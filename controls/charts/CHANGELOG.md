@@ -2,7 +2,19 @@
 
 ## [Unreleased]
 
-## 29.2.11 (2025-06-17)
+## 30.1.37 (2025-06-25)
+
+### Chart
+
+#### Feature
+
+- Added support to highlight the last value of the series with a label and grid line indicator, offering a clear and immediate reference point for the series endpoint. Explore the demo [here](https://ej2.syncfusion.com/demos/#/tailwind3/chart/live-stock-data.html)
+
+### Stock Chart
+
+#### Feature
+
+- Added support to highlight the last value of the series with a label and grid line indicator, offering a clear and immediate reference point for the series endpoint. Explore the demo [here](https://ej2.syncfusion.com/demos/#/tailwind3/stock-chart/spline.html)
 
 ### Chart
 
@@ -108,14 +120,6 @@
 
 - `#I667715` - Added support for trapezoidal funnel shapes in the accumulation chart, offering a new design option to represent data more effectively and enhance visual appeal.
 - Provided the customization support for accumulation chart title position.
-
-## 28.2.9 (2025-03-04)
-
-### Chart
-
-#### Bug Fixes
-
-- `#I696021` - Now, the chart SVG height and width are set correctly for the rotated axis label.
 
 ## 28.2.9 (2025-03-04)
 

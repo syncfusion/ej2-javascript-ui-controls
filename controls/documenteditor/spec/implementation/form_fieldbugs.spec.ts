@@ -29,7 +29,7 @@ describe('form fields', () => {
         expect(() => { editor.destroy(); }).not.toThrowError();
         element = undefined;
         editor = undefined;
-        document.body.innerHTML = '';
+        
     });
     it('validate text formfield input texts', ()=>{
         editor.openBlank();

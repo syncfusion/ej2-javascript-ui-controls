@@ -4,7 +4,7 @@ import { ColumnModel } from './../models/column';
 import { PointF, PdfColor, PdfFontFamily, PdfFontStyle, PdfStringFormat, PdfTrueTypeFont, PdfStandardFont, PdfTextWebLink, PdfImage, PdfPen  } from '@syncfusion/ej2-pdf-export';
 import {
     ContextMenuType, PdfPageSize, PageOrientation, ExportType, PdfTheme, TaskType, ContentType, PdfPageNumberType, PdfDashStyle,
-    PdfHAlign, PdfVAlign
+    PdfHAlign, PdfVAlign, ConstraintType, ViolationType
 } from './enum';
 import { ContextMenuOpenEventArgs as GridContextMenuOpenEventArgs } from '@syncfusion/ej2-grids';
 import { ContextMenuClickEventArgs as GridContextMenuClickEventArgs } from '@syncfusion/ej2-grids';
@@ -57,7 +57,42 @@ export interface IGanttData {
     /** Defines the slack value of critical path task. */
     slack?: string | number;
 }
-
+export interface IGanttTaskInfo {
+    /** The baseline width of the task. */
+    baselineWidth?: number;
+    /** The baseline left position of the task. */
+    baselineLeft?: number;
+    /** Indicates whether the task is on the critical path. */
+    isCritical?: boolean;
+    /** The slack value for a critical path task. */
+    slack?: string | number;
+    /** The width of the task's progress bar. */
+    progressWidth?: number;
+    /** The left position of an auto-scheduled task. */
+    autoTaskLeft?: number;
+    /** The width of an auto-scheduled task. */
+    autoTaskWidth?: number;
+    /** The left position of a manually scheduled task. */
+    manualTaskLeft?: number;
+    /** The width of a manually scheduled task. */
+    manualTaskWidth?: number;
+    /** The segments of the task. */
+    segments?: ITaskSegment[];
+    /** The Work Breakdown Structure (WBS) code for the task. */
+    wbsCode?: string;
+    /** The WBS predecessor code for the task. */
+    wbsPredecessor?: string;
+    /** Indicates whether the task is auto-scheduleable. */
+    isAutoSchedule?: boolean;
+    /** The left position of an auto-scheduled taskbar within a manually scheduled parent task. */
+    manualTaskAutoLeft?: number;
+    /** The width of an auto-scheduled taskbar within a manually scheduled parent task. */
+    manualTaskAutoWidth?: number;
+    /** The start date of an auto-scheduled taskbar within a manually scheduled parent task. */
+    manualTaskAutoStartDate?: Date;
+    /** The end date of an auto-scheduled taskbar within a manually scheduled parent task. */
+    manualTaskAutoEndDate?: Date;
+}
 export interface IParent {
     /** Defines the unique id of task. */
     uniqueID?: string;
@@ -160,6 +195,14 @@ export interface ITaskData {
      * Defines shared task unique ids.
      */
     sharedTaskUniqueIds?: string[];
+    /** Defines the wbs value for each task */
+    wbsCode?: string;
+    /** Defines the wbs predecessor value for each task */
+    wbsPredecessor?: string;
+    /** Defines the constraint date of the task. */
+    constraintDate?: Date;
+    /** Defines the constraint type of the task. */
+    constraintType?: ConstraintType;
 }
 
 export interface ITaskSegment {
@@ -360,6 +403,8 @@ export interface IValidateArgs {
     validateMode?: IValidateMode;
     /** Defines the edited arguments. */
     editEventArgs?: object;
+    /** Defines the type of constraint violation. */
+    violationType?: ViolationType;
 }
 
 export interface ITimeSpanEventArgs {
@@ -381,6 +426,29 @@ export interface IValidateMode {
     respectLink?: boolean;
     removeLink?: boolean;
     preserveLinkWithEditing?: boolean;
+    /**
+     * If false, reverts edits violating Must Start On (MSO)
+     * and shows dialog with violationType: "MustStartOn".
+     */
+    respectMustStartOn?: boolean;
+
+    /**
+     * If false, reverts edits violating Must Finish On (MFO)
+     * and shows dialog with violationType: "MustFinishOn".
+     */
+    respectMustFinishOn?: boolean;
+
+    /**
+     * If false, reverts edits violating Start No Later Than (SNLT)
+     * and shows dialog with violationType: "StartNoLaterThan".
+     */
+    respectStartNoLaterThan?: boolean;
+
+    /**
+     * If false, reverts edits violating Finish No Later Than (FNLT)
+     * and shows dialog with violationType: "FinishNoLaterThan".
+     */
+    respectFinishNoLaterThan?: boolean;
 }
 export interface IActionBeginEventArgs {
     /** Defines the action type. */

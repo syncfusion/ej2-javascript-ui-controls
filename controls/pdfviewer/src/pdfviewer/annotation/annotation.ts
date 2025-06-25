@@ -1,4 +1,4 @@
-import { FreeTextSettings, HighlightSettings, LineSettings, StickyNotesSettings, StrikethroughSettings, UnderlineSettings, RectangleSettings, CircleSettings, ArrowSettings, PerimeterSettings, DistanceSettings, AreaSettings, RadiusSettings, VolumeSettings, PolygonSettings, InkAnnotationSettings, StampSettings, CustomStampSettings, HandWrittenSignatureSettings } from './../pdfviewer';
+import { FreeTextSettings, HighlightSettings, LineSettings, StickyNotesSettings, StrikethroughSettings, UnderlineSettings, SquigglySettings, RectangleSettings, CircleSettings, ArrowSettings, PerimeterSettings, DistanceSettings, AreaSettings, RadiusSettings, VolumeSettings, PolygonSettings, InkAnnotationSettings, StampSettings, CustomStampSettings, HandWrittenSignatureSettings } from './../pdfviewer';
 import {
     PdfViewer, PdfViewerBase, AnnotationType, ITextMarkupAnnotation, TextMarkupAnnotation, ShapeAnnotation,
     StampAnnotation, StickyNotesAnnotation, IPopupAnnotation, ICommentsCollection, MeasureAnnotation, InkAnnotation,
@@ -280,7 +280,7 @@ export class Annotation {
         }
         if (type === 'None') {
             this.clearAnnotationMode();
-        } else if (type === 'Highlight' || type === 'Strikethrough' || type === 'Underline') {
+        } else if (type === 'Highlight' || type === 'Strikethrough' || type === 'Underline' || type === 'Squiggly') {
             if (this.textMarkupAnnotationModule) {
                 this.textMarkupAnnotationModule.isSelectionMaintained = false;
                 this.textMarkupAnnotationModule.drawTextMarkupAnnotations(type.toString());
@@ -790,6 +790,8 @@ export class Annotation {
             customData = this.pdfViewer.underlineSettings.customData;
         } else if (type === 'Strikethrough' && this.pdfViewer.strikethroughSettings.customData) {
             customData = this.pdfViewer.strikethroughSettings.customData;
+        } else if (type === 'Squiggly' && this.pdfViewer.squigglySettings.customData) {
+            customData = this.pdfViewer.squigglySettings.customData;
         } else if (this.pdfViewer.annotationSettings.customData) {
             customData = this.pdfViewer.annotationSettings.customData;
         }
@@ -875,8 +877,8 @@ export class Annotation {
         if (collections && annotation) {
             for (let i: number = 0; i < collections.length; i++) {
                 if (collections[parseInt(i.toString(), 10)].annotationId ===
-                annotation.annotName || collections[parseInt(i.toString(), 10)].annotationId === annotation.annotationId &&
-                collections[parseInt(i.toString(), 10)].pageNumber === annotation.pageNumber) {
+                    annotation.annotName || collections[parseInt(i.toString(), 10)].annotationId === annotation.annotationId &&
+                    collections[parseInt(i.toString(), 10)].pageNumber === annotation.pageNumber) {
                     this.removedAnnotationCollection.push(collections[parseInt(i.toString(), 10)]);
                     this.pdfViewer.annotationCollection.splice(i, 1);
                     break;
@@ -2369,6 +2371,8 @@ export class Annotation {
             this.popupNote.style.backgroundColor = 'rgb(187, 241, 191)';
         } else if (type === 'Strikethrough') {
             this.popupNote.style.backgroundColor = 'rgb(242, 188, 207)';
+        } else if (type === 'Squiggly') {
+            this.popupNote.style.backgroundColor = 'rgb(242, 188, 207)';
         }
         this.popupNote.style.display = 'block';
         let topPosition: number = (event.pageY - mainContainerPosition.top + 5);
@@ -3492,11 +3496,11 @@ export class Annotation {
                 if (!this.pdfViewerBase.isAnnotationAdded || pdfAnnotationBase.measureType === 'Distance') {
                     if (pdfAnnotationBase.measureType === '' || isNullOrUndefined(pdfAnnotationBase.measureType)) {
                         this.shapeAnnotationModule.
-                            renderShapeAnnotations(pdfAnnotationBase, this.pdfViewer.annotation.getEventPageNumber(event));
+                            renderShapeAnnotations(pdfAnnotationBase, pdfAnnotationBase.pageIndex);
                     } else if (pdfAnnotationBase.measureType === 'Distance' || pdfAnnotationBase.measureType === 'Perimeter' ||
                         pdfAnnotationBase.measureType === 'Radius') {
                         this.measureAnnotationModule.
-                            renderMeasureShapeAnnotations(pdfAnnotationBase, this.pdfViewer.annotation.getEventPageNumber(event));
+                            renderMeasureShapeAnnotations(pdfAnnotationBase, pdfAnnotationBase.pageIndex);
                     }
                 }
                 this.pdfViewerBase.updateDocumentEditedProperty(true);
@@ -4957,8 +4961,8 @@ export class Annotation {
             } else if (annotation.type === 'StickyNotes' || annotation.type === 'Stamp' || annotation.shapeAnnotationType === 'sticky' || annotation.shapeAnnotationType === 'stamp') {
                 if (!(isNullOrUndefined(annotation.opacity))  && currentAnnotation.opacity !== annotation.opacity) {
                     redoClonedObject.opacity = annotation.opacity;
-                    this.isEdited = true;
                     this.annotationPropertyChange(currentAnnotation, annotation.opacity, 'Shape Opacity', clonedObject, redoClonedObject);
+                    this.isEdited = true;
                 }
                 this.calculateAnnotationBounds(currentAnnotation, annotation);
                 if (annotation.type === 'StickyNotes' || annotation.shapeAnnotationType === 'sticky') {
@@ -4969,11 +4973,15 @@ export class Annotation {
             } else if (annotation.type === 'Ink' || annotation.type === 'Shape' || annotation.type === 'Measure' || annotation.shapeAnnotationType === 'Line' || annotation.shapeAnnotationType === 'Square' || annotation.shapeAnnotationType === 'Circle' || annotation.shapeAnnotationType === 'Polygon' || annotation.shapeAnnotationType === 'Polyline' || annotation.shapeAnnotationType === 'Ink') {
                 if (annotation.shapeAnnotationType === 'Square' || annotation.shapeAnnotationType === 'Circle' || annotation.shapeAnnotationType === 'Radius' || annotation.shapeAnnotationType === 'Ink') {
                     this.calculateAnnotationBounds(currentAnnotation, annotation);
+                    if (annotation.indent === 'PolygonRadius') {
+                        this.updateCalibrateValues(currentAnnotation);
+                        annotation.note = currentAnnotation.notes;
+                    }
                 }
                 if (!(isNullOrUndefined(annotation.opacity)) && currentAnnotation.opacity !== annotation.opacity) {
                     redoClonedObject.opacity = annotation.opacity;
-                    this.isEdited = true;
                     this.annotationPropertyChange(currentAnnotation, annotation.opacity, 'Shape Opacity', clonedObject, redoClonedObject);
+                    this.isEdited = true;
                 }
                 if (annotation.fillColor && currentAnnotation.fillColor !== annotation.fillColor) {
                     redoClonedObject.fillColor = annotation.fillColor;
@@ -5003,16 +5011,6 @@ export class Annotation {
                     this.pdfViewer.nodePropertyChange(currentAnnotation, { thickness: annotation.thickness });
                     this.triggerAnnotationPropChange(currentAnnotation, false, false, true, false);
                     this.pdfViewer.annotation.addAction(currentAnnotation.pageIndex, null, currentAnnotation, 'Shape Thickness', '', clonedObject, redoClonedObject);
-                }
-                if (currentAnnotation.author !== annotation.author) {
-                    redoClonedObject.author = annotation.author;
-                    this.isEdited = true;
-                    this.pdfViewer.nodePropertyChange(currentAnnotation, { author: annotation.author });
-                    this.triggerAnnotationPropChange(currentAnnotation, false, true, false, false);
-                    const commentDiv: any = document.getElementById(annotation.annotationId).firstChild.firstChild.childNodes[1];
-                    if (commentDiv instanceof Element && commentDiv.classList.contains('e-pv-comment-title')) {
-                        commentDiv.textContent = annotation.author + ' - ' + this.pdfViewer.annotationModule.stickyNotesAnnotationModule.getDateAndTime();
-                    }
                 }
                 if (currentAnnotation.subject !== annotation.subject) {
                     redoClonedObject.subject = annotation.subject;
@@ -5054,6 +5052,11 @@ export class Annotation {
                         currentAnnotation.vertexPoints = annotation.vertexPoints;
                         this.isEdited = true;
                         this.pdfViewer.nodePropertyChange(currentAnnotation, { vertexPoints: annotation.vertexPoints });
+                        if (annotation.indent === 'LineDimension' || annotation.indent === 'PolyLineDimension' || annotation.indent === 'PolygonDimension' || annotation.indent === 'PolygonVolume') {
+                            this.updateCalibrateValues(currentAnnotation);
+                            annotation.note = currentAnnotation.notes;
+                        }
+                        this.pdfViewer.renderSelector(currentAnnotation.pageIndex, this.pdfViewer.annotationSelectorSettings);
                     }
                 }
                 if (annotation.subType === 'Line' || annotation.subType === 'Arrow' || annotation.subType === 'Distance' || annotation.subType === 'Perimeter') {
@@ -5226,6 +5229,46 @@ export class Annotation {
             if (annotation.type !== 'TextMarkup' && annotation.shapeAnnotationType !== 'textMarkup') {
                 this.pdfViewer.renderDrawing();
             }
+            if (currentAnnotation.author !== annotation.author) {
+                redoClonedObject.author = annotation.author;
+                currentAnnotation.author = annotation.author;
+                this.isEdited = true;
+                this.triggerAnnotationPropChange(currentAnnotation, false, true, false, false);
+                const commentDiv: any = document.getElementById(annotation.annotationId).firstChild.firstChild.childNodes[1];
+                if (commentDiv instanceof Element && commentDiv.classList.contains('e-pv-comment-title')) {
+                    commentDiv.textContent = annotation.author + ' - ' + this.pdfViewer.annotationModule.stickyNotesAnnotationModule.getDateAndTime();
+                }
+            }
+            if (!isNullOrUndefined(annotation.setState) && (currentAnnotation.review.state  !== annotation.setState)) {
+                currentAnnotation.review.state = annotation.setState;
+                annotation.review.state = annotation.setState;
+                this.isEdited = true;
+                this.selectAnnotation(annotation.annotationId);
+                const args: any = {item : { text : annotation.setState }};
+                this.pdfViewer.annotationModule.stickyNotesAnnotationModule.commentMenuItemSelect(args);
+            }
+            for (let j: number = 0; j < annotation.comments.length; j++) {
+                const annotComment: any = annotation.comments[parseInt(j.toString(), 10)];
+                if (!isNullOrUndefined(annotComment) && currentAnnotation.comments[parseInt(j.toString(), 10)].annotName
+                    === annotation.commentId && annotation.commentId) {
+                    if (currentAnnotation.comments[parseInt(j.toString(), 10)].author !== annotComment.author) {
+                        const replyDiv: any = document.getElementById(annotation.commentId).firstChild.childNodes[0];
+                        replyDiv.textContent = annotComment.author + ' - ' + this.pdfViewer.annotationModule.
+                            stickyNotesAnnotationModule.getDateAndTime();
+                        currentAnnotation.comments[parseInt(j.toString(), 10)].author = annotComment.author;
+                        annotation.comments[parseInt(j.toString(), 10)].review.author = annotComment.author;
+                        this.isEdited = true;
+                        break;
+                    }
+                    if (currentAnnotation.comments[parseInt(j.toString(), 10)].review.state !== annotComment.review.state) {
+                        currentAnnotation.comments[parseInt(j.toString(), 10)].review.state = annotComment.review.state;
+                        const args: any = { item: { text: annotComment.review.state } };
+                        this.pdfViewer.annotationModule.stickyNotesAnnotationModule.commentMenuItemSelect(args);
+                        this.isEdited = true;
+                        break;
+                    }
+                }
+            }
             this.updateCollection(annotationId, pageNumber, annotation, annotationType);
             if (this.isEdited)
             {
@@ -5380,6 +5423,9 @@ export class Annotation {
         if (annotation && annotation.note !== '' && annotation.note !== undefined) {
             newAnnotation.note = annotation.note;
         }
+        if (annotation.review) {
+            newAnnotation.review = annotation.review;
+        }
         if (annotation.commentId && annotation.editComment && annotation.commentType === 'edit') {
             const commentDiv: any = document.getElementById(annotation.commentId);
             if (annotation.annotationId === annotation.commentId) {
@@ -5389,6 +5435,15 @@ export class Annotation {
                 if (annotation.comments[parseInt(j.toString(), 10)].annotName === annotation.commentId) {
                     newAnnotation.comments[parseInt(j.toString(), 10)].note = commentDiv.childNodes[1].ej2_instances[0].value;
                 }
+            }
+        }
+        for (let j: number = 0; j < annotation.comments.length; j++) {
+            const annotComment: any = annotation.comments[parseInt(j.toString(), 10)];
+            if (!isNullOrUndefined(annotComment) && annotation.commentId && annotComment.annotName === annotation.commentId) {
+                newAnnotation.comments[parseInt(j.toString(), 10)].author = annotComment.author;
+                newAnnotation.comments[parseInt(j.toString(), 10)].review.author = annotComment.author;
+                newAnnotation.comments[parseInt(j.toString(), 10)].review.state = annotComment.review.state;
+                break;
             }
         }
         if (annotationType === 'textMarkup') {
@@ -5596,6 +5651,11 @@ export class Annotation {
                 }
             } else if (annotationSubType === 'Strikethrough') {
                 annotationAuthor = (this.pdfViewer.strikethroughSettings.author !== 'Guest') ? this.pdfViewer.strikethroughSettings.author : this.pdfViewer.annotationSettings.author ? this.pdfViewer.annotationSettings.author : 'Guest';
+                if ( annotationAuthor !== 'Guest' && this.pdfViewer.enableHtmlSanitizer ){
+                    annotationAuthor = SanitizeHtmlHelper.sanitize(annotationAuthor);
+                }
+            } else if (annotationSubType === 'Squiggly') {
+                annotationAuthor = (this.pdfViewer.squigglySettings.author !== 'Guest') ? this.pdfViewer.squigglySettings.author : this.pdfViewer.annotationSettings.author ? this.pdfViewer.annotationSettings.author : 'Guest';
                 if ( annotationAuthor !== 'Guest' && this.pdfViewer.enableHtmlSanitizer ){
                     annotationAuthor = SanitizeHtmlHelper.sanitize(annotationAuthor);
                 }
@@ -5807,6 +5867,9 @@ export class Annotation {
             }
             else if (annotation.subject === 'Strikethrough') {
                 annotSettings = this.pdfViewer.strikethroughSettings;
+            }
+            else if (annotation.subject === 'Squiggly') {
+                annotSettings = this.pdfViewer.squigglySettings;
             }
         }
         return this.updateSettings(annotSettings);
@@ -6374,6 +6437,9 @@ export class Annotation {
                 } else if (annotation.textMarkupAnnotationType === 'Strikethrough' && this.pdfViewer.strikethroughSettings.allowedInteractions) {
                     annotationInteraction = this.checkAllowedInteractionSettings(this.pdfViewer.strikethroughSettings.allowedInteractions,
                                                                                  annotation.allowedInteractions);
+                } else if (annotation.textMarkupAnnotationType === 'Squiggly' && this.pdfViewer.squigglySettings.allowedInteractions) {
+                    annotationInteraction = this.checkAllowedInteractionSettings(this.pdfViewer.squigglySettings.allowedInteractions,
+                                                                                 annotation.allowedInteractions);
                 }
             } else {
                 if (annotation.measureType !== '') {
@@ -6441,6 +6507,8 @@ export class Annotation {
                     isLocked = this.checkLockSettings(this.pdfViewer.underlineSettings.isLock);
                 } else if (annotation.textMarkupAnnotationType === 'Strikethrough') {
                     isLocked = this.checkLockSettings(this.pdfViewer.strikethroughSettings.isLock);
+                } else if (annotation.textMarkupAnnotationType === 'Squiggly') {
+                    isLocked = this.checkLockSettings(this.pdfViewer.squigglySettings.isLock);
                 }
             } else {
                 if (annotation.measureType !== '') {
@@ -6749,10 +6817,88 @@ export class Annotation {
      * @returns {void}
      */
     public destroy(): void {
+        const pageDiv: HTMLElement = document.getElementById(this.pdfViewer.element.id + '_pageDiv_' + (this.pdfViewerBase.currentPageNumber - 1));
+        if (pageDiv) {
+            pageDiv.removeEventListener('mousedown', this.pdfViewer.annotationModule.stickyNotesAnnotationModule.drawIcons.bind(this));
+        }
+        const closeBtn: HTMLElement = document.getElementById(this.pdfViewer.element.id + '_popup_close');
+        if (closeBtn) {
+            closeBtn.removeEventListener('click', this.saveClosePopupMenu.bind(this));
+            closeBtn.removeEventListener('touchend', this.saveClosePopupMenu.bind(this));
+        }
+        if (this.popupElement) {
+            this.popupElement.removeEventListener('mousedown', this.onPopupElementMoveStart.bind(this));
+            this.popupElement.removeEventListener('mousemove', this.onPopupElementMove.bind(this));
+            this.popupElement.removeEventListener('touchstart', this.onPopupElementMoveStart.bind(this));
+            this.popupElement.removeEventListener('touchmove', this.onPopupElementMove.bind(this));
+        }
+        if (this.noteContentElement) {
+            this.noteContentElement.removeEventListener('mousedown', () => {
+                this.noteContentElement.focus();
+            });
+        }
+        window.removeEventListener('mouseup', this.onPopupElementMoveEnd.bind(this));
+        window.removeEventListener('touchend', this.onPopupElementMoveEnd.bind(this));
         this.destroyPropertiesWindow();
         if (this.textMarkupAnnotationModule) {
             this.textMarkupAnnotationModule.clear();
         }
+        this.textMarkupAnnotationModule = null;
+        this.shapeAnnotationModule = null;
+        this.measureAnnotationModule = null;
+        this.stampAnnotationModule = null;
+        this.freeTextAnnotationModule = null;
+        this.inputElementModule = null;
+        this.inkAnnotationModule = null;
+        this.stickyNotesAnnotationModule = null;
+        this.popupNote = null;
+        this.popupNoteAuthor = null;
+        this.popupNoteContent = null;
+        this.popupElement = null;
+        this.authorPopupElement = null;
+        this.noteContentElement = null;
+        this.modifiedDateElement = null;
+        this.opacityIndicator = null;
+        this.startArrowDropDown = null;
+        this.endArrowDropDown = null;
+        this.lineStyleDropDown = null;
+        this.thicknessBox = null;
+        this.leaderLengthBox = null;
+        this.fillColorPicker = null;
+        this.strokeColorPicker = null;
+        this.fillDropDown = null;
+        this.strokeDropDown = null;
+        this.opacitySlider = null;
+        this.propertiesDialog = null;
+        this.currentAnnotPageNumber = null;
+        this.clientX = null;
+        this.clientY = null;
+        this.isPopupMenuMoved = null;
+        this.selectedLineStyle = null;
+        this.selectedLineDashArray = null;
+        this.isUndoRedoAction = null;
+        this.isFreeTextFontsizeChanged = null;
+        this.isUndoAction = null;
+        this.annotationSelected = null;
+        this.isAnnotDeletionApiCall = null;
+        this.removedDocumentAnnotationCollection = null;
+        this.nonRenderSelectedAnnotation = null;
+        this.isShapeCopied = null;
+        this.actionCollection = null;
+        this.redoCollection = null;
+        this.isPopupNoteVisible = null;
+        this.undoCommentsElement = null;
+        this.redoCommentsElement = null;
+        this.selectAnnotationId = null;
+        this.isAnnotationSelected = null;
+        this.annotationPageIndex = null;
+        this.previousIndex = null;
+        this.annotationType = null;
+        this.overlappedAnnotations = null;
+        this.overlappedCollections = null;
+        this.isFormFieldShape = null;
+        this.removedAnnotationCollection = null;
+        this.isEdited = null;
     }
 
     /**
@@ -6790,7 +6936,7 @@ export class Annotation {
      * @returns {void}
      */
     public addAnnotation(annotationType: AnnotationType, options?: FreeTextSettings | StickyNotesSettings |
-    HighlightSettings | UnderlineSettings | LineSettings | StrikethroughSettings | RectangleSettings |
+    HighlightSettings | UnderlineSettings | SquigglySettings | LineSettings | StrikethroughSettings | RectangleSettings |
     CircleSettings | ArrowSettings | PolygonSettings | DistanceSettings | PerimeterSettings | AreaSettings |
     RadiusSettings | VolumeSettings | InkAnnotationSettings| HandWrittenSignatureSettings | StampSettings | CustomStampSettings,
                          dynamicStampItem?: DynamicStampItem, signStampItem?: SignStampItem,
@@ -6817,13 +6963,15 @@ export class Annotation {
              this.pdfViewer.annotation.stickyNotesAnnotationModule.updateAddAnnotationDetails(options as StickyNotesSettings, offset);
             this.pdfViewer.annotation.stickyNotesAnnotationModule.isAddAnnotationProgramatically = true;
         }
-        else if (annotationType === 'Highlight' || annotationType === 'Underline' || annotationType === 'Strikethrough') {
+        else if (annotationType === 'Highlight' || annotationType === 'Underline' || annotationType === 'Strikethrough' || annotationType === 'Squiggly') {
             if (annotationType === 'Highlight')
             {annotationObject = options as HighlightSettings; }
             else if (annotationType === 'Underline')
             {annotationObject = options as UnderlineSettings; }
             else if (annotationType === 'Strikethrough')
             {annotationObject = options as StrikethroughSettings; }
+            else if (annotationType === 'Squiggly')
+            {annotationObject = options as SquigglySettings; }
             pdfAnnotation[parseInt(pageNumber.toString(), 10)] =
              this.pdfViewer.annotation.textMarkupAnnotationModule.updateAddAnnotationDetails(annotationType, annotationObject);
             this.pdfViewer.annotation.textMarkupAnnotationModule.isAddAnnotationProgramatically = true;
@@ -7036,7 +7184,7 @@ export class Annotation {
      * @returns {number} - fontSize
      */
     public calculateFontSize(text: string, rectangle: { width: number, height: number }): number {
-        const canvasElement: HTMLElement = document.createElement('canvas');
+        const canvasElement: HTMLElement  = document.createElement('canvas');
         const context: CanvasRenderingContext2D = (canvasElement as HTMLCanvasElement).getContext('2d');
         let fontSize: number = 10;
         let contextWidth: number = 0;

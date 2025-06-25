@@ -275,11 +275,7 @@ export class ContextMenu {
         // eslint-disable-next-line
         this.parent.trigger('actionBegin', eventArgs, (eventArgs: ActionBeginArgs) => {
             if (!eventArgs.cancel) {
-                if (!isNullOrUndefined(this.parent.loadingIndicator) && this.parent.loadingIndicator.indicatorType === 'Shimmer') {
-                    this.parent.showMaskRow();
-                } else {
-                    this.parent.showSpinner();
-                }
+                this.parent['showLoadingIndicator']();
                 this.parent.chartRowsModule.splitTask(this.rowData[taskSettings.id], currentClickedDate);
                 this.parent.chartRowsModule.updateSegment(this.rowData.ganttProperties.segments, this.rowData.ganttProperties.taskId);
             }
@@ -403,7 +399,9 @@ export class ContextMenu {
             !this.parent.focusModule ? this.parent.focusModule.getActiveElement() :
                 this.parent.ganttChartModule.targetElement;
         // Closed edited cell before opening context menu
-        if ((!isNullOrUndefined(this.parent.editModule) && this.parent.editModule.cellEditModule && this.parent.editModule.cellEditModule.isCellEdit && target.parentElement.classList.contains('e-row')) || target.parentElement.classList.contains('e-treecolumn-container')) {
+        if (!isNullOrUndefined(this.parent.editModule) && this.parent.editModule.cellEditModule &&
+            this.parent.editModule.cellEditModule.isCellEdit && (target.parentElement.classList.contains('e-row') ||
+            target.parentElement.classList.contains('e-treecolumn-container'))) {
             this.parent.treeGrid.endEdit();
         }
         if (!isNullOrUndefined(args.element) && args.element.id === this.parent.element.id + '_contextmenu') {
@@ -618,8 +616,8 @@ export class ContextMenu {
                     isBottomTierHour = this.parent.timelineSettings.bottomTier.unit === 'Hour';
                 }
                 if (this.parent.readOnly || !taskbarElement || isNullOrUndefined(taskSettings.segments) ||
-                    this.parent.flatData[Number(rowIndex)].hasChildRecords ||
-                    (this.parent.flatData[Number(rowIndex)].ganttProperties.duration < 2
+                    this.parent.updatedRecords[Number(rowIndex)].hasChildRecords ||
+                    (this.parent.updatedRecords[Number(rowIndex)].ganttProperties.duration < 2
                      && !(isBottomTierMinute || isBottomTierHour))) {
                     this.updateItemVisibility(item.text);
                 }

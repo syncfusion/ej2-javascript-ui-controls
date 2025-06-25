@@ -11,7 +11,7 @@ import { Timeline } from '../renderer/timeline';
 import { GanttTreeGrid } from './tree-grid';
 import { Toolbar } from '../actions/toolbar';
 import { CriticalPath } from '../actions/critical-path';
-import { IGanttData, IWorkingTimeRange, IQueryTaskbarInfoEventArgs, BeforeTooltipRenderEventArgs, IDependencyEventArgs } from './interface';
+import { IGanttData, IWorkingTimeRange, IQueryTaskbarInfoEventArgs, BeforeTooltipRenderEventArgs, IDependencyEventArgs, IGanttTaskInfo, ITaskSegment } from './interface';
 import { DataStateChangeEventArgs } from '@syncfusion/ej2-treegrid';
 import { ITaskbarEditedEventArgs, IParent, ITaskData, PdfColumnHeaderQueryCellInfoEventArgs } from './interface';
 import { ICollapsingEventArgs, CellEditArgs, PdfQueryTimelineCellInfoEventArgs } from './interface';
@@ -50,7 +50,7 @@ import { Splitter } from './splitter';
 import { ResizeEventArgs, ResizingEventArgs } from '@syncfusion/ej2-layouts';
 import { TooltipSettingsModel } from '../models/tooltip-settings-model';
 import { Tooltip } from '../renderer/tooltip';
-import { ToolbarItem, ColumnMenuItem, RowPosition, DurationUnit, SortDirection, GanttAction } from './enum';
+import { ToolbarItem, ColumnMenuItem, RowPosition, DurationUnit, SortDirection, GanttAction, ViolationType } from './enum';
 import { GridLine, ContextMenuItem, ScheduleMode, ViewType } from './enum';
 import { Selection } from '../actions/selection';
 import { ExcelExport } from '../actions/excel-export';
@@ -69,6 +69,7 @@ import { TaskbarEdit } from '../actions/taskbar-edit';
 import { UndoRedo } from '../actions/undo-redo';
 import { WeekWorkingTimeModel } from '../models/week-working-time-model';
 import { WeekWorkingTime } from '../models/week-working-time';
+import {CellSaveArgs} from '@syncfusion/ej2-grids';
 /**
  *
  * Represents the Gantt chart component.
@@ -308,6 +309,8 @@ export class Gantt extends Component<HTMLElement>
     /** @hidden */
     public dialogValidateMode?: IValidateMode;
     /** @hidden */
+    public constraintViolationType?: any;
+    /** @hidden */
     public perDayWidth?: number;
     /** @hidden */
     public zoomingProjectStartDate?: Date;
@@ -525,6 +528,25 @@ export class Gantt extends Component<HTMLElement>
      */
     @Property(false)
     public enableAdaptiveUI: boolean;
+    /**
+     * Enables Work Breakdown Structure (WBS) functionality in the Gantt Chart.
+     * When set to true, the Gantt Chart automatically generates WBS codes based on the task hierarchy.
+     * A dedicated WBS Code column will be shown to represent the task structure.
+     * Additionally, if task dependencies (predecessors) are mapped in the data source, a WBS Predecessor column will also be displayed to reflect dependency information using WBS codes.
+     *
+     * @default false
+     */
+    @Property(false)
+    public enableWBS: boolean;
+
+    /**
+     * Enables the automatic update of WBS codes when performing actions like sorting, filtering, row drag and drop, and other grid operations that change the task order or hierarchy.
+     * When set to true, the Gantt component will refresh and regenerate the WBS codes dynamically after such actions to ensure the codes remain in sync with the current task structure.
+     *
+     * @default false
+     */
+    @Property(false)
+    public enableAutoWbsUpdate: boolean;
 
     /**
      * If `allowSelection` is set to true, it enables row selection in the Gantt chart, and the selected rows are highlighted.
@@ -1376,7 +1398,16 @@ export class Gantt extends Component<HTMLElement>
      */
     @Event()
     public actionBegin: EmitType<Object | PageEventArgs | FilterEventArgs | SortEventArgs | ITimeSpanEventArgs | IDependencyEventArgs | ITaskAddedEventArgs | ZoomEventArgs>;  // eslint-disable-line
-
+    /**
+     * Triggers before a cell's value is saved in the Gantt chart.
+     *
+     * This event allows cancellation of the save action.
+     *
+     * @event cellSave
+     * @param args - Arguments related to the cell save event, including data and cancellation options.
+     */
+    @Event()
+    public cellSave: EmitType<CellSaveArgs>;
     /**
      * Triggers when Gantt actions such as sorting, filtering, searching etc. are completed.
      *
@@ -1465,6 +1496,15 @@ export class Gantt extends Component<HTMLElement>
      */
     @Event()
     public dataBound: EmitType<Object>;
+
+    /**
+     * Triggers before the data is bound to the TreeGrid in the Gantt component.
+     * This event is triggered before any visual elements (taskbars, rows, timelines) are rendered in the DOM.
+     *
+     * @event beforeDataBound
+     */
+    @Event()
+    public beforeDataBound: EmitType<Object>;
 
     /**
      * Triggers when column resize starts.
@@ -1927,6 +1967,20 @@ export class Gantt extends Component<HTMLElement>
         }
         return totalSeconds;
     }
+    private showLoadingIndicator(): void {
+        if (!isNullOrUndefined(this.loadingIndicator) && this.loadingIndicator.indicatorType === 'Shimmer') {
+            this.showMaskRow();
+        } else {
+            this.showSpinner();
+        }
+    }
+    private hideLoadingIndicator(): void {
+        if (!isNullOrUndefined(this.loadingIndicator) && this.loadingIndicator.indicatorType === 'Shimmer') {
+            this.hideMaskRow();
+        } else {
+            this.hideSpinner();
+        }
+    }
     private initProperties(): void {
         this.globalize = new Internationalization(this.locale);
         this.isAdaptive = Browser.isDevice;
@@ -2009,6 +2063,12 @@ export class Gantt extends Component<HTMLElement>
             removeLink: false,
             preserveLinkWithEditing: true
         };
+        if (this.taskFields.constraintType && this.taskFields.constraintDate) {
+            this.dialogValidateMode.respectMustStartOn = false;
+            this.dialogValidateMode.respectMustFinishOn = false;
+            this.dialogValidateMode.respectStartNoLaterThan = false;
+            this.dialogValidateMode.respectFinishNoLaterThan = false;
+        }
         this.secondsPerDay = this.dataOperation.getSecondsPerDay();
         this.nonWorkingDayIndex = [];
         this.dataOperation.getNonWorkingDayIndex();
@@ -2184,6 +2244,13 @@ export class Gantt extends Component<HTMLElement>
             /* eslint-disable-next-line */
             (<{ vueInstance?: any }>this.treeGrid.grid).vueInstance = (<{ vueInstance?: any }>this).vueInstance;
         }
+        if (
+            this.taskFields &&
+            this.taskFields.constraintDate &&
+            this.taskFields.constraintType
+        ) {
+            this.updateOffsetOnTaskbarEdit = false;
+        }
         this.element.setAttribute('role', 'application');
         createSpinner({ target: this.element }, this.createElement);
         this.trigger('load', {});
@@ -2200,11 +2267,7 @@ export class Gantt extends Component<HTMLElement>
         this.splitterModule.renderSplitter();
         this.notify('renderPanels', null);
         this.actionFailures();
-        if (!isNullOrUndefined(this.loadingIndicator) && this.loadingIndicator.indicatorType === 'Shimmer'){
-            this.showMaskRow();
-        } else {
-            this.showSpinner();
-        }
+        this.showLoadingIndicator();
         if (this.dataMap) {
             this.dataMap.clear();
         }
@@ -2385,6 +2448,123 @@ export class Gantt extends Component<HTMLElement>
         }
     }
 
+    private convertToWBSPredecessor(value: string, record: IGanttData): string {
+        return value.split(',').map((item : string) => {
+            const match: string[] = item.trim().match(/^(.*?)(FS|SS|FF|SF|\+|\s|$)(.*)/i);
+            if (match) {
+                const newId: string = this.getRecordByID(match[1]).ganttProperties.wbsCode; // New ID to replace
+                const remaining: string = (match[2] + match[3]).trim(); // Keep original remaining part
+                return newId + remaining; // Combine new ID + remaining
+            } else {
+                return item.trim(); // If no match, return as is
+            }
+        }).join(',');
+    }
+
+    private updateWBSPredecessor(record: IGanttData): void {
+        const wbsPredValue: string = ((record[this.taskFields.dependency] && record[this.taskFields.dependency] !== '') ? this.convertToWBSPredecessor(record[this.taskFields.dependency], record) : null);
+        record['WBSPredecessor'] = wbsPredValue;
+        record.ganttProperties.wbsPredecessor = wbsPredValue;
+    }
+
+    /* eslint-disable-next-line */
+    private updateWBSCodes(record: IGanttData, wbsMap: Map<IGanttData, string>, siblingCountMap: Map<IGanttData | null, number>,
+                           avoidWBSCode?: boolean): { wbsMap: Map<IGanttData, string>; siblingCountMap: Map<IGanttData | null, number> } {
+        const parent: IGanttData = this.getParentTask(record.parentItem);
+        // Determine index of this record among siblings of same parent
+        const currentIndex: number = (siblingCountMap.get(parent) || 0) + 1;
+        siblingCountMap.set(parent, currentIndex);
+        let wbsCode: string;
+        if (!parent) {
+            // Top-level task
+            wbsCode = `${currentIndex}`;
+        } else {
+            // Use parent WBS code + current index
+            const parentWBS: string = wbsMap.get(parent);
+            wbsCode = `${parentWBS}.${currentIndex}`;
+        }
+        // Save WBS
+        wbsMap.set(record, wbsCode);
+        if (!avoidWBSCode) {
+            record['WBSCode'] = wbsCode.toString();
+            record.ganttProperties.wbsCode = wbsCode.toString();
+        }
+        return {wbsMap, siblingCountMap};
+    }
+
+    public getMaxRootWBSCode(parentDataCollection: IGanttData[], parentItem?: IGanttData): string {
+        let maxCode: string = '';
+        for (const item of parentDataCollection) {
+            const current: string = item.ganttProperties.wbsCode;
+            if (!current) {
+                continue;
+            }
+            const maxParts: number[] = maxCode.split('.').map(Number);
+            const currParts: number[] = current.split('.').map(Number);
+            const len: number = Math.max(maxParts.length, currParts.length);
+            let isGreater: boolean = false;
+            for (let i: number = 0; i < len; i++) {
+                const a: number = currParts[i as number] ? currParts[i as number] : 0;
+                const b: number = maxParts[i as number] ? maxParts[i as number] : 0;
+                if (a > b) {
+                    isGreater = true;
+                    break;
+                } else if (a < b) {
+                    break;
+                }
+            }
+            if (isGreater || !maxCode) {
+                maxCode = current;
+            }
+        }
+        // Increment the last segment
+        if (!maxCode) {
+            return parentItem.ganttProperties.wbsCode + '.' + '1';
+        }
+        else {
+            const parts: number[] = maxCode.split('.').map(Number);
+            parts[parts.length - 1]++;
+            return parts.join('.');
+        }
+    }
+
+    public generateWBSCodes(flatDataCollection: IGanttData[]): void {
+        let wbsMap: Map<IGanttData, string> = new Map<IGanttData, string>();
+        const recordsWithDependencies: IGanttData[] = [];
+        let siblingCountMap: Map<IGanttData | null, number> = new Map<IGanttData | null, number>();
+        for (const record of flatDataCollection) {
+            if (this.enableAutoWbsUpdate || this.isLoad) {
+                const result: { wbsMap: Map<IGanttData, string>, siblingCountMap: Map<IGanttData | null, number> } =
+                    this.updateWBSCodes(record, wbsMap, siblingCountMap);
+                wbsMap = result.wbsMap;
+                siblingCountMap = result.siblingCountMap;
+            }
+            else if (!record.ganttProperties.wbsCode) {
+                let wbsCode: string;
+                if (record.parentItem) {
+                    const parentTask: IGanttData = this.getParentTask(record.parentItem);
+                    wbsCode = parentTask.ganttProperties.wbsCode;
+                    wbsCode = this.getMaxRootWBSCode(parentTask.childRecords, parentTask);
+                }
+                else {
+                    wbsCode = this.getMaxRootWBSCode(this.treeGrid.parentData);
+                }
+                record['WBSCode'] = wbsCode;
+                record.ganttProperties.wbsCode = wbsCode;
+            }
+            if (record[this.taskFields.dependency]) {
+                recordsWithDependencies.push(record);
+            }
+            else {
+                record['WBSPredecessor'] = null;
+                record.ganttProperties.wbsPredecessor = null;
+            }
+        }
+        for (const record of recordsWithDependencies) {
+            this.updateWBSPredecessor(record);
+        }
+    }
+
     private renderHeaderBackground (element: Element): void {
         const parentElement: Element = element;
         // const timelineHeight: any = element.getBoundingClientRect().height;
@@ -2414,6 +2594,14 @@ export class Gantt extends Component<HTMLElement>
             }
             parentElement.insertBefore(div, parentElement.firstChild);
         }
+    }
+    private assignTimeToDate(dateValue: Date, seconds: number): Date {
+        const date: Date = new Date(dateValue);
+        const hours: number = Math.floor(seconds / 3600);
+        const minutes: number = Math.floor((seconds % 3600) / 60);
+        const secs: number = seconds % 60;
+        date.setHours(hours, minutes, secs, 0);
+        return date;
     }
     private renderBackGround (element: Element): void {
         const parentElement: Element = element;
@@ -3320,11 +3508,7 @@ export class Gantt extends Component<HTMLElement>
                 this.treeGrid.setProperties({ height: '100%' }, false);
                 this.notify('tree-grid-created', {});
                 this.createGanttPopUpElement();
-                if (!isNullOrUndefined(this.loadingIndicator) && this.loadingIndicator.indicatorType === 'Shimmer') {
-                    this.hideMaskRow();
-                } else {
-                    this.hideSpinner();
-                }
+                this.hideLoadingIndicator();
                 setValue('isGanttCreated', true, args);
                 this.renderComplete();
             }
@@ -3357,6 +3541,22 @@ export class Gantt extends Component<HTMLElement>
         this.isExpandPerformed = !this.enableVirtualization ? false : this.isExpandPerformed;
         if (!this.isExpandPerformed) {
             this.previousFlatData = extend([], this.flatData, [], true) as IGanttData[];
+        }
+        if (this.undoRedoModule && Object.keys(this.undoRedoModule['undoActionDetails']).length !== 0) {
+            const actionDetail: object = this.undoRedoModule['undoActionDetails'];
+            if (actionDetail['action'] === 'RowDragAndDrop' || actionDetail['action'] === 'TaskbarDragAndDrop') {
+                actionDetail['beforeDrop'].forEach((data: Object) => {
+                    this.updateRecordByID(data['data']);
+                });
+                if (actionDetail['afterDrop'].dropPosition === 'child') {
+                    this.updateRecordByID(actionDetail['afterDrop'].dropRecord);
+                }
+            } else if (actionDetail['action'] === 'Indent' || actionDetail['action'] === 'Outdent') {
+                this.undoRedoModule['isUndoRedoPerformed'] = true;
+                this.updateRecordByID(actionDetail['droppedRecord']);
+                this.undoRedoModule['isUndoRedoPerformed'] = false;
+            }
+            this.undoRedoModule['undoActionDetails'] = {};
         }
         this.trigger('dataBound', args);
     }
@@ -3434,6 +3634,9 @@ export class Gantt extends Component<HTMLElement>
                 break;
             case 'timelineSettings':
                 this.timelineModule.refreshTimeline();
+                if (this.undoRedoModule && this.undoRedoModule['isZoomingUndoRedoProgress']) {
+                    this.undoRedoModule['isZoomingUndoRedoProgress'] =  false;
+                }
                 break;
             case 'rowHeight':
             case 'taskbarHeight':
@@ -3446,14 +3649,11 @@ export class Gantt extends Component<HTMLElement>
                 }
                 break;
             case 'timezone':
+            case 'durationUnit':
                 this.dataOperation.checkDataBinding(true);
                 break;
             case 'enableCriticalPath':
-                if (!isNullOrUndefined(this.loadingIndicator) && this.loadingIndicator.indicatorType === 'Shimmer') {
-                    this.hideMaskRow();
-                } else {
-                    this.hideSpinner();
-                }
+                this.hideLoadingIndicator();
                 if (this.enableCriticalPath && this.criticalPathModule) {
                     this.criticalPathModule.showCriticalPath(this.enableCriticalPath);
                     const criticalModule: CriticalPath = this.criticalPathModule;
@@ -4121,6 +4321,9 @@ export class Gantt extends Component<HTMLElement>
             name: 'Name',
             startDate: 'Start Date',
             endDate: 'End Date',
+            constraintDate: 'Constraint Date',
+            constraintType: 'Constraint Type',
+            advancedTab: 'Advanced',
             duration: 'Duration',
             progress: 'Progress',
             dependency: 'Dependency',
@@ -4172,6 +4375,22 @@ export class Gantt extends Component<HTMLElement>
             nextTimeSpan: 'Next timespan',
             prevTimeSpan: 'Previous timespan',
             saveButton: 'Save',
+            cancelLink: 'Cancel, keep the existing link',
+            removeLink: 'Remove the link and move "{0}" to start on "{1}".',
+            removeConstraint: 'Remove  {0}  constraint of task "{1}"',
+            preserveLink: 'Move the "{0}" to start on "{1}" and keep the link.',
+            removeDependency: 'Remove dependency from "{0}" to "{1}"',
+            cancelChange: 'Cancel the change and do nothing',
+            validateEditing: 'Validate Editing',
+            schedulingConflicts: 'Scheduling conflict',
+            constraintTypeAsSoonAsPossible: 'As Soon As Possible',
+            constraintTypeAsLateAsPossible: 'As Late As Possible',
+            constraintTypeMustStartOn: 'Must Start On',
+            constraintTypeMustFinishOn: 'Must Finish On',
+            constraintTypeStartNoEarlierThan: 'Start No Earlier Than',
+            constraintTypeStartNoLaterThan: 'Start No Later Than',
+            constraintTypeFinishNoEarlierThan: 'Finish No Earlier Than',
+            constraintTypeFinishNoLaterThan: 'Finish No Later Than',
             taskBeforePredecessorFS: 'You moved "{0}" to start before "{1}" finishes and the two tasks are linked.'
                 + 'As the result, the links cannot be honored. Select one action below to perform',
             taskAfterPredecessorFS: 'You moved "{0}" away from "{1}" and the two tasks are linked.'
@@ -4250,11 +4469,7 @@ export class Gantt extends Component<HTMLElement>
     public actionBeginTask(args: object): boolean | void {
         this.trigger('actionBegin', args);
         if (!getValue('cancel', args)) {
-            if (!isNullOrUndefined(this.loadingIndicator) && this.loadingIndicator.indicatorType === 'Shimmer') {
-                this.showMaskRow();
-            } else {
-                this.showSpinner();
-            }
+            this.showLoadingIndicator();
         }
     }
 
@@ -4650,14 +4865,16 @@ export class Gantt extends Component<HTMLElement>
                     if (this.undoRedoModule['changedRecords'].indexOf(task) === -1) {
                         this.undoRedoModule['changedRecords'].push(extend({}, {}, task, true));
                     }
-                    const currentAction: string = this.undoRedoModule['getUndoCollection'].length > 0 ? this.undoRedoModule['getUndoCollection'][this.undoRedoModule['getUndoCollection'].length - 1]['action'] : null;
+                    const undoCollections: Object[] = this.undoRedoModule['getUndoCollection'];
+                    const currentAction: string = undoCollections.length > 0 ? undoCollections[undoCollections.length - 1]['action'] : null;
                     if (this.editModule && this.editSettings.allowEditing && !this.undoRedoModule['isUndoRedoPerformed'] && !this.isOnDelete && !this.isOnAdded && currentAction !== 'outdent' && currentAction !== 'indent' &&
                         currentAction !== 'RowDragAndDrop' && currentAction !== 'TaskbarDragAndDrop') {
                         const oldRecord: IGanttData = this.previousFlatData.filter((data: IGanttData) => {
                             return data.ganttProperties.taskId === task.ganttProperties.taskId;
                         })[0];
-                        if (oldRecord && this.undoRedoModule['getUndoCollection'][this.undoRedoModule['getUndoCollection'].length - 1] && this.undoRedoModule['getUndoCollection'][this.undoRedoModule['getUndoCollection'].length - 1]['modifiedRecords']) {
-                            (this.undoRedoModule['getUndoCollection'][this.undoRedoModule['getUndoCollection'].length - 1]['modifiedRecords'] as Object[]).push(oldRecord);
+                        if (oldRecord && undoCollections[undoCollections.length - 1] && undoCollections[undoCollections.length - 1]['modifiedRecords']
+                            && undoCollections[undoCollections.length - 1]['modifiedRecords'].indexOf(oldRecord) === -1) {
+                            (undoCollections[undoCollections.length - 1]['modifiedRecords'] as Object[]).push(oldRecord);
                         }
                     }
                 }
@@ -4921,7 +5138,6 @@ export class Gantt extends Component<HTMLElement>
             }
         }
     }
-
     /**
      * Method to update record by ID.
      *
@@ -4935,6 +5151,106 @@ export class Gantt extends Component<HTMLElement>
             this.editModule.updateRecordByID(data);
             this.updateDuration = false;
         }
+    }
+    /**
+     * Retrieves the current view data, reflecting the latest state after filtering, sorting, and CRUD operations.
+     * @returns {Object[]} An array of objects representing the current view data.
+     */
+    public getCurrentViewData(): Object[] {
+        return this.treeGrid.getCurrentViewRecords().map((record: IGanttData) => record.taskData);
+    }
+    /**
+     * Adjusts the width of specified columns to fit their content, preventing wrapping or truncation.
+     *
+     * Hidden columns are ignored. For initial rendering, call this method during the `dataBound` event.
+     *
+     * @param { string | string[]} fieldNames - The name(s) of the column(s) to auto-fit. Accepts a single column name or an array of column names.
+     * @returns {void} This method does not return a value.
+     */
+    public autoFitColumns(fieldNames?: string | string[]): void {
+        this.treeGrid.autoFitColumns(fieldNames);
+    }
+    /**
+     * Retrieves the internal Gantt properties for a task using its Task ID.
+     *
+     * This method provides access to task data such as taskbar width, left position, segments collection etc.,.
+     * @param {string} taskId - The unique identifier of the task.
+     * @returns {IGanttTaskInfo} The Gantt task information.
+     */
+    public getTaskInfo(taskId: string): IGanttTaskInfo {
+        const record: IGanttData = this.getRecordByID(taskId);
+        const ganttTaskInfo: IGanttTaskInfo = {} as IGanttTaskInfo;
+        if (record && record.ganttProperties) {
+            const props: ITaskData = record.ganttProperties;
+            const taskSettings: TaskFieldsModel = this.taskFields;
+            const properties:  { baseline: boolean; isCritical: boolean; progressWidth:
+            string; segments: string; isAutoSchedule: boolean, wbs: boolean}  = {
+                baseline : this.renderBaseline,
+                isCritical: this.enableCriticalPath,
+                progressWidth: taskSettings.progress,
+                segments: taskSettings.segments,
+                isAutoSchedule: props.isAutoSchedule,
+                wbs: this.enableWBS
+            };
+            for (const key in properties) {
+                if (Object.prototype.hasOwnProperty.call(properties, key)) {
+                    switch (key) {
+                    case 'baseline':
+                        if (props.baselineStartDate && props.baselineEndDate) {
+                            if (!isNullOrUndefined(props.baselineLeft)) {
+                                ganttTaskInfo.baselineLeft = props.baselineLeft;
+                            }
+                            if (!isNullOrUndefined(props.baselineWidth)) {
+                                ganttTaskInfo.baselineWidth = props.baselineWidth;
+                            }
+                        }
+                        break;
+                    case 'isCritical':
+                        if (props.isCritical) {
+                            ganttTaskInfo.isCritical = props.isCritical;
+                            ganttTaskInfo.slack = props.slack;
+                        }
+                        break;
+                    case 'progressWidth':
+                        if (props.progressWidth){
+                            ganttTaskInfo.progressWidth = props.progressWidth;
+                        }
+                        break;
+                    case 'segments':
+                        if (props.segments) {
+                            ganttTaskInfo.segments = props.segments;
+                        }
+                        break;
+                    case 'wbs':
+                        if (props.wbsCode) {
+                            ganttTaskInfo.wbsCode = props.wbsCode;
+                        }
+                        if (props.wbsPredecessor) {
+                            ganttTaskInfo.wbsPredecessor = props.wbsPredecessor;
+                        }
+                        break;
+                    case 'isAutoSchedule':
+                        ganttTaskInfo.isAutoSchedule = props.isAutoSchedule;
+                        if (props.isAutoSchedule) {
+                            ganttTaskInfo.autoTaskLeft = props.left;
+                            ganttTaskInfo.autoTaskWidth = props.width;
+                        }
+                        else if (!props.isAutoSchedule && record.hasChildRecords) {
+                            ganttTaskInfo.manualTaskAutoLeft = props.autoLeft;
+                            ganttTaskInfo.manualTaskAutoWidth = props.autoWidth;
+                            ganttTaskInfo.manualTaskLeft = props.left;
+                            ganttTaskInfo.manualTaskWidth = props.width;
+                        }
+                        else {
+                            ganttTaskInfo.manualTaskLeft = props.left;
+                            ganttTaskInfo.manualTaskWidth = props.width;
+                        }
+                        break;
+                    }
+                }
+            }
+        }
+        return ganttTaskInfo;
     }
     /**
      * To update existing taskId with new unique Id.

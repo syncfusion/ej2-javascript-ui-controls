@@ -166,6 +166,7 @@ export class TableSelection {
             else if (this.BLOCK_TAGS.indexOf(child.nodeName.toLocaleLowerCase()) >= 0) {
                 tempBlockNodes.push(child as HTMLElement);
                 if (wrapperElement.childNodes.length > 0) {
+                    wrapperElement = child as HTMLElement;
                     child = wrapperElement.nextSibling;
                 } else {
                     // Check if any nested list items are present

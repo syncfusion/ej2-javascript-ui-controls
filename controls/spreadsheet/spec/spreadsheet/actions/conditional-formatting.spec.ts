@@ -1,6 +1,6 @@
 import { SpreadsheetHelper } from '../util/spreadsheethelper.spec';
 import { defaultData, InventoryList } from '../util/datasource.spec';
-import { Spreadsheet, UsedRangeModel, clearViewer, DialogBeforeOpenEventArgs, CellModel } from '../../../src/index';
+import { Spreadsheet, UsedRangeModel, clearViewer, DialogBeforeOpenEventArgs, CellModel, ConditionalFormatEventArgs } from '../../../src/index';
 import { EmitType, getComponent } from '@syncfusion/ej2-base';
 
 
@@ -1521,8 +1521,16 @@ describe('Conditional formatting ->', () => {
                 expect(helper.invoke('getCell', [1, 5]).style.color).toBe('rgb(156, 0, 85)');
                 expect(helper.invoke('getCell', [7, 5]).style.backgroundColor).toBe('rgb(255, 199, 206)');
                 expect(helper.invoke('getCell', [7, 5]).style.color).toBe('rgb(156, 0, 85)');
-                helper.edit('F3','');
-                helper.edit('F8','');
+                helper.invoke('selectRange', ['F3']);
+                helper.invoke('startEdit');
+                helper.getInstance().editModule.editCellData.oldValue = helper.getInstance().sheets[0].rows[2].cells[5].value;
+                helper.getInstance().editModule.editCellData.value = '';
+                helper.invoke('endEdit');
+                helper.invoke('selectRange', ['F8']);
+                helper.invoke('startEdit');
+                helper.getInstance().editModule.editCellData.oldValue = helper.getInstance().sheets[0].rows[7].cells[5].value;
+                helper.getInstance().editModule.editCellData.value = '';
+                helper.invoke('endEdit');
                 expect(helper.invoke('getCell', [1, 5]).style.backgroundColor).toBe('');
                 expect(helper.invoke('getCell', [1, 5]).style.color).toBe('');
                 expect(helper.invoke('getCell', [7, 5]).style.backgroundColor).toBe('');
@@ -2849,6 +2857,38 @@ describe('Conditional formatting ->', () => {
             expect(helper.invoke('getCell', [2, 7]).classList.contains('e-yellowft'));
             done();
         });
+        it('EJ2-876151 - Incorrect Data Bar Position in RTL Mode with Conditional Formatting', (done: Function) => {
+            helper.setModel('enableRtl', true);
+            helper.invoke('conditionalFormat', [{ type: 'GreenDataBar', range: 'H2:H4' }]);
+            const cell1 = helper.invoke('getCell', [1, 7]);
+            expect(cell1.getElementsByClassName('e-databar')[1].style.width).toBe('20%');
+            expect(cell1.getElementsByClassName('e-databar')[1].style.height).toBe('17px');
+            expect(cell1.getElementsByClassName('e-databar')[1].style.backgroundColor).toBe('rgb(99, 190, 123)');
+            expect(cell1.getElementsByClassName('e-databar')[1].style.right).toBe('0px');
+            helper.edit('H5', '-1');
+            helper.edit('H6', '-2');
+            helper.edit('H7', '-3');
+            helper.invoke('conditionalFormat', [{ type: 'GreenDataBar', range: 'H5:H7' }]);
+            const cell2 = helper.invoke('getCell', [4, 7]);
+            expect(cell2.getElementsByClassName('e-databar')[1].style.width).toBe('34%');
+            expect(cell2.getElementsByClassName('e-databar')[1].style.height).toBe('17px');
+            expect(cell2.getElementsByClassName('e-databar')[1].style.backgroundColor).toBe('rgb(248, 105, 107)');
+            expect(cell2.getElementsByClassName('e-databar')[1].style.right).toBe('0px');
+            helper.edit('H8', '-144');
+            helper.edit('H9', '-166');
+            helper.invoke('conditionalFormat', [{ type: 'GreenDataBar', range: 'H8:H11' }]);
+            const cell3 = helper.invoke('getCell', [8, 7]);
+            const cell4 = helper.invoke('getCell', [9, 7]);
+            expect(cell3.getElementsByClassName('e-databar')[0].style.width).toBe('50%');
+            expect(cell3.getElementsByClassName('e-databar')[0].style.height).toBe('17px');
+            expect(cell3.getElementsByClassName('e-databar')[0].style.backgroundColor).toBe('rgb(248, 105, 107)');
+            expect(cell3.getElementsByClassName('e-databar')[0].style.right).toBe('0px');
+            expect(cell4.getElementsByClassName('e-databar')[1].style.width).toBe('50%');
+            expect(cell4.getElementsByClassName('e-databar')[1].style.height).toBe('17px');
+            expect(cell4.getElementsByClassName('e-databar')[1].style.backgroundColor).toBe('rgb(99, 190, 123)');
+            expect(cell4.getElementsByClassName('e-databar')[1].style.right).toBe('50%');
+            done();
+        });
     });
 
     describe('920691 - Edited values not updated when note added in cell->', () => {
@@ -3149,6 +3189,26 @@ describe('Conditional formatting ->', () => {
             expect(helper.getInstance().sheets[0].rows[2].cells[9].value).toBe('');
             done();
         });
+
+        it('EJ2-931129 - The height of data bars conditional formatting is not set correctly when cells are merged', (done: Function) => {
+            spreadsheet = helper.getInstance();
+            expect(helper.invoke('getCell', [1, 7]).getElementsByClassName('e-databar')[1].style.height).toBe('17px');
+            expect(helper.invoke('getCell', [3, 7]).getElementsByClassName('e-databar')[1].style.height).toBe('17px');
+            expect(helper.invoke('getCell', [5, 7]).getElementsByClassName('e-databar')[1].style.height).toBe('17px');
+            expect(helper.invoke('getCell', [6, 7]).getElementsByClassName('e-databar')[1].style.height).toBe('17px');
+            expect(helper.invoke('getCell', [8, 7]).getElementsByClassName('e-databar')[1].style.height).toBe('17px');
+            helper.invoke('merge', ['H2:H3']);
+            helper.invoke('merge', ['H4:I6']);
+            helper.invoke('merge', ['H7:K10']);
+            expect(helper.invoke('getCell', [1, 7]).getElementsByClassName('e-databar')[1].style.height).toBe('37px');
+            expect(helper.invoke('getCell', [3, 7]).getElementsByClassName('e-databar')[1].style.height).toBe('57px');
+            expect(helper.invoke('getCell', [6, 7]).getElementsByClassName('e-databar')[1].style.height).toBe('77px');
+            spreadsheet.setRowsHeight(50,['1:10']);
+            expect(helper.invoke('getCell', [1, 7]).getElementsByClassName('e-databar')[1].style.height).toBe('97px');
+            expect(helper.invoke('getCell', [3, 7]).getElementsByClassName('e-databar')[1].style.height).toBe('147px');
+            expect(helper.invoke('getCell', [6, 7]).getElementsByClassName('e-databar')[1].style.height).toBe('197px');
+            done();
+        });
     });
 
     describe('Iconset cf with Databar cf ->', () => {
@@ -3162,28 +3222,25 @@ describe('Conditional formatting ->', () => {
         });
         it('Set cell height', (done: Function) => {
             spreadsheet = helper.getInstance();
-            spreadsheet.goTo("F2");
+            helper.invoke('selectRange', ['F2']);
             spreadsheet.setColWidth(260, 5);
             spreadsheet.setRowHeight(160, 1);
-            let cellEle: HTMLElement = helper.getElements('.e-active-cell')[0];
             setTimeout((): void => {
-                expect(cellEle.style.height).toEqual('161px');
+                expect(spreadsheet.sheets[0].rows[1].height).toBe(160);
                 done();
-            });
+            }, 50);
         });
         it('Apply databars', (done: Function) => {
+            helper.getElement('#' + helper.id + '_conditionalformatting').click();
+            const target: HTMLElement = helper.getElement('#' + helper.id + '_conditionalformatting-popup .e-databars');
+            (getComponent(target.parentElement.parentElement, 'menu') as any).animationSettings.effect = 'None';
+            helper.triggerMouseAction('mouseover', { x: target.getBoundingClientRect().left + 5, y: target.getBoundingClientRect().top + 5 }, document, target);
             setTimeout((): void => {
-                helper.getElement('#' + helper.id + '_conditionalformatting').click();
-                const target: HTMLElement = helper.getElement('#' + helper.id + '_conditionalformatting-popup .e-databars');
-                (getComponent(target.parentElement.parentElement, 'menu') as any).animationSettings.effect = 'None';
-                helper.triggerMouseAction('mouseover', { x: target.getBoundingClientRect().left + 5, y: target.getBoundingClientRect().top + 5 }, document, target);
+                helper.getElement('#OrangeDataBar').click();
                 setTimeout((): void => {
-                    helper.getElement('#OrangeDataBar').click();
                     let cellEle: HTMLElement = helper.getElements('.e-cf-databar')[0];
-                    setTimeout((): void => {
-                        expect(cellEle.style.height).toEqual('159px');
-                        done();
-                    });
+                    expect(cellEle.style.height).toEqual('159px');
+                    done();
                 });
             });
         });
@@ -3194,8 +3251,8 @@ describe('Conditional formatting ->', () => {
             helper.triggerMouseAction('mouseover', { x: target.getBoundingClientRect().left + 5, y: target.getBoundingClientRect().top + 5 }, document, target);
             setTimeout((): void => {
                 helper.getElement('#ThreeTrafficLights1').click();
-                let cellEle: HTMLElement = helper.getElements('.e-iconsetspan')[0];
                 setTimeout((): void => {
+                    let cellEle: HTMLElement = helper.getElements('.e-iconsetspan')[0];
                     expect(cellEle.style.height).toBe('159px');
                     expect(cellEle.parentElement.querySelector('.e-cf-icon-end')).not.toBeNull();
                     done();
@@ -3207,18 +3264,16 @@ describe('Conditional formatting ->', () => {
             helper.getElement('#' + helper.id + '_Accounting').click();
             setTimeout((): void => {
                 let cellEle: HTMLElement = helper.getElements('.e-cf-currency')[0];
-                setTimeout((): void => {
-                    expect(cellEle.style.alignItems).toBe('end');
-                    done();
-                });
+                expect(cellEle.style.alignItems).toBe('end');
+                done();
             });
         });
         it('Apply align action for top', (done: Function) => {
             helper.getElement('#' + helper.id + '_vertical_align').click();
             setTimeout((): void => {
                 helper.getElement('#' + helper.id + '_vertical_align-popup .e-top-icon').click();
-                let cellEle: HTMLElement = helper.getElements('.e-iconsetspan')[0];
                 setTimeout((): void => {
+                    let cellEle: HTMLElement = helper.getElements('.e-iconsetspan')[0];
                     expect(cellEle.parentElement.querySelector('.e-cf-icon-top')).not.toBeNull();
                     expect(helper.getElements('.e-cf-currency')[0].style.alignItems).toBe('start');
                     done();
@@ -3229,8 +3284,8 @@ describe('Conditional formatting ->', () => {
             helper.getElement('#' + helper.id + '_vertical_align').click();
             setTimeout((): void => {
                 helper.getElement('#' + helper.id + '_vertical_align-popup .e-middle-icon').click();
-                let cellEle: HTMLElement = helper.getElements('.e-iconsetspan')[0];
                 setTimeout((): void => {
+                    let cellEle: HTMLElement = helper.getElements('.e-iconsetspan')[0];
                     expect(cellEle.parentElement.querySelector('.e-cf-icon-middle')).not.toBeNull();
                     expect(helper.getElements('.e-cf-currency')[0].style.alignItems).toBe('center');
                     done();
@@ -3241,8 +3296,8 @@ describe('Conditional formatting ->', () => {
             helper.getElement('#' + helper.id + '_text_align').click();
             setTimeout((): void => {
                 helper.getElement('#' + helper.id + '_text_align-popup .e-left-icon').click();
-                let cellEle: HTMLElement = helper.getElements('.e-iconsetspan')[0];
                 setTimeout((): void => {
+                    let cellEle: HTMLElement = helper.getElements('.e-iconsetspan')[0];
                     expect(cellEle.parentElement.style.textAlign).toBe('left');
                     done();
                 });
@@ -3252,8 +3307,8 @@ describe('Conditional formatting ->', () => {
             helper.getElement('#' + helper.id + '_text_align').click();
             setTimeout((): void => {
                 helper.getElement('#' + helper.id + '_text_align-popup .e-center-icon').click();
-                let cellEle: HTMLElement = helper.getElements('.e-iconsetspan')[0];
                 setTimeout((): void => {
+                    let cellEle: HTMLElement = helper.getElements('.e-iconsetspan')[0];
                     expect(cellEle.parentElement.style.textAlign).toBe('center');
                     done();
                 });
@@ -3275,111 +3330,111 @@ describe('Conditional formatting ->', () => {
             });
         });
         it('Undo action-1', (done: Function) => {
+            helper.getElement('#' + helper.id + '_undo').click();
             setTimeout((): void => {
-                helper.getElement('#' + helper.id + '_undo').click();
                 expect(helper.getElements('.e-iconsetspan')[0].parentElement.style.textAlign).toBe('left');
                 done();
             });
         });
         it('Undo action-2', (done: Function) => {
+            helper.getElement('#' + helper.id + '_undo').click();
             setTimeout((): void => {
-                helper.getElement('#' + helper.id + '_undo').click();
                 expect(helper.getElements('.e-iconsetspan')[0].parentElement.style.textAlign).toBe('');
                 done();
             });
         });
         it('Undo action-3', (done: Function) => {
+            helper.getElement('#' + helper.id + '_undo').click();
             setTimeout((): void => {
-                helper.getElement('#' + helper.id + '_undo').click();
                 let cellEle: HTMLElement = helper.getElements('.e-iconsetspan')[0];
                 expect(cellEle.parentElement.querySelector('.e-cf-icon-top')).not.toBeNull();
                 done();
             });
         });
         it('Undo action-4', (done: Function) => {
+            helper.getElement('#' + helper.id + '_undo').click();
             setTimeout((): void => {
-                helper.getElement('#' + helper.id + '_undo').click();
                 let cellEle: HTMLElement = helper.getElements('.e-iconsetspan')[0];
                 expect(cellEle.parentElement.querySelector('.e-cf-icon-end')).not.toBeNull();
                 done();
             });
         });
         it('Undo action-5', (done: Function) => {
+            helper.getElement('#' + helper.id + '_undo').click();
             setTimeout((): void => {
-                helper.getElement('#' + helper.id + '_undo').click();
                 expect(helper.getElements('.e-cf-currency')[0]).toBeUndefined();
                 done();
             });
         });
         it('Undo action-6', (done: Function) => {
+            helper.getElement('#' + helper.id + '_undo').click();
             setTimeout((): void => {
-                helper.getElement('#' + helper.id + '_undo').click();
                 expect(helper.getElements('.e-iconsetspan')[0]).toBeUndefined();
                 done();
             });
         });
         it('Undo action-7', (done: Function) => {
+            helper.getElement('#' + helper.id + '_undo').click();
             setTimeout((): void => {
-                helper.getElement('#' + helper.id + '_undo').click();
                 expect(helper.getElements('.e-iconsetspan').length).toBe(0);
                 expect(helper.getElements('.e-cf-databar')[0]).toBeUndefined();
                 done();
             });
         });
         it('Redo action', (done: Function) => {
+            helper.getElement('#' + helper.id + '_redo').click();
             setTimeout((): void => {
-                helper.getElement('#' + helper.id + '_redo').click();
                 expect(helper.getElements('.e-cf-databar')).not.toBeNull();
                 done();
             });
         });
         it('Redo action-1', (done: Function) => {
+            helper.getElement('#' + helper.id + '_redo').click();
             setTimeout((): void => {
-                helper.getElement('#' + helper.id + '_redo').click();
                 expect(helper.getElements('.e-iconsetspan').length).toBe(1);
                 done();
             });
         });
         it('Redo action-2', (done: Function) => {
+            helper.getElement('#' + helper.id + '_redo').click();
             setTimeout((): void => {
-                helper.getElement('#' + helper.id + '_redo').click();
                 expect(helper.getElements('.e-cf-currency').length).toBe(1);
                 done();
             });
         });
         it('Redo action-3', (done: Function) => {
+            helper.getElement('#' + helper.id + '_redo').click();
             setTimeout((): void => {
-                helper.getElement('#' + helper.id + '_redo').click();
                 let cellEle: HTMLElement = helper.getElements('.e-iconsetspan')[0];
                 expect(cellEle.parentElement.querySelector('.e-cf-icon-top')).not.toBeNull();
                 done();
             });
         });
         it('Redo action-4', (done: Function) => {
+            helper.getElement('#' + helper.id + '_redo').click();
             setTimeout((): void => {
-                helper.getElement('#' + helper.id + '_redo').click();
                 let cellEle: HTMLElement = helper.getElements('.e-iconsetspan')[0];
                 expect(cellEle.parentElement.querySelector('.e-cf-icon-middle')).not.toBeNull();
                 done();
             });
         });
         it('Redo action-5', (done: Function) => {
+            helper.getElement('#' + helper.id + '_redo').click();
             setTimeout((): void => {
-                helper.getElement('#' + helper.id + '_redo').click();
                 expect(helper.getElements('.e-iconsetspan')[0].parentElement.style.textAlign).toBe('left');
                 done();
             });
         });
         it('Redo action-6', (done: Function) => {
+            helper.getElement('#' + helper.id + '_redo').click();
             setTimeout((): void => {
-                helper.getElement('#' + helper.id + '_redo').click();
                 expect(helper.getElements('.e-iconsetspan')[0].parentElement.style.textAlign).toBe('center');
                 done();
             });
         });
         it('Redo action-7', (done: Function) => {
+            helper.getElement('#' + helper.id + '_redo').click();
             setTimeout((): void => {
-                helper.getElement('#' + helper.id + '_redo').click();
                 expect(helper.invoke('getCell', [1, 5]).textContent).toBe('');
                 done();
             });
@@ -3530,6 +3585,56 @@ describe('Conditional formatting ->', () => {
                 expect(helper.invoke('getCell', [3, 4]).children[0].classList.contains('e-3arrows-3'));
                 done();
             });
+        });
+    });
+    describe('allowconditionalformat: false ->', () => {
+        let spreadsheet: any;
+        beforeAll((done: Function) => {
+            helper.initializeSpreadsheet({
+                allowConditionalFormat: false, 
+                sheets: [{
+                    conditionalFormats: [{ type: "GreaterThan", cFColor: "GreenFT", value:'20', range: 'H1:H11' }],
+                    ranges: [{dataSource: defaultData}],
+            }] }, done);
+        });
+        afterAll(() => {
+            helper.invoke('destroy');
+        });
+        it('ConditionalFormat button removed and cell data binding value check', (done: Function) => {
+            expect(helper.getElement('#' + helper.id + '_conditionalformatting')).toBeNull();
+            spreadsheet = helper.getInstance().sheets[0];
+            expect(spreadsheet.rows[3].cells[7].backgroundColor).toBeUndefined();
+            expect(helper.invoke('getCell', [3, 7]).style.backgroundColor).toBe('');
+            done();
+        });
+        it('Should not apply conditionalFormat', (done: Function) => {
+            helper.invoke('conditionalFormat', [{ type: "GreaterThan", cFColor: 'YellowFT', value: '20', range: 'H12:H15' }]);
+            expect(helper.invoke('getCell', [10, 7]).style.backgroundColor).toBe('');
+            spreadsheet = helper.getInstance().sheets[0];
+            expect(spreadsheet.rows[10].cells[7].backgroundColor).toBeUndefined();
+            done();
+        });
+    });
+    describe('beforeConditionalFormat event ->', () => {
+        beforeAll((done: Function) => {
+            helper.initializeSpreadsheet({ sheets: [{ ranges: [{ dataSource: defaultData }] }]}, done);
+        });
+        afterAll(() => {
+            helper.invoke('destroy');
+        });
+        it('Should trigger beforeConditionalFormat event', (done: Function) => {
+            const spreadsheet: Spreadsheet = helper.getInstance();
+            let beforeConditionalFormatCalled: boolean = false;
+            let beforeConditionalFormatArgs: string = '';
+            spreadsheet.beforeConditionalFormat = (args) => {
+                beforeConditionalFormatCalled = true;
+                beforeConditionalFormatArgs = JSON.stringify(args);
+            };
+            helper.invoke('conditionalFormat', [{ type: 'GreaterThan', cFColor: 'RedFT', value: '10', range: 'D2:D11' }]);
+            expect(beforeConditionalFormatCalled).toBeTruthy();
+            expect(beforeConditionalFormatArgs).toBe('{"conditionalFormat":{"type":"GreaterThan","cFColor":"RedFT","value":"10","range":"D2:D11"},"cell":{"value":50},"element":{},"apply":true,"address":"D11","name":"beforeConditionalFormat"}');
+            spreadsheet.beforeConditionalFormat = undefined;
+            done();
         });
     });
 });

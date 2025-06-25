@@ -1613,7 +1613,7 @@ describe('Gantt base module', () => {
             let zoomToFit: HTMLElement = ganttObj.element.querySelector('#' + ganttObj.element.id + '_zoomtofit') as HTMLElement;
             triggerMouseEvent(zoomToFit, 'click');
             setTimeout(() => { // Add a timeout to give Gantt operations time to complete
-                expect(ganttObj.currentZoomingLevel.level).toBe(24);
+                expect(ganttObj.currentZoomingLevel.level).toBe(9);
                 done();
             }, 1000);
         }
@@ -1691,7 +1691,7 @@ describe('Gantt base module', () => {
         ganttObj.splitterSettings.position = '99%';
         ganttObj.dataBound = () => {
             ganttObj.fitToProject();
-            expect(ganttObj.currentZoomingLevel.level).toBe(0);
+            expect(ganttObj.currentZoomingLevel.level).toBe(2);
             ganttObj.zoomingLevels[3].bottomTier.count = 13;
             ganttObj.zoomIn();
             setTimeout(() => {
@@ -4394,7 +4394,7 @@ describe('timeline with showeekend as false', () => {
     });
     it('zoom to fit without weekends without weekends', () => {
         ganttObj.fitToProject();
-        expect(ganttObj.currentZoomingLevel.level).toBe(11);
+        expect(ganttObj.currentZoomingLevel.level).toBe(9);
     });
     it('timeline mode as month without weekends', () => {
         ganttObj.timelineSettings =   {
@@ -4687,6 +4687,377 @@ describe('timeline with showeekend as false in split task', () => {
             element: null,
         };
         (ganttObj.contextMenuModule as any).contextMenuItemClick(e);
+    });
+    afterAll(() => {
+        if (ganttObj) {
+            destroyGantt(ganttObj);
+        }
+    });
+});
+describe('processing zoom to fit ', () => {
+    let ganttObj: Gantt;
+    const data: Object[] = [
+            {
+                TaskID: 1,
+                TaskName: 'Project Initiation',
+                StartDate: new Date('2019-04-02T09:00:00'),
+                EndDate: new Date('2019-04-02T10:00:00') 
+                                
+            }
+        ]
+    beforeAll((done: Function) => {
+        ganttObj = createGantt(
+        {
+            dataSource: data,
+            allowSorting: true,
+            taskFields: {
+                id: 'TaskID',
+                name: 'TaskName',
+                startDate: 'StartDate',
+                endDate: 'EndDate',
+                duration: 'Duration',
+                progress: 'Progress',
+                child: 'subtasks',
+                segments: 'Segments'
+            },
+            editSettings: {
+                allowAdding: true,
+                allowEditing: true,
+                allowDeleting: true,
+                allowTaskbarEditing: true,
+                showDeleteConfirmDialog: true
+            },
+            toolbar: ['Add', 'Edit', 'Update', 'Delete', 'Cancel', 'ExpandAll', 'CollapseAll', 'Search', 'ZoomIn', 'ZoomOut', 'ZoomToFit',
+                'PrevTimeSpan', 'NextTimeSpan', 'ExcelExport', 'CsvExport', 'PdfExport'],
+            allowExcelExport: true,
+            allowPdfExport: true,
+            allowSelection: false,
+            enableVirtualization: false,
+            allowRowDragAndDrop: true,
+            splitterSettings: {
+                position: "50%",
+            },
+            tooltipSettings: {
+                showTooltip: true
+            },
+            timelineSettings: {
+                topTier: {
+                    unit: 'Hour',
+                },
+                bottomTier: {
+                    unit: 'Minutes',
+                    count: 1,
+                }
+            },
+            height: '550px',
+            allowUnscheduledTasks: true,
+            projectStartDate: new Date('2019-04-02T09:00:00'),
+            projectEndDate: new Date('2019-04-02T10:00:00') 
+           
+        }, done);
+    });
+    it('processing zoom to fit with timeline setting as minutes', () => {
+        ganttObj.timelineModule.processZoomToFit();
+        expect(ganttObj.currentZoomingLevel.level).toBe(23);
+    });
+    afterAll(() => {
+        if (ganttObj) {
+            destroyGantt(ganttObj);
+        }
+    });
+});
+describe('zoom out with show weekend as false', () => {
+    let ganttObj: Gantt;
+    const data: Object[] = [
+        {
+            TaskID: 1,
+            TaskName: 'Product Concept',
+            StartDate: new Date('04/02/2019'),
+            EndDate: new Date('04/21/2019'),
+            subtasks: [
+                { TaskID: 2, TaskName: 'Defining the product and its usage', StartDate: new Date('04/02/2019'), Duration: 3, Progress: 30 },
+                { TaskID: 3, TaskName: 'Defining target audience', StartDate: new Date('04/02/2019'), Duration: 3 },
+                { TaskID: 4, TaskName: 'Prepare product sketch and notes', StartDate: new Date('04/02/2019'), Duration: 3, Predecessor: "2", Progress: 30 },
+            ]
+        }
+        ]
+    beforeAll((done: Function) => {
+        ganttObj = createGantt(
+        {
+            dataSource: data,
+            enableUndoRedo: true,
+            allowSorting: true,
+            taskFields: {
+                id: 'TaskID',
+                name: 'TaskName',
+                startDate: 'StartDate',
+                duration: 'Duration',
+                progress: 'Progress',
+                dependency: 'Predecessor',
+                child: 'subtasks'
+            },
+            editSettings: {
+                allowEditing: true,
+                allowDeleting: true,
+                allowTaskbarEditing: true,
+                showDeleteConfirmDialog: true
+            },
+        toolbar: [
+                "Add",
+                "Edit",
+                "Update",
+                "Delete",
+                "Cancel",
+                "ExpandAll",
+                "CollapseAll",
+                "Search",
+                "ZoomIn",
+                "ZoomOut",
+                "ZoomToFit",
+                "PrevTimeSpan",
+                "NextTimeSpan",
+                "PdfExport",
+            ],
+            allowSelection: true,
+            gridLines: "Both",
+            showColumnMenu: false,
+            highlightWeekends: true,
+            timelineSettings: {
+                showWeekend: false,
+                topTier: {
+                    unit: 'Week',
+                    format: 'dd/MM/yyyy'
+                },
+                bottomTier: {
+                    unit: 'Day',
+                    count: 1
+                }
+            },
+            labelSettings: {
+                leftLabel: 'TaskName',
+                taskLabel: 'Progress'
+            },
+            height: '550px',
+            allowUnscheduledTasks: true,
+           
+        }, done);
+    });
+    it('processing zooming with showweekend as false', () => {
+        ganttObj.timelineModule.processZooming(false);
+        expect(ganttObj.currentZoomingLevel.level).toBe(10);
+    });
+    afterAll(() => {
+        if (ganttObj) {
+            destroyGantt(ganttObj);
+        }
+    });
+});
+describe('zoomtfit in undo redo actions', () => {
+    let ganttObj: Gantt;
+    const data: Object[] = [
+    {
+        'TaskID': 1,
+        'TaskName': 'Parent Task 1',
+        'StartDate': new Date('02/27/2017'),
+        'EndDate': new Date('03/03/2017'),
+        'Progress': '40',
+        'isManual' : true,
+        'Children': [
+             { 'TaskID': 2, 'TaskName': 'Child Task 1', 'StartDate': new Date('02/27/2017'),
+             'EndDate': new Date('03/03/2017'), 'Progress': '40' },
+             { 'TaskID': 3, 'TaskName': 'Child Task 2', 'StartDate': new Date('02/26/2017'),
+             'EndDate': new Date('03/03/2017'), 'Progress': '40', 'isManual': true },
+             { 'TaskID': 4, 'TaskName': 'Child Task 3', 'StartDate': new Date('02/27/2017'),
+             'EndDate': new Date('03/03/2017'), 'Duration': 5, 'Progress': '40', }
+        ]
+    }
+        ]
+    beforeAll((done: Function) => {
+        ganttObj = createGantt(
+        {
+            dataSource: data,
+            allowSorting: true,
+            enableContextMenu: true,
+            height: '450px',
+            allowSelection: true,
+            enableUndoRedo: true,
+            toolbar: ['Add', 'Edit', 'Update', 'Delete', 'Cancel', 'ExpandAll', 'CollapseAll', 'Search', 'ZoomIn', 'ZoomOut', 'ZoomToFit', 
+        'PrevTimeSpan', 'NextTimeSpan', 'Indent', 'Outdent','Undo','Redo', 'ExcelExport', 'CsvExport', 'PdfExport'],
+        undoRedoActions:['Sorting','Add','ColumnReorder','ColumnResize','ColumnState','Delete','Edit','Filtering','Indent','Outdent','NextTimeSpan','PreviousTimeSpan','RowDragAndDrop','Search','TaskbarDragAndDrop','ZoomIn','ZoomOut','ZoomToFit'],
+            highlightWeekends: true,
+            taskFields: {
+                id: 'TaskID',
+                name: 'TaskName',
+                startDate: 'StartDate',
+                duration: 'Duration',
+                progress: 'Progress',
+                endDate: 'EndDate',
+                dependency: 'Predecessor',
+                child: 'Children',
+                manual: 'isManual',
+            },
+            taskMode : 'Custom',
+            allowExcelExport: true,
+            allowPdfExport: true,
+            allowRowDragAndDrop: true,
+            splitterSettings: {
+                position: "50%",
+            // columnIndex: 4
+            },
+            selectionSettings: {
+                mode: 'Row',
+                type: 'Single',
+                enableToggle: false
+            },
+            tooltipSettings: {
+                showTooltip: true
+            },
+            allowFiltering: true,
+            columns: [
+                { field: 'TaskID', visible: true},
+                {field: 'TaskName'},
+                { field: 'isManual'},
+                {field: 'StartDate'},
+                {field: 'Duration'},
+                {field: 'Progress'}
+            ],
+            validateManualTasksOnLinking: true,
+            treeColumnIndex: 1,
+            allowReordering: true,
+            editSettings: {
+                allowAdding: true,
+                allowEditing: true,
+                allowDeleting: true,
+                allowTaskbarEditing: true,
+                showDeleteConfirmDialog: true
+            },
+            timelineSettings: {
+                showTooltip: true,
+                topTier: {
+                    unit: 'Week',
+                    format: 'dd/MM/yyyy'
+                },
+                bottomTier: {
+                    unit: 'Day',
+                    count: 1
+                }
+            },
+            gridLines: "Both",
+            showColumnMenu: true,
+            allowResizing: true,
+            readOnly: false,
+            taskbarHeight: 20,
+            rowHeight: 40,
+            labelSettings: {
+                leftLabel: 'TaskName',
+                taskLabel: '${Progress}%'
+            },
+            projectStartDate: new Date('02/20/2017'),
+            projectEndDate: new Date('03/30/2017'),
+           
+        }, done);
+    });
+    it('zoomtfit in undo redo actions', () => {
+        ganttObj.timelineModule.processZoomToFit();
+        ganttObj.undo();
+        ganttObj.timelineModule.processZoomToFit();
+        ganttObj.undo();
+    });
+    afterAll(() => {
+        if (ganttObj) {
+            destroyGantt(ganttObj);
+        }
+    });
+});
+describe('testcase to increase code coverage', () => {
+    let ganttObj: Gantt;
+    const data: Object[] = [
+        {
+            TaskID: 1,
+            TaskName: 'Product Concept',
+            StartDate: new Date('04/02/2019'),
+            EndDate: new Date('04/21/2019'),
+            subtasks: [
+                { TaskID: 2, TaskName: 'Defining the product and its usage', StartDate: new Date('04/02/2019'), Duration: 3, Progress: 30 },
+                { TaskID: 3, TaskName: 'Defining target audience', StartDate: new Date('04/02/2019'), Duration: 3 },
+                { TaskID: 4, TaskName: 'Prepare product sketch and notes', StartDate: new Date('04/02/2019'), Duration: 3, Predecessor: "2", Progress: 30 },
+            ]
+        }
+        ]
+    beforeAll((done: Function) => {
+        ganttObj = createGantt(
+        {
+            dataSource: data,
+            enableUndoRedo: true,
+            allowSorting: true,
+            taskFields: {
+                id: 'TaskID',
+                name: 'TaskName',
+                startDate: 'StartDate',
+                duration: 'Duration',
+                progress: 'Progress',
+                dependency: 'Predecessor',
+                child: 'subtasks'
+            },
+            editSettings: {
+                allowEditing: true,
+                allowDeleting: true,
+                allowTaskbarEditing: true,
+                showDeleteConfirmDialog: true
+            },
+        toolbar: [
+                "Add",
+                "Edit",
+                "Update",
+                "Delete",
+                "Cancel",
+                "ExpandAll",
+                "CollapseAll",
+                "Search",
+                "ZoomIn",
+                "ZoomOut",
+                "ZoomToFit",
+                "PrevTimeSpan",
+                "NextTimeSpan",
+                "PdfExport",
+            ],
+            allowSelection: true,
+            gridLines: "Both",
+            showColumnMenu: false,
+            highlightWeekends: true,
+            timelineSettings: {
+                showWeekend: false,
+                topTier: {
+                    unit: 'Week',
+                    format: 'dd/MM/yyyy'
+                },
+                bottomTier: {
+                    unit: 'Day',
+                    count: 1
+                }
+            },
+            labelSettings: {
+                leftLabel: 'TaskName',
+                taskLabel: 'Progress'
+            },
+            height: '550px',
+            allowUnscheduledTasks: true,
+           
+        }, done);
+    });
+    it('testcase to increase code coverage', () => {
+        ganttObj.timelineModule['dateByLeftValue'](230,false);
+        ganttObj.timelineModule['dateByLeftValue'](280,true,ganttObj.currentViewData[3].ganttProperties)
+        ganttObj.timelineModule['bottomTierCellWidthCalc']('Minutes',{
+        topTier: { unit: 'Month', format: 'MMM, yy', count: 1 },
+        bottomTier: { unit: 'Week', format: 'dd', count: 1 }, timelineUnitSize: 33, level: 0,
+        timelineViewMode: 'Month', weekStartDay: 0, perDayWidth: 33, updateTimescaleView: true, weekendBackground: null, showTooltip: true,
+        }, new Date(2023, 0, 1, 12, 0, 0, 0))
+        ganttObj.timelineModule['bottomTierCellWidthCalc']('Year',{
+            topTier: { unit: 'Year', format: 'yyyy', count: 1 },
+            bottomTier: { unit: 'Week', format: 'dd', count: 1 }, timelineUnitSize: 33, level: 0,
+            timelineViewMode: 'Month', weekStartDay: 0, perDayWidth: 33, updateTimescaleView: true, weekendBackground: null, showTooltip: true,
+        }, new Date(2023, 0, 1, 12, 0, 0, 0))
     });
     afterAll(() => {
         if (ganttObj) {

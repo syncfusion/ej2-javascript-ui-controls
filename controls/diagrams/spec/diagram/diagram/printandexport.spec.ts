@@ -7,7 +7,7 @@ import { Rect } from '../../../src/index';
 import { PrintAndExport } from '../../../src/diagram/print-settings';
 import { PageSettingsModel, BackgroundModel } from '../../../src/diagram/diagram/page-settings-model';
 import { IExportOptions } from '../../../src/diagram/objects/interface/interfaces';
-import { Container, DataBinding, DiagramModel, HierarchicalTree, ImageElement, StackPanel, TextElement, TreeInfo, ZoomOptions } from '../../../src/diagram/index';
+import { GroupableView, DataBinding, DiagramModel, HierarchicalTree, ImageElement, StackPanel, TextElement, TreeInfo, ZoomOptions } from '../../../src/diagram/index';
 import { UndoRedo } from '../../../src/diagram/objects/undo-redo';
 import { profile, inMB, getMemoryProfile } from '../../../spec/common.spec';
 import { DataManager, Query } from '@syncfusion/ej2-data';
@@ -1563,7 +1563,7 @@ describe('Print and export', () => {
                     return connector;
                 },
             
-                setNodeTemplate: (obj: NodeModel, diagram: Diagram): Container => {
+                setNodeTemplate: (obj: NodeModel, diagram: Diagram): GroupableView => {
                     let content: StackPanel = new StackPanel();
                     content.id = obj.id + '_outerstack';
                     content.style.strokeColor = 'darkgreen';

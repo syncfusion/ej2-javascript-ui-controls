@@ -10,7 +10,7 @@ import { colWidthChanged, protectSelection, editOperation, initiateFormulaRefere
 import { getRangeIndexes, getCellAddress, getRangeAddress, getCellIndexes, getSwapRange } from '../../workbook/common/address';
 import { addressHandle, isMouseDown, isMouseMove, selectionStatus, setPosition, removeRangeEle, removeNoteContainer, setActionData } from '../common/index';
 import { isCellReference, getSheetNameFromAddress, CellModel, isLocked, getColumn, getCell, updateCell, getSheetName } from '../../workbook/index';
-import { selectionComplete, parseFormulaArgument, getChartRowIdxFromClientY, getChartColIdxFromClientX, isRowSelected, isColumnSelected, addDPRValue } from '../../workbook/common/index';
+import { selectionComplete, parseFormulaArgument, getChartRowIdxFromClientY, getChartColIdxFromClientX, addDPRValue, isRowSelected, isColumnSelected } from '../../workbook/common/index';
 import { getIndexesFromAddress, skipHiddenIdx, isHiddenRow, isHiddenCol } from '../../workbook/index';
 import { DropDownList } from '@syncfusion/ej2-dropdowns';
 
@@ -452,8 +452,8 @@ export class Selection {
                     const targetElement: HTMLElement = e.target as HTMLElement;
                     let isNoteAvailable: boolean = targetElement.className === 'e-addNoteIndicator';
                     if (!isNoteAvailable && targetElement.children.length > 0) {
-                        const lastChild: HTMLElement = targetElement.children[targetElement.childElementCount - 1] as HTMLElement;
-                        isNoteAvailable = typeof lastChild.className === 'string' && lastChild.className.indexOf('e-addNoteIndicator') > -1;
+                        const className: string = targetElement.children[targetElement.childElementCount - 1].className;
+                        isNoteAvailable = typeof className === 'string' && className.indexOf('e-addNoteIndicator') > -1;
                     }
                     if (isTouchStart(e) && isNoteAvailable) {
                         const cellIndexes: number[] = getCellIndexes(getRangeAddress(range).split(':')[0]);
@@ -629,14 +629,16 @@ export class Selection {
             const isRowSelect: boolean = isRowSelected(sheet, indexes);
             const isColumnSelect: boolean = isColumnSelected(sheet, indexes);
             if (!(isColumnSelect && indexes[1] === colIdx) && !(isRowSelect && indexes[0] === rowIdx)) {
-                const autoFillDdb: Element = (e.target as HTMLElement).parentElement.querySelector('.e-dragfill-ddb');
-                if (!autoFillDdb || autoFillDdb.classList.contains('e-hide')) {
-                    this.dAutoFillCell = sheet.selectedRange;
+                if ((e.target as HTMLElement).parentElement) {
+                    const autoFillDdb: Element = (e.target as HTMLElement).parentElement.querySelector('.e-dragfill-ddb');
+                    if (!autoFillDdb || autoFillDdb.classList.contains('e-hide')) {
+                        this.dAutoFillCell = sheet.selectedRange;
+                    }
                 }
                 this.parent.notify(performAutoFill, { event: e, dAutoFillCell: this.dAutoFillCell });
             }
             this.isautoFillClicked = false;
-        } else if (!e.ctrlKey && !isDiscontinuousRange(getSelectedRange(this.parent.getActiveSheet()))) {
+        } else if (!e.ctrlKey && !isDiscontinuousRange(getSelectedRange(this.parent.getActiveSheet())) || this.parent.selectionSettings.mode === 'Single') {
             this.parent.notify(positionAutoFillElement, null);
         } else {
             this.parent.notify(hideAutoFillElement, null);
@@ -825,7 +827,7 @@ export class Selection {
         this.parent.notify(editOperation, eventArgs);
         const isFormulaEdit: boolean = (this.parent.isEdit ? checkIsFormula(eventArgs.editedValue, true) : false) &&
             !eventArgs.endFormulaRef;
-        const isMultiRange: boolean = e && e.ctrlKey && isMouseDown(e as MouseEvent);
+        const isMultiRange: boolean = e && e.ctrlKey && isMouseDown(e as MouseEvent) && this.parent.selectionSettings.mode !== 'Single';
         let ele: HTMLElement;
         if (!isMultiRange) {
             ele = this.getSelectionElement(e as MouseEvent, selectedRowColIdx);
@@ -991,7 +993,7 @@ export class Selection {
         }
         rowColSelectArgs = this.isRowColSelected(range);
         this.isRowSelected = rowColSelectArgs.isRowSelected; this.isColSelected = rowColSelectArgs.isColSelected;
-        this.highlightHdr(range, e && e.ctrlKey);
+        this.highlightHdr(range, e && e.ctrlKey && this.parent.selectionSettings.mode !== 'Single');
         if (!isScrollRefresh && !(e && (e.type === 'mousemove' || isTouchMove(e)))) {
             if (!isFormulaEdit) {
                 this.updateActiveCell(isActCellChanged ? getRangeIndexes(sheet.activeCell) : range, isInit, preventAnimation);
@@ -1009,7 +1011,7 @@ export class Selection {
             this.parent.notify(selectionComplete, e);
         }
         if (!isMultiRange && !isDiscontinuousRange(getSelectedRange(this.parent.getActiveSheet()))) {
-            this.parent.notify(positionAutoFillElement, { preventAnimation: preventAnimation });
+            this.parent.notify(positionAutoFillElement, { preventAnimation: preventAnimation, isSelection: isInit });
         } else {
             this.parent.notify(hideAutoFillElement, null);
         }
@@ -1079,7 +1081,7 @@ export class Selection {
 
     private getSelectionElement(e?: MouseEvent, selectedRowColIdx?: number): HTMLElement {
         const sheet: SheetModel = this.parent.getActiveSheet();
-        if (e && e.ctrlKey && !this.parent.isEdit) {
+        if (e && e.ctrlKey && !this.parent.isEdit && this.parent.selectionSettings.mode !== 'Single') {
             if (isMouseUp(e) || isMouseMove(e)) {
                 if (sheet.frozenColumns || sheet.frozenRows) {
                     let ele: HTMLElement = this.parent.getMainContent().querySelector('.e-cur-selection');

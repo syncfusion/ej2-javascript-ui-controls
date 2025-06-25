@@ -366,6 +366,9 @@ export class Formats {
         for (let i: number = 0; i < formatsNodes.length; i++) {
             let parentNode: Element;
             let replaceHTML: string;
+            if ((formatsNodes[i as number]).nodeName === 'HR') {
+                continue;
+            }
             if (e.subCommand.toLowerCase() === 'blockquote') {
                 parentNode = this.getParentNode(formatsNodes[i as number]) as Element;
                 if (e.enterAction === 'BR') {
@@ -380,18 +383,25 @@ export class Formats {
                     }
                 }
             } else {
-                parentNode = formatsNodes[i as number] as Element;
-                replaceHTML = parentNode.innerHTML;
+                const formatNodes: Element = formatsNodes[i as number] as Element;
+                if (formatNodes && formatNodes.tagName === 'PRE' && formatNodes.firstChild && formatNodes.firstChild.nodeName === 'CODE' && formatNodes.hasAttribute('data-language')) {
+                    parentNode = formatNodes;
+                    replaceHTML = parentNode.querySelector('code').innerHTML;
+                } else {
+                    parentNode = formatNodes;
+                    replaceHTML = parentNode.innerHTML;
+                }
             }
-            if ((e.subCommand.toLowerCase() === 'blockquote' && e.subCommand.toLowerCase() === parentNode.tagName.toLowerCase() && isPartiallySelected) ||
+            const isCodeBlockElement: boolean = parentNode.tagName === 'PRE' && parentNode.firstChild && parentNode.firstChild.nodeName === 'CODE' && parentNode.hasAttribute('data-language');
+            if (!isCodeBlockElement && ((e.subCommand.toLowerCase() === 'blockquote' && e.subCommand.toLowerCase() === parentNode.tagName.toLowerCase() && isPartiallySelected) ||
                 ((e.subCommand.toLowerCase() === parentNode.tagName.toLowerCase() &&
-                (e.subCommand.toLowerCase() !== 'pre' && e.subCommand.toLowerCase() !== 'blockquote' ||
-                    (!isNOU(e.exeValue) && e.exeValue.name === 'dropDownSelect'))) ||
-                isNOU(parentNode.parentNode) || (parentNode.tagName === 'TABLE' && e.subCommand.toLowerCase() === 'pre'))) {
+                    (e.subCommand.toLowerCase() !== 'pre' && e.subCommand.toLowerCase() !== 'blockquote' ||
+                        (!isNOU(e.exeValue) && e.exeValue.name === 'dropDownSelect'))) ||
+                    isNOU(parentNode.parentNode) || (parentNode.tagName === 'TABLE' && e.subCommand.toLowerCase() === 'pre')))) {
                 continue;
             }
             this.cleanFormats(parentNode, e.subCommand);
-            const replaceNode: string = (e.subCommand.toLowerCase() === 'pre' && parentNode.tagName.toLowerCase() === 'pre') ?
+            const replaceNode: string = (e.subCommand.toLowerCase() === 'pre' && (parentNode.tagName.toLowerCase() === 'pre' && !isCodeBlockElement)) ?
                 'p' : e.subCommand;
             const isToggleBlockquoteList: boolean = e.subCommand.toLowerCase() === parentNode.tagName.toLowerCase() &&
                 e.subCommand.toLowerCase() === 'blockquote' && !isNOU(closest(formatsNodes[i as number], 'li'));
@@ -430,13 +440,45 @@ export class Formats {
                 if (i === formatsNodes.length - 1) {
                     this.createBlockquoteSpan('e-rte-blockquote-open', formatsNodes[i as number] as Element, 'after');
                 }
+            } else if (parentNode && parentNode.tagName === 'PRE' && parentNode.firstChild && parentNode.firstChild.nodeName === 'CODE' && parentNode.hasAttribute('data-language')) {
+                replaceTag = this.parent.domNode.createTagString(
+                    replaceNode, null, replaceHTML.replace(/>\s+</g, '><'));
             } else {
                 replaceTag = this.parent.domNode.createTagString(
                     replaceNode, (e.subCommand.toLowerCase() === 'blockquote' ? null : parentNode), replaceHTML.replace(/>\s+</g, '><'));
             }
             if (parentNode.tagName === 'LI') {
-                parentNode.innerHTML = '';
-                parentNode.insertAdjacentHTML('beforeend', replaceTag);
+                const firstchildNode: Element = parentNode.firstChild as Element;
+                const childNodes: Node[] = [];
+                let hasNestedList: boolean = false;
+                for (const child of Array.from(parentNode.childNodes)) {
+                    const tagName: string = child.nodeName.toLowerCase();
+                    if (tagName === 'ul' || tagName === 'ol') {
+                        hasNestedList = true;
+                    } else {
+                        childNodes.push(child);
+                    }
+                }
+                if (hasNestedList) {
+                    let wrapperElement: HTMLElement = document.createElement('div');
+                    for (const child of childNodes) {
+                        wrapperElement.appendChild(child.cloneNode(true));
+                        if (firstchildNode !== child) {
+                            parentNode.removeChild(child);
+                        }
+                    }
+                    if (formatsNodes[i + 1] && (formatsNodes[i + 1].textContent === wrapperElement.textContent)) {
+                        wrapperElement = formatsNodes[i + 1] as HTMLElement;
+                    }
+                    replaceTag = this.parent.domNode.createTagString(
+                        replaceNode, (e.subCommand.toLowerCase() === 'blockquote' ? null : wrapperElement), wrapperElement.innerHTML.replace(/>\s+</g, '><'));
+                    const tempDiv: HTMLElement = document.createElement('div');
+                    tempDiv.innerHTML = replaceTag;
+                    parentNode.replaceChild(tempDiv.firstChild, firstchildNode);
+                } else {
+                    parentNode.innerHTML = '';
+                    parentNode.insertAdjacentHTML('beforeend', replaceTag);
+                }
             } else if (!isWholeBlockquoteNotSelected) {
                 const currentTag: Element = ((!isNOU(closest(formatsNodes[i as number], 'table')) && this.parent.editableElement.contains(closest(formatsNodes[i as number], 'table'))) ?
                     (!isNOU(closest((formatsNodes[i as number]), 'blockquote')) ? closest((formatsNodes[i as number]), 'blockquote') : formatsNodes[i as number] as Element) : parentNode);
@@ -562,7 +604,7 @@ export class Formats {
     }
 
     private preFormatMerge(): void {
-        const preNodes: NodeListOf<Element> = this.parent.editableElement.querySelectorAll('PRE');
+        const preNodes: NodeListOf<Element> = this.parent.editableElement.querySelectorAll('PRE:not([data-language])');
         if (!isNOU(preNodes)) {
             for (let i: number = 0; i < preNodes.length; i++) {
                 const previousSib: Element = (preNodes[i as number] as HTMLElement).previousElementSibling;

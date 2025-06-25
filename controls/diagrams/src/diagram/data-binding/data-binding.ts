@@ -118,8 +118,8 @@ export class DataBinding {
             for (let r: number = 0; r < data.length; r++) {
                 obj = data[parseInt(r.toString(), 10)];
                 //832886 - Rendering layout without case sensitivity
-                if (obj[mapper.parentId] === undefined || obj[mapper.parentId] === null ||
-                    typeof obj[mapper.parentId] !== 'object') {
+                if (obj[mapper.parentId] === undefined || obj[mapper.parentId] === null || typeof obj[mapper.parentId] !== 'object' ||
+                    obj[mapper.parentId].length === 0) {
                     if (isNaN(obj[mapper.parentId]) && obj[mapper.parentId] !== undefined) {
                         if (rootNodes[obj[mapper.parentId] ? obj[mapper.parentId].toLowerCase() : obj[mapper.parentId]] !== undefined) {
                             (rootNodes[obj[mapper.parentId].toLowerCase()] as DataItems).items.push(obj);
@@ -402,8 +402,15 @@ export class DataBinding {
     }
 
     private renderChildNodes(
-        mapper: DataSourceModel, parent: Object, value: string, rtNodes: Object[], diagram: Diagram): void {
+        mapper: DataSourceModel, parent: Object, value: string, rtNodes: Object[], diagram: Diagram, connectorLookup? : Set<string>): void {
         let child: Object; let nextLevel: Object; let node: Node;
+        if (!connectorLookup) {
+            connectorLookup = new Set(
+                diagram.connectors
+                    .filter((connector: ConnectorModel) => connector.sourceID && connector.targetID)
+                    .map((connector: ConnectorModel) => `${connector.sourceID}->${connector.targetID}`)
+            );
+        }
         for (let j: number = 0; j < (parent as DataItems).items.length; j++) {
             child = (parent as DataItems).items[parseInt(j.toString(), 10)];
             if (!child[mapper.id]) {
@@ -423,8 +430,10 @@ export class DataBinding {
             } else {
                 canBreak = true;
             }
-            if (!this.containsConnector(diagram, value, node.id)) {
-                diagram.connectors.push(this.applyConnectorTemplate(value, node.id, diagram));
+            if (!this.containsConnector(diagram, value, node.id, connectorLookup)) {
+                const conObj: ConnectorModel = this.applyConnectorTemplate(value, node.id, diagram);
+                diagram.connectors.push(conObj);
+                connectorLookup.add(`${conObj.sourceID}->${conObj.targetID}`);
             }
             if (!canBreak) {
                 if (node.data[mapper.id] && isNaN(node.data[mapper.id])) {
@@ -434,21 +443,16 @@ export class DataBinding {
                     nextLevel = rtNodes[node.data[mapper.id]];
                 }
                 if (nextLevel !== undefined) {
-                    this.renderChildNodes(mapper, nextLevel, node.id, rtNodes, diagram);
+                    this.renderChildNodes(mapper, nextLevel, node.id, rtNodes, diagram, connectorLookup);
                 }
             }
         }
     }
 
     // Bug 832897: Need to improve performance while rendering layout with large number of nodes.
-    // Replaced for loop with some() method to improve performance.
-    private containsConnector(diagram: Diagram, sourceNode: string, targetNode: string): boolean {
-        if (sourceNode === '' || targetNode === '') {
-            return false;
-        }
-        return diagram.connectors.some((connector: Connector) => {
-            return connector !== undefined && connector.sourceID === sourceNode && connector.targetID === targetNode;
-        });
+    // performance improvement- Replaced array.some with Set() to improve performance.
+    private containsConnector(diagram: Diagram, sourceNode: string, targetNode: string, connectorLookup: Set<string>): boolean {
+        return sourceNode && targetNode && connectorLookup.has(`${sourceNode}->${targetNode}`);
     }
 
     /**

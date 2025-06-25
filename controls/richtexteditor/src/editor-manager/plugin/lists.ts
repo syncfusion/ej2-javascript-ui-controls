@@ -259,7 +259,7 @@ export class Lists {
     private handleNestedEnterKeyForLists(e: IHtmlKeyboardEvent, parentOfCurrentOLUL: HTMLElement, startNode: Element,
                                          startNodeParent: HTMLElement): void {
         let hasIgnoredElement: boolean = false;
-        if (!isNOU(startNode) && startNode.querySelectorAll('audio,video,table,img').length > 0) {
+        if (!isNOU(startNode) && startNode.querySelectorAll('audio,video,table,img,HR').length > 0) {
             hasIgnoredElement = true;
         }
         if (!isNOU(parentOfCurrentOLUL) && (!isNOU(parentOfCurrentOLUL.closest('UL')) || !isNOU(parentOfCurrentOLUL.closest('OL')) || startNodeParent.nodeName === 'UL' || startNodeParent.nodeName === 'OL') &&
@@ -467,8 +467,9 @@ export class Lists {
         endNode = endNode.nodeName === 'BR' ? endNode.parentElement : endNode;
         startNode = startNode.nodeName !== 'LI' && !isNOU(startNode.closest('LI')) ? startNode.closest('LI') : startNode;
         endNode = endNode.nodeName !== 'LI' && endNode.nodeName !== '#text' && !isNOU(endNode.closest('LI')) ? endNode.closest('LI') : endNode;
+        const endNodeNextElementSibling: boolean = (!isNOU(endParentList) && isNOU(endParentList.nextElementSibling));
         if (((range.commonAncestorContainer.nodeName === 'OL' || range.commonAncestorContainer.nodeName === 'UL' || range.commonAncestorContainer.nodeName === 'LI') &&
-        isNOU(endNode.nextElementSibling) && endNode.textContent.length === range.endOffset &&
+        isNOU(endNode.nextElementSibling) && endNode.textContent.length === range.endOffset && endNodeNextElementSibling &&
         isNOU(startNode.previousElementSibling) && range.startOffset === 0) ||
         (Browser.userAgent.indexOf('Firefox') !== -1 && range.startContainer === range.endContainer && range.startContainer === this.parent.editableElement &&
         range.startOffset === 0 && range.endOffset === 1)) {
@@ -502,7 +503,7 @@ export class Lists {
                         }
                     });
                 }
-                if ((!listItems[i as number].firstChild || listItems[i as number].textContent.trim() === '') && (listItems[i as number] === startNode || listItems[i as number] === endNode)) {
+                if ((!listItems[i as number].firstChild || listItems[i as number].textContent.trim() === '') && (listItems[i as number] === startNode || listItems[i as number] === endNode || listItems[i as number] === endParentList)) {
                     previousNode = this.findPreviousElementForCursor(listItems[i as number]);
                     listItems[i as number].parentNode.removeChild(listItems[i as number]);
                 }
@@ -751,7 +752,7 @@ export class Lists {
                         this.saveSelection.setCursorPoint(this.parent.currentDocument, startElementTextNode as Element, cursorPosition);
                     }
                 } else {
-                    InsertHtml.Insert(this.parent.currentDocument, '&nbsp;&nbsp;&nbsp;&nbsp;');
+                    InsertHtml.Insert(this.parent.currentDocument, '&nbsp;&nbsp;&nbsp;&nbsp;', this.parent.editableElement);
                 }
                 this.listTabIndentation = true;
             }
@@ -915,6 +916,9 @@ export class Lists {
     }
     private applyListsHandler(e: IHtmlSubCommands): void {
         let range: Range = this.parent.nodeSelection.getRange(this.parent.currentDocument);
+        const selectedNode: Element = (range.startContainer.nodeName === 'HR' ? range.startContainer as HTMLElement : range.startContainer.childNodes[range.startOffset] as HTMLElement);
+        const lastSelectedNode: Element = (selectedNode ? (selectedNode.nodeName === 'HR' ? (selectedNode as HTMLElement).nextElementSibling : null) : null);
+        const checkCursorPointer: boolean = range.startContainer === range.endContainer && range.startOffset === range.endOffset;
         if (Browser.userAgent.indexOf('Firefox') !== -1 && range.startContainer === range.endContainer && range.startContainer === this.parent.editableElement) {
             const startChildNodes: NodeListOf<Node> = range.startContainer.childNodes;
             const startNode: Element = <Element>((startChildNodes[(range.startOffset > 0) ? (range.startOffset - 1) :
@@ -968,7 +972,10 @@ export class Lists {
                 listsNodes[i as number] = listsNodes[i as number].parentNode;
             }
         }
-        this.applyLists(listsNodes as HTMLElement[], this.currentAction, e.selector, e.item, e);
+        this.applyLists(listsNodes as HTMLElement[], this.currentAction, e.selector, e.item, e, checkCursorPointer);
+        if (lastSelectedNode && range.startContainer === range.endContainer && range.startOffset === range.endOffset) {
+            this.parent.nodeSelection.setCursorPoint(this.parent.currentDocument, lastSelectedNode, 0);
+        }
         if (e.callBack) {
             e.callBack({
                 requestType: this.currentAction,
@@ -991,13 +998,14 @@ export class Lists {
         }
     }
 
-    private applyLists(elements: HTMLElement[], type: string, selector?: string, item?: IAdvanceListItem, e?: IHtmlSubCommands): void {
+    private applyLists(elements: HTMLElement[], type: string, selector?: string,
+                       item?: IAdvanceListItem, e?: IHtmlSubCommands, checkCursorPointer?: boolean): void {
         let isReverse: boolean = true;
         if (this.isRevert(elements, type, item) && isNOU(item)) {
             this.revertList(elements, e);
             this.removeEmptyListElements();
         } else {
-            this.checkLists(elements, type, item);
+            this.checkLists(elements, type, item, checkCursorPointer);
             let marginLeftAttribute: string = '';
             if (elements[0].style.marginLeft !== '') {
                 marginLeftAttribute = ' style = "margin-left: ' + elements[0].style.marginLeft + ';"';
@@ -1080,7 +1088,7 @@ export class Lists {
         tempDiv.innerHTML = innerHTML.trim(); // Convert string to DOM elements
         let liElement: HTMLElement = tempDiv.querySelector('li');
         const styleElement: HTMLElement = liElement;
-        if (liElement && liElement.children.length === 1) {
+        if (liElement && liElement.childNodes.length === 1) {
             while (liElement && liElement.children.length === 1 && liElement.firstChild &&
                 liElement.firstChild.nodeType !== Node.TEXT_NODE) {
                 const childElement: HTMLElement = liElement.firstChild as HTMLElement;
@@ -1137,19 +1145,10 @@ export class Lists {
         return isRevert;
     }
 
-    private checkLists(nodes: Element[], tagName: string, item?: IAdvanceListItem): void {
+    private checkLists(nodes: Element[], tagName: string, item?: IAdvanceListItem, checkCursorPointer?: boolean): void {
         const nodesTemp: Element[] = [];
         for (let i: number = 0; i < nodes.length; i++) {
             const node: Element = nodes[i as number].parentNode as Element;
-            if (!isNOU(item) && 'LI' === nodes[i as number].tagName && !isNOU(item.listStyle)) {
-                if (item.listStyle === 'listImage') {
-                    setStyleAttribute(node as HTMLElement, { 'list-style-image': item.listImage });
-                }
-                else {
-                    setStyleAttribute(node as HTMLElement, { 'list-style-image': 'none' });
-                    setStyleAttribute(node as HTMLElement, { 'list-style-type': item.listStyle.replace( /([a-z])([A-Z])/g, '$1-$2' ).toLowerCase() });
-                }
-            }
             if ((nodes[i as number].tagName === 'LI' && node.tagName !== tagName && nodesTemp.indexOf(node) < 0) ||
              (nodes[i as number].tagName === 'LI' && node.tagName === tagName && nodesTemp.indexOf(node) < 0 && item !== null)) {
                 nodesTemp.push(node);
@@ -1161,14 +1160,93 @@ export class Lists {
                 }
             }
         }
-        for (let j: number = nodesTemp.length - 1; j >= 0; j--) {
-            const h: Element = nodesTemp[j as number];
-            const replace: string = '<' + tagName.toLowerCase() + ' '
-                + this.domNode.attributes(h) + '>' + h.innerHTML + '</' + tagName.toLowerCase() + '>';
-            this.domNode.replaceWith(nodesTemp[j as number], replace);
+        this.convertListType(nodes, tagName, nodesTemp, checkCursorPointer, item);
+    }
+    /*
+     * Convert list type based on the different list
+     * Transforms selected list items between ordered and unordered lists
+     */
+    private convertListType(nodes: Element[], tagName: string, nodesTemp: Element[],
+                            checkCursorPointer: boolean, item?: IAdvanceListItem | null): void {
+        const initialNodesTemp: Element[] = Array.from(new Set<Element>(
+            nodes.map((node: Element) => node.parentNode as Element)
+                .filter((parent: Element) => parent.tagName === 'OL' || parent.tagName === 'UL')
+        )).reverse();
+        for (let i: number = 0; i < initialNodesTemp.length; i++) {
+            const list: Element = initialNodesTemp[i as number];
+            if (!checkCursorPointer && (list.tagName === 'UL' || list.tagName === 'OL')) {
+                const newFragment: DocumentFragment = this.parent.currentDocument.createDocumentFragment();
+                let currentTagName: string = list.tagName;
+                let newList: HTMLElement = this.parent.currentDocument.createElement(tagName.toLowerCase());
+                const listElements: Element[] = Array.from(list.children).filter((child: Element) => child.tagName === 'LI');
+                listElements.forEach((child: Element) => {
+                    if (nodes.indexOf(child) !== -1) {
+                        if (currentTagName === tagName.toLowerCase()) {
+                            const clonedChild: HTMLElement = child.cloneNode(true) as HTMLElement;
+                            newList.appendChild(clonedChild);
+                        } else {
+                            newList = this.parent.currentDocument.createElement(tagName.toLowerCase());
+                            if (currentTagName === tagName) {
+                                this.transferAttributes(list, newList);
+                            }
+                            currentTagName = tagName.toLowerCase();
+                            newFragment.appendChild(newList);
+                            const clonedChild: HTMLElement = child.cloneNode(true) as HTMLElement;
+                            this.applyListItemStyle(newList, item);
+                            newList.appendChild(clonedChild);
+                        }
+                    } else {
+                        if (currentTagName !== list.tagName.toLowerCase()) {
+                            currentTagName = list.tagName.toLowerCase();
+                            newList = this.parent.currentDocument.createElement(currentTagName);
+                            this.transferAttributes(list, newList);
+                            newFragment.appendChild(newList);
+                        }
+                        newList.appendChild(child.cloneNode(true));
+                    }
+                });
+                list.parentNode.replaceChild(newFragment, list);
+            } else if (checkCursorPointer) {
+                for (let j: number = nodesTemp.length - 1; j >= 0; j--) {
+                    const h: Element = nodesTemp[j as number];
+                    const replace: string = '<' + tagName.toLowerCase() + ' '
+                        + this.domNode.attributes(h) + '>' + h.innerHTML + '</' + tagName.toLowerCase() + '>';
+                    const tempDiv: HTMLDivElement = document.createElement('div');
+                    tempDiv.innerHTML = replace;
+                    this.applyListItemStyle(tempDiv.firstChild as Element, item);
+                    this.domNode.replaceWith(nodesTemp[j as number], tempDiv.innerHTML);
+                }
+            }
         }
     }
-
+    /*
+     * Applies list style to a list item element
+     * @param node The list item element to apply styles to
+     * @param item The advanced list item configuration
+     */
+    private applyListItemStyle(node: Element, item?: IAdvanceListItem): void {
+        if (!isNOU(item) && !isNOU(item.listStyle)) {
+            if (item.listStyle === 'listImage') {
+                setStyleAttribute(node as HTMLElement, { 'list-style-image': item.listImage });
+            }
+            else {
+                setStyleAttribute(node as HTMLElement, { 'list-style-image': 'none' });
+                setStyleAttribute(node as HTMLElement, { 'list-style-type': item.listStyle.replace(/([a-z])([A-Z])/g, '$1-$2').toLowerCase() });
+            }
+        }
+    }
+    /*
+     * Transfers attributes from source element to target element
+     */
+    private transferAttributes(
+        sourceList: Element,
+        targetList: HTMLElement
+    ): void {
+        for (let j: number = 0; j < sourceList.attributes.length; j++) {
+            const attr: Attr = sourceList.attributes[j as number];
+            targetList.setAttribute(attr.name, attr.value);
+        }
+    }
     private cleanNode(): void {
         const liParents: Element[] = <Element[] & NodeListOf<Element>>this.parent.editableElement.querySelectorAll('ol + ol, ul + ul');
         let listStyleType: string;

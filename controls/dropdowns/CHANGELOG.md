@@ -2,165 +2,6 @@
 
 ## [Unreleased]
 
-## 29.2.11 (2025-06-17)
-
-### MultiSelect
-
-#### Bug Fixes
-
-- `#I731138` - Fixed an issue where the MultiSelect Checkbox would unintentionally select all options when navigating with the keyboard after interacting with the `SelectAll` feature.
-
-## 29.2.10 (2025-06-10)
-
-### MultiSelect
-
-#### Bug Fixes
-
-- `#I731530` - Resolved an issue where the popup displayed skeletons upon reopening when using virtualization and checkbox mode.
-
-## 29.2.8 (2025-06-03)
-
-### DropDownTree
-
-#### Bug Fixes
-
-- `#I725718` - Issue with "Selected item disappears visually on continued search input after selection in Dropdown Tree" has been resolved.
-
-### MultiSelect
-
-#### Bug Fixes
-
-- `#I696602` - Fixed an issue where the popup remains open if the MultiSelect input is not visible in the viewport.
-
-## 29.2.5 (2025-05-21)
-
-### DropDownTree
-
-#### Bug Fixes
-
-- `#I712180` - Enhanced the node selection behavior in the `TreeView` component by introducing a new property `checkOnClick`, which provides control over node interaction. This is enabled by default in Dropdown Tree, so that the checkbox will be checked on either clicking node text or checkbox.
-
-### DropdownList
-
-#### Bug Fixes
-
-- `#I715148` - Fixed an issue where group template fails to render properly after selecting value.
-- `#I716996` - Fixed an issue where the popup did not open correctly after simultaneously pressing the space key and clicking on a dropdown list.
-
-## 29.2.4 (2025-05-14)
-
-### ComboBox
-
-#### Bug Fixes
-
-- `#I717289` - Resolved an issue where RTL support was not applied to the ComboBox component when enabled globally.
-
-### MultiSelect
-
-#### Bug Fixes
-
-- `#I713063` - Fixed an issue where binding a value with `allowObjectBinding` caused the data fetch request to fail.
-
-- `#I718283` - Fixed an issue where the pre-selected value was overflowing
-
-- `#I713454` - Fixed an issue where extra space appeared in the popup when using the allowResize property.
-- `#I713828` - Fixed an issue where the resize icon overlaps with the scroll bar in multi-select when using the allowResize feature with the header template.
-- `#I708109` - Fixed an issue related to disabled fields and sort order, which was causing incorrect item disabling.
-- `#I699580` - Fixed an issue where the text was overlapping the clear icon in the Multi Select dropdown.
-
-## 29.1.41 (2025-05-06)
-
-### ComboBox
-
-#### Bug Fixes
-
-- `#I707526` - Fixed an issue where the selected value was displayed twice within the popup when using virtualization.
-
-## 29.1.40 (2025-04-29)
-
-### Mention
-
-#### Bug Fixes
-
-- `#I715091` – Fixed an issue in the Mention component within the Rich Text Editor when the `suffixText` property was set to an empty string.
-
-### DropdownList
-
-#### Bug Fixes
-
-- `#I707077` - Fixed an issue where Group Headers in the Dropdown List would remain fixed while scrolling in the scrollable area.
-
-### MultiSelect
-
-#### Bug Fixes
-
-- `#I708109` - Fixed an issue that caused an exception when scrolling within the multiselect dropdown containing a grouped data source.
-
-### ComboBox
-
-#### Bug Fixes
-
-- `#I712292` - Fixed an issue where the ComboBox component would throw a console error when filtering data with complex structures while the `allowFiltering` option is set to true.
-
-### DropDownTree
-
-#### Bug Fixes
-
-- `#I711933` - Resolved the issue where the dropdown popup did not open on the first touch interaction on iPad devices.
-
-## 29.1.38 (2025-04-15)
-
-### MultiSelect
-
-#### Bug Fixes
-
-- `#I696017` - Fixed an issue where the value was not displaying correctly when `allowObjectBinding` was enabled and a custom value was set.
-
-- `#697152` - Fixed the issue where the "Select All" checkbox was not selected in the multi-dropdown when the virtualization property was configured.
-
-- `#I700421` - Fixed the issue where the value was incorrectly converted to text after pressing the Escape key.
-
-## 29.1.37 (2025-04-08)
-
-### ListBox
-
-#### Bug Fixes
-
-- `#F196369` - Issue with "Script error thrown while setting the values with a new line (\n) in the list item text of the list box" has been resolved.
-
-### ComboBox
-
-#### Bug Fixes
-
-- `#I6988657` - Fixed the issue where an itemTemplate element not render while opens ComboBox popup twice when filtering enabled.
-
-- `#I697381` - Fixed an issue where the selected value would disappear when the item template was enabled.
-
-### MultiSelect
-
-#### Bug Fixes
-
-- `#I687522` - Issue with "Resolving the text is overlapping the clear icon in the Multi Select dropdown" has been resolved.
-- `#I697553` - Fixed an issue where using the Chip icon removed all selected values instead of removing a specific chip.
-
-- `#I696602` - Fixed an issue where the popup remains open if the MultiSelect input is not visible in the viewport.
-
-### DropDownTree
-
-#### Bug Fixes
-
-- `#I702413` - An issue getting empty tree data after performing the filtering and reopening the popup, when both the itemTemplate and filtering support are enabled in the Dropdown Tree component has been resolved.
-
-## 29.1.33 (2025-03-25)
-
-### DropDownTree
-
-#### Bug Fixes
-
-- `#I694965` - Resolved an issue where the parent node check state was not maintained in nested data after filtering when Select All was used in the Dropdown Tree component.
-
-- `#I693819` - An issue with the select All checkbox in Dropdown Tree component when filtering is enabled and the tree contains disabled items has been resolved.
-
 ## 28.2.9 (2025-03-04)
 
 ### ComboBox
@@ -525,7 +366,7 @@
 
 #### Bug Fixes
 
-- `#I343913` - Issue with "exception throws while preventing the request to the server in the `actionBegin` event" has been resolved.
+- `#I343913` -  Issue with "exception throws while preventing the request to the server in the `actionBegin` event" has been resolved.
 
 ## 19.3.53 (2021-11-12)
 
@@ -559,7 +400,7 @@
 
 - `#F169190` - The issue with "The Dropdown tree is not focused while pressing single tab key" has been resolved.
 
-- `#I341135` - The issue with "The Dropdown Tree selected items are misaligned while adding the `e-outline` and `e-filled` CSS classes" has been resolved.
+- `#I341135` - The issue with "The Dropdown Tree selected items are misaligned while adding  the `e-outline` and `e-filled` CSS classes" has been resolved.
 
 ## 19.3.45 (2021-10-12)
 
@@ -2090,7 +1931,7 @@ The ListBox is a graphical user interface component used to display a list of it
 
 - custom value support has been given in MultiSelect when the filtering is enabled instead of 'no records found' template.
 
-- The issue, 'Input is rendered again on typing while resetting value from null with remote data and custom value as true.' has been fixed.
+- The issue, 'Input is rendered again  on typing while resetting value from null with remote data and custom value as true.' has been fixed.
 
 - The issue, 'Enable persistence is not working properly when all the items in the list are selected.' has been fixed.
 
@@ -2372,7 +2213,7 @@ MultiSelect component contains a list of predefined values from which a multiple
 
 - **Custom Value** - Allows user to select a new custom value.
 
-- **Accessibility** - Provided with built-in accessibility support which helps to access all the MultiSelect component features through the keyboard, screen readers, or other assistive technology devices.
+- **Accessibility** - Provided with built-in accessibility support which helps to access all the MultiSelect component features through  the keyboard, screen readers, or other assistive technology devices.
 
 ### ComboBox
 

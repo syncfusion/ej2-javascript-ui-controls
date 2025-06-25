@@ -7,6 +7,7 @@ import { Button, IconPosition } from '@syncfusion/ej2-buttons';
 import { ItemModel, DropDownButton, DropDownButtonModel } from '@syncfusion/ej2-splitbuttons';
 import { NumericTextBox, ColorPicker, ColorPickerEventArgs } from '@syncfusion/ej2-inputs';
 import { DocumentEditorContainer } from '../document-editor-container';
+import { BordersHelper } from '../helper/borders-helper';
 /**
  * Represents table properties
  *
@@ -156,8 +157,7 @@ export class TableProperties {
     private onTabSelection(args: SelectingEventArgs): void {
         args.preventFocus = true;
         this.documentEditor.resize();
-        if (this.documentEditor.enableAutoFocus)
-        {
+        if (this.documentEditor.enableAutoFocus) {
             this.documentEditor.focusIn();
         }
 
@@ -188,10 +188,10 @@ export class TableProperties {
         this.alignTop.element.addEventListener('click', this.applyAlignTopHandler);
         this.alignBottom.element.addEventListener('click', this.applyAlignBottomHandler);
         this.alignCenterHorizontal.element.addEventListener('click', this.applyAlignCenterHorizontalHandler);
-        this.topMargin.htmlAttributes = {'aria-label': 'top-margin'};
-        this.bottomMargin.htmlAttributes = {'aria-label': 'bottom-margin'};
-        this.leftMargin.htmlAttributes = {'aria-label': 'left-margin'};
-        this.rightMargin.htmlAttributes = {'aria-label': 'right-Margin'};
+        this.topMargin.htmlAttributes = { 'aria-label': 'top-margin' };
+        this.bottomMargin.htmlAttributes = { 'aria-label': 'bottom-margin' };
+        this.leftMargin.htmlAttributes = { 'aria-label': 'left-margin' };
+        this.rightMargin.htmlAttributes = { 'aria-label': 'right-Margin' };
         this.topMargin.element.addEventListener('click', this.onTopMarginClickHandler);
         this.rightMargin.element.addEventListener('click', this.onRightMarginClickHandler);
         this.leftMargin.element.addEventListener('click', this.onLeftMarginClickHandler);
@@ -269,43 +269,48 @@ export class TableProperties {
     private onBottomMarginBlur(): void {
         this.applyBottomMargin(); this.isBottomMarginApply = false;
     }
-    private getBorder(border: BorderType): BorderSettings {
-        const lineWidth: number = (this.borderSize.content.indexOf('No Border') >= 0) ? 0 : parseFloat(this.borderSize.content);
-        const linestyle: LineStyle = (lineWidth === 0) ? 'Cleared' : 'Single';
-        const borderSettings: BorderSettings = {
-            type: border,
-            borderColor: this.borderColor,
-            lineWidth: lineWidth,
-            borderStyle: linestyle
-        };
-        return borderSettings;
-    }
+
     private onOutlineBorder(): void {
-        this.documentEditor.editorModule.applyBorders(this.getBorder('OutsideBorders'));
+        BordersHelper.applyBorder(this.documentEditor, 'OutsideBorders', this.borderColor, this.borderSize.content);
     }
+
+
     private onAllBorder(): void {
-        this.documentEditor.editorModule.applyBorders(this.getBorder('AllBorders'));
+        BordersHelper.applyBorder(this.documentEditor, 'AllBorders', this.borderColor, this.borderSize.content);
     }
+
+
     private onInsideBorder(): void {
-        this.documentEditor.editorModule.applyBorders(this.getBorder('InsideBorders'));
+        BordersHelper.applyBorder(this.documentEditor, 'InsideBorders', this.borderColor, this.borderSize.content);
     }
+
+
     private onLeftBorder(): void {
-        this.documentEditor.editorModule.applyBorders(this.getBorder('LeftBorder'));
+        BordersHelper.applyBorder(this.documentEditor, 'LeftBorder', this.borderColor, this.borderSize.content);
     }
+
     private onVerticalBorder(): void {
-        this.documentEditor.editorModule.applyBorders(this.getBorder('InsideVerticalBorder'));
+        BordersHelper.applyBorder(this.documentEditor, 'InsideVerticalBorder', this.borderColor, this.borderSize.content);
     }
+
     private onRightBorder(): void {
-        this.documentEditor.editorModule.applyBorders(this.getBorder('RightBorder'));
+        BordersHelper.applyBorder(this.documentEditor, 'RightBorder', this.borderColor, this.borderSize.content);
     }
+
     private onTopBorder(): void {
-        this.documentEditor.editorModule.applyBorders(this.getBorder('TopBorder'));
+        BordersHelper.applyBorder(this.documentEditor, 'TopBorder', this.borderColor, this.borderSize.content);
     }
+
     private onHorizontalBorder(): void {
-        this.documentEditor.editorModule.applyBorders(this.getBorder('InsideHorizontalBorder'));
+        BordersHelper.applyBorder(this.documentEditor, 'InsideHorizontalBorder', this.borderColor, this.borderSize.content);
     }
+
     private onBottomBorder(): void {
-        this.documentEditor.editorModule.applyBorders(this.getBorder('BottomBorder'));
+        BordersHelper.applyBorder(this.documentEditor, 'BottomBorder', this.borderColor, this.borderSize.content);
+    }
+
+    private createDropdownOption(ulTag: HTMLElement, text: string): HTMLElement {
+        return BordersHelper.createBorderWidthOption(ulTag, text, this.localObj);
     }
     private onTopMargin(e: KeyboardEventArgs): void {
         if (e.keyCode === 13) {
@@ -484,8 +489,8 @@ export class TableProperties {
         (styleTypeDiv.firstElementChild.lastElementChild.firstElementChild.firstElementChild as HTMLElement).style.width = '100%';
         classList((styleTypeDiv.lastElementChild.lastElementChild.lastElementChild.firstChild as HTMLElement), ['e-de-ctnr-highlightcolor'], ['e-caret']);
         this.borderSizeButton = createElement('button', { id: this.elementId + '_tableBorderSize', className: 'e-de-border-size-button', styles: 'font-size:10px;padding:0px;', attrs: { type: 'button' } });
-        styleTypeDiv.appendChild( this.borderSizeButton);
-        this.borderSize = this.createBorderSizeDropDown('e-de-ctnr-strokesize e-icons',  this.borderSizeButton);
+        styleTypeDiv.appendChild(this.borderSizeButton);
+        this.borderSize = this.createBorderSizeDropDown('e-de-ctnr-strokesize e-icons', this.borderSizeButton);
         parentDiv.appendChild(styleTypeDiv);
         this.borderSizeColorElement = document.getElementsByClassName('e-de-border-width');
         this.borderStyleDiv.appendChild(parentDiv);
@@ -674,27 +679,6 @@ export class TableProperties {
             this.tableOutlineBorder.element.focus();
         }, 10);
     }
-    private createDropdownOption(ulTag: HTMLElement, text: string): HTMLElement {
-        const liTag: HTMLElement = createElement('li', {
-            styles: 'display:block',
-            className: 'e-de-floating-menuitem e-de-floating-menuitem-md e-de-list-items  e-de-list-item-size'
-        });
-        ulTag.appendChild(liTag);
-        let innerHTML: string;
-        if (text === 'No Border') {
-            innerHTML = '<div>' + text + '</div>';
-        } else if (text === '1.5px') {
-            innerHTML = '<div>' + text + '<span class="e-de-list-line e-de-border-width"  style="margin-left:10px;border-bottom-width:' + text + ';' + '"' + '></span></div>';
-        } else {
-            innerHTML = '<div>' + text + '<span class="e-de-list-line e-de-border-width" style="margin-left:20px;border-bottom-width:' + text + ';' + '"' + '></span></div>';
-        }
-        const liInnerDiv: HTMLElement = createElement('div', {
-            className: 'e-de-list-header-presetmenu',
-            innerHTML: innerHTML
-        });
-        liTag.appendChild(liInnerDiv);
-        return liTag;
-    }
     /* eslint-disable-next-line max-len */
     public createDropDownButton(id: string, styles: string, parentDiv: HTMLElement, iconCss: string, content: string, items?: ItemModel[], target?: HTMLElement): DropDownButton {
         const buttonElement: HTMLButtonElement = createElement('button', { id: id, styles: styles, attrs: { type: 'button' } }) as HTMLButtonElement;
@@ -727,8 +711,8 @@ export class TableProperties {
         return btn;
     }
     private createColorPickerTemplate(id: string, divElement: HTMLElement, toolTipText: string, isBorderWidth: boolean): ColorPicker {
-        const {columns , createPopupOnClick , disabled , enablePersistence , inline ,
-            mode , modeSwitcher , noColor , presetColors , showButtons } = this.documentEditor.documentEditorSettings.colorPickerSettings;
+        const { columns, createPopupOnClick, disabled, enablePersistence, inline,
+            mode, modeSwitcher, noColor, presetColors, showButtons } = this.documentEditor.documentEditorSettings.colorPickerSettings;
         const inputElement: HTMLInputElement = createElement('input', { id: id }) as HTMLInputElement;
         divElement.appendChild(inputElement);
         let cssClass: string = 'e-de-prop-font-button e-de-prop-font-colorpicker';
@@ -736,10 +720,12 @@ export class TableProperties {
             cssClass = cssClass + ' e-de-border-clr-picker';
         }
         /* eslint-disable-next-line max-len */
-        const colorPicker: ColorPicker = new ColorPicker({ cssClass: cssClass, enableRtl: this.isRtl, locale: this.container.locale, enableOpacity: false ,
-            mode: mode , modeSwitcher: modeSwitcher , showButtons: showButtons , columns: columns ,
-            createPopupOnClick : createPopupOnClick , disabled : disabled , enablePersistence : enablePersistence , inline : inline ,
-            noColor : noColor , presetColors : presetColors}, inputElement);
+        const colorPicker: ColorPicker = new ColorPicker({
+            cssClass: cssClass, enableRtl: this.isRtl, locale: this.container.locale, enableOpacity: false,
+            mode: mode, modeSwitcher: modeSwitcher, showButtons: showButtons, columns: columns,
+            createPopupOnClick: createPopupOnClick, disabled: disabled, enablePersistence: enablePersistence, inline: inline,
+            noColor: noColor, presetColors: presetColors
+        }, inputElement);
         inputElement.parentElement.setAttribute('title', toolTipText);
         inputElement.parentElement.setAttribute('aria-label', toolTipText);
         return colorPicker;
@@ -805,6 +791,20 @@ export class TableProperties {
             this.tableProperties.innerHTML = '';
             this.tableProperties.remove();
             this.tableProperties = null;
+        }
+        if (this.parentElement) {
+            if (this.parentElement.parentElement) {
+                this.parentElement.parentElement.removeChild(this.parentElement);
+            }
+            this.parentElement.innerHTML = '';
+            this.parentElement = null;
+        }
+        if (this.element) {
+            this.element.innerHTML = '';
+            if (this.element.parentElement) {
+                this.element.parentElement.removeChild(this.element);
+            }
+            this.element = undefined;
         }
     }
     public destroy(): void {

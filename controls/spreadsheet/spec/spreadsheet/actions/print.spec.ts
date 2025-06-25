@@ -1365,6 +1365,10 @@ describe('Auto fill ->', () => {
                                         image: [
                                             { src: imageSource, width: 400, height: 1200 }
                                         ]
+                                    },{
+                                        format: " $#,##0_);[Red]($#,##0)", value: '-10'
+                                    },{
+                                        format: " $#,##0_);[Red]($#,##0)", formula: '=SUM(E2:E11)'
                                     }
                                 ]
                             },

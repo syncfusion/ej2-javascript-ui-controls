@@ -383,6 +383,9 @@ export class EditorHistory {
      */
     public updateHistory(): void {
         if (this.documentHelper.owner.enableHistoryMode && !isNullOrUndefined(this.currentBaseHistoryInfo)) {
+            if (!isNullOrUndefined(this.currentBaseHistoryInfo.lastDeletedNodeRevision) && !this.isUndoing && !this.isRedoing) {
+                this.currentBaseHistoryInfo.updateEndRevisionLogicalIndex();
+            }
             //Updates the current end position
             if (!isNullOrUndefined(this.currentBaseHistoryInfo)
                 && isNullOrUndefined(this.currentBaseHistoryInfo.endPosition)) {
@@ -477,7 +480,9 @@ export class EditorHistory {
                 this.documentHelper.removeEmptyPages();
             }
         }
-        if (this.owner.showRevisions && !this.owner.editorModule.restrictLayout && this.viewer.owner.enableLayout) {
+        if (this.owner.showRevisions && !this.owner.editorModule.restrictLayout
+           && this.viewer.owner.enableLayout && !this.owner.revisions.isAcceptAllOrRejectAll) {
+            this.owner.trackChangesPane.updatePendingChangesToView();
             this.owner.trackChangesPane.updateTrackChanges();
         }
         selection.owner.isShiftingEnabled = false;

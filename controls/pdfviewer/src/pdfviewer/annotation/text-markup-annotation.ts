@@ -90,6 +90,10 @@ export class TextMarkupAnnotation {
     /**
      * @private
      */
+    public squigglyColor: string;
+    /**
+     * @private
+     */
     public highlightOpacity: number;
     /**
      * @private
@@ -103,6 +107,10 @@ export class TextMarkupAnnotation {
      * @private
      */
     public strikethroughOpacity: number;
+    /**
+     * @private
+     */
+    public squigglyOpacity: number;
     /**
      * @private
      */
@@ -291,6 +299,8 @@ export class TextMarkupAnnotation {
                 isEnableResizer = true;
             } else if (type === 'Strikethrough' && this.pdfViewer.strikethroughSettings.enableTextMarkupResizer) {
                 isEnableResizer = true;
+            } else if (type === 'Squiggly' && this.pdfViewer.squigglySettings.enableTextMarkupResizer) {
+                isEnableResizer = true;
             } else if (this.pdfViewer.enableTextMarkupResizer) {
                 isEnableResizer = true;
             }
@@ -302,6 +312,8 @@ export class TextMarkupAnnotation {
             } else if ( this.pdfViewer.underlineSettings.enableTextMarkupResizer) {
                 isEnableResizer = true;
             } else if ( this.pdfViewer.strikethroughSettings.enableTextMarkupResizer) {
+                isEnableResizer = true;
+            } else if ( this.pdfViewer.squigglySettings.enableTextMarkupResizer) {
                 isEnableResizer = true;
             }
         }
@@ -644,6 +656,10 @@ export class TextMarkupAnnotation {
                         this.renderUnderlineAnnotation(annotBounds, opacity, color, context, factor, pageNumber, isPrint,
                                                        annotationRotation);
                         break;
+                    case 'Squiggly':
+                        this.renderSquigglyAnnotation(annotBounds, opacity, color, context, factor, pageNumber, isPrint,
+                                                      annotationRotation);
+                        break;
                     }
                 }
             }
@@ -842,6 +858,8 @@ export class TextMarkupAnnotation {
             isSelection = true;
         } else if (type === 'Strikethrough' && this.pdfViewer.strikethroughSettings.enableMultiPageAnnotation) {
             isSelection = true;
+        } else if (type === 'Squiggly' && this.pdfViewer.squigglySettings.enableMultiPageAnnotation) {
+            isSelection = true;
         } else if (this.pdfViewer.enableMultiPageAnnotation) {
             isSelection = true;
         }
@@ -879,35 +897,31 @@ export class TextMarkupAnnotation {
         let isEqual: boolean = false;
         for (let i: number = 0; i < newAnnotation.bounds.length; i++) {
             const newAnnotationBounds: any = newAnnotation.bounds[parseInt(i.toString(), 10)];
-            currentTop = newAnnotationBounds.top ? newAnnotationBounds.top : newAnnotationBounds.Top;
+            currentTop = newAnnotationBounds.top ?
+                newAnnotationBounds.top : newAnnotationBounds.Top;
             nextTop = !isNullOrUndefined(newAnnotation.bounds[i + 1]) ? newAnnotation.bounds[i + 1].top ?
                 newAnnotation.bounds[i + 1].top : newAnnotation.bounds[i + 1].Top : 0;
             currentLeft = newAnnotationBounds.left ?
                 newAnnotationBounds.left : newAnnotationBounds.Left;
             nextLeft = !isNullOrUndefined(newAnnotation.bounds[i + 1]) ? newAnnotation.bounds[i + 1].left ?
                 newAnnotation.bounds[i + 1].left : newAnnotation.bounds[i + 1].Left : 0;
-            let rotation180Exists: boolean;
             const pageRotate: number = this.pdfViewerBase.pageSize[newAnnotation.pageNumber].rotation;
-            if (this.pdfViewerBase.clientSideRendering) {
-                currentRotation = !isNullOrUndefined(newAnnotationBounds.rotation) ? newAnnotationBounds.rotation :
-                    pageRotate ? pageRotate : 0;
-                rotation180Exists = (currentRotation === 0) || (currentRotation === 2) || (currentRotation === 180);
-                if (rotation180Exists) {
-                    const currentRight: number = newAnnotationBounds.right ?
-                        newAnnotationBounds.right : newAnnotationBounds.Right;
-                    const nextRight: number = !isNullOrUndefined(newAnnotation.bounds[i + 1]) ?
-                        newAnnotation.bounds[i + 1].right ? newAnnotation.bounds[i + 1].right : newAnnotation.bounds[i + 1].Right : 0;
-                    isEqual = ((nextRight === 0 || Math.abs(currentLeft - nextRight) < 0.5) ||
-                        (nextLeft === 0 || Math.abs(currentRight - nextLeft) < 0.5));
-                }
-                else {
-                    const currentBottom: number = newAnnotationBounds.bottom ? newAnnotationBounds.bottom : newAnnotationBounds.Bottom;
-                    const nextBottom: number = !isNullOrUndefined(newAnnotation.bounds[i + 1]) ? newAnnotation.bounds[i + 1].bottom ?
-                        newAnnotation.bounds[i + 1].bottom : newAnnotation.bounds[i + 1].Bottom : 0;
-                    isEqual = (nextBottom === 0 || (Math.abs(nextBottom - currentTop) < 0.5) || Math.abs(nextTop - currentBottom) < 0.5);
-                }
+            currentRotation = !isNullOrUndefined(newAnnotationBounds.rotation) ? newAnnotationBounds.rotation : pageRotate ? pageRotate : 0;
+            const rotation180Exists: boolean = (currentRotation === 0) || (currentRotation === 2) || (currentRotation === 180);
+            if (rotation180Exists) {
+                const currentRight: number = newAnnotationBounds.right ?
+                    newAnnotationBounds.right : newAnnotationBounds.Right;
+                const nextRight: number = !isNullOrUndefined(newAnnotation.bounds[i + 1]) ?
+                    newAnnotation.bounds[i + 1].right ? newAnnotation.bounds[i + 1].right : newAnnotation.bounds[i + 1].Right : 0;
+                isEqual = ((nextRight === 0 || Math.abs(currentLeft - nextRight) < 0.5) ||
+                    (nextLeft === 0 || Math.abs(currentRight - nextLeft) < 0.5));
             }
-            isEqual = this.pdfViewerBase.clientSideRendering ? isEqual : true;
+            else {
+                const currentBottom: number = newAnnotationBounds.bottom ? newAnnotationBounds.bottom : newAnnotationBounds.Bottom;
+                const nextBottom: number = !isNullOrUndefined(newAnnotation.bounds[i + 1]) ? newAnnotation.bounds[i + 1].bottom ?
+                    newAnnotation.bounds[i + 1].bottom : newAnnotation.bounds[i + 1].Bottom : 0;
+                isEqual = (nextBottom === 0 || (Math.abs(nextBottom - currentTop) < 0.5) || Math.abs(nextTop - currentBottom) < 0.5);
+            }
             if (newAnnotation.bounds.length > 1 && i < newAnnotation.bounds.length - 1 && (currentTop === nextTop ||
                 currentLeft === nextLeft) && isEqual) {
                 newBounds.push(newAnnotationBounds);
@@ -921,9 +935,18 @@ export class TextMarkupAnnotation {
                     y = newBounds.reduce((min: number, rect: any) => (rect.top ? rect.top : rect.Top || 0) < min ?
                         (rect.top ? rect.top : rect.Top || 0) : min, Infinity);
                     if (!this.pdfViewerBase.clientSideRendering || rotation180Exists) {
-                        height = newBounds[0].height ? newBounds[0].height : newBounds[0].Height;
+                        if (!rotation180Exists) {
+                            width = newBounds[0].width ? newBounds[0].width : newBounds[0].Width;
+                        }
+                        else {
+                            height = newBounds[0].height ? newBounds[0].height : newBounds[0].Height;
+                        }
                         for (let j: number = 0; j < newBounds.length; j++) {
-                            if ((!isNaN(newBounds[parseInt(j.toString(), 10)].width) &&
+                            if (!rotation180Exists) {
+                                height += newBounds[parseInt(j.toString(), 10)].height ?
+                                    newBounds[parseInt(j.toString(), 10)].height : newBounds[parseInt(j.toString(), 10)].Height;
+                            }
+                            else if ((!isNaN(newBounds[parseInt(j.toString(), 10)].width) &&
                                 newBounds[parseInt(j.toString(), 10)].width > 0) || (!isNaN(newBounds[parseInt(j.toString(), 10)].Width) &&
                                 newBounds[parseInt(j.toString(), 10)].Width > 0)) {
                                 width += newBounds[parseInt(j.toString(), 10)].width ?
@@ -948,6 +971,7 @@ export class TextMarkupAnnotation {
                     }
                     newBounds = [];
                     width = 0;
+                    height = 0;
                 }
             }
         }
@@ -1208,9 +1232,12 @@ export class TextMarkupAnnotation {
         this.highlightColor = this.highlightColor ? this.highlightColor : this.pdfViewer.highlightSettings.color ? this.pdfViewer.highlightSettings.color : '#FFDF56';
         this.underlineColor = this.underlineColor ? this.underlineColor : this.pdfViewer.underlineSettings.color ? this.pdfViewer.underlineSettings.color : '#00ff00';
         this.strikethroughColor = this.strikethroughColor ? this.strikethroughColor : this.pdfViewer.strikethroughSettings.color ? this.pdfViewer.strikethroughSettings.color : '#ff0000';
+        this.squigglyColor = this.squigglyColor ? this.squigglyColor : (this.pdfViewer.squigglySettings.color ? this.pdfViewer.squigglySettings.color : '#00ff00');
         this.highlightOpacity = this.highlightOpacity ? this.highlightOpacity : this.pdfViewer.highlightSettings.opacity;
         this.underlineOpacity = this.underlineOpacity ? this.underlineOpacity : this.pdfViewer.underlineSettings.opacity;
         this.strikethroughOpacity = this.strikethroughOpacity ? this.strikethroughOpacity : this.pdfViewer.strikethroughSettings.opacity;
+        this.squigglyOpacity = this.squigglyOpacity ? this.squigglyOpacity : (this.pdfViewer.squigglySettings.opacity ?
+            this.pdfViewer.squigglySettings.opacity : 1 );
         this.annotationAddMode = 'UI Drawn Annotation';
         let allowedInteractions: any[];
         const pageDetails: ISize = this.pdfViewerBase.pageSize[parseInt(pageNumber.toString(), 10)];
@@ -1298,6 +1325,32 @@ export class TextMarkupAnnotation {
                 if (annotation) {
                     this.renderUnderlineAnnotation(annotation.bounds, annotation.opacity, annotation.color, context,
                                                    factor, pageNumber, annotation.isPrint, annotation.annotationRotation);
+                }
+                break;
+            case 'Squiggly':
+                this.isNewAnnotation = true;
+                subject = (this.pdfViewer.squigglySettings.subject !== '' && this.pdfViewer.squigglySettings.subject) ? this.pdfViewer.squigglySettings.subject : this.pdfViewer.annotationSettings.subject ? this.pdfViewer.annotationSettings.subject : 'Squiggly';
+                author = (this.pdfViewer.squigglySettings.author !== 'Guest' && this.pdfViewer.squigglySettings.subject) ? this.pdfViewer.squigglySettings.author : this.pdfViewer.annotationSettings.author ? this.pdfViewer.annotationSettings.author : 'Guest';
+                allowedInteractions = this.pdfViewer.squigglySettings.allowedInteractions ? this.pdfViewer.squigglySettings.allowedInteractions : ['None'];
+                if (targetElement && targetElement.style.transform !== '') {
+                    if (targetElement.style.transform.startsWith('rotate(90deg)')) {
+                        annotationRotate = Math.abs(pageRotation - 90);
+                    }
+                    else if (targetElement.style.transform.startsWith('rotate(180deg)')) {
+                        annotationRotate = Math.abs(pageRotation - 180);
+                    }
+                    else if (targetElement.style.transform.startsWith('rotate(-90deg)')) {
+                        annotationRotate = Math.abs(pageRotation - 270);
+                    }
+                    else {
+                        annotationRotate = pageRotation;
+                    }
+                }
+                bounds = this.formatSquigglyBounds(bounds, pageRotation, textContent);
+                annotation = this.getAddedAnnotation(type, this.squigglyColor, this.squigglyOpacity, bounds, author, subject, modifiedDate, '', false, rect, pageNumber, textContent, startIndex, endIndex, isMultiSelect, allowedInteractions, annotationRotate);
+                if (annotation) {
+                    this.renderSquigglyAnnotation(annotation.bounds, annotation.opacity, annotation.color, context,
+                                                  factor, pageNumber, annotation.isPrint, annotation.annotationRotation);
                 }
                 break;
             }
@@ -1534,6 +1587,150 @@ export class TextMarkupAnnotation {
         context.closePath();
         context.msFillRule = 'nonzero';
         context.stroke();
+    }
+
+    private renderSquigglyAnnotation(bounds: any[], opacity: number, color: string, context: CanvasRenderingContext2D,
+                                     factor: number, pageNumber: number, isPrint: boolean, annotationRotation: number): void {
+        for (let i: number = 0; i < bounds.length; i++) {
+            const boundValues: any = this.getProperBounds(bounds[parseInt(i.toString(), 10)]);
+            const factorRatio: number = this.pdfViewerBase.getZoomRatio(factor);
+            if (context.canvas.id === this.pdfViewer.element.id + '_print_annotation_layer_' + pageNumber) {
+                if (isPrint) {
+                    this.drawSquiggly(opacity, boundValues.x, boundValues.y, boundValues.width, boundValues.height, color, factorRatio,
+                                      context, pageNumber, this.pdfViewerBase.clientSideRendering ? bounds[parseInt(i.toString(), 10)]
+                                          .rotation : annotationRotation);
+                }
+            } else {
+                this.drawSquiggly(opacity, boundValues.x, boundValues.y, boundValues.width, boundValues.height, color, factorRatio,
+                                  context, pageNumber, this.pdfViewerBase.clientSideRendering ? bounds[parseInt(i.toString(), 10)].rotation
+                                      : annotationRotation);
+            }
+        }
+    }
+
+    private drawSquiggly(opacity: number, x: number, y: number, width: number, height: number, color: string, factor: number,
+                         context: any, pageNumber: number, annotationRotation?: number): void {
+        context.globalAlpha = opacity;
+        context.strokeStyle = color;
+        context.lineWidth = 0.85 * factor; // Line width
+        context.setLineDash([]);
+        // Define the clipping region
+        context.save(); // Save the current context state
+        const clippingX: number = x * factor;
+        const clippingY: number = y * factor;
+        const clippingWidth: number = width * factor;
+        const clippingHeight: number = height * factor;
+
+        // Set the clipping region
+        context.beginPath();
+        context.rect(clippingX, clippingY, clippingWidth, clippingHeight);
+        context.clip();
+
+        const pageDetails: ISize = this.pdfViewerBase.pageSize[pageNumber as number]; // Get the page rotation details
+        let rotation: number = pageDetails.rotation;
+        if (annotationRotation || (this.pdfViewerBase.clientSideRendering && annotationRotation >= 0)) {
+            const pageRotation: number = this.pdfViewerBase.getAngle(rotation);
+            rotation = this.pdfViewerBase.clientSideRendering ? Math.abs(annotationRotation) / 90 :
+                Math.abs(annotationRotation - pageRotation) / 90;
+        }
+
+        let waveSpace: number = 0;
+        let waveHeight: number = 0;
+
+        if (factor >= 1) {
+            if (rotation === 0 || rotation === 2) {
+                waveSpace = Math.max(3.05, height * 0.15 * factor); // Space between peaks
+                waveHeight = Math.max(3.5, height * 0.17 * factor); // Height of waves
+            } else if (rotation === 1 || rotation === 3) {
+                waveSpace = Math.max(3.05, width * 0.15 * factor); // Space between peaks
+                waveHeight = Math.max(3.5, width * 0.17 * factor); // Height of waves
+            }
+        } else {
+            if (rotation === 0 || rotation === 2) {
+                waveSpace = Math.max(0.35, height * 0.13 * factor); // Space between peaks
+                waveHeight = Math.max(0.5, height * 0.15 * factor); // Height of waves
+            } else if (rotation === 1 || rotation === 3) {
+                waveSpace = Math.max(0.35, width * 0.13 * factor); // Space between peaks
+                waveHeight = Math.max(0.5, width * 0.15 * factor); // Height of waves
+            }
+        }
+        let startX: number;
+        let startY: number;
+        let endX: number;
+        let endY: number;
+
+        context.beginPath();  // Start the squiggly drawing
+        // Adjust start and end points based on rotation
+        if (rotation === 0) { // No rotation
+            startX = x * factor;
+            startY = (y + height) * factor;
+            endX = (x + width) * factor;
+
+            // Draw the squiggly from start to end
+            context.moveTo(startX, startY);
+            while (startX < endX) {
+                // Draw peak
+                context.lineTo(startX + waveSpace, startY - waveHeight);
+                startX += waveSpace;
+
+                // Draw trough
+                context.lineTo(startX + waveSpace, startY);
+                startX += waveSpace;
+            }
+        } else if (rotation === 1) { // Rotate 90 degrees
+            startX = x * factor;
+            startY = y * factor;
+            endY = (y + height) * factor;
+
+            // Draw the squiggly from start to end
+            context.moveTo(startX, startY);
+            while (startY < endY) {
+                // Draw peak
+                context.lineTo(startX + waveHeight, startY + waveSpace);
+                startY += waveSpace;
+
+                // Draw trough
+                context.lineTo(startX, startY + waveSpace);
+                startY += waveSpace;
+            }
+        } else if (rotation === 2) { // Rotate 180 degrees
+            startX = (x + width) * factor;
+            startY = y * factor;
+            endX = x * factor;
+
+            // Draw the squiggly from start to end
+            context.moveTo(startX, startY);
+            while (startX > endX) {
+                // Draw peak
+                context.lineTo(startX - waveSpace, startY + waveHeight);
+                startX -= waveSpace;
+
+                // Draw trough
+                context.lineTo(startX - waveSpace, startY);
+                startX -= waveSpace;
+            }
+        } else if (rotation === 3) { // Rotate 270 degrees
+            startX = (x + width) * factor;
+            startY = (y + height) * factor;
+            endY = y * factor;
+
+            // Draw the squiggly from start to end
+            context.moveTo(startX, startY);
+            while (startY > endY) {
+                // Draw peak
+                context.lineTo(startX - waveHeight, startY - waveSpace);
+                startY -= waveSpace;
+
+                // Draw trough
+                context.lineTo(startX, startY - waveSpace);
+                startY -= waveSpace;
+            }
+        }
+        context.stroke();
+        context.closePath();
+
+        // Restore the original context state to remove the clipping region
+        context.restore();
     }
 
     /**
@@ -3016,6 +3213,8 @@ export class TextMarkupAnnotation {
             selector = this.pdfViewer.underlineSettings.annotationSelectorSettings;
         } else if (type === 'Strikethrough' && this.pdfViewer.strikethroughSettings.annotationSelectorSettings) {
             selector = this.pdfViewer.strikethroughSettings.annotationSelectorSettings;
+        } else if (type === 'Squiggly' && this.pdfViewer.squigglySettings.annotationSelectorSettings) {
+            selector = this.pdfViewer.squigglySettings.annotationSelectorSettings;
         }
         return selector;
     }
@@ -3030,6 +3229,9 @@ export class TextMarkupAnnotation {
         }
         if (type === 'Strikethrough') {
             isPrint = this.pdfViewer.strikethroughSettings.isPrint;
+        }
+        if (type === 'Squiggly') {
+            isPrint = this.pdfViewer.squigglySettings.isPrint;
         }
         if (isNullOrUndefined(isPrint)) {
             isPrint = true;
@@ -3174,6 +3376,11 @@ export class TextMarkupAnnotation {
             this.strikethroughOpacity = this.pdfViewer.strikethroughSettings.opacity ?
                 this.pdfViewer.strikethroughSettings.opacity : this.strikethroughOpacity;
         }
+        if (textMarkUpSettings === 'squigglySettings') {
+            this.squigglyColor = this.pdfViewer.squigglySettings.color ? this.pdfViewer.squigglySettings.color : this.squigglyColor;
+            this.squigglyOpacity = this.pdfViewer.squigglySettings.opacity ?
+                this.pdfViewer.squigglySettings.opacity : this.squigglyOpacity;
+        }
     }
 
     /**
@@ -3181,10 +3388,49 @@ export class TextMarkupAnnotation {
      * @returns {void}
      */
     public clear(): void {
+        if (this.dropDivAnnotationLeft) {
+            this.dropDivAnnotationLeft.addEventListener('mousedown', this.maintainSelection);
+            this.dropDivAnnotationLeft.addEventListener('mousemove', this.annotationLeftMove);
+            this.dropDivAnnotationLeft.addEventListener('mouseup', this.selectionEnd);
+        }
+        if (this.dropDivAnnotationRight) {
+            this.dropDivAnnotationRight.addEventListener('mousedown', this.maintainSelection);
+            this.dropDivAnnotationRight.addEventListener('mousemove', this.annotationRightMove);
+            this.dropDivAnnotationRight.addEventListener('mouseup', this.selectionEnd);
+        }
         this.selectTextMarkupCurrentPage = null;
         this.currentTextMarkupAnnotation = null;
         this.annotationClickPosition = null;
         PdfViewerBase.sessionStorageManager.removeItem(this.pdfViewerBase.documentId + '_annotations_textMarkup');
+        this.isTextMarkupAnnotationMode = null;
+        this.currentTextMarkupAddMode = null;
+        this.highlightColor = null;
+        this.underlineColor = null;
+        this.strikethroughColor = null;
+        this.highlightOpacity = null;
+        this.underlineOpacity = null;
+        this.annotationAddMode = null;
+        this.strikethroughOpacity = null;
+        this.isAddAnnotationProgramatically = null;
+        this.currentAnnotationIndex = null;
+        this.isAnnotationSelect = null;
+        this.dropDivAnnotationLeft = null;
+        this.dropDivAnnotationRight = null;
+        this.dropElementLeft = null;
+        this.dropElementRight = null;
+        this.isDropletClicked = null;
+        this.isRightDropletClicked = null;
+        this.isLeftDropletClicked = null;
+        this.isSelectionMaintained = null;
+        this.isExtended = null;
+        this.isNewAnnotation = null;
+        this.selectedTextMarkup = null;
+        this.multiPageCollection = null;
+        this.triggerAddEvent = null;
+        this.isSelectedAnnotation = null;
+        this.dropletHeight = null;
+        this.strikeoutDifference = null;
+        this.underlineDifference = null;
     }
 
     /**
@@ -3267,6 +3513,18 @@ export class TextMarkupAnnotation {
             textMarkupAnnotationType = 'Strikethrough';
             color = annotationObject.color ? annotationObject.color : '#ff0000';
         }
+        else if (annotationType === 'Squiggly')
+        {
+            //Creating annotation settings
+            annotSelectorSettings = this.pdfViewer.squigglySettings.annotationSelectorSettings;
+            this.pdfViewerBase.updateSelectorSettings(annotSelectorSettings);
+            annotSettings = this.pdfViewer.annotationModule.updateSettings(this.pdfViewer.squigglySettings);
+            annotationObject.author = annotationObject.author ? annotationObject.author : this.pdfViewer.annotationModule.updateAnnotationAuthor('textMarkup', annotationType);
+            annotallowedInteractions = this.pdfViewer.squigglySettings.allowedInteractions ?
+                this.pdfViewer.squigglySettings.allowedInteractions : this.pdfViewer.annotationSettings.allowedInteractions;
+            textMarkupAnnotationType = 'Squiggly';
+            color = annotationObject.color ? annotationObject.color : '#ff0000';
+        }
         annotSettings.isLock = annotationObject.isLock ? annotationObject.isLock : annotSettings.isLock;
         //Creating the offset points
         if (annotationObject.bounds)
@@ -3312,5 +3570,117 @@ export class TextMarkupAnnotation {
         //Adding the annotation object to an array and return it
         textMarkupAnnotation[0] = textmarkup;
         return {textMarkupAnnotation};
+    }
+
+    public formatSquigglyBounds(bounds: any[], rotation: number, textContent: string): any[] {
+        const squigglyBounds: IRectangle[] = [];
+        let gapFactor: number = 0;
+        const calculateGapFactor: (size: number) => number = (size: number): number => {
+            if (size <= 0) {
+                return size;
+            }
+            return (2.1 / Math.abs(size) + 0.035);
+        };
+        //Skipping calculation for arabic
+        const arabicRegex: RegExp = /[\u0600-\u06FF\u0750-\u077F\u08A0-\u08FF\uFB50-\uFDFF\uFE70-\uFEFF]/;
+        if (this.pdfViewerBase.clientSideRendering && arabicRegex.test(textContent)) {
+            return bounds;
+        }
+        //Formatting squiggly bounds for server mode rotations 90, 180 and 270
+        if (!this.pdfViewerBase.clientSideRendering && (rotation === 90 || rotation === 180 || rotation === 270)) {
+            for (let i: number = 0; i < bounds.length; i++) {
+                gapFactor = rotation === 180 ? calculateGapFactor(bounds[i as number].height)
+                    : calculateGapFactor(bounds[i as number].width);
+                if (rotation === 90) {
+                    bounds[i as number].left -= bounds[i as number].width * gapFactor;
+                    bounds[i as number].width += bounds[i as number].width * gapFactor;
+                } else if (rotation === 180) {
+                    bounds[i as number].top  -= bounds[i as number].height * gapFactor;
+                    bounds[i as number].height += bounds[i as number].height * gapFactor;
+                } else if (rotation === 270) {
+                    bounds[i as number].width += bounds[i as number].width * gapFactor;
+                }
+            }
+            return bounds;
+        }
+        //Formatting initial bound values for all standalone rotations
+        gapFactor = (rotation === 0 || rotation === 180) ? calculateGapFactor(bounds[0].height) : calculateGapFactor(bounds[0].width);
+        if (rotation === 0) {
+            bounds[0].height  += bounds[0].height * gapFactor;
+        } else if (rotation === 90) {
+            bounds[0].left -= bounds[0].width * gapFactor;
+            bounds[0].width += bounds[0].width * gapFactor;
+        } else if (rotation === 180) {
+            bounds[0].top  -= bounds[0].height * gapFactor;
+            bounds[0].height += bounds[0].height * gapFactor;
+        } else if (rotation === 270) {
+            bounds[0].width += bounds[0].width * gapFactor;
+        }
+
+        squigglyBounds.push(bounds[0]);
+        for (let i: number = 1; i < bounds.length; i++) {
+            const previousSelectionRect: IRectangle = squigglyBounds[squigglyBounds.length - 1];
+            const currentSelectionRect: IRectangle = bounds[i as number];
+            const minSpace: number = 30;
+            let spacing: number = 0;
+            gapFactor = (rotation === 0 || rotation === 180) ? calculateGapFactor(currentSelectionRect.height)
+                : calculateGapFactor(currentSelectionRect.width);
+            if (!this.pdfViewerBase.clientSideRendering) {
+                previousSelectionRect.rotation = rotation;
+                currentSelectionRect.rotation = rotation;
+            }
+            if ((previousSelectionRect.rotation === 0 || previousSelectionRect.rotation === 180) &&
+                (previousSelectionRect.rotation === currentSelectionRect.rotation)) {
+                if (previousSelectionRect.rotation === 0) {
+                    currentSelectionRect.height += currentSelectionRect.height * gapFactor;
+                    spacing = Math.abs(currentSelectionRect.left - (previousSelectionRect.left + previousSelectionRect.width));
+                    if ((spacing > minSpace) || currentSelectionRect.top !== previousSelectionRect.top) {
+                        squigglyBounds.push(currentSelectionRect);
+                    }
+                    else if ((spacing < minSpace) && previousSelectionRect.top === currentSelectionRect.top) {
+                        previousSelectionRect.width += currentSelectionRect.width;
+                    }
+                }
+                else if (previousSelectionRect.rotation === 180) {
+                    currentSelectionRect.top -= currentSelectionRect.height * gapFactor;
+                    currentSelectionRect.height += currentSelectionRect.height * gapFactor;
+                    if (previousSelectionRect.top === currentSelectionRect.top) {
+                        previousSelectionRect.width += currentSelectionRect.width;
+                        if (previousSelectionRect.left > currentSelectionRect.left) {
+                            previousSelectionRect.left = currentSelectionRect.left;
+                        }
+                    }
+                    else {
+                        squigglyBounds.push(currentSelectionRect);
+                    }
+                }
+            } else if ((previousSelectionRect.rotation === 90 || previousSelectionRect.rotation === 270) &&
+                (previousSelectionRect.rotation === currentSelectionRect.rotation)) {
+                if (previousSelectionRect.rotation === 90) {
+                    currentSelectionRect.left -= currentSelectionRect.width * gapFactor;
+                    currentSelectionRect.width += currentSelectionRect.width * gapFactor;
+                    spacing = Math.abs(currentSelectionRect.top - (previousSelectionRect.top + previousSelectionRect.height));
+                    if ((spacing > minSpace) || (currentSelectionRect.left !== previousSelectionRect.left)) {
+                        squigglyBounds.push(currentSelectionRect);
+                    }
+                    else if ((spacing < minSpace) && (previousSelectionRect.left === currentSelectionRect.left)) {
+                        previousSelectionRect.height += currentSelectionRect.height;
+                    }
+                }
+                else if (previousSelectionRect.rotation === 270) {
+                    currentSelectionRect.width += currentSelectionRect.width * gapFactor;
+                    if (previousSelectionRect.left === currentSelectionRect.left) {
+                        previousSelectionRect.height += currentSelectionRect.height;
+                        if (previousSelectionRect.top > currentSelectionRect.top) {
+                            previousSelectionRect.top = currentSelectionRect.top;
+                        }
+                    }
+                    else {
+                        squigglyBounds.push(currentSelectionRect);
+                    }
+                }
+            }
+        }
+        return squigglyBounds;
     }
 }

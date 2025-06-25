@@ -7345,7 +7345,40 @@ describe('EJ2-948229: Focus Border Not Displayed on Cell After Clicking Header a
         rows[2].cells[2].click();
     });
 
-    
+    afterAll(() => {
+        destroy(gridObj);
+        gridObj = null;
+    });
+});
+
+describe('EJ2-915005: The cell is not highlighted when selecting a row using the method.', () => {
+    let gridObj: Grid;
+    let rows: any;
+    beforeAll((done: Function) => {
+        gridObj = createGrid(
+            {
+                dataSource: data,
+                columns: [
+                    { field: 'OrderID', isPrimaryKey: true, headerText: 'Order ID' },
+                    { field: 'CustomerID', headerText: 'CustomerID', },
+                    { field: 'EmployeeID', headerText: 'Employee ID' },
+                    { field: "ShipCity", headerText: "Ship City", width: 250,},
+                ],
+                height: 700,
+            }, done);
+    });
+    it('click any rowcell', (done: Function) => {
+        rows = gridObj.getRows();
+        let rowSelected = (args: any) => {
+            expect(args.row.cells[0].classList.contains('e-focused')).toBeTruthy();
+            gridObj.rowSelected = null;
+            done();
+        };
+        gridObj.rowSelected = rowSelected;
+        gridObj.selectRow(2);
+        done();
+    });
+
     afterAll(() => {
         destroy(gridObj);
         gridObj = null;
@@ -7399,39 +7432,6 @@ describe('EJ2-955281: Shift + Checkbox Click Does Not Perform Range Selection in
     });
 });
 
-describe('EJ2-915005: The cell is not highlighted when selecting a row using the method.', () => {
-    let gridObj: Grid;
-    let rows: any;
-    beforeAll((done: Function) => {
-        gridObj = createGrid(
-            {
-                dataSource: data,
-                columns: [
-                    { field: 'OrderID', isPrimaryKey: true, headerText: 'Order ID' },
-                    { field: 'CustomerID', headerText: 'CustomerID', },
-                    { field: 'EmployeeID', headerText: 'Employee ID' },
-                    { field: "ShipCity", headerText: "Ship City", width: 250,},
-                ],
-                height: 700,
-            }, done);
-    });
-    it('click any rowcell', (done: Function) => {
-        rows = gridObj.getRows();
-        let rowSelected = (args: any) => {
-            expect(args.row.cells[0].classList.contains('e-focused')).toBeTruthy();
-            gridObj.rowSelected = null;
-            done();
-        };
-        gridObj.rowSelected = rowSelected;
-        gridObj.selectRow(2);
-        done();
-    });
-
-    afterAll(() => {
-        destroy(gridObj);
-        gridObj = null;
-    });
-});
 
 describe('EJ2-960012: Previously selected records gets removed in getSelectedRecords when clicking selectAll after filtering', () => {
     let gridObj: Grid;

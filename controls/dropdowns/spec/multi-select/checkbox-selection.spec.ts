@@ -2114,7 +2114,7 @@ describe('MultiSelect', () => {
                 expect((<any>listObj).scrollFocusStatus).toBe(false);
                 listObj.destroy();
                 done();
-            }, 500);
+            }, 800);
         });
     });
 

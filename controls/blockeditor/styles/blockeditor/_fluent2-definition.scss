@@ -1,0 +1,252 @@
+/* ======== BlockEditor Styles ======== */
+$be-font-family: $font-family !default;
+$be-font-size: 14px !default;
+$be-font-weight: 400 !default;
+$be-line-height: 20px !default;
+$be-font-size-bigger: 16px !default;
+$be-font-weight-bigger: 400 !default;
+$be-line-height-bigger: 22px !default;
+$be-bg-color: $content-bg-color !default;
+$be-color: $content-text-color !default;
+
+/* ======== Drag and Drop Styles ======== */
+$be-drop-indicator-height: 2px !default;
+$be-drop-indicator-before-height: 8px !default;
+$be-drop-indicator-before-width: 8px !default;
+$be-drag-clone-block-padding: 4px 8px !default;
+$be-drag-clone-border-radius: 4px !default;
+$be-drop-indicator-bg-color: $primary !default;
+$be-dragging-clone-bg-color: $primary-light !default;
+
+/* ======== Floating Icons Styles ======== */
+$be-floating-icon-width: 20px !default;
+$be-floating-icon-height: 20px !default;
+$be-floating-icon-line-height: 14px !default;
+$be-floating-icon-font-size: 14px !default;
+$be-floating-icon-font-weight: 400 !default;
+$be-floating-icon-border-radius: 4px !default;
+$be-floating-icon-border-width: 1px !default;
+$be-floating-icon-width-bigger: 24px !default;
+$be-floating-icon-height-bigger: 24px !default;
+$be-floating-icon-line-height-bigger: 16px !default;
+$be-floating-icon-font-size-bigger: 16px !default;
+$be-floating-icon-font-weight-bigger: 400 !default;
+$be-floating-icon-border-color: transparent !default;
+$be-floating-icon-color: $icon-color !default;
+$be-floating-icon-color-hover: $icon-color-pressed !default;
+$be-floating-icon-hover-bg-color: $secondary-bg-color-selected !default;
+
+/* ======== Inline toolbar Styles ======== */
+$be-inline-toolbar-border-radius: 4px !default;
+$be-inline-toolbar-border-width: 1px !default;
+$be-inline-toolbar-popup-bg-color: $content-bg-color-alt1 !default;
+$be-inline-toolbar-popup-border-color: $content-bg-color-alt1 !default;
+$be-inline-toolbar-popup-shadow: $shadow-lg !default;
+$be-inline-toolbar-item-active-bg-color: $secondary-bg-color-pressed !default;
+$be-inline-toolbar-item-active-color: $toolbar-icon-color !default;
+
+/* ======== Block level syles ======== */
+$be-block-placeholder-color: $placeholder-text-color !default;
+
+/* ======== Numbered And Bullet List ======== */
+$be-numberlist-font-weight: 400 !default;
+$be-numberlist-font-size: 14px !default;
+$be-numberlist-font-weight-bigger: 400 !default;
+$be-numberlist-font-size-bigger: 16px !default;
+
+/* ======== Quote and Callout Block ======== */
+$be-blockquote-left-width: 3px !default;
+$be-blockquote-text-padding: 8px !default;
+$be-blockquote-margin: 0 !default;
+$be-blockquote-left-width-bigger: 3px !default;
+$be-blockquote-text-padding-bigger: 8px !default;
+$be-blockquote-border-color: $grey-90 !default;
+$be-callout-border-radius: 4px !default;
+$be-callout-icon-size: 16px !default;
+$be-callout-padding: 12px !default;
+$be-callout-padding-bigger: 16px !default;
+$be-callout-icon-size-bigger: 18px !default;
+$be-callout-bg-color: $content-bg-color-alt2 !default;
+
+/* ======== Toggle Block Styles ======== */
+$be-toggle-icon-size: 12px !default;
+$be-toggle-icon-margin: 8px !default;
+$be-toggle-icon-size-bigger: 14px !default;
+$be-toggle-icon-margin-bigger: 12px !default;
+
+/* ======== Divider Block ======== */
+$be-divider-selected-bg-color: $primary-light !default;
+$be-divider-border-color: $border !default;
+
+/* ======== Link syles ======== */
+$be-link-anchor-color: $primary !default;
+
+/* ======== Inline content syles ======== */
+$be-inline-code-font-size: 12px !default;
+$be-inline-code-font-weight: 400 !default;
+$be-inline-code-line-height: 16px !default;
+$be-inline-code-padding: 2px 4px !default;
+$be-inline-code-border-radius: 2px !default;
+$be-inline-code-font-size-bigger: 14px !default;
+$be-inline-code-line-height-bigger: 20px !default;
+$be-inline-code-padding-bigger: 1px 4px !default;
+$be-inline-code-bg-color: rgba(157, 157, 157, .15) !default;
+$be-inline-code-text-color: rgb(237, 72, 76) !default;
+
+/* ======== Slash Command styles ======== */
+$be-mention-popup-border-width: 1px !default;
+$be-mention-popup-border-radius: 4px !default;
+$be-mention-popup-padding: 4px !default;
+$be-mention-popup-header-padding: 8px !default;
+$be-mention-popup-item-padding-left: 8px !default;
+$be-mention-popup-padding-bigger: 6px !default;
+$be-mention-popup-item-padding-left-bigger: 6px !default;
+$be-mention-popup-header-padding-bigger: 8px !default;
+$be-mention-popup-border-color: $flyout-border !default;
+$be-mention-popup-bg-color: $flyout-bg-color !default;
+$be-mention-popup-shadow: $shadow-lg !default;
+
+/* ======== Context menu syles ======== */
+$be-ctmenu-content-gap: 8px !default;
+$be-ctmenu-icon-font-size: 16px !default;
+$be-ctmenu-icon-line-height: 16px !default;
+$be-ctmenu-text-font-size: 14px !default;
+$be-ctmenu-text-line-height: 20px !default;
+$be-ctmenu-shortcut-font-size: 12px !default;
+$be-ctmenu-shortcut-line-height: 16px !default;
+$be-ctmenu-icon-font-size-bigger: 16px !default;
+$be-ctmenu-icon-line-height-bigger: 16px !default;
+$be-ctmenu-text-font-size-bigger: 16px !default;
+$be-ctmenu-text-line-height-bigger: 22px !default;
+$be-ctmenu-shortcut-font-size-bigger: 14px !default;
+$be-ctmenu-shortcut-line-height-bigger: 20px !default;
+$be-ctmenu-icon-color: $icon-color !default;
+$be-ctmenu-text-color: $content-text-color !default;
+$be-ctmenu-shortcut-color: $content-text-color !default;
+$be-ctmenu-shortcut-color-disabled: $content-text-color-disabled !default;
+
+/* ======== Check Box syles ======== */
+$be-checkbox-width: 16px !default;
+$be-checkbox-height: 16px !default;
+$be-checkmark-font-size: 10px !default;
+$be-checkmark-line-height: 10px !default;
+$be-checkbox-border-radius: 2px !default;
+$be-checkbox-border: 1px !default;
+$be-checkbox-width-bigger: 18px !default;
+$be-checkbox-height-bigger: 18px !default;
+$be-checkmark-font-size-bigger: 12px !default;
+$be-checkmark-line-height-bigger: 12px !default;
+$be-checkbox-border-bigger: 1px !default;
+$be-checklist-marker-border-color: $border-alt !default;
+$be-checklist-marker-checked-bg-color: $primary !default;
+$be-checklist-marker-checked-border-color: $primary !default;
+$be-checklist-marker-checked-color: $primary-text-color !default;
+$be-checked-block-strikethrough-color: $content-text-color !default;
+
+/* ======== User and Label Mention Chip Syles ======== */
+$be-user-mention-chip-height: 30px !default;
+$be-user-mention-avatar-height: 20px !default;
+$be-user-mention-chip-padding: 5px 4px !default;
+$be-user-mention-chip-font-size: 14px !default;
+$be-user-mention-chip-font-weight: 400 !default;
+$be-user-mention-chip-line-height: 20px !default;
+$be-user-mention-chip-border-radius: 2px !default;
+$be-label-mention-chip-height: 30px !default;
+$be-label-mention-chip-padding: 4px !default;
+$be-label-mention-chip-font-size: 14px !default;
+$be-label-mention-chip-line-height: 20px !default;
+$be-label-mention-chip-border-radius: 4px !default;
+$be-user-mention-chip-height-bigger: 32px !default;
+$be-user-mention-avatar-height-bigger: 24px !default;
+$be-user-mention-chip-padding-bigger: 4px !default;
+$be-user-mention-chip-font-size-bigger: 16px !default;
+$be-user-mention-chip-line-height-bigger: 22px !default;
+$be-label-mention-chip-height-bigger: 32px !default;
+$be-label-mention-chip-padding-bigger: 4px !default;
+$be-label-mention-chip-font-size-bigger: 16px !default;
+$be-label-mention-chip-line-height-bigger: 22px !default;
+
+/* ======== User and Label Mention Syles ======== */
+$be-user-mention-item-padding: 6px !default;
+$be-label-mention-item-padding: 6px 8px !default;
+$be-mention-avatar-width: 30px !default;
+$be-mention-avatar-height: 30px !default;
+$be-label-avatar-width: 20px !default;
+$be-label-avatar-height: 20px !default;
+$be-user-mention-item-padding-bigger: 8px 6px !default;
+$be-label-mention-item-padding-bigger: 10px !default;
+$be-mention-avatar-width-bigger: 34px !default;
+$be-mention-avatar-height-bigger: 34px !default;
+$be-label-avatar-width-bigger: 20px !default;
+$be-label-avatar-height-bigger: 20px !default;
+$be-mention-menu-avatar-text-color: $primary-text-color !default;
+
+/* ======== Code Block Styles ======== */
+$be-code-block-border-radius: 4px !default;
+$be-code-block-container-border-width: 1px !default;
+$be-code-block-toolbar-padding: 12px !default;
+$be-code-block-lang-padding: 6px 10px !default;
+$be-code-block-lang-border-radius: 4px !default;
+$be-code-block-lang-border-width: 1px !default;
+$be-code-copy-btn-padding: 9px !default;
+$be-code-copy-btn-border-radius: 4px !default;
+$be-code-toolbar-height: 32px !default;
+$be-code-lang-height: 32px !default;
+$be-code-copy-btn-height: 32px !default;
+$be-code-copy-btn-font-size: 14px !default;
+$be-code-block-toolbar-padding-bigger: 12px !default;
+$be-code-block-lang-padding-bigger: 9px 12px !default;
+$be-code-copy-btn-padding-bigger: 12px !default;
+$be-code-toolbar-height-bigger: 40px !default;
+$be-code-lang-height-bigger: 40px !default;
+$be-code-copy-btn-height-bigger: 40px !default;
+$be-code-copy-btn-font-size-bigger: 16px !default;
+$be-code-copy-btn-bg-color: $content-bg-color-alt1 !default;
+$be-code-copy-btn-color: $icon-color !default;
+$be-code-copy-btn-bg-color-hover: $secondary-bg-color-selected !default;
+$be-code-copy-btn-color-hover: $icon-color-pressed !default;
+$be-code-block-lang-border-color: $border !default;
+$be-code-block-lang-bg-color: $content-bg-color-alt1 !default;
+$be-code-block-container-border-color: $border !default;
+$be-code-block-container-bg-color: $content-bg-color-alt1 !default;
+
+/* ======== Table syles ======== */
+$be-table-heading-height: 32px !default;
+$be-table-heading-padding: 6px !default;
+$be-table-heading-font-weight: 500 !default;
+$be-table-heading-font-size: 14px !default;
+$be-table-heading-line-height: 20px !default;
+$be-table-col-height: 44px !default;
+$be-table-col-padding: 12px !default;
+$be-table-col-font-weight: 400 !default;
+$be-table-col-font-size: 14px !default;
+$be-table-col-line-height: 20px !default;
+$be-table-heading-height-bigger: 32px !default;
+$be-table-heading-padding-bigger: 6px !default;
+$be-table-heading-font-size-bigger: 14px !default;
+$be-table-heading-line-height-bigger: 20px !default;
+$be-table-col-height-bigger: 44px !default;
+$be-table-col-padding-bigger: 12px !default;
+$be-table-col-font-size-bigger: 14px !default;
+$be-table-col-line-height-bigger: 20px !default;
+$be-table-border-color: $border-light !default;
+$be-table-header-row-bg-color: $content-bg-color-alt2 !default;
+$be-table-header-color: $content-text-color !default;
+$be-table-body-row-bg-color: $content-bg-color !default;
+$be-table-body-color: $content-text-color !default;
+$be-table-cell-focus-color: $primary !default;
+$be-table-cell-focus-shadow: unset !default;
+$be-table-add-indicator-bg-color: $primary !default;
+$be-table-add-indicator-color: $primary-text-color !default;
+$be-table-hover-line-bg-color: $primary !default;
+$be-table-row-hover-bg-color: $table-bg-color-hover !default;
+$be-table-row-hover-color: $table-text-color-hover !default;
+$be-table-row-focus-bg-color: $table-bg-color-selected !default;
+$be-table-row-focus-color: $table-text-color-selected !default;
+
+/* ======== scrollbar syles ======== */
+$be-scrollbar-width: 6px !default;
+$be-scrollbar-color: $content-text-color-alt3 !default;
+
+/* ======== Selection syles ======== */
+$be-text-selection-bg-color: $primary-light !default;

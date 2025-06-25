@@ -172,9 +172,14 @@ export class RibbonFileMenu {
         if (event) {
             const eventArgs: FileMenuEventArgs = { element: args.element, item: args.item, event: args.event };
             event.call(this, eventArgs);
-            if (!args.element.classList.contains('e-menu-caret-icon')) {
-                this.fileMenuDDB.toggle();
-            }
+        }
+        const menuOpen: boolean = !!args.element.closest('.e-ribbon-menu.e-popup-open');
+        const fileTriggerOpen: boolean = !!args.element.closest('.e-ribbon-file-menu.e-popup-open');
+        const fileMenuOpen: boolean = !!document.querySelector('.e-ribbon-file-menu.e-popup-open');
+        // True if the file trigger was clicked open, or if the ribbon menu is open and the file menu popup is actually present
+        const isMenuOpen: boolean = fileTriggerOpen || (menuOpen && fileMenuOpen);
+        if (!args.element.classList.contains('e-menu-caret-icon') && isMenuOpen) {
+            this.fileMenuDDB.toggle();
         }
     }
 

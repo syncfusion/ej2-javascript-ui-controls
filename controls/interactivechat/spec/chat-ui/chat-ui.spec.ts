@@ -1,7 +1,12 @@
 import { createElement, L10n } from "@syncfusion/ej2-base";
-import { ChatUI,MessageModel, UserModel } from "../../src/chat-ui/index";
+import { ChatUI,MessageModel, MessageReplyModel, UserModel } from "../../src/chat-ui/index";
 import { ToolbarItemClickedEventArgs } from '../../src/interactive-chat-base/index';
 import { InterActiveChatBase } from '../../src/interactive-chat-base/index';
+
+interface ClipboardItem {
+    new (items: { [mimeType: string]: Blob }): ClipboardItem;
+}
+declare let ClipboardItem: any;
 
 describe('ChatUI Component', () => {
     let chatUI: ChatUI;
@@ -17,6 +22,101 @@ describe('ChatUI Component', () => {
         stopImmediatePropagation: (): void => { /** NO Code */ }
     };
     const messages: MessageModel[] = [
+        {
+            id: 'msg1',
+            text: 'Hi!',
+            author: {
+                user: 'John Doe',
+                id: 'user1',
+                statusIconCss: 'e-icons e-user-online'
+            },
+            timeStamp: new Date('October 13, 2024 11:13:00'),
+            status: {
+                iconCss: 'e-icons e-check',
+                tooltip: 'sent',
+                text: 'Seen'
+            }
+        },
+        {
+            id: 'msg2',
+            author: {
+                user: 'John Doe',
+                id: 'user1',
+                statusIconCss: 'e-icons e-user-online'
+            },
+            text: 'How are you?',
+            timeStamp: new Date("October 13, 2024 11:14:00"),
+            status: {
+                iconCss: 'e-icons e-check',
+                tooltip: 'sent',
+                text: 'Seen'
+            },
+        },
+        {
+            id: 'msg3',
+            text: 'Hello!',
+            author: {
+                user: 'Jane Smith',
+                id: 'user2',
+                avatarUrl: 'https://ej2.syncfusion.com/demos/src/avatar/images/pic03.png',
+                avatarBgColor: '#ccc',
+                cssClass: 'customuserAvatar',
+                statusIconCss: 'e-icons e-user-online'
+            },
+            timeStamp: new Date('October 14, 2024 11:14:00'),
+            timeStampFormat: 'hh:mm a'
+        },
+        {
+            id: 'msg4',
+            text: 'I am good, thanks! How about you?',
+            author: {
+                user: 'Jane Smith',
+                id: 'user2',
+                avatarUrl: 'https://ej2.syncfusion.com/demos/src/avatar/images/pic03.png',
+                avatarBgColor: '#ccc',
+                cssClass: 'customuserAvatar',
+                statusIconCss: 'e-icons e-user-online'
+            },
+            timeStamp: new Date('October 14, 2024 11:14:00'),
+            timeStampFormat: 'hh:mm a',
+            status: {
+                iconCss: 'e-icons e-check',
+                tooltip: 'sent',
+                text: 'Seen'
+            }
+        },
+        {
+            id: 'msg5',
+            author: {
+                user: 'John Doe',
+                id: 'user1',
+                statusIconCss: 'e-icons e-user-online'
+            },
+            text: 'I am doing well too, thank you!',
+            timeStamp: new Date("October 15, 2024 11:15:00"),
+            status: {
+                iconCss: 'e-icons e-check',
+                tooltip: 'sent',
+                text: 'Seen'
+            },
+        },
+        {
+            id: 'msg6',
+            author: {
+                user: 'John Doe',
+                id: 'user1',
+                statusIconCss: 'e-icons e-user-online'
+            },
+            text: 'What have you been up to lately?',
+            timeStamp: new Date("October 15, 2024 11:15:00"),
+            status: {
+                iconCss: 'e-icons e-check',
+                tooltip: 'sent',
+                text: 'Seen'
+            }
+        }
+    ];
+    const usersMessage: MessageModel[] = [
         {
             id: 'msg1',
             text: 'Hi!',
@@ -57,52 +157,6 @@ describe('ChatUI Component', () => {
             },
             timeStamp: new Date('October 14, 2024 11:14:00'),
             timeStampFormat: 'hh:mm a'
-        },
-        {
-            id: 'msg4',
-            text: 'I am good, thanks! How about you?',
-            author: {
-                user: 'Jane Smith',
-                id: 'user2',
-                avatarUrl: 'https://ej2.syncfusion.com/demos/src/avatar/images/pic03.png',
-                avatarBgColor: '#ccc',
-                cssClass: 'customuserAvatar'
-            },
-            timeStamp: new Date('October 14, 2024 11:14:00'),
-            timeStampFormat: 'hh:mm a',
-            status: {
-                iconCss: 'e-icons e-check',
-                tooltip: 'sent',
-                text: 'Seen'
-            }
-        },
-        {
-            id: 'msg5',
-            author: {
-                user: 'John Doe',
-                id: 'user1'
-            },
-            text: 'I am doing well too, thank you!',
-            timeStamp: new Date("October 15, 2024 11:15:00"),
-            status: {
-                iconCss: 'e-icons e-check',
-                tooltip: 'sent',
-                text: 'Seen'
-            },
-        },
-        {
-            id: 'msg6',
-            author: {
-                user: 'John Doe',
-                id: 'user1'
-            },
-            text: 'What have you been up to lately?',
-            timeStamp: new Date("October 15, 2024 11:15:00"),
-            status: {
-                iconCss: 'e-icons e-check',
-                tooltip: 'sent',
-                text: 'Seen'
-            }
         }
     ];
     describe('DOM', () => {
@@ -122,9 +176,9 @@ describe('ChatUI Component', () => {
             expect(messageWrapper).not.toBeNull();
             const footerElem: HTMLElement = chatUIElem.querySelector('.e-footer');
             expect(footerElem).not.toBeNull();
-            const textareaElem: HTMLTextAreaElement = footerElem.querySelector('textarea');
+            const textareaElem: HTMLDivElement = footerElem.querySelector('.e-chat-textarea');
             expect(textareaElem).not.toBeNull();
-            expect(textareaElem.placeholder).toBe('Type your message…');
+            expect(textareaElem.getAttribute('placeholder')).toEqual('Type your message…');
             const sendIcon: HTMLElement = footerElem.querySelector('.e-chat-send');
             expect(sendIcon).not.toBeNull();
             expect(sendIcon.classList.contains('disabled')).toBe(true);
@@ -229,13 +283,13 @@ describe('ChatUI Component', () => {
             });
             chatUI.appendTo('#chatUI');
             expect(chatUIElem.classList.contains('e-chat-ui')).toBe(true);
-            let textareaElem: HTMLTextAreaElement = chatUIElem.querySelector('.e-footer textarea');
-            expect(textareaElem.placeholder).toBe('Enter your message here');
+            let textareaElem: HTMLDivElement = chatUIElem.querySelector('.e-footer .e-chat-textarea');
+            expect(textareaElem.getAttribute('placeholder')).toEqual('Enter your message here');
             chatUI.placeholder = 'Type your message here';
             chatUI.dataBind();
             setTimeout(() => {
-                textareaElem = chatUIElem.querySelector('.e-footer textarea');
-                expect(textareaElem.placeholder).toEqual('Type your message here');
+                textareaElem = chatUIElem.querySelector('.e-footer .e-chat-textarea');
+                expect(textareaElem.getAttribute('placeholder')).toEqual('Type your message here');
                 done();
             }, 0, done);
         });
@@ -463,6 +517,57 @@ describe('ChatUI Component', () => {
             expect(thirtGroupMessageItems[0].querySelector('.e-text').textContent).toBe('I am doing well too, thank you!');
         });
 
+        it('status icon handling', () => {
+            chatUI = new ChatUI({
+                user: {
+                    id: 'user1',
+                    user: 'John Doe',
+                    avatarUrl: 'https://ej2.syncfusion.com/demos/src/avatar/images/pic01.png',
+                    avatarBgColor: '#ff0000',
+                    cssClass: 'custom-user-class',
+                    statusIconCss: 'e-icons e-user-online'
+                },
+                messages: messages,
+                height: '500px',
+                width: '500px',
+                headerIconCss: 'e-user'
+            });
+            chatUI.appendTo('#chatUI');
+            const headerIconElement: HTMLElement = chatUIElem.querySelector('.e-header-icon');
+            const messageIconElement: HTMLElement = chatUIElem.querySelector('.e-message-icon');
+            const headerStatusElement = headerIconElement.querySelector('.e-user-status-icon');
+            const messageStatusElement = messageIconElement.querySelector('.e-user-status-icon');
+
+            expect(headerStatusElement).not.toBeNull();
+            expect(headerStatusElement.classList.contains('e-user-online')).toBe(true);
+            expect(messageStatusElement).not.toBeNull();
+            expect(messageStatusElement.classList.contains('e-user-online')).toBe(true);
+        });
+
+        it('status icon', () => {
+            chatUI = new ChatUI({
+                user: {
+                    id: 'user1',
+                    user: 'John Doe',
+                    avatarUrl: 'https://ej2.syncfusion.com/demos/src/avatar/images/pic01.png',
+                    avatarBgColor: '#ff0000',
+                    cssClass: 'custom-user-class'
+                },
+                messages: usersMessage,
+                height: '500px',
+                width: '500px',
+                headerIconCss: 'e-user'
+            });
+            chatUI.appendTo('#chatUI');
+            const headerIconElement: HTMLElement = chatUIElem.querySelector('.e-header-icon');
+            const messageIconElement: HTMLElement = chatUIElem.querySelector('.e-message-icon');
+            const headerStatusElement = headerIconElement.querySelector('.e-user-status-icon');
+            const messageStatusElement = messageIconElement.querySelector('.e-user-status-icon');
+
+            expect(headerStatusElement).toBeNull();
+            expect(messageStatusElement).toBeNull();
+        });
+
         it('Locale checking', () => {
             L10n.load({
                 'de': {
@@ -563,6 +668,18 @@ describe('ChatUI Component', () => {
             expect(userIcon.length).toBe(3);
             let userText: HTMLSpanElement = typingInicator.querySelector('.e-user-text');
             expect(userText.textContent).toBe('Reena, John, and 2 others are typing');
+        });
+
+        it('Checking the status icon in typing user', () => {
+            chatUI = new ChatUI({
+                typingUsers: [
+                    {user: 'Reena'}
+                ]
+            });
+            chatUI.appendTo('#chatUI');
+            let typingInicator: HTMLDivElement = chatUIElem.querySelector('.e-typing-indicator');
+            let statusIcon: HTMLSpanElement = typingInicator.querySelector('.e-user-status-icon');
+            expect (statusIcon).toBeNull();
         });
 
         it('Three users Typing check', () => {
@@ -970,18 +1087,18 @@ describe('ChatUI Component', () => {
             chatUI.appendTo('#chatUI');
             const initialBannerView = chatUIElem.querySelector('.e-empty-chat-template');
             expect(initialBannerView).not.toBeNull();
-            const textareaElem: HTMLTextAreaElement = chatUIElem.querySelector('.e-footer textarea');
+            const footerElem: HTMLDivElement = chatUIElem.querySelector('.e-footer');
+            const textareaElem: HTMLDivElement = chatUIElem.querySelector('.e-footer .e-chat-textarea');
             const sendIcon: HTMLElement = chatUIElem.querySelector('.e-chat-send');
             expect(textareaElem).not.toBeNull();
             expect(sendIcon).not.toBeNull();
             expect(sendIcon.classList.contains('disabled')).toBe(true);
-            (textareaElem as any).ej2_instances[0].value = 'Hello!';
-            (textareaElem as any).ej2_instances[0].dataBind();
-            const keyEvent: KeyboardEvent = document.createEvent('KeyboardEvent');
-            (textareaElem as any).ej2_instances[0].inputHandler(keyEvent);
-            keyEventArgs.key = 'Enter';
-            (chatUI as any).keyHandler(keyEventArgs, 'footer');
+            textareaElem.innerText = 'Hello!';
+            const inputEvent: Event = new Event('input', { bubbles: true });
+            textareaElem.dispatchEvent(inputEvent);
             setTimeout(() => {
+                    const keyEvent: KeyboardEvent = new KeyboardEvent('keydown', { key: 'Enter' });
+                    footerElem.dispatchEvent(keyEvent);
                     expect(sendIcon.classList.contains('disabled')).toEqual(true);
                     const messageItems: NodeListOf<HTMLElement> = chatUIElem.querySelectorAll('.e-message-item');
                     const lastMessage: HTMLElement = messageItems[messageItems.length - 1];
@@ -989,9 +1106,9 @@ describe('ChatUI Component', () => {
                     expect(lastMessage.querySelector('.e-text').textContent).toBe('Hello!');
                     const messageGroup: HTMLElement = lastMessage.closest('.e-message-group') as HTMLElement;
                     expect(messageGroup.classList.contains('e-right')).toBe(true);
-                    expect(textareaElem.value).toBe('');
+                    expect(textareaElem.innerText).toBe('');
                     done();
-            }, 100);
+            }, 450, done);
         });
         it('scroll to bottom click handling', (done: DoneFn) => {
             chatUI = new ChatUI({
@@ -1054,17 +1171,16 @@ describe('ChatUI Component', () => {
                 messages: []
             });
             chatUI.appendTo('#chatUI');
-            const textareaElem: HTMLTextAreaElement = chatUIElem.querySelector('.e-footer textarea');
+            const textareaElem: HTMLDivElement = chatUIElem.querySelector('.e-footer .e-chat-textarea');
             expect(textareaElem).not.toBeNull();
-            (textareaElem as any).ej2_instances[0].value = 'Hello!';
-            (textareaElem as any).ej2_instances[0].dataBind();
+            (textareaElem as any).innerText = 'Hello!';
             const blurEvent = new Event('blur', {
                 bubbles: true,
                 cancelable: true
             });
             textareaElem.dispatchEvent(blurEvent);
             expect(textareaElem as any).not.toBeNull();
-            expect(textareaElem.value).toBe('Hello!');
+            expect(textareaElem.innerText).toBe('Hello!');
         });
         it('Toolbar item click', () => {
             let isCancellableEvent: boolean = false;
@@ -1131,15 +1247,15 @@ describe('ChatUI Component', () => {
                 user: { id: 'user1', user: 'John Doe' }
             });
             chatUI.appendTo('#chatUI');
-            const textareaElem: HTMLTextAreaElement = chatUIElem.querySelector('.e-footer textarea');
-            (textareaElem as any).ej2_instances[0].value = 'Hello!';
-            (textareaElem as any).ej2_instances[0].dataBind();
+            const footerEle: HTMLDivElement = chatUIElem.querySelector('.e-footer');
+            const textareaElem: HTMLDivElement = chatUIElem.querySelector('.e-footer .e-chat-textarea');
+            (textareaElem as any).innerText = 'Hello!';
             const keyEvent = new KeyboardEvent('keydown', {
                 key: 'Enter',
                 shiftKey: false,
                 bubbles: true
             });
-            textareaElem.dispatchEvent(keyEvent);
+            footerEle.dispatchEvent(keyEvent);
             setTimeout(() => {
                 const messageItem: NodeListOf<HTMLElement> = chatUIElem.querySelectorAll('.e-message-item');
                 expect(messageItem[0].querySelector('.e-text').textContent).toBe('Hello!');
@@ -1159,6 +1275,198 @@ describe('ChatUI Component', () => {
             const toolbarItems = chatUIElem.querySelectorAll('.e-chat-toolbar .e-toolbar-item');
             expect(toolbarItems.length).toBe(1);
             expect(toolbarItems[0].querySelector('.e-icons').classList.contains('e-home')).toBe(true);
+        });
+
+        it('Compact mode checking', () => {
+
+            const testMessages: MessageModel[] = [
+                {
+                    id: 'msg1',
+                    text: 'Hello, how are you?',
+                    author: {
+                        id: 'user1',
+                        user: 'John Doe'
+                    },
+                    timeStamp: new Date('October 13, 2024 11:13:00')
+                },
+                {
+                    id: 'msg2',
+                    text: 'I\'m fine, thanks!',
+                    author: {
+                        id: 'user2',
+                        user: 'Jane Smith'
+                    },
+                    timeStamp: new Date('October 13, 2024 11:14:00'),
+                    timeStampFormat: 'hh:mm a'
+                }]
+
+            chatUI = new ChatUI({
+                messages: testMessages,
+                height: '300px',
+                enableCompactMode: true,
+                showTimeBreak: true
+            });
+            chatUI.appendTo('#chatUI');
+            
+            expect(chatUIElem.classList.contains('e-compact-mode')).toBe(true);
+            const messageGroups: NodeListOf<HTMLElement> = chatUIElem.querySelectorAll('.e-message-group');
+            expect(messageGroups.length).toBeGreaterThan(0);
+            expect(messageGroups[0].classList.contains('e-left')).toBe(true);
+            expect(messageGroups[1].classList.contains('e-left')).toBe(true);
+        });
+
+        it('Compact mode class dynamic check', () => {
+            const newProp: any = {
+                enableCompactMode : true
+            }
+            chatUI = new ChatUI({
+            });
+            chatUI.appendTo('#chatUI');
+            expect(chatUIElem.classList.contains('e-compact-mode')).toEqual(false);
+            chatUI.setProperties(newProp);
+            expect(chatUIElem.classList.contains('e-compact-mode')).toEqual(true);
+        });
+
+        it('Compact mode dynamic checking', () => {
+
+            const testMessages: MessageModel[] = [
+                {
+                    id: 'msg1',
+                    text: 'Hello, how are you?',
+                    author: {
+                        id: 'user1',
+                        user: 'John Doe'
+                    },
+                    timeStamp: new Date('October 13, 2024 11:13:00')
+                },
+                {
+                    id: 'msg2',
+                    text: 'I\'m fine, thanks!',
+                    author: {
+                        id: 'user2',
+                        user: 'Jane Smith'
+                    },
+                    timeStamp: new Date('October 13, 2024 11:14:00'),
+                    timeStampFormat: 'hh:mm a'
+                }]
+
+            chatUI = new ChatUI({
+                messages: testMessages,
+                height: '300px',
+                showTimeBreak: true
+            });
+            chatUI.appendTo('#chatUI');
+            chatUI.enableCompactMode = true;
+            chatUI.dataBind();
+            
+            const messageGroups: NodeListOf<HTMLElement> = chatUIElem.querySelectorAll('.e-message-group');
+            expect(messageGroups.length).toBeGreaterThan(0);
+            expect(messageGroups[0].classList.contains('e-left')).toBe(true);
+            expect(messageGroups[1].classList.contains('e-left')).toBe(true);
+        });
+        it('Hidden textarea value checking', (done: DoneFn) => {
+            chatUI = new ChatUI({});
+            chatUI.appendTo('#chatUI');
+            const textareaElem: HTMLDivElement = chatUIElem.querySelector('.e-footer .e-chat-textarea');
+            textareaElem.innerText = 'Hello!';
+            const inputEvent: Event = new Event('input', { bubbles: true });
+            textareaElem.dispatchEvent(inputEvent);
+            setTimeout(() => {
+                const hiddenTextarea: HTMLTextAreaElement = chatUI.element.querySelector('.e-hidden-textarea') as HTMLTextAreaElement;
+                expect(hiddenTextarea).not.toBeNull();
+                expect(hiddenTextarea.value).toEqual('Hello!');
+                done();
+            }, 450, done);
+        });
+        it('should handle pasting content', (done: DoneFn) => {
+            chatUI = new ChatUI({});
+            chatUI.appendTo('#chatUI');
+            
+            const textareaEle: HTMLDivElement = chatUIElem.querySelector('.e-footer .e-chat-textarea');
+            expect(textareaEle).not.toBeNull();
+            // Focus the textarea for selection to be in the correct place
+            textareaEle.focus();
+            // Simulate placing the cursor within the textarea
+            const range: Range = document.createRange();
+            range.selectNodeContents(textareaEle);
+            range.collapse(false); // Set the cursor at the end of the content
+            const selection = window.getSelection();
+            selection.removeAllRanges();
+            selection.addRange(range);
+            const clipboardItem = new DataTransfer();
+            clipboardItem.setData('text/plain', 'Pasted content');
+            const pasteEvent = new ClipboardEvent('paste', {
+                bubbles: true,
+                cancelable: true
+            });
+            Object.defineProperty(pasteEvent, 'clipboardData', {
+                value: clipboardItem
+            });
+        
+            textareaEle.dispatchEvent(pasteEvent);
+            
+            setTimeout(() => {
+                expect(textareaEle.innerText).toBe('Pasted content');
+                done();
+            }, 450, done);
+        });
+        
+        it('should handle undo action', (done: DoneFn) => {
+            chatUI = new ChatUI({});
+            chatUI.appendTo('#chatUI');
+            
+            const textareaEle: HTMLDivElement = chatUIElem.querySelector('.e-footer .e-chat-textarea');
+            expect(textareaEle).not.toBeNull();
+            // check for undo action with no previous values in the stack
+            const undoKeyEvent: KeyboardEvent = new KeyboardEvent('keydown', { key: 'z', ctrlKey: true });
+            (chatUI as any).footer.dispatchEvent(undoKeyEvent);
+            textareaEle.innerText = 'Initial content';
+            const inputEvent: Event = new Event('input', { bubbles: true });
+            textareaEle.dispatchEvent(inputEvent);
+    
+            setTimeout(() => {
+                textareaEle.innerText = 'Changed content';
+                textareaEle.dispatchEvent(new Event('input', { bubbles: true }));
+                setTimeout(() => {
+                    const undoEvent: KeyboardEvent = new KeyboardEvent('keydown', { key: 'z', ctrlKey: true });
+                    (chatUI as any).footer.dispatchEvent(undoEvent);
+                    setTimeout(() => {
+                        expect(textareaEle.innerText).toBe('Initial content');
+                        done();
+                    }, 0);
+                }, 400);
+            }, 400);
+        });
+        
+        it('should handle redo action', (done: DoneFn) => {
+            chatUI = new ChatUI({});
+            chatUI.appendTo('#chatUI');
+        
+            const textareaEle: HTMLDivElement = chatUIElem.querySelector('.e-footer .e-chat-textarea');
+            expect(textareaEle).not.toBeNull();
+            // check for redo action with no previous values in the stack
+            const redoKeyEvent: KeyboardEvent = new KeyboardEvent('keydown', { key: 'y', ctrlKey: true });
+            (chatUI as any).footer.dispatchEvent(redoKeyEvent);
+            textareaEle.innerText = 'Initial content';
+            const inputEvent: Event = new Event('input', { bubbles: true });
+            textareaEle.dispatchEvent(inputEvent);
+    
+            setTimeout(() => {
+                textareaEle.innerText = 'Changed content';
+                textareaEle.dispatchEvent(new Event('input', { bubbles: true }));
+                setTimeout(() => {
+                    const undoKeyEvent: KeyboardEvent = new KeyboardEvent('keydown', { key: 'z', ctrlKey: true });
+                    (chatUI as any).footer.dispatchEvent(undoKeyEvent);
+        
+                    const redoEvent: KeyboardEvent = new KeyboardEvent('keydown', { key: 'y', ctrlKey: true });
+                    (chatUI as any).footer.dispatchEvent(redoEvent);
+        
+                    setTimeout(() => {
+                        expect(textareaEle.innerText).toBe('Changed content');
+                        done();
+                    }, 0);
+                }, 400);
+            }, 400);
         });
     });
 
@@ -1247,6 +1555,46 @@ describe('ChatUI Component', () => {
             expect(messageElem).not.toBeNull();
             expect(messageElem.querySelector('.author').textContent).toEqual('John');
             expect(messageElem.textContent).toContain('Hello');
+            document.body.removeChild(sTag);
+        });
+
+        it('Message template suggestions initial checking', () => {
+            const sTag: HTMLElement = createElement('script', { id: 'messageTemplate', attrs: { type: 'text/x-template' } });
+            sTag.innerHTML = '<div class="message-item"><span class="author">${message.author.user}</span>: ${message.text}</div>';
+            document.body.appendChild(sTag);
+            var suggestions = ['track', 'cancel'];
+            chatUI = new ChatUI({
+                messageTemplate: function(context: any) {
+                    {
+                        let isAdmin = context.message.author.id === 'admin';
+                        let userImage = !isAdmin ? `<img class="message-user" src="${context.message.author.avatarUrl}" alt="${context.message.author.user}">` : '';
+                        let suggestions = context.message.suggestions && context.message.suggestions.length > 0 && !isAdmin ?
+                            `<div class="message-suggestions">${context.message.suggestions.map((suggestion: any) => `<button class="suggestion-button e-btn e-primary e-outline">${suggestion}</button>`).join('')}</div>` : '';
+                        return `<div class="message-wrapper">
+                                <div class="message-template">
+                                    ${userImage}
+                                    <div class="message-items e-card">
+                                        <div class="message-text">${context.message.text}</div>
+                                    </div>
+                                </div>
+                                <div class="suggestion-container">
+                                    ${suggestions}
+                                </div>
+                            </div>`;
+                    }
+                },
+                messages: [{
+                    id: 'msg1',
+                    text: 'Hello',
+                    author: { id: 'user1', user: 'John' },
+                    timeStamp: new Date(),
+                    suggestions: suggestions
+                }] as any
+            });
+            chatUI.appendTo('#chatUI');
+            const messageElem: HTMLElement = chatUIElem.querySelector('.message-wrapper');
+            expect(messageElem).not.toBeNull();
+            expect(messageElem.querySelectorAll('.suggestion-button').length).toBe(2);
             document.body.removeChild(sTag);
         });
     
@@ -1368,13 +1716,18 @@ describe('ChatUI Component', () => {
             }, 100);
         });
 
-        it('Focus Method check', () => {
+        it('Focus Method check', (done: DoneFn) => {
             chatUI = new ChatUI({});
             chatUI.appendTo('#chatUI');
-            const textareaElem: HTMLTextAreaElement = chatUIElem.querySelector('.e-footer textarea');
+            const textareaElem: HTMLDivElement = chatUIElem.querySelector('.e-footer .e-chat-textarea');
+            const footerElem: HTMLDivElement = chatUIElem.querySelector('.e-footer');
             expect(textareaElem).not.toBeNull();
             chatUI.focus();
-            expect(document.activeElement).toBe(textareaElem);
+            setTimeout(() => {
+                expect(document.activeElement).toBe(textareaElem);
+                expect(footerElem.classList.contains('focused')).toBe(true);
+                done();
+            }, 100, done);
         });
 
         it('addMessage method checking with string parameter', () => {
@@ -1526,6 +1879,752 @@ describe('ChatUI Component', () => {
             chatUI = new ChatUI({});
             chatUI.appendTo('#chatUI');
             expect(chatUI.getModuleName()).toBe('chat-ui');
+        });
+    });
+
+    describe('Messaging Options', () => {
+
+        const chatMessages: MessageModel[] = [
+            {
+                id: 'msg1',
+                text: 'Hi!',
+                author: { user: 'John Doe', id: 'user1', statusIconCss: 'e-icons e-user-online' },
+                timeStamp: new Date('October 13, 2024 11:13:00'),
+                status: { iconCss: 'e-icons e-check', tooltip: 'sent', text: 'Seen' }
+            },
+            {
+                id: 'msg2',
+                text: 'How are you?',
+                author: { user: 'John Doe', id: 'user1', statusIconCss: 'e-icons e-user-online' },
+                timeStamp: new Date('October 13, 2024 11:14:00'),
+                status: { iconCss: 'e-icons e-check', tooltip: 'sent', text: 'Seen' }
+            },
+            {
+                id: 'msg3',
+                text: 'Hello!',
+                author: { user: 'Jane Smith', id: 'user2', statusIconCss: 'e-icons e-user-online' },
+                timeStamp: new Date('October 14, 2024 11:14:00'),
+                status: { iconCss: 'e-icons e-check', tooltip: 'sent', text: 'Seen' }
+            },
+            {
+                id: 'msg4',
+                text: 'I am good, thanks! How about you?',
+                author: { user: 'Jane Smith', id: 'user2', statusIconCss: 'e-icons e-user-online' },
+                timeStamp: new Date('October 14, 2024 11:15:00'),
+                status: { iconCss: 'e-icons e-check', tooltip: 'sent', text: 'Seen' }
+            },
+            {
+                id: 'msg5',
+                text: 'I am doing well too, thank you!',
+                author: { user: 'John Doe', id: 'user1', statusIconCss: 'e-icons e-user-online' },
+                timeStamp: new Date('October 15, 2024 11:15:00'),
+                status: { iconCss: 'e-icons e-check', tooltip: 'sent', text: 'Seen' }
+            },
+            {
+                id: 'msg6',
+                text: 'What have you been up to lately?',
+                author: { user: 'John Doe', id: 'user1', statusIconCss: 'e-icons e-user-online' },
+                timeStamp: new Date('October 15, 2024 11:16:00'),
+                status: { iconCss: 'e-icons e-check', tooltip: 'sent', text: 'Seen' }
+            },
+            {
+                id: 'msg7',
+                text: 'Just working on some projects.',
+                author: { user: 'John Doe', id: 'user1', statusIconCss: 'e-icons e-user-online' },
+                timeStamp: new Date('October 15, 2024 12:00:00'),
+                status: { iconCss: 'e-icons e-check', tooltip: 'sent', text: 'Seen' }
+            },
+            {
+                id: 'msg8',
+                text: 'That\'s great to hear!',
+                author: { user: 'Jane Smith', id: 'user2', statusIconCss: 'e-icons e-user-online' },
+                timeStamp: new Date('October 15, 2024 12:05:00'),
+                status: { iconCss: 'e-icons e-check', tooltip: 'sent', text: 'Seen' }
+            },
+            {
+                id: 'msg9',
+                text: 'What about you?',
+                author: { user: 'John Doe', id: 'user1', statusIconCss: 'e-icons e-user-online' },
+                timeStamp: new Date('October 15, 2024 12:06:00'),
+                status: { iconCss: 'e-icons e-check', tooltip: 'sent', text: 'Seen' }
+            },
+            {
+                id: 'msg10',
+                text: 'I have been traveling a bit.',
+                author: { user: 'Jane Smith', id: 'user2', statusIconCss: 'e-icons e-user-online' },
+                timeStamp: new Date('October 15, 2024 12:10:00'),
+                status: { iconCss: 'e-icons e-check', tooltip: 'sent', text: 'Seen' }
+            }
+        ];
+        afterEach(() => {
+            if (chatUI) {
+                chatUI.destroy();
+                chatUI=null;
+            }
+        });
+
+        it('should not render toolbar with invalid items', () => {
+            chatUI = new ChatUI({
+                messages: [
+                    {
+                        id: 'msg1',
+                        text: 'Test message',
+                        author: { id: 'user1', user: 'John Doe' },
+                        timeStamp: new Date(),
+                    }
+                ],
+                messageToolbarSettings: {
+                    items: [
+                        {}
+                    ]
+                }
+            });
+            chatUI.appendTo('#chatUI');
+
+            const toolbarIcons = chatUIElem.querySelectorAll('.e-chat-message-toolbar .e-icons');
+            expect(toolbarIcons.length).toBe(0); // No icons should be rendered
+        });
+
+        it('should render the toolbar with message options', () => {
+            chatUI = new ChatUI({
+                messages: [{
+                    id: 'msg1',
+                    text: 'Test message',
+                    author: { id: 'user1', user: 'John Doe' },
+                    timeStamp: new Date()
+                }]
+            });
+            chatUI.appendTo('#chatUI');
+
+            const toolbar = chatUIElem.querySelector('.e-chat-message-toolbar');
+            expect(toolbar).not.toBeNull();
+        });
+
+        it('should render pinned message initially', () => {
+            const initialMessage: MessageModel = {
+                id: 'msg1',
+                text: 'This is a pinned message!',
+                author: { id: 'user1', user: 'John Doe' },
+                timeStamp: new Date(),
+                isPinned: true
+            };
+            chatUI = new ChatUI({
+                messages: [initialMessage]
+            });
+            chatUI.appendTo('#chatUI');
+
+            const pinnedMessage: HTMLElement = chatUIElem.querySelector('.e-pinned-message');
+            const pinnedText = pinnedMessage.querySelector('.e-pinned-message-text');
+            expect(pinnedText.textContent).toBe('This is a pinned message!');
+        });
+
+        it('should render forwarded message indicator initially', () => {
+            const initialMessage: MessageModel = {
+                id: 'msg1',
+                text: 'This is a forwarded message!',
+                author: { id: 'user1', user: 'John Doe' },
+                timeStamp: new Date(),
+                isForwarded: true
+            };
+            chatUI = new ChatUI({
+                messages: [initialMessage]
+            });
+            chatUI.appendTo('#chatUI');
+
+            const messageItem: HTMLElement = chatUIElem.querySelector('.e-message-item');
+            const forwardedIndicator = messageItem.querySelector('.e-forwarded-indicator');
+            expect(forwardedIndicator).not.toBeNull();
+            expect(forwardedIndicator.textContent).toContain('Forwarded');
+        });
+
+        it('should render reply message content initially', () => {
+            const repliedMessage: MessageReplyModel = {
+                messageID: 'msg0',
+                text: 'Replied to this message!',
+                user: { id: 'user2', user: 'Jane Smith' }
+            };
+            const initialMessage: MessageModel = {
+                id: 'msg1',
+                text: 'This is a reply!',
+                author: { id: 'user1', user: 'John Doe' },
+                timeStamp: new Date(),
+                replyTo: repliedMessage
+            };
+            chatUI = new ChatUI({
+                messages: [initialMessage]
+            });
+            chatUI.appendTo('#chatUI');
+
+            const messageItem: HTMLElement = chatUIElem.querySelector('.e-message-item');
+            const replyWrapper = messageItem.querySelector('.e-reply-wrapper');
+            expect(replyWrapper).not.toBeNull();
+            const replyText = replyWrapper.querySelector('.e-reply-message-text');
+            expect(replyText.textContent).toBe('Replied to this message!');
+        });
+
+        it('should show toolbar on message hover', () => {
+            const initialMessage: MessageModel = {
+                id: 'msg1',
+                text: 'Hover over this message!',
+                author: { id: 'user1', user: 'John Doe' },
+                timeStamp: new Date(),
+            };
+            chatUI = new ChatUI({
+                messages: [initialMessage]
+            });
+            chatUI.appendTo('#chatUI');
+
+            const messageItem: HTMLElement = chatUIElem.querySelector('.e-message-item');
+            const toolbar: HTMLElement = chatUIElem.querySelector('.e-chat-message-toolbar');
+
+            expect(toolbar.classList.contains('e-show')).toBe(false);
+            messageItem.dispatchEvent(new Event('mouseover'));
+            expect(toolbar.classList.contains('e-show')).toBe(true);
+
+            messageItem.dispatchEvent(new Event('mouseleave'));
+            expect(toolbar.classList.contains('e-show')).toBe(false);
+        });
+
+        it('should contain toolbar items with specific classes', () => {
+            chatUI = new ChatUI({
+                messages: [{
+                    id: 'msg1',
+                    text: 'Test message',
+                    author: { id: 'user1', user: 'John Doe' },
+                    timeStamp: new Date()
+                }]
+            });
+            chatUI.appendTo('#chatUI');
+
+            const toolbarIcons = chatUIElem.querySelectorAll('.e-chat-message-toolbar .e-icons');
+            expect(toolbarIcons.length).toBeGreaterThan(0);
+
+            const expectedClasses = ['e-chat-copy', 'e-chat-reply', 'e-chat-pin', 'e-chat-trash'];
+            expectedClasses.forEach(className => {
+                const icon = Array.from(toolbarIcons).find(icon => icon.classList.contains(className));
+                expect(icon).not.toBeNull();
+            });
+        });
+
+        it('should perform copy action upon clicking copy icon', function (done) {
+            var initialMessage = {
+                id: 'msg1',
+                text: 'Copy this text!',
+                author: { id: 'user1', user: 'John Doe' },
+                timeStamp: new Date(),
+            };
+            chatUI = new ChatUI({
+                messages: [initialMessage]
+            });
+            chatUI.appendTo('#chatUI');
+
+            const copyButton: HTMLElement = chatUIElem.querySelector('.e-icons.e-chat-copy');
+            expect(copyButton).not.toBeNull();
+
+            const clipboardWriteSpy: jasmine.Spy = spyOn((navigator as any).clipboard, 'write').and.callFake(function (items: any) {
+                expect(items.length).toBe(1); // Ensure there's one item
+                var clipboardItem = items[0];
+
+                clipboardItem.getType('text/plain').then(function(blob: any) {
+                    var reader = new FileReader();
+                    reader.onload = function () {
+                        var copiedText = reader.result;
+                        expect(copiedText).toBe('Copy this text!');
+                        done();
+                    };
+                    reader.readAsText(blob);
+                });
+
+                return Promise.resolve();
+            });
+
+            copyButton.click();
+        });
+
+        it('should show reply UI when reply icon is clicked', () => {
+            const initialMessage: MessageModel = {
+                id: 'msg1',
+                text: 'Reply to this message!',
+                author: { id: 'user1', user: 'John Doe' },
+                timeStamp: new Date(),
+            };
+            chatUI = new ChatUI({
+                user: { id: 'user2', user: 'Jane Doe' },
+                messages: [initialMessage]
+            });
+            chatUI.appendTo('#chatUI');
+
+            const replyButton: HTMLElement = chatUIElem.querySelector('.e-icons.e-chat-reply');
+            expect(replyButton).not.toBeNull();
+
+            replyButton.click();
+
+            const replyWrapper: HTMLElement = chatUIElem.querySelector('.e-reply-wrapper');
+            expect(replyWrapper).not.toBeNull();
+            const replyText: HTMLElement = replyWrapper.querySelector('.e-reply-message-text');
+            expect(replyText.textContent).toBe('Reply to this message!');
+        });
+
+        it('should remove message when delete icon is clicked', () => {
+            const initialMessage: MessageModel = {
+                id: 'msg1',
+                text: 'Delete this message!',
+                author: { id: 'user1', user: 'John Doe' },
+                timeStamp: new Date(),
+            };
+            chatUI = new ChatUI({
+                messages: [initialMessage]
+            });
+            chatUI.appendTo('#chatUI');
+
+            const deleteButton: HTMLElement = chatUIElem.querySelector('.e-icons.e-chat-trash');
+            expect(deleteButton).not.toBeNull();
+
+            deleteButton.click();
+
+            const messageElem: HTMLElement = chatUIElem.querySelector('.e-message-item');
+            expect(messageElem).toBeNull();
+        });
+
+        it('should remove message and adjust time breaks when delete icon is clicked', () => {
+            const messages: MessageModel[] = [
+                {
+                    id: 'msg1',
+                    text: 'Delete this message!',
+                    author: { id: 'user1', user: 'John Doe' },
+                    timeStamp: new Date('October 15, 2024 12:30:00')
+                },
+                {
+                    id: 'msg2',
+                    text: 'Another message!',
+                    author: { id: 'user2', user: 'Jane Doe' },
+                    timeStamp: new Date('October 16, 2024 12:30:00')
+                },
+                {
+                    id: 'msg3',
+                    text: 'Yet another message!',
+                    author: { id: 'user3', user: 'Alice Doe' },
+                    timeStamp: new Date('October 17, 2024 12:30:00')
+                },
+                {
+                    id: 'msg4',
+                    text: 'Message again!',
+                    author: { id: 'user4', user: 'Bob Doe' },
+                    timeStamp: new Date('October 18, 2024 12:30:00')
+                },
+                {
+                    id: 'msg5',
+                    text: 'Last message!',
+                    author: { id: 'user5', user: 'Charlie Doe' },
+                    timeStamp: new Date('October 19, 2024 12:30:00')
+                }
+            ];
+
+            chatUI = new ChatUI({
+                messages: messages,
+                showTimeBreak: true
+            });
+            chatUI.appendTo('#chatUI');
+
+            // Check initial state - all messages should be present
+            expect(chatUIElem.querySelectorAll('.e-message-item').length).toBe(5);
+
+            // Mock the delete button click for each message
+            messages.forEach((msg) => {
+                const messageItem: HTMLElement = chatUIElem.querySelector(`#${msg.id}`) as HTMLElement;
+                const deleteButton: HTMLElement = messageItem.querySelector('.e-icons.e-chat-trash') as HTMLElement;
+                deleteButton.click();
+            });
+
+            // Check after deletion
+            expect(chatUIElem.querySelectorAll('.e-message-item').length).toBe(0);
+            expect(chatUIElem.querySelectorAll('.e-timebreak').length).toBe(0);
+        });
+
+        it('should pin a message when the pin icon is clicked', () => {
+            const initialMessage: MessageModel = {
+                id: 'msg1',
+                text: 'Pin this message!',
+                author: { id: 'user1', user: 'John Doe' },
+                timeStamp: new Date(),
+            };
+            chatUI = new ChatUI({
+                messages: [initialMessage]
+            });
+            chatUI.appendTo('#chatUI');
+
+            const messageWrapper: HTMLElement = chatUIElem.querySelector('.e-message-wrapper');
+            const pinButton: HTMLElement = messageWrapper.querySelector('.e-chat-pin');
+            expect(pinButton).not.toBeNull();
+
+            pinButton.click();
+
+            const pinnedMessage: HTMLElement = chatUIElem.querySelector('.e-pinned-message');
+            expect(pinnedMessage.querySelector('.e-pinned-message-text').textContent).toBe('Pin this message!');
+        });
+
+        it('should handle multiple messages with one having a repliedTo property', () => {
+            const messages: MessageModel[]= [
+                {
+                    id: 'msg1',
+                    text: 'First message!',
+                    author: { id: 'user1', user: 'John Doe' },
+                    timeStamp: new Date(),
+                },
+                {
+                    id: 'msg2',
+                    text: 'Second message!',
+                    author: { id: 'user2', user: 'Jane Smith' },
+                    timeStamp: new Date(),
+                },
+                {
+                    id: 'msg3',
+                    text: 'Third message with reply!',
+                    author: { id: 'user3', user: 'Alice Johnson' },
+                    timeStamp: new Date(),
+                    replyTo: {
+                        messageID: 'msg1',
+                        text: 'First message!',
+                        user: { id: 'user2', user: 'Jane Smith' }
+                    }
+                }
+            ];
+
+            chatUI = new ChatUI({
+                user: { id: 'user4', user: 'Bob Brown' },
+                messages: messages
+            });
+            chatUI.appendTo('#chatUI');
+
+            // Check for all messages presence and repliedTo property
+            const messageItems: NodeListOf<HTMLElement> = chatUIElem.querySelectorAll('.e-message-item');
+            expect(messageItems.length).toBe(3);
+
+            const repliedMessage: HTMLElement = messageItems[2];
+            const replyWrapper: HTMLElement = repliedMessage.querySelector('.e-reply-wrapper');
+            expect(replyWrapper).not.toBeNull();
+
+            const replyText: HTMLElement = replyWrapper.querySelector('.e-reply-message-text');
+            expect(replyText.textContent).toBe('First message!');
+
+            // Clicking the reply button to update reply values
+            const replyButton: HTMLElement = chatUIElem.querySelectorAll('.e-icons.e-chat-reply')[1] as HTMLElement;
+            expect(replyButton).not.toBeNull();
+
+            replyButton.click();
+
+            // Verify the reply wrapper updates with new values
+            const updatedReplyWrapper: HTMLElement = (chatUI as any).footer.querySelector('.e-reply-wrapper');
+            expect(updatedReplyWrapper).not.toBeNull();
+            const updatedReplyText: HTMLElement = updatedReplyWrapper.querySelector('.e-reply-message-text');
+            expect(updatedReplyText.textContent).toBe('Second message!');
+        });
+
+        it('should handle initial message with reply and click reply icon on another message followed by send icon', (done: DoneFn) => {
+            const messages: MessageModel[] = [
+                {
+                    id: 'msg1',
+                    text: 'Initial message with reply!',
+                    author: { id: 'user1', user: 'John Doe' },
+                    timeStamp: new Date(),
+                    replyTo: {
+                        messageID: 'msg0',
+                        text: 'Old message!',
+                        user: { id: 'user2', user: 'Alice' }
+                    }
+                },
+                {
+                    id: 'msg2',
+                    text: 'Click reply on this message!',
+                    author: { id: 'user2', user: 'Jane Doe' },
+                    timeStamp: new Date(),
+                }
+            ];
+
+            chatUI = new ChatUI({ messages: messages });
+            chatUI.appendTo('#chatUI');
+
+            // Check for the initial message with reply
+            const initialMessageItem: HTMLElement = chatUIElem.querySelector('#msg1');
+            const initialReplyWrapper: HTMLElement = initialMessageItem.querySelector('.e-reply-wrapper');
+            expect(initialReplyWrapper).not.toBeNull();
+            const initialReplyText: HTMLElement = initialReplyWrapper.querySelector('.e-reply-message-text');
+            expect(initialReplyText.textContent).toBe('Old message!');
+
+            // Simulate clicking the reply icon on the second message
+            const secondMessageItem: HTMLElement = chatUIElem.querySelector('#msg2');
+            const replyButton: HTMLElement = secondMessageItem.querySelector('.e-icons.e-chat-reply');
+            expect(replyButton).not.toBeNull();
+
+            replyButton.click();
+
+            // Verify that the reply textarea is visible and contains correct message
+            const footerReplyWrapper: HTMLElement = chatUIElem.querySelector('.e-footer .e-reply-wrapper');
+            expect(footerReplyWrapper).not.toBeNull();
+            const footerReplyText: HTMLElement = footerReplyWrapper.querySelector('.e-reply-message-text');
+            expect(footerReplyText.textContent).toBe('Click reply on this message!');
+
+            // Simulate typing a message and clicking send
+            const footerTextArea: HTMLDivElement = chatUIElem.querySelector('.e-footer .e-chat-textarea');
+            footerTextArea.innerText = 'New reply message!';
+            const inputEvent: Event = new Event('input', { bubbles: true });
+            footerTextArea.dispatchEvent(inputEvent);
+
+            // Click the send icon
+            const sendIcon: HTMLElement = chatUIElem.querySelector('.e-footer .e-chat-send');
+            expect(sendIcon).not.toBeNull();
+
+            // Add a delay to simulate send action
+            setTimeout(() => {
+                sendIcon.click();
+
+                // Check for the newly sent message with reply
+                const messageItems: NodeListOf<HTMLElement> = chatUIElem.querySelectorAll('.e-message-item');
+                const newMessageItem: HTMLElement = messageItems[messageItems.length - 1];
+                const newReplyWrapper: HTMLElement = newMessageItem.querySelector('.e-reply-wrapper');
+                expect(newReplyWrapper).not.toBeNull();
+                const newReplyText: HTMLElement = newReplyWrapper.querySelector('.e-reply-message-text');
+                expect(newReplyText.textContent).toBe('Click reply on this message!');
+                const newText: HTMLElement = newMessageItem.querySelector('.e-text');
+                expect(newText.textContent).toBe('New reply message!');
+                done();
+            }, 50);
+        });
+
+        it('should handle unpin and view in chat options for pinned messages with multiple other messages', () => {
+            const pinnedMessage: MessageModel = {
+                id: 'msg1',
+                text: 'This is a pinned message!',
+                author: { id: 'user1', user: 'John Doe' },
+                timeStamp: new Date(),
+                isPinned: true
+            };
+
+            const message2: MessageModel = {
+                id: 'msg2',
+                text: 'First additional message!',
+                author: { id: 'user2', user: 'Jane Doe' },
+                timeStamp: new Date(),
+            };
+
+            const message3: MessageModel = {
+                id: 'msg3',
+                text: 'Second additional message!',
+                author: { id: 'user3', user: 'Alice Johnson' },
+                timeStamp: new Date(),
+            };
+
+            chatUI = new ChatUI({
+                user: { id: 'user4', user: 'Bob Brown' },
+                messages: [pinnedMessage, message2, message3]
+            });
+            chatUI.appendTo('#chatUI');
+
+            // Check the pinned message is present in the wrapper
+            const pinnedWrapper: HTMLElement = chatUIElem.querySelector('.e-pinned-message-wrapper');
+            const dropDownButton: HTMLElement = pinnedWrapper.querySelector('.e-dropdown-btn');
+            dropDownButton.click();
+            const pinnedDropdown: HTMLElement = document.querySelector('.e-dropdown-popup.e-pinned-dropdown-popup');
+            expect(pinnedDropdown).not.toBeNull();
+
+            const viewInChatButton: HTMLElement = pinnedDropdown.querySelector('.e-item');
+            expect(viewInChatButton).not.toBeNull();
+            
+            viewInChatButton.click();
+
+            // Simulation of scrolling behavior or confirmation that message is viewed
+            const messageItems: NodeListOf<HTMLElement> = chatUIElem.querySelectorAll('.e-message-item');
+            const scrolledToMessage: HTMLElement = Array.from(messageItems).find(item => item.textContent.includes('This is a pinned message!'));
+            expect(scrolledToMessage).toBeTruthy();
+
+            // Verify clicking the unpin message button updates display property
+            dropDownButton.click();
+            const unpinButton: HTMLElement = pinnedDropdown.querySelectorAll('.e-item')[1] as HTMLElement;
+            expect(unpinButton).not.toBeNull();
+
+            unpinButton.click();
+            expect(pinnedWrapper.style.display).toBe('none'); // The wrapper is hidden but not removed
+        });
+
+        it('should handle pin and unpin in chat options for messages', () => {
+           const initialMessage: MessageModel = {
+                id: 'msg1',
+                text: 'Pin this message!',
+                author: { id: 'user1', user: 'John Doe' },
+                timeStamp: new Date(),
+                isPinned: true
+            };
+            chatUI = new ChatUI({
+                messages: [initialMessage]
+            });
+            chatUI.appendTo('#chatUI');
+
+            const pinnedWrapper: HTMLElement = chatUIElem.querySelector('.e-pinned-message-wrapper');
+            const dropDownButton: HTMLElement = pinnedWrapper.querySelector('.e-dropdown-btn');
+
+            const pinnedDropdown: HTMLElement = document.querySelector('.e-dropdown-popup.e-pinned-dropdown-popup');
+            expect(pinnedDropdown).not.toBeNull();
+
+            dropDownButton.click();
+            const unpinButton: HTMLElement = pinnedDropdown.querySelectorAll('.e-item')[1] as HTMLElement;
+            expect(unpinButton).not.toBeNull();
+
+            unpinButton.click();
+            expect(pinnedWrapper.style.display).toBe('none');
+
+            const messageWrapper: HTMLElement = chatUIElem.querySelector('.e-message-wrapper');
+            const pinButton: HTMLElement = messageWrapper.querySelector('.e-chat-pin');
+            expect(pinButton).not.toBeNull();
+
+            pinButton.click();
+
+            const pinnedMessage: HTMLElement = chatUIElem.querySelector('.e-pinned-message');
+            expect(pinnedMessage.querySelector('.e-pinned-message-text').textContent).toBe('Pin this message!');
+        });
+
+        it('should pin a message, then pin another message, then unpin that message', (done: DoneFn) => {
+              const initialMessage: MessageModel = {
+                id: 'msg1',
+                text: 'Pin first message!',
+                author: { id: 'user1', user: 'John Doe' },
+                timeStamp: new Date(),
+                isPinned: false
+            };
+            const secondMessage: MessageModel = {
+                id: 'msg2',
+                text: 'Pin second message!',
+                author: { id: 'user1', user: 'John Doe' },
+                timeStamp: new Date(),
+                isPinned: false
+            }
+            chatUI = new ChatUI({
+                messages: [initialMessage,secondMessage]
+            });
+            chatUI.appendTo('#chatUI');
+
+            const messageWrapper: HTMLElement = chatUIElem.querySelector('.e-message-wrapper') as HTMLElement;
+            const pinButtons: NodeListOf<HTMLElement> = messageWrapper.querySelectorAll('.e-chat-pin') as NodeListOf<HTMLElement>;
+            expect(pinButtons[0]).not.toBeNull();
+            pinButtons[0].click();
+
+            const pinnedMessage: HTMLElement = chatUIElem.querySelector('.e-pinned-message') as HTMLElement;
+            expect(pinnedMessage.querySelector('.e-pinned-message-text').textContent).toBe('Pin first message!');
+            expect(pinButtons[1]).not.toBeNull();
+            pinButtons[1].click();
+            
+            setTimeout(() =>{
+                const pinnedMessage2: HTMLElement = chatUIElem.querySelector('.e-pinned-message');
+                expect(pinnedMessage2.querySelector('.e-pinned-message-text').textContent).toBe('Pin second message!');
+                done();
+            }),100;
+
+            const pinnedWrapper: HTMLElement = chatUIElem.querySelector('.e-pinned-message-wrapper');
+            const dropDownButton: HTMLElement = pinnedWrapper.querySelector('.e-dropdown-btn');
+
+            const pinnedDropdown: HTMLElement = document.querySelector('.e-dropdown-popup.e-pinned-dropdown-popup');
+            expect(pinnedDropdown).not.toBeNull();
+
+            dropDownButton.click();
+            const unpinButton: HTMLElement = pinnedDropdown.querySelectorAll('.e-item')[1] as HTMLElement;
+            expect(unpinButton).not.toBeNull();
+
+            unpinButton.click();
+            expect(pinnedWrapper.style.display).toBe('none');
+        });
+
+        it('should handle multiple message replies with correct footer update and message send', (done: DoneFn) => {
+
+            chatUI = new ChatUI({ messages: chatMessages });
+            chatUI.appendTo('#chatUI');
+
+            // Ensure all 10 messages are rendered
+            const messageItems: NodeListOf<HTMLElement> = chatUIElem.querySelectorAll('.e-message-item');
+            expect(messageItems.length).toBe(10);
+
+            // Click the reply icon on first message
+            const firstReplyButton: HTMLElement = messageItems[0].querySelector('.e-icons.e-chat-reply');
+            expect(firstReplyButton).not.toBeNull();
+            firstReplyButton.click();
+
+            // Check footer's reply wrapper content
+            let footerReplyWrapper: HTMLElement = chatUIElem.querySelector('.e-footer .e-reply-wrapper');
+            expect(footerReplyWrapper).not.toBeNull();
+            let footerReplyText: HTMLElement = footerReplyWrapper.querySelector('.e-reply-message-text');
+            expect(footerReplyText.textContent).toBe('Hi!');
+
+            // Click the reply icon on the last message
+            const lastReplyButton: HTMLElement = messageItems[9].querySelector('.e-icons.e-chat-reply');
+            expect(lastReplyButton).not.toBeNull();
+            lastReplyButton.click();
+
+            // Verify footer's reply wrapper content is updated
+            footerReplyWrapper = chatUIElem.querySelector('.e-footer .e-reply-wrapper');
+            expect(footerReplyWrapper).not.toBeNull();
+            footerReplyText = footerReplyWrapper.querySelector('.e-reply-message-text');
+            expect(footerReplyText.textContent).toBe('I have been traveling a bit.');
+
+            // Simulate typing a new message and sending it
+            const footerTextArea: HTMLDivElement = chatUIElem.querySelector('.e-footer .e-chat-textarea');
+            footerTextArea.innerText = 'New message as a reply!';
+            const inputEvent: Event = new Event('input', { bubbles: true });
+            footerTextArea.dispatchEvent(inputEvent);
+
+            // Click the send icon
+            const sendIcon: HTMLElement = chatUIElem.querySelector('.e-footer .e-chat-send');
+            expect(sendIcon).not.toBeNull();
+            sendIcon.click();
+
+            setTimeout(() => {
+                const updatedMessageItems: NodeListOf<HTMLElement> = chatUIElem.querySelectorAll('.e-message-item');
+                const newMessageItem: HTMLElement = updatedMessageItems[updatedMessageItems.length - 1];
+                const newReplyWrapper: HTMLElement = newMessageItem.querySelector('.e-reply-wrapper');
+                expect(newReplyWrapper).not.toBeNull();
+                const newReplyText: HTMLElement = newReplyWrapper.querySelector('.e-reply-message-text');
+                expect(newReplyText.textContent).toBe('I have been traveling a bit.');
+                const newText: HTMLElement = newMessageItem.querySelector('.e-text');
+                expect(newText.textContent).toBe('New message as a reply!');
+                done();
+            }, 50);
+        });
+
+        it('should show toolbar on message hover and toolbar position wraps below if no space above the message', () => {
+            let currentUserModel: UserModel = {
+                id: "user1",
+                user: "Albert"
+            };
+            let michaleUserModel: UserModel = {
+                id: "user2",
+                user: "Michale Suyama"
+            };
+            let chatMessages: MessageModel[] = [
+                {
+                    author: currentUserModel,
+                    text: "Hi Michale, are we on track for the deadline?"
+                },
+                {
+                    author: michaleUserModel,
+                    text: "Yes, the design phase is complete."
+                },
+                {
+                    author: currentUserModel,
+                    text: "I’ll review it and send feedback by today!."
+                }
+            ];
+            const chatUI = new ChatUI({
+                messages: chatMessages,
+                user: currentUserModel,
+            });
+            chatUI.appendTo('#chatUI');
+
+            const messageItems = document.querySelectorAll('.e-message-item');
+            expect(messageItems.length).toBe(3);
+
+            const rightMessage: HTMLElement = messageItems[0] as HTMLElement;
+            rightMessage.dispatchEvent(new Event('mouseover'));
+
+            const rightToolbar: HTMLElement = rightMessage.querySelector('.e-chat-message-toolbar') as HTMLElement;
+            expect(rightToolbar).not.toBeNull();
+            rightMessage.dispatchEvent(new Event('mouseleave'));
         });
     });
 });

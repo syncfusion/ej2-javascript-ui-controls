@@ -1,5 +1,5 @@
-import { NotifyPropertyChanges, Property, INotifyPropertyChanged, getUniqueID, isNullOrUndefined as isNOU, EventHandler, L10n, remove } from '@syncfusion/ej2-base';import { Internationalization, ChildProperty, Collection, removeClass, Event, EmitType, BaseEventArgs, Complex } from '@syncfusion/ej2-base';import { InterActiveChatBase, ToolbarSettings, ToolbarItemClickedEventArgs } from '../interactive-chat-base/interactive-chat-base';import { ToolbarItemModel, ToolbarSettingsModel } from '../interactive-chat-base/interactive-chat-base-model';import { InputEventArgs, FocusOutEventArgs, TextArea } from '@syncfusion/ej2-inputs';import { ClickEventArgs, ItemModel, Toolbar } from '@syncfusion/ej2-navigations';import { createSpinner, showSpinner, hideSpinner } from '@syncfusion/ej2-popups';import { Fab } from '@syncfusion/ej2-buttons';
-import {MessageSendEventArgs,TypingEventArgs} from "./chat-ui";
+import { NotifyPropertyChanges, Property, INotifyPropertyChanged, getUniqueID, isNullOrUndefined as isNOU, EventHandler, L10n } from '@syncfusion/ej2-base';import { Internationalization, ChildProperty, Collection, removeClass, Event, EmitType, BaseEventArgs, Complex } from '@syncfusion/ej2-base';import { InterActiveChatBase, ToolbarSettings, ToolbarItemClickedEventArgs, TextState, ToolbarItem } from '../interactive-chat-base/interactive-chat-base';import { ToolbarItemModel, ToolbarSettingsModel } from '../interactive-chat-base/interactive-chat-base-model';import { ClickEventArgs, ItemModel, Toolbar } from '@syncfusion/ej2-navigations';import { createSpinner, showSpinner, hideSpinner } from '@syncfusion/ej2-popups';import { Fab } from '@syncfusion/ej2-buttons';import { DropDownButton, MenuEventArgs } from '@syncfusion/ej2-splitbuttons';
+import {MessageToolbarItemClickedEventArgs,MessageSendEventArgs,TypingEventArgs} from "./chat-ui";
 import {InterActiveChatBaseModel} from "../interactive-chat-base/interactive-chat-base-model";
 
 /**
@@ -85,6 +85,79 @@ export interface UserModel {
      */
     cssClass?: string;
 
+    /**
+     * Specifies the CSS class for the status bar icon in the Chat UI component.
+     * This allows customization of the status icon's appearance using custom styles.
+     *
+     * @type {string}
+     * @default ''
+     */
+    statusIconCss?: string;
+
+}
+
+/**
+ * Interface for a class MessageToolbarSettings
+ */
+export interface MessageToolbarSettingsModel {
+
+    /**
+     * Specifies the width of the response toolbar in the Chat UI component.
+     * Represents the width of the toolbar, which can be defined using various CSS units and values such as 'auto', '100%', or pixel-based measurements.
+     *
+     * @type {string}
+     * @default '100%'
+     * @aspType string
+     */
+    width?: string | number;
+
+    /**
+     * Specifies the collection of toolbar items in the response toolbar of the Chat UI component.
+     * Represents an array of items that are rendered in the toolbar, allowing for customization and interaction within the response section.
+     *
+     * @type {ToolbarItemModel[]}
+     * @default null
+     */
+    items?: ToolbarItemModel[];
+
+    /**
+     * Event raised when a toolbar item is clicked in the response toolbar of the Chat UI component.
+     *
+     * @event itemClicked
+     */
+    itemClicked?: EmitType<MessageToolbarItemClickedEventArgs>;
+
+}
+
+/**
+ * Interface for a class MessageReply
+ */
+export interface MessageReplyModel {
+
+    /**
+     * Specifies the author of the message in the Chat UI component.
+     * This property references a `UserModel` object that contains details about the user who sent the message.
+     *
+     * @default null
+     */
+    user?: UserModel;
+
+    /**
+     * Represents the content of the message sent by a user in the Chat UI component.
+     *
+     * @type {string}
+     * @default ''
+     */
+    text?: string;
+
+    /**
+     * Represents the id of the message sent by a user in the Chat UI component.
+     *
+     * @type {string}
+     * @default ''
+     */
+    messageID?: string;
+
 }
 
 /**
@@ -144,6 +217,32 @@ export interface MessageModel {
      */
     status?: MessageStatusModel;
 
+    /**
+     * Specifies whether the message is pinned.
+     * When set to true, the message will be visually highlighted and can be displayed in a pinned messages section.
+     *
+     * @type {boolean}
+     * @default false
+     */
+    isPinned?: boolean;
+
+    /**
+     * Specifies the reference to the original message when this message is a reply.
+     * Contains the MessageModel of the message being replied to.
+     *
+     * @default null
+     */
+    replyTo?: MessageReplyModel;
+
+    /**
+     * Specifies whether the message has been forwarded.
+     * When set to true, the message is visually marked as forwarded.
+     *
+     * @type {boolean}
+     * @default false
+     */
+    isForwarded?: boolean;
+
 }
 
 /**
@@ -181,6 +280,7 @@ export interface ChatUIModel extends InterActiveChatBaseModel{
     /**
      * Specifies the header text to be displayed in the Chat UI component.
      * This property defines the text that appears in the header, which can indicate the current participant's username or the group name, providing context for the conversation.
+     *
      * @type {string}
      * @default 'Chat'
      */
@@ -385,6 +485,26 @@ export interface ChatUIModel extends InterActiveChatBaseModel{
      * @aspType string
      */
     typingUsersTemplate?: string | Function;
+
+    /**
+     * Enables the compact mode layout in the Chat UI component.
+     * When enabled, all messages are aligned to the left side regardless of the sender, creating a simplified chat view.
+     * This mode is useful for dense group conversations or compact displays (e.g., mobile,embedded).
+     * Example: `compactMode: true`
+     *
+     * @type {boolean}
+     * @default false
+     */
+    enableCompactMode?: boolean;
+
+    /**
+     * Specifies the settings for the message toolbar in the Chat UI component.
+     * Configures the toolbar options associated with each message such as Reply, Forward, Copy, Pin, and Delete.
+     * If 'items' is not provided, default toolbar actions ['Copy', 'Reply', 'Pin', 'Delete'] will be rendered.
+     *
+     * @default []
+     */
+    messageToolbarSettings?: MessageToolbarSettingsModel;
 
     /**
      * Event triggered when a message is about to be sent in the Chat UI component.

@@ -2185,7 +2185,7 @@ describe('Hierarchial data filter testing', () => {
                 expect(ddtreeObj.treeObj.checkedNodes.length).toBe(3);
                 done();
             }, 350);
-        });
+        });  
     });
 });
 

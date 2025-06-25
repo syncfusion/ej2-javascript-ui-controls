@@ -1,5 +1,6 @@
 import { KeyboardEventArgs, removeClass, selectAll, isNullOrUndefined as isNOU, EventHandler } from '@syncfusion/ej2-base';
-import { IRichTextEditor, IRenderer, ActionBeginEventArgs } from '../base/interface';
+import { IRichTextEditor, IRenderer } from '../base/interface';
+import { ActionBeginEventArgs } from '../../common/interface';
 import * as events from '../base/constant';
 import { CLS_EXPAND_OPEN, CLS_TB_ITEM, CLS_ACTIVE, CLS_RTE_SOURCE_CODE_TXTAREA } from '../base/classes';
 import * as CONSTANT from '../../common/constant';
@@ -9,7 +10,7 @@ import { RenderType } from '../base/enum';
 import { ServiceLocator } from '../services/service-locator';
 import { KeyboardEvents } from '../actions/keyboard';
 import { ClickEventArgs } from '@syncfusion/ej2-navigations';
-import { resetContentEditableElements, cleanupInternalElements } from '../base/util';
+import { cleanHTMLString, resetContentEditableElements, cleanupInternalElements } from '../../common/util';
 
 /**
  * Content module is used to render Rich Text Editor content
@@ -201,6 +202,7 @@ export class ViewSource {
                     baseToolbar: this.parent.getBaseToolbarObject()
                 });
                 if (!isNOU(editHTML)) {
+                    editHTML.value = cleanHTMLString(editHTML.value, this.parent.element);
                     editHTML.value = resetContentEditableElements(this.replaceAmpersand(editHTML.value), this.parent.editorMode);
                 }
                 const serializeValue: string = this.parent.serializeValue(editHTML.value);
@@ -233,6 +235,9 @@ export class ViewSource {
                 clearTimeout(this.codeViewTimeInterval);
                 this.parent.invokeChangeEvent();
                 this.parent.notify(events.tableclass, {});
+                if (this.parent.editorMode === 'HTML' && !isNOU(this.parent.codeBlockModule)) {
+                    this.parent.codeBlockModule.disableToolbarItems();
+                }
             }
         });
     }

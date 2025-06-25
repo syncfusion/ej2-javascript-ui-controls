@@ -753,5 +753,15 @@ describe('Spec for empty method ', () => {
             (<any>listObj).checkValueCase('BMW', false, true, true);
             done();
         });
+        it('for remainingItems and emptyDataRequest methods', function (done) {
+            listObj = new DropDownBase({
+                dataSource: datasource1,
+                fields: { groupBy: 'category' },
+            });
+            listObj.appendTo(element);
+            listObj.remainingItems(datasource1, { groupBy: 'category' });
+            listObj.emptyDataRequest({ groupBy: 'category' });
+            done();
+        });
     });
 });

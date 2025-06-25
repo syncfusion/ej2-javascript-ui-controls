@@ -405,7 +405,7 @@ export class FormDesigner {
                         value = drawingObject.value;
                     }
                     if (value && this.pdfViewer.formFieldsModule) {
-                        let signatureType: 'Type' | 'Path' | 'Image' = (value.indexOf('base64')) > -1 ? 'Image' : ((value.startsWith('M') && value.split(',')[1].split(' ')[1].startsWith('L') || (value.startsWith('M') && value.split(' ')[3].startsWith('L'))) ? 'Path' : 'Type');
+                        let signatureType: 'Type' | 'Path' | 'Image' = (value.indexOf('base64')) > -1 ? 'Image' : ((value.startsWith('M') && value.split(',')[1] && value.split(',')[1].split(' ')[1].startsWith('L') || (value.startsWith('M') && value.split(' ')[3].startsWith('L'))) ? 'Path' : 'Type');
                         if (this.pdfViewerBase.isSignaturePathData(value))
                         {
                             signatureType = 'Path';
@@ -2881,46 +2881,20 @@ export class FormDesigner {
         const bound: any = (actualObject as any).bounds;
         const wrapper: DiagramHtmlElement = actualObject.wrapper.children[0];
         const type : string = actualObject.formFieldAnnotationType;
-        let isEdited: boolean = false;
         if (!isNullOrUndefined(options.customData) && (actualObject as any).customData !== options.customData) {
             (actualObject as any).customData = options.customData;
-            isEdited = true;
         }
         if (!isNullOrUndefined(options.name) && (actualObject as any).name !== options.name) {
             (actualObject as any).name = options.name;
-            isEdited = true;
         }
         if (!isNullOrUndefined(options.borderColor) && (actualObject as any).borderColor !== options.borderColor) {
             (actualObject as any).borderColor = options.borderColor;
-            isEdited = true;
         }
         if (!isNullOrUndefined(options.backgroundColor) && (actualObject as any).backgroundColor !== options.backgroundColor) {
             (actualObject as any).backgroundColor = options.backgroundColor;
-            isEdited = true;
         }
         if (!isNullOrUndefined(options.value) && (actualObject as any).value !== options.value) {
             (actualObject as any).value = options.value;
-            isEdited = true;
-        }
-        if (!isNullOrUndefined(options.bounds) && actualObject.bounds.properties !== options.bounds) {
-            const { X, Y, Width, Height } = options.bounds;
-            const updatedBounds: any = { x: X, y: Y, width: Width, height: Height };
-            if (
-                actualObject.bounds.x !== updatedBounds.x ||
-                actualObject.bounds.y !== updatedBounds.y ||
-                actualObject.bounds.width !== updatedBounds.width ||
-                actualObject.bounds.height !== updatedBounds.height
-            ) {
-                actualObject.bounds = updatedBounds;
-            }
-            updatedBounds.x = updatedBounds.x + updatedBounds.width * 0.5;
-            updatedBounds.y = updatedBounds.y + updatedBounds.height * 0.5;
-            options.bounds = updatedBounds;
-            this.pdfViewer.drawing.nodePropertyChange(actualObject, options);
-            isEdited = true;
-        }
-        if (isEdited) {
-            this.pdfViewerBase.updateDocumentEditedProperty(isEdited);
         }
         this.updateFormDesignerFieldInSessionStorage(bound, wrapper, type, actualObject);
     }
@@ -2934,53 +2908,26 @@ export class FormDesigner {
      */
     private updateFormFieldsInFieldsSession(formFieldId: any, options: any): void {
         const fieldsData: string = this.pdfViewerBase.getItemFromSessionStorage('_formfields');
-        let isEdited: boolean = false;
         if (!isNullOrUndefined(fieldsData)) {
             const data: any = JSON.parse(fieldsData);
             for (let x: number = 0; x < data.length; x++) {
                 if (data[`${x}`].FieldName === formFieldId.name) {
                     if (!isNullOrUndefined(options.customData) && data[`${x}`].CustomData !== options.customData) {
                         data[`${x}`].CustomData = options.customData;
-                        isEdited = true;
                     }
                     if (!isNullOrUndefined(options.backgroundColor) && data[`${x}`].BackColor !== options.backgroundColor) {
                         data[`${x}`].BackColor = this.getRgbCode(options.backgroundColor);
-                        isEdited = true;
                     }
                     if (!isNullOrUndefined(options.borderColor) && data[`${x}`].BorderColor !== options.borderColor) {
                         data[`${x}`].BorderColor = this.getRgbCode(options.borderColor);
-                        isEdited = true;
                     }
                     if (!isNullOrUndefined(options.name) && data[`${x}`].Name !== options.name) {
                         data[`${x}`].Name = options.name;
-                        isEdited = true;
                     }
                     if (!isNullOrUndefined(options.value) && data[`${x}`].Value !== options.value) {
                         data[`${x}`].Value = options.value;
-                        isEdited = true;
-                    }
-                    if (!isNullOrUndefined(options.bounds)) {
-                        const lineBounds: any = {
-                            X: this.pdfViewer.formFieldsModule.ConvertPointToPixel(data['' + x].LineBounds.X),
-                            Y: this.pdfViewer.formFieldsModule.ConvertPointToPixel(data['' + x].LineBounds.Y),
-                            Width: this.pdfViewer.formFieldsModule.ConvertPointToPixel(data['' + x].LineBounds.Width),
-                            Height: this.pdfViewer.formFieldsModule.ConvertPointToPixel(data['' + x].LineBounds.Height)
-                        };
-                        if (JSON.stringify(lineBounds) !== JSON.stringify(options.bounds)) {
-                            const newLineBounds: any = {
-                                X: PdfViewerUtils.convertPixelToPoint(options.bounds.X),
-                                Y: PdfViewerUtils.convertPixelToPoint(options.bounds.Y),
-                                Width: PdfViewerUtils.convertPixelToPoint(options.bounds.Width),
-                                Height: PdfViewerUtils.convertPixelToPoint(options.bounds.Height)
-                            };
-                            data['' + x].LineBounds = newLineBounds;
-                        }
-                        isEdited = true;
                     }
                 }
-            }
-            if (isEdited) {
-                this.pdfViewerBase.updateDocumentEditedProperty(isEdited);
             }
             this.pdfViewerBase.setItemInSessionStorage(data, '_formfields');
         }
@@ -3017,18 +2964,6 @@ export class FormDesigner {
     private updateFormFieldData(currentData: any, options: any): void {
         if (options.name && currentData.name !== options.name) {
             currentData.name = options.name;
-        }
-        if (options.bounds) {
-            const { X, Y, Width, Height } = options.bounds;
-            const updatedBounds: any = { x: X, y: Y, width: Width, height: Height };
-            if (
-                currentData.bounds.x !== updatedBounds.x ||
-                currentData.bounds.y !== updatedBounds.y ||
-                currentData.bounds.width !== updatedBounds.width ||
-                currentData.bounds.height !== updatedBounds.height
-            ) {
-                currentData.bounds = updatedBounds;
-            }
         }
         if (currentData.type !== 'SignatureField' || currentData.type !== 'InitialField') {
             if (options.thickness && currentData.thickness !== options.thickness) {
@@ -3125,7 +3060,6 @@ export class FormDesigner {
         let isRequiredChanged: boolean = false; let isPrintChanged: boolean = false; let isToolTipChanged: boolean = false;
         let isCustomDataChanged: boolean = false;
         let isNameChanged: boolean = false;
-        let isBoundsChanged: boolean = false;
         let oldValue: any; let newValue: any;
         const zoomValue: number = this.pdfViewerBase.getZoomFactor();
         if (options.name) {
@@ -3206,16 +3140,6 @@ export class FormDesigner {
             }
         }
         if (options.bounds) {
-            const formBounds: any = formFieldObject.bounds;
-            const optionBounds: any = options.bounds;
-            if (
-                formBounds.x !== optionBounds.X ||
-                formBounds.y !== optionBounds.Y ||
-                formBounds.width !== optionBounds.Width ||
-                formBounds.height !== optionBounds.Height
-            ) {
-                isBoundsChanged = true;
-            }
             options.bounds.X = options.bounds.X + options.bounds.Width * 0.5;
             options.bounds.Y  = options.bounds.Y + options.bounds.Height * 0.5;
             formFieldObject.bounds = { x: options.bounds.X, y: options.bounds.Y, width: options.bounds.Width,
@@ -3689,7 +3613,7 @@ export class FormDesigner {
         if (isValueChanged || isFontFamilyChanged || isFontSizeChanged || isFontStyleChanged || isColorChanged ||
             isBackgroundColorChanged || isBorderColorChanged || isBorderWidthChanged || isAlignmentChanged || isReadOnlyChanged
             || isVisibilityChanged || isRequiredChanged || isPrintChanged || isToolTipChanged || isCustomDataChanged ||
-            isNameChanged || isMaxLengthChanged || isBoundsChanged) {
+            isNameChanged || isMaxLengthChanged) {
             this.pdfViewerBase.updateDocumentEditedProperty(true);
         }
     }
@@ -3960,9 +3884,7 @@ export class FormDesigner {
             this.pdfViewerBase.disableTextSelectionMode();
         } else {
             this.enableDisableFormFieldsInteraction(false);
-            if (this.pdfViewer.textSelectionModule) {
-                this.pdfViewer.textSelectionModule.enableTextSelectionMode();
-            }
+            this.pdfViewer.toolbarModule.updateInteractionItems();
         }
     }
 
@@ -4684,7 +4606,6 @@ export class FormDesigner {
                                     Y: PdfViewerUtils.convertPixelToPoint(currentData.lineBound.Y),
                                     Width: PdfViewerUtils.convertPixelToPoint(currentData.lineBound.Width),
                                     Height: PdfViewerUtils.convertPixelToPoint(currentData.lineBound.Height)};
-
                                 if (typeof filteredField[0].value === 'string' && filteredField[0].value.trim().startsWith('[')) {
                                     filteredField[0].value = this.pdfViewerBase.signatureValue(filteredField[0].value);
                                 }

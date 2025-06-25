@@ -497,6 +497,12 @@ export class ImageEditor extends Component<HTMLDivElement> implements INotifyPro
     /** @hidden */
     public editCompleteArgs: object | RotateEventArgs | FlipEventArgs | CropEventArgs | FinetuneEventArgs | FrameChangeEventArgs | ImageFilterEventArgs |
     PanEventArgs | ResizeEventArgs | ShapeChangeEventArgs | ZoomEventArgs;
+    /** @hidden */
+    public imageSettings: Dimension = {width: null, height: null};
+    /** @hidden */
+    public aspectRatioBaseDimension: boolean = false;
+    /** @hidden */
+    public imageLoaded: boolean = false;
     private lowerContext: CanvasRenderingContext2D;
     private upperContext: CanvasRenderingContext2D;
     private inMemoryContext: CanvasRenderingContext2D;
@@ -1164,10 +1170,12 @@ export class ImageEditor extends Component<HTMLDivElement> implements INotifyPro
                 break;
             case 'disabled':
                 if (newProperties.disabled) {
-                    this.element.classList.add('e-disabled');
+                    this.element.classList.add('e-disabled', 'e-overlay');
+                    this.element.style.opacity = '0.5';
                     this.unwireEvent();
                 } else {
-                    this.element.classList.remove('e-disabled');
+                    this.element.classList.remove('e-disabled', 'e-overlay');
+                    this.element.style.opacity = '1';
                     this.wireEvent();
                 }
                 break;
@@ -1280,7 +1288,7 @@ export class ImageEditor extends Component<HTMLDivElement> implements INotifyPro
                 if (newProperties.uploadSettings) {
                     this.uploadSettings = newProperties.uploadSettings;
                     if (!this.uploadSettings.allowedExtensions) {
-                        this.uploadSettings.allowedExtensions = '.jpg, .jpeg, .png, .svg, .webp';
+                        this.uploadSettings.allowedExtensions = '.jpg, .jpeg, .png, .svg, .webp, .bmp';
                         this.notify('draw', { prop: 'setNullExtension', value: { extension: true } });
                     } else {
                         this.notify('draw', { prop: 'setNullExtension', value: {extension: false }});
@@ -1323,6 +1331,10 @@ export class ImageEditor extends Component<HTMLDivElement> implements INotifyPro
     }
 
     public initialize(): void {
+        if (this.disabled) {
+            this.element.classList.add('e-disabled', 'e-overlay');
+            this.element.style.opacity = '0.5';
+        }
         if (this.toolbarTemplate) {
             this.element.appendChild(this.createElement('div', {
                 id: this.element.id + '_toolbarArea', className: 'e-toolbar-area'
@@ -1333,7 +1345,7 @@ export class ImageEditor extends Component<HTMLDivElement> implements INotifyPro
             this.notify('toolbar', { prop: 'create-contextual-toolbar', onPropertyChange: false });
         }
         if (!this.uploadSettings.allowedExtensions) {
-            this.setProperties({ uploadSettings: { allowedExtensions: '.jpg, .jpeg, .png, .svg, .webp' } }, true);
+            this.setProperties({ uploadSettings: { allowedExtensions: '.jpg, .jpeg, .png, .svg, .webp, .bmp' } }, true);
         } else {
             this.notify('draw', { prop: 'setNullExtension', value: {extension: false }});
         }
@@ -1516,7 +1528,7 @@ export class ImageEditor extends Component<HTMLDivElement> implements INotifyPro
      * @returns {string[]}.
      */
     public getExtensionArray(): string[] {
-        const validExtensions: string[] = ['jpeg', 'jpg', 'png', 'svg', 'webp'];
+        const validExtensions: string[] = ['jpeg', 'jpg', 'png', 'svg', 'webp', 'bmp'];
         const split: string[] = this.uploadSettings.allowedExtensions.split(',');
         const extension: string[] = [];
         for (const ext of split) {
@@ -1566,6 +1578,9 @@ export class ImageEditor extends Component<HTMLDivElement> implements INotifyPro
                 break;
             case 'webp':
                 words += ' WebP,';
+                break;
+            case 'bmp':
+                words += ' BMP,';
                 break;
             }
             if (i === extension.length - 1) {
@@ -1863,10 +1878,15 @@ export class ImageEditor extends Component<HTMLDivElement> implements INotifyPro
      */
     public flip(direction: Direction): void {
         this.applyShapes();
-        this.updateImageTransformColl(direction.toLowerCase() + 'flip');
-        this.notify('transform', {prop: 'flip', value: {direction: direction }});
-        this.notify('draw', { prop: 'redrawDownScale' });
-        this.notify('undo-redo', {prop: 'updateCurrUrc', value: {type: 'ok' }});
+        if (this.activeObj.shape && this.activeObj.shape.indexOf('crop') > -1) {
+            this.transformSelect(direction.toLowerCase() + 'flip');
+        } else {
+            this.updateImageTransformColl(direction.toLowerCase() + 'flip');
+            this.setRotateZoom();
+            this.notify('transform', {prop: 'flip', value: {direction: direction }});
+            this.notify('draw', { prop: 'redrawDownScale' });
+            this.notify('undo-redo', { prop: 'updateCurrUrc', value: { type: 'ok' } });
+        }
         const actionArgs: EditCompleteEventArgs  = { action: 'flip', actionEventArgs: this.editCompleteArgs };
         this.triggerEditCompleteEvent(actionArgs);
     }
@@ -1905,7 +1925,7 @@ export class ImageEditor extends Component<HTMLDivElement> implements INotifyPro
      *
      * @param {string | ImageData } data - Specifies url of the image or image data.
      * @param {boolean} [resetChanges=true] - Optional. Determines whether to reset existing changes when opening the image. The default value is true, which resets all existing changes.
-     * @param {ImageSettings} imageSettings - Optional. Specifies the image setting that contains background color to apply when opening a transparent image. The default value of background color is an empty string (''), meaning no background color is applied by default when a transparent image is opened.
+     * @param {ImageSettings} imageSettings - Optional. Specifies image settings to apply when loading an image.
      *
      * @remarks
      * The supported file types are JPG, JPEG, PNG, and SVG.
@@ -1915,12 +1935,75 @@ export class ImageEditor extends Component<HTMLDivElement> implements INotifyPro
     public open(data: string | ImageData, resetChanges?: boolean, imageSettings?: ImageSettings): void {
         resetChanges = isNullOrUndefined(resetChanges) ? true : resetChanges;
         if (resetChanges) {
-            if (isNullOrUndefined(data)) { return; }
+            if (isNullOrUndefined(data) || this.disabled) { return; }
             const dropArea: HTMLElement = document.getElementById(this.element.id + '_dropArea');
             if (dropArea) {
                 dropArea.style.display = 'none';
             }
-            this.notify('draw', {prop: 'open', value: {data: data}});
+            this.imageSettings = {width: null, height: null};
+            this.aspectRatioBaseDimension = null;
+            if (imageSettings && (imageSettings.width || imageSettings.height)) {
+                const tempImageSettings: ImageSettings = extend({}, imageSettings, {}, true) as ImageSettings;
+                imageSettings = this.scaleToFit(imageSettings);
+                this.aspectRatioBaseDimension = imageSettings.isAspectRatio;
+                if (!imageSettings.isAspectRatio && imageSettings.width && imageSettings.height) {
+                    this.imageSettings.width = imageSettings.width;
+                    this.imageSettings.height = imageSettings.height;
+                    this.notify('draw', {prop: 'open', value: {data: data}});
+                    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                    const intervalId: any = setInterval(() => {
+                        if (this.imageLoaded && this.baseImg.width && this.baseImg.height) {
+                            this.setInitialZoomLevel(tempImageSettings);
+                            clearInterval(intervalId);
+                        }
+                    }, 1);
+                } else if (imageSettings.width || imageSettings.height) {
+                    this.notify('draw', {prop: 'open', value: {data: data}});
+                    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                    const intervalId: any = setInterval(() => {
+                        if (this.imageLoaded && this.baseImg.width && this.baseImg.height) {
+                            this.imageSettings.width = imageSettings.width;
+                            this.imageSettings.height = imageSettings.height;
+                            const originalWidth: number = this.baseImg.width;
+                            const originalHeight: number = this.baseImg.height;
+                            let maxValue: string = ''; let aspectRatioValue: number; let value: number; let newValue: number;
+                            if (imageSettings.width && imageSettings.height) {
+                                maxValue = imageSettings.width > imageSettings.height ? 'width' : 'height';
+                            }
+                            if (maxValue === 'width' || (imageSettings.width && maxValue !== 'height')) {
+                                aspectRatioValue = imageSettings.width;
+                                value = aspectRatioValue / (originalWidth / originalHeight);
+                                newValue = value % 1 >= 0.5 || value % 1 <= -0.5 ? Math.round(value) : (value < 0) ? Math.ceil(value) : Math.floor(value);
+                                if (!imageSettings.height || newValue > imageSettings.height) {
+                                    this.imageSettings.height = imageSettings.height = newValue;
+                                } else {
+                                    aspectRatioValue = imageSettings.height;
+                                    value = aspectRatioValue / (originalHeight / originalWidth);
+                                    newValue = value % 1 >= 0.5 || value % 1 <= -0.5 ? Math.round(value) : (value < 0) ? Math.ceil(value) : Math.floor(value);
+                                    this.imageSettings.width = imageSettings.width = newValue;
+                                }
+                            } else if (maxValue === 'height' || (imageSettings.height && maxValue !== 'width')) {
+                                aspectRatioValue = imageSettings.height;
+                                value = aspectRatioValue / (originalHeight / originalWidth);
+                                newValue = value % 1 >= 0.5 || value % 1 <= -0.5 ? Math.round(value) : (value < 0) ? Math.ceil(value) : Math.floor(value);
+                                if (!imageSettings.width || newValue > imageSettings.width) {
+                                    this.imageSettings.width = imageSettings.width = newValue;
+                                } else {
+                                    aspectRatioValue = imageSettings.width;
+                                    value = aspectRatioValue / (originalWidth / originalHeight);
+                                    newValue = value % 1 >= 0.5 || value % 1 <= -0.5 ? Math.round(value) : (value < 0) ? Math.ceil(value) : Math.floor(value);
+                                    this.imageSettings.height = imageSettings.height = newValue;
+                                }
+                            }
+                            this.notify('draw', {prop: 'open', value: {data: data}});
+                            this.setInitialZoomLevel(tempImageSettings);
+                            clearInterval(intervalId);
+                        }
+                    }, 1);
+                }
+            } else {
+                this.notify('draw', {prop: 'open', value: {data: data}});
+            }
         } else {
             this.updateImage(data, imageSettings ? imageSettings.backgroundColor : null);
         }
@@ -2042,11 +2125,17 @@ export class ImageEditor extends Component<HTMLDivElement> implements INotifyPro
     public rotate(degree: number): boolean {
         const obj: Object = {isRotate: false };
         this.applyShapes();
-        if (degree === 90 || degree === -90) {
-            this.updateImageTransformColl(degree === 90 ? 'rotateright' : 'rotateleft');
+        if (this.activeObj.shape && this.activeObj.shape.indexOf('crop') > -1) {
+            this.transformSelect(degree === 90 ? 'rotateright' : 'rotateleft');
+            obj['isRotate'] = true;
+        } else {
+            if (degree === 90 || degree === -90) {
+                this.updateImageTransformColl(degree === 90 ? 'rotateright' : 'rotateleft');
+            }
+            this.setRotateZoom();
+            this.notify('transform', {prop: 'rotate', value: {degree: degree, obj: obj}});
+            this.notify('draw', { prop: 'redrawDownScale' });
         }
-        this.notify('transform', {prop: 'rotate', value: {degree: degree, obj: obj}});
-        this.notify('draw', { prop: 'redrawDownScale' });
         const actionArgs: EditCompleteEventArgs  = { action: 'rotate', actionEventArgs: this.editCompleteArgs };
         this.triggerEditCompleteEvent(actionArgs);
         return obj['isRotate'];
@@ -2065,7 +2154,7 @@ export class ImageEditor extends Component<HTMLDivElement> implements INotifyPro
      * @returns {void}.
      */
     public export(type?: string, fileName?: string, imageQuality?: number): void {
-        this.applyShapes();
+        this.manageActiveAction();
         this.notify('export', { prop: 'export', onPropertyChange: false, value: {type: type, fileName: fileName, imgQuality: imageQuality}});
     }
 
@@ -2176,6 +2265,17 @@ export class ImageEditor extends Component<HTMLDivElement> implements INotifyPro
      */
     public zoom(zoomFactor: number, zoomPoint?: Point): void {
         this.isZoomBtnClick = true;
+        let prevZoom: number = this.transform.zoomFactor;
+        if (prevZoom !== 0) {
+            const zoomObj: { previousZoomValue: number | null } = { previousZoomValue: null };
+            this.notify('transform', { prop: 'getPreviousZoomValue', value: { obj: zoomObj } });
+            prevZoom = zoomObj.previousZoomValue;
+        }
+        if (zoomFactor !== 1 && prevZoom !== 0 && ((prevZoom < 1 && zoomFactor > 1) || (prevZoom > 1 && zoomFactor < 1))) {
+            this.notify('transform', { prop: 'zoom', onPropertyChange: false,
+                value: { zoomFactor: 1, zoomPoint }
+            });
+        }
         this.notify('transform', { prop: 'zoom', onPropertyChange: false,
             value: {zoomFactor: zoomFactor, zoomPoint: zoomPoint}});
         this.notify('draw', { prop: 'redrawDownScale' });
@@ -2348,12 +2448,14 @@ export class ImageEditor extends Component<HTMLDivElement> implements INotifyPro
      * @param {string} strokeColor - Specifies the outline color of the text annotation.
      * @param {number} strokeWidth - Specifies the outline stroke width of the text annotation.
      * @param {TransformationCollection[]} transformCollection - Specifies the transform collection of the text annotation.
+     * @param {boolean} underline - Specifies whether the text should be underlined.
+     * @param {boolean} strikethrough - Specifies whether the text should have a strikethrough.
      * @returns {boolean}.
      *
      */
     public drawText(x?: number, y?: number, text?: string, fontFamily?: string, fontSize?: number, bold?: boolean, italic?: boolean,
                     color?: string, isSelected?: boolean, degree?: number, fillColor?: string, strokeColor?: string,
-                    strokeWidth?: number, transformCollection?: TransformationCollection[]): boolean {
+                    strokeWidth?: number, transformCollection?: TransformationCollection[], underline?: boolean, strikethrough?: boolean): boolean {
         let isText: boolean = false;
         const isPointsInRange: boolean = this.allowShape(x, y);
         if (!this.disabled && this.isImageLoaded && (isPointsInRange || (isNullOrUndefined(x) && isNullOrUndefined(y)))) {
@@ -2361,7 +2463,7 @@ export class ImageEditor extends Component<HTMLDivElement> implements INotifyPro
             this.manageActiveAction();
             this.notify('shape', { prop: 'drawText', onPropertyChange: false, value: {x: x, y: y, text: text, fontFamily: fontFamily,
                 fontSize: fontSize, bold: bold, italic: italic, color: color, isSelected: isSelected, degree: degree, fillColor: fillColor,
-                outlineColor: strokeColor, outlineWidth: strokeWidth, transformCollection: transformCollection }});
+                outlineColor: strokeColor, outlineWidth: strokeWidth, transformCollection: transformCollection, underline: underline, strikethrough: strikethrough }});
             this.editCompleted();
         }
         return isText;
@@ -2388,14 +2490,25 @@ export class ImageEditor extends Component<HTMLDivElement> implements INotifyPro
         let isImage: boolean = false;
         const isPointsInRange: boolean = this.allowShape(x, y);
         if (!this.disabled && this.isImageLoaded && (isPointsInRange || (isNullOrUndefined(x) && isNullOrUndefined(y)))) {
+            if (typeof data === 'string') {
+                try {
+                    const request: XMLHttpRequest = new XMLHttpRequest();
+                    const isBlob: boolean = (data as string).indexOf('blob:') === 0;
+                    request.open(isBlob ? 'GET' : 'HEAD', data, false);
+                    request.send();
+                    isImage = request.status >= 200 && request.status < 300;
+                } catch (error) {
+                    isImage = false;
+                }
+            } else if (data instanceof ImageData) {
+                if (data.data instanceof Uint8ClampedArray && data.width > 0 && data.height > 0) {
+                    isImage = true;
+                }
+            }
             this.manageActiveAction();
-            const length: number = this.objColl.length;
             this.notify('shape', { prop: 'drawImage', onPropertyChange: false, value: {x: x, y: y, width: width, height: height,
                 src: data, degree: degree, isAspectRatio: isAspectRatio, opacity: opacity, isSelected: isSelected }});
             this.editCompleted();
-            if (this.objColl.length > length) {
-                isImage = true;
-            }
         }
         return isImage;
     }
@@ -2512,6 +2625,8 @@ export class ImageEditor extends Component<HTMLDivElement> implements INotifyPro
         this.applyShapes();
         this.notify('shape', { prop: 'deleteShape', onPropertyChange: false, value: {id: id, isShape: true }});
         this.editCompleted('shape-delete');
+        this.notify('draw', { prop: 'clearOuterCanvas', onPropertyChange: false, value: {context: this.lowerContext}});
+        this.notify('draw', { prop: 'clearOuterCanvas', onPropertyChange: false, value: {context: this.upperContext}});
     }
 
     /**
@@ -2732,6 +2847,7 @@ export class ImageEditor extends Component<HTMLDivElement> implements INotifyPro
         let isResized: boolean = false;
         if (((width.toString()).length <= 4 && (height.toString()).length <= 4) && (!this.isCircleCrop || isAspectRatio)) {
             this.manageActiveAction();
+            this.isPublicMethod = true;
             this.notify('toolbar', { prop: 'resizeClick', value: {bool: false }});
             const destPoints: ActivePoint = {startX: this.img.destLeft, startY: this.img.destTop, width: this.img.destWidth,
                 height: this.img.destHeight };
@@ -2764,6 +2880,7 @@ export class ImageEditor extends Component<HTMLDivElement> implements INotifyPro
             } else {
                 this.notify('draw', {prop: 'performCancel', value: {isContextualToolbar: null }});
             }
+            this.isPublicMethod = false;
             this.notify('draw', { prop: 'redrawDownScale' });
         }
         return isResized;
@@ -3254,6 +3371,68 @@ export class ImageEditor extends Component<HTMLDivElement> implements INotifyPro
     }
 
     // Toolbar related codes
+    private scaleToFit(imageSettings: ImageSettings): ImageSettings {
+        const tempImageSettings: ImageSettings = extend({}, imageSettings, {}, true) as ImageSettings;
+        const viewPortWidth: number = this.lowerCanvas.clientWidth;
+        const viewPortHeight: number = this.lowerCanvas.clientHeight;
+        if (imageSettings.width && imageSettings.height && (imageSettings.width > viewPortWidth ||
+            imageSettings.height > viewPortHeight)) {
+            const widthScale: number = viewPortWidth / imageSettings.width;
+            const heightScale: number = viewPortHeight / imageSettings.height;
+            const scale: number = Math.min(widthScale, heightScale);
+            tempImageSettings.width = Math.round(imageSettings.width * scale);
+            tempImageSettings.height = Math.round(imageSettings.height * scale);
+        } else if (imageSettings.width && imageSettings.width > viewPortWidth) {
+            const scale: number = viewPortWidth / imageSettings.width;
+            tempImageSettings.width = Math.round(imageSettings.width * scale);
+        } else if (imageSettings.height && imageSettings.height > viewPortHeight) {
+            const scale: number = viewPortHeight / imageSettings.height;
+            tempImageSettings.height = Math.round(imageSettings.height * scale);
+        }
+        return tempImageSettings;
+    }
+
+    private setInitialZoomLevel(oldImageSettings: ImageSettings): void {
+        let zoomLevel: number = 1;
+        let newWidth: number = this.img.destWidth;
+        let newHeight: number = this.img.destHeight;
+        const oldWidth: number = oldImageSettings.width;
+        const oldHeight: number = oldImageSettings.height;
+        const dimObj: Object = { width: 0, height: 0 };
+        this.notify('transform', { prop: 'calcMaxDimension', onPropertyChange: false,
+            value: { width: this.img.srcWidth, height: this.img.srcHeight, obj: dimObj, isImgShape: null } });
+        while ((newWidth && oldWidth && oldWidth > newWidth) || (newHeight && oldHeight && oldHeight > newHeight)) {
+            newWidth = dimObj['width'] + (dimObj['width'] * 0.025 * zoomLevel);
+            newHeight = dimObj['height'] + (dimObj['height'] * 0.025 * zoomLevel);
+            if (Math.abs(newWidth) >= Math.abs(oldWidth) && Math.abs(newHeight) >= Math.abs(oldHeight)) {
+                break;
+            }
+            zoomLevel++;
+        }
+        if (zoomLevel > 1) {
+            this.isImageLoaded = true;
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+            const intervalId: any = setInterval(() => {
+                if (this.imageLoaded) {
+                    for (let i: number = 1; i < zoomLevel; i++) {
+                        if (Math.round(i / 4) < this.zoomSettings.maxZoomFactor) {
+                            this.notify('transform', { prop: 'zoomAction', onPropertyChange: false,
+                                value: { zoomFactor: 0.025, zoomPoint: null, isResize: true } });
+                        } else {
+                            zoomLevel = i;
+                            break;
+                        }
+                    }
+                    this.setProperties({ zoomSettings: { zoomFactor: Math.round(zoomLevel / 4) } }, true);
+                    this.notify('transform', { prop: 'setPreviousZoomValue', onPropertyChange: false,
+                        value: { previousZoomValue: this.zoomSettings.zoomFactor } });
+                    this.notify('toolbar', {prop: 'enable-disable-btns'});
+                    clearInterval(intervalId);
+                }
+            }, 1);
+        }
+    }
+
     private resetToolbar(): void {
         if (this.toolbarHeight !== this.tempToolbarHeight && !((isNullOrUndefined(this.toolbar) ||
             (this.toolbar && this.toolbar.length > 0)
@@ -3266,6 +3445,14 @@ export class ImageEditor extends Component<HTMLDivElement> implements INotifyPro
                 this.notify('toolbar', { prop: 'create-contextual-toolbar', onPropertyChange: false });
             }
             this.update();
+        }
+    }
+
+    private setRotateZoom(): void {
+        if (this.transform.zoomFactor > 0) {
+            this.notify('draw', { prop: 'setRotateZoom', onPropertyChange: false, value: {isRotateZoom: true }});
+        } else {
+            this.notify('draw', { prop: 'setRotateZoom', onPropertyChange: false, value: {isRotateZoom: false }});
         }
     }
 
@@ -3861,6 +4048,11 @@ export class ImageEditor extends Component<HTMLDivElement> implements INotifyPro
     }
 
     public triggerEditCompleteEvent(args: EditCompleteEventArgs): void {
+        const obj: Object = {bool: false };
+        this.notify('undo-redo', { prop: 'preventEditComplete', value: {obj: obj}});
+        if (obj['bool']) {
+            return;
+        }
         if (args.action === 'shape-insert' && args.actionEventArgs &&
             (args.actionEventArgs as ShapeChangeEventArgs).currentShapeSettings &&
             (args.actionEventArgs as ShapeChangeEventArgs).currentShapeSettings.type.toString() === 'Redact') {
@@ -5109,15 +5301,23 @@ export class ImageEditor extends Component<HTMLDivElement> implements INotifyPro
                 this.notify('crop', { prop: 'calcRatio', onPropertyChange: false,
                     value: {obj: obj, dimension: {width: ctx.canvas.width, height: ctx.canvas.height }}});
             }
-            let dimension: Dimension;
-            // eslint-disable-next-line prefer-const
-            dimension = this.getRotatedCanvasDim(this.baseImg.width, this.baseImg.height, this.transform.straighten);
+            let width: number = this.baseImg.width;
+            let height: number = this.baseImg.height;
+            if (!this.aspectRatioBaseDimension && this.imageSettings.width && this.imageSettings.height) {
+                const widthRatio: number = this.baseImg.width / this.imageSettings.width;
+                const heightRatio: number = this.baseImg.height / this.imageSettings.height;
+                let ratio: number = (widthRatio + heightRatio) / 2;
+                ratio = ratio < 1 ? 1 : ratio;
+                width = this.imageSettings.width * ratio;
+                height = this.imageSettings.height * ratio;
+            }
+            const dimension: Dimension = this.getRotatedCanvasDim(width, height, this.transform.straighten);
             this.img.srcWidth = ctx.canvas.width = dimension.width; this.img.srcHeight = ctx.canvas.height = dimension.height;
             const x: number = ctx.canvas.width / 2; const y: number = ctx.canvas.height / 2;
             ctx.clearRect(0, 0, ctx.canvas.width, ctx.canvas.height);
             ctx.translate(x, y);
             ctx.rotate(straighten * Math.PI / 180);
-            ctx.drawImage(this.baseImg, -this.baseImg.width / 2, -this.baseImg.height / 2, this.baseImg.width, this.baseImg.height);
+            ctx.drawImage(this.baseImg, -width / 2, -height / 2, width, height);
             ctx.setTransform(1, 0, 0, 1, 0, 0);
             const obj: Object = {width: 0, height: 0 };
             this.notify('crop', { prop: 'calcRatio', onPropertyChange: false, value: {obj: obj, dimension:

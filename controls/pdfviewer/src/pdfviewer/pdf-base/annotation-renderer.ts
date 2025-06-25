@@ -1,4 +1,4 @@
-import { isNullOrUndefined } from '@syncfusion/ej2-base';
+import { Browser, isNullOrUndefined } from '@syncfusion/ej2-base';
 import { Rect, Size } from '@syncfusion/ej2-drawings';
 import { PdfAnnotationBorder, PdfDocument, PdfPage, PdfRotationAngle, PdfSquareAnnotation, PdfAnnotationFlag, _PdfDictionary, _PdfName, PdfBorderEffectStyle, PdfBorderEffect, PdfAnnotationState, PdfAnnotationStateModel, PdfCircleAnnotation, PdfPopupAnnotation, PdfLineAnnotation, PdfLineEndingStyle, PdfFont, PdfFontStyle, PdfFontFamily, PdfStandardFont, PdfStringFormat, PdfTextAlignment, PdfRubberStampAnnotation, PdfPen, PdfBrush, PdfGraphics, PdfVerticalAlignment, PdfGraphicsState, PdfPath, PdfRubberStampAnnotationIcon, PdfBitmap, PdfImage, PdfPolyLineAnnotation, PdfCircleMeasurementType, PdfPopupIcon, PdfFreeTextAnnotation, PdfBorderStyle, PdfAnnotationCollection, PdfRectangleAnnotation, PdfPolygonAnnotation, PdfEllipseAnnotation, PdfTextMarkupAnnotation, PdfAnnotation, PdfInkAnnotation, PdfLineIntent, PdfAppearance, PdfTemplate, PdfTextMarkupAnnotationType, PdfLineCaptionType, PdfMeasurementUnit, PdfAnnotationIntent, PdfTrueTypeFont, _decode, _PdfBaseStream, _annotationFlagsToString, _RtlRenderer, _UnicodeLine, _TrueTypeReader, _UnicodeTrueTypeFont, _TrueTypeGlyph} from '@syncfusion/ej2-pdf';
 import { PdfViewer, PdfViewerBase, SizeBase, PageRenderer, getArialFontData } from '../index';
@@ -1788,7 +1788,9 @@ export class AnnotationRenderer {
         }
         if (hasUniCode) {
             stampFont = new PdfTrueTypeFont(getArialFontData(),
-                                            this.pdfViewer.annotationModule.calculateFontSize(icon.toUpperCase(), rectangle) - 5,
+                                            Browser.isDevice && Browser.isAndroid ?
+                                                this.pdfViewer.annotationModule.calculateFontSize(icon.toUpperCase(), rectangle) - 10 :
+                                                this.pdfViewer.annotationModule.calculateFontSize(icon.toUpperCase(), rectangle) - 5,
                                             PdfFontStyle.bold | PdfFontStyle.italic);
             detailsFont =  new PdfTrueTypeFont(getArialFontData(),
                                                this.pdfViewer.annotationModule.calculateFontSize(text.toUpperCase(), rectangle) - 5,
@@ -1796,7 +1798,9 @@ export class AnnotationRenderer {
         }
         else {
             stampFont = new PdfStandardFont(PdfFontFamily.helvetica,
-                                            this.pdfViewer.annotationModule.calculateFontSize(icon.toUpperCase(), rectangle) - 5,
+                                            Browser.isDevice && Browser.isAndroid ?
+                                                this.pdfViewer.annotationModule.calculateFontSize(icon.toUpperCase(), rectangle) - 10 :
+                                                this.pdfViewer.annotationModule.calculateFontSize(icon.toUpperCase(), rectangle) - 5,
                                             PdfFontStyle.bold | PdfFontStyle.italic);
             detailsFont = new PdfStandardFont(PdfFontFamily.helvetica,
                                               this.pdfViewer.annotationModule.calculateFontSize(text, rectangle) - 5,
@@ -2983,8 +2987,8 @@ export class AnnotationRenderer {
         if (!isNullOrUndefined(polygonAnnot._dictionary.get('Vertices'))){
             shapeAnnotation.VertexPoints = this.getVertexPoints(polygonAnnot._dictionary.get('Vertices'), width, height, pageRotation, polygonAnnot._page);
         }
-        if (!isNullOrUndefined(shapeAnnotation.VertexPoints) && shapeAnnotation.VertexPoints[0] !==
-        shapeAnnotation.VertexPoints[shapeAnnotation.VertexPoints.length - 1]){
+        if (!isNullOrUndefined(shapeAnnotation.VertexPoints) && JSON.stringify(shapeAnnotation.VertexPoints[0]) !==
+        JSON.stringify(shapeAnnotation.VertexPoints[shapeAnnotation.VertexPoints.length - 1])){
             shapeAnnotation.VertexPoints.push(shapeAnnotation.VertexPoints[0]);
         }
         shapeAnnotation.StrokeColor = 'rgba(' + polygonAnnot.color[0] + ',' + polygonAnnot.color[1] + ',' + polygonAnnot.color[2] + ',' + (polygonAnnot.color[3] ? polygonAnnot.color[3] : 1) + ')';
@@ -4075,6 +4079,18 @@ export class AnnotationRenderer {
             }
         }
         return annotationBoundList;
+    }
+
+    /**
+     * @private
+     * @returns {void}
+     */
+    public destroy(): void {
+        this.formats = null;
+        this.defaultWidth = null;
+        this.defaultHeight = null;
+        // eslint-disable-next-line
+        this.m_renderer = null;
     }
 
     private getMarkupAnnotTypeString(textMarkupType: PdfTextMarkupAnnotationType): string{

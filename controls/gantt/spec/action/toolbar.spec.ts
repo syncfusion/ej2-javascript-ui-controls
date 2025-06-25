@@ -2130,3 +2130,356 @@ describe('MT:887301-Issue in Multi taskbar in project view samples- Self referen
         }
     });
 });
+describe('previous timespan action without non working days', () => {
+    let ganttObj: Gantt;
+    let data = [
+        {
+            TaskID: 1,
+            TaskName: 'Product Concept',
+            StartDate: new Date('04/02/2019'),
+            EndDate: new Date('04/21/2019'),
+            subtasks: [
+                { TaskID: 2, TaskName: 'Defining the product  and its usage', BaselineStartDate: new Date('04/02/2019'), BaselineEndDate: new Date('04/06/2019'), StartDate: new Date('04/02/2019'), Duration: 3,Progress: 30 },
+                { TaskID: 3, TaskName: 'Defining target audience', StartDate: new Date('04/02/2019'), Duration: 3, 
+                Indicators: [
+                    {
+                        'date': '04/10/2019',
+                        'iconClass': 'e-btn-icon e-notes-info e-icons e-icon-left e-gantt e-notes-info::before',
+                        'name': 'Indicator title',
+                        'tooltip': 'tooltip'
+                    }
+                ] 
+            },
+                { TaskID: 4, TaskName: 'Prepare product sketch and notes', StartDate: new Date('04/02/2019'), Duration: 3, Predecessor: "2" ,Progress: 30},
+            ]
+        }]
+    beforeAll((done: Function) => {
+        ganttObj = createGantt ({
+            dataSource: data,
+           treeColumnIndex: 1,
+            taskFields: {
+                id: 'TaskID',
+                name: 'TaskName',
+                startDate: 'StartDate',
+                duration: 'Duration',
+                progress: 'Progress',
+                dependency:'Predecessor',
+                baselineStartDate: "BaselineStartDate",
+                baselineEndDate: "BaselineEndDate",
+                child: 'subtasks',
+                indicators: 'Indicators'
+            },
+            editSettings: {
+                allowAdding: true,
+                allowEditing: true,
+                allowDeleting: true,
+                allowTaskbarEditing: true,
+                showDeleteConfirmDialog: true
+            },
+            columns: [
+                { field: 'taskID', width: 60 },
+                { field: 'taskName', width: 250 },
+                { field: 'startDate' },
+                { field: 'endDate' },
+                { field: 'duration' },
+                { field: 'predecessor' },
+                { field: 'progress' },
+            ],
+            toolbar: ['Add', 'Edit', 'Update', 'Delete', 'Cancel', 'ExpandAll', 'CollapseAll', 'Search', 'ZoomIn', 'ZoomOut', 'ZoomToFit', 
+            'PrevTimeSpan', 'NextTimeSpan','ExcelExport', 'CsvExport', 'PdfExport',],
+            gridLines: "Both",
+            timelineSettings: {
+                showTooltip: true,
+                showWeekend: false,
+                topTier: {
+                    unit: 'Week',
+                    format: 'dd/MM/yyyy'
+                },
+                bottomTier: {
+                    unit: 'Day',
+                    count: 1
+                }
+            },
+            taskbarHeight: 20,
+            rowHeight: 40,
+            allowUnscheduledTasks: true,
+            projectStartDate: new Date('03/25/2019'),
+            projectEndDate: new Date('05/30/2019'),
+        }, done);
+    });
+    it('Previous Timespan handler function', () => {
+        let previoustimespanToolbar: HTMLElement = ganttObj.element.querySelector('#' + ganttObj.element.id + '_prevtimespan') as HTMLElement;
+        triggerMouseEvent(previoustimespanToolbar, 'click');
+        expect(ganttObj.getFormatedDate(ganttObj.timelineModule.timelineStartDate, 'MM/dd/yyyy')).toBe('03/18/2019');
+     });
+    afterAll(() => {
+        if (ganttObj) {
+            destroyGantt(ganttObj);
+        }
+    });
+});
+describe('previous timespan action without non working days with timelinesetting as days', () => {
+    let ganttObj: Gantt;
+    let data = [
+        {
+            TaskID: 1,
+            TaskName: 'Product Concept',
+            StartDate: new Date('04/02/2019'),
+            EndDate: new Date('04/21/2019'),
+            subtasks: [
+                { TaskID: 2, TaskName: 'Defining the product  and its usage', BaselineStartDate: new Date('04/02/2019'), BaselineEndDate: new Date('04/06/2019'), StartDate: new Date('04/02/2019'), Duration: 3,Progress: 30 },
+                { TaskID: 3, TaskName: 'Defining target audience', StartDate: new Date('04/02/2019'), Duration: 3, 
+                Indicators: [
+                    {
+                        'date': '04/10/2019',
+                        'iconClass': 'e-btn-icon e-notes-info e-icons e-icon-left e-gantt e-notes-info::before',
+                        'name': 'Indicator title',
+                        'tooltip': 'tooltip'
+                    }
+                ] 
+            },
+                { TaskID: 4, TaskName: 'Prepare product sketch and notes', StartDate: new Date('04/02/2019'), Duration: 3, Predecessor: "2" ,Progress: 30},
+            ]
+        }]
+    beforeAll((done: Function) => {
+        ganttObj = createGantt ({
+            dataSource: data,
+           treeColumnIndex: 1,
+            taskFields: {
+                id: 'TaskID',
+                name: 'TaskName',
+                startDate: 'StartDate',
+                duration: 'Duration',
+                progress: 'Progress',
+                dependency:'Predecessor',
+                baselineStartDate: "BaselineStartDate",
+                baselineEndDate: "BaselineEndDate",
+                child: 'subtasks',
+                indicators: 'Indicators'
+            },
+            editSettings: {
+                allowAdding: true,
+                allowEditing: true,
+                allowDeleting: true,
+                allowTaskbarEditing: true,
+                showDeleteConfirmDialog: true
+            },
+            columns: [
+                { field: 'taskID', width: 60 },
+                { field: 'taskName', width: 250 },
+                { field: 'startDate' },
+                { field: 'endDate' },
+                { field: 'duration' },
+                { field: 'predecessor' },
+                { field: 'progress' },
+            ],
+            toolbar: ['Add', 'Edit', 'Update', 'Delete', 'Cancel', 'ExpandAll', 'CollapseAll', 'Search', 'ZoomIn', 'ZoomOut', 'ZoomToFit', 
+            'PrevTimeSpan', 'NextTimeSpan','ExcelExport', 'CsvExport', 'PdfExport',],
+            gridLines: "Both",
+            timelineSettings: {
+                showTooltip: true,
+                showWeekend: false,
+                topTier: {
+                    unit: 'Day',
+                    format: 'dd/MM/yyyy'
+                },
+                bottomTier: {
+                    unit: 'Hour',
+                    count: 1
+                }
+            },
+            taskbarHeight: 20,
+            rowHeight: 40,
+            allowUnscheduledTasks: true,
+            projectStartDate: new Date('03/25/2019'),
+            projectEndDate: new Date('05/30/2019'),
+        }, done);
+    });
+    it('Previous Timespan handler function', () => {
+        let previoustimespanToolbar: HTMLElement = ganttObj.element.querySelector('#' + ganttObj.element.id + '_prevtimespan') as HTMLElement;
+        triggerMouseEvent(previoustimespanToolbar, 'click');
+        expect(ganttObj.getFormatedDate(ganttObj.timelineModule.timelineStartDate, 'MM/dd/yyyy')).toBe('03/22/2019');
+     });
+    afterAll(() => {
+        if (ganttObj) {
+            destroyGantt(ganttObj);
+        }
+    });
+});
+describe('previous timespan action without non working days with  weekStartDay', () => {
+    let ganttObj: Gantt;
+    let data = [
+        {
+            TaskID: 1,
+            TaskName: 'Product Concept',
+            StartDate: new Date('04/02/2019'),
+            EndDate: new Date('04/21/2019'),
+            subtasks: [
+                { TaskID: 2, TaskName: 'Defining the product  and its usage', BaselineStartDate: new Date('04/02/2019'), BaselineEndDate: new Date('04/06/2019'), StartDate: new Date('04/02/2019'), Duration: 3,Progress: 30 },
+                { TaskID: 3, TaskName: 'Defining target audience', StartDate: new Date('04/02/2019'), Duration: 3, 
+                Indicators: [
+                    {
+                        'date': '04/10/2019',
+                        'iconClass': 'e-btn-icon e-notes-info e-icons e-icon-left e-gantt e-notes-info::before',
+                        'name': 'Indicator title',
+                        'tooltip': 'tooltip'
+                    }
+                ] 
+            },
+                { TaskID: 4, TaskName: 'Prepare product sketch and notes', StartDate: new Date('04/02/2019'), Duration: 3, Predecessor: "2" ,Progress: 30},
+            ]
+        }]
+    beforeAll((done: Function) => {
+        ganttObj = createGantt ({
+            dataSource: data,
+           treeColumnIndex: 1,
+            taskFields: {
+                id: 'TaskID',
+                name: 'TaskName',
+                startDate: 'StartDate',
+                duration: 'Duration',
+                progress: 'Progress',
+                dependency:'Predecessor',
+                baselineStartDate: "BaselineStartDate",
+                baselineEndDate: "BaselineEndDate",
+                child: 'subtasks',
+                indicators: 'Indicators'
+            },
+            editSettings: {
+                allowAdding: true,
+                allowEditing: true,
+                allowDeleting: true,
+                allowTaskbarEditing: true,
+                showDeleteConfirmDialog: true
+            },
+            columns: [
+                { field: 'taskID', width: 60 },
+                { field: 'taskName', width: 250 },
+                { field: 'startDate' },
+                { field: 'endDate' },
+                { field: 'duration' },
+                { field: 'predecessor' },
+                { field: 'progress' },
+            ],
+            toolbar: ['Add', 'Edit', 'Update', 'Delete', 'Cancel', 'ExpandAll', 'CollapseAll', 'Search', 'ZoomIn', 'ZoomOut', 'ZoomToFit', 
+            'PrevTimeSpan', 'NextTimeSpan','ExcelExport', 'CsvExport', 'PdfExport',],
+            gridLines: "Both",
+            timelineSettings: {
+                showTooltip: true,
+                showWeekend: false,
+                 weekStartDay:5,
+                topTier: {
+                    unit: 'Week',
+                    format: 'dd/MM/yyyy'
+                },
+                bottomTier: {
+                    unit: 'Day',
+                    count: 1
+                }
+            },
+            taskbarHeight: 20,
+            rowHeight: 40,
+            allowUnscheduledTasks: true,
+            projectStartDate: new Date('03/25/2019'),
+            projectEndDate: new Date('05/30/2019'),
+        }, done);
+    });
+    it('Previous Timespan handler function with  weekStartDay', () => {
+        let previoustimespanToolbar: HTMLElement = ganttObj.element.querySelector('#' + ganttObj.element.id + '_prevtimespan') as HTMLElement;
+        triggerMouseEvent(previoustimespanToolbar, 'click');
+        expect(ganttObj.getFormatedDate(ganttObj.timelineModule.timelineStartDate, 'MM/dd/yyyy')).toBe('03/22/2019');
+     });
+    afterAll(() => {
+        if (ganttObj) {
+            destroyGantt(ganttObj);
+        }
+    });
+});
+describe('next timespan action without non working days with timelinesetting as days', () => {
+    let ganttObj: Gantt;
+    let data = [
+        {
+            TaskID: 1,
+            TaskName: 'Product Concept',
+            StartDate: new Date('04/02/2019'),
+            EndDate: new Date('04/21/2019'),
+            subtasks: [
+                { TaskID: 2, TaskName: 'Defining the product  and its usage', BaselineStartDate: new Date('04/02/2019'), BaselineEndDate: new Date('04/06/2019'), StartDate: new Date('04/02/2019'), Duration: 3,Progress: 30 },
+                { TaskID: 3, TaskName: 'Defining target audience', StartDate: new Date('04/02/2019'), Duration: 3, 
+                Indicators: [
+                    {
+                        'date': '04/10/2019',
+                        'iconClass': 'e-btn-icon e-notes-info e-icons e-icon-left e-gantt e-notes-info::before',
+                        'name': 'Indicator title',
+                        'tooltip': 'tooltip'
+                    }
+                ] 
+            },
+                { TaskID: 4, TaskName: 'Prepare product sketch and notes', StartDate: new Date('04/02/2019'), Duration: 3, Predecessor: "2" ,Progress: 30},
+            ]
+        }]
+    beforeAll((done: Function) => {
+        ganttObj = createGantt ({
+            dataSource: data,
+           treeColumnIndex: 1,
+            taskFields: {
+                id: 'TaskID',
+                name: 'TaskName',
+                startDate: 'StartDate',
+                duration: 'Duration',
+                progress: 'Progress',
+                dependency:'Predecessor',
+                baselineStartDate: "BaselineStartDate",
+                baselineEndDate: "BaselineEndDate",
+                child: 'subtasks',
+                indicators: 'Indicators'
+            },
+            editSettings: {
+                allowAdding: true,
+                allowEditing: true,
+                allowDeleting: true,
+                allowTaskbarEditing: true,
+                showDeleteConfirmDialog: true
+            },
+            columns: [
+                { field: 'taskID', width: 60 },
+                { field: 'taskName', width: 250 },
+                { field: 'startDate' },
+                { field: 'endDate' },
+                { field: 'duration' },
+                { field: 'predecessor' },
+                { field: 'progress' },
+            ],
+            toolbar: ['Add', 'Edit', 'Update', 'Delete', 'Cancel', 'ExpandAll', 'CollapseAll', 'Search', 'ZoomIn', 'ZoomOut', 'ZoomToFit', 
+            'PrevTimeSpan', 'NextTimeSpan','ExcelExport', 'CsvExport', 'PdfExport',],
+            gridLines: "Both",
+            timelineSettings: {
+                showTooltip: true,
+                showWeekend: false,
+                topTier: {
+                    unit: 'Day',
+                    format: 'dd/MM/yyyy'
+                },
+                bottomTier: {
+                    unit: 'Hour',
+                    count: 1
+                }
+            },
+            taskbarHeight: 20,
+            rowHeight: 40,
+            allowUnscheduledTasks: true,
+            projectStartDate: new Date('03/25/2019'),
+            projectEndDate: new Date('05/30/2019'),
+        }, done);
+    });
+    it('Previous Timespan handler function', () => {
+        let previoustimespanToolbar: HTMLElement = ganttObj.element.querySelector('#' + ganttObj.element.id + '_nexttimespan') as HTMLElement;
+        triggerMouseEvent(previoustimespanToolbar, 'click');
+        expect(ganttObj.getFormatedDate(ganttObj.timelineModule.timelineStartDate, 'MM/dd/yyyy')).toBe('03/25/2019');
+     });
+    afterAll(() => {
+        if (ganttObj) {
+            destroyGantt(ganttObj);
+        }
+    });
+});

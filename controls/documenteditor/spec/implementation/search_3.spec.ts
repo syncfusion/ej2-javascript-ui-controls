@@ -16,7 +16,7 @@ import { EditorHistory } from '../../src/document-editor/implementation/editor-h
 //     let editor: DocumentEditor = undefined;
 //     beforeAll(() => {
 //         let ele: HTMLElement = createElement('div', { id: 'container' });
-//         document.body.innerHTML = '';
+//         
 //         document.body.appendChild(ele);
 //         DocumentEditor.Inject(Editor, Selection, Search);
 //         editor = new DocumentEditor({
@@ -32,7 +32,7 @@ import { EditorHistory } from '../../src/document-editor/implementation/editor-h
 //         document.body.removeChild(document.getElementById('container'));
 //         editor.destroy();
 //         editor = undefined;
-//         document.body.innerHTML = '';
+//         
 //         setTimeout(() => {
 //             done();
 //         }, 1000);

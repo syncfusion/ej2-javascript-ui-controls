@@ -507,6 +507,11 @@ describe('Aggregates Functionality testing', () => {
                     load: function() {
                         this.isReact = true;
                         this.isInitialLoad = true;
+                        this.clearTemplate = (propertyNames?: string[], index?: any, callback?: Function): void => {
+                            if (callback) {
+                                callback();
+                            }
+                        }
                     },
                     aggregates: [{
                         columns: [{

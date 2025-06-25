@@ -277,10 +277,10 @@ describe('Toolbar actions ', () => {
                 it("check-placeholder", function () {
                     rteObj.value='';
                     rteObj.dataBind();
-                    expect((document.getElementsByClassName('rte-placeholder')[0] as HTMLElement).classList.contains('enabled')).toBe(true);
+                    expect((document.getElementsByClassName('e-rte-placeholder')[0] as HTMLElement).classList.contains('e-placeholder-enabled')).toBe(true);
                     var trgEle = rteEle.querySelectorAll(".e-toolbar-item")[5];
                     (trgEle.childNodes[0] as HTMLElement).click();
-                    expect((document.getElementsByClassName('rte-placeholder')[0] as HTMLElement).classList.contains('enabled')).toBe(false);
+                    expect((document.getElementsByClassName('e-rte-placeholder')[0] as HTMLElement).classList.contains('e-placeholder-enabled')).toBe(false);
                     expect((rteObj.inputElement.firstChild as HTMLElement).tagName).toBe('OL');
                 });
 
@@ -964,9 +964,10 @@ describe('Toolbar actions ', () => {
                 });
                 let trgEle: HTMLElement = <HTMLElement>rteObj.element.querySelectorAll(".e-toolbar-item")[1];
                 trgEle.childNodes[0].dispatchEvent(mouseDownEvent);
-                (trgEle.childNodes[0] as HTMLElement).click();
-                (trgEle.childNodes[0] as HTMLElement).setAttribute("aria-expanded", 'true');
-                let popupElement = document.querySelectorAll("#" + rteObj.getID() + "_toolbar_NumberFormatList-popup")[0];
+                //Modified rendering from dropdown to split button
+                (trgEle.childNodes[0].childNodes[1] as HTMLElement).click();
+                (trgEle.childNodes[0].childNodes[1] as HTMLElement).setAttribute("aria-expanded", 'true');
+                let popupElement = document.querySelectorAll("#" + rteObj.getID() + "_toolbar_NumberFormatList_dropdownbtn-popup")[0];
                 expect(popupElement != undefined ).toBe(true);
                 (rteObj as any).inputElement.ownerDocument.dispatchEvent(mouseDownEvent);
                 expect(popupElement.classList.contains("e-popup-close")).toBe(true);
@@ -1087,6 +1088,100 @@ describe('Toolbar actions ', () => {
         afterAll((done) => {
             destroy(rteObj);
             done();
+        });
+    });
+    describe(' Test case Coverage for Toolbar renderer ', () => {
+        let rteObj: RichTextEditor;
+        let curDocument: Document;
+        let mouseEventArgs: { [key: string]: HTMLElement };
+        let editNode: Element;
+        let rteEle: Element;
+        let selectNode: Element;
+        let innerHTMLStr: string = `<p>First p node-0</p><p>First p node-1</p>
+        <p class='first-p-node'>dom node<label class='first-label'>label node</label></p>
+        <p class='second-p-node'><label class='second-label'>label node</label></p>
+        <p class='third-p-node'>dom node<label class='third-label'>label node</label></p>
+        <ul class='ul-third-node'><li>one-node</li><li>two-node</li><li>three-node</li></ul>
+        <p id='convertPre'>converted to pre<p><p id='revertPre'>converted to pre<p>`;
+        beforeAll(() => {
+            rteObj = renderRTE({
+                toolbarSettings: {
+                    items: ['|', 'Formats', '|', 'Alignments', '|', 'OrderedList', 'UnorderedList', '|', 'Indent', 'Outdent', '|',
+                        'FontName', '|', 'InsertCode']
+                },
+                value: innerHTMLStr
+            });
+            rteEle = rteObj.element;
+            editNode = rteObj.contentModule.getEditPanel();
+            curDocument = rteObj.contentModule.getDocument();
+        });
+        afterAll(() => {
+            destroy(rteObj);
+        });
+        it("Alignments - JustifyFull", () => {
+            selectNode = editNode.querySelector('.first-p-node');
+            setCursorPoint(curDocument, selectNode.childNodes[0] as Element, 1);
+            let trgEle: HTMLElement = <HTMLElement>rteEle.querySelectorAll(".e-toolbar-item")[3];
+            (trgEle.childNodes[0] as HTMLElement).click();
+            let popupElement: Element = curDocument.querySelectorAll(".e-rte-dropdown-popup.e-popup-open")[0];
+            mouseEventArgs = {
+                target: (popupElement.childNodes[0].childNodes[3] as HTMLElement)
+            };
+            (rteObj.toolbarModule as any).dropDownModule.alignDropDown.clickHandler(mouseEventArgs);
+            selectNode = editNode.querySelector('.first-p-node');
+            expect((selectNode as HTMLElement).style.textAlign === 'justify').toBe(true);
+            selectNode = editNode.querySelector('.first-p-node');
+            setCursorPoint(curDocument, selectNode.childNodes[0] as Element, 1);
+            trgEle = <HTMLElement>rteEle.querySelectorAll(".e-toolbar-item")[3];
+            (trgEle.childNodes[0] as HTMLElement).click();
+            popupElement = curDocument.querySelectorAll(".e-rte-dropdown-popup.e-popup-open")[0];
+            mouseEventArgs = {
+                target: (popupElement.childNodes[0].childNodes[3] as HTMLElement)
+            };
+            (rteObj.toolbarModule as any).dropDownModule.alignDropDown.clickHandler(mouseEventArgs);
+            selectNode = editNode.querySelector('.first-p-node');
+            expect((selectNode as HTMLElement).style.textAlign === 'justify').toBe(true);
+        });
+    });
+    describe('964195 - In IFrame mode, Font and Background Color dropdown not closed properly when focus on the editor. ', () => {
+        let rteObj: RichTextEditor;
+        let innerHTMLStr = "<p>First p node-0</p><p>First p node-1</p>\n\n    <p class='first-p-node'>dom node<label class='first-label'>label node</label></p>\n\n    <p class='second-p-node'><label class='second-label'>label node</label></p>\n    <p class='third-p-node'>dom node<label class='third-label'>label node</label></p>\n    <ul class='ul-third-node'><li>one-node</li><li>two-node</li><li>three-node</li></ul>\n    <p id='convertPre'>converted to pre<p><p id='revertPre'>converted to pre<p>";
+        beforeAll(() => {
+            rteObj = renderRTE({
+                toolbarSettings: {
+                    items: ['FontColor', 'BackgroundColor']
+                },
+                value :innerHTMLStr,
+                iframeSettings: {
+                    enable: true
+                },
+            });
+        });
+        afterAll(() => {
+            destroy(rteObj);
+        });
+        it("Dropdown hides when you click the focus from the dropdown.", () => {
+            (rteObj as any).focusIn();
+            const mouseDownEvent = new MouseEvent('mousedown', {
+                bubbles: true,
+                cancelable: true,
+            });
+            let trgEle: HTMLElement = <HTMLElement>rteObj.element.querySelectorAll(".e-toolbar-item")[0];
+            trgEle.childNodes[0].dispatchEvent(mouseDownEvent);
+            (trgEle.childNodes[0].childNodes[1].childNodes[1] as HTMLElement).click();
+            (trgEle.childNodes[0].childNodes[1].childNodes[1] as HTMLElement).setAttribute("aria-expanded", 'true');
+            let fontColorPopupElement = document.querySelector(".e-dropdown-popup.e-popup-open");
+            expect(fontColorPopupElement != undefined ).toBe(true);
+            (rteObj as any).inputElement.ownerDocument.dispatchEvent(mouseDownEvent);
+            expect(fontColorPopupElement.classList.contains("e-popup-close")).toBe(true);
+            trgEle = <HTMLElement>rteObj.element.querySelectorAll(".e-toolbar-item")[1];
+            trgEle.childNodes[0].dispatchEvent(mouseDownEvent);
+            (trgEle.childNodes[0].childNodes[1].childNodes[1] as HTMLElement).click();
+            (trgEle.childNodes[0].childNodes[1].childNodes[1] as HTMLElement).setAttribute("aria-expanded", 'true');
+            let bgColorPopupElement = document.querySelector(".e-dropdown-popup.e-popup-open");
+            expect(bgColorPopupElement != undefined ).toBe(true);
+            (rteObj as any).inputElement.ownerDocument.dispatchEvent(mouseDownEvent);
+            expect(bgColorPopupElement.classList.contains("e-popup-close")).toBe(true);
         });
     });
 });

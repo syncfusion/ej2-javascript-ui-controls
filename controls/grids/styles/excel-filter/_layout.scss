@@ -342,6 +342,10 @@
     .e-footer-content {
       border-style: solid;
       border-width: $grid-column-chooser-footdiv;
+      @if $grid-xlfl-skin == 'fluent2' {
+        padding-right: 20px;
+        padding-left: 20px;
+      }
     }
 
     .e-excel-menu {
@@ -358,6 +362,9 @@
       padding-left: $grid-checkbox-content-padding-left;
       @if $grid-xlfl-skin == 'material3' {
         padding-right: 16px;
+      }
+      @if $grid-xlfl-skin == 'fluent2' {
+        padding-right: 20px;
       }
     }
 

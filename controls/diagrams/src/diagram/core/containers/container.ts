@@ -13,7 +13,7 @@ import { rotatePoint, getOffset } from '../../utility/base-util';
 /**
  * Container module is used to group related objects
  */
-export class Container extends DiagramElement {
+export class GroupableView extends DiagramElement {
     /**
      * Gets/Sets the space between the container and its immediate children
      */
@@ -69,7 +69,7 @@ export class Container extends DiagramElement {
                     availableSize.height = child.bounds.height;
                 }
                 const force: boolean = child.horizontalAlignment === 'Stretch' || child.verticalAlignment === 'Stretch';
-                if (this.measureChildren || force || (child instanceof Container && child.measureChildren !== undefined)) {
+                if (this.measureChildren || force || (child instanceof GroupableView && child.measureChildren !== undefined)) {
                     child.measure(availableSize, id, callback);
                 }
                 childBounds = this.GetChildrenBounds(child);
@@ -152,7 +152,7 @@ export class Container extends DiagramElement {
                         child.parentTransform = this.parentTransform + this.rotateAngle;
                         arrange = true;
                     }
-                    if (arrange || this.measureChildren || (child instanceof Container && child.measureChildren !== undefined)) {
+                    if (arrange || this.measureChildren || (child instanceof GroupableView && child.measureChildren !== undefined)) {
                         child.arrange(child.desiredSize);
                     }
                     //EJ2-839298 - Connector draw cursor is not enabled while hover the group node port
@@ -190,7 +190,7 @@ export class Container extends DiagramElement {
                 if (child.verticalAlignment === 'Stretch' || child.desiredSize.height === undefined) {
                     child.desiredSize.height = size.height - child.margin.top - child.margin.bottom;
                 }
-                if (child instanceof Container) {
+                if (child instanceof GroupableView) {
                     child.stretchChildren(child.desiredSize);
                 }
             }

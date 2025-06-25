@@ -154,6 +154,7 @@ export declare class Rule extends ChildProperty<Rule> {
     /**
      * Specifies whether rule is locked or not.
      *
+     * @aspType bool?
      * @default null
      */
     isLocked: boolean;

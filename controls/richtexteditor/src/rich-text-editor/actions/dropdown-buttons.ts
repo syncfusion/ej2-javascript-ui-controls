@@ -1,16 +1,18 @@
 import { addClass, isNullOrUndefined, removeClass, select, closest, L10n } from '@syncfusion/ej2-base';
-import { DropDownButton, MenuEventArgs } from '@syncfusion/ej2-splitbuttons';
+import { DropDownButton, MenuEventArgs, SplitButton } from '@syncfusion/ej2-splitbuttons';
 import { RenderType } from '../base/enum';
 import { getIndex } from '../base/util';
 import { RichTextEditorModel } from '../base/rich-text-editor-model';
 import * as events from '../base/constant';
 import * as classes from '../base/classes';
-import { getDropDownValue, getFormattedFontSize} from '../base/util';
+import { getDropDownValue, getFormattedFontSize } from '../base/util';
 import * as model from '../models/items';
-import { IRichTextEditor, IRenderer, IDropDownModel, IDropDownItemModel, IDropDownRenderArgs, IListDropDownModel, ICssClassArgs } from '../base/interface';
+import { IRichTextEditor, IDropDownRenderArgs, ICssClassArgs, IRenderer } from '../base/interface';
+import { IDropDownModel, IDropDownItemModel, ISplitButtonModel, ICodeBlockLanguageModel, IListDropDownModel } from '../../common/interface';
 import { ServiceLocator } from '../services/service-locator';
 import { RendererFactory } from '../services/renderer-factory';
 import { dispatchEvent } from '../base/util';
+import { CLS_CODEBLOCK_TB_BTN, CLS_CODEBLOCK_TB_BTN_ICON } from '../base/classes';
 
 /**
  * `Toolbar` module is used to handle Toolbar actions.
@@ -19,6 +21,7 @@ export class DropDownButtons {
     public numberFormatListDropDown: DropDownButton;
     public bulletFormatListDropDown: DropDownButton;
     public formatDropDown: DropDownButton;
+    public codeBlockSplitButton: SplitButton;
     public fontNameDropDown: DropDownButton;
     public fontSizeDropDown: DropDownButton;
     public alignDropDown: DropDownButton;
@@ -59,7 +62,7 @@ export class DropDownButtons {
     }
 
     private dropdownContent(width: string, type: string, content: string): string {
-        return ('<span style="display: inline-flex;' + 'width:' + ((type === 'quick') ? 'auto' : width) + '" >' +
+        return ('<span class="e-rte-dropdown-btn-text-wrapper" style="width:' + ((type === 'quick') ? 'auto' : width) + '" >' +
             '<span class="e-rte-dropdown-btn-text">' + content + '</span></span>');
     }
 
@@ -91,9 +94,10 @@ export class DropDownButtons {
                             command: { value: 'Lists', enumerable: true }, subCommand: { value: 'NumberFormatList', enumerable: true }
                         });
                     });
-                    this.numberFormatListDropDown = this.toolbarRenderer.renderListDropDown({
-                        cssClass: 'e-order-list' + ' ' + classes.CLS_RTE_ELEMENTS + ' ' + classes.CLS_ICONS,
-                        itemName: 'NumberFormatList', items: formatOLItem, element: targetElement
+                    this.numberFormatListDropDown = this.toolbarRenderer.renderSplitButton({
+                        cssClass: classes.CLS_NUMBERFORMATLIST_DROPDOWN + ' ' + classes.CLS_RTE_ELEMENTS + ' ' + classes.CLS_DROPDOWN,
+                        itemName: 'NumberFormatList', items: formatOLItem, element: targetElement,
+                        iconCss: ('e-order-list' + ' ' + classes.CLS_ICONS)
                     } as IDropDownModel);
                     break;
                 }
@@ -108,10 +112,32 @@ export class DropDownButtons {
                             command: { value: 'Lists', enumerable: true }, subCommand: { value: 'BulletFormatList', enumerable: true }
                         });
                     });
-                    this.bulletFormatListDropDown = this.toolbarRenderer.renderListDropDown({
-                        cssClass: 'e-unorder-list' + ' ' + classes.CLS_RTE_ELEMENTS + ' ' + classes.CLS_ICONS,
-                        itemName: 'BulletFormatList', items: formatULItem, element: targetElement
+                    this.bulletFormatListDropDown = this.toolbarRenderer.renderSplitButton({
+                        cssClass: classes.CLS_BULLETFORMATLIST_DROPDOWN + ' ' + classes.CLS_RTE_ELEMENTS + ' ' + classes.CLS_DROPDOWN,
+                        itemName: 'BulletFormatList', items: formatULItem, element: targetElement,
+                        iconCss: ('e-unorder-list' + ' ' + classes.CLS_ICONS)
                     } as IDropDownModel);
+                    break;
+                }
+                case 'codeblock': {
+                    targetElement = select('#' + this.parent.getID() + '_' + type + '_codeBlock', tbElement);
+                    if (isNullOrUndefined(targetElement) || targetElement.classList.contains(classes.CLS_DROPDOWN_BTN)) {
+                        return;
+                    }
+                    const codeBlockItems: ICodeBlockLanguageModel[] = (isNullOrUndefined(this.parent.codeBlockSettings.languages) ? [] :
+                        this.parent.codeBlockSettings.languages).slice();
+                    codeBlockItems.forEach((item: ICodeBlockLanguageModel): void => {
+                        Object.defineProperties((item as object), {
+                            command: { value: 'CodeBlock', enumerable: true },
+                            subCommand: { value: 'CodeBlock', enumerable: true },
+                            text: { value: item.label, enumerable: true },
+                            value: { value: item.language, enumerable: true }
+                        });
+                    });
+                    this.codeBlockSplitButton = this.toolbarRenderer.renderSplitButton({
+                        cssClass: 'e-code-block' + ' ' + CLS_CODEBLOCK_TB_BTN + ' ' + classes.CLS_RTE_ELEMENTS + ' ' + 'e-rte-dropdown',
+                        itemName: 'CodeBlock', items: codeBlockItems, element: targetElement, iconCss: (CLS_CODEBLOCK_TB_BTN_ICON + ' e-icons')
+                    } as ISplitButtonModel);
                     break;
                 }
                 case 'formats': {
@@ -128,7 +154,6 @@ export class DropDownButtons {
                     const formatContent: string = isNullOrUndefined(this.parent.format.default) ? formatItem[0].text :
                         this.parent.format.default;
                     this.formatDropDown = this.toolbarRenderer.renderDropDownButton({
-                        iconCss: ((type === 'quick') ? 'e-formats e-icons' : ''),
                         content: this.dropdownContent(
                             this.parent.format.width,
                             type,
@@ -136,7 +161,8 @@ export class DropDownButtons {
                         cssClass: classes.CLS_DROPDOWN_POPUP + ' ' + classes.CLS_DROPDOWN_ITEMS + ' ' + classes.CLS_FORMATS_TB_BTN,
                         itemName: 'Formats', items: formatItem, element: targetElement
                     } as IDropDownModel);
-                    break; }
+                    break;
+                }
                 case 'fontname': {
                     targetElement = select('#' + this.parent.getID() + '_' + type + '_FontName', tbElement);
                     if (isNullOrUndefined(targetElement) || targetElement.classList.contains(classes.CLS_DROPDOWN_BTN)) {
@@ -151,7 +177,6 @@ export class DropDownButtons {
                     const fontNameContent: string = isNullOrUndefined(this.parent.fontFamily.default) ? fontItem.length === 0 ? '' : fontItem[0].text :
                         this.parent.fontFamily.default;
                     this.fontNameDropDown = this.toolbarRenderer.renderDropDownButton({
-                        iconCss: ((type === 'quick') ? 'e-font-name e-icons' : ''),
                         content: this.dropdownContent(
                             this.parent.fontFamily.width,
                             type,
@@ -159,14 +184,15 @@ export class DropDownButtons {
                         cssClass: classes.CLS_DROPDOWN_POPUP + ' ' + classes.CLS_DROPDOWN_ITEMS + ' ' + classes.CLS_FONT_NAME_TB_BTN,
                         itemName: 'FontName', items: fontItem, element: targetElement
                     } as IDropDownModel);
-                    break; }
+                    break;
+                }
                 case 'fontsize': {
                     targetElement = select('#' + this.parent.getID() + '_' + type + '_FontSize', tbElement);
                     if (isNullOrUndefined(targetElement) || targetElement.classList.contains(classes.CLS_DROPDOWN_BTN)) {
                         return;
                     }
                     const fontsize: IDropDownItemModel[] = !isNullOrUndefined(this.fontSizeDropDown) &&
-                    !isNullOrUndefined(this.fontSizeDropDown.items) && this.fontSizeDropDown.items.length > 0 ?
+                            !isNullOrUndefined(this.fontSizeDropDown.items) && this.fontSizeDropDown.items.length > 0 ?
                         this.fontSizeDropDown.items : JSON.parse(JSON.stringify(this.parent.fontSize.items.slice()));
                     fontsize.forEach((item: IDropDownItemModel): void => {
                         Object.defineProperties((item as object), {
@@ -184,7 +210,8 @@ export class DropDownButtons {
                         cssClass: classes.CLS_DROPDOWN_POPUP + ' ' + classes.CLS_DROPDOWN_ITEMS + ' ' + classes.CLS_FONT_SIZE_TB_BTN,
                         itemName: 'FontSize', items: fontsize, element: targetElement
                     } as IDropDownModel);
-                    break; }
+                    break;
+                }
                 case 'alignments':
                     targetElement = select('#' + this.parent.getID() + '_' + type + '_Alignments', tbElement);
                     if (isNullOrUndefined(targetElement) || targetElement.classList.contains(classes.CLS_DROPDOWN_BTN)) {
@@ -218,7 +245,7 @@ export class DropDownButtons {
             }
         });
         if (this.parent.inlineMode.enable) {
-            this.setCssClass({cssClass: this.parent.getCssClass()});
+            this.setCssClass({ cssClass: this.parent.getCssClass() });
         }
     }
 
@@ -260,7 +287,8 @@ export class DropDownButtons {
                             } else {
                                 this.getEditNode().style.removeProperty('font-family');
                             }
-                            break; }
+                            break;
+                        }
                         case 'items':
                             this.fontNameDropDown.setProperties({
                                 items: this.getUpdateItems(newProp.fontFamily.items, 'FontName')
@@ -291,7 +319,8 @@ export class DropDownButtons {
                             } else {
                                 this.getEditNode().style.removeProperty('font-size');
                             }
-                            break; }
+                            break;
+                        }
                         case 'items':
                             this.fontSizeDropDown.setProperties({
                                 items: this.getUpdateItems(newProp.fontSize.items, 'FontSize')
@@ -316,7 +345,8 @@ export class DropDownButtons {
                                 this.parent.format.width, type,
                                 ((type === 'quick') ? '' : getDropDownValue(formatItems, formatContent, 'text', 'text')));
                             this.formatDropDown.setProperties({ content: content });
-                            break; }
+                            break;
+                        }
                         case 'types':
                             this.formatDropDown.setProperties({
                                 items: this.getUpdateItems(newProp.format.types, 'Format')
@@ -511,7 +541,25 @@ export class DropDownButtons {
             this.bulletFormatListDropDown.destroy();
             this.bulletFormatListDropDown = null;
         }
+        if (this.codeBlockSplitButton) {
+            this.removeDropDownClasses(this.codeBlockSplitButton.element);
+            this.codeBlockSplitButton.destroy();
+            this.codeBlockSplitButton = null;
+        }
         this.toolbarRenderer = null;
+    }
+
+    // Toggles the appropriate dropdown menu (number format or bullet format) based on the toolbar click event
+    private showDropDown(e: { [key: string]: Object }): void {
+        if (!isNullOrUndefined(this.numberFormatListDropDown) && (e.toolbarClick === 'NumberFormatList')) {
+            this.numberFormatListDropDown.toggle();
+        }
+        else if (!isNullOrUndefined(this.bulletFormatListDropDown) && (e.toolbarClick === 'BulletFormaList')) {
+            this.bulletFormatListDropDown.toggle();
+        }
+        else if (!isNullOrUndefined(this.codeBlockSplitButton) && (e.toolbarClick === 'CodeBlock')) {
+            this.codeBlockSplitButton.toggle();
+        }
     }
 
     private setRtl(args: { [key: string]: Object }): void {
@@ -541,7 +589,7 @@ export class DropDownButtons {
         }
     }
 
-    private updateCss(dropDownObj: DropDownButton, e: ICssClassArgs) : void {
+    private updateCss(dropDownObj: DropDownButton, e: ICssClassArgs): void {
         if (dropDownObj && e.cssClass) {
             if (isNullOrUndefined(e.oldCssClass)) {
                 dropDownObj.setProperties({ cssClass: (dropDownObj.cssClass + ' ' + e.cssClass).trim() });
@@ -571,11 +619,26 @@ export class DropDownButtons {
         this.parent.on(events.rtlMode, this.setRtl, this);
         this.parent.on(events.modelChanged, this.onPropertyChanged, this);
         this.parent.on(events.bindCssClass, this.setCssClass, this);
+        this.parent.on(events.showDropDown, this.showDropDown, this);
     }
 
     private onIframeMouseDown(): void {
-        if (!isNullOrUndefined(this.parent.getToolbarElement()) && (this.parent.getToolbarElement().querySelectorAll('.e-rte-dropdown-btn[aria-expanded="true"]').length > 0 || this.parent.getToolbarElement().querySelectorAll('.e-dropdown-btn.e-rte-inline-dropdown[aria-expanded="true"]').length > 0)) {
-            this.closeOpenDropdowns();
+        const toolbarElement: HTMLElement = (this.parent.getToolbarElement() as HTMLElement);
+        if (!isNullOrUndefined(toolbarElement)) {
+            const dropdownBtnEle: NodeListOf<HTMLElement> = toolbarElement.querySelectorAll('.e-dropdown-btn[aria-expanded="true"]');
+            if (dropdownBtnEle && dropdownBtnEle.length > 0) {
+                this.closeOpenDropdowns();
+            }
+            if (toolbarElement.querySelector('.e-rte-dropdown.e-dropdown-btn.e-active')) {
+                const targetEle: HTMLElement = toolbarElement.querySelector('.e-rte-dropdown.e-dropdown-btn.e-active');
+                const hasFontColor: boolean = targetEle.classList.contains('e-rte-font-colorpicker');
+                if (hasFontColor || targetEle.classList.contains('e-rte-background-colorpicker')) {
+                    this.parent.notify(events.showColorPicker, {
+                        toolbarClick: hasFontColor ?
+                            'fontcolor' : 'backgroundcolor'
+                    });
+                }
+            }
         }
     }
 
@@ -592,9 +655,7 @@ export class DropDownButtons {
             this.tableRowsDropDown,
             this.tableColumnsDropDown,
             this.tableCellDropDown,
-            this.tableCellVerticalAlignDropDown,
-            this.parent.toolbarModule.colorPickerModule.fontColorDropDown,
-            this.parent.toolbarModule.colorPickerModule.backgroundColorDropDown
+            this.tableCellVerticalAlignDropDown
         ];
         dropdowns.forEach((dropdown: DropDownButton) => {
             if (dropdown && dropdown.dropDown && dropdown.dropDown.element && dropdown.dropDown.element.classList.contains('e-popup-open')) {
@@ -609,6 +670,7 @@ export class DropDownButtons {
         this.parent.off(events.beforeDropDownItemRender, this.beforeRender);
         this.parent.off(events.modelChanged, this.onPropertyChanged);
         this.parent.off(events.bindCssClass, this.setCssClass);
+        this.parent.off(events.showDropDown, this.showDropDown);
     }
 
     public destroy(): void {

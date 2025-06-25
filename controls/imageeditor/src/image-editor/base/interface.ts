@@ -759,9 +759,21 @@ export interface FrameSettings {
  */
 export interface ImageSettings {
     /**
-     * Returns the background color of an image.
+     * Specifies the background color of an image. The default value of background color is an empty string (''), meaning no background color is applied by default when a transparent image is opened.
      */
     backgroundColor: string;
+    /**
+     * Specifies the target width at which the image should be rendered on the canvas.
+     */
+    width?: number;
+    /**
+     * Specifies the target height at which the image should be rendered on the canvas.
+     */
+    height?: number;
+    /**
+     * Indicates whether to maintain the original aspect ratio when scaling the image.
+     */
+    isAspectRatio?: boolean;
 }
 
 /**
@@ -1112,6 +1124,10 @@ export interface TextSettings {
      * Specifies the underline styles for the text content.
      */
     underline: boolean;
+    /**
+     * Specifies the strikethrough styles for the text content.
+     */
+    strikethrough: boolean;
 }
 
 /**

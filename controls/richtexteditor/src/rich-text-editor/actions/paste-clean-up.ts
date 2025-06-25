@@ -1,5 +1,5 @@
 import * as events from '../base/constant';
-import { IRichTextEditor, NotifyArgs, IRenderer, ImageSuccessEventArgs, ICssClassArgs } from '../base/interface';
+import { IRichTextEditor, IRenderer, ICssClassArgs } from '../base/interface';
 import { PasteCleanupArgs } from '../base/interface';
 import { Dialog, DialogModel, Popup } from '@syncfusion/ej2-popups';
 import { RadioButton } from '@syncfusion/ej2-buttons';
@@ -8,25 +8,29 @@ import { isNullOrUndefined as isNOU, L10n, isNullOrUndefined, detach, extend, ad
 import { getUniqueID, Browser, closest} from '@syncfusion/ej2-base';
 import { CLS_RTE_PASTE_KEEP_FORMAT, CLS_RTE_PASTE_REMOVE_FORMAT, CLS_RTE_PASTE_PLAIN_FORMAT } from '../base/classes';
 import { CLS_RTE_PASTE_OK, CLS_RTE_PASTE_CANCEL, CLS_RTE_DIALOG_MIN_HEIGHT } from '../base/classes';
-import { pasteCleanupGroupingTags } from '../../common/config';
 import { NodeSelection } from '../../selection/selection';
 import * as EVENTS from './../../common/constant';
 import { ServiceLocator } from '../services/service-locator';
-import { RenderType, ImageInputSource } from '../base/enum';
+import { RenderType } from '../base/enum';
+import { ImageInputSource } from '../../common/enum';
+import { ImageSuccessEventArgs, NotifyArgs, CropImageDataItem, IPasteModel } from '../../common/interface';
 import { DialogRenderer } from '../renderer/dialog-renderer';
 import { Uploader, MetaData, UploadingEventArgs, SelectedEventArgs, FileInfo, BeforeUploadEventArgs } from '@syncfusion/ej2-inputs';
 import * as classes from '../base/classes';
 import { IHtmlFormatterCallBack } from '../../common';
-import { sanitizeHelper, convertToBlob } from '../base/util';
-import { scrollToCursor } from '../../common/util';
+import { sanitizeHelper } from '../base/util';
+import { cleanHTMLString, scrollToCursor } from '../../common/util';
+import { PasteCleanupSettingsModel } from '../../models/models';
+import { PasteCleanupAction } from '../../editor-manager/plugin/paste-clean-up-action';
 /**
  * PasteCleanup module called when pasting content in RichTextEditor
  */
 export class PasteCleanup {
     private parent: IRichTextEditor;
+    private pasteObj: PasteCleanupAction;
     private renderFactory: RendererFactory;
     private locator: ServiceLocator;
-    private contentRenderer: IRenderer;
+    private contentModule: IRenderer;
     private i10n: L10n;
     private saveSelection: NodeSelection;
     private nodeSelectionObj: NodeSelection;
@@ -39,12 +43,11 @@ export class PasteCleanup {
     private plainTextRadioButton : RadioButton;
     private isNotFromHtml: boolean = false;
     private containsHtml: boolean = false;
-    private cropImageData: { [key: string]: string | boolean | number }[] = [];
+    private cropImageData: CropImageDataItem[] = [];
     private fireFoxUploadTime: number;
     private refreshPopupTime: number;
     private popupCloseTime: number;
     private failureTime: number;
-    private iframeUploadTime: number;
     private plainTextContent: string = '';
     private isDestroyed: boolean;
     public constructor(parent?: IRichTextEditor, serviceLocator?: ServiceLocator) {
@@ -63,9 +66,11 @@ export class PasteCleanup {
             return;
         }
         this.parent.on(events.pasteClean, this.pasteClean, this);
+        this.parent.on(events.bindOnEnd, this.bindOnEnd, this);
         this.parent.on(events.bindCssClass, this.setCssClass, this);
         this.parent.on(events.destroy, this.destroy, this);
         this.parent.on(events.docClick, this.docClick, this);
+        this.parent.on(events.updateProperty, this.updatePasteCleanupProperty, this);
     }
 
     private destroy(): void {
@@ -74,7 +79,6 @@ export class PasteCleanup {
         if (this.refreshPopupTime) { clearTimeout(this.refreshPopupTime); this.refreshPopupTime = null; }
         if (this.popupCloseTime) { clearTimeout(this.popupCloseTime); this.popupCloseTime = null; }
         if (this.failureTime) { clearTimeout(this.failureTime); this.failureTime = null; }
-        if (this.iframeUploadTime) { clearTimeout(this.iframeUploadTime); this.iframeUploadTime = null; }
         this.removeEventListener();
         if (this.popupObj && !this.popupObj.isDestroyed) {
             this.popupObj.destroy();
@@ -104,8 +108,79 @@ export class PasteCleanup {
         this.parent.off(events.bindCssClass, this.setCssClass);
         this.parent.off(events.destroy, this.destroy);
         this.parent.off(events.docClick, this.docClick);
+        this.parent.off(events.bindOnEnd, this.bindOnEnd);
+        this.parent.off(events.updateProperty, this.updatePasteCleanupProperty);
     }
 
+    /*
+     * Initializes the PasteCleanupAction  object in the editor manager after editor initialization is complete.
+     * This method binds the paste cleanup module to the editor's formatter for handling paste cleanup related operations.
+     */
+    private bindOnEnd(): void {
+        if (this.parent.editorMode === 'HTML' && this.parent.formatter && this.parent.formatter.editorManager
+            && this.parent.contentModule) {
+            const pasteModel: IPasteModel = this.getPasteCleanupModel();
+            this.parent.formatter.editorManager.pasteObj = this.pasteObj =
+                new PasteCleanupAction(this.parent.formatter.editorManager, pasteModel);
+        }
+    }
+
+    /* Creates and returns a paste cleanup model with editor configuration and callback methods */
+    private getPasteCleanupModel(): IPasteModel {
+        // Create TableCommand with table model containing required methods
+        const pasteModel: IPasteModel = {
+            rteElement: this.parent.element,
+            enterKey: this.parent.enterKey,
+            rootContainer: this.parent.rootContainer,
+            enableXhtml: this.parent.enableXhtml,
+            iframeSettings: this.parent.iframeSettings,
+            pasteCleanupSettings: this.parent.pasteCleanupSettings,
+            insertImageSettings: this.parent.insertImageSettings,
+            // Retrieves the maximum allowed width for an image within the editor.
+            getInsertImgMaxWidth: () => {
+                return this.parent.getInsertImgMaxWidth();
+            },
+            // Method for retrieving the document object of the content module
+            getDocument: () => {
+                if (!this.contentModule) {
+                    return this.parent.contentModule.getDocument();
+                }
+                return this.contentModule.getDocument();
+            },
+            // Method for retrieving the editable element object of the content module
+            getEditPanel: () => {
+                if (!this.contentModule) {
+                    return this.parent.contentModule.getEditPanel();
+                }
+                return this.contentModule.getEditPanel();
+            },
+            updateValue: () => {
+                this.parent.updateValue();
+            },
+            imageUpload: () => {
+                this.imgUploading(this.parent.inputElement);
+            },
+            getCropImageData: () => {
+                return this.getCropImageData();
+            }
+        };
+        return pasteModel;
+    }
+
+    /* Updates the paste cleanup object with the latest editor configuration settings */
+    private updatePasteCleanupProperty(): void {
+        const pasteModel: IPasteModel = this.getPasteCleanupModel();
+        if (!isNullOrUndefined(this.pasteObj)) {
+            this.pasteObj.updatePasteCleanupModel(pasteModel);
+        }
+    }
+
+    /**
+     * Handles the paste cleanup operation when content is pasted into the editor
+     *
+     * @param {NotifyArgs} e - The notification arguments containing event data
+     * @returns {void}
+     */
     private pasteClean(e?: NotifyArgs): void {
         const args: { [key: string]: string | NotifyArgs } = {
             requestType: 'Paste',
@@ -115,228 +190,287 @@ export class PasteCleanup {
         let value: string = null;
         let imageproperties: string | object;
         const allowedTypes: string[] = this.parent.insertImageSettings.allowedTypes;
+        // Extract clipboard data if available
         if (e.args && !isNOU((e.args as ClipboardEvent).clipboardData)) {
             value = (e.args as ClipboardEvent).clipboardData.getData('text/html');
+            // Store plain text content for later use
             if ((e.args as ClipboardEvent).clipboardData.getData('text/plain')) {
                 this.plainTextContent = (e.args as ClipboardEvent).clipboardData.getData('text/plain');
             }
         }
+        // Process only if we have args, value, and in HTML mode
         if (e.args && value !== null && this.parent.editorMode === 'HTML') {
-            let file: File;
-            if (value.length === 0) {
-                const htmlRegex: RegExp = new RegExp(/<\/[a-z][\s\S]*>/i);
-                value = (e.args as ClipboardEvent).clipboardData.getData('text/plain');
-                this.parent.trigger(events.beforePasteCleanup, {value : value});
-                this.isNotFromHtml = value !== '' ? true : false;
-                value = value.replace(/</g, '&lt;');
-                value = value.replace(/>/g, '&gt;');
-                this.containsHtml = htmlRegex.test(value);
-                this.plainTextContent = value;
-                file = e && (e.args as ClipboardEvent).clipboardData &&
-                (e.args as ClipboardEvent).clipboardData.items.length > 0 ?
-                    ((e.args as ClipboardEvent).clipboardData.items[0].getAsFile() === null ?
-                        (!isNOU((e.args as ClipboardEvent).clipboardData.items[1]) ?
-                            (e.args as ClipboardEvent).clipboardData.items[1].getAsFile() : null) :
-                        (e.args as ClipboardEvent).clipboardData.items[0].getAsFile()) : null;
-                if (file) {
-                    const fileNameParts: string = file.name;
-                    const imgType: string = fileNameParts.substring(fileNameParts.lastIndexOf('.'));
-                    if (allowedTypes.every((type: string) => type.toLowerCase() !== imgType)) {
-                        (e.args as ClipboardEvent).preventDefault();
-                        return;
-                    }
+            const shouldContinue: boolean = this.processHtmlPaste(e, value, args, allowedTypes, imageproperties);
+            if (!shouldContinue) {
+                return; // Stop processing if indicated
+            }
+        }
+    }
+
+    /* Processes HTML content from paste operation */
+    private processHtmlPaste(
+        e: NotifyArgs, value: string,
+        args: { [key: string]: string | NotifyArgs },
+        allowedTypes: string[],
+        imageproperties: string | object
+    ): boolean {
+        let processedValue: string = value;
+        let shouldContinue: boolean = true;
+        // Handle empty HTML content (plain text or image)
+        if (value.length === 0) {
+            const result: { value: string, shouldContinue: boolean } =
+                this.handleEmptyHtmlValue(e, value, args, allowedTypes, imageproperties);
+            processedValue = result.value;
+            shouldContinue = result.shouldContinue;
+            if (!shouldContinue) {
+                return false; // Stop processing
+            }
+        } else if (value.length > 0) { // Handle non-empty HTML content
+            processedValue = this.handleNonEmptyHtmlValue(e, value, args);
+        }
+        // Remove base tags from content
+        if (processedValue !== null && processedValue !== '') {
+            processedValue = processedValue.replace(/<base[^>]*>/g, '');
+        }
+        this.prepareAndInsertContent(e, processedValue, args);
+        return true;
+    }
+
+    /* Handles case when HTML value is empty but may contain plain text or images */
+    private handleEmptyHtmlValue(
+        e: NotifyArgs, value: string,
+        args: { [key: string]: string | NotifyArgs },
+        allowedTypes: string[],
+        imageproperties: string | object
+    ): { value: string, shouldContinue: boolean } {
+        const htmlRegex: RegExp = new RegExp(/<\/[a-z][\s\S]*>/i);
+        let processedValue: string = (e.args as ClipboardEvent).clipboardData.getData('text/plain');
+        this.parent.trigger(events.beforePasteCleanup, {value : processedValue});
+        this.isNotFromHtml = processedValue !== '' ? true : false;
+        processedValue = processedValue.replace(/</g, '&lt;');
+        processedValue = processedValue.replace(/>/g, '&gt;');
+        this.containsHtml = htmlRegex.test(processedValue);
+        this.plainTextContent = processedValue;
+        // Check for image file in clipboard
+        const file: File = this.pasteObj.extractFileFromClipboard(e);
+        // Validate image type if file exists
+        if (file) {
+            const fileNameParts: string = file.name;
+            const imgType: string = fileNameParts.substring(fileNameParts.lastIndexOf('.'));
+            if (this.isInvalidImageType(imgType, allowedTypes)) {
+                (e.args as ClipboardEvent).preventDefault();
+                return { value: processedValue, shouldContinue: false }; // Signal to stop processing
+            }
+        }
+        // Process paste with potential image
+        const result: { value: string, shouldContinue: boolean } =
+            this.processPasteWithImage(e, file, processedValue, args, imageproperties, htmlRegex);
+        return result;
+    }
+
+    /* Checks if image type is not in allowed types */
+    private isInvalidImageType(imgType: string, allowedTypes: string[]): boolean {
+        return allowedTypes.every((type: string) => type.toLowerCase() !== imgType);
+    }
+
+    /* Processes paste operation that may contain an image */
+    private processPasteWithImage(
+        e: NotifyArgs, file: File, value: string,
+        args: { [key: string]: string | NotifyArgs },
+        imageproperties: string | object,
+        htmlRegex: RegExp
+    ): { value: string, shouldContinue: boolean } {
+        let processedValue: string = value;
+        //let shouldContinue: boolean = true;
+        this.parent.notify(events.paste, {
+            file: file,
+            args: e.args,
+            text: processedValue,
+            callBack: (b: string | object) => {
+                imageproperties = b;
+                if (typeof (imageproperties) === 'object') {
+                    this.parent.formatter.editorManager.execCommand(
+                        'Images',
+                        'Image',
+                        e.args,
+                        this.imageFormatting.bind(this, args),
+                        'pasteCleanup',
+                        imageproperties,
+                        'pasteCleanupModule');
+                } else {
+                    processedValue = imageproperties as string;
                 }
-                this.parent.notify(events.paste, {
-                    file: file,
-                    args: e.args,
-                    text: value,
-                    callBack: (b: string | object) => {
-                        imageproperties = b;
-                        if (typeof (imageproperties) === 'object') {
-                            this.parent.formatter.editorManager.execCommand(
-                                'Images',
-                                'Image',
-                                e.args,
-                                this.imageFormatting.bind(this, args),
-                                'pasteCleanup',
-                                imageproperties,
-                                'pasteCleanupModule');
-                        } else {
-                            value = imageproperties;
-                        }
-                    }
-                });
-                if (!htmlRegex.test(value)) {
-                    const divElement: HTMLElement = this.parent.createElement('div');
-                    divElement.innerHTML = this.splitBreakLine(value);
-                    value = divElement.innerHTML;
-                }
-            } else if (value.length > 0) {
-                this.parent.trigger(events.beforePasteCleanup, {value : value});
-                this.parent.formatter.editorManager.observer.notify(EVENTS.MS_WORD_CLEANUP, {
-                    args: e.args,
-                    text: e.text,
-                    allowedStylePropertiesArray: this.parent.pasteCleanupSettings.allowedStyleProps,
-                    callBack: (a: string, cropImageData: { [key: string]: string | boolean | number }[], pasteTableSource?: string) => {
-                        args.pasteTableSource = pasteTableSource;
-                        value = a.trim();
-                        this.cropImageData = cropImageData;
-                    }
-                });
             }
-            if (value !== null && value !== '') {
-                value = value.replace(/<base[^>]*>/g, '');
+        });
+        // Format plain text with line breaks if not HTML
+        if (!htmlRegex.test(processedValue)) {
+            const divElement: HTMLElement = this.parent.createElement('div');
+            divElement.innerHTML = this.pasteObj.splitBreakLine(processedValue);
+            processedValue = divElement.innerHTML;
+        }
+        return { value: processedValue, shouldContinue: true };
+    }
+
+    /* Handles non-empty HTML content */
+    private handleNonEmptyHtmlValue(
+        e: NotifyArgs, value: string,
+        args: { [key: string]: string | NotifyArgs }
+    ): string {
+        let processedValue: string = value;
+        this.parent.trigger(events.beforePasteCleanup, {value : processedValue});
+        this.parent.formatter.editorManager.observer.notify(EVENTS.MS_WORD_CLEANUP, {
+            args: e.args,
+            text: e.text,
+            allowedStylePropertiesArray: this.parent.pasteCleanupSettings.allowedStyleProps,
+            callBack: (a: string, cropImageData: CropImageDataItem[], pasteTableSource?: string) => {
+                args.pasteTableSource = pasteTableSource;
+                processedValue = a.trim();
+                this.cropImageData = cropImageData;
             }
-            this.contentRenderer = this.renderFactory.getRenderer(RenderType.Content);
-            const currentDocument: Document = this.contentRenderer.getDocument();
-            const range: Range = this.nodeSelectionObj.getRange(currentDocument);
-            this.saveSelection = this.nodeSelectionObj.save(range, currentDocument);
-            const tempDivElem: HTMLElement = this.parent.createElement('div') as HTMLElement;
-            tempDivElem.innerHTML = value;
-            const unsupportedImg: NodeListOf<HTMLImageElement> = tempDivElem.querySelectorAll('.e-rte-image-unsupported');
-            for (let index: number = 0; index < unsupportedImg.length; index++) {
-                unsupportedImg[index as number].setAttribute('alt', this.i10n.getConstant('unsupportedImage'));
-                unsupportedImg[index as number].classList.remove('e-rte-image-unsupported');
-            }
-            value = tempDivElem.innerHTML;
-            const isValueNotEmpty: boolean = tempDivElem.textContent !== '' || !isNOU(tempDivElem.querySelector('img')) ||
+        });
+        return processedValue;
+    }
+
+    /* Prepares and inserts content into the editor */
+    private prepareAndInsertContent(
+        e: NotifyArgs, value: string,
+        args: { [key: string]: string | NotifyArgs }
+    ): void {
+        this.contentModule = this.renderFactory.getRenderer(RenderType.Content);
+        const currentDocument: Document = this.contentModule.getDocument();
+        const range: Range = this.nodeSelectionObj.getRange(currentDocument);
+        this.saveSelection = this.nodeSelectionObj.save(range, currentDocument);
+        // Process content through temp div
+        const tempDivElem: HTMLElement = this.parent.createElement('div') as HTMLElement;
+        tempDivElem.innerHTML = value;
+        // Handle unsupported images
+        this.processUnsupportedImages(tempDivElem);
+        const processedValue: string = tempDivElem.innerHTML;
+        // Check if content is not empty
+        const isValueNotEmpty: boolean = tempDivElem.textContent !== '' ||
+            !isNOU(tempDivElem.querySelector('img')) ||
             !isNOU(tempDivElem.querySelector('table'));
-            this.parent.notify(events.cleanupResizeElements, {
-                value: value,
-                callBack: (currentValue: string) => {
-                    value = currentValue;
-                }
-            });
-            if (this.parent.pasteCleanupSettings.prompt && !e.isPlainPaste) {
-                if (isValueNotEmpty) {
-                    (e.args as ClipboardEvent).preventDefault();
-                    this.pasteDialog(value, args);
-                }
+        // Clean up resize elements
+        let finalValue: string = processedValue;
+        this.parent.notify(events.cleanupResizeElements, {
+            value: processedValue,
+            callBack: (currentValue: string) => {
+                finalValue = currentValue;
             }
-            else if (this.parent.pasteCleanupSettings.plainText) {
-                (e.args as ClipboardEvent).preventDefault();
-                this.plainFormatting(value, args);
-            } else if (this.parent.pasteCleanupSettings.keepFormat || e.isPlainPaste) {
-                (e.args as ClipboardEvent).preventDefault();
-                this.formatting(value, false, args);
-            } else {
-                (e.args as ClipboardEvent).preventDefault();
-                this.formatting(value, true, args);
-            }
+        });
+        // Removes the \n from the value
+        finalValue = cleanHTMLString(finalValue, this.parent.element);
+        // Handle paste based on settings
+        this.handlePasteBasedOnSettings(e, finalValue, args, isValueNotEmpty);
+    }
+
+    /* Processes unsupported images in pasted content */
+    private processUnsupportedImages(tempDivElem: HTMLElement): void {
+        const unsupportedImg: NodeListOf<HTMLImageElement> = tempDivElem.querySelectorAll('.e-rte-image-unsupported');
+        for (let index: number = 0; index < unsupportedImg.length; index++) {
+            unsupportedImg[index as number].setAttribute('alt', this.i10n.getConstant('unsupportedImage'));
+            unsupportedImg[index as number].classList.remove('e-rte-image-unsupported');
         }
     }
 
-    private splitBreakLine(value: string): string {
-        const enterSplitText: string[] = value.split('\r\n\r\n');
-        let finalText: string = '';
-        const startNode: string = this.parent.enterKey === 'P' ? '<p>' : (this.parent.enterKey === 'DIV' ? '<div>' : '');
-        const endNode: string = this.parent.enterKey === 'P' ? '</p>' : (this.parent.enterKey === 'DIV' ? '</div>' : '<br>');
-        for (let i: number = 0; i < enterSplitText.length; i++) {
-            const content: string = enterSplitText[i as number];
-            const contentWithSpace: string = this.makeSpace(content);
-            const contentWithLineBreak: string = contentWithSpace.replace(/\r\n|\n/g, '<br>');
-            if (i === 0) {
-                if (this.parent.enterKey === 'BR' && !contentWithLineBreak.endsWith('<br>')) {
-                    finalText += (contentWithLineBreak + endNode);
-                } else {
-                    finalText += contentWithLineBreak; // In order to merge the content in current line. No P/Div tag is added.
-                }
-            } else {
-                if (this.parent.enterKey === 'BR') {
-                    if (i === enterSplitText.length - 1) {
-                        finalText += (contentWithLineBreak + endNode);
-                    } else {
-                        finalText += (contentWithLineBreak + endNode + endNode);
-                    }
-                } else {
-                    finalText += startNode + contentWithLineBreak + endNode;
-                }
+    /* Handles paste based on editor settings */
+    private handlePasteBasedOnSettings(
+        e: NotifyArgs, value: string,
+        args: { [key: string]: string | NotifyArgs },
+        isValueNotEmpty: boolean
+    ): void {
+        if (this.parent.pasteCleanupSettings.prompt && !e.isPlainPaste) {
+            if (isValueNotEmpty) {
+                (e.args as ClipboardEvent).preventDefault();
+                this.pasteDialog(value, args);
             }
+        } else if (this.parent.pasteCleanupSettings.plainText) {
+            (e.args as ClipboardEvent).preventDefault();
+            this.plainFormatting(value, args);
+        } else if (this.parent.pasteCleanupSettings.keepFormat || e.isPlainPaste) {
+            (e.args as ClipboardEvent).preventDefault();
+            this.formatting(value, false, args);
+        } else {
+            (e.args as ClipboardEvent).preventDefault();
+            this.formatting(value, true, args);
         }
-        return finalText;
     }
 
-    private makeSpace(text: string): string {
-        let spacedContent: string = '';
-        if (text === '') {
-            return text;
-        }
-        const lineBreakSplitText: string[] = text.split(' ');
-        for (let i: number = 0; i < lineBreakSplitText.length; i++) {
-            const currentText: string = lineBreakSplitText[i as number];
-            if (currentText === '') {
-                spacedContent += '&nbsp;';
-            } else if (currentText === '\t') {
-                spacedContent += '&nbsp;&nbsp;&nbsp;&nbsp;';
-            } else {
-                if (i > 0 && i < lineBreakSplitText.length) {
-                    spacedContent += ' ';
-                }
-                spacedContent += currentText;
-            }
-        }
-        spacedContent = spacedContent.replace(/\t/g, '&nbsp;&nbsp;&nbsp;&nbsp;');
-        spacedContent = spacedContent.replace(/&nbsp;&nbsp;/g, '&nbsp; ');
-        return spacedContent;
-    }
-
+    /* Processes and uploads images from pasted content */
     private imgUploading(elm: HTMLElement): void {
         const allImgElm: NodeListOf<HTMLImageElement> = elm.querySelectorAll('.pasteContent_Img');
+        // Handle image upload if save URL is configured and images exist
         if (this.parent.insertImageSettings.saveUrl && allImgElm.length > 0) {
-            const base64Src: string[] = [];
-            const imgName: string[] = [];
-            const uploadImg: Element[] = [];
-            for (let i: number = 0; i < allImgElm.length; i++) {
-                if (!isNOU(allImgElm[i as number].getAttribute('src')) &&
-                    allImgElm[i as number].getAttribute('src').split(',')[0].indexOf('base64') >= 0) {
-                    base64Src.push(allImgElm[i as number].getAttribute('src'));
-                    imgName.push(getUniqueID('rte_image'));
-                    uploadImg.push(allImgElm[i as number]);
-                }
-            }
-            const fileList: File[] = [];
-            for (let i: number = 0; i < base64Src.length; i++) {
-                fileList.push(this.base64ToFile(base64Src[i as number], imgName[i as number]));
-            }
-            for (let i: number = 0; i < fileList.length; i++) {
-                this.uploadMethod(fileList[i as number], uploadImg[i as number]);
-            }
-            if (isNOU(this.parent.insertImageSettings.path) &&
-                this.parent.insertImageSettings.saveFormat === 'Blob') {
-                this.getBlob(allImgElm);
-            }
+            this.processImagesWithSaveUrl(allImgElm);
         } else if (this.parent.insertImageSettings.saveFormat === 'Blob') {
-            this.getBlob(allImgElm);
+            // Convert to blob format if specified
+            this.pasteObj.getBlob(allImgElm);
         }
+        // Clean up temporary CSS classes from images
+        this.cleanupImageClasses(elm, allImgElm);
+    }
+
+    /* Processes images when save URL is configured */
+    private processImagesWithSaveUrl(allImgElm: NodeListOf<HTMLImageElement>): void {
+        const base64Src: string[] = [];
+        const imgName: string[] = [];
+        const uploadImg: Element[] = [];
+        // Collect base64 images
+        for (let i: number = 0; i < allImgElm.length; i++) {
+            const imgSrc: string = allImgElm[i as number].getAttribute('src');
+            if (!isNOU(imgSrc) && imgSrc.split(',')[0].indexOf('base64') >= 0) {
+                base64Src.push(imgSrc);
+                imgName.push(getUniqueID('rte_image'));
+                uploadImg.push(allImgElm[i as number]);
+            }
+        }
+        // Convert base64 to files
+        const fileList: File[] = [];
+        for (let i: number = 0; i < base64Src.length; i++) {
+            fileList.push(this.pasteObj.base64ToFile(base64Src[i as number], imgName[i as number]));
+        }
+        // Upload each file
+        for (let i: number = 0; i < fileList.length; i++) {
+            this.uploadMethod(fileList[i as number], uploadImg[i as number]);
+        }
+        // Convert to blob if needed
+        if (isNOU(this.parent.insertImageSettings.path) &&
+            this.parent.insertImageSettings.saveFormat === 'Blob') {
+            this.pasteObj.getBlob(allImgElm);
+        }
+    }
+
+    /* Removes temporary CSS classes from processed images */
+    private cleanupImageClasses(elm: HTMLElement, allImgElm: NodeListOf<HTMLImageElement>): void {
         const allImgElmId: NodeListOf<Element> = elm.querySelectorAll('.pasteContent_Img');
         for (let i: number = 0; i < allImgElmId.length; i++) {
             allImgElmId[i as number].classList.remove('pasteContent_Img');
+            // Remove class attribute if empty
             if (allImgElmId[i as number].getAttribute('class').trim() === '') {
                 allImgElm[i as number].removeAttribute('class');
             }
         }
     }
 
-    private getBlob(allImgElm: NodeListOf<HTMLImageElement>): void {
-        for (let i: number = 0; i < allImgElm.length; i++) {
-            if (!isNOU(allImgElm[i as number].getAttribute('src')) &&
-        allImgElm[i as number].getAttribute('src').split(',')[0].indexOf('base64') >= 0) {
-                const blopUrl: string = URL.createObjectURL(convertToBlob(allImgElm[i as number].getAttribute('src')));
-                allImgElm[i as number].setAttribute('src', blopUrl);
-            }
-        }
-    }
-
+    /* Enables or disables the toolbar based on state */
     private toolbarEnableDisable(state: boolean): void {
         if (!this.parent.inlineMode.enable) {
             this.parent.toolbarModule.baseToolbar.toolbarObj.disable(state);
         }
     }
 
+    /* Handles the upload process for an image file */
     private uploadMethod(file: File, imgElem: Element): void {
-        (imgElem as HTMLElement).style.opacity = '0.5';
-        const popupEle: HTMLElement = this.parent.createElement('div');
-        this.parent.rootContainer.appendChild(popupEle);
+        this.pasteObj.setImageOpacity(imgElem);
+        const popupEle: HTMLElement = this.pasteObj.createPopupElement();
+        this.createPopupObject(popupEle, imgElem, file);
+        this.createUploader(imgElem);
+        this.initializeUpload(file);
+        this.hideFileSelectWrapper();
+    }
+
+    /* Creates and configures the popup object */
+    private createPopupObject(popupEle: HTMLElement, imgElem: Element, file: File): void {
         const contentEle: HTMLInputElement | HTMLElement = this.parent.createElement('input', {
             id: this.parent.getID() + '_upload', attrs: { type: 'File', name: 'UploadFiles' }
         });
@@ -350,22 +484,35 @@ export class PasteCleanup {
             position: { X: 'center', Y: 'top' },
             enableRtl: this.parent.enableRtl,
             zIndex: 10001,
-            // eslint-disable-next-line
             close: (event: { [key: string]: object }) => {
                 this.parent.isBlur = false;
                 this.popupObj.destroy();
                 detach(this.popupObj.element);
             }
         });
+        this.configurePopupStyles();
+        this.schedulePopupRefresh(imgElem, file);
+    }
+
+    /* Configures popup styles and CSS classes */
+    private configurePopupStyles(): void {
         this.popupObj.element.style.display = 'none';
         addClass([this.popupObj.element], [classes.CLS_POPUP_OPEN, classes.CLS_RTE_UPLOAD_POPUP]);
         if (!isNOU(this.parent.cssClass)) {
             addClass([this.popupObj.element], this.parent.cssClass.replace(/\s+/g, ' ').trim().split(' '));
         }
+    }
+
+    /* Schedules popup refresh based on file size */
+    private schedulePopupRefresh(imgElem: Element, file: File): void {
         const timeOut: number = file.size > 1000000 ? 300 : 100;
         this.refreshPopupTime = setTimeout(() => {
             this.refreshPopup(imgElem as HTMLElement, this.popupObj);
         }, timeOut);
+    }
+
+    /* Creates and configures the uploader component */
+    private createUploader(imgElem: Element): void {
         this.uploadObj = new Uploader({
             asyncSettings: {
                 saveUrl: this.parent.insertImageSettings.saveUrl,
@@ -377,52 +524,69 @@ export class PasteCleanup {
             success: (e: ImageSuccessEventArgs) => {
                 this.popupClose(this.popupObj, this.uploadObj, imgElem, e);
             },
-            uploading: (e: UploadingEventArgs) => {
-                if (!this.parent.isServerRendered) {
-                    this.parent.trigger(events.imageUploading, e, (imageUploadingArgs: UploadingEventArgs) => {
-                        if (imageUploadingArgs.cancel) {
-                            if (!isNullOrUndefined(imgElem)) {
-                                detach(imgElem);
-                            }
-                            if (!isNullOrUndefined(this.popupObj.element)) {
-                                detach(this.popupObj.element);
-                            }
-                        } else {
-                            this.parent.inputElement.contentEditable = 'false';
-                        }
-                    });
-                }
-            },
-            beforeUpload: (args: BeforeUploadEventArgs) => {
-                this.parent.trigger(events.beforeImageUpload, args);
-                this.toolbarEnableDisable(true);
-            },
-            failure: (e: Object) => {
-                this.failureTime = setTimeout(() => {
-                    this.uploadFailure(imgElem, this.uploadObj, this.popupObj, e);
-                }, 900);
-            },
-            canceling: () => {
-                this.parent.inputElement.contentEditable = 'true';
-                if (imgElem.nextSibling.textContent === ' ') {
-                    detach(imgElem.nextSibling);
-                }
-                detach(imgElem);
-                this.popupObj.close();
-            },
-            selected: (e: SelectedEventArgs) => {
-                e.cancel = true;
-            },
-            removing: () => {
-                this.parent.inputElement.contentEditable = 'true';
-                if (imgElem.nextSibling.textContent === ' ') {
-                    detach(imgElem.nextSibling);
-                }
-                detach(imgElem);
-                this.popupObj.close();
-            }
+            uploading: (e: UploadingEventArgs) => this.handleUploading(e, imgElem),
+            beforeUpload: (args: BeforeUploadEventArgs) => this.handleBeforeUpload(args),
+            failure: (e: Object) => this.handleFailure(e, imgElem),
+            canceling: () => this.handleCanceling(imgElem),
+            selected: (e: SelectedEventArgs) => { e.cancel = true; },
+            removing: () => this.handleRemoving(imgElem)
         });
         this.uploadObj.appendTo(this.popupObj.element.childNodes[0] as HTMLElement);
+    }
+
+    /* Handles the uploading event */
+    private handleUploading(e: UploadingEventArgs, imgElem: Element): void {
+        if (!this.parent.isServerRendered) {
+            this.parent.trigger(events.imageUploading, e, (imageUploadingArgs: UploadingEventArgs) => {
+                if (imageUploadingArgs.cancel) {
+                    if (!isNullOrUndefined(imgElem)) {
+                        detach(imgElem);
+                    }
+                    if (!isNullOrUndefined(this.popupObj.element)) {
+                        detach(this.popupObj.element);
+                    }
+                } else {
+                    this.parent.inputElement.contentEditable = 'false';
+                }
+            });
+        }
+    }
+
+    /* Handles the beforeUpload event */
+    private handleBeforeUpload(args: BeforeUploadEventArgs): void {
+        this.parent.trigger(events.beforeImageUpload, args);
+        this.toolbarEnableDisable(true);
+    }
+
+    /* Handles upload failure */
+    private handleFailure(e: Object, imgElem: Element): void {
+        this.failureTime = setTimeout(() => {
+            this.uploadFailure(imgElem, this.uploadObj, this.popupObj, e);
+        }, 900);
+    }
+
+    /* Handles upload cancellation */
+    private handleCanceling(imgElem: Element): void {
+        this.parent.inputElement.contentEditable = 'true';
+        if (imgElem.nextSibling && imgElem.nextSibling.textContent === ' ') {
+            detach(imgElem.nextSibling);
+        }
+        detach(imgElem);
+        this.popupObj.close();
+    }
+
+    /* Handles file removal */
+    private handleRemoving(imgElem: Element): void {
+        this.parent.inputElement.contentEditable = 'true';
+        if (imgElem.nextSibling && imgElem.nextSibling.textContent === ' ') {
+            detach(imgElem.nextSibling);
+        }
+        detach(imgElem);
+        this.popupObj.close();
+    }
+
+    /* Initializes the upload process */
+    private initializeUpload(file: File): void {
         const fileInfo: FileInfo[] = [{
             name: file.name,
             rawFile: file,
@@ -434,15 +598,37 @@ export class PasteCleanup {
         }];
         this.uploadObj.createFileList(fileInfo);
         this.uploadObj.upload(fileInfo);
-        (this.popupObj.element.getElementsByClassName('e-file-select-wrap')[0] as HTMLElement).style.display = 'none';
-        detach(this.popupObj.element.querySelector('.e-rte-dialog-upload .e-file-select-wrap') as HTMLElement);
     }
+
+    /* Hides the file select wrapper */
+    private hideFileSelectWrapper(): void {
+        const fileSelectWrap: HTMLElement = this.popupObj.element.getElementsByClassName('e-file-select-wrap')[0] as HTMLElement;
+        if (fileSelectWrap) {
+            fileSelectWrap.style.display = 'none';
+        }
+        const dialogUploadWrap: HTMLElement = this.popupObj.element.querySelector('.e-rte-dialog-upload .e-file-select-wrap') as HTMLElement;
+        if (dialogUploadWrap) {
+            detach(dialogUploadWrap);
+        }
+    }
+
+    /* Handles image upload failure */
     private uploadFailure(imgElem: Element, uploadObj: Uploader, popupObj: Popup, e: Object): void {
         if (this.parent && this.parent.isDestroyed) {
             return;
         }
+        // Re-enable content editing
         this.parent.inputElement.contentEditable = 'true';
         detach(imgElem);
+        // Destroy popup if it exists
+        this.cleanupPopup(popupObj);
+        this.parent.trigger(events.imageUploadFailed, e);
+        // Destroy uploader if it exists
+        this.cleanupUploader(uploadObj);
+    }
+
+    /* Cleans up popup object */
+    private cleanupPopup(popupObj: Popup): void {
         if (popupObj) {
             this.parent.isBlur = false;
             popupObj.destroy();
@@ -450,135 +636,175 @@ export class PasteCleanup {
                 detach(popupObj.element);
             }
         }
-        this.parent.trigger(events.imageUploadFailed, e);
+    }
+
+    /* Cleans up uploader object */
+    private cleanupUploader(uploadObj: Uploader): void {
         if (uploadObj && document.body.contains(uploadObj.element)) {
             uploadObj.destroy();
         }
     }
+
+    /* Handles popup close after successful upload */
     private popupClose(popupObj: Popup, uploadObj: Uploader, imgElem: Element, e: ImageSuccessEventArgs): void {
         this.parent.inputElement.contentEditable = 'true';
+        this.prepareEventArgs(e, imgElem);
+        this.handleUploadStatus(e, imgElem);
+        this.scheduleCleanup(popupObj, uploadObj, imgElem);
+    }
+
+    /* Prepares event arguments for upload events */
+    private prepareEventArgs(e: ImageSuccessEventArgs, imgElem: Element): void {
         e.element = imgElem as HTMLElement;
         e.detectImageSource = ImageInputSource.Pasted;
+    }
+
+    /* Handles different upload status codes */
+    private handleUploadStatus(e: ImageSuccessEventArgs, imgElem: Element): void {
         const element: FileInfo = e.file;
         if (element.statusCode === '2') {
-            this.parent.trigger(events.imageUploadSuccess, e, (e: object) => {
-                if (!isNullOrUndefined(this.parent.insertImageSettings.path)) {
-                    const url: string = this.parent.insertImageSettings.path + (e as MetaData).file.name;
-                    if (!this.parent.inputElement.contains(imgElem) && imgElem.id) {
-                        const imgHtmlElems: NodeListOf<HTMLElement> = this.parent.inputElement.querySelectorAll('#' + imgElem.id);
-                        for (let i: number = 0; i < imgHtmlElems.length; i++) {
-                            const imgHtmlElem: HTMLElement = imgHtmlElems[i as number];
-                            if (imgHtmlElem && imgHtmlElem.style && imgHtmlElem.style.opacity === '0.5') {
-                                (imgHtmlElem as HTMLImageElement).src = url;
-                                imgHtmlElem.setAttribute('alt', (e as MetaData).file.name);
-                            }
-                        }
-                    } else {
-                        (imgElem as HTMLImageElement).src = url;
-                        imgElem.setAttribute('alt', (e as MetaData).file.name);
-                    }
-                }
-            });
+            this.handleSuccessfulUpload(e, imgElem);
+        } else if (element.statusCode === '5') {
+            this.handleImageRemoval(e);
         }
-        else if (element.statusCode === '5') {
-            this.parent.trigger(events.imageRemoving, e, (e: object) => {
-                if (!isNullOrUndefined((e as { element: HTMLImageElement }).element.src)) {
-                    (e as { element: HTMLImageElement }).element.src = '';
-                }
-            });
+    }
+
+    /* Handles successful image upload */
+    private handleSuccessfulUpload(e: ImageSuccessEventArgs, imgElem: Element): void {
+        this.parent.trigger(events.imageUploadSuccess, e, (e: object) => {
+            if (!isNullOrUndefined(this.parent.insertImageSettings.path)) {
+                const url: string = this.parent.insertImageSettings.path + (e as MetaData).file.name;
+                this.updateImageSource(imgElem, url, (e as MetaData).file.name);
+            }
+        });
+    }
+
+    /* Updates image source after successful upload */
+    private updateImageSource(imgElem: Element, url: string, altText: string): void {
+        // Handle detached images with ID
+        if (!this.parent.inputElement.contains(imgElem) && imgElem.id) {
+            const imgHtmlElems: NodeListOf<HTMLElement> = this.parent.inputElement.querySelectorAll('#' + imgElem.id);
+            this.updateDetachedImages(imgHtmlElems, url, altText);
+        } else {
+            (imgElem as HTMLImageElement).src = url;
+            imgElem.setAttribute('alt', altText);
         }
+    }
+
+    /* Updates detached images by ID */
+    private updateDetachedImages(imgHtmlElems: NodeListOf<HTMLElement>, url: string, altText: string): void {
+        for (let i: number = 0; i < imgHtmlElems.length; i++) {
+            const imgHtmlElem: HTMLElement = imgHtmlElems[i as number];
+            if (imgHtmlElem && imgHtmlElem.style && imgHtmlElem.style.opacity === '0.5') {
+                (imgHtmlElem as HTMLImageElement).src = url;
+                imgHtmlElem.setAttribute('alt', altText);
+            }
+        }
+    }
+
+    /* Handles image removal */
+    private handleImageRemoval(e: ImageSuccessEventArgs): void {
+        this.parent.trigger(events.imageRemoving, e, (e: object) => {
+            if (!isNullOrUndefined((e as { element: HTMLImageElement }).element.src)) {
+                (e as { element: HTMLImageElement }).element.src = '';
+            }
+        });
+    }
+
+    /* Schedules cleanup after upload completion */
+    private scheduleCleanup(popupObj: Popup, uploadObj: Uploader, imgElem: Element): void {
         this.popupCloseTime = setTimeout(() => {
-            if (popupObj) {
-                this.parent.isBlur = false;
-                popupObj.destroy();
-                if (!isNullOrUndefined(popupObj.element)) {
-                    detach(popupObj.element);
-                }
-            }
-            if (!this.parent.inputElement.contains(imgElem) && (imgElem.id || (imgElem as HTMLImageElement).alt)) {
-                const selector: string | null = imgElem.id ? `#${imgElem.id}` : `[alt="${(imgElem as HTMLImageElement).alt}"]`;
-                if (selector) {
-                    const imgHtmlElems: NodeListOf<HTMLElement> = this.parent.inputElement.querySelectorAll(selector);
-                    for (let i: number = 0; i < imgHtmlElems.length; i++) {
-                        const imgHtmlElem: HTMLElement = imgHtmlElems[i as number];
-                        if (imgHtmlElem && imgHtmlElem.style && imgHtmlElem.style.opacity === '0.5') {
-                            (imgHtmlElem as HTMLImageElement).style.opacity = '1';
-                        }
-                    }
-                }
-            } else {
-                (imgElem as HTMLElement).style.opacity = '1';
-            }
+            this.cleanupPopup(popupObj);
+            this.resetImageOpacity(imgElem);
             this.toolbarEnableDisable(false);
-            if (uploadObj && document.body.contains(uploadObj.element)) {
-                uploadObj.destroy();
-            }
+            this.cleanupUploader(uploadObj);
         }, 1500);
     }
-    private refreshPopup(imageElement: HTMLElement, popupObj: Popup): void {
-        const imgPosition: number = this.parent.iframeSettings.enable ? this.parent.element.offsetTop +
-        imageElement.offsetTop : imageElement.offsetTop;
-        const rtePosition: number = this.parent.element.offsetTop + this.parent.element.offsetHeight;
-        if (imgPosition > rtePosition) {
-            popupObj.relateTo = this.parent.inputElement;
-            popupObj.offsetY = this.parent.iframeSettings.enable ? -30 : -65;
-            popupObj.element.style.display = 'block';
+
+    /* Resets image opacity after upload */
+    private resetImageOpacity(imgElem: Element): void {
+        if (!this.parent.inputElement.contains(imgElem) && (imgElem.id || (imgElem as HTMLImageElement).alt)) {
+            this.resetDetachedImageOpacity(imgElem);
         } else {
-            if (popupObj) {
-                popupObj.refreshPosition(imageElement);
-                popupObj.element.style.display = 'block';
+            (imgElem as HTMLElement).style.opacity = '1';
+        }
+    }
+
+    /* Resets opacity for detached images */
+    private resetDetachedImageOpacity(imgElem: Element): void {
+        const selector: string | null = imgElem.id ?
+            `#${imgElem.id}` :
+            `[alt="${(imgElem as HTMLImageElement).alt}"]`;
+        if (selector) {
+            const imgHtmlElems: NodeListOf<HTMLElement> = this.parent.inputElement.querySelectorAll(selector);
+            for (let i: number = 0; i < imgHtmlElems.length; i++) {
+                const imgHtmlElem: HTMLElement = imgHtmlElems[i as number];
+                if (imgHtmlElem && imgHtmlElem.style && imgHtmlElem.style.opacity === '0.5') {
+                    (imgHtmlElem as HTMLImageElement).style.opacity = '1';
+                }
             }
         }
     }
-    private base64ToFile(base64: string, filename: string): File {
-        const baseStr: string[] = base64.split(',');
-        const typeStr: string = baseStr[0].match(/:(.*?);/)[1];
-        const extension: string = typeStr.split('/')[1];
-        const decodeStr: string = atob(baseStr[1]);
-        let strLen: number = decodeStr.length;
-        const decodeArr: Uint8Array = new Uint8Array(strLen);
-        while (strLen--) {
-            decodeArr[strLen as number] = decodeStr.charCodeAt(strLen);
-        }
-        if (Browser.isIE || navigator.appVersion.indexOf('Edge') > -1) {
-            const blob: Blob = new Blob([decodeArr], { type: extension });
-            extend(blob, { name: filename + '.' + (!isNOU(extension) ? extension : '') });
-            return blob as File;
+
+    /* Refreshes popup position relative to image */
+    private refreshPopup(imageElement: HTMLElement, popupObj: Popup): void {
+        const imgPosition: number = this.calculateImagePosition(imageElement);
+        const rtePosition: number = this.parent.element.offsetTop + this.parent.element.offsetHeight;
+        if (imgPosition > rtePosition) {
+            this.positionPopupAtTop(popupObj);
         } else {
-            return new File([decodeArr], filename + '.' + (!isNOU(extension) ? extension : ''), { type: extension });
+            this.positionPopupAtImage(popupObj, imageElement);
         }
     }
-    /**
-     * Method for image formatting when pasting
-     *
-     * @param {Object} pasteArgs - specifies the paste arguments.
-     * @param {Element []} imgElement - specifies the array elements.
-     * @returns {void}
-     * @hidden
-     * @deprecated
-     */
+
+    /* Calculates image position considering iframe */
+    private calculateImagePosition(imageElement: HTMLElement): number {
+        return this.parent.iframeSettings.enable ?
+            this.parent.element.offsetTop + imageElement.offsetTop :
+            imageElement.offsetTop;
+    }
+
+    /* Positions popup at the top of editor */
+    private positionPopupAtTop(popupObj: Popup): void {
+        popupObj.relateTo = this.parent.inputElement;
+        popupObj.offsetY = this.parent.iframeSettings.enable ? -30 : -65;
+        popupObj.element.style.display = 'block';
+    }
+
+    /* Positions popup relative to image */
+    private positionPopupAtImage(popupObj: Popup, imageElement: HTMLElement): void {
+        if (popupObj) {
+            popupObj.refreshPosition(imageElement);
+            popupObj.element.style.display = 'block';
+        }
+    }
+
+    /* Method for image formatting when pasting */
     private imageFormatting(pasteArgs: Object, imgElement: { [key: string]: Element[] }): void {
-        if (!isNOU(imgElement.elements[0].getAttribute('src'))) {
-            imgElement.elements[0].classList.add('pasteContent_Img');
+        const imgElem: Element = imgElement.elements[0];
+        if (!isNOU(imgElem.getAttribute('src'))) {
+            imgElem.classList.add('pasteContent_Img');
         }
         const imageElement: HTMLElement = this.parent.createElement('span');
-        imageElement.appendChild(imgElement.elements[0]);
+        imageElement.appendChild(imgElem);
         const imageValue: string = imageElement.innerHTML;
-        this.contentRenderer = this.renderFactory.getRenderer(RenderType.Content);
-        const currentDocument: Document = this.contentRenderer.getDocument();
+        this.contentModule = this.renderFactory.getRenderer(RenderType.Content);
+        const currentDocument: Document = this.contentModule.getDocument();
         const range: Range = this.nodeSelectionObj.getRange(currentDocument);
         this.saveSelection = this.nodeSelectionObj.save(range, currentDocument);
-        if (this.parent.pasteCleanupSettings.prompt) {
+        const settings: PasteCleanupSettingsModel = this.parent.pasteCleanupSettings;
+        if (settings.prompt) {
             this.pasteDialog(imageValue, pasteArgs);
-        } else if (this.parent.pasteCleanupSettings.plainText) {
+        } else if (settings.plainText) {
             this.plainFormatting(imageValue, pasteArgs);
-        } else if (this.parent.pasteCleanupSettings.keepFormat) {
+        } else if (settings.keepFormat) {
             this.formatting(imageValue, false, pasteArgs);
         } else {
             this.formatting(imageValue, true, pasteArgs);
         }
     }
 
+    /* Renders radio buttons for paste formatting options. */
     private radioRender(): void {
         this.keepRadioButton = new RadioButton({ label: this.i10n.getConstant('keepFormat'),
             name: 'pasteOption', checked: true });
@@ -596,7 +822,9 @@ export class PasteCleanup {
     }
 
     private selectFormatting(
-        value: string, args: Object, keepChecked: boolean, cleanChecked: boolean): void {
+        value: string, args: Object,
+        keepChecked: boolean, cleanChecked: boolean
+    ): void {
         if (keepChecked) {
             this.formatting(value, false, args);
         } else if (cleanChecked) {
@@ -605,63 +833,15 @@ export class PasteCleanup {
             this.plainFormatting(value, args);
         }
     }
-    private pasteDialog(value: string, args: Object): void {
-        const dialogModel: DialogModel = {
-            buttons: [
-                {
-                    click: () => {
-                        if (!this.dialogObj.isDestroyed) {
-                            const keepChecked: boolean = (this.parent.element.querySelector('#keepFormating') as HTMLInputElement).checked;
-                            const cleanChecked: boolean = (this.parent.element.querySelector('#cleanFormat') as HTMLInputElement).checked;
-                            this.dialogObj.hide();
-                            const argument: Dialog = this.dialogObj;
-                            this.dialogRenderObj.close(argument);
-                            this.dialogObj.destroy();
-                            this.selectFormatting(value, args, keepChecked, cleanChecked);
-                        }
-                    },
-                    buttonModel: {
-                        isPrimary: true,
-                        cssClass: 'e-flat ' + CLS_RTE_PASTE_OK,
-                        content: this.i10n.getConstant('pasteDialogOk')
-                    }
-                },
-                {
-                    click: () => {
-                        if (!this.dialogObj.isDestroyed) {
-                            this.dialogObj.hide();
-                            const args: Dialog = this.dialogObj;
-                            this.dialogRenderObj.close(args);
-                            this.dialogObj.destroy();
-                        }
-                    },
-                    buttonModel: {
-                        cssClass: 'e-flat ' + CLS_RTE_PASTE_CANCEL,
-                        content: this.i10n.getConstant('pasteDialogCancel')
-                    }
-                }
-            ],
-            header: this.i10n.getConstant('pasteFormat'),
-            content: this.i10n.getConstant('pasteFormatContent') + '<br/><div><div style="padding-top:24px;">' +
-                '<input type="radio" class="' + CLS_RTE_PASTE_KEEP_FORMAT + '" id="keepFormating"/>' +
-                '</div><div style="padding-top:20px;"><input type="radio" class="' +
-                CLS_RTE_PASTE_REMOVE_FORMAT + '" id="cleanFormat"/></div>' +
-                '<div style="padding-top:20px;"><input type="radio" class="' +
-                CLS_RTE_PASTE_PLAIN_FORMAT + '" id="plainTextFormat"/></div></div>',
-            target: this.parent.element,
-            width: '300px',
-            height: '265px',
-            cssClass: CLS_RTE_DIALOG_MIN_HEIGHT,
-            isModal: (Browser.isDevice as boolean),
-            visible: false
-        };
-        this.dialogObj = this.dialogRenderObj.render(dialogModel);
-        let rteDialogWrapper: HTMLElement = this.parent.element.querySelector('#' + this.parent.getID()
-            + '_pasteCleanupDialog');
-        if (rteDialogWrapper !== null && rteDialogWrapper.innerHTML !== '') {
+
+    /* Shows the dialog for paste formatting options. */
+    private pasteDialog(value: string, args: object): void {
+        this.dialogObj = this.dialogRenderObj.render(this.getDialogModel(value, args));
+        let rteDialogWrapper: HTMLElement | null = this.parent.element.querySelector('#' + this.parent.getID() + '_pasteCleanupDialog');
+        if (rteDialogWrapper && rteDialogWrapper.innerHTML !== '') {
             this.destroyDialog(rteDialogWrapper);
         }
-        if (rteDialogWrapper === null) {
+        if (!rteDialogWrapper) {
             rteDialogWrapper = this.parent.createElement('div', {
                 id: this.parent.getID() + '_pasteCleanupDialog'
             }) as HTMLElement;
@@ -670,9 +850,85 @@ export class PasteCleanup {
         this.dialogObj.appendTo(rteDialogWrapper);
         this.radioRender();
         this.dialogObj.show();
-        this.setCssClass({cssClass: this.parent.getCssClass()});
+        this.setCssClass({ cssClass: this.parent.getCssClass() });
     }
 
+    /* Returns the dialog model configuration. */
+    private getDialogModel(value: string, args: object): DialogModel {
+        return {
+            buttons: [
+                this.getOkButton(value, args),
+                this.getCancelButton()
+            ],
+            header: this.i10n.getConstant('pasteFormat'),
+            content: this.getDialogContent(),
+            target: this.parent.element,
+            width: '300px',
+            height: '265px',
+            cssClass: CLS_RTE_DIALOG_MIN_HEIGHT,
+            isModal: Browser.isDevice as boolean,
+            visible: false
+        };
+    }
+
+    /* Creates the OK button configuration for the dialog. */
+    private getOkButton(value: string, args: object): Object {
+        return {
+            click: (): void => {
+                if (!this.dialogObj.isDestroyed) {
+                    const keepChecked: boolean = !!(this.parent.element.querySelector('#keepFormating') as HTMLInputElement).checked;
+                    const cleanChecked: boolean = !!(this.parent.element.querySelector('#cleanFormat') as HTMLInputElement).checked;
+                    this.closeDialog();
+                    this.selectFormatting(value, args, keepChecked, cleanChecked);
+                }
+            },
+            buttonModel: {
+                isPrimary: true,
+                cssClass: 'e-flat ' + CLS_RTE_PASTE_OK,
+                content: this.i10n.getConstant('pasteDialogOk')
+            }
+        };
+    }
+
+    /* Creates the Cancel button configuration for the dialog. */
+    private getCancelButton(): Object {
+        return {
+            click: (): void => {
+                if (!this.dialogObj.isDestroyed) {
+                    this.closeDialog();
+                }
+            },
+            buttonModel: {
+                cssClass: 'e-flat ' + CLS_RTE_PASTE_CANCEL,
+                content: this.i10n.getConstant('pasteDialogCancel')
+            }
+        };
+    }
+
+    /* Closes and destroys the dialog. */
+    private closeDialog(): void {
+        this.dialogObj.hide();
+        const dialogRef: Dialog = this.dialogObj;
+        this.dialogRenderObj.close(dialogRef);
+        this.dialogObj.destroy();
+    }
+
+    /* Returns the HTML content for the dialog. */
+    private getDialogContent(): string {
+        return `${this.i10n.getConstant('pasteFormatContent')}<br/><div>
+            <div class="e-rte-radio-keep-format">
+                <input type="radio" class="${CLS_RTE_PASTE_KEEP_FORMAT}" id="keepFormating"/>
+            </div>
+            <div class="e-rte-radio-remove-format">
+                <input type="radio" class="${CLS_RTE_PASTE_REMOVE_FORMAT}" id="cleanFormat"/>
+            </div>
+            <div class="e-rte-radio-plain-format">
+                <input type="radio" class="${CLS_RTE_PASTE_PLAIN_FORMAT}" id="plainTextFormat"/>
+            </div>
+        </div>`;
+    }
+
+    /* Updates CSS classes on a component. */
     private updateCss(currentObj: Dialog | Uploader | RadioButton, e: ICssClassArgs) : void {
         if (currentObj && e.cssClass) {
             if (isNullOrUndefined(e.oldCssClass)) {
@@ -686,12 +942,10 @@ export class PasteCleanup {
     // eslint-disable-next-line @typescript-eslint/tslint/config
     private setCssClass(e: ICssClassArgs) {
         if (this.popupObj && e.cssClass) {
-            if (isNullOrUndefined(e.oldCssClass)) {
-                addClass([this.popupObj.element], e.cssClass);
-            } else {
+            if (e.oldCssClass) {
                 removeClass([this.popupObj.element], e.oldCssClass);
-                addClass([this.popupObj.element], e.cssClass);
             }
+            addClass([this.popupObj.element], e.cssClass);
         }
         this.updateCss(this.dialogObj, e);
         this.updateCss(this.uploadObj, e);
@@ -700,276 +954,121 @@ export class PasteCleanup {
         this.updateCss(this.keepRadioButton, e);
     }
 
+    /* Removes the dialog container and its child elements. */
     private destroyDialog(rteDialogWrapper: HTMLElement): void {
         const rteDialogContainer: HTMLElement = this.parent.element.querySelector('.e-rte-dialog-minheight');
-        detach(rteDialogContainer);
-        const rteDialogWrapperChildLength: number = rteDialogWrapper.children.length;
-        for (let i: number = 0; i < rteDialogWrapperChildLength; i++) {
-            detach(rteDialogWrapper.children[0]);
+        if (rteDialogContainer) {
+            detach(rteDialogContainer);
+        }
+        while (rteDialogWrapper.firstChild) {
+            detach(rteDialogWrapper.firstChild as HTMLElement);
         }
     }
 
+    /* Handles document click to hide dialog if clicked outside. */
     private docClick(e: { [key: string]: object }): void {
-        const target: HTMLElement = <HTMLElement>(e.args as MouseEvent).target;
-        if (target && target.classList && ((this.dialogObj && !closest(target, '[id=' + '\'' + this.dialogObj.element.id + '\'' + ']')))
-            && (!target.classList.contains('e-toolbar-item'))) {
-            if (this.dialogObj) {
-                this.dialogObj.hide();
-            }
+        const target: HTMLElement = (e.args as MouseEvent).target as HTMLElement;
+        if (
+            target &&
+            target.classList &&
+            this.dialogObj &&
+            !closest(target, `[id='${this.dialogObj.element.id}']`) &&
+            !target.classList.contains('e-toolbar-item')
+        ) {
+            this.dialogObj.hide();
         }
     }
 
-    private cleanAppleClass (elem: HTMLElement): HTMLElement {
-        const appleClassElem: NodeListOf<Element> = elem.querySelectorAll('br.Apple-interchange-newline');
-        for (let i : number = 0; i < appleClassElem.length; i++) {
-            detach(appleClassElem[i as number]);
-        }
-        return elem;
-    }
-
+    /* Processes and sanitizes pasted content based on cleanup settings, image handling, sanitization, and custom callbacks. */
     private formatting(value: string, clean: boolean, args: Object): void {
         let clipBoardElem: HTMLElement = this.parent.createElement(
-            'div', { className: 'pasteContent', styles: 'display:inline;' }) as HTMLElement;
+            'div', { className: 'pasteContent', styles: 'display:inline;' }
+        ) as HTMLElement;
+        // If plain text paste contains HTML, split lines appropriately
         if (this.isNotFromHtml && this.containsHtml) {
-            value = this.splitBreakLine(value);
+            value = this.pasteObj.splitBreakLine(value);
         }
         clipBoardElem.innerHTML = value;
-        clipBoardElem = this.cleanAppleClass(clipBoardElem);
-        if (this.parent.pasteCleanupSettings.deniedTags !== null) {
-            clipBoardElem = this.deniedTags(clipBoardElem);
-        }
-        if (clean) {
-            clipBoardElem = this.deniedAttributes(clipBoardElem, clean);
-        } else if (this.parent.pasteCleanupSettings.deniedAttrs !== null) {
-            clipBoardElem = this.deniedAttributes(clipBoardElem, clean);
-        }
+        clipBoardElem = this.pasteObj.cleanAppleClass(clipBoardElem);
+        // Remove denied tags and attributes as per settings
+        clipBoardElem = this.pasteObj.cleanupDeniedTagsAndAttributes(clipBoardElem, clean);
+        // Restrict allowed CSS style properties if configured
         if (this.parent.pasteCleanupSettings.allowedStyleProps !== null) {
-            clipBoardElem = this.allowedStyle(clipBoardElem);
+            clipBoardElem = this.pasteObj.allowedStyle(clipBoardElem);
         }
         this.saveSelection.restore();
         let newText: string = clipBoardElem.innerHTML;
-        if (this.parent.enableHtmlSanitizer) {
+        if (this.parent.enableHtmlSanitizer) { // Sanitize innerHTML and ensure ampersands
             newText = clipBoardElem.innerHTML.split('&').join('&amp;');
         }
-        clipBoardElem.innerHTML = this.sanitizeHelper(newText);
-        const allImg: NodeListOf<HTMLImageElement> = clipBoardElem.querySelectorAll('img');
-        for (let i: number = 0; i < allImg.length; i++) {
-            if (!isNOU(allImg[i as number].getAttribute('src'))) {
-                allImg[i as number].classList.add('pasteContent_Img');
-            }
-            this.setImageProperties(allImg[i as number]);
+        clipBoardElem.innerHTML = sanitizeHelper(newText, this.parent);
+        this.pasteObj.setImageClassAndProps(clipBoardElem);
+        // Handle pasted <picture> elements if present
+        if (this.pasteObj.hasPictureElement(clipBoardElem)) {
+            this.pasteObj.processPictureElement(clipBoardElem);
         }
-        this.addTempClass(clipBoardElem);
-        if (clipBoardElem.querySelectorAll('picture').length > 0) {
-            this.processPictureElement(clipBoardElem);
-        }
-        if (clipBoardElem.textContent !== '' || !isNOU(clipBoardElem.querySelector('img')) ||
-        !isNOU(clipBoardElem.querySelector('table'))) {
-            const tempWrapperElem: HTMLElement = this.parent.createElement('div') as HTMLElement;
-            tempWrapperElem.innerHTML = value;
-            const filesData: FileInfo[] = [];
-            if (!isNOU(tempWrapperElem.querySelector('img'))) {
-                const imgElem: NodeListOf<HTMLImageElement> = tempWrapperElem.querySelectorAll('img');
-                const base64Src: string[] = [];
-                const imgName: string[] = [];
-                const uploadImg: Element[] = [];
-                for (let i: number = 0; i < imgElem.length; i++) {
-                    if (imgElem[i as number].getAttribute('src') &&
-                        imgElem[i as number].getAttribute('src').split(',')[0].indexOf('base64') >= 0) {
-                        base64Src.push(imgElem[i as number].getAttribute('src'));
-                        imgName.push(getUniqueID('rte_image'));
-                        uploadImg.push(imgElem[i as number]);
-                    }
-                }
-                const fileList: File[] = [];
-                let currentData: FileInfo;
-                for (let i: number = 0; i < base64Src.length; i++) {
-                    fileList.push(this.base64ToFile(base64Src[i as number], imgName[i as number]));
-                    currentData = {
-                        name: fileList[i as number].name, rawFile: fileList[i as number],
-                        size: fileList[i as number].size, type: fileList[i as number].type,
-                        status: '', validationMessages: { minSize: '', maxSize: '' }, statusCode: '1'
-                    };
-                    filesData.push(currentData);
-                }
-            }
-            this.parent.trigger(
-                events.afterPasteCleanup,
-                { value : clipBoardElem.innerHTML, filesData: filesData },
-                (updatedArgs: PasteCleanupArgs) => { value = updatedArgs.value; });
-            clipBoardElem.innerHTML = this.parent.addAnchorAriaLabel(value);
-            clipBoardElem = this.addTableClass(clipBoardElem, (args as NotifyArgs).pasteTableSource);
-            this.parent.formatter.editorManager.execCommand(
-                'inserthtml',
-                'pasteCleanup',
-                args,
-                (returnArgs: IHtmlFormatterCallBack) => {
-                    extend(args, { elements: returnArgs.elements, imageElements: returnArgs.imgElem }, true);
-                    this.parent.formatter.onSuccess(this.parent, args);
-                },
-                clipBoardElem, null, null, this.parent.enterKey
-            );
-            this.parent.notify(events.autoResize, {});
-            scrollToCursor(this.parent.contentModule.getDocument(), this.parent.inputElement);
-            this.removeTempClass();
-            this.parent.notify(events.toolbarRefresh, {});
-            this.cropImageHandler(this.parent.inputElement);
-        }
-    }
-    private convertBlobToBase64(element: HTMLElement): void {
-        const imgElem: NodeListOf<HTMLImageElement> = element.querySelectorAll('img');
-        for (let i: number = 0; i < imgElem.length; i++) {
-            if (imgElem[i as number].getAttribute('src') &&
-                imgElem[i as number].getAttribute('src').startsWith('blob')) {
-                const blobImageUrl: string = imgElem[i as number].getAttribute('src');
-                const img: HTMLImageElement = new Image();
-                const onImageLoadEvent: () => void = () => {
-                    const canvas: HTMLCanvasElement = document.createElement('canvas');
-                    const ctx: CanvasRenderingContext2D = canvas.getContext('2d');
-                    canvas.width = img.width;
-                    canvas.height = img.height;
-                    ctx.drawImage(img, 0, 0);
-                    const base64String: string = canvas.toDataURL('image/png');
-                    (imgElem[i as number] as HTMLImageElement).src = base64String;
-                    img.removeEventListener('load', onImageLoadEvent);
-                };
-                img.src = blobImageUrl;
-                img.addEventListener('load', onImageLoadEvent);
-            }
-        }
-    }
-    private cropImageHandler(element: HTMLElement): void {
-        const allImgElm: NodeListOf<HTMLImageElement> = element.querySelectorAll('.e-img-cropped');
-        if (allImgElm.length > 0) {
-            for (let i: number = 0; i < allImgElm.length; i++) {
-                if (allImgElm[i as number].getAttribute('src').split(',')[0].indexOf('base64') >= 0) {
-                    const image: HTMLImageElement = new Image();
-                    image.src = allImgElm[i as number].getAttribute('src');
-                    const canvas: HTMLCanvasElement = document.createElement('canvas');
-                    const ctx: CanvasRenderingContext2D = canvas.getContext('2d');
-                    image.onload = () => {
-                        const wGoalWidth: number = this.cropImageData[i as number].goalWidth as number / image.naturalWidth;
-                        const hGoalHeight: number = this.cropImageData[i as number].goalHeight as number / image.naturalHeight;
-                        const cropLength: number = this.cropImageData[i as number].cropLength as number / wGoalWidth;
-                        const cropTop: number = this.cropImageData[i as number].cropTop as number / hGoalHeight;
-                        const cropWidth: number = (this.cropImageData[i as number].goalWidth as number -
-                            (this.cropImageData[i as number].cropLength as number) -
-                            (this.cropImageData[i as number].cropR as number)) / wGoalWidth;
-                        const cropHeight: number = (this.cropImageData[i as number].goalHeight as number -
-                            (this.cropImageData[i as number].cropTop as number) -
-                            (this.cropImageData[i as number].cropB as number)) / hGoalHeight;
-                        canvas.width = cropWidth;
-                        canvas.height = cropHeight;
-                        // Draw the cropped portion of the image onto the canvas
-                        ctx.drawImage(image, cropLength, cropTop, cropWidth, cropHeight, 0, 0, cropWidth, cropHeight);
-                        // Convert the cropped canvas to a base64 encoded image
-                        const croppedBase64: string = canvas.toDataURL('image/png');
-                        // Call the provided callback with the cropped base64 data
-                        allImgElm[i as number].setAttribute('src', croppedBase64);
-                        allImgElm[i as number].classList.remove('e-img-cropped');
-                        this.imgUploading(this.parent.inputElement);
-                        if (this.parent.iframeSettings.enable) {
-                            this.parent.updateValue();
-                        }
-                    };
-                }
-            }
-        } else {
-            if (!isNOU(this.parent.insertImageSettings.saveUrl) && !isNOU(this.parent.insertImageSettings.path) &&
-            this.parent.inputElement.querySelectorAll('img').length > 0 && this.parent.inputElement.querySelectorAll('img')[0].src.startsWith('blob')) {
-                this.convertBlobToBase64(this.parent.inputElement);
-                this.iframeUploadTime = setTimeout(() => {
-                    this.imgUploading(this.parent.inputElement);
-                    if (this.parent.iframeSettings.enable) {
-                        this.parent.updateValue();
-                    }
-                }, 20);
-            } else {
-                this.imgUploading(this.parent.inputElement);
-                if (this.parent.iframeSettings.enable) {
-                    this.parent.updateValue();
-                }
-            }
+        // Process paste content, image conversion & emit callbacks if present
+        if (this.pasteObj.hasContentToPaste(clipBoardElem)) {
+            this.handlePastedImagesAndEvents(clipBoardElem, value, args);
         }
     }
 
-    private addTableClass(element: HTMLElement, source?: string): HTMLElement {
-        const tableElement : NodeListOf<HTMLElement> = element.querySelectorAll('table');
-        for (let i: number = 0; i < tableElement.length; i++) {
-            const isMSTeamsTable: boolean = tableElement[i as number].parentElement.nodeName === 'FIGURE';
-            if (tableElement[i as number].classList.length > 0 && tableElement[i as number].classList.contains('e-rte-custom-table')) {
-                continue; // Skip the custom table class
-            }
-            if (this.parent.pasteCleanupSettings.keepFormat && source && !isMSTeamsTable) {
-                tableElement[i as number].classList.add('e-rte-paste-' + source + '-table');
-            } else if (!tableElement[i as number].classList.contains('e-rte-table')) {
-                tableElement[i as number].classList.add('e-rte-table');
-            }
-            if (isNOU(tableElement[i as number].nextElementSibling) && tableElement[i as number].nextSibling &&
-                !tableElement[i as number].nextSibling.textContent.trim()) {
-                detach(tableElement[i as number].nextSibling);
-            }
-        }
-        return element;
+    private handlePastedImagesAndEvents(clipBoardElem: HTMLElement, value: string, args: Object): void {
+        // Based on the information in your clipboard, the function below is refactored for better readability.
+        const tempWrapperElem: HTMLElement = this.parent.createElement('div') as HTMLElement;
+        tempWrapperElem.innerHTML = value;
+        const filesData: FileInfo[] = this.pasteObj.collectBase64ImageFiles(tempWrapperElem);
+        this.parent.trigger(
+            events.afterPasteCleanup,
+            { value: clipBoardElem.innerHTML, filesData: filesData },
+            (updatedArgs: PasteCleanupArgs) => { value = updatedArgs.value; }
+        );
+        clipBoardElem.innerHTML = this.parent.addAnchorAriaLabel(value);
+        clipBoardElem = this.pasteObj.addTableClass(clipBoardElem, (args as NotifyArgs).pasteTableSource);
+        this.execPasteCommand(clipBoardElem, args);
+        this.parent.notify(events.autoResize, {});
+        scrollToCursor(this.parent.contentModule.getDocument(), this.parent.inputElement);
+        this.pasteObj.removeTempClass();
+        this.parent.notify(events.toolbarRefresh, {});
+        this.pasteObj.cropImageHandler(this.parent.inputElement);
     }
 
-    private setImageProperties(allImg: HTMLImageElement): void {
-        if (this.parent.insertImageSettings.width !== 'auto') {
-            allImg.setAttribute('width', this.parent.insertImageSettings.width);
-        }
-        if (this.parent.insertImageSettings.minWidth !== '0' && this.parent.insertImageSettings.minWidth !== 0) {
-            allImg.style.minWidth = this.parent.insertImageSettings.minWidth.toString();
-        }
-        if (this.parent.insertImageSettings.maxWidth !== null) {
-            allImg.style.maxWidth = this.parent.getInsertImgMaxWidth().toString();
-        }
-        if (this.parent.insertImageSettings.height !== 'auto') {
-            allImg.setAttribute('height', this.parent.insertImageSettings.height);
-        }
-        if (this.parent.insertImageSettings.minHeight !== '0' && this.parent.insertImageSettings.minHeight !== 0) {
-            allImg.style.minHeight = this.parent.insertImageSettings.minHeight.toString();
-        }
-        if (this.parent.insertImageSettings.maxHeight !== null) {
-            allImg.style.maxHeight = this.parent.insertImageSettings.maxHeight.toString();
-        }
+    private execPasteCommand(clipBoardElem: HTMLElement, args: Object): void {
+        this.parent.formatter.editorManager.execCommand(
+            'inserthtml',
+            'pasteCleanup',
+            args,
+            (returnArgs: IHtmlFormatterCallBack) => {
+                extend(args, {
+                    elements: returnArgs.elements, imageElements: returnArgs.imgElem
+                }, true);
+                this.parent.formatter.onSuccess(this.parent, args);
+            },
+            clipBoardElem, null, null, this.parent.enterKey
+        );
     }
 
-    private addTempClass(clipBoardElem: HTMLElement): void {
-        const allChild: HTMLCollection = clipBoardElem.children;
-        for (let i: number = 0; i < allChild.length; i++) {
-            allChild[i as number].classList.add('pasteContent_RTE');
-        }
+    private getCropImageData(): CropImageDataItem[] {
+        return this.cropImageData;
     }
 
-    private removeTempClass(): void {
-        const classElm: NodeListOf<Element> = this.parent.inputElement.querySelectorAll('.pasteContent_RTE');
-        for (let i: number = 0; i < classElm.length; i++) {
-            classElm[i as number].classList.remove('pasteContent_RTE');
-            if (classElm[i as number].getAttribute('class') === '') {
-                classElm[i as number].removeAttribute('class');
-            }
-        }
-    }
-
-    private sanitizeHelper(value: string): string {
-        value = sanitizeHelper(value, this.parent);
-        return value;
-    }
-
-    //Plain Formatting
+    /* Handles the pasting of plain text content into the rich text editor. */
     private plainFormatting(value: string, args: Object): void {
         const clipBoardElem: HTMLElement = this.parent.createElement(
-            'div', { className: 'pasteContent'}) as HTMLElement;
+            'div', { className: 'pasteContent'}
+        ) as HTMLElement;
         this.plainTextContent = this.plainTextContent.replace(/</g, '&lt;');
         this.plainTextContent = this.plainTextContent.replace(/>/g, '&gt;');
-        const sanitizedContent: string = this.sanitizeHelper(this.plainTextContent);
-        const splitContent: string = this.splitBreakLine(sanitizedContent);
+        const sanitizedContent: string = sanitizeHelper(this.plainTextContent, this.parent);
+        const splitContent: string = this.pasteObj.splitBreakLine(sanitizedContent);
         clipBoardElem.innerHTML = splitContent;
         if (clipBoardElem.textContent.trim() !== '') {
             this.saveSelection.restore();
             this.parent.trigger(
                 events.afterPasteCleanup,
-                { value : clipBoardElem.innerHTML, filesData: null }, (updatedArgs: PasteCleanupArgs) => { value = updatedArgs.value; });
+                { value : clipBoardElem.innerHTML, filesData: null },
+                (updatedArgs: PasteCleanupArgs) => { value = updatedArgs.value; }
+            );
             clipBoardElem.innerHTML = value;
             this.parent.formatter.editorManager.execCommand(
                 'inserthtml',
@@ -981,7 +1080,7 @@ export class PasteCleanup {
                 },
                 clipBoardElem, null, null, this.parent.enterKey
             );
-            this.removeTempClass();
+            this.pasteObj.removeTempClass();
         } else {
             this.saveSelection.restore();
             extend(args, { elements: [] }, true);
@@ -989,145 +1088,6 @@ export class PasteCleanup {
         }
     }
 
-    //GroupingTags
-    private tagGrouping(deniedTags: string[]): string[] {
-        const groupingTags: string[] = [...deniedTags];
-        const keys: string[] = Object.keys(pasteCleanupGroupingTags);
-        const values: string[][] = keys.map((key: string) => {
-            return pasteCleanupGroupingTags[`${key}`];
-        });
-        const addTags: string[] = [];
-        for (let i: number = 0; i < groupingTags.length; i++) {
-            //The value split using '[' because to retrieve the tag name from the user given format which may contain tag with attributes
-            if (groupingTags[i as number].split('[').length > 1) {
-                groupingTags[i as number] = groupingTags[i as number].split('[')[0].trim();
-            }
-            if (keys.indexOf(groupingTags[i as number]) > -1) {
-                for (let j: number = 0; j < values[keys.indexOf(groupingTags[i as number])].length; j++) {
-                    if (groupingTags.indexOf(values[keys.indexOf(groupingTags[i as number])][j as number]) < 0 &&
-                        addTags.indexOf(values[keys.indexOf(groupingTags[i as number])][j as number]) < 0) {
-                        addTags.push(values[keys.indexOf(groupingTags[i as number])][j as number]);
-                    }
-                }
-            }
-        }
-        return deniedTags = deniedTags.concat(addTags);
-    }
-
-    //Filter Attributes in Denied Tags
-    private attributesfilter(deniedTags: string[]): string[] {
-        for (let i: number = 0; i < deniedTags.length; i++) {
-            if (deniedTags[i as number].split('[').length > 1) {
-                const userAttributes: string[] = deniedTags[i as number].split('[')[1].split(']')[0].split(',');
-                const allowedAttributeArray: string[] = [];
-                const deniedAttributeArray: string[] = [];
-                for (let j: number = 0; j < userAttributes.length; j++) {
-                    if (userAttributes[j as number].indexOf('!') < 0) {
-                        allowedAttributeArray.push(userAttributes[j as number].trim());
-                    } else {
-                        deniedAttributeArray.push(userAttributes[j as number].split('!')[1].trim());
-                    }
-                }
-                const allowedAttribute: string = allowedAttributeArray.length > 1 ?
-                    (allowedAttributeArray.join('][')) : (allowedAttributeArray.join());
-                const deniedAttribute: string = deniedAttributeArray.length > 1 ?
-                    deniedAttributeArray.join('][') : (deniedAttributeArray.join());
-                if (deniedAttribute.length > 0) {
-                    const select: string = allowedAttribute !== '' ? deniedTags[i as number].split('[')[0] +
-            '[' + allowedAttribute + ']' : deniedTags[i as number].split('[')[0];
-                    deniedTags[i as number] = select + ':not([' + deniedAttribute + '])';
-                } else {
-                    deniedTags[i as number] = deniedTags[i as number].split('[')[0] + '[' + allowedAttribute + ']';
-                }
-            }
-        }
-        return deniedTags;
-    }
-
-    //Denied Tags
-    private deniedTags(clipBoardElem: HTMLElement): HTMLElement {
-        let deniedTags: string[] = isNullOrUndefined(this.parent.pasteCleanupSettings.deniedTags) ? [] :
-            [...this.parent.pasteCleanupSettings.deniedTags];
-        deniedTags = this.attributesfilter(deniedTags);
-        deniedTags = this.tagGrouping(deniedTags);
-        for (let i: number = 0; i < deniedTags.length; i++) {
-            const removableElement: NodeListOf<Element> = clipBoardElem.querySelectorAll(
-                deniedTags[i as number]
-            );
-            for (let j: number = removableElement.length - 1; j >= 0; j--) {
-                const parentElem: Node = removableElement[j as number].parentNode;
-                while (removableElement[j as number].firstChild) {
-                    parentElem.insertBefore(removableElement[j as number].firstChild, removableElement[j as number]);
-                }
-                parentElem.removeChild(removableElement[j as number]);
-            }
-        }
-        return clipBoardElem;
-    }
-
-    //Denied Attributes
-    private deniedAttributes(clipBoardElem: HTMLElement, clean: boolean): HTMLElement {
-        const deniedAttrs: string[] = isNullOrUndefined(this.parent.pasteCleanupSettings.deniedAttrs) ? [] :
-            [...this.parent.pasteCleanupSettings.deniedAttrs];
-        if (clean) {
-            deniedAttrs.push('style');
-        }
-        for (let i: number = 0; i < deniedAttrs.length; i++) {
-            const removableAttrElement: NodeListOf<HTMLElement> = clipBoardElem.
-                querySelectorAll('[' + deniedAttrs[i as number] + ']');
-            for (let j: number = 0; j < removableAttrElement.length; j++) {
-                removableAttrElement[j as number].removeAttribute(deniedAttrs[i as number]);
-            }
-        }
-        return clipBoardElem;
-    }
-
-    //Allowed Style Properties
-    private allowedStyle(clipBoardElem: HTMLElement): HTMLElement {
-        const allowedStyleProps: string[] = isNullOrUndefined(this.parent.pasteCleanupSettings.allowedStyleProps) ? [] :
-            [...this.parent.pasteCleanupSettings.allowedStyleProps];
-        allowedStyleProps.push('list-style-type', 'list-style');
-        const styleElement: NodeListOf<HTMLElement> = clipBoardElem.querySelectorAll('[style]');
-        for (let i: number = 0; i < styleElement.length; i++) {
-            let allowedStyleValue: string = '';
-            const allowedStyleValueArray: string[] = [];
-            const styleValue: string[] = styleElement[i as number].getAttribute('style').split(';');
-            for (let k: number = 0; k < styleValue.length; k++) {
-                if (allowedStyleProps.indexOf(styleValue[k as number].split(':')[0].trim()) >= 0) {
-                    allowedStyleValueArray.push(styleValue[k as number]);
-                }
-            }
-            styleElement[i as number].removeAttribute('style');
-            allowedStyleValue = allowedStyleValueArray.join(';').trim() === '' ?
-                allowedStyleValueArray.join(';') : allowedStyleValueArray.join(';') + ';';
-            if (allowedStyleValue) {
-                styleElement[i as number].style.cssText += allowedStyleValue;
-            }
-        }
-        return clipBoardElem;
-    }
-
-    private processPictureElement(clipBoardElem: HTMLElement): void {
-        const pictureElems: NodeListOf<HTMLElement> = clipBoardElem.querySelectorAll('picture');
-        const base: string = this.parent.contentModule.getDocument().baseURI;
-        for (let i: number = 0; i < pictureElems.length; i++) {
-            const imgElem: HTMLImageElement | null = pictureElems[i as number].querySelector('img');
-            const sourceElems: NodeListOf<HTMLSourceElement> = pictureElems[i as number].querySelectorAll('source');
-            if (imgElem && imgElem.getAttribute('src')) {
-                const srcValue: string = (imgElem as HTMLElement).getAttribute('src');
-                const url: URL = srcValue.indexOf('http') > -1 ? new URL(srcValue) : new URL(srcValue, base);
-                for (let j: number = 0; j < sourceElems.length; j++) {
-                    const srcset: string | null = sourceElems[j as number].getAttribute('srcset');
-                    if (srcset) {
-                        if (srcset.indexOf('http') === -1) {
-                            const fullPath: string = url.origin + srcset;
-                            sourceElems[j as number].setAttribute('srcset', fullPath);
-                        }
-                    }
-                }
-            }
-        }
-    }
 
     /**
      * For internal use only - Get the module name.

@@ -1,5 +1,4 @@
-import { Property, NotifyPropertyChanges, INotifyPropertyChanged, Event } from '@syncfusion/ej2-base';import { Base, EmitType } from '@syncfusion/ej2-base';import { KeyboardEventsModel } from '@syncfusion/ej2-base';
-import {KeyboardEventArgs} from "./keyboard";
+import { Property, NotifyPropertyChanges, INotifyPropertyChanged, Event, KeyboardEventArgs } from '@syncfusion/ej2-base';import { Base, EmitType } from '@syncfusion/ej2-base';import { KeyboardEventsModel } from '@syncfusion/ej2-base';
 
 /**
  * Interface for a class KeyboardEvents

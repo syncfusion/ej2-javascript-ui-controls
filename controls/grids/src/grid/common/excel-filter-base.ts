@@ -13,7 +13,7 @@ import { Column } from '../models/column';
 import { DatePicker, DateTimePicker } from '@syncfusion/ej2-calendars';
 import { OffsetPosition } from '@syncfusion/ej2-popups';
 import { parentsUntil, appendChildren, extend, eventPromise, resetDialogAppend } from '../base/util';
-import { IFilterArgs, EJ2Intance, FilterUI, IGrid } from '../base/interface';
+import { IFilterArgs, EJ2Intance, FilterUI, IGrid, BeforeCustomFilterOpenEventArgs } from '../base/interface';
 import * as events from '../base/constant';
 import { ContextMenu, MenuItemModel, ContextMenuModel, MenuEventArgs, BeforeOpenCloseMenuEventArgs } from '@syncfusion/ej2-navigations';
 import { PredicateModel } from '../base/grid-model';
@@ -590,7 +590,22 @@ export class ExcelFilterBase extends CheckBoxFilterBase {
         if (!this.options.isResponsiveFilter && Browser.isDevice && window.innerWidth < 440) {
             this.dlgObj.element.style.width = '90%';
         }
-        this.parent.notify(events.beforeCustomFilterOpen, { column: column, dialog: this.dialogObj });
+        this.parent.notify(events.customFilterOpen, { column: column, dialog: this.dialogObj });
+        const beforeOpenArgs: BeforeCustomFilterOpenEventArgs = {
+            column: column,
+            dialogInstance: this.dialogObj,
+            cancel: false,
+            target: target
+        };
+        this.parent.trigger(events.beforeCustomFilterOpen, beforeOpenArgs);
+        if (beforeOpenArgs.cancel) {
+            if ((this.parent.isReact || this.parent.isVue) && this.parent.destroyTemplate !== undefined) {
+                clearReactVueTemplates(this.parent, ['filterTemplate']);
+            }
+            this.removeObjects(this.childRefs);
+            remove(this.dlgDiv);
+            return;
+        }
         this.dlgObj.show();
         applyBiggerTheme(this.parent.element, this.dlgObj.element.parentElement);
     }

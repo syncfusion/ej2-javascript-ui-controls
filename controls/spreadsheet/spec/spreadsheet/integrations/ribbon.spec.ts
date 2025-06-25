@@ -641,6 +641,40 @@ describe('Spreadsheet Ribbon integration module ->', (): void => {
             expect(helper.getInstance().sheets[0].rows[4].cells[4].style.borderTop).toBe('2px solid #ec407a');
             done();
         });
+        it('Apply border Colors by press Enter key and close border popup by pressing ESC key->', (done: Function) => {
+            helper.invoke('selectRange', ['E5']);
+            helper.getElement('#' + helper.id + '_borders').click();
+            const borderColor: HTMLElement = helper.getElement('.e-menu-item[aria-label="Border Color"]');
+            (getComponent(borderColor.parentElement, 'menu') as any).animationSettings.effect = 'None';
+            const borderOffset: ClientRect = borderColor.getBoundingClientRect();
+            const leftOffset: number = borderOffset.left + 5;
+            const topOffset: number = borderOffset.top + 5;
+            helper.triggerMouseAction('mouseover', { x: leftOffset, y: topOffset }, document, borderColor);
+            helper.triggerKeyEvent('keydown', 27, helper.getElement('.e-border-colorpicker'), false, false);
+            expect(borderColor.classList.contains('e-selected')).toBeFalsy();
+            expect(helper.getElement('.e-border-color')).toBeNull();
+            helper.triggerMouseAction('mouseover', { x: leftOffset, y: topOffset }, document, borderColor);
+            helper.getElement('.e-tile[aria-label="#ec407aff"]').click();
+            const applyBtn: HTMLElement = helper.getElement('.e-border-colorpicker .e-apply');
+            helper.triggerKeyEvent('keydown', 13, helper.getElement('.e-border-colorpicker'), false, false, applyBtn);
+            expect(borderColor.classList.contains('e-selected')).toBeFalsy();
+            applyBtn.click();
+            expect(helper.getElement('.e-border-color')).toBeNull();
+            helper.triggerMouseAction('mouseover', { x: leftOffset, y: topOffset }, document, borderColor);
+            const cancelBtn: HTMLElement = helper.getElement('.e-border-colorpicker .e-cancel');
+            helper.triggerKeyEvent('keydown', 13, helper.getElement('.e-border-colorpicker'), false, false, cancelBtn);
+            expect(borderColor.classList.contains('e-selected')).toBeFalsy();
+            cancelBtn.click();
+            expect(helper.getElement('.e-border-color')).toBeNull();
+            const borderStyle: HTMLElement = helper.getElement('.e-menu-item[aria-label="Border Style"]');
+            helper.triggerMouseAction(
+                'mouseover', { x: borderStyle.getBoundingClientRect().left + 5, y: borderStyle.getBoundingClientRect().top + 5 }, document, borderStyle);
+            helper.getElement('#' + helper.id + '_2px').click();
+            expect(helper.getElement('#' + helper.id + '_2px')).toBeNull();
+            helper.getElement('.e-menu-item[aria-label="Top Borders"]').click();
+            expect(helper.getInstance().sheets[0].rows[4].cells[4].style.borderTop).toBe('2px solid #ec407a');
+            done();
+        });
         it('Apply "3px" style in Border Popup->', (done: Function) => {
             helper.invoke('selectRange', ['E5']);
             helper.getElement('#' + helper.id + '_borders').click();
@@ -765,6 +799,31 @@ describe('Spreadsheet Ribbon integration module ->', (): void => {
             const dialog = helper.getElement('.e-readonly-alert-dlg.e-dialog');
             expect(dialog.querySelector('.e-dlg-content').textContent).toBe("You are trying to modify a cell that is in read-only mode. To make changes, please disable the read-only status.");
             helper.click('.e-dialog .e-primary');
+            done();
+        });
+        it('956217 - Should handle merge for reverse selection', function (done) {
+            helper.invoke('selectRange', ['D5:C2']);
+            helper.getElement('#' + helper.id + '_merge').click();
+            setTimeout(function () {
+                const dialog = helper.getElement('.e-merge-alert-dlg.e-dialog');
+                expect(dialog).not.toBeNull();
+                helper.setAnimationToNone('.e-merge-alert-dlg.e-dialog');
+                helper.click('.e-merge-alert-dlg .e-primary');
+                expect(helper.getInstance().sheets[0].rows[1].cells[2].colSpan).toBe(2);
+                expect(helper.getInstance().sheets[0].rows[1].cells[2].rowSpan).toBe(4);
+                done();
+            });
+        });
+        it('EJ2-931213 - Merged cells can be unmerged on protected sheet and merge dropdown remains enabled', (done: Function): void => {
+            helper.invoke('merge', ['Sheet1!H10:H11']);
+            expect(helper.getInstance().sheets[0].rows[9].cells[7].rowSpan).toBe(2);
+            expect(helper.getInstance().sheets[0].rows[10].cells[7].rowSpan).toBe(-1);
+            helper.invoke('protectSheet', ['Sheet1']);
+            expect(helper.getInstance().sheets[0].isProtected).toBe(true);
+            helper.invoke('goTo', ['H10']);
+            expect(helper.invoke('getCell', [9, 7]).textContent).toBe('166');
+            const btn: HTMLElement = helper.getElementFromSpreadsheet('.e-split-btn-wrapper.e-merge-ddb');
+            expect(btn.getAttribute('aria-disabled')).toBe('true');
             done();
         });
     });
@@ -918,6 +977,13 @@ describe('Spreadsheet Ribbon integration module ->', (): void => {
             helper.click('_font_name .e-btn-icon');
             expect(helper.getElements('.e-menu-icon')[0].classList).toContain('e-selected-icon');
             done();
+        });
+        it('EJ2-919674 - The merge button does not disable when allowMerge set to false', () => {
+            helper.invoke('selectRange', ['H10:H11']);
+            helper.getInstance().allowMerge = false;
+            expect(helper.getInstance().allowMerge).toBe(false);
+            const btn: HTMLElement = helper.getElementFromSpreadsheet('.e-split-btn-wrapper.e-merge-ddb');
+            expect(btn.getAttribute('aria-disabled')).toBe('false');
         });
 
         it('Disabled icons gets enabled while loading a new document', (done: Function): void => {

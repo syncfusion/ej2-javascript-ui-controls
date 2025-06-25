@@ -1021,4 +1021,72 @@ describe('Selection ->', () => {
             });
         });
     });
+    describe('EJ2-958789 -> Script error occurs when performing autofill outside the viewport', () => {
+        beforeAll((done: Function) => {
+            helper.initializeSpreadsheet({ sheets: [{ ranges: [{ dataSource: defaultData }] }] }, done);
+        });
+        afterAll(() => {
+            helper.invoke('destroy');
+        });
+        it('Script error should not occurs when performing autofill outside the viewport', (done: Function) => {
+            helper.invoke('selectRange', ['G8']);
+            expect(helper.getInstance().sheets[0].rows[7].cells[6].value).toBe(3);
+            const autoFill: HTMLElement = helper.getElementFromSpreadsheet('.e-autofill');
+            const startCell = helper.invoke('getCell', [7, 6]);
+            const startCoords = startCell.getBoundingClientRect();
+            helper.triggerMouseAction('mousedown', { x: startCoords.right + 1, y: startCoords.bottom + 1 }, null, autoFill);
+            helper.getInstance().selectionModule.mouseMoveHandler({ target: autoFill, clientX: startCoords.right + 1, clientY: startCoords.bottom + 1200 });
+            helper.triggerMouseAction('mouseup', { x: startCoords.right + 1, y: startCoords.bottom + 1200 }, document, autoFill);
+            setTimeout(() => {
+                const finalValue = helper.getInstance().sheets[0].rows[67].cells[6].value;
+                expect(finalValue).toBe(63);
+                done();
+            });
+        });
+    });
+    describe('Spreadsheet Ctrl+Click with Single Mode', () => {
+        beforeAll((done: Function) => {
+            helper.initializeSpreadsheet({
+                selectionSettings: { mode: 'Single' },
+                sheets: [
+                    {
+                        ranges: [{ dataSource: defaultData }],
+                        selectedRange: 'A1'
+                    }
+                ]
+            }, done);
+        });
+        afterAll(() => {
+            helper.invoke('destroy');
+        });
+
+        it('should deselect previous and select only the clicked cell using Ctrl+Click in Single mode', (done: Function): void => {
+            const spreadsheet: Spreadsheet = helper.getInstance();
+            expect(spreadsheet.selectionSettings.mode).toBe('Single');
+            helper.invoke('selectRange', ['A1']);
+            expect(spreadsheet.sheets[0].selectedRange).toBe('A1:A1');
+            const cell: HTMLElement = helper.invoke('getCell', [0, 2]);
+            const rect: ClientRect = cell.getBoundingClientRect();
+            helper.triggerMouseAction('mousedown', { x: rect.left + 2, y: rect.top + 2 }, null, cell, true);
+            helper.triggerMouseAction('mouseup', { x: rect.left + 2, y: rect.top + 2 }, document, cell, true);
+            setTimeout((): void => {
+                const selEle: HTMLElement = helper.getElementFromSpreadsheet('.e-selection');
+                expect(selEle).not.toBeNull();
+                expect(spreadsheet.sheets[0].selectedRange).toBe('C1:C1');
+                expect(spreadsheet.sheets[0].activeCell).toBe('C1');
+                const actEle: HTMLElement = helper.getElementFromSpreadsheet('.e-active-cell');
+                const autoEle: HTMLElement = helper.getElementFromSpreadsheet('.e-autofill');
+                expect(actEle.style.height).toBe('20px');
+                checkPosition(actEle, ['0px', '127px', '20px', '65px']);
+                expect(autoEle.classList).not.toContain('e-hide');
+                expect(selEle.classList).toContain('e-hide');
+                const colHeaders: NodeListOf<HTMLElement> = helper.getColHeaderElement().querySelectorAll('.e-header-cell');
+                const rowHeader: HTMLElement = helper.getRowHeaderElement().querySelectorAll('tr')[0].children[0] as HTMLElement;
+                expect(colHeaders[1].classList).toContain('e-prev-highlight');
+                expect(colHeaders[2].classList).toContain('e-highlight');
+                expect(rowHeader.classList).toContain('e-highlight');
+                done();
+            }, 50);
+        });
+    });     
 });

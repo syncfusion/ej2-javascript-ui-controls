@@ -5,7 +5,8 @@ import { DocumentEditor } from '../../document-editor';
 import { ImageSizeInfo } from '../selection/selection-helper';
 import {
     IWidget, ImageElementBox, LineWidget, Page, ParagraphWidget, TableCellWidget, TableRowWidget,
-    ShapeElementBox
+    ShapeElementBox,
+    GroupShapeElementBox
 } from '../viewer/page';
 import { Point, ImagePointInfo, HelperMethods } from './editor-helper';
 import { BaseHistoryInfo } from '../editor-history/base-history-info';
@@ -21,7 +22,7 @@ export class ImageResizer {
      * @private
      */
     public owner: DocumentEditor;
-    private currentImageElementBoxIn: ImageElementBox | ShapeElementBox;
+    private currentImageElementBoxIn: ImageElementBox | ShapeElementBox | GroupShapeElementBox;
     /**
      * @private
      */
@@ -143,15 +144,15 @@ export class ImageResizer {
      * Gets or Sets the current image element box.
      *
      * @private
-     * @returns {ImageElementBox | ShapeElementBox} - Returns the image element.
+     * @returns {ImageElementBox | ShapeElementBox | GroupShapeElementBox} - Returns the image element.
      */
-    public get currentImageElementBox(): ImageElementBox | ShapeElementBox {
+    public get currentImageElementBox(): ImageElementBox | ShapeElementBox | GroupShapeElementBox {
         return this.currentImageElementBoxIn;
     }
     /**
-     * @param {ImageElementBox | ShapeElementBox} value - Specifies the current element box.
+     * @param {ImageElementBox | ShapeElementBox | GroupShapeElementBox} value - Specifies the current element box.
      */
-    public set currentImageElementBox(value: ImageElementBox | ShapeElementBox) {
+    public set currentImageElementBox(value: ImageElementBox | ShapeElementBox | GroupShapeElementBox) {
         this.currentImageElementBoxIn = value;
     }
     /**
@@ -174,7 +175,7 @@ export class ImageResizer {
      * @returns {boolean} - Returns the shape size.
      */
     public get isShapeResize(): boolean {
-        if (this.currentImageElementBox instanceof ShapeElementBox) {
+        if (this.currentImageElementBox instanceof ShapeElementBox || this.currentImageElementBox instanceof GroupShapeElementBox) {
             return true;
         }
         return false;
@@ -248,7 +249,7 @@ export class ImageResizer {
      * @param {ImageElementBox} elementBox - Specifies the image position.
      * @returns {void}
      */
-    public positionImageResizer(elementBox: ImageElementBox | ShapeElementBox): void {
+    public positionImageResizer(elementBox: ImageElementBox | ShapeElementBox | GroupShapeElementBox): void {
         this.selectedImageWidget.clear();
         // Initializes the image resizer on demand, i.e at the time of selecting an image for the first time.
         let resizeDiv: HTMLElement;
@@ -264,7 +265,7 @@ export class ImageResizer {
         const lineWidget: LineWidget = elementBox.line;
         let top: number;
         let left: number;
-        if (elementBox instanceof ImageElementBox && elementBox.textWrappingStyle !== 'Inline') {
+        if ((elementBox instanceof ImageElementBox || elementBox instanceof GroupShapeElementBox) && elementBox.textWrappingStyle !== 'Inline') {
             top = elementBox.y;
             left = elementBox.x;
         } else {
@@ -330,7 +331,7 @@ export class ImageResizer {
         this.imageResizerDivElement.style.height = parseInt(this.imageResizerDivElement.style.height.replace('px', ''), 10) * this.documentHelper.zoomFactor + 'px';
         height = this.documentHelper.render.getScaledValue(elementBox.height);
         width = this.documentHelper.render.getScaledValue(elementBox.width);
-        if (elementBox instanceof ImageElementBox) {
+        if (elementBox instanceof ImageElementBox || elementBox instanceof GroupShapeElementBox) {
             left = this.documentHelper.render.getScaledValue(left);
             top = this.documentHelper.render.getScaledValue(top);
         } else {
@@ -785,6 +786,9 @@ export class ImageResizer {
                 }
                 this.currentImageElementBox.width = width;
                 this.currentImageElementBox.height = height;
+                if (this.currentImageElementBox instanceof GroupShapeElementBox) {
+                    this.owner.documentHelper.layout.layoutGroupShape(this.currentImageElementBox);
+                }
                 let owner: ParagraphWidget = this.currentImageElementBox.line.paragraph as ParagraphWidget;
                 this.positionImageResizer(this.currentImageElementBox);
             }
@@ -1147,13 +1151,13 @@ export class ImageResizer {
     public updateImageResizerPosition(): void {
         if (!isNullOrUndefined(this.currentImageElementBox)) {
 
-            let elementBox: ImageElementBox | ShapeElementBox = this.currentImageElementBox instanceof ImageElementBox ? this.currentImageElementBox as ImageElementBox : this.currentImageElementBox as ShapeElementBox;
+            let elementBox: ImageElementBox | ShapeElementBox | GroupShapeElementBox = this.currentImageElementBox instanceof ImageElementBox ? this.currentImageElementBox as ImageElementBox : this.currentImageElementBox as ShapeElementBox || this.currentImageElementBox as GroupShapeElementBox;
             let lineWidget: LineWidget = elementBox.line;
             let top: number;
             let left: number;
             let topValue: number;
             let leftValue: number;
-            if (this.currentImageElementBox instanceof ImageElementBox) {
+            if (this.currentImageElementBox instanceof ImageElementBox ||  this.currentImageElementBox instanceof GroupShapeElementBox) {
                 top = this.documentHelper.selection.getTop(lineWidget) + elementBox.margin.top;
                 left = this.documentHelper.selection.getLeftInternal(lineWidget, elementBox, 0);
                 topValue = top * this.documentHelper.zoomFactor;

@@ -947,15 +947,6 @@ export class MeasureAnnotation {
      * @private
      * @returns {void}
      */
-    public destroy(): void {
-        this.scaleRatioCollection = null;
-        this.scaleRatioAddCollection = null;
-    }
-
-    /**
-     * @private
-     * @returns {void}
-     */
     public createScaleRatioWindow(): void {
         if (!isBlazor()) {
             const elementID: string = this.pdfViewer.element.id;
@@ -1096,6 +1087,7 @@ export class MeasureAnnotation {
             }
         }
     }
+
 
     private createRatioUI(): HTMLElement {
         const element: HTMLElement = createElement('div');
@@ -1260,6 +1252,59 @@ export class MeasureAnnotation {
     }
 
     /**
+     * @private
+     * @returns {void}
+     */
+    public destroy(): void {
+        this.currentAnnotationMode = null;
+        this.distanceOpacity = null;
+        this.perimeterOpacity = null;
+        this.areaOpacity = null;
+        this.radiusOpacity = null;
+        this.volumeOpacity = null;
+        this.distanceFillColor = null;
+        this.perimeterFillColor = null;
+        this.areaFillColor = null;
+        this.radiusFillColor = null;
+        this.volumeFillColor = null;
+        this.distanceStrokeColor = null;
+        this.perimeterStrokeColor = null;
+        this.areaStrokeColor = null;
+        this.radiusStrokeColor = null;
+        this.volumeStrokeColor = null;
+        this.distanceThickness = null;
+        this.leaderLength = null;
+        this.perimeterThickness = null;
+        this.areaThickness = null;
+        this.radiusThickness = null;
+        this.volumeThickness = null;
+        this.distanceDashArray = null;
+        this.distanceStartHead = null;
+        this.distanceEndHead = null;
+        this.perimeterDashArray = null;
+        this.perimeterStartHead = null;
+        this.perimeterEndHead = null;
+        this.unit = null;
+        this.displayUnit = null;
+        this.measureShapeCount = null;
+        this.volumeDepth = null;
+        this.isAddAnnotationProgramatically = null;
+        this.ratio = null;
+        this.srcValue = null;
+        this.destValue = null;
+        this.scaleRatioString = null;
+        this.scaleRatioDialog = null;
+        this.sourceTextBox = null;
+        this.convertUnit = null;
+        this.destTextBox = null;
+        this.dispUnit = null;
+        this.depthTextBox = null;
+        this.depthUnit = null;
+        this.scaleRatioCollection = null;
+        this.scaleRatioAddCollection = null;
+    }
+
+    /**
      * @param {string} ratio - It describes about the ratio
      * @param {CalibrationUnit} displayUnit - It describes about the display unit
      * @param {CalibrationUnit} conversionUnit - It describes about the conversion unit
@@ -1281,7 +1326,7 @@ export class MeasureAnnotation {
                         const measureObject: IMeasureShapeAnnotation = pageAnnotations[parseInt(j.toString(), 10)];
                         const matchedRatio: any = this.scaleRatioCollection.find((item: any) => item.annotName === measureObject.annotName);
                         if (pageAnnotations[parseInt(j.toString(), 10)].annotName ===
-                        this.pdfViewer.selectedItems.annotations[0].annotName) {
+                            this.pdfViewer.selectedItems.annotations[0].annotName) {
                             if (!measureObject.annotationSettings.isLock && matchedRatio) {
                                 measureObject.calibrate.ratio = matchedRatio.ratioString;
                                 measureObject.calibrate.x[0].unit = matchedRatio.displayUnit;
@@ -2159,7 +2204,7 @@ export class MeasureAnnotation {
                 Size: {Height: annotationObject.height, IsEmpty: false, Width: annotationObject.width}},
             Calibrate: {
                 Area: [{ConversionFactor: 1, Denominator: 100, FormatDenominator: false, FractionalType: 'D', Unit: 'sq in'}],
-                Depth: annotationObject.depth ? annotationObject.depth : 0,
+                Depth: annotationObject.depth ? annotationObject.depth : 96,
                 Distance: [{ConversionFactor: 1, Denominator: 100, FormatDenominator: false, FractionalType: 'D', Unit: 'in'}],
                 Ratio: '1 in = 1 in',
                 TargetUnitConversion: 0,
@@ -2206,7 +2251,6 @@ export class MeasureAnnotation {
             VertexPoints : vertexPoints
         };
         //Adding the annotation object to an array and return it
-        measureShapeAnnotation[0] = shape;
         const ratioString: any = shape.Calibrate.Ratio.split('=').map((ratioString: any) => ratioString.trim());
         const [srcValueStr, unit] = ratioString[0].split(' ');
         const [destValueStr, displayUnit] = ratioString[1].split(' ');
@@ -2225,6 +2269,7 @@ export class MeasureAnnotation {
             ratioString: ratioString
         };
         this.scaleRatioCollection.push(scaleRatio);
+        measureShapeAnnotation[0] = shape;
         return {measureShapeAnnotation};
     }
 }

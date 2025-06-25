@@ -181,6 +181,44 @@ describe('Slash Menu ', () => {
         });
     });
 
+    describe('Bug 960025: Heading 1 format not applied when selected via arrow key navigation', () => {
+        let editor: RichTextEditor;
+        beforeEach((done: DoneFn) => {
+            editor = renderRTE({
+                slashMenuSettings: {
+                    enable: true,
+                },
+                value: '/h'
+            });
+            done();
+        });
+        afterEach((done: DoneFn) => {
+            destroy(editor);
+            done();
+        });
+        it('Should apply heading 1 on select of the item and br tag should be present', (done: DoneFn) => {
+            editor.focusIn();
+            const range: Range = new Range();
+            range.setStart(editor.inputElement.firstChild.firstChild, 2);
+            range.setEnd(editor.inputElement.firstChild.firstChild, 2);
+            document.getSelection().removeAllRanges();
+            document.getSelection().addRange(range);
+            const keyDownEvent: KeyboardEvent = new KeyboardEvent('keydown', SLASH_KEY_EVENT_INIT);
+            editor.inputElement.dispatchEvent(keyDownEvent);
+            const keyUpEvent: KeyboardEvent = new KeyboardEvent('keyup', SLASH_KEY_EVENT_INIT);
+            editor.inputElement.dispatchEvent(keyUpEvent);
+            setTimeout(() => {
+                const heading1: HTMLElement = document.querySelector('[data-value="Use this for a top level heading or title."]')
+                heading1.click();
+                setTimeout(() => {
+                    expect(editor.inputElement.querySelectorAll('h1').length).toBe(1);
+                    expect(editor.inputElement.querySelectorAll('h1')[0].childNodes[0].nodeName === 'BR').toBe(true);
+                    done();
+                }, 50);
+            }, 150);
+        });
+    });
+
     describe('Applying Heading with the slash command', () => {
         let editor: RichTextEditor;
         beforeEach((done: DoneFn) => {
@@ -856,6 +894,69 @@ describe('Slash Menu ', () => {
                     expect(h2Element.innerHTML.includes('strong')).toBe(true);
                     done();
                 }, 100);
+            }, 150);
+        });
+    });
+    describe('961054 - Code Block format inserts text inside <p> tag instead of <pre> element', () => {
+        let editor: RichTextEditor;
+        beforeEach((done: DoneFn) => {
+            editor = renderRTE({
+                slashMenuSettings: {
+                    enable: true,
+                },
+                codeBlockSettings: {
+                    defaultLanguage: 'dart'
+                },
+                value: '/'
+            });
+            done();
+        });
+        afterEach((done: DoneFn) => {
+            destroy(editor);
+            done();
+        });
+        it('should insert a code block with default language when selecting code block option from slash menu', (done: DoneFn) => {
+            editor.focusIn();
+            const range: Range = new Range();
+            range.setStart(editor.inputElement.firstChild.firstChild, 1);
+            range.setEnd(editor.inputElement.firstChild.firstChild, 1);
+            document.getSelection().removeAllRanges();
+            document.getSelection().addRange(range);
+            const keyDownEvent: KeyboardEvent = new KeyboardEvent('keydown', SLASH_KEY_EVENT_INIT);
+            editor.inputElement.dispatchEvent(keyDownEvent);
+            const keyUpEvent: KeyboardEvent = new KeyboardEvent('keyup', SLASH_KEY_EVENT_INIT);
+            editor.inputElement.dispatchEvent(keyUpEvent);
+            setTimeout(() => {
+                const preElem: HTMLElement = document.querySelector('[data-value="Create a preformatted code block."]')
+                preElem.click();
+                setTimeout(() => {
+                    expect(editor.inputElement.querySelectorAll('pre').length).toBe(1);
+                    expect(editor.inputElement.querySelectorAll('pre[data-language]').length).toBe(1);
+                    done();
+                }, 50);
+            }, 150);
+        });
+        it('should insert a code block with the first language from the list when defaultLanguage is set to null', (done: DoneFn) => {
+            editor.focusIn();
+            editor.codeBlockSettings.defaultLanguage = null;
+            editor.dataBind();
+            const range: Range = new Range();
+            range.setStart(editor.inputElement.firstChild.firstChild, 1);
+            range.setEnd(editor.inputElement.firstChild.firstChild, 1);
+            document.getSelection().removeAllRanges();
+            document.getSelection().addRange(range);
+            const keyDownEvent: KeyboardEvent = new KeyboardEvent('keydown', SLASH_KEY_EVENT_INIT);
+            editor.inputElement.dispatchEvent(keyDownEvent);
+            const keyUpEvent: KeyboardEvent = new KeyboardEvent('keyup', SLASH_KEY_EVENT_INIT);
+            editor.inputElement.dispatchEvent(keyUpEvent);
+            setTimeout(() => {
+                const preElem: HTMLElement = document.querySelector('[data-value="Create a preformatted code block."]')
+                preElem.click();
+                setTimeout(() => {
+                    expect(editor.inputElement.querySelectorAll('pre').length).toBe(1);
+                    expect(editor.inputElement.querySelectorAll('pre[data-language]')[0].getAttribute('data-language') === 'Plain text').toBe(true);
+                    done();
+                }, 50);
             }, 150);
         });
     });

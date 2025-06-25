@@ -1774,8 +1774,8 @@ export class DropDownBase extends Component<HTMLElement> implements INotifyPrope
      * @param {boolean} isClearAll - Specifies whether the current action is clearAll.
      * @returns {HTMLElement} Return the list items.
      */
-    protected renderItems(listData: { [key: string]: Object }[], fields: FieldSettingsModel, isCheckBoxUpdate?: boolean,
-                          isClearAll?: boolean): HTMLElement {
+    protected renderItems(listData: { [key: string]: Object }[], fields: FieldSettingsModel,
+                          isCheckBoxUpdate?: boolean, isClearAll?: boolean): HTMLElement {
         let ulElement: HTMLElement;
         if (this.itemTemplate && listData) {
             if (this.getModuleName() === 'multiselect' && this.virtualSelectAll){

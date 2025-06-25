@@ -250,22 +250,6 @@ export class PdfRenderer {
             this.formFieldsBase.GetFormFields();
             pdfRenderedFormFields = this.formFieldsBase.PdfRenderedFormFields;
         }
-        if (this.formFieldsBase.mIsDigitalSignaturePresent) {
-            const digitalSignatureDoc: PdfDocument = new PdfDocument(documentData, password ? password : '');
-            const loadedForm: PdfForm = digitalSignatureDoc.form;
-            if (!isNullOrUndefined(loadedForm) && !isNullOrUndefined(loadedForm._fields)) {
-                for (let i: number = 0; i < loadedForm.count; i++) {
-                    if (loadedForm.fieldAt(i) instanceof PdfSignatureField) {
-                        const signatureField: PdfSignatureField = loadedForm.fieldAt(i) as PdfSignatureField;
-                        if (signatureField.isSigned && this.formFieldsBase.showDigitalSignatureAppearance) {
-                            signatureField.flatten = true;
-                        }
-                    }
-                }
-            }
-            this.digitialByteArray = digitalSignatureDoc.save();
-            digitalSignatureDoc.destroy();
-        }
         return { pageCount: this.pageCount, pageSizes: this.pageSizes, uniqueId: documentId,
             PdfRenderedFormFields: pdfRenderedFormFields, RestrictionSummary: this.restrictionList,
             isDigitalSignaturePresent: this.formFieldsBase.mIsDigitalSignaturePresent,

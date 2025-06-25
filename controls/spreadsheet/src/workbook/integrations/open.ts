@@ -4,7 +4,7 @@
 import { isNullOrUndefined, isUndefined } from '@syncfusion/ej2-base';
 import { OpenFailureArgs, BeforeOpenEventArgs, OpenArgs } from '../../spreadsheet/common/interface';
 import { workbookOpen, openSuccess, openFailure, sheetsDestroyed, workbookFormulaOperation, getRangeIndexes } from '../common/index';
-import { sheetCreated, protectSheetWorkBook, getRangeAddress, beginAction } from '../common/index';
+import { sheetCreated, getRangeAddress, beginAction, importModelUpdate } from '../common/index';
 import { WorkbookModel, Workbook, initSheet, SheetModel, RangeModel, getSheet } from '../base/index';
 import { clearUndoRedoCollection } from '../../spreadsheet/common/event';
 
@@ -96,6 +96,9 @@ export class WorkbookOpen {
             if (!isNullOrUndefined(header)) {
                 formData.append('chunkPayload', JSON.stringify(header));
             }
+        }
+        if (eventArgs.parseOptions) {
+            formData.append('parseOptions', JSON.stringify(eventArgs.parseOptions));
         }
         fetch(this.parent.openUrl, eventArgs.requestData)
             .then((response: Response) => {
@@ -299,9 +302,7 @@ export class WorkbookOpen {
         }
         initSheet(this.parent, undefined, isImport);
         this.parent.notify(sheetCreated, null);
-        this.parent.notify(workbookFormulaOperation, { action: 'registerSheet', isImport: true });
-        this.parent.notify(workbookFormulaOperation, { action: 'initiateDefinedNames' });
-        this.parent.notify(protectSheetWorkBook, null);
+        this.parent.notify(importModelUpdate, null);
     }
 
     private setSelectAllRange(sheets: SheetModel[], isOpenFromJson: boolean): void {

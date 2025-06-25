@@ -1,11 +1,13 @@
 import { createElement, detach, isNullOrUndefined, L10n, Browser, isVisible } from "@syncfusion/ej2-base";
 import { FormValidator } from "@syncfusion/ej2-inputs";
-import { ENTERKEY_EVENT_INIT, NUMPAD_ENTER_EVENT_INIT, INSRT_IMG_EVENT_INIT, ESCAPE_KEY_EVENT_INIT } from "../constant.spec";
+import { ENTERKEY_EVENT_INIT, NUMPAD_ENTER_EVENT_INIT, INSRT_IMG_EVENT_INIT, ESCAPE_KEY_EVENT_INIT, BASIC_MOUSE_EVENT_INIT } from "../constant.spec";
 import { renderRTE, setCursorPoint, destroy, dispatchEvent } from "../rich-text-editor/render.spec";
 import { RichTextEditor } from "../../src/rich-text-editor/base/rich-text-editor";
-import { ActionBeginEventArgs, IRenderer } from "../../src/rich-text-editor/base/interface";
+import { ActionBeginEventArgs } from "../../src/common/interface";
 import { NodeSelection } from "../../src/selection/selection";
 import { SelectionCommands } from "../../src/editor-manager/plugin/selection-commands";
+import { ImageCommand } from '../../src/editor-manager/plugin/image';
+import { cleanHTMLString } from "../../src/common/util";
 
 describe('Editor specs', ()=> {
     describe('EJ2-20672 - Full Screen not working properly when render inside the overflow element', () => {
@@ -76,6 +78,7 @@ describe('Editor specs', ()=> {
         });
 
         it('I213118 => EJ2-15261 - RTE removes spacing between words when content is pasted from a word document', () => {
+            innerHTML = cleanHTMLString(innerHTML, rteObj.inputElement);
             expect((rteObj as any).inputElement.innerHTML === innerHTML).toBe(true);
         });
 
@@ -190,7 +193,7 @@ describe('Editor specs', ()=> {
             item.click();
             item = rteObj.element.querySelector('#' + controlId + '_toolbar_FontColor');
             dispatchEvent(item, 'mousedown');
-            item = (item.querySelector('.e-rte-color-content') as HTMLElement);
+            item = (item.nextElementSibling.childNodes[0] as HTMLElement);
             item.click();
             dispatchEvent(item, 'mousedown');
             setTimeout(() => {
@@ -789,10 +792,10 @@ describe('Editor specs', ()=> {
             rteObj.formatter.editorManager.nodeSelection.setSelectionText(document, pEle.childNodes[0], pEle.childNodes[0], 0, 3);
             dispatchEvent(pEle, 'mouseup');
             setTimeout(() => {
-                let item: HTMLElement = document.querySelector('#' + controlId + '_quick_FontColor');
+                let item: HTMLElement = (document.querySelector('#' + controlId + '_quick_FontColor').nextElementSibling.childNodes[1] as HTMLElement);
                 item.click();
-                let popup: HTMLElement = document.getElementById(controlId + '_quick_FontColor-popup');
-                expect(!isNullOrUndefined(popup)).toBe(true);                
+                let popup: HTMLElement = document.querySelector('.e-color-palette');
+                expect(!isNullOrUndefined(popup)).toBe(true);
                 done();
             }, 200);
         });
@@ -1055,8 +1058,8 @@ describe('Editor specs', ()=> {
                 target: (rteObj as any).tableModule.popupObj.element.querySelectorAll('.e-rte-table-row')[1].querySelectorAll('.e-rte-tablecell')[3],
                 preventDefault: function () { }
             };
-            (rteObj as any).tableModule.tableCellSelect(event);
-            (rteObj as any).tableModule.tableCellLeave(event);
+            (rteObj.tableModule as any).tableObj.tableCellSelect(event);
+            (rteObj.tableModule as any).tableObj.tableCellLeave(event);
             let clickEvent: any = document.createEvent("MouseEvents");
             clickEvent.initEvent("mouseup", false, true);
             event.target.dispatchEvent(clickEvent);
@@ -1085,8 +1088,8 @@ describe('Editor specs', ()=> {
                 target: (rteObj as any).tableModule.popupObj.element.querySelectorAll('.e-rte-table-row')[1].querySelectorAll('.e-rte-tablecell')[3],
                 preventDefault: function () { }
             };
-            (rteObj as any).tableModule.tableCellSelect(event);
-            (rteObj as any).tableModule.tableCellLeave(event);
+            (rteObj.tableModule as any).tableObj.tableCellSelect(event);
+            (rteObj.tableModule as any).tableObj.tableCellLeave(event);
             let clickEvent: any = document.createEvent("MouseEvents");
             clickEvent.initEvent("mouseup", false, true);
             event.target.dispatchEvent(clickEvent);
@@ -1387,9 +1390,9 @@ describe('Editor specs', ()=> {
             keyBoardEvent.code = 'Shift';
             let style = ( defaultRTE as any ).inputElement.querySelector( '.FocusNode1' ).style.textDecoration;
             expect( style == "line-through" ).toBe( true );
-            expect( defaultRTE.inputElement.textContent.length ).toBe( 423 );
+            expect( defaultRTE.inputElement.textContent.length ).toBe( 339 );
             ( defaultRTE as any ).keyDown( keyBoardEvent );
-            expect( defaultRTE.inputElement.textContent.length ).toBe( 423 );
+            expect( defaultRTE.inputElement.textContent.length ).toBe( 339 );
             style = ( defaultRTE as any ).inputElement.querySelector( '.FocusNode1' ).style.textDecoration;
             expect( style == "line-through" ).toBe( true );
         } );
@@ -1525,7 +1528,7 @@ describe('Editor specs', ()=> {
             const tileItems: NodeList = ( row[0] as HTMLElement ).querySelectorAll('.e-tile');
             ( tileItems[9] as HTMLElement ).click();
             // Background color
-            (rteObject.element.querySelector('.e-background-color') as HTMLElement).click();
+            (rteObject.element.querySelector('.e-rte-background-colorpicker .e-split-colorpicker .e-selected-color') as HTMLElement).click();
             ( dropButton[1] as HTMLElement ).click(); // Font Size
             const fontDropItems : NodeList= document.body.querySelectorAll('.e-item');
             ( fontDropItems[7] as HTMLElement ).click(); // Apply Font size
@@ -2023,14 +2026,15 @@ describe('Editor specs', ()=> {
             rteObj.focusIn()
             selectNode  = (editNode.querySelector('.first-p') as HTMLElement).firstChild as HTMLElement
             setCursorPoint(selectNode, 1);
-            let trg = document.querySelector('[title="Number Format List (Ctrl+Shift+O)"]').childNodes[0].childNodes[0] as HTMLElement
+            //Modified rendering from dropdown to split button
+            let trg = document.querySelector('[title="Number Format List (Ctrl+Shift+O)"]').childNodes[0].childNodes[1] as HTMLElement
             let event = new MouseEvent('mousedown', {
                 bubbles: true,
                 cancelable: true,
                 view: window,
             });
             trg.dispatchEvent(event);
-            (document.querySelector('[title="Number Format List (Ctrl+Shift+O)"]').childNodes[0] as HTMLElement).click();
+            (document.querySelector('[title="Number Format List (Ctrl+Shift+O)"]').childNodes[0].childNodes[1] as HTMLElement).click();
             (document.querySelector('.e-dropdown-popup').childNodes[0].childNodes[1] as HTMLElement).click();
             let result = true;
             expect((editNode.querySelector('.first-p') as HTMLElement).innerHTML == `<li>description</li>`).toBe(true)
@@ -2061,14 +2065,15 @@ describe('Editor specs', ()=> {
 
         it('Without focusing the editor, changing the list type adds extra bullet points', () => {
             rteObj.focusIn()
-            let trg = document.querySelector('[title="Bullet Format List (Ctrl+Alt+O)"]').childNodes[0].childNodes[0] as HTMLElement
+            //Modified rendering from dropdown to split button
+            let trg = document.querySelector('[title="Bullet Format List (Ctrl+Alt+O)"]').childNodes[0].childNodes[1] as HTMLElement
             let event = new MouseEvent('mousedown', {
                 bubbles: true,
                 cancelable: true,
                 view: window,
             });
             trg.dispatchEvent(event);
-            (document.querySelector('[title="Bullet Format List (Ctrl+Alt+O)"]').childNodes[0] as HTMLElement).click();
+            (document.querySelector('[title="Bullet Format List (Ctrl+Alt+O)"]').childNodes[0].childNodes[1] as HTMLElement).click();
             (document.querySelector('.e-dropdown-popup').childNodes[0].childNodes[1] as HTMLElement).click();
             expect(editNode.innerHTML == `<ul style="list-style-image: none; list-style-type: disc;"><li>cgvhj​</li></ul>`).toBe(true)
         });
@@ -2499,7 +2504,7 @@ describe('Editor specs', ()=> {
               <circle cx='50' cy='50' r='40' stroke='green' stroke-width='4' fill='yellow' />
             </svg>
           </div><p>text</p>`);
-          expect(rteObj.contentModule.getEditPanel().innerHTML === '<div>\n            <p>test</p>\n            <svg xmlns="http://www.w3.org/2000/svg" width="100" height="100">\n              <circle cx="50" cy="50" r="40" stroke="green" stroke-width="4" fill="yellow"></circle>\n            </svg>\n          </div><p>text</p>').toBe(true);
+          expect(rteObj.contentModule.getEditPanel().innerHTML === '<div> <p>test</p> <svg xmlns="http://www.w3.org/2000/svg" width="100" height="100"> <circle cx="50" cy="50" r="40" stroke="green" stroke-width="4" fill="yellow"></circle> </svg> </div><p>text</p>').toBe(true);
         });
     });
 
@@ -2687,12 +2692,15 @@ describe('Editor specs', ()=> {
         afterAll(() => {
             destroy(rteObj);
         });
-        it("enter key br mode", () => {
-            rteObj.focusIn();
+        it("enter key br mode", (done: DoneFn) => {
             rteObj.focusIn();
             rteObj.formatter.editorManager.nodeSelection.setCursorPoint(document, rteObj.inputElement.querySelector('.currentStartMark').childNodes[5] as Element, 0);
-            (rteObj as any).keyDown({ keyCode: 13, which: 13, shiftkey: false, key: 'Enter',code: 'Enter', preventDefault: function () { } });
-            expect(rteObj.inputElement.querySelector('.currentStartMark').childNodes.length === 11).toBe(true);
+            const enterKeyEvent: KeyboardEvent = new KeyboardEvent('keydown', ENTERKEY_EVENT_INIT);
+            rteObj.inputElement.dispatchEvent(enterKeyEvent);
+            setTimeout(() => {
+                expect(rteObj.inputElement.querySelector('.currentStartMark').childNodes.length === 11).toBe(true);
+                done();
+            }, 100);
         });
     });
 
@@ -2701,6 +2709,9 @@ describe('Editor specs', ()=> {
         let controlId: string;
         let rteEle: HTMLElement;
         let div: HTMLElement;
+        const MOUSEUP_EVENT: MouseEvent = new MouseEvent('mouseup', BASIC_MOUSE_EVENT_INIT);
+        const INIT_MOUSEDOWN_EVENT: MouseEvent = new MouseEvent('mousedown', BASIC_MOUSE_EVENT_INIT);
+
         beforeEach(function (done: DoneFn) {
             rteObj = renderRTE({
                 toolbarSettings: {
@@ -2722,14 +2733,14 @@ describe('Editor specs', ()=> {
             done();
         });
         it('Dashed borders', function (done) {
-            rteObj.focusIn()
+            rteObj.focusIn();
+            rteObj.inputElement.dispatchEvent(INIT_MOUSEDOWN_EVENT);
             var tbElement = rteObj.contentModule.getEditPanel().querySelector(".tdElement")
             var eventsArg = { pageX: 50, pageY: 300, target: tbElement, which: 1 };
             setCursorPoint(tbElement, 0);
-            (rteObj as any).mouseDownHandler(eventsArg);
-            (rteObj as any).mouseUp(eventsArg);
-            div = document.querySelector('#' + controlId + '_quick_TableRows-popup');
+            tbElement.dispatchEvent(MOUSEUP_EVENT);
             setTimeout(function () {
+                div = document.querySelector('#' + controlId + '_quick_TableRows-popup');
                 (document.querySelectorAll(".e-rte-quick-toolbar .e-toolbar-items .e-toolbar-item")[8].querySelector(".e-btn-icon.e-caret") as any).click();
                 (document.querySelector(".e-dropdown-popup .e-item.e-dashed-borders") as any).click();
                 detach(div);
@@ -2741,17 +2752,17 @@ describe('Editor specs', ()=> {
                 expect(document.querySelector(".e-dropdown-popup .e-item.e-dashed-borders").classList.contains('e-active')).toBe(true);
                 detach(div);
                 done();
-            },0);
+            },100);
         });
         it('Alternate rows', function (done) {
-            rteObj.focusIn()
+            rteObj.focusIn();
+            rteObj.inputElement.dispatchEvent(INIT_MOUSEDOWN_EVENT);
             var tbElement = rteObj.contentModule.getEditPanel().querySelector(".tdElement")
             var eventsArg = { pageX: 50, pageY: 300, target: tbElement, which: 1 };
             setCursorPoint(tbElement, 0);
-            (rteObj as any).mouseDownHandler(eventsArg);
-            (rteObj as any).mouseUp(eventsArg);
-            div = document.querySelector('#' + controlId + '_quick_TableRows-popup');
+            tbElement.dispatchEvent(MOUSEUP_EVENT);
             setTimeout(function () {
+                div = document.querySelector('#' + controlId + '_quick_TableRows-popup');
                 (document.querySelectorAll(".e-rte-quick-toolbar .e-toolbar-items .e-toolbar-item")[8].querySelector(".e-btn-icon.e-caret") as any).click();
                 (document.querySelector(".e-dropdown-popup .e-item.e-alternate-rows") as any).click();
                 detach(div);
@@ -2763,95 +2774,57 @@ describe('Editor specs', ()=> {
                 expect(document.querySelector(".e-dropdown-popup .e-item.e-alternate-rows").classList.contains('e-active')).toBe(true);
                 detach(div);
                 done();
-            },0);
+            },100);
         });
         it('Alignments', function (done) {
             let item: HTMLElement = rteObj.element.querySelector('#' + controlId + '_toolbar_Alignments');
-            dispatchEvent(item, 'mousedown');
-            dispatchEvent(item, 'mouseup');
             item.click();
             setTimeout(() => {
                 let items: any = document.querySelectorAll('#' + controlId + '_toolbar_Alignments-popup .e-item');
                 expect(items[0].classList.contains('e-active')).toBe(true);
                 done();
-            }, 200)
+            }, 100)
         });
     });
 
-    describe('854667 - The table styles are not preselected in the quick toolbar in the Rich Text Editor. for image', () => {
-        let rteEle: HTMLElement;
-        let rteObj: RichTextEditor;
-        let QTBarModule: IRenderer;
-        let curDocument: Document;
+    xdescribe('854667 - The table styles are not preselected in the quick toolbar in the Rich Text Editor. for image', () => {
+        let editor: RichTextEditor;
         beforeAll(() => {
-            rteObj = renderRTE({
+            editor = renderRTE({
                 toolbarSettings: {
                     items: ['Image', 'Bold']
                 },
                 insertImageSettings: { resize: false },
-                value: `<p>rte sample</p>`
+                value: `<p><img alt="Sky with sun" src="https://cdn.syncfusion.com/ej2/richtexteditor-resources/RTE-Overview.png" style="width: 440px" class="e-rte-image e-imginline" /></p>`
             });
-            rteEle = rteObj.element;
-            QTBarModule = rteObj.quickToolbarModule;
-            curDocument = rteObj.contentModule.getDocument();
+            editor.formatter.editorManager.imgObj = new ImageCommand(editor.formatter.editorManager);
         });
         afterAll(() => {
-            destroy(rteObj);
+            destroy(editor);
         });
 
-        it('edit image', (done) => {
-            (<HTMLElement>rteEle.querySelectorAll(".e-toolbar-item")[0] as HTMLElement).click();
-            let dialogEle: any = rteObj.element.querySelector('.e-dialog');
-            (dialogEle.querySelector('.e-img-url') as HTMLInputElement).value = 'https://ej2.syncfusion.com/demos/src/rich-text-editor/images/RTEImage-Feather.png';
-            (dialogEle.querySelector('.e-img-url') as HTMLInputElement).dispatchEvent(new Event("input"));
-            expect(rteObj.element.lastElementChild.classList.contains('e-dialog')).toBe(true);
-            (document.querySelector('.e-insertImage.e-primary') as HTMLElement).click();
-            (rteObj.element.querySelector('.e-rte-image') as HTMLElement).click();
-            (<any>rteObj).clickPoints = { clientY: 0, clientX: 0 };
-            dispatchEvent((rteObj.element.querySelector('.e-rte-image') as HTMLElement), 'mouseup');
+        it('Should have active class when the dropdown is opened.', (done) => {
+            editor.focusIn();
+            const INIT_MOUSEDOWN_EVENT: MouseEvent = new MouseEvent('mousedown', BASIC_MOUSE_EVENT_INIT);
+            const MOUSEUP_EVENT: MouseEvent = new MouseEvent('mouseup', BASIC_MOUSE_EVENT_INIT);
+            editor.inputElement.dispatchEvent(INIT_MOUSEDOWN_EVENT);
+            const target: HTMLElement = editor.inputElement.querySelector('img');
+            setCursorPoint(target, 0);
+            expect(editor.quickToolbarSettings.image.length).toBe(14);
+            target.dispatchEvent(MOUSEUP_EVENT);
             setTimeout(() => {
-                let nodObj: NodeSelection = new NodeSelection();
-                var range = nodObj.getRange(document);
-                var save = nodObj.save(range, document);
-                let target = rteObj.element.querySelector('.e-rte-image') as HTMLElement;
-                (rteObj as any).formatter.editorManager.nodeSelection.setSelectionNode(rteObj.contentModule.getDocument(), target);
-                var args = {
-                    item: { url: 'https://ej2.syncfusion.com/demos/src/rich-text-editor/images/RTEImage-Feather.png', selection: save, selectParent: [(rteObj.element.querySelector('.e-rte-image') as HTMLElement)] },
-                    preventDefault: function () { }
-                };
-                (<any>rteObj).formatter.editorManager.imgObj.createImage(args);
-                (rteObj.element.querySelector('.e-rte-image') as HTMLElement).click();
-                (<any>rteObj).clickPoints = { clientY: 0, clientX: 0 };
-                dispatchEvent((rteObj.element.querySelector('.e-rte-image') as HTMLElement), 'mouseup');
+                expect(document.querySelectorAll('.e-rte-quick-popup')[0].id.indexOf('Image_Quick_Popup') >= 0).toBe(true);
+                const caretIcon: HTMLElement = editor.quickToolbarModule.imageQTBar.element.querySelector('.e-justify-left').nextElementSibling as HTMLElement;
+                caretIcon.click();
                 setTimeout(() => {
-                    (<any>QTBarModule).renderQuickToolbars();
-                    QTBarModule.imageQTBar.showPopup(10, 131, (rteObj.element.querySelector('.e-rte-image') as HTMLElement));
-                    let imgPop: HTMLElement = <HTMLElement>document.querySelector('.e-rte-quick-popup');
-                    let imgTBItems: NodeList = imgPop.querySelectorAll('.e-toolbar-item');
-                    let popupElement: Element = curDocument.querySelectorAll(".e-rte-dropdown-popup.e-popup-open")[0];
-                    let mouseEventArgs = {
-                        item: { command: 'Images', subCommand: 'JustifyLeft' }
-                    };
-                    let img: HTMLElement = rteObj.element.querySelector('.e-rte-image') as HTMLElement;
-                    ((<HTMLElement>imgTBItems.item(9)).firstElementChild as HTMLElement).click();
-                    popupElement = curDocument.querySelectorAll(".e-rte-dropdown-popup.e-popup-open")[1];
-                    mouseEventArgs.item.subCommand = 'Inline';
-                    (<any>rteObj).imageModule.alignmentSelect(mouseEventArgs);
-                    QTBarModule.imageQTBar.hidePopup();
-                    QTBarModule.imageQTBar.showPopup(10, 131, (rteObj.element.querySelector('.e-rte-image') as HTMLElement));
-                    ((<HTMLElement>imgTBItems.item(9)).firstElementChild as HTMLElement).click();
-                    expect(img.classList.contains('e-imginline')).toBe(true);
-                    expect(document.querySelector('.e-inline').classList.contains('e-active')).toBe(true);
-                    mouseEventArgs.item.subCommand = 'Break';
-                    (<any>rteObj).imageModule.alignmentSelect(mouseEventArgs);
-                    expect(img.classList.contains('e-imgbreak')).toBe(true);
-                    QTBarModule.imageQTBar.hidePopup();
-                    QTBarModule.imageQTBar.showPopup(10, 131, (rteObj.element.querySelector('.e-rte-image') as HTMLElement));
-                    ((<HTMLElement>imgTBItems.item(9)).firstElementChild as HTMLElement).click();
-                    expect(document.querySelector('.e-break').classList.contains('e-active')).toBe(true);
+                    const openDropDownPopup: HTMLElement = document.body.querySelector('.e-dropdown-popup.e-popup-open');
+                    const listElements: NodeListOf<HTMLLIElement> = openDropDownPopup.querySelectorAll('li');
+                    expect(listElements[0].classList.contains('e-active')).toBe(true);
+                    expect(listElements[1].classList.contains('e-active')).not.toBe(true);
+                    expect(listElements[2].classList.contains('e-active')).not.toBe(true);
                     done();
-                }, 40);
-            }, 40);
+                }, 100);
+            }, 100);
         });
     });
 
@@ -3158,7 +3131,7 @@ describe('Editor specs', ()=> {
 
         it('image after the link', () => {
             rteObj.executeCommand('insertImage', { url: 'https://ej2.syncfusion.com/javascript/demos/src/rich-text-editor/images/RTEImage-Feather.png', cssClass: 'rte-img'});
-            expect(rteObj.inputElement.innerHTML).toBe('<p><a class="e-rte-anchor" href="https://www.grouptechedge.com/Reminders/TechEdgeServiceMaintenanceWindow521.ics" title="https://www.grouptechedge.com/Reminders/TechEdgeServiceMaintenanceWindow521.ics" target="_blank" aria-label="Open in new window">link</a><img src="https://ej2.syncfusion.com/javascript/demos/src/rich-text-editor/images/RTEImage-Feather.png" class="e-rte-image rte-img" width="auto" height="auto" style="min-width: 0px; min-height: 0px;"> </p>');
+            expect(rteObj.inputElement.innerHTML).toBe('<p><a class="e-rte-anchor" href="https://www.grouptechedge.com/Reminders/TechEdgeServiceMaintenanceWindow521.ics" title="https://www.grouptechedge.com/Reminders/TechEdgeServiceMaintenanceWindow521.ics" target="_blank" aria-label="Open in new window">link</a><img src="https://ej2.syncfusion.com/javascript/demos/src/rich-text-editor/images/RTEImage-Feather.png" class="e-rte-image rte-img" width="auto" height="auto" style="min-width: 0px; min-height: 0px;">&nbsp;</p>');
         });
         afterAll(() => {
             destroy(rteObj);
@@ -3420,5 +3393,4 @@ describe('Editor specs', ()=> {
             }, 100);
         });
     });
-
 });

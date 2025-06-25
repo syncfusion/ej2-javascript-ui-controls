@@ -1,7 +1,7 @@
 import { isNullOrUndefined as isNOU, KeyboardEventArgs, detach, Browser } from '@syncfusion/ej2-base';
 import * as events from '../base/constant';
-import { IRichTextEditor, ActionBeginEventArgs } from '../base/interface';
-import { NotifyArgs } from '../base/interface';
+import { IRichTextEditor } from '../base/interface';
+import { NotifyArgs, ActionBeginEventArgs } from '../../common/interface';
 import { ImageOrTableCursor } from '../../common';
 
 /**
@@ -42,6 +42,15 @@ export class EnterKeyAction {
         let isTableEnter: boolean = true;
         this.formatTags = ['h1', 'h2', 'h3', 'h4', 'h5', 'h6', 'blockquote'];
         const tableImagCursor: ImageOrTableCursor = this.processedTableImageCursor();
+        if (!isNOU(this.parent.codeBlockModule)) {
+            const codeBlockPasteAction: Element = (this.parent.formatter.editorManager.codeBlockObj
+                .isValidCodeBlockStructure(this.range.startContainer) ||
+                this.parent.formatter.editorManager.codeBlockObj.isValidCodeBlockStructure(this.range.endContainer));
+            if (!isNOU(codeBlockPasteAction)) {
+                this.parent.notify(events.codeBlockEnter, e);
+                return;
+            }
+        }
         if (tableImagCursor.start || tableImagCursor.end) {
             if (tableImagCursor.startName === 'TABLE' || tableImagCursor.endName === 'TABLE') { // Default browser action prevented and hanled manually.
                 this.handleCursorAtTableSide(e, tableImagCursor.start, tableImagCursor.end);
@@ -233,7 +242,7 @@ export class EnterKeyAction {
                                     this.parent.inputElement.textContent[0] !== '\u200B'));
                                 const preventEnterkeyShiftKey: boolean = (this.range.startContainer.nodeName === '#text' || this.range.startContainer.nodeName === 'BR') && (this.range.startOffset === 0 && this.range.endOffset === 0) && this.range.startContainer.parentElement === this.parent.inputElement && this.parent.enterKey === 'BR' && shiftKey;
                                 // eslint-disable-next-line max-len
-                                if (!preventEnterkeyShiftKey && !preventZeroWithSpace && !fireFoxEnterAtMiddle && ((this.range.startOffset === 0 && this.range.endOffset === 0) || isFocusedFirst) &&
+                                if (!preventEnterkeyShiftKey && !preventZeroWithSpace && !fireFoxEnterAtMiddle && this.range.startContainer.nodeName !== 'HR' && ((this.range.startOffset === 0 && this.range.endOffset === 0) || isFocusedFirst) &&
                                     !(!isNOU(this.range.startContainer.previousSibling) &&
                                     (this.range.startContainer.previousSibling.nodeName === 'IMG' || this.range.startContainer.previousSibling.nodeName === 'BR'))) {
                                     let isNearBlockLengthZero: boolean;
@@ -685,8 +694,8 @@ export class EnterKeyAction {
         if (isBRNextElement && (isEmptyBrInserted || (!isNOU(brElm.nextSibling) && brElm.nextSibling.nodeName === '#text' && brElm.nextSibling.textContent.trim().length === 0 && !isNOU(brElm.nextSibling.nextSibling) && brElm.nextSibling.nextSibling.textContent.trim().length > 0))) {
             this.parent.formatter.editorManager.nodeSelection.setCursorPoint(
                 this.parent.contentModule.getDocument(),
-                !isNOU(brElm.nextSibling) && isFocusTextNode &&
-                !isImageElement && !isMediaElement  ? (brElm.nextSibling as Element) : brElm, 0);
+                !isNOU(brElm.nextSibling) && isFocusTextNode
+                && !isImageElement && !isMediaElement ? (brElm.nextSibling as Element) : brElm, 0);
             isEmptyBrInserted = false;
         } else {
             const brElements: HTMLElement = this.parent.createElement('br');

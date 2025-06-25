@@ -629,7 +629,8 @@ describe(' - Opening the calculated dialog dialog', () => {
             },
             height: 300,
             allowCalculatedField: true,
-            dataBound: dataBound
+            dataBound: dataBound,
+            cssClass: 'pivot-calculated-field'
         });
         pivotGridObj.appendTo('#PivotGrid');
     });

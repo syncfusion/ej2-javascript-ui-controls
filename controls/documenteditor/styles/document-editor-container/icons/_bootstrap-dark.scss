@@ -357,7 +357,7 @@
     content: '\e8ff';
     font-family: 'e-icons';
   }
-  
+
   .e-de-dropdown-list::before {
     content: '\e8fe';
     font-family: 'e-icons';
@@ -413,22 +413,22 @@
     font-family: 'e-icons';
   }
 
-  .e-de-e-paragraph-mark::before{
+  .e-de-e-paragraph-mark::before {
     content: '\e353';
     font-family: 'e-icons';
   }
 
-  .e-de-e-paragraph-style-mark::before{
+  .e-de-e-paragraph-style-mark::before {
     content: '\e353';
     font-family: 'e-icons';
   }
 
-  .e-de-e-character-style-mark::before{
+  .e-de-e-character-style-mark::before {
     content: '\e98e';
     font-family: 'e-icons';
   }
 
-  .e-de-e-linked-style-mark::before{
+  .e-de-e-linked-style-mark::before {
     content: '\e992';
     font-family: 'e-icons';
   }
@@ -457,7 +457,7 @@
     content: '\e981';
     font-family: 'e-icons';
   }
-  
+
   .e-de-ctnr-section-break-even-page::before {
     content: '\e97e';
     font-family: 'e-icons';
@@ -496,5 +496,213 @@
     content: '\e985';
     font-family: 'e-icons';
     font-size: $de-column-presets-font-size;
+  }
+
+  .e-de-ctnr-add-bookmark::before {
+    content: '\e17a';
+  }
+
+  .e-de-ctnr-all-bookmarks::before {
+    content: '\e17b';
+  }
+
+  .e-de-ctnr-landscape::before {
+    content: '\e17c';
+  }
+
+  .e-de-ctnr-page-orientation::before {
+    content: '\e17d';
+  }
+
+  .e-de-ctnr-margin::before {
+    content: '\e17e';
+  }
+
+  .e-de-ctnr-previous-comment::before {
+    content: '\e17f';
+  }
+
+  .e-de-ctnr-next-comment::before {
+    content: '\e180';
+  }
+
+  .e-de-ctnr-close-comment::before {
+    content: '\e181';
+  }
+
+  .e-de-ctnr-increase-fontsize::before {
+    content: '\e182';
+  }
+
+  .e-de-ctnr-decrease-fontsize::before {
+    content: '\e183';
+  }
+
+  .e-de-ctnr-delete-all-comments::before {
+    content: '\e184';
+  }
+
+  .e-de-ctnr-reading-view::before {
+    content: '\e185';
+  }
+
+  .e-de-ctnr-multiple-page::before {
+    content: '\e186';
+  }
+
+  .e-de-ctnr-fit-100::before {
+    content: '\e187';
+  }
+
+  .e-de-ctnr-margin-narrow::before {
+    content: '\e188';
+  }
+
+  .e-de-ctnr-margin-normal::before {
+    content: '\e189';
+  }
+
+  .e-de-ctnr-margin-moderate::before {
+    content: '\e18a';
+  }
+
+  .e-de-ctnr-margin-wide::before {
+    content: '\e18b';
+  }
+
+  .e-de-ctnr-margin-default::before {
+    content: '\e18c';
+  }
+
+  .e-de-ctnr-margin-custom::before {
+    content: '\e18d';
+  }
+
+  .e-de-ctnr-size-letter::before {
+    content: '\e18e';
+  }
+
+  .e-de-ctnr-size-legal::before {
+    content: '\e18f';
+  }
+
+  .e-de-ctnr-size-executive::before {
+    content: '\e190';
+  }
+
+  .e-de-ctnr-size-a4::before {
+    content: '\e191';
+  }
+
+  .e-de-ctnr-size-a5::before {
+    content: '\e192';
+  }
+
+  .e-de-ctnr-size-custom::before {
+    content: '\e193';
+  }
+
+  .e-de-ctnr-more-column::before {
+    content: '\e194';
+  }
+
+  .e-de-ctnr-zoom-in::before {
+    content: '\e349';
+  }
+
+  .e-de-ctnr-zoom-out::before {
+    content: '\e351';
+  }
+
+  .e-de-ctnr-table-update::before {
+    content: '\e19e';
+  }
+
+  .e-de-ctnr-text-alternative::before {
+    content: '\e33c';
+  }
+
+  .e-de-ctnr-export::before {
+    content: '\e702';
+  }
+
+  .e-de-ctnr-replace::before {
+    content: '\e359';
+  }
+
+  .e-de-ctnr-cut::before {
+    content: '\e33b';
+  }
+
+  .e-de-ctnr-copy::before {
+    content: '\e77c';
+  }
+
+  .e-de-ctnr-changes-accept::before {
+    content: '\e19f';
+  }
+
+  .e-de-ctnr-changes-reject::before {
+    content: '\e204';
+  }
+
+  .e-de-ctnr-border-none::before {
+    content: '\e195';
+  }
+
+  .e-de-ctnr-paint-bucket::before {
+    content: '\e35c';
+  }
+
+  .e-de-ctnr-mouse-pointer::before {
+    content: '\ebce';
+  }
+
+  .e-de-ctnr-table-2::before {
+    content: '\e70f';
+  }
+
+  .e-de-ctnr-freeze-row::before {
+    content: '\eb02';
+  }
+
+  .e-de-ctnr-freeze-column::before {
+    content: '\e21e';
+  }
+
+  .e-de-ctnr-table-cell::before {
+    content: '\e89c';
+  }
+
+  .e-de-ctnr-table-delete::before {
+    content: '\e292';
+  }
+
+  .e-de-ctnr-page-column-right::before {
+    content: '\e983';
+  }
+
+  .e-de-ctnr-page-column-left::before {
+    content: '\e985';
+  }
+
+  .e-de-ctnr-page-column-one::before {
+    content: '\e986';
+  }
+
+  .e-de-ctnr-page-column-two::before {
+    content: '\e987';
+  }
+
+  .e-de-ctnr-page-column-three::before {
+    content: '\e989';
+  }
+
+  .e-de-ctnr-page-width::before {
+    content: '\e169';
+  }
+
+  .e-de-ctnr-page-portrait::before {
+    content: '\e13f';
   }
 }

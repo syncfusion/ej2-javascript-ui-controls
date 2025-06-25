@@ -205,5 +205,256 @@
     width: auto !important;
     height: auto !important;
   }
+  .e-diagram-blazor{
+    position: relative; 
+    overflow: hidden; 
+    fill: transparent;
+  }
+  .e-diagram-blazor-vertical-linemarker{
+    overflow:hidden; 
+    position: absolute;
+  }
+  .e-diagram-blazor-vertical-rulerlinesvg{
+    position:inherit;
+  }
+  .e-diagram-blazor-horiontal-linemarker{
+    overflow:hidden; 
+    position: absolute;
+  }
+  .e-diagram-blazor-horizontal-rulerlinesvg{
+    position:inherit;
+  }
+  .e-diagram-blazor-diagramcontent{
+    position: absolute;
+    overflow: auto; 
+    background: transparent;
+  }
+  .e-diagram-blazor-diagram-adornerlayer{
+    position: absolute; 
+    top: 0px; 
+    left: 0px; 
+    overflow: hidden; 
+    pointer-events: none;
+  }
+  .e-diagram-blazor-userhandle-layer{
+    position: absolute; 
+    top: 0px; 
+    left: 0px; 
+    overflow: hidden; 
+    pointer-events: none;
+  }
+  .e-symbolpalette-blazor{
+    overflow: auto;
+  }
+  .e-symbolpalette-blazor-draggable{
+    visibility:hidden;
+    display:none
+  }
+  .e-symbolpalette-blazor-preview{
+    visibility:hidden;
+    display:none
+  }
+  .e-symbolpalette-blazor-preview-div{
+    overflow: hidden;
+    float: left
+  }
+  .e-symbolpalette-blazor-preview-content{
+    position: absolute;
+  }
+  .e-symbolpalette-blazor-input{
+    width: 100%;
+  }
+  .e-diagram-blazor-searchbox-icon{
+    margin-top:7px;
+    margin-right:7px
+  }
+  .e-symbolpalette-blazor-remove-palette{
+    overflow: auto;
+  }
+  .e-symbolpalette-blazor-symbol-draggable{
+    overflow: hidden;
+    float: left
+  }
+  .e-symbolpalette-blazor-symbol-draggable-svg{
+    margin-left: 10px; 
+    margin-top: 10px
+  }
+  .e-symbolpalette-blazor-symbol-draggable-content{
+    position: absolute;
+  }
+  .e-diagram-blazor-tspan{
+    user-select: none;
+  }
+  .e-diagram-blazor-ruler{
+    overflow:hidden; 
+    position: absolute;
+    font-size: 11px;
+  }
+  .e-diagram-blazor-ruler-space{
+    float: left;
+  }
+  .e-diagram-blazor-ruler-svg{
+    position:inherit;
+  }
+  .e-diagram-blazor-background{
+    position: absolute; 
+    top: 0px; 
+    left: 0px; 
+    overflow: hidden; 
+    pointer-events: none;
+  }
+  .e-diagram-blazor-grid-layer{
+    position: absolute; 
+    top: 0px; 
+    left: 0px; 
+    overflow: hidden; 
+    pointer-events: none;
+  }
+  .e-diagram-blazor-diagram-layer{
+    position: absolute; 
+    top: 0px;
+    left: 0px; 
+    overflow: hidden; 
+    pointer-events: none;
+  }
+  .e-diagram-blazor-svg-layer{
+    pointer-events: all;
+  }
+  .e-diagram-blazor-html-layer{
+    position: absolute; 
+    top: 0px; 
+    left: 0px; 
+    overflow: hidden; 
+    pointer-events: none;
+  }
+  .e-diagram-blazor-html-layer-div{
+    position: absolute; 
+    top: 0px; 
+    left: 0px; 
+    pointer-events: all;
+  }
+  .e-diagram-blazor-ports-expand-layer{
+    position: absolute; 
+    top: 0px; 
+    left: 0px; 
+    overflow: hidden; 
+    pointer-events: none;
+  }
+  .e-diagram-blazor-ports-gparent{
+    pointer-events: all;
+  }
+  .e-diagram-blazor-expander{
+    pointer-events: all;
+  }
+  .e-diagram-blazor-foreign-object{
+    user-select: none; 
+    -webkit-user-select: none; 
+    -ms-user-select: none;
+  }
+  .e-diagram-blazor-html-template{
+    position: absolute;
+  }
+  .e-diagram-blazor-expand-collapse-template{
+    position: absolute;
+    opacity: 1;
+  }
+  .e-diagram-blazor-annotation-template{
+    position: absolute;
+  }
+  .e-diagram-blazor-userhandle-div{
+    position: absolute; 
+    top: 0px; 
+    left: 0px; 
+    pointer-events: all; 
+    transform: translate(0px, 0px) scale(1);
+  }
+  .e-diagram-blazor-userhandle-template{
+    position: absolute; 
+    transform: rotate(0deg); 
+    visibility: visible; 
+    opacity: 1;
+  }
+  .e-diagram-blazor-fixed-userhandle-template{
+    position: absolute; 
+    transform: rotate(0deg);
+    opacity:1;
+  }
+  .e-diagram-blazor-fixed-userhandle{
+    position: absolute; 
+    top: 0px; 
+    left: 0px; 
+    pointer-events: all; 
+    transform: translate(0px, 0px) scale(1);
+  }
+  .e-diagram-blazor-ruler-overlap{
+    position: absolute; 
+    left: 0; 
+    top: 0;
+  }
+  .e-blazordiagram-tooltip {
+    pointer-events: none;
+  }
+  .e-blazordiagram-tooltip .e-tooltip-close{
+    pointer-events: auto;
+  }
+  .e-diagram-blazor-template-div{
+    height: 100%; 
+    width: 100%;
+  }
+  .e-diagram-blazor-overview{
+    background: transparent; 
+    user-select: none; 
+    overflow: hidden; 
+    height: 100%; 
+    width: 100%;
+    user-select: none;
+    -ms-user-select: none;
+    -moz-user-select: none;
+  }
+  .e-diagram-blazor-drawing{
+    position: relative;
+    touch-action: none;
+  }
+  .e-diagram-blazor-overview-diagramlayer{
+    position: absolute; 
+    left: 0px; 
+    top: 0px;
+  }
+  .e-diagram-blazor-overview-diagramlayer-canvas{
+    position: absolute; 
+    left: 0px; 
+    top: 0px;
+  }
+  .e-diagram-blazor-overview-html-layer{
+    pointer-events: none; 
+    position: absolute; 
+    top: 0px; 
+    left: 0px;
+  }
+  .e-diagram-blazor-overview-html-layer-div{
+    position: absolute; 
+    top: 0px; 
+    left: 0px;
+  }
+  .e-diagram-blazor-overviewsvg{
+    position: absolute; 
+    left: 0px; 
+    top: 0px;
+  }
+  .e-diagram-blazor-goverviewlayer{
+    pointer-events: none;
+  }
+  .e-diagram-blazor-overviewbackrect{
+    pointer-events: none;
+  }
+  .e-diagram-blazor-overviewrect{
+    cursor: all-scroll;
+  }
+  .e-diagram-blazor-all{
+    pointer-events: all;
+  }
+  .e-diagram-blazor-none{
+    pointer-events: none;
+  }
 }
  /* stylelint-enable */

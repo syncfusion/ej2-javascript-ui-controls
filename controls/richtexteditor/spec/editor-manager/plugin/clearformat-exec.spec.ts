@@ -113,7 +113,7 @@ describe('924318 - Clear Formatting Fails on Ordered List with Bold Text in IFra
         let mouseEvent = new MouseEvent('mousedown', { bubbles: true, cancelable: true });
         clearFormatButton.dispatchEvent(mouseEvent);
         clearFormatButton.click();
-        expect(rteObj.inputElement.innerHTML).toEqual(`<p>The Rich Text Editor component is a WYSIWYG ("what you see is what you get") editor that provides the best user experience to create and update the content. Users can format their content using standard toolbar commands.</p><p>Key features:</p><p>Provides IFRAME and DIV modes</p><ol><li><p>Capable of handling markdown editing.</p></li></ol>`);
+        expect(rteObj.inputElement.innerHTML).toEqual(`<p>The Rich Text Editor component is a WYSIWYG ("what you see is what you get") editor that provides the best user experience to create and update the content. Users can format their content using standard toolbar commands.</p><p>Key features:</p><p>Provides IFRAME and DIV modes</p><ol><li>Capable of handling markdown editing.</li></ol>`);
         done();
     });
 });

@@ -763,14 +763,6 @@ export interface AxisModel {
     description?: string;
 
     /**
-     * Specifies an offset value that determines where the first label appears on the category axis.
-     * This helps control the alignment of axis labels by shifting the starting position.
-     *
-     * @default null
-     */
-    intervalOffset?: number;
-
-    /**
      * The `tabIndex` value for the axis, determining its position in the tab order.
      *
      * @default 2

@@ -118,7 +118,7 @@
       width: 45%;
     }
 
-    .e-format-font-color-picker {
+    .e-colorpicker-wrapper.e-format-font-color-picker {
       margin-left: 0;
       margin-right: 16px;
     }
@@ -331,7 +331,7 @@
     }
 
     &.e-rtl {
-      .e-format-font-color-picker {
+      .e-colorpicker-wrapper.e-format-font-color-picker {
         margin-left: 16px;
         margin-right: 0;
       }

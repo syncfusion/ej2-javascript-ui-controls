@@ -334,17 +334,51 @@ export function isHeightCheckNeeded(style: CellStyleModel, onActionUpdate?: bool
 }
 
 /**
+ * Fixes row index overflow by wrapping it within the valid Excel row index range (0 to 1048575).
+ *
+ * @param {number} index - The row index to adjust.
+ * @returns {number} - The adjusted row index.
+ * @hidden
+ */
+function fixRowIndexOverflow(index: number): number {
+    if (index > 1048575) {
+        return index - 1048576;
+    } else if (index < 0) {
+        return index + 1048576;
+    }
+    return index;
+}
+
+/**
+ * Fixes column index overflow by wrapping it within the valid Excel column index range (0 to 16383).
+ *
+ * @param {number} index - The column index to adjust.
+ * @returns {number} - The adjusted column index.
+ * @hidden
+ */
+function fixColIndexOverflow(index: number): number {
+    if (index > 16383) {
+        return index - 16384;
+    } else if (index < 0) {
+        return index + 16384;
+    }
+    return index;
+}
+
+/**
  * @param {number[]} currIndexes - current indexes in which formula get updated
  * @param {number[]} prevIndexes - copied indexes
  * @param {SheetModel} sheet - sheet model
  * @param {Workbook} context - Represents workbook instance
  * @param {CellModel} prevCell - Copied or previous cell model
  * @param {boolean} isSort - Represents sort action
+ * @param {boolean} isValidation - Represents validation action
  * @returns {string} - retruns updated formula
  * @hidden
  */
 export function getUpdatedFormula(
-    currIndexes: number[], prevIndexes: number[], sheet: SheetModel, context: Workbook, prevCell?: CellModel, isSort?: boolean): string {
+    currIndexes: number[], prevIndexes: number[], sheet: SheetModel, context: Workbook, prevCell?: CellModel, isSort?: boolean,
+    isValidation?: boolean): string {
     let cIdxValue: string; let cell: CellModel;
     if (prevIndexes) {
         cell = prevCell || getCell(prevIndexes[0], prevIndexes[1], sheet, false, true);
@@ -358,7 +392,7 @@ export function getUpdatedFormula(
             cIdxValue = cIdxValue.slice(1);
         }
         cIdxValue = cIdxValue.split('(').join(context.listSeparator).split(')').join(context.listSeparator);
-        const formulaOperators: string[] = ['+', '-', '*', '/', '>=', '<=', '<>', '>', '<', '=', '%', '&']; let splitArray: string[];
+        const formulaOperators: string[] = ['+', '-', '*', '/', '>=', '<=', '<>', '>', '<', '=', '%', '&', '^']; let splitArray: string[];
         let value: string = cIdxValue;
         for (let i: number = 0; i < formulaOperators.length; i++) {
             splitArray = value.split(formulaOperators[i as number]);
@@ -376,12 +410,20 @@ export function getUpdatedFormula(
             } else {
                 cellRef = splitArray[j as number].toUpperCase();
             }
-            if (isCellReference(cellRef.trim()) && !cellRef.includes('$')) {
+            if (isCellReference(cellRef.trim()) && !cellRef.includes('$') && (!isSort || !isSheetRef)) {
                 const leadingSpaces: string = getLeadingSpaces(cellRef);
                 const trailingSpaces: string = getTrailingSpaces(cellRef);
                 const range: number[] = getRangeIndexes(cellRef);
-                const newRange: number[] = [currIndexes[0] - (prevIndexes[0] - range[0]), currIndexes[1] - (prevIndexes[1] - range[1]),
-                    currIndexes[0] - (prevIndexes[0] - range[2]), currIndexes[1] - (prevIndexes[1] - range[3])];
+                let newRange: number[];
+                if (isValidation) {
+                    newRange = [fixRowIndexOverflow(currIndexes[0] - (prevIndexes[0] - range[0])),
+                        fixColIndexOverflow(currIndexes[1] - (prevIndexes[1] - range[1])),
+                        fixRowIndexOverflow(currIndexes[0] - (prevIndexes[0] - range[2])),
+                        fixColIndexOverflow(currIndexes[1] - (prevIndexes[1] - range[3]))];
+                } else {
+                    newRange = [currIndexes[0] - (prevIndexes[0] - range[0]), currIndexes[1] - (prevIndexes[1] - range[1]),
+                        currIndexes[0] - (prevIndexes[0] - range[2]), currIndexes[1] - (prevIndexes[1] - range[3])];
+                }
                 if (newRange[1] < 0 || newRange[2] < 0 || newRange[3] < 0 || (!isSort && newRange[0] < 0)) {
                     newRef = '#REF!';
                 } else {

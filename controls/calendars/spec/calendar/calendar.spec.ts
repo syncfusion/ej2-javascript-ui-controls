@@ -5021,6 +5021,7 @@ describe(' Islamic Calendar', () => {
             cal.keyActionHandle(keyEventArgs);
             expect(document.querySelector('.e-focused-date').textContent).toBe('1441');
             keyEventArgs.action = 'end';
+            keyEventArgs.type = 'keydown';
             cal.keyActionHandle(keyEventArgs);
             expect(document.querySelector('.e-focused-date').textContent).toBe('1450');
         });

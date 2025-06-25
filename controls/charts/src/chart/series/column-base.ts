@@ -1,6 +1,6 @@
 import { Animation, AnimationOptions, animationMode, isNullOrUndefined, remove } from '@syncfusion/ej2-base';
 import { DoubleRange } from '../utils/double-range';
-import { appendChildElement, redrawElement, pathAnimation, valueToCoefficient, getVisiblePoints, colorNameToHex, checkColorFormat, applyZLight } from '../../common/utils/helper';
+import { appendChildElement, redrawElement, pathAnimation, valueToCoefficient, getVisiblePoints, colorNameToHex, checkColorFormat, applyZLight, markerAnimate } from '../../common/utils/helper';
 import { getAnimationFunction, getPoint, ChartLocation, getMinPointsDelta } from '../../common/utils/helper';
 import { PathOption, Rect } from '@syncfusion/ej2-svg-base';
 import { Chart } from '../chart';
@@ -648,8 +648,12 @@ export class ColumnBase {
                     if (annotations) {
                         annotations.style.visibility = 'visible';
                     }
+                    if (series.lastValueLabelElement) {
+                        series.lastValueLabelElement.setAttribute('visibility', 'visible');
+                    }
                     const stackLabelGroup: HTMLElement = <HTMLElement>document.getElementById(series.chart.element.id + '_StackLabelGroup');
                     if (stackLabelGroup) {
+                        markerAnimate(stackLabelGroup, 0, duration, series, null, null, false);
                         stackLabelGroup.setAttribute('visibility', 'visible');
                     }
                     element.setAttribute('transform', 'translate(0,0)');

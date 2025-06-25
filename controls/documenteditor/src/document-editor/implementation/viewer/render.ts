@@ -9,7 +9,8 @@ import {
     TableRowWidget, TableWidget, TableCellWidget, FieldElementBox, TabElementBox, BlockWidget, ErrorTextElementBox,
     CommentCharacterElementBox, ShapeElementBox, EditRangeStartElementBox, FootNoteWidget, ShapeBase,
     FootnoteElementBox, TextFrame, BookmarkElementBox, EditRangeEndElementBox,
-    ContentControl
+    ContentControl,
+    GroupShapeElementBox
 } from './page';
 import { BaselineAlignment, HighlightColor, Underline, Strikethrough, TabLeader, CollaborativeEditingSettingsModel, TextureStyle } from '../../index';
 import { Layout } from './layout';
@@ -91,7 +92,7 @@ export class Renderer {
     }
     public renderWidgets(page: Page, left: number, top: number, width: number, height: number): void {
         if (isNullOrUndefined(this.pageCanvas) || isNullOrUndefined(page) || isNullOrUndefined(page.bodyWidgets)
-        || !this.documentHelper.owner.enableLayout) {
+           || !this.documentHelper.owner.enableLayout) {
             return;
         }
         this.pageContext.fillStyle = HelperMethods.getColor(this.documentHelper.backgroundColor);
@@ -498,7 +499,11 @@ export class Renderer {
                         let shapeLeft: number = this.getScaledValue(shape.x, 1);
                         let shapeTop: number = this.getScaledValue(shape.y, 2);
                         this.renderShapeElementBox(shape, shapeLeft, shapeTop, page);
+                    
+                    } else if (shape instanceof GroupShapeElementBox) {
+                        this.renderGroupShapeElementBox(shape, page);
                     }
+                
                 } else if (!overLappedShapeWidgets.containsKey(shape.zOrderPosition)) {
                     overLappedShapeWidgets.add(shape.zOrderPosition, shape);
                 }
@@ -513,6 +518,8 @@ export class Renderer {
                         let shapeLeft: number = this.getScaledValue(shape.x, 1);
                         let shapeTop: number = this.getScaledValue(shape.y, 2);
                         this.renderShapeElementBox(shape, shapeLeft, shapeTop, page);
+                    } else if (shape instanceof GroupShapeElementBox) {
+                        this.renderGroupShapeElementBox(shape, page);
                     }
                 }
             }
@@ -532,6 +539,20 @@ export class Renderer {
             && !(this.documentHelper.compatibilityMode !== 'Word2013'
             && (floatingElement.isBelowText
             && floatingElement.textWrappingStyle !== 'InFrontOfText'))));
+    }
+    private renderGroupShapeElementBox(groupShape: GroupShapeElementBox, page: Page): void {
+        for (let i = 0; i < groupShape.childWidgets.length; i++) {
+            let shape: any = groupShape.childWidgets[i];
+            if (shape instanceof GroupShapeElementBox) {
+                this.renderGroupShapeElementBox(shape, page);
+            } else if (shape instanceof ImageElementBox) {
+                this.renderImageElementBox(shape, shape.x, shape.y, 0);
+            } else if (shape instanceof ShapeElementBox) {
+                let shapeLeft: number = this.getScaledValue(shape.x, 1);
+                let shapeTop: number = this.getScaledValue(shape.y, 2);
+                this.renderShapeElementBox(shape, shapeLeft, shapeTop, page);
+            }
+        }
     }
     private renderShapeElementBox(shape: ShapeElementBox, shapeLeft: number, shapeTop: number, page: Page): void {
         if (shape.isHorizontalRule) {
@@ -914,7 +935,11 @@ private calculatePathBounds(data: string): Rect {
         }
         //Updated client area for current page
         page.viewer.updateClientArea(page.bodyWidgets[0], page);
-        let top: number = page.viewer.clientArea.y;
+        let isMultiColumn: boolean = false;
+        if (widget.containerWidget instanceof BodyWidget && (widget.containerWidget as BodyWidget).sectionFormat.columns.length > 1) {
+            isMultiColumn = true;
+        }
+        let top: number = isMultiColumn ? widget.y : page.viewer.clientArea.y;
         let parentTable: TableWidget = header.ownerTable.getSplitWidgets()[0] as TableWidget;
         if (parentTable.childWidgets.length === 0) {
             return;
@@ -924,8 +949,8 @@ private calculatePathBounds(data: string): Rect {
         }
         let table: TableWidget = parentTable.clone(true);
         table.childWidgets = [];
-        page.viewer.updateClientAreaLocation(table, new Rect(page.viewer.clientArea.x, top, table.width, table.height));
-        this.updateTableHeaderRows(header, table, page, top);
+        page.viewer.updateClientAreaLocation(table, new Rect(isMultiColumn ? widget.x : page.viewer.clientArea.x, top, table.width, table.height));
+        this.updateTableHeaderRows(header, table, page, top, isMultiColumn ? widget.x : page.viewer.clientArea.x, isMultiColumn);
         this.isRenderHeader = true;
         for (let j: number = 0; j < table.childWidgets.length; j++) {
             let headerWidget: TableRowWidget = table.childWidgets[j] as TableRowWidget;
@@ -940,10 +965,10 @@ private calculatePathBounds(data: string): Rect {
         this.isRenderHeader = false;
         if (widget.y !== top) {
             //this.Location.Y = top;
-            page.documentHelper.layout.updateChildLocationForTable(top, widget);
+            page.documentHelper.layout.updateChildLocationForTable(top, widget, undefined, false, isMultiColumn);
         }
     }
-    private updateTableHeaderRows(headerRow: TableRowWidget, clonedTable: TableWidget, page: Page, top: number): void {
+    private updateTableHeaderRows(headerRow: TableRowWidget, clonedTable: TableWidget, page: Page, top: number, left: number, isMultiColumn: boolean): void {
         let table: TableWidget = headerRow.ownerTable;
         let rowSpan: number = 1;
         for (let i: number = 0; i < table.childWidgets.length; i++) {
@@ -952,8 +977,8 @@ private calculatePathBounds(data: string): Rect {
                 let clonedRow: TableRowWidget = row.clone();
                 clonedTable.childWidgets.push(clonedRow);
                 clonedRow.containerWidget = clonedTable;
-                page.viewer.updateClientAreaLocation(clonedRow, new Rect(page.viewer.clientArea.x, top, clonedRow.width, clonedRow.height));
-                page.documentHelper.layout.updateChildLocationForRow(top, clonedRow);
+                page.viewer.updateClientAreaLocation(clonedRow, new Rect(left, top, clonedRow.width, clonedRow.height));
+                page.documentHelper.layout.updateChildLocationForRow(top, clonedRow, undefined, false, isMultiColumn);
                 top += clonedRow.height;
                 if (row == headerRow) {
                     for (let j: number = 0; j < headerRow.childWidgets.length; j++) {
@@ -967,8 +992,8 @@ private calculatePathBounds(data: string): Rect {
                                 let clonedRow: TableRowWidget = nextRow.clone();
                                 clonedTable.childWidgets.push(clonedRow);
                                 clonedRow.containerWidget = clonedTable;
-                                page.viewer.updateClientAreaLocation(clonedRow, new Rect(page.viewer.clientArea.x, top, clonedRow.width, clonedRow.height));
-                                page.documentHelper.layout.updateChildLocationForRow(top, clonedRow);
+                                page.viewer.updateClientAreaLocation(clonedRow, new Rect(left, top, clonedRow.width, clonedRow.height));
+                                page.documentHelper.layout.updateChildLocationForRow(top, clonedRow, undefined, false, isMultiColumn);
                                 top += clonedRow.height;
                             }
                         }
@@ -999,7 +1024,7 @@ private calculatePathBounds(data: string): Rect {
             this.clipRect(paraWidget.x + paddingLeft, this.getScaledValue(page.boundingRectangle.y), this.getScaledValue(page.boundingRectangle.width), this.getScaledValue(page.boundingRectangle.height));
             isClipped = true;
         }
-        if (!(paraWidget.containerWidget instanceof HeaderFooterWidget && paraWidget.containerWidget.isEmpty && !isNullOrUndefined(this.documentHelper.owner.selectionModule) && !isNullOrUndefined(this.documentHelper.selection.start) 
+        if (!(paraWidget.containerWidget instanceof HeaderFooterWidget && paraWidget.containerWidget.isEmpty && !isNullOrUndefined(this.documentHelper.owner.selectionModule) && !isNullOrUndefined(this.documentHelper.owner.selectionModule.start) 
             && !isNullOrUndefined(this.documentHelper.selection.start.paragraph) && !this.documentHelper.selection.start.paragraph.isInHeaderFooter)) {
             this.renderParagraphBorder(page, paraWidget);
         }
@@ -1849,7 +1874,7 @@ private calculatePathBounds(data: string): Rect {
                         }
                         elementBox.isVisible = false;
                         if ((!elementBox.isSpellChecked && !elementBox.isSpellCheckTriggered) || elementBox.line.paragraph.isChangeDetected) {
-                            elementBox.ischangeDetected = true;
+                            elementBox.isChangeDetected = true;
                         }
                     }
                     if (!this.isExporting) {
@@ -1870,6 +1895,8 @@ private calculatePathBounds(data: string): Rect {
                 let shapeLeft: number = this.getScaledValue(left + shapeLeftMargin, 1);
                 let shapeTop: number = this.getScaledValue(top + shapeTopMargin, 2);
                 this.renderShapeElementBox(elementBox, shapeLeft, shapeTop, page);
+            } else if (elementBox instanceof GroupShapeElementBox) {
+                this.renderGroupShapeElementBox(elementBox, page);
             } else {
                 elementBox.isVisible = true;
                 left += elementBox.padding.left;
@@ -1911,9 +1938,10 @@ private calculatePathBounds(data: string): Rect {
             } else {
                 y = top + lineWidget.maxBaseLine;
             }
-            if (currentCharFormat.revisions.length > 0) {
+            if (currentCharFormat.revisionLength > 0) {
                 //CharacterFormat Track changes is not supported., Hence only the Para mark changes are parsed and preserved in the charcterForamt. 
-                let color: string = this.documentHelper.authors.get(currentCharFormat.revisions[0].author);
+                let revisionInfo: RevisionInfo[] = this.checkRevisionType(currentCharFormat);
+                let color: string = revisionInfo.length > 0 ? this.getRevisionColor(revisionInfo) : currentCharFormat.fontColor;
                 this.pageContext.fillStyle = HelperMethods.getColor(color);
             }
             if (lineWidget.isEndsWithColumnBreak) {
@@ -2406,8 +2434,8 @@ private calculatePathBounds(data: string): Rect {
                 this.leftPosition = this.pageLeft;
                 this.topPosition = this.pageTop;
                 let isDeleteRevision: boolean = false;
-                if (!isNullOrUndefined(elementBox.revisions) && elementBox.revisions.length > 0) {
-                    isDeleteRevision = elementBox.revisions[0].revisionType === "Deletion" ? true : false;
+                if (elementBox.revisionLength > 0) {
+                    isDeleteRevision = elementBox.getRevision(0).revisionType === "Deletion" ? true : false;
                 }
                 if (!isDeleteRevision) {
                     let errorDetails: ErrorInfo = this.spellChecker.checktextElementHasErrors(elementBox.text, elementBox, left);
@@ -2442,7 +2470,7 @@ private calculatePathBounds(data: string): Rect {
                                 }
                             }
                         }
-                    } else if (elementBox.ischangeDetected || this.documentHelper.triggerElementsOnLoading) {
+                    } else if (elementBox.isChangeDetected || this.documentHelper.triggerElementsOnLoading) {
                         this.handleChangeDetectedElements(elementBox, underlineY, left, top, format.baselineAlignment);
                         elementBox.isSpellCheckTriggered = true;
                     }
@@ -2620,7 +2648,7 @@ private calculatePathBounds(data: string): Rect {
                             }
                         }
                     }
-                    elementBox.ischangeDetected = false; 
+                    elementBox.isChangeDetected = false; 
                 }
             }
         }
@@ -2673,7 +2701,7 @@ private calculatePathBounds(data: string): Rect {
                             }
                         }
                     });
-                    elementBox.ischangeDetected = false;
+                    elementBox.isChangeDetected = false;
                 }
             }
         }
@@ -3269,8 +3297,8 @@ private calculatePathBounds(data: string): Rect {
         let tableBackgroundColor: string = cellWidget.ownerTable.tableFormat.shading.backgroundColor;
         let bgColor: string = cellFormat.shading.backgroundColor;
 
-        if (cellWidget.ownerRow.rowFormat.revisions.length > 0) {
-            let revision: Revision = cellWidget.ownerRow.rowFormat.revisions[cellWidget.ownerRow.rowFormat.revisions.length - 1];
+        if (cellWidget.ownerRow.rowFormat.revisionLength > 0) {
+            let revision: Revision = cellWidget.ownerRow.rowFormat.getRevision(cellWidget.ownerRow.rowFormat.revisionLength - 1);
             bgColor = (revision.revisionType === 'Insertion') ? '#e1f2fa' : '#fce6f4';
         }
         if (bgColor !== 'empty') {
@@ -3381,12 +3409,15 @@ private calculatePathBounds(data: string): Rect {
         let x: number = value * this.documentHelper.zoomFactor;
         return x + (type === 1 ? this.pageLeft : (type === 2 ? this.pageTop : 0));
     }
-    private checkRevisionType(elementBox: ElementBox): RevisionInfo[] {
+    private checkRevisionType(elementBox: ElementBox | WCharacterFormat): RevisionInfo[] {
         let revisions: RevisionInfo[] = [];
-        let count: number = elementBox.revisions.length;
+        let count: number = elementBox.revisionLength;
         for (let i: number = 0; i < count; i++) {
-            let currentRevision: Revision = elementBox.revisions[i];
+            let currentRevision: Revision = elementBox.getRevision(i);
             let color: string = this.documentHelper.authors.get(currentRevision.author);
+            if (isNullOrUndefined(color)) {
+                color = this.documentHelper.getAuthorColor(currentRevision.author);
+            }
             revisions.push({ 'type': currentRevision.revisionType, 'color': color });
         }
         return revisions

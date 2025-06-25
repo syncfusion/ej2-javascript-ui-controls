@@ -27,6 +27,7 @@ export class ExcelExport {
      */
     constructor(parent?: PivotView) {
         this.parent = parent;
+        this.rows = [];
     }
 
     /**
@@ -39,8 +40,12 @@ export class ExcelExport {
         return 'excelExport';
     }
 
-    private addHeaderAndFooter(excelExportProperties?: ExcelHeader | ExcelFooter, stringValue?: string, type?: string, rowCount?: number)
-        : void {
+    private addHeaderAndFooter(
+        excelExportProperties?: ExcelHeader | ExcelFooter, stringValue?: string, type?: string, rowCount?: number
+    ): void {
+        if (!this.rows) {
+            this.rows = [];
+        }
         let cells: ExcelCell[] = [];
         if (!isNullOrUndefined(excelExportProperties.rows)) {
             this.actualrCnt = (type === 'footer') ? this.actualrCnt + rowCount - (excelExportProperties.rows[0].cells.length) : this.actualrCnt;
@@ -238,18 +243,24 @@ export class ExcelExport {
                             }
                             cCnt = cCnt + (pivotCell.colSpan ? (pivotCell.colSpan - 1) : 0);
                         } else {
-                            const pivotCell: IAxisSet = { formattedText: '' };
+                            const pivotCell: IAxisSet = { formattedText: '', colSpan: 1, rowSpan: 1 };
+                            if (rCnt === 0 && cCnt === 0) {
+                                pivotCell.colSpan = pivotValues[0].length - this.engine.columnCount;
+                                pivotCell.rowSpan = Object.keys(pivotValues).length - this.engine.rowCount;
+                            }
                             let excelHeaderQueryCellInfoArgs: ExcelHeaderQueryCellInfoEventArgs;
                             if (pivotCell) {
                                 excelHeaderQueryCellInfoArgs = {
-                                    style: undefined,
+                                    style: { borders: { color: '#000000', lineStyle: 'thin' }},
                                     cell: pivotCell
                                 };
                                 this.parent.trigger(events.excelHeaderQueryCellInfo, excelHeaderQueryCellInfoArgs);
                             }
+                            const cell: { [key: string]: string | number }
+                                = excelHeaderQueryCellInfoArgs.cell as { [key: string]: string | number };
                             cells.push({
-                                index: cCnt + 1, colSpan: 1, rowSpan: 1, value: pivotCell.formattedText,
-                                style: excelHeaderQueryCellInfoArgs.style
+                                index: cCnt + 1, colSpan: cell['colSpan'] as number, rowSpan: cell['rowSpan'] as number,
+                                value: pivotCell.formattedText, style: excelHeaderQueryCellInfoArgs.style
                             });
                         }
                     }
@@ -314,8 +325,13 @@ export class ExcelExport {
      */
 
     public destroy(): void {
+        this.rows = [];
+        this.actualrCnt = 0;
         if (this.engine) {
             this.engine = null;
+        }
+        if (this.rows) {
+            this.rows = null;
         }
     }
 }

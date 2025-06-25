@@ -12640,7 +12640,7 @@ describe('Spreadsheet formula module ->', () => {
                 helper.click('.e-validation-error-dlg.e-dialog .e-footer-content button:nth-child(1)');
                 helper.invoke('closeEdit');
                 done();
-            });
+            }, 20);
         });
         it('Selecting formula in dropdown->', (done: Function) => {
             helper.invoke('selectRange', ['J1']);
@@ -12717,9 +12717,9 @@ describe('Spreadsheet formula module ->', () => {
                     setTimeout(() => {
                         expect(JSON.stringify(helper.getInstance().sheets[0].rows[2].cells[9])).toBe('{"value":554,"formula":"=SUM(H2:H11)"}');
                         done();
-                    });
-                });
-            });
+                    }, 20);
+                }, 20);
+            }, 20);
         });
         it('Close name box popup using esc button->', (done: Function) => {
             helper.invoke('selectRange', ['J3']);
@@ -15557,7 +15557,7 @@ describe('Spreadsheet formula module ->', () => {
                 done();
             });
         });
-        describe('EJ2-57075, EJ2-60798 ->', () => {
+        describe('EJ2-57075, EJ2-60798, EJ2-962607 ->', () => {
             beforeAll((done: Function) => {
                 helper.initializeSpreadsheet(
                     { sheets: [{       rows: [
@@ -15568,7 +15568,9 @@ describe('Spreadsheet formula module ->', () => {
                             { formula: '=SUMIF(A1:A2,"10",B1)' },
                             { value: 'Apple' },
                             { value: 'Fruit' },
-                            { formula: '=IF(D1="NA",E1,Concat(D1:E1))' }
+                            { formula: '=IF(D1="NA",E1,Concat(D1:E1))' },
+                            { formula: '=IF(""=" ","","WO 8012-01-00004")' },
+                            { formula: '=IF(""="","WO 8012-01-00004","")' }
                           ],
                         },
                         { cells: [{ value: '10' }, { value: '10' }] },
@@ -15588,6 +15590,14 @@ describe('Spreadsheet formula module ->', () => {
                 helper.edit('D1', 'NA');
                 expect(cell.value).toBe('Fruit');
                 expect(helper.invoke('getCell', [0, 5]).textContent).toBe('Fruit');
+                done();
+            });
+            it('IF formula returns incorrect result in Spreadsheet', (done: Function) => {
+                const spreadsheet: Spreadsheet = helper.getInstance();
+                expect(spreadsheet.sheets[0].rows[0].cells[6].value).toBe('WO 8012-01-00004');
+                expect(spreadsheet.sheets[0].rows[0].cells[6].formula).toBe('=IF(""=" ","","WO 8012-01-00004")');
+                expect(spreadsheet.sheets[0].rows[0].cells[7].value).toBe('WO 8012-01-00004');
+                expect(spreadsheet.sheets[0].rows[0].cells[7].formula).toBe('=IF(""="","WO 8012-01-00004","")');
                 done();
             });
         });

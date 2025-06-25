@@ -127,12 +127,11 @@ export class StampAnnotation {
      * @param {any} canvass - It describes about the canvas
      * @param {boolean} isImport - It describes about the isImport
      * @param {boolean} isAnnotOrderAction - It describes about the isAnnotOrderAction
-     * @param {boolean} isLastAnnot - It describes about the isLastAnnot
      * @private
      * @returns {Promise<void>} - any
      */
     public renderStampAnnotations(stampAnnotations: any, pageNumber: number, canvass?: any,
-                                  isImport?: boolean,  isAnnotOrderAction?: boolean, isLastAnnot?: boolean): Promise<void> {
+                                  isImport?: boolean,  isAnnotOrderAction?: boolean): Promise<void> {
         return new Promise((resolve: any) => {
             let isStampAdded: boolean = false;
             if (!isImport) {
@@ -227,11 +226,9 @@ export class StampAnnotation {
                                         const currentLocation: IRectCollection = proxy.calculateImagePosition(position, true);
                                         annotation.AnnotationSettings = annotation.AnnotationSettings ?
                                             annotation.AnnotationSettings : proxy.pdfViewer.customStampSettings.annotationSettings;
-                                        const isNeedToRender: boolean = ((isImport && isLastAnnot) || isNullOrUndefined(isImport) ||
-                                                                !isImport) ? true : false;
                                         proxy.renderCustomImage(currentLocation, pageIndex, image, currentDate, modifiedDate,
                                                                 rotationAngle, opacity, canvass, true, annotation, null, null,
-                                                                null, isNeedToRender);
+                                                                null);
                                         if (proxy.pdfViewer.annotationModule.annotationType === 'image') {
                                             proxy.pdfViewer.annotation.selectAnnotationFromCodeBehind();
                                             proxy.pdfViewer.annotationModule.annotationType = null;
@@ -1148,14 +1145,15 @@ export class StampAnnotation {
                         }
                         if (!this.pdfViewerBase.clientSideRendering && pageAnnotationObject.annotations[parseInt(z.toString(), 10)].icon) {
                             const bounds: any = pageAnnotationObject.annotations[parseInt(z.toString(), 10)].bounds;
-                            const iconSize: number =
+                            let iconSize: number =
                             this.pdfViewer.annotationModule.calculateFontSize(pageAnnotationObject.
                                 annotations[parseInt(z.toString(), 10)].icon.toUpperCase(), bounds);
+                            iconSize = Browser.isDevice && Browser.isAndroid ? iconSize - 11 : iconSize - 5;
                             pageAnnotationObject.annotations[parseInt(z.toString(), 10)].iconFontSize = iconSize;
                             let textSize: number = 10;
                             const dynamicText: string = pageAnnotationObject.annotations[parseInt(z.toString(), 10)].dynamicText;
                             if (dynamicText.trim().length !== 0) {
-                                textSize = this.pdfViewer.annotationModule.calculateFontSize(dynamicText, bounds);
+                                textSize = this.pdfViewer.annotationModule.calculateFontSize(dynamicText, bounds) - 5;
                             }
                             pageAnnotationObject.annotations[parseInt(z.toString(), 10)].textFontSize = textSize;
                         }
@@ -1481,6 +1479,23 @@ export class StampAnnotation {
             return dynamicText;
         }
         return dynamicText;
+    }
+
+    /**
+     * @private
+     * @returns {void}
+     */
+    public destroy(): void {
+        this.author = null;
+        this.currentStampAnnotation = null;
+        this.isStampAnnotSelected = null;
+        this.isStampAddMode = null;
+        this.isNewStampAnnot = null;
+        this.isExistingStamp = null;
+        this.stampPageNumber = null;
+        this.isAddAnnotationProgramatically = null;
+        this.customStampName = null;
+        this.dynamicText = null;
     }
 
     private getAnnotations(pageIndex: number, shapeAnnotations: any[]): any[] {

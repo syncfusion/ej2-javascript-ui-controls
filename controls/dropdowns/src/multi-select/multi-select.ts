@@ -788,6 +788,7 @@ export class MultiSelect extends DropDownBase implements IInput {
     private virtualCustomData: { [key: string]: string | Object };
     private isSelectAllLoop: boolean = false;
     private initialPopupHeight: number;
+
     private enableRTL(state: boolean): void {
         if (state) {
             this.overAllWrapper.classList.add(RTL_CLASS);
@@ -1198,7 +1199,7 @@ export class MultiSelect extends DropDownBase implements IInput {
         if (this.mode === 'CheckBox' && this.allowFiltering) {
             this.notify('targetElement', { module: 'CheckBoxSelection', enable: this.mode === 'CheckBox' });
         }
-        return this.targetInputElement.value;
+        return this.targetInputElement ? this.targetInputElement.value : null;
     }
 
     private getForQuery(valuecheck: string[] | number[] | boolean[] | object[], isCheckbox?: boolean): Query {
@@ -4238,7 +4239,6 @@ export class MultiSelect extends DropDownBase implements IInput {
             this.search(event);
         });
     }
-
     protected performFiltering(e: KeyboardEventArgs | MouseEvent): void {
         const eventArgs: { [key: string]: Object } = {
             preventDefaultAction: false,
@@ -4274,7 +4274,6 @@ export class MultiSelect extends DropDownBase implements IInput {
             }
         });
     }
-
     protected search(e: KeyboardEventArgs): void {
         this.preventSetCurrentData = false;
         this.firstItem = this.dataSource && (this.dataSource as any).length > 0 ? (this.dataSource as any)[0] : null;
@@ -5376,7 +5375,7 @@ export class MultiSelect extends DropDownBase implements IInput {
                         this.updateWrapperText(this.viewWrapper, data);
                     }
                     wrapperleng = this.viewWrapper.offsetWidth +
-                        parseInt(window.getComputedStyle(this.viewWrapper).paddingRight, 10) +
+                        parseInt(window.getComputedStyle(this.viewWrapper).paddingRight, 10)  +
                         parseInt(window.getComputedStyle(this.viewWrapper).paddingLeft, 10);
                     overAllContainer = this.componentWrapper.offsetWidth -
                         parseInt(window.getComputedStyle(this.componentWrapper).paddingLeft, 10) -

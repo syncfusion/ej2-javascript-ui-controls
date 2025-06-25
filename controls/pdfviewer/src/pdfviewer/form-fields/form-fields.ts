@@ -742,7 +742,7 @@ export class FormFields {
                 font: { isItalic: !isNullOrUndefined(font) ? font.Italic : false, isBold: !isNullOrUndefined(font) ? font.Bold : false,
                     isStrikeout: !isNullOrUndefined(font) ? font.Strikeout : false, isUnderline: !isNullOrUndefined(font) ?
                         font.Underline : false }, pageIndex : currentData['PageIndex'], isTransparent : currentData['IsTransparent'],
-                rotationAngle : rotateFieldAngle, signatureType : currentData['SignatureType'] ? currentData['SignatureType'] : '',
+                rotationAngle : currentData['RotationAngle'], signatureType : currentData['SignatureType'] ? currentData['SignatureType'] : '',
                 signatureIndicatorSettings : currentData['SignatureIndicatorSettings'], zIndex: currentData['zIndex'],
                 customData: !isNullOrUndefined(currentData['CustomData']) ? typeof currentData['CustomData'] === 'object'
                     ? currentData['CustomData'] : currentData['CustomData'].trim() !== ''

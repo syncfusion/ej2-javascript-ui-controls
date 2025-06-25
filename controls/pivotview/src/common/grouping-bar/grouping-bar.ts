@@ -33,6 +33,7 @@ export class GroupingBar implements IAction {
     private resColWidth: number;
     private timeOutObj: ReturnType<typeof setTimeout>;
     private rowAxisWidth: number = 0;
+    private isDestroyed: boolean = false;
 
     /**
      * Module declarations
@@ -473,6 +474,9 @@ export class GroupingBar implements IAction {
         emptyRowHeader.querySelector('.e-group-row').appendChild(this.rowAxisPanel);
         const colGroupElement: HTMLElement =
             this.parent.element.querySelector('.' + cls.HEADERCONTENT).querySelector('colgroup').children[0] as HTMLElement;
+        if (this.parent.isTabular) {
+            this.setTabularWidth();
+        }
         if (this.rowPanel.querySelector('.' + cls.PIVOT_BUTTON_CLASS)) {
             if (!this.parent.isAdaptive) {
                 const pivotButtons: HTMLElement[] = [].slice.call(this.rowPanel.querySelectorAll('.' + cls.PIVOT_BUTTON_WRAPPER_CLASS));
@@ -527,23 +531,25 @@ export class GroupingBar implements IAction {
                     }
                 }
                 if (this.parent.isTabular) {
-                    if (this.parent.dataSourceSettings.valueAxis === 'row') {
-                        this.rowAxisWidth = this.rowAxisPanel.querySelector('.e-tabular-group-rows').getBoundingClientRect().width;
-                    } else {
-                        const pivotButtons: NodeListOf<HTMLElement> = this.rowAxisPanel.querySelectorAll('.' + cls.PIVOT_BUTTON_WRAPPER_CLASS);
-                        this.rowAxisWidth = this.getPivotButtonsTotalWidth(pivotButtons);
-                        if (this.parent.engineModule.rowMaxLevel === 0 && pivotButtons.length === 1) {
-                            this.rowAxisWidth = 250;
-                        }
-                        if ((this.parent.element.getBoundingClientRect().width * 0.8) <= this.rowAxisWidth) {
-                            this.rowAxisWidth = pivotButtons.length * this.parent.gridSettings.columnWidth;
-                        }
+                    const firstRow: IAxisSet[] = this.parent.pivotValues[0];
+                    let rowDepth: number = 0;
+                    if (firstRow && isNullOrUndefined(firstRow[0])) {
+                        const lastIndex: number = firstRow.lastIndexOf(
+                            this.parent.dataSourceSettings.mode === 'Server' ? null : undefined
+                        );
+                        rowDepth = lastIndex + 1;
+                    }
+                    if (this.rowAxisWidth > 250 && rowDepth > 1) {
+                        const btnWidth: number = pivotButtons[0].getBoundingClientRect().width + 6;
+                        buttonWidth = this.rowAxisWidth < rowDepth * btnWidth ? `${btnWidth}px` :
+                            rowDepth > 1 ? `${btnWidth}px` : `${this.rowAxisWidth - ((rowDepth - 1) * btnWidth)}px`;
                     }
                 }
                 this.parent.posCount = 0;
                 this.parent.setGridColumns(this.parent.grid.columns as ColumnModel[]);
                 if (!this.parent.firstColWidth) {
-                    buttonWidth = gridColumn[0].autoFit ? gridColumn[0].width.toString() : buttonWidth;
+                    buttonWidth = this.parent.isTabular ? this.resColWidth.toString() : gridColumn[0].autoFit ?
+                        gridColumn[0].width.toString() : buttonWidth;
                     colGroupElement.style.width = buttonWidth;
                     rowContent.style.width = buttonWidth;
                     rowHeaderTable.style.width = buttonWidth;
@@ -584,6 +590,9 @@ export class GroupingBar implements IAction {
         EventHandler.add(element, 'mouseleave', this.dropIndicatorUpdate, this);
     }
     private unWireEvent(element: Element): void {
+        if (!element) {
+            return;
+        }
         EventHandler.remove(element, 'mouseover', this.dropIndicatorUpdate);
         EventHandler.remove(element, 'mouseleave', this.dropIndicatorUpdate);
     }
@@ -679,22 +688,85 @@ export class GroupingBar implements IAction {
      * @hidden
      */
     public destroy(): void {
+        if (this.isDestroyed) {
+            return;
+        }
+        if (this.timeOutObj) {
+            clearTimeout(this.timeOutObj);
+            this.timeOutObj = null;
+        }
         this.removeEventListener();
+        const axisPanels: HTMLElement[] = [this.rowPanel,
+            this.groupingTable ? this.groupingTable.querySelector('.' + cls.GROUP_COLUMN_CLASS) as HTMLElement : null,
+            this.groupingTable ? this.groupingTable.querySelector('.' + cls.GROUP_VALUE_CLASS) as HTMLElement : null,
+            this.groupingTable ? this.groupingTable.querySelector('.' + cls.GROUP_FILTER_CLASS) as HTMLElement : null];
+        axisPanels.forEach((element: HTMLElement) => {
+            if (element) {
+                this.unWireEvent(element);
+            }
+        });
         if (this.parent.pivotButtonModule) {
             this.parent.pivotButtonModule.destroy();
             this.parent.pivotButtonModule = null;
         }
-        if (this.groupingTable && this.groupingTable.querySelector('.' + cls.ALL_FIELDS_PANEL_CLASS) && this.gridPanel != null && !this.gridPanel.isDestroyed) {
+        if (this.parent.axisFieldModule) {
+            this.parent.axisFieldModule.destroy();
+            this.parent.axisFieldModule = null;
+        }
+        if (this.gridPanel && !this.gridPanel.isDestroyed) {
             this.gridPanel.destroy();
             this.gridPanel = null;
         }
-        if (this.groupingChartTable && this.groupingChartTable.querySelector('.' + cls.ALL_FIELDS_PANEL_CLASS) && this.chartPanel != null && !this.chartPanel.isDestroyed) {
+        if (this.chartPanel && !this.chartPanel.isDestroyed) {
             this.chartPanel.destroy();
             this.chartPanel = null;
         }
-        if (this.touchObj && !this.touchObj.isDestroyed) { this.touchObj.destroy(); }
-        if (this.parent.element.querySelector('.' + cls.GROUPING_BAR_CLASS)) {
-            remove(this.parent.element.querySelector('.' + cls.GROUPING_BAR_CLASS));
+        if (this.touchObj && !this.touchObj.isDestroyed) {
+            this.touchObj.destroy();
+            this.touchObj = null;
+        }
+        let groupingBars: NodeListOf<Element> = this.parent.element.querySelectorAll('.' + cls.GROUPING_BAR_CLASS);
+        if (groupingBars.length > 0) {
+            for (let i: number = 0; i < groupingBars.length; i++) {
+                remove(groupingBars[i as number]);
+            }
+        }
+        groupingBars = null;
+        if (this.groupingChartTable) {
+            this.removeAllEventListeners(this.groupingChartTable);
+            this.groupingChartTable = null;
+        }
+        if (this.groupingTable) {
+            this.removeAllEventListeners(this.groupingTable);
+            this.groupingTable = null;
+        }
+        this.rowPanel = null;
+        this.rowAxisPanel = null;
+        this.rightAxisPanel = null;
+        this.rowAxisWidth = 0;
+        this.resColWidth = 0;
+        this.isDestroyed = true;
+    }
+
+    /**
+     * Remove all event listeners from a DOM element and its children recursively
+     *
+     * @param {HTMLElement} element - The element to clean up
+     * @returns {void}
+     * @private
+     */
+    private removeAllEventListeners(element: HTMLElement): void {
+        if (!element) {
+            return;
+        }
+        const droppableElements: NodeListOf<Element> = element.querySelectorAll('.' + cls.DROPPABLE_CLASS);
+        for (let i: number = 0; i < droppableElements.length; i++) {
+            this.unWireEvent(droppableElements[i as number]);
+        }
+        const buttons: NodeListOf<Element> = element.querySelectorAll('.' + cls.PIVOT_BUTTON_CLASS);
+        for (let i: number = 0; i < buttons.length; i++) {
+            EventHandler.remove(buttons[i as number], 'mouseover', this.dropIndicatorUpdate);
+            EventHandler.remove(buttons[i as number], 'mouseleave', this.dropIndicatorUpdate);
         }
     }
 
@@ -706,5 +778,20 @@ export class GroupingBar implements IAction {
             totalWidth += buttonWidth + 6;
         }
         return totalWidth;
+    }
+
+    private setTabularWidth(): void {
+        if (this.parent.dataSourceSettings.valueAxis === 'row') {
+            this.rowAxisWidth = this.rowAxisPanel.querySelector('.e-tabular-group-rows').getBoundingClientRect().width;
+        } else {
+            const pivotButtons: NodeListOf<HTMLElement> = this.rowAxisPanel.querySelectorAll('.' + cls.PIVOT_BUTTON_WRAPPER_CLASS);
+            this.rowAxisWidth = this.getPivotButtonsTotalWidth(pivotButtons);
+            if (this.parent.engineModule.rowMaxLevel === 0 && pivotButtons.length === 1) {
+                this.rowAxisWidth = 250;
+            }
+            if ((this.parent.element.getBoundingClientRect().width * 0.8) <= this.rowAxisWidth) {
+                this.rowAxisWidth = pivotButtons.length * this.parent.gridSettings.columnWidth;
+            }
+        }
     }
 }

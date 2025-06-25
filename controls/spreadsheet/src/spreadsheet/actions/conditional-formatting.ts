@@ -1,15 +1,15 @@
-import { ConditionalFormatEventArgs, Spreadsheet, DialogBeforeOpenEventArgs, getUpdateUsingRaf } from '../index';
+import { ConditionalFormatEventArgs, Spreadsheet, DialogBeforeOpenEventArgs } from '../index';
 import { renderCFDlg, locale, dialog, focus, removeElements, readonlyAlert, createHyperlinkElement } from '../common/index';
-import { CellModel, SheetModel, getCell, isHiddenRow, isHiddenCol, getRowHeight, skipDefaultValue, getColorCode } from '../../workbook/base/index';
+import { CellModel, SheetModel, getCell, isHiddenRow, isHiddenCol, getRowHeight, skipDefaultValue, getColorCode, getRowsHeight } from '../../workbook/base/index';
 import { getRangeIndexes, checkDateFormat, applyCF, isNumber, getCellIndexes, parseLocaleNumber } from '../../workbook/index';
-import { CellFormatArgs, isDateTime, dateToInt, CellStyleModel, applyCellFormat, clearCF, getSwapRange, isReadOnlyCells, NumberFormatArgs, getFormattedCellObject } from '../../workbook/common/index';
+import { CellFormatArgs, isDateTime, dateToInt, CellStyleModel, applyCellFormat, clearCF, getSwapRange, isReadOnlyCells, NumberFormatArgs, getFormattedCellObject, updateHighlight, ValidationModel } from '../../workbook/common/index';
 import { setCFRule, getCellAddress, DateFormatCheckArgs, CFArgs, checkRange, getViewportIndexes } from '../../workbook/common/index';
 import { extend, isNullOrUndefined, L10n, removeClass } from '@syncfusion/ej2-base';
 import { Dialog } from '../services';
 import { DropDownList } from '@syncfusion/ej2-dropdowns';
 import { HighlightCell, TopBottom, CFColor, ConditionalFormatModel, ApplyCFArgs, ConditionalFormat } from '../../workbook/common/index';
 import { NumericTextBox } from '@syncfusion/ej2-inputs';
-import { calculateFormula, rowFillHandler, getTypeFromFormat } from '../../workbook/index';
+import { calculateFormula, rowFillHandler, getTypeFromFormat, checkColumnValidation } from '../../workbook/index';
 import { BeforeOpenEventArgs } from '@syncfusion/ej2-popups';
 
 /**
@@ -106,7 +106,7 @@ export class ConditionalFormatting {
         const dialogInst: Dialog = this.parent.serviceLocator.getService(dialog) as Dialog;
         dialogInst.show({
             width: 375, showCloseIcon: true, isModal: true, cssClass: 'e-conditionalformatting-dlg',
-            header: args.action.replace('...', ''),
+            header: args.action.replace('...', ''), enableRtl: this.parent.enableRtl,
             beforeOpen: (beforeOpenArgs: BeforeOpenEventArgs): void => {
                 const dlgArgs: DialogBeforeOpenEventArgs = {
                     dialogName: 'ConditionalFormatDialog',
@@ -304,7 +304,10 @@ export class ConditionalFormatting {
                 const percent: boolean = action === l10n.getConstant('Top10') + ' %...' || action === l10n.getConstant('Bottom10') + ' %...';
                 if (action === l10n.getConstant('Top10Items') + '...' || action === l10n.getConstant('Bottom10Items') + '...' || percent) {
                     this.value1Inp.maxLength = percent ? 3 : 4;
-                    const numeric: NumericTextBox = new NumericTextBox({ value: 10, min: 1, max: percent ? 100 : 1000, format: '###' });
+                    const numeric: NumericTextBox = new NumericTextBox({
+                        value: 10, min: 1, max: percent ? 100 : 1000,
+                        format: '###', enableRtl: this.parent.enableRtl
+                    });
                     this.numericTBElements = numeric;
                     numeric.appendTo(this.value1Inp);
                 }
@@ -318,7 +321,8 @@ export class ConditionalFormatting {
             const dupList: DropDownList = new DropDownList({
                 dataSource: this.dupData,
                 index: 0,
-                popupHeight: '200px'
+                popupHeight: '200px',
+                enableRtl: this.parent.enableRtl
             });
             this.dropDownListElements.push(dupList);
             dupList.appendTo(duplicateSelectEle);
@@ -349,7 +353,8 @@ export class ConditionalFormatting {
         const colorList: DropDownList = new DropDownList({
             dataSource: this.colorData,
             index: 0,
-            popupHeight: '200px'
+            popupHeight: '200px',
+            enableRtl: this.parent.enableRtl
         });
         this.dropDownListElements.push(colorList);
         colorList.appendTo(colorSelectEle);
@@ -618,7 +623,7 @@ export class ConditionalFormatting {
             this.updateResult(cf, sheet, isDataBar, isColorScale, isAverage, isTopBottom, isIconSets, value1);
         }
         const updateCF: Function = (rIdx: number, cIdx: number, cell: CellModel, td: HTMLElement, currentRowHeight?: number,
-                                    isLongDate?: boolean): void => {
+                                    isLongDate?: boolean, mergeArgs?: { range: number[] }): void => {
             const cellVal: string = cell && !isNullOrUndefined(cell.value) ? cell.value.toString() : '';
             let isApply: boolean; let dateEventArgs: DateFormatCheckArgs;
             let isValueCFRule: boolean = true;
@@ -673,7 +678,7 @@ export class ConditionalFormatting {
                 if (isDataBar) {
                     if (!updatedCFCellRef[`${rIdx}_${cIdx}_bars`]) {
                         updatedCFCellRef[`${rIdx}_${cIdx}_bars`] = true;
-                        this.applyDataBars(cellVal, cf, td, rIdx, cellType, currentRowHeight);
+                        this.applyDataBars(cellVal, cf, td, rIdx, cellType, currentRowHeight, cell, mergeArgs);
                     }
                 } else if (isColorScale) {
                     if (!updatedCFCellRef[`${rIdx}_${cIdx}`]) {
@@ -689,6 +694,7 @@ export class ConditionalFormatting {
                                             colIdx: cIdx
                                         });
                                 }
+                                this.isHighlight(rIdx, cIdx, sheet);
                             }
                         } else {
                             const valArr: number[] = <number[]>cf.result;
@@ -711,6 +717,7 @@ export class ConditionalFormatting {
                                     (idx === valArr.length - 1 ? colors[colors.length - 1] : (valArr.length === 3 && idx === 1 ? colors[1] :
                                         this.getGradient(idx, colors[0], colors[1], colors[2], valArr.length)));
                                 updatedCFCellRef[`${rIdx}_${cIdx}`] = true;
+                                this.isHighlight(rIdx, cIdx, sheet);
                             }
                         }
                     }
@@ -764,10 +771,11 @@ export class ConditionalFormatting {
                     this.setCFStyle(style, cf);
                 }
                 Object.assign(td.style, style);
+                this.isHighlight(rIdx, cIdx, sheet);
             }
         };
         if (args.ele) {
-            updateCF(args.indexes[0], args.indexes[1], args.cell, args.ele, args.resizedRowHeight, isLongDate);
+            updateCF(args.indexes[0], args.indexes[1], args.cell, args.ele, args.resizedRowHeight, isLongDate, args.mergeArgs);
         } else {
             const rangeArr: string[] = cf.range.split(',');
             const frozenRow: number = this.parent.frozenRowCount(sheet); const frozenCol: number = this.parent.frozenColCount(sheet);
@@ -808,6 +816,19 @@ export class ConditionalFormatting {
                 if (td) {
                     invokeFn(rowIdx, colIdx, getCell(rowIdx, colIdx, sheet), td, undefined, isLongDate);
                 }
+            }
+        }
+    }
+
+    private isHighlight(rIdx: number, cIdx: number, sheet: SheetModel): void {
+        const cell: CellModel = getCell(rIdx, cIdx, sheet, false, true);
+        const validation: ValidationModel = cell.validation ||
+            (checkColumnValidation(sheet.columns[cIdx as number], rIdx, cIdx) && sheet.columns[cIdx as number].validation);
+        if (validation || checkColumnValidation(sheet.columns[cIdx as number], rIdx, cIdx)) {
+            if (validation.isHighlighted) {
+                this.parent.notify(updateHighlight, {
+                    rowIdx: rIdx, colIdx: cIdx, cell: cell, validation: validation, col: cell.validation && sheet.columns[cIdx as number]
+                });
             }
         }
     }
@@ -920,7 +941,8 @@ export class ConditionalFormatting {
     }
 
     private applyDataBars(
-        val: string, cf: ConditionalFormat, td: HTMLElement, rIdx: number, cellType: string, currentRowHeight: number): void {
+        val: string, cf: ConditionalFormat, td: HTMLElement, rIdx: number, cellType: string, currentRowHeight: number,
+        cell: CellModel, mergeArgs: { range: number[] }): void {
         const sheet: SheetModel = this.parent.getActiveSheet();
         const result: number[] = cf.result as number[]; let leftStandardWidth: number = 0;
         let topVal: number;
@@ -971,7 +993,22 @@ export class ConditionalFormatting {
         const iconSetSpan: HTMLElement = td.querySelector('.e-iconsetspan');
         const noteIndicator: HTMLElement = td.querySelector('.e-addNoteIndicator');
         const wrapText: HTMLElement = td.querySelector('.e-wrap-content');
-        const rowHeight: number = currentRowHeight ? currentRowHeight : getRowHeight(sheet, rIdx, true);
+        let rowHeight: number = 0;
+        if (currentRowHeight) {
+            if (mergeArgs) {
+                rowHeight += getRowsHeight(sheet, mergeArgs.range[0], rIdx - 1, true);
+                if (rIdx !== mergeArgs.range[2]) {
+                    rowHeight += getRowsHeight(sheet, rIdx + 1, mergeArgs.range[0] + (cell.rowSpan - 1), true);
+                }
+            } else if (cell.rowSpan > 1) {
+                rowHeight = getRowsHeight(sheet, rIdx + 1, rIdx + (cell.rowSpan - 1), true);
+            }
+            rowHeight += currentRowHeight;
+        } else if (cell.rowSpan !== undefined && cell.rowSpan > 1) {
+            rowHeight = getRowsHeight(sheet, rIdx, rIdx + (cell.rowSpan - 1), true);
+        } else {
+            rowHeight = getRowHeight(sheet, rIdx, true);
+        }
         const currencySpan: HTMLElement = td.querySelector('#' + this.parent.element.id + '_currency');
         databar.style.height = rowHeight - 1 + 'px';
         if (iconSetSpan) {
@@ -992,29 +1029,53 @@ export class ConditionalFormatting {
             rightSpan.style.width = '' + Math.ceil(Math.abs((value / topVal) * 100)) + '%';
             rightSpan.style.height = rowHeight - 3 + 'px';
             rightSpan.style.backgroundColor = this.getColor(cfColor)[0];
-            rightSpan.style.left = '0px';
+            if (this.parent.enableRtl) {
+                rightSpan.style.right = '0px';
+            } else {
+                rightSpan.style.left = '0px';
+            }
         } else if (result[0] === undefined) {
             rightSpan.style.width = '' + Math.ceil(Math.abs((value / topVal) * 100)) + '%';
             rightSpan.style.height = rowHeight - 3 + 'px';
             rightSpan.style.backgroundColor = this.getColor('R')[0];
-            rightSpan.style.left = '0px';
+            if (this.parent.enableRtl) {
+                rightSpan.style.right = '0px';
+            } else {
+                rightSpan.style.left = '0px';
+            }
         } else  if (value >= 0) {
             leftSpan.style.width = leftStandardWidth + '%';
             leftSpan.style.height = rowHeight - 3 + 'px'; // -3 buffer of data bar.
             leftSpan.style.backgroundColor = 'transparent';
-            leftSpan.style.left = '0px';
+            if (this.parent.enableRtl) {
+                leftSpan.style.right = '0px';
+            } else {
+                leftSpan.style.left = '0px';
+            }
             rightSpan.style.width = '' + Math.ceil(Math.abs((value / topVal) * 100)) + '%';
             rightSpan.style.height = rowHeight - 3 + 'px';
             rightSpan.style.backgroundColor = this.getColor(cfColor)[0];
-            rightSpan.style.left = leftStandardWidth + '%';
+            if (this.parent.enableRtl) {
+                rightSpan.style.right = leftStandardWidth + '%';
+            } else {
+                rightSpan.style.left = leftStandardWidth + '%';
+            }
         } else {
             leftSpan.style.width = '' + Math.ceil(Math.abs((value / topVal) * 100)) + '%';
             leftSpan.style.height = rowHeight - 3 + 'px';
             leftSpan.style.backgroundColor = this.getColor('R')[0];
-            if (leftSpan.style.width === leftStandardWidth + '%') {
-                leftSpan.style.left = '0px';
+            if (this.parent.enableRtl) {
+                if (leftSpan.style.width === leftStandardWidth + '%') {
+                    leftSpan.style.right = '0px';
+                } else {
+                    leftSpan.style.left = (100 - leftStandardWidth) + '%';
+                }
             } else {
-                leftSpan.style.right = (100 - leftStandardWidth) + '%';
+                if (leftSpan.style.width === leftStandardWidth + '%') {
+                    leftSpan.style.left = '0px';
+                } else {
+                    leftSpan.style.right = (100 - leftStandardWidth) + '%';
+                }
             }
         }
         dataSpan.style.fontSize = td.style.fontSize || '11pt';

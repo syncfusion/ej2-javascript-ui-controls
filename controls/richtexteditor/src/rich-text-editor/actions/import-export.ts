@@ -1,8 +1,8 @@
-import { ActionBeginEventArgs, IRichTextEditor } from '../base/interface';
+import { IRichTextEditor } from '../base/interface';
 import * as events from '../base/constant';
 import { SuccessEventArgs, Uploader } from '@syncfusion/ej2-inputs';
 import { RichTextEditor } from '../base';
-import { NotifyArgs } from '../base/interface';
+import { NotifyArgs, ActionBeginEventArgs } from '../../common/interface';
 import { EXPORT_STYLES } from '../../common/export-styles';
 /**
  * ImportExport module called when import and export content in RichTextEditor

@@ -1161,7 +1161,7 @@ export class CalculatedField implements IAction {
         let parentElement: HTMLElement;
         if (this.parent.getModuleName() === 'pivotview' && this.parent.element) {
             parentElement = this.parent.element;
-        } else if (document.getElementById(this.parent.element.id + '_Container')) {
+        } else if (this.parent.element && document.getElementById(this.parent.element.id + '_Container')) {
             parentElement = document.getElementById(this.parent.element.id + '_Container');
         }
         if (parentElement) {
@@ -2232,7 +2232,7 @@ export class CalculatedField implements IAction {
             closeOnEscape: true,
             target: document.body,
             cssClass: this.parent.cssClass,
-            close: this.removeErrorDialog.bind(this)
+            close: this.removeErrorDialog.bind(this, node)
         });
         confirmPopUp.isStringTemplate = true;
         confirmPopUp.appendTo(errorDialog);
@@ -2273,7 +2273,7 @@ export class CalculatedField implements IAction {
         this.removeErrorDialog();
     }
 
-    private removeErrorDialog(): void {
+    private removeErrorDialog(node?: HTMLElement): void {
         const element: HTMLElement = select('#' + this.parentID + '_CalculatedFieldErrorDialog', document);
         const confirmPopUp: Dialog = element ? getInstance(element, Dialog) as Dialog : null;
         if (confirmPopUp && !confirmPopUp.isDestroyed) {
@@ -2281,6 +2281,10 @@ export class CalculatedField implements IAction {
         }
         if (select('#' + this.parentID + '_CalculatedFieldErrorDialog', document) !== null) {
             remove(select('#' + this.parentID + '_CalculatedFieldErrorDialog', document));
+        }
+        if (node) {
+            node.setAttribute('tabindex', '0');
+            node.focus();
         }
     }
 
@@ -2346,43 +2350,144 @@ export class CalculatedField implements IAction {
      * @hidden
      */
     public destroy(): void {
+        const errorDialogElement: HTMLElement = select('#' + this.parentID + '_CalculatedFieldErrorDialog', document) as HTMLElement;
+        if (errorDialogElement) {
+            const confirmPopUp: Dialog = getInstance(errorDialogElement, Dialog) as Dialog;
+            if (confirmPopUp && !confirmPopUp.isDestroyed) {
+                confirmPopUp.destroy();
+            }
+            remove(errorDialogElement);
+        }
+        const menuElement: HTMLElement = select('#' + this.parentID + 'CalcContextmenu', document) as HTMLElement;
+        if (menuElement) {
+            const menuObj: Menu = getInstance(menuElement, Menu) as Menu;
+            if (menuObj && !menuObj.isDestroyed) {
+                menuObj.destroy();
+            }
+            remove(menuElement);
+        }
         if (this.treeObj && !this.treeObj.isDestroyed) {
             this.treeObj.destroy();
-        }
-        if (this.treeObj) {
             this.treeObj = null;
-        }
-        if (this.newFields) {
-            this.newFields = null;
-        }
-        if (this.curMenu) {
-            this.curMenu = null;
         }
         if (this.droppable) {
             this.droppable = null;
         }
         if (this.keyboardEvents) {
+            this.keyboardEvents.destroy();
             this.keyboardEvents = null;
         }
-        let element: HTMLElement = select('#' + this.parentID + 'ddlelement', document);
-        if (element) { /* inputObj */
-            (getInstance(element, MaskedTextBox) as MaskedTextBox).destroy();
+        const inputElement: HTMLElement = select('#' + this.parentID + 'ddlelement', document) as HTMLElement;
+        if (inputElement) {
+            const inputObj: MaskedTextBox = getInstance(inputElement, MaskedTextBox) as MaskedTextBox;
+            if (inputObj && !inputObj.isDestroyed) {
+                inputObj.destroy();
+            }
         }
-        element = select('#' + this.parentID + 'calculateddialog', document);
-        if (element) { /* dialog */
-            (getInstance(element, Dialog) as Dialog).destroy();
+        const customFormatElement: HTMLElement = select('#' + this.parentID + 'Custom_Format_Element', document) as HTMLElement;
+        if (customFormatElement) {
+            const customFormatObj: MaskedTextBox = getInstance(customFormatElement, MaskedTextBox) as MaskedTextBox;
+            if (customFormatObj && !customFormatObj.isDestroyed) {
+                customFormatObj.destroy();
+            }
         }
-        element = select('#' + this.parentID + 'CalcContextmenu', document);
-        if (element) { /* menuObj */
-            (getInstance(element, Menu) as Menu).destroy();
+        this.destroyDropdowns();
+        this.destroyAdaptiveComponents();
+        const dialogElement: HTMLElement = select('#' + this.parentID + 'calculateddialog', document) as HTMLElement;
+        if (dialogElement) {
+            const dialog: Dialog = getInstance(dialogElement, Dialog) as Dialog;
+            if (dialog && !dialog.isDestroyed) {
+                dialog.destroy();
+            }
+            remove(dialogElement);
         }
-        element = select('#' + this.parentID + 'accordDiv', document);
-        if (element) { /* accordion */
-            (getInstance(element, Accordion) as Accordion).destroy();
+        const accordionElement: HTMLElement = select('#' + this.parentID + 'accordDiv', document) as HTMLElement;
+        if (accordionElement) {
+            const accordion: Accordion = getInstance(accordionElement, Accordion) as Accordion;
+            if (accordion && !accordion.isDestroyed) {
+                accordion.destroy();
+            }
         }
-        element = select('#' + this.parentID + '_CalculatedFieldErrorDialog', document);
-        if (element) { /* confirmPopUp */
-            (getInstance(element, Dialog) as Dialog).destroy();
+        this.newFields = null;
+        this.curMenu = null;
+        this.existingReport = null;
+        this.formulaText = null;
+        this.fieldText = null;
+        this.formatText = null;
+        this.formatType = null;
+        this.fieldType = null;
+        this.parentHierarchy = null;
+        this.currentFieldName = null;
+    }
+
+    /**
+     * Clean up dropdown components
+     *
+     * @private
+     * @returns {void}
+     */
+    private destroyDropdowns(): void {
+        const formatDiv: HTMLElement = select('#' + this.parentID + 'Format_Div', document) as HTMLElement;
+        if (formatDiv) {
+            const formatDropdown: DropDownList = getInstance(formatDiv, DropDownList) as DropDownList;
+            if (formatDropdown && !formatDropdown.isDestroyed) {
+                formatDropdown.destroy();
+            }
+        }
+        const memberTypeDiv: HTMLElement = select('#' + this.parentID + 'Member_Type_Div', document) as HTMLElement;
+        if (memberTypeDiv) {
+            const memberDropdown: DropDownList = getInstance(memberTypeDiv, DropDownList) as DropDownList;
+            if (memberDropdown && !memberDropdown.isDestroyed) {
+                memberDropdown.destroy();
+            }
+        }
+        const hierarchyDiv: HTMLElement = select('#' + this.parentID + 'Hierarchy_List_Div', document) as HTMLElement;
+        if (hierarchyDiv) {
+            const hierarchyDropdown: DropDownList = getInstance(hierarchyDiv, DropDownList) as DropDownList;
+            if (hierarchyDropdown && !hierarchyDropdown.isDestroyed) {
+                hierarchyDropdown.destroy();
+            }
+        }
+    }
+
+    /**
+     * Clean up adaptive layout components
+     *
+     * @private
+     * @returns {void}
+     */
+    private destroyAdaptiveComponents(): void {
+        if (!this.parent.isAdaptive) {
+            return;
+        }
+        const buttonSelectors: string [] = ['#' + this.parentID + 'addBtn', '#' + this.parentID + 'cancelBtn', '#' + this.parentID + 'okBtn'];
+        buttonSelectors.forEach((selector: string) => {
+            const buttonElement: HTMLElement = select(selector, document) as HTMLElement;
+            if (buttonElement) {
+                const button: Button = getInstance(buttonElement, Button) as Button;
+                if (button && !button.isDestroyed) {
+                    button.destroy();
+                }
+            }
+        });
+        const container: HTMLElement = document.getElementById(this.parent.element.id + '_PivotFieldList_Container');
+        if (container) {
+            if (this.parent.dataType === 'pivot') {
+                const radioButtons: NodeListOf<Element> = container.querySelectorAll('.e-radio-wrapper');
+                radioButtons.forEach((radioElement: Element) => {
+                    const radio: RadioButton = getInstance(radioElement as HTMLElement, RadioButton) as RadioButton;
+                    if (radio && !radio.isDestroyed) {
+                        radio.destroy();
+                    }
+                });
+            }
+            const checkboxes: NodeListOf<Element> = container.querySelectorAll('.' + cls.CALCCHECK);
+            checkboxes.forEach((checkboxElement: Element) => {
+                const checkbox: CheckBox = getInstance(checkboxElement as HTMLElement, CheckBox) as CheckBox;
+                if (checkbox && !checkbox.isDestroyed) {
+                    checkbox.destroy();
+                }
+            });
         }
     }
 }

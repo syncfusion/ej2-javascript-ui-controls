@@ -9,7 +9,7 @@ import { isScheduledTask } from '../base/utils';
 import { getValue, isNullOrUndefined, extend } from '@syncfusion/ej2-base';
 import { TaskbarEdit } from './taskbar-edit';
 import { PdfExport } from './pdf-export';
-import { ExportType } from '../base/enum';
+import { ConstraintType, ExportType, ViolationType } from '../base/enum';
 
 export class Dependency {
 
@@ -35,9 +35,17 @@ export class Dependency {
      */
     public ensurePredecessorCollection(): void {
         const predecessorTasks: IGanttData[] = this.parent.predecessorsCollection;
+        const flatData: IGanttData[] = this.parent.flatData;
+        const flatDataMap: Map<string, IGanttData> = new Map();
+        if (flatData != null)
+        {
+            for (const record of flatData) {
+                flatDataMap.set(record.ganttProperties.rowUniqueID.toString(), record);
+            }
+        }
         for (const ganttData of predecessorTasks) {
             if ((!ganttData.hasChildRecords && !this.parent.allowParentDependency) || this.parent.allowParentDependency) {
-                this.ensurePredecessorCollectionHelper(ganttData, ganttData.ganttProperties);
+                this.ensurePredecessorCollectionHelper(ganttData, ganttData.ganttProperties, flatDataMap);
             }
         }
     }
@@ -45,13 +53,15 @@ export class Dependency {
      *
      * @param {IGanttData} ganttData .
      * @param {ITaskData} ganttProp .
+     * @param {Map<string, IGanttData>} flatDataMap .
      * @returns {void} .
      * @private
      */
-    public ensurePredecessorCollectionHelper(ganttData: IGanttData, ganttProp: ITaskData): void {
+    public ensurePredecessorCollectionHelper(ganttData: IGanttData, ganttProp: ITaskData,
+                                             flatDataMap: Map<string, IGanttData> = null): void {
         const predecessorVal: object[] | string | number = ganttProp.predecessorsName;
         if (predecessorVal && (typeof predecessorVal === 'string' || typeof predecessorVal === 'number')) {
-            this.parent.setRecordValue('predecessor', this.calculatePredecessor(predecessorVal, ganttData), ganttProp, true);
+            this.parent.setRecordValue('predecessor', this.calculatePredecessor(predecessorVal, ganttData, flatDataMap), ganttProp, true);
         } else if (predecessorVal && typeof predecessorVal === 'object' && predecessorVal.length) {
             const preValues: IPredecessor[] = [];
             for (let c: number = 0; c < predecessorVal.length; c++) {
@@ -63,7 +73,9 @@ export class Dependency {
                 const offsetUnits: Record<string, unknown> = getValue('offset', predecessorItem);
                 if (isNullOrUndefined(offsetUnits)) {
                     preValue.offset = 0;
-                    preValue.offsetUnit = this.parent.durationUnit.toLocaleLowerCase();
+                    if (!isNullOrUndefined(this.parent.durationUnit)) {
+                        preValue.offsetUnit = this.parent.durationUnit.toLocaleLowerCase();
+                    }
                 } else if (typeof offsetUnits === 'string') {
                     const tempOffsetUnits: { duration: number, durationUnit: string } = this.getOffsetDurationUnit(
                         getValue('offset', predecessorItem));
@@ -71,7 +83,9 @@ export class Dependency {
                     preValue.offsetUnit = tempOffsetUnits.durationUnit;
                 } else {
                     preValue.offset = parseFloat(offsetUnits.toString());
-                    preValue.offsetUnit = this.parent.durationUnit.toLocaleLowerCase();
+                    if (!isNullOrUndefined(this.parent.durationUnit)) {
+                        preValue.offsetUnit = this.parent.durationUnit.toLocaleLowerCase();
+                    }
                 }
                 const isOwnParent: boolean = this.checkIsParent(preValue.from.toString());
                 if (!isOwnParent) {
@@ -222,10 +236,12 @@ export class Dependency {
      *
      * @param {string | number} predecessorValue .
      * @param {IGanttData} ganttRecord .
+     * @param {Map<string, IGanttData>} flatDataMap .
      * @returns {IPredecessor[]} .
      * @private
      */
-    public calculatePredecessor(predecessorValue: string | number, ganttRecord?: IGanttData): IPredecessor[] {
+    public calculatePredecessor(predecessorValue: string | number, ganttRecord?: IGanttData,
+                                flatDataMap: Map<string, IGanttData> = null): IPredecessor[] {
         const predecessor: string = predecessorValue.toString();
         const collection: IPredecessor[] = [];
         let match: string[];
@@ -384,16 +400,26 @@ export class Dependency {
                 }
             }
             else {
-                const fromData: IGanttData = this.parent.connectorLineModule.getRecordByID(obj.to);
-                const toData: IGanttData = this.parent.connectorLineModule.getRecordByID(obj.from);
+                let fromData: IGanttData = null;
+                let toData: IGanttData = null;
+                if (this.parent.viewType === 'ProjectView' && !isNullOrUndefined(flatDataMap) && flatDataMap.size > 0)
+                {
+                    fromData = flatDataMap.get(obj.from);
+                    toData = flatDataMap.get(obj.to);
+                }
+                else
+                {
+                    fromData = this.parent.connectorLineModule.getRecordByID(obj.from);
+                    toData = this.parent.connectorLineModule.getRecordByID(obj.to);
+                }
                 let isValid: boolean;
                 if (toData && fromData) {
-                    isValid = this.validateParentPredecessor(toData, fromData);
+                    isValid = this.validateParentPredecessor(fromData, toData);
                     if (isValid) {
                         collection.push(obj);
-                        if (parentRecords.indexOf(toData) === -1 && toData.hasChildRecords && this.parent.editModule
+                        if (parentRecords.indexOf(fromData) === -1 && fromData.hasChildRecords && this.parent.editModule
                             && this.parent.editModule.cellEditModule && this.parent.editModule.cellEditModule.isCellEdit) {
-                            parentRecords.push(extend([], [], [toData], true)[0]);
+                            parentRecords.push(extend([], [], [fromData], true)[0]);
                         }
                     }
                 }
@@ -475,7 +501,10 @@ export class Dependency {
     /*Get duration and duration unit value from tasks*/
     private getOffsetDurationUnit(val: string | number): { duration: number, durationUnit: string } {
         let duration: number = 0;
-        let durationUnit: string = this.parent.durationUnit.toLocaleLowerCase();
+        let durationUnit: string;
+        if (!isNullOrUndefined(this.parent.durationUnit)) {
+            durationUnit = this.parent.durationUnit.toLocaleLowerCase();
+        }
         const durationUnitLabels: Object = this.parent.durationUnitEditText;
         if (typeof val === 'string') {
             const values: string[] = val.match(/[^0-9]+|[0-9]+/g);
@@ -502,18 +531,24 @@ export class Dependency {
                 } else if (getValue('day', durationUnitLabels).indexOf(durationUnit) !== -1) {
                     durationUnit = 'day';
                 } else {
-                    durationUnit = this.parent.durationUnit.toLocaleLowerCase();
+                    if (!isNullOrUndefined(this.parent.durationUnit)) {
+                        durationUnit = this.parent.durationUnit.toLocaleLowerCase();
+                    }
                 }
             }
         } else {
             duration = val;
-            durationUnit = this.parent.durationUnit.toLocaleLowerCase();
+            if (!isNullOrUndefined(this.parent.durationUnit)) {
+                durationUnit = this.parent.durationUnit.toLocaleLowerCase();
+            }
         }
         if (isNaN(duration)) {
             const err: string = 'The provided value for the offset field is invalid.Please ensure the offset field contains only valid numeric values';
             this.parent.trigger('actionFailure', { error: err });
             duration = 0;
-            durationUnit = this.parent.durationUnit.toLocaleLowerCase();
+            if (!isNullOrUndefined(this.parent.durationUnit)) {
+                durationUnit = this.parent.durationUnit.toLocaleLowerCase();
+            }
         }
         return {
             duration: duration,
@@ -590,8 +625,8 @@ export class Dependency {
         }
     }
 
-    private traverseParents(record: IGanttData): void {
-        this.parent.dataOperation.updateParentItems(record);
+    private traverseParents(record: IGanttData, isParent: boolean): void {
+        this.parent.dataOperation.updateParentItems(record, isParent);
     }
 
     /**
@@ -647,7 +682,7 @@ export class Dependency {
                         parentRecord = this.parent.getRecordByID(recordId);
                     }
                     if (parentRecord) {
-                        this.traverseParents(parentRecord);
+                        this.traverseParents(parentRecord, true);
                     }
                 }
             }
@@ -725,6 +760,23 @@ export class Dependency {
             }
         }
     }
+    private getConstraintDate(constraintType: number, startDate: Date, endDate: Date): Date | null {
+        switch (constraintType) {
+        case ConstraintType.AsSoonAsPossible:
+        case ConstraintType.AsLateAsPossible:
+            return null;
+        case ConstraintType.MustStartOn:
+        case ConstraintType.StartNoEarlierThan:
+            return startDate;
+        case ConstraintType.MustFinishOn:
+        case ConstraintType.FinishNoEarlierThan:
+        case ConstraintType.StartNoLaterThan:
+        case ConstraintType.FinishNoLaterThan:
+            return endDate;
+        default:
+            return null;
+        }
+    }
     /**
      * Method to validate task with predecessor
      *
@@ -749,9 +801,12 @@ export class Dependency {
             const childPredecessor: IPredecessor[] = predecessorsCollection.filter((data: IPredecessor): IPredecessor => {
                 if (data.to === currentTaskId) { return data; } else { return null; }
             });
-            const startDate: Date = this.getPredecessorDate(childGanttRecord, childPredecessor, flatDataCollection);
+            const startDate: Date = this.getPredecessorDate(childGanttRecord, childPredecessor, flatDataCollection, true);
             this.parent.setRecordValue('startDate', startDate, childRecordProperty, true);
             this.parent.dataOperation.updateMappingData(childGanttRecord, 'startDate');
+            if (this.parent.taskFields.constraintDate && this.parent.taskFields.constraintType && this.parent.updateOffsetOnTaskbarEdit) {
+                this.parent.connectorLineEditModule['calculateOffset'](childGanttRecord);
+            }
             const segments: ITaskSegment[] = childGanttRecord.ganttProperties.segments;
             if (isNullOrUndefined(segments) || ! isNullOrUndefined(segments) && segments.length === 0) {
                 this.dateValidateModule.calculateEndDate(childGanttRecord);
@@ -766,31 +821,60 @@ export class Dependency {
                     this.parentRecord.push(childGanttRecord.parentItem);
                 }
             }
+            if (this.parent.taskFields.constraintDate && this.parent.taskFields.constraintType) {
+                const constraintType: ConstraintType = childRecordProperty.constraintType;
+                const startDate: Date = childRecordProperty.startDate;
+                const endDate: Date = childRecordProperty.endDate;
+                const constraintDate: Date = this.getConstraintDate(constraintType, startDate, endDate);
+                this.parent.setRecordValue('constraintDate', constraintDate, childRecordProperty, true);
+                this.parent.dataOperation.updateMappingData(childGanttRecord, 'constraintDate');
+            }
         }
+    }
+    private filterPredecessorsByTarget(
+        predecessorsCollection: IPredecessor[],
+        ganttRecord: IGanttData,
+        viewType: string
+    ): IPredecessor[] {
+        if (
+            !predecessorsCollection ||
+            !Array.isArray(predecessorsCollection) ||
+            !ganttRecord ||
+            !ganttRecord.ganttProperties ||
+            !viewType
+        ) {
+            return [];
+        }
+        const targetId: string = viewType === 'ResourceView'
+            ? ganttRecord.ganttProperties.taskId
+            : ganttRecord.ganttProperties.rowUniqueID;
+
+        return predecessorsCollection.filter((data: IPredecessor): boolean => {
+            return data.to === targetId.toString();
+        });
     }
     /**
      *
      * @param {IGanttData} ganttRecord .
      * @param {IPredecessor[]} predecessorsCollection .
      * @param {Map<string, IGanttData>} flatDataCollection .
+     * @param {boolean} [restrictConstraint] - Optional flag to restrict constraint validation.
      * @returns {Date} .
      * @private
      */
     public getPredecessorDate(ganttRecord: IGanttData, predecessorsCollection: IPredecessor[],
-                              flatDataCollection: Map<string, IGanttData> = null): Date {
+                              flatDataCollection: Map<string, IGanttData> = null, restrictConstraint?: boolean): Date {
         let maxStartDate: Date;
         let tempStartDate: Date;
         let parentGanttRecord: IGanttData;
         let childGanttRecord: IGanttData;
-        const validatedPredecessor: IPredecessor[] = predecessorsCollection.filter((data: IPredecessor): IPredecessor => {
-            const id: string = this.parent.viewType === 'ResourceView' ? ganttRecord.ganttProperties.taskId
-                : ganttRecord.ganttProperties.rowUniqueID;
-            if (data.to === id.toString()) {
-                return data;
-            } else {
-                return null;
-            }
-        });
+        const validatedPredecessor: IPredecessor[] = this.filterPredecessorsByTarget(
+            predecessorsCollection,
+            ganttRecord,
+            this.parent.viewType
+        );
+        const isConstraintMapped: boolean = !isNullOrUndefined(this.parent.taskFields.constraintDate) &&
+            !isNullOrUndefined(this.parent.taskFields.constraintType);
         if (validatedPredecessor) {
             const length: number = validatedPredecessor.length;
             for (let i: number = 0; i < length; i++) {
@@ -810,6 +894,24 @@ export class Dependency {
                     parentGanttRecord = isNullOrUndefined(parentGanttRecord) ?
                         this.getRecord(parentGanttRecord, childGanttRecord, predecessor) : parentGanttRecord;
                 }
+                if (
+                    !isConstraintMapped &&
+                    this.parent.editModule &&
+                    this.parent.editModule.cellEditModule &&
+                    !this.parent.editModule.cellEditModule.isCellEdit &&
+                    !this.parent.editModule.dialogModule['isFromEditDialog'] &&
+                    !this.parent.updateOffsetOnTaskbarEdit &&
+                    !this.parent.isLoad
+                ) {
+                    const offset: number = this.parent.connectorLineEditModule['getOffsetForPredecessor'](
+                        predecessor,
+                        this.parent.connectorLineModule.getRecordByID(predecessor.from),
+                        childGanttRecord
+                    );
+                    if (predecessor.offset !== offset && offset >= 0) {
+                        return childGanttRecord.ganttProperties.startDate;
+                    }
+                }
                 if (childGanttRecord && parentGanttRecord) {
                     tempStartDate =
                         this.getValidatedStartDate(childGanttRecord.ganttProperties, parentGanttRecord.ganttProperties, predecessor);
@@ -818,6 +920,14 @@ export class Dependency {
                     maxStartDate = tempStartDate;
                 }
             }
+        }
+        if (isConstraintMapped) {
+            maxStartDate = this.dateValidateModule.getDateByConstraint(
+                ganttRecord.ganttProperties,
+                maxStartDate,
+                restrictConstraint,
+                validatedPredecessor.length > 0
+            );
         }
         return maxStartDate;
     }
@@ -859,7 +969,12 @@ export class Dependency {
             if (!ganttProperty.isMilestone) {
                 const date: Date = new Date(tempDate);
                 date.setDate(date.getDate() - 1);
-                tempDate = this.dateValidateModule.checkEndDate(tempDate, ganttProperty);
+                if (this.parent.allowUnscheduledTasks && isNullOrUndefined(ganttProperty.endDate) &&
+                                                            isNullOrUndefined(ganttProperty.duration)) {
+                    tempDate = this.dateValidateModule.checkStartDate(tempDate, ganttProperty);
+                } else {
+                    tempDate = this.dateValidateModule.checkEndDate(tempDate, ganttProperty);
+                }
             }
             if (ganttProperty.segments && ganttProperty.segments.length !== 0) {
                 const duration: number = this.dateValidateModule.getDuration(ganttProperty.startDate, ganttProperty.endDate,
@@ -1172,6 +1287,9 @@ export class Dependency {
         );
         if (this.parent.updateOffsetOnTaskbarEdit || isUpdateSucessorTask) {
             this.validateChildGanttRecord(parentGanttRecord, record);
+            if (record.hasChildRecords && record.ganttProperties.isAutoSchedule) {
+                this.updateChildItems(record);
+            }
         }
     }
 

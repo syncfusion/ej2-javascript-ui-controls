@@ -1,4 +1,4 @@
-import { IRenderer, IRichTextEditor } from '../base/interface';
+import { IRichTextEditor, IRenderer } from '../base/interface';
 
 /**
  * Markdown module is used to render Rich Text Editor as Markdown editor content
@@ -33,7 +33,13 @@ export class MarkdownRender implements IRenderer {
         this.editableElement = this.parent.createElement('textarea', {
             className: 'e-content',
             id: this.parent.getID() + '_editable-content',
-            attrs: { 'aria-labelledby': this.parent.getID() + '_view' }
+            attrs: {
+                'aria-labelledby': this.parent.getID() + '_view',
+                'aria-label': 'Markdown Editor',
+                'role': 'textbox',
+                'lang': rteObj.locale.slice(0, 2),
+                'dir': rteObj.enableRtl ? 'rtl' : 'ltr'
+            }
         });
         div.appendChild(this.editableElement);
         this.setPanel(div);

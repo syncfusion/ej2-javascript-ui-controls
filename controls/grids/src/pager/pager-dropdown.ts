@@ -192,7 +192,9 @@ export class PagerDropDown {
         if (this.dropDownListObject && !this.dropDownListObject.isDestroyed) {
             this.removeEventListener();
             this.dropDownListObject.destroy();
-            remove(this.pagerDropDownDiv);
+            if (this.pagerDropDownDiv && this.pagerDropDownDiv.parentNode) {
+                remove(this.pagerDropDownDiv);
+            }
         }
     }
 }

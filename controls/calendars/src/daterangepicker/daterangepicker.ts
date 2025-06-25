@@ -247,6 +247,7 @@ export class DateRangePicker extends CalendarBase {
     private endCopy: Date;
     private formElement: Element;
     private formatString: string;
+    private inputFormatsString: string[];
     protected tabIndex: string;
     private invalidValueString: string = null;
     private dateRangeOptions: DateRangePickerModel;
@@ -631,6 +632,14 @@ export class DateRangePicker extends CalendarBase {
     @Property(null)
     public format: string | RangeFormatObject;
     /**
+     * Specifies an array of acceptable date input formats for parsing user input.
+     *
+     * @default null
+     * @aspType string[]
+     */
+    @Property(null)
+    public inputFormats: string[] | RangeFormatObject[];
+    /**
      * Specifies the component to be disabled which prevents the DateRangePicker from user interactions.
      *
      * @default true
@@ -816,6 +825,9 @@ export class DateRangePicker extends CalendarBase {
             this.value = [new Date(rangeArray[0]), new Date(rangeArray[1])];
         }
         this.initProperty();
+        if (this.inputFormats) {
+            this.checkInputFormats();
+        }
         this.tabIndex = this.element.hasAttribute('tabindex') ? this.element.getAttribute('tabindex') : '0';
         this.element.removeAttribute('tabindex');
         super.preRender();
@@ -913,6 +925,28 @@ export class DateRangePicker extends CalendarBase {
             }
         } else {
             this.formatString = null;
+        }
+    }
+    protected checkInputFormats(): void {
+        this.inputFormatsString = [];
+        if (this.inputFormats) {
+            for (const format of this.inputFormats) {
+                let formatString: string = '';
+                if (typeof format === 'string') {
+                    formatString = format;
+                } else if (format.skeleton !== '' && !isNullOrUndefined(format.skeleton)) {
+                    const skeletonString: string = format.skeleton;
+                    formatString = this.globalize.getDatePattern({ skeleton: skeletonString, type: 'date' });
+                }
+                if (formatString) {
+                    this.inputFormatsString.push(formatString);
+                }
+            }
+            if (this.inputFormatsString.length === 0) {
+                this.inputFormatsString = null;
+            }
+        } else {
+            this.inputFormatsString = null;
         }
     }
     private initialize(): void {
@@ -1544,13 +1578,30 @@ export class DateRangePicker extends CalendarBase {
                 if (range.length > 1) {
                     this.invalidValueString = null;
                     const dateOptions: object = { format: this.formatString, type: 'date', skeleton: 'yMd' };
-                    const startDate: Date = this.globalize.parseDate(this.getAmPmValue(range[0]).trim(), dateOptions);
+                    let startDate: Date = this.globalize.parseDate(this.getAmPmValue(range[0]).trim(), dateOptions);
                     let endDate: Date = this.globalize.parseDate(this.getAmPmValue(range[1]).trim(), dateOptions);
                     if (this.start !== 'Decade' && this.start === 'Year' && this.depth !== 'Month'){
                         if (this.inputElement.defaultValue !== value){
                             endDate = this.getStartEndDate(endDate, true);
                         }
                         if (endDate >= this.max) { endDate = this.max; }
+                    }
+                    if (((isNullOrUndefined(startDate) || (typeof (startDate) === 'object' && isNaN(startDate.getTime()))
+                        || isNullOrUndefined(endDate)) || (typeof (endDate) === 'object' && isNaN(endDate.getTime())))
+                        && !isNullOrUndefined(this.inputFormatsString)) {
+                        for (const format of this.inputFormatsString) {
+                            const inputFormatOptions: object = { format: format, type: 'date', skeleton: 'yMd' };
+                            if (isNullOrUndefined(startDate) || (typeof (startDate) === 'object' && isNaN(startDate.getTime()))) {
+                                startDate = this.globalize.parseDate(this.getAmPmValue(range[0]).trim(), inputFormatOptions);
+                            }
+                            if (isNullOrUndefined(endDate) || (typeof (endDate) === 'object' && isNaN(endDate.getTime()))) {
+                                endDate = this.globalize.parseDate(this.getAmPmValue(range[1]).trim(), inputFormatOptions);
+                            }
+                            if (!isNullOrUndefined(startDate) && startDate instanceof Date && !isNaN(startDate.getTime())
+                                && !isNullOrUndefined(endDate) && endDate instanceof Date && !isNaN(endDate.getTime())) {
+                                break;
+                            }
+                        }
                     }
                     if (!isNullOrUndefined(startDate) && !isNaN(+startDate) && !isNullOrUndefined(endDate) && !isNaN(+endDate)) {
                         const prevStartVal: Date = this.startValue;
@@ -4876,6 +4927,9 @@ export class DateRangePicker extends CalendarBase {
                 this.checkFormat();
                 this.updateInput();
                 this.changeTrigger();
+                break;
+            case 'inputFormats':
+                this.checkInputFormats();
                 break;
             case 'locale':
                 this.globalize = new Internationalization(this.locale);

@@ -90,7 +90,11 @@ export class NormalEdit {
                 if (this.parent.enableVirtualization && e['index'] > 0) {
                     this.parent.selectVirtualRowOnAdd = true;
                 }
-                this.parent.selectRow(e['index']);
+                if (!this.parent['isTreeGrid'] || !(this.parent.enableVirtualization && ((this.parent.sortSettings && this.parent.sortSettings.columns.length) ||
+                (this.parent.filterSettings && this.parent.filterSettings.columns.length) ||
+                (this.parent.searchSettings && this.parent.searchSettings.key.length)))) {
+                    this.parent.selectRow(e['index']);
+                }
             }
             this.parent.trigger(events.actionComplete, extend(e, {
                 requestType: 'save',

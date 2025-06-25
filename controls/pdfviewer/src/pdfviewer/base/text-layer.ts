@@ -248,6 +248,15 @@ export class TextLayer {
         }
     }
 
+    /**
+     * @private
+     * @returns {void}
+     */
+    public destroy(): void {
+        this.textBoundsArray = null;
+        this.characterBound = null;
+    }
+
     private applyTextRotation(scale: number, textDiv: HTMLElement, rotation: number, textRotation: number, bounds: any): void {
         const scaleString: string = 'scaleX(' + scale + ')';
         if (this.pdfViewerBase.clientSideRendering) {

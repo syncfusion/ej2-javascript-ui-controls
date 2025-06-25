@@ -6252,3 +6252,74 @@ describe('update record by id method to update enddate in self referance data', 
         }
     });
 });
+describe('update record by id method to update expand state in self referance data', () => {
+    let ganttObj: Gantt;
+    const datas : Object[] =  [
+        {
+            taskID: '1',
+            taskName: 'Project Schedule',
+            startDate: new Date('02/04/2019'),
+            endDate: new Date('03/10/2019'),
+        },
+        {
+            taskID: '2',
+            taskName: 'Planning',
+            startDate: new Date('02/04/2019'),
+            endDate: new Date('02/10/2019'),
+            parentID: 1,
+        }
+      ];
+    beforeAll((done: Function) => {
+        ganttObj = createGantt(
+            {
+                dataSource: datas,
+                height: '450px',
+                highlightWeekends: true,
+                allowSelection: true,
+                treeColumnIndex: 1,
+                taskFields: {
+                    id: 'taskID',
+                    name: 'taskName',
+                    startDate: 'startDate',
+                    endDate: 'endDate',
+                    duration: 'duration',
+                    progress: 'progress',
+                    dependency: 'predecessor',
+                    parentID: 'parentID',
+                    expandState: 'expandState'
+                },
+                editSettings: {
+                    allowAdding: true,
+                    allowEditing: true,
+                    allowDeleting: true,
+                    allowTaskbarEditing: true,
+                    showDeleteConfirmDialog: true
+                },
+                selectedRowIndex: 1,
+                gridLines: "Both",
+                taskbarHeight: 20,
+                rowHeight: 40,
+                allowUnscheduledTasks: true,
+                projectStartDate: new Date('01/28/2019'),
+                projectEndDate: new Date('03/10/2019'),
+        }, done);
+    });
+    it('update record by id method to update expand state',() => {
+        const data : Object = {
+            taskID: 1,
+            taskName: 'Updated by index value',
+            StartDate: new Date('02/05/2019'),
+            duration: 4,
+            expandState: false,
+            progress: 50,
+        }
+        ganttObj.updateRecordByID(data);
+        expect(ganttObj.currentViewData[0].expanded).toBe(false);
+    });
+    afterAll(() => {
+        if (ganttObj) {
+            destroyGantt(ganttObj);
+        }
+    });
+
+});

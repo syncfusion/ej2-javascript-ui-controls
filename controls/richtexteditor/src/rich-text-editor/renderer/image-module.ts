@@ -4,17 +4,21 @@ import { BeforeUploadEventArgs, FileInfo, InputEventArgs, MetaData, ProgressEven
 import { ClickEventArgs } from '@syncfusion/ej2-navigations';
 import { BeforeCloseEventArgs, Dialog, DialogModel, Popup } from '@syncfusion/ej2-popups';
 import { imageResizeFactor } from '../../common/config';
-import { IImageResizeFactor, ImageDimension } from '../../common/interface';
-import { isIDevice } from '../../common/util';
+import { IImageResizeFactor, ImageDimension, ImageDropEventArgs } from '../../common/interface';
+import { isIDevice, convertToBlob } from '../../common/util';
+import { ImageInputSource } from '../../common/enum';
 import { NodeSelection } from '../../selection/selection';
 import * as classes from '../base/classes';
 import * as events from '../base/constant';
-import { ImageInputSource, RenderType } from '../base/enum';
-import { ActionBeginEventArgs, ActionCompleteEventArgs, AfterImageDeleteEventArgs, ICssClassArgs, IDropDownItemModel, IImageCommandsArgs, IImageNotifyArgs, ImageDropEventArgs, ImageSuccessEventArgs, IRenderer, IRichTextEditor, IShowPopupArgs, IToolbarItemModel, NotifyArgs, OffsetPosition, ResizeArgs, ImageFailedEventArgs, SlashMenuItemSelectArgs} from '../base/interface';
-import { convertToBlob, dispatchEvent, hasClass, parseHtml } from '../base/util';
+import { CLS_IMG_FOCUS, CLS_RESIZE, CLS_RTE_DRAG_IMAGE } from '../../common/constant';
+import { RenderType } from '../base/enum';
+import { AfterImageDeleteEventArgs, ICssClassArgs, IImageNotifyArgs, IRichTextEditor, ImageFailedEventArgs, SlashMenuItemSelectArgs, IQuickToolbar, IRenderer } from '../base/interface';
+import { ActionBeginEventArgs, ActionCompleteEventArgs, IDropDownItemModel, IImageCommandsArgs, ImageSuccessEventArgs, IShowPopupArgs, IToolbarItemModel, NotifyArgs, OffsetPosition, ResizeArgs } from '../../common/interface';
+import { dispatchEvent, hasClass, parseHtml } from '../base/util';
 import { RendererFactory } from '../services/renderer-factory';
 import { ServiceLocator } from '../services/service-locator';
 import { DialogRenderer } from './dialog-renderer';
+import { ImageCommand } from '../../editor-manager/plugin/image';
 /**
  * `Image` module is used to handle image actions.
  */
@@ -35,7 +39,7 @@ export class Image {
     private uploadUrl: IImageCommandsArgs;
     private contentModule: IRenderer;
     private rendererFactory: RendererFactory;
-    private quickToolObj: IRenderer;
+    private quickToolObj: IQuickToolbar;
     /**
      * @hidden
      */
@@ -110,6 +114,7 @@ export class Image {
         this.parent.on(events.paste, this.imagePaste, this);
         this.parent.on(events.bindCssClass, this.setCssClass, this);
         this.parent.on(events.destroy, this.destroy, this);
+        this.parent.on(events.bindOnEnd, this.bindOnEnd, this);
     }
 
     protected removeEventListener(): void {
@@ -138,6 +143,7 @@ export class Image {
         this.parent.off(events.paste, this.imagePaste);
         this.parent.off(events.bindCssClass, this.setCssClass);
         this.parent.off(events.destroy, this.destroy);
+        this.parent.off(events.bindOnEnd, this.bindOnEnd);
         const dropElement: HTMLElement | Document = this.parent.iframeSettings.enable ? this.parent.inputElement.ownerDocument
             : this.parent.inputElement;
         dropElement.removeEventListener('drop', this.drop, true);
@@ -161,7 +167,13 @@ export class Image {
         }
     }
 
-    private updateCss(currentObj: CheckBox | TextBox | Uploader | Dialog, e: ICssClassArgs) : void {
+    private bindOnEnd(): void {
+        if (this.parent.formatter.editorManager && !this.parent.formatter.editorManager.imgObj) {
+            this.parent.formatter.editorManager.imgObj = new ImageCommand(this.parent.formatter.editorManager);
+        }
+    }
+
+    private updateCss(currentObj: CheckBox | TextBox | Uploader | Dialog, e: ICssClassArgs): void {
         if (currentObj && e.cssClass) {
             if (isNOU(e.oldCssClass)) {
                 currentObj.setProperties({ cssClass: (currentObj.cssClass + ' ' + e.cssClass).trim() });
@@ -418,11 +430,11 @@ export class Image {
         let elementOffset: OffsetPosition;
         const doc: Document = elem.ownerDocument;
         let offsetParent: Node = ((elem.offsetParent && (elem.offsetParent.classList.contains('e-img-caption') ||
-                ignoreOffset.indexOf(elem.offsetParent.tagName) > -1)) ?
+            ignoreOffset.indexOf(elem.offsetParent.tagName) > -1)) ?
             closest(elem, '#' + this.parent.getID() + '_rte-edit-view') : elem.offsetParent) || doc.documentElement;
         while (offsetParent &&
-                (offsetParent === doc.body || offsetParent === doc.documentElement) &&
-                (<HTMLElement>offsetParent).style.position === 'static') {
+            (offsetParent === doc.body || offsetParent === doc.documentElement) &&
+            (<HTMLElement>offsetParent).style.position === 'static') {
             offsetParent = offsetParent.parentNode;
         }
         if (offsetParent && offsetParent !== elem && offsetParent.nodeType === 1) {
@@ -529,7 +541,7 @@ export class Image {
             } else {
                 if ((parseInt(this.parent.insertImageSettings.minWidth as string, 10) >= parseInt(width, 10) ||
                     (parseInt(this.parent.getInsertImgMaxWidth() as string, 10) <= parseInt(width, 10) &&
-                    isNOU(this.imgEle.style.width)))) {
+                        isNOU(this.imgEle.style.width)))) {
                     return;
                 }
                 if (!this.parent.insertImageSettings.resizeByPercent &&
@@ -551,7 +563,7 @@ export class Image {
                 const resizeFactor: number[] = this.getResizeFactor(this.currentResizeHandler);
                 const currentScreenX: number = this.getPointX(e);
                 const currentScreenY: number = this.getPointY(e);
-                const currentWidth: number  = this.imgEle.clientWidth;
+                const currentWidth: number = this.imgEle.clientWidth;
                 const currentHeight: number = this.imgEle.clientHeight;
                 const deltaX: number = currentScreenX - this.pageX;
                 const deltaY: number = currentScreenY - this.pageY;
@@ -568,7 +580,7 @@ export class Image {
                 const resizeFactor: number[] = this.getResizeFactor(this.currentResizeHandler);
                 const diffX: number = (pageX - this.pageX);
                 const diffY: number = (pageY - this.pageY);
-                const currentWidth: number  = this.imgEle.clientWidth;
+                const currentWidth: number = this.imgEle.clientWidth;
                 const currentHeight: number = this.imgEle.clientHeight;
                 const width: number = diffX * resizeFactor[0] + currentWidth;
                 const height: number = diffY * resizeFactor[1] + currentHeight;
@@ -580,7 +592,7 @@ export class Image {
         }
     }
 
-    private adjustDimensions (width: number, height: number, diffX: number, diffY: number, aspectRatio: number): ImageDimension {
+    private adjustDimensions(width: number, height: number, diffX: number, diffY: number, aspectRatio: number): ImageDimension {
         width = (width < 16) ? 16 : width;
         height = (height < 16) ? 16 : height;
         const dimensions: { width: number, height: number } = this.adjustDimensionsByAspectRatio(width, height, aspectRatio);
@@ -761,8 +773,8 @@ export class Image {
         }
         if (originalEvent.keyCode === 8 || originalEvent.keyCode === 46) {
             if (selectNodeEle && selectNodeEle[0] && selectNodeEle[0].nodeName === 'IMG' && selectNodeEle.length < 1) {
-                if (!isNOU(this.parent.formatter.editorManager.nodeSelection))
-                {save = this.parent.formatter.editorManager.nodeSelection.save(range, this.parent.contentModule.getDocument()); }
+                // eslint-disable-next-line max-len
+                if (!isNOU(this.parent.formatter.editorManager.nodeSelection)) { save = this.parent.formatter.editorManager.nodeSelection.save(range, this.parent.contentModule.getDocument()); }
                 originalEvent.preventDefault();
                 const event: IImageNotifyArgs = {
                     selectNode: selectNodeEle, selection: save, selectParent: selectParentEle,
@@ -792,15 +804,15 @@ export class Image {
                 if (range.startContainer.nodeType === 3) {
                     if (originalEvent.code === 'Backspace') {
                         if ((range.startContainer as HTMLElement).previousElementSibling && range.startOffset === 0 &&
-                            (range.startContainer as HTMLElement).previousElementSibling.classList.contains(classes.CLS_CAPTION) &&
-                            (range.startContainer as HTMLElement).previousElementSibling.classList.contains(classes.CLS_CAPINLINE)) {
+                                (range.startContainer as HTMLElement).previousElementSibling.classList.contains(classes.CLS_CAPTION) &&
+                                (range.startContainer as HTMLElement).previousElementSibling.classList.contains(classes.CLS_CAPINLINE)) {
                             detach((range.startContainer as HTMLElement).previousElementSibling);
                         }
                     } else {
                         if ((range.startContainer as HTMLElement).nextElementSibling &&
-                            range.endContainer.textContent.length === range.endOffset &&
-                            (range.startContainer as HTMLElement).nextElementSibling.classList.contains(classes.CLS_CAPTION) &&
-                            (range.startContainer as HTMLElement).nextElementSibling.classList.contains(classes.CLS_CAPINLINE)) {
+                                range.endContainer.textContent.length === range.endOffset &&
+                                (range.startContainer as HTMLElement).nextElementSibling.classList.contains(classes.CLS_CAPTION) &&
+                                (range.startContainer as HTMLElement).nextElementSibling.classList.contains(classes.CLS_CAPINLINE)) {
                             detach((range.startContainer as HTMLElement).nextElementSibling);
                         }
                     }
@@ -822,8 +834,8 @@ export class Image {
             }
             break;
         case 'insert-image':
-            if (!isNOU(this.parent.formatter.editorManager.nodeSelection))
-            {save = this.parent.formatter.editorManager.nodeSelection.save(range, this.parent.contentModule.getDocument()); }
+            // eslint-disable-next-line max-len
+            if (!isNOU(this.parent.formatter.editorManager.nodeSelection)) { save = this.parent.formatter.editorManager.nodeSelection.save(range, this.parent.contentModule.getDocument()); }
             this.openDialog(true, originalEvent, save, selectNodeEle, selectParentEle);
             originalEvent.preventDefault();
             break;
@@ -835,8 +847,8 @@ export class Image {
 
     private handleSelectAll(): void {
         this.cancelResizeAction();
-        const imgFocusNodes: NodeListOf<Element> = this.parent.inputElement.querySelectorAll('.' + classes.CLS_IMG_FOCUS);
-        removeClass(imgFocusNodes, classes.CLS_IMG_FOCUS);
+        const imgFocusNodes: NodeListOf<Element> = this.parent.inputElement.querySelectorAll('.' + CLS_IMG_FOCUS);
+        removeClass(imgFocusNodes, CLS_IMG_FOCUS);
     }
 
     private openDialog(
@@ -891,7 +903,7 @@ export class Image {
         } else {
             this.openDialog(false);
         }
-        this.setCssClass({cssClass: this.parent.getCssClass()});
+        this.setCssClass({ cssClass: this.parent.getCssClass() });
     }
     private closeDialog(): void {
         if (this.dialogObj) { this.dialogObj.hide({ returnValue: true } as Event); }
@@ -963,59 +975,41 @@ export class Image {
         this.cancelResizeAction();
     }
 
-    private imageWithLinkQTBarItemUpdate(): void {
-        const items: NodeListOf<Element> = this.quickToolObj.imageQTBar.toolbarElement.querySelectorAll('.e-toolbar-item');
-        for (let i: number = 0; i < items.length; i++) {
-            if (items[i as number].getAttribute('title') === this.i10n.getConstant('openLink') ||
-                items[i as number].getAttribute('title') === this.i10n.getConstant('editLink') ||
-                items[i as number].getAttribute('title') === this.i10n.getConstant('removeLink')) {
-                addClass([items[i as number]], 'e-link-groups');
-                (items[i as number] as HTMLElement).style.display = 'none';
-            } else if (items[i as number].getAttribute('title') === 'Insert Link') {
-                (items[i as number] as HTMLElement).style.display = '';
-            } else if (items[i as number].classList.contains('e-rte-horizontal-separator')) {
-                detach(items[i as number]);
-            }
-        }
-        const newItems: NodeListOf<Element> = this.quickToolObj.imageQTBar.toolbarElement.querySelectorAll(
-            '.e-toolbar-item:not(.e-link-groups)');
-        this.quickToolObj.imageQTBar.addQTBarItem(['-'], Math.round(newItems.length / 2));
-    }
-
     private showImageQuickToolbar(e: IShowPopupArgs): void {
         if ((e.type !== 'Images' && e.type !== 'Replace') || isNOU(this.parent.quickToolbarModule)
             || isNOU(this.parent.quickToolbarModule.imageQTBar) || isNOU(e.args)) {
             return;
         }
         this.quickToolObj = this.parent.quickToolbarModule;
-        const args: MouseEvent = e.args as MouseEvent;
         let target: HTMLElement = e.elements as HTMLElement;
         [].forEach.call(e.elements, (element: Element, index: number) => {
             if (index === 0) {
                 target = <HTMLElement>element;
             }
         });
-        if (target && !closest(target, 'a')) {
-            this.imageWithLinkQTBarItemUpdate();
+        const imageQuickToolbarElem: HTMLElement = this.quickToolObj.imageQTBar.quickTBarObj.toolbarObj.element;
+        if (!isNOU(imageQuickToolbarElem.querySelector('.e-insert-link'))) {
+            if (target.closest('a')) {
+                imageQuickToolbarElem.classList.add('e-link-enabled');
+            } else if (imageQuickToolbarElem.classList.contains('e-link-enabled')) {
+                imageQuickToolbarElem.classList.remove('e-link-enabled');
+            }
         }
         if (target.nodeName === 'IMG') {
             addClass([target], ['e-img-focus']);
         }
-        const pageY: number = (this.parent.iframeSettings.enable) ? window.pageYOffset +
-                this.parent.element.getBoundingClientRect().top + args.clientY : args.pageY;
         if (this.parent.quickToolbarModule.imageQTBar) {
             if (e.isNotify) {
                 this.imageQTPopupTime = setTimeout(() => {
                     this.parent.formatter.editorManager.nodeSelection.Clear(this.contentModule.getDocument());
                     this.parent.formatter.editorManager.nodeSelection.setSelectionContents(this.contentModule.getDocument(), target);
-                    this.quickToolObj.imageQTBar.showPopup(args.pageX, pageY, target as Element);
+                    this.quickToolObj.imageQTBar.showPopup(target as Element, e.args as MouseEvent);
                     if (this.parent.insertImageSettings.resize === true) {
                         this.resizeStart(e.args as PointerEvent, target);
                     }
-                }, 400);
+                }, this.parent.element.dataset.rteUnitTesting === 'true' ? 0 : 400);
             } else {
-                const coordinates: DOMRect = target.getBoundingClientRect() as DOMRect;
-                this.quickToolObj.imageQTBar.showPopup(coordinates.left, coordinates.top, target as Element, 'Image');
+                this.quickToolObj.imageQTBar.showPopup(target as Element, e.args as MouseEvent);
             }
         }
     }
@@ -1049,40 +1043,13 @@ export class Image {
             this.quickToolObj = this.parent.quickToolbarModule;
             const target: HTMLElement = args.target as HTMLElement;
             this.contentModule = this.rendererFactory.getRenderer(RenderType.Content);
-            const isPopupOpen: boolean = this.quickToolObj.imageQTBar.element.classList.contains('e-rte-pop');
             if (target.nodeName === 'IMG' && this.parent.quickToolbarModule) {
-                if (isPopupOpen) {
-                    return;
-                }
                 this.parent.formatter.editorManager.nodeSelection.Clear(this.contentModule.getDocument());
                 this.parent.formatter.editorManager.nodeSelection.setSelectionContents(this.contentModule.getDocument(), target);
                 if (isIDevice()) {
                     this.parent.notify(events.selectionSave, e);
                 }
                 addClass([target], 'e-img-focus');
-                const items: NodeListOf<Element> = this.quickToolObj.imageQTBar.toolbarElement.querySelectorAll('.e-toolbar-item');
-                let separator: HTMLElement;
-                if (closest(target, 'a')) {
-                    for (let i: number = 0; i < items.length; i++) {
-                        if (items[i as number].getAttribute('title') === this.i10n.getConstant('openLink') ||
-                            items[i as number].getAttribute('title') === this.i10n.getConstant('editLink') ||
-                            items[i as number].getAttribute('title') === this.i10n.getConstant('removeLink')) {
-                            (items[i as number] as HTMLElement).style.display = '';
-                            removeClass([items[i as number]], 'e-link-groups');
-                        } else if (items[i as number].getAttribute('title') === 'Insert Link') {
-                            (items[i as number] as HTMLElement).style.display = 'none';
-                        } else if (items[i as number].classList.contains('e-rte-horizontal-separator')) {
-                            // eslint-disable-next-line
-                            separator = items[i as number] as HTMLElement;
-                            detach(items[i as number]);
-                        }
-                    }
-                    const newItems: NodeListOf<Element> = this.quickToolObj.imageQTBar.toolbarElement.querySelectorAll(
-                        '.e-toolbar-item:not(.e-link-groups)');
-                    this.quickToolObj.imageQTBar.addQTBarItem(['-'], Math.round(newItems.length / 2));
-                } else if (!closest(target, 'a')) {
-                    this.imageWithLinkQTBarItemUpdate();
-                }
                 this.showImageQuickToolbar({ args: args, type: 'Images', elements: [args.target as Element] } as IShowPopupArgs);
             } else {
                 this.hideImageQuickToolbar();
@@ -1121,7 +1088,7 @@ export class Image {
             this.checkBoxObj.createElement = this.parent.createElement;
             this.checkBoxObj.appendTo(linkTarget);
             let target: string = '_blank';
-            const imageLabel: string | null  = this.i10n.getConstant('imageLinkAriaLabel');
+            const imageLabel: string | null = this.i10n.getConstant('imageLinkAriaLabel');
             const linkUpdate: string = this.i10n.getConstant('dialogUpdate');
             const linkargs: IImageNotifyArgs = {
                 args: e.args,
@@ -1239,10 +1206,10 @@ export class Image {
             addClass([e.link], 'e-error');
             (e.link as HTMLInputElement).setSelectionRange(0, url.length);
             (e.link as HTMLInputElement).focus();
-            EventHandler.add(e.link,  'input', this.handleKeyDown, this);
+            EventHandler.add(e.link, 'input', this.handleKeyDown, this);
             return;
         } else {
-            EventHandler.remove(e.link,  'input', this.handleKeyDown);
+            EventHandler.remove(e.link, 'input', this.handleKeyDown);
             removeClass([e.link], 'e-error');
         }
         if (!this.isUrl(url)) {
@@ -1301,7 +1268,7 @@ export class Image {
         let restoreStartElement: Node = e.selection.range.startContainer;
         if (e.selection.range.startContainer.nodeName === 'SPAN' &&
             (restoreStartElement as HTMLElement).classList.contains('e-img-wrap') &&
-            (restoreStartElement as HTMLElement).parentElement.classList.contains('e-img-caption') ) {
+            (restoreStartElement as HTMLElement).parentElement.classList.contains('e-img-caption')) {
             restoreStartElement = (restoreStartElement as HTMLElement).parentElement;
             if (!isNOU(restoreStartElement.previousSibling)) {
                 let lastNode: Node = restoreStartElement.previousSibling;
@@ -1374,8 +1341,10 @@ export class Image {
                 attrs: { contenteditable: 'false', draggable: 'false', style: 'width:' + this.parent.insertImageSettings.width }
             });
             const imgWrap: HTMLElement = this.parent.createElement('span', { className: 'e-img-wrap' + this.parent.getCssClass(true) });
-            const imgInner: HTMLElement = this.parent.createElement('span', { className: 'e-img-inner' + this.parent.getCssClass(true),
-                attrs: { contenteditable: 'true' } });
+            const imgInner: HTMLElement = this.parent.createElement('span', {
+                className: 'e-img-inner' + this.parent.getCssClass(true),
+                attrs: { contenteditable: 'true' }
+            });
             const parent: HTMLElement = e.selectNode[0].parentElement;
             if (parent.tagName === 'A') {
                 parent.setAttribute('contenteditable', 'true');
@@ -1617,8 +1586,8 @@ export class Image {
             !closest(target, '[id=' + "'" + this.dialogObj.element.id + "'" + ']') && this.parent.toolbarSettings.enable && this.parent.getToolbarElement() &&
             !this.parent.getToolbarElement().contains(e.target as Node)) ||
             (this.parent.getToolbarElement() && this.parent.getToolbarElement().contains(e.target as Node) &&
-            !closest(target, '#' + this.parent.getID() + '_toolbar_Image') &&
-            !target.querySelector('#' + this.parent.getID() + '_toolbar_Image')))
+                !closest(target, '#' + this.parent.getID() + '_toolbar_Image') &&
+                !target.querySelector('#' + this.parent.getID() + '_toolbar_Image')))
         ) {
             /* eslint-disable */
             if (e.offsetX > (e.target as HTMLImageElement).clientWidth || e.offsetY > (e.target as HTMLImageElement).clientHeight) {
@@ -1632,7 +1601,7 @@ export class Image {
         }
         if (!(this.parent.iframeSettings.enable && !isNOU(this.parent.currentTarget) && this.parent.currentTarget.nodeName === 'IMG') &&
             (e.target as HTMLElement).tagName !== 'IMG' && this.imgResizeDiv && !(this.quickToolObj &&
-            this.quickToolObj.imageQTBar && this.quickToolObj.imageQTBar.element.contains(e.target as HTMLElement)) &&
+                this.quickToolObj.imageQTBar && this.quickToolObj.imageQTBar.element.contains(e.target as HTMLElement)) &&
             this.contentModule.getEditPanel().contains(this.imgResizeDiv)) {
             this.cancelResizeAction();
         }
@@ -1775,15 +1744,15 @@ export class Image {
         const imgWidth: string = this.i10n.getConstant('imageWidth');
         const imgSizeWrap: HTMLElement = this.parent.createElement('div', { className: 'e-img-sizewrap' + this.parent.getCssClass(true) });
         let widthVal: string = isNOU(this.changedWidthValue) && (selectNode.style.width.toString() === 'auto' ||
-                selectNode.style.width !== '') ? selectNode.style.width : !isNOU(this.changedWidthValue) ?
+            selectNode.style.width !== '') ? selectNode.style.width : !isNOU(this.changedWidthValue) ?
                 this.changedWidthValue : (parseInt(selectNode.getClientRects()[0].width.toString(), 10)).toString();
         let heightVal: string = isNOU(this.changedHeightValue) && (selectNode.style.height.toString() === 'auto' ||
-            selectNode.style.height !== '') ? selectNode.style.height : !isNOU(this.changedHeightValue) ?
+                        selectNode.style.height !== '') ? selectNode.style.height : !isNOU(this.changedHeightValue) ?
                 this.changedHeightValue : (parseInt(selectNode.getClientRects()[0].height.toString(), 10)).toString();
-        if (selectNode.style.width === '') {
+        if (selectNode.style.width === '' && widthVal === '') {
             widthVal = 'auto';
         }
-        if (selectNode.style.height === '') {
+        if (selectNode.style.height === '' && heightVal === '') {
             heightVal = 'auto';
         }
         this.changedWidthValue = null;
@@ -1821,11 +1790,10 @@ export class Image {
 
     private inputValue(value: string): string {
         if (value === 'auto' || value.indexOf('%') !== -1 || value.indexOf('px') !== -1
-        || value.match(/(\d+)/)) {
+            || value.match(/(\d+)/)) {
             return value;
         }
-        else
-        {
+        else {
             return 'auto';
         }
     }
@@ -1875,8 +1843,8 @@ export class Image {
         const proxy: this = this;
         const iframe: boolean = proxy.parent.iframeSettings.enable;
         if (proxy.parent.editorMode === 'HTML' && (!iframe && isNOU(closest(e.selection.range.startContainer.parentNode, '[id='
-        // eslint-disable-next-line
-        + "'" + this.parent.contentModule.getPanel().id + "'" + ']'))
+            // eslint-disable-next-line
+            + "'" + this.parent.contentModule.getPanel().id + "'" + ']'))
             || (iframe && !hasClass(e.selection.range.startContainer.parentNode.ownerDocument.querySelector('body'), 'e-lib')))) {
             (this.contentModule.getEditPanel() as HTMLElement).focus();
             const range: Range = this.parent.formatter.editorManager.nodeSelection.getRange(this.parent.contentModule.getDocument());
@@ -1917,6 +1885,7 @@ export class Image {
             asyncSettings: { saveUrl: this.parent.insertImageSettings.saveUrl, removeUrl: this.parent.insertImageSettings.removeUrl },
             dropArea: span, multiple: false, enableRtl: this.parent.enableRtl, cssClass: this.parent.getCssClass(),
             allowedExtensions: this.parent.insertImageSettings.allowedTypes.toString(),
+            maxFileSize: this.parent.insertImageSettings.maxFileSize,
             selected: (e: SelectedEventArgs) => {
                 proxy.isImgUploaded = true;
                 selectArgs = e;
@@ -2043,7 +2012,7 @@ export class Image {
     private dragStart(e: DragEvent): void | boolean {
         if ((e.target as HTMLElement).nodeName === 'IMG') {
             e.dataTransfer.effectAllowed = 'copyMove';
-            (e.target as HTMLElement).classList.add(classes.CLS_RTE_DRAG_IMAGE);
+            (e.target as HTMLElement).classList.add(CLS_RTE_DRAG_IMAGE);
         } else {
             return true;
         }
@@ -2070,7 +2039,7 @@ export class Image {
      */
     private dragDrop(args: ImageDropEventArgs): void {
         this.parent.trigger(events.beforeImageDrop, args, (e: ImageDropEventArgs) => {
-            const imgElement: HTMLElement = this.parent.inputElement.ownerDocument.querySelector('.' + classes.CLS_RTE_DRAG_IMAGE);
+            const imgElement: HTMLElement = this.parent.inputElement.ownerDocument.querySelector('.' + CLS_RTE_DRAG_IMAGE);
             const isImgOrFileDrop: boolean = (imgElement && imgElement.tagName === 'IMG') || e.dataTransfer.files.length > 0;
             if (!e.cancel && isImgOrFileDrop) {
                 if (closest((e.target as HTMLElement), '#' + this.parent.getID() + '_toolbar') ||
@@ -2140,7 +2109,7 @@ export class Image {
         if (activePopupElement) {
             activePopupElement.classList.add(classes.CLS_HIDE);
         }
-        const imgElement: HTMLElement = this.parent.inputElement.ownerDocument.querySelector('.' + classes.CLS_RTE_DRAG_IMAGE);
+        const imgElement: HTMLElement = this.parent.inputElement.ownerDocument.querySelector('.' + CLS_RTE_DRAG_IMAGE);
         const actionBeginArgs: ActionBeginEventArgs = {
             requestType: 'Images',
             name: 'ImageDragAndDrop',
@@ -2192,7 +2161,7 @@ export class Image {
                                 range.insertNode(imgElement);
                             }
                         }
-                        imgElement.classList.remove(classes.CLS_RTE_DRAG_IMAGE);
+                        imgElement.classList.remove(CLS_RTE_DRAG_IMAGE);
                         const imgArgs: ActionCompleteEventArgs = { elements: [imgElement] };
                         imgElement.addEventListener('load', () => {
                             this.parent.trigger(events.actionComplete, imgArgs);
@@ -2253,7 +2222,7 @@ export class Image {
         imageTag.style.opacity = '0.5';
         imageTag.classList.add(classes.CLS_RTE_IMAGE);
         imageTag.classList.add(classes.CLS_IMGINLINE);
-        imageTag.classList.add(classes.CLS_RESIZE);
+        imageTag.classList.add(CLS_RESIZE);
         const file: File = validFiles.rawFile as File;
         const reader: FileReader = new FileReader();
         reader.addEventListener('load', () => {
@@ -2291,12 +2260,12 @@ export class Image {
                 const command: IImageCommandsArgs = actionBeginArgs.itemCollection as IImageCommandsArgs;
                 const image: HTMLImageElement = createElement('img', {
                     className: command.cssClass,
-                    attrs: { src: command.url, alt: command.altText}
+                    attrs: { src: command.url, alt: command.altText }
                 }) as HTMLImageElement;
                 image.style.opacity = '0.5';
                 image.classList.add(classes.CLS_RTE_IMAGE);
                 image.classList.add(classes.CLS_IMGINLINE);
-                image.classList.add(classes.CLS_RESIZE);
+                image.classList.add(CLS_RESIZE);
                 range.insertNode(image);
                 this.uploadMethod(args, image);
                 image.addEventListener('load', (e: Event) => {
@@ -2430,7 +2399,7 @@ export class Image {
                 }, 900);
             },
             success: (e: ImageSuccessEventArgs) => {
-                if (e.operation === 'cancel'){
+                if (e.operation === 'cancel') {
                     return;
                 }
                 isUploading = false;
@@ -2494,7 +2463,7 @@ export class Image {
      */
     private uploadSuccess(imageElement: HTMLElement, dragEvent: DragEvent, args: IShowPopupArgs, e: ImageSuccessEventArgs): void {
         imageElement.style.opacity = '1';
-        imageElement.classList.add(classes.CLS_IMG_FOCUS);
+        imageElement.classList.add(CLS_IMG_FOCUS);
         e.element = imageElement;
         e.detectImageSource = ImageInputSource.Dropped;
         this.parent.trigger(events.imageUploadSuccess, e, (e: object) => {

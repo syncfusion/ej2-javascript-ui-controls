@@ -1,7 +1,7 @@
 import { PathAttributes, TextAttributes } from './canvas-interface';
 import { RectAttributes, ImageAttributes, BaseAttributes } from './canvas-interface';
 import { ImageElement } from '../core/elements/image-element';
-import { Container } from '../core/containers/container';
+import { GroupableView } from '../core/containers/container';
 import { PathElement } from '../core/elements/path-element';
 import { TextElement } from '../core/elements/text-element';
 import { DiagramElement } from '../core/elements/diagram-element';

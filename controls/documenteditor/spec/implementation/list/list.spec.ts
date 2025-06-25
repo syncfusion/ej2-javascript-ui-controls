@@ -21,7 +21,7 @@ console.log('List Level  Testing');
 describe('Increase indent and Decrease Indent in list paragraph', () => {
     let container: DocumentEditor;
     beforeAll(() => {
-        document.body.innerHTML = '';
+        
         let ele: HTMLElement = createElement('div', { id: 'container' });
         document.body.appendChild(ele);
         DocumentEditor.Inject(Editor, Selection, EditorHistory, SfdtExport);
@@ -36,7 +36,7 @@ describe('Increase indent and Decrease Indent in list paragraph', () => {
         container.destroy();
         document.body.removeChild(document.getElementById('container'));
         container = undefined;
-        document.body.innerHTML = '';
+        
         setTimeout(function () {
             done();
         }, 1000);
@@ -91,7 +91,7 @@ describe('Increase indent and Decrease Indent in list paragraph', () => {
 describe('Indenting the list using Tab key', () => {
     let container: DocumentEditor;
     beforeAll(() => {
-        document.body.innerHTML = '';
+        
         let ele: HTMLElement = createElement('div', { id: 'container' });
         document.body.appendChild(ele);
         DocumentEditor.Inject(Editor, Selection, EditorHistory, SfdtExport);
@@ -106,7 +106,7 @@ describe('Indenting the list using Tab key', () => {
         container.destroy();
         document.body.removeChild(document.getElementById('container'));
         container = undefined;
-        document.body.innerHTML = '';
+        
         setTimeout(function () {
             done();
         }, 1000);
@@ -168,7 +168,7 @@ describe('Indenting the list using Tab key', () => {
 describe('To check the direct formatting value is cleared while applying list', () => {
     let container: DocumentEditor;
     beforeAll(() => {
-        document.body.innerHTML = '';
+        
         let ele: HTMLElement = createElement('div', { id: 'container' });
         document.body.appendChild(ele);
         DocumentEditor.Inject(Editor, Selection, EditorHistory, SfdtExport);
@@ -183,7 +183,7 @@ describe('To check the direct formatting value is cleared while applying list', 
         container.destroy();
         document.body.removeChild(document.getElementById('container'));
         container = undefined;
-        document.body.innerHTML = '';
+        
         setTimeout(function () {
             done();
         }, 1000);
@@ -213,7 +213,7 @@ describe('To check the direct formatting value is cleared while applying list', 
 describe('Undo and Redo validation for list', () => {
     let container: DocumentEditor;
     beforeAll(() => {
-        document.body.innerHTML = '';
+        
         let ele: HTMLElement = createElement('div', { id: 'container' });
         document.body.appendChild(ele);
         DocumentEditor.Inject(Editor, Selection, EditorHistory, SfdtExport);
@@ -228,7 +228,7 @@ describe('Undo and Redo validation for list', () => {
         container.destroy();
         document.body.removeChild(document.getElementById('container'));
         container = undefined;
-        document.body.innerHTML = '';
+        
         setTimeout(function () {
             done();
         }, 1000);
@@ -293,7 +293,7 @@ describe('Undo and Redo validation for list', () => {
 describe('Applying and removing the list and checking the indentation value', () => {
     let container: DocumentEditor;
     beforeAll(() => {
-        document.body.innerHTML = '';
+        
         let ele: HTMLElement = createElement('div', { id: 'container' });
         document.body.appendChild(ele);
         DocumentEditor.Inject(Editor, Selection, EditorHistory, SfdtExport);
@@ -308,7 +308,7 @@ describe('Applying and removing the list and checking the indentation value', ()
         container.destroy();
         document.body.removeChild(document.getElementById('container'));
         container = undefined;
-        document.body.innerHTML = '';
+        
         setTimeout(function () {
             done();
         }, 1000);
@@ -338,7 +338,7 @@ describe('Applying and removing the list and checking the indentation value', ()
 describe('List para style preservation validation', () => {
     let container: DocumentEditor;
     beforeAll(() => {
-        document.body.innerHTML = '';
+        
         let ele: HTMLElement = createElement('div', { id: 'container' });
         document.body.appendChild(ele);
         DocumentEditor.Inject(Editor, Selection, EditorHistory, SfdtExport);
@@ -353,7 +353,7 @@ describe('List para style preservation validation', () => {
         container.destroy();
         document.body.removeChild(document.getElementById('container'));
         container = undefined;
-        document.body.innerHTML = '';
+        
         setTimeout(function () {
             done();
         }, 1000);

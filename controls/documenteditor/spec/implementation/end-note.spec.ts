@@ -13,7 +13,7 @@ let sfdt = '{"sfdt":"UEsDBBQAAAAIADJkLFmMvPnMGgUAAEsQAAAEAAAAc2ZkdOxWzW4bNxB+FYK
 // describe('Insert endnote when endnote move to next page', () => {
 //     let editor: DocumentEditor = undefined;
 //     beforeAll(() => {
-//         document.body.innerHTML = '';
+//         
 //         let ele: HTMLElement = createElement('div', { id: 'container' });
 //         document.body.appendChild(ele);
 //         editor = new DocumentEditor({ enableEditor: true, isReadOnly: false, enableEditorHistory: true, enableLocalPaste: false });
@@ -28,7 +28,7 @@ let sfdt = '{"sfdt":"UEsDBBQAAAAIADJkLFmMvPnMGgUAAEsQAAAEAAAAc2ZkdOxWzW4bNxB+FYK
 //         editor.destroy();
 //         document.body.removeChild(document.getElementById('container'));
 //         editor = undefined;
-//         document.body.innerHTML = '';
+//         
 //         setTimeout(() => {
 //             done();
 //         }, 1000);
@@ -45,7 +45,7 @@ let sfdt = '{"sfdt":"UEsDBBQAAAAIADJkLFmMvPnMGgUAAEsQAAAEAAAAc2ZkdOxWzW4bNxB+FYK
 describe('Insert text at the end of end note page', () => {
     let editor: DocumentEditor = undefined;
     beforeAll(() => {
-        document.body.innerHTML = '';
+        
         let ele: HTMLElement = createElement('div', { id: 'container' });
         document.body.appendChild(ele);
         editor = new DocumentEditor({ enableEditor: true, isReadOnly: false, enableEditorHistory: true, enableLocalPaste: false });
@@ -60,7 +60,7 @@ describe('Insert text at the end of end note page', () => {
         editor.destroy();
         document.body.removeChild(document.getElementById('container'));
         editor = undefined;
-        document.body.innerHTML = '';
+        
         setTimeout(() => {
             done();
         }, 1000);
@@ -78,7 +78,7 @@ let sfdt1 = '{"sfdt":"UEsDBBQAAAAIAAFsLFmP4YyEog0AAMfiAQAEAAAAc2ZkdOydTW/byBnHv8
 // describe('Insert enter in the endnote Bodywidget', () => {
 //     let editor: DocumentEditor = undefined;
 //     beforeAll(() => {
-//         document.body.innerHTML = '';
+//         
 //         let ele: HTMLElement = createElement('div', { id: 'container' });
 //         document.body.appendChild(ele);
 //         editor = new DocumentEditor({ enableEditor: true, isReadOnly: false, enableEditorHistory: true, enableLocalPaste: false });
@@ -93,7 +93,7 @@ let sfdt1 = '{"sfdt":"UEsDBBQAAAAIAAFsLFmP4YyEog0AAMfiAQAEAAAAc2ZkdOydTW/byBnHv8
 //         editor.destroy();
 //         document.body.removeChild(document.getElementById('container'));
 //         editor = undefined;
-//         document.body.innerHTML = '';
+//         
 //         setTimeout(() => {
 //             done();
 //         }, 1000);
@@ -110,7 +110,7 @@ let sfdt1 = '{"sfdt":"UEsDBBQAAAAIAAFsLFmP4YyEog0AAMfiAQAEAAAAc2ZkdOydTW/byBnHv8
 describe('Switch weblayout when track change revision added in endnote widget', () => {
     let editor: DocumentEditor = undefined;
     beforeAll(() => {
-        document.body.innerHTML = '';
+        
         let ele: HTMLElement = createElement('div', { id: 'container' });
         document.body.appendChild(ele);
         editor = new DocumentEditor({ enableEditor: true, isReadOnly: false, enableEditorHistory: true, enableLocalPaste: false });
@@ -125,7 +125,7 @@ describe('Switch weblayout when track change revision added in endnote widget', 
         editor.destroy();
         document.body.removeChild(document.getElementById('container'));
         editor = undefined;
-        document.body.innerHTML = '';
+        
         setTimeout(() => {
             done();
         }, 1000);
@@ -147,7 +147,7 @@ describe('Switch weblayout when track change revision added in endnote widget', 
 describe('Double tap on the foot note element', () => {
     let editor: DocumentEditor = undefined;
     beforeAll(() => {
-        document.body.innerHTML = '';
+        
         let ele: HTMLElement = createElement('div', { id: 'container' });
         document.body.appendChild(ele);
         editor = new DocumentEditor({ enableEditor: true, isReadOnly: false, enableEditorHistory: true, enableLocalPaste: false });
@@ -162,7 +162,7 @@ describe('Double tap on the foot note element', () => {
         editor.destroy();
         document.body.removeChild(document.getElementById('container'));
         editor = undefined;
-        document.body.innerHTML = '';
+        
         setTimeout(() => {
             done();
         }, 1000);
@@ -192,7 +192,7 @@ let sfdt2 = '{"sfdt":"UEsDBBQAAAAIAHB0LFm0Vx9YcfgAACaJAQAEAAAAc2ZkdOy9Se/jWLYn9l
 describe('Undo the reject end note in trackchanges', () => {
     let editor: DocumentEditor = undefined;
     beforeAll(() => {
-        document.body.innerHTML = '';
+        
         let ele: HTMLElement = createElement('div', { id: 'container' });
         document.body.appendChild(ele);
         editor = new DocumentEditor({ enableEditor: true, isReadOnly: false, enableEditorHistory: true, enableLocalPaste: false });
@@ -207,7 +207,7 @@ describe('Undo the reject end note in trackchanges', () => {
         editor.destroy();
         document.body.removeChild(document.getElementById('container'));
         editor = undefined;
-        document.body.innerHTML = '';
+        
         setTimeout(() => {
             done();
         }, 1000);
@@ -222,8 +222,8 @@ describe('Undo the reject end note in trackchanges', () => {
         editor.selectionModule.select('0;1;16', '0;1;16');
         editor.editorModule.insertEndnote();
         editor.editorModule.insertText('Sync2');
-        editor.revisions.changes[3].reject();
-        editor.revisions.changes[0].reject();
+        editor.revisions.revisions[3].reject();
+        editor.revisions.revisions[0].reject();
         editor.editorHistoryModule.undo();
         editor.editorHistoryModule.undo();
         expect(editor.revisions.length).toBe(4);
@@ -238,17 +238,15 @@ describe('Undo the reject end note in trackchanges', () => {
         editor.selectionModule.select('0;1;8', '0;1;8');
         editor.editorModule.insertEndnote();
         editor.editorModule.insertText('Sync2');
-        editor.revisions.changes[1].reject();
-        editor.revisions.changes[2].reject();
-        editor.revisions.changes[1].reject();
-        editor.revisions.changes[0].reject();
+        editor.revisions.revisions[1].reject();
+        editor.revisions.revisions[0].reject();
         expect(editor.revisions.length).toBe(0);
     });
 });
 describe('Insert endnote inside the table', () => {
     let editor: DocumentEditor = undefined;
     beforeAll(() => {
-        document.body.innerHTML = '';
+        
         let ele: HTMLElement = createElement('div', { id: 'container' });
         document.body.appendChild(ele);
         editor = new DocumentEditor({ enableEditor: true, isReadOnly: false, enableEditorHistory: true, enableLocalPaste: false });
@@ -263,7 +261,7 @@ describe('Insert endnote inside the table', () => {
         editor.destroy();
         document.body.removeChild(document.getElementById('container'));
         editor = undefined;
-        document.body.innerHTML = '';
+        
         setTimeout(() => {
             done();
         }, 1000);
@@ -281,7 +279,7 @@ let sfdt3 = '{"sfdt":"UEsDBBQAAAAIAACBLFmwAmBIOBQAAExKAAAEAAAAc2ZkdOxbzY/cRnb/Vw
 describe('Check end note reference number issue', () => {
     let editor: DocumentEditor = undefined;
     beforeAll(() => {
-        document.body.innerHTML = '';
+        
         let ele: HTMLElement = createElement('div', { id: 'container' });
         document.body.appendChild(ele);
         editor = new DocumentEditor({ enableEditor: true, isReadOnly: false, enableEditorHistory: true, enableLocalPaste: false });
@@ -296,7 +294,7 @@ describe('Check end note reference number issue', () => {
         editor.destroy();
         document.body.removeChild(document.getElementById('container'));
         editor = undefined;
-        document.body.innerHTML = '';
+        
         setTimeout(() => {
             done();
         }, 1000);

@@ -323,7 +323,10 @@ export class VerticalView extends ViewBase implements IRenderer {
     }
 
     public changeCurrentTimePosition(): void {
-        if (!this.parent || this.parent && this.parent.isDestroyed) { return; }
+        if (!this.parent || this.parent && this.parent.isDestroyed) {
+            this.parent = null;
+            return;
+        }
         this.removeCurrentTimeIndicatorElements();
         const currentDateIndex: number[] = this.getCurrentTimeIndicatorIndex();
         const firstRow: HTMLTableRowElement = (this.parent.getContentTable() as HTMLTableElement).rows[0];

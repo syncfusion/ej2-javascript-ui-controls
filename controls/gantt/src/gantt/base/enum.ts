@@ -199,6 +199,7 @@ export type ColumnMenuItem =
  * * Notes :- Defines tab as notes editor.
  * * Custom :- Defines tab as custom column editor.
  * * Segments :- Defines tab as task segments editor.
+ * * `Advanced` :- Displays the advanced tab for fields like constraint type and constraint date.
  * ```
  */
 export type DialogFieldType =
@@ -207,7 +208,8 @@ export type DialogFieldType =
     'Resources' |
     'Notes' |
     'Custom' |
-    'Segments';
+    'Segments'|
+    'Advanced';
 
 /**
  * Defines filter type of Gantt
@@ -574,3 +576,44 @@ export type PdfPageNumberType =
     'UpperRoman' |
     'Numeric' |
     'Arabic';
+
+/**
+ * Defines the constraint types used for task scheduling.
+ *
+ * Available values:
+ * - `0`: AsSoonAsPossible (ASAP) – Task starts as early as possible. Default for auto-scheduled tasks.
+ * - `1`: AsLateAsPossible (ALAP) – Task finishes as late as possible without delaying dependents.
+ * - `2`: MustStartOn (MSO) – Task must start on the specified date.
+ * - `3`: MustFinishOn (MFO) – Task must finish on the specified date.
+ * - `4`: StartNoEarlierThan (SNET) – Task cannot start before the specified date.
+ * - `5`: StartNoLaterThan (SNLT) – Task must start on or before the specified date.
+ * - `6`: FinishNoEarlierThan (FNET) – Task cannot finish before the specified date.
+ * - `7`: FinishNoLaterThan (FNLT) – Task must finish on or before the specified date.
+ */
+export enum ConstraintType {
+    AsSoonAsPossible = 0,
+    AsLateAsPossible = 1,
+    MustStartOn = 2,
+    MustFinishOn = 3,
+    StartNoEarlierThan = 4,
+    StartNoLaterThan = 5,
+    FinishNoEarlierThan = 6,
+    FinishNoLaterThan = 7
+}
+
+/**
+ * Defines the types of constraint violations in task scheduling.
+ * ```props
+ * * MustStartOn       :- Task startDate is not equal to the constraintDate.
+ * * MustFinishOn      :- Task finishDate (startDate + duration - 1) is not equal to the constraintDate.
+ * * StartNoLaterThan  :- Task startDate is later than the constraintDate.
+ * * FinishNoLaterThan :- Task finishDate is later than the constraintDate.
+ * * PredecessorLink   :- Task startDate violates the predecessor's endDate and offset.
+ * ```
+ */
+export type ViolationType =
+  | 'MustStartOn'
+  | 'MustFinishOn'
+  | 'StartNoLaterThan'
+  | 'FinishNoLaterThan'
+  | 'PredecessorLink';

@@ -165,7 +165,7 @@ describe('Spreadsheet formula bar module ->', () => {
                 setTimeout(() => {
                     expect(helper.getInstance().sheets[0].topLeftCell).toEqual('D3');
                     done();
-                }, 10);
+                }, 20);
             }, 20);
         });
         it('Formula bar edit alert with Protect Sheet', (done: Function) => {

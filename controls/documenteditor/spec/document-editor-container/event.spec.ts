@@ -20,7 +20,7 @@ describe('DocumentEditorContainer Events', () => {
         expect(() => { container.destroy(); }).not.toThrowError();
         expect(element.childNodes.length).toBe(0);
         document.body.removeChild(element);
-        document.body.innerHTML = '';
+        
         element = undefined;
         container = undefined;
     });

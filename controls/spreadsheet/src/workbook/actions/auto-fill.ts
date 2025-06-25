@@ -550,7 +550,7 @@ export class WorkbookAutoFill {
                         const option: { type?: string } = {};
                         format = data[i as number].format;
                         isNumVal = isNumber(val);
-                        if (format && isCustomDateTime(format, true, option)) {
+                        if (format && isCustomDateTime(format, true, option) && val !== '') {
                             type = option.type;
                             if (val && !isNumVal) {
                                 const dateEventArgs: DateFormatCheckArgs = { value: val, updatedVal: val, cell: data[i as number] };

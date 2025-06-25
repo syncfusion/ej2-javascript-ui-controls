@@ -768,7 +768,7 @@ describe('Conditional Formatting', () => {
                             conditions: 'LessThan',
                             style: {
                                 backgroundColor: '#80cbc4',
-                                color: 'black',
+                                color: 'rgba(0, 0, 0, 1)',
                                 fontFamily: 'Tahoma',
                                 fontSize: '12px'
                             }
@@ -780,7 +780,7 @@ describe('Conditional Formatting', () => {
                             conditions: 'Between',
                             style: {
                                 backgroundColor: '#f48fb1',
-                                color: 'black',
+                                color: 'rgb(0, 0, 0)',
                                 fontFamily: 'Tahoma',
                                 fontSize: '12px'
                             }
@@ -849,7 +849,8 @@ describe('Conditional Formatting', () => {
                 },
                 height: 300,
                 allowConditionalFormatting: true,
-                dataBound: dataBound
+                dataBound: dataBound,
+                enableHtmlSanitizer: true
             });
             pivotGridObj.appendTo('#PivotGrid');
         });
@@ -969,6 +970,10 @@ describe('Conditional Formatting', () => {
             it('Click apply button', () => {
                 expect(true).toBeTruthy();
                 (document.querySelector('.e-format-apply-button') as HTMLElement).click();
+            });
+            it('Invoke remove method',  () => {
+                expect(true).toBeTruthy();
+                (pivotGridObj.conditionalFormattingModule as any).removeDialog();
             });
             afterAll(() => {
                 if (pivotGridObj) {

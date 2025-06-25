@@ -11,7 +11,7 @@ describe('Selection Table Format Validation', () => {
     let documentHelper: DocumentHelper;
     beforeAll(() => {
         let ele: HTMLElement = createElement('div', { id: 'container', styles: 'width:100%;height:500px' });
-        document.body.innerHTML = '';
+        
         document.body.appendChild(ele);
         DocumentEditor.Inject(Editor, EditorHistory, Selection);
         editor = new DocumentEditor({ enableEditor: true, isReadOnly: false, enableSelection: true, enableEditorHistory: true });
@@ -28,7 +28,7 @@ describe('Selection Table Format Validation', () => {
         document.body.removeChild(document.getElementById('container'));
         editor = undefined;
         documentHelper = undefined;
-        document.body.innerHTML = '';
+        
         setTimeout(() => {
             done();
         }, 1000);

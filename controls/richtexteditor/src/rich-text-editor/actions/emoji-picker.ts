@@ -1,4 +1,4 @@
-import { EmojiIconsSet, IRichTextEditor, NotifyArgs } from '../base/interface';
+import { IRichTextEditor } from '../base/interface';
 import * as events from '../base/constant';
 import { detach, addClass, isNullOrUndefined as isNOU, KeyboardEventArgs, removeClass, closest, createElement, EventHandler, L10n, getComponent } from '@syncfusion/ej2-base';
 import { ServiceLocator } from '../services/service-locator';
@@ -8,6 +8,8 @@ import { ClickEventArgs, Toolbar } from '@syncfusion/ej2-navigations';
 import { ItemModel } from '@syncfusion/ej2-navigations/src/toolbar/toolbar-model';
 import { TextBox } from '@syncfusion/ej2-inputs';
 import { NodeSelection } from '../../selection';
+import { EmojiPickerAction } from '../../editor-manager/plugin/emoji-picker-action';
+import { NotifyArgs, EmojiIconsSet } from '../../common/interface';
 
 export class EmojiPicker {
     protected parent: IRichTextEditor;
@@ -51,7 +53,7 @@ export class EmojiPicker {
     public childDestroy(): void {
         if (this.isPopupDestroyed) { return; }
         if (this.popupObj && !this.popupObj.isDestroyed) {
-            if (this.popupObj.element && this.popupObj.element.querySelector('.e-rte-emoji-search') ) {
+            if (this.popupObj.element && this.popupObj.element.querySelector('.e-rte-emoji-search')) {
                 const textBox: TextBox = getComponent(this.popupObj.element.querySelector('.e-rte-emoji-search') as HTMLElement, 'textbox') as TextBox;
                 if (textBox && !textBox.isDestroyed) {
                     textBox.destroy();
@@ -90,13 +92,20 @@ export class EmojiPicker {
         this.parent.on(events.contentscroll, this.contentscroll, this);
         this.parent.on(events.scroll, this.contentscroll, this);
         this.parent.on(events.destroy, this.destroy, this);
+        this.parent.on(events.bindOnEnd, this.bindOnEnd, this);
+    }
+
+    private bindOnEnd(): void {
+        if (!this.parent.formatter.editorManager.emojiPickerObj) {
+            this.parent.formatter.editorManager.emojiPickerObj = new EmojiPickerAction(this.parent.formatter.editorManager);
+        }
     }
 
     // eslint-disable-next-line
     private toolbarClick(args: NotifyArgs | any): void {
         this.noResultsFoundCount = 0;
-        let spanElement : HTMLElement;
-        if (!isNOU(this.parent.element.querySelector('.e-emoji'))){
+        let spanElement: HTMLElement;
+        if (!isNOU(this.parent.element.querySelector('.e-emoji'))) {
             spanElement = this.parent.element.querySelector('.e-emoji');
         } else if (this.parent.inlineMode.enable) {
             spanElement = this.parent.element.ownerDocument.querySelector('.e-emoji');
@@ -120,9 +129,12 @@ export class EmojiPicker {
             this.popupObj.hide();
         }
         this.popDiv = this.parent.createElement('div', { className: 'e-rte-emojipicker-popup', id: this.parent.getID() + '_emojiPicker' });
-        if (!isNOU(this.parent.getToolbar()) && !this.parent.inlineMode.enable){
+        const actualTarget: HTMLElement = args.args ? (((args as NotifyArgs).args as ClickEventArgs).originalEvent.target as HTMLElement) :
+            this.parent.inputElement;
+        if (!isNOU(this.parent.getToolbar()) && !this.parent.inlineMode.enable &&
+        (this.parent.toolbarSettings.position !== 'Bottom' || actualTarget !== this.parent.inputElement)) {
             this.parent.getToolbar().parentElement.appendChild(this.popDiv);
-        } else if (this.parent.inlineMode.enable) {
+        } else if (this.parent.inlineMode.enable || (this.parent.toolbarSettings.position === 'Bottom' || actualTarget === this.parent.inputElement)) {
             this.parent.rootContainer.appendChild(this.popDiv);
         }
         EventHandler.add(this.popDiv, 'keydown', this.onKeyDown, this);
@@ -133,14 +145,17 @@ export class EmojiPicker {
             const computedStyle: CSSStyleDeclaration = window.getComputedStyle(extendEle);
             zIndex = computedStyle.getPropertyValue('z-index');
         }
-        else{
+        else {
             zIndex = '10001';
         }
         let target: HTMLElement;
         let xValue: string | number;
         let yValue: string | number;
+        if (this.parent.toolbarSettings.position === 'Bottom') {
+            args.y = args.y - this.parent.getToolbar().getBoundingClientRect().height;
+        }
         if (!isNOU((args as NotifyArgs).args as ClickEventArgs) && !this.parent.inlineMode.enable &&
-         isNOU(this.parent.quickToolbarSettings.text)) {
+            (isNOU(this.parent.quickToolbarSettings.text) || (!isNOU(this.parent.quickToolbarSettings.text) && isNOU(this.parent.element.querySelector('.e-rte-quick-toolbar'))))) {
             target = (((args as NotifyArgs).args as ClickEventArgs).originalEvent.target as HTMLElement);
             target = target.classList.contains('e-toolbar-item') ? target.firstChild as HTMLElement : target.parentElement;
             xValue = 'left';
@@ -189,6 +204,7 @@ export class EmojiPicker {
         addClass([this.popupObj.element], 'e-popup-open');
         this.popupObj.element.parentElement.style.zIndex = '11';
         this.popupObj.refreshPosition(target);
+        this.positionDialogue(target, spanElement);
         // header search element
         if ((!isNOU((args as NotifyArgs).args as ClickEventArgs) || (isNOU(args.x) && isNOU(args.y))) &&
             this.parent.emojiPickerSettings.showSearchBox) {
@@ -280,10 +296,60 @@ export class EmojiPicker {
         if (scrollTop < toolbarName[0].offsetHeight) {
             addClass([toolbarName[0]], 'e-selected');
         }
-        if (this.popupObj){
+        if (this.popupObj) {
             addClass([this.divElement], 'e-active');
         }
     }
+
+    /**
+     * Positions the emoji picker dialog based on available screen space
+     * This method calculates the optimal position for the emoji picker popup
+     * considering available space below the trigger button. If insufficient space exists
+     * below, it positions the popup above the button instead.
+     *
+     * @param {HTMLElement} target - The target element relative to which the dialog should be positioned
+     * @param {HTMLElement} spanElement - The trigger element (emoji button) that activated the dialog
+     * @returns {void}
+     * @private
+     */
+    private positionDialogue(target: HTMLElement, spanElement: HTMLElement): void {
+        const editContentElement: HTMLElement = this.parent.inputElement;
+        if (editContentElement === target) {
+            return;
+        }
+        const windowHeight: number = window.innerHeight;
+        const popupHeight: number = this.popDiv.getBoundingClientRect().height;
+        const spaceBelow: number = windowHeight - spanElement.getBoundingClientRect().top;
+        let buttonRowHeight: number;
+        const toolbarButton: Element = spanElement.closest('.e-toolbar-item');
+        const isPopup: boolean = this.parent.toolbarSettings.type === 'Popup';
+        const toolbarWrapper: HTMLElement = this.parent.toolbarModule.getToolbarElement() as HTMLElement;
+        const expandedToolbar: HTMLElement = toolbarWrapper ? toolbarWrapper.querySelector('.e-toolbar-extended') : toolbarWrapper;
+        if (toolbarButton) {
+            if (isPopup) {
+                buttonRowHeight = toolbarButton.getBoundingClientRect().height;
+                if (toolbarButton.parentElement.getBoundingClientRect().top < toolbarWrapper.getBoundingClientRect().top) {
+                    buttonRowHeight = toolbarWrapper.getBoundingClientRect().height +
+                    toolbarButton.parentElement.getBoundingClientRect().height;
+                }
+            } else {
+                buttonRowHeight = toolbarButton.parentElement.getBoundingClientRect().height;
+            }
+        } else {
+            const toolbarItem: HTMLElement = this.parent.element.querySelector('.e-toolbar-item');
+            if (toolbarItem) {
+                buttonRowHeight = toolbarItem.parentElement.getBoundingClientRect().height;
+            }
+        }
+        if (expandedToolbar && toolbarButton.parentElement !== expandedToolbar) {
+            buttonRowHeight += expandedToolbar.getBoundingClientRect().height;
+        }
+        if (spaceBelow < popupHeight && spanElement.getBoundingClientRect().top > popupHeight) {
+            this.popupObj.element.style.setProperty('top', 'auto');
+            this.popupObj.element.style.setProperty('bottom', `${buttonRowHeight}px`);
+        }
+    }
+
     private onIframeMouseDown(e: { [key: string]: object }): void {
         if (this.popupObj) {
             removeClass([this.divElement], 'e-active');
@@ -600,7 +666,7 @@ export class EmojiPicker {
                             focusEle.focus();
                             break;
                         }
-                        else{
+                        else {
                             const firstFocusEle: HTMLElement = emojiButtons[i as number] as HTMLElement | null;
                             removeClass([firstFocusEle], 'e-focus');
                             const focusEle: HTMLElement = emojiButtons[focusIndex -= 1] as HTMLElement | null;
@@ -749,7 +815,7 @@ export class EmojiPicker {
     }
 
     private emojiBtnClick(e: Event | KeyboardEvent): void {
-        const event: MouseEvent = new MouseEvent('mouseleave', {bubbles: true, cancelable: true});
+        const event: MouseEvent = new MouseEvent('mouseleave', { bubbles: true, cancelable: true });
         // Includes the emote button element tooltip and toolbar tooltip
         const emotePickerTooltips: NodeList = this.parent.element.querySelectorAll('.e-rte-emojipicker-popup [data-tooltip-id]');
         for (let i: number = 0; i < emotePickerTooltips.length; i++) {
@@ -812,7 +878,7 @@ export class EmojiPicker {
             const currentDocument: Document = this.parent.iframeSettings.enable ? this.parent.contentModule.getPanel().ownerDocument :
                 this.parent.contentModule.getDocument();
             if (this.parent.showTooltip && !isNOU(currentDocument.querySelector('.e-tooltip-wrap'))) {
-                this.parent.notify(events.destroyTooltip, {args: event});
+                this.parent.notify(events.destroyTooltip, { args: event });
             }
             this.popupObj.hide();
         }
@@ -857,7 +923,7 @@ export class EmojiPicker {
         const range: Range = selection.getRangeAt(0);
         let firstChild: HTMLElement;
         if (range.startContainer.nodeName === 'P' || range.startContainer.nodeName === 'DIV') {
-            if (range.startContainer.childNodes[0].nodeName !== '#text' ){
+            if (range.startContainer.childNodes[0].nodeName !== '#text') {
                 firstChild = range.startContainer.childNodes[0] as HTMLElement;
             }
         }
@@ -900,6 +966,7 @@ export class EmojiPicker {
         this.parent.off(events.contentscroll, this.contentscroll);
         this.parent.off(events.scroll, this.contentscroll);
         this.parent.off(events.destroy, this.destroy);
+        this.parent.off(events.bindOnEnd, this.bindOnEnd);
     }
 
     /**

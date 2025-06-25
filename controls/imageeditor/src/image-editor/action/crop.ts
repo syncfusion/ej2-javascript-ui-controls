@@ -166,7 +166,7 @@ export class Crop {
                 srcTop: (actPoint.startY * ratio.height) - (img.destTop * ratio.height),
                 srcWidth: (actPoint.width * ratio.width), srcHeight: (actPoint.height * ratio.height),
                 destLeft: (parent.lowerCanvas.clientWidth - maxDimension.width) / 2,
-                destTop: (parent.lowerCanvas.clientHeight - maxDimension.height + 1) / 2,
+                destTop: (parent.lowerCanvas.clientHeight - maxDimension.height) / 2,
                 destWidth: maxDimension.width, destHeight: maxDimension.height };
             const temp: string = this.lowerContext.filter;
             parent.notify('draw', { prop: 'drawImage', onPropertyChange: false});

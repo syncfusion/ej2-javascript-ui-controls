@@ -1233,4 +1233,235 @@ describe('Link testing', ()=>{
             done();
         });
     });
+    describe('Copy and Paste a Hyperlink in Rich Text Editor', function () {
+        let editorObj: RichTextEditor;
+        let copiedNode: HTMLElement;
+        const clipboardData: string = `<html>
+                                          <body>
+                                              <a href="https://example.com">List Item Link</a>
+                                          </body>
+                                       </html>`;
+
+        beforeAll(() => {
+            editorObj = renderRTE({
+                toolbarSettings: {
+                    items: ['Bold', 'Italic', 'Underline', 'CreateLink']
+                },
+                value: `
+                    <p id="text-content">Sample text for testing</p>
+                    <ul>
+                        <li id="list-item">List Item</li>
+                    </ul>
+                    <table>
+                        <tr>
+                            <td id="table-cell">Table Cell</td>
+                        </tr>
+                    </table>
+                    <img id="image-content" src="https://cdn.syncfusion.com/ej2/richtexteditor-resources/RTE-Overview.png" alt="Sample Image"/>
+                    <p id="styled-text" style="color: red; background-color: yellow; font-family: Arial;">Styled Text</p>
+                `
+            });
+        });
+
+        afterAll(() => {
+            destroy(editorObj);
+        });
+
+        it('Copies and pastes a hyperlink onto normal text', (done) => {
+            copiedNode = document.getElementById('text-content') as HTMLElement;
+            editorObj.formatter.editorManager.nodeSelection.setSelectionText(
+                document, copiedNode.childNodes[0], copiedNode.childNodes[0], 0, copiedNode.textContent!.length
+            );
+            const dataTransfer = new DataTransfer();
+            dataTransfer.setData('text/html', clipboardData);
+            const pasteEvent: ClipboardEvent = new ClipboardEvent('paste', { clipboardData: dataTransfer } as ClipboardEventInit);
+            editorObj.onPaste(pasteEvent);
+            expect(editorObj.inputElement.innerHTML).toContain('<p id="text-content"><a class="e-rte-anchor" href="https://example.com/" title="https://example.com/" target="" aria-label="">Sample text for testing</a></p>');
+            done();
+        });
+
+        it('Copies and pastes a hyperlink onto a list item', (done) => {
+            copiedNode = document.getElementById('list-item') as HTMLElement;
+            editorObj.formatter.editorManager.nodeSelection.setSelectionText(
+                document, copiedNode.childNodes[0], copiedNode.childNodes[0], 0, copiedNode.textContent!.length
+            );
+            const dataTransfer = new DataTransfer();
+            dataTransfer.setData('text/html', clipboardData);
+            const pasteEvent: ClipboardEvent = new ClipboardEvent('paste', { clipboardData: dataTransfer } as ClipboardEventInit);
+            editorObj.onPaste(pasteEvent);
+            expect(editorObj.inputElement.innerHTML).toContain('<li id="list-item"><a class="e-rte-anchor" href="https://example.com/" title="https://example.com/" target="" aria-label="">List Item</a></li>');
+            done();
+        });
+
+        it('Copies and pastes a hyperlink onto a table cell', (done) => {
+            copiedNode = document.getElementById('table-cell') as HTMLElement;
+            editorObj.formatter.editorManager.nodeSelection.setSelectionText(
+                document, copiedNode.childNodes[0], copiedNode.childNodes[0], 0, copiedNode.textContent!.length
+            );
+            const dataTransfer = new DataTransfer();
+            dataTransfer.setData('text/html', clipboardData);
+            const pasteEvent: ClipboardEvent = new ClipboardEvent('paste', { clipboardData: dataTransfer } as ClipboardEventInit);
+            editorObj.onPaste(pasteEvent);
+            expect(editorObj.inputElement.innerHTML).toContain('<td id="table-cell"><a class="e-rte-anchor" href="https://example.com/" title="https://example.com/" target="" aria-label="">Table Cell</a></td>');
+            done();
+        });
+
+        it('Pastes hyperlink into a styled paragraph with font color, background color, and font name', (done) => {
+            copiedNode = document.getElementById('styled-text') as HTMLElement;
+            editorObj.formatter.editorManager.nodeSelection.setSelectionText(
+                document, copiedNode.childNodes[0], copiedNode.childNodes[0], 0, copiedNode.textContent!.length
+            );
+            const dataTransfer = new DataTransfer();
+            dataTransfer.setData('text/html', clipboardData);
+            const pasteEvent: ClipboardEvent = new ClipboardEvent('paste', { clipboardData: dataTransfer } as ClipboardEventInit);
+            editorObj.onPaste(pasteEvent);
+            expect(editorObj.inputElement.innerHTML).toContain('<p id="styled-text" style="color: red; background-color: yellow; font-family: Arial;"><a class="e-rte-anchor" href="https://example.com/" title="https://example.com/" target="" aria-label="">Styled Text</a></p>');
+            done();
+        });
+        it('Copies and pastes a hyperlink onto an image', (done) => {
+            copiedNode = document.getElementById('image-content') as HTMLElement;
+            editorObj.formatter.editorManager.nodeSelection.setSelectionContents(document, copiedNode);
+            const dataTransfer = new DataTransfer();
+            dataTransfer.setData('text/html', clipboardData);
+            const pasteEvent: ClipboardEvent = new ClipboardEvent('paste', { clipboardData: dataTransfer } as ClipboardEventInit);
+            editorObj.onPaste(pasteEvent);
+            expect(editorObj.inputElement.innerHTML).toContain('<a href="https://example.com/" target="" aria-label=""><img id="image-content" src="https://cdn.syncfusion.com/ej2/richtexteditor-resources/RTE-Overview.png" alt="Sample Image" class="e-rte-image e-imginline"></a>');
+            done();
+        });
+    });
+    describe('Pasting a Hyperlink onto Partially Selected Text in Rich Text Editor', function () {
+        let editorObj: RichTextEditor;
+        let copiedNode: HTMLElement;
+        const clipboardData: string = `<html>
+                                          <body>
+                                              <a href="https://example.com">List Item Link</a>
+                                          </body>
+                                       </html>`;
+    
+        beforeAll(() => {
+            editorObj = renderRTE({
+                toolbarSettings: { items: ['Bold', 'Italic', 'Underline', 'CreateLink'] },
+                value: `
+                    <p id="text-content">Sample text for testing</p>
+                    <ul><li id="list-item">List Item</li></ul>
+                    <h1 id="heading-content">Sample Heading</h1>
+                `
+            });
+        });
+    
+        afterAll(() => {
+            destroy(editorObj);
+        });
+        it('Pastes hyperlink onto partially selected text inside a heading', (done) => {
+            copiedNode = document.getElementById('heading-content') as HTMLElement;
+            editorObj.formatter.editorManager.nodeSelection.setSelectionText(
+                document, copiedNode.childNodes[0], copiedNode.childNodes[0], 7, 14 
+            );
+            const dataTransfer = new DataTransfer();
+            dataTransfer.setData('text/html', clipboardData);
+            const pasteEvent: ClipboardEvent = new ClipboardEvent('paste', { clipboardData: dataTransfer } as ClipboardEventInit);
+            editorObj.onPaste(pasteEvent);
+    
+            expect(editorObj.inputElement.innerHTML).toContain(
+                '<h1 id="heading-content">Sample <a class="e-rte-anchor" href="https://example.com/" title="https://example.com/" target="" aria-label="">Heading</a></h1>'
+            );
+            done();
+        });
+        it('Pastes hyperlink onto partially selected text inside a list item', (done) => {
+            copiedNode = document.getElementById('list-item') as HTMLElement;
+            editorObj.formatter.editorManager.nodeSelection.setSelectionText(
+                document, copiedNode.childNodes[0], copiedNode.childNodes[0], 0, 4 
+            );
+            const dataTransfer = new DataTransfer();
+            dataTransfer.setData('text/html', clipboardData);
+            const pasteEvent: ClipboardEvent = new ClipboardEvent('paste', { clipboardData: dataTransfer } as ClipboardEventInit);
+            editorObj.onPaste(pasteEvent);
+    
+            expect(editorObj.inputElement.innerHTML).toContain(
+                '<li id="list-item"><a class="e-rte-anchor" href="https://example.com/" title="https://example.com/" target="" aria-label="">List</a> Item</li>'
+            );
+            done();
+        });
+    });
+    describe('Pasting identical hyperlink onto fully selected anchor and text in Rich Text Editor', function () {
+        let editorObj: any;
+        const clipboardData = `<html>
+            <body>
+                <a href="https://example.com">Editor Text</a>
+            </body>
+        </html>`;
+    
+        beforeAll(() => {
+            editorObj = renderRTE({
+                toolbarSettings: { items: ['Bold', 'Italic', 'Underline', 'CreateLink'] },
+                value: `<p id="anchor-text"><a class="e-rte-anchor" href="https://example.com/" title="https://example.com/" target="_blank" aria-label="Open in new window">Editor</a> Text</p>`
+            });
+        });
+        afterAll(() => {
+            destroy(editorObj);
+        });
+        it('Should retain original anchor when pasting same link on full selection', (done: DoneFn) => {
+            const paraElem = document.getElementById('anchor-text') as HTMLElement;
+            const firstChild = paraElem.firstChild as HTMLElement; 
+            const lastChild = paraElem.lastChild as Text; 
+            editorObj.formatter.editorManager.nodeSelection.setSelectionText(
+                document,
+                (firstChild as HTMLElement).childNodes[0] as Text,
+                lastChild,
+                0,
+                lastChild.textContent.length
+            );
+            const dataTransfer = new DataTransfer();
+            dataTransfer.setData('text/html', clipboardData);
+            const pasteEvent: ClipboardEvent = new ClipboardEvent('paste', {
+                clipboardData: dataTransfer
+            } as ClipboardEventInit);
+            editorObj.onPaste(pasteEvent);
+            expect(editorObj.inputElement.innerHTML).toBe(
+                '<p id="anchor-text"><a class="e-rte-anchor" href="https://example.com/" title="https://example.com/" target="" aria-label="">Editor Text</a></p>'
+            );
+            done();
+        });
+    });
+
+    describe('960608 - Display text does not update first time when inserting a link in the RichTextEditor', () => {
+        let editor: RichTextEditor;
+        beforeEach((done: DoneFn) => {
+            editor = renderRTE({
+                value: '<p>Syncfusion</p>',
+            });
+            done();
+        });
+        afterEach((done: DoneFn) => {
+            destroy(editor);
+            done();
+        });
+        it('should insert a link and update the display text', (done: DoneFn) => {
+            editor.focusIn();
+            const pElem = editor.inputElement.querySelector('p');
+            const range = new Range();
+            const textNode = pElem.firstChild;
+            range.setStart(textNode, 0);
+            range.setEnd(textNode, textNode.textContent.length);
+            const sel = editor.inputElement.ownerDocument.getSelection();
+            sel.removeAllRanges();
+            sel.addRange(range);
+            editor.showDialog('InsertLink' as any);
+            setTimeout(() => {
+                const urlInput: HTMLInputElement = editor.element.querySelector('.e-rte-linkurl');
+                const displayInput: HTMLInputElement = editor.element.querySelector('.e-rte-linkText');
+                const insertBtn: HTMLElement = editor.element.querySelector('.e-insertLink');
+                urlInput.value = 'https://www.google.com/';
+                displayInput.value = 'Google';
+                insertBtn.click();
+                setTimeout(() => {
+                    const anchor: HTMLAnchorElement = editor.inputElement.querySelector('a');
+                    expect(anchor).toBeTruthy();
+                    expect(anchor.href).toBe('https://www.google.com/');
+                    expect(anchor.textContent).toBe('Google');
+                    done();
+                }, 50);
+            }, 50);
+        });
+    });
 });

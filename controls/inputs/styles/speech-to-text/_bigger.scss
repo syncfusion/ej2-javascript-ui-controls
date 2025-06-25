@@ -10,6 +10,10 @@
     min-width: $stt-bigger-min-width;
     min-height: $stt-bigger-min-height;
     padding: $stt-bigger-padding;
+    @if ($skin-name == 'FluentUI') {
+      line-height: 0;
+      display: inline;
+    }
     &.e-round {
       width: $stt-bigger-round-width;
       height: $stt-bigger-round-height;
@@ -17,21 +21,12 @@
     }
     .e-btn-icon {
       font-size: $stt-bigger-font-size;
-      @if ($skin-name == 'material' or $skin-name == 'material-dark' or $skin-name == 'material3') {
+      @if ($skin-name == 'material' or $skin-name == 'material-dark' or $skin-name == 'Material3') {
         line-height: 1px;
         width: 2em;
       }
-      @if ($skin-name == 'bootstrap5.3' or $skin-name == 'fabric') {
-        margin-top: 1px;
-      }
-      @if ($skin-name == 'bootstrap5') {
-        margin-top: 0;
-      }
-      @if ($skin-name == 'FluentUI' or $skin-name == 'fabric-dark') {
-        margin-top: -1px;
-      }
-      @if ($skin-name == 'fluent2') {
-        margin-top: 2px;
+      @if ($skin-name != 'bootstrap4' or $skin-name != 'bootstrap' or $skin-name != 'bootstrap-dark') {
+        margin-top: $stt-bigger-margin-top;
       }
     }
   }
@@ -40,6 +35,15 @@
   .e-bigger.e-speech-to-text.e-round {
     .e-btn-icon {
       font-size: $stt-bigger-btn-font-size;
+      @if ($skin-name == 'FluentUI') {
+        margin-top: -2px;
+      }
+      @if ($skin-name == 'fluent2'or $skin-name == 'Material3') {
+        margin-top: 0;
+      }
+      @if ($skin-name == 'material' or $skin-name == 'fabric-dark') {
+        margin-top: 1px;
+      }
     }
   }
 }

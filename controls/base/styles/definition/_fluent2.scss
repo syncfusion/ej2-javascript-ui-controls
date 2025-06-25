@@ -638,7 +638,7 @@ $rating-selected-color:mapcolorvariable('rating-selected-color') !default;
 $rating-unrated-color: mapcolorvariable('rating-unrated-color') !default;
 $rating-selected-disabled-color: mapcolorvariable('rating-selected-disabled-color') !default;
 $rating-unrated-disabled-color: mapcolorvariable('rating-unrated-disabled-color') !default;
-$rating-selected-hover-color: mapcolorvariable('rating-selected-hover-color') !default;
+$rating-selected-hover-color: mapcolorvariable('rating-selected-hover-color:') !default;
 $rating-unrated-hover-color: mapcolorvariable('rating-unrated-hover-color') !default;
 $rating-pressed-color: mapcolorvariable('rating-pressed-color') !default;
 
@@ -657,7 +657,7 @@ $msg-icon-color-alt2: mapcolorvariable('msg-icon-color-alt2') !default;
 
 $msg-close-icon-color: mapcolorvariable('msg-close-icon-color') !default;
 $msg-close-icon-color-alt1: mapcolorvariable('msg-close-icon-color-alt21') !default;
-$msg-close-icon-color-alt2: mapcolorvariable('msg-close-icon-color-alt2') !default;
+$msg-close-icon-color-alt2: mapcolorvariable('msg-close-icon-color-alt2:') !default;
 
 $msg-success-color: mapcolorvariable('msg-success-color') !default;
 $msg-success-bg-color: mapcolorvariable('msg-success-bg-color') !default;

@@ -6,11 +6,12 @@ import { Editor } from "../../../src/document-editor/implementation/editor/edito
 import { Selection } from '../../../src/document-editor/implementation/selection/selection';
 import { EditorHistory } from "../../../src/document-editor/implementation/editor-history/editor-history";
 import { SfdtExport } from "../../../src/document-editor/implementation/writer/sfdt-export";
-import { FootnoteEndnoteMarkerElementBox, HeaderFooterWidget, LineWidget, ParagraphWidget, TableCellWidget, TableRowWidget, TableWidget } from "../../../src/document-editor/implementation/viewer/page";
+import { FootnoteEndnoteMarkerElementBox, HeaderFooterWidget, LineWidget, ParagraphWidget, TableCellWidget, TableRowWidget, TableWidget, TextElementBox } from "../../../src/document-editor/implementation/viewer/page";
+import { WRowFormat } from "../../../src/document-editor/implementation/format/row-format";
 describe('Track changes Validation', () => {
     let container: DocumentEditor;
     beforeAll(() => {
-        document.body.innerHTML = '';
+        
         let ele: HTMLElement = createElement('div', { id: 'container' });
         document.body.appendChild(ele);
         DocumentEditor.Inject(Editor, Selection, EditorHistory, SfdtExport);
@@ -25,7 +26,7 @@ describe('Track changes Validation', () => {
         container.destroy();
         document.body.removeChild(document.getElementById('container'));
         container = undefined;
-        document.body.innerHTML = '';
+        
         setTimeout(function () {
             done();
         }, 1000);
@@ -45,7 +46,7 @@ describe('Track changes Validation', () => {
 describe('Track changes Pane in RTL Validation', () => {
     let container: DocumentEditor;
     beforeAll(() => {
-        document.body.innerHTML = '';
+        
         let ele: HTMLElement = createElement('div', { id: 'container' });
         document.body.appendChild(ele);
         DocumentEditor.Inject(Editor, Selection, EditorHistory, SfdtExport);
@@ -60,7 +61,7 @@ describe('Track changes Pane in RTL Validation', () => {
         container.destroy();
         document.body.removeChild(document.getElementById('container'));
         container = undefined;
-        document.body.innerHTML = '';
+        
         setTimeout(function () {
             done();
         }, 1000);
@@ -77,7 +78,7 @@ describe('Track changes Pane in RTL Validation', () => {
 describe('Track changes in Table validation', () => {
     let container: DocumentEditor;
     beforeAll(() => {
-        document.body.innerHTML = '';
+        
         let ele: HTMLElement = createElement('div', { id: 'container' });
         document.body.appendChild(ele);
         DocumentEditor.Inject(Editor, Selection, EditorHistory, SfdtExport);
@@ -92,7 +93,7 @@ describe('Track changes in Table validation', () => {
         container.destroy();
         document.body.removeChild(document.getElementById('container'));
         container = undefined;
-        document.body.innerHTML = '';
+        
         setTimeout(function () {
             done();
         }, 1000);
@@ -116,7 +117,7 @@ describe('Track changes in Table validation', () => {
 describe('Track changes Select all and replace text', () => {
     let container: DocumentEditor;
     beforeAll(() => {
-        document.body.innerHTML = '';
+        
         let ele: HTMLElement = createElement('div', { id: 'container' });
         document.body.appendChild(ele);
         DocumentEditor.Inject(Editor, Selection, EditorHistory, SfdtExport);
@@ -131,7 +132,7 @@ describe('Track changes Select all and replace text', () => {
         container.destroy();
         document.body.removeChild(document.getElementById('container'));
         container = undefined;
-        document.body.innerHTML = '';
+        
         setTimeout(function () {
             done();
         }, 1000);
@@ -145,13 +146,14 @@ describe('Track changes Select all and replace text', () => {
         container.editor.onEnter();
         container.editor.insertText("World");
         var count = container.revisions.changes.length;
-        expect(count).toBe(1);
+        expect(count).toBe(3);
+        expect(container.revisions.length).toBe(1);
     });
 });
 describe('Track changes hyperlink reject validation', () => {
     let container: DocumentEditor;
     beforeAll(() => {
-        document.body.innerHTML = '';
+        
         let ele: HTMLElement = createElement('div', { id: 'container' });
         document.body.appendChild(ele);
         DocumentEditor.Inject(Editor, Selection, EditorHistory, SfdtExport);
@@ -166,7 +168,7 @@ describe('Track changes hyperlink reject validation', () => {
         container.destroy();
         document.body.removeChild(document.getElementById('container'));
         container = undefined;
-        document.body.innerHTML = '';
+        
         setTimeout(function () {
             done();
         }, 1000);
@@ -187,7 +189,7 @@ describe('Track changes hyperlink reject validation', () => {
 describe('Track changes hyperlink inserting validation', () => {
     let container: DocumentEditor;
     beforeAll(() => {
-        document.body.innerHTML = '';
+        
         let ele: HTMLElement = createElement('div', { id: 'container' });
         document.body.appendChild(ele);
         DocumentEditor.Inject(Editor, Selection, EditorHistory, SfdtExport);
@@ -202,7 +204,7 @@ describe('Track changes hyperlink inserting validation', () => {
         container.destroy();
         document.body.removeChild(document.getElementById('container'));
         container = undefined;
-        document.body.innerHTML = '';
+        
         setTimeout(function () {
             done();
         }, 1000);
@@ -221,7 +223,7 @@ let sfdt: any = {"sfdt":"UEsDBAoAAAAIAN1cK1nPaSW/JwUAAGg2AAAEAAAAc2ZkdO1bW2+jOBT
 describe('Track changes deletion validation', () => {
     let container: DocumentEditor;
     beforeAll(() => {
-        document.body.innerHTML = '';
+        
         let ele: HTMLElement = createElement('div', { id: 'container' });
         document.body.appendChild(ele);
         DocumentEditor.Inject(Editor, Selection, EditorHistory, SfdtExport);
@@ -236,7 +238,7 @@ describe('Track changes deletion validation', () => {
         container.destroy();
         document.body.removeChild(document.getElementById('container'));
         container = undefined;
-        document.body.innerHTML = '';
+        
         setTimeout(function () {
             done();
         }, 1000);
@@ -245,13 +247,17 @@ describe('Track changes deletion validation', () => {
         console.log('Track changes single cell deletion validation');
         container.open(sfdt);
         container.enableTrackChanges = true;
+        expect(container.revisions.changes.length).toBe(30);
         expect(container.revisions.length).toBe(6);
         container.selection.select('0;0;0;0;0;0', '0;0;0;0;4;4');
         container.editor.delete();
+        expect(container.revisions.changes.length).toBe(21);
         expect(container.revisions.length).toBe(3);
         container.editorHistoryModule.undo();
+        expect(container.revisions.changes.length).toBe(30);
         expect(container.revisions.length).toBe(6);
         container.editorHistoryModule.redo();
+        expect(container.revisions.changes.length).toBe(21);
         expect(container.revisions.length).toBe(3);
     });
     // it('Track changes two cell deletion validation', () => {
@@ -286,7 +292,7 @@ let delSfdt: any = {"sfdt":"UEsDBAoAAAAIACl6LFm79fzkMQUAAPQ5AAAEAAAAc2ZkdO1bS2/j
 describe('Track changes deletion validation with deleted text', () => {
     let container: DocumentEditor;
     beforeAll(() => {
-        document.body.innerHTML = '';
+        
         let ele: HTMLElement = createElement('div', { id: 'container' });
         document.body.appendChild(ele);
         DocumentEditor.Inject(Editor, Selection, EditorHistory, SfdtExport);
@@ -301,7 +307,7 @@ describe('Track changes deletion validation with deleted text', () => {
         container.destroy();
         document.body.removeChild(document.getElementById('container'));
         container = undefined;
-        document.body.innerHTML = '';
+        
         setTimeout(function () {
             done();
         }, 1000);
@@ -377,7 +383,8 @@ describe('Track changes deletion validation with deleted text', () => {
         container.enableTrackChanges = true;
         container.selection.select('0;0;1;0;0;0', '0;0;1;1;2;6');
         container.editor.delete();
-        expect(container.revisions.length).toBe(8);
+        expect(container.revisions.changes.length).toBe(27);
+        expect(container.revisions.length).toBe(7);
     });
     it('Track changes para mark validation', () => {
         console.log('Track changes para mark validation');
@@ -392,8 +399,9 @@ describe('Track changes deletion validation with deleted text', () => {
         container.enableTrackChanges = true;
         container.selection.select('0;0;0;0;0;0', '0;0;0;0;2;6');
         container.editor.delete();
-        let length: number = container.revisions.changes[0].range.length;
+        let length: number = container.revisions.changes.length;
         expect(length).toBe(5);
+        expect(container.revisions.revisions.length).toBe(1);
     });
     // it('Track changes cell insert and delete validation with deleted text', () => {
     //     console.log('16');
@@ -415,7 +423,7 @@ describe('Track changes deletion validation with deleted text', () => {
 describe('Track changes deletion validation', () => {
     let container: DocumentEditor;
     beforeAll(() => {
-        document.body.innerHTML = '';
+        
         let ele: HTMLElement = createElement('div', { id: 'container' });
         document.body.appendChild(ele);
         DocumentEditor.Inject(Editor, Selection, EditorHistory, SfdtExport);
@@ -430,7 +438,7 @@ describe('Track changes deletion validation', () => {
         container.destroy();
         document.body.removeChild(document.getElementById('container'));
         container = undefined;
-        document.body.innerHTML = '';
+        
         setTimeout(function () {
             done();
         }, 1000);
@@ -552,12 +560,14 @@ describe('Track changes deletion validation', () => {
         container.enableTrackChanges = true;
         container.editor.delete();
 
-        expect(container.revisions.length).toBe(2);
-
+        expect(container.revisions.changes.length).toBe(30);
+        expect(container.revisions.length).toBe(1);
         container.editorHistory.undo();
+        expect(container.revisions.changes.length).toBe(0);
         expect(container.revisions.length).toBe(0);
         container.editorHistory.redo();
-        expect(container.revisions.length).toBe(2);
+        expect(container.revisions.changes.length).toBe(30);
+        expect(container.revisions.length).toBe(1);
     });
     it("Revision on last row and paragraph combination", () => {
        let gettingStarted = '{"sfdt":"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"}';
@@ -565,17 +575,32 @@ describe('Track changes deletion validation', () => {
        container.enableTrackChanges = true;
        container.selection.select('0;4;2;0;0;0','0;6;4' );
        container.editorModule.onBackSpace();
-       expect(container.revisions.length).toBe(3)
+       expect(container.revisions.changes.length).toBe(17);
+       expect(container.revisions.length).toBe(2);
        container.editorHistory.undo();
     //    expect(container.revisions.length).toBe(0)
     //      container.editorHistory.redo();
     //      expect(container.revisions.length).toBe(3)
     });
+    it("Validate pane updation when deleting a row using different user",()=>{
+        console.log("Validate pane updation when deleting a row using different user");
+        container.openBlank();
+        container.enableTrackChanges = true;
+        container.editor.insertTable(5,2);
+        container.currentUser = 'New User';
+        container.selection.select('0;0;0;0;0;0','0;0;1;1;0;1');
+        container.editor.onBackSpace();
+        expect(container.revisions.length).toBe(2);
+        container.editorHistory.undo();
+        expect(container.revisions.length).toBe(1);
+        container.editorHistory.redo();
+        expect(container.revisions.length).toBe(2);
+    })
 });
 // describe('EndNote insertion validation', () => {
 //     let container: DocumentEditor;
 //     beforeAll(() => {
-//         document.body.innerHTML = '';
+//         
 //         let ele: HTMLElement = createElement('div', { id: 'container' });
 //         document.body.appendChild(ele);
 //         DocumentEditor.Inject(Editor, Selection, EditorHistory, SfdtExport);
@@ -590,7 +615,7 @@ describe('Track changes deletion validation', () => {
 //         container.destroy();
 //         document.body.removeChild(document.getElementById('container'));
 //         container = undefined;
-//         document.body.innerHTML = '';
+//         
 //         setTimeout(function () {
 //             done();
 //         }, 1000);
@@ -612,7 +637,7 @@ describe('Track changes deletion validation', () => {
 // describe('Footnote insertion validation', () => {
 //     let container: DocumentEditor;
 //     beforeAll(() => {
-//         document.body.innerHTML = '';
+//         
 //         let ele: HTMLElement = createElement('div', { id: 'container' });
 //         document.body.appendChild(ele);
 //         DocumentEditor.Inject(Editor, Selection, EditorHistory, SfdtExport);
@@ -627,7 +652,7 @@ describe('Track changes deletion validation', () => {
 //         container.destroy();
 //         document.body.removeChild(document.getElementById('container'));
 //         container = undefined;
-//         document.body.innerHTML = '';
+//         
 //         setTimeout(function () {
 //             done();
 //         }, 1000);
@@ -642,3 +667,717 @@ describe('Track changes deletion validation', () => {
 //         expect(()=>{container.revisions.get(3).reject()}).not.toThrowError();
 //     });
 // });
+
+// Track changes
+describe('Track changes-para mark track validation when delete the same user inserted para', () => {
+    let container: DocumentEditor;
+    beforeAll(() => {
+        document.body.innerHTML = '';
+        let ele: HTMLElement = createElement('div', { id: 'container' });
+        document.body.appendChild(ele);
+        DocumentEditor.Inject(Editor, Selection, EditorHistory, SfdtExport);
+        container = new DocumentEditor({ enableEditor: true, isReadOnly: false, enableEditorHistory: true, enableSfdtExport: true });
+        (container.documentHelper as any).containerCanvasIn = TestHelper.containerCanvas;
+        (container.documentHelper as any).selectionCanvasIn = TestHelper.selectionCanvas;
+        (container.documentHelper.render as any).pageCanvasIn = TestHelper.pageCanvas;
+        (container.documentHelper.render as any).selectionCanvasIn = TestHelper.pageSelectionCanvas;
+        container.appendTo('#container');
+    });
+    afterAll((done): void => {
+        container.destroy();
+        document.body.removeChild(document.getElementById('container'));
+        container = undefined;
+        document.body.innerHTML = '';
+        setTimeout(function () {
+            done();
+        }, 1000);
+    });
+    it('Track changes-para mark track validation when delete the same user inserted para', function () {
+        console.log('Track changes-para mark track validation when delete the same user inserted para');
+        container.enableTrackChanges = true;
+        container.currentUser = "Guest";
+        container.editor.insertText("Hello");
+        container.editor.onEnter();
+        container.editor.insertText("world");
+        container.editor.onEnter();
+        container.editor.insertText("syncfusion");
+        container.selection.select('0;0;2','0;1;3');
+        container.editor.delete();
+        container.editorHistory.undo();
+        container.editorHistory.redo();
+        expect((container.documentHelper.pages[0].bodyWidgets[0].childWidgets[0] as ParagraphWidget).characterFormat.revisionLength).toBe(1);
+    });
+});
+describe('Track changes- para mark delete validation', () => {
+    let container: DocumentEditor;
+    beforeAll(() => {
+        document.body.innerHTML = '';
+        let ele: HTMLElement = createElement('div', { id: 'container' });
+        document.body.appendChild(ele);
+        DocumentEditor.Inject(Editor, Selection, EditorHistory, SfdtExport);
+        container = new DocumentEditor({ enableEditor: true, isReadOnly: false, enableEditorHistory: true, enableSfdtExport: true });
+        (container.documentHelper as any).containerCanvasIn = TestHelper.containerCanvas;
+        (container.documentHelper as any).selectionCanvasIn = TestHelper.selectionCanvas;
+        (container.documentHelper.render as any).pageCanvasIn = TestHelper.pageCanvas;
+        (container.documentHelper.render as any).selectionCanvasIn = TestHelper.pageSelectionCanvas;
+        container.appendTo('#container');
+    });
+    afterAll((done): void => {
+        container.destroy();
+        document.body.removeChild(document.getElementById('container'));
+        container = undefined;
+        document.body.innerHTML = '';
+        setTimeout(function () {
+            done();
+        }, 1000);
+    });
+    // it('Track changes- para mark delete validation', function () {
+    //     console.log('Track changes- para mark delete validation');
+    //     container.currentUser = "Guest";
+    //     container.editor.insertText("Hello");
+    //     container.editor.onEnter();
+    //     container.enableTrackChanges = true;
+    //     container.selection.select('0;0;5', '0;1;1');
+    //     container.editor.delete();
+    //     container.editorHistory.undo();
+    //     container.editorHistory.redo();
+    //     expect(container.documentHelper.pages[0].bodyWidgets[0].childWidgets.length).toBe(2);
+    //     expect((container.documentHelper.pages[0].bodyWidgets[0].childWidgets[0] as ParagraphWidget).characterFormat.revisionLength).toBe(1);
+    // });
+    it('Track changes- para mark single delete validation(combine)', function () {
+        console.log('Track changes- para mark single delete validation(combine)');
+        container.openBlank();
+        container.enableTrackChanges = false;
+        container.editor.insertText("Hello");
+        container.editor.onEnter();
+        container.enableTrackChanges = true;
+        container.editor.onEnter();
+        expect((container.documentHelper.pages[0].bodyWidgets[0].childWidgets[1] as ParagraphWidget).characterFormat.revisionLength).toBe(1);
+        container.enableTrackChanges = false;
+        container.selection.select('0;0;5', '0;0;5');
+        container.editor.delete();
+        expect((container.documentHelper.pages[0].bodyWidgets[0].childWidgets[0] as ParagraphWidget).characterFormat.revisionLength).toBe(1);
+        container.editorHistory.undo();
+        expect((container.documentHelper.pages[0].bodyWidgets[0].childWidgets[1] as ParagraphWidget).characterFormat.revisionLength).toBe(1);
+        container.editorHistory.redo();
+        expect((container.documentHelper.pages[0].bodyWidgets[0].childWidgets[0] as ParagraphWidget).characterFormat.revisionLength).toBe(1);
+        expect(container.revisions.changes.length).toBe(1);
+    });
+    it('Track changes- para mark select and delete validation(combine)', function () {
+        console.log('Track changes- para mark select and delete validation(combine)');
+        container.openBlank();
+        container.editor.insertText("Hello");
+        container.editor.onEnter();
+        container.enableTrackChanges = true;
+        container.editor.onEnter();
+        expect((container.documentHelper.pages[0].bodyWidgets[0].childWidgets[1] as ParagraphWidget).characterFormat.revisionLength).toBe(1);
+        container.enableTrackChanges = false;
+        container.selection.select('0;0;5', '0;0;6');
+        container.editor.delete();
+        expect((container.documentHelper.pages[0].bodyWidgets[0].childWidgets[0] as ParagraphWidget).characterFormat.revisionLength).toBe(1);
+        container.editorHistory.undo();
+        expect((container.documentHelper.pages[0].bodyWidgets[0].childWidgets[1] as ParagraphWidget).characterFormat.revisionLength).toBe(1);
+        container.editorHistory.redo();
+        expect((container.documentHelper.pages[0].bodyWidgets[0].childWidgets[0] as ParagraphWidget).characterFormat.revisionLength).toBe(1);
+        expect(container.revisions.changes.length).toBe(1);
+    });
+});
+describe('Track changes-onEnter validation with different user', () => {
+    let container: DocumentEditor;
+    beforeAll(() => {
+        document.body.innerHTML = '';
+        let ele: HTMLElement = createElement('div', { id: 'container' });
+        document.body.appendChild(ele);
+        DocumentEditor.Inject(Editor, Selection, EditorHistory, SfdtExport);
+        container = new DocumentEditor({ enableEditor: true, isReadOnly: false, enableEditorHistory: true, enableSfdtExport: true });
+        (container.documentHelper as any).containerCanvasIn = TestHelper.containerCanvas;
+        (container.documentHelper as any).selectionCanvasIn = TestHelper.selectionCanvas;
+        (container.documentHelper.render as any).pageCanvasIn = TestHelper.pageCanvas;
+        (container.documentHelper.render as any).selectionCanvasIn = TestHelper.pageSelectionCanvas;
+        container.appendTo('#container');
+    });
+    afterAll((done): void => {
+        container.destroy();
+        document.body.removeChild(document.getElementById('container'));
+        container = undefined;
+        document.body.innerHTML = '';
+        setTimeout(function () {
+            done();
+        }, 1000);
+    });
+    it('Track changes-onEnter validation with different user', function () {
+        console.log('Track changes-onEnter validation with different user');
+        container.enableTrackChanges = true;
+        container.currentUser = "Guest";
+        container.editor.insertText("Hello");
+        container.editor.onEnter();
+        container.selection.select('0;0;5', '0;0;5');
+        container.currentUser = "Henry";
+        container.editor.onEnter();
+        expect((container.documentHelper.pages[0].bodyWidgets[0].childWidgets[0] as ParagraphWidget).characterFormat.getRevision(0).author).toBe('Henry');
+        expect((container.documentHelper.pages[0].bodyWidgets[0].childWidgets[1] as ParagraphWidget).characterFormat.getRevision(0).author).toBe('Guest');
+        container.editorHistory.undo();
+        expect((container.documentHelper.pages[0].bodyWidgets[0].childWidgets[0] as ParagraphWidget).characterFormat.getRevision(0).author).toBe('Guest');
+        container.editorHistory.redo();
+        expect((container.documentHelper.pages[0].bodyWidgets[0].childWidgets[0] as ParagraphWidget).characterFormat.getRevision(0).author).toBe('Henry');
+        expect((container.documentHelper.pages[0].bodyWidgets[0].childWidgets[1] as ParagraphWidget).characterFormat.getRevision(0).author).toBe('Guest');
+    });
+});
+describe('Track changes-insert text validation', () => {
+    let container: DocumentEditor;
+    beforeAll(() => {
+        document.body.innerHTML = '';
+        let ele: HTMLElement = createElement('div', { id: 'container' });
+        document.body.appendChild(ele);
+        DocumentEditor.Inject(Editor, Selection, EditorHistory, SfdtExport);
+        container = new DocumentEditor({ enableEditor: true, isReadOnly: false, enableEditorHistory: true, enableSfdtExport: true });
+        (container.documentHelper as any).containerCanvasIn = TestHelper.containerCanvas;
+        (container.documentHelper as any).selectionCanvasIn = TestHelper.selectionCanvas;
+        (container.documentHelper.render as any).pageCanvasIn = TestHelper.pageCanvas;
+        (container.documentHelper.render as any).selectionCanvasIn = TestHelper.pageSelectionCanvas;
+        container.appendTo('#container');
+    });
+    afterAll((done): void => {
+        container.destroy();
+        document.body.removeChild(document.getElementById('container'));
+        container = undefined;
+        document.body.innerHTML = '';
+        setTimeout(function () {
+            done();
+        }, 1000);
+    });
+    it('Track changes-insert text in between tracked content', function () {
+        console.log('Track changes-insert text in between tracked content');
+        container.enableTrackChanges = true;
+        container.editor.insertText("HelloWorld");
+        container.enableTrackChanges = false;
+        container.selection.select('0;0;5', '0;0;5');
+        container.editor.insertText("S");
+        expect(container.revisions.length).toBe(2);
+        expect(container.revisions.changes.length).toBe(2);
+        container.editorHistory.undo();
+        expect(container.revisions.length).toBe(1);
+        expect(container.revisions.changes.length).toBe(1);
+        container.editorHistory.redo();
+        expect(container.revisions.length).toBe(2);
+        expect(container.revisions.changes.length).toBe(2);
+    });
+});
+describe('Track changes-revision splitting and combine validation', () => {
+    let container: DocumentEditor;
+    beforeAll(() => {
+        document.body.innerHTML = '';
+        let ele: HTMLElement = createElement('div', { id: 'container' });
+        document.body.appendChild(ele);
+        DocumentEditor.Inject(Editor, Selection, EditorHistory, SfdtExport);
+        container = new DocumentEditor({ enableEditor: true, isReadOnly: false, enableEditorHistory: true, enableSfdtExport: true });
+        (container.documentHelper as any).containerCanvasIn = TestHelper.containerCanvas;
+        (container.documentHelper as any).selectionCanvasIn = TestHelper.selectionCanvas;
+        (container.documentHelper.render as any).pageCanvasIn = TestHelper.pageCanvas;
+        (container.documentHelper.render as any).selectionCanvasIn = TestHelper.pageSelectionCanvas;
+        container.appendTo('#container');
+    });
+    afterAll((done): void => {
+        container.destroy();
+        document.body.removeChild(document.getElementById('container'));
+        container = undefined;
+        document.body.innerHTML = '';
+        setTimeout(function () {
+            done();
+        }, 1000);
+    });
+    it('Track changes-revision splitting and combine validation', function () {
+        console.log('Track changes-revision splitting and combine validation');
+        container.editor.insertText("Hello");
+        container.editor.onEnter();
+        container.editor.insertText("Hello");
+        container.editor.onEnter();
+        container.editor.insertText("World");
+        container.editor.onEnter();
+        container.editor.insertText("World");
+        container.enableTrackChanges = true;
+        container.selection.select('0;0;0', '0;0;5');
+        container.editor.delete();
+        container.selection.select('0;1;0', '0;3;5');
+        container.editor.delete();
+        container.selection.select('0;0;5', '0;0;5');
+        container.editor.delete();
+        expect(container.revisions.length).toBe(1);
+        expect(container.revisions.changes.length).toBe(7);
+        container.editorHistory.undo();
+        container.editorHistory.redo();
+        expect(container.revisions.length).toBe(1);
+        expect(container.revisions.changes.length).toBe(7);
+    });
+});
+
+describe('Track changes-Validation for manual tesing', () => {
+    let container: DocumentEditor;
+    beforeAll(() => {
+        document.body.innerHTML = '';
+        let ele: HTMLElement = createElement('div', { id: 'container' });
+        document.body.appendChild(ele);
+        DocumentEditor.Inject(Editor, Selection, EditorHistory, SfdtExport);
+        container = new DocumentEditor({ enableEditor: true, isReadOnly: false, enableEditorHistory: true, enableSfdtExport: true });
+        (container.documentHelper as any).containerCanvasIn = TestHelper.containerCanvas;
+        (container.documentHelper as any).selectionCanvasIn = TestHelper.selectionCanvas;
+        (container.documentHelper.render as any).pageCanvasIn = TestHelper.pageCanvas;
+        (container.documentHelper.render as any).selectionCanvasIn = TestHelper.pageSelectionCanvas;
+        container.appendTo('#container');
+    });
+    afterAll((done): void => {
+        container.destroy();
+        document.body.removeChild(document.getElementById('container'));
+        container = undefined;
+        document.body.innerHTML = '';
+        setTimeout(function () {
+            done();
+        }, 1000);
+    });
+    it('Track changes-Validation for reject the different user revision', () => {
+        console.log('Track changes-Validation for reject the different user revision');
+        container.enableTrackChanges = true;
+        container.currentUser = "Guest";
+        container.editor.insertText("Hello");
+        container.editor.onEnter();
+        container.currentUser = "Henry";
+        container.selection.select('0;0;5', '0;0;5');
+        container.editor.onEnter();
+        container.revisions.get(1).reject();
+        expect(container.revisions.changes.length).toBe(2);
+        expect(container.revisions.changes[0].revisionType).toBe('Insertion');
+        expect(container.revisions.groupedView.keys.length).toBe(1);
+    });
+    it('Track changes validation for revision not combined on delete', () => {
+        container.openBlank();
+        container.editor.insertText('Hello');
+        container.enableTrackChanges = true;
+        container.editor.insertText('World');
+        container.editor.onEnter();
+        container.revisions.get(0).reject();
+        expect(container.revisions.changes.length).toBe(0);
+        expect(container.revisions.revisions.length).toBe(0);
+    });
+    it('Track changes validation for paramark revision not removed', () => {
+        container.openBlank();
+        container.enableTrackChanges = true;
+        container.editor.insertText('Hello');
+        container.editor.onEnter();
+        container.editor.insertText('World');
+        container.selection.select('0;0;5', '0;0;5');
+        container.editor.delete();
+        expect(container.revisions.changes.length).toBe(1);
+        expect(container.revisions.revisions.length).toBe(1);
+    });
+    it('Track changes validation for revisions combine', () => {
+        container.openBlank();
+        container.enableTrackChanges = true;
+        container.editor.insertText('HelloWorld');
+        container.editor.onEnter();
+        expect(container.revisions.changes.length).toBe(2);
+        expect(container.revisions.revisions.length).toBe(1);
+        container.selection.select('0;0;5', '0;0;5');
+        container.currentUser = "new"
+        container.editor.insertText('S');
+        expect(container.revisions.changes.length).toBe(4);
+        expect(container.revisions.revisions.length).toBe(3);
+        container.editor.onBackSpace();
+        container.editorHistory.undo();
+        expect(container.revisions.changes.length).toBe(4);
+        expect(container.revisions.revisions.length).toBe(3);
+        container.editorHistory.redo();
+        expect(container.revisions.changes.length).toBe(2);
+        expect(container.revisions.revisions.length).toBe(1);
+    });
+    it('Press enter in the first cell of table', () => {
+        container.openBlank();
+        container.enableTrackChanges = false;
+        container.editor.insertTable(2, 2);
+        container.enableTrackChanges = true;
+        container.editor.onEnter();
+        expect(container.revisions.changes.length).toBe(1);
+        expect(container.revisions.revisions.length).toBe(1);
+        container.editorHistory.undo();
+        expect(container.revisions.changes.length).toBe(0);
+        expect(container.revisions.revisions.length).toBe(0);
+        container.editorHistory.redo();
+        expect(container.revisions.changes.length).toBe(1);
+        expect(container.revisions.revisions.length).toBe(1);
+    });
+    it('Track changes validation for inserting comment', () => {
+        container.openBlank();
+        container.enableTrackChanges = true;
+        container.editor.insertComment('HelloWorld');
+        expect(container.revisions.changes.length).toBe(0);
+        expect(container.revisions.revisions.length).toBe(0);
+    });
+    it('Track changes validation for inserting content control', () => {
+        container.openBlank();
+        container.enableTrackChanges = true;
+        container.editor.insertContentControl('Text');
+        expect(container.revisions.changes.length).toBe(1);
+        expect(container.revisions.revisions.length).toBe(1);
+    });
+    it('Track changes validation for inserting hyperlink', () => {
+        container.openBlank();
+        container.editor.insertText('Hello');
+        container.editor.onEnter();
+        container.editor.insertText('world');
+        container.enableTrackChanges = true;
+        container.selection.selectAll();
+        container.editor.insertHyperlinkInternal('https://www.google.com', "<<Selection in document>>", false);
+        expect(container.revisions.changes.length).toBe(3);
+        expect(container.revisions.revisions.length).toBe(1);
+        container.editorHistory.undo();
+        expect(container.revisions.changes.length).toBe(0);
+        expect(container.revisions.revisions.length).toBe(0);
+    });
+    // it('Rejecting the insert revision which has comment', () => {
+    //     container.openBlank();
+    //     container.enableTrackChanges = true;
+    //     container.editor.insertText('Hello');
+    //     container.editor.insertComment('HelloWorld');
+    //     container.revisions.get(0).reject();
+    //     expect(container.documentHelper.comments.length).toBe(0);
+    //     expect(container.revisions.changes.length).toBe(0);
+    //     expect(container.revisions.revisions.length).toBe(0);
+    // });
+    it('Track changes validation for delete revision', () => {
+        container.openBlank();
+        container.enableTrackChanges = false;
+        container.editor.insertText('Helloworld');
+        container.enableTrackChanges = true;
+        container.selection.selectAll();
+        container.editor.delete();
+        expect(container.revisions.changes.length).toBe(1);
+        expect(container.revisions.revisions.length).toBe(1);
+        container.editorHistory.undo();
+        expect(container.revisions.changes.length).toBe(0);
+        expect(container.revisions.revisions.length).toBe(0);
+        container.editorHistory.redo();
+        expect(container.revisions.changes.length).toBe(1);
+        expect(container.revisions.revisions.length).toBe(1);
+    });
+    it('Track changes validation for deleting paragraph and table', () => {
+        container.openBlank();
+        container.enableTrackChanges = true;
+        container.editor.insertText('HelloWorld');
+        container.editor.onEnter();
+        container.editor.insertTable(2, 2);
+        container.selection.selectAll();
+        container.editor.delete();
+        expect(container.revisions.changes.length).toBe(0);
+        expect(container.revisions.revisions.length).toBe(0);
+        container.editorHistory.undo();
+        expect(container.revisions.changes.length).toBe(4);
+        expect(container.revisions.revisions.length).toBe(2);
+        container.editorHistory.redo();
+        expect(container.revisions.changes.length).toBe(0);
+        expect(container.revisions.revisions.length).toBe(0);
+    });
+    it('Track changes validation for deleting table and paragraph with insert revision-1', () => {
+        container.openBlank();
+        container.enableTrackChanges = true;
+        container.editor.insertTable(2, 2);
+        container.selection.handleDownKey();
+        container.selection.handleDownKey();
+        container.editor.insertText('HelloWorld');
+        container.selection.selectAll();
+        container.editor.delete();
+        expect(container.revisions.changes.length).toBe(0);
+        expect(container.revisions.revisions.length).toBe(0);
+        container.editorHistory.undo();
+        expect(container.revisions.changes.length).toBe(3);
+        expect(container.revisions.revisions.length).toBe(2);
+        container.editorHistory.redo();
+        expect(container.revisions.changes.length).toBe(0);
+        expect(container.revisions.revisions.length).toBe(0);
+    });
+    it('Track changes validation for deleting table and paragraph with insert revision-2', () => {
+        container.openBlank();
+        container.enableTrackChanges = true;
+        container.editor.insertTable(2, 2);
+        container.selection.handleDownKey();
+        container.selection.handleDownKey();
+        container.editor.insertText('Hello');
+        container.editor.onEnter();
+        container.editor.insertText('World');
+        container.selection.selectAll();
+        container.editor.delete();
+        expect(container.revisions.changes.length).toBe(0);
+        expect(container.revisions.revisions.length).toBe(0);
+        container.editorHistory.undo();
+        expect(container.revisions.changes.length).toBe(5);
+        expect(container.revisions.revisions.length).toBe(2);
+        container.editorHistory.redo();
+        expect(container.revisions.changes.length).toBe(0);
+        expect(container.revisions.revisions.length).toBe(0);
+    });
+    it('Deleting the delete revision with track changes disabled', () => {
+        container.openBlank();
+        container.enableTrackChanges = false;
+        container.editor.insertText('Hello');
+        container.editor.onEnter();
+        container.editor.onEnter();
+        container.enableTrackChanges = true;
+        container.selection.select('0;0;5', '0;0;5');
+        container.editor.delete();
+        container.enableTrackChanges = false;
+        container.editor.onBackSpace();
+        expect(container.revisions.changes.length).toBe(0);
+        expect(container.revisions.revisions.length).toBe(0);
+    });
+    it('Track changes validation for paragraph removed on undo', () => {
+        container.openBlank();
+        container.editor.insertText('HelloWorld');
+        container.editor.onEnter();
+        container.editor.insertTable(2, 2);
+        container.enableTrackChanges = true;
+        container.selection.select('0;0;0','0;1;0;1;0;1');
+        container.editor.delete();
+        container.editorHistory.undo();
+        expect(container.selection.text).toBe('HelloWorld\r\r\r');
+    });
+    it('Track changes validation for revision not combined on deleting untracked content', () => {
+        container.openBlank();
+        container.enableTrackChanges = true;
+        container.editor.insertText('Hello');
+        container.enableTrackChanges = false;
+        container.editor.insertText('S');
+        container.enableTrackChanges = true;
+        container.editor.insertText('World');
+        container.enableTrackChanges = false;
+        container.selection.select('0;0;5', '0;0;5');
+        container.editor.delete();
+        expect(container.revisions.changes.length).toBe(1);
+        expect(container.revisions.revisions.length).toBe(1);
+    });
+    it('Track changes validation for para mark revision not removed undo', () => {
+        container.openBlank();
+        container.editor.insertTable(2, 2);
+        container.enableTrackChanges = true;
+        container.editor.onEnter();
+        container.editorHistory.undo();
+        expect(container.revisions.changes.length).toBe(0);
+        expect(container.revisions.revisions.length).toBe(0);
+        container.editorHistory.redo();
+        expect(container.revisions.changes.length).toBe(1);
+        expect(container.revisions.revisions.length).toBe(1);
+    });
+    it('Track changes validation for revision not removed in header & footer ', () => {
+        container.openBlank();
+        container.enableTrackChanges = true;
+        container.selection.goToHeader();
+        container.editor.insertText('HelloWorld');
+        container.revisions.get(0).reject();
+        container.editorHistory.undo();
+        container.editorHistory.redo();
+        expect(container.revisions.changes.length).toBe(0);
+        expect(container.revisions.revisions.length).toBe(0);
+        container.selection.goToFooter();
+        container.editor.insertText('HelloWorld');
+        container.revisions.get(0).reject();
+        container.editorHistory.undo();
+        container.editorHistory.redo();
+        expect(container.revisions.changes.length).toBe(0);
+        expect(container.revisions.revisions.length).toBe(0);
+    });
+    it('Track changes validation for revisions splitted in the pane', () => {
+        container.openBlank();
+        container.enableTrackChanges = true;
+        container.editor.insertText('HelloWorld');
+        container.selection.select('0;0;5', '0;0;5');
+        container.editor.onEnter();
+        container.editorHistory.undo();
+        container.editorHistory.redo();
+        expect(container.revisions.changes.length).toBe(3);
+        expect(container.revisions.revisions.length).toBe(1);
+    });
+    it('Track changes validation for insert row between table revision', () => {
+        container.openBlank();
+        container.enableTrackChanges = true;
+        container.editor.insertTable(2, 2);
+        container.enableTrackChanges = false;
+        container.editor.insertRow();
+        expect(container.revisions.changes.length).toBe(2);
+        let newRow: TableRowWidget = container.selection.start.paragraph.associatedCell.ownerRow as TableRowWidget;
+        expect(newRow.rowFormat.revisionLength).toBe(0);
+    });
+});
+
+describe('Track changes-Validation for nested table', () => {
+    let container: DocumentEditor;
+    beforeAll(() => {
+        document.body.innerHTML = '';
+        let ele: HTMLElement = createElement('div', { id: 'container' });
+        document.body.appendChild(ele);
+        DocumentEditor.Inject(Editor, Selection, EditorHistory, SfdtExport);
+        container = new DocumentEditor({ enableEditor: true, isReadOnly: false, enableEditorHistory: true, enableSfdtExport: true, enableSelection: true });
+        (container.documentHelper as any).containerCanvasIn = TestHelper.containerCanvas;
+        (container.documentHelper as any).selectionCanvasIn = TestHelper.selectionCanvas;
+        (container.documentHelper.render as any).pageCanvasIn = TestHelper.pageCanvas;
+        (container.documentHelper.render as any).selectionCanvasIn = TestHelper.pageSelectionCanvas;
+        container.appendTo('#container');
+    });
+    afterAll((done): void => {
+        container.destroy();
+        document.body.removeChild(document.getElementById('container'));
+        container = undefined;
+        document.body.innerHTML = '';
+        setTimeout(function () {
+            done();
+        }, 1000);
+    });
+    it('Deleting the insert revision in the nested table', () => {
+        container.openBlank();
+        container.editor.insertTable(2, 2);
+        container.enableTrackChanges = true;
+        container.selection.selectAll();
+        container.editor.onBackSpace();
+        container.editor.insertText('Hello');
+        expect(container.revisions.changes.length).toBe(7);
+        expect(container.revisions.length).toBe(2);
+        container.selection.selectRow();
+        container.editor.onBackSpace();
+        expect(container.revisions.changes.length).toBe(6);
+        expect(container.revisions.length).toBe(1);
+    });
+    it('On undo delete revision should be removed', () => {
+        container.openBlank();
+        container.enableTrackChanges = false;
+        container.editor.insertTable(2, 2);
+        container.editor.insertTable(2, 2);
+        container.enableTrackChanges = true;
+        container.selection.select('0;0;0;1;0;0', '0;0;0;1;0;0');
+        container.selection.selectRow();
+        container.editor.onBackSpace();
+        expect(container.revisions.changes.length).toBe(9);
+        container.editorHistory.undo();
+        expect(container.revisions.changes.length).toBe(0);
+    });
+});
+
+describe('Track changes-Validation for combination of insert and delete', () => {
+    let container: DocumentEditor;
+    beforeAll(() => {
+        document.body.innerHTML = '';
+        let ele: HTMLElement = createElement('div', { id: 'container' });
+        document.body.appendChild(ele);
+        DocumentEditor.Inject(Editor, Selection, EditorHistory, SfdtExport);
+        container = new DocumentEditor({ enableEditor: true, isReadOnly: false, enableEditorHistory: true, enableSfdtExport: true, enableSelection: true });
+        (container.documentHelper as any).containerCanvasIn = TestHelper.containerCanvas;
+        (container.documentHelper as any).selectionCanvasIn = TestHelper.selectionCanvas;
+        (container.documentHelper.render as any).pageCanvasIn = TestHelper.pageCanvas;
+        (container.documentHelper.render as any).selectionCanvasIn = TestHelper.pageSelectionCanvas;
+        container.appendTo('#container');
+    });
+    afterAll((done): void => {
+        container.destroy();
+        document.body.removeChild(document.getElementById('container'));
+        container = undefined;
+        document.body.innerHTML = '';
+        setTimeout(function () {
+            done();
+        }, 1000);
+    });
+    it('Splitting the revision based on author', () => {
+        console.log('Splitting the revision based on author');
+        container.openBlank();
+        container.enableTrackChanges = true;
+        container.editor.insertText('HelloWorld');
+        container.editor.onEnter();
+        container.currentUser = 'Syncfusion';
+        container.selection.select('0;0;0', '0;0;11');
+        container.editor.onBackSpace();
+        container.selection.select('0;0;5', '0;0;5');
+        container.editor.insertText('B');
+        expect(container.revisions.changes.length).toBe(7);
+        expect(container.revisions.revisions.length).toBe(5);
+    });
+    it('splitting the revision based on insertion and deletion', () => {
+        console.log('splitting the revision based on insertion and deletion');
+        container.openBlank();
+        container.currentUser = '';
+        container.enableTrackChanges = true;
+        container.editor.insertText('HelloWorld');
+        container.editor.onEnter();
+        container.currentUser = 'Syncfusion';
+        container.selection.select('0;0;3', '0;0;8');
+        container.editor.onBackSpace();
+        expect(container.revisions.revisions.length).toBe(2);
+        expect(container.revisions.changes.length).toBe(3);
+    });    
+    it('Checking the owner node for delete action', () => {
+        console.log('Checking the owner node for delete action');
+        container.openBlank();
+        container.currentUser = '';
+        container.editor.insertText('HelloWorld');
+        container.editor.onEnter();
+        container.currentUser = 'Syncfusion';
+        container.selection.selectAll();
+        container.editor.onBackSpace();
+        expect((container.revisions.revisions[0].getRange()[0] as TextElementBox).text).toBe('HelloWorld');
+    });
+    it('Checking the owner node for delete action', () => {
+        console.log('Checking the owner node for delete action');
+        container.openBlank();
+        container.currentUser = '';
+        container.editor.insertTable(2,2);
+        container.currentUser = 'Syncfusion';
+        container.selection.select('0;0;0;0;0;0', '0;0;0;0;0;0') ;
+        container.editor.insertRow(false, 1);
+        expect((container.revisions.revisions[0].getRange()[0] as WRowFormat).ownerBase.indexInOwner).toBe(0);
+        expect((container.revisions.revisions[1].getRange()[0] as WRowFormat).ownerBase.indexInOwner).toBe(1);
+        expect((container.revisions.revisions[2].getRange()[0] as WRowFormat).ownerBase.indexInOwner).toBe(2);
+    });
+});
+describe('Nested table -track changes pane validation', () => {
+    let container: DocumentEditor;
+    beforeAll(() => {
+        document.body.innerHTML = '';
+        let ele: HTMLElement = createElement('div', { id: 'container' });
+        document.body.appendChild(ele);
+        DocumentEditor.Inject(Editor, Selection, EditorHistory, SfdtExport);
+        container = new DocumentEditor({ enableEditor: true, isReadOnly: false, enableEditorHistory: true, enableSfdtExport: true, enableSelection: true });
+        (container.documentHelper as any).containerCanvasIn = TestHelper.containerCanvas;
+        (container.documentHelper as any).selectionCanvasIn = TestHelper.selectionCanvas;
+        (container.documentHelper.render as any).pageCanvasIn = TestHelper.pageCanvas;
+        (container.documentHelper.render as any).selectionCanvasIn = TestHelper.pageSelectionCanvas;
+        container.appendTo('#container');
+    });
+    afterAll((done): void => {
+        container.destroy();
+        document.body.removeChild(document.getElementById('container'));
+        container = undefined;
+        document.body.innerHTML = '';
+        setTimeout(function () {
+            done();
+        }, 1000);
+    });
+    it('Nested table -track changes pane validation', () => {
+        console.log('Nested table -track changes pane validation');
+        container.openBlank();
+        container.editor.insertTable(2,2)
+        container.selection.select('0;0;0;1;0;0', '0;0;0;1;0;0');
+        container.enableTrackChanges = true;
+        container.editor.insertTable(2,2)
+        container.selection.select('0;0;0;1;0;0;0;0;0', '0;0;0;1;0;0;0;0;0');
+        container.editor.insertText('1');
+        container.selection.select('0;0;0;1;0;0;1;0;0', '0;0;0;1;0;0;1;0;0');
+        container.editor.insertText('2');
+        container.selection.select('0;0;0;1;0;1;0;0;0', '0;0;0;1;0;1;0;0;0');
+        container.editor.insertText('3');
+        container.selection.select('0;0;0;1;0;1;1;0;0', '0;0;0;1;0;1;1;0;0');
+        container.editor.insertText('4');
+        container.currentUser = 'Syncfusion';
+        container.selection.select('0;0;0;1;0;0;0;0;1', '0;0;0;1;0;1;1;0;2');
+        container.editor.onBackSpace();
+        expect(container.revisions.revisions.length).toBe(2);
+        expect(container.revisions.revisions[0].ownerNode instanceof WRowFormat).toBe(true);
+        expect(container.revisions.revisions[1].ownerNode instanceof WRowFormat).toBe(true);
+        let revisions1 = container.revisions.groupedView.get(container.trackChangesPane.changes.get(container.revisions.revisions[0]));
+        let revisions2 = container.revisions.groupedView.get(container.trackChangesPane.changes.get(container.revisions.revisions[1]));
+        expect(revisions1[0].ownerNode instanceof WRowFormat).toBe(true);
+        expect(revisions2[0].ownerNode instanceof WRowFormat).toBe(true);
+    });
+});

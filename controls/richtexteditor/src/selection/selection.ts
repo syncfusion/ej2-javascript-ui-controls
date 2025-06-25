@@ -348,6 +348,9 @@ export class NodeSelection {
             if (node.nodeType === 3 && node.nodeValue.replace(/\u00a0/g, '&nbsp;') === '&nbsp;') {
                 constant = node.textContent.length;
             }
+            else if (node.nodeType !== 3) {
+                constant = Math.min(constant, node.childNodes.length);
+            }
             range[isvalid ? 'setStart' : 'setEnd'](node, constant);
         }
         return range;
@@ -536,6 +539,9 @@ export class NodeSelection {
         if (element.nodeType === Node.TEXT_NODE) {
             return { node: element, offset: element.textContent ? element.textContent.length : 0 };
         }
+        if (element.nodeName === 'BR') {
+            return { node: element, offset: 0 };
+        }
         for (let i: number = element.childNodes.length - 1; i >= 0; i--) {
             const lastPosition: { node: Node; offset: number } | null = this.findLastTextPosition(element.childNodes[i as number]);
             if (lastPosition) {
@@ -543,5 +549,32 @@ export class NodeSelection {
             }
         }
         return null;
+    }
+    public findFirstTextNode(node: Node): Node | null {
+        if (node.nodeType === Node.TEXT_NODE) {
+            return node;
+        }
+        for (let i: number = 0; i < node.childNodes.length; i++) {
+            const textNode: Node = this.findFirstTextNode(node.childNodes[i as number]);
+            if (!isNullOrUndefined(textNode)) {
+                return textNode;
+            }
+        }
+        return null;
+    }
+    public findFirstContentNode(node: Node): { node: Node; position: number } {
+        if (node.nodeType === Node.TEXT_NODE) {
+            return { node: node, position: 0 };
+        }
+        if (node.nodeName === 'BR') {
+            return { node: node, position: 0 };
+        }
+        for (let i: number = 0; i < node.childNodes.length; i++) {
+            const result: { node: Node; position: number } = this.findFirstContentNode(node.childNodes[i as number]);
+            if (result.node !== null) {
+                return result;
+            }
+        }
+        return { node: node, position: 0 };
     }
 }

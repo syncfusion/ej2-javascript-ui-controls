@@ -18,7 +18,7 @@ export class Draw {
     private isRotateZoom: boolean = false; // To restore zoomed image on selection crop selection
     private tempStrokeSettings: StrokeSettings = {strokeColor: '#fff', fillColor: '', strokeWidth: null, outlineColor: '', radius: null, outlineWidth: null}; // restore stroke settings on cancel
     private tempTextSettings: TextSettings =
-    {text: 'Enter Text', fontFamily: '', fontSize: null, fontRatio: null, bold: false, italic: false, underline: false}; // restore text settings on cancel
+    {text: 'Enter Text', fontFamily: '', fontSize: null, fontRatio: null, bold: false, italic: false, underline: false, strikethrough: false}; // restore text settings on cancel
     private tempAdjValue: string = ''; // for temp internal slider value
     private tempFilter: string = ''; // restore filter style on cancel
     private tempUndoRedoStep: number = 0;
@@ -390,7 +390,7 @@ export class Draw {
         this.currSelPoint = null; this.isRotateZoom = false; this.tempAdjValue = '';
         this.tempStrokeSettings = {strokeColor: '#fff', fillColor: '', strokeWidth: null, radius: null, outlineColor: '', outlineWidth: null};
         this.tempTextSettings =
-            {text: 'Enter Text', fontFamily: this.parent.fontFamily.default, fontSize: null, fontRatio: null, bold: false, italic: false, underline: false};
+            {text: 'Enter Text', fontFamily: this.parent.fontFamily.default, fontSize: null, fontRatio: null, bold: false, italic: false, underline: false, strikethrough: false};
         this.tempUndoRedoStep = this.tempFreehandCounter = this.tempCurrFhdIndex = 0; this.tempZoomFactor = null;
         this.isCancelAction = false; this.rotatedFlipCropSel = false; this.prevActObj = null; this.tempStraightenDestPoints = null;
         this.arrowDimension = {bar: {width: 10, height: 32, ratioX: null, ratioY: null},
@@ -1812,7 +1812,7 @@ export class Draw {
         const filter: string = canvasDraw.filter; const actObj: SelectionPoint = parent.activeObj;
         const { startX, startY, width, height } = actObj.activePoint;
         const rows: string[] = actObj.keyHistory.split('\n');
-        const { fontFamily, bold, italic } = actObj.textSettings;
+        const { fontFamily, bold, italic, underline, strikethrough } = actObj.textSettings;
         let { fontSize } = actObj.textSettings;
         const lHeight: number = fontSize + fontSize * 0.25;
         const lineHeight: number = ((lHeight * rows.length) - (fontSize * rows.length)) / rows.length;
@@ -1827,16 +1827,16 @@ export class Draw {
         canvasDraw.fillStyle = tempFill;
         for (let i: number = 0; i < rows.length; i++) {
             const text: string = rows[i as number];
-            const yPoint: number = ((i + 1) * fontSize * 0.85) + (i * lineHeight);
+            const yPoint: number = ((i + 1) * fontSize * 0.9) + (i * lineHeight);
             if (parent.transform.degree === -360) {parent.transform.degree = 0; }
             if (parent.transform.degree === 0 || parent.transform.degree === 180) {
                 if (fontSize > height) {
-                    fontSize = actObj.textSettings.fontSize = height - (height * 0.1);
+                    fontSize = actObj.textSettings.fontSize = height / 1.18;
                 }
             }
             else {
                 if (fontSize > width) {
-                    fontSize = actObj.textSettings.fontSize = width - (width * 0.1);
+                    fontSize = actObj.textSettings.fontSize = width / 1.18;
                 }
             }
             canvasDraw.strokeStyle = actObj.strokeSettings.outlineColor;
@@ -1874,6 +1874,15 @@ export class Draw {
             } else {
                 canvasDraw.strokeText(text, startX + fontSize * 0.1, startY + yPoint);
                 canvasDraw.fillText(text, startX + fontSize * 0.1, startY + yPoint);
+                if (underline) {
+                    const yOffset: number = yPoint + fontSize * 0.1;
+                    this.drawTextDecoration(canvasDraw, text, startX, startY, yOffset, fontSize, 0.1);
+                }
+
+                if (strikethrough) {
+                    const yOffset: number = yPoint - lineHeight - fontSize * 0.025;
+                    this.drawTextDecoration(canvasDraw, text, startX, startY, yOffset, fontSize, 0.1);
+                }
             }
             canvasDraw.lineWidth = tempWidth;
         }
@@ -1882,6 +1891,22 @@ export class Draw {
         if (this.upperContext === canvasDraw) {
             this.drawOuterSelection(canvasDraw);
         }
+    }
+
+    private drawTextDecoration(canvasDraw: CanvasRenderingContext2D, text: string, startX: number, startY: number,
+                               yOffset: number, fontSize: number, horizontalPadding: number = 0.1): void {
+        const tempWidth: number = canvasDraw.lineWidth;
+        const textWidth: number = canvasDraw.measureText(text).width;
+        canvasDraw.lineWidth = fontSize * 0.1;
+
+        canvasDraw.beginPath();
+        canvasDraw.moveTo(startX + fontSize * horizontalPadding, startY + yOffset);
+        canvasDraw.lineTo(startX + textWidth + fontSize * horizontalPadding, startY + yOffset);
+        canvasDraw.strokeStyle = canvasDraw.fillStyle;
+        canvasDraw.stroke();
+
+        canvasDraw.lineWidth = tempWidth;
+        canvasDraw.strokeStyle = this.parent.activeObj.strokeSettings.outlineColor;
     }
 
     private updateActPoint(degree: string, canvasDraw: CanvasRenderingContext2D): ActivePoint {
@@ -2083,6 +2108,14 @@ export class Draw {
                 yPoint + (i > 0 ? fontSize * 0.25 : -fontSize * 0.35));
             canvasDraw.fillText(text, startX + fontSize * 0.15, startY +
                 yPoint + (i > 0 ? fontSize * 0.25 : -fontSize * 0.35));
+            if (actObj.textSettings.underline) {
+                const yOffset: number = yPoint + (i > 0 ? fontSize * 0.35 : -fontSize * 0.25);
+                this.drawTextDecoration(canvasDraw, text, startX, startY, yOffset, fontSize, 0.15);
+            }
+            if (actObj.textSettings.strikethrough) {
+                const yOffset: number = yPoint - lineHeight + (i > 0 ? - fontSize * 0.04 : -fontSize * 0.64);
+                this.drawTextDecoration(canvasDraw, text, startX, startY, yOffset, fontSize, 0.1);
+            }
         }
     }
 
@@ -2128,7 +2161,7 @@ export class Draw {
             }
             parent.img.destLeft = (parent.lowerCanvas.clientWidth - maxDimension.width) / 2;
             if (degree === 0) {
-                parent.img.destTop = (parent.lowerCanvas.clientHeight - maxDimension.height + 1) / 2;
+                parent.img.destTop = (parent.lowerCanvas.clientHeight - maxDimension.height) / 2;
             } else {
                 parent.img.destTop = (parent.lowerCanvas.clientHeight - maxDimension.height) / 2;
             }
@@ -2292,6 +2325,7 @@ export class Draw {
         const parent: ImageEditor = this.parent;
         // eslint-disable-next-line @typescript-eslint/no-this-alias
         const proxy: Draw = this;
+        parent.imageLoaded = false;
         parent.baseImg.src = src;
         parent.baseImg.onload = () => {
             parent.imgSrc = src;
@@ -2331,6 +2365,10 @@ export class Draw {
                 const action: EditCompleteEventArgs  = { action: 'file-open', actionEventArgs: fileOpened };
                 parent.triggerEditCompleteEvent(action);
             }
+            if (this.fileType === 'Bmp') {
+                this.fileType = FileType.Png;
+            }
+            parent.imageLoaded = true;
         };
         parent.baseImg.onerror = () => {
             hideSpinner(parent.element);
@@ -2347,8 +2385,18 @@ export class Draw {
 
     private updateBaseImgCanvas(): void {
         const parent: ImageEditor = this.parent;
-        parent.baseImgCanvas.width = parent.baseImg.width; parent.baseImgCanvas.height = parent.baseImg.height;
-        parent.baseImgCanvas.getContext('2d').drawImage(parent.baseImg, 0, 0);
+        if (!parent.aspectRatioBaseDimension && parent.imageSettings.width && parent.imageSettings.height) {
+            const widthRatio: number = parent.baseImg.width / parent.imageSettings.width;
+            const heightRatio: number = parent.baseImg.height / parent.imageSettings.height;
+            let ratio: number = (widthRatio + heightRatio) / 2;
+            ratio = ratio < 1 ? 1 : ratio;
+            parent.baseImgCanvas.width = parent.imageSettings.width * ratio;
+            parent.baseImgCanvas.height = parent.imageSettings.height * ratio;
+            parent.baseImgCanvas.getContext('2d').drawImage(parent.baseImg, 0, 0, parent.baseImgCanvas.width, parent.baseImgCanvas.height);
+        } else {
+            parent.baseImgCanvas.width = parent.baseImg.width; parent.baseImgCanvas.height = parent.baseImg.height;
+            parent.baseImgCanvas.getContext('2d').drawImage(parent.baseImg, 0, 0);
+        }
     }
 
     private updateCanvas(isCropped?: boolean, isSameDimension?: boolean): void {
@@ -2373,7 +2421,7 @@ export class Draw {
             value: {width: parent.img.srcWidth, height: parent.img.srcHeight, obj: obj, isImgShape: null}});
         const maxDimension: Dimension = obj as Dimension;
         parent.img.destLeft = (parent.lowerCanvas.clientWidth - maxDimension.width) / 2;
-        parent.img.destTop = (parent.lowerCanvas.clientHeight - maxDimension.height + 1) / 2;
+        parent.img.destTop = (parent.lowerCanvas.clientHeight - maxDimension.height) / 2;
         this.drawImgToCanvas(maxDimension);
         this.origDim.width = parent.img.destWidth; this.origDim.height = parent.img.destHeight;
         this.zoomCrop.width = parent.img.destWidth; this.zoomCrop.height = parent.img.destHeight;
@@ -2678,7 +2726,7 @@ export class Draw {
         }
         parent.notify('toolbar', { prop: 'destroy-qa-toolbar', onPropertyChange: false});
         this.tempTextSettings = {text: 'Enter Text', fontFamily: parent.fontFamily.default, fontSize: null, fontRatio: null, bold: false,
-            italic: false, underline: false};
+            italic: false, underline: false, strikethrough: false};
         parent.objColl = extend([], this.tempObjColl, [], true) as SelectionPoint[];
         parent.pointColl = extend([], this.tempPointColl, [], true) as Point[];
         this.renderImage();
@@ -3112,13 +3160,13 @@ export class Draw {
         const parent: ImageEditor = this.parent;
         if (parent.transform.degree % 90 === 0 && parent.transform.degree % 180 !== 0) {
             parent.img.destLeft = (parent.lowerCanvas.clientWidth - parent.img.destHeight) / 2;
-            parent.img.destTop = (parent.lowerCanvas.clientHeight - parent.img.destWidth + 1) / 2;
+            parent.img.destTop = (parent.lowerCanvas.clientHeight - parent.img.destWidth) / 2;
             const temp: number = parent.img.destWidth; parent.img.destWidth = parent.img.destHeight;
             parent.img.destHeight = temp;
         } else {
             if (isNullOrUndefined(isPreventDimension)) {
                 parent.img.destLeft = (parent.lowerCanvas.clientWidth - parent.img.destWidth) / 2;
-                parent.img.destTop = (parent.lowerCanvas.clientHeight - parent.img.destHeight + 1) / 2;
+                parent.img.destTop = (parent.lowerCanvas.clientHeight - parent.img.destHeight) / 2;
             }
         }
     }
@@ -3514,7 +3562,7 @@ export class Draw {
                 if (fileType === 'jpg' || fileType === 'jpeg') {
                     this.fileType = 'Jpeg' as FileType; fileType = 'jpeg';
                 }
-                if (fileType !== 'jpeg' && fileType !== 'png' && fileType !== 'svg' && fileType !== 'webp') {
+                if (fileType !== 'jpeg' && fileType !== 'png' && fileType !== 'svg' && fileType !== 'webp' && fileType !== 'bmp') {
                     this.fileType = null;
                 }
             }
@@ -3542,9 +3590,9 @@ export class Draw {
     private async getImageSizeFromURL(imageUrl: string, callback: (imageSizeMB: number | null) => void): Promise<void> {
         let response: Response;
         try {
-            response = await fetch(imageUrl, { method: 'HEAD' });
-            const contentLength: number = parseInt(response.headers.get('content-length') || '0', 10);
-            const imageSizeMB: number | null = contentLength;
+            const isBlob: boolean = imageUrl.indexOf('blob:') === 0;
+            response = await fetch(imageUrl, { method: isBlob ? 'GET' : 'HEAD' });
+            const imageSizeMB: number | null = isBlob ? (await response.blob()).size : parseInt(response.headers.get('content-length') || '0', 10);
             callback(imageSizeMB);
         } catch (ex) {
             // eslint-disable-next-line no-console
@@ -3745,6 +3793,8 @@ export class Draw {
                 this.errorLoading();
                 return;
             }
+            parent.imageSettings = {width: null, height: null};
+            parent.aspectRatioBaseDimension = null;
             showSpinner(parent.element); parent.element.style.opacity = '0.5';
             this.inputElem = inputElement;
             fileExtension = fileData.name && fileData.name.split('.')[1];
@@ -3864,7 +3914,7 @@ export class Draw {
                 }
                 const panX: number = (parent.lowerCanvas.clientWidth / 2) - (currObj.activePoint.startX +
                     (currObj.activePoint.width / 2));
-                const panY: number = ((parent.lowerCanvas.clientHeight + 1) / 2) - (currObj.activePoint.startY +
+                const panY: number = ((parent.lowerCanvas.clientHeight) / 2) - (currObj.activePoint.startY +
                     (currObj.activePoint.height / 2));
                 if (isNullOrUndefined(parent.activeObj.shape)) {
                     parent.activeObj = extend({}, activeObj, {}, true) as SelectionPoint;
@@ -4598,8 +4648,18 @@ export class Draw {
     private getImagePoints(): Point[] {
         const point: Point[] = []; const parent: ImageEditor = this.parent;
         const degree: number = parent.transform.degree;
-        const width: number = parent.baseImg.width;
-        const height: number = parent.baseImg.height;
+        let width: number; let height: number;
+        if (!parent.aspectRatioBaseDimension && parent.imageSettings.width && parent.imageSettings.height) {
+            const widthRatio: number = parent.baseImg.width / parent.imageSettings.width;
+            const heightRatio: number = parent.baseImg.height / parent.imageSettings.height;
+            let ratio: number = (widthRatio + heightRatio) / 2;
+            ratio = ratio < 1 ? 1 : ratio;
+            width = parent.imageSettings.width * ratio;
+            height = parent.imageSettings.height * ratio;
+        } else {
+            width = parent.baseImg.width;
+            height = parent.baseImg.height;
+        }
         const obj: Object = {dim: null, width: height, height: width, angle: parent.transform.straighten };
         obj['dim'] = parent.getRotatedCanvasDim(obj['width'], obj['height'], obj['angle']);
         const baseImgCanvasWidth: number = degree % 90 === 0 && degree % 180 !== 0 ? obj['dim']['width'] : parent.baseImgCanvas.width;
@@ -4846,6 +4906,9 @@ export class Draw {
                 }
                 canvasDraw.imageSmoothingEnabled = false;
                 canvasDraw.drawImage(offscreenCanvas, 0, 0, offscreenCanvas.width, offscreenCanvas.height, startX, startY, width, height);
+                if (this.parent.imageSmoothingEnabled) {
+                    canvasDraw.imageSmoothingEnabled = true;
+                }
             }
             obj.redactImage = this.parent.createElement('canvas');
             obj.redactImage.width = offscreenCanvas.width;

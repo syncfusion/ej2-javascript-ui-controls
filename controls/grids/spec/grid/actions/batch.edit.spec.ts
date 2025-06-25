@@ -5066,6 +5066,11 @@ describe('Code Coverage - renderer, react batch edit, number-filter-ui and numer
                     expect(this.isReact).toBe(false);
                     expect(this.requireTemplateRef).toBe(true);
                     this.isReact = true;
+                    this.clearTemplate = (propertyNames?: string[], index?: any, callback?: Function): void => {
+                        if (callback) {
+                            callback();
+                        }
+                    }
                 }
             }, done);
     });

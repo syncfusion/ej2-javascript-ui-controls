@@ -2064,7 +2064,7 @@ describe('Chart Control', () => {
                            marker: { dataLabel: { visible: true } },
                          },
                        ],
-                     
+
                        //Initializing Chart title
                        title: 'Steel Production by Countries, Grouped by Continent',
                        //Initializing User Interaction Tooltip
@@ -2072,7 +2072,7 @@ describe('Chart Control', () => {
                          enable: true,
                          format: '${point.x} : <b>${point.y} Mmt',
                        },
-                     
+
                        legendSettings: {
                          visible: true,
                          enableHighlight: true,
@@ -2080,7 +2080,7 @@ describe('Chart Control', () => {
                          shapeHeight: 9,
                        },
                        load: (args: ILoadedEventArgs) => {
-                    
+
                        },
                        axisLabelRender: (args: IAxisLabelRenderEventArgs) => {
                          const value: number = parseInt(args.text.replace(/,/g, ''), 10);
@@ -2128,7 +2128,6 @@ describe('Chart Control', () => {
             chartObj.refresh();
         });
     });
-
     it('memory leak', () => {
         profile.sample();
         let average: any = inMB(profile.averageChange)

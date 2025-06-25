@@ -595,4 +595,47 @@ describe('Wrap ->', () => {
             });
         });
     });
+
+    describe('API allowWrap:false condition checks ', () => {
+        const helper: SpreadsheetHelper = new SpreadsheetHelper('spreadsheet');
+        beforeAll((done: Function) => {
+            helper.initializeSpreadsheet({
+                sheets: [
+                    {
+                        rows: [
+                            { index: 0, cells: [{ value: 'Hello\nWorld', wrap: true }] },
+                            { index: 1, cells: [{ value: 'Welcome', wrap: true }] },
+                            { index: 2, cells: [{ value: 'Test\nWrap' }] },
+                            { index: 3, cells: [{ value: 'Wrapped\nCell' }, { value: 'Target' }] }
+                        ]
+                    }
+                ],
+                allowWrap: false
+            }, done);
+        });
+        afterAll(() => {
+            helper.invoke('destroy');
+        });
+        it('Check through celldata binding and public method call', (done: Function) => {
+            expect(helper.invoke('getCell', [0, 0]).classList).not.toContain('e-wraptext');
+            expect(helper.invoke('getCell', [1, 0]).classList).not.toContain('e-wraptext');
+            helper.invoke('wrap', ['Sheet1!A3']);
+            expect(helper.invoke('getCell', [2, 0]).classList).not.toContain('e-wraptext');
+            helper.invoke('wrap', ['Sheet1!A4']);
+            helper.invoke('copy', ['Sheet1!A4']).then(() => {
+                helper.invoke('selectRange', ['Sheet1!B4']);
+                helper.invoke('paste');
+                expect(helper.invoke('getCell', [3, 1]).classList).not.toContain('e-wraptext');
+                done();
+            });
+        });
+        it('Check through ui interaction', (done: Function) => {
+            helper.invoke('selectRange', ['Sheet1!A2']);
+            helper.getElement('#' + helper.id + '_wrap').click();
+            expect(helper.invoke('getCell', [1, 0]).classList).not.toContain('e-wraptext');
+            const wrapBtn = document.getElementById('spreadsheet_wrap');
+            expect(wrapBtn.parentElement.classList).toContain('e-overlay');
+            done();
+        });
+    });
 });

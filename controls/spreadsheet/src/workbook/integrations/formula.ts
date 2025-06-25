@@ -8,7 +8,7 @@ import { Deferred } from '@syncfusion/ej2-data';
 import { DefineNameModel, getCellAddress, getFormattedCellObject, isNumber, checkIsFormula, removeUniquecol, checkUniqueRange } from '../common/index';
 import { getRangeAddress, InsertDeleteEventArgs, getRangeFromAddress, isCellReference, refreshInsertDelete, getUpdatedFormulaOnInsertDelete } from '../common/index';
 import { getUniqueRange, DefineName, selectionComplete, DefinedNameEventArgs, getRangeIndexes, InvalidFormula, getSwapRange } from '../common/index';
-import { FormulaCalculateArgs, updateSheetFromDataSource, ExtendedRange } from '../common/index';
+import { FormulaCalculateArgs, updateSheetFromDataSource, ExtendedRange, importModelUpdate } from '../common/index';
 import { formulaBarOperation } from '../../spreadsheet/common/event';
 
 /**
@@ -92,6 +92,7 @@ export class WorkbookFormula {
         this.parent.on(getCellRefValue, this.getCellRefValue, this);
         this.parent.on(commputeFormulaValue, this.commputeFormulaValue, this);
         this.parent.on(sheetRenameUpdate, this.renameUpdation, this);
+        this.parent.on(importModelUpdate, this.initFormulaOnImport, this);
     }
 
     private removeEventListener(): void {
@@ -109,6 +110,7 @@ export class WorkbookFormula {
             this.parent.off(getCellRefValue, this.getCellRefValue);
             this.parent.off(commputeFormulaValue, this.commputeFormulaValue);
             this.parent.off(sheetRenameUpdate, this.renameUpdation);
+            this.parent.off(importModelUpdate, this.initFormulaOnImport);
         }
     }
 
@@ -196,13 +198,11 @@ export class WorkbookFormula {
             break;
         case 'registerSheet':
             this.registerSheet(<number>args.sheetIndex, <number>args.sheetCount);
-            if (args.isImport) {
-                this.calculateInstance.setParseArgumentSeparator(this.parent.listSeparator);
-                this.updateSheetInfo();
-            }
             break;
         case 'unRegisterSheet':
-            this.unRegisterSheet(<number>args.sheetIndex, <number>args.sheetCount, <boolean>args.propertyChange); break;
+            this.unRegisterSheet(<number>args.sheetIndex, <number>args.sheetCount, <boolean>args.propertyChange,
+                <boolean>args.isNewWorkBook);
+            break;
         case 'initSheetInfo':
             this.updateSheetInfo(); break;
         case 'refreshCalculate':
@@ -277,6 +277,12 @@ export class WorkbookFormula {
             this.calculateInstance.getFormulaInfoTable().clear();
             break;
         }
+    }
+    private initFormulaOnImport(): void {
+        this.registerSheet();
+        this.calculateInstance.setParseArgumentSeparator(this.parent.listSeparator);
+        this.updateSheetInfo();
+        this.initiateDefinedNames();
     }
     private definedNamesDeletion(sheetName: string): void {
         const definedNames: DefineNameModel[] = this.parent.definedNames;
@@ -526,16 +532,26 @@ export class WorkbookFormula {
     }
 
     private unRegisterSheet(
-        sheetIndex: number = 0, sheetCount: number = this.parent.sheets.length, propertyChange?: boolean): void {
+        sheetIndex: number = 0, sheetCount: number = this.parent.sheets.length, propertyChange?: boolean, isNewWorkBook?: boolean): void {
         let id: string;
         this.calculateInstance.tokenCount = 0;
         if (propertyChange) {
             this.calculateInstance.unregisterGridAsSheet(id, id, propertyChange);
         } else {
-            while (sheetIndex < sheetCount) {
-                id = getSheet(this.parent, sheetIndex).id + '';
-                this.calculateInstance.unregisterGridAsSheet(id, id);
-                sheetIndex++;
+            if (isNewWorkBook) {
+                for (let i: number = this.sheetInfo.length - 1; i >= 0; i--) {
+                    const visibleName: string = this.sheetInfo[i as number].visibleName;
+                    id = this.sheetInfo[i as number].index.toString();
+                    this.calculateInstance.unregisterGridAsSheet(id, id);
+                    this.definedNamesDeletion(visibleName);
+                }
+                this.clearFormulaDependentCells({ isOpen: true });
+            } else {
+                while (sheetIndex < sheetCount) {
+                    id = getSheet(this.parent, sheetIndex).id + '';
+                    this.calculateInstance.unregisterGridAsSheet(id, id);
+                    sheetIndex++;
+                }
             }
         }
     }

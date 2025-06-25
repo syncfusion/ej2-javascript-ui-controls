@@ -1,11 +1,12 @@
 /**
  * Resize spec
  */
-import { Browser } from "@syncfusion/ej2-base";
+import { Browser, createElement } from "@syncfusion/ej2-base";
 import { CLS_RTE_RES_HANDLE } from "../../../src/rich-text-editor/base/classes";
 import { renderRTE, destroy } from "./../render.spec";
 import { RichTextEditor } from "../../../src/rich-text-editor/index";
 import { BASIC_MOUSE_EVENT_INIT } from "../../constant.spec";
+import { ToolbarType } from "../../../src/common/enum";
 
 describe("Resize - Actions Module", () => {
 
@@ -481,6 +482,60 @@ describe("Resize - Actions Module", () => {
                     expect(errorSpy).not.toHaveBeenCalled();
                     done();
                 }, 100);
+        });
+    });
+
+    describe("959345 - Resize is not working properly in code view.", () => {
+        let rteEle: HTMLElement;
+        let rteObj: RichTextEditor;
+        let clickEvent: any;
+        let defaultRTE: HTMLElement = createElement('div', { id: 'defaultRTE' });
+        let innerHTML: string = `<p id="rte-p"></p>`;
+        let resizeStartSpy: jasmine.Spy = jasmine.createSpy('onresizeStart');
+        let resizingSpy: jasmine.Spy = jasmine.createSpy('onresizing');
+        let resizeStopSpy: jasmine.Spy = jasmine.createSpy('onresizeStop');
+        beforeEach((done: Function) => {
+            document.body.appendChild(defaultRTE);
+            rteObj = new RichTextEditor({
+            toolbarSettings: {
+                type: ToolbarType.Popup,
+                items: ['SourceCode', 'CreateTable']
+            },
+            enableResize: true,
+            enableRtl: true,
+            resizeStart: resizeStartSpy,
+            resizing: resizingSpy,
+            resizeStop: resizeStopSpy
+            });
+            rteObj.appendTo('#defaultRTE');
+            rteEle = rteObj.element;
+            done();
+        });
+        afterEach((done: Function) => {
+            destroy(rteObj);
+            done();
+        });
+        it('Resize is not working properly in code view when there are more contents.', (done) => {
+            expect(rteEle.querySelectorAll(".e-toolbar-item")[0].getAttribute("title")).toBe("Code View (Ctrl+Shift+H)");
+            rteObj.contentModule.getEditPanel().innerHTML = '<p>data</p>';
+            let trgEle: HTMLElement = <HTMLElement>rteEle.querySelectorAll(".e-toolbar-item")[0];
+            trgEle.click();
+            expect((<any>rteObj).element.querySelector('.e-rte-srctextarea')).not.toBe(null);
+            expect((<any>rteObj).element.querySelector('.e-rte-srctextarea').value === '<p>data</p>').toBe(true);
+            let trg = (rteObj.element.querySelector('.' + CLS_RTE_RES_HANDLE) as HTMLElement);
+            clickEvent = new MouseEvent('mousemove', {
+            clientX: rteObj.inputElement.getBoundingClientRect().left + 10,
+            clientY: rteObj.inputElement.getBoundingClientRect().top + 10,
+            bubbles: true,
+            cancelable: true,
+            detail: 1
+            });
+            trg.dispatchEvent(clickEvent);
+            (rteObj.resizeModule as any).performResize(clickEvent);
+            const rteHeight = document.getElementById(rteObj.getID()).style.height;
+            const sourceViewHeight = document.getElementById(rteObj.getID() + "_source-view").style.height;
+            expect(rteHeight === sourceViewHeight).toBe(true);
+            done();
         });
     });
 });

@@ -1,6 +1,6 @@
 import { SpreadsheetHelper } from '../util/spreadsheethelper.spec';
 import { defaultData } from '../util/datasource.spec';
-import { SheetModel, getRangeAddress, Spreadsheet, getCell, CellModel } from '../../../src/index';
+import { SheetModel, getRangeAddress, Spreadsheet, getCell, CellModel, setCellFormat} from '../../../src/index';
 import { L10n } from '@syncfusion/ej2-base';
 import { SpreadsheetModel } from '../../../src/spreadsheet/index';
 
@@ -990,7 +990,7 @@ describe('Cell Format ->', () => {
             done();
         });
     });
-    
+
     describe('EJ2-58338, EJ2-840548, EJ2-896102 ->', () => {
         beforeAll((done: Function) => {
             helper.initializeSpreadsheet({ sheets: [{ ranges: [{ dataSource: defaultData }] }] }, done);
@@ -1182,6 +1182,23 @@ describe('Cell Format ->', () => {
             expect(helper.getInstance().sheets[0].rows[1].cells[6].style.borderTop).toBe('');
             expect(helper.getInstance().sheets[0].rows[1].cells[6].style.borderRight).toBe('');
             expect(helper.getInstance().sheets[0].rows[1].cells[6].style.borderLeft).toBe('');
+            done();
+        });
+        it('EJ2-875685 - Outside border not applied correctly in RTL mode', (done: Function) => {
+            helper.setModel('enableRtl', true);
+            helper.invoke('selectRange', ['J2:L4']);
+            helper.getElement('#' + helper.id + '_borders').click();
+            helper.getElement('.e-menu-item[aria-label="Outside Borders"]').click();
+            expect(helper.getInstance().sheets[0].rows[1].cells[11].style.borderLeft).toBe('1px solid #000000');
+            expect(helper.getInstance().sheets[0].rows[1].cells[9].style.borderRight).toBe('1px solid #000000');
+            helper.invoke('selectRange', ['J6:L8']);
+            helper.getElement('#' + helper.id + '_borders').click();
+            helper.getElement('.e-menu-item[aria-label="Left Borders"]').click();
+            expect(helper.getInstance().sheets[0].rows[5].cells[11].style.borderLeft).toBe('1px solid #000000');
+            helper.invoke('selectRange', ['J10:L12']);
+            helper.getElement('#' + helper.id + '_borders').click();
+            helper.getElement('.e-menu-item[aria-label="Right Borders"]').click();
+            expect(helper.getInstance().sheets[0].rows[9].cells[9].style.borderRight).toBe('1px solid #000000');
             done();
         });
     });
@@ -1567,5 +1584,69 @@ describe('Cell Format ->', () => {
             });
         });
     });
-
+    describe('Cell Format automation coverage ->', () => {
+        beforeAll((done: Function) => {
+            helper.initializeSpreadsheet({ sheets: [{ ranges: [{ dataSource: defaultData }] }] }, done);
+        });
+        afterAll(() => {
+            helper.invoke('destroy');
+        });
+        it('Should prevent formatting read-only cells and show alert', (done: Function) => {
+            helper.invoke('setRangeReadOnly',[true, 'A1:A1',0]);
+            helper.getInstance().notify(setCellFormat, { style: { fontWeight: 'bold' }, range:'A1', onActionUpdate: true });
+            expect(helper.invoke('getCell', [0, 0]).style.fontWeight).not.toBe('bold');
+            expect(helper.invoke('getCell', [0, 0]).style.color).not.toBe('#ff0000');
+            const dialog = helper.getElement('.e-readonly-alert-dlg');
+            expect(dialog.querySelector('.e-dlg-content').textContent).toBe('You are trying to modify a cell that is in read-only mode. To make changes, please disable the read-only status.');
+            helper.setAnimationToNone('.e-readonly-alert-dlg.e-dialog');
+            (dialog.querySelector('.e-btn.e-primary') as HTMLElement).click();
+            done();
+        });
+        it('Should maintain existing border style when modifying individual border', (done: Function) => {
+            helper.invoke('cellFormat', [{ border: '1px solid #000000' }, 'B1']);
+            const cellB1 = helper.getInstance().sheets[0].rows[0].cells[1];
+            expect(JSON.stringify(cellB1.style)).toBe('{"borderRight":"1px solid #000000","borderTop":"1px solid #000000","borderLeft":"1px solid #000000","borderBottom":"1px solid #000000"}');
+            const cell = helper.invoke('getCell', [0, 1]);
+            expect(cell.style.borderTop).toBe('1px solid rgb(0, 0, 0)');
+            expect(cell.style.borderLeft).toBe('');
+            expect(cell.style.borderRight).toBe('1px solid rgb(0, 0, 0)');
+            expect(cell.style.borderBottom).toBe('1px solid rgb(0, 0, 0)');
+            done();
+        });
+    });
+    describe('Cell Formatting with allowCellFormatting: false ->', () => {
+        beforeAll((done: Function) => {
+            helper = new SpreadsheetHelper('spreadsheet');
+            helper.initializeSpreadsheet({
+                allowCellFormatting: false,
+                sheets: [{ ranges: [{ dataSource: defaultData }], rows: [{ cells:[{ style: {border: '1px solid black', fontWeight: 'normal', textAlign: 'left' } }] }]}],
+            },done);
+        });
+        afterAll(() => {
+            helper.invoke('destroy');
+        });
+        it('Should not apply any style formatting and conditional formatting', (done: Function) => {
+            const cellA1 = helper.getInstance().sheets[0].rows[0].cells[0];
+            expect(JSON.stringify(cellA1.style)).toBe('{"border":"1px solid black","fontWeight":"normal","textAlign":"left"}');
+            const tdA1 = helper.invoke('getCell', [0, 0]);
+            expect(tdA1.style.borderStyle).toBe('');
+            expect(tdA1.style.fontWeight).toBe('');
+            expect(tdA1.style.textAlign).toBe('');
+            helper.getInstance().cellFormat({ fontWeight: 'bold', fontStyle: 'italic', color: '#ff0000', backgroundColor: '#88eeff', textAlign: 'center' }, 'A1');
+            expect(JSON.stringify(cellA1.style)).toBe('{"border":"1px solid black","fontWeight":"normal","textAlign":"left"}');
+            helper.getInstance().conditionalFormat({ type: 'GreaterThan', cFColor: 'RedFT', value: '10', range: 'E5:E6' });
+            const cellE5 = helper.getInstance().sheets[0].rows[4].cells[4];
+            expect(cellE5.style).toBeUndefined();
+            const tdE5 = helper.invoke('getCell', [4, 4]);
+            expect(tdE5.style.backgroundColor).toBe('');
+            done()
+        });
+        it('Should not apply data validation', (done: Function) => {
+            helper.getInstance().addDataValidation({ type: 'WholeNumber', operator: 'LessThan', value1: '10', isHighlighted: true }, 'F4');
+            const cellF4 =helper.getInstance().sheets[0].rows[3].cells[5];
+            expect(JSON.stringify(cellF4.validation)).toBe('{"type":"WholeNumber","operator":"LessThan","value1":"10","isHighlighted":true}');
+            expect(helper.invoke('getCell',[3,5]).style.backgroundColor).toBe("");
+            done();
+        });
+    });
 });

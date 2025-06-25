@@ -1789,9 +1789,9 @@ export function resetDialogAppend(gObj: IGrid, dlgObj: Dialog): void {
     element.style.zIndex = (dlgObj.zIndex).toString();
     element.style.width = dlgObj.element.offsetWidth + 'px';
     element.appendChild(dlgObj.element);
-    const sbPanel: Element = parentsUntil(gObj.element, 'sb-demo-section') || parentsUntil(gObj.element, 'e-grid-dialog-fixed');
+    const sbPanel: HTMLElement = document.querySelector('.sb-demo-section,.e-grid-dialog-fixed');
     if (sbPanel) {
-        const sbPos: { left: number; top: number; } = calculateRelativeBasedPosition(gObj.element, sbPanel as HTMLElement);
+        const sbPos: { left: number; top: number; } = calculateRelativeBasedPosition(gObj.element, sbPanel);
         element.style.top = sbPos.top + 'px';
         element.style.left = sbPos.left + 'px';
         sbPanel.insertBefore(element, sbPanel.firstChild);
@@ -2335,11 +2335,12 @@ export function removeEventHandlers(component: any, evts: string[], instance: an
 /**
  * @param {IGrid | IXLFilter} parent - Defines parent instance
  * @param {string[]} templates - Defines the templates name which are needs to clear
+ * @param {Function} callback - Defines the callback function that is triggered after the template is cleared
  * @returns {void}
  * @hidden
  */
-export function clearReactVueTemplates(parent: IGrid | IXLFilter, templates: string[]): void {
-    parent.destroyTemplate(templates);
+export function clearReactVueTemplates(parent: IGrid | IXLFilter, templates: string[], callback?: Function): void {
+    parent.destroyTemplate(templates, undefined, callback);
     if (parent.isReact) {
         parent.renderTemplates();
     }

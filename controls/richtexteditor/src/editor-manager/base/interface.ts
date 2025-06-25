@@ -1,7 +1,7 @@
 import { NodeSelection } from './../../selection/index';
 import { KeyboardEventArgs } from '@syncfusion/ej2-base';
 import { IHtmlFormatterCallBack, IAdvanceListItem } from '../../common/interface';
-import { IFormatPainterActionValue, IFormatPainterContext } from './enum';
+import { IFormatPainterActionValue } from './enum';
 /**
  * Specifies  Command models interfaces.
  *
@@ -77,7 +77,7 @@ export interface IKeyboardActionArgs extends KeyboardEvent {
  */
 export interface IHtmlItem {
     module?: string
-    event?: KeyboardEvent | MouseEvent
+    event?: KeyboardEvent | MouseEvent | ClipboardEvent
     selection?: NodeSelection
     link?: HTMLInputElement
     selectNode?: Node[]
@@ -169,7 +169,6 @@ export interface IHtmlKeyboardEvent {
  *
  */
 export interface IFormatPainterSettings {
-    allowedContext?: IFormatPainterContext[]
     allowedFormats?: string
     deniedFormats?: string
 }
@@ -262,4 +261,14 @@ export interface BeforeInputEvent extends Event {
     inputType: string;
     isComposing: boolean;
     preventDefault(): void;
+}
+
+/**
+ * @private
+ * @hidden
+ */
+export interface CodeBlockPosition {
+    blockNode: Node;
+    cursorAtLastPosition: boolean;
+    nextSiblingCodeBlockElement: {currentNode: Node, nextSibling: Node } | null;
 }

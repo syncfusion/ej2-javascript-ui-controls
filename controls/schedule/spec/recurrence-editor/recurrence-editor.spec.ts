@@ -46,7 +46,7 @@ describe('Recurrence Editor Base Module', () => {
             schObj = util.createRecurrenceEditor(model);
             expect(createdFn).toHaveBeenCalledTimes(1);
             schObj.destroy();
-            expect(destroyedFn).toHaveBeenCalledTimes(1);
+            expect(destroyedFn).toHaveBeenCalledTimes(1);    
         });
     });
 
@@ -539,6 +539,7 @@ describe('Recurrence Editor Base Module', () => {
             expect(schObj.getRecurrenceRule()).toBe('FREQ=DAILY;INTERVAL=2;UNTIL=20280131T090000Z;');
             expect('every 2 day(s), until 31 Jan 2028').toBe(schObj.getRuleSummary());
         });
+        //
         it('ensuring the Rule set process- WEEKLY - Never', () => {
             schObj.setRecurrenceRule('FREQ=WEEKLY;INTERVAL=2;BYDAY=SU,WE,FR');
             expect((<any>schObj).repeatType.value).toBe(WEEKLY);

@@ -120,7 +120,7 @@ export class Sort {
         const l10n: L10n = this.parent.serviceLocator.getService(locale);
         dialogInst.show({
             height: 180, width: 400, isModal: true, showCloseIcon: true,
-            content: args.error,
+            content: args.error, enableRtl: this.parent.enableRtl,
             beforeOpen: (openArgs: BeforeOpenEventArgs): void => {
                 const dlgArgs: DialogBeforeOpenEventArgs = {
                     dialogName: args.error === l10n.getConstant('MultiRangeSortError') ? 'MultiRangeSortDialog' : 'SortRangeDialog',
@@ -159,7 +159,7 @@ export class Sort {
         let sortOptions: SortOptions;
         dialogInst.show({
             height: 400, width: 560, isModal: true, showCloseIcon: true, cssClass: 'e-customsort-dlg',
-            header: l10n.getConstant('CustomSort'),
+            header: l10n.getConstant('CustomSort'), enableRtl: this.parent.enableRtl,
             beforeOpen: (args: BeforeOpenEventArgs): void => {
                 const dlgArgs: DialogBeforeOpenEventArgs = {
                     dialogName: 'CustomSortDialog',
@@ -343,6 +343,7 @@ export class Sort {
         const checkHeaderObj: CheckBox = new CheckBox({
             label: l10n.getConstant('ContainsHeader'),
             checked: true,
+            enableRtl: this.parent.enableRtl,
             change: (args: CheckBoxChangeEventArgs) => {
                 const fieldsMap: FieldSettingsModel = args.checked ? { text: 'text', value: 'value' } : { text: 'value' };
                 Array.prototype.forEach.call(
@@ -367,7 +368,8 @@ export class Sort {
         const checkCaseObj: CheckBox = new CheckBox({
             label: l10n.getConstant('CaseSensitive'),
             checked: false,
-            cssClass: 'e-sort-casecheckbox'
+            cssClass: 'e-sort-casecheckbox',
+            enableRtl: this.parent.enableRtl
         });
         const caseCheckbox: HTMLElement = this.parent.createElement('input', {
             className: 'e-sort-checkcase', attrs: { type: 'checkbox' }
@@ -391,6 +393,7 @@ export class Sort {
             dataSource: data,
             fields: { id: 'id' },
             height: '100%',
+            enableRtl: this.parent.enableRtl,
             /* eslint-disable */
             template: initializeCSPTemplate( function(data: any): string {
                 return ('<div class="e-sort-listwrapper">' +
@@ -440,6 +443,7 @@ export class Sort {
         const dropDown: Element = element.getElementsByClassName('e-sort-field')[0];
         const dropDownListObj: DropDownList = new DropDownList({
             dataSource: fields,
+            enableRtl: this.parent.enableRtl,
             width: 'auto',
             cssClass: 'e-sort-field-ddl',
             fields: fieldsMap,
@@ -466,7 +470,7 @@ export class Sort {
         const ordertxtElem: HTMLElement = orderRadio.getElementsByClassName('e-sort-ordertxt')[0] as HTMLElement;
         const isAscending: boolean = ordertxtElem.innerText.toLocaleLowerCase() === 'ascending';
         const radiobutton: RadioButton = new RadioButton({
-            label: l10n.getConstant('SortAscending'),
+            label: l10n.getConstant('SortAscending'), enableRtl: this.parent.enableRtl,
             name: 'sortAZ_' + id, value: 'ascending', checked: isAscending, cssClass: 'e-sort-radiobutton',
             change: (args: ChangeArgs) => { this.setRadioBtnValue(lvObj, id, args.value); }
         });
@@ -478,7 +482,7 @@ export class Sort {
         radiobutton.appendTo(radio);
         /* sort descending radio button */
         const radiobutton2: RadioButton = new RadioButton({
-            label: l10n.getConstant('SortDescending'),
+            label: l10n.getConstant('SortDescending'), enableRtl: this.parent.enableRtl,
             name: 'sortAZ_' + id, value: 'descending', checked: !isAscending, cssClass: 'e-sort-radiobutton',
             change: (args: ChangeArgs) => { this.setRadioBtnValue(lvObj, id, args.value); }
         });

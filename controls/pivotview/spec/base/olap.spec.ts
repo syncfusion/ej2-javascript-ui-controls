@@ -813,6 +813,101 @@ describe('Pivot Olap Engine', () => {
                 expect(memory).toBeLessThan(profile.samples[0] + 0.25);
             });
         });
+
+        describe('Toolbar', () => {
+            let pivotGridObj: PivotView;
+            let elem: HTMLElement = createElement('div', { id: 'PivotGrid', styles: 'height:200px; width:500px' });
+            afterAll(() => {
+                if (pivotGridObj) {
+                    pivotGridObj.destroy();
+                }
+                remove(elem);
+            });
+            beforeAll((done: Function) => {
+                if (!document.getElementById(elem.id)) {
+                    document.body.appendChild(elem);
+                }
+                let dataBound: EmitType<Object> = () => { done(); };
+                PivotView.Inject(GroupingBar, DrillThrough, Grouping, Toolbar, PDFExport, ExcelExport, ConditionalFormatting, NumberFormatting);
+                pivotGridObj = new PivotView({
+                    dataSourceSettings: {
+                        catalog: 'Adventure Works DW Standard Edition',
+                        cube: 'Adventure Works',
+                        providerType: 'SSAS',
+                        url: 'https://olap.flexmonster.com/olap/msmdpump.dll',
+                        localeIdentifier: 1033,
+                        allowLabelFilter: true,
+                        allowValueFilter: true,
+                        formatSettings: [{ name: '[Measures].[Customer Count]', format: 'N2' }],
+                        rows: [
+
+                            { name: '[Employee].[Gender]', caption: 'Date Fiscal' },
+                        ],
+                        columns: [
+                            { name: '[Measures]', caption: 'Measures' },
+                        ],
+                        values: [
+                            { name: '[Measures].[Customer Count]', caption: 'Customer Count' },
+                            { name: '[Measures].[Internet Sales Amount]', caption: 'Internet Sales Amount' },
+                        ],
+                        expandAll: false,
+
+                    },
+                    height: 800,
+                    width: 800,
+                    allowDrillThrough: true,
+                    allowDataCompression: true,
+                    showToolbar: true,
+                    allowExcelExport: true,
+                    allowConditionalFormatting: true,
+                    allowPdfExport: true,
+                    showGroupingBar: true,
+                    enableVirtualization: true,
+                    showFieldList: false,
+                    showValuesButton: true,
+                    allowGrouping: true,
+                    enablePaging: false,
+                    allowNumberFormatting: true,
+                    allowCalculatedField: true,
+                    allowDeferLayoutUpdate: true,
+                    enableValueSorting: true,
+                    exportAllPages: false,
+                    maxNodeLimitInMemberEditor: 50,
+                    saveReport: util.saveReport.bind(this),
+                    fetchReport: util.fetchReport.bind(this),
+                    loadReport: util.loadReport.bind(this),
+                    removeReport: util.removeReport.bind(this),
+                    renameReport: util.renameReport.bind(this),
+                    newReport: util.newReport.bind(this),
+                    toolbarRender: util.beforeToolbarRender.bind(this),
+                    displayOption: { view: 'Both' },
+                    dataBound: dataBound,
+                    chartSettings: {
+                        value: 'Amount', enableExport: true, chartSeries: { type: 'Column', animation: { enable: false } }, enableMultipleAxis: false,
+                    },
+                    gridSettings: {
+                        columnWidth: 120, rowHeight: 36, allowSelection: true,
+                        selectionSettings: { mode: 'Cell', type: 'Single', cellSelectionMode: 'Box' }
+                    },
+                    toolbar: ['New', 'Save', 'SaveAs', 'Rename', 'Remove', 'Load',
+                    'Grid', 'Chart', 'MDX', 'Export', 'SubTotal', 'GrandTotal', 'ConditionalFormatting', 'FieldList'],
+                    virtualScrollSettings: { allowSinglePage: false }
+                });
+                pivotGridObj.appendTo('#PivotGrid');
+            });
+            it('values testing', (done: Function) => {
+                setTimeout(() => {
+                    expect((pivotGridObj.olapEngineModule.pivotValues[1][1]).formattedText).toBe('18,484.00');
+                    done();
+                }, 2500);
+            });
+            it('values testing', (done: Function) => {
+                setTimeout(() => {
+                    (document.getElementById('PivotGridmdxQuery') as HTMLElement).click();
+                    done();
+                }, 2500);
+            });
+        });
     });
     // describe('Features ensuring - Drillthrough for column', () => {
     //     let elem: HTMLElement = createElement('div', { id: 'PivotGrid' });

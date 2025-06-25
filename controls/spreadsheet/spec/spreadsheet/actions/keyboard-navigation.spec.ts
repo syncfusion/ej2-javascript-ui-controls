@@ -1172,4 +1172,32 @@ describe('Spreadsheet cell navigation module ->', () => {
             done();
         });
     });
+    describe('EJ2-960405 -> Focus does not move to the Close button in the Custom dialog when using the Tab key.', () => {
+        beforeAll((done: Function) => {
+            helper.initializeSpreadsheet({ sheets: [{ ranges: [{ dataSource: defaultData }] }] }, done);
+        });
+        afterAll(() => {
+            helper.invoke('destroy');
+        });
+        it('Custom format dialog button focus verification with Tab key', (done: Function) => {
+            helper.invoke('selectRange', ['J2']);
+            helper.getElement(`#${helper.id}_number_format`).click();
+            helper.getElement(`#${helper.id}_Custom`).click();
+            setTimeout(() => {
+                const dialog: HTMLElement = helper.getElement('.e-custom-format-dlg');
+                expect(dialog).not.toBeNull();
+
+                const btnElement: HTMLElement = helper.getElement('.e-custom-dialog .e-input-button .e-btn');
+                btnElement.focus();
+                expect(document.activeElement).toBe(btnElement);
+                helper.triggerKeyEvent('keydown', 9, null, false, false, btnElement);
+                setTimeout(() => {
+                    const activeElement = document.activeElement;
+                    expect(dialog.contains(activeElement)).toBeTruthy();
+                    expect(activeElement).not.toBe(btnElement);
+                    done();
+                }, 20);
+            }, 50);
+        });
+    });
 });

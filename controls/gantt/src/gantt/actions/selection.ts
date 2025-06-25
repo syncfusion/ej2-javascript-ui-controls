@@ -566,7 +566,7 @@ export class Selection {
         if (!isTaskbarEdited && this.parent.element.contains(e.target as Node) && !(elements.length === 1)) {
             const parent: Element = parentsUntil(e.target as Element, 'e-chart-row');
             const targetEl: HTMLElement = e.target as HTMLElement;
-            const isSelected: boolean = (e.target as HTMLElement).classList.contains('e-rowcell') ||
+            const isSelected: boolean =
                 targetEl.classList.contains('e-rowcell') ||
                 (targetEl.closest('td.e-rowcell') &&
                 targetEl.closest('td.e-rowcell').classList.contains('e-rowcell')) ||

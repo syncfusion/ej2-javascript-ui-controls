@@ -19,7 +19,7 @@ describe('Status bar for buttons', () => {
         expect(element.childNodes.length).toBe(0);
         document.body.removeChild(element);
         expect(() => { container.destroy(); }).not.toThrowError();
-        document.body.innerHTML = '';
+        
         element = undefined;
         container = undefined;
     });
@@ -75,7 +75,7 @@ describe('Status bar for spell chcek', () => {
         expect(element.childNodes.length).toBe(0);
         document.body.removeChild(element);
         expect(() => { container.destroy(); }).not.toThrowError();
-        document.body.innerHTML = '';
+        
         element = undefined;
         container = undefined;
     });
@@ -101,7 +101,7 @@ describe('Status bar for page number', () => {
         expect(element.childNodes.length).toBe(0);
         document.body.removeChild(element);
         expect(() => { container.destroy(); }).not.toThrowError();
-        document.body.innerHTML = '';
+        
         element = undefined;
         container = undefined;
     });

@@ -461,10 +461,6 @@ describe('Excel Filter =>', () => {
         let gridObj: Grid;
         let drpdwn: string = '<input id="dropdown" value="1" >';
         let uiInfo: any;
-        let formFunc: any = (args?: any): void => {
-            expect(args.name).toBe('beforeCustomFilterOpen');
-            gridObj.off(events.beforeCustomFilterOpen, formFunc);
-        };
         beforeAll((done: Function) => {
             gridObj = createGrid(
                 {
@@ -496,7 +492,10 @@ describe('Excel Filter =>', () => {
 
         it('BeforeCustomFilterOpen event Check with filterTemplate', (done: Function) => {
             (gridObj.filterModule as any).filterModule.closeDialog();
-            gridObj.on(events.beforeCustomFilterOpen, formFunc, this);
+            gridObj.beforeCustomFilterOpen = (args?: any): void => {
+                expect(args.name).toBe('beforeCustomFilterOpen');
+                gridObj.beforeCustomFilterOpen = null;
+            };
             (gridObj.filterModule as any).filterModule.excelFilterBase.renderDialogue({ element: '' });
             (document.getElementsByClassName('e-btn')[0] as HTMLElement).click();
             done();
@@ -505,7 +504,10 @@ describe('Excel Filter =>', () => {
         it('Custom Filter Open on date type', (done: Function) => {
             (<any>gridObj).element.querySelector('.e-headercell:nth-child(3)').querySelector('.e-filtermenudiv').click();
             (gridObj.filterModule as any).filterModule.closeDialog();
-            gridObj.on(events.beforeCustomFilterOpen, formFunc, this);
+            gridObj.beforeCustomFilterOpen = (args?: any): void => {
+                expect(args.name).toBe('beforeCustomFilterOpen');
+                gridObj.beforeCustomFilterOpen = null;
+            };
             (gridObj.filterModule as any).filterModule.excelFilterBase.renderDialogue({ element: '' });
             (document.getElementsByClassName('e-btn')[0] as HTMLElement).click();
             done();
@@ -514,7 +516,10 @@ describe('Excel Filter =>', () => {
         it('Custom Filter Open on datetime type', (done: Function) => {
             (<any>gridObj).element.querySelector('.e-headercell:nth-child(4)').querySelector('.e-filtermenudiv').click();
             (gridObj.filterModule as any).filterModule.closeDialog();
-            gridObj.on(events.beforeCustomFilterOpen, formFunc, this);
+            gridObj.beforeCustomFilterOpen = (args?: any): void => {
+                expect(args.name).toBe('beforeCustomFilterOpen');
+                gridObj.beforeCustomFilterOpen = null;
+            };
             (gridObj.filterModule as any).filterModule.excelFilterBase.renderDialogue({ element: '' });
             (document.getElementsByClassName('e-btn')[0] as HTMLElement).click();
             done();
@@ -524,7 +529,10 @@ describe('Excel Filter =>', () => {
             (gridObj.filterModule as any).filterModule.excelFilterBase.completeAction({result: ['a','b','b']});
             (<any>gridObj).element.querySelector('.e-headercell:nth-child(1)').querySelector('.e-filtermenudiv').click();
             (gridObj.filterModule as any).filterModule.closeDialog();
-            gridObj.on(events.beforeCustomFilterOpen, formFunc, this);
+            gridObj.beforeCustomFilterOpen = (args?: any): void => {
+                expect(args.name).toBe('beforeCustomFilterOpen');
+                gridObj.beforeCustomFilterOpen = null;
+            };
             (gridObj.filterModule as any).filterModule.excelFilterBase.renderDialogue({ element: '' });
             uiInfo = gridObj.getFilterUIInfo();
             (document.getElementsByClassName('e-btn')[1] as HTMLElement).click();
@@ -798,11 +806,10 @@ describe('Excel Filter =>', () => {
                     let fltrElement: Element =  document.getElementsByClassName('e-filtermenudiv')[0];
                     (gridObj.filterModule as any).filterDialogOpen(gridObj.getColumnByIndex(0),fltrElement,100,100);
                     (gridObj.filterModule as any).filterModule.closeDialog();
-                    let formFunc: any = (args?: any): void => {
+                    gridObj.beforeCustomFilterOpen = (args?: any): void => {
                         expect(args.name).toBe('beforeCustomFilterOpen');
-                        gridObj.off(events.beforeCustomFilterOpen, formFunc);
+                        gridObj.beforeCustomFilterOpen = null;
                     };
-                    gridObj.on(events.beforeCustomFilterOpen, formFunc, this);
                     (gridObj.filterModule as any).filterModule.excelFilterBase.renderDialogue({element:''});   
                     (document.getElementsByClassName('e-btn')[0] as HTMLElement).click();
                     done();
@@ -1706,6 +1713,45 @@ describe('EJ2: 937540 => On-Demand Excel Filter Dialog in Grouped Grid with Exis
             done();
         };
         gridObj.filterModule.openMenuByField('User');
+    });
+
+    afterAll(() => {
+        destroy(gridObj);
+        gridObj = null;
+    });
+});
+
+describe('EJ2: 957122: Need to change the beforeCustomFilterOpen event as public. => ', () => {
+    let gridObj: Grid;
+    beforeAll((done: Function) => {
+        gridObj = createGrid(
+            {
+                dataSource: filterData,
+                allowFiltering: true,
+                allowPaging: true,
+                filterSettings: { type: 'Excel' },
+                columns: [
+                    { field: 'CustomerID', width: 120, headerText: 'Customer ID'},
+                    { field: 'ShipCountry', headerText: 'Ship Country' }
+                ]
+            }, done);
+    });
+
+    it('Prevent custom filter dialog open', (done: Function) => {
+        gridObj.beforeCustomFilterOpen = (args?: any): void => {
+            expect(args.name).toBe('beforeCustomFilterOpen');
+            args.cancel = true;
+            gridObj.beforeCustomFilterOpen = null;
+            done();
+        };
+        (gridObj.element.querySelectorAll(".e-filtermenudiv")[0] as HTMLElement).click();
+        (gridObj.filterModule as any).filterModule.closeDialog();
+        (gridObj.filterModule as any).filterModule.excelFilterBase.renderDialogue({ element: '' });
+    });
+
+    it('The custom filter dialog should not be opened', (done: Function) => {
+        expect(document.querySelector('.e-xlflmenu')).toBe(null);
+        done();
     });
 
     afterAll(() => {

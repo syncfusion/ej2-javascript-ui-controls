@@ -89,7 +89,9 @@ export class Timeline {
     public refreshTimeline(): void {
         this.initProperties();
         this.processTimelineUnit();
-        this.parent.dataOperation.calculateProjectDates();
+        if (!this.parent.undoRedoModule || (this.parent.undoRedoModule && !this.parent.undoRedoModule['isZoomingUndoRedoProgress'])) {
+            this.parent.dataOperation.calculateProjectDates();
+        }
         if (!this.parent.isFromOnPropertyChange) {
             this.parent.updateProjectDates(
                 this.parent.cloneProjectStartDate, this.parent.cloneProjectEndDate, this.parent.isTimelineRoundOff);
@@ -166,11 +168,7 @@ export class Timeline {
         };
         this.parent.trigger('actionBegin', args);
         if (!args.cancel) {
-            if (!isNullOrUndefined(this.parent.loadingIndicator) && this.parent.loadingIndicator.indicatorType === 'Shimmer') {
-                this.parent.showMaskRow();
-            } else {
-                this.parent.showSpinner();
-            }
+            this.parent['showLoadingIndicator']();
             newTimeline = args.timeline;
             this.changeTimelineSettings(newTimeline);
         }
@@ -188,6 +186,8 @@ export class Timeline {
                 action,
                 previousZoomingLevel: extend({}, {}, this.parent.currentZoomingLevel, true)
             };
+            previousTimeline['previousZoomingLevel'].bottomTier.format = this.customTimelineSettings.bottomTier.format;
+            previousTimeline['previousZoomingLevel'].topTier.format = this.customTimelineSettings.topTier.format;
             (this.parent.undoRedoModule['getUndoCollection'][this.parent.undoRedoModule['getUndoCollection'].length - 1] as Object) = previousTimeline;
         }
     }
@@ -264,11 +264,7 @@ export class Timeline {
                 timeline: this.parent.currentZoomingLevel
             };
             this.parent.trigger('actionComplete', args);
-            if (!isNullOrUndefined(this.parent.loadingIndicator) && this.parent.loadingIndicator.indicatorType === 'Shimmer') {
-                this.parent.hideMaskRow();
-            } else {
-                this.parent.hideSpinner();
-            }
+            this.parent['hideLoadingIndicator']();
         }
         const tier: string = this.topTier === 'None' ? 'bottomTier' : 'topTier';
         if (this.parent.enableTimelineVirtualization && (!this.parent.pdfExportModule || this.parent.pdfExportModule
@@ -328,7 +324,9 @@ export class Timeline {
             this.parent.cloneProjectStartDate = new Date(this.parent.allowUnscheduledTasks ?
                 this.parent.zoomingProjectStartDate : this.parent.cloneProjectStartDate);
         }
-        this.parent.dataOperation.calculateProjectDates();
+        if (isNullOrUndefined(this.parent.projectStartDate) && isNullOrUndefined(this.parent.projectEndDate)) {
+            this.parent.dataOperation.calculateProjectDates();
+        }
         let totalDays: number;
         let nonWorkingDays: number = 0;
         if (!this.parent.timelineSettings.showWeekend) {
@@ -366,8 +364,12 @@ export class Timeline {
             }
         }
         const newTimeline: ZoomTimelineSettings = extend({}, {}, zoomingLevel, true);
-        this.roundOffDateToZoom(this.parent.cloneProjectStartDate, true, perDayWidth, newTimeline.bottomTier.unit, zoomingLevel);
-        this.roundOffDateToZoom(this.parent.cloneProjectEndDate, false, perDayWidth, newTimeline.bottomTier.unit, zoomingLevel);
+        if (isNullOrUndefined(this.parent.projectStartDate)) {
+            this.roundOffDateToZoom(this.parent.cloneProjectStartDate, true, perDayWidth, newTimeline.bottomTier.unit, zoomingLevel);
+        }
+        if (isNullOrUndefined(this.parent.projectEndDate)) {
+            this.roundOffDateToZoom(this.parent.cloneProjectEndDate, false, perDayWidth, newTimeline.bottomTier.unit, zoomingLevel);
+        }
         const numberOfCells: number = this.calculateNumberOfTimelineCells(newTimeline);
         const scrollHeight: number = this.parent.ganttChartModule.scrollElement.offsetHeight - 17; //17 is horizontal scrollbar width
         const contentHeight: number = this.parent.ganttChartModule.chartBodyContent.offsetHeight;
@@ -382,16 +384,13 @@ export class Timeline {
         }
         this.parent.trigger('actionBegin', args);
         if (!args.cancel) {
-            if (!isNullOrUndefined(this.parent.loadingIndicator) && this.parent.loadingIndicator.indicatorType === 'Shimmer') {
-                this.parent.showMaskRow();
-            } else {
-                this.parent.showSpinner();
-            }
+            this.parent['showLoadingIndicator']();
             this.changeTimelineSettings(newTimeline);
             this.parent.isTimelineRoundOff = isNullOrUndefined(this.parent.projectStartDate) ? true : false;
         }
         this.isZoomToFit = false;
     }
+
 
     private bottomTierCellWidthCalc(mode: string, zoomLevel: ZoomTimelineSettings, date: Date): number {
         let convertedMilliSeconds: number;
@@ -799,7 +798,7 @@ export class Timeline {
         const milliSecondsPerPixel: number = (24 * 60 * 60 * 1000) / this.parent.perDayWidth;
         const milliSecondsPerDay: number = (24 * 60 * 60 * 1000);
         const nonWorkingDays: number[] = this.parent.nonWorkingDayIndex;
-        const totalDays: number = Math.floor(left * milliSecondsPerPixel / milliSecondsPerDay);
+        const totalDays: number = Math.ceil(left * milliSecondsPerPixel / milliSecondsPerDay);
         const totalDaysPerWeek: number = 7;
         const workingDaysPerWeek: number = totalDaysPerWeek - nonWorkingDays.length;
 
@@ -924,7 +923,12 @@ export class Timeline {
                 translateXValue = -(translateXValue);
             }
             const contentVirtualTable: HTMLElement = this.parent.element.querySelectorAll('.e-chart-scroll-container')[0].querySelector('.e-virtualtable');
-            contentVirtualTable.style.transform = `translate(${translateXValue}px, ${translateYValue}px)`;
+            if (!this.parent.undoRedoModule || (this.parent.undoRedoModule && !this.parent.undoRedoModule['isZoomingUndoRedoProgress'])) {
+                contentVirtualTable.style.transform = `translate(${translateXValue}px, ${translateYValue}px)`;
+            }
+            if (this.parent.undoRedoModule && this.parent.undoRedoModule['isZoomingUndoRedoProgress']) {
+                this.parent.undoRedoModule['isZoomingUndoRedoProgress'] = false;
+            }
             const contentVirtualTrack: HTMLElement = this.parent.element.querySelectorAll('.e-chart-scroll-container')[0].querySelector('.e-virtualtrack');
             contentVirtualTrack.style.position = 'relative';
             contentVirtualTrack.style.width = trackWidth + 'px';
@@ -1866,7 +1870,7 @@ export class Timeline {
         let thWidth: number;
         let increment: number = this.getIncrement(scheduleWeeks, count, mode, isFirstCell);
         if (!this.parent.timelineSettings.showWeekend && (((mode === 'Week' || mode === 'Month' || mode === 'Year') && tier === 'topTier' &&
-            this.parent.currentZoomingLevel.bottomTier.unit === 'Day') || this.isZoomToFit)) {
+            this.parent.currentZoomingLevel.bottomTier.unit === 'Day' || this.parent.currentZoomingLevel.bottomTier.unit === 'Hour') || this.isZoomToFit)) {
             const copyStartDate: Date = new Date(scheduleWeeks);
             const orginalDate: Date = new Date(scheduleWeeks);
             const enddate: Date = new Date(orginalDate.getTime() + increment);
@@ -2031,7 +2035,8 @@ export class Timeline {
         this.parent.dateValidationModule['updateDateWithTimeZone'](sDate, eDate);
         const timeDifference: number = (eDate.getTime() - sDate.getTime());
         const totalDays: number = timeDifference / (1000 * 60 * 60 * 24);
-        if (!this.parent.timelineSettings.showWeekend && this.parent.currentZoomingLevel.bottomTier.unit === 'Day') {
+        if (!this.parent.timelineSettings.showWeekend && (this.parent.currentZoomingLevel.bottomTier.unit === 'Day' ||
+            this.parent.currentZoomingLevel.bottomTier.unit === 'Hour' || this.isZoomToFit)) {
             const totalWeeks: number = Math.floor(totalDays / 7);
             const completeWeekDays: number = totalWeeks * (7 - this.parent.nonWorkingDayIndex.length);
             const remainingDays: number = totalDays % 7;
@@ -2205,13 +2210,41 @@ export class Timeline {
             const dayIndex: number = this.parent.timelineModule.customTimelineSettings.weekStartDay;
             let dayIntervel: number;
             if (span === 'prevTimeSpan') {
-                dayIntervel = startDate.getDay() < dayIndex ? 7 - (dayIndex - startDate.getDay()) :
-                    startDate.getDay() - dayIndex;
-                startDate.setHours(0, 0, 0, 0);
-                if (dayIntervel === 0) {
-                    startDate.setDate(startDate.getDate() - 7);
-                } else {
-                    startDate.setDate(startDate.getDate() - dayIntervel);
+                if (this.parent.timelineSettings.showWeekend) {
+                    dayIntervel = startDate.getDay() < dayIndex ? 7 - (dayIndex - startDate.getDay()) :
+                        startDate.getDay() - dayIndex;
+                    startDate.setHours(0, 0, 0, 0);
+                    if (dayIntervel === 0) {
+                        startDate.setDate(startDate.getDate() - 7);
+                    } else {
+                        startDate.setDate(startDate.getDate() - dayIntervel);
+                    }
+                }
+                else {
+                    const fullWeek: number[] = Array.from({ length: 7 }, (_: number, index: number) => index);
+                    const workingDays: number[] = fullWeek.filter((day: number) => this.parent.nonWorkingDayIndex.indexOf(day) === -1);
+                    startDate.setHours(0, 0, 0, 0);
+                    if (this.parent.timelineModule.customTimelineSettings.weekStartDay > 1) {
+                        // eslint-disable-next-line no-constant-condition
+                        while (true) {
+                            startDate.setDate(startDate.getDate() - 1);
+                            const currentDay: number = startDate.getDay();
+                            if (workingDays.indexOf(currentDay) !== -1 &&
+                                currentDay === this.parent.timelineModule.customTimelineSettings.weekStartDay) {
+                                break;
+                            }
+                        }
+                    }
+                    else{
+                        let count: number = 0;
+                        while (count < workingDays.length) {
+                            startDate.setDate(startDate.getDate() - 1);
+                            const day: number = startDate.getDay();
+                            if (workingDays.indexOf(day) !== -1) {
+                                count++;
+                            }
+                        }
+                    }
                 }
             } else {
                 dayIntervel = endDate.getDay() < dayIndex ? (dayIndex - endDate.getDay()) :
@@ -2228,12 +2261,22 @@ export class Timeline {
             if (span === 'prevTimeSpan') {
                 if (startDate.getHours() === 0) {
                     startDate.setTime(startDate.getTime() - (1000 * 60 * 60 * 24));
+                    if (!this.parent.timelineSettings.showWeekend) {
+                        while (this.parent.nonWorkingDayIndex.indexOf(startDate.getDay()) !== -1) {
+                            startDate.setTime(startDate.getTime() - (1000 * 60 * 60 * 24));
+                        }
+                    }
                 } else {
                     startDate.setHours(0);
                 }
             } else {
                 if (endDate.getHours() === 0) {
                     endDate.setTime(endDate.getTime() + (1000 * 60 * 60 * 24));
+                    if (!this.parent.timelineSettings.showWeekend) {
+                        while (this.parent.nonWorkingDayIndex.indexOf(endDate.getDay()) !== -1) {
+                            endDate.setTime(endDate.getTime() + (1000 * 60 * 60 * 24));
+                        }
+                    }
                 } else {
                     endDate.setHours(24);
                 }

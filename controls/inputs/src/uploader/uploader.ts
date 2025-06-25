@@ -3592,7 +3592,7 @@ export class Uploader extends Component<HTMLInputElement> implements INotifyProp
             metaData.request.httpRequest.abort();
         }
         const liElement: HTMLElement = this.getLiElement(metaData.file);
-        if (isNullOrUndefined(this.template) && (isNullOrUndefined(custom) || !custom) ) {
+        if (isNullOrUndefined(this.template) && (isNullOrUndefined(custom) || !custom) && liElement) {
             const targetElement: HTMLElement = liElement.querySelector('.' + PAUSE_UPLOAD) as HTMLElement;
             targetElement.classList.remove(PAUSE_UPLOAD);
             targetElement.classList.add(RESUME_UPLOAD);
@@ -3743,8 +3743,10 @@ export class Uploader extends Component<HTMLInputElement> implements INotifyProp
         if (isNullOrUndefined(this.template) && (isNullOrUndefined(custom) || !custom) && liElement) {
             this.updateProgressBarClasses(liElement, UPLOAD_FAILED);
         }
-        metaData.retryCount += 1;
-        this.sendRequest(metaData.file, metaData);
+        if (metaData) {
+            metaData.retryCount += 1;
+            this.sendRequest(metaData.file, metaData);
+        }
     }
 
     private checkPausePlayAction(e: Event): void {

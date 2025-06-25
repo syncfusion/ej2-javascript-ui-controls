@@ -1208,4 +1208,227 @@
       }
     }
   }
+  .e-bigger .e-spreadsheet.sf-spreadsheet{
+    .e-dialog .e-dlg-content .e-contextmenu-container ul .e-menu-item.e-menu-caret-icon {
+      @if $skin-name == 'fluent2'{
+        padding: 0 12px !important; /* stylelint-disable-line declaration-no-important */
+      }
+    }
+
+    .e-spreadsheet-ribbon .e-ribbon-simplified-mode {
+      .e-ribbon-file-menu {
+        @if $skin-name == 'tailwind3'{
+          padding-top: 18px;
+        }
+      }
+      .e-ribbon-group-content {
+        @if $skin-name == 'bootstrap5'{
+          height: 38px;
+        }
+      }
+      .e-ribbon-tab .e-tab-header .e-toolbar-item {
+        & .e-tab-text {
+          @if $skin-name == 'tailwind3' or $skin-name == 'fluent2' {
+            padding-top: 18px;
+          }
+        }
+
+        & .e-text-wrap {
+          @if $skin-name == 'highcontrast' {
+            height: 39px;
+          }
+          @else if $skin-name == 'bootstrap5' {
+            height: 41px;
+          }
+        }
+
+        & .e-tab-wrap {
+          @if $skin-name == 'FluentUI' {
+            height: auto;
+          }
+        }
+      }
+
+      .e-btn:not(.e-tbar-btn):not(.e-dropdown-btn):not(.e-split-btn) {
+        padding-left: 6px;
+        padding-right: 6px;
+      }
+
+      .e-content .e-split-btn-wrapper .e-split-btn.e-color-picker {
+        width: 40px;
+        .e-icons.e-btn-icon:not(.e-caret).e-font-color {
+          @if $skin-name == 'highcontrast'{
+            font-size: 16px;
+            padding-top: 4px;
+          }
+        }
+        .e-icons.e-btn-icon:not(.e-caret).e-fill-color{
+          @if $skin-name == 'highcontrast'{
+            font-size: 16px;
+          }
+        }
+      }
+    }
+    
+    .e-spreadsheet-name-manager-form > .e-spreadsheet-name-manager-form-group:first-child {
+      @if ($skin-name == 'tailwind3') {
+        padding-top: 4px;
+      }
+    }
+
+    .e-name-manager-dialog .e-dlg-header-content {
+      padding-bottom: $bigger-spreadsheet-namerange-header-padding-bottom;
+    }
+
+    .e-namedRangesList.e-listview {
+      @if $skin-name == 'fluent2' or $skin-name == 'bootstrap5.3' {
+        margin-top: 20px;
+      }
+      @if $skin-name == 'FluentUI' {
+        margin-top: 24px;
+      }
+      height: 140px !important; /* stylelint-disable-line declaration-no-important */
+    }
+    
+    .e-spreadsheet-name-manager-form-group {
+      padding-top: $bigger-spreadsheet-namerange-form-group-padding-top;
+    }
+
+    .e-name-dlg-header {
+      font-size: $bigger-spreadsheet-namerange-header-font-size;
+    }
+
+    .e-spreadsheet-protection-dialog {
+      & .e-dlg-header-content {
+        padding-bottom: $bigger-spreadsheet-protection-padding-bottom;
+      }
+
+      .e-protection-tab-content {
+        & .e-protection-toggle-container {
+          padding-top: $bigger-spreadsheet-protection-toggle-container-padding-top;
+          padding-bottom: $bigger-spreadsheet-protection-toggle-container-padding-bottom;
+        }
+
+        & .e-protection-password-field {
+          padding-bottom: $bigger-spreadsheet-protection-password-field-padding-bottom;
+        }
+        & .e-unlock-range-container {
+          .e-unlock-range-field {
+            padding-top: $bigger-spreadsheet-protection-unlock-range-field-padding-top;
+          }
+
+          @if ($skin-name == 'Material3') {
+            .e-unlock-range-inputs {
+              .e-unlock-range-field:nth-of-type(2) {
+                padding-top: 24px;
+              }
+            }
+          }
+          
+          .e-unlock-range-actions {
+            padding-top: $bigger-spreadsheet-protection-unlock-range-action-padding;
+          }
+
+          .e-unlock-text {
+            padding-top: $bigger-spreadsheet-protection-unlock-text-padding-top;
+            padding-bottom: $bigger-spreadsheet-protection-unlock-text-padding-bottom;
+          }
+        }
+        & .e-sheet-options-container {
+          .e-sheet-options-header {
+            font-family: $spreadsheet-protection-sheet-option-font-family;
+            font-size: $bigger-spreadsheet-protection-sheet-option-font-size;
+            font-weight: $spreadsheet-protection-sheet-option-font-weight;
+            line-height: $spreadsheet-protection-sheet-option-line-height;
+            color: $spreadsheet-protection-sheet-option-font-color;
+            padding-top: $bigger-spreadsheet-protection-sheet-option-padding-top;
+            padding-bottom: $bigger-spreadsheet-protection-sheet-option-padding-bottom;
+          }
+        }
+      }
+    }
+
+    & .e-spreadsheet-unprotect-dialog {
+      .e-unprotect-password-field label {
+        font-family: $spreadsheet-unprotect-label-font-family;
+        font-weight: $spreadsheet-unprotect-label-font-weight;
+        font-size: $bigger-spreadsheet-protection-sheet-option-font-size;
+        line-height: $spreadsheet-unprotect-label-line-height;
+        color: $spreadsheet-unprotect-label-font-color;
+        padding-bottom: $spreadsheet-unprotect-label-padding-bottom;
+      }
+    }
+  }
+  .e-bigger .e-ribbon-group-overflow-ddb .e-ribbon-overflow-target .e-ribbonoverflow.e-ribbon-item {
+    @if $skin-name == 'tailwind3' {
+      height: 43px !important; /* stylelint-disable-line declaration-no-important */
+    }
+
+    @else if $skin-name == 'bootstrap5' {
+      height: 41px !important; /* stylelint-disable-line declaration-no-important */
+    }
+
+    @else if $skin-name == 'highcontrast' {
+      height: 47px !important; /* stylelint-disable-line declaration-no-important */
+    }
+
+    @else if $skin-name == 'FluentUI' {
+      height: 45px !important; /* stylelint-disable-line declaration-no-important */
+    }
+
+    &.e-ribbon-text-format .e-color-picker {
+      @if $skin-name == 'FluentUI' {
+        padding-left: 10px;
+        padding-right: 10px;
+      }
+    }
+
+    &:not(:has(.e-ribbon-template)) .e-btn .e-btn-icon{
+      @if $skin-name == 'Material3' {
+        font-size: 20px;
+      }
+    }
+    
+    & .e-btn:not(.e-tbar-btn):not(.e-font-list) {
+      @if $skin-name == 'Material3' {
+        padding: 7px 10px 7px 7px;
+      }
+    }
+    
+    .e-split-btn-wrapper .e-split-btn .e-btn-icon{
+      @if $skin-name == 'Material3' {
+        border-radius: 0;
+      }
+    }
+
+    & .e-font-list {
+      @if $skin-name == 'Material3' {
+        padding: 7px;
+      }
+    }
+
+    & .e-btn.e-wrap {
+      @if $skin-name == 'Material3' {
+        padding-left: 10px;
+        padding-right: 10px;
+      }
+      @else if $skin-name == 'bootstrap5' or $skin-name == 'tailwind3' {
+        padding-left: 12px;
+        padding-right: 12px;
+      }
+      @else if $skin-name == 'FluentUI' {
+        padding-left: 10px;
+        padding-right: 10px;
+      }
+    }
+
+    .e-dropdown-btn .e-caret {
+      @if $skin-name != 'fluent2' {
+        font-size: 20px;
+      }
+      @else {
+        font-size: 16px;
+      }
+    }
+  }
 }

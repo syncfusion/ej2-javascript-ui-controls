@@ -12,7 +12,7 @@ import { PageSettingsModel, AggregateRowModel, ColumnChooserSettingsModel } from
 import { RowDropSettingsModel, GroupSettingsModel, GridModel, EditSettingsModel, LoadingIndicatorModel } from './grid-model';
 import { Cell } from '../models/cell';
 import { Row } from '../models/row';
-import { GridLine, Action, CellType, SortDirection, PrintMode, ToolbarItems, CommandButtonType, ContextMenuItem, ExcelBorderLineStyle, FocusType } from './enum';
+import { GridLine, Action, CellType, SortDirection, PrintMode, ToolbarItems, CommandButtonType, ContextMenuItem, ExcelBorderLineStyle, FocusType, ChartType } from './enum';
 import { MultipleExportType, MultiplePdfExportType, ExportType, ExcelHAlign, ExcelVAlign, BorderLineStyle, ToolbarItem, AggregateTemplateType } from './enum';
 import { PredicateModel } from './grid-model';
 import { SentinelType, Offsets } from './type';
@@ -685,6 +685,7 @@ export interface IGrid extends Component<HTMLElement> {
     adaptiveDlgTarget?: HTMLElement;
     parentDetails?: ParentDetails;
     printGridParent?: IGrid;
+    defaultChartLocale?: Object;
 
     /**
      * @hidden
@@ -851,7 +852,7 @@ export interface IGrid extends Component<HTMLElement> {
     setRowData(key: string | number, rowData?: Object): void;
     getState?(): Object;
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    destroyTemplate?(templateName: string[], index?: any): void;
+    destroyTemplate?(templateName: string[], index?: any, callback?: Function): void;
     getQuery?(): Query;
     log?(type: string | string[], args?: Object): void;
     isDetail?(): boolean;
@@ -2966,6 +2967,18 @@ export interface ContextMenuClickEventArgs {
     item: MenuItemModel;
     event?: Event;
     name?: string;
+    /**
+     * Defines the Grid instance
+     */
+    gridInstance?: IGrid;
+    /**
+     * Defines the selected records from the Grid
+     */
+    records?: Object[];
+    /**
+     * Defines the selected chart type from the context menu
+     */
+    chartType?: ChartType;
 }
 
 export interface ContextMenuOpenEventArgs extends BeforeOpenCloseMenuEventArgs {
@@ -3217,3 +3230,14 @@ export interface DetailTemplateDetach {
 }
 
 export type DetailTemplateDetachArgs = DetailTemplateDetach[]
+
+export interface BeforeCustomFilterOpenEventArgs {
+    /** Specifies the field name of the column for which the custom filter is being opened. */
+    column?: string;
+    /** Specifies the instance of custom filter dialog. */
+    dialogInstance?: Object;
+    /** If `cancel` is set to true, the custom filter dialog will not be opened. */
+    cancel?: boolean;
+    /** Specifies the target element for the custom filter menu items. */
+    target?: Element;
+}

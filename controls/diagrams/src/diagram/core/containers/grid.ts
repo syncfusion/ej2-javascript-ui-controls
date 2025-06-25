@@ -1,7 +1,7 @@
 /* eslint-disable no-self-assign */
 import { DiagramElement } from '../elements/diagram-element';
 import { Canvas } from './canvas';
-import { Container } from './container';
+import { GroupableView } from './container';
 import { Size } from '../../primitives/size';
 import { ShapeStyleModel } from '../appearance-model';
 import { randomId } from '../../utility/base-util';
@@ -10,7 +10,7 @@ import { TextElement } from '../elements/text-element';
 /**
  * Grid panel is used to arrange the children in a table like structure
  */
-export class GridPanel extends Container {
+export class GridPanel extends GroupableView {
 
     private childTable: GridCellItem[] = [];
 

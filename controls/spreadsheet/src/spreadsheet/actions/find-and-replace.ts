@@ -181,7 +181,8 @@ export class FindAndReplace {
                         this.renderFindDlg();
                         this.findDialog.hide();
                     }
-                }, width: 'auto', height: 'auto', items: toolItemModel, cssClass: 'e-find-toolObj',
+                }, width: 'auto', height: 'auto', items: toolItemModel,
+                cssClass: 'e-find-toolObj', enableRtl: this.parent.enableRtl,
                 created: (): void => {
                     const tbarBtns: NodeList = toolbarObj.element.querySelectorAll('.e-toolbar-item .e-tbar-btn');
                     tbarBtns.forEach((tbarBtn: HTMLElement): void => tbarBtn.removeAttribute('tabindex'));
@@ -298,12 +299,12 @@ export class FindAndReplace {
         }
     }
 
-    private renderFindDlg(): void {
+    private renderFindDlg(args?: FindOptions): void {
         const dialogInst: Dialog = (this.parent.serviceLocator.getService(dialog) as Dialog);
         if (!this.parent.element.querySelector('.e-find-dlg')) {
             const l10n: L10n = this.parent.serviceLocator.getService(locale);
             const dlg: DialogModel = {
-                isModal: false, showCloseIcon: true, cssClass: 'e-find-dlg',
+                isModal: false, showCloseIcon: true, cssClass: 'e-find-dlg', enableRtl: this.parent.enableRtl,
                 header: l10n.getConstant('FindAndReplace'),
                 beforeOpen: (args: BeforeOpenEventArgs): void => {
                     const dlgArgs: DialogBeforeOpenEventArgs = { dialogName: 'FindAndReplaceDialog', element: args.element, target:
@@ -359,6 +360,24 @@ export class FindAndReplace {
                     getUpdateUsingRaf((): void => {
                         focus(findInput);
                     });
+                    if (args && args.showDialog) {
+                        if (args.value) {
+                            findInput.value = args.value;
+                            (getComponent(this.parent.element.querySelector(
+                                '.e-btn-findPrevious') as HTMLElement, 'btn') as Button).disabled = false;
+                            (getComponent(this.parent.element.querySelector(
+                                '.e-btn-findNext') as HTMLElement, 'btn') as Button).disabled = false;
+                        }
+                        if (args.replaceValue) {
+                            const replaceInput: HTMLInputElement = this.parent.element.querySelector(
+                                '.e-text-replaceInp') as HTMLInputElement;
+                            replaceInput.value = args.replaceValue;
+                            (getComponent(
+                                this.parent.element.querySelector('.e-btn-replace') as HTMLElement, 'btn') as Button).disabled = false;
+                            (getComponent(
+                                this.parent.element.querySelector('.e-btn-replaceAll') as HTMLElement, 'btn') as Button).disabled = false;
+                        }
+                    }
                 },
                 beforeClose: this.dialogBeforeClose.bind(this)
             };
@@ -411,7 +430,7 @@ export class FindAndReplace {
         if (isNullOrUndefined(this.parent.element.querySelector('.e-goto-dlg'))) {
             const dlg: DialogModel = {
                 width: 300, isModal: false, showCloseIcon: true, cssClass: 'e-goto-dlg',
-                header: l10n.getConstant('GotoHeader'),
+                header: l10n.getConstant('GotoHeader'), enableRtl: this.parent.enableRtl,
                 beforeOpen: (args: BeforeOpenEventArgs): void => {
                     const dlgArgs: DialogBeforeOpenEventArgs = {
                         dialogName: 'GoToDialog',
@@ -613,16 +632,19 @@ export class FindAndReplace {
                 this.dialogMessage();
             }
         }
-        const findValue: string = (this.parent.element.querySelector('.e-text-findNext') as HTMLInputElement).value;
-        const replaceValue: string = (this.parent.element.querySelector('.e-text-replaceInp') as HTMLInputElement).value;
-        if (!isNullOrUndefined(findValue) && !isNullOrUndefined(replaceValue) && (findValue !== '') && (replaceValue !== '')) {
-            if (!this.parent.getActiveSheet().isProtected) {
-                (getComponent(this.parent.element.querySelector('.e-btn-replace') as HTMLElement, 'btn') as Button).disabled = false;
-                (getComponent(this.parent.element.querySelector('.e-btn-replaceAll') as HTMLElement, 'btn') as Button).disabled = false;
+        const findInput: HTMLInputElement = this.parent.element.querySelector('.e-text-findNext') as HTMLInputElement;
+        if (findInput) {
+            const findValue: string = (this.parent.element.querySelector('.e-text-findNext') as HTMLInputElement).value;
+            const replaceValue: string = (this.parent.element.querySelector('.e-text-replaceInp') as HTMLInputElement).value;
+            if (!isNullOrUndefined(findValue) && !isNullOrUndefined(replaceValue) && (findValue !== '') && (replaceValue !== '')) {
+                if (!this.parent.getActiveSheet().isProtected) {
+                    (getComponent(this.parent.element.querySelector('.e-btn-replace') as HTMLElement, 'btn') as Button).disabled = false;
+                    (getComponent(this.parent.element.querySelector('.e-btn-replaceAll') as HTMLElement, 'btn') as Button).disabled = false;
+                }
+            } else {
+                (getComponent(this.parent.element.querySelector('.e-btn-replace') as HTMLElement, 'btn') as Button).disabled = true;
+                (getComponent(this.parent.element.querySelector('.e-btn-replaceAll') as HTMLElement, 'btn') as Button).disabled = true;
             }
-        } else {
-            (getComponent(this.parent.element.querySelector('.e-btn-replace') as HTMLElement, 'btn') as Button).disabled = true;
-            (getComponent(this.parent.element.querySelector('.e-btn-replaceAll') as HTMLElement, 'btn') as Button).disabled = true;
         }
     }
 
@@ -656,7 +678,7 @@ export class FindAndReplace {
         findTextE.appendChild(findTextIp);
         findTextE.insertBefore(findTextH, findTextIp);
         findElem.appendChild(findTextE);
-        const findTextBox: TextBox = new TextBox({ width: '70%' });
+        const findTextBox: TextBox = new TextBox({ width: '70%', enableRtl: this.parent.enableRtl });
         this.textBoxElements.push(findTextBox);
         findTextBox.createElement = this.parent.createElement;
         findTextBox.appendTo(findTextIp);
@@ -670,7 +692,7 @@ export class FindAndReplace {
         replaceTextE.appendChild(replaceTextIp);
         replaceTextE.insertBefore(replaceTextH, replaceTextIp);
         findElem.appendChild(replaceTextE);
-        const replaceTextBox: TextBox = new TextBox({ width: '70%' });
+        const replaceTextBox: TextBox = new TextBox({ width: '70%', enableRtl: this.parent.enableRtl });
         this.textBoxElements.push(replaceTextBox);
         replaceTextBox.createElement = this.parent.createElement;
         replaceTextBox.appendTo(replaceTextIp);
@@ -682,6 +704,7 @@ export class FindAndReplace {
             {
                 dataSource: withinData,
                 cssClass: 'e-search-within',
+                enableRtl: this.parent.enableRtl,
                 fields: { value: 'Id', text: 'Within' }, width: '50%', index: 0
             });
         this.dropDownListElements.push(withInDDL);
@@ -704,6 +727,7 @@ export class FindAndReplace {
             {
                 dataSource: searchData,
                 cssClass: 'e-searchby',
+                enableRtl: this.parent.enableRtl,
                 fields: { value: 'Id', text: 'Search' }, width: '50%', index: 0
             });
         this.dropDownListElements.push(searchDDL);
@@ -721,7 +745,8 @@ export class FindAndReplace {
 
         const isCSen: CheckBox = new CheckBox({
             label: l10n.getConstant('MatchCase'), checked: false,
-            cssClass: 'e-findnreplace-casecheckbox'
+            cssClass: 'e-findnreplace-casecheckbox',
+            enableRtl: this.parent.enableRtl
         });
         const caaseCheckbox: HTMLElement = this.parent.createElement('input', {
             className: 'e-findnreplace-checkcase', attrs: { type: 'checkbox' }
@@ -732,7 +757,8 @@ export class FindAndReplace {
         isCSen.appendTo(caaseCheckbox);
         const isEMatch: CheckBox = new CheckBox({
             label: l10n.getConstant('MatchExactCellElements'), checked: false,
-            cssClass: 'e-findnreplace-exactmatchcheckbox'
+            cssClass: 'e-findnreplace-exactmatchcheckbox',
+            enableRtl: this.parent.enableRtl
         });
         this.checkBoxElements = isEMatch;
         const entirematchCheckbox: HTMLElement = this.parent.createElement('input', {
@@ -754,7 +780,8 @@ export class FindAndReplace {
         const gotoTextH: HTMLElement = this.parent.createElement('p', { className: 'e-header' });
         gotoTextH.innerText = l10n.getConstant('Reference');
         const gotoTextBox: TextBox = new TextBox({
-            placeholder: l10n.getConstant('EnterCellAddress')
+            placeholder: l10n.getConstant('EnterCellAddress'),
+            enableRtl: this.parent.enableRtl
         });
         const gotoTextIp: HTMLElement = this.parent.createElement('input', { className: 'e-text-goto', attrs: { 'type': 'Text' } });
         gotoTextE.appendChild(gotoTextIp);

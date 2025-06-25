@@ -8,6 +8,8 @@ import { Canvas } from '../../../src/diagram/core/containers/canvas';
 import { PointModel } from '../../../src/diagram/primitives/point-model';
 import { Rect } from '../../../src/diagram/primitives/rect';
 import { Matrix, transformPointByMatrix, identityMatrix } from '../../../src/diagram/primitives/matrix';
+import { UmlSequenceDiagramModel, UmlSequenceParticipantModel, UmlSequenceMessageModel, UmlSequenceFragmentModel  } from "../../../src/diagram/diagram/sequence-diagram-model";
+import { UmlSequenceMessageType, UmlSequenceFragmentType, UmlSequenceDiagram,  } from "../../../src/diagram/diagram/sequence-diagram";
 
 import {
     SymbolPalette, SymbolInfo,
@@ -544,7 +546,7 @@ describe('Diagram Control', () => {
         let diagram: Diagram;
         let ele: HTMLElement;
         let mouseEvents: MouseEvents = new MouseEvents();
-        
+
         let umlActivityFlowSymbols: ConnectorModel[] = [
             {
                 id: "umlConn2",
@@ -597,7 +599,7 @@ describe('Diagram Control', () => {
         });
     });
 
-    
+
      describe('Code coverage UML node', () => {
         let diagram: Diagram;
         let ele: HTMLElement;
@@ -607,7 +609,7 @@ describe('Diagram Control', () => {
                         obj.style = { fill: '#26A0DA', strokeColor: 'white' };
                         return obj;
                     }
-                    
+
                     //Set an annoation style at runtime.
                     function setNodeTemplate(node: NodeModel): void {
                         if (node.annotations.length > 0) {
@@ -616,17 +618,17 @@ describe('Diagram Control', () => {
                         }
                         }
                     }
-                    
+
                     //create class Property
                     function createProperty(name: string, type: string): object {
                         return { name: name, type: type };
                     }
-                    
+
                     //create class Methods
                     function createMethods(name: string, type: string): object {
                         return { name: name, type: type };
                     }
-        
+
         beforeAll((): void => {
             const isDef = (o: any) => o !== undefined && o !== null;
             if (!isDef(window.performance)) {
@@ -637,9 +639,9 @@ describe('Diagram Control', () => {
             ele = createElement('div', { styles: 'width:100%;height:500px;' });
             ele.appendChild(createElement('div', { id: 'umlClassDiagram', styles: 'width:74%;height:500px;float:left;' }));
             document.body.appendChild(ele);
-            
 
-            
+
+
             let nodes: NodeModel[] = [
                 {
                   id: 'Patient',
@@ -1044,6 +1046,2225 @@ describe('Diagram Control', () => {
             diagram.dataBind();
             expect(diagram.locale === 'de-DE').toBe(true);
             done();
+        });
+    });
+    describe('UmlSequenceDiagram', () => {
+        describe('Sample-1', () => {
+            let diagram: Diagram;
+            let ele: HTMLElement;
+            let error: any;
+            beforeAll((): void => {
+                ele = createElement('div', { id: 'umlSequenceDiagram-1', styles: 'width:100%;height:800px;' });
+                document.body.appendChild(ele);
+
+                const model: UmlSequenceDiagramModel = {
+                    spaceBetweenParticipants: 200,
+                    participants: [
+                        {
+                            id: "User",
+                            content: "User",
+                            isActor: true,
+                            showDestructionMarker: true,
+                            activationBoxes: [
+                                { id: "act1", startMessageID: 101, endMessageID: 125 }
+                            ]
+                        },
+                        {
+                            id: "ATMMachine",
+                            content: "ATMMachine",
+                            isActor: false,
+                            showDestructionMarker: true,
+                            activationBoxes: [
+                                { id: "act2", startMessageID: 101, endMessageID: 125 }
+                            ]
+                        },
+                        {
+                            id: "BankServer",
+                            content: "BankServer",
+                            isActor: false,
+                            activationBoxes: [
+                                { id: "act3", startMessageID: 104, endMessageID: 105 },
+                                { id: "act4", startMessageID: 108, endMessageID: 109 },
+                                { id: "act5", startMessageID: 113, endMessageID: 114 },
+                                { id: "act6", startMessageID: 119, endMessageID: 120 }
+                            ]
+                        }
+                    ],
+                    messages: [
+                        { id: 101, content: "InsertCard", fromParticipantID: "User", toParticipantID: "ATMMachine", type: UmlSequenceMessageType.Synchronous },
+                        { id: 102, content: "RequestPIN", fromParticipantID: "ATMMachine", toParticipantID: "User", type: UmlSequenceMessageType.Synchronous },
+                        { id: 103, content: "InsertPIN", fromParticipantID: "User", toParticipantID: "ATMMachine", type: UmlSequenceMessageType.Synchronous },
+                        { id: 104, content: "VerifyPIN", fromParticipantID: "ATMMachine", toParticipantID: "BankServer", type: UmlSequenceMessageType.Synchronous },
+                        { id: 105, content: "PIN Verified", fromParticipantID: "BankServer", toParticipantID: "ATMMachine", type: UmlSequenceMessageType.Reply },
+                        { id: 106, content: "Show Options", fromParticipantID: "ATMMachine", toParticipantID: "User", type: UmlSequenceMessageType.Synchronous },
+                        { id: 107, content: "Choose Option", fromParticipantID: "User", toParticipantID: "ATMMachine", type: UmlSequenceMessageType.Synchronous },
+                        { id: 108, content: "GetBalance", fromParticipantID: "ATMMachine", toParticipantID: "BankServer", type: UmlSequenceMessageType.Synchronous },
+                        { id: 109, content: "Balance", fromParticipantID: "BankServer", toParticipantID: "ATMMachine", type: UmlSequenceMessageType.Reply },
+                        { id: 110, content: "ShowBalance", fromParticipantID: "ATMMachine", toParticipantID: "User", type: UmlSequenceMessageType.Synchronous },
+                        { id: 111, content: "GetAmount", fromParticipantID: "ATMMachine", toParticipantID: "User", type: UmlSequenceMessageType.Synchronous },
+                        { id: 112, content: "EnterAmount", fromParticipantID: "User", toParticipantID: "ATMMachine", type: UmlSequenceMessageType.Synchronous },
+                        { id: 113, content: "CheckBalance", fromParticipantID: "ATMMachine", toParticipantID: "BankServer", type: UmlSequenceMessageType.Synchronous },
+                        { id: 114, content: "Balance", fromParticipantID: "BankServer", toParticipantID: "ATMMachine", type: UmlSequenceMessageType.Reply },
+                        { id: 115, content: "Display(\"Insufficient Balance\")", fromParticipantID: "ATMMachine", toParticipantID: "User", type: UmlSequenceMessageType.Synchronous },
+                        { id: 116, content: "DispenseCash", fromParticipantID: "ATMMachine", toParticipantID: "User", type: UmlSequenceMessageType.Synchronous },
+                        { id: 117, content: "Display(\"Collect Cash\")", fromParticipantID: "ATMMachine", toParticipantID: "User", type: UmlSequenceMessageType.Synchronous },
+                        { id: 118, content: "CollectCash", fromParticipantID: "User", toParticipantID: "ATMMachine", type: UmlSequenceMessageType.Synchronous },
+                        { id: 119, content: "UpdateBalance", fromParticipantID: "ATMMachine", toParticipantID: "BankServer", type: UmlSequenceMessageType.Synchronous },
+                        { id: 120, content: "BalanceUpdated", fromParticipantID: "BankServer", toParticipantID: "ATMMachine", type: UmlSequenceMessageType.Reply },
+                        { id: 121, content: "Display(\"Transaction Cancelled\")", fromParticipantID: "ATMMachine", toParticipantID: "User", type: UmlSequenceMessageType.Synchronous },
+                        { id: 122, content: "Print Receipt", fromParticipantID: "ATMMachine", toParticipantID: "User", type: UmlSequenceMessageType.Synchronous },
+                        { id: 123, content: "Eject Card", fromParticipantID: "ATMMachine", toParticipantID: "User", type: UmlSequenceMessageType.Synchronous },
+                        { id: 124, content: "Collect Card", fromParticipantID: "User", toParticipantID: "ATMMachine", type: UmlSequenceMessageType.Synchronous },
+                        { id: 125, content: "Display(\"Thank You\")", fromParticipantID: "ATMMachine", toParticipantID: "User", type: UmlSequenceMessageType.Synchronous }
+                    ],
+                    fragments: [
+                        {
+                            id: "1.1",
+                            type: UmlSequenceFragmentType.Alternative,
+                            conditions: [
+                                {
+                                    content: "Balance < Withdrawal Amount",
+                                    messageIds: [115]
+                                },
+                                {
+                                    content: "Balance >= Withdrawal Amount",
+                                    messageIds: [116, 117, 118, 119, 120]
+                                }
+                            ]
+                        },
+                        {
+                            id: 1,
+                            type: UmlSequenceFragmentType.Alternative,
+                            conditions: [
+                                {
+                                    content: "option = BalanceEnquiry",
+                                    messageIds: [108, 109, 110]
+                                },
+                                {
+                                    content: "option = Withdraw",
+                                    messageIds: [111, 112, 113, 114],
+                                    fragmentIds: ["1.1"]
+                                },
+                                {
+                                    content: "option = Cancel",
+                                    messageIds: [121]
+                                }
+                            ]
+                        },
+                    ]
+                };
+
+                diagram = new Diagram({
+                    width: '100%',
+                    height: '800px',
+                    model: model
+                });
+                diagram.appendTo('#umlSequenceDiagram-1');
+            });
+
+            afterAll((): void => {
+                diagram.destroy();
+                ele.remove();
+            });
+            it('render', (done: Function) => {
+                debugger;
+                expect(diagram.nodes.length).toBe(11);
+                expect(diagram.connectors.length).toBe(28);
+                done();
+            });
+        });
+        describe('Sample-2', () => {
+            let diagram: Diagram;
+            let ele: HTMLElement;
+            beforeAll((): void => {
+                ele = createElement('div', { id: 'umlSequenceDiagram-2', styles: 'width:100%;height:800px;' });
+                document.body.appendChild(ele);
+                const model: UmlSequenceDiagramModel = {
+                    spaceBetweenParticipants: 120,
+                    participants: [
+                        {
+                            id: 'p1', content: 'Client', isActor: true, showDestructionMarker: false,
+                            activationBoxes: [{ id: 'act1', startMessageID: 'm1', endMessageID: 'm2' }, { id: 'act2', startMessageID: 'm5', endMessageID: 'm7' }]
+                        },
+                        {
+                            id: 'p2', content: 'Server', isActor: false, showDestructionMarker: true,
+                            activationBoxes: [{ id: 'act2', startMessageID: 'm2', endMessageID: 'm5' },]
+                        },
+                        {
+                            id: 'p3', content: 'DB', isActor: false, showDestructionMarker: false,
+                            activationBoxes: [{ id: 'act3', startMessageID: 'm3', endMessageID: 'm4' }]
+                        }
+                    ],
+                    messages: [
+                        { id: 'm1', type: UmlSequenceMessageType.Create, fromParticipantID: 'p1', toParticipantID: 'p2', content: 'init()' },
+                        { id: 'm2', type: UmlSequenceMessageType.Synchronous, fromParticipantID: 'p1', toParticipantID: 'p2', content: 'request()' },
+                        { id: 'm3', type: UmlSequenceMessageType.Asynchronous, fromParticipantID: 'p2', toParticipantID: 'p3', content: 'query()' },
+                        { id: 'm4', type: UmlSequenceMessageType.Reply, fromParticipantID: 'p3', toParticipantID: 'p2', content: 'result' },
+                        { id: 'm5', type: UmlSequenceMessageType.Reply, fromParticipantID: 'p2', toParticipantID: 'p1', content: 'response' },
+                        { id: 'm6', type: UmlSequenceMessageType.Self, fromParticipantID: 'p2', toParticipantID: 'p2', content: 'log()' },
+                        { id: 'm7', type: UmlSequenceMessageType.Delete, fromParticipantID: 'p1', toParticipantID: 'p2', content: 'terminate()' }
+                    ],
+                    fragments: [
+                        {
+                            id: 'altFrag',
+                            type: UmlSequenceFragmentType.Alternative,
+                            conditions: [
+                                { content: 'DB available', messageIds: ['m3', 'm4'] },
+                                { content: 'DB down', messageIds: ['m6'] }
+                            ]
+                        },
+                        {
+                            id: 'optFrag',
+                            type: UmlSequenceFragmentType.Optional,
+                            conditions: [
+                                { content: 'Request valid', messageIds: ['m2', 'm5'] }
+                            ]
+                        },
+                        {
+                            id: 'loopFrag',
+                            type: UmlSequenceFragmentType.Loop,
+                            conditions: [
+                                { content: 'Retry 3 times', messageIds: ['m2', 'm3', 'm4'] }
+                            ]
+                        }
+                    ]
+                }
+                diagram = new Diagram({
+                    width: '100%',
+                    height: '800px',
+                    model: model
+                });
+                diagram.appendTo('#umlSequenceDiagram-2');
+            });
+
+            afterAll((): void => {
+                diagram.destroy();
+                ele.remove();
+            });
+            it('render', (done: Function) => {
+                expect(diagram.nodes.length).toBe(10);
+                expect(diagram.connectors.length).toBe(10);
+                done();
+            });
+        });
+        describe('Sample-3', () => {
+            let diagram: Diagram;
+            let ele: HTMLElement;
+            let model: UmlSequenceDiagramModel;
+            beforeAll((): void => {
+                ele = createElement('div', { id: 'umlSequenceDiagram-3', styles: 'width:100%;height:800px;' });
+                document.body.appendChild(ele);
+                model = {
+                    participants: [
+                        {
+                            id: "1",
+                            content: "Alice",
+                            isActor: true,
+                            showDestructionMarker: true
+                        },
+                        {
+                            id: "B",
+                            content: "Bob",
+                            isActor: true,
+                            showDestructionMarker: true
+                        },
+                        {
+                            id: "2",
+                            content: "Evaluator",
+                            isActor: true,
+                            showDestructionMarker: false,
+                            activationBoxes: [
+                                { id: "Act1", startMessageID: 103, endMessageID: 115 }
+                            ]
+                        },
+                        {
+                            id: "D123",
+                            content: "Developer",
+                            isActor: true,
+                            showDestructionMarker: true,
+                            activationBoxes: [
+                                { id: "Act2", startMessageID: 109, endMessageID: 113 }
+                            ]
+                        },
+                        {
+                            id: "3",
+                            content: "Customer",
+                            isActor: true,
+                            showDestructionMarker: true,
+                            activationBoxes: [
+                                { id: "Act3", startMessageID: "111", endMessageID: 112 }
+                            ]
+                        }
+                    ],
+                    messages: [
+                        { id: "MSG1", content: "Hey Bob, do you have the report?", fromParticipantID: "1", toParticipantID: "B", type: UmlSequenceMessageType.Synchronous },
+                        { id: 102, content: "Not yet, I'm still working on it.", fromParticipantID: "B", toParticipantID: "1", type: UmlSequenceMessageType.Synchronous },
+                        { id: 103, content: "Can you assist Bob with that?", fromParticipantID: "1", toParticipantID: "2", type: UmlSequenceMessageType.Create },
+                        { id: "104", content: "Let's get this done together.", fromParticipantID: "2", toParticipantID: "B", type: UmlSequenceMessageType.Synchronous },
+                        { id: 105, content: "Thanks for your help, Eve.", fromParticipantID: "B", toParticipantID: "2", type: UmlSequenceMessageType.Synchronous },
+                        { id: "106", content: "The report is ready.", fromParticipantID: "2", toParticipantID: "1", type: UmlSequenceMessageType.Synchronous },
+                        { id: 107, content: "Great job, Bob!", fromParticipantID: "1", toParticipantID: "B", type: UmlSequenceMessageType.Synchronous },
+                        { id: "MSG108", content: "Thanks, Eve!", fromParticipantID: "1", toParticipantID: "2", type: UmlSequenceMessageType.Synchronous },
+                        { id: 109, content: "We need to check the code.", fromParticipantID: "B", toParticipantID: "D123", type: UmlSequenceMessageType.Create },
+                        { id: "110", content: "Sure, I'll review the code.", fromParticipantID: "D123", toParticipantID: "B", type: UmlSequenceMessageType.Synchronous },
+                        { id: "111", content: "Report is finalized, sending it to you.", fromParticipantID: "B", toParticipantID: "3", type: UmlSequenceMessageType.Create },
+                        { id: 112, content: "Received, thank you.", fromParticipantID: "3", toParticipantID: "B", type: UmlSequenceMessageType.Synchronous },
+                        { id: 113, content: "Thanks for the review", fromParticipantID: "1", toParticipantID: "D123", type: UmlSequenceMessageType.Delete },
+                        { id: "114", content: "We're done here.", fromParticipantID: "2", toParticipantID: "1", type: UmlSequenceMessageType.Synchronous },
+                        { id: 115, content: "Let's proceed with closing steps.", fromParticipantID: "1", toParticipantID: "2", type: UmlSequenceMessageType.Delete },
+                        { id: 116, content: "Shall we wrap up the project meeting?", fromParticipantID: "1", toParticipantID: "B", type: UmlSequenceMessageType.Synchronous },
+                        { id: "117", content: "Yes, let's finalize it.", fromParticipantID: "B", toParticipantID: "1", type: UmlSequenceMessageType.Synchronous },
+                        { id: "118", content: "I'm done with the project.", fromParticipantID: "B", toParticipantID: "1", type: UmlSequenceMessageType.Delete }
+                    ],
+                    fragments: [
+                        {
+                            id: 1,
+                            type: UmlSequenceFragmentType.Alternative,
+                            conditions: [
+                                {
+                                    content: "If assistance is needed",
+                                    messageIds: ["104", 105, "106"]
+                                },
+                                {
+                                    content: "If review is needed",
+                                    messageIds: [107, "MSG108", 109, 110]
+                                }
+                            ]
+                        },
+                        {
+                            id: 2,
+                            type: UmlSequenceFragmentType.Loop,
+                            conditions: [
+                                {
+                                    content: "For each review cycle",
+                                    messageIds: ["111", 112, 113]
+                                }
+                            ]
+                        }
+                    ]
+                };
+                diagram = new Diagram({
+                    width: '100%',
+                    height: '800px',
+                    model: model
+                });
+                diagram.appendTo('#umlSequenceDiagram-3');
+            });
+
+            afterAll((): void => {
+                diagram.destroy();
+                ele.remove();
+            });
+            it('render', (done: Function) => {
+                expect(diagram.nodes.length).toBe(10);
+                expect(diagram.connectors.length).toBe(23);
+                done();
+            });
+            it('render', (done: Function) => {
+                const rajParticipant: UmlSequenceParticipantModel = {
+                    id: "4",
+                    content: "Raj",
+                    isActor: false,
+                    showDestructionMarker: true,
+                    activationBoxes: [
+                        {
+                            id: "Act4",
+                            startMessageID: 120,
+                            endMessageID: 123
+                        }
+                    ]
+                };
+                model.participants.push(rajParticipant);
+
+                const rajMessages: UmlSequenceMessageModel[] = [
+                    { id: 120, content: "Hello Alice!", fromParticipantID: "B", toParticipantID: "4", type: UmlSequenceMessageType.Create },
+                    { id: 121, content: "Can you send the report to Bob?", fromParticipantID: "4", toParticipantID: "B", type: UmlSequenceMessageType.Synchronous },
+                    { id: 122, content: "Bob, did you receive the report?", fromParticipantID: "4", toParticipantID: "B", type: UmlSequenceMessageType.Synchronous },
+                    { id: 123, content: "Thank you all for your efforts!", fromParticipantID: "4", toParticipantID: "B", type: UmlSequenceMessageType.Synchronous }
+                ];
+                model.messages = model.messages.concat(rajMessages);
+
+                const rajLoopFragment: UmlSequenceFragmentModel = {
+                    id: 3,
+                    type: UmlSequenceFragmentType.Loop,
+                    conditions: [
+                        {
+                            content: "Raj iterates over communication",
+                            messageIds: [120, 121, 122, 123]
+                        }
+                    ]
+                };
+                model.fragments.push(rajLoopFragment);
+                diagram.model = model;
+                diagram.updateFromModel();
+                expect(diagram.nodes.length).toBe(13);
+                expect(diagram.connectors.length).toBe(28);
+                done();
+            });
+        });
+        describe('errorHandling', () => {
+            let diagram: Diagram;
+            let ele: HTMLElement;
+            let error: any;
+            beforeAll((): void => {
+                ele = createElement('div', { id: 'errorHandling',  styles: 'width:100%;height:800px;' });
+                document.body.appendChild(ele);
+                const model: UmlSequenceDiagramModel = {
+                    participants: [
+                        {
+                            content: "Unnamed Participant",
+                            isActor: true
+                        }
+                    ],
+                    messages: [],
+                    fragments: []
+                };
+                diagram = new Diagram({
+                    width: '100%',
+                    height: '800px',
+                    model: model
+                });
+                diagram.appendTo('#errorHandling');
+
+            });
+
+            afterAll((): void => {
+                diagram.destroy();
+                ele.remove();
+            });
+            it('Participant ID undefined', (done: Function) => {
+                expect(diagram.nodes.length).toBe(0);
+                done();
+            });
+            it('Message ID undefined', (done: Function) => {
+                const model: UmlSequenceDiagramModel = {
+                    participants: [
+                        {
+                            id: 'User1',
+                            content: "ParticipantA",
+                            isActor: true
+                        },
+                        {
+                            id: 'User2',
+                            content: 'ParticipantB',
+                        }
+                    ],
+                    messages: [{content: 'message', fromParticipantID: 'User1', toParticipantID: 'User1'}],
+                    fragments: []
+                };
+                diagram.model = model;
+                diagram.updateFromModel();
+                expect(diagram.nodes.length).toBe(2);
+                expect(diagram.connectors.length).toBe(2);
+                done();
+            });
+            it('Message ID not given', (done: Function) => {
+                const model: UmlSequenceDiagramModel = {
+                    participants: [
+                        {
+                            id: 'User1',
+                            content: "ParticipantA",
+                            isActor: true
+                        },
+                        {
+                            id: 'User2',
+                            content: 'ParticipantB',
+                        }
+                    ],
+                    messages: [{id: 'msg1', content: 'message', fromParticipantID: 'User1'}],
+                    fragments: []
+                };
+                diagram.model = model;
+                diagram.updateFromModel();
+                expect(diagram.nodes.length).toBe(2);
+                expect(diagram.connectors.length).toBe(2);
+                done();
+            });
+             it('Incorrect from & to participant ID', (done: Function) => {
+                const model: UmlSequenceDiagramModel = {
+                    participants: [
+                        {
+                            id: 'User1',
+                            content: "ParticipantA",
+                            isActor: true
+                        },
+                        {
+                            id: 'User2',
+                            content: 'ParticipantB',
+                            activationBoxes: [{id: 'Act2', startMessageID: "X", endMessageID: "Y" }]
+                        }
+                    ],
+                    messages: [
+                        {id: 'msg1', content: 'message1', fromParticipantID: 'A', toParticipantID: 'B'},
+                        {id: 'msg2', content: 'message2', fromParticipantID: 'User2', toParticipantID: 'User1'},
+
+                    ],
+                    fragments: []
+                };
+                diagram.model = model;
+                diagram.updateFromModel();
+                expect(diagram.nodes.length).toBe(2);
+                expect(diagram.connectors.length).toBe(3);
+                done();
+            });
+            it('Activation ID undefined', (done: Function) => {
+                const model: UmlSequenceDiagramModel = {
+                    participants: [
+                        {
+                            id: 'User1',
+                            content: "ParticipantA",
+                            isActor: true
+                        },
+                        {
+                            id: 'User2',
+                            content: 'ParticipantB',
+                            activationBoxes: [{startMessageID: "message1", endMessageID: "message2" }]
+                        }
+                    ],
+                    messages: [
+                        {id: 'message1',content: 'message1', fromParticipantID: 'User1', toParticipantID: 'User2'},
+                        {id: 'message2',content: 'message2', fromParticipantID: 'User2', toParticipantID: 'User1'},
+
+                    ],
+                    fragments: []
+                };
+                diagram.model = model;
+                diagram.updateFromModel();
+                expect(diagram.nodes.length).toBe(3);
+                done();
+            });
+            it('Incorrect activation start & end message ID', (done: Function) => {
+                const model: UmlSequenceDiagramModel = {
+                    participants: [
+                        {
+                            id: 'User1',
+                            content: "ParticipantA",
+                            isActor: true
+                        },
+                        {
+                            id: 'User2',
+                            content: 'ParticipantB',
+                            activationBoxes: [{id: 'Act2', startMessageID: "X", endMessageID: "Y" }]
+                        }
+                    ],
+                    messages: [
+                        {id: 'message1', content: 'message1', fromParticipantID: 'User1', toParticipantID: 'User2'},
+                        {id: 'message2', content: 'message2', fromParticipantID: 'User2', toParticipantID: 'User1'},
+
+                    ],
+                    fragments: []
+                };
+                diagram.model = model;
+                diagram.updateFromModel();
+                expect(diagram.nodes.length).toBe(2);
+                done();
+            });
+            it('Fragment ID undefined', (done: Function) => {
+                const model: UmlSequenceDiagramModel = {
+                    participants: [
+                        {
+                            id: 'User1',
+                            content: "ParticipantA",
+                            isActor: true
+                        },
+                        {
+                            id: 'User2',
+                            content: 'ParticipantB',
+                            activationBoxes: [{id: 'Act2', startMessageID: "message1", endMessageID: "message2" }]
+                        }
+                    ],
+                    messages: [
+                        {id: 'message1', content: 'message1', fromParticipantID: 'User1', toParticipantID: 'User2'},
+                        {id: 'message2', content: 'message2', fromParticipantID: 'User2', toParticipantID: 'User1'},
+
+                    ],
+                    fragments: [{
+                            type: UmlSequenceFragmentType.Loop,
+                            conditions: [{ content: "Looping" }]
+                    }]
+                };
+                diagram.model = model;
+                diagram.updateFromModel();
+                expect(diagram.nodes.length).toBe(3);
+                done();
+            });
+        });
+        describe('errorHandling-7', () => {
+            let diagram: Diagram;
+            let ele: HTMLElement;
+            let error: any;
+            beforeAll((): void => {
+                ele = createElement('div', { id: 'errorHandling-7', styles: 'width:100%;height:800px;' });
+                document.body.appendChild(ele);
+                const model: UmlSequenceDiagramModel = {
+                    participants: [
+                        {
+                            id: "A",
+                            content: "Alice",
+                            isActor: true
+                        }
+                    ],
+                    messages: [
+                        {
+                            id: "m1",
+                            toParticipantID: "A", // valid ID
+                            content: "Invalid IDs",
+                            type: UmlSequenceMessageType.Self
+                        }
+                    ],
+                    fragments: []
+                };
+                diagram = new Diagram({
+                    width: '100%',
+                    height: '800px',
+                    model: model
+                });
+                try {
+                    diagram.appendTo('#errorHandling-7');
+                }
+                catch (e) {
+                    error = e;
+                    debugger;
+                }
+            });
+
+            afterAll((): void => {
+                diagram.destroy();
+                ele.remove();
+            });
+            it('render', (done: Function) => {
+                expect(error).toBe(undefined);
+                done();
+            });
+        });
+        
+        describe('errorHandling-10', () => {
+            let diagram: Diagram;
+            let ele: HTMLElement;
+            let error: any;
+            beforeAll((): void => {
+                ele = createElement('div', { id: 'errorHandling-10', styles: 'width:100%;height:800px;' });
+                document.body.appendChild(ele);
+                const model: UmlSequenceDiagramModel = {
+                    participants: [
+                        {
+                            id: "A",
+                            content: "Alice",
+                            isActor: true,
+                            activationBoxes: [
+                                { id: "Act1" } // Missing start and end IDs
+                            ]
+                        },
+                        {
+                            id: "B",
+                            content: "BOb",
+                            isActor: true,
+                            activationBoxes: [
+                                { id: "Act2", startMessageID: 'msg1' } // Missing end IDs
+                            ]
+                        }
+                    ],
+                    messages: [
+                        { id: 'msg1', content: 'message1', fromParticipantID: 'A', toParticipantID: 'B', type: UmlSequenceMessageType.Synchronous },
+                        { id: 'msg2', content: 'message2', fromParticipantID: 'A', toParticipantID: 'B', type: UmlSequenceMessageType.Asynchronous }
+                    ],
+                };
+                diagram = new Diagram({
+                    width: '100%',
+                    height: '800px',
+                    model: model
+                });
+                try {
+                    diagram.appendTo('#errorHandling-10');
+                }
+                catch (e) {
+                    error = e;
+                    debugger;
+                }
+            });
+
+            afterAll((): void => {
+                diagram.destroy();
+                ele.remove();
+            });
+            it('render', (done: Function) => {
+                expect(error).toBe(undefined);
+                done();
+            });
+        });
+
+        describe('errorHandling-11', () => {
+            let diagram: Diagram;
+            let ele: HTMLElement;
+            let error: any;
+            beforeAll((): void => {
+                ele = createElement('div', { id: 'errorHandling-11', styles: 'width:100%;height:800px;' });
+                document.body.appendChild(ele);
+                const model: UmlSequenceDiagramModel = {
+                    participants: [
+                        {
+                            id: "A",
+                            content: "Alice",
+                            isActor: true
+                        }
+                    ],
+                    fragments: [
+                        {
+                            id: "frag1",
+                            type: UmlSequenceFragmentType.Loop,
+                            conditions: []
+                        }
+                    ]
+                };
+                diagram = new Diagram({
+                    width: '100%',
+                    height: '800px',
+                    model: model
+                });
+                try {
+                    diagram.appendTo('#errorHandling-11');
+                }
+                catch (e) {
+                    error = e;
+                    debugger;
+                }
+            });
+
+            afterAll((): void => {
+                diagram.destroy();
+                ele.remove();
+            });
+            it('render', (done: Function) => {
+                expect(error).toBe(undefined);
+                done();
+            });
+        });
+
+        describe('errorHandling-12', () => {
+            let diagram: Diagram;
+            let ele: HTMLElement;
+            let error: any;
+            beforeAll((): void => {
+                ele = createElement('div', { id: 'errorHandling-12', styles: 'width:100%;height:800px;' });
+                document.body.appendChild(ele);
+                const model: UmlSequenceDiagramModel = {
+                    participants: [
+                        {
+                            id: "A",
+                            content: "Alice",
+                            isActor: true
+                        },
+                        {
+                            id: "B",
+                            content: "Bob",
+                            isActor: true
+                        }
+                    ],
+                    messages: [
+                        { id: 'msg1', content: 'message', fromParticipantID: 'A', toParticipantID: 'B' },
+                        { id: 'msg2', content: 'message', fromParticipantID: 'B', toParticipantID: 'A', type: UmlSequenceMessageType.Reply }
+                    ],
+                    fragments: [
+                        {
+                            id: "childFrag",
+                            type: UmlSequenceFragmentType.Optional,
+                            conditions: [{ content: "Inner Condition", messageIds: ['msg1', 'msg2'] }]
+                        },
+                        {
+                            id: "parentFrag",
+                            type: UmlSequenceFragmentType.Alternative,
+                            conditions: [
+                                {
+                                    content: "Parent Condition", messageIds: ['msg2'],
+                                    fragmentIds: ['childFrag']
+                                }
+                            ]
+                        }
+                    ]
+                };
+                diagram = new Diagram({
+                    width: '100%',
+                    height: '800px',
+                    model: model
+                });
+                try {
+                    diagram.appendTo('#errorHandling-12');
+                }
+                catch (e) {
+                    error = e;
+                    debugger;
+                }
+            });
+
+            afterAll((): void => {
+                diagram.destroy();
+                ele.remove();
+            });
+            it('render', (done: Function) => {
+                expect(error).toBe(undefined);
+                done();
+            });
+        });
+        describe('errorHandling-13', () => {
+            let diagram: Diagram;
+            let ele: HTMLElement;
+            let error: any;
+            beforeAll((): void => {
+                ele = createElement('div', { id: 'errorHandling-13', styles: 'width:100%;height:800px;' });
+                document.body.appendChild(ele);
+                const model: UmlSequenceDiagramModel = {
+                    participants: [
+                        {
+                            id: "A",
+                            content: "Alice",
+                            isActor: true
+                        },
+                        {
+                            id: "B",
+                            content: "Bob",
+                            isActor: true
+                        }
+                    ],
+                    messages: [
+                        { id: 'msg1', content: 'message', fromParticipantID: 'A', toParticipantID: 'B' },
+                        { id: 'msg2', content: 'message', fromParticipantID: 'B', toParticipantID: 'A', type: UmlSequenceMessageType.Reply }
+                    ],
+                    fragments: [
+                        {
+                            id: "childFrag",
+                            type: UmlSequenceFragmentType.Optional,
+                            conditions: [{ content: "Inner Condition", messageIds: ['msg1', 'msg2'] }]
+                        },
+                        {
+                            id: "parentFrag",
+                            type: UmlSequenceFragmentType.Alternative,
+                            conditions: [
+                                {
+                                    content: "Parent Condition", messageIds: [''],
+                                }
+                            ]
+                        }
+                    ]
+                };
+                diagram = new Diagram({
+                    width: '100%',
+                    height: '800px',
+                    model: model
+                });
+                try {
+                    diagram.appendTo('#errorHandling-13');
+                }
+                catch (e) {
+                    error = e;
+                    debugger;
+                }
+            });
+
+            afterAll((): void => {
+                diagram.destroy();
+                ele.remove();
+            });
+            it('render', (done: Function) => {
+                expect(error).toBe(undefined);
+                done();
+            });
+        });
+    
+        describe('errorHandling-15', () => {
+            let diagram: Diagram;
+            let ele: HTMLElement;
+            let error: any;
+            beforeAll((): void => {
+                ele = createElement('div', { id: 'errorHandling-15', styles: 'width:100%;height:800px;' });
+                document.body.appendChild(ele);
+                const model: UmlSequenceDiagramModel = {
+                    participants: [
+                        {
+                            id: "A",
+                            content: "Alice",
+                            isActor: true,
+                        }
+                    ],
+                    messages: [{ id: 'msg', content: 'message', toParticipantID: 'A', type: UmlSequenceMessageType.Self }],
+                };
+                diagram = new Diagram({
+                    width: '100%',
+                    height: '800px',
+                    model: model
+                });
+                try {
+                    diagram.appendTo('#errorHandling-15');
+                }
+                catch (e) {
+                    error = e;
+                    debugger;
+                }
+            });
+
+            afterAll((): void => {
+                diagram.destroy();
+                ele.remove();
+            });
+            it('render', (done: Function) => {
+                expect(error).toBe(undefined);
+                done();
+            });
+        });
+        describe('errorHandling-16', () => {
+            let diagram: Diagram;
+            let ele: HTMLElement;
+            let error: any;
+            beforeAll((): void => {
+                ele = createElement('div', { id: 'errorHandling-16', styles: 'width:100%;height:800px;' });
+                document.body.appendChild(ele);
+                const model: UmlSequenceDiagramModel = {
+                    participants: [
+                        {
+                            id: "A",
+                            content: "Alice",
+                            isActor: true
+                        },
+                        {
+                            id: "B",
+                            content: "Bob",
+                            isActor: true
+                        }
+                    ],
+                    messages: [
+                        { id: 'msg1', content: 'message', fromParticipantID: 'A', toParticipantID: 'B' },
+                        { id: 'msg2', content: 'message', fromParticipantID: 'B', toParticipantID: 'A', type: UmlSequenceMessageType.Reply }
+                    ],
+                    fragments: [
+                        {
+                            id: "childFrag",
+                            type: UmlSequenceFragmentType.Optional,
+                            conditions: [
+                                {
+                                    content: "Parent Condition", messageIds: ['msg1'],
+                                }
+                            ]
+                        },
+                        {
+                            id: "parentFrag",
+                            type: UmlSequenceFragmentType.Optional,
+                            conditions: [{ content: "Inner Condition", messageIds: ['msg1', 'msg2'], fragmentIds: ['childFrag'] }]
+                        },
+                    ]
+                };
+                diagram = new Diagram({
+                    width: '100%',
+                    height: '800px',
+                    model: model
+                });
+                try {
+                    diagram.appendTo('#errorHandling-16');
+                }
+                catch (e) {
+                    error = e;
+                    debugger;
+                }
+            });
+
+            afterAll((): void => {
+                diagram.destroy();
+                ele.remove();
+            });
+            it('render', (done: Function) => {
+                expect(error).toBe(undefined);
+                done();
+            });
+        });
+        describe('errorHandling-17', () => {
+            let diagram: Diagram;
+            let ele: HTMLElement;
+            let error: any;
+            beforeAll((): void => {
+                ele = createElement('div', { id: 'errorHandling-17', styles: 'width:100%;height:800px;' });
+                document.body.appendChild(ele);
+                const model: UmlSequenceDiagramModel = {
+                    participants: [
+                        {
+                            id: "A",
+                            content: "Alice",
+                            isActor: true
+                        },
+                        {
+                            id: "B",
+                            content: "Bob",
+                            isActor: true
+                        }
+                    ],
+                    messages: [
+                        { id: 'msg1', content: 'message', fromParticipantID: 'A', toParticipantID: 'B' },
+                        { id: 'msg2', content: 'message', fromParticipantID: 'B', toParticipantID: 'A', type: UmlSequenceMessageType.Reply },
+                        { id: 'msg3', content: 'message', fromParticipantID: 'A', toParticipantID: 'B' },
+                        { id: 'msg4', content: 'message', fromParticipantID: 'B', toParticipantID: 'A', type: UmlSequenceMessageType.Reply },
+                        { id: 'msg5', content: 'message', fromParticipantID: 'A', toParticipantID: 'B' },
+                        { id: 'msg6', content: 'message', fromParticipantID: 'A', toParticipantID: 'A', type: UmlSequenceMessageType.Reply },
+
+                    ],
+                    fragments: [
+                        {
+                            id: "nestedFrag",
+                            type: UmlSequenceFragmentType.Alternative,
+                            conditions: [
+                                {
+                                    content: "Nest1", messageIds: ['msg1'],
+                                },
+                                {
+                                    content: "Nest2", messageIds: ['msg2'],
+                                }
+                            ]
+                        },
+                        {
+                            id: "childFrag",
+                            type: UmlSequenceFragmentType.Alternative,
+                            conditions: [
+                                {
+                                    content: "child1", fragmentIds: ['nestedFrag']
+                                },
+                                {
+                                    content: "child2", messageIds: ['msg3']
+                                }
+                            ]
+                        },
+                        {
+                            id: "parentFrag",
+                            type: UmlSequenceFragmentType.Alternative,
+                            conditions: [
+                                { content: "Inner Condition", fragmentIds: ['childFrag'] },
+                                {
+                                    content: "Inner Condition2", messageIds: ['msg4'],
+                                }]
+                        },
+                    ]
+                };
+                diagram = new Diagram({
+                    width: '100%',
+                    height: '800px',
+                    model: model
+                });
+                try {
+                    diagram.appendTo('#errorHandling-17');
+                }
+                catch (e) {
+                    error = e;
+                    debugger;
+                }
+            });
+
+            afterAll((): void => {
+                diagram.destroy();
+                ele.remove();
+            });
+            it('render', (done: Function) => {
+                expect(error).toBe(undefined);
+                done();
+            });
+        });
+        describe('errorHandling-18', () => {
+            let diagram: Diagram;
+            let ele: HTMLElement;
+            let error: any;
+            beforeAll((): void => {
+                ele = createElement('div', { id: 'errorHandling-18', styles: 'width:100%;height:800px;' });
+                document.body.appendChild(ele);
+                const model: UmlSequenceDiagramModel = {
+                    participants: [
+                        {
+                            id: "A",
+                            content: "Alice",
+                            isActor: true
+                        },
+                        {
+                            id: "B",
+                            content: "Bob",
+                            isActor: true,
+                            activationBoxes: [{ id: 'act1', startMessageID: 'msg2', endMessageID: 'msg3' }]
+                        },
+                        {
+                            id: "C",
+                            content: "Kevin",
+                            isActor: true,
+                            activationBoxes: [{ id: 'act2', startMessageID: 'msg3', endMessageID: 'msg4' }]
+                        }
+                    ],
+                    messages: [
+                        { id: 'msg1', content: 'Command', fromParticipantID: 'A', toParticipantID: 'B' },
+                        { id: 'msg2', content: 'Accept', fromParticipantID: 'B', toParticipantID: 'B', type: UmlSequenceMessageType.Self },
+                        { id: 'msg3', content: 'Create', fromParticipantID: 'B', toParticipantID: 'C', type: UmlSequenceMessageType.Create },
+                        { id: 'msg4', content: 'Created', fromParticipantID: 'C', toParticipantID: 'A', type: UmlSequenceMessageType.Reply }
+                    ],
+                };
+                diagram = new Diagram({
+                    width: '100%',
+                    height: '800px',
+                    model: model
+                });
+                try {
+                    diagram.appendTo('#errorHandling-18');
+                }
+                catch (e) {
+                    error = e;
+                    debugger;
+                }
+            });
+
+            afterAll((): void => {
+                diagram.destroy();
+                ele.remove();
+            });
+            it('render', (done: Function) => {
+                expect(error).toBe(undefined);
+                done();
+            });
+        });
+        describe('errorHandling-19', () => {
+            let diagram: Diagram;
+            let ele: HTMLElement;
+            let error: any;
+            beforeAll((): void => {
+                ele = createElement('div', { id: 'errorHandling-19', styles: 'width:100%;height:800px;' });
+                document.body.appendChild(ele);
+                const model: UmlSequenceDiagramModel = {
+                    participants: [
+                        {
+                            id: "A",
+                            content: "Alice",
+                            isActor: true
+                        },
+                        {
+                            id: "B",
+                            content: "Bob",
+                            isActor: true
+                        },
+                        {
+                            id: "C",
+                            content: "Kevin",
+                            isActor: true
+                        }
+                    ],
+                    messages: [
+                        { id: 'msg1', content: 'message', fromParticipantID: 'A', toParticipantID: 'B' },
+                        { id: 'msg2', content: 'message', fromParticipantID: 'B', toParticipantID: 'C', type: UmlSequenceMessageType.Create },
+                        { id: 'msg3', content: 'message', fromParticipantID: 'C', toParticipantID: 'A', type: UmlSequenceMessageType.Asynchronous }
+                    ],
+                    fragments: [
+                        {
+                            id: "childFrag",
+                            type: UmlSequenceFragmentType.Optional,
+                            conditions: [
+                                {
+                                    content: "Parent Condition", messageIds: ['msg1', 'msg2', 'msg3']
+                                }
+                            ]
+                        },
+                    ]
+                };
+                diagram = new Diagram({
+                    width: '100%',
+                    height: '800px',
+                    model: model
+                });
+                try {
+                    diagram.appendTo('#errorHandling-19');
+                }
+                catch (e) {
+                    error = e;
+                    debugger;
+                }
+            });
+
+            afterAll((): void => {
+                diagram.destroy();
+                ele.remove();
+            });
+            it('render', (done: Function) => {
+                expect(error).toBe(undefined);
+                done();
+            });
+        });
+        describe('errorHandling-20', () => {
+            let diagram: Diagram;
+            let ele: HTMLElement;
+            let error: any;
+            beforeAll((): void => {
+                ele = createElement('div', { id: 'errorHandling-20', styles: 'width:100%;height:800px;' });
+                document.body.appendChild(ele);
+                const model: UmlSequenceDiagramModel = {
+                    participants: [
+                        {
+                            id: "A",
+                            content: "Alice",
+                            isActor: true,
+                            showDestructionMarker: true,
+                        },
+                        {
+                            id: "B",
+                            content: "Bob",
+                            isActor: true
+                        },
+                        {
+                            id: "C",
+                            content: "Kevin",
+                            isActor: true
+                        }
+                    ],
+                    messages: [
+                        { id: 'msg1', content: 'message', fromParticipantID: 'A', toParticipantID: 'B' },
+                        { id: 'msg2', content: 'message', fromParticipantID: 'B', toParticipantID: 'C', type: UmlSequenceMessageType.Create },
+                        { id: 'msg3', content: 'message', fromParticipantID: 'C', toParticipantID: 'A', type: UmlSequenceMessageType.Delete }
+                    ],
+                    fragments: [
+                        {
+                            id: "childFrag",
+                            type: UmlSequenceFragmentType.Optional,
+                            conditions: [
+                                {
+                                    content: "Parent Condition", messageIds: ['msg1', 'msg2', 'msg3']
+                                }
+                            ]
+                        },
+                    ]
+                };
+                diagram = new Diagram({
+                    width: '100%',
+                    height: '800px',
+                    model: model
+                });
+                try {
+                    diagram.appendTo('#errorHandling-20');
+                }
+                catch (e) {
+                    error = e;
+                    debugger;
+                }
+            });
+
+            afterAll((): void => {
+                diagram.destroy();
+                ele.remove();
+            });
+            it('render', (done: Function) => {
+                expect(error).toBe(undefined);
+                done();
+            });
+        });
+        describe('errorHandling-21', () => {
+            let diagram: Diagram;
+            let ele: HTMLElement;
+            let error: any;
+            beforeAll((): void => {
+                ele = createElement('div', { id: 'errorHandling-21', styles: 'width:100%;height:800px;' });
+                document.body.appendChild(ele);
+                const model: UmlSequenceDiagramModel = {
+                    participants: [
+                        {
+                            id: "A",
+                            content: "Alice",
+                            isActor: true,
+                            showDestructionMarker: true,
+                        },
+                        {
+                            id: "B",
+                            content: "Bob",
+                            isActor: true
+                        },
+                        {
+                            id: "C",
+                            content: "Kevin",
+                            isActor: true
+                        }
+                    ],
+                    messages: [
+                        { id: 'msg1', content: 'message', fromParticipantID: 'A', toParticipantID: 'B' },
+                        { id: 'msg2', content: 'message', fromParticipantID: 'B', toParticipantID: 'C', type: UmlSequenceMessageType.Create },
+                    ],
+                    fragments: [
+                        {
+                            id: "childFrag",
+                            type: UmlSequenceFragmentType.Alternative,
+                            conditions: [
+                                {
+                                    content: "Parent Condition", messageIds: []
+                                }
+                            ]
+                        },
+                    ]
+                };
+                diagram = new Diagram({
+                    width: '100%',
+                    height: '800px',
+                    model: model
+                });
+                try {
+                    diagram.appendTo('#errorHandling-21');
+                }
+                catch (e) {
+                    error = e;
+                    debugger;
+                }
+            });
+
+            afterAll((): void => {
+                diagram.destroy();
+                ele.remove();
+            });
+            it('render', (done: Function) => {
+                expect(error).toBe(undefined);
+                done();
+            });
+        });
+      
+        describe('errorHandling-23', () => {
+            let diagram: Diagram;
+            let ele: HTMLElement;
+            let error: any;
+            beforeAll((): void => {
+                ele = createElement('div', { id: 'errorHandling-23', styles: 'width:100%;height:800px;' });
+                document.body.appendChild(ele);
+                const model: UmlSequenceDiagramModel = {
+                    participants: [
+                        {
+                            id: "A",
+                            content: "Alice",
+                            isActor: true,
+                            showDestructionMarker: true,
+                        },
+                        {
+                            id: "B",
+                            content: "Bob",
+                            isActor: true
+                        },
+                    ],
+                    messages: [
+                        { id: 'msg1', content: 'message', fromParticipantID: 'A', toParticipantID: 'B' },
+                        { id: 'msg2', content: 'message', fromParticipantID: 'B', toParticipantID: 'A' },
+                        { id: 'msg3', content: 'message', fromParticipantID: 'B', toParticipantID: 'A' },
+                        { id: 'msg4', content: 'message', fromParticipantID: 'A', toParticipantID: 'B' },
+
+                    ],
+                    fragments: [
+                        {
+                            id: 'firstNest',
+                            type: UmlSequenceFragmentType.Alternative,
+                            conditions: [
+                                {
+                                    content: "InCondition1", messageIds: ['msg1']
+                                },
+                                {
+                                    content: "InCondition2", messageIds: ['msg2']
+                                }
+                            ]
+                        },
+                        {
+                            id: 'secondNest',
+                            type: UmlSequenceFragmentType.Alternative,
+                            conditions: [
+                                {
+                                    content: "InCondition1", messageIds: ['msg3']
+                                },
+                                {
+                                    content: "InCondition2", messageIds: ['msg4']
+                                }
+                            ]
+                        },
+                        {
+                            id: "ParnetFragment",
+                            type: UmlSequenceFragmentType.Alternative,
+                            conditions: [
+                                {
+                                    content: "Nested Alts1", fragmentIds: ['firstNest']
+                                },
+                                {
+                                    content: "Nested Alts2", fragmentIds: ['secondNest']
+                                },
+                            ]
+                        },
+                    ]
+                };
+                diagram = new Diagram({
+                    width: '100%',
+                    height: '800px',
+                    model: model
+                });
+                try {
+                    diagram.appendTo('#errorHandling-23');
+                }
+                catch (e) {
+                    error = e;
+                    debugger;
+                }
+            });
+
+            afterAll((): void => {
+                diagram.destroy();
+                ele.remove();
+            });
+            it('render', (done: Function) => {
+                expect(error).toBe(undefined);
+                done();
+            });
+        });
+        describe('errorHandling-24', () => {
+            let diagram: Diagram;
+            let ele: HTMLElement;
+            let error: any;
+            beforeAll((): void => {
+                ele = createElement('div', { id: 'errorHandling-24', styles: 'width:100%;height:800px;' });
+                document.body.appendChild(ele);
+                const model: UmlSequenceDiagramModel = {
+                    participants: [
+                        {
+                            id: "A",
+                            content: "Alice",
+                            isActor: true,
+                            activationBoxes: [
+                                { id: 'act1', startMessageID: 'msg1', endMessageID: 'msg3' },
+                                { id: 'act2', startMessageID: 'msg2', endMessageID: 'msg3' }
+                            ]
+                        },
+                        {
+                            id: "B",
+                            content: "Bob",
+                            isActor: true
+                        },
+                    ],
+                    messages: [
+                        { id: 'msg1', content: 'message', fromParticipantID: 'A', toParticipantID: 'B' },
+                        { id: 'msg2', content: 'message', fromParticipantID: 'B', toParticipantID: 'A' },
+                        { id: 'msg3', content: 'message', fromParticipantID: 'B', toParticipantID: 'A' },
+                        { id: 'msg4', content: 'message', fromParticipantID: 'A', toParticipantID: 'B' },
+
+                    ],
+                };
+                diagram = new Diagram({
+                    width: '100%',
+                    height: '800px',
+                    model: model
+                });
+                try {
+                    diagram.appendTo('#errorHandling-24');
+                }
+                catch (e) {
+                    error = e;
+                    debugger;
+                }
+            });
+
+            afterAll((): void => {
+                diagram.destroy();
+                ele.remove();
+            });
+            it('render', (done: Function) => {
+                expect(diagram.nodes.length).toBe(4);
+                done();
+            });
+        });
+        describe('errorHandling-25', () => {
+            let diagram: Diagram;
+            let ele: HTMLElement;
+            let error: any;
+            beforeAll((): void => {
+                ele = createElement('div', { id: 'errorHandling-25', styles: 'width:100%;height:800px;' });
+                document.body.appendChild(ele);
+                const model: UmlSequenceDiagramModel = {
+                    participants: [
+                        {
+                            id: "A",
+                            content: "Alice",
+                            isActor: true,
+                            showDestructionMarker: true,
+                        },
+                        {
+                            id: "B",
+                            content: "Bob",
+                            isActor: true
+                        },
+                        {
+                            id: "C",
+                            content: "Kevin",
+                            isActor: true
+                        }
+                    ],
+                    messages: [
+                        { id: 'msg1', content: 'message', fromParticipantID: 'A', toParticipantID: 'B' },
+                        { id: 'msg2', content: 'message', fromParticipantID: 'B', toParticipantID: 'C', type: UmlSequenceMessageType.Create },
+                    ],
+                    fragments: [
+                        {
+                            id: "childFrag",
+                            type: UmlSequenceFragmentType.Optional,
+                            conditions: [
+                                {
+                                    content: "Parent Condition", messageIds: []
+                                }
+                            ]
+                        },
+                    ]
+                };
+                diagram = new Diagram({
+                    width: '100%',
+                    height: '800px',
+                    model: model
+                });
+                try {
+                    diagram.appendTo('#errorHandling-25');
+                }
+                catch (e) {
+                    error = e;
+                    debugger;
+                }
+            });
+
+            afterAll((): void => {
+                diagram.destroy();
+                ele.remove();
+            });
+            it('render', (done: Function) => {
+                expect(error).toBe(undefined);
+                done();
+            });
+        });
+        describe('errorHandling-26', () => {
+            let diagram: Diagram;
+            let ele: HTMLElement;
+            let error: any;
+            beforeAll((): void => {
+                ele = createElement('div', { id: 'errorHandling-26', styles: 'width:100%;height:800px;' });
+                document.body.appendChild(ele);
+                const model: UmlSequenceDiagramModel = {
+                    participants: [
+                        {
+                            id: "A",
+                            content: "Alice",
+                            isActor: true
+                        },
+                        {
+                            id: "B",
+                            content: "Bob",
+                            isActor: true
+                        },
+                    ],
+                    messages: [
+                        { id: 'msg1', content: 'message', fromParticipantID: 'A', toParticipantID: 'B' },
+                        { id: 'msg2', content: 'message', fromParticipantID: 'B', toParticipantID: 'A', type: UmlSequenceMessageType.Reply },
+                    ],
+                    fragments: [
+                        {
+                            id: 'loop',
+                            type: UmlSequenceFragmentType.Loop,
+                            conditions: [
+                                { messageIds: ['msg1'] }
+                            ]
+                        }
+                    ]
+                };
+                diagram = new Diagram({
+                    width: '100%',
+                    height: '800px',
+                    model: model
+                });
+                try {
+                    diagram.appendTo('#errorHandling-26');
+                }
+                catch (e) {
+                    error = e;
+                    debugger;
+                }
+            });
+
+            afterAll((): void => {
+                diagram.destroy();
+                ele.remove();
+            });
+            it('render', (done: Function) => {
+                expect(error).toBe(undefined);
+                done();
+            });
+        });
+        describe('FootBox-1', () => {
+            let diagram: Diagram;
+            let ele: HTMLElement;
+            beforeAll((): void => {
+                ele = createElement('div', { id: 'FootBox-1', styles: 'width:100%;height:800px;' });
+                document.body.appendChild(ele);
+                const model: UmlSequenceDiagramModel = {
+                    participants: [
+                        {
+                            id: "A",
+                            content: "Alice",
+                            isActor: true
+                        },
+                        {
+                            id: "B",
+                            content: "Bob",
+                            isActor: true
+                        }
+                    ],
+                    messages: [
+                        { id: 'msg1', content: 'message', fromParticipantID: 'A', toParticipantID: 'B' },
+                    ],
+                };
+                diagram = new Diagram({
+                    width: '100%',
+                    height: '800px',
+                    model: model
+                });
+                (diagram.model as UmlSequenceDiagram).hideFootBox = false;
+                diagram.appendTo('#FootBox-1');
+            });
+
+            afterAll((): void => {
+                diagram.destroy();
+                ele.remove();
+            });
+            it('render', (done: Function) => {
+                expect(diagram.nodes.length).toBe(4);
+                done();
+            });
+        });
+        describe('FootBox-2', () => {
+            let diagram: Diagram;
+            let ele: HTMLElement;
+            beforeAll((): void => {
+                ele = createElement('div', { id: 'FootBox-2', styles: 'width:100%;height:800px;' });
+                document.body.appendChild(ele);
+                const model: UmlSequenceDiagramModel = {
+                    participants: [
+                        {
+                            id: "A",
+                            content: "Alice",
+                            isActor: true
+                        },
+                        {
+                            id: "B",
+                            content: "Bob",
+                            isActor: true,
+                            showDestructionMarker: true
+                        }
+                    ],
+                    messages: [
+                        { id: 'msg1', content: 'message', fromParticipantID: 'A', toParticipantID: 'B' },
+                    ],
+                };
+                diagram = new Diagram({
+                    width: '100%',
+                    height: '800px',
+                    model: model
+                });
+                (diagram.model as UmlSequenceDiagram).hideFootBox = false;
+                diagram.appendTo('#FootBox-2');
+            });
+
+            afterAll((): void => {
+                diagram.destroy();
+                ele.remove();
+            });
+            it('render', (done: Function) => {
+                expect(diagram.nodes.length).toBe(3);
+                done();
+            });
+        });
+            describe('Mermaid to Sequence', () => {
+            let diagram: Diagram;
+            let ele: HTMLElement;
+            let mermaidData: string;
+            beforeAll((): void => {
+                ele = createElement('div', { id: 'mermaidSeqDiagram-1', styles: 'width:100%;height:800px;' });
+                document.body.appendChild(ele);
+                mermaidData = `sequenceDiagram
+                                participant Alice
+                                participant Bob
+                                alt Check Report
+                                    Alice->>Bob: Hey Bob, do you have the report?
+                                    activate Alice
+                                    activate Bob
+                                    Bob->>Alice: Not yet, I'm still working on it.
+                                    deactivate Bob
+                                    deactivate Alice
+                                end
+                                create participant Eve as Evaluator
+                                Alice->>Eve: Can you assist Bob with that?
+                                activate Eve
+                                alt Assistance Workflow
+                                    Eve->>Bob: Let's get this done together.
+                                    activate Bob
+                                    Bob->>Eve: Thanks for your help, Eve.
+                                    deactivate Bob
+                                else Deliver
+                                    Eve->>Alice: The report is ready.
+                                    Alice->>Bob: Great job, Bob!
+                                    activate Bob
+                                    Alice->>Eve: Thanks, Eve!
+                                    deactivate Bob
+                                end
+                                deactivate Eve
+                                create participant Dave as Developer
+                                loop Code Review
+                                    Bob->>Dave: We need to check the code.
+                                    activate Dave
+                                    Dave->>Bob: Sure, I'll review the code.
+                                    opt Finalize Report
+                                        create actor Carol as Customer
+                                        Bob->>Carol: Report is finalized, sending it to you.
+                                        activate Carol
+                                        Carol->>Bob: Received, thank you.
+                                        deactivate Carol
+                                    end
+                                end
+                                destroy Dave
+                                Alice->>Dave: Thanks for the review
+                                deactivate Dave
+                                Eve->>Alice: We're done here.
+                                destroy Eve
+                                Alice->>Eve: Let's proceed with closing steps.
+                                alt Finalize Project
+                                    Alice->>Bob: Shall we wrap up the project meeting?
+                                    activate Bob
+                                    Bob->>Alice: Yes, let's finalize it.
+                                    deactivate Bob
+                                end
+                                destroy Bob
+                                Bob->>Alice: I'm done with the project.
+                                Alice->>Alice: Wrapping up!`;
+                diagram = new Diagram({
+                    width: '100%',
+                    height: '800px',
+                });
+                diagram.appendTo('#mermaidSeqDiagram-1');
+            });
+
+            afterAll((): void => {
+                diagram.destroy();
+                ele.remove();
+            });
+            it('load mermaid data', (done: Function) => {
+                diagram.loadDiagramFromMermaid(mermaidData)
+                expect(diagram.connectors.length).toBe(24);
+                expect(diagram.nodes.length).toBe(18);
+                done();
+            });
+            it('save mermaid data', (done: Function) => {
+                const mermaidText: string = diagram.saveDiagramAsMermaid()
+                expect(mermaidText === mermaidData);
+                done();
+            });
+        });
+        describe('Sequence model to Mermaid', () => {
+            let diagram: Diagram;
+            let ele: HTMLElement;
+            beforeAll((): void => {
+                ele = createElement('div', { id: 'mermaidSeqDiagram-2', styles: 'width:100%;height:800px;' });
+                document.body.appendChild(ele);
+                const model: UmlSequenceDiagramModel = {
+                    participants: [
+                        {
+                            id: 'Alice', content: 'Alice', isActor: false, showDestructionMarker: false,
+                            activationBoxes: [{ id: 'aliceAct', startMessageID: 'MSG1', endMessageID: 'MSG2' }]
+                        },
+                        {
+                            id: 'Bob', content: 'Bob', isActor: false, showDestructionMarker: true,
+                            activationBoxes: [
+                                { id: 'act1', startMessageID: 'MSG1', endMessageID: 'MSG2' },
+                                { id: 'act2', startMessageID: 'MSG4', endMessageID: 'MSG5' },
+                                { id: 'act3', startMessageID: 'MSG7', endMessageID: 'MSG8' },
+                                { id: 'act4', startMessageID: 'MSG16', endMessageID: 'MSG17' }
+                            ]
+                        },
+                        {
+                            id: 'Eve', content: 'Evaluator', isActor: false, showDestructionMarker: true,
+                            activationBoxes: [{ id: 'act1', startMessageID: 'MSG3', endMessageID: 'MSG8' }]
+                        },
+                        {
+                            id: 'Dave', content: 'Developer', isActor: false, showDestructionMarker: true,
+                            activationBoxes: [{ id: 'act1', startMessageID: 'MSG9', endMessageID: 'MSG13' }]
+                        },
+                        { id: 'Carol', content: 'Customer', isActor: true, showDestructionMarker: false, }
+                    ],
+                    messages: [
+                        { id: 'MSG1', content: "Hey Bob, do you have the report?", fromParticipantID: 'Alice', toParticipantID: 'Bob', type: UmlSequenceMessageType.Synchronous },
+                        { id: 'MSG2', content: "Not yet, I'm still working on it.", fromParticipantID: 'Bob', toParticipantID: 'Alice', type: UmlSequenceMessageType.Synchronous },
+                        { id: 'MSG3', content: "Can you assist Bob with that?", fromParticipantID: 'Alice', toParticipantID: 'Eve', type: UmlSequenceMessageType.Create },
+                        { id: 'MSG4', content: "Let's get this done together.", fromParticipantID: 'Eve', toParticipantID: 'Bob', type: UmlSequenceMessageType.Synchronous },
+                        { id: 'MSG5', content: "Thanks for your help, Eve.", fromParticipantID: 'Bob', toParticipantID: 'Eve', type: UmlSequenceMessageType.Synchronous },
+                        { id: 'MSG6', content: "The report is ready.", fromParticipantID: 'Eve', toParticipantID: 'Alice', type: UmlSequenceMessageType.Synchronous },
+                        { id: 'MSG7', content: "Great job, Bob!", fromParticipantID: 'Alice', toParticipantID: 'Bob', type: UmlSequenceMessageType.Synchronous },
+                        { id: 'MSG8', content: "Thanks, Eve!", fromParticipantID: 'Alice', toParticipantID: 'Eve', type: UmlSequenceMessageType.Synchronous },
+                        { id: 'MSG9', content: "We need to check the code.", fromParticipantID: 'Bob', toParticipantID: 'Dave', type: UmlSequenceMessageType.Synchronous },
+                        { id: 'MSG10', content: "Sure, I'll review the code.", fromParticipantID: 'Dave', toParticipantID: 'Bob', type: UmlSequenceMessageType.Synchronous },
+                        { id: 'MSG11', content: "Report is finalized, sending it to you.", fromParticipantID: 'Bob', toParticipantID: 'Carol', type: UmlSequenceMessageType.Create },
+                        { id: 'MSG12', content: "Received, thank you.", fromParticipantID: 'Carol', toParticipantID: 'Bob', type: UmlSequenceMessageType.Synchronous },
+                        { id: 'MSG13', content: "Thanks for the review", fromParticipantID: 'Alice', toParticipantID: 'Dave', type: UmlSequenceMessageType.Synchronous },
+                        { id: 'MSG14', content: "We're done here.", fromParticipantID: 'Eve', toParticipantID: 'Alice', type: UmlSequenceMessageType.Synchronous },
+                        { id: 'MSG15', content: "Let's proceed with closing steps.", fromParticipantID: 'Alice', toParticipantID: 'Eve', type: UmlSequenceMessageType.Synchronous },
+                        { id: 'MSG16', content: "Shall we wrap up the project meeting?", fromParticipantID: 'Alice', toParticipantID: 'Bob', type: UmlSequenceMessageType.Synchronous },
+                        { id: 'MSG17', content: "Yes, let's finalize it.", fromParticipantID: 'Bob', toParticipantID: 'Alice', type: UmlSequenceMessageType.Synchronous },
+                        { id: 'MSG18', content: "I'm done with the project.", fromParticipantID: 'Bob', toParticipantID: 'Alice', type: UmlSequenceMessageType.Synchronous },
+                        { id: 'MSG19', content: "Wrapping up!", fromParticipantID: 'Alice', toParticipantID: 'Alice', type: UmlSequenceMessageType.Synchronous }
+                    ],
+                    fragments: [
+                        {
+                            id: 1,
+                            type: UmlSequenceFragmentType.Alternative,
+                            conditions: [
+                                {
+                                    content: "Check Report",
+                                    messageIds: ['MSG1', 'MSG2']
+                                }
+                            ]
+                        },
+                        {
+                            id: 2,
+                            type: UmlSequenceFragmentType.Alternative,
+                            conditions: [
+                                {
+                                    content: "Assistance Workflow",
+                                    messageIds: ['MSG4', 'MSG5']
+                                },
+                                {
+                                    content: "Deliver",
+                                    messageIds: ['MSG6', 'MSG7', 'MSG8']
+                                }
+                            ]
+                        },
+                        {
+                            id: 4,
+                            type: UmlSequenceFragmentType.Optional,
+                            conditions: [
+                                {
+                                    content: "Finalize Report",
+                                    messageIds: ['MSG11', 'MSG12']
+                                }
+                            ]
+                        },
+                        {
+                            id: 3,
+                            type: UmlSequenceFragmentType.Loop,
+                            conditions: [
+                                {
+                                    content: "Code Review",
+                                    messageIds: ['MSG9', 'MSG10'],
+                                    fragmentIds: ["4"]
+                                }
+                            ]
+                        },
+                        {
+                            id: 5,
+                            type: UmlSequenceFragmentType.Alternative,
+                            conditions: [
+                                {
+                                    content: "Finalize Project",
+                                    messageIds: ['MSG16', 'MSG17']
+                                }
+                            ]
+                        }
+                    ]
+                };
+                diagram = new Diagram({
+                    width: '100%',
+                    height: '800px',
+                    model: model
+                });
+                diagram.appendTo('#mermaidSeqDiagram-2');
+            });
+
+            afterAll((): void => {
+                diagram.destroy();
+                ele.remove();
+            });
+            it('check mermaid data', (done: Function) => {
+                const mermaidText: string = diagram.saveDiagramAsMermaid();
+                const expectedMermaidData: string = 
+`sequenceDiagram
+    participant Alice as Alice
+    participant Bob as Bob
+    participant Dave as Developer
+    alt Check Report
+        Alice->>Bob: Hey Bob, do you have the report?
+        activate Alice
+        activate Bob
+        Bob->>Alice: Not yet, I'm still working on it.
+        deactivate Alice
+        deactivate Bob
+    end
+    create participant Eve as Evaluator
+    Alice-->Eve: Can you assist Bob with that?
+    activate Eve
+    alt Assistance Workflow
+        Eve->>Bob: Let's get this done together.
+        activate Bob
+        Bob->>Eve: Thanks for your help, Eve.
+        deactivate Bob
+    else Deliver
+        Eve->>Alice: The report is ready.
+        Alice->>Bob: Great job, Bob!
+        activate Bob
+        Alice->>Eve: Thanks, Eve!
+        deactivate Bob
+        deactivate Eve
+    end
+    loop Code Review
+        Bob->>Dave: We need to check the code.
+        activate Dave
+        Dave->>Bob: Sure, I'll review the code.
+    end
+    opt Finalize Report
+        create actor Carol as Customer
+        Bob-->Carol: Report is finalized, sending it to you.
+        Carol->>Bob: Received, thank you.
+    end
+    Alice->>Dave: Thanks for the review
+    deactivate Dave
+    Eve->>Alice: We're done here.
+    Alice->>Eve: Let's proceed with closing steps.
+    alt Finalize Project
+        Alice->>Bob: Shall we wrap up the project meeting?
+        activate Bob
+        Bob->>Alice: Yes, let's finalize it.
+        deactivate Bob
+    end
+    Bob->>Alice: I'm done with the project.
+    Alice->>Alice: Wrapping up!`;
+                expect(mermaidText.trim() === expectedMermaidData.trim()).toBe(true);
+                done();
+            });
+        });
+        describe('Sequence Mermaid data-1', () => {
+            let diagram: Diagram;
+            let ele: HTMLElement;
+            beforeAll((): void => {
+                ele = createElement('div', { id: 'mermaidSeqDiagram-3', styles: 'width:100%;height:800px;' });
+                document.body.appendChild(ele);
+                diagram = new Diagram({
+                    width: '100%',
+                    height: '800px',
+                });
+                diagram.appendTo('#mermaidSeqDiagram-3');
+            });
+
+            afterAll((): void => {
+                diagram.destroy();
+                ele.remove();
+            });
+            it('check messages', (done: Function) => {
+                const expectedMermaidData: string = 
+`sequenceDiagram
+    participant A
+    participant B
+
+    A->>B: Solid Arrow
+    A-->>B: Dashed Arrow
+    B<<->>A: Bidirectional
+    B<<-->>A: Dashed Bidirectional
+    A-)B: Open Arrow
+    A--)B: Dashed Open Arrow
+    A->B: Solid
+    A-->B: Dashed`;
+                diagram.loadDiagramFromMermaid(expectedMermaidData);
+                expect(diagram.connectors.length).toBe(10);
+                done();
+            });
+        });
+        describe('Sequence Mermaid data-2', () => {
+            let diagram: Diagram;
+            let ele: HTMLElement;
+            beforeAll((): void => {
+                ele = createElement('div', { id: 'mermaidSeqDiagram-4', styles: 'width:100%;height:800px;' });
+                document.body.appendChild(ele);
+                const model: UmlSequenceDiagramModel = {
+                    participants: [
+                        // id as string, content provided
+                        { id: 'p1', content: 'User', isActor: true },
+                        // isActor omitted
+                        { id: 'p2', content: 'System' }
+                    ],
+                    messages: [
+                        // type omitted -> should default to Synchronous
+                        { id: 'm1', fromParticipantID: 'p1', toParticipantID: 'p2', content: 'Login()' },
+                        { id: 'm2', fromParticipantID: 'p2', toParticipantID: 'p1', content: 'Success' },
+                        { id: 'm3', fromParticipantID: 'p2', toParticipantID: 'p1', content: 'Failure' },
+                        { id: 'm4', fromParticipantID: 'p1', toParticipantID: 'p2', content: 'Retry()' }
+                    ],
+                    fragments: [
+                        {
+                            id: 'AltFrag1',
+                            type: UmlSequenceFragmentType.Alternative,
+                            conditions: [
+                                { content: 'if valid', messageIds: ['m2'] },
+                                { content: 'else', messageIds: ['m3'] }
+                            ]
+                        },
+                        {
+                            id: 'optFrag1',
+                            type: UmlSequenceFragmentType.Optional,
+                            conditions: [
+                                { content: 'user retries', messageIds: ['m4'] }
+                            ]
+                        },
+                        {
+                            id: 'loopFrag1',
+                            type: UmlSequenceFragmentType.Loop,
+                            conditions: [
+                                { content: 'max 3 attempts', messageIds: ['m1'] }
+                            ]
+                        }
+                    ]
+                }
+                diagram = new Diagram({
+                    width: '100%',
+                    height: '800px',
+                    model: model
+                });
+                diagram.appendTo('#mermaidSeqDiagram-4');
+            });
+
+            afterAll((): void => {
+                diagram.destroy();
+                ele.remove();
+            });
+            it('check messages', (done: Function) => {
+                const mermaidText: string = diagram.saveDiagramAsMermaid();
+                const expectedMermaidData: string = 
+`sequenceDiagram
+    actor p1 as User
+    participant p2 as System
+    loop max 3 attempts
+        p1->>p2: Login()
+    end
+    alt if valid
+        p2->>p1: Success
+    else else
+        p2->>p1: Failure
+    end
+    opt user retries
+        p1->>p2: Retry()
+    end`;
+                expect(mermaidText.trim() === expectedMermaidData.trim()).toBe(true);
+                expect(diagram.nodes.length).toBe(5);
+                done();
+            });
+        });
+        describe('Sequence Mermaid data-3', () => {
+            let diagram: Diagram;
+            let ele: HTMLElement;
+            beforeAll((): void => {
+                ele = createElement('div', { id: 'mermaidSeqDiagram-5', styles: 'width:100%;height:800px;' });
+                document.body.appendChild(ele);
+                diagram = new Diagram({
+                    width: '100%',
+                    height: '800px',
+                });
+                diagram.appendTo('#mermaidSeqDiagram-5');
+            });
+
+            afterAll((): void => {
+                diagram.destroy();
+                ele.remove();
+            });
+            it('cover create destory messages', (done: Function) => {
+                const mermaidData: string = 
+`sequenceDiagram
+    participant Alice
+    participant Bob
+
+    %% Comment before creation
+    create participant Alice
+
+    %% Another comment
+    %% Yet another one
+    destroy participant Bob
+
+    %% Comment after destroy`;
+                diagram.loadDiagramFromMermaid(mermaidData);
+                expect(diagram.nodes.length).toBe(2);
+                done();
+            });
+        });
+        describe('Mermaid', () => {
+            let diagram: Diagram;
+            let ele: HTMLElement;
+            beforeAll((): void => {
+                ele = createElement('div', { id: 'mermaidSeqDiagram-6', styles: 'width:100%;height:800px;' });
+                document.body.appendChild(ele);
+                diagram = new Diagram({
+                    width: '100%',
+                    height: '800px',
+                });
+                diagram.appendTo('#mermaidSeqDiagram-6');
+            });
+
+            afterAll((): void => {
+                diagram.destroy();
+                ele.remove();
+            });
+            it('Activation undefined', (done: Function) => {
+                const mermaidData: string = 
+`sequenceDiagram
+    participant A as Alice
+    participant B
+    participant C
+    participant D
+    participant E
+    participant F
+    activate A
+    A->>B: Initiate Workflow
+    activate B
+    opt Validate Session
+        B->>A: Check Session Validity
+        A-->>B: Session Valid
+        deactivate B
+        activate C
+        loop Iterate Over Items
+            C->>D: Process Item
+            activate D
+            alt Check Item Status
+                D-->>C: Status OK
+                E->>D: Perform Detailed Analysis
+                activate E
+                D-->>E: Detailed Result
+                deactivate E
+                loop Post Analysis Procedures
+                    D->>F: Request Additional Data
+                    activate F
+                    alt Data Available
+                        F-->>D: Return Data
+                    else Data Missing
+                        F-->>D: Notify Unavailability
+                    end
+                    deactivate F
+                end
+            else
+                D->>C: Report Failed Item
+            end
+            D-->>C: Item Processed
+            deactivate D
+        end
+        C-->>A: Completed All Items
+        deactivate C
+    end
+    A->>B: Finalize and Close
+    activate B
+    B-->>A: Confirmation Acknowledged
+    deactivate B
+    deactivate A
+`;
+                diagram.loadDiagramFromMermaid(mermaidData);
+                expect(diagram.nodes.length).toBe(18);
+                done();
+            });
+            it('message after participant destroyed', (done: Function) => {
+                const mermaidData: string = 
+`sequenceDiagram
+    actor Alice
+    participant Bob
+    
+    Alice ->> Bob: Hi Bob!
+    Bob -->> Alice: Hello Alice!
+    Alice ->> Bob: How are you?
+    Bob -->> Alice: I'm good, thanks!
+    Alice ->> Bob: What are you working on?
+    Bob -->> Alice: Just coding a demo.
+    destroy Alice
+    Alice ->> Bob: Sounds interesting!
+    destroy Bob
+    Bob -->> Alice: It really is.
+    Alice ->> Bob: Let's meet later.
+    Bob -->> Alice: Sure, see you soon!
+
+`;
+                diagram.loadDiagramFromMermaid(mermaidData);
+                expect(diagram.nodes.length).toBe(2);
+                expect(diagram.connectors.length).toBe(12);
+                done();
+            });
+            it('Empty message collection in 1st fragment condition', (done: Function) => {
+                const mermaidData: string = 
+`sequenceDiagram
+    actor Alice
+    participant Bob
+
+    Alice ->> Bob: Hello Bob
+    activate Alice
+    Bob -->> Alice: Hi Alice
+    Alice ->> Bob: How are you?
+    activate Bob
+
+    alt first
+
+    else second
+        Bob -->> Alice: I'm good, thanks
+        Alice ->> Bob: Let's meet later
+    end
+
+    deactivate Bob
+    deactivate Alice
+    deactivate A
+`;
+                diagram.loadDiagramFromMermaid(mermaidData);
+                expect(diagram.nodes.length).toBe(6);
+                expect(diagram.connectors.length).toBe(8);
+                done();
+            });
+            it('Empty message collection in 2nd fragment condition', (done: Function) => {
+                const mermaidData: string = 
+`sequenceDiagram
+    actor Alice
+    participant Bob
+
+    Alice ->> Bob: Hello Bob
+    activate Alice
+    Bob -->> Alice: Hi Alice
+    Alice ->> Bob: How are you?
+    activate Bob
+
+    alt first
+        Bob -->> Alice: I'm good, thanks
+        Alice ->> Bob: Let's meet later
+    else second
+
+    end
+
+    deactivate Bob
+    deactivate Alice
+    deactivate A
+`;
+                diagram.loadDiagramFromMermaid(mermaidData);
+                expect(diagram.nodes.length).toBe(6);
+                expect(diagram.connectors.length).toBe(8);
+                done();
+            });
+             it('overlapping activations', (done: Function) => {
+                const mermaidData: string = 
+`sequenceDiagram
+    participant A as Alice
+    participant B as Bob
+    participant C as Charlie
+    activate B
+    A ->> B: Simple Message
+    activate B
+    A ->> B: Calling Method
+    B ->> C: B calls C
+    activate C
+    C -->> B: Return Result
+    deactivate C
+    B ->> A: Response
+    deactivate B
+    A -->> C: Asynchronous Call
+    deactivate B
+    activate C
+    C -->> A: Async Response
+    deactivate C
+    A ->> B: Another Call
+    activate B
+    B -->> A: Another Response
+    deactivate B
+`;
+                diagram.loadDiagramFromMermaid(mermaidData);
+                expect(diagram.nodes.length).toBe(8);
+                expect(diagram.connectors.length).toBe(12);
+                done();
+            });
         });
     });
 });

@@ -327,7 +327,9 @@ export function updateParentRow(key: string, record: ITreeData, action: string, 
                     record.childRecords = [];
                 } else {
                     if (!isNullOrUndefined(child) && record[`${key}`] !== child[`${key}`]) {
-                        record.childRecords.push(child);
+                        if (!record.childRecords.some((records: ITreeData) => records.uniqueID === child.uniqueID)) {
+                            record.childRecords.push(child);
+                        }
                     }
                 }
                 if (record.childRecords.indexOf(childRecords) === -1 && record[`${key}`] !== child[`${key}`]) {

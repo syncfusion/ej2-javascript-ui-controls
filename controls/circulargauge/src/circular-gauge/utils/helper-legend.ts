@@ -94,6 +94,8 @@ export function showTooltip(text: string, x: number, y: number, gauge: CircularG
  * @private */
 export function titleTooltip(event: Event, x: number, y: number, gauge: CircularGauge, isTitleTouch: boolean): void {
     const targetId: string = (<HTMLElement>event.target).id;
+    const svgElement: DOMRect | ClientRect = document.getElementById(gauge.element.id + '_svg').getBoundingClientRect();
+    x = x - svgElement.left; y = y - svgElement.top;
     const elementArray: HTMLCollectionOf<Element> = document.getElementsByClassName('EJ2-CircularGauge-Tooltip');
     if ((targetId === (gauge.element.id + '_CircularGaugeTitle')) && ((<HTMLElement>event.target).textContent.indexOf('...') > -1)) {
         showTooltip(gauge.title, x, y, gauge, 'Title');

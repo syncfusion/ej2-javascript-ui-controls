@@ -16,7 +16,7 @@ describe('Table Resize at simple case in table middle validation', () => {
     let editor: DocumentEditor = undefined;
     let documentHelper: DocumentHelper;
     beforeAll((): void => {
-        document.body.innerHTML = '';
+        
         let ele: HTMLElement = createElement('div', {
             id: 'container',
             styles: 'width:1280px;height:500px'
@@ -36,7 +36,7 @@ describe('Table Resize at simple case in table middle validation', () => {
         editor.destroy();
         editor = undefined;
         document.body.removeChild(document.getElementById('container'));
-        document.body.innerHTML = '';
+        
         setTimeout(function () {
             done();
         }, 1000);
@@ -149,7 +149,7 @@ describe('After resize cell validation without selection', () => {
         editor.destroy();
         editor = undefined;
         document.body.removeChild(document.getElementById('container'));
-        document.body.innerHTML = '';
+        
         setTimeout(function () {
             done();
         }, 1000);

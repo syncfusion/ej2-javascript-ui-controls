@@ -95,6 +95,8 @@ export * from './diagram/custom-cursor';
 export * from './diagram/custom-cursor-model';
 export * from './diagram/data-mapping';
 export * from './diagram/data-mapping-model';
+export * from './diagram/sequence-diagram';
+export * from './diagram/sequence-diagram-model';
 
 
 //layout
@@ -112,4 +114,3 @@ export * from './load-utility/labelProperties';
 export * from './load-utility/modelProperties';
 export * from './load-utility/nodeProperties';
 export * from './load-utility/portProperties';
-

@@ -185,6 +185,7 @@ export class Rule extends ChildProperty<Rule> {
     /**
      * Specifies whether rule is locked or not.
      *
+     * @aspType bool?
      * @default null
      */
     @Property(null)
@@ -979,7 +980,13 @@ export class QueryBuilder extends Component<HTMLDivElement> implements INotifyPr
                 if (forIdValue) {
                     targetValue = document.getElementById(forIdValue).getAttribute('value');
                 } else if (this.enableSeparateConnector) {
-                    targetValue = target.textContent;
+                    if (target.classList.contains('e-btngroup-or-lbl')) {
+                        targetValue = 'or';
+                    } else if (target.classList.contains('e-btngroup-and-lbl')) {
+                        targetValue = 'and';
+                    } else {
+                        targetValue = target.textContent;
+                    }
                 }
                 groupID = element.id.replace(this.element.id + '_', '');
                 const group: RuleModel = this.getGroup(groupID);
@@ -1721,7 +1728,7 @@ export class QueryBuilder extends Component<HTMLDivElement> implements INotifyPr
             } else {
                 dragClsName = 'e-icons e-drag-qb-rule e-hidden';
             }
-            const spanDragElement: HTMLElement = this.createElement('span', { attrs: { class: dragClsName, 'aria-lable': 'drag handle',
+            const spanDragElement: HTMLElement = this.createElement('span', { attrs: { class: dragClsName, 'aria-label': 'drag handle',
                 title: 'drag handle' } });
             groupHdrElem.appendChild(spanDragElement);
             const className: string = this.enableSeparateConnector && !isConnector ? 'e-lib e-btn-group e-qb-toggle-btn' : 'e-lib e-btn-group';
@@ -1773,7 +1780,7 @@ export class QueryBuilder extends Component<HTMLDivElement> implements INotifyPr
         } else {
             dragClsName = 'e-icons e-drag-qb-rule e-hidden';
         }
-        const spanDragElement: HTMLElement = this.createElement('span', { attrs: { class: dragClsName, 'aria-lable': 'drag handle',
+        const spanDragElement: HTMLElement = this.createElement('span', { attrs: { class: dragClsName, 'aria-label': 'drag handle',
             title: 'drag handle' } });
         fieldElem.appendChild(spanDragElement);
         const filterElem: Element = this.createElement('input', { attrs: { type: 'text', class: 'e-filter-input' } });

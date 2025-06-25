@@ -3,6 +3,7 @@
  */
 import { createElement, detach } from '@syncfusion/ej2-base';
 import { EditorManager } from '../../../src/editor-manager/base';
+import { ImageCommand } from '../../../src/editor-manager/plugin/image';
 
 describe('Alignments plugin', () => {
 
@@ -128,6 +129,7 @@ describe('Alignments plugin', () => {
         beforeAll(() => {
             document.body.appendChild(elem);
             editorObj = new EditorManager({ document: document, editableElement: document.getElementById("content-edit") });
+            editorObj.imgObj = new ImageCommand(editorObj);
         });
 
         it(' Align', () => {
@@ -163,6 +165,7 @@ describe('Alignments plugin', () => {
         beforeAll(() => {
             document.body.appendChild(elem);
             editorObj = new EditorManager({ document: document, editableElement: document.getElementById("content-edit") });
+            editorObj.imgObj = new ImageCommand(editorObj);
         });
         it('Align', () => {
             let elem: HTMLElement = editorObj.editableElement as HTMLElement;

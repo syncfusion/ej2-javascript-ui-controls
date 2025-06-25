@@ -2,7 +2,7 @@ import { SpreadsheetHelper } from "../util/spreadsheethelper.spec";
 import { defaultData } from '../util/datasource.spec';
 import { Spreadsheet } from '../../../src/spreadsheet/index';
 import { L10n } from '@syncfusion/ej2-base';
-import { CellModel, getCell, ProtectSettingsModel, refreshCell, setRow } from "../../../src/index";
+import { CellModel, getCell, getFormatFromType, ProtectSettingsModel, refreshCell, setRow } from "../../../src/index";
 
 describe('Auto fill ->', () => {
     let helper: SpreadsheetHelper = new SpreadsheetHelper('spreadsheet');
@@ -1787,6 +1787,42 @@ describe('Auto fill ->', () => {
                 });
             });
         });
+        it('Short Date Format applied cell with empty cell perform autofill action(962588)', (done: DoneFn) => {
+            const spreadsheet = helper.getInstance();
+            spreadsheet.numberFormat(getFormatFromType('ShortDate'), 'D1:D20');
+            expect(spreadsheet.sheets[0].rows[0].cells[3].format).toBe('m/d/yyyy');
+            expect(spreadsheet.sheets[0].rows[19].cells[3].format).toBe('m/d/yyyy');
+            expect(spreadsheet.sheets[0].rows[0].cells[3].value).toBe('Quantity');
+            expect(spreadsheet.sheets[0].rows[10].cells[3].value).toBe(50);
+            spreadsheet.updateCell({ value: '' }, 'D6');
+            expect(spreadsheet.sheets[0].rows[5].cells[3].value).toBe('');
+            helper.invoke('autoFill', ['D6:D12', 'D6', 'Down', 'FillSeries']);
+            expect(spreadsheet.sheets[0].rows[6].cells[3].format).toBe('m/d/yyyy');
+            expect(spreadsheet.sheets[0].rows[7].cells[3].format).toBe('m/d/yyyy');
+            expect(spreadsheet.sheets[0].rows[11].cells[3].format).toBe('m/d/yyyy');
+            expect(spreadsheet.sheets[0].rows[6].cells[3].value).toBe('');
+            expect(spreadsheet.sheets[0].rows[7].cells[3].value).toBe('');
+            expect(spreadsheet.sheets[0].rows[11].cells[3].value).toBe('');
+            done();
+        });
+        it('Time Format applied cell with empty cell perform autofill action(962588)', (done: DoneFn) => {
+            const spreadsheet = helper.getInstance();
+            spreadsheet.numberFormat(getFormatFromType('Time'), 'E1:E20');
+            expect(spreadsheet.sheets[0].rows[0].cells[4].format).toBe('h:mm:ss AM/PM');
+            expect(spreadsheet.sheets[0].rows[19].cells[4].format).toBe('h:mm:ss AM/PM');
+            expect(spreadsheet.sheets[0].rows[0].cells[4].value).toBe('Price');
+            expect(spreadsheet.sheets[0].rows[10].cells[4].value).toBe(10);
+            helper.invoke('updateCell', [{ value: '' }, 'E6']);
+            expect(spreadsheet.sheets[0].rows[5].cells[4].value).toBe('');
+            helper.invoke('autoFill', ['E6:E12', 'E6', 'Down', 'FillSeries']);
+            expect(spreadsheet.sheets[0].rows[6].cells[4].format).toBe('h:mm:ss AM/PM');
+            expect(spreadsheet.sheets[0].rows[7].cells[4].format).toBe('h:mm:ss AM/PM');
+            expect(spreadsheet.sheets[0].rows[11].cells[4].format).toBe('h:mm:ss AM/PM');
+            expect(spreadsheet.sheets[0].rows[6].cells[4].value).toBe('');
+            expect(spreadsheet.sheets[0].rows[7].cells[4].value).toBe('');
+            expect(spreadsheet.sheets[0].rows[11].cells[4].value).toBe('');
+            done();
+        });
     });
 
     describe('CR Issues ->', () => {
@@ -2943,6 +2979,45 @@ describe('Auto fill ->', () => {
                     expect(td.querySelector('.e-addNoteIndicator')).toBeNull();
                     done();
                 });
+            });
+        });
+    });
+
+    describe('API allowAutoFill:false condition checks', () => {
+        const helper: SpreadsheetHelper = new SpreadsheetHelper('spreadsheet');
+        beforeAll((done: Function) => {
+            helper.initializeSpreadsheet({
+                sheets: [
+                    {
+                        name: 'Sheet1',
+                        rows: [
+                            { index: 0, cells: [{ value: "Test" }] },
+                            { index: 1, cells: [{ value: "123" }] }
+                        ]
+                    }
+                ],
+                allowAutoFill: false,
+            }, done);
+        });
+        afterAll(() => {
+            helper.invoke('destroy');
+        });
+        it('Check through celldata binding and public method call', (done: Function) => {
+            expect(document.querySelector('.e-autofill')).toBeNull();
+            helper.invoke('selectRange', ['A1:A2']);
+            expect(document.querySelector('.e-autofill')).toBeNull();
+            helper.invoke('autoFill', [{ range: 'A1:B1', fillRange: 'A2:B2', direction: 'Down' }]);
+            expect(helper.invoke('getCell', [1, 0]).textContent).toBe('123');
+            done();
+        });
+        it('Check through UI interaction', (done: Function) => {
+            helper.invoke('selectRange', ['A1']);
+            expect(document.querySelector('.e-autofill')).toBeNull();
+            helper.invoke('copy', ['A1']).then(() => {
+                helper.invoke('selectRange', ['A2']);
+                helper.invoke('paste');
+                expect(document.querySelector('.e-autofill')).toBeNull();
+                done();
             });
         });
     });

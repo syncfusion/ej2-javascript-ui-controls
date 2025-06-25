@@ -118,7 +118,7 @@ export class WorkbookInsert {
                 parentCell = getCell(index - 1, i, args.model, false, true);
                 style = parentCell.style;
                 cell = getCell(index + 1, i, args.model, false, true);
-                if (style || parentCell.wrap) {
+                if (style || parentCell.wrap || parentCell.format) {
                     if (style) {
                         newStyle = {};
                         Object.keys(style).forEach((key: string) => {
@@ -140,6 +140,9 @@ export class WorkbookInsert {
                             }
                             if (parentCell.wrap) {
                                 row.cells[i as number].wrap = true;
+                            }
+                            if (parentCell.format) {
+                                row.cells[i as number].format = parentCell.format;
                             }
                         });
                     }
@@ -187,18 +190,29 @@ export class WorkbookInsert {
                 args.model.rows[i as number].cells.splice(index, 0, ...(args.columnCellsModel[i as number] &&
                     args.columnCellsModel[i as number].cells ? args.columnCellsModel[i as number].cells : cellModel));
                 const curIdx: number = index + model.length;
-                if (args.model.rows[i as number].cells[curIdx as number]) {
-                    cell = args.model.rows[i as number].cells[curIdx as number];
-                    if (cell.colSpan !== undefined && cell.colSpan < 0 && cell.rowSpan === undefined) {
-                        mergeCollection.push(<MergeArgs>{
-                            range: [i, curIdx, i, curIdx], insertCount: cellModel.length, insertModel: 'Column'
-                        });
+                cell = args.model.rows[i as number].cells[curIdx as number];
+                if (cell && cell.colSpan !== undefined && cell.colSpan < 0 && cell.rowSpan === undefined) {
+                    mergeCollection.push(<MergeArgs>{
+                        range: [i, curIdx, i, curIdx], insertCount: cellModel.length, insertModel: 'Column'
+                    });
+                } else if (args.isUndoRedo && !args.isRedo) {
+                    let mergeIdx: number;
+                    for (let colIdx: number = index; colIdx < curIdx; colIdx++) {
+                        cell = args.model.rows[i as number].cells[colIdx as number];
+                        if (cell && cell.colSpan !== undefined && cell.colSpan < 0 && cell.rowSpan === undefined) {
+                            mergeIdx = colIdx;
+                        } else {
+                            break;
+                        }
+                    }
+                    if (mergeIdx) {
+                        mergeCollection.push(<MergeArgs>{ range: [i, mergeIdx, i, mergeIdx], insertCount: 0, insertModel: 'Column' });
                     }
                 }
                 parentCell = getCell(i, index - 1, args.model, false, true);
                 style = parentCell.style;
                 cell = getCell(i, index + 1, args.model, false, true);
-                if (style || parentCell.wrap) {
+                if (style || parentCell.wrap || parentCell.format) {
                     if (style) {
                         newStyle = {};
                         Object.keys(style).forEach((key: string) => {
@@ -223,6 +237,9 @@ export class WorkbookInsert {
                             }
                             if (parentCell.wrap) {
                                 args.model.rows[i as number].cells[j as number].wrap = true;
+                            }
+                            if (parentCell.format) {
+                                args.model.rows[i as number].cells[j as number].format = parentCell.format;
                             }
                         }
                     }

@@ -32,7 +32,7 @@ describe('Column Dialog Test Case Validation - 1', function () {
         editor = undefined;
         dialog = undefined;
         document.body.removeChild(document.getElementById('container'));
-        document.body.innerHTML = '';
+        
         setTimeout(function () {
             done();
         }, 2000);
@@ -73,7 +73,7 @@ describe('Column Dialog Test Case Validation - 2', function () {
         editor = undefined;
         dialog = undefined;
         document.body.removeChild(document.getElementById('container'));
-        document.body.innerHTML = '';
+        
         setTimeout(function () {
             done();
         }, 2000);
@@ -114,7 +114,7 @@ describe('Undo validation after applied column value', function () {
         editor = undefined;
         dialog = undefined;
         document.body.removeChild(document.getElementById('container'));
-        document.body.innerHTML = '';
+        
         setTimeout(function () {
             done();
         }, 2000);
@@ -157,7 +157,7 @@ describe('Column Dialog Test Case Validation - 3', function () {
         editor = undefined;
         dialog = undefined;
         document.body.removeChild(document.getElementById('container'));
-        document.body.innerHTML = '';
+        
         setTimeout(function () {
             done();
         }, 2000);

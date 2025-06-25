@@ -180,6 +180,12 @@ export class WrapText {
                                 }
                             }
                         }
+                    } else if (isMerge && !args.wrap) {
+                        if (cell.value && cell.value.toString().includes('\n')) {
+                            ele.classList.add('e-alt-unwrap');
+                        } else if (ele.classList.contains('e-alt-unwrap')) {
+                            ele.classList.remove('e-alt-unwrap');
+                        }
                     }
                     if (ele) {
                         if (isCustomHgt && !isMerge) {

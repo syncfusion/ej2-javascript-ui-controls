@@ -561,6 +561,11 @@ export class DocumentEditor extends Component<HTMLElement> implements INotifyPro
      */
     public textMeasureHelper: Regular | Optimized
     /**
+     * Skip style update before document change
+     * @private
+     */
+    public skipStyleUpdate: boolean;
+    /**
      * Enable collaborative editing in document editor.
      *
      * @default false
@@ -2182,7 +2187,7 @@ export class DocumentEditor extends Component<HTMLElement> implements INotifyPro
      *
      * @returns {void}
      */
-    public verbelizeFromCursorLocation(): void {
+    public verbalizeFromCursorLocation(): void {
         let actualEnd: TextPosition = this.selection.end;
         this.documentHelper.updateFocus();
         this.selection.end = this.documentEnd;

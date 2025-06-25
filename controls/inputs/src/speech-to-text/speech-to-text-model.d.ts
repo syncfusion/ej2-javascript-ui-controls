@@ -165,7 +165,7 @@ export interface SpeechToTextModel extends ComponentModel{
 
     /**
      * Defines tooltip content and positioning for guiding user interactions.
-     * Tooltips provide helpful instructions or descriptions for button actions, improving user experience.
+     * Tooltip provides helpful instructions or descriptions for button actions, improving user experience.
      *
      * @default null
      * @type {TooltipSettingsModel}

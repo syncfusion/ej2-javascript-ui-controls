@@ -2,7 +2,8 @@
  * Sanitize HTML helper renderer spec
  */
 import { detach } from '@syncfusion/ej2-base';
-import { RichTextEditor, BeforeSanitizeHtmlArgs } from "../../../src/rich-text-editor/index";
+import { RichTextEditor } from "../../../src/rich-text-editor/index";
+import { BeforeSanitizeHtmlArgs } from "../../../src/common/interface";
 import { CLS_RTE_PASTE_KEEP_FORMAT, CLS_RTE_PASTE_OK } from "../../../src/rich-text-editor/base/classes";
 import { renderRTE, destroy, setCursorPoint } from './../render.spec';
 

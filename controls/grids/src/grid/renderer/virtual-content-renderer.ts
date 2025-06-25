@@ -1235,6 +1235,10 @@ export class VirtualContentRenderer extends ContentRender implements IRenderer {
         if (this.isNormaledit && (dataActionRequestTypes.some((value: string) => value === args.requestType)
             || editRequestTypes.some((value: string) => value === args.requestType))) {
             this.isCancel = true;
+            if (this.isAdd && this.parent.editSettings && this.parent.editSettings.newRowPosition === 'Bottom') {
+                this.virtualEle.placeholder.style.height =
+                    (parseInt(this.virtualEle.placeholder.style.height.toString(), 10) - this.diff) + 'px';
+            }
             this.isAdd = false || this.parent.editSettings.showAddNewRow;
             this.editedRowIndex = this.empty as number;
             this.virtualData = {};

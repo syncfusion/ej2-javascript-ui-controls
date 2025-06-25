@@ -534,6 +534,9 @@ export class Magnification {
         const pageDivElements: any = document.querySelectorAll('.e-pv-page-div');
         const startPageElement: number = pageDivElements[0].id.split('_pageDiv_')[1];
         const endPageElement: number = pageDivElements[pageDivElements.length - 1].id.split('_pageDiv_')[1];
+        for (let i: number = 0; i < this.pdfViewerBase.renderedPagesList.length; i++) {
+            this.pdfViewer.annotation.clearAnnotationCanvas(this.pdfViewerBase.renderedPagesList[parseInt(i.toString(), 10)]);
+        }
         if ((this.previousZoomFactor !== this.zoomFactor) || this.pdfViewerBase.isInitialPageMode) {
             for (let i: number = startPageElement; i <= endPageElement; i++) {
                 this.pdfViewerBase.showPageLoadingIndicator(i, false);

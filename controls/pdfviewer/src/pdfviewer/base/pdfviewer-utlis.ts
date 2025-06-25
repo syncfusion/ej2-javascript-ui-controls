@@ -476,13 +476,33 @@ export class PdfiumTaskScheduler {
      * @returns {void}
      */
     public addTask(taskData: any, priority: TaskPriorityLevel): void {
-        if (taskData.message === 'unloadFPDF') {
+        if (taskData.message === 'unloadFPDF' || taskData.skipOnReload === true) {
             this.taskQueue = [];
             this.functionManager = {};
         }
         this.taskQueue.push({ taskData, priority });
         this.taskQueue.sort((a: any, b: any) => a.priority - b.priority); // Sort by priority
         this.processQueue(); // Start processing if idle
+    }
+
+    /**
+     * Method to remove previously created requests when image size for page organizer is changed
+     *
+     * @private
+     * @param {number} currentImageSize the current image size of page organizer
+     * @returns {void}
+     */
+    public removePreviewImageTasks(currentImageSize: number): void {
+        /* eslint-disable security/detect-object-injection */
+        for (let index: number = 0; index < this.taskQueue.length; ) {
+            if (this.taskQueue[index].taskData.imageSize !== currentImageSize) {
+                this.taskQueue.splice(index, 1);
+            }
+            else {
+                index++;
+            }
+        }
+        /* eslint-enable security/detect-object-injection */
     }
 
     /**

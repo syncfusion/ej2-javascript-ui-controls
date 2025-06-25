@@ -438,8 +438,14 @@ export class KeyboardInteraction {
      * @private
      */
     public destroy(): void {
+        if (this.timeOutObj) {
+            clearTimeout(this.timeOutObj);
+            this.timeOutObj = null;
+        }
+        this.event = null;
         if (this.pivotViewKeyboardModule) {
             this.pivotViewKeyboardModule.destroy();
+            this.pivotViewKeyboardModule = null;
         } else {
             return;
         }

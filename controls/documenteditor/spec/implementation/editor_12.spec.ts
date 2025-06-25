@@ -10,7 +10,7 @@ import { BorderSettings } from '../../src/document-editor/implementation/editor/
 describe('Paste content validation', () => {
     let editor: DocumentEditor = undefined;
     beforeAll(() => {
-        document.body.innerHTML = '';
+        
         let ele: HTMLElement = createElement('div', { id: 'container' });
         document.body.appendChild(ele);
         editor = new DocumentEditor({ enableEditor: true, enableEditorHistory: true, isReadOnly: false, enableLocalPaste: false });
@@ -25,7 +25,7 @@ describe('Paste content validation', () => {
         editor.destroy();
         document.body.removeChild(document.getElementById('container'));
         editor = undefined;
-        document.body.innerHTML = '';
+        
         setTimeout(() => {
             done();
         }, 1000);
@@ -41,7 +41,7 @@ describe('Paste content validation', () => {
 describe('Paste Text Formatting formatting option', () => {
     let editor: DocumentEditor = undefined;
     beforeAll(() => {
-        document.body.innerHTML = '';
+        
         let ele: HTMLElement = createElement('div', { id: 'container' });
         document.body.appendChild(ele);
         editor = new DocumentEditor({ enableEditor: true, enableEditorHistory: true, isReadOnly: false });
@@ -56,7 +56,7 @@ describe('Paste Text Formatting formatting option', () => {
         editor.destroy();
         document.body.removeChild(document.getElementById('container'));
         editor = undefined;
-        document.body.innerHTML = '';
+        
         setTimeout(() => {
             done();
         }, 1000);
@@ -84,7 +84,7 @@ describe('Toc content creation validation', () => {
     };
     let text: string = "welcome";
     beforeAll(() => {
-        document.body.innerHTML = '';
+        
         let ele: HTMLElement = createElement('div', { id: 'container' });
         document.body.appendChild(ele);
         editor = new DocumentEditor({ enableEditor: true, enableSelection: true, enableEditorHistory: true, isReadOnly: false });
@@ -99,7 +99,7 @@ describe('Toc content creation validation', () => {
         editor.destroy();
         document.body.removeChild(document.getElementById('container'));
         editor = undefined;
-        document.body.innerHTML = '';
+        
         setTimeout(() => {
             done();
         }, 1000);
@@ -133,7 +133,7 @@ console.log('Applying style on selection not including para mark and inserting T
 describe('Paste Heading content and TOC validation', () => {
     let editor: DocumentEditor = undefined;
     beforeAll(() => {
-        document.body.innerHTML = '';
+        
         let ele: HTMLElement = createElement('div', { id: 'container' });
         document.body.appendChild(ele);
         editor = new DocumentEditor({ enableEditor: true, enableSelection: true, enableEditorHistory: true, isReadOnly: false, enableSfdtExport: true, enableLocalPaste: true });
@@ -148,7 +148,7 @@ describe('Paste Heading content and TOC validation', () => {
         editor.destroy();
         document.body.removeChild(document.getElementById('container'));
         editor = undefined;
-        document.body.innerHTML = '';
+        
         setTimeout(() => {
             done();
         }, 500);
@@ -204,7 +204,7 @@ console.log('Copy Paste whole paragraph');
 describe('apply list to rtl paragraph with history validation', () => {
     let editor: DocumentEditor = undefined;
     beforeAll(() => {
-        document.body.innerHTML = '';
+        
         let ele: HTMLElement = createElement('div', { id: 'container' });
         document.body.appendChild(ele);
         editor = new DocumentEditor({ enableEditor: true, enableEditorHistory: true, isReadOnly: false, enableLocalPaste: false });
@@ -219,7 +219,7 @@ describe('apply list to rtl paragraph with history validation', () => {
         editor.destroy();
         document.body.removeChild(document.getElementById('container'));
         editor = undefined;
-        document.body.innerHTML = '';
+        
         setTimeout(() => {
             done();
         }, 1000);

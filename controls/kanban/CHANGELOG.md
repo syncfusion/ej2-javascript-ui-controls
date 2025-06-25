@@ -2,32 +2,6 @@
 
 ## [Unreleased]
 
-## 29.1.41 (2025-05-06)
-
-### Kanban
-
-#### Bug Fixes
-
-- `#F196600` - Fixed an issue where the Kanban card temporarily returned to its old position after being dropped.
-
-- `#I709249` - Fixed an alignment issue between the header and the content in the Kanban.
-
-## 29.1.37 (2025-04-08)
-
-### Kanban
-
-#### Bug Fixes
-
-- `#I702257` - Kanban items now display correctly on smaller screens during continuous scrolling.
-
-## 29.1.35 (2025-04-01)
-
-### Kanban
-
-#### Bug Fixes
-
-- `#I693238` - Now, dragging and dropping a card in Kanban doesn't throw any console error.
-
 ## 25.1.35 (2024-03-15)
 
 ### Kanban

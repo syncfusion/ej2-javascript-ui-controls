@@ -1166,6 +1166,18 @@ export class TreeViewRenderer implements IAction {
      */
     public destroy(): void {
         this.removeEventListener();
+        if (this.parentElement) {
+            const sortElements: Element[] = [
+                this.parentElement.querySelector('.e-sort-none'),
+                this.parentElement.querySelector('.e-sort-ascend'),
+                this.parentElement.querySelector('.e-sort-descend')
+            ];
+            for (const element of sortElements) {
+                if (element) {
+                    this.unWireFieldListEvent(element);
+                }
+            }
+        }
         if (this.editorSearch && !this.editorSearch.isDestroyed) {
             this.editorSearch.destroy();
             this.editorSearch = null;
@@ -1175,6 +1187,12 @@ export class TreeViewRenderer implements IAction {
             this.fieldSearch = null;
         }
         if (this.fieldTable && !this.fieldTable.isDestroyed) {
+            if (this.fieldTable.element) {
+                const treeNodes: NodeListOf<HTMLLIElement> = this.fieldTable.element.querySelectorAll('li');
+                for (let i: number = 0; i < treeNodes.length; i++) {
+                    EventHandler.clearEvents(treeNodes[i as number]);
+                }
+            }
             this.fieldTable.destroy();
             this.fieldTable = null;
         }
@@ -1182,5 +1200,11 @@ export class TreeViewRenderer implements IAction {
             this.fieldDialog.destroy();
             this.fieldDialog = null;
         }
+        if (this.treeViewElement && this.treeViewElement.parentNode) {
+            this.treeViewElement.innerHTML = '';
+        }
+        this.selectedNodes = [];
+        this.nonSearchList = null;
+        this.parentIDs = [];
     }
 }

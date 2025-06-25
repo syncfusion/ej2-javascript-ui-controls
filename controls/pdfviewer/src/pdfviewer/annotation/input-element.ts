@@ -169,6 +169,18 @@ export class InputElement {
     }
 
     /**
+     * @private
+     * @returns {void}
+     */
+    public destroy(): void {
+        this.inputBoxElement = null;
+        this.isInFocus = null;
+        this.maxHeight = null;
+        this.maxWidth = null;
+        this.fontSize = null;
+    }
+
+    /**
      * @param bounds
      * @private
      */

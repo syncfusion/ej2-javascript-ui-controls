@@ -847,7 +847,7 @@ describe('Accumulation Chart Control', () => {
 
             pie = new AccumulationChart({
                 enableSmartLabels: true,
-             
+
                 series: [{
                     type: 'Pyramid', dataSource: [{ x: 'Milk, Youghnut, Cheese', y: 435, text:  'Milk, Youghnut, Cheese: 435 cal' },
                         { x: 'Vegetables', y: 470, text: 'Vegetables: 470 cal' },
@@ -861,12 +861,12 @@ describe('Accumulation Chart Control', () => {
                             fontWeight: '600'
                         }
                     }, explode: true, emptyPointSettings: { mode: 'Drop', fill: 'red' },
-                    
+
                 }],
                 legendSettings: {
                     visible: false
                 },
-        
+
                 tooltip: { enable: true, format: '${point.x} : <b>${point.y} cal</b>',header:'' },
 
                 title: 'Food Comparison Chart',
@@ -890,7 +890,6 @@ describe('Accumulation Chart Control', () => {
             };
             pie.refresh();
         });});
-
     it('memory leak', () => {
         profile.sample();
         let average: any = inMB(profile.averageChange)

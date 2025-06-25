@@ -1,7 +1,7 @@
 import { enableRipple } from '@syncfusion/ej2-base';
 import { Count } from '../src/rich-text-editor/actions/count';
 import { Resize } from '../src/rich-text-editor/actions/resize';
-import { ToolbarType } from '../src/rich-text-editor/base/enum';
+import { ToolbarType } from '../src/common/enum';
 import { Toolbar } from '../src/rich-text-editor/actions/toolbar';
 import { Link } from '../src/rich-text-editor/renderer/link-module';
 import { Table } from '../src/rich-text-editor/renderer/table-module';

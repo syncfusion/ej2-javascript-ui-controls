@@ -1,0 +1,308 @@
+@include export-module('blockeditor-bigger') {
+  .e-bigger.e-blockeditor,
+  .e-bigger .e-blockeditor {
+    .e-block-container-wrapper {
+      font-size: $be-font-size-bigger;
+      font-weight: $be-font-weight-bigger;
+      line-height: $be-line-height-bigger;
+    }
+
+    /* ======== Blocks Level styles ======== */
+    .e-block {
+
+      /* List Block Styles */
+      &.e-list-block {
+
+        li::marker {
+          font-size: $be-numberlist-font-size-bigger;
+        }
+
+        /* Checklist Block */
+        &[data-block-type = 'CheckList'] {
+          .e-checkmark {
+            min-width: $be-checkbox-width-bigger;
+            min-height: $be-checkbox-height-bigger;
+            width: $be-checkbox-width-bigger;
+            height: $be-checkbox-height-bigger;
+            border-width: $be-checkbox-border-bigger;
+            font-size: $be-checkmark-font-size-bigger;
+          }
+
+          &:has(.e-checked) {
+            .e-checkmark-checked {
+              &::after {
+                font-size: $be-checkmark-font-size-bigger;
+                line-height: $be-checkmark-line-height-bigger;
+              }
+            }
+          }
+        }
+      }
+
+      /* Quote Block */
+      &.e-quote-block blockquote {
+        border-left-width: $be-blockquote-left-width-bigger;
+        padding-left: $be-blockquote-text-padding-bigger;
+      }
+
+      /* Callout Block */
+      &.e-callout-block {
+        .e-callout-wrapper {
+          padding: $be-callout-padding-bigger;
+        }
+
+        .e-callout-icon {
+          height: $be-callout-icon-size-bigger;
+          width: $be-callout-icon-size-bigger;
+        }
+      }
+
+      /* Toggle Block */
+      &.e-toggle-block {
+
+        .e-toggle-icon {
+          height: $be-toggle-icon-size-bigger;
+          width: $be-toggle-icon-size-bigger;
+          margin-right: $be-toggle-icon-margin-bigger;
+        }
+      }
+
+      /* User and label mention Chip styles */
+      .e-user-chip {
+        height: $be-user-mention-chip-height-bigger;
+        padding: $be-user-mention-chip-padding-bigger;
+        .em-avatar {
+          height: $be-user-mention-avatar-height-bigger;
+          width: $be-user-mention-avatar-height-bigger;
+          font-size: $be-user-mention-chip-font-size-bigger;
+          line-height: $be-user-mention-chip-line-height-bigger;
+        }
+        .em-text {
+          font-size: $be-user-mention-chip-font-size-bigger;
+          line-height: $be-user-mention-chip-line-height-bigger;
+        }
+      }
+
+      .e-label-chip {
+        height: $be-label-mention-chip-height-bigger;
+        padding: $be-label-mention-chip-padding-bigger;
+        font-size: $be-label-mention-chip-font-size-bigger;
+        line-height: $be-label-mention-chip-line-height-bigger;
+      }
+
+      /* Inline content type styles */
+      .e-block-content {
+
+        /* Inline code */
+        .e-be-inline-code {
+          font-size: $be-inline-code-font-size-bigger;
+          line-height: $be-inline-code-line-height-bigger;
+          padding: $be-inline-code-padding-bigger;
+        }
+      }
+    }
+
+    /* ======== Code Block Styles ======== */
+    .e-code-block-toolbar {
+      padding: $be-code-block-toolbar-padding-bigger;
+      min-height: $be-code-toolbar-height-bigger;
+    }
+
+    .e-code-block-languages {
+      padding: $be-code-block-lang-padding-bigger;
+      width: 248px;
+      height: $be-code-lang-height-bigger;
+    }
+
+    .e-code-block-copy-button {
+      padding: $be-code-copy-btn-padding-bigger;
+      margin-left: 12px;
+      width: $be-code-copy-btn-height-bigger;
+      height: $be-code-copy-btn-height-bigger;
+      .e-icons {
+        font-size: $be-code-copy-btn-font-size-bigger;
+      }
+    }
+
+    .e-code-block {
+      margin: 0;
+      padding-left: 24px;
+      overflow-x: auto;
+      font-size: $be-font-size-bigger;
+      line-height: $be-line-height-bigger;
+    }
+
+    /* ======== Table Block Styles ======== */
+    .e-table-block {
+      th {
+        height: $be-table-heading-height-bigger;
+        padding: $be-table-heading-padding-bigger;
+        font-size: $be-table-heading-font-size-bigger;
+        line-height: $be-table-heading-line-height-bigger;
+      }
+      td {
+        height: $be-table-col-height-bigger;
+        padding: $be-table-col-padding-bigger;
+        font-size: $be-table-col-font-size-bigger;
+        line-height: $be-table-col-line-height-bigger;
+      }
+    }
+  }
+
+  /* ======== Floating Icons styles ======== */
+  .e-bigger .e-floating-icon {
+    width: $be-floating-icon-width-bigger;
+    height: $be-floating-icon-height-bigger;
+    font-size: $be-floating-icon-font-size-bigger;
+    line-height: $be-floating-icon-line-height-bigger;
+    font-weight: $be-floating-icon-font-weight-bigger;
+  }
+
+  /* Common for all mention menu */
+  .e-bigger .e-blockeditor-mention-menu.e-popup,
+  .e-bigger.e-blockeditor-mention-menu.e-popup {
+    .e-dropdownbase {
+      padding: $be-mention-popup-padding-bigger;
+    }
+  }
+
+  /* ======== Block Action styles ======== */
+  .e-bigger .e-blockeditor-blockaction-popup,
+  .e-bigger.e-blockeditor-blockaction-popup {
+    .e-menu-wrapper {
+      padding: $be-mention-popup-padding-bigger;
+      ul .e-menu-item {
+        height: 40px;
+        line-height: 40px;
+        padding: 0;
+        .e-blockaction-item-template {
+          min-height: 40px;
+          padding-left: $be-mention-popup-item-padding-left-bigger;
+          .e-action-icon {
+            font-size: $be-ctmenu-icon-font-size-bigger;
+            line-height: $be-ctmenu-icon-line-height-bigger;
+          }
+          .e-action-item-label {
+            font-size: $be-ctmenu-text-font-size-bigger;
+            line-height: $be-ctmenu-text-line-height-bigger;
+          }
+          .e-action-item-shortcut {
+            font-size: $be-ctmenu-shortcut-font-size-bigger;
+            line-height: $be-ctmenu-shortcut-line-height-bigger;
+          }
+        }
+      }
+    }
+  }
+
+  /* ======== Slash Command styles ======== */
+  .e-bigger .e-blockeditor-command-menu.e-popup,
+  .e-bigger.e-blockeditor-command-menu.e-popup {
+    .e-command-mention-item-template {
+      min-height: 40px;
+      padding-left: $be-mention-popup-item-padding-left-bigger;
+
+      .e-command-icon {
+        font-size: $be-ctmenu-icon-font-size-bigger;
+        line-height: $be-ctmenu-icon-line-height-bigger;
+      }
+      .e-command-title {
+        font-size: $be-ctmenu-text-font-size-bigger;
+        line-height: $be-ctmenu-text-line-height-bigger;
+      }
+      .e-command-shortcut {
+        font-size: $be-ctmenu-shortcut-font-size-bigger;
+        line-height: $be-ctmenu-shortcut-line-height-bigger;
+      }
+    }
+    .e-dropdownbase .e-list-group-item,
+    .e-fixed-head {
+      padding-left: $be-mention-popup-header-padding-bigger;
+    }
+  
+    &.e-rtl {
+      .e-dropdownbase .e-list-group-item,
+      .e-fixed-head {
+        padding-right: $be-mention-popup-header-padding-bigger;
+        padding-left: 0;
+      }
+    }
+  }
+
+  /* Context menu styles */
+  .e-bigger .e-blockeditor-contextmenu,
+  .e-bigger.e-blockeditor-contextmenu {
+    width: 220px;
+    &.e-contextmenu {
+      padding: $be-mention-popup-padding-bigger;
+    }
+    .e-ctmenu-icon {
+      font-size: $be-ctmenu-icon-font-size-bigger;
+      line-height: $be-ctmenu-icon-line-height-bigger;
+    }
+    .e-ctmenu-text {
+      font-size: $be-ctmenu-text-font-size-bigger;
+      line-height: $be-ctmenu-text-line-height-bigger;
+    }
+    .e-ctmenu-shortcut {
+      font-size: $be-ctmenu-shortcut-font-size-bigger;
+      line-height: $be-ctmenu-shortcut-line-height-bigger;
+    }
+  }
+
+  /* ======== Inline Toolbar styles ======== */
+  .e-bigger .e-blockeditor-inline-toolbar-popup,
+  .e-bigger.e-blockeditor-inline-toolbar-popup {
+    .e-toolbar-item {
+      .e-inline-color-icon,
+      .e-inline-bgColor-icon {
+        font-size: 16px;
+      }
+
+      .e-toolbar-color-dropdown .e-icons.e-btn-icon,
+      .e-toolbar-bgcolor-dropdown .e-icons.e-btn-icon {
+        font-size: 14px;
+      }
+    }
+  }
+
+  /* User and label mention styles */
+  .e-bigger .e-blockeditor-mention-menu.e-popup,
+  .e-bigger.e-blockeditor-mention-menu.e-popup {
+    .e-user-mention-item-template,
+    .e-label-mention-item-template {
+      gap: 8px;
+    }
+    .e-user-mention-item-template {
+      padding: $be-user-mention-item-padding-bigger;
+    }
+    .e-label-mention-item-template {
+      padding: $be-label-mention-item-padding-bigger;
+    }
+    .em-avatar {
+      width: $be-mention-avatar-width-bigger;
+      height: $be-mention-avatar-height-bigger;
+      font-size: $be-ctmenu-text-font-size-bigger;
+      line-height: $be-ctmenu-text-line-height-bigger;
+    }
+
+    &.e-blockeditor-label-menu {
+      .em-avatar {
+        width: $be-label-avatar-width-bigger;
+        height: $be-label-avatar-height-bigger;
+      }
+    }
+
+    .em-content {
+      gap: 8px;
+      .em-text {
+        font-size: $be-ctmenu-text-font-size-bigger;
+        line-height: $be-ctmenu-text-line-height-bigger;
+      }
+      .e-icons {
+        font-size: $be-ctmenu-icon-font-size-bigger;
+        line-height: $be-ctmenu-icon-line-height-bigger;
+      }
+    }
+  }
+}

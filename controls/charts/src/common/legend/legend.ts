@@ -1197,6 +1197,7 @@ export class BaseLegend {
             (!this.isChartControl && chart.getModuleName() !== 'bulletChart' && !this.isStockChartControl && !(chart.getModuleName() === 'accumulationchart' && (legend.layout !== 'Auto' || legend.maximumColumns > 0))
             ) && this.isVertical) ? this.maxWidth - padding + legend.containerPadding.left + legend.containerPadding.right
             : legendBounds.width;
+        options.width = (chart.legendSettings as LegendSettings).titlePosition === 'Right' ? (options.width - this.legendTitleSize.width - padding) : options.width;
         if (!isCanvas) {
             this.clipRect = chart.renderer.drawRectangle(options);
             clippath.appendChild(this.clipRect);
@@ -1250,7 +1251,15 @@ export class BaseLegend {
             this.legendID + this.generateId(legendOption, '_shape_', legendIndex), symbolColor, strokewidth,
             (isCustomBorder ? borderColor : symbolColor), this.legend.opacity, legendOption.dashArray, '');
         const textSize: Size = measureText(legendOption.text, this.legend.textStyle, this.chart.themeStyle.legendLabelFont);
-        const x: number = this.legend.isInversed && !this.isRtlEnable ? legendOption.location.x + textSize.width + this.legend.shapePadding
+        let maxWidth: number = 0;
+        for (const text of legendOption.textCollection) {
+            const size: Size = measureText(text, this.legend.textStyle, this.chart.themeStyle.legendLabelFont);
+            if (size.width > maxWidth) {
+                maxWidth = size.width;
+            }
+        }
+        const x: number = this.legend.isInversed && !this.isRtlEnable ? legendOption.location.x + (this.legend.textWrap === 'Wrap'
+            && legendOption.textCollection.length > 1 ? maxWidth : textSize.width) + this.legend.shapePadding
             : legendOption.location.x;
         const y: number = legendOption.location.y;
         if (!isCanvas) {

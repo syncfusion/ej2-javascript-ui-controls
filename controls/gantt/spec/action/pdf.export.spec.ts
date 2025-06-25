@@ -14571,7 +14571,7 @@ describe('pdfexport testcase for code coverage', () => {
             'Progress': '40',
             'isManual': true,
         },
-       
+
     ];
     beforeAll((done: Function) => {
         ganttObj = createGantt(
@@ -15265,3 +15265,175 @@ describe('Gantt PDF Export with tasklabel template for font color', () => {
         }
     });
 })
+describe('zoom out with show weekend as false', () => {
+    let ganttObj: Gantt;
+    const data: Object[] = [
+        {
+            TaskID: 1,
+            TaskName: 'Product Concept',
+            StartDate: new Date('04/02/2019'),
+            EndDate: new Date('04/21/2019'),
+            subtasks: [
+                { TaskID: 2, TaskName: 'Defining the product and its usage', StartDate: new Date('04/02/2019'), Duration: 3, Progress: 30 },
+                { TaskID: 3, TaskName: 'Defining target audience', StartDate: new Date('04/02/2019'), Duration: 3 },
+                { TaskID: 4, TaskName: 'Prepare product sketch and notes', StartDate: new Date('04/02/2019'), Duration: 3, Predecessor: "2", Progress: 30 },
+            ]
+        }
+        ]
+    beforeAll((done: Function) => {
+        ganttObj = createGantt(
+        {
+            dataSource: data,
+            enableUndoRedo: true,
+            allowPdfExport: true,
+            allowSorting: true,
+            taskFields: {
+                id: 'TaskID',
+                name: 'TaskName',
+                startDate: 'StartDate',
+                duration: 'Duration',
+                progress: 'Progress',
+                dependency: 'Predecessor',
+                child: 'subtasks'
+            },
+            editSettings: {
+                allowEditing: true,
+                allowDeleting: true,
+                allowTaskbarEditing: true,
+                showDeleteConfirmDialog: true
+            },
+        toolbar: [
+                "Add",
+                "Edit",
+                "Update",
+                "Delete",
+                "Cancel",
+                "ExpandAll",
+                "CollapseAll",
+                "Search",
+                "ZoomIn",
+                "ZoomOut",
+                "ZoomToFit",
+                "PrevTimeSpan",
+                "NextTimeSpan",
+                "PdfExport",
+            ],
+            allowSelection: true,
+            gridLines: "Both",
+            showColumnMenu: false,
+            highlightWeekends: true,
+            timelineSettings: {
+                showWeekend: false,
+                topTier: {
+                    unit: 'Day',
+                    format: 'dd/MM/yyyy'
+                },
+                bottomTier: {
+                    unit: 'Hour',
+                    count: 1
+                }
+            },
+            labelSettings: {
+                leftLabel: 'TaskName',
+                taskLabel: 'Progress'
+            },
+            height: '550px',
+            allowUnscheduledTasks: true,
+           
+        }, done);
+    });
+    it('processing zooming with showweekend as false', () => {
+        ganttObj.timelineModule.processZooming(false);
+        ganttObj.pdfExport();
+    });
+    afterAll(() => {
+        if (ganttObj) {
+            destroyGantt(ganttObj);
+        }
+    });
+});
+describe('pdf export with hours timeline', () => {
+    let ganttObj: Gantt;
+    const data: Object[] = [
+        {
+            TaskID: 1,
+            TaskName: 'Product Concept',
+            StartDate: new Date('04/02/2019'),
+            EndDate: new Date('04/21/2019'),
+            subtasks: [
+                { TaskID: 2, TaskName: 'Defining the product and its usage', StartDate: new Date('04/02/2019'), Duration: 3, Progress: 30 },
+                { TaskID: 3, TaskName: 'Defining target audience', StartDate: new Date('04/02/2019'), Duration: 3 },
+                { TaskID: 4, TaskName: 'Prepare product sketch and notes', StartDate: new Date('04/02/2019'), Duration: 3, Predecessor: "2", Progress: 30 },
+            ]
+        }
+        ]
+    beforeAll((done: Function) => {
+        ganttObj = createGantt(
+        {
+            dataSource: data,
+            enableUndoRedo: true,
+            allowPdfExport: true,
+            allowSorting: true,
+            taskFields: {
+                id: 'TaskID',
+                name: 'TaskName',
+                startDate: 'StartDate',
+                duration: 'Duration',
+                progress: 'Progress',
+                dependency: 'Predecessor',
+                child: 'subtasks'
+            },
+            editSettings: {
+                allowEditing: true,
+                allowDeleting: true,
+                allowTaskbarEditing: true,
+                showDeleteConfirmDialog: true
+            },
+        toolbar: [
+                "Add",
+                "Edit",
+                "Update",
+                "Delete",
+                "Cancel",
+                "ExpandAll",
+                "CollapseAll",
+                "Search",
+                "ZoomIn",
+                "ZoomOut",
+                "ZoomToFit",
+                "PrevTimeSpan",
+                "NextTimeSpan",
+                "PdfExport",
+            ],
+            allowSelection: true,
+            gridLines: "Both",
+            showColumnMenu: false,
+            highlightWeekends: true,
+            timelineSettings: {
+                topTier: {
+                    unit: 'Day',
+                    format: 'dd/MM/yyyy'
+                },
+                bottomTier: {
+                    unit: 'Hour',
+                    count: 1
+                }
+            },
+            labelSettings: {
+                leftLabel: 'TaskName',
+                taskLabel: 'Progress'
+            },
+            height: '550px',
+            allowUnscheduledTasks: true,
+           
+        }, done);
+    });
+    it('pdf export with hours timeline', () => {
+        ganttObj.pdfExport();
+    });
+    afterAll(() => {
+        if (ganttObj) {
+            destroyGantt(ganttObj);
+        }
+    });
+});

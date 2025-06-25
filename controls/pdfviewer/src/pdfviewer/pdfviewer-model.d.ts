@@ -1,4 +1,4 @@
-import { Component, INotifyPropertyChanged, NotifyPropertyChanges, ChildProperty, L10n, Collection, Complex, isBlazor, Browser } from '@syncfusion/ej2-base';import { ModuleDeclaration, isNullOrUndefined, Property, Event, EmitType, SanitizeHtmlHelper } from '@syncfusion/ej2-base';import { IAnnotationPoint, IPoint, PdfViewerBase, PdfiumRunner, TextMarkupAnnotation } from './index';import { Navigation } from './index';import { Magnification } from './index';import { Toolbar } from './index';import { ToolbarItem } from './index';import { PdfRenderer } from './index';import { LinkTarget, InteractionMode, SignatureFitMode, AnnotationType, AnnotationToolbarItem, LineHeadStyle, ContextMenuAction, FontStyle, TextAlignment, AnnotationResizerShape, AnnotationResizerLocation, ZoomMode, PrintMode, CursorType, ContextMenuItem, DynamicStampItem, SignStampItem, StandardBusinessStampItem, FormFieldType, AllowedInteraction, AnnotationDataFormat, SignatureType, CommentStatus, SignatureItem, FormDesignerToolbarItem, DisplayMode, Visibility, FormFieldDataFormat, PdfKeys, ModifierKeys, ExtractTextOption } from './base/types';import { Annotation } from './index';import { LinkAnnotation } from './index';import { ThumbnailView } from './index';import { BookmarkView } from './index';import { TextSelection } from './index';import { TextSearch } from './index';import { AccessibilityTags } from './index';import { FormFields } from './index';import { FormDesigner } from './index';import { Print, CalibrationUnit } from './index';import { PageOrganizer } from './index';import { UnloadEventArgs, LoadEventArgs, LoadFailedEventArgs, AjaxRequestFailureEventArgs, PageChangeEventArgs, PageClickEventArgs, ZoomChangeEventArgs, HyperlinkClickEventArgs, HyperlinkMouseOverArgs, ImportStartEventArgs, ImportSuccessEventArgs, ImportFailureEventArgs, ExportStartEventArgs, ExportSuccessEventArgs, ExportFailureEventArgs, AjaxRequestInitiateEventArgs, PageRenderInitiateEventArgs, AjaxRequestSuccessEventArgs, PageRenderCompleteEventArgs, PageOrganizerSaveAsEventArgs } from './index';import { AnnotationAddEventArgs, AnnotationRemoveEventArgs, AnnotationPropertiesChangeEventArgs, AnnotationResizeEventArgs, AnnotationSelectEventArgs, AnnotationMoveEventArgs, AnnotationDoubleClickEventArgs, AnnotationMouseoverEventArgs, PageMouseoverEventArgs, AnnotationMouseLeaveEventArgs , ButtonFieldClickEventArgs} from './index';import { TextSelectionStartEventArgs, TextSelectionEndEventArgs, DownloadStartEventArgs, DownloadEndEventArgs, ExtractTextCompletedEventArgs, PrintStartEventArgs, PrintEndEventArgs } from './index';import { TextSearchStartEventArgs, TextSearchCompleteEventArgs, TextSearchHighlightEventArgs } from './index';import { CustomContextMenuSelectEventArgs, CustomContextMenuBeforeOpenEventArgs } from './index';import { PdfAnnotationBase, PdfFormFieldBase, ZOrderPageTable } from './drawing/pdf-annotation';import { PdfAnnotationBaseModel, PdfFormFieldBaseModel } from './drawing/pdf-annotation-model';import { Drawing, ClipBoardObject } from './drawing/drawing';import { Selector } from './drawing/selector';import { SelectorModel } from './drawing/selector-model';import { PointModel, IElement, Rect, Point, Size, processPathData, splitArrayCollection } from '@syncfusion/ej2-drawings';import { renderAdornerLayer } from './drawing/dom-util';import { ThumbnailClickEventArgs } from './index';import { ValidateFormFieldsArgs, BookmarkClickEventArgs, AnnotationUnSelectEventArgs, BeforeAddFreeTextEventArgs, FormFieldFocusOutEventArgs, CommentEventArgs, FormFieldClickArgs, FormFieldAddArgs, FormFieldRemoveArgs, FormFieldPropertiesChangeArgs, FormFieldMouseLeaveArgs, FormFieldMouseoverArgs, FormFieldMoveArgs, FormFieldResizeArgs, FormFieldSelectArgs, FormFieldUnselectArgs, FormFieldDoubleClickArgs, AnnotationMovingEventArgs, KeyboardCustomCommandsEventArgs, ISize } from './base';import { AddSignatureEventArgs, RemoveSignatureEventArgs, MoveSignatureEventArgs, SignaturePropertiesChangeEventArgs, ResizeSignatureEventArgs, SignatureSelectEventArgs, SignatureUnselectEventArgs } from './base';import { IFormField, IFormFieldBound } from './form-designer/form-designer';import { ClickEventArgs, MenuItemModel } from '@syncfusion/ej2-navigations';import { PdfViewerUtils, PdfiumTaskScheduler, TaskPriorityLevel } from './base/pdfviewer-utlis';
+import { Component, INotifyPropertyChanged, NotifyPropertyChanges, ChildProperty, L10n, Collection, Complex, isBlazor, Browser } from '@syncfusion/ej2-base';import { ModuleDeclaration, isNullOrUndefined, Property, Event, EmitType, SanitizeHtmlHelper } from '@syncfusion/ej2-base';import { IAnnotationPoint, IPoint, PdfViewerBase, PdfiumRunner, TextMarkupAnnotation } from './index';import { Navigation } from './index';import { Magnification } from './index';import { Toolbar } from './index';import { ToolbarItem } from './index';import { PdfRenderer } from './index';import { LinkTarget, InteractionMode, SignatureFitMode, AnnotationType, AnnotationToolbarItem, LineHeadStyle, ContextMenuAction, FontStyle, TextAlignment, AnnotationResizerShape, AnnotationResizerLocation, ZoomMode, PrintMode, CursorType, ContextMenuItem, DynamicStampItem, SignStampItem, StandardBusinessStampItem, FormFieldType, AllowedInteraction, AnnotationDataFormat, SignatureType, CommentStatus, SignatureItem, FormDesignerToolbarItem, DisplayMode, Visibility, FormFieldDataFormat, PdfKeys, ModifierKeys, ExtractTextOption } from './base/types';import { Annotation } from './index';import { LinkAnnotation } from './index';import { ThumbnailView } from './index';import { BookmarkView } from './index';import { TextSelection } from './index';import { TextSearch } from './index';import { AccessibilityTags } from './index';import { FormFields } from './index';import { FormDesigner } from './index';import { Print, CalibrationUnit } from './index';import { PageOrganizer } from './index';import { UnloadEventArgs, LoadEventArgs, LoadFailedEventArgs, AjaxRequestFailureEventArgs, PageChangeEventArgs, PageClickEventArgs, ZoomChangeEventArgs, HyperlinkClickEventArgs, HyperlinkMouseOverArgs, ImportStartEventArgs, ImportSuccessEventArgs, ImportFailureEventArgs, ExportStartEventArgs, ExportSuccessEventArgs, ExportFailureEventArgs, AjaxRequestInitiateEventArgs, PageRenderInitiateEventArgs, AjaxRequestSuccessEventArgs, PageRenderCompleteEventArgs, PageOrganizerSaveAsEventArgs, PageOrganizerZoomChangedEventArgs } from './index';import { AnnotationAddEventArgs, AnnotationRemoveEventArgs, AnnotationPropertiesChangeEventArgs, AnnotationResizeEventArgs, AnnotationSelectEventArgs, AnnotationMoveEventArgs, AnnotationDoubleClickEventArgs, AnnotationMouseoverEventArgs, PageMouseoverEventArgs, AnnotationMouseLeaveEventArgs , ButtonFieldClickEventArgs} from './index';import { TextSelectionStartEventArgs, TextSelectionEndEventArgs, DownloadStartEventArgs, DownloadEndEventArgs, ExtractTextCompletedEventArgs, PrintStartEventArgs, PrintEndEventArgs } from './index';import { TextSearchStartEventArgs, TextSearchCompleteEventArgs, TextSearchHighlightEventArgs } from './index';import { CustomContextMenuSelectEventArgs, CustomContextMenuBeforeOpenEventArgs } from './index';import { PdfAnnotationBase, PdfFormFieldBase, ZOrderPageTable } from './drawing/pdf-annotation';import { PdfAnnotationBaseModel, PdfFormFieldBaseModel } from './drawing/pdf-annotation-model';import { Drawing, ClipBoardObject } from './drawing/drawing';import { Selector } from './drawing/selector';import { SelectorModel } from './drawing/selector-model';import { PointModel, IElement, Rect, Point, Size, processPathData, splitArrayCollection } from '@syncfusion/ej2-drawings';import { renderAdornerLayer } from './drawing/dom-util';import { ThumbnailClickEventArgs } from './index';import { ValidateFormFieldsArgs, BookmarkClickEventArgs, AnnotationUnSelectEventArgs, BeforeAddFreeTextEventArgs, FormFieldFocusOutEventArgs, CommentEventArgs, FormFieldClickArgs, FormFieldAddArgs, FormFieldRemoveArgs, FormFieldPropertiesChangeArgs, FormFieldMouseLeaveArgs, FormFieldMouseoverArgs, FormFieldMoveArgs, FormFieldResizeArgs, FormFieldSelectArgs, FormFieldUnselectArgs, FormFieldDoubleClickArgs, AnnotationMovingEventArgs, KeyboardCustomCommandsEventArgs, ISize } from './base';import { AddSignatureEventArgs, RemoveSignatureEventArgs, MoveSignatureEventArgs, SignaturePropertiesChangeEventArgs, ResizeSignatureEventArgs, SignatureSelectEventArgs, SignatureUnselectEventArgs } from './base';import { IFormField, IFormFieldBound } from './form-designer/form-designer';import { ClickEventArgs, MenuItemModel } from '@syncfusion/ej2-navigations';import { PdfViewerUtils, PdfiumTaskScheduler, TaskPriorityLevel } from './base/pdfviewer-utlis';
 import {IAjaxHeaders,IPdfRectBounds} from "./pdfviewer";
 import {ComponentModel} from '@syncfusion/ej2-base';
 
@@ -484,6 +484,80 @@ export interface StrikethroughSettingsModel {
     /**
      * Gets or sets the allowed interactions for the locked strikethrough annotations.
      * IsLock can be configured using strikethrough settings.
+     *
+     * @default ['None']
+     */
+    allowedInteractions?: AllowedInteraction[];
+
+    /**
+     * specifies whether the individual annotations are included or not in print actions.
+     */
+    isPrint?: boolean;
+
+    /**
+     * specifies the subject of the annotation.
+     */
+    subject?: string;
+
+}
+
+/**
+ * Interface for a class SquigglySettings
+ */
+export interface SquigglySettingsModel {
+
+    /**
+     * Get or set page number of the annotation.
+     */
+    pageNumber?: number;
+
+    /**
+     * specifies the opacity of the annotation.
+     */
+    opacity?: number;
+
+    /**
+     * specifies the color of the annotation.
+     */
+    color?: string;
+
+    /**
+     * specifies the author of the annotation.
+     */
+    author?: string;
+
+    /**
+     * specifies the annotation selector settings of the annotation.
+     */
+    annotationSelectorSettings?: AnnotationSelectorSettingsModel;
+
+    /**
+     * specifies the custom data of the annotation.
+     */
+    customData?: object;
+
+    /**
+     * specifies the locked action of the annotation.
+     */
+    isLock?: boolean;
+
+    /**
+     * Enables or disables the multi-page text markup annotation selection in UI.
+     *
+     * @default false
+     */
+    enableMultiPageAnnotation?: boolean;
+
+    /**
+     * Enable or disable the text markup resizer to modify the bounds in UI.
+     *
+     * @default false
+     */
+    enableTextMarkupResizer?: boolean;
+
+    /**
+     * Gets or sets the allowed interactions for the locked squiggly annotations.
+     * IsLock can be configured using squiggly settings.
      *
      * @default ['None']
      */
@@ -3639,6 +3713,27 @@ export interface PageOrganizerSettingsModel {
      */
     canImport?: boolean;
 
+    /**
+     * Controls visibility of the zooming slider UI in the page organizer.
+     * When enabled, a slider is shown to zoom in / out the page thumbnails
+     */
+    showImageZoomingSlider?: boolean;
+
+    /**
+     * Minimum value for the image zoom scale in the page organizer view.
+     */
+    imageZoomMin?: number;
+
+    /**
+     * Maximum value for the image zoom scale in the page organizer view.
+     */
+    imageZoomMax?: number;
+
+    /**
+     * Current zoom scale of the images in the page organizer view.
+     */
+    imageZoom?: number;
+
 }
 
 /**
@@ -3964,6 +4059,7 @@ export interface PdfViewerModel extends ComponentModel{
      * {% codeBlock src='pdfviewer/pageOrganizerSettings/index.md' %}{% endcodeBlock %}
      *
      */
+    // eslint-disable-next-line max-len
     pageOrganizerSettings?: PageOrganizerSettingsModel;
 
     /**
@@ -4564,6 +4660,15 @@ export interface PdfViewerModel extends ComponentModel{
      */
 
     strikethroughSettings?: StrikethroughSettingsModel;
+
+    /**
+     * Defines the settings of squiggly annotation.
+     *
+     * {% codeBlock src='pdfviewer/squigglySettings/index.md' %}{% endcodeBlock %}
+     *
+     */
+
+    squigglySettings?: SquigglySettingsModel;
 
     /**
      * Defines the settings of underline annotation.
@@ -5484,6 +5589,13 @@ export interface PdfViewerModel extends ComponentModel{
      * @event pageOrganizerSaveAs
      */
     pageOrganizerSaveAs?: EmitType<PageOrganizerSaveAsEventArgs>;
+
+    /**
+     * Triggers when the zoom level changes in the Page Organizer view.
+     *
+     * This event provides details about the previous and current zoom values
+     */
+    pageOrganizerZoomChanged?: EmitType<PageOrganizerZoomChangedEventArgs>
 
     /**
      * PDF document annotation collection.

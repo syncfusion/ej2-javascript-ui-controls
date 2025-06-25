@@ -722,6 +722,61 @@ describe('PivotView spec', () => {
                 expect(li.classList.contains('e-menu-caret-icon')).toBeTruthy();
             });
         });
+        describe('Aggregation-string fields', () => {
+            let pivotGridObj: PivotView;
+            let elem: HTMLElement = createElement('div', { id: 'PivotGrid', styles: 'height:200px; width:500px' });
+            afterAll(() => {
+                if (pivotGridObj) {
+                    pivotGridObj.destroy();
+                }
+                remove(elem);
+            });
+            beforeAll((done: Function) => {
+                if (!document.getElementById(elem.id)) {
+                    document.body.appendChild(elem);
+                }
+                let dataBound: EmitType<Object> = () => { done(); };
+                PivotView.Inject(GroupingBar, FieldList);
+                pivotGridObj = new PivotView({
+                    dataSourceSettings: {
+                        dataSource: pivotDataset as IDataSet[],
+                        valueSortSettings: { "headerDelimiter": "##", "sortOrder": "Ascending" },
+                        drilledMembers: [{ name: 'State', items: ['Tada', 'Califo'] }],
+                        rows: [{ name: 'State' }, { name: 'Product' }],
+                        formatSettings: [{ name: 'balance', format: 'C' }, { name: 'date', format: 'dd/MM/yyyy', type: 'date' }],
+                        columns: [{ name: 'Country'}],
+                        values: [{ name: 'Status' }, { name: 'Amount', type: 'Count' }],
+                        expandAll: false,
+                        enableSorting: true,
+                        fieldMapping: [{ name: 'Status', dataType: 'string' }],
+                        showHeaderWhenEmpty: false,
+                        emptyCellsTextContent: '-',
+                        showAggregationOnValueField: true
+                    },
+                    height: 800,
+                    width: 800,
+                    showGroupingBar: true,
+                    showFieldList: false,
+                    dataBound: dataBound,
+                });
+                pivotGridObj.appendTo('#PivotGrid');
+            });
+            beforeEach((done: Function) => {
+                setTimeout(() => { done(); }, 100);
+            });
+            it('Initial', (done: Function) => {
+                setTimeout(() => {
+                    expect(pivotGridObj.engineModule.pivotValues.length).toBe(9);
+                    done();
+                }, 100);
+            });
+            it('- Using the corresponding method', (done: Function) => {
+                setTimeout(() => {
+                    (document.querySelectorAll('.e-values .e-dropdown-icon')[0] as HTMLElement).click();
+                    done();
+                }, 1000);
+            });
+        });
     });
   
 });

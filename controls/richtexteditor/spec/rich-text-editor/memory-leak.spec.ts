@@ -1,5 +1,6 @@
 import { Tooltip } from "@syncfusion/ej2-popups";
-import { EditorManager, IEditorModel, RichTextEditor } from "../../src";
+import { EditorManager, RichTextEditor } from "../../src";
+import { IEditorModel } from '../../src/common/interface'
 import { renderRTE, destroy } from "./render.spec";
 import { Component, getComponent } from "@syncfusion/ej2-base";
 import { DropDownButton } from "@syncfusion/ej2-splitbuttons";

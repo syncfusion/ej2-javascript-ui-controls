@@ -32,7 +32,7 @@ describe('Form field Text dialog', () => {
         editor.destroy();
         document.body.removeChild(document.getElementById('container'));
         editor = undefined;
-        document.body.innerHTML = '';
+        
         setTimeout(function () {
             done();
         }, 2000);
@@ -144,7 +144,7 @@ describe('Form field Text dialog', () => {
 describe('Check API to modify text form field name in Inline mode', () => {
     let container: DocumentEditor;
     beforeAll(() => {
-        document.body.innerHTML = '';
+        
         let ele: HTMLElement = createElement('div', { id: 'container' });
         document.body.appendChild(ele);
         DocumentEditor.Inject(Editor, Selection, EditorHistory, SfdtExport);
@@ -159,7 +159,7 @@ describe('Check API to modify text form field name in Inline mode', () => {
         container.destroy();
         document.body.removeChild(document.getElementById('container'));
         container = undefined;
-        document.body.innerHTML = '';
+        
         setTimeout(function () {
             done();
         }, 1000);
@@ -241,7 +241,7 @@ describe('Check API to modify text form field name in Inline mode', () => {
 describe('Check API to modify text form field name in popup mode', () => {
     let container: DocumentEditor;
     beforeAll(() => {
-        document.body.innerHTML = '';
+        
         let ele: HTMLElement = createElement('div', { id: 'container' });
         document.body.appendChild(ele);
         DocumentEditor.Inject(Editor, Selection, EditorHistory, SfdtExport);
@@ -256,7 +256,7 @@ describe('Check API to modify text form field name in popup mode', () => {
         container.destroy();
         document.body.removeChild(document.getElementById('container'));
         container = undefined;
-        document.body.innerHTML = '';
+        
         setTimeout(function () {
             done();
         }, 1000);

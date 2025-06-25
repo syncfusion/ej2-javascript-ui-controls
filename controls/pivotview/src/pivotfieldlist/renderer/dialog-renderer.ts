@@ -1,4 +1,4 @@
-import { createElement, isNullOrUndefined, addClass, removeClass, closest, select, remove, MouseEventArgs } from '@syncfusion/ej2-base';
+import { createElement, isNullOrUndefined, addClass, removeClass, closest, select, remove, MouseEventArgs, getInstance } from '@syncfusion/ej2-base';
 import { EventHandler, setStyleAttribute} from '@syncfusion/ej2-base';
 import { PivotFieldList } from '../base/field-list';
 import * as cls from '../../common/base/css-constant';
@@ -683,7 +683,10 @@ export class DialogRenderer {
      */
     public destroy(): void {
         if (this.parent.renderMode === 'Popup') {
-            this.unWireDialogEvent(this.parent.element.querySelector('.' + cls.TOGGLE_FIELD_LIST_CLASS));
+            const toggleFieldListElement: Element = this.parent.element.querySelector('.' + cls.TOGGLE_FIELD_LIST_CLASS);
+            if (toggleFieldListElement) {
+                this.unWireDialogEvent(toggleFieldListElement);
+            }
         }
         if (this.deferUpdateCheckBox && !this.deferUpdateCheckBox.isDestroyed) {
             this.deferUpdateCheckBox.destroy();
@@ -701,14 +704,30 @@ export class DialogRenderer {
             this.adaptiveElement.destroy();
             this.adaptiveElement = null;
         }
+        const calculatedFieldButton: HTMLElement = document.getElementById(this.parent.element.id + '_CalculatedField');
+        if (calculatedFieldButton) {
+            const button: Button = getInstance(calculatedFieldButton as HTMLElement, Button) as Button;
+            if (button && !button.isDestroyed) {
+                button.destroy();
+            }
+        }
         if (this.parent.renderMode === 'Popup') {
             if (this.fieldListDialog && !this.fieldListDialog.isDestroyed) {
+                const footerButtons: NodeListOf<HTMLButtonElement> = this.fieldListDialog.element.querySelectorAll('button');
+                for (let i: number = 0; i < footerButtons.length; i++) {
+                    const button: Button = getInstance(footerButtons[i as number] as HTMLButtonElement, Button) as Button;
+                    if (button && !button.isDestroyed) {
+                        button.destroy();
+                    }
+                }
                 this.fieldListDialog.destroy();
                 this.fieldListDialog = null;
             }
-            if (document.getElementById(this.parent.element.id + '_Container')) {
-                remove(document.getElementById(this.parent.element.id + '_Container'));
+            const containerElement: HTMLElement = document.getElementById(this.parent.element.id + '_Container');
+            if (containerElement) {
+                remove(containerElement);
             }
         }
+        this.lastTabIndex = null;
     }
 }

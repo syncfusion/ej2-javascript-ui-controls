@@ -56,7 +56,8 @@ export function getData(
                     data = [];
                     let index: number;
                     let cells: { [key: string]: CellModel | string | Date | number }; let parsedNumVal: string;
-                    let key: string; let cellProp: CellModel | string | Date | number | { value?: string | number | Date };
+                    let key: string; let cellProp: CellModel | string | Date | number |
+                    { value?: string | number | Date };
                     let localeObj: { decimal: string }; let intl: Internationalization; let autoDetectFormatFn: (cell: CellModel) => void;
                     if (valueOnly) {
                         localeObj = getNumericObject(context.locale) as { decimal: string };
@@ -119,7 +120,8 @@ export function getData(
                                     }
                                     cells[`${key}_value`] = <string | number>cellProp;
                                 } else {
-                                    if ((cell && (cell.formula || !isNullOrUndefined(cell.value))) || Object.keys(cells).length) {
+                                    if ((cell && (cell.formula || !isNullOrUndefined(cell.value) || cell.hyperlink)) ||
+                                        Object.keys(cells).length) {
                                         if (i === dateValueForSpecificColIdx) {
                                             cellProp = { value: getValueFromFormat(context, cell, sRow, i, sheetIdx, true) };
                                             if (cellProp.value && typeof cellProp.value === 'string') {

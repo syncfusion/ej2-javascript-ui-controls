@@ -2,33 +2,7 @@
 
 ## [Unreleased]
 
-## 29.2.11 (2025-06-17)
-
-### Tree Grid
-
-#### Bug Fixes
-
-- `#726732` - Fixed a filter issue where sorting after filtering with Query Builder, the sorting was applied to the entire data source instead of the filtered results.
-- `#I722548` - Fixed an issue where records are in expanded state after searching when `enableVirtualization` and `enableCollapseAll` set to true.
-
-## 29.1.39 (2025-04-22)
-
-### Tree Grid
-
-#### Bug Fixes
-
-- `#F66780` - Fixed an issue where `allowMultiSorting` API was not functioning properly in the tree grid.
-
-## 29.1.37 (2025-04-08)
-
-### Tree Grid
-
-#### Bug Fixes
-
-- `#F61040` - Fixed a script error issue when reordering columns with frozen columns and persistence enabled.
-- `#F66017` - Fixed an issue where the drop position was not properly registering during drag and drop operations between tree grids, resulting in data disappearing.
-
-## 29.1.33 (2025-03-25)
+## 30.1.37 (2025-06-25)
 
 ### Tree Grid
 
@@ -36,7 +10,7 @@
 
 - `#I651431` - The Tree Grid now supports enhanced `in` and `not in` filters, allowing users to filter multiple values in a column using a multiselect checkbox. Explore the demo [here](https://ej2.syncfusion.com/demos/#/tailwind3/tree-grid/filter-menu.html).
 - Enhanced the EJ2 Tree Grid performance by removing unnecessary attributes and inline styles, ensuring a leaner HTML structure for faster rendering and improved responsiveness.
-
+  
 ### Tree Grid
 
 #### Breaking Changes

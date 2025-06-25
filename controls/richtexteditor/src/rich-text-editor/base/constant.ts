@@ -120,6 +120,11 @@ export const onExport: string = 'onExport';
  * @hidden
  * @deprecated
  */
+export const onCodeBlock: string = 'onCodeBlock';
+/**
+ * @hidden
+ * @deprecated
+ */
 export const mouseUp: string = 'mouseUp';
 /**
  * @hidden
@@ -450,6 +455,16 @@ export const paste: string = 'paste-content';
  * @hidden
  * @deprecated
  */
+export const codeBlockPaste: string = 'code-block-paste-content';
+/**
+ * @hidden
+ * @deprecated
+ */
+export const codeBlockEnter: string = 'code-block-enter';
+/**
+ * @hidden
+ * @deprecated
+ */
 export const imgModule: string = 'imageModule';
 /**
  * @hidden
@@ -461,6 +476,11 @@ export const rtlMode: string = 'rtl-mode';
  * @deprecated
  */
 export const createTable: string = 'createTable';
+/**
+ * @hidden
+ * @deprecated
+ */
+export const updateProperty: string = 'updateProperty';
 /**
  * @hidden
  * @deprecated
@@ -501,11 +521,7 @@ export const beforeDialogOpen: string = 'beforeDialogOpen';
  * @deprecated
  */
 export const clearDialogObj: string = 'clearDialogObj';
-/**
- * @hidden
- * @deprecated
- */
-export const hideTableQuickToolbar: string = 'hideTableQuickToolbar';
+
 /**
  * @hidden
  * @deprecated
@@ -766,6 +782,11 @@ export const documentClickClosedBy: string = 'documentClickClosedBy';
  * @deprecated
  */
 export const showColorPicker: string = 'showColorPicker';
+/**
+ * @hidden
+ * @deprecated
+ */
+export const showDropDown: string = 'showDropDown';
 /**
  * @hidden
  * @deprecated

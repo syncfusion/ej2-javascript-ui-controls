@@ -97,7 +97,8 @@ export class CommentReviewPane {
                         this.reviewTab.select(0);
                     }
                 }
-                this.owner.trackChangesPane.updateTrackChanges(this.owner.showRevisions);
+                this.owner.trackChangesPane.enableButtons = !this.owner.isReadOnly && !this.owner.documentHelper.isDocumentProtected;
+                this.owner.trackChangesPane.updateTrackChanges(show);
                 this.commentPane.updateCommentStatus();
             }
             else {

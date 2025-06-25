@@ -456,7 +456,13 @@ export class TaskbarEdit extends DateProcessor {
             if (!isNullOrUndefined(parentRecord)) {
                 if (!parentRecord.expanded) {
                     isShowConnectorPoints = false;
-                    addClass([element], [cls.collapseMultiTaskBar]);
+                    if (record && record.ganttProperties.segments &&
+                        record.ganttProperties.segments.length > 0) {
+                        addClass([element.parentElement], [cls.collapseMultiTaskBar]);
+                    }
+                    else {
+                        addClass([element], [cls.collapseMultiTaskBar]);
+                    }
                 }
             }
         }
@@ -467,8 +473,7 @@ export class TaskbarEdit extends DateProcessor {
                 if (isShowProgressResizer) {
                     const progressElement: HTMLElement = (record && record.ganttProperties.segments &&
                                                         record.ganttProperties.segments.length > 0) ?
-                        this.parent.getRowByIndex(this.parent.currentViewData.indexOf(record)).
-                            querySelectorAll('.' + cls.childProgressResizer)[0] as HTMLElement :
+                        element.parentElement.querySelector('.' + cls.childProgressResizer) as HTMLElement :
                         element.querySelector('.' + cls.childProgressResizer) as HTMLElement;
                     if (!isNullOrUndefined(progressElement)) {
                         addClass([progressElement], [cls.progressResizeGripper]);
@@ -506,7 +511,7 @@ export class TaskbarEdit extends DateProcessor {
                 removeClass([secondElement.querySelector('.' + cls.taskBarLeftResizer)], [cls.leftResizeGripper]);
                 removeClass([secondElement.querySelector('.' + cls.taskBarRightResizer)], [cls.rightResizeGripper]);
                 const progressElement: Element = (record && record.ganttProperties.segments && record.ganttProperties.segments.length > 0) ?
-                    this.parent.getRowByIndex(this.parent.currentViewData.indexOf(record)) : secondElement;
+                    secondElement.parentElement : secondElement;
                 if (progressElement && progressElement.querySelector('.' + cls.childProgressResizer)) {
                     removeClass([progressElement.querySelector('.' + cls.childProgressResizer)], [cls.progressResizeGripper]);
                 }
@@ -955,7 +960,7 @@ export class TaskbarEdit extends DateProcessor {
                             rowElement = this.parent.getRowByIndex(parseInt(droppedTreeGridRowElement.getAttribute('aria-rowindex'), 10) - 1);
                         }
                         const rowIndex: number = getValue('rowIndex', rowElement);
-                        const droppedTreeGridRecord: IGanttData = this.parent.flatData[rowIndex as number];
+                        const droppedTreeGridRecord: IGanttData = this.parent.currentViewData[rowIndex as number];
                         let isValid: boolean = true;
                         if (this.parent.viewType === 'ResourceView' && !this.taskBarEditRecord.hasChildRecords && !droppedTreeGridRecord.hasChildRecords &&
                         !isNullOrUndefined(droppedTreeGridRecord.parentItem) &&
@@ -1031,10 +1036,8 @@ export class TaskbarEdit extends DateProcessor {
                     }
                 }
                 if (arg.cancel === false) {
-                    if (!isNullOrUndefined(this.parent.loadingIndicator) && this.parent.loadingIndicator.indicatorType === 'Shimmer' && this.parent.showIndicator) {
-                        this.parent.showMaskRow();
-                    } else if (this.parent.showIndicator) {
-                        this.parent.showSpinner();
+                    if (this.parent.showIndicator) {
+                        this.parent['showLoadingIndicator']();
                     }
                     this.taskBarEditingAction(event, false);
                 } else {
@@ -1175,6 +1178,47 @@ export class TaskbarEdit extends DateProcessor {
                 this.taskBarEditedAction(e);
             }
             this.parent.trigger('taskbarEditing', args, (arg: ITaskbarEditedEventArgs) => {
+                if (
+                    arg.cancel !== true &&
+                    arg.data.ganttProperties.constraintType !== 2 &&
+                    arg.data.ganttProperties.constraintType !== 3 &&
+                    ['ChildDrag', 'ParentDrag', 'MilestoneDrag', 'LeftResizing', 'RightResizing'].indexOf(arg.taskBarEditAction) !== -1
+                ) {
+                    args.data.ganttProperties.constraintType = 4;
+                    args.data.ganttProperties.constraintDate = args.data.ganttProperties.startDate;
+                }
+                if (
+                    (
+                        arg.taskBarEditAction === 'ChildDrag' ||
+                        arg.taskBarEditAction === 'ParentDrag' ||
+                        arg.taskBarEditAction === 'MilestoneDrag'
+                    ) &&
+                    (
+                        arg.data.ganttProperties.constraintType === 2 ||
+                        arg.data.ganttProperties.constraintType === 3
+                    ) ||
+                    (
+                        arg.taskBarEditAction === 'LeftResizing' &&
+                        arg.data.ganttProperties.constraintType === 2
+                    ) ||
+                    (
+                        arg.taskBarEditAction === 'RightResizing' &&
+                        arg.data.ganttProperties.constraintType === 3
+                    )
+                ) {
+                    const isValidPredecessor: IPredecessor[] = this.parent.predecessorModule['filterPredecessorsByTarget'](
+                        args.data.ganttProperties.predecessor,
+                        args.data,
+                        this.parent.viewType
+                    );
+                    let hasPredecessor: boolean = (arg.data.ganttProperties.predecessor && arg.data.ganttProperties.predecessor.length > 0);
+                    if (hasPredecessor && isValidPredecessor.length === 0) {
+                        hasPredecessor = false;
+                    }
+                    if (!hasPredecessor) {
+                        arg.cancel = true;
+                    }
+                }
                 if (arg.cancel && this.taskBarEditRecord !== null) {
                     this.tapPointOnFocus = false;
                     merge(this.taskBarEditRecord.ganttProperties, arg.previousData);
@@ -1840,7 +1884,7 @@ export class TaskbarEdit extends DateProcessor {
      * @param {IGanttData} record - The Gantt task to validate.
      * @returns {{ isValid: boolean }} - An object indicating if the task's dependencies are valid.
      */
-    private isValidDependency(record: IGanttData): { isValid: boolean } {
+    private isValidDependency(record: IGanttData): { isValid: boolean, maxDate?: Date} {
         if (isNullOrUndefined(record.ganttProperties) || isNullOrUndefined(record.ganttProperties.predecessor)) {
             return { isValid: true };
         }
@@ -1857,7 +1901,7 @@ export class TaskbarEdit extends DateProcessor {
             ? record.ganttProperties.endDate
             : record.ganttProperties.startDate;
         const isValid: boolean = recordDate.getTime() >= maxDate.getTime();
-        return { isValid};
+        return { isValid, maxDate};
     }
     private updateChildDrag(item: ITaskData): void {
         const left: number = this.getRoundOffStartLeft(item, this.roundOffDuration);
@@ -1988,7 +2032,7 @@ export class TaskbarEdit extends DateProcessor {
             item.segments[item.segments.length - 1].endDate,
             item,
             true);
-        if (!isNullOrUndefined(this.parent.taskFields.endDate)) {
+        if (!isNullOrUndefined(taskSettings.endDate)) {
             this.parent.dataOperation.updateMappingData(this.taskBarEditRecord, 'endDate');
         }
 
@@ -2876,8 +2920,6 @@ export class TaskbarEdit extends DateProcessor {
         }
 
         this.parent.ganttChartModule.chartBodyContainer.appendChild(this.falseLine);
-
-
     }
     /**
      *

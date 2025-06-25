@@ -2,8 +2,8 @@ import { Workbook, SheetModel, CellModel, getSheet, ColumnModel, isHiddenRow, ge
 import { cellValidation, addHighlight, getCellAddress, updateHighlight, getSwapRange, getUpdatedRange } from '../common/index';
 import { removeHighlight, InsertDeleteEventArgs, checkIsFormula, getSheetIndexFromAddress, getRangeFromAddress } from '../common/index';
 import { getRangeIndexes, getUpdatedFormulaOnInsertDelete, InsertDeleteModelArgs, getUpdatedFormula } from '../common/index';
-import { ValidationModel, updateCell, beforeInsert, beforeDelete, addListValidationDropdown } from '../common/index';
-import { getSplittedAddressForColumn } from '../common/index';
+import { ValidationModel, updateCell, beforeInsert, beforeDelete, addListValidationDropdown, importModelUpdate } from '../common/index';
+import { getSplittedAddressForColumn, ExtendedSheet } from '../common/index';
 import { getSheetIndexFromId, setColumn, refreshInsertDelete, workbookFormulaOperation, ExtendedWorkbook, isHiddenCol } from '../index';
 import { getSheetIndex, RowModel, getRow, checkColumnValidation } from '../base/index';
 import { extend, isNullOrUndefined } from '@syncfusion/ej2-base';
@@ -43,6 +43,7 @@ export class WorkbookDataValidation {
         this.parent.on(beforeInsert, this.beforeInsertDeleteHandler, this);
         this.parent.on(beforeDelete, this.beforeInsertDeleteHandler, this);
         this.parent.on(refreshInsertDelete, this.beforeInsertDeleteHandler, this);
+        this.parent.on(importModelUpdate, this.updataSheetValidation, this);
     }
 
     private removeEventListener(): void {
@@ -53,6 +54,7 @@ export class WorkbookDataValidation {
             this.parent.off(beforeInsert, this.beforeInsertDeleteHandler);
             this.parent.off(beforeDelete, this.beforeInsertDeleteHandler);
             this.parent.off(refreshInsertDelete, this.beforeInsertDeleteHandler);
+            this.parent.off(importModelUpdate, this.updataSheetValidation);
         }
     }
 
@@ -153,11 +155,13 @@ export class WorkbookDataValidation {
                 // Calculate previous indexes based on the original starting point of the formula
                 if (isFormulaVal1) {
                     options.validation.value1 = getUpdatedFormula(
-                        [rowIdx, options.colIdx, rowIdx, options.colIdx], indexes, sheet, this.parent, { formula: args.rules.value1 });
+                        [rowIdx, options.colIdx, rowIdx, options.colIdx], indexes, sheet, this.parent, { formula: args.rules.value1 }, null,
+                        true);
                 }
                 if (isFormulaVal2) {
                     options.validation.value2 = getUpdatedFormula(
-                        [rowIdx, options.colIdx, rowIdx, options.colIdx], indexes, sheet, this.parent, { formula: args.rules.value2 });
+                        [rowIdx, options.colIdx, rowIdx, options.colIdx], indexes, sheet, this.parent, { formula: args.rules.value2 }, null,
+                        true);
                 }
             };
         }
@@ -454,6 +458,98 @@ export class WorkbookDataValidation {
             range = colNames[0] + ':' + colNames[1];
         }
         return { range: range, isFullCol: isFullCol };
+    }
+
+    private updataSheetValidation(): void {
+        let ranges: string[]; let validation: ValidationModel; let rowIdx: number; let colIdx: number; let prevIndexes: number[];
+        const updateFormulaValidation: (model: ValidationModel, sheet: SheetModel) => void =
+            (model: ValidationModel, sheet: SheetModel): void => {
+                let indexes: number[] = getRangeIndexes(ranges.shift());
+                prevIndexes = [indexes[0], indexes[1]];
+                if (ranges.length) {
+                    const rangeIndexes: number[][] = [indexes];
+                    ranges.forEach((range: string) => {
+                        indexes = getRangeIndexes(range);
+                        if (indexes[0] < prevIndexes[0]) {
+                            prevIndexes[0] = indexes[0];
+                        }
+                        if (indexes[1] < prevIndexes[1]) {
+                            prevIndexes[1] = indexes[1];
+                        }
+                        rangeIndexes.push(indexes);
+                    });
+                    rangeIndexes.forEach((indexes: number[]) => {
+                        setValidation(indexes, model, sheet);
+                    });
+                } else {
+                    setValidation(indexes, model, sheet);
+                }
+            };
+        let updateFormula: () => void;
+        const setValidation: (indexes: number[], model: ValidationModel, sheet: SheetModel) => void =
+            (indexes: number[], model: ValidationModel, sheet: SheetModel): void => {
+                if (indexes[0] === 0 && indexes[2] === 1048575) {
+                    colIdx = indexes[1]; rowIdx = 0;
+                    while (colIdx <= indexes[3]) {
+                        validation = Object.assign({}, model);
+                        updateFormula();
+                        setColumn(sheet, colIdx, { validation: validation });
+                        colIdx++;
+                    }
+                } else {
+                    rowIdx = indexes[0];
+                    const endRowIdx: number = Math.min(indexes[2], sheet.usedRange.rowIndex);
+                    const endColIdx: number = Math.min(indexes[3], sheet.usedRange.colIndex);
+                    while (rowIdx <= endRowIdx) {
+                        colIdx = indexes[1];
+                        while (colIdx <= endColIdx) {
+                            validation = Object.assign({}, model);
+                            updateFormula();
+                            setCell(rowIdx, colIdx, sheet, { validation: validation }, true);
+                            colIdx++;
+                        }
+                        rowIdx++;
+                    }
+                }
+            };
+        this.parent.sheets.forEach((sheet: ExtendedSheet) => {
+            if (sheet.validations) {
+                sheet.validations.forEach((model: ValidationModel & { range?: string[] }) => {
+                    if (model.range && model.range.length) {
+                        ranges = model.range;
+                        delete model.range;
+                        if (checkIsFormula(model.value2)) {
+                            if (checkIsFormula(model.value1)) {
+                                updateFormula = (): void => {
+                                    validation.value1 = getUpdatedFormula(
+                                        [rowIdx, colIdx], prevIndexes, sheet, this.parent, { formula: validation.value1 }, null, true);
+                                    validation.value2 = getUpdatedFormula(
+                                        [rowIdx, colIdx], prevIndexes, sheet, this.parent, { formula: validation.value2 }, null, true);
+                                };
+                            } else {
+                                updateFormula = (): void => {
+                                    validation.value2 = getUpdatedFormula(
+                                        [rowIdx, colIdx], prevIndexes, sheet, this.parent, { formula: validation.value2 }, null, true);
+                                };
+                            }
+                            updateFormulaValidation(model, sheet);
+                        } else if (checkIsFormula(model.value1)) {
+                            updateFormula = (): void => {
+                                validation.value1 = getUpdatedFormula(
+                                    [rowIdx, colIdx], prevIndexes, sheet, this.parent, { formula: validation.value1 }, null, true);
+                            };
+                            updateFormulaValidation(model, sheet);
+                        } else {
+                            updateFormula = (): void => { /* Invoking empty function for non formula values. */ };
+                            ranges.forEach((range: string) => {
+                                setValidation(getRangeIndexes(range), model, sheet);
+                            });
+                        }
+                    }
+                });
+                delete sheet.validations;
+            }
+        });
     }
 
     /**

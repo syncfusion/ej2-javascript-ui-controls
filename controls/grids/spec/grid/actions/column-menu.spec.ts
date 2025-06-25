@@ -953,4 +953,44 @@ describe('column menu module', () => {
             gridObj = null;
         });
     });
+
+    describe('EJ2: 954043 => Need to add event for context menu and column menu closing. => ', () => {
+        let gridObj: Grid;
+        beforeAll((done: Function) => {
+            gridObj = createGrid(
+                {
+                    dataSource: data,
+                    allowFiltering: true,
+                    allowPaging: true,
+                    showColumnMenu: true,
+                    filterSettings: { type: 'Menu' },
+                    columns: [
+                        { field: 'CustomerID', width: 120, headerText: 'Customer ID' },
+                        { field: 'ShipCountry', headerText: 'Ship Country' }
+                    ]
+                }, done);
+        });
+
+        it('Open the columnmenu', (done: Function) => {
+            (gridObj as any).element.querySelector('.e-columnmenu').click();
+            done();
+        });
+        it('Column menu close', (done: Function) => {
+            gridObj.columnMenuClose = function (args: ColumnMenuOpenEventArgs) {
+                args.cancel = true;
+                done();
+            }
+            gridObj.getContent().querySelectorAll('tr')[0].querySelector('td').click();
+        });
+
+        it('Coverage the case', (done: Function) => {
+            expect((gridObj.columnMenuModule as any).columnMenu.isMenuVisible()).toBeTruthy();
+            done();
+        });
+
+        afterAll(() => {
+            destroy(gridObj);
+            gridObj = null;
+        });
+    });
 });

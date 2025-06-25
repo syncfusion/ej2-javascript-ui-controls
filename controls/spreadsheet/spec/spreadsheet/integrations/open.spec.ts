@@ -37,12 +37,6 @@ describe('Open & Save ->', () => {
                     helper.invoke('open', [{ file: file }]);
                 });
             });
-            setTimeout(() => {
-                const spreadsheet: any = helper.getInstance();
-                spreadsheet.workbookOpenModule.setSelectAllRange(spreadsheet.sheets, false);
-                spreadsheet.workbookOpenModule.setSelectAllRange(spreadsheet.sheets, true);
-                done();
-            }, 300);
         });
 
         // it('Save', (done: Function) => {
@@ -69,7 +63,7 @@ describe('Open & Save ->', () => {
         it('Changing allowOpen property dynamically', (done: Function) => {
             const spreadsheet: any = helper.getInstance();
             expect(spreadsheet.allowOpen).toBeTruthy();
-            //expect(spreadsheet.openModule.isImportedFile).toBeTruthy();
+            expect(spreadsheet.openModule.isImportedFile).toBeTruthy();
             const prevUploadInput: HTMLElement = spreadsheet.element.querySelector(`#${helper.id}_fileUpload`);
             expect(prevUploadInput).not.toBeNull();
             spreadsheet.allowOpen = false;
@@ -79,8 +73,8 @@ describe('Open & Save ->', () => {
             expect(spreadsheet.element.querySelector(`#${helper.id}_fileUpload`)).toBeNull();
             spreadsheet.allowOpen = true;
             spreadsheet.dataBind();
-            //expect(spreadsheet.allowOpen).toBeTruthy();
-            //expect(spreadsheet.openModule.isImportedFile).toBeFalsy();
+            expect(spreadsheet.allowOpen).toBeTruthy();
+            expect(spreadsheet.openModule.isImportedFile).toBeFalsy();
             const uploadInput: HTMLElement = spreadsheet.element.querySelector(`#${helper.id}_fileUpload`);
             expect(uploadInput).not.toBeNull();
             expect(uploadInput).not.toBe(prevUploadInput);
@@ -605,8 +599,5 @@ describe('Opening document using chunk processing', () => {
                 }
             });
         });
-        setTimeout(() => {
-            done();
-        }, 300);
     });
 });

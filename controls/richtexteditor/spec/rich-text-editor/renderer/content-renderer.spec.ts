@@ -65,4 +65,32 @@ describe('Content renderer module', () => {
             destroy(rteObj);
         });
     });
+    describe('913845 - Rich Text Editor Accessibility Attributes', () => {
+        let rteObj: RichTextEditor;
+        beforeAll(() => {
+            rteObj = renderRTE({
+                enableRtl: false,
+                locale: 'en'
+            });
+        });
+        it('should have correct accessibility attributes', () => {
+            const contentDiv = rteObj.contentModule.getPanel().querySelector('.e-content');
+            expect(contentDiv.getAttribute('aria-label')).toBe('Rich Text Editor');
+            expect(contentDiv.getAttribute('role')).toBe('textbox');
+            expect(contentDiv.getAttribute('lang')).toBe('en');
+            expect(contentDiv.getAttribute('dir')).toBe('ltr');
+        });
+        it('should update lang and dir attributes dynamically', () => {
+            rteObj.locale = 'fr';
+            rteObj.enableRtl = true;
+            rteObj.dataBind();
+    
+            const contentDiv = rteObj.contentModule.getPanel().querySelector('.e-content');
+            expect(contentDiv.getAttribute('lang')).toBe('fr');
+            expect(contentDiv.getAttribute('dir')).toBe('rtl');
+        });
+        afterAll(() => {
+            destroy(rteObj);
+        });
+    });
 });

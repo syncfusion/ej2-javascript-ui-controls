@@ -7,6 +7,7 @@ import { InsertHtml } from './inserthtml';
 import * as EVENTS from './../../common/constant';
 import { NodeSelection } from '../../selection';
 import { scrollToCursor } from '../../common/util';
+import { IEditorModel } from '../../common/interface';
 
 /**
  * Video internal component
@@ -15,16 +16,16 @@ import { scrollToCursor } from '../../common/util';
  * @deprecated
  */
 export class VideoCommand {
-    private parent: EditorManager;
+    private parent: IEditorModel;
     private vidElement: HTMLElement;
     /**
      * Constructor for creating the Video plugin
      *
-     * @param {EditorManager} parent - specifies the parent element
+     * @param {IEditorModel} parent - specifies the parent element
      * @hidden
      * @deprecated
      */
-    public constructor(parent: EditorManager) {
+    public constructor(parent: IEditorModel) {
         this.parent = parent;
         this.addEventListener();
     }

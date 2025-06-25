@@ -1273,7 +1273,7 @@ export type Action = 'Insert' | 'Delete' | 'BackSpace' | 'Selection' | 'MultiSel
 | 'ParagraphBidi' | 'TableBidi' | 'ContextualSpacing' | 'RestrictEditing' | 'RemoveEditRange' | 'InsertComment' | 'DeleteComment'
 | 'RemoveInline' | 'DeleteAllComments' | 'InsertCommentWidget' | 'DeleteCommentWidget' | 'FormField' | 'UpdateFormField' |
 'FormTextFormat' | 'Accept Change' | 'Reject Change' | 'Accept All' | 'Reject All' | 'ParaMarkTrack' | 'ParaMarkReject' |
-'RemoveRowTrack' | 'AcceptTOC' | 'ClearRevisions' | 'TrackingPageBreak' | 'InsertTextParaReplace' | 'Uppercase'|'ToggleCase'|'Lowercase'|'SentenceCase'|'CapitalizeEachWord'| 'PasteColumn'|
+'RemoveRowTrack' | 'ClearRevisions' | 'TrackingPageBreak' | 'InsertTextParaReplace' | 'Uppercase'|'ToggleCase'|'Lowercase'|'SentenceCase'|'CapitalizeEachWord'| 'PasteColumn'|
 'PasteRow' | 'PasteOverwrite' | 'PasteNested' | 'SkipCommentInline' | 'DeleteCommentInline' | 'ResolveComment'
 |'TopBorder'
 |'LeftBorder'
@@ -1281,7 +1281,7 @@ export type Action = 'Insert' | 'Delete' | 'BackSpace' | 'Selection' | 'MultiSel
 |'BottomBorder'
 |'HorizontalBorder'
 |'VerticalBorder'|'ColumnBreak'
-| 'DragAndDropContent' | 'LinkToPrevious' | 'GroupAction' | 'DeleteHeaderFooter' | 'EditComment' | 'TableTitle' | 'TableDescription' | 'TabStop' | 'Grouping' | 'ModifyStyle'|'InsertContentControl'|'RemoveContentControl' | 'InsertSectionBreak' | 'UpdateContentControl';
+| 'DragAndDropContent' | 'LinkToPrevious' | 'GroupAction' | 'DeleteHeaderFooter' | 'EditComment' | 'TableTitle' | 'TableDescription' | 'TabStop' | 'Grouping' | 'ModifyStyle'|'InsertContentControl'|'RemoveContentControl' | 'InsertSectionBreak' | 'UpdateContentControl' | 'AddRevision' | 'RemoveAndAddRevision' | 'RemoveRevision';
 /**
  * Enum for direction
  */
@@ -2735,7 +2735,31 @@ export type BreakClearType =
      */
     'All';
 
+/**
+ * Specifies the toolbar mode.
+ */
+export type ToolbarMode =
+    /**
+     * Specifies the default toolbar mode.
+     */
+    'Toolbar' |
+    /**
+     * Specifies the ribbon toolbar mode.
+     */
+    'Ribbon';
 
+/**
+ * Defines the various ribbon layout modes available.
+ */
+export type RibbonLayoutType =
+    /**
+     * Represents the classic ribbon layout mode, offering a traditional interface.
+     */
+    'Classic' |
+    /**
+     * Represents a simplified ribbon layout mode, providing a more streamlined interface.
+     */
+    'Simplified';
 
 
 /**
@@ -2758,3 +2782,24 @@ export const CONTROL_CHARACTERS: any = {
     'Field_Separator': '\u0017',
     'Section_Break': '\u0018'
 };
+
+/**
+ * Type representing standard file menu operations
+ */
+export type FileMenuItemType =
+    /**
+     * New file operation.
+     */
+    'New' |
+    /**
+     * Open file operation.
+     */
+    'Open' |
+    /**
+     * Export file operation.
+     */
+    'Export' |
+    /**
+     * Print file operation.
+     */
+    'Print';

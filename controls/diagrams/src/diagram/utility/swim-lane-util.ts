@@ -6,7 +6,7 @@ import { GridPanel, GridCell, GridRow, RowDefinition, ColumnDefinition } from '.
 import { Lane, Phase } from '../objects/node';
 import { DiagramAction, NodeConstraints, DiagramConstraints, DiagramEvent, ElementAction } from '../enum/enum';
 import { cloneObject, randomId } from './../utility/base-util';
-import { Container } from '../core/containers/container';
+import { GroupableView } from '../core/containers/container';
 import { DiagramElement } from '../core/elements/diagram-element';
 import { TextElement } from '../core/elements/text-element';
 import { Size } from '../primitives/size';
@@ -81,7 +81,7 @@ export function initSwimLane(grid: GridPanel, diagram: Diagram, node: NodeModel)
 /**
  * addObjectToGrid method \
  *
- * @returns {Container} addObjectToGrid method .\
+ * @returns {GroupableView} addObjectToGrid method .\
  * @param { Diagram} diagram - provide the diagram  value.
  * @param { GridPanel} grid - provide the grid  value.
  * @param {NodeModel} parent - provide the parent  value.
@@ -94,7 +94,7 @@ export function initSwimLane(grid: GridPanel, diagram: Diagram, node: NodeModel)
  */
 export function addObjectToGrid(
     diagram: Diagram, grid: GridPanel, parent: NodeModel, object: NodeModel,
-    isHeader?: boolean, isPhase?: boolean, isLane?: boolean, canvas?: string): Container {
+    isHeader?: boolean, isPhase?: boolean, isLane?: boolean, canvas?: string): GroupableView {
 
     const node: Node = new Node(diagram, 'nodes', object, true);
     node.parentId = parent.id;
@@ -158,7 +158,7 @@ export function headerDefine(grid: GridPanel, diagram: Diagram, object: NodeMode
     if (!canSelect(object)) {
         node.constraints &= ~NodeConstraints.Select;
     }
-    const wrapper: Container = addObjectToGrid(diagram, grid, object, node, true);
+    const wrapper: GroupableView = addObjectToGrid(diagram, grid, object, node, true);
     grid.addObject(wrapper, 0, 0, 1, grid.columnDefinitions().length);
 }
 
@@ -194,12 +194,13 @@ export function phaseDefine(
         rowIndex: rowValue, columnIndex: colValue,
         container: { type: 'Canvas', orientation: orientation ? 'Horizontal' : 'Vertical' }
     };
+    phaseObject[shape.orientation === 'Horizontal' ? 'height' : 'width'] = shape.phaseSize;
     phaseObject.annotations[0].rotateAngle = orientation ? 0 : 270;
     if (!canSelect(object)) {
         phaseObject.constraints &= ~NodeConstraints.Select;
     }
     shape.phases[parseInt(phaseIndex.toString(), 10)].header.id = phaseObject.id;
-    const wrapper: Container = addObjectToGrid(
+    const wrapper: GroupableView = addObjectToGrid(
         diagram, grid, object, phaseObject, false, true, false, shape.phases[parseInt(phaseIndex.toString(), 10)].id);
     grid.addObject(wrapper, rowValue, colValue);
 }
@@ -218,7 +219,8 @@ export function phaseDefine(
  */
 export function laneCollection(
     grid: GridPanel, diagram: Diagram, object: NodeModel, indexValue: number, laneIndex: number, orientation: boolean): void {
-    let laneNode: NodeModel; let parentWrapper: Container; let gridCell: GridCell; let canvas: NodeModel; let childWrapper: Container;
+    let laneNode: NodeModel; let parentWrapper: GroupableView;
+    let gridCell: GridCell; let canvas: NodeModel; let childWrapper: GroupableView;
     const shape: SwimLaneModel = object.shape as SwimLaneModel;
     const value: number = shape.phases.length || 1;
     const isHeader: number = (shape.header && (shape as SwimLane).hasHeader) ? 1 : 0;
@@ -424,16 +426,16 @@ export function initGridColumns(columns: ColumnDefinition[], orientation: boolea
  * @private
  */
 export function getConnectors(diagram: Diagram, grid: GridPanel, rowIndex: number, isRowUpdate: boolean): string[] {
-    const connectors: string[] = []; let conn: number = 0; let childNode: Container; let node: Node;
-    let k: number; let i: number; let j: number; let canvas: Container; let row: GridRow;
+    const connectors: string[] = []; let conn: number = 0; let childNode: GroupableView; let node: Node;
+    let k: number; let i: number; let j: number; let canvas: GroupableView; let row: GridRow;
     const length: number = grid.rowDefinitions().length; let edges: string[];
     for (let i: number = 0; i < length; i++) {
         row = grid.rows[parseInt(i.toString(), 10)];
         for (j = 0; j < row.cells.length; j++) {
-            canvas = row.cells[parseInt(j.toString(), 10)].children[0] as Container;
+            canvas = row.cells[parseInt(j.toString(), 10)].children[0] as GroupableView;
             if (canvas && canvas.children && canvas.children.length) {
                 for (k = 1; k < canvas.children.length; k++) {
-                    childNode = canvas.children[parseInt(k.toString(), 10)] as Container;
+                    childNode = canvas.children[parseInt(k.toString(), 10)] as GroupableView;
                     node = diagram.getObject(childNode.id) as Node;
                     if (node && ((node as Node).inEdges.length > 0 || (node as Node).outEdges.length > 0)) {
                         edges = (node as Node).inEdges.concat((node as Node).outEdges);
@@ -458,7 +460,7 @@ export function getConnectors(diagram: Diagram, grid: GridPanel, rowIndex: numbe
  * @private
  */
 export function swimLaneMeasureAndArrange(obj: NodeModel): void {
-    const canvas: Container = obj.wrapper;
+    const canvas: GroupableView = obj.wrapper;
     canvas.measure(new Size(obj.width, obj.height));
     if (canvas.children[0] instanceof GridPanel) {
         const grid: GridPanel = canvas.children[0] as GridPanel; let isMeasure: boolean = false;
@@ -525,7 +527,7 @@ export function arrangeChildNodesInSwimLane(diagram: Diagram, obj: NodeModel): v
     const lanes: LaneModel[] = shape.lanes; let top: number = grid.bounds.y;
     let rowvalue: number; let columnValue: number;
     const phaseCount: number = (shape.phaseSize > 0) ? shape.phases.length : 0;
-    let node: NodeModel; let canvas: Container; let cell: GridCell;
+    let node: NodeModel; let canvas: GroupableView; let cell: GridCell;
     let i: number; let j: number; let k: number;
     const orientation: boolean = shape.orientation === 'Horizontal' ? true : false;
     const col: number = orientation ? shape.phases.length || 1 : lanes.length + 1;
@@ -611,12 +613,12 @@ export function arrangeChildNodesInSwimLane(diagram: Diagram, obj: NodeModel): v
  * addChildToLane method \
  *
  * @returns {void} addChildToLane method .\
- * @param {Container} canvas - provide the row  value.
+ * @param {GroupableView} canvas - provide the row  value.
  * @param {NodeModel} node - provide the row  value.
  * @param {Diagram} diagram - provide the row  value.
  * @private
  */
-function addChildToLane(canvas: Container, node: NodeModel, diagram: Diagram): void {
+function addChildToLane(canvas: GroupableView, node: NodeModel, diagram: Diagram): void {
     canvas.measure(new Size(node.width, node.height));
     canvas.arrange(canvas.desiredSize);
     const parent: NodeModel = diagram.getObject((node as Node).parentId);
@@ -1524,7 +1526,10 @@ function addSwimlanePhases(
     } else {
         x = grid.bounds.x; y = nextCell.bounds.y;
     }
-
+    if (!orientation && nextCell && nextCell.bounds) {
+        x = nextCell.bounds.x;
+        y = nextCell.bounds.y;
+    }
     const rect: Rect = new Rect(x, y, width, height);
     // Bug-908135: Redoing the undoed phase collection followed by node collection threw exception.
     const tempRowIndex: number = (node.shape as SwimLane).hasHeader ? rowIndex - 1 : rowIndex;
@@ -1560,7 +1565,7 @@ function addSwimlanePhases(
             phase.laneGrids.push(canvas.id);
         }
     }
-    const parentWrapper: Container = addObjectToGrid(diagram, grid, node, canvas, false, false, true);
+    const parentWrapper: GroupableView = addObjectToGrid(diagram, grid, node, canvas, false, false, true);
     parentWrapper.children[0].isCalculateDesiredSize = false;
     grid.addObject(parentWrapper, rowIndex, columnIndex);
 
@@ -1584,31 +1589,31 @@ function addSwimlanePhases(
  * @param {GridCell} nextCell - provide the nextCell  value.
  * @param {GridPanel} gridCell - provide the gridCell  value.
  * @param {Rect} rect - provide the rect  value.
- * @param {Container} parentWrapper - provide the parentWrapper  value.
+ * @param {GroupableView} parentWrapper - provide the parentWrapper  value.
  * @param {boolean} orientation - provide the orientation  value.
  * @param {GridCell} prevCell - provide the prevCell  value.
  * @private
  */
 export function arrangeChildInGrid(
     diagram: Diagram, nextCell: GridCell, gridCell: GridCell,
-    rect: Rect, parentWrapper: Container, orientation: boolean, prevCell?: GridCell): void {
+    rect: Rect, parentWrapper: GroupableView, orientation: boolean, prevCell?: GridCell): void {
 
-    let child: Container; let point: PointModel; let childNode: NodeModel;
+    let child: GroupableView; let point: PointModel; let childNode: NodeModel;
     const parent: NodeModel = diagram.nameTable[parentWrapper.id];
     const changeCell: GridCell = (!nextCell) ? prevCell : nextCell;
     const swimLane: NodeModel = diagram.nameTable[(parent as Node).parentId];
     const padding: number = (swimLane.shape as SwimLane).padding;
 
-    if (changeCell.children && (changeCell.children[0] as Container).children.length > 1) {
-        for (let j: number = 1; j < (changeCell.children[0] as Container).children.length; j++) {
-            child = (changeCell.children[0] as Container).children[parseInt(j.toString(), 10)] as Container;
+    if (changeCell.children && (changeCell.children[0] as GroupableView).children.length > 1) {
+        for (let j: number = 1; j < (changeCell.children[0] as GroupableView).children.length; j++) {
+            child = (changeCell.children[0] as GroupableView).children[parseInt(j.toString(), 10)] as GroupableView;
             childNode = diagram.nameTable[child.id] as NodeModel;
             point = (orientation) ? { x: child.bounds.x, y: child.bounds.center.y } :
                 { x: child.bounds.center.x, y: child.bounds.top };
 
             if (rect.containsPoint(point)) {
-                (gridCell.children[0] as Container).children.push(child);
-                (changeCell.children[0] as Container).children.splice(j, 1);
+                (gridCell.children[0] as GroupableView).children.push(child);
+                (changeCell.children[0] as GroupableView).children.splice(j, 1);
                 j--;
                 diagram.deleteChild(childNode, undefined, true);
                 if (!(childNode as Node).isLane) {
@@ -1658,7 +1663,7 @@ export function swimLaneSelection(diagram: Diagram, node: NodeModel, corner: str
 
         const shape: SwimLaneModel = node.shape as SwimLaneModel;
         const wrapper: GridPanel = node.wrapper.children[0] as GridPanel;
-        let child: Container; let index: number;
+        let child: GroupableView; let index: number;
 
         if (corner === 'ResizeSouth') {
             if (shape.orientation === 'Vertical') {
@@ -1789,6 +1794,8 @@ export function pasteSwimLane(
                     }
                     connector.zIndex = Number.MIN_VALUE;
                     diagram.add(connector);
+                    // 943601 : copy,paste -swimlane connector disappered
+                    (connector as any).parentSwimlaneId += ranId;
                 } else if (childNodeIds.indexOf(connector.sourceID) !== -1) {
                     connector.sourceID += ranId;
                 } else if (childNodeIds.indexOf(connector.targetID) !== -1) {
@@ -1824,7 +1831,7 @@ export function gridSelection(diagram: Diagram, selectorModel: SelectorModel, id
             swimLaneId = (diagram.nameTable[`${id}`].parentId);
             targetnode = node = diagram.nameTable[`${id}`];
         }
-        const wrapper: Container = !id ? node.wrapper : targetnode.wrapper;
+        const wrapper: GroupableView = !id ? node.wrapper : targetnode.wrapper;
         const parentNode: NodeModel = diagram.nameTable[swimLaneId || (node as Node).parentId];
         if (parentNode && parentNode.container.type === 'Grid') {
             canvas = new Canvas(); canvas.children = [];
@@ -1897,7 +1904,7 @@ export function removeLaneChildNode(
  * @private
  */
 export function getGridChildren(obj: DiagramElement): DiagramElement {
-    const children: DiagramElement = (obj as Container).children[0];
+    const children: DiagramElement = (obj as GroupableView).children[0];
     return children;
 }
 
@@ -1913,13 +1920,13 @@ export function removeSwimLane(diagram: Diagram, obj: NodeModel): void {
     const rows: GridRow[] = (obj.wrapper.children[0] as GridPanel).rows;
     //let preventHistory: boolean = false;
     let node: NodeModel;
-    let i: number; let j: number; let k: number; let child: Container; let removeNode: Node;
+    let i: number; let j: number; let k: number; let child: GroupableView; let removeNode: Node;
     for (i = 0; i < rows.length; i++) {
         for (j = 0; j < rows[parseInt(i.toString(), 10)].cells.length; j++) {
-            child = getGridChildren(rows[parseInt(i.toString(), 10)].cells[parseInt(j.toString(), 10)]) as Container;
+            child = getGridChildren(rows[parseInt(i.toString(), 10)].cells[parseInt(j.toString(), 10)]) as GroupableView;
             if (child && child.children) {
                 for (k = child.children.length - 1; k >= 0; k--) {
-                    if ((child.children[parseInt(k.toString(), 10)] as Container).children) {
+                    if ((child.children[parseInt(k.toString(), 10)] as GroupableView).children) {
                         removeNode = diagram.nameTable[child.children[parseInt(k.toString(), 10)].id];
                         if (removeNode) {
                             if (removeNode.isLane) {
@@ -2266,7 +2273,8 @@ export function removeVerticalPhase(diagram: Diagram, grid: GridPanel, phase: No
     let i: number; let j: number; let k: number;
     let prevCell: GridCell; let prevChild: Canvas;
     const shape: SwimLaneModel = swimLane.shape as SwimLaneModel; let child: Canvas; let object: Node;
-    const phaseRowIndex: number = (phaseIndex !== undefined) ? ((shape.header) ? phaseIndex + 1 : phaseIndex) : phase.rowIndex;
+    const phaseRowIndex: number = (phaseIndex !== undefined) ? (((shape as SwimLane).hasHeader && shape.header) ? phaseIndex + 1 :
+        phaseIndex) : phase.rowIndex;
     const row: GridRow = grid.rows[parseInt(phaseRowIndex.toString(), 10)];
     let top: number = swimLane.wrapper.bounds.y;
     const phaseCount: number = shape.phases.length;

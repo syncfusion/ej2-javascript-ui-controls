@@ -1252,4 +1252,109 @@ describe('context menu module', () => {
             gridObj = null;
         });
     });
+
+    describe('EJ2-954043-Need to add event for context menu and column menu closing.', () => {
+        let gridObj: Grid;
+        beforeAll((done: Function) => {
+            gridObj = createGrid({
+                dataSource: data,
+                allowExcelExport: true,
+                allowPdfExport: true,
+                allowSorting: true,
+                allowPaging: true,
+                contextMenuItems: ['SortAscending', 'SortDescending', 'Copy'],
+                columns: [
+                    { field: 'OrderID', headerText: 'Order ID', width: 120, textAlign: 'Right', isPrimaryKey: true },
+                    { field: 'CustomerName', headerText: 'Customer Name', width: 160 },
+                    { field: 'Freight', format: 'C2', textAlign: 'Right', width: 120, editType: 'numericedit' },
+                    { field: 'ShipName', headerText: 'Ship Name', width: 200 },
+                    { field: 'ShipCountry', headerText: 'Ship Country', width: 150, editType: 'dropdownedit' },
+                ]
+            }, done);
+        });
+
+        it('Open the context menu', (done: Function) => {
+            gridObj.contextMenuOpen = function (args: ContextMenuOpenEventArgs) {
+                expect(args.column).not.toBe(null);
+                gridObj.contextMenuOpen = null;
+                done();
+            }
+            let eventArgs = { target: gridObj.getHeaderTable().querySelector('th') };
+            let e = {
+                event: eventArgs,
+                items: gridObj.contextMenuModule.contextMenu.items,
+                parentItem: document.querySelector('tr.edoas')
+            };
+            (gridObj.contextMenuModule as any).contextMenuBeforeOpen(e);
+        });
+
+        it('Close the context menu', (done: Function) => {
+            gridObj.contextMenuClose = function(args: ContextMenuOpenEventArgs) {
+                args.cancel = true;
+                done();
+            }
+            gridObj.getContent().querySelectorAll('tr')[0].querySelector('td').click();
+        });
+
+        it('Coverage the case', (done: Function) => {
+            expect((gridObj.contextMenuModule as any).contextMenu.isMenuVisible()).toBeTruthy();
+            done();
+        });
+
+        afterAll(() => {
+            destroy(gridObj);
+            gridObj = null;
+        });
+    });
+
+    describe('Chart feature code coverage', () => {
+        let gridObj: Grid;
+        beforeAll((done: Function) => {
+            gridObj = createGrid({
+                dataSource: data,
+                allowPaging: true,
+                selectionSettings: { type: 'Multiple' },
+                contextMenuItems: [
+                    'Bar', 'StackingBar', 'StackingBar100',
+                    'Pie',
+                    'Column', 'StackingColumn', 'StackingColumn100',
+                    'Line', 'StackingLine', 'StackingLine100',
+                    'Area', 'StackingArea', 'StackingArea100',
+                    'Scatter'
+                ],
+                columns: [
+                    { field: 'OrderID', headerText: 'Order ID', width: 120, textAlign: 'Right', isPrimaryKey: true },
+                    { field: 'CustomerName', headerText: 'Customer Name', width: 160 },
+                    { field: 'Freight', format: 'C2', textAlign: 'Right', width: 120, editType: 'numericedit' },
+                    { field: 'ShipName', headerText: 'Ship Name', width: 200 },
+                    { field: 'ShipCountry', headerText: 'Ship Country', width: 150, editType: 'dropdownedit' },
+                ]
+            }, done);
+        });
+
+        it('Open the context menu', (done: Function) => {
+            gridObj.selectRowsByRange(0, 2);
+            expect(gridObj.getContent().querySelectorAll('tr[aria-selected=true]').length).toBe(3);
+            let eventArgs = { target: gridObj.getContent().querySelector('tr').querySelector('td') };
+            let e = {
+                event: eventArgs,
+                items: gridObj.contextMenuModule.contextMenu.items
+            };
+            (gridObj.contextMenuModule as any).contextMenuBeforeOpen(e);
+            expect(gridObj.getContent().querySelectorAll('tr[aria-selected=true]').length).toBe(3);
+            (gridObj.contextMenuModule as any).contextMenuOpen();
+            done();
+        });
+
+        it('Click the context menu', (done: Function) => {
+            let bar: any = (gridObj.contextMenuModule as any).defaultItems['Bar'];
+            (gridObj.contextMenuModule as any).contextMenuItemClick({ item: bar });
+            done();
+        });
+
+        afterAll(() => {
+            destroy(gridObj);
+            gridObj = null;
+        });
+    });
 });

@@ -18,7 +18,7 @@ describe('Document editor setting Properties', () => {
         documenteditor.destroy();
         document.body.removeChild(document.getElementById('container'));
         documenteditor = undefined;
-        document.body.innerHTML = '';
+        
         setTimeout(function () {
             done();
         }, 1000);
@@ -59,7 +59,7 @@ describe("checkModuleInjection", function() {
         documenteditor.destroy();
         document.body.removeChild(document.getElementById('container'));
         documenteditor = undefined;
-        document.body.innerHTML = '';
+        
         setTimeout(function () {
             done();
         }, 1000);
@@ -101,7 +101,7 @@ describe("checkModuleInjection", function() {
             documenteditor.destroy();
             document.body.removeChild(document.getElementById('container'));
             documenteditor = undefined;
-            document.body.innerHTML = '';
+            
             setTimeout(function () {
                 done();
             }, 1000);
@@ -140,7 +140,7 @@ describe("checkModuleInjection", function() {
             documenteditor.destroy();
             document.body.removeChild(document.getElementById('container'));
             documenteditor = undefined;
-            document.body.innerHTML = '';
+            
             setTimeout(function () {
                 done();
             }, 1000);
@@ -220,7 +220,7 @@ describe('ContentControl Lock', () => {
         documenteditor.destroy();
         document.body.removeChild(document.getElementById('container'));
         documenteditor = undefined;
-        document.body.innerHTML = '';
+        
         setTimeout(function () {
             done();
         }, 1000);

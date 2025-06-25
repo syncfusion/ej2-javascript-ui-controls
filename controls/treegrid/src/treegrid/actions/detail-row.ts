@@ -57,12 +57,12 @@ export class DetailRow {
     }
 
     private dataBoundArg(): void {
-        const detailele: HTMLTableRowElement[] = this.parent.getRows().filter((e: HTMLTableRowElement) => {
+        const detailRows: HTMLTableRowElement[] = this.parent.getRows().filter((e: HTMLTableRowElement) => {
             return !e.classList.contains('e-detailrow');
         });
-        for (let i: number = 0; i < detailele.length; i++) {
-            const elements: Object = detailele[parseInt(i.toString(), 10)].getElementsByClassName('e-detailrowcollapse');
-            const detailData: Row<Object> = this.parent.grid.getRowObjectFromUID(detailele[parseInt(i.toString(), 10)].getAttribute('data-Uid'));
+        for (let i: number = 0; i < detailRows.length; i++) {
+            const elements: Object = detailRows[parseInt(i.toString(), 10)].getElementsByClassName('e-detailrowcollapse');
+            const detailData: Row<Object> = this.parent.grid.getRowObjectFromUID(detailRows[parseInt(i.toString(), 10)].getAttribute('data-Uid'));
             const parentItem: Object = getObject('parentItem', this.parent.grid.getCurrentViewRecords()[parseInt(i.toString(), 10)]);
             if (isNullOrUndefined(parentItem) || !isNullOrUndefined(parentItem) &&
         getExpandStatus(this.parent, detailData.data, this.parent.grid.getCurrentViewRecords())) {
@@ -100,10 +100,9 @@ export class DetailRow {
 
     private actioncomplete(args: CellSaveEventArgs): void {
         if (args.requestType === 'beginEdit' || args.requestType === 'add') {
-            const spann: string = ((args.row as HTMLElement).querySelectorAll('.e-editcell')[0].getAttribute('colSpan'));
-            const colum: number = parseInt(spann, 10) - 1;
-            const updtdcolum: string = colum.toString();
-            (args.row as HTMLElement).querySelectorAll('.e-editcell')[0].setAttribute('colSpan', updtdcolum);
+            const colSpan: string = ((args.row as HTMLElement).querySelectorAll('.e-editcell')[0].getAttribute('colSpan'));
+            const colum: number = parseInt(colSpan, 10) - 1;
+            (args.row as HTMLElement).querySelectorAll('.e-editcell')[0].setAttribute('colSpan', colum.toString());
         }
         const focusElement: Row<Object>[] | HTMLCollectionOf<HTMLTableRowElement> = this.parent.grid.contentModule.getRows();
         for (let i: number = 0; i < focusElement.length; i++) {

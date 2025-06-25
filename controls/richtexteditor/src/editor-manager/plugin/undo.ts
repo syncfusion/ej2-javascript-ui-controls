@@ -1,12 +1,12 @@
-import { debounce, isNullOrUndefined, detach } from '@syncfusion/ej2-base';
+import { debounce, isNullOrUndefined, detach, KeyboardEventArgs, removeClass } from '@syncfusion/ej2-base';
 import { EditorManager } from './../base/editor-manager';
 import { IHtmlSubCommands, IHtmlUndoRedoData } from './../base/interface';
 import { NodeSelection } from './../../selection/selection';
 import { IHtmlKeyboardEvent } from './../../editor-manager/base/interface';
-import { KeyboardEventArgs } from './../../rich-text-editor/actions/keyboard';
 import * as EVENTS from './../../common/constant';
 import { IUndoCallBack } from '../../common/interface';
 import { isIDevice, scrollToCursor, setEditFrameFocus } from '../../common/util';
+import { CLS_AUD_FOCUS, CLS_VID_FOCUS } from './../../common/constant';
 /**
  * `Undo` module is used to handle undo actions.
  */
@@ -155,16 +155,16 @@ export class UndoRedoManager {
         let range: Range = new NodeSelection(this.parent.editableElement as HTMLElement).getRange(this.parent.currentDocument);
         const currentContainer: Node = this.parent.editableElement === range.startContainer.parentElement ?
             range.startContainer.parentElement : range.startContainer;
-        for (let i: number = currentContainer.childNodes.length - 1 ; i >= 0; i--) {
+        for (let i: number = currentContainer.childNodes.length - 1; i >= 0; i--) {
             if (!isNullOrUndefined(currentContainer.childNodes[i as number]) && currentContainer.childNodes[i as number].nodeName === '#text' &&
-            currentContainer.childNodes[i as number].textContent.length === 0 && currentContainer.childNodes[i as number].nodeName !== 'IMG' &&
-            currentContainer.childNodes[i as number].nodeName !== 'BR' && currentContainer.childNodes[i as number].nodeName && 'HR') {
+                currentContainer.childNodes[i as number].textContent.length === 0 && currentContainer.childNodes[i as number].nodeName !== 'IMG' &&
+                currentContainer.childNodes[i as number].nodeName !== 'BR' && currentContainer.childNodes[i as number].nodeName && 'HR') {
                 detach(currentContainer.childNodes[i as number]);
             }
         }
         range = new NodeSelection(this.parent.editableElement as HTMLElement).getRange(this.parent.currentDocument);
         const save: NodeSelection = new NodeSelection(this.parent.editableElement as HTMLElement).save(range, this.parent.currentDocument);
-        const clonedElement: HTMLElement = this.parent.editableElement.cloneNode(true) as HTMLElement;
+        const clonedElement: HTMLElement = this.removeResizeElement(this.parent.editableElement.cloneNode(true) as HTMLElement);
         const fragment: DocumentFragment = document.createDocumentFragment();
         while (clonedElement.firstChild) {
             fragment.appendChild(clonedElement.firstChild);
@@ -178,7 +178,7 @@ export class UndoRedoManager {
             (this.undoRedoStack[this.undoRedoStack.length - 1].range.endOffset === save.range.endOffset) &&
             (this.undoRedoStack[this.undoRedoStack.length - 1].range.range.startContainer === save.range.startContainer) &&
             (this.getTextContentFromFragment(this.undoRedoStack[this.undoRedoStack.length - 1].text).trim() ===
-            this.getTextContentFromFragment(changEle.text as DocumentFragment).trim()) &&
+                this.getTextContentFromFragment(changEle.text as DocumentFragment).trim()) &&
             this.isElementStructureEqual(this.undoRedoStack[this.undoRedoStack.length - 1].text, changEle.text as DocumentFragment)) {
             return;
         }
@@ -191,6 +191,48 @@ export class UndoRedoManager {
         if (e && (e as IHtmlKeyboardEvent).callBack) {
             (e as IHtmlKeyboardEvent).callBack();
         }
+    }
+    /*
+    * Cleans up an HTML element by removing all resize handles and visual focus indicators
+    * related to video, image, and audio editing UI.
+    *
+    * - Removes the DOM elements used for resizing videos and images.
+    * - Clears visual focus classes and outline styles added for video, image, and audio elements.
+    */
+    private removeResizeElement(element: HTMLElement): HTMLElement {
+        // Remove video resize element
+        const videoResize: HTMLElement = element.querySelector('.e-vid-resize');
+        if (videoResize) {
+            detach(videoResize);
+        }
+        // Remove video focus class
+        const videoFocus: HTMLElement = element.querySelector(`.${CLS_VID_FOCUS}`);
+        if (videoFocus) {
+            removeClass([videoFocus], [CLS_VID_FOCUS, 'e-resize']);
+        }
+        // Remove image resize element
+        const imageResize: HTMLElement = element.querySelector('.e-img-resize');
+        if (imageResize) {
+            detach(imageResize);
+        }
+        // Remove focus/resize classes from all images
+        const images: NodeListOf<HTMLElement> = element.querySelectorAll('img');
+        for (let i: number = 0; i < images.length; i++) {
+            const img: HTMLElement = images[i as number];
+            removeClass([img], ['e-img-focus', 'e-resize']);
+        }
+        // Remove audio focus class
+        const audioFocus: HTMLElement = element.querySelector(`.${CLS_AUD_FOCUS}`);
+        if (audioFocus) {
+            removeClass([audioFocus], [CLS_AUD_FOCUS]);
+        }
+        // Remove outline from images, audio, and video elements
+        const outlineElements: NodeListOf<HTMLElement> = element.querySelectorAll('img, audio, video');
+        for (let i: number = 0; i < outlineElements.length; i++) {
+            const outlineElem: HTMLElement = outlineElements[i as number];
+            outlineElem.style.outline = '';
+        }
+        return element;
     }
     /**
      * Undo the editable text.
@@ -278,5 +320,17 @@ export class UndoRedoManager {
     }
     public getCurrentStackIndex(): number {
         return this.steps;
+    }
+
+
+    /**
+     * Clears the undo and redo stacks and reset the steps to null..
+     *
+     * @returns {void}
+     * @public
+     */
+    public clear(): void {
+        this.undoRedoStack = [];
+        this.steps = null;
     }
 }

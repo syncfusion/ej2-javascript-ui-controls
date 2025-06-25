@@ -282,6 +282,7 @@ describe('PivotView spec', () => {
                     allowExcelExport: true,
                     allowConditionalFormatting: true,
                     allowPdfExport: true,
+                    cssClass: 'test-class',
                     showGroupingBar: true,
                     enableVirtualization: false,
                     showFieldList: false,
@@ -2207,7 +2208,7 @@ describe('PivotView spec', () => {
             });
             it(' - Checking the pivot buttons', function (done) {
                 setTimeout(function () {
-                    expect(pivotGridObj.pivotValues.length === 0).toBeTruthy();
+                    expect(pivotGridObj.pivotValues.length === 6).toBeTruthy();
                     done();
                 }, 3000);
             });
@@ -2526,6 +2527,7 @@ describe('PivotView spec', () => {
             ]
           },
           showGroupingBar: true,
+          enableHtmlSanitizer: true,
           height: 500,
           width: 1000,
           dataBound: dataBound,

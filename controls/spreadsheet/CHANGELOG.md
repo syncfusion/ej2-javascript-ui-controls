@@ -2,46 +2,17 @@
 
 ## [Unreleased]
 
-## 29.2.8 (2025-06-03)
+## 30.1.37 (2025-06-25)
 
 ### Spreadsheet
 
-#### Bug fixes
+#### Features
 
-- `#I714036` - Issue with "custom data validation formula containing double quotes with cell reference is altered unexpectedly" has been resolved.
-
-## 29.1.41 (2025-05-06)
-
-### Spreadsheet
+- **Improved Excel import performance:** Added support to skip styles and formats during Excel file import using the server-side library. This optimization reduces the generated JSON size and significantly improves rendering speed, especially for large or style-heavy Excel files.
 
 #### Bug fixes
 
-- `#I714036` - Issue with "custom data validation formula is not retained as entered when the formula contains `?`" has been resolved.
-- `#I709078` - Issue with "double quotes not parsed correctly in nested formulas using & for string concatenation" has been resolved.
-
-## 29.1.39 (2025-04-22)
-
-### Spreadsheet
-
-#### Bug fixes
-
-- `#I700006` - Issue with "image left position changes when switching between sheets after importing" has been resolved.
-
-## 29.1.37 (2025-04-08)
-
-### Spreadsheet
-
-#### Bug fixes
-
-- `#I700006` - Issue with "images missing or being misplaced when importing an Excel file into the Spreadsheet" has been resolved.
-
-## 29.1.35 (2025-04-01)
-
-### Spreadsheet
-
-#### Bug fixes
-
-- `#I696599` - Issue with "spreadsheet becomes unresponsive when switching to a sheet with table-referenced formulas" has been resolved.
+- `#I733762` - Issue with "`IF` formula with string values being mistakenly considered as date values and returning the wrong result" has been resolved.
 
 ## 29.1.33 (2025-03-25)
 

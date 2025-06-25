@@ -64,7 +64,6 @@ export class Mention extends DropDownBase {
     private isUpDownKey: boolean;
     private isRTE: boolean;
     private keyEventName: string;
-    protected debounceTimer: ReturnType<typeof setTimeout> | null = null;
 
     // Mention Options
 
@@ -727,12 +726,16 @@ export class Mention extends DropDownBase {
         const isValid: boolean = currentRange && mentionRegex.test(currentRange) ? false : true;
         let lastWordRange: string = this.getLastLetter(currentRange);
         const previousChar: string = currentRange ? currentRange.charAt(Math.max(0, currentRange.indexOf(this.mentionChar) - 1)) : '';
-        if (isValid && this.allowSpaces && currentRange && (currentRange as any).includes(this.mentionChar) && (currentRange as any).split(this.mentionChar).pop() !== ''
-         && (!this.requireLeadingSpace || (this.requireLeadingSpace && (previousChar === ' ' || (currentRange as any).indexOf(this.mentionChar) === 0)))) {
-            lastWordRange = this.mentionChar + (currentRange as any).split(this.mentionChar).pop();
-        }
-        if (!this.requireLeadingSpace && lastWordRange && (lastWordRange as any).includes(this.mentionChar)) {
-            lastWordRange = this.mentionChar + lastWordRange.split(this.mentionChar).pop();
+        if (!this.allowSpaces) {
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+            if (isValid && currentRange && (currentRange as any).includes(this.mentionChar) && (currentRange as string).split(this.mentionChar).pop() !== ''
+             && (!this.requireLeadingSpace || (this.requireLeadingSpace && (previousChar === ' ' || (currentRange as string).indexOf(this.mentionChar) === 0)))) {
+                lastWordRange = this.mentionChar + (currentRange as string).split(this.mentionChar).pop();
+            }
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+            if (!this.requireLeadingSpace && lastWordRange && (lastWordRange as any).includes(this.mentionChar)) {
+                lastWordRange = this.mentionChar + lastWordRange.split(this.mentionChar).pop();
+            }
         }
         const lastTwoLetters: string = this.mentionChar.toString() + this.mentionChar.toString();
         // eslint-disable-next-line security/detect-non-literal-regexp
@@ -743,7 +746,8 @@ export class Mention extends DropDownBase {
             this.hidePopup();
             return;
         }
-        if (((!currentRange || !lastWordRange) || (!(lastWordRange as any).includes(this.mentionChar) && !this.requireLeadingSpace)) || e.code === 'Enter' || e.keyCode === 27 ||
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        if (((!currentRange || !lastWordRange) || (!(lastWordRange as any).includes(this.mentionChar) && !this.requireLeadingSpace && !this.allowSpaces)) || e.code === 'Enter' || e.keyCode === 27 ||
             (lastWordRange.match(Regex) && lastWordRange.match(Regex).length > 1) ||
             (this.isContentEditable(this.inputElement) && this.range.startContainer &&
             (this.range.startContainer as HTMLElement).previousElementSibling && (this.range.startContainer as HTMLElement).previousElementSibling.tagName !== 'BR' && this.range.startContainer.textContent.split('').length > 0 &&

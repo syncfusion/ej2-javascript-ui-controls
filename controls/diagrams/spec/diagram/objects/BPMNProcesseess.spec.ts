@@ -1528,5 +1528,93 @@ describe('Diagram Control', () => {
 
 
     });
+    describe('BPMN processes ', () => {
+        let diagram: Diagram;
+        let ele: HTMLElement;
+        let mouseEvents: MouseEvents = new MouseEvents();
+        let undoOffsetX: number; let undoOffsetY: number;
+        beforeAll((): void => {
+            const isDef = (o: any) => o !== undefined && o !== null;
+            if (!isDef(window.performance)) {
+                console.log("Unsupported environment, window.performance.memory is unavailable");
+                this.skip(); //Skips test (in Chai)
+                return;
+            }
+            ele = createElement('div', { id: 'diagram' });
+            document.body.appendChild(ele);
+            let nod: NodeModel = {
+                id: 'nod', width: 100, height: 100, offsetX: 300, offsetY: 300,
+                constraints: NodeConstraints.Default | NodeConstraints.AllowDrop,
 
+                shape: {
+                    type: 'Bpmn', shape: 'Activity', activity: {
+                        activity: 'SubProcess',
+                        subProcess: { collapsed: false } as BpmnSubProcessModel
+                    } as BpmnActivityModel,
+                },
+            };
+            let nod1: NodeModel = {
+                id: 'nod1', width: 100, height: 100, offsetX: 300, offsetY: 300, margin: { top: 200 },
+                constraints: NodeConstraints.Default | NodeConstraints.AllowDrop,
+
+                shape: {
+                    type: 'Bpmn', shape: 'Activity', activity: {
+                        activity: 'SubProcess',
+                        subProcess: { collapsed: false } as BpmnSubProcessModel
+                    } as BpmnActivityModel,
+                },
+            };
+            let nodea: NodeModel = {
+                id: 'nodea', width: 400, height: 400, maxHeight: 600, maxWidth: 600, minWidth: 300, minHeight: 300,
+                constraints: (NodeConstraints.Default | NodeConstraints.AllowDrop) & ~NodeConstraints.Resize,
+                offsetX: 200, offsetY: 200,
+                shape: {
+                    type: 'Bpmn', shape: 'Activity', activity: {
+                        activity: 'SubProcess',
+                        subProcess: {
+                            collapsed: false, type: 'Event',
+                            processes: ['start', 'end', 'nod1', 'nod']
+                        } as BpmnSubProcessModel
+                    } as BpmnActivityModel,
+                },
+            };
+
+            let start: NodeModel = {
+                id: 'start', shape: { type: 'Bpmn', shape: 'Event' }, width: 100, height: 100,
+                margin: { left: 10, top: 50 }
+            };
+
+            let end: NodeModel = {
+                id: 'end', shape: { type: 'Bpmn', shape: 'Event', event: { event: 'End' } }, width: 100, height: 100,
+                margin: { left: 300, top: 50 }
+            };
+
+            let connector6: ConnectorModel[] = [{
+                id: 'connector6', type: 'Straight', sourceID: 'start', targetID: 'nod1'
+            },
+            {
+                id: 'connector2', type: 'Straight', sourceID: 'nod1', targetID: 'end'
+            }];
+            diagram = new Diagram({
+                width: '74%', height: '750px', nodes: [nodea, nod, nod1, start, end], connectors: connector6
+            });
+
+            diagram.appendTo('#diagram');
+        });
+
+        afterAll((): void => {
+            diagram.destroy();
+            ele.remove();
+        });
+
+        it('Disable resize constraint of subprocss and checking remove child from parent', function (done) {
+            let diagramCanvas = document.getElementById(diagram.element.id + 'content');
+            mouseEvents.clickEvent(diagramCanvas, 320, 100);
+            mouseEvents.mouseDownEvent(diagramCanvas, 404, 106);
+            mouseEvents.mouseMoveEvent(diagramCanvas, 488, 106);
+            mouseEvents.mouseUpEvent(diagramCanvas,488, 115);
+            expect(diagram.nodes.length === 5).toBe(true);
+            done();
+        });
+    });
 });

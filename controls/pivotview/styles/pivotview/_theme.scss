@@ -262,21 +262,9 @@
     }
 
     .e-sortfilterdiv {
-      .e-value-sort-icon {
+      &.e-value-sort-icon {
         float: right;
-        @if ($pivotgrid-skin == 'bootstrap4') {
-          font-size: 10px !important;
-        }
-        @if ($skin-name == 'bootstrap5') {
-          font-size: 12px !important;
-        }
-        @if ($skin-name == 'FluentUI') {
-          font-size: 14px !important;
-        }
-
-        &.e-value-sort-icon {
-          font-size: $pivotgrid-value-sort-icon-font-size !important;
-        }
+        font-size: $pivotgrid-value-sort-icon-font-size !important;
       }
 
       &:not(.e-value-sort-icon) {
@@ -511,6 +499,7 @@
     }
 
     .e-grouping-bar {
+      min-width: 400px;
       .e-right-axis-fields {
         flex: auto;
       }
@@ -531,6 +520,10 @@
 
       .e-axis-row.e-axis-row-hide {
         display: none;
+      }
+
+      .e-left-axis-fields-container {
+        display: flex;
       }
 
       .e-left-axis-fields {
@@ -851,6 +844,10 @@
         &.e-tabular-group-rows {
           padding-top: 3px !important;
           padding-left: 0px !important;
+        }
+
+        &.e-static-server-rendering {
+          display: grid;
         }
 
         .e-pvt-btn-div {

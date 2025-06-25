@@ -895,101 +895,101 @@ describe('Diagram Control', () => {
             done();
         });
     });
-});
 
-
-describe('957467 - Annotation interaction after flip', () => {
-    let diagram: Diagram;
-    let ele: HTMLElement;
-    let mouseEvents = new MouseEvents();
-    beforeAll((): void => {
-        const isDef = (o: any) => o !== undefined && o !== null;
-        if (!isDef(window.performance)) {
-            console.log("Unsupported environment, window.performance.memory is unavailable");
-            this.skip(); //Skips test (in Chai)
-            return;
-        }
-        ele = createElement('div', { id: 'diagramLabelInteractionFlip' });
-        document.body.appendChild(ele);
-        diagram = new Diagram({
-            width: '1050px', height: '800px',
-            nodes: [
-                {
-                    id: 'node1', width: 150, height: 100, offsetX: 300, offsetY: 300,
-                    flip: FlipDirection.Horizontal, flipMode: 'Label',
-                    annotations: [{
-                        content: 'node Annotation', width: 50, offset: { x: 0.2, y: 0.5 },
-                        constraints: AnnotationConstraints.Interaction
-                    }], style: { fill: 'yellow' }, shape: { type: 'Basic', shape: 'RightTriangle' }
-                }
-            ]
+    describe('957467 - Annotation interaction after flip', () => {
+        let diagram: Diagram;
+        let ele: HTMLElement;
+        let mouseEvents = new MouseEvents();
+        beforeAll((): void => {
+            const isDef = (o: any) => o !== undefined && o !== null;
+            if (!isDef(window.performance)) {
+                console.log("Unsupported environment, window.performance.memory is unavailable");
+                this.skip(); //Skips test (in Chai)
+                return;
+            }
+            ele = createElement('div', { id: 'diagramLabelInteractionFlip' });
+            document.body.appendChild(ele);
+            diagram = new Diagram({
+                width: '1050px', height: '800px',
+                nodes: [
+                    {
+                        id: 'node1', width: 150, height: 100, offsetX: 300, offsetY: 300,
+                        flip: FlipDirection.Horizontal, flipMode: 'Label',
+                        annotations: [{
+                            content: 'node Annotation', width: 50, offset: { x: 0.2, y: 0.5 },
+                            constraints: AnnotationConstraints.Interaction
+                        }], style: { fill: 'yellow' }, shape: { type: 'Basic', shape: 'RightTriangle' }
+                    }
+                ]
+            });
+            diagram.appendTo('#diagramLabelInteractionFlip');
         });
-        diagram.appendTo('#diagramLabelInteractionFlip');
+        afterAll((): void => {
+            diagram.destroy();
+            ele.remove();
+        });
+        it('Select-annotation after flip', function (done) {
+            let diagramCanvas = document.getElementById(diagram.element.id + 'content');
+            mouseEvents.mouseMoveEvent(diagramCanvas, 345, 300);
+            mouseEvents.mouseDownEvent(diagramCanvas, 345, 300);
+            mouseEvents.mouseUpEvent(diagramCanvas, 345, 300);
+            let selectedAnnotation = (diagram.selectedItems as any).annotation;
+            expect(selectedAnnotation !== undefined).toBe(true);
+            done();
+        });
+        it('Resize-annotation after flip', function (done) {
+            let diagramCanvas = document.getElementById(diagram.element.id + 'content');
+            mouseEvents.mouseMoveEvent(diagramCanvas, 345, 300);
+            mouseEvents.mouseDownEvent(diagramCanvas, 345, 300);
+            mouseEvents.mouseUpEvent(diagramCanvas, 345, 300);
+            let selectedAnnotation;
+            let resizeEastThumb = document.getElementById('resizeEast');
+            if (resizeEastThumb) {
+                let bounds: any = resizeEastThumb.getBoundingClientRect();
+                mouseEvents.mouseMoveEvent(diagramCanvas, bounds.x + bounds.width / 2, bounds.y + bounds.height / 2);
+                mouseEvents.mouseDownEvent(diagramCanvas, bounds.x + bounds.width / 2, bounds.y + bounds.height / 2);
+                mouseEvents.mouseMoveEvent(diagramCanvas, bounds.x + bounds.width / 2 + 30, bounds.y + bounds.height / 2);
+                mouseEvents.mouseUpEvent(diagramCanvas, bounds.x + bounds.width / 2 + 30, bounds.y + bounds.height / 2);
+                selectedAnnotation = (diagram.selectedItems as any).annotation;
+            }
+            expect(selectedAnnotation && selectedAnnotation.width !== 50).toBe(true);
+            done();
+        });
+        it('Rotate-annotation after flip', function (done) {
+            let diagramCanvas = document.getElementById(diagram.element.id + 'content');
+            let rotateThumb = document.getElementById('rotateThumb');
+            let selectedAnnotation;
+            if (rotateThumb) {
+                let bounds: any = rotateThumb.getBoundingClientRect();
+                mouseEvents.mouseMoveEvent(diagramCanvas, bounds.x + bounds.width / 2, bounds.y + bounds.height / 2);
+                mouseEvents.mouseDownEvent(diagramCanvas, bounds.x + bounds.width / 2, bounds.y + bounds.height / 2);
+                mouseEvents.mouseMoveEvent(diagramCanvas, bounds.x + bounds.width / 2 + 20, bounds.y + bounds.height / 2 + 20);
+                mouseEvents.mouseUpEvent(diagramCanvas, bounds.x + bounds.width / 2 + 20, bounds.y + bounds.height / 2 + 20);
+                selectedAnnotation = (diagram.selectedItems as any).annotation;
+            }
+            expect(selectedAnnotation && selectedAnnotation.rotateAngle !== 0).toBe(true);
+            done();
+        });
+        it('Drag-annotation after flip', function (done) {
+            let diagramCanvas = document.getElementById(diagram.element.id + 'content');
+            let selector = document.getElementById(diagram.element.id + '_SelectorElement');
+            let selectedAnnotation;
+            let bounds: any;
+            if (selector) {
+                bounds = selector.getBoundingClientRect();
+                mouseEvents.mouseMoveEvent(diagramCanvas, bounds.x + bounds.width / 2, bounds.y + bounds.height / 2);
+                mouseEvents.mouseDownEvent(diagramCanvas, bounds.x + bounds.width / 2, bounds.y + bounds.height / 2);
+                mouseEvents.mouseMoveEvent(diagramCanvas, bounds.x + bounds.width / 2 + 20, bounds.y + bounds.height / 2 + 20);
+                mouseEvents.mouseUpEvent(diagramCanvas, bounds.x + bounds.width / 2 + 20, bounds.y + bounds.height / 2 + 20);
+                selectedAnnotation = (diagram.selectedItems as any).annotation;
+            }
+            let curBounds: any = selector.getBoundingClientRect();
+            expect(selectedAnnotation && bounds.x < curBounds.x).toBe(true);
+            done();
+        });
     });
-    afterAll((): void => {
-        diagram.destroy();
-        ele.remove();
-    });
-    it('Select-annotation after flip', function (done) {
-        let diagramCanvas = document.getElementById(diagram.element.id + 'content');
-        mouseEvents.mouseMoveEvent(diagramCanvas, 345, 300);
-        mouseEvents.mouseDownEvent(diagramCanvas, 345, 300);
-        mouseEvents.mouseUpEvent(diagramCanvas, 345, 300);
-        let selectedAnnotation = (diagram.selectedItems as any).annotation;
-        expect(selectedAnnotation !== undefined).toBe(true);
-        done();
-    });
-    it('Resize-annotation after flip', function (done) {
-        let diagramCanvas = document.getElementById(diagram.element.id + 'content');
-        mouseEvents.mouseMoveEvent(diagramCanvas, 345, 300);
-        mouseEvents.mouseDownEvent(diagramCanvas, 345, 300);
-        mouseEvents.mouseUpEvent(diagramCanvas, 345, 300);
-        let selectedAnnotation;
-        let resizeEastThumb = document.getElementById('resizeEast');
-        if (resizeEastThumb) {
-            let bounds: any = resizeEastThumb.getBoundingClientRect();
-            mouseEvents.mouseMoveEvent(diagramCanvas, bounds.x + bounds.width / 2, bounds.y + bounds.height / 2);
-            mouseEvents.mouseDownEvent(diagramCanvas, bounds.x + bounds.width / 2, bounds.y + bounds.height / 2);
-            mouseEvents.mouseMoveEvent(diagramCanvas, bounds.x + bounds.width / 2 + 30, bounds.y + bounds.height / 2);
-            mouseEvents.mouseUpEvent(diagramCanvas, bounds.x + bounds.width / 2 + 30, bounds.y + bounds.height / 2);
-            selectedAnnotation = (diagram.selectedItems as any).annotation;
-        }
-        expect(selectedAnnotation && selectedAnnotation.width !== 50).toBe(true);
-        done();
-    });
-    it('Rotate-annotation after flip', function (done) {
-        let diagramCanvas = document.getElementById(diagram.element.id + 'content');
-        let rotateThumb = document.getElementById('rotateThumb');
-        let selectedAnnotation;
-        if (rotateThumb) {
-            let bounds: any = rotateThumb.getBoundingClientRect();
-            mouseEvents.mouseMoveEvent(diagramCanvas, bounds.x + bounds.width / 2, bounds.y + bounds.height / 2);
-            mouseEvents.mouseDownEvent(diagramCanvas, bounds.x + bounds.width / 2, bounds.y + bounds.height / 2);
-            mouseEvents.mouseMoveEvent(diagramCanvas, bounds.x + bounds.width / 2 + 20, bounds.y + bounds.height / 2 + 20);
-            mouseEvents.mouseUpEvent(diagramCanvas, bounds.x + bounds.width / 2 + 20, bounds.y + bounds.height / 2 + 20);
-            selectedAnnotation = (diagram.selectedItems as any).annotation;
-        }
-        expect(selectedAnnotation && selectedAnnotation.rotateAngle !== 0).toBe(true);
-        done();
-    });
-    it('Drag-annotation after flip', function (done) {
-        let diagramCanvas = document.getElementById(diagram.element.id + 'content');
-        let selector = document.getElementById(diagram.element.id + '_SelectorElement');
-        let selectedAnnotation;
-        let bounds: any;
-        if (selector) {
-            bounds = selector.getBoundingClientRect();
-            mouseEvents.mouseMoveEvent(diagramCanvas, bounds.x + bounds.width / 2, bounds.y + bounds.height / 2);
-            mouseEvents.mouseDownEvent(diagramCanvas, bounds.x + bounds.width / 2, bounds.y + bounds.height / 2);
-            mouseEvents.mouseMoveEvent(diagramCanvas, bounds.x + bounds.width / 2 + 20, bounds.y + bounds.height / 2 + 20);
-            mouseEvents.mouseUpEvent(diagramCanvas, bounds.x + bounds.width / 2 + 20, bounds.y + bounds.height / 2 + 20);
-            selectedAnnotation = (diagram.selectedItems as any).annotation;
-        }
-        let curBounds: any = selector.getBoundingClientRect();
-        expect(selectedAnnotation && bounds.x < curBounds.x).toBe(true);
-        done();
-    });
-     describe('958329 - Grouping nodes and a connector, then applying a flip, does not work correctly', () => {
+
+    describe('958329 - Grouping nodes and a connector, then applying a flip, does not work correctly', () => {
         let diagram: Diagram;
         let ele: HTMLElement;
         Diagram.Inject(ConnectorBridging);
@@ -1031,7 +1031,7 @@ describe('957467 - Annotation interaction after flip', () => {
                     },
                     // {id:'group',children:['node1','node2','node3','connector1','connectors2'],flip:1}
                 ],
-                connectors:  [
+                connectors: [
                     {
                         id: 'connector1',
                         type: 'Straight',
@@ -1055,41 +1055,41 @@ describe('957467 - Annotation interaction after flip', () => {
             diagram.destroy();
             ele.remove();
         });
-         it('Flipping Group with connectors Horizontally', function (done) {
-             (diagram).selectAll();
-             // Groups the selected nodes and connectors in the diagram.
-             (diagram).group();
-             const groupNode = (diagram).nodes[
-                 (diagram).nodes.length - 1
-             ];
-             groupNode.flip = FlipDirection.Horizontal;
-             diagram.dataBind();
-             let connector: ConnectorModel = diagram.connectors[0];
+        it('Flipping Group with connectors Horizontally', function (done) {
+            (diagram).selectAll();
+            // Groups the selected nodes and connectors in the diagram.
+            (diagram).group();
+            const groupNode = (diagram).nodes[
+                (diagram).nodes.length - 1
+            ];
+            groupNode.flip = FlipDirection.Horizontal;
+            diagram.dataBind();
+            let connector: ConnectorModel = diagram.connectors[0];
 
-             expect(connector.sourceID === 'node1' && connector.targetPoint.x === 50).toBe(true);
-             done();
-         });
+            expect(connector.sourceID === 'node1' && connector.targetPoint.x === 50).toBe(true);
+            done();
+        });
         it('Flipping Group with connectors Vertically', function (done) {
-             const groupNode = (diagram).nodes[
-                 (diagram).nodes.length - 1
-             ];
-             groupNode.flip = FlipDirection.Vertical;
-             diagram.dataBind();
-             let connector: ConnectorModel = diagram.connectors[0];
+            const groupNode = (diagram).nodes[
+                (diagram).nodes.length - 1
+            ];
+            groupNode.flip = FlipDirection.Vertical;
+            diagram.dataBind();
+            let connector: ConnectorModel = diagram.connectors[0];
 
-             expect(connector.sourceID === 'node1' && connector.targetPoint.x === 350 && connector.targetPoint.y === 330).toBe(true);
-             done();
-         });
+            expect(connector.sourceID === 'node1' && connector.targetPoint.x === 350 && connector.targetPoint.y === 330).toBe(true);
+            done();
+        });
         it('Flipping Group with connectors Both flip', function (done) {
-             const groupNode = (diagram).nodes[
-                 (diagram).nodes.length - 1
-             ];
-             groupNode.flip = FlipDirection.Both;
-             diagram.dataBind();
-             let connector: ConnectorModel = diagram.connectors[0];
+            const groupNode = (diagram).nodes[
+                (diagram).nodes.length - 1
+            ];
+            groupNode.flip = FlipDirection.Both;
+            diagram.dataBind();
+            let connector: ConnectorModel = diagram.connectors[0];
 
-             expect(connector.sourceID === 'node1' && connector.targetPoint.x === 50 && connector.targetPoint.y === 330).toBe(true);
-             done();
-         });
+            expect(connector.sourceID === 'node1' && connector.targetPoint.x === 50 && connector.targetPoint.y === 330).toBe(true);
+            done();
+        });
     });
 });

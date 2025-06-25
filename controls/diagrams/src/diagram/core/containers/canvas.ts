@@ -2,7 +2,7 @@
 /* eslint-disable jsdoc/require-param */
 /* eslint-disable jsdoc/require-returns */
 /* eslint-disable valid-jsdoc */
-import { Container } from './container';
+import { GroupableView } from './container';
 import { DiagramElement } from '../elements/diagram-element';
 import { rotateSize } from '../../utility/base-util';
 import { Transform, ElementAction, FlipDirection } from '../../enum/enum';
@@ -16,7 +16,7 @@ import { ImageElement } from '../elements/image-element';
 /**
  * Canvas module is used to define a plane(canvas) and to arrange the children based on margin
  */
-export class Canvas extends Container {
+export class Canvas extends GroupableView {
 
     /**
      * Not applicable for canvas

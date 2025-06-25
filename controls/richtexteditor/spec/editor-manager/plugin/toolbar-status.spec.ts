@@ -264,9 +264,9 @@ describe('Update Toolbar commands', () => {
     it('Check unorderlist tag ', () => {
         let node: Node = document.getElementById('paragraph32');
         domSelection.setSelectionText(document, node.childNodes[0], node.childNodes[0], 5, 5);
-        let format: IToolbarStatus = ToolbarStatus.get(document, parentDiv, ['div'], ['10pt'], ['Arial']);
+        let format: IToolbarStatus = ToolbarStatus.get(document, parentDiv, ['p'], ['10pt'], ['Arial']);
         expect(format.unorderedlist).toEqual(true);
-        expect(format.formats).toEqual('div');
+        expect(format.formats).toEqual('p');
     });
     it('Check multiple formatted values ', () => {
         let node: Node = document.getElementById('justify41');
@@ -412,7 +412,7 @@ describe('872419 - List status testing with sub list changed to a different list
         let format: IToolbarStatus = ToolbarStatus.get(document, parentDiv, ['div'], ['10pt'], ['Arial']);
         expect(format.unorderedlist).toEqual(true);
         expect(format.orderedlist).toEqual(false);
-        expect(format.numberFormatList).toEqual(null);
+        expect(format.numberFormatList).toEqual(false);
         expect(format.bulletFormatList).toEqual('Disc');
     });
 });
@@ -528,6 +528,6 @@ describe('924326 - Both Bullet and Number Format Toolbar Icons Highlighted After
         expect(format.unorderedlist).toEqual(true);
         expect(format.orderedlist).toEqual(false);
         expect(format.bulletFormatList).toEqual('None');
-        expect(format.numberFormatList).toEqual(null);
+        expect(format.numberFormatList).toEqual(false);
     });
 });

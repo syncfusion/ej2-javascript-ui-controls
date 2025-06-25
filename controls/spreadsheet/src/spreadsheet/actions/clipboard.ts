@@ -5,7 +5,7 @@ import { SheetModel, getRangeIndexes, getCell, getSheet, CellModel, getSwapRange
 import { CellStyleModel, getRangeAddress, getSheetIndexFromId, getSheetName, NumberFormatArgs } from '../../workbook/index';
 import { RowModel, getFormattedCellObject, workbookFormulaOperation, checkIsFormula, Sheet, mergedRange } from '../../workbook/index';
 import { ExtendedSheet, Cell, setMerge, MergeArgs, getCellIndexes, ChartModel } from '../../workbook/index';
-import { ribbonClick, ICellRenderer, copy, paste, PasteSpecialType, initiateFilterUI, setPosition, isLockedCells, focus, readonlyAlert, BeforeActionData } from '../common/index';
+import { ribbonClick, ICellRenderer, copy, paste, PasteSpecialType, initiateFilterUI, setPosition, isLockedCells, focus, readonlyAlert, BeforeActionData, isValidUrl } from '../common/index';
 import { BeforePasteEventArgs, hasTemplate, getTextHeightWithBorder, getLines, getExcludedColumnWidth, editAlert } from '../common/index';
 import { enableToolbarItems, rowHeightChanged, completeAction, DialogBeforeOpenEventArgs, insertImage } from '../common/index';
 import { clearCopy, selectRange, dialog, contentLoaded, tabSwitch, cMenuBeforeOpen, createImageElement, setMaxHgt } from '../common/index';
@@ -18,7 +18,7 @@ import { refreshRibbonIcons, refreshClipboard, getColumn, isLocked as isCellLock
 import { setFilteredCollection, setChart, parseIntValue, isSingleCell, activeCellMergedRange, getRowsHeight } from '../../workbook/index';
 import { ConditionalFormatModel, getUpdatedFormula, clearCFRule, checkUniqueRange, clearFormulaDependentCells } from '../../workbook/index';
 import { updateCell, ModelType, beginAction, isFilterHidden, applyCF, CFArgs, ApplyCFArgs, checkRange } from '../../workbook/index';
-import { cellValidation, removeUniquecol } from '../../workbook/common/event';
+import { cellValidation, removeUniquecol, wrapEvent } from '../../workbook/common/event';
 import { ColumnModel } from '../../workbook/base/column-model';
 
 /**
@@ -385,6 +385,7 @@ export class Clipboard {
                 const cutSetCell: Function = !isExternal && this.copiedInfo.isCut && this.setCell({ sheet: prevSheet });
                 const prevSheetMergeCollection: { range: number[], rowSpan: number, colSpan: number }[] = [];
                 const colValidationCollection: number[] = [];
+                const pasteMergeCollection: number[][] = [];
                 for (let i: number = cIdx[0], l: number = 0; i <= cIdx[2]; i++, l++) {
                     if (!isExternal && !copyInfo.isCut && isFilterHidden(prevSheet, i)) {
                         l--; hiddenCount++; continue;
@@ -498,6 +499,15 @@ export class Clipboard {
                                         this.parent.notify(setMerge, merge);
                                     }
                                     const colInd: number = y + k;
+                                    if (cell && cell.rowSpan > 1 || cell.colSpan > 1) {
+                                        const pasteRange: number[] = [x + l, colInd, x + l + (cell.rowSpan || 1) - 1,
+                                            colInd + (cell.colSpan || 1) - 1];
+                                        const hasOverlap: boolean = !(pasteRange[2] < cIdx[0] || pasteRange[0] > cIdx[2] ||
+                                            pasteRange[3] < cIdx[1] || pasteRange[1] > cIdx[3]);
+                                        if (hasOverlap) {
+                                            pasteMergeCollection.push(pasteRange);
+                                        }
+                                    }
                                     cell = extend({}, cell ? cell : {}, null, true);
                                     if (!isExtend && this.copiedInfo && !this.copiedInfo.isCut && cell.formula) {
                                         const newFormula: string = getUpdatedFormula([x + l, colInd], [i, j], prevSheet,
@@ -561,6 +571,7 @@ export class Clipboard {
                         if (!isExternal && this.copiedInfo.isCut && !(inRange(selIdx, i, j) &&
                             copiedIdx === this.parent.activeSheetIndex)) {
                             let cell: CellModel = getCell(i, j, prevSheet);
+                            let isWrapApplied: boolean;
                             if (cell) {
                                 if (cell.isReadOnly) {
                                     continue;
@@ -579,9 +590,11 @@ export class Clipboard {
                                             && colValidationCollection.indexOf(j) === -1) {
                                             colValidationCollection.push(j);
                                         }
+                                        isWrapApplied = cell.wrap;
                                         cell = null;
                                     }
                                 } else if (cell.isLocked === false) {
+                                    isWrapApplied = cell.wrap;
                                     if (prevSheet.isProtected) {
                                         cell = { isLocked: false };
                                     } else {
@@ -590,9 +603,38 @@ export class Clipboard {
                                 }
                             }
                             cutSetCell(i, j, cell, j === cIdx[3]);
+                            if (isWrapApplied && !getCell(i, j, prevSheet, false, true).wrap) {
+                                this.parent.notify(wrapEvent, { range: [i, j, i, j], wrap: false, sheet: prevSheet });
+                            }
                         }
                     }
                     rowIdx++;
+                }
+                if (pasteMergeCollection.length) {
+                    pasteMergeCollection.forEach((pasteRange: number[]) => {
+                        for (let row: number = pasteRange[0]; row <= pasteRange[2]; row++) {
+                            for (let col: number = pasteRange[1]; col <= pasteRange[3]; col++) {
+                                if (row === pasteRange[0] && col === pasteRange[1]) {
+                                    continue;
+                                } else {
+                                    const cell: CellModel = getCell(row, col, curSheet, false, true);
+                                    if (cell && cell.rowSpan === undefined && cell.colSpan === undefined) {
+                                        if (row !== pasteRange[0]) {
+                                            cell.rowSpan = pasteRange[0] - row;
+                                        }
+                                        if (col !== pasteRange[1]) {
+                                            cell.colSpan = pasteRange[1] - col;
+                                        }
+                                        const cellElement: HTMLElement = this.parent.getCell(row, col);
+                                        if (cellElement) {
+                                            this.parent.serviceLocator.getService<{ refresh: Function }>('cell').refresh(
+                                                row, col, false, cellElement);
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    });
                 }
                 if (prevSheetMergeCollection.length) {
                     prevSheetMergeCollection.forEach((mergeInfo: { range: number[]; rowSpan: number; colSpan: number; }) => {
@@ -654,11 +696,14 @@ export class Clipboard {
                         this.parent.notify(clearCFRule, clearCFArgs);
                     }
                     //this.updateFilter(copyInfo, rfshRange);
+                    const isActSheet: boolean = this.parent.activeSheetIndex === pSheetIdx;
+                    const rowHeight: number = isActSheet ?
+                        (this.parent.getRow(cIdx[0], null, this.parent.frozenColCount(prevSheet)) || { offsetHeight: 20 }).offsetHeight :
+                        getRowHeight(prevSheet, cIdx[0], false, true);
                     setMaxHgt(
-                        prevSheet, cIdx[0], cIdx[1], (this.parent.getRow(
-                            cIdx[0], null, this.parent.frozenColCount(prevSheet)) || { offsetHeight: 20 }).offsetHeight);
+                        prevSheet, cIdx[0], cIdx[1], rowHeight);
                     const hgt: number = getMaxHgt(prevSheet, cIdx[0]);
-                    setRowEleHeight(this.parent, prevSheet, hgt, cIdx[0]);
+                    setRowEleHeight(this.parent, prevSheet, hgt, cIdx[0], undefined, undefined, isActSheet, !isActSheet);
                 }
                 if (cf.length && cSIdx === this.parent.activeSheetIndex) {
                     this.parent.notify(applyCF, <ApplyCFArgs>{ cfModel: cf, isAction: true });
@@ -1076,6 +1121,7 @@ export class Clipboard {
         const isRowSelected: boolean = range[1] === 0 && range[3] === sheet.colCount - 1;
         const isColSelected: boolean = range[0] === 0 && range[2] === sheet.rowCount - 1;
         let rowHeight: number; let colWidth: number;
+        let displayVal: string;
         let data: string = '<html><body><table class="e-spreadsheet" xmlns="http://www.w3.org/1999/xhtml" style="border-collapse:collapse;"';
         if (isRowSelected || isColSelected) {
             data += ` aria-rowcount="${sheet.usedRange.rowIndex}" aria-colcount="${sheet.usedRange.colIndex}"`;
@@ -1131,6 +1177,7 @@ export class Clipboard {
                     data += 'white-space:' + (cell.wrap ? 'normal' : 'nowrap') +
                         ';vertical-align:bottom;font-family:Calibri;font-size:11pt;"';
                 }
+                displayVal = '';
                 if (!isNullOrUndefined(cell.value)) {
                     val = cell.value;
                     if (cell.format && cell.format !== 'General') {
@@ -1141,17 +1188,21 @@ export class Clipboard {
                         this.parent.notify(getFormattedCellObject, eventArgs);
                         val = <string>eventArgs.formattedText;
                     }
-                    data += '>';
-                    if (typeof val === 'string' && val.includes('\n')) {
-                        data += val.split('\n').join('<br>');
-                    } else {
-                        data += val;
-                    }
-                    text += val;
-                    data += '</td>';
-                } else {
-                    data += '></td>';
+                    displayVal = typeof val === 'string' && val.includes('\n') ? val.split('\n').join('<br>') : val;
                 }
+                data += '>';
+                if (cell.hyperlink) {
+                    const address: string = typeof cell.hyperlink === 'string' ? cell.hyperlink : (cell.hyperlink.address || '');
+                    if (address && ['http://', 'https://', 'ftp://'].some((url: string) => address.startsWith(url))) {
+                        data += `<a href="${address}" target="_blank">${displayVal}</a>`;
+                    } else {
+                        data += displayVal;
+                    }
+                } else {
+                    data += displayVal;
+                }
+                text += displayVal;
+                data += '</td>';
                 text += j === range[3] ? '' : '\t';
             }
             data += '</tr>';
@@ -1315,6 +1366,13 @@ export class Clipboard {
                 }
                 cells[colIdx as number] = {};
                 cellStyle = getStyle(td, rowStyleObj, tableStyleObj);
+                const anchorElement: HTMLCollectionOf<HTMLAnchorElement> = td.getElementsByTagName('a');
+                if (anchorElement && anchorElement[0]) {
+                    const href: string = anchorElement[0].getAttribute('href');
+                    if (href && isValidUrl(href)) {
+                        cells[colIdx as number].hyperlink = { address: href };
+                    }
+                }
                 td.textContent = td.textContent.replace(/(\r\n|\n|\r)/gm, '');
                 td.textContent = td.textContent.replace(/\s+/g, ' ');
                 if ((cellStyle as { whiteSpace: string }).whiteSpace &&

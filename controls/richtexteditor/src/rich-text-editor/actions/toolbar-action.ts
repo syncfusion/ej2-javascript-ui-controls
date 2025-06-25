@@ -1,7 +1,8 @@
 import { isNullOrUndefined as isNOU } from '@syncfusion/ej2-base';
 import * as events from '../base/constant';
-import { IRichTextEditor, IColorPickerEventArgs, IDropDownClickArgs } from '../base/interface';
-import { IAdvanceListItem } from '../../common';
+import { IRichTextEditor } from '../base/interface';
+import { IColorPickerEventArgs, IDropDownClickArgs } from '../../common/interface';
+import { IAdvanceListItem, ICodeBlockItem } from '../../common';
 
 /**
  * `ToolbarAction` module is used to toolbar click action
@@ -42,16 +43,26 @@ export class ToolbarAction {
             }
         }
         if (args.item.command === 'NumberFormatList' || args.item.command === 'BulletFormatList') {
-            if ((args.originalEvent.target as HTMLElement).classList.contains('e-order-list') || (args.originalEvent.target as HTMLElement).classList.contains('e-unorder-list')) {
-                args.item.command = 'Lists' ;
-                args.item.subCommand = args.item.subCommand === 'NumberFormatList' ? 'OL' : 'UL';
+            const targetEle: HTMLElement = (args.originalEvent.target as HTMLElement).nodeName === 'SPAN' ?
+                (args.originalEvent.target as HTMLElement).closest('.e-rte-dropdown.e-split-btn') as HTMLElement : (args.originalEvent.target as HTMLElement);
+            if (targetEle) {
+                const hasNumberList: boolean | null = targetEle.classList.contains('e-rte-numberformatlist-dropdown');
+                if (hasNumberList || targetEle.classList.contains('e-rte-bulletformatlist-dropdown')) {
+                    args.item.command = 'Lists' ;
+                    args.item.subCommand = args.item.subCommand === 'NumberFormatList' ? 'OL' : 'UL';
+                }
             }
         }
         if (args.item.command === 'Lists') {
-            if ((args.originalEvent.target as HTMLElement).classList.contains('e-caret') &&
-            ((args.originalEvent.target as HTMLElement).parentElement.classList.contains('e-rte-bulletformatlist-dropdown') || (args.originalEvent.target as HTMLElement).parentElement.classList.contains('e-rte-numberformatlist-dropdown'))) {
+            if ((((args.originalEvent.target as HTMLElement).classList.contains('e-rte-numberformatlist-dropdown') ||
+                (args.originalEvent.target as HTMLElement).classList.contains('e-rte-bulletformatlist-dropdown')) &&
+                ((args.originalEvent.target as HTMLElement).classList.contains('e-dropdown-btn'))) ||
+                (args.originalEvent.target as HTMLElement).classList.contains('e-caret')) {
                 return;
             }
+        }
+        if (args.item.subCommand === 'HorizontalLine') {
+            args.item.value = '<hr/>';
         }
         this.parent.notify(events.htmlToolbarClick, args);
         this.parent.notify(events.markdownToolbarClick, args);
@@ -66,8 +77,10 @@ export class ToolbarAction {
             if (e.item.command === 'Lists') {
                 const listItem: IAdvanceListItem = {listStyle: e.item.value, listImage: e.item.listImage, type: e.item.subCommand};
                 this.parent.formatter.process(this.parent, e, e.originalEvent, listItem);
-            }
-            else {
+            } else if (e.item.command === 'CodeBlock') {
+                const codeBlockItems: ICodeBlockItem = { language: e.item.text, label: e.item.label, action: 'createCodeBlock' };
+                this.parent.formatter.process(this.parent, e, e.originalEvent, codeBlockItems);
+            } else {
                 this.parent.formatter.process(this.parent, e, e.originalEvent, value);
             }
         }

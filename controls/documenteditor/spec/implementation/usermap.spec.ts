@@ -25,7 +25,7 @@ describe('Validation for usermap', () => {
         editor.destroy();
         document.body.removeChild(document.getElementById('container'));
         editor = undefined;
-        document.body.innerHTML = '';
+        
         setTimeout(() => {
             done();
         }, 1000);

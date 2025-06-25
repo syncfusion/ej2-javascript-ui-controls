@@ -7,7 +7,7 @@ import { DropDownButton, ItemModel as DropDownButtonItemModel, MenuEventArgs, Op
 import { ColorPicker, ColorPickerEventArgs, Uploader, Slider, TextBox } from '@syncfusion/ej2-inputs';
 import { ImageEditor, SelectionPoint, ToolbarEventArgs, Point, ImageFilterEventArgs, ZoomTrigger, Transition, CurrentObject, FrameValue,
     ImageDimension, FrameSettings, FrameType, FrameLineStyle, ShapeSettings, ShapeChangeEventArgs, ShapeType,
-    EditCompleteEventArgs } from '../index';
+    EditCompleteEventArgs, TextSettings} from '../index';
 import { QuickAccessToolbarEventArgs, ImageFilterOption } from '../index';
 import { Dialog, hideSpinner, showSpinner } from '@syncfusion/ej2-popups';
 import { addClass, removeClass } from '@syncfusion/ej2-base';
@@ -136,7 +136,9 @@ export class ToolbarModule {
             Path: 'Path',
             Bold: 'Bold',
             Italic: 'Italic',
+            Underline: 'Underline',
             BoldItalic: 'Bold Italic',
+            Strikethrough: 'Strikethrough',
             XSmall: 'X-Small',
             Small: 'Small',
             Medium: 'Medium',
@@ -2105,12 +2107,15 @@ export class ToolbarModule {
         if (!Browser.isDevice) {
             const obj: Object = {shape: null };
             parent.notify('selection', { prop: 'getCurrentDrawingShape', value: {obj: obj }});
-            if (obj['shape'] !== 'path') {
+            if (obj['shape'] === 'path') {
+                toolbarItems.push({ id: id + '_ok', prefixIcon: 'e-icons e-check', cssClass: 'top-icon e-tick',
+                    tooltipText: this.l10n.getConstant('OK'), align: 'Right', tabIndex: 0, disabled: true });
+            } else {
                 toolbarItems.push({ id: id + '_ok', prefixIcon: 'e-icons e-check', cssClass: 'top-icon e-tick',
                     tooltipText: this.l10n.getConstant('OK'), align: 'Right', tabIndex: 0 });
-                toolbarItems.push({ id: id + '_cancel', prefixIcon: 'e-icons e-close', cssClass: 'top-icon e-save',
-                    tooltipText: this.l10n.getConstant('Cancel'), align: 'Right' });
             }
+            toolbarItems.push({ id: id + '_cancel', prefixIcon: 'e-icons e-close', cssClass: 'top-icon e-save',
+                tooltipText: this.l10n.getConstant('Cancel'), align: 'Right' });
         }
         return toolbarItems;
     }
@@ -2733,6 +2738,14 @@ export class ToolbarModule {
             toolbarItems.push({ id: id + '_italic', prefixIcon: 'e-icons e-italic', cssClass: 'top-icon e-italic',
                 tooltipText: this.l10n.getConstant('Italic'), align: 'Center' });
         }
+        if (items.indexOf('underline') > -1) {
+            toolbarItems.push({ id: id + '_underline', prefixIcon: 'e-icons e-underline', cssClass: 'top-icon e-underline',
+                tooltipText: this.l10n.getConstant('Underline'), align: 'Center' });
+        }
+        if (items.indexOf('strikethrough') > -1) {
+            toolbarItems.push({ id: id + '_strikethrough', prefixIcon: 'e-icons e-strikethrough', cssClass: 'top-icon e-strikethrough',
+                tooltipText: this.l10n.getConstant('Strikethrough'), align: 'Center' });
+        }
         if (items.indexOf('strokeWidth') > -1) {
             toolbarItems.push({ id: id + '_strokeWidth', cssClass: 'top-icon e-size', tooltipText: this.l10n.getConstant('TextOutlineWidth'), align: 'Center',
                 type: 'Input', template: '<button id="' + id + '_borderWidthBtn"></button>' });
@@ -3185,6 +3198,12 @@ export class ToolbarModule {
             if (!parent.isPublicMethod) { parent.noPushUndo = true; }
             if (Browser.isDevice) {
                 this.initMainToolbar(false, true, true);
+                const okBtn: HTMLElement = document.getElementById(parent.element.id + '_ok');
+                const drawingObject: Object = { shape: '' };
+                parent.notify('selection', { prop: 'getCurrentDrawingShape', onPropertyChange: false, value: { obj: drawingObject } });
+                if (drawingObject['shape'] === 'path' && okBtn) {
+                    okBtn.classList.add('e-overlay');
+                }
             }
             if (parent.activeObj.shape === 'line' || parent.activeObj.shape === 'path') {
                 args.toolbarItems = ['strokeColor', 'strokeWidth', 'z-order', 'duplicate', 'remove'];
@@ -3212,7 +3231,7 @@ export class ToolbarModule {
             if (Browser.isDevice) {
                 this.initMainToolbar(false, true, true);
             }
-            args.toolbarItems = ['fontFamily', 'fontSize', 'fontColor', 'fillColor', 'strokeColor', 'strokeWidth', 'bold', 'italic', 'z-order', 'duplicate', 'remove', 'text'];
+            args.toolbarItems = ['fontFamily', 'fontSize', 'fontColor', 'fillColor', 'strokeColor', 'strokeWidth', 'bold', 'italic', 'underline', 'strikethrough', 'z-order', 'duplicate', 'remove', 'text'];
             this.initTextToolbarItem(args.toolbarItems);
             break;
         case 'pen':
@@ -3340,8 +3359,13 @@ export class ToolbarModule {
         parent.notify('transform', { prop: 'getPanMove', onPropertyChange: false,
             value: {obj: panMoveObj }});
         if (panMoveObj['panMove']) {
+            const currentPannedPoint: Point = extend({}, parent.panPoint.currentPannedPoint, {}, true) as Point;
+            parent.panPoint.currentPannedPoint = {x: parent.panPoint.totalPannedClientPoint.x, y: parent.panPoint.totalPannedClientPoint.y};
+            parent.panPoint.totalPannedClientPoint = { x: 0, y: 0 };
+            parent.panPoint.totalPannedInternalPoint = { x: 0, y: 0 };
             parent.notify('transform', { prop: 'drawPannedImage', onPropertyChange: false,
-                value: { xDiff: null, yDiff: null } });
+                value: { xDiff: parent.panPoint.currentPannedPoint.x, yDiff: parent.panPoint.currentPannedPoint.y } });
+            parent.panPoint.currentPannedPoint = currentPannedPoint;
         }
     }
 
@@ -5189,52 +5213,10 @@ export class ToolbarModule {
                 }
                 break;
             case 'bold':
-                parent.notify('selection', { prop: 'setInitialTextEdit', value: {bool: false }});
-                if (parent.activeObj.textSettings.bold && parent.activeObj.textSettings.italic) {
-                    parent.notify('shape', { prop: 'applyFontStyle', onPropertyChange: false,
-                        value: {item: 'italic' }});
-                } else if (parent.activeObj.textSettings.bold && !parent.activeObj.textSettings.italic) {
-                    parent.notify('shape', { prop: 'applyFontStyle', onPropertyChange: false,
-                        value: {item: 'default' }});
-                } else if (!parent.activeObj.textSettings.bold && parent.activeObj.textSettings.italic) {
-                    parent.notify('shape', { prop: 'applyFontStyle', onPropertyChange: false,
-                        value: {item: 'bolditalic' }});
-                } else if (!parent.activeObj.textSettings.bold && !parent.activeObj.textSettings.italic) {
-                    parent.notify('shape', { prop: 'applyFontStyle', onPropertyChange: false,
-                        value: {item: 'bold' }});
-                }
-                if (parent.element.querySelector('#' + id + '_bold').classList.contains('e-selected-btn')) {
-                    parent.element.querySelector('#' + id + '_bold').classList.remove('e-selected-btn');
-                } else {
-                    parent.element.querySelector('#' + id + '_bold').classList.add('e-selected-btn');
-                }
-                if (parent.activeObj.activePoint.width !== 0 || parent.activeObj.activePoint.height !== 0) {
-                    parent.notify('undo-redo', { prop: 'updateUndoRedoStack', onPropertyChange: false});
-                }
-                break;
             case 'italic':
-                parent.notify('selection', { prop: 'setInitialTextEdit', value: {bool: false }});
-                if (parent.activeObj.textSettings.bold && parent.activeObj.textSettings.italic) {
-                    parent.notify('shape', { prop: 'applyFontStyle', onPropertyChange: false,
-                        value: {item: 'bold' }});
-                } else if (parent.activeObj.textSettings.bold && !parent.activeObj.textSettings.italic) {
-                    parent.notify('shape', { prop: 'applyFontStyle', onPropertyChange: false,
-                        value: {item: 'bolditalic' }});
-                } else if (!parent.activeObj.textSettings.bold && parent.activeObj.textSettings.italic) {
-                    parent.notify('shape', { prop: 'applyFontStyle', onPropertyChange: false,
-                        value: {item: 'default' }});
-                } else if (!parent.activeObj.textSettings.bold && !parent.activeObj.textSettings.italic) {
-                    parent.notify('shape', { prop: 'applyFontStyle', onPropertyChange: false,
-                        value: {item: 'italic' }});
-                }
-                if (parent.element.querySelector('#' + id + '_italic').classList.contains('e-selected-btn')) {
-                    parent.element.querySelector('#' + id + '_italic').classList.remove('e-selected-btn');
-                } else {
-                    parent.element.querySelector('#' + id + '_italic').classList.add('e-selected-btn');
-                }
-                if (parent.activeObj.activePoint.width !== 0 || parent.activeObj.activePoint.height !== 0) {
-                    parent.notify('undo-redo', { prop: 'updateUndoRedoStack', onPropertyChange: false});
-                }
+            case 'underline':
+            case 'strikethrough':
+                this.toggleStyle(id, type);
                 break;
             case 'croptransform':
                 this.performCropTransformClick();
@@ -5400,6 +5382,46 @@ export class ToolbarModule {
         }
     }
 
+    private getFontStyle(settings: TextSettings): string {
+        const parts: string[] = [];
+
+        if (settings.bold) { parts.push('bold'); }
+        if (settings.italic) { parts.push('italic'); }
+        if (settings.underline) { parts.push('underline'); }
+        if (settings.strikethrough) { parts.push('strikethrough'); }
+
+        return parts.length === 0 ? 'default' : parts.join('');
+    }
+
+    private toggleStyle(id: string, style: string): void {
+        const parent: ImageEditor = this.parent;
+        parent.notify('selection', { prop: 'setInitialTextEdit', value: { bool: false } });
+        type StyleKeys = 'bold' | 'italic' | 'underline' | 'strikethrough';
+
+        const settings: TextSettings = parent.activeObj.textSettings;
+        settings[style as StyleKeys] = !settings[style as StyleKeys];
+
+        const fontStyle: string = this.getFontStyle(settings);
+
+        parent.notify('shape', {prop: 'applyFontStyle', onPropertyChange: false, value: { item: fontStyle }});
+
+        const button: Element = parent.element.querySelector(`#${id}_${style}`);
+        if (button)
+        {
+            if (button.classList.contains('e-selected-btn')) {
+                button.classList.remove('e-selected-btn');
+            } else {
+                button.classList.add('e-selected-btn');
+            }
+        }
+        if (
+            parent.activeObj.activePoint.width !== 0 ||
+            parent.activeObj.activePoint.height !== 0
+        ) {
+            parent.notify('undo-redo', {prop: 'updateUndoRedoStack', onPropertyChange: false});
+        }
+    }
+
     private updateRedactType(value: string): void {
         const parent: ImageEditor = this.parent;
         parent.activeObj.redactType = value;
@@ -5414,14 +5436,17 @@ export class ToolbarModule {
         let zoom: number; let frameObj: FrameValue; let tempFrameObj: FrameValue;
         parent.notify('draw', { prop: 'updateCropSelection', onPropertyChange: false });
         if (parent.currObjType.isFiltered || parent.currObjType.isRedact) {parent.okBtn(); }
-        if (frame && !frame.classList.contains('e-overlay')) {
+        if (!frame || !frame.classList.contains('e-overlay')) {
             zoom = parent.transform.zoomFactor;
             parent.frameDestPoints = extend({}, parent.img, {}, true) as ImageDimension;
             if (isNullOrUndefined(parent.cxtTbarHeight)) {
                 frameObj = extend({}, parent.frameObj, {}, true) as FrameValue;
                 tempFrameObj = extend({}, parent.tempFrameObj, {}, true) as FrameValue;
                 this.callFrameToolbar(); parent.frameObj.type = 'mat'; this.callFrameToolbar();
-                parent.cxtTbarHeight = parent.element.querySelector('#' + id + '_customizeWrapper').scrollHeight;
+                const elem: HTMLElement = parent.element.querySelector('#' + id + '_customizeWrapper');
+                if (elem) {
+                    parent.cxtTbarHeight = elem.scrollHeight;
+                }
                 parent.frameObj = frameObj; parent.tempFrameObj = tempFrameObj;
             }
             this.zoomToFrameRange();
@@ -5946,6 +5971,8 @@ export class ToolbarModule {
             const fontSizeElem: HTMLElement = parent.element.querySelector('.e-text-font-size') as HTMLElement;
             const boldBtn: HTMLElement = parent.element.querySelector('#' + id + '_bold') as HTMLElement;
             const italicBtn: HTMLElement = parent.element.querySelector('#' + id + '_italic') as HTMLElement;
+            const underlineBtn: HTMLElement = parent.element.querySelector('#' + id + '_underline') as HTMLElement;
+            const strikethroughBtn: HTMLElement = parent.element.querySelector('#' + id + '_strikethrough') as HTMLElement;
             if (parent.activeObj.strokeSettings && parent.activeObj.textSettings) {
                 if (isNullOrUndefined(parent.activeObj.strokeSettings.strokeWidth)) {
                     parent.activeObj.strokeSettings.strokeWidth = 2;
@@ -6050,6 +6077,20 @@ export class ToolbarModule {
                         italicBtn.classList.remove('e-selected-btn');
                     }
                 }
+                if (underlineBtn) {
+                    if (parent.activeObj.textSettings.underline) {
+                        underlineBtn.classList.add('e-selected-btn');
+                    } else {
+                        underlineBtn.classList.remove('e-selected-btn');
+                    }
+                }
+                if (strikethroughBtn) {
+                    if (parent.activeObj.textSettings.strikethrough) {
+                        strikethroughBtn.classList.add('e-selected-btn');
+                    } else {
+                        strikethroughBtn.classList.remove('e-selected-btn');
+                    }
+                }
                 if (strokeWidthElem) {
                     const width: number = parent.activeObj.shape === 'text' ? parent.activeObj.strokeSettings.outlineWidth : parent.activeObj.strokeSettings.strokeWidth;
                     const strokeWidth: string = Math.round(width).toString();
@@ -6066,25 +6107,18 @@ export class ToolbarModule {
     private getStrokeWidth(text: string): string {
         let strokeWidth: string;
         const currentWidth: number = parseInt(text, 10) / 2;
-        switch (currentWidth) {
-        case 0:
+        if (currentWidth === 0) {
             strokeWidth = this.l10n.getConstant('NoOutline');
-            break;
-        case 1:
+        } else if (currentWidth > 0 && currentWidth <= 1) {
             strokeWidth = this.l10n.getConstant('XSmall');
-            break;
-        case 2:
+        } else if (currentWidth > 1 && currentWidth <= 2) {
             strokeWidth = this.l10n.getConstant('Small');
-            break;
-        case 3:
+        } else if (currentWidth > 2 && currentWidth <= 3) {
             strokeWidth = this.l10n.getConstant('Medium');
-            break;
-        case 4:
+        } else if (currentWidth > 3 && currentWidth <= 4) {
             strokeWidth = this.l10n.getConstant('Large');
-            break;
-        case 5:
+        } else {
             strokeWidth = this.l10n.getConstant('XLarge');
-            break;
         }
         return strokeWidth;
     }

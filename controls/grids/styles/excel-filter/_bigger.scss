@@ -29,7 +29,20 @@
       }
     }
   }
-  
+
+  .e-bigger .sf-grid {
+    .e-excelfilter {
+      &.e-dialog .e-dlg-content {
+        @if $grid-xlfl-skin == 'fluent2' {
+          padding-right: 0;
+        }
+        @if $grid-xlfl-skin == 'highcontrast' {
+          padding-left: 0;
+        }
+      }
+    }
+  }
+
   .e-bigger #{&}.e-xlflmenu.e-rtl {
     .e-radio + label .e-label {
       @include padding-styles($grid-xl-rtl-radio-padding-left, $grid-xl-rtl-radio-padding-right);
@@ -182,6 +195,9 @@
   
     &.e-dialog .e-dlg-content {
       padding-left: $grid-bigger-checkbox-content-padding-left;
+      @if $grid-xlfl-skin == 'fluent2' {
+        padding-right: 24px;
+      }
     }
   
     .e-ftrchk,

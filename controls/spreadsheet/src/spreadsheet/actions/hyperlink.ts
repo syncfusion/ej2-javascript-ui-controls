@@ -1,5 +1,5 @@
 import { Spreadsheet, DialogBeforeOpenEventArgs, ICellRenderer, completeAction, isLockedCells } from '../index';
-import { initiateHyperlink, locale, dialog, click, keyUp, createHyperlinkElement, getUpdateUsingRaf, focus, readonlyAlert, removeElements } from '../common/index';
+import { initiateHyperlink, locale, dialog, click, keyUp, createHyperlinkElement, getUpdateUsingRaf, focus, readonlyAlert, removeElements, isValidUrl } from '../common/index';
 import { editHyperlink, openHyperlink, editAlert, removeHyperlink } from '../common/index';
 import { L10n, isNullOrUndefined, closest } from '@syncfusion/ej2-base';
 import { Dialog } from '../services';
@@ -124,6 +124,7 @@ export class SpreadsheetHyperlink {
             let displayText: string;
             dialogInst.show({
                 width: 323, isModal: true, showCloseIcon: true, cssClass: 'e-hyperlink-dlg',
+                enableRtl: this.parent.enableRtl,
                 header: l10n.getConstant('InsertLink'),
                 beforeOpen: (args: BeforeOpenEventArgs): void => {
                     const dlgArgs: DialogBeforeOpenEventArgs = {
@@ -185,6 +186,9 @@ export class SpreadsheetHyperlink {
             if (item.querySelector('.e-webpage')) {
                 address = (item.getElementsByClassName('e-cont')[1].querySelector('.e-text') as CellModel).value;
                 const args: HyperlinkModel = { address: address };
+                if (value === address) {
+                    value = null;
+                }
                 this.parent.insertHyperlink(args, cellAddress, value, false);
             } else {
                 address = (item.getElementsByClassName('e-cont')[1].querySelector('.e-text') as CellModel).value;
@@ -232,6 +236,7 @@ export class SpreadsheetHyperlink {
         let displayText: string;
         dialogInst.show({
             width: 323, isModal: true, showCloseIcon: true, cssClass: 'e-edithyperlink-dlg',
+            enableRtl: this.parent.enableRtl,
             header: l10n.getConstant('EditLink'),
             beforeOpen: (args: BeforeOpenEventArgs): void => {
                 const dlgArgs: DialogBeforeOpenEventArgs = {
@@ -387,7 +392,7 @@ export class SpreadsheetHyperlink {
                     }
                 }
             } else if (!isClick) {
-                if (this.isValidUrl(address)) {
+                if (isValidUrl(address)) {
                     window.open(address, befArgs.target);
                 } else {
                     this.showInvalidHyperlinkDialog();
@@ -395,11 +400,6 @@ export class SpreadsheetHyperlink {
             }
             this.parent.trigger(afterHyperlinkClick, aftArgs);
         }
-    }
-
-    private isValidUrl(url: string): boolean {
-        // eslint-disable-next-line no-useless-escape, security/detect-unsafe-regex
-        return /(ftp|http|https):\/\/(\w+:{0,1}\w*@)?(\S+)(:[0-9]+)?(\/|\/([\w#!:.?+=&%@!\-\/]))?/.test(url);
     }
 
     private showInvalidHyperlinkDialog(): void {
@@ -588,12 +588,18 @@ export class SpreadsheetHyperlink {
         const item: HTMLElement = dialog.querySelector('.e-content') as HTMLElement;
         if (isWeb) {
             const webContElem: HTMLElement = item.querySelector('.e-webpage') as HTMLElement;
-            webContElem.getElementsByClassName('e-cont')[0].getElementsByClassName('e-text')[0].setAttribute('value', value);
+            const webTextInput: HTMLInputElement = webContElem.getElementsByClassName('e-cont')[0].getElementsByClassName('e-text')[0] as HTMLInputElement;
+            const webUrlInput: HTMLInputElement = webContElem.getElementsByClassName('e-cont')[1].getElementsByClassName('e-text')[0] as HTMLInputElement;
+            webTextInput.setAttribute('value', value);
             if (typeof (hyperlink) === 'string') {
-                webContElem.getElementsByClassName('e-cont')[1].querySelector('.e-text').setAttribute('value', hyperlink);
+                webUrlInput.setAttribute('value', hyperlink);
             } else {
-                const address: HTMLElement = webContElem.getElementsByClassName('e-cont')[1].querySelector('.e-text') as HTMLElement;
-                address.setAttribute('value', hyperlink.address);
+                webUrlInput.setAttribute('value', hyperlink.address);
+            }
+            if (cell.hyperlink && (!cell.value || <unknown>cell.value !== 0)) {
+                webUrlInput.addEventListener('input', (): void => {
+                    webTextInput.value = webUrlInput.value;
+                });
             }
         } else {
             let isDefinedNamed: boolean;
@@ -668,6 +674,7 @@ export class SpreadsheetHyperlink {
         const sheet: SheetModel = this.parent.getActiveSheet();
         const cell: CellModel = getCell(indexes[0], indexes[1], sheet);
         let isEnable: boolean = true;
+        const isRTL: boolean = this.parent.enableRtl;
         if (cell) {
             if ((cell.value && typeof (cell.value) === 'string' && cell.value.match('[A-Za-z]+') !== null) ||
                 cell.value === '' || isNullOrUndefined(cell.value)) {
@@ -729,6 +736,7 @@ export class SpreadsheetHyperlink {
         const docContElem: HTMLElement = this.parent.createElement('div', { className: 'e-document' });
         this.headerTabs = new Tab({
             selectedItem: selIdx,
+            enableRtl: isRTL,
             items: [
                 {
                     header: { 'text': l10n.getConstant('WebPage') },
@@ -743,9 +751,9 @@ export class SpreadsheetHyperlink {
         this.headerTabs.appendTo(dialogElem);
         const indicator: HTMLElement = dialogElem.querySelector('.e-toolbar-items').querySelector('.e-indicator');
         if (isWeb) {
-            indicator.style.cssText = 'left: 0; right: 136px';
+            indicator.style.cssText = isRTL ? 'left: 136px; right: 0' : 'left: 0; right: 136px';
         } else {
-            indicator.style.cssText = 'left: 136px; right: 0';
+            indicator.style.cssText = isRTL ? 'left: 0; right: 136px' : 'left: 136px; right: 0';
         }
         const textCont: HTMLElement = this.parent.createElement('div', { className: 'e-cont' });
         const urlCont: HTMLElement = this.parent.createElement('div', { className: 'e-cont' });
@@ -810,7 +818,8 @@ export class SpreadsheetHyperlink {
             }
         ];
         const treeObj: TreeView = new TreeView({
-            fields: { dataSource: data, id: 'nodeId', text: 'nodeText', child: 'nodeChild' }
+            fields: { dataSource: data, id: 'nodeId', text: 'nodeText', child: 'nodeChild' },
+            enableRtl: isRTL
         });
         const cellrefCont: HTMLElement = this.parent.createElement('div', { className: 'e-cont' });
         const cellrefH: HTMLElement = this.parent.createElement('div', { className: 'e-header' });

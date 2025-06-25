@@ -1,4 +1,5 @@
-import { DialogType, RichTextEditor } from "../../../src/rich-text-editor/base";
+import { RichTextEditor } from "../../../src/rich-text-editor/base";
+import { DialogType } from "../../../src/common/enum";
 import { renderRTE } from "../../rich-text-editor/render.spec";
 
 describe('Markdown Parser base module ', () => {
@@ -11,7 +12,7 @@ describe('Markdown Parser base module ', () => {
     afterAll(() => {
         editor.destroy();
     });
-    it ('Calling the image show dialog programmatically', () => {
+    it('Calling the image show dialog programmatically', () => {
         editor.showDialog(DialogType.InsertImage);
         expect(document.body.querySelector('.e-rte-img-dialog')).not.toBe(null);
     });

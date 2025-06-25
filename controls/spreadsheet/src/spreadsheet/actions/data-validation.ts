@@ -259,7 +259,9 @@ export class DataValidation {
             }
         }
         if (inCellDropDown) {
-            const ddlCont: HTMLElement = this.parent.createElement('div', { className: 'e-validation-list' });
+            const ddlCont: HTMLElement = this.parent.createElement('div', {
+                className: 'e-validation-list' + (this.parent.enableRtl ? ' e-rtl' : '')
+            });
             const ddlEle: HTMLElement = this.parent.createElement('input', { id: this.parent.element.id + 'listValid' });
             ddlCont.appendChild(ddlEle);
             let isDevice: boolean;
@@ -272,7 +274,7 @@ export class DataValidation {
             if ((!args.cell || !args.cell.validation) && validationVal.startsWith('=')) {
                 validationVal = getUpdatedFormula(
                     [args.rowIdx, args.colIdx, args.rowIdx, args.colIdx], [0, args.colIdx, 0, args.colIdx], this.parent.getActiveSheet(),
-                    this.parent, { formula: validationVal });
+                    this.parent, { formula: validationVal }, null, true);
             }
             const dataSource: { [key: string]: string }[] = this.getListDataSource(validationVal);
             this.listObj = new DropDownList({
@@ -283,12 +285,13 @@ export class DataValidation {
                 popupHeight: '200px',
                 noRecordsTemplate: '',
                 change: () => this.listValueChange(this.listObj.text),
+                enableRtl: this.parent.enableRtl,
                 beforeOpen: () => {
                     isDevice = (window as { browserDetails?: { isDevice?: boolean } }).browserDetails.isDevice;
                     if (isDevice) { (window as { browserDetails?: { isDevice?: boolean } }).browserDetails.isDevice = false; }
                 },
                 open: (args: PopupEventArgs) => {
-                    args.popup.offsetX = this.listObj.enableRtl ? 3 : -tdEle.offsetWidth + (this.parent.enableRtl ? 4 : 24);
+                    args.popup.offsetX = this.parent.enableRtl ? tdEle.offsetWidth - 24 : -tdEle.offsetWidth + 24;
                     args.popup.offsetY = -((tdEle.querySelector('.e-control-wrapper.e-ddl') as HTMLElement).offsetHeight - 18);
                     args.popup.element.style.width = tdEle.offsetWidth - 1 + 'px';
                     if (isDevice) { (window as { browserDetails?: { isDevice?: boolean } }).browserDetails.isDevice = true; }
@@ -524,13 +527,15 @@ export class DataValidation {
         let validation: ValidationModel; let curValidation: ValidationModel; let isVal1Formula: boolean; let isVal2Formula: boolean;
         const updateFormula: (curIndexes: number[], prevIndexes: number[]) => void = (curIdx: number[], prevIdx: number[]): void => {
             if (isVal1Formula) {
-                const updatedFormula: string = getUpdatedFormula(curIdx, prevIdx, sheet, this.parent, { formula: validation.value1 });
+                const updatedFormula: string = getUpdatedFormula(
+                    curIdx, prevIdx, sheet, this.parent, { formula: validation.value1 }, null, true);
                 if (!updatedFormula.includes('#REF!')) {
                     validation.value1 = updatedFormula;
                 }
             }
             if (isVal2Formula) {
-                const updatedFormula: string = getUpdatedFormula(curIdx, prevIdx, sheet, this.parent, { formula: validation.value2 });
+                const updatedFormula: string = getUpdatedFormula(
+                    curIdx, prevIdx, sheet, this.parent, { formula: validation.value2 }, null, true);
                 if (!updatedFormula.includes('#REF!')) {
                     validation.value2 = updatedFormula;
                 }
@@ -573,7 +578,8 @@ export class DataValidation {
             if (!this.parent.element.querySelector('.e-datavalidation-dlg')) {
                 const range: string = this.getRange(sheet.selectedRange).range;
                 dialogInst.show({
-                    width: 375, showCloseIcon: true, isModal: true, cssClass: 'e-datavalidation-dlg',
+                    width: 375, showCloseIcon: true, isModal: true,
+                    cssClass: 'e-datavalidation-dlg', enableRtl: this.parent.enableRtl,
                     header: l10n.getConstant('DataValidation'),
                     beforeOpen: (args: BeforeOpenEventArgs): void => {
                         const dlgArgs: DialogBeforeOpenEventArgs = { dialogName: 'ValidationDialog', element: args.element,
@@ -635,7 +641,7 @@ export class DataValidation {
             const dialogContent: string = l10n.getConstant(dialogName);
             const dlg: DialogModel = {
                 width: 350, isModal: true, showCloseIcon: true, cssClass: 'e-goto-dlg', header: l10n.getConstant('Spreadsheet'),
-                content: dialogContent,
+                content: dialogContent, enableRtl: this.parent.enableRtl,
                 beforeOpen: (args: BeforeOpenEventArgs): void => {
                     const dlgArgs: DialogBeforeOpenEventArgs = { dialogName: dialogName, element: args.element, target: args.target,
                         cancel: args.cancel, content: dialogContent };
@@ -779,6 +785,7 @@ export class DataValidation {
             this.spanElements.push(dataText); this.inputElements.push(dataSelectEle);
             this.dataList = new DropDownList({
                 dataSource: this.operatorData,
+                enableRtl: this.parent.enableRtl,
                 index: dataIdx,
                 popupHeight: '200px',
                 change: this.userInput.bind(this)
@@ -788,8 +795,10 @@ export class DataValidation {
         } else if (type !== 'Custom') {
             const ignoreBlankEle: HTMLElement = this.parent.createElement('input', { className: 'e-checkbox' });
             dataCont.appendChild(ignoreBlankEle);
-            const ignoreBlankObj: CheckBox = new CheckBox(
-                { label: l10n.getConstant('InCellDropDown'), checked: validation.inCellDropDown === false ? false : true });
+            const ignoreBlankObj: CheckBox = new CheckBox({
+                label: l10n.getConstant('InCellDropDown'), checked: validation.inCellDropDown === false ? false : true,
+                enableRtl: this.parent.enableRtl
+            });
             this.checkBoxElements.push(ignoreBlankObj);
             ignoreBlankObj.appendTo(ignoreBlankEle);
             this.inputElements.push(ignoreBlankEle);
@@ -798,6 +807,7 @@ export class DataValidation {
         allowCont.appendChild(allowSelectEle);
         this.typeList = new DropDownList({
             dataSource: this.typeData,
+            enableRtl: this.parent.enableRtl,
             index: allowIdx,
             popupHeight: '200px',
             change: this.userInput.bind(this)
@@ -838,12 +848,12 @@ export class DataValidation {
             this.spanElements.push(minimumText); this.spanElements.push(maximumText);
             this.inputElements.push(minimumInp); this.inputElements.push(maximumInp);
             const numericMin: NumericTextBox = new NumericTextBox({
-                value: 0
+                value: 0, enableRtl: this.parent.enableRtl
             });
             this.numericTextBoxElements.push(numericMin);
             numericMin.appendTo('#minvalue');
             const numericMax: NumericTextBox = new NumericTextBox({
-                value: 0
+                value: 0, enableRtl: this.parent.enableRtl
             });
             this.numericTextBoxElements.push(numericMax);
             numericMax.appendTo('#maxvalue');
@@ -856,7 +866,10 @@ export class DataValidation {
         }
         const ignoreBlankEle: HTMLElement = this.parent.createElement('input', { className: 'e-checkbox' });
         ignoreBlankCont.appendChild(ignoreBlankEle);
-        const ignoreBlankObj: CheckBox = new CheckBox({ label: l10n.getConstant('IgnoreBlank'), checked: ignoreBlank });
+        const ignoreBlankObj: CheckBox = new CheckBox({
+            label: l10n.getConstant('IgnoreBlank'),
+            checked: ignoreBlank, enableRtl: this.parent.enableRtl
+        });
         this.checkBoxElements.push(ignoreBlankObj);
         ignoreBlankObj.appendTo(ignoreBlankEle);
         this.inputElements.push(ignoreBlankEle);
@@ -911,7 +924,10 @@ export class DataValidation {
             const cellDropDownEle: HTMLElement = this.parent.createElement('input', { className: 'e-checkbox' });
             this.inputElements.push(cellDropDownEle);
             dataCont.appendChild(cellDropDownEle);
-            const cellDropDownOhj: CheckBox = new CheckBox({ label: l10n.getConstant('InCellDropDown'), checked: true });
+            const cellDropDownOhj: CheckBox = new CheckBox({
+                label: l10n.getConstant('InCellDropDown'),
+                checked: true, enableRtl: this.parent.enableRtl
+            });
             this.checkBoxElements.push(cellDropDownOhj);
             cellDropDownOhj.appendTo(cellDropDownEle);
         } else if (listObj.value === l10n.getConstant('Custom')) {
@@ -941,12 +957,12 @@ export class DataValidation {
             this.spanElements.push(minimumText); this.spanElements.push(maximumText);
             this.inputElements.push(minimumInp); this.inputElements.push(maximumInp);
             const numericMin: NumericTextBox = new NumericTextBox({
-                value: 0
+                value: 0, enableRtl: this.parent.enableRtl
             });
             this.numericTextBoxElements.push(numericMin);
             numericMin.appendTo('min');
             const numericMax: NumericTextBox = new NumericTextBox({
-                value: 0
+                value: 0, enableRtl: this.parent.enableRtl
             });
             this.numericTextBoxElements.push(numericMax);
             numericMax.appendTo('max');
@@ -1246,10 +1262,10 @@ export class DataValidation {
             const currIdx: number[] = args.range;
             const prevIdx: number[] = [0, args.range[1], 0, args.range[3]];
             if (checkIsFormula(value1)) {
-                value1 = getUpdatedFormula(currIdx, prevIdx, sheet, this.parent, { formula: value1 });
+                value1 = getUpdatedFormula(currIdx, prevIdx, sheet, this.parent, { formula: value1 }, null, true);
             }
             if (checkIsFormula(value2)) {
-                value2 = getUpdatedFormula(currIdx, prevIdx, sheet, this.parent, { formula: value2 });
+                value2 = getUpdatedFormula(currIdx, prevIdx, sheet, this.parent, { formula: value2 }, null, true);
             }
         }
         if (validation.type !== 'List') {
@@ -1535,8 +1551,9 @@ export class DataValidation {
         }): void {
         let isValid: boolean;
         if (!args.isRemoveValidation) {
-            const cellValue: string = args.cell.value || <unknown>args.cell.value === 0 ? args.cell.value : args.cell.hyperlink ?
-                (typeof args.cell.hyperlink === 'string' ? args.cell.hyperlink : (args.cell.hyperlink.address || '')) : '';
+            const cellValue: string = args.cell ? (args.cell.value || <unknown>args.cell.value === 0 ? args.cell.value :
+                args.cell.hyperlink ? (typeof args.cell.hyperlink === 'string' ? args.cell.hyperlink :
+                    (args.cell.hyperlink.address || '')) : '') : '';
             const validEventArgs: CheckCellValidArgs = {
                 value: cellValue, range: [args.rowIdx, args.colIdx], sheetIdx: this.parent.activeSheetIndex
             };
@@ -1562,6 +1579,9 @@ export class DataValidation {
                 this.parent.notify(applyCellFormat, <CellFormatArgs>args);
             } else {
                 args.style = { backgroundColor: '#ffff00', color: '#ff0000' };
+                if (args.cell && args.cell.hyperlink && args.cell.style && args.cell.style.color === '#551a8b') {
+                    args.style.color = args.cell.style.color;
+                }
                 this.parent.notify(applyCellFormat, <CellFormatArgs>args);
             }
         }

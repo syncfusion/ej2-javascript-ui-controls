@@ -25,7 +25,7 @@ describe('validation for insertShape API', () => {
         documenteditor.destroy();
         documenteditor = undefined;
         document.body.removeChild(document.getElementById('container'));
-        document.body.innerHTML = '';
+        
         setTimeout(function () {
             done();
         }, 1000);

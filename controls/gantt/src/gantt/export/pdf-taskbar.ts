@@ -195,7 +195,7 @@ export class PdfGanttTaskbarCollection {
         customizedFont = font;
         if (!isNullOrUndefined(taskbar.taskbarTemplate.value) && taskbar.taskbarTemplate.fontStyle && taskbar.taskbarTemplate.fontStyle.fontFamily && taskbar.taskbarTemplate.fontStyle.fontSize) {
             customizedFont = new PdfStandardFont(taskbar.taskbarTemplate.fontStyle.fontFamily, taskbar.taskbarTemplate.fontStyle.fontSize, taskbar.taskbarTemplate.fontStyle.fontStyle)
-        } 
+        }
         customizedFontBrush = !isNullOrUndefined(taskbar.taskbarTemplate.value) && taskbar.taskbarTemplate.fontStyle && taskbar.taskbarTemplate.fontStyle.fontColor
             ? new PdfSolidBrush(taskbar.taskbarTemplate.fontStyle.fontColor)
             : fontBrush;
@@ -713,11 +713,11 @@ export class PdfGanttTaskbarCollection {
                                 }
                             }
                             pervwidth = data.left + data.width
-                          if( renderWidth >= pervwidth){
-                            this.segmentCollection[parseInt(index.toString(), 10)].width = 0;
-                            this.segmentCollection[parseInt(index.toString(), 10)].left = 0;
-                          }
-                          else {                      
+                            if( renderWidth >= pervwidth){
+                                this.segmentCollection[parseInt(index.toString(), 10)].width = 0;
+                                this.segmentCollection[parseInt(index.toString(), 10)].left = 0;
+                            }
+                            else {                      
                                 if (renderWidth >= (pervwidth - data.width)) {
                                     this.segmentCollection[parseInt(index.toString(), 10)].left = 0;
                                 }
@@ -730,6 +730,11 @@ export class PdfGanttTaskbarCollection {
                                 else {
                                     if (valueChangeBlocker) {
                                         this.segmentCollection[parseInt(index.toString(), 10)].width = pervwidth - renderWidth;
+                                        for(let i = 1; i < this.segmentCollection.length ; i++ ){
+                                            if(this.segmentCollection[parseInt((i).toString(), 10)].left > renderWidth){
+                                                this.segmentCollection[parseInt((i).toString(), 10)].left = this.segmentCollection[parseInt((i).toString(), 10)].left - renderWidth;
+                                            }
+                                        }
                                         valueChangeBlocker = false;
                                     }
                                 }
@@ -1174,14 +1179,13 @@ export class PdfGanttTaskbarCollection {
                         }
                     }
                     if(!isNullOrUndefined(this.taskLabel)){
-                       if (this.isAutoFit()) {
-                            taskGraphics.drawString(this.taskLabel.toString(), taskLabelFont, fontColor, taskLabelFontBrush, startPoint.x + (this.autoLeft - cumulativeWidth) + 0.5  - (taskLabelPadding.left + taskLabelPadding.right), startPoint.y + adjustHeight + 8  - (taskLabelPadding.top + taskLabelPadding.bottom), (this.autoWidth), pixelToPoint(this.height), progressFormat);
-                       }
-                       else {
-                            taskGraphics.drawString(this.taskLabel.toString(), taskLabelFont, fontColor, taskLabelFontBrush,  startPoint.x + pixelToPoint(this.autoLeft - cumulativeWidth) + 0.5 - (taskLabelPadding.left + taskLabelPadding.right), startPoint.y + adjustHeight + 8 - (taskLabelPadding.top + taskLabelPadding.bottom), pixelToPoint(this.autoWidth), pixelToPoint(this.height), progressFormat);
+                        if (this.isAutoFit()) {
+                             taskGraphics.drawString(this.taskLabel.toString(), taskLabelFont, fontColor, taskLabelFontBrush, startPoint.x + (this.autoLeft - cumulativeWidth) + 0.5  - (taskLabelPadding.left + taskLabelPadding.right), startPoint.y + adjustHeight + 8  - (taskLabelPadding.top + taskLabelPadding.bottom), (this.autoWidth), pixelToPoint(this.height), progressFormat);
                         }
-                    }
-                
+                        else {
+                             taskGraphics.drawString(this.taskLabel.toString(), taskLabelFont, fontColor, taskLabelFontBrush,  startPoint.x + pixelToPoint(this.autoLeft - cumulativeWidth) + 0.5 - (taskLabelPadding.left + taskLabelPadding.right), startPoint.y + adjustHeight + 8 - (taskLabelPadding.top + taskLabelPadding.bottom), pixelToPoint(this.autoWidth), pixelToPoint(this.height), progressFormat);
+                         }
+                     }
                     this.isCompletedAutotask = true;
                     this.startPage = pageIndex;
                     this.endPage = pageIndex;
@@ -1220,7 +1224,6 @@ export class PdfGanttTaskbarCollection {
                     taskbar.autoWidth = taskbar.autoWidth - renderWidth;
                     taskbar.progressWidth = taskbar.progressWidth - progressWidth;
                 }
-                
                 if (this.parent.labelSettings.taskLabel && !isNullOrUndefined(this.taskLabel)) {
                     this.stringLeft = this.autoLeft;
                     if(isNullOrUndefined(taskbar.taskbarTemplate.value)){
@@ -1234,10 +1237,10 @@ export class PdfGanttTaskbarCollection {
                     }
                     else{
                         if (this.isAutoFit()) {
-                            taskGraphics.drawString(this.taskLabel.toString(), taskLabelFont, fontColor, taskLabelFontBrush, startPoint.x + (this.autoLeft - cumulativeWidth) + 0.5  - (taskLabelPadding.left + taskLabelPadding.right), (startPoint.y + adjustHeight +8) - (taskLabelPadding.top + taskLabelPadding.bottom) , (taskbar.progressWidth ), pixelToPoint(this.height), progressFormat);
+                            taskGraphics.drawString(this.taskLabel.toString(), taskLabelFont, fontColor, taskLabelFontBrush, startPoint.x + (this.autoLeft - cumulativeWidth) + 0.5  - (taskLabelPadding.left + taskLabelPadding.right), (startPoint.y + adjustHeight +10) - (taskLabelPadding.top + taskLabelPadding.bottom) , (taskbar.progressWidth ), pixelToPoint(this.height), progressFormat);
                         }
                         else {
-                            taskGraphics.drawString(this.taskLabel.toString(), taskLabelFont, fontColor, taskLabelFontBrush, startPoint.x + pixelToPoint(this.autoLeft - cumulativeWidth) + 0.5  - (taskLabelPadding.left + taskLabelPadding.right), (startPoint.y + adjustHeight +8)  - (taskLabelPadding.top + taskLabelPadding.bottom), pixelToPoint(taskbar.progressWidth ), pixelToPoint(this.height), progressFormat);
+                            taskGraphics.drawString(this.taskLabel.toString(), taskLabelFont, fontColor, taskLabelFontBrush, startPoint.x + pixelToPoint(this.autoLeft - cumulativeWidth) + 0.5  - (taskLabelPadding.left + taskLabelPadding.right), (startPoint.y + adjustHeight +10)  - (taskLabelPadding.top + taskLabelPadding.bottom), pixelToPoint(taskbar.progressWidth ), pixelToPoint(this.height), progressFormat);
                         }
                     }
                 }
@@ -1259,18 +1262,17 @@ export class PdfGanttTaskbarCollection {
                         taskGraphics.drawRectangle(null, manualProgressBrush, startPoint.x + pixelToPoint(this.autoLeft + 0.5), startPoint.y + adjustHeight+10, pixelToPoint(taskbar.progressWidth), pixelToPoint(12));
                     }
                     if (!isNullOrUndefined(this.taskLabel)) {
-                      
+
                         if (isLabelString && isNullOrUndefined(taskbar.taskbarTemplate.value)) {
                             if (!isNullOrUndefined(this.remainString)) {
                                 const result: PdfStringLayoutResult = this.getWidth(this.remainString, detail.endPoint - this.stringLeft, 15);
-                                taskGraphics.drawString(result.lines[0].text, taskLabelFont, fontColor, taskLabelFontBrush, startPoint.x + pixelToPoint(this.autoLeft + 0.5)  - (taskLabelPadding.left + taskLabelPadding.right), (startPoint.y +adjustHeight+8)  - (taskLabelPadding.top + taskLabelPadding.bottom), pixelToPoint(taskbar.progressWidth), pixelToPoint(this.height), progressFormat);
+                                taskGraphics.drawString(result.lines[0].text, taskLabelFont, fontColor, taskLabelFontBrush, startPoint.x + pixelToPoint(this.autoLeft + 0.5)  - (taskLabelPadding.left + taskLabelPadding.right), (startPoint.y +adjustHeight+10)  - (taskLabelPadding.top + taskLabelPadding.bottom), pixelToPoint(taskbar.progressWidth), pixelToPoint(this.height), progressFormat);
                             }
                         }
                         else if (!isNullOrUndefined(this.taskLabel) && !isLabelString){
-                            taskGraphics.drawString(this.taskLabel.toString(), taskLabelFont, fontColor, taskLabelFontBrush, startPoint.x + pixelToPoint(this.autoLeft + 0.5)  - (taskLabelPadding.left + taskLabelPadding.right), (startPoint.y +adjustHeight+8)  - (taskLabelPadding.top + taskLabelPadding.bottom), pixelToPoint(taskbar.progressWidth), pixelToPoint(this.height), progressFormat);
+                            taskGraphics.drawString(this.taskLabel.toString(), taskLabelFont, fontColor, taskLabelFontBrush, startPoint.x + pixelToPoint(this.autoLeft + 0.5)  - (taskLabelPadding.left + taskLabelPadding.right), (startPoint.y +adjustHeight+10)  - (taskLabelPadding.top + taskLabelPadding.bottom), pixelToPoint(taskbar.progressWidth), pixelToPoint(this.height), progressFormat);
                         }
                     }
-
                     this.isCompletedAutotask = true;
                     this.endPage = pageIndex;
                 }

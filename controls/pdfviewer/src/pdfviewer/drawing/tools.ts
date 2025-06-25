@@ -638,7 +638,7 @@ export class MoveTool extends ToolBase {
                     rotation: (node as any).rotateAngle, tooltip: (node as any).tooltip, options: (node as any).options,
                     isChecked: (node as any).isChecked, isSelected: (node as any).isSelected, id: args.source ?  args.source.id : '',
                     name: (node as any).name, customData : (node as any).customData, lineBound: (node as any).bounds,
-                    pageNumber: (node as any).pageIndex, insertSpaces: (node as any).insertSpaces,
+                    pageNumber: (node as any).pageIndex, insertSpaces: (node as any).insertSpaces ,
                     formFieldAnnotationType: (node as any).formFieldAnnotationType, isTransparent: (node as any).isTransparent
                 };
                 const actualWidth: any = args.source.wrapper.actualSize.width;

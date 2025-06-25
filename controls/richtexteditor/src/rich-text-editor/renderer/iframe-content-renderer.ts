@@ -1,19 +1,11 @@
-import { IRichTextEditor, MetaTag } from '../base/interface';
+import { IRichTextEditor } from '../base/interface';
 import { ContentRender } from '../renderer/content-renderer';
-import { isNullOrUndefined as isNOU} from '@syncfusion/ej2-base';
+import { createElement, isNullOrUndefined as isNOU } from '@syncfusion/ej2-base';
 import { getEditValue } from '../base/util';
-import { IFRAME_EDITOR_STYLES } from '../../common/editor-styles';
+import { IFRAME_EDITOR_STYLES, IFRAME_EDITOR_LIGHT_THEME_STYLES, IFRAME_EDITOR_DARK_THEME_STYLES } from '../../common/editor-styles';
+import { CLS_RTE_IFRAME_CONTENT } from '../base';
+import { MetaTag } from '../../common/interface';
 
-const IFRAMEHEADER: string = `
-    <!DOCTYPE html> 
-    <html>
-         <head>
-            <meta charset='utf-8' /> 
-            <style>` +
-                IFRAME_EDITOR_STYLES.replace(/[\n\t]/g, '') + `
-            </style>
-        </head>
-`;
 
 /**
  * Content module is used to render Rich Text Editor content
@@ -22,19 +14,40 @@ const IFRAMEHEADER: string = `
  * @deprecated
  */
 export class IframeContentRender extends ContentRender {
-    /**
-     * The function is used to render Rich Text Editor iframe
-     *
-     * @hidden
-     * @deprecated
-     */
-
+    private styles: string = this.getEditorStyles();
+    private IFRAMEHEADER: string = `
+    <!DOCTYPE html> 
+    <html>
+         <head>
+            <meta charset='utf-8' /> 
+            <style>` +
+        this.styles + `
+            </style>
+        </head>
+    `;
+    /* Gets editor styles with theme-specific styling */
+    private getEditorStyles(): string {
+        // Get base editor styles
+        const baseStyles: string = IFRAME_EDITOR_STYLES.replace(/[\n\t]/g, '');
+        // Detect theme
+        const themeStyle: CSSStyleDeclaration = window.getComputedStyle(this.parent.element.querySelector('.e-rte-container'));
+        const isDarkTheme: boolean = themeStyle.content.includes('dark-theme');
+        // Select theme styles based on current theme
+        const themeStyles: string = (isDarkTheme ?
+            IFRAME_EDITOR_DARK_THEME_STYLES :
+            IFRAME_EDITOR_LIGHT_THEME_STYLES).replace(/[\n\t]/g, '');
+        // Return combined styles
+        return baseStyles + themeStyles;
+    }
     public renderPanel(): void {
         const rteObj: IRichTextEditor = this.parent;
         const rteContent: string = getEditValue(rteObj.value, rteObj);
-        const iFrameBodyContent: string = '<body contenteditable="true">' +
-           rteContent + '</body></html>';
-        let iFrameContent: string = IFRAMEHEADER + iFrameBodyContent;
+        const iFrameBodyContent: string =
+            '<body contenteditable="true" aria-label="Rich Text Editor" role="textbox" lang="' +
+            this.parent.locale.slice(0, 2) +
+            '" dir="' + (this.parent.enableRtl ? 'rtl' : 'ltr') +
+            '">' + rteContent + '</body></html>';
+        let iFrameContent: string = this.IFRAMEHEADER + iFrameBodyContent;
         const iframe: HTMLIFrameElement = <HTMLIFrameElement>this.parent.createElement(
             'iframe',
             {
@@ -53,7 +66,9 @@ export class IframeContentRender extends ContentRender {
             }
             iframe.setAttribute('sandbox', sandboxValues.trim());
         }
-        rteObj.rootContainer.appendChild(iframe);
+        const iframeWrapper: HTMLElement = createElement('div', { className: CLS_RTE_IFRAME_CONTENT });
+        rteObj.rootContainer.appendChild(iframeWrapper);
+        iframeWrapper.appendChild(iframe);
         iframe.contentDocument.body.setAttribute('aria-owns', this.parent.getID());
         iframe.contentDocument.open();
         iFrameContent = this.setThemeColor(iFrameContent, { color: '#333' });

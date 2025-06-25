@@ -12,6 +12,7 @@ import { PdfPageSize } from '@syncfusion/ej2-grids';
 import { SizeF } from '@syncfusion/ej2-pdf-export';
 import { PivotChart } from '../pivotchart/base/pivotchart';
 import * as cls from '../common/base/css-constant';
+import { DrillOptionsModel } from '../model/datasourcesettings-model';
 
 /**
  * This is a file to perform common utility for OLAP and Relational datasource
@@ -595,7 +596,11 @@ export class PivotUtil {
                 headerDelimiter: collection.headerDelimiter,
                 headerText: collection.headerText,
                 measure: collection.measure,
-                sortOrder: collection.sortOrder
+                sortOrder: collection.sortOrder,
+                columnHeaderText: collection.columnHeaderText,
+                rowHeaderText: collection.rowHeaderText,
+                rowSortOrder: collection.rowSortOrder,
+                columnSortOrder: collection.columnSortOrder
             };
             return clonedCollection;
         } else {
@@ -1159,8 +1164,45 @@ export class PivotUtil {
             }
         }
         if (control.toolbar && control.toolbar.indexOf('FieldList') !== -1 &&
-            control.showToolbar && control.element.querySelector('.e-toggle-field-list')) {
-            (control.element.querySelector('.e-toggle-field-list') as HTMLElement).style.display = 'none';
+            control.showToolbar && control.element.querySelector('.' + cls.TOGGLE_FIELD_LIST_CLASS)) {
+            (control.element.querySelector('.' + cls.TOGGLE_FIELD_LIST_CLASS) as HTMLElement).style.display = 'none';
         }
+    }
+
+    public static isMemberDrilled(previousRowCell: IAxisSet, previousRowTextCollection: string[],
+                                  drilledMembers: DrillOptionsModel[]): boolean {
+        let drillMem: boolean = false;
+        for (let n: number = 0; n < drilledMembers.length; n++) {
+            const drillItems: string[] = drilledMembers[n as number].items;
+            for (let v: number = 0; v < drillItems.length; v++) {
+                if (drillMem) {
+                    break;
+                }
+                const drillItemsCollection: string[] = drillItems[v as number].split(
+                    drilledMembers[n as number].delimiter);
+                const rowText: string[] = previousRowCell.formattedText.split(' ');
+                const rowFormatText: string[] = [];
+                let formattedRowText: string;
+                for (let z: number = 0; z < rowText.length; z++) {
+                    rowFormatText.push(rowText[z as number]);
+                    formattedRowText = rowFormatText.join(' ');
+                    if (formattedRowText === drillItemsCollection[drillItemsCollection.length - 1]) {
+                        for (let x: number = 0; x < previousRowTextCollection.length; x++) {
+                            if (!drillItemsCollection[x as number]) {
+                                break;
+                            }
+                            if (drillItemsCollection[x as number] === previousRowTextCollection[x as number] &&
+                                drillItemsCollection[0] === previousRowTextCollection[0]) {
+                                drillMem = true;
+                            } else {
+                                drillMem = false;
+                                break;
+                            }
+                        }
+                    }
+                }
+            }
+        }
+        return drillMem;
     }
 }

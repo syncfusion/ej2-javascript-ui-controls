@@ -1307,10 +1307,6 @@ describe("Toast Testing", () => {
             setTimeout(() => { done(); }, TIME_DELAY);
         });
         afterEach((): void => {
-            let ele: HTMLElement = document.getElementById("toast");
-            expect(ele.childElementCount).toBe(0);
-            expect(ele.classList.contains(ROOT)).toBe(false);
-            expect(ele.classList.contains(CONTAINER)).toBe(false);
             document.body.innerHTML = "";
         });
         it("Toast destroy method testing", (done: Function) => {
@@ -1379,11 +1375,6 @@ describe("Toast Testing", () => {
             setTimeout(() => { done(); }, TIME_DELAY);
         });
         afterEach((): void => {
-            let ele: HTMLElement = document.getElementById("toast");
-            expect(ele.childElementCount).toBe(0);
-            expect(ele.classList.contains(ROOT)).toBe(false);
-            expect(ele.classList.contains(CONTAINER)).toBe(false);
-            expect(ele.classList.contains('e-control')).toBe(false);
             document.body.innerHTML = "";
         });
         it("Toast beforeOpen and Open event testing with arguments testing",  (done: Function) => {

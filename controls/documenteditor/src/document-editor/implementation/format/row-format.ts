@@ -34,7 +34,7 @@ export class WRowFormat {
     /**
      * @private
      */
-    public revisions: Revision[] = [];
+    private revisions: Revision[] = [];
     /**
      * @private
      */
@@ -331,5 +331,64 @@ export class WRowFormat {
     }
     public static clear(): void {
         this.uniqueRowFormats.clear();
+    }
+
+    /**
+     * @private
+     */
+    get revisionLength(): number {
+        if (!isNullOrUndefined(this.revisions)) {
+            return this.revisions.length;
+        }
+        return 0;
+    }
+    /**
+     * @private
+     */
+    public getRevision(index: number): Revision {
+        if (!isNullOrUndefined(this.revisions)) {
+            return this.revisions[index];
+        }
+        return undefined;
+    }
+    /**
+     * @private
+     */
+    public addRevision(revision: Revision): void {
+        if (this.revisions.indexOf(revision) === -1) {
+            this.revisions.push(revision);
+        }
+        revision.hasChanges = true;
+    }
+    /**
+     * @private
+     */
+    public insertRevisionAt(index: number, revision: Revision): void {
+        this.revisions.splice(index, 0, revision)
+        revision.hasChanges = true;
+    }
+    /**
+     * @private
+     */
+    public removeRevision(index: number): void {
+        let revision: Revision = this.revisions.splice(index, 1)[0];
+        revision.hasChanges = true;
+    }
+
+    /**
+     * @private
+     */
+    public getAllRevision(): Revision[] {
+        return this.revisions;
+    }
+    /**
+     * @private
+     */
+    public getRevisionRange(revision: Revision): WRowFormat[] {
+        let range: WRowFormat[] = [];
+        if (this.revisions.indexOf(revision) !== -1) {
+            range.push(this)
+        }
+        return range;
     }
 }

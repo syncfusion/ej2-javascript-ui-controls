@@ -164,7 +164,8 @@ export class MultiLevelLabel {
                         (axisRect.y - startY + labelSize.height / 2 - this.xAxisMultiLabelHeight[level as number] -
                         this.xAxisPrevHeight[level as number])) + scrollBarHeight;
                     if (argsData.alignment === 'Center') {
-                        x += (endX - startX - padding) / 2; anchor = 'middle';
+                        x += (endX - startX - padding) / 2;
+                        anchor = 'middle';
                     } else if (argsData.alignment === 'Far') {
                         x = x + (endX - startX - padding) - multiLevel.border.width / 2;
                         if (axis.labelPlacement === 'OnTicks' && (i === 0 || i === len - 1)) {
@@ -173,7 +174,8 @@ export class MultiLevelLabel {
                         }
                         anchor = 'end';
                     } else {
-                        anchor = 'start'; x += multiLevel.border.width / 2;
+                        anchor = 'start';
+                        x += multiLevel.border.width / 2;
                     }
                     y = multiLevel.border.type === 'CurlyBrace' ?
                         (((!opposedPosition && isOutside) || (opposedPosition && !isOutside)) ? y + padding : y - padding / 2) : y;

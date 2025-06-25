@@ -625,6 +625,9 @@ export class VirtualScroll {
     }
 
     private updateVTrackHeight(args: { rowIdx: number, threshold: number }): void {
+        if (!this.parent.allowScrolling) {
+            return;
+        }
         const frozenRow: number = this.parent.frozenRowCount(this.parent.getActiveSheet());
         if (args.rowIdx < this.scroll[this.parent.activeSheetIndex].rowCount) {
             this.updateVTrack(this.rowHeader, this.getVTrackHeight('height') + args.threshold, 'height');
@@ -644,7 +647,7 @@ export class VirtualScroll {
     }
 
     private updateVTrackWidth(args: { colIdx: number, threshold: number }): void {
-        if (isHiddenCol(this.parent.getActiveSheet(), args.colIdx)) {
+        if (isHiddenCol(this.parent.getActiveSheet(), args.colIdx) || !this.parent.allowScrolling) {
             return;
         }
         const frozenCol: number = this.parent.frozenColCount(this.parent.getActiveSheet());

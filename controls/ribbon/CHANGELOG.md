@@ -2,14 +2,6 @@
 
 ## [Unreleased]
 
-## 29.1.39 (2025-04-22)
-
-### Ribbon
-
-#### Bug Fixes
-
-`#I708279` - Now the script issue raised when dynamically adding/removing the ribbon tabs, using the signal concept has been resolved.
-
 ## 25.1.35 (2024-03-15)
 
 ### Ribbon

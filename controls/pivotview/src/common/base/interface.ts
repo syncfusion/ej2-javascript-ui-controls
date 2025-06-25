@@ -1066,7 +1066,7 @@ export interface BeforeServiceInvokeEventArgs {
     /** Allows you to export the pivot table data of all pages. */
     exportAllPages?: boolean;
     /** Defines whether the pivot table's group settings are modified or not. */
-    isGroupingUpdated: boolean;
+    isGroupingUpdated?: boolean;
 }
 
 /**

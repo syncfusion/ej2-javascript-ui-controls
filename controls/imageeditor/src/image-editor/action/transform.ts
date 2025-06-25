@@ -817,36 +817,35 @@ export class Transform {
             destWidth: parent.img.destWidth, destHeight: parent.img.destHeight };
         if (parent.activeObj.shape) {
             const maxDimension: Dimension = this.setZoomDimension(-0.1, parent.activeObj);
-            if (!isNullOrUndefined(zoomOut)) {
-                const actPoint: ActivePoint = parent.activeObj.activePoint;
-                if (parent.transform.straighten === 0) {
-                    if (parent.img.destLeft > actPoint.startX || parent.img.destTop >
-                        actPoint.startY || parent.img.destLeft + parent.img.destWidth <
-                        actPoint.endX || parent.img.destTop + parent.img.destHeight < actPoint.endY
-                        || zoomFactor === minZoomFactor) {
-                        zoomOut.classList.add('e-disabled');
-                        zoomOut.parentElement.classList.add('e-overlay');
-                        isDisabled = true;
-                    } else {
-                        zoomOut.classList.remove('e-disabled');
-                        zoomOut.parentElement.classList.remove('e-overlay');
-                        isDisabled = false;
-                    }
+            const actPoint: ActivePoint = parent.activeObj.activePoint;
+            if (parent.transform.straighten === 0) {
+                if (parent.img.destLeft > actPoint.startX || parent.img.destTop >
+                    actPoint.startY || parent.img.destLeft + parent.img.destWidth <
+                    actPoint.endX || parent.img.destTop + parent.img.destHeight < actPoint.endY
+                    || zoomFactor === minZoomFactor) {
+                    isDisabled = true;
                 } else {
-                    parent.img.destWidth = maxDimension.width; parent.img.destHeight = maxDimension.height;
-                    const obj: Object = {isIntersect: null };
-                    parent.notify('draw', { prop: 'updateImgCanvasPoints', onPropertyChange: false });
-                    parent.notify('draw', { prop: 'isLinesIntersect', onPropertyChange: false, value: {obj: obj }});
-                    if (obj['isIntersect'] ||
-                        zoomFactor === minZoomFactor) {
-                        zoomOut.classList.add('e-disabled');
-                        zoomOut.parentElement.classList.add('e-overlay');
-                        isDisabled = true;
-                    } else {
-                        zoomOut.classList.remove('e-disabled');
-                        zoomOut.parentElement.classList.remove('e-overlay');
-                        isDisabled = false;
-                    }
+                    isDisabled = false;
+                }
+            } else {
+                parent.img.destWidth = maxDimension.width; parent.img.destHeight = maxDimension.height;
+                const obj: Object = {isIntersect: null };
+                parent.notify('draw', { prop: 'updateImgCanvasPoints', onPropertyChange: false });
+                parent.notify('draw', { prop: 'isLinesIntersect', onPropertyChange: false, value: {obj: obj }});
+                if (obj['isIntersect'] ||
+                    zoomFactor === minZoomFactor) {
+                    isDisabled = true;
+                } else {
+                    isDisabled = false;
+                }
+            }
+            if (zoomOut) {
+                if (isDisabled) {
+                    zoomOut.classList.add('e-disabled');
+                    zoomOut.parentElement.classList.add('e-overlay');
+                } else {
+                    zoomOut.classList.remove('e-disabled');
+                    zoomOut.parentElement.classList.remove('e-overlay');
                 }
             }
         } else {
@@ -876,7 +875,7 @@ export class Transform {
             maxDimension.width += (maxDimension.width * parent.transform.zoomFactor);
             maxDimension.height += (maxDimension.height * parent.transform.zoomFactor);
             parent.img.destLeft = (parent.lowerCanvas.clientWidth - maxDimension.width) / 2;
-            parent.img.destTop = (parent.lowerCanvas.clientHeight - maxDimension.height + 1) / 2;
+            parent.img.destTop = (parent.lowerCanvas.clientHeight - maxDimension.height) / 2;
         }
         parent.notify('draw', {prop: 'draw-image-to-canvas', value: {dimension: maxDimension } });
         maxDimension.width = this.cropDimension.width; maxDimension.height = this.cropDimension.height;
@@ -1512,7 +1511,7 @@ export class Transform {
                 maxDimension.height += (maxDimension.height * parent.transform.defaultZoomFactor);
             }
             parent.img.destLeft = (parent.lowerCanvas.clientWidth - maxDimension.width) / 2;
-            parent.img.destTop = (parent.lowerCanvas.clientHeight - maxDimension.height + 1) / 2;
+            parent.img.destTop = (parent.lowerCanvas.clientHeight - maxDimension.height) / 2;
             if (parent.transform.degree === 0 && parent.transform.currFlipState === '') {
                 if (parent.transform.defaultZoomFactor > 0) {
                     parent.img.destLeft += parent.panPoint.totalPannedPoint.x;
@@ -1612,11 +1611,11 @@ export class Transform {
     private calcMaxDimension(width: number, height: number, obj?: Object, isImgShape?: boolean): Dimension {
         const object: Object = {toolbarHeight: 0 }; const parent: ImageEditor = this.parent;
         parent.notify('toolbar', { prop: 'getToolbarHeight', value: {obj: object }});
-        let canvasMaxWidth: number = isImgShape ? parent.element.clientWidth / 3 :
-            parent.element.clientWidth;
-        let canvasMaxHeight: number = isImgShape ? (parent.element.clientHeight - object['toolbarHeight']) / 3 :
-            parent.element.clientHeight - (object['toolbarHeight']); // 1px border
-        canvasMaxHeight = Browser.isDevice ? canvasMaxHeight - (object['toolbarHeight']) : canvasMaxHeight; // 1px border
+        const newWidth: number = parent.imageSettings.width ? parent.imageSettings.width : parent.element.clientWidth;
+        const newHeight: number = parent.imageSettings.height ? parent.imageSettings.height : parent.element.clientHeight - (object['toolbarHeight']);
+        let canvasMaxWidth: number = isImgShape ? parent.element.clientWidth / 3 : newWidth;
+        let canvasMaxHeight: number = isImgShape ? (parent.element.clientHeight - object['toolbarHeight']) / 3 : newHeight;
+        canvasMaxHeight = Browser.isDevice ? canvasMaxHeight - (object['toolbarHeight']) : canvasMaxHeight;
         if (Browser.isDevice && parent.isStraightening) {
             const cxtTbar: HTMLElement = parent.element.querySelector('#' + parent.element.id + '_contextualToolbarArea');
             canvasMaxHeight -= cxtTbar ? cxtTbar.clientHeight : 0;
@@ -1624,12 +1623,15 @@ export class Transform {
         if (!isImgShape && parent.element.clientHeight === 0) {
             canvasMaxHeight = 0;
         }
-        if (isNullOrUndefined(isImgShape)) {
+        const isImageSettings: boolean = parent.imageSettings.width && parent.imageSettings.height ? true : false;
+        if (isNullOrUndefined(isImgShape) && !(isImageSettings)) {
             if (canvasMaxWidth > 30) {canvasMaxWidth -= 30; } if (canvasMaxHeight > 30) {canvasMaxHeight -= 30; }
         }
         const widthScale: number = canvasMaxWidth / width; const heightScale: number = canvasMaxHeight / height;
         let cssMaxWidth: number = Math.min(width, canvasMaxWidth); let cssMaxHeight: number = Math.min(height, canvasMaxHeight);
-        if (widthScale < 1 && widthScale < heightScale) {cssMaxWidth = width * widthScale; cssMaxHeight = height * widthScale; }
+        if (widthScale < 1 && widthScale < heightScale) {
+            cssMaxWidth = width * widthScale; cssMaxHeight = height * widthScale;
+        }
         else if (heightScale < 1 && heightScale < widthScale) {cssMaxWidth = width * heightScale; cssMaxHeight = height * heightScale; }
         if (isNullOrUndefined(isImgShape)) {
             const cropObj: Object = {bool: null };
@@ -1793,6 +1795,9 @@ export class Transform {
                 this.zoomAction(.0125, null, true, true);
             }
         }
+        if (parent.isPublicMethod && parent.aspectWidth === width && parent.aspectHeight === height) {
+            return;
+        }
         this.resizeImg(activeObj, width, height); width = tempwidth; height = tempheight;
         if ((height !== parent.img.destHeight || width !== parent.img.destWidth)) {
             while ((height > parent.img.destHeight || width > parent.img.destWidth)) {
@@ -1829,9 +1834,12 @@ export class Transform {
                 value: {type: 'custom', startX: null, startY: null, width: null, height: null }});
         }
         if (isNullOrUndefined(parent.currSelectionPoint)) {
-            parent.notify('draw', { prop: 'select', onPropertyChange: false,
-                value: {type: 'custom', startX: parent.img.destLeft, startY: parent.img.destTop,
-                    width: parent.img.destWidth, height: parent.img.destHeight }});
+            /* eslint-disable-next-line @typescript-eslint/no-explicit-any */
+            if (!parent.shapeColl.some((item: any) => item.rotatedAngle && item.rotatedAngle !== 0)) {
+                parent.notify('draw', { prop: 'select', onPropertyChange: false,
+                    value: {type: 'custom', startX: parent.img.destLeft, startY: parent.img.destTop,
+                        width: parent.img.destWidth, height: parent.img.destHeight }});
+            }
         } else {
             parent.notify('draw', { prop: 'select', onPropertyChange: false,
                 value: {type: 'custom', startX: null, startY: null, width: null, height: null}});

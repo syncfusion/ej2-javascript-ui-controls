@@ -91,7 +91,7 @@ describe('Default section Format API Validation', () => {
         editor.destroy();
         document.body.removeChild(document.getElementById('container'));
         editor = undefined;
-        document.body.innerHTML = '';
+        
     });
     it('check page width of the page', () => {
 console.log('check page width of the page');

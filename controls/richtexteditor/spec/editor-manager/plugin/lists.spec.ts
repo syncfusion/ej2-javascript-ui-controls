@@ -3,7 +3,7 @@
  */
 import { createElement, detach, isNullOrUndefined, selectAll, Browser } from '@syncfusion/ej2-base';
 import { EditorManager } from '../../../src/editor-manager/index';
-import { destroy, renderRTE } from '../../rich-text-editor/render.spec';
+import { destroy, renderRTE, dispatchEvent } from '../../rich-text-editor/render.spec';
 import { RichTextEditor } from '../../../src';
 import { CustomUserAgentData } from '../../../src/common/user-agent';
 import { BACKSPACE_EVENT_INIT } from '../../constant.spec';
@@ -1385,7 +1385,7 @@ describe ('left indent testing', () => {
                 expect((editorObj.listObj as any).saveSelection.range.endContainer.textContent === endNode.childNodes[0].textContent).toBe(true);
 
                 startNode = editNode.querySelector('.ol-third-node');
-                expect(startNode.tagName === 'UL').toBe(true);
+                expect(startNode).toBeNull();
                 editorObj.nodeSelection.Clear(document);
             });
             it(' convert the OL list to UL list while render with inner HTML tag', () => {
@@ -1625,7 +1625,7 @@ describe ('left indent testing', () => {
                 expect((editorObj.listObj as any).saveSelection.range.endContainer.textContent === endNode.childNodes[0].textContent).toBe(true);
 
                 startNode = editNode.querySelector('.ul-third-node');
-                expect(startNode.tagName === 'OL').toBe(true);
+                expect(startNode).toBeNull();
                 editorObj.nodeSelection.Clear(document);
             });
 
@@ -2309,6 +2309,38 @@ describe ('left indent testing', () => {
             });
         });
         
+        describe('Enter key press testing in nested list with hr and text node', () => {
+            let elem: HTMLElement;
+            let innerValue = `<div id="content-edit"><ol><li>List<ol><li>item<hr><p class="focusNode">items</p></li></ol></li></ol></div>`;
+
+            beforeEach(() => {
+                elem = createElement('div', {
+                    id: 'dom-node', innerHTML: innerValue
+                });
+                document.body.appendChild(elem);
+                editorObj = new EditorManager({ document: document, editableElement: document.getElementById("content-edit") });
+                editNode = editorObj.editableElement as HTMLElement;
+            });
+
+            afterEach(() => {
+                detach(elem);
+            });
+
+            it('961384-Unintended List Item Created After Inserting Horizontal Line in Nested List and Typing Below It', () => {
+                const startNode = editNode.querySelector('.focusNode');
+                setCursorPoint(startNode, 0);
+                keyBoardEvent.event.shiftKey = false;
+                keyBoardEvent.action = 'enter';
+                keyBoardEvent.event.which = 13;
+                (editorObj as any).editorKeyDown(keyBoardEvent);
+                expect(editNode.innerHTML).toBe(`<ol><li>List<ol><li>item<hr><p class="focusNode">items</p></li></ol></li></ol>`
+                );
+            });
+
+            afterAll(() => {
+                detach(elem);
+            });
+        });
     });
 
     describe(' EJ2-29800 - Reactive form validation not working properly', () => {
@@ -2897,6 +2929,37 @@ describe ('left indent testing', () => {
                 done();
             }, 100);
         });
+    });  
+
+    describe('962722 - Fails to retain bold style on specific list items when switching between bullet and number lists', () => {
+        let editorObj: RichTextEditor;
+        beforeAll(() => {
+            editorObj = renderRTE({
+                toolbarSettings: {
+                    items: ['OrderedList', 'UnorderedList']
+                },
+                value: `<p><strong>Insert Images:</strong> Upload images from local storage or provide an image URL.</p>
+        <p><strong>Resize &amp; Drag:</strong> Easily adjust image dimensions and reposition them within the content.</p>
+        <p><strong>Align Images:</strong> Set images to align <strong>left, center, or right</strong>.</p>
+        <p><strong>Caption Support:</strong> Add captions to describe your images.</p>
+        <p><strong>Replace &amp; Remove:</strong> Change or delete images as needed.</p>`
+            });
+        });
+        afterAll(() => {
+            destroy(editorObj);
+        });
+        it('Apply ordered list and check for the bold style', (done) => {
+            const paragraphs = editorObj.inputElement.querySelectorAll('p');
+            const firstParagraph = paragraphs[0];
+            const lastParagraph = paragraphs[paragraphs.length - 1];
+            // Select all <p> elements
+            editorObj.formatter.editorManager.nodeSelection.setSelectionText(document, firstParagraph, lastParagraph, 0, 1);
+            (editorObj.element.querySelectorAll(".e-toolbar .e-toolbar-item")[0] as HTMLElement).click();
+            setTimeout(() => {
+                expect(editorObj.inputElement.innerHTML === `<ol><li><strong>Insert Images:</strong> Upload images from local storage or provide an image URL.</li><li><strong>Resize &amp; Drag:</strong> Easily adjust image dimensions and reposition them within the content.</li><li><strong>Align Images:</strong> Set images to align <strong>left, center, or right</strong>.</li><li><strong>Caption Support:</strong> Add captions to describe your images.</li><li><strong>Replace &amp; Remove:</strong> Change or delete images as needed.</li></ol>`).toBe(true);
+                done();
+            }, 100);
+        });
     });
 
     describe('926563 - Decrease Indent Format Applied to Paragraph Format, After Reverting a List for Selected Combination of Heading and Paragraph Format with Increase Indent Format.', () => {
@@ -2954,7 +3017,7 @@ describe ('left indent testing', () => {
             keyBoardEvent.action = "paste";
             (editorObj as any).onPaste(keyBoardEvent);
             setTimeout(() => {
-                expect(editorObj.inputElement.innerHTML === '<p><b>Key features:</b></p><ul><li><p>Provides &lt;IFRAME&gt; and &lt;DIV&gt; modes</p></li><li><p>Capable of handling markdown editing.</p></li><li><p>Contains a modular library to load the necessary functionality on demand.</p></li><li><p>Provides a fully customizable toolbar.</p></li><li><p>Provides HTML view to edit the source directly for developers.</p></li><li><p>Supports third-party library integration.</p></li><li><p>Allows a preview of modified content before saving it.</p></li><li><p>Handles images, hyperlinks, video, hyperlinks, uploads, etc.</p></li><li><p>Contains undo/redo manager.</p></li><li><p>Creates bulleted and numbered lists.</p></li></ul>').toBe( true);
+                expect(editorObj.inputElement.innerHTML === '<p><b>Key features:</b></p><ul><li>Provides &lt;IFRAME&gt; and &lt;DIV&gt; modes</li><li>Capable of handling markdown editing.</li><li>Contains a modular library to load the necessary functionality on demand.</li><li>Provides a fully customizable toolbar.</li><li>Provides HTML view to edit the source directly for developers.</li><li>Supports third-party library integration.</li><li>Allows a preview of modified content before saving it.</li><li>Handles images, hyperlinks, video, hyperlinks, uploads, etc.</li><li>Contains undo/redo manager.</li><li>Creates bulleted and numbered lists.</li></ul>').toBe(true);
                 done();
             }, 100);
         });
@@ -3314,8 +3377,146 @@ describe ('left indent testing', () => {
             }, 100);
         });
     });
+    describe('List functionality in readonly mode', () => {
+        let editor: RichTextEditor;
+        beforeEach((done: DoneFn) => {
+            editor = renderRTE({
+                value: `Rich Text Editor`,
+                toolbarSettings: {
+                    items: ['NumberFormatList', 'UnorderedList']
+                },
+                readonly: true
+            });
+            done();
+        });
+        afterEach((done: DoneFn) => {
+            destroy(editor);
+            done();
+        });
+        it('should not show dropdown when list button is clicked in readonly mode', (done: DoneFn) => {
+            editor.focusIn();
+            const toolbar: Element = editor.element.querySelectorAll('.e-rte-toolbar .e-toolbar-item')[0];
+            //Modified rendering from dropdown to split button
+            const button: Element = toolbar.querySelector('#' + editor.getID() + '_toolbar_NumberFormatList').parentElement;
+            (button as HTMLElement).style.width = '50px';
+            (button as HTMLElement).style.height = '50px';
+            (button as HTMLElement).click();
+            setTimeout(() => {
+                expect(editor.element.querySelector('.e-popup-open')).toBe(null);
+                done();
+            }, 100);
+        });
+    });
+    describe('List Split functionality', () => {
+        let editor: RichTextEditor;
+        beforeEach((done: DoneFn) => {
+            editor = renderRTE({
+                value: `<ul><li>Rich Text Editor 1</li><li>Rich Text Editor 2</li><li>Rich Text Editor 3</li><li>Rich Text Editor 4</li></ul>`,
+                toolbarSettings: {
+                    items: ['NumberFormatList', 'UnorderedList']
+                }
+            });
+            done();
+        });
+        afterEach((done: DoneFn) => {
+            destroy(editor);
+            done();
+        });
 
-    describe('956972 - Rich Text Editor Issues with Delete action When List Is at the End', () => {
+        it('should split the unordered list to ordered list for the selected list items', (done: DoneFn) => {
+            editor.focusIn();
+            const editorEle: Element = editor.contentModule.getEditPanel();
+            const start = editorEle.querySelectorAll('li')[0].firstChild;
+            const end = editorEle.querySelectorAll('li')[2].firstChild;
+            expect(editorEle.querySelectorAll('ol').length === 0).toBe(true);
+            editor.formatter.editorManager.nodeSelection.setSelectionText(document, start, end, 0, 5);
+            const toolbar: Element = editor.element.querySelectorAll('.e-rte-toolbar .e-toolbar-item')[0];
+            const button: Element = toolbar.querySelector('#' + editor.getID() + '_toolbar_NumberFormatList').parentElement;
+            (button as HTMLElement).click();
+            setTimeout(() => {
+                const lists = editorEle.querySelectorAll('ol');
+                expect(lists.length).toBeGreaterThan(0);
+                expect(editorEle.querySelectorAll('ul').length).toBe(1);
+                expect(editorEle.querySelectorAll('ol')[0].nextElementSibling.nodeName === 'UL').toBe(true);
+                done();
+            }, 10);
+        });
+        it('should split the unordered list to ordered list when selection is within a single list item', (done: DoneFn) => {
+            editor.focusIn();
+            const editorEle: Element = editor.contentModule.getEditPanel();
+            editorEle.innerHTML = `<ul><li>Rich Text Editor 1</li><li>Rich Text Editor 2</li><li>Rich Text Editor 3</li></ul>`;
+            const start = editorEle.querySelectorAll('li')[1].firstChild;
+            const end = editorEle.querySelectorAll('li')[1].firstChild;
+            expect(editorEle.querySelectorAll('ol').length === 0).toBe(true);
+            editor.formatter.editorManager.nodeSelection.setSelectionText(document, start, end, 2, 5);
+            const toolbar: Element = editor.element.querySelectorAll('.e-rte-toolbar .e-toolbar-item')[0];
+            const button: Element = toolbar.querySelector('#' + editor.getID() + '_toolbar_NumberFormatList').parentElement;
+            (button as HTMLElement).click();
+            setTimeout(() => {
+                const unorderList = editorEle.querySelectorAll('ul')[0];
+                expect(unorderList.nextElementSibling.nodeName === 'OL').toBe(true);
+                expect(unorderList.nextElementSibling.nextElementSibling.nodeName === 'UL').toBe(true);
+                const lists = editorEle.querySelectorAll('ol');
+                expect(lists.length).toBeGreaterThan(0);
+                done();
+            }, 10);
+        });
+        it('should convert the entire list when the cursor is positioned within a list item', (done: DoneFn) => {
+            editor.focusIn();
+            const editorEle: Element = editor.contentModule.getEditPanel();
+            editorEle.innerHTML = `<ul><li>Rich Text Editor 1</li><li>Rich Text Editor 2</li><li>Rich Text Editor 3</li></ul>`;
+            const start = editorEle.querySelectorAll('li')[1].firstChild;
+            expect(editorEle.querySelectorAll('ol').length === 0).toBe(true);
+            setCursorPoint(start as Element, 4);
+            const toolbar: Element = editor.element.querySelectorAll('.e-rte-toolbar .e-toolbar-item')[0];
+            const button: Element = toolbar.querySelector('#' + editor.getID() + '_toolbar_NumberFormatList').parentElement;
+            (button as HTMLElement).click();
+            setTimeout(() => {
+                expect(editorEle.querySelectorAll('ul').length === 0).toBe(true);
+                const lists = editorEle.querySelectorAll('ol');
+                expect(lists.length).toBe(1);
+                done();
+            }, 10);
+        });
+        it('should convert nested lists that are within the selection range', (done: DoneFn) => {
+            editor.focusIn();
+            const editorEle: Element = editor.contentModule.getEditPanel();
+            editorEle.innerHTML = `<ul><li class="start">Rich Text Editor 1<ul><li>Rich&nbsp;<ul><li class="end">Text<ul><li>Editor 2</li></ul></li></ul></li></ul></li><li>Rich Text Editor 3</li></ul>`;
+            expect(editorEle.querySelectorAll('ol').length === 0).toBe(true);
+            const start = editorEle.querySelector('.start').firstChild;
+            const end = editorEle.querySelector('.end').firstChild;
+            editor.formatter.editorManager.nodeSelection.setSelectionText(document, start, end, 2, 4);
+            const toolbar: Element = editor.element.querySelectorAll('.e-rte-toolbar .e-toolbar-item')[0];
+            const button: Element = toolbar.querySelector('#' + editor.getID() + '_toolbar_NumberFormatList').parentElement;
+            (button as HTMLElement).click();
+            setTimeout(() => {
+                expect(editorEle.querySelectorAll('ol').length === 3).toBe(true);
+                const lists = editorEle.querySelector('ol');
+                expect(lists.nextElementSibling.nodeName).toBe('UL');
+                expect(editorEle.innerHTML === '<ol><li class="start">Rich Text Editor 1<ol><li>Rich&nbsp;<ol><li class="end">Text<ul><li>Editor 2</li></ul></li></ol></li></ol></li></ol><ul><li>Rich Text Editor 3</li></ul>');
+                done();
+            }, 10);
+        });
+        it('should convert only the selected nested list without affecting parent lists', (done: DoneFn) => {
+            editor.focusIn();
+            const editorEle: Element = editor.contentModule.getEditPanel();
+            editorEle.innerHTML = `<ol><li>Rich 1<ol><li class="start">Rich 1.1</li><li class="end">Rich&nbsp; 1.2</li></ol></li><li>Rich 2</li></ol>`;
+            expect(editorEle.querySelectorAll('ul').length === 0).toBe(true);
+            const start = editorEle.querySelector('.start').firstChild;
+            const end = editorEle.querySelector('.end').firstChild;
+            editor.formatter.editorManager.nodeSelection.setSelectionText(document, start, end, 2, 4);
+            const toolbar: Element = editor.element.querySelectorAll('.e-rte-toolbar .e-toolbar-item')[1];
+            const button: Element = toolbar.querySelector('#' + editor.getID() + '_toolbar_UnorderedList');
+            (button as HTMLElement).click();
+            setTimeout(() => {
+                expect(editorEle.querySelectorAll('ol').length === 1).toBe(true);
+                expect(editorEle.innerHTML === '<ol><li>Rich 1<ul><li class="start">Rich 1.1</li><li class="end">Rich&nbsp; 1.2</li></ul></li><li>Rich 2</li></ol>').toBe(true);
+                done();
+            }, 10);
+        });
+    });
+
+      describe('956972 - Rich Text Editor Issues with Delete action When List Is at the End', () => {
         let editorObj: RichTextEditor;
         beforeAll(() => {
             editorObj = renderRTE({
@@ -3425,5 +3626,197 @@ describe ('left indent testing', () => {
                 done();
             }, 100);
         });
+        it('RTE content should not be removed when the Backspace key is pressed while the RTE contains an empty br.', (done) => {
+            editorObj.inputElement.innerHTML = '<p><br></p><p><br></p><p><br></p><p class="start"><br></p>'
+            let startNode = editorObj.inputElement.querySelector('.start');
+            editorObj.formatter.editorManager.nodeSelection.setSelectionText(document, startNode, startNode, 0, startNode.textContent.length);
+            let keyBoardEvent: any = { type: 'keydown', preventDefault: () => { }, ctrlKey: true, key: 'backspace', stopPropagation: () => { }, shiftKey: false, which: 8 };
+            keyBoardEvent.keyCode = 8;
+            keyBoardEvent.code = 'Backspace';
+            (editorObj as any).keyDown(keyBoardEvent);
+            (editorObj as any).keyUp(keyBoardEvent);
+            setTimeout(() => {
+                expect(editorObj.inputElement.innerHTML === '<p><br></p><p><br></p><p><br></p><p class="start"><br></p>').toBe(true);
+                done();
+            }, 100);
+        });
+    });
+
+    describe('Applying bullet and ordered list styles on a selected table', () => {
+        let rteObj: RichTextEditor;
+        let rteEle: HTMLElement;
+        let controlId: string;
+    
+        beforeAll((done: Function) => {
+            rteObj = renderRTE({
+                toolbarSettings: {
+                    items: ['BulletFormatList', 'NumberFormatList']
+                },
+                bulletFormatList: {
+                    types: [
+                        { text: 'None', value: 'none' },
+                        { text: 'Disc', value: 'disc' },
+                        { text: 'Circle', value: 'circle' },
+                        { text: 'Square', value: 'square' }
+                    ]
+                },
+                numberFormatList: {
+                    types: [
+                        { text: 'None', value: 'none' },
+                        { text: 'Number', value: 'decimal' },
+                        { text: 'UpperAlpha', value: 'upperAlpha' }
+                    ]
+                },
+                value: `
+                    <table>
+                        <tbody>
+                            <tr>
+                                <td>Cell 1</td>
+                                <td>Cell 2</td>
+                            </tr>
+                            <tr>
+                                <td>Cell 3</td>
+                                <td>Cell 4</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                `
+            });
+            rteEle = rteObj.element;
+            controlId = rteEle.id;
+            done();
+        });
+    
+        afterAll((done: Function) => {
+            destroy(rteObj);
+            done();
+        });
+    
+        it('Should apply bullet and ordered list styles using setSelectionText', () => {
+            const table: HTMLTableElement = rteEle.querySelector('table')!;
+            expect(table).not.toBeNull();
+            const ul = table.closest('ul');
+            // Selecting the first cell
+            const firstCell = table.querySelectorAll('td');
+            const nodeSelection = rteObj.formatter.editorManager.nodeSelection;
+            // Using the setSelectionText method as per NodeSelection class logic
+            nodeSelection.setSelectionText(document, firstCell[0], firstCell[3], 0, 0);
+            // Simulate clicking 'Disc'
+            let bulletDropdown = document.querySelector('#' + controlId + '_toolbar_BulletFormatList_dropdownbtn');
+            (bulletDropdown as HTMLElement).click();
+            let bulletDropdownItems = document.querySelectorAll('#' + controlId + '_toolbar_BulletFormatList_dropdownbtn-popup .e-item');
+            (bulletDropdownItems[1] as HTMLElement).click();
+            // Verify if the bullet style applied correctly
+            let firstTd = table.querySelector('ul');
+            expect(firstTd.style.listStyleType).toBe('disc');
+            // apply an ordered list
+            const numberButton: HTMLElement = rteObj.element.querySelector(`#${controlId}_toolbar_NumberFormatList_dropdownbtn`) as HTMLElement;
+            numberButton.click();
+            // clicking 'Number' (decimal)
+            let numberDropdownItems = document.querySelectorAll('#' + controlId + '_toolbar_NumberFormatList_dropdownbtn-popup .e-item');
+            dispatchEvent(numberDropdownItems[1] as HTMLElement, 'mousedown');
+            (numberDropdownItems[1] as HTMLElement).click();
+            firstTd = table.querySelector('ol');
+            expect(firstTd.style.listStyleType).toBe('decimal');
+        });
+    });
+    describe('Lists applied to HR elements', () => {
+        it('should apply a list to the first HR element with no text nodes', () => {
+            const htmlContent = `<div id="content-edit" contenteditable="true">
+                <hr/>
+                <hr/>
+                <hr/>
+            </div>`;
+            // Create a DOM element with the initial HTML content
+            const elem = createElement('div', {
+                id: 'dom-node', innerHTML: htmlContent
+            });
+            document.body.appendChild(elem);
+            const editorObj = new EditorManager({ document: document, editableElement: document.getElementById('content-edit') });
+            const editNode = editorObj.editableElement as HTMLElement;
+            // Select the first HR element to apply the list
+            const hrElement = editNode.querySelector('hr');
+            setCursorPoint(hrElement, 0);
+            editorObj.execCommand("Lists", 'OL', null);
+            
+            // Assertions to verify the applied list around hr element
+            const listElement = editNode.querySelector('ol');
+            expect(listElement).not.toBeNull();
+            expect(listElement.firstElementChild.tagName).toBe('LI');
+            expect(listElement.querySelector('li').firstElementChild.tagName).toBe('HR');
+            // Clean up DOM
+            detach(elem);
+        });
+    });
+
+});
+describe('963590 - Blazor Server : List formatting fails when applying bullet list over numbered list with mixed content selection', () => {
+    let editorObj: RichTextEditor;
+    beforeAll(() => {
+        editorObj = renderRTE({
+            toolbarSettings: {
+                items: ['OrderedList', 'UnorderedList']
+            },
+            value: `<ol><li>text1<ol><li class="start">text2</li></ol></li><li><br></li></ol><p>Rich Text Ediotr</p>`
+        });
+    });
+    afterAll(() => {
+        destroy(editorObj);
+    });
+    it('Should remove the empty list when delete key is pressed', (done) => {
+        let startNode = editorObj.inputElement.querySelector('.start');
+        setCursorPoint(startNode.firstChild as Element, startNode.firstChild.textContent.length);
+        let keyBoardEvent: any = { type: 'keydown', preventDefault: () => { }, ctrlKey: true, key: 'backspace', stopPropagation: () => { }, shiftKey: false, which: 8 };
+        keyBoardEvent.keyCode = 46;
+        keyBoardEvent.code = 'Delete';
+        expect(editorObj.inputElement.querySelectorAll("li").length === 3).toBe(true);
+        (editorObj as any).keyDown(keyBoardEvent);
+        setTimeout(() => {
+            expect(editorObj.inputElement.querySelectorAll("li").length === 2).toBe(true);
+            expect(editorObj.inputElement.innerHTML == '<ol><li>text1<ol><li class="start">text2<br></li></ol></li></ol><p>Rich Text Ediotr</p>').toBe(true);
+            done();
+        }, 100);
+    });
+    it('Should list merge with the range li element when delete key is pressed', (done) => {
+        editorObj.inputElement.innerHTML = '<ol><li>text1<ol><li class="start">text2</li></ol></li><li>sdfsdfsd<ol><li>asdfasdf</li></ol></li></ol><p>Rich Text Ediotr</p>';
+        let startNode = editorObj.inputElement.querySelector('.start');
+        setCursorPoint(startNode.firstChild as Element, startNode.firstChild.textContent.length);
+        let keyBoardEvent: any = { type: 'keydown', preventDefault: () => { }, ctrlKey: true, key: 'backspace', stopPropagation: () => { }, shiftKey: false, which: 8 };
+        keyBoardEvent.keyCode = 46;
+        keyBoardEvent.code = 'Delete';
+        expect(editorObj.inputElement.querySelectorAll("li").length === 4).toBe(true);
+        (editorObj as any).keyDown(keyBoardEvent);
+        setTimeout(() => {
+            expect(editorObj.inputElement.querySelectorAll("li").length === 3).toBe(true);
+            expect(editorObj.inputElement.innerHTML == `<ol><li>text1<ol><li class="start">text2sdfsdfsd<ol><li>asdfasdf</li></ol></li></ol></li></ol><p>Rich Text Ediotr</p>`).toBe(true);
+            done();
+        }, 100);
+    });
+});
+describe('964856 - When selecting two list items and pressing the Backspace key, the entire list gets deleted unexpectedly', () => {
+    let editorObj: RichTextEditor;
+    beforeAll(() => {
+        editorObj = renderRTE({
+            toolbarSettings: {
+                items: ['OrderedList', 'UnorderedList']
+            },
+            value: `<ul><li class="start">Basic features include headings, block quotes, numbered lists, bullet lists, and support to insert images, tables, audio, and video.</li><li class="end">Inline styles include <b>bold</b>, <em>italic</em>, <span style="text-decoration: underline">underline</span>, <span style="text-decoration: line-through">strikethrough</span>, <a class="e-rte-anchor" href="https://ej2.syncfusion.com/demos/#/material/rich-text-editor/tools.html" title="https://ej2.syncfusion.com/demos/#/material/rich-text-editor/tools.html" aria-label="Open in new window">hyperlinks</a>,<code>InlineCode</code>, 😀 and more.</li> <li>The toolbar has multi-row, expandable, and scrollable modes. The Editor supports an inline toolbar, a floating toolbar, and custom toolbar items.</li> <li>Integration with Syncfusion<sup>®</sup> Mention control lets users tag other users. To learn more, check out the <a class="e-rte-anchor" href="https://ej2.syncfusion.com/documentation/rich-text-editor/mention-integration" title="Mention Documentation" aria-label="Open in new window">documentation</a> and <a class="e-rte-anchor" href="https://ej2.syncfusion.com/demos/#/material/rich-text-editor/mention-integration.html" title="Mention Demos" aria-label="Open in new window">demos</a>.</li> </ul><p><br/></p>`
+        });
+    });
+    afterAll(() => {
+        destroy(editorObj);
+    });
+    it('Do not remove the entire list while select two list then press the Backspace key.', (done) => {
+        let startNode = editorObj.inputElement.querySelector('.start');
+        let endNode = editorObj.inputElement.querySelector('.end');
+        editorObj.formatter.editorManager.nodeSelection.setSelectionText(document, startNode, endNode.lastChild, 0, endNode.lastChild.textContent.length);
+        let keyBoardEvent: any = { type: 'keydown', preventDefault: () => { }, ctrlKey: true, key: 'backspace', stopPropagation: () => { }, shiftKey: false, which: 8 };
+        keyBoardEvent.keyCode = 8;
+        keyBoardEvent.code = 'Backspace';
+        (editorObj as any).keyDown(keyBoardEvent);
+        setTimeout(() => {
+            expect(editorObj.inputElement.innerHTML === '<ul> <li>The toolbar has multi-row, expandable, and scrollable modes. The Editor supports an inline toolbar, a floating toolbar, and custom toolbar items.</li> <li>Integration with Syncfusion<sup>®</sup> Mention control lets users tag other users. To learn more, check out the <a class="e-rte-anchor" href="https://ej2.syncfusion.com/documentation/rich-text-editor/mention-integration" title="Mention Documentation" aria-label="Open in new window">documentation</a> and <a class="e-rte-anchor" href="https://ej2.syncfusion.com/demos/#/material/rich-text-editor/mention-integration.html" title="Mention Demos" aria-label="Open in new window">demos</a>.</li> </ul><p><br></p>').toBe(true);
+            done();
+        }, 100);
     });
 });

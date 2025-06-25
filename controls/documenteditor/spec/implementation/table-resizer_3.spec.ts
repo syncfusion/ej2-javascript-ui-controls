@@ -39,7 +39,7 @@ describe('Table Cell Resizing With Final Cell Selection testing', () => {
         editor.destroy();
         editor = undefined;
         document.body.removeChild(document.getElementById('container'));
-        document.body.innerHTML = '';
+        
         setTimeout(function () {
             done();
         }, 1000);
@@ -106,7 +106,7 @@ describe('Cell Width Restricting on cell Resizing testing', () => {
         editor.destroy();
         editor = undefined;
         document.body.removeChild(document.getElementById('container'));
-        document.body.innerHTML = '';
+        
         setTimeout(function () {
             done();
         }, 1000);
@@ -167,7 +167,7 @@ describe('Cell Width Restricting on cell Resizing With Selection testing', () =>
         editor.destroy();
         editor = undefined;
         document.body.removeChild(document.getElementById('container'));
-        document.body.innerHTML = '';
+        
         setTimeout(function () {
             done();
         }, 1000);
@@ -209,7 +209,7 @@ console.log('Resize Table With Selection on Zero index Testing');
 describe('Check the backspace is working properly in table case with bookmark', () => {
     let container: DocumentEditor;
     beforeAll(() => {
-        document.body.innerHTML = '';
+        
         let ele: HTMLElement = createElement('div', { id: 'container' });
         document.body.appendChild(ele);
         DocumentEditor.Inject(Editor, Selection, EditorHistory);
@@ -224,7 +224,7 @@ describe('Check the backspace is working properly in table case with bookmark', 
         container.destroy();
         document.body.removeChild(document.getElementById('container'));
         container = undefined;
-        document.body.innerHTML = '';
+        
         setTimeout(function () {
             done();
         }, 1000);

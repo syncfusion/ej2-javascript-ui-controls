@@ -40,6 +40,7 @@ export class SheetTabs {
             this.destroy(); return;
         }
         const l10n: L10n = this.parent.serviceLocator.getService(locale);
+        const isRTL: boolean = this.parent.enableRtl;
         const panel: HTMLElement = this.parent.createElement('div', {
             className: 'e-sheet-tab-panel', id: this.parent.element.id + '_sheet_tab_panel'
         });
@@ -60,6 +61,7 @@ export class SheetTabs {
             iconCss: 'e-icons',
             items: items.ddbItems,
             createPopupOnClick: true,
+            enableRtl: isRTL,
             beforeItemRender: (args: MenuEventArgs): void => {
                 const sheet: SheetModel = this.parent.sheets[this.dropDownInstance.items.indexOf(args.item)];
                 if (sheet.state === 'Hidden') {
@@ -71,7 +73,8 @@ export class SheetTabs {
             select: (args: MenuEventArgs): void => this.updateSheetTab({ idx: this.dropDownInstance.items.indexOf(args.item) }),
             beforeOpen: (args: BeforeOpenCloseMenuEventArgs): void => this.beforeOpenHandler(
                 this.dropDownInstance, args.element, l10n.getConstant('ListAllSheets')),
-            open: (args: OpenCloseMenuEventArgs): void => this.openHandler(this.dropDownInstance, args.element, 'left'),
+            open: (args: OpenCloseMenuEventArgs): void => this.openHandler(
+                this.dropDownInstance, args.element, this.parent.enableRtl ? 'right' : 'left'),
             cssClass: 'e-sheets-list e-flat e-caret-hide',
             close: (): void => this.focusTab(this.tabInstance.element)
         });
@@ -84,6 +87,7 @@ export class SheetTabs {
             overflowMode: 'Scrollable',
             items: items.tabItems,
             scrollStep: 250,
+            enableRtl: isRTL,
             selecting: (args: SelectingEventArgs): void => {
                 if (args.selectingIndex === args.selectedIndex) { return; }
                 if (cancelSelect) {
@@ -474,6 +478,7 @@ export class SheetTabs {
         dialogInst.show({
             height: 180, width: 400, isModal: true, showCloseIcon: true,
             content: content,
+            enableRtl: this.parent.enableRtl,
             beforeOpen: (args: BeforeOpenEventArgs): void => {
                 const dlgArgs: DialogBeforeOpenEventArgs = {
                     dialogName: 'SheetRenameDialog',
@@ -536,6 +541,7 @@ export class SheetTabs {
                 } else {
                     dialogInst.show({
                         height: 200, width: 400, isModal: true, showCloseIcon: true, cssClass: 'e-delete-sheet-dlg',
+                        enableRtl: this.parent.enableRtl,
                         content: l10n.getConstant('DeleteSheetAlert'),
                         beforeOpen: (args: BeforeOpenEventArgs): void => {
                             const dlgArgs: DialogBeforeOpenEventArgs = {
@@ -643,6 +649,7 @@ export class SheetTabs {
                     content: content,
                     items: this.getAggregateItems(eventArgs),
                     createPopupOnClick: true,
+                    enableRtl: this.parent.enableRtl,
                     select: (args: MenuEventArgs): void => {
                         this.parent.notify(aggregateComputation, eventArgs);
                         this.updateAggregateContent(args.item.text,
@@ -651,7 +658,8 @@ export class SheetTabs {
                     },
                     beforeOpen: (args: BeforeOpenCloseMenuEventArgs): void =>
                         this.beforeOpenHandler(this.aggregateDropDown, args.element),
-                    open: (args: OpenCloseMenuEventArgs): void => this.openHandler(this.aggregateDropDown, args.element, 'right'),
+                    open: (args: OpenCloseMenuEventArgs): void => this.openHandler(
+                        this.aggregateDropDown, args.element, this.parent.enableRtl ? 'left' : 'right'),
                     close: (): void => focus(this.parent.element),
                     cssClass: btnClass
                 });

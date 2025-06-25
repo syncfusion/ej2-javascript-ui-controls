@@ -1,4 +1,4 @@
-import { IRenderer, IRichTextEditor } from '../base/interface';
+import { IRichTextEditor, IRenderer } from '../base/interface';
 import { getEditValue } from '../base/util';
 import { isNullOrUndefined as isNOU } from '@syncfusion/ej2-base';
 
@@ -38,7 +38,11 @@ export class ContentRender implements IRenderer {
             className: 'e-content',
             id: this.parent.getID() + '_rte-edit-view',
             attrs: {
-                'contenteditable': 'true'
+                'contenteditable': 'true',
+                'aria-label': 'Rich Text Editor',
+                'role': 'textbox',
+                'lang': rteObj.locale.slice(0, 2),
+                'dir': rteObj.enableRtl ? 'rtl' : 'ltr'
             }
         });
         if (!isNOU(this.parent.fontFamily.default)) {

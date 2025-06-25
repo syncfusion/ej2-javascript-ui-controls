@@ -29,6 +29,7 @@
         }
       }
     }
+
     .e-view-content {
       height: calc(100% - $aiassist-bigger-header-height);
     }
@@ -71,25 +72,26 @@
       }
     }
     .e-footer {
-      &:not(.e-footer-template) .e-assist-send {
-        font-size: $send-icon-size-bigger;
-        bottom: $send-icon-bigger-bottom;
-      }
-      .e-clear-icon:not(.e-clear-icon-hide) {
-        padding-bottom: $clear-icon-bigger-bottom;
-      }
-      .e-input-group.e-control-wrapper.e-multi-line-input {
-        .e-textarea {
-          min-height: 38px;
-          @if $theme-name == 'Material3' or $theme-name == 'material' or $theme-name == 'Material3-dark' or $theme-name == 'material-dark' {
-            padding: 6px 12px 6px 16px;
-          }
+      &:not(.e-footer-template) {
+        .e-assist-send {
+          font-size: $send-icon-size-bigger;
         }
-        &.e-rtl .e-textarea {
-          @if $theme-name == 'Material3' or $theme-name == 'material' or $theme-name == 'Material3-dark' or $theme-name == 'material-dark' {
-            padding: 6px 16px 6px 12px;
-          }
+        .e-assist-clear-icon:not(.e-assist-clear-icon-hide) {
+          font-size: $clear-icon-size-bigger;
         }
+      }
+      .e-footer-icons-wrapper {
+        gap: $assist-footer-icons-gap-bigger;
+        padding: $assist-footer-icons-padding-bigger;
+        .e-assist-attachment-icon {
+          font-size: $assist-attachment-icon-font-size-bigger;
+        }
+      }
+      .e-assist-textarea {
+        min-height: $assist-textarea-min-height-bigger;
+        line-height: $assist-textarea-line-height-bigger;
+        padding: $assist-textarea-padding-bigger;
+        font-size: 16px;
       }
     }
     .e-stop-response.e-btn-active {
@@ -118,6 +120,59 @@
       .e-content-body,
       .e-loading-footer {
         padding: 6px 6px 0 0;
+      }
+      .e-footer {
+        .e-footer-icons-wrapper {
+          padding: $assist-footer-icons-rtl-padding-bigger;
+          padding-right: unset;
+        }
+      }
+    }
+
+    // Attachment support related styles
+    .e-prompt-content .e-prompt-uploaded-files:has(.e-assist-uploaded-file-item) {
+      border-radius: $bigger-prompt-uploded-file-border-radius;
+      padding: $bigger-prompt-uploded-file-padding;
+    }
+
+    .e-footer .e-assist-drop-area:has(.e-assist-uploaded-file-item) {
+      margin: $bigger-prompt-files-container-margin;
+    }
+
+    .e-footer .e-assist-drop-area,
+    .e-prompt-content .e-prompt-uploaded-files {
+      .e-assist-uploaded-file-item {
+        margin: $bigger-prompt-files-margin;
+        &:not(:has(.e-assist-clear-icon)) .e-assist-file-details {
+          padding-right: 15px;
+        }
+      }
+
+      .e-assist-file-details {
+        padding: $bigger-attached-file-details-padding;
+      }
+
+      .e-assist-clear-icon {
+        padding: $bigger-attached-file-clear-icon-padding;
+      }
+    }
+
+    .e-view-content {
+      .e-upload-failure-alert {
+        padding: $bigger-file-failure-padding;
+        border-radius: $bigger-file-failure-border-radius;
+        .e-assist-clear-icon {
+          font-size: $bigger-file-failure-close-icon-font-size;
+          line-height: $bigger-file-failure-close-icon-line-height;
+        }
+        .e-failure-message {
+          font-size: $bigger-file-failure-msg-font-size;
+          line-height: $bigger-file-failure-msg-line-height;
+        }
+        .e-assist-circle-close {
+          font-size: $bigger-file-failure-circle-close-icon-font-size;
+          margin-right: $bigger-file-failure-circle-close-icon-margin;
+        }
       }
     }
   }

@@ -4839,18 +4839,18 @@ describe('Keyboard interaction', () => {
     describe('quick info popup', () => {
         let schObj: Schedule;
         let keyModule: any;
-
+    
         beforeAll((done: DoneFn) => {
             const elem: HTMLElement = createElement('div', { id: 'Schedule', attrs: { tabIndex: '1' } });
             const schOptions: ScheduleModel = { selectedDate: new Date(2017, 9, 4) };
             schObj = util.createSchedule(schOptions, [], done, elem);
             keyModule = schObj.keyboardInteractionModule;
         });
-
+    
         afterAll(() => {
             util.destroy(schObj);
         });
-
+    
         it('home key focus maintained in quick info popup', () => {
             const workCells: NodeListOf<HTMLElement> = schObj.element.querySelectorAll('.e-work-cells');
             workCells[25].click();
@@ -4865,7 +4865,7 @@ describe('Keyboard interaction', () => {
             keyModule.keyActionHandler({ action: 'home', target: document.activeElement });
             expect(document.activeElement).toBe(subjectInput);
         });
-
+    
         it('should not activate inappropriate elements', () => {
             const nonInteractiveElement = document.createElement('div');
             document.body.appendChild(nonInteractiveElement);

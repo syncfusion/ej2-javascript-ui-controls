@@ -42,6 +42,14 @@ $de-tool-ctnr-editor-height-big: calc(100% - 126px) !default;
 // Subtract statusbar height
 $de-ctnr-editor-height: calc(100% - 42px) !default;
 $de-ctnr-editor-height-big: calc(100% - 46px) !default;
+
+// Subtract the ribbon & statusbar height
+$de-ribbon-simplified-ctnr-editor-height: calc(100% - 113px) !default;
+$de-ribbon-simplified-ctnr-editor-height-big: calc(100% - 117px) !default;
+
+$de-ribbon-classic-editor-height: calc(100% - 201px) !default;
+$de-ribbon-classic-editor-height-big: calc(100% - 205px) !default;
+
 $de-ctrnr-tblr-item-padding: 0 !default;
 $de-ctrnr-tblr-item-margin: 0 6.5px !default;
 $de-ctrnr-tblr-item-margin-big: 0 6px !default;
@@ -52,6 +60,7 @@ $de-toc-template-content1: 83px !default;
 $de-toc-template-content2: 68px !default;
 $de-toc-template-content3: 60px !default;
 $de-img-span-top: 8px !default;
+$de-ribbon-img-span-top: 8px !default;
 $de-img-span-left: 12px !default;
 $de-toggle-btn-outline: none !default;
 $de-toggle-btn-border: none !default;
@@ -138,6 +147,7 @@ $de-prop-clr-wrap-height-big: 40px;
 $de-prop-font-btn-width: 67px;
 $de-prop-font-btn-width-big: 88px;
 $de-prop-clr-wrap-mar-right: 8px;
+$de-ribbon-property-label: $text-xs;
 
 // Color variable
 $de-pageweb-toggle-outline: $white 0 solid !default;
@@ -165,6 +175,8 @@ $de-pageweb-toggle-color: $content-bg-color-alt3 !default;
 $e-de-pagenumber-bg: $content-bg-color;
 $de-toggle-border-hover-color: var(--color-sf-secondary-bg-color-pressed);
 $de-toggle-hover-color: var(--color-sf-secondary-bg-color-hover);
+$de-ctnr-layout-margin-bottom: 4px;
+$de-ctnr-picture-margin-bottom: 0;
 
 //Blazor
 $e-de-bzr-button-border-color: $white !default;

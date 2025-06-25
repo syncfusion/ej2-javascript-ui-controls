@@ -11,7 +11,7 @@ import { PathSegment, ImageAttributes, StyleAttributes, BaseAttributes, LineAttr
 import { LinearGradientModel, RadialGradientModel, StopModel } from './../core/appearance-model';
 import { RectAttributes, PathAttributes, TextAttributes, SubTextElement, TextBounds } from './canvas-interface';
 import { IRenderer } from './../rendering/IRenderer';
-import { Container } from '../core/containers/container';
+import { GroupableView } from '../core/containers/container';
 import { PathElement } from '../core/elements/path-element';
 import { TextElement } from '../core/elements/text-element';
 import { ImageElement } from '../core/elements/image-element';
@@ -174,12 +174,11 @@ export class CanvasRenderer implements IRenderer {
         }
         ctx.setLineDash(dashArray);
         if (style.gradient && style.gradient.type !== 'None') {
-            if ((style as BaseAttributes).shapeType === 'Rectangle' &&
-                ((style as RectAttributes).cornerRadius === undefined || (style as RectAttributes).cornerRadius === 0)) {
-                this.renderGradient(style, ctx, (style as BaseAttributes).x, (style as BaseAttributes).y);
-            } else {
-                this.renderGradient(style, ctx, 0, 0);
-            }
+                if ((style as BaseAttributes).shapeType === 'Rectangle') {
+                    this.renderGradient(style, ctx, (style as BaseAttributes).x, (style as BaseAttributes).y);
+                } else {
+                    this.renderGradient(style, ctx, 0, 0);
+                }
         } else {
             ctx.fillStyle = style.fill;
         }
@@ -527,7 +526,7 @@ export class CanvasRenderer implements IRenderer {
         diagramId?: string, scaleValue?: number, renderer?: any, element?: TextElement):
         void {
         if (options.content && options.visible === true) {
-            const parentNode: Container = renderer.groupElement;
+            const parentNode: GroupableView = renderer.groupElement;
             const ctx: CanvasRenderingContext2D = CanvasRenderer.getContext(canvas);
             ctx.save();
             this.setStyle(canvas, options as StyleAttributes);
@@ -612,7 +611,7 @@ export class CanvasRenderer implements IRenderer {
         renderer?: any, element?: PathElement | TextElement | ImageElement | DiagramElement):
         void {
             if (options.flip !== FlipDirection.None && renderer && element && !(element.elementActions & ElementAction.ElementIsPort)) {
-                const parent: Container  = renderer.groupElement;
+                const parent: GroupableView  = renderer.groupElement;
                 const textWrapper: PathElement | TextElement | ImageElement | DiagramElement = element;
                 let transform: ITransform;
                 if ((element instanceof TextElement && (element as any).position)) {

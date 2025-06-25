@@ -45,7 +45,7 @@ export interface IShapeAnnotation {
     labelBorderColor: string
     fontColor: string
     fontSize: number
-    fontFamily: string
+    fontFamily : string
     labelBounds: IRectangle
     annotationSelectorSettings: AnnotationSelectorSettingsModel
     labelSettings?: ShapeLabelSettingsModel
@@ -911,6 +911,42 @@ export class ShapeAnnotation {
         const b: number = parseInt(stringArray[2], 10);
         const a: number = parseFloat(stringArray[3]);
         return { r: r, g: g, b: b, a: a };
+    }
+
+    /**
+     * @private
+     * @returns {void}
+     */
+    public destroy(): void {
+        this.currentAnnotationMode = null;
+        this.lineOpacity = null;
+        this.arrowOpacity = null;
+        this.rectangleOpacity = null;
+        this.circleOpacity = null;
+        this.polygonOpacity = null;
+        this.lineFillColor = null;
+        this.arrowFillColor = null;
+        this.rectangleFillColor = null;
+        this.circleFillColor = null;
+        this.polygonFillColor = null;
+        this.lineStrokeColor = null;
+        this.arrowStrokeColor = null;
+        this.rectangleStrokeColor = null;
+        this.circleStrokeColor = null;
+        this.polygonStrokeColor = null;
+        this.lineThickness = null;
+        this.arrowThickness = null;
+        this.rectangleThickness = null;
+        this.circleThickness = null;
+        this.polygonThickness = null;
+        this.lineDashArray = null;
+        this.lineStartHead = null;
+        this.lineEndHead = null;
+        this.arrowDashArray = null;
+        this.arrowStartHead = null;
+        this.arrowEndHead = null;
+        this.shapeCount = null;
+        this.isAddAnnotationProgramatically = null;
     }
 
     /**

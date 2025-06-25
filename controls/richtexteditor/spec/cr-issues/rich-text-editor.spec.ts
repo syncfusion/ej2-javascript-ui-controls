@@ -134,7 +134,7 @@ describe('RTE CR issues ', () => {
         it('insert the special character inside the table', () => {
             rteObj.dataBind();
             let start: Element =(document.querySelector('.e-content').childNodes[0] as HTMLElement).children[0] as Element;
-            rteObj.formatter.editorManager.nodeSelection.setSelectionText(document, start.firstChild, start.firstChild, 293, 293);
+            rteObj.formatter.editorManager.nodeSelection.setSelectionText(document, start.firstChild, start.firstChild, 167, 167);
             (document.querySelector('[title="Create Table (Ctrl+Shift+E)"]') as HTMLElement).click();
             (document.querySelector('#customRTE_insertTable')as HTMLElement).click();
             (document.querySelector('.e-insert-table.e-primary')as HTMLElement).click();
@@ -746,26 +746,26 @@ describe('RTE CR issues ', () => {
         });
         it('Select and apply tab key in list', (done: DoneFn) => {
         rteObj.value=`<ol id='ol'><li><p>Provide
-        the tool bar support, it’s also customizable.</p></li><li ><p id='one'>Options
+        the tool bar support, it’s also customizable.</p></li><li id='one' ><p >Options
         to get the HTML elements with styles.</p></li><li><p>Support
         to insert image from a defined path.</p></li><li id='two'><p>Footer
         elements and styles(tag / Element information , Action button (Upload, Cancel))</p></li></ol>`;
         rteObj.dataBind();
         let startElement = rteObj.inputElement.querySelector('#one');
         let endElement = rteObj.inputElement.querySelector('#two');
-        domSelection.setSelectionText(document, startElement.childNodes[0], endElement.childNodes[0], 6, 1);
+        domSelection.setSelectionText(document, startElement.childNodes[0], endElement.childNodes[0], 6, 86);
         (rteObj as any).keyDown(keyBoardEvent);
         setTimeout(() => {
             let value=rteObj.inputElement.querySelector('#ol');
-            expect(value.innerHTML=== `<li><p>Provide\n        the tool bar support, it’s also customizable.</p></li><li><p id="one">Option&nbsp;&nbsp;&nbsp;&nbsp;</p></li>`).toBe(true);
-        rteObj.value=`<p id='one'><b>Functional Specifications/Requirements:</b></p><ol><li><p>Provide the tool bar support, it’s also customizable.</p></li><li><p id='two'>Options to get the HTML elements with styles.</p></li></ol>`;
+            expect(value.innerHTML=== `<li>Provide the tool bar support, it’s also customizable.</li><li id="one">Option&nbsp;&nbsp;&nbsp;&nbsp;</li>`).toBe(true);
+        rteObj.value=`<p id='one'><b>Functional Specifications/Requirements:</b></p><ol><li><p>Provide the tool bar support, it’s also customizable.</p></li><li id='two'><p>Options to get the HTML elements with styles.</p></li></ol>`;
             rteObj.dataBind();
             startElement = rteObj.inputElement.querySelector('#one');
             endElement = rteObj.inputElement.querySelector('#two');
             domSelection.setSelectionText(document, startElement.childNodes[0], endElement.childNodes[0], 0, 1);
             (rteObj as any).keyDown(keyBoardEvent);
             setTimeout(() => {
-                expect(rteObj.value==='<p id="one"><b>Functional Specifications/Requirements:</b></p><ol><li><p>Provide the tool bar support, it’s also customizable.</p></li><li><p id="two">Options to get the HTML elements with styles.</p></li></ol>').toBe(true);
+                expect(rteObj.value==='<p id="one"><b>Functional Specifications/Requirements:</b></p><ol><li>Provide the tool bar support, it’s also customizable.</li><li id="two">Options to get the HTML elements with styles.</li></ol>').toBe(true);
                 done();
             }, 100);
         }, 100);

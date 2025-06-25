@@ -27,6 +27,7 @@ export class PDFExport {
     /** @hidden */
     public exportProperties: BeforeExportEventArgs;
     private pdfExportHelper: PDFExportHelper;
+    private createdDocuments: PdfDocument[] = [];
 
     /**
      * Constructor for the PivotGrid PDF Export module.
@@ -49,8 +50,12 @@ export class PDFExport {
         return 'pdfExport';
     }
 
-    private addPage(eventParams: { document: PdfDocument; args: EnginePopulatedEventArgs },
-                    pdfExportProperties?: PdfExportProperties): PdfPage {
+    private addPage(
+        eventParams: { document: PdfDocument; args: EnginePopulatedEventArgs }, pdfExportProperties?: PdfExportProperties
+    ): PdfPage {
+        if (this.createdDocuments.indexOf(eventParams.document) === -1) {
+            this.createdDocuments.push(eventParams.document);
+        }
         pdfExportProperties = pdfExportProperties ? pdfExportProperties : this.exportProperties.pdfExportProperties;
         const documentSection: PdfSection = eventParams.document.sections.add() as PdfSection;
         const documentHeight: number = eventParams.document.pageSettings.height;
@@ -594,6 +599,16 @@ export class PDFExport {
         }
     }
 
+    private cleanupDocument(document: PdfDocument): void {
+        if (document) {
+            document.destroy();
+            const index: number = this.createdDocuments.indexOf(document);
+            if (index !== -1) {
+                this.createdDocuments.splice(index, 1);
+            }
+        }
+    }
+
     /**
      * To destroy the pdf export module.
      *
@@ -601,17 +616,25 @@ export class PDFExport {
      * @hidden
      */
     public destroy(): void {
+        for (let i: number = 0; i < this.createdDocuments.length; i++) {
+            this.cleanupDocument(this.createdDocuments[i as number]);
+        }
+        this.createdDocuments = [];
+        if (this.document) {
+            this.cleanupDocument(this.document);
+            this.document = null;
+        }
+        if (this.pdfExportHelper) {
+            this.pdfExportHelper = null;
+        }
         if (this.engine) {
             this.engine = null;
         }
         if (this.exportProperties) {
             this.exportProperties = null;
         }
-        if (this.document) {
-            this.document = null;
-        }
-        if (this.pdfExportHelper) {
-            this.pdfExportHelper = null;
+        if (this.gridStyle) {
+            this.gridStyle = null;
         }
     }
 }

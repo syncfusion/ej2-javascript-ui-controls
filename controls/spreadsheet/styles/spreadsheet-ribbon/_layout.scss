@@ -250,6 +250,13 @@
         }
       }
     }
+
+    &.e-rtl{
+      &:not(.sf-spreadsheet .e-ribbon) .e-drop-icon {
+        right: auto;
+        left: 0;
+      }
+    }
   }
   .e-spreadsheet-ribbon-fill-color,
   .e-spreadsheet-ribbon-font-color {

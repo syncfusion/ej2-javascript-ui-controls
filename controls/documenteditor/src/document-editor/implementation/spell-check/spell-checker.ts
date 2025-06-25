@@ -188,7 +188,7 @@ export class SpellChecker {
         this.errorSuggestions = new Dictionary<string, string[]>();
         this.ignoreAllItems = [];
         this.uniqueSpelledWords = {};
-        if (!isNullOrUndefined(this.documentHelper)) {
+        if (!isNullOrUndefined(this.documentHelper) && !isNullOrUndefined(this.documentHelper.owner)) {
             this.textSearchResults = new TextSearchResults(this.documentHelper.owner);
             this.uniqueKey = this.documentHelper.owner.element.id + '_' + this.createGuid();
         }
@@ -521,10 +521,10 @@ export class SpellChecker {
         text = text.replace(/[\s]+/g, '');
         if (!isNullOrUndefined(element.errorCollection) && element.errorCollection.length > 0) {
 
-            if (!this.documentHelper.isScrollHandler && (element.ischangeDetected || element.paragraph.isChangeDetected) && !element.istextCombined) {
+            if (!this.documentHelper.isScrollHandler && (element.isChangeDetected || element.paragraph.isChangeDetected) && !element.istextCombined) {
                 this.updateStatusForGlobalErrors(element.errorCollection, element);
                 element.errorCollection = [];
-                element.ischangeDetected = true;
+                element.isChangeDetected = true;
                 return { 'errorFound': hasError, 'elements': erroElements };
             }
             for (let i: number = 0; i < element.errorCollection.length; i++) {
@@ -534,8 +534,8 @@ export class SpellChecker {
                 }
             }
         } else if (!this.documentHelper.isScrollHandler && element.paragraph.isChangeDetected) {
-            element.ischangeDetected = true;
-        } else if (!element.ischangeDetected && this.handleErrorCollection(element)) {
+            element.isChangeDetected = true;
+        } else if (!element.isChangeDetected && this.handleErrorCollection(element)) {
             hasError = true;
             erroElements.push(element);
         }
@@ -550,7 +550,7 @@ export class SpellChecker {
                     const elements: ElementBox[] = this.errorWordCollection.get(exactText);
                     for (let j: number = 0; j < elements.length; j++) {
                         if (elements[j] instanceof ErrorTextElementBox && elements[j] === erroElements[i]) {
-                            elements[j].ischangeDetected = true;
+                            elements[j].isChangeDetected = true;
 
                             (elements[j] as ErrorTextElementBox).start.offset = parentElement.line.getOffset((parentElement as TextElementBox).istextCombined ? this.getCombinedElement(parentElement) : parentElement, 0);
                             elements[j].line = parentElement.line;
@@ -689,7 +689,7 @@ export class SpellChecker {
         const length: number = errorCollection.length;
         for (let i: number = 0; i < length; i++) {
             if (copyElement[i] instanceof ErrorTextElementBox) {
-                if (copyElement[i].ischangeDetected) {
+                if (copyElement[i].isChangeDetected) {
                     const exactText: string = this.manageSpecialCharacters((copyElement[i] as TextElementBox).text, undefined, true);
                     isChanged = true;
 
@@ -779,7 +779,7 @@ export class SpellChecker {
                 let textElement: TextElementBox = undefined;
                 for (let i: number = index - difference; i >= 0; i--) {
                     textElement = line.children[i] as TextElementBox;
-                    if (!isNullOrUndefined(textElement) && !isNullOrUndefined(textElement.revisions) && textElement.revisions.length > 0 && textElement.revisions[0].revisionType === "Deletion") {
+                    if (!isNullOrUndefined(textElement) && textElement.revisionLength > 0 && textElement.getRevision(0).revisionType === "Deletion") {
                         break;
                     }
                     if (textElement instanceof TextElementBox && !isPrevField) {
@@ -818,7 +818,7 @@ export class SpellChecker {
                 let element: TextElementBox = undefined;
                 for (let i: number = index + 1; i < line.children.length; i++) {
                     element = (line.children[i] as TextElementBox);
-                    if (!isNullOrUndefined(element) && !isNullOrUndefined(element.revisions) && element.revisions.length > 0 && element.revisions[0].revisionType === "Deletion") {
+                    if (!isNullOrUndefined(element) && element.revisionLength > 0 && element.getRevision(0).revisionType === "Deletion") {
                         break;
                     }
                     if (element instanceof TextElementBox && !isPrevField) {
@@ -1107,7 +1107,7 @@ export class SpellChecker {
                 for (let i: number = 0; i < errorWords.length; i++) {
                     const errorElements: ElementBox[] = errorWords.get(errorWords.keys[i]);
                     for (let j: number = 0; j < errorElements.length; j++) {
-                        if (errorElements[j] instanceof ErrorTextElementBox && !errorElements[j].ischangeDetected) {
+                        if (errorElements[j] instanceof ErrorTextElementBox && !errorElements[j].isChangeDetected) {
                             if ((isNullOrUndefined((errorElements[j] as ErrorTextElementBox).start.paragraph) || (errorElements[j] as ErrorTextElementBox).start.paragraph.indexInOwner === -1)) {
                                 this.errorWordCollection.remove(errorWords.keys[i]);
                             }
@@ -1122,7 +1122,7 @@ export class SpellChecker {
                                 const matchResults: MatchResults = this.getMatchedResultsFromElement(errorElements[j]);
                                 const results: TextSearchResults = matchResults.textResults;
     
-                                const markIndex: number = (errorElements[j].ischangeDetected) ? (errorElements[j] as ErrorTextElementBox).start.offset : errorElements[j].line.getOffset(errorElements[j], 0);
+                                const markIndex: number = (errorElements[j].isChangeDetected) ? (errorElements[j] as ErrorTextElementBox).start.offset : errorElements[j].line.getOffset(errorElements[j], 0);
     
                                 this.documentHelper.owner.searchModule.textSearch.updateMatchedTextLocation(matchResults.matches, results, matchResults.elementInfo, 0, errorElements[j], false, null, markIndex);
                                 for (let i: number = 0; i < results.length; i++) {
@@ -1339,7 +1339,7 @@ export class SpellChecker {
             }
             for (let i: number = 0; i < errorCount; i++) {
                 if (currentElement.text.indexOf(errorCollection[i].text) === -1) {
-                    splittedElement.ischangeDetected = true;
+                    splittedElement.isChangeDetected = true;
                     currentElement.errorCollection.splice(0, 1);
                 }
             }

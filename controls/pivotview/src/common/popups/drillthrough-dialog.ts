@@ -45,9 +45,10 @@ export class DrillThroughDialog {
      * show Drill Through Dialog
      *
      * @param {DrillThroughEventArgs} eventArgs - eventArgs.
+     * @param {string} valueText - valueText.
      * @returns {void}
      * @hidden */
-    public showDrillThroughDialog(eventArgs: DrillThroughEventArgs): void {
+    public showDrillThroughDialog(eventArgs: DrillThroughEventArgs, valueText: string): void {
         const gridData: IDataSet[] = eventArgs.rawData;
         const clonedData: IDataSet[] = [];
         let gridIndexObjects: INumberIndex = {};
@@ -74,7 +75,7 @@ export class DrillThroughDialog {
                     animationSettings: { effect: 'Fade' },
                     allowDragging: false,
                     header: this.parent.localeObj.getConstant('details'),
-                    content: this.createDrillThroughGrid(eventArgs, gridData),
+                    content: this.createDrillThroughGrid(eventArgs, gridData, valueText),
                     cssClass: this.parent.cssClass,
                     beforeOpen: () => {
                         this.drillThroughGrid.setProperties({
@@ -309,7 +310,7 @@ export class DrillThroughDialog {
         }
     }
 
-    private createDrillThroughGrid(eventArgs: DrillThroughEventArgs, gridData: IDataSet[]): HTMLElement {
+    private createDrillThroughGrid(eventArgs: DrillThroughEventArgs, gridData: IDataSet[], valueText: string): HTMLElement {
         const drillThroughBody: HTMLElement =
             createElement('div', { id: this.parent.element.id + '_drillthroughbody', className: cls.DRILLTHROUGH_BODY_CLASS });
         const drillThroughBodyHeader: HTMLElement =
@@ -331,13 +332,12 @@ export class DrillThroughDialog {
                 eventArgs.columnHeaders + '</span></span>';
         }
         if (eventArgs.value !== '') {
-            const measure: string = eventArgs.value.split('(')[0];
-            const value: string = eventArgs.value.split('(')[1].split(')')[0];
+            const value: string = eventArgs.currentCell.formattedText;
             if (value !== '0') {
                 drillThroughBodyHeader.innerHTML = drillThroughBodyHeader.innerHTML + '<span class=' +
                     cls.DRILLTHROUGH_BODY_HEADER_COMMON_CLASS + '><span class=' +
                     cls.DRILLTHROUGH_BODY_HEADER_CLASS + '>' +
-                    measure + '</span> : <span class=' + cls.DRILLTHROUGH_BODY_HEADER_VALUE_CLASS + '>' + value + '</span></span>';
+                    valueText + '</span> : <span class=' + cls.DRILLTHROUGH_BODY_HEADER_VALUE_CLASS + '>' + value + '</span></span>';
             }
         }
         let toolbarItems: string[] = ['ColumnChooser'];

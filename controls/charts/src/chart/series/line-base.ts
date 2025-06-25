@@ -1,4 +1,4 @@
-import { getAnimationFunction, ChartLocation, pathAnimation, getElement, animateAddPoints } from '../../common/utils/helper';
+import { getAnimationFunction, ChartLocation, pathAnimation, getElement, animateAddPoints, markerAnimate } from '../../common/utils/helper';
 import { PathAttributes, PathOption, Rect } from '@syncfusion/ej2-svg-base';
 import { Axis } from '../axis/axis';
 import { Series, Points } from './chart-series';
@@ -284,6 +284,9 @@ export class LineBase {
                 if (annotations) {
                     annotations.style.visibility = 'visible';
                 }
+                if (series.lastValueLabelElement) {
+                    series.lastValueLabelElement.setAttribute('visibility', 'visible');
+                }
                 path.setAttribute('stroke-dasharray', strokeDashArray);
                 path.style.visibility = '';
                 series.chart.trigger('animationComplete', { series: series.chart.isBlazor ? {} : series });
@@ -485,8 +488,12 @@ export class LineBase {
                 if (annotations) {
                     annotations.style.visibility = 'visible';
                 }
+                if (series.lastValueLabelElement) {
+                    series.lastValueLabelElement.setAttribute('visibility', 'visible');
+                }
                 const stackLabelGroup: HTMLElement = <HTMLElement>document.getElementById(series.chart.element.id + '_StackLabelGroup');
                 if (stackLabelGroup) {
+                    markerAnimate(stackLabelGroup, 0, duration, series, null, null, false);
                     stackLabelGroup.setAttribute('visibility', 'visible');
                 }
                 clipRect.setAttribute('transform', 'translate(0,0)');

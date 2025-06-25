@@ -221,7 +221,8 @@ export class PivotChart {
                     const firstRowLevelName: string = firstRowCell.valueSort.levelName as string;
                     const levelNameCollection: string[] = firstRowLevelName.split(delimiter);
                     const previousRowTextCollection: string[] = previousRowCell.formattedText.split(' ');
-                    drillMem = this.isMemberDrilled(previousRowCell, previousRowTextCollection);
+                    drillMem = PivotUtil.isMemberDrilled(previousRowCell, previousRowTextCollection,
+                                                         this.parent.dataSourceSettings.drilledMembers);
                     for (let z: number = ((previousRowLevelNameCollection.length - 2) - previousHeader); z >= 0; z--) {
                         if (previousRowLevelNameCollection[z as number] !==
                             levelNameCollection[z as number] && !drillMem) {
@@ -309,7 +310,8 @@ export class PivotChart {
                             const firstRowLevelName: string = firstRowCell.valueSort.levelName as string;
                             const levelNameCollection: string[] = firstRowLevelName.split(delimiter);
                             const formattedTextCollection: string[] = firstRowCell.formattedText.split(' ');
-                            drillMem = this.isMemberDrilled(firstRowCell, levelNameCollection);
+                            drillMem = PivotUtil.isMemberDrilled(firstRowCell, levelNameCollection,
+                                                                 this.parent.dataSourceSettings.drilledMembers);
                             const valueSortIndex: number = (valueSort.length - 2) !== (this.parent.engineModule.rowMaxLevel - 1) ?
                                 (valueSort.length - 2) : this.parent.engineModule.rowMaxLevel - 1;
                             for (let k: number = 0; k <= this.parent.engineModule.rowMaxLevel; k++) {
@@ -408,6 +410,7 @@ export class PivotChart {
                             } else if (firstRowCell.level === this.parent.engineModule.rowMaxLevel - 1) {
                                 reductionLevel = 0;
                             } else if (firstRowCell.level < this.parent.engineModule.rowMaxLevel - 1 && firstRowCell.level !== 0) {
+                                reductionLevel = 0;
                                 reductionLevelCount = 0;
                             }
                         }
@@ -1984,23 +1987,6 @@ export class PivotChart {
         this.parent.trigger(events.chartResized, args);
     }
 
-    private isMemberDrilled(previousRowCell: IAxisSet, previousRowTextCollection: string[]): boolean {
-        let drillMem: boolean = false;
-        for (let n: number = 0; n < this.parent.dataSourceSettings.drilledMembers.length; n++) {
-            const drillItems: string[] = this.parent.dataSourceSettings.drilledMembers[n as number].items;
-            for (let v: number = 0; v < drillItems.length; v++) {
-                const drillItemsCollection: string[] = drillItems[v as number].split(this.parent.dataSourceSettings
-                    .drilledMembers[n as number].delimiter);
-                if (drillItemsCollection[drillItemsCollection.length - 1] === previousRowCell.formattedText.split(' ')[0]
-                    && drillItemsCollection[0] === previousRowTextCollection[0]) {
-                    drillMem = true;
-                    break;
-                }
-            }
-        }
-        return drillMem;
-    }
-
     /** @hidden */
 
     public getResizedChartHeight(): string {
@@ -2025,35 +2011,84 @@ export class PivotChart {
         if (this.parent && this.parent.isDestroyed) {
             return;
         }
-        if (this.engineModule && !this.parent.destroyEngine) {
-            this.engineModule.fieldList = {};
-            this.engineModule = {} as PivotEngine | OlapEngine;
-        }
-        if (this.chartSeries) {
-            this.chartSeries = null;
-        }
-        if (this.columnGroupObject) {
-            this.columnGroupObject = null;
-        }
-        if (this.chartSeriesInfo) {
-            this.chartSeriesInfo = {};
-            this.selectedLegend = null;
-        }
-        if (this.chartSettings) {
-            this.chartSettings = null;
-        }
-        if (this.dataSourceSettings) {
-            this.dataSourceSettings = null;
-        }
         if (this.accumulationMenu && !this.accumulationMenu.isDestroyed) {
             this.accumulationMenu.destroy();
             this.accumulationMenu = null;
         }
+        if (select('#' + this.parent.element.id + '_accumulationChart', document)) {
+            remove(select('#' + this.parent.element.id + '_accumulationChart', document));
+        }
         if (this.parent && this.parent.chart && !this.parent.chart.isDestroyed) {
             this.parent.chart.destroy();
             this.parent.chart = null;
-        } else {
-            return;
         }
+        if (this.chartElement) {
+            if (this.chartElement.parentNode) {
+                this.chartElement.parentNode.removeChild(this.chartElement);
+            }
+            this.chartElement = null;
+        }
+        if (this.element) {
+            if (this.element.parentNode) {
+                this.element.parentNode.removeChild(this.element);
+            }
+            this.element = null;
+        }
+        if (this.templateFn) {
+            this.templateFn = null;
+        }
+        if (this.engineModule && !this.parent.destroyEngine) {
+            this.engineModule.fieldList = {};
+            this.engineModule = null;
+        }
+        if (this.chartSeries) {
+            this.chartSeries.length = 0;
+            this.chartSeries = null;
+        }
+        if (this.columnGroupObject) {
+            for (const key in this.columnGroupObject) {
+                if (Object.prototype.hasOwnProperty.call(this.columnGroupObject, key)) {
+                    this.columnGroupObject[key as string] = null;
+                }
+            }
+            this.columnGroupObject = null;
+        }
+        if (this.chartSeriesInfo) {
+            for (const key in this.chartSeriesInfo) {
+                if (Object.prototype.hasOwnProperty.call(this.chartSeriesInfo, key)) {
+                    this.chartSeriesInfo[key as string] = null;
+                }
+            }
+            this.chartSeriesInfo = {};
+            this.selectedLegend = null;
+        }
+        if (this.headerColl) {
+            for (const key in this.headerColl) {
+                if (Object.prototype.hasOwnProperty.call(this.headerColl, key)) {
+                    this.headerColl[key as unknown as number] = null;
+                }
+            }
+            this.headerColl = {};
+        }
+        if (this.measuresNames) {
+            for (const key in this.measuresNames) {
+                if (Object.prototype.hasOwnProperty.call(this.measuresNames, key)) {
+                    delete this.measuresNames[key as string];
+                }
+            }
+            this.measuresNames = {};
+        }
+        this.chartSettings = null;
+        this.persistSettings = null;
+        this.dataSourceSettings = null;
+        this.currentColumn = null;
+        this.currentMeasure = null;
+        this.pivotIndex = null;
+        this.measureList = null;
+        this.maxLevel = 0;
+        this.measurePos = -1;
+        this.accEmptyPoint = false;
+        this.isChartInitial = true;
+        this.calculatedWidth = null;
     }
 }

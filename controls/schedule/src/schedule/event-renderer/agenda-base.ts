@@ -1,5 +1,5 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import { isNullOrUndefined, addClass, createElement, append, EventHandler, extend, remove } from '@syncfusion/ej2-base';
+import { isNullOrUndefined, addClass, createElement, append, EventHandler, extend, remove, initializeCSPTemplate } from '@syncfusion/ej2-base';
 import { ListBase } from '@syncfusion/ej2-lists';
 import { EventFieldsMapping, EventRenderedArgs, TdData, CellTemplateArgs } from '../base/interface';
 import { ResourcesModel } from '../models/resources-model';
@@ -32,13 +32,7 @@ export class AgendaBase extends ViewBase {
                 moduleName: 'agenda',
                 listClass: this.parent.activeView.viewClass,
                 itemClass: this.parent.activeView.viewClass,
-                template: (data: Record<string, any>) => {
-                    const div: HTMLElement = createElement('div', {
-                        className: cls.AGENDA_NO_EVENT_CLASS,
-                        innerHTML: data.subject
-                    });
-                    return div;
-                }
+                template: initializeCSPTemplate(() => `<div class="${cls.AGENDA_NO_EVENT_CLASS}">${this.parent.localeObj.getConstant('noEvents')}</div>`)
             });
             if (listElement.querySelector('.e-agenda-item').children.length === 0) {
                 listElement.firstElementChild.appendChild(createElement('div', { className: cls.AGENDA_NO_EVENT_CLASS, innerHTML: this.parent.localeObj.getConstant('noEvents') }));

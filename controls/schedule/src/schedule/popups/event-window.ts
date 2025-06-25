@@ -1004,6 +1004,7 @@ export class EventWindow {
     }
 
     public convertToEventData(cellsData: Record<string, any>, eventObj: Record<string, any>): void {
+        if (!cellsData) { return; }
         if (cellsData.subject) {
             eventObj[this.fields.subject] = cellsData.subject;
         }

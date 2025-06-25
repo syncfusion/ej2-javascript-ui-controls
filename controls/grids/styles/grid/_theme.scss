@@ -789,6 +789,11 @@
     .e-gridcontent table tbody .e-normaledit .e-rowcell {
       border-top-color: $grid-header-border-color;
     }
+    .e-gridcontent table tbody .e-normaledit{
+      &.e-edit-frozen{
+        position: relative;
+      }
+    }
 
     &.e-resize-lines .e-filterbarcell,
     &.e-rtl.e-resize-lines .e-filterbarcell,
@@ -859,12 +864,22 @@
       }
     }
 
-    &.sf-grid .e-ccheck.e-colfocus {
-      @if ($grid-skin == 'material3') {
-        background: $grid-hover-bg-color;
+    &.sf-grid {
+      .e-ccheck {
+        &.e-colfocus {
+          @if ($grid-skin == 'material3') {
+            background: $grid-hover-bg-color;
+          }
+          @else {
+            background-color: $grid-hover-bg-color;
+          }
+        }
+        &.e-cchooser-chk {
+          padding: 5px 0;
+        }
       }
-      @else {
-        background-color: $grid-hover-bg-color;
+      .e-hide {
+        display: none;
       }
     }
 
@@ -875,7 +890,11 @@
       }
     }
   }
-
+  .e-print-offscreen{
+    position: absolute;
+    top: -9999px;
+    left: -9999px;
+  }
   .e-spreadsheet .e-ftrchk.e-chkfocus {
     @if ($grid-skin == 'material3') {
       background: $grid-hover-bg-color;
@@ -915,6 +934,9 @@
     .e-tip-content,
     .e-tip-content label {
       color: $grid-val-error-color;
+    }
+    .e-tip-content .e-error{
+      display: block;
     }
   }
 

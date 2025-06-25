@@ -1,4 +1,4 @@
-import { ChildProperty, Property, Complex, Collection, Browser } from '@syncfusion/ej2-base';import { DataManager, Query} from '@syncfusion/ej2-data';import { MarkerSettings, Series, Trendline } from '../../chart/series/chart-series';import { MarkerSettingsModel, TrendlineModel } from '../../chart/series/chart-series-model';import { StockChart } from '../stock-chart';import { ChartSeriesType,  TechnicalIndicators, MacdType, FinancialDataFields,  ChartShape, TooltipPosition, FadeOutMode } from '../../chart/utils/enum';import { Anchor, ZIndex, SizeType, AxisPosition } from '../../chart/utils/enum';import { TrendlineTypes } from '../../chart/utils/enum';import { MajorGridLinesModel, MajorTickLinesModel, CrosshairTooltipModel, AxisLineModel } from '../../chart/axis/axis-model';import { MinorGridLinesModel, MinorTickLinesModel } from '../../chart/axis/axis-model';import { MajorGridLines, MajorTickLines, MinorTickLines, MinorGridLines, CrosshairTooltip, AxisLine } from '../../chart/axis/axis';import { ConnectorType } from '../../accumulation-chart/model/enum';import { TextOverflow, Alignment, Regions, Units, Position, FlagType, LabelPlacement, EmptyPointMode, LegendShape, ChartTheme, ValueType, EdgeLabelPlacement, ChartRangePadding, IntervalType, SkeletonType, LabelIntersectAction } from '../../common/utils/enum';import { AnimationModel, EmptyPointSettingsModel, IChartEventArgs, Font, FontModel, Border, BorderModel, ConnectorModel, CornerRadiusModel } from '../../chart/index';import { stockEventFont } from '../../common/model/theme';
+import { ChildProperty, Property, Complex, Collection, Browser } from '@syncfusion/ej2-base';import { DataManager, Query} from '@syncfusion/ej2-data';import { MarkerSettings, Series, Trendline, LastValueLabelSettings } from '../../chart/series/chart-series';import { MarkerSettingsModel, TrendlineModel, LastValueLabelSettingsModel } from '../../chart/series/chart-series-model';import { StockChart } from '../stock-chart';import { ChartSeriesType,  TechnicalIndicators, MacdType, FinancialDataFields,  ChartShape, TooltipPosition, FadeOutMode } from '../../chart/utils/enum';import { Anchor, ZIndex, SizeType, AxisPosition } from '../../chart/utils/enum';import { TrendlineTypes } from '../../chart/utils/enum';import { MajorGridLinesModel, MajorTickLinesModel, CrosshairTooltipModel, AxisLineModel } from '../../chart/axis/axis-model';import { MinorGridLinesModel, MinorTickLinesModel } from '../../chart/axis/axis-model';import { MajorGridLines, MajorTickLines, MinorTickLines, MinorGridLines, CrosshairTooltip, AxisLine } from '../../chart/axis/axis';import { ConnectorType } from '../../accumulation-chart/model/enum';import { TextOverflow, Alignment, Regions, Units, Position, FlagType, LabelPlacement, EmptyPointMode, LegendShape, ChartTheme, ValueType, EdgeLabelPlacement, ChartRangePadding, IntervalType, SkeletonType, LabelIntersectAction } from '../../common/utils/enum';import { AnimationModel, EmptyPointSettingsModel, IChartEventArgs, Font, FontModel, Border, BorderModel, ConnectorModel, CornerRadiusModel, MarginModel } from '../../chart/index';import { stockEventFont } from '../../common/model/theme';
 
 /**
  * Interface for a class StockChartFont
@@ -707,6 +707,11 @@ export interface StockSeriesModel {
      * @default true
      */
     showNearestTooltip?: boolean;
+
+    /**
+     * Options for customizing and displaying the last value in the series.
+     */
+    lastValueLabel?: LastValueLabelSettingsModel;
 
 }
 

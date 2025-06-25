@@ -1127,7 +1127,7 @@ export class BasicFormulas {
                     }
                     return val.slice(0, val.length - 1);
                 }
-                result = argArr[1] === '' ? '0' : this.parent.getValueFromArg(argArr[1]);
+                result = argArr[1] === '' ? '0' : this.parent.getValueFromArg(argArr[1], undefined, undefined, undefined, true);
             } else if (condUpper === this.parent.falseValue || parsedVal === 0) {
                 if (isNullOrUndefined(argArr[2])) {
                     return this.parent.falseValue;
@@ -1142,7 +1142,7 @@ export class BasicFormulas {
                     }
                     return val.slice(0, val.length - 1);
                 }
-                result = argArr[2] === '' ? '0' : this.parent.getValueFromArg(argArr[2]);
+                result = argArr[2] === '' ? '0' : this.parent.getValueFromArg(argArr[2], undefined, undefined, undefined, true);
             } else {
                 return this.parent.formulaErrorStrings[FormulasErrorsStrings.Requires3Args];
             }

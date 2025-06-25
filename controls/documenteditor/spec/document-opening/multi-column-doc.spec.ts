@@ -12,7 +12,7 @@ var text1: string = '{"sfdt":"UEsDBAoAAAAIAHJ6+FgLHdKAhhAAABXcAAAEAAAAc2ZkdO0dTY
 describe('Document Opening cases - Multi-column', () => {
     let container: DocumentEditor;
     beforeAll(() => {
-        document.body.innerHTML = '';
+        
         let ele: HTMLElement = createElement('div', { id: 'container' });
         document.body.appendChild(ele);
         DocumentEditor.Inject(Selection, Editor, EditorHistory, SfdtExport, WordExport);
@@ -29,7 +29,7 @@ describe('Document Opening cases - Multi-column', () => {
         container.destroy();
         document.body.removeChild(document.getElementById('container'));
         container = undefined;
-        document.body.innerHTML = '';
+        
         setTimeout(function () {
             done();
         }, 1000);

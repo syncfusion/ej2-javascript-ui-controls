@@ -27,7 +27,7 @@ import { getAdornerLayerSvg } from './../utility/dom-util';
 import { isSelected } from '../interaction/actions';
 import { TextElement } from '../core/elements/text-element';
 import { DiagramHtmlElement } from '../core/elements/html-element';
-import { Container } from '../core/containers/container';
+import { GroupableView } from '../core/containers/container';
 
 /**
  * Snapping
@@ -46,7 +46,7 @@ export class Snapping {
         return (this.diagram.snapSettings.constraints
             & (SnapConstraints.SnapToObject | SnapConstraints.SnapToLines)) !== 0;
     }
-    private getWrapperObject(selectedObject: SelectorModel, nameTable: {}): Container {
+    private getWrapperObject(selectedObject: SelectorModel, nameTable: {}): GroupableView {
         if (selectedObject.nodes && selectedObject.nodes.length > 0
             && (this.diagram.snapSettings.constraints & SnapConstraints.SnapToLines || this.diagram.snapSettings.constraints
                 & SnapConstraints.SnapToObject)) {
@@ -79,7 +79,7 @@ export class Snapping {
         const snapSettings: SnapSettingsModel = this.diagram.snapSettings;
         const zoomFactor: number = this.diagram.scroller.currentZoom;
         const offset: PointModel = { x: 0, y: 0 };
-        const wrapper: Container = this.getWrapperObject(selectedObject, diagram.nameTable);
+        const wrapper: GroupableView = this.getWrapperObject(selectedObject, diagram.nameTable);
         const bounds: Rect = getBounds(wrapper);
         const horizontallysnapped: Snap = { snapped: false, offset: 0 };
         const verticallysnapped: Snap = { snapped: false, offset: 0 };
@@ -214,7 +214,7 @@ export class Snapping {
         const snapSettings: SnapSettingsModel = this.diagram.snapSettings;
         const objectsAtLeft: Objects[] = []; const objectsAtRight: Objects[] = []; const objectsAtTop: Objects[] = [];
         const objectsAtBottom: Objects[] = [];
-        const wrapper: Container = this.getWrapperObject(selectedObject, diagram.nameTable);
+        const wrapper: GroupableView = this.getWrapperObject(selectedObject, diagram.nameTable);
         const bounds: Rect = getBounds(wrapper); const scale: number = diagram.scroller.currentZoom;
         const hoffset: number = -scroller.horizontalOffset; const voffset: number = -scroller.verticalOffset;
         const snapObjDistance: number = snapSettings.snapObjectDistance / scale;
@@ -707,7 +707,7 @@ export class Snapping {
         this.sortByDistance(objectsAtTop, 'distance', true);
         this.sortByDistance(objectsAtBottom, 'distance', true);
         const equallySpaced: Objects[] = [];
-        const wrapper: Container = this.getWrapperObject(shape, diagram.nameTable);
+        const wrapper: GroupableView = this.getWrapperObject(shape, diagram.nameTable);
         const bounds: Rect = getBounds(wrapper);
         let nearesttop: Rect; let nearestbottom: Rect;
         let targetBounds: Rect;

@@ -4,7 +4,7 @@ import { DiagramElement } from '../core/elements/diagram-element';
 import { PathElement } from '../core/elements/path-element';
 import { ImageElement } from '../core/elements/image-element';
 import { TextElement } from '../core/elements/text-element';
-import { Container } from '../core/containers/container';
+import { GroupableView } from '../core/containers/container';
 import { rotateMatrix, identityMatrix, transformPointByMatrix, Matrix } from '../primitives/matrix';
 import { Size } from '../primitives/size';
 import { Rect } from '../primitives/rect';
@@ -60,7 +60,7 @@ export class DiagramRenderer {
     public adornerSvgLayer: SVGSVGElement;
     /** @private */
     public rendererActions: RendererAction;
-    private groupElement: Container;
+    private groupElement: GroupableView;
     private element: HTMLElement;
     private transform: PointModel = { x: 0, y: 0 };
     constructor(name: string, svgRender: IRenderer, isSvgMode: boolean) {
@@ -198,7 +198,7 @@ export class DiagramRenderer {
         parentSvg?: SVGSVGElement, createParent?: boolean, fromPalette?: boolean, indexValue?: number, isPreviewNode?: boolean,
         centerPoint?: object, portCenterPoint?: object): void {
         let isElement: boolean = true;
-        if (element instanceof Container) {
+        if (element instanceof GroupableView) {
             // eslint-disable-next-line @typescript-eslint/no-unused-vars
             isElement = false;
             element.id = element.id ? element.id : randomId();
@@ -1946,7 +1946,7 @@ export class DiagramRenderer {
      *
      * @returns {void} Method used to render the container .\
      *
-     * @param {Container} group - Provide the container .
+     * @param {GroupableView} group - Provide the container .
      * @param { HTMLCanvasElement | SVGElement} canvas - Provide the canvas element .
      * @param { HTMLElement } htmlLayer - Provide the html layer element  .
      * @param { Transforms } transform - Provide the transform value .
@@ -1960,7 +1960,7 @@ export class DiagramRenderer {
      * @private
      */
     public renderContainer(
-        group: Container, canvas: HTMLCanvasElement | SVGElement, htmlLayer: HTMLElement,
+        group: GroupableView, canvas: HTMLCanvasElement | SVGElement, htmlLayer: HTMLElement,
         transform?: Transforms, parentSvg?: SVGSVGElement, createParent?: boolean, fromPalette?: boolean,
         indexValue?: number, isPreviewNode?: boolean, centerPoint?: object, portCenterPoint?: object):
         void {
@@ -2201,8 +2201,8 @@ export class DiagramRenderer {
 
             };
         }
-        const isHtml: boolean = element && (element as Container).children &&
-        (element as Container).children.length && ((element as Container).children[0] instanceof DiagramHtmlElement);
+        const isHtml: boolean = element && (element as GroupableView).children &&
+        (element as GroupableView).children.length && ((element as GroupableView).children[0] instanceof DiagramHtmlElement);
         if (!isCanvasMode) {
             this.setFlipAttributes(element, canvas, attr, scaleX, scaleY, isHtml);
             return {};
@@ -2281,8 +2281,8 @@ export class DiagramRenderer {
             const child: DiagramElement = children[0];
             if (child instanceof DiagramNativeElement) {
                 return child;
-            } else if ((child as Container).children && (child as Container).children.length) {
-                this.hasNativeParent((child as Container).children, count++ || 0);
+            } else if ((child as GroupableView).children && (child as GroupableView).children.length) {
+                this.hasNativeParent((child as GroupableView).children, count++ || 0);
             }
         }
         return undefined;
@@ -2511,7 +2511,7 @@ export class DiagramRenderer {
         element: DiagramElement, diagramElementsLayer: HTMLCanvasElement, htmlLayer: HTMLElement,
         transform?: Transforms, insertIndex?: number, centerPoint?: object, portCenterPoint?: object): void {
         this.renderElement(
-            element as Container, diagramElementsLayer, htmlLayer, transform,
+            element as GroupableView, diagramElementsLayer, htmlLayer, transform,
             this.getParentSvg(element), undefined, undefined, insertIndex, null, centerPoint, portCenterPoint);
     }
 

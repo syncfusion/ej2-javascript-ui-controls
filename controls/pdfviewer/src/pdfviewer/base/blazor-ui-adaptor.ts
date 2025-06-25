@@ -801,6 +801,64 @@ export class BlazorUiAdaptor {
         this.annotationDeleteElement.classList.remove(this.cssClass);
         this.annotationCommentPanelElement.classList.remove(this.cssClass);
     }
+
+    /**
+     * @private
+     * @returns {void}
+     */
+    public destroy(): void {
+        this.totalPageElement = null;
+        this.currentPageBoxElementContainer = null;
+        this.currentPageBoxElement = null;
+        this.firstPageElement = null;
+        this.previousPageElement = null;
+        this.nextPageElement = null;
+        this.lastPageElement = null;
+        this.zommOutElement = null;
+        this.zoomInElement = null;
+        this.zoomDropDownElement = null;
+        this.selectToolElement = null;
+        this.handToolElement = null;
+        this.undoElement = null;
+        this.redoElement = null;
+        this.commentElement = null;
+        this.submitFormButton = null;
+        this.searchElement = null;
+        this.annotationElement = null;
+        this.printElement = null;
+        this.downloadElement = null;
+        this.highlightElement = null;
+        this.underlineElement = null;
+        this.strikeThroughElement = null;
+        this.shapeElement = null;
+        this.calibrateElement = null;
+        this.stampElement = null;
+        this.freeTextElement = null;
+        this.signatureElement = null;
+        this.inkElement = null;
+        this.annotationFontSizeInputElement = null;
+        this.annotationFontFamilyInputElement = null;
+        this.annotationColorElement = null;
+        this.annotationStrokeColorElement = null;
+        this.annotationThicknessElement = null;
+        this.annotationOpacityElement = null;
+        this.annotationFontColorElement = null;
+        this.annotationFontFamilyElement = null;
+        this.annotationFontSizeElement = null;
+        this.annotationTextAlignElement = null;
+        this.annotationTextColorElement = null;
+        this.annotationTextPropertiesElement = null;
+        this.annotationDeleteElement = null;
+        this.annotationCloseElement = null;
+        this.annotationCommentPanelElement = null;
+        this.mobileToolbarContainerElement = null;
+        this.mobileSearchPreviousOccurenceElement = null;
+        this.mobileSearchNextOccurenceElement = null;
+        this.cssClass = null;
+        this.disableClass = null;
+        this.editAnnotationButtonElement = null;
+    }
+
     /**
      * @param {string} fontFamily - The fontFamily.
      * @returns {void}

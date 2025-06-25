@@ -10,7 +10,8 @@ import { dispatchEvent } from '../base/util';
 import { DialogRenderer } from '../renderer/dialog-renderer';
 import { ServiceLocator } from '../services/service-locator';
 import { RendererFactory } from '../services/renderer-factory';
-import { IImageCommandsArgs, IRichTextEditor, IRenderer, IImageNotifyArgs, ICssClassArgs } from '../base/interface';
+import { IRichTextEditor, IImageNotifyArgs, ICssClassArgs, IRenderer } from '../base/interface';
+import { IImageCommandsArgs } from '../../common/interface';
 
 /**
  * `FileManager` module is used to display the directories and images inside the editor.

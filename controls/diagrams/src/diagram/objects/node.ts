@@ -16,7 +16,7 @@ import { Size } from '../primitives/size';
 import { PointModel } from '../primitives/point-model';
 import { Shapes, BasicShapes, FlowShapes, UmlActivityShapes, Scale, ImageAlignment, Status, ElementAction, TextAnnotationDirection, FlipDirection } from '../enum/enum';
 import { IElement } from './interface/IElement';
-import { Container } from '../core/containers/container';
+import { GroupableView } from '../core/containers/container';
 import { Canvas } from '../core/containers/canvas';
 import { getBasicShape } from './dictionary/basic-shapes';
 import { DiagramElement } from '../core/elements/diagram-element';
@@ -48,7 +48,7 @@ import { setSwimLaneDefaults, setPortsEdges } from './../utility/diagram-util';
 import { randomId, getFunction, cloneObject } from './../utility/base-util';
 import { NodeBase } from './node-base';
 import { canShadow } from './../utility/constraints-util';
-import { NodeModel, BpmnTransactionSubProcessModel, SwimLaneModel, LaneModel, HeaderModel, PhaseModel } from '../objects/node-model';
+import { NodeModel, BpmnTransactionSubProcessModel, SwimLaneModel, LaneModel, HeaderModel, PhaseModel, ContainerModel } from '../objects/node-model';
 import { PortVisibility, Stretch } from '../enum/enum';
 import { IconShapeModel } from './icon-model';
 import { IconShape } from './icon';
@@ -76,6 +76,7 @@ import { SymbolSize } from './preview';
 import { NodeFixedUserHandleModel } from './fixed-user-handle-model';
 import { NodeFixedUserHandle } from './fixed-user-handle';
 import { IReactDiagram } from '../rendering/canvas-interface';
+import { initContainerWrapper } from '../utility/container-util';
 
 const getShapeType: Function = (obj: Shape): Object => {
     if (obj) {
@@ -103,6 +104,11 @@ const getShapeType: Function = (obj: Shape): Object => {
             return UmlClassifierShape;
         case 'SwimLane':
             return SwimLane;
+        case 'Container':
+            if (!(obj as Container).header) {
+                (obj as Container).hasHeader = false;
+            }
+            return Container;
         default:
             return BasicShape;
         }
@@ -2335,7 +2341,7 @@ export class Node extends NodeBase implements IElement {
      * @aspType object
      */
     @ComplexFactory(getShapeType)
-    public shape: ShapeModel | FlowShapeModel | BasicShapeModel | ImageModel | PathModel | TextModel | BpmnShapeModel | NativeModel | HtmlModel | UmlActivityShapeModel | UmlClassifierShapeModel | SwimLaneModel | DiagramShapeModel;
+    public shape: ShapeModel | FlowShapeModel | BasicShapeModel | ImageModel | PathModel | TextModel | BpmnShapeModel | NativeModel | HtmlModel | UmlActivityShapeModel | UmlClassifierShapeModel | SwimLaneModel | DiagramShapeModel | ContainerModel;
     /* tslint:enable */
 
     /**
@@ -2363,7 +2369,7 @@ export class Node extends NodeBase implements IElement {
      * @deprecated
      */
     @Property(null)
-    public wrapper: Container;
+    public wrapper: GroupableView;
 
     /**
      * Enables/Disables certain features of nodes
@@ -2571,7 +2577,7 @@ export class Node extends NodeBase implements IElement {
         if (this.shape && this.shape.type === 'UmlActivity') {
             setUMLActivityDefaults(defaultValue, this);
         }
-        if (this.shape && this.shape.type === 'SwimLane') {
+        if (this.shape && (this.shape.type === 'SwimLane' || this.shape.type === 'Container')) {
             setSwimLaneDefaults(defaultValue, this);
         }
         if (this.ports && this.ports.length) {
@@ -2645,6 +2651,9 @@ export class Node extends NodeBase implements IElement {
             break;
         case 'Bpmn':
             if (diagram.bpmnModule) {
+                if ((this.shape as BpmnShape).activity && (this.shape as BpmnShape).activity.activity === 'SubProcess') {
+                    this.flip = FlipDirection.None;
+                }
                 content = diagram.bpmnModule.initBPMNContent(content, this, diagram);
                 this.wrapper.elementActions = this.wrapper.elementActions | ElementAction.ElementIsGroup;
                 const subProcess: BpmnSubProcessModel = (this.shape as BpmnShape).activity.subProcess;
@@ -2657,7 +2666,7 @@ export class Node extends NodeBase implements IElement {
                                 diagram.updateElementVisibility(
                                     diagram.nameTable[`${i}`].wrapper, diagram.nameTable[`${i}`], !subProcess.collapsed);
                             }
-                            (content as Container).children.push(diagram.nameTable[`${i}`].wrapper);
+                            (content as GroupableView).children.push(diagram.nameTable[`${i}`].wrapper);
                         }
                     }
                 }
@@ -2690,6 +2699,11 @@ export class Node extends NodeBase implements IElement {
         case 'UmlClassifier':
             //   let umlClassifierShape: StackPanel = new StackPanel();
             content = getULMClassifierShapes(content, this, diagram);
+            break;
+        case 'Container':
+            this.constraints |= (NodeConstraints.ReadOnly | NodeConstraints.AllowDrop);
+            this.flip = FlipDirection.None;
+            content = initContainerWrapper(content, this, diagram);
             break;
         case 'SwimLane':
             this.annotations = [];
@@ -2760,14 +2774,14 @@ export class Node extends NodeBase implements IElement {
     }
     /* tslint:enable */
     /** @private */
-    public initContainer(): Container {
+    public initContainer(): GroupableView {
         if (!this.id) {
             this.id = randomId();
         }
         // Creates canvas element
-        let canvas: Container;
-        if (!this.container || this.shape instanceof SwimLane) {
-            canvas = this.children ? new Container() : new Canvas();
+        let canvas: GroupableView;
+        if (!this.container || this.shape instanceof SwimLane || this.shape.type === 'Container') {
+            canvas = this.children ? new GroupableView() : new Canvas();
         } else {
             switch (this.container.type) {
             case 'Canvas':
@@ -2814,15 +2828,15 @@ export class Node extends NodeBase implements IElement {
     }
 
     /** @private */
-    public initPorts(accessibilityContent: Function | string, container: Container): void {
+    public initPorts(accessibilityContent: Function | string, container: GroupableView): void {
         for (let i: number = 0; this.ports !== undefined, i < this.ports.length; i++) {
             this.initPort(accessibilityContent, container, this.ports[parseInt(i.toString(), 10)] as Port);
         }
     }
 
     /** @private */
-    public initPort(accessibilityContent: Function | string, container: Container, port: Port): void {
-        const canvas: Container = this.wrapper;
+    public initPort(accessibilityContent: Function | string, container: GroupableView, port: Port): void {
+        const canvas: GroupableView = this.wrapper;
         let portWrapper: DiagramElement;
         // eslint-disable-next-line prefer-const
         portWrapper = this.initPortWrapper(port, this);
@@ -2857,8 +2871,8 @@ export class Node extends NodeBase implements IElement {
         return { x, y };
     }
     /** @private */
-    public initIcons(accessibilityContent: Function | string, layout: LayoutModel, container: Container, diagramId: string): void {
-        const canvas: Container = this.wrapper;
+    public initIcons(accessibilityContent: Function | string, layout: LayoutModel, container: GroupableView, diagramId: string): void {
+        const canvas: GroupableView = this.wrapper;
         let offset: PointModel;
         const icon: IconShapeModel = this.isExpanded ? this.expandIcon : this.collapseIcon;
         if (icon.shape !== 'None') {
@@ -2905,7 +2919,7 @@ export class Node extends NodeBase implements IElement {
         }
         else
         {
-            const canvas: Container = this.wrapper;
+            const canvas: GroupableView = this.wrapper;
             fixedUserHandleContainer = new Canvas();
             const children: DiagramElement[] = [];
             fixedUserHandleContainer.children = children;
@@ -2942,7 +2956,7 @@ export class Node extends NodeBase implements IElement {
 
     /** @private */
     public initAnnotations(
-        accessibilityContent: Function | string, container: Container, diagramId: string, virtualize?: boolean, annotationTemplate?: string | Function)
+        accessibilityContent: Function | string, container: GroupableView, diagramId: string, virtualize?: boolean, annotationTemplate?: string | Function)
         :
         void {
         let annotation: DiagramElement;
@@ -3414,6 +3428,47 @@ export class SwimLane extends Shape {
 }
 
 /**
+ * Defines the behavior of swimLane shape
+ */
+export class Container extends Shape {
+    /**
+     * Defines the type of node shape.
+     *
+     * @default 'Basic'
+     */
+    @Property('Container')
+    public type: Shapes;
+
+    /**
+     * Defines the collection of header
+     *
+     * @default 'undefined'
+     */
+    @Complex<HeaderModel>({}, Header)
+    public header: HeaderModel;
+
+    /**
+     * Defines the children of container element
+     *
+     * @aspDefaultValueIgnore
+     * @default undefined
+     */
+    @Property()
+    public children: string[];
+
+    /**
+     * Defines header by user or not
+     *
+     * @private
+     *
+     */
+    public hasHeader: boolean = true;
+
+    public getClassName(): string {
+        return 'Container';
+    }
+}
+/**
  * Defines the behavior of container
  */
 export class ChildContainer {
@@ -3454,7 +3509,7 @@ export class Selector extends ChildProperty<Selector> implements IElement {
      * @default null
      */
     @Property(null)
-    public wrapper: Container;
+    public wrapper: GroupableView;
     /**
      * Defines the size of the resize handler
      *
@@ -3647,13 +3702,13 @@ export class Selector extends ChildProperty<Selector> implements IElement {
     /**
      * Initializes the UI of the container
      */
-    public init(diagram: Diagram): Container {
-        const container: Container = new Container();
+    public init(diagram: Diagram): GroupableView {
+        const container: GroupableView = new GroupableView();
         container.measureChildren = false;
         //const consize: Size = new Size();
         container.children = [];
         if (this.annotation) {
-            const object: Container = (this.nodes.length > 0) ? diagram.nameTable[this.nodes[0].id].wrapper :
+            const object: GroupableView = (this.nodes.length > 0) ? diagram.nameTable[this.nodes[0].id].wrapper :
                 diagram.nameTable[this.connectors[0].id].wrapper;
             const wrapper: DiagramElement = diagram.getWrapper(object, this.annotation.id);
             container.children.push(wrapper);
@@ -3661,7 +3716,7 @@ export class Selector extends ChildProperty<Selector> implements IElement {
             if (this.nodes || this.connectors) {
                 for (let i: number = 0; i < this.nodes.length; i++) {
                     const node: NodeModel = diagram.nameTable[this.nodes[parseInt(i.toString(), 10)].id];
-                    const wrapper: Container = node.wrapper;
+                    const wrapper: GroupableView = node.wrapper;
                     // this.width = wrapper.actualSize.width;
                     // this.height = wrapper.actualSize.height;
                     // this.rotateAngle = wrapper.rotateAngle;
@@ -3671,7 +3726,7 @@ export class Selector extends ChildProperty<Selector> implements IElement {
                 }
                 for (let j: number = 0; j < this.connectors.length; j++) {
                     const connector: ConnectorModel = diagram.nameTable[this.connectors[parseInt(j.toString(), 10)].id];
-                    const wrapper: Container = connector.wrapper;
+                    const wrapper: GroupableView = connector.wrapper;
                     // this.width = wrapper.actualSize.width; this.height = wrapper.actualSize.height;
                     // this.rotateAngle = wrapper.rotateAngle; this.offsetX = wrapper.offsetX;
                     // this.offsetY = wrapper.offsetY;

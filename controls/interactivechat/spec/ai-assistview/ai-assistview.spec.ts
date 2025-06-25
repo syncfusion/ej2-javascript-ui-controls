@@ -1,8 +1,9 @@
 
-import { createElement, EventHandler, L10n } from "@syncfusion/ej2-base";
+import { createElement, EventHandler, isNullOrUndefined, L10n } from "@syncfusion/ej2-base";
 import { AIAssistView, PromptRequestEventArgs } from "../../src/ai-assistview/index";
 import { ToolbarItemClickedEventArgs } from '../../src/interactive-chat-base/index';
 import { InterActiveChatBase } from '../../src/interactive-chat-base/index';
+import { FileInfo, Uploader } from "@syncfusion/ej2-inputs";
 
 describe('AIAssistView -', () => {
 
@@ -38,7 +39,7 @@ describe('AIAssistView -', () => {
             expect(iconElem).not.toBeNull();
             expect(iconElem.classList.contains('e-icons')).toEqual(true);
             expect(iconElem.classList.contains('e-assistview-icon')).toEqual(true);
-            const textAreaElem: HTMLTextAreaElement = aiAssistView.element.querySelector('.e-footer textarea');
+            const textAreaElem: HTMLDivElement = aiAssistView.element.querySelector('.e-footer .e-assist-textarea');
             expect(textAreaElem).not.toBeNull();
             const sendBtnElem: HTMLButtonElement = aiAssistView.element.querySelector('.e-footer .e-assist-send.e-icons');
             expect(sendBtnElem).not.toBeNull();
@@ -59,8 +60,8 @@ describe('AIAssistView -', () => {
                 prompt: 'Write a palindrome program in C#.'
             });
             aiAssistView.appendTo(aiAssistViewElem);
-            const textAreaElem: HTMLTextAreaElement = aiAssistView.element.querySelector('.e-footer textarea');
-            expect(textAreaElem.value).toEqual('Write a palindrome program in C#.');
+            const textAreaElem: HTMLDivElement = aiAssistView.element.querySelector('.e-footer .e-assist-textarea');
+            expect(textAreaElem.innerText).toBe('Write a palindrome program in C#.');
         });
 
         it('Width checking', () => {
@@ -70,7 +71,16 @@ describe('AIAssistView -', () => {
             aiAssistView.appendTo(aiAssistViewElem);
             expect(aiAssistViewElem.style.width).toEqual('700px');
         });
-
+        it('Width dynamic update checking', () => {
+            aiAssistView = new AIAssistView({
+                width: '700px'
+            });
+            aiAssistView.appendTo(aiAssistViewElem);
+            expect(aiAssistViewElem.style.width).toEqual('700px');
+            aiAssistView.width = '600px';
+            aiAssistView.dataBind();
+            expect(aiAssistViewElem.style.width).toBe('600px');
+        });
         it('Height checking', () => {
             aiAssistView = new AIAssistView({
                 height: '700px'
@@ -79,13 +89,20 @@ describe('AIAssistView -', () => {
             expect(aiAssistViewElem.style.height).toEqual('700px');
         });
 
-        it('Promptplaceholder checking', () => {
+        it('Promptplaceholder checking', (done: DoneFn) => {
             aiAssistView = new AIAssistView({
                 promptPlaceholder: 'Type your message here'
             });
             aiAssistView.appendTo(aiAssistViewElem);
-            const textAreaElem: HTMLTextAreaElement = aiAssistView.element.querySelector('.e-footer textarea');
-            expect(textAreaElem.placeholder).toEqual('Type your message here');
+            const textareaEle: HTMLDivElement = aiAssistViewElem.querySelector('.e-footer .e-assist-textarea');
+            expect(textareaEle).not.toBeNull();
+            textareaEle.innerText = '';
+            const inputEvent: Event = new Event('input', { bubbles: true });
+            textareaEle.dispatchEvent(inputEvent);
+            setTimeout(() => {
+                expect(textareaEle.getAttribute('placeholder')).toEqual('Type your message here');
+                done();
+            }, 450, done);
         });
 
         it('Prompts prop checking', () => {
@@ -356,24 +373,6 @@ describe('AIAssistView -', () => {
             expect(headerElem.hidden).toEqual(true);
         });
 
-        it('Showclearbutton prop checking', (done: DoneFn) => {
-            aiAssistView = new AIAssistView({
-                showClearButton: true
-            });
-            aiAssistView.appendTo(aiAssistViewElem);
-            const textareaEle: HTMLTextAreaElement = aiAssistViewElem.querySelector('.e-footer .e-assist-textarea');
-            // once fixed the prompt property not setting the value to textarea, remove the below line
-            (textareaEle as any).ej2_instances[0].value = 'Explain about the Syncfusion product';
-            expect(textareaEle).not.toBeNull();
-            textareaEle.focus();
-            setTimeout(() => {
-                const clearBtnElem: HTMLElement = aiAssistViewElem.querySelector('.e-footer .e-clear-icon');
-                expect(clearBtnElem).not.toBeNull();
-                expect(clearBtnElem.classList.contains('e-clear-icon-hide')).toEqual(false);
-                done();
-            }, 0, done);
-        });
-
         it('Prompt icon css checking', () => {
             aiAssistView = new AIAssistView({
                 prompts: [ {
@@ -564,9 +563,9 @@ describe('AIAssistView -', () => {
             aiAssistView.appendTo(aiAssistViewElem);
             aiAssistView.prompt = 'Write a palindrome program in C#.';
             aiAssistView.dataBind();
-            const textAreaElem: HTMLTextAreaElement = aiAssistView.element.querySelector('.e-footer textarea');
+            const textAreaElem: HTMLDivElement = aiAssistView.element.querySelector('.e-footer .e-assist-textarea');
             setTimeout(() => {
-                expect(textAreaElem.value).toEqual('Write a palindrome program in C#.');
+                expect(textAreaElem.innerText).toBe('Write a palindrome program in C#.');
                 done();
             }, 0, done);
         });
@@ -596,8 +595,8 @@ describe('AIAssistView -', () => {
             aiAssistView.promptPlaceholder = 'Type your message here';
             aiAssistView.dataBind();
             setTimeout(() => {
-                const textAreaElem: HTMLTextAreaElement = aiAssistView.element.querySelector('.e-footer textarea');
-                expect(textAreaElem.placeholder).toEqual('Type your message here');
+                const textAreaElem: HTMLDivElement = aiAssistView.element.querySelector('.e-footer .e-assist-textarea');
+                expect(textAreaElem.getAttribute('placeholder')).toEqual('Type your message here');
                 done();
             }, 0, done);
         });
@@ -783,17 +782,114 @@ describe('AIAssistView -', () => {
             aiAssistView.appendTo(aiAssistViewElem);
             aiAssistView.showClearButton = true;
             aiAssistView.dataBind();
-            const textareaEle: HTMLTextAreaElement = aiAssistViewElem.querySelector('.e-footer .e-assist-textarea');
+            const textareaEle: HTMLDivElement = aiAssistViewElem.querySelector('.e-footer .e-assist-textarea');
             expect(textareaEle).not.toBeNull();
-            // once fixed the prompt property not setting the value to textarea, remove the below line
-            (textareaEle as any).ej2_instances[0].value = 'Explain about the Syncfusion product';
-            textareaEle.focus();
+            textareaEle.innerText = 'Explain about the Syncfusion product';
+            const inputEvent: Event = new Event('input', { bubbles: true });
+            textareaEle.dispatchEvent(inputEvent);
             setTimeout(() => {
-                const clearBtnElem: HTMLElement = aiAssistViewElem.querySelector('.e-footer .e-clear-icon');
+                const clearBtnElem: HTMLElement = aiAssistViewElem.querySelector('.e-footer .e-assist-clear-icon');
                 expect(clearBtnElem).not.toBeNull();
-                expect(clearBtnElem.classList.contains('e-clear-icon-hide')).toEqual(false);
+                expect(clearBtnElem.classList.contains('e-assist-clear-icon-hide')).toEqual(false);
                 done();
-            }, 0, done);
+            }, 450, done);
+        });
+
+        it('Showclearbutton prop dynamic update', (done: DoneFn) => {
+            aiAssistView = new AIAssistView({
+            });
+            aiAssistView.appendTo(aiAssistViewElem);
+            aiAssistView.showClearButton = true;
+            aiAssistView.dataBind();
+            aiAssistView.showClearButton = false;
+            aiAssistView.dataBind();
+            const clearBtn: HTMLElement = aiAssistViewElem.querySelector('.e-footer .e-assist-clear-icon');
+            expect(clearBtn).toBeNull();
+            aiAssistView.showClearButton = true;
+            aiAssistView.dataBind();
+            const textareaEle: HTMLDivElement = aiAssistViewElem.querySelector('.e-footer .e-assist-textarea');
+            expect(textareaEle).not.toBeNull();
+            textareaEle.innerText = 'Explain about the Syncfusion product';
+            const inputEvent: Event = new Event('input', { bubbles: true });
+            textareaEle.dispatchEvent(inputEvent);
+            setTimeout(() => {
+                const clearBtnElem: HTMLElement = aiAssistViewElem.querySelector('.e-footer .e-assist-clear-icon');
+                expect(clearBtnElem).not.toBeNull();
+                expect(clearBtnElem.classList.contains('e-assist-clear-icon-hide')).toEqual(false);
+                done();
+            }, 450, done);
+        });
+
+        it('Clear button click action checking', (done: DoneFn) => {
+            aiAssistView = new AIAssistView({
+                showClearButton: true,
+                prompt: 'Explain about the Syncfusion product'
+            });
+            aiAssistView.appendTo(aiAssistViewElem);
+            const textareaEle: HTMLDivElement = aiAssistViewElem.querySelector('.e-footer .e-assist-textarea');
+            expect(textareaEle).not.toBeNull();
+            const inputEvent: Event = new Event('input', { bubbles: true });
+            textareaEle.dispatchEvent(inputEvent);
+            setTimeout(() => {
+                const clearBtnElem: HTMLElement = aiAssistViewElem.querySelector('.e-footer .e-assist-clear-icon');
+                expect(clearBtnElem).not.toBeNull();
+                expect(clearBtnElem.classList.contains('e-assist-clear-icon-hide')).toEqual(false);
+                clearBtnElem.click();
+                expect(textareaEle.innerText).toEqual('');
+                done();
+            }, 450, done);
+        });
+
+        it('Input event with clear button and send icon target', (done: DoneFn) => {
+            aiAssistView = new AIAssistView({
+                showClearButton: true,
+                prompt: 'Test prompt'
+            });
+            aiAssistView.appendTo(aiAssistViewElem);
+    
+            const textareaEle: HTMLDivElement = aiAssistViewElem.querySelector('.e-footer .e-assist-textarea');
+            expect(textareaEle).not.toBeNull();
+            textareaEle.innerText = 'New prompt input';
+            const inputEvent: Event = new Event('input', { bubbles: true });
+            textareaEle.dispatchEvent(inputEvent);
+    
+            setTimeout(() => {
+                const clearBtnElem: HTMLElement = aiAssistViewElem.querySelector('.e-footer .e-assist-clear-icon');
+                expect(clearBtnElem).not.toBeNull();
+                expect(clearBtnElem.classList.contains('e-assist-clear-icon-hide')).toEqual(false);
+                const sendBtnElem: HTMLButtonElement = aiAssistViewElem.querySelector('.e-footer .e-assist-send.e-icons');
+                const blurEvent: FocusEvent = new FocusEvent('blur', { relatedTarget: sendBtnElem });
+                textareaEle.dispatchEvent(blurEvent);
+                setTimeout(() => {
+                    expect(clearBtnElem.classList.contains('e-assist-clear-icon-hide')).toEqual(true);
+                    done();
+                }, 0);
+            }, 450);
+        });
+    
+        it('Input event with clear button and no target', (done: DoneFn) => {
+            aiAssistView = new AIAssistView({
+                showClearButton: true,
+                prompt: 'Test prompt'
+            });
+            aiAssistView.appendTo(aiAssistViewElem);
+    
+            const textareaEle: HTMLDivElement = aiAssistViewElem.querySelector('.e-footer .e-assist-textarea');
+            expect(textareaEle).not.toBeNull();
+            textareaEle.innerText = 'New prompt input';
+            const inputEvent: Event = new Event('input', { bubbles: true });
+            textareaEle.dispatchEvent(inputEvent);
+            setTimeout(() => {
+                const clearBtnElem: HTMLElement = aiAssistViewElem.querySelector('.e-footer .e-assist-clear-icon');
+                expect(clearBtnElem).not.toBeNull();
+                expect(clearBtnElem.classList.contains('e-assist-clear-icon-hide')).toEqual(false);
+                const blurEvent: FocusEvent = new FocusEvent('blur', { relatedTarget: null });
+                textareaEle.dispatchEvent(blurEvent);
+                setTimeout(() => {
+                    expect(clearBtnElem.classList.contains('e-assist-clear-icon-hide')).toEqual(true);
+                    done();
+                }, 0);
+            }, 450);
         });
 
         it('Prompt icon css checking', () => {
@@ -875,6 +971,70 @@ describe('AIAssistView -', () => {
             expect(aiAssistViewElem.querySelector('.e-stop-response-text').textContent).toEqual('Arrêtez de répondre');
         });
 
+        it('Hidden textarea value checking', (done: DoneFn) => {
+            aiAssistView = new AIAssistView({
+            });
+            aiAssistView.appendTo(aiAssistViewElem);
+            const hiddenTextarea: HTMLTextAreaElement = aiAssistView.element.querySelector('.e-hidden-textarea') as HTMLTextAreaElement;
+            expect(hiddenTextarea).not.toBeNull();
+            expect(hiddenTextarea.value).toEqual('');
+            aiAssistView.prompt = 'Write a palindrome program in C#.';
+            aiAssistView.dataBind();
+            const textAreaElem: HTMLDivElement = aiAssistView.element.querySelector('.e-footer .e-assist-textarea');
+            setTimeout(() => {
+                expect(textAreaElem.innerText).toBe('Write a palindrome program in C#.');
+                expect(hiddenTextarea.value).toEqual('Write a palindrome program in C#.');
+                done();
+            }, 0, done);
+        });
+
+        it('Hidden textarea value on edit icon click', (done: DoneFn) => {
+            aiAssistView = new AIAssistView({
+                prompts: [ {
+                    prompt: 'How can i assist you?',
+                    response: 'I can help you with that.'
+                }]
+            });
+            aiAssistView.appendTo(aiAssistViewElem);
+            const hiddenTextarea: HTMLTextAreaElement = aiAssistView.element.querySelector('.e-hidden-textarea') as HTMLTextAreaElement;
+            expect(hiddenTextarea).not.toBeNull();
+            expect(hiddenTextarea.value).toEqual('');
+            const toolbarItems: NodeList = aiAssistViewElem.querySelectorAll('.e-prompt-toolbar .e-toolbar-item');
+            expect(toolbarItems).not.toBeNull();
+            const editItem: HTMLElement = (toolbarItems[0] as HTMLElement).querySelector('button');
+            expect(editItem).not.toBeNull();
+            editItem.click();
+            setTimeout(() => {
+                const textAreaElem: HTMLDivElement = aiAssistView.element.querySelector('.e-footer .e-assist-textarea');
+                expect(textAreaElem.innerText).toEqual('How can i assist you?');
+                expect(hiddenTextarea.value).toEqual('How can i assist you?');
+                done();
+            }, 0, done);
+        });
+
+        it('Hidden textarea value on Clear icon click', (done: DoneFn) => {
+            aiAssistView = new AIAssistView({
+                showClearButton: true,
+                prompt: 'Explain about the Syncfusion product'
+            });
+            aiAssistView.appendTo(aiAssistViewElem);
+            const textareaEle: HTMLDivElement = aiAssistViewElem.querySelector('.e-footer .e-assist-textarea');
+            expect(textareaEle).not.toBeNull();
+            const hiddenTextarea: HTMLTextAreaElement = aiAssistView.element.querySelector('.e-hidden-textarea') as HTMLTextAreaElement;
+            expect(hiddenTextarea).not.toBeNull();
+            expect(hiddenTextarea.value).toEqual('Explain about the Syncfusion product');
+            const inputEvent: Event = new Event('input', { bubbles: true });
+            textareaEle.dispatchEvent(inputEvent);
+            setTimeout(() => {
+                const clearBtnElem: HTMLElement = aiAssistViewElem.querySelector('.e-footer .e-assist-clear-icon');
+                expect(clearBtnElem).not.toBeNull();
+                expect(clearBtnElem.classList.contains('e-assist-clear-icon-hide')).toEqual(false);
+                clearBtnElem.click();
+                expect(textareaEle.innerText).toEqual('');
+                expect(hiddenTextarea.value).toEqual('');
+                done();
+            }, 450, done);
+        });
     });
 
     describe('Methods - ', () => {
@@ -1007,25 +1167,26 @@ describe('AIAssistView -', () => {
                 }
             });
             aiAssistView.appendTo(aiAssistViewElem);
-            const textareaEle: HTMLTextAreaElement = aiAssistViewElem.querySelector('.e-footer .e-assist-textarea');
+            const textareaEle: HTMLDivElement = aiAssistViewElem.querySelector('.e-footer .e-assist-textarea');
             expect(textareaEle).not.toBeNull();
-            (textareaEle as any).ej2_instances[0].value = 'Write a palindrome program in C#.';
-            (textareaEle as any).ej2_instances[0].dataBind();
-            const keyEvent: KeyboardEvent = document.createEvent('KeyboardEvent');
-            (textareaEle as any).ej2_instances[0].inputHandler(keyEvent);
-            const sendBtnElem: HTMLButtonElement = aiAssistView.element.querySelector('.e-footer .e-assist-send.e-icons');
-            expect(sendBtnElem).not.toBeNull();
-            expect(sendBtnElem.classList.contains('disabled')).toEqual(false);
-            sendBtnElem.click();
+            textareaEle.innerText = 'Write a palindrome program in C#.';
+            const inputEvent: Event = new Event('input', { bubbles: true });
+            textareaEle.dispatchEvent(inputEvent);
             setTimeout(() => {
-                const promptElem: HTMLElement = aiAssistViewElem.querySelector('.e-prompt-text');
-                expect(promptElem).not.toBeNull();
-                expect(promptElem.textContent).toEqual('Write a palindrome program in C#.');
-                const responseElem: HTMLElement = aiAssistViewElem.querySelector('.e-output');
-                expect(responseElem).not.toBeNull();
-                expect(responseElem.textContent).toEqual('For real-time prompt processing, connect the AIAssistView component to your preferred AI service, such as OpenAI or Azure Cognitive Services.');
-                done();
-            }, 100, done);
+                const sendBtnElem: HTMLButtonElement = aiAssistView.element.querySelector('.e-footer .e-assist-send.e-icons');
+                expect(sendBtnElem).not.toBeNull();
+                expect(sendBtnElem.classList.contains('disabled')).toEqual(false);
+                sendBtnElem.click();
+                setTimeout(() => {
+                    const promptElem: HTMLElement = aiAssistViewElem.querySelector('.e-prompt-text');
+                    expect(promptElem).not.toBeNull();
+                    expect(promptElem.textContent).toEqual('Write a palindrome program in C#.');
+                    const responseElem: HTMLElement = aiAssistViewElem.querySelector('.e-output');
+                    expect(responseElem).not.toBeNull();
+                    expect(responseElem.textContent).toEqual('For real-time prompt processing, connect the AIAssistView component to your preferred AI service, such as OpenAI or Azure Cognitive Services.');
+                    done();
+                }, 100);
+            }, 450);
         });
 
         it('Prompt toolbar items checking', (done: DoneFn) => {
@@ -1042,17 +1203,17 @@ describe('AIAssistView -', () => {
             expect(editItem).not.toBeNull();
             editItem.click();
             setTimeout(() => {
-                const textAreaElem: HTMLTextAreaElement = aiAssistView.element.querySelector('.e-footer textarea');
-                expect(textAreaElem.value).toEqual('How can i assist you?');
+                const textAreaElem: HTMLDivElement = aiAssistView.element.querySelector('.e-footer .e-assist-textarea');
+                expect(textAreaElem.innerText).toEqual('How can i assist you?');
                 const copyItem: HTMLElement = (toolbarItems[1] as HTMLElement).querySelector('button');
                 expect(copyItem).not.toBeNull();
                 copyItem.click();
                 setTimeout(() => {
-                    // (window.navigator as any).clipboard.readText()
-                    //     .then((clipText: string) => {
-                    //         expect(clipText).toEqual('How can i assist you?');
-                    //         done();
-                    //     });
+                    (window.navigator as any).clipboard.readText()
+                        .then((clipText: string) => {
+                            expect(clipText).toEqual('How can i assist you?');
+                            done();
+                        });
                     done();
                 }, 1500, done);
             }, 0, done);
@@ -1073,17 +1234,17 @@ describe('AIAssistView -', () => {
             expect(editItem).not.toBeNull();
             editItem.click();
             setTimeout(() => {
-                const textAreaElem: HTMLTextAreaElement = aiAssistView.element.querySelector('.e-footer textarea');
-                expect(textAreaElem.value).toEqual('How can i assist you?');
+                const textAreaElem: HTMLDivElement = aiAssistView.element.querySelector('.e-footer .e-assist-textarea');
+                expect(textAreaElem.innerText).toEqual('How can i assist you?');
                 const copyItem: HTMLElement = (toolbarItems[1] as HTMLElement).querySelector('button');
                 expect(copyItem).not.toBeNull();
                 copyItem.click();
                 setTimeout(() => {
-                    // (window.navigator as any).clipboard.readText()
-                    //     .then((clipText: string) => {
-                    //         expect(clipText).toEqual('How can i assist you?');
-                    //         done();
-                    //     });
+                    (window.navigator as any).clipboard.readText()
+                        .then((clipText: string) => {
+                            expect(clipText).toEqual('How can i assist you?');
+                            done();
+                        });
                     done();
                 }, 1500, done);
             }, 0, done);
@@ -1261,33 +1422,127 @@ class HelloWorld
             aiAssistView.appendTo(aiAssistViewElem);
             let suggestionsElem: HTMLElement = aiAssistViewElem.querySelector('.e-suggestions');
             expect(suggestionsElem.hidden).toBe(false);
-            const textareaEle: HTMLTextAreaElement = aiAssistViewElem.querySelector('.e-footer .e-assist-textarea');
+            const textareaEle: HTMLDivElement = aiAssistViewElem.querySelector('.e-footer .e-assist-textarea');
             expect(textareaEle).not.toBeNull();
-            (textareaEle as any).ej2_instances[0].value = 'Write a palindrome program in C#.';
-            (textareaEle as any).ej2_instances[0].dataBind();
-            const keyEvent: KeyboardEvent = document.createEvent('KeyboardEvent');
-            (textareaEle as any).ej2_instances[0].inputHandler(keyEvent);
-            const sendBtnElem: HTMLButtonElement = aiAssistView.element.querySelector('.e-footer .e-assist-send.e-icons');
-            expect(sendBtnElem).not.toBeNull();
-            expect(sendBtnElem.classList.contains('disabled')).toEqual(false);
-            sendBtnElem.click();
-            const promptElem: HTMLElement = aiAssistViewElem.querySelector('.e-prompt-text');
-            expect(promptElem).not.toBeNull();
-            expect(promptElem.textContent).toEqual('Write a palindrome program in C#.');
-            const responseElem: HTMLElement = aiAssistViewElem.querySelector('.e-output');
-            expect(responseElem).toBeNull();
-            expect(suggestionsElem.hidden).toBe(true);
-            aiAssistView.promptSuggestions = ["How do I prioritize tasks effectively?", "What tools or apps can help me prioritize tasks?"];
-            aiAssistView.dataBind();
-            expect(suggestionsElem.hidden).toBe(true);
-            aiAssistView.prompts = [];
-            aiAssistView.promptSuggestions = ["What tools or apps can help me prioritize tasks?"];
-            aiAssistView.dataBind();
-            suggestionsElem = aiAssistViewElem.querySelector('.e-suggestions');
-            expect(suggestionsElem.hidden).toBe(false);
-            expect(suggestionsElem.querySelector('li').innerText).toBe("What tools or apps can help me prioritize tasks?");
-            done();
+            textareaEle.innerText = 'Write a palindrome program in C#.';
+            const inputEvent: Event = new Event('input', { bubbles: true });
+            textareaEle.dispatchEvent(inputEvent);
+            setTimeout(() => {
+                const sendBtnElem: HTMLButtonElement = aiAssistView.element.querySelector('.e-footer .e-assist-send.e-icons');
+                expect(sendBtnElem).not.toBeNull();
+                expect(sendBtnElem.classList.contains('disabled')).toEqual(false);
+                sendBtnElem.click();
+                const promptElem: HTMLElement = aiAssistViewElem.querySelector('.e-prompt-text');
+                expect(promptElem).not.toBeNull();
+                expect(promptElem.textContent).toEqual('Write a palindrome program in C#.');
+                const responseElem: HTMLElement = aiAssistViewElem.querySelector('.e-output');
+                expect(responseElem).toBeNull();
+                expect(suggestionsElem.hidden).toBe(true);
+                aiAssistView.promptSuggestions = ["How do I prioritize tasks effectively?", "What tools or apps can help me prioritize tasks?"];
+                aiAssistView.dataBind();
+                expect(suggestionsElem.hidden).toBe(true);
+                aiAssistView.prompts = [];
+                aiAssistView.promptSuggestions = ["What tools or apps can help me prioritize tasks?"];
+                aiAssistView.dataBind();
+                suggestionsElem = aiAssistViewElem.querySelector('.e-suggestions');
+                expect(suggestionsElem.hidden).toBe(false);
+                expect(suggestionsElem.querySelector('li').innerText).toBe("What tools or apps can help me prioritize tasks?");
+                done();
+            }, 450, done);
         });
+
+        it('should handle pasting content', (done: DoneFn) => {
+            aiAssistView = new AIAssistView();
+            aiAssistView.appendTo(aiAssistViewElem);
+            
+            const textareaEle: HTMLDivElement = aiAssistViewElem.querySelector('.e-footer .e-assist-textarea');
+            expect(textareaEle).not.toBeNull();
+            // Focus the textarea for selection to be in the correct place
+            textareaEle.focus();
+            // Simulate placing the cursor within the textarea
+            const range: Range = document.createRange();
+            range.selectNodeContents(textareaEle);
+            range.collapse(false); // Set the cursor at the end of the content
+            const selection = window.getSelection();
+            selection.removeAllRanges();
+            selection.addRange(range);
+            const clipboardItem = new DataTransfer();
+            clipboardItem.setData('text/plain', 'Pasted content');
+            const pasteEvent = new ClipboardEvent('paste', {
+                bubbles: true,
+                cancelable: true
+            });
+            Object.defineProperty(pasteEvent, 'clipboardData', {
+                value: clipboardItem
+            });
+        
+            textareaEle.dispatchEvent(pasteEvent);
+            
+            setTimeout(() => {
+                expect(textareaEle.innerText).toBe('Pasted content');
+                done();
+            }, 450, done);
+        });
+        
+        it('should handle undo action', (done: DoneFn) => {
+            aiAssistView = new AIAssistView();
+            aiAssistView.appendTo(aiAssistViewElem);
+            
+            const textareaEle: HTMLDivElement = aiAssistViewElem.querySelector('.e-footer .e-assist-textarea');
+            expect(textareaEle).not.toBeNull();
+            // check for undo action with no previous values in the stack
+            const undoKeyEvent: KeyboardEvent = new KeyboardEvent('keydown', { key: 'z', ctrlKey: true });
+            (aiAssistView as any).footer.dispatchEvent(undoKeyEvent);
+            textareaEle.innerText = 'Initial content';
+            const inputEvent: Event = new Event('input', { bubbles: true });
+            textareaEle.dispatchEvent(inputEvent);
+    
+            setTimeout(() => {
+                textareaEle.innerText = 'Changed content';
+                textareaEle.dispatchEvent(new Event('input', { bubbles: true }));
+                setTimeout(() => {
+                    const undoEvent: KeyboardEvent = new KeyboardEvent('keydown', { key: 'z', ctrlKey: true });
+                    (aiAssistView as any).footer.dispatchEvent(undoEvent);
+                    setTimeout(() => {
+                        expect(textareaEle.innerText).toBe('Initial content');
+                        done();
+                    }, 0);
+                }, 400);
+            }, 400);
+        });
+        
+        it('should handle redo action', (done: DoneFn) => {
+            aiAssistView = new AIAssistView();
+            aiAssistView.appendTo(aiAssistViewElem);
+        
+            const textareaEle: HTMLDivElement = aiAssistViewElem.querySelector('.e-footer .e-assist-textarea');
+            expect(textareaEle).not.toBeNull();
+            // check for redo action with no previous values in the stack
+            const redoKeyEvent: KeyboardEvent = new KeyboardEvent('keydown', { key: 'y', ctrlKey: true });
+            (aiAssistView as any).footer.dispatchEvent(redoKeyEvent);
+            textareaEle.innerText = 'Initial content';
+            const inputEvent: Event = new Event('input', { bubbles: true });
+            textareaEle.dispatchEvent(inputEvent);
+    
+            setTimeout(() => {
+                textareaEle.innerText = 'Changed content';
+                textareaEle.dispatchEvent(new Event('input', { bubbles: true }));
+                setTimeout(() => {
+                    const undoKeyEvent: KeyboardEvent = new KeyboardEvent('keydown', { key: 'z', ctrlKey: true });
+                    (aiAssistView as any).footer.dispatchEvent(undoKeyEvent);
+        
+                    const redoEvent: KeyboardEvent = new KeyboardEvent('keydown', { key: 'y', ctrlKey: true });
+                    (aiAssistView as any).footer.dispatchEvent(redoEvent);
+        
+                    setTimeout(() => {
+                        expect(textareaEle.innerText).toBe('Changed content');
+                        done();
+                    }, 0);
+                }, 400);
+            }, 400);
+        });
+
+
     });
 
     describe('Key Action - ', () => {
@@ -1308,24 +1563,66 @@ class HelloWorld
                 }
             });
             aiAssistView.appendTo(aiAssistViewElem);
-            const textareaEle: HTMLTextAreaElement = aiAssistViewElem.querySelector('.e-footer .e-assist-textarea');
+            const textareaEle: HTMLDivElement = aiAssistViewElem.querySelector('.e-footer .e-assist-textarea');
             expect(textareaEle).not.toBeNull();
-            (textareaEle as any).ej2_instances[0].value = 'Write a palindrome program in C#.';
-            (textareaEle as any).ej2_instances[0].dataBind();
-            const keyEvent: KeyboardEvent = document.createEvent('KeyboardEvent');
-            (textareaEle as any).ej2_instances[0].inputHandler(keyEvent);
-            const sendBtnElem: HTMLButtonElement = aiAssistView.element.querySelector('.e-footer .e-assist-send.e-icons');
-            expect(sendBtnElem).not.toBeNull();
-            expect(sendBtnElem.classList.contains('disabled')).toEqual(false);
-            keyEventArgs.key = 'Enter';
-            (aiAssistView as any).keyHandler(keyEventArgs, 'footer');
+            textareaEle.innerText = 'Write a palindrome program in C#.';
+            const inputEvent: Event = new Event('input', { bubbles: true });
+            textareaEle.dispatchEvent(inputEvent);
             setTimeout(() => {
-                expect(sendBtnElem.classList.contains('disabled')).toEqual(true);
-                const promptElem: HTMLElement[] = Array.from(aiAssistViewElem.querySelectorAll('.e-prompt-text'));
-                expect(promptElem.length).toEqual(1);
-                aiAssistView.prompt = '';
+                const keyEvent: KeyboardEvent = new KeyboardEvent('keypress', { key: 'Enter' });
+                textareaEle.dispatchEvent(keyEvent);
+                const sendBtnElem: HTMLButtonElement = aiAssistView.element.querySelector('.e-footer .e-assist-send.e-icons');
+                expect(sendBtnElem).not.toBeNull();
+                expect(sendBtnElem.classList.contains('disabled')).toEqual(false);
+                keyEventArgs.key = 'Enter';
+                (aiAssistView as any).keyHandler(keyEventArgs, 'footer');
+                setTimeout(() => {
+                    expect(sendBtnElem.classList.contains('disabled')).toEqual(true);
+                    const promptElem: HTMLElement[] = Array.from(aiAssistViewElem.querySelectorAll('.e-prompt-text'));
+                    expect(promptElem.length).toEqual(1);
+                    aiAssistView.prompt = '';
+                    done();
+                }, 100);
+            }, 450, done);
+        });
+
+        it('Stop Responding enter key action', (done: DoneFn) => {
+            aiAssistView = new AIAssistView({
+                promptSuggestions: [
+                    "How do I set daily goals in my work day?", 
+                    "Steps to publish a e-book with marketing strategy"
+                ],
+                promptRequest: () => {
+                    const stopResponseBtn: HTMLElement = aiAssistViewElem.querySelector('.e-stop-response');
+                    expect(stopResponseBtn).not.toBeNull();
+                    stopResponseBtn.focus();
+                    const enterKeyEvent: KeyboardEvent = new KeyboardEvent('keydown', {
+                        key: 'Enter',
+                        bubbles: true
+                    });
+                    stopResponseBtn.dispatchEvent(enterKeyEvent);
+                }
+            });
+            aiAssistView.appendTo(aiAssistViewElem);
+            let suggestionsElem: HTMLElement = aiAssistViewElem.querySelector('.e-suggestions');
+            expect(suggestionsElem.hidden).toBe(false);
+            const textareaEle: HTMLDivElement = aiAssistViewElem.querySelector('.e-footer .e-assist-textarea');
+            expect(textareaEle).not.toBeNull();
+            textareaEle.innerText = 'Write a palindrome program in C#.';
+            const inputEvent: Event = new Event('input', { bubbles: true });
+            textareaEle.dispatchEvent(inputEvent);
+            setTimeout(() => {
+                const sendBtnElem: HTMLButtonElement = aiAssistView.element.querySelector('.e-footer .e-assist-send.e-icons');
+                expect(sendBtnElem).not.toBeNull();
+                expect(sendBtnElem.classList.contains('disabled')).toEqual(false);
+                sendBtnElem.click();
+                const promptElem: HTMLElement = aiAssistViewElem.querySelector('.e-prompt-text');
+                expect(promptElem).not.toBeNull();
+                expect(promptElem.textContent).toEqual('Write a palindrome program in C#.');
+                const responseElem: HTMLElement = aiAssistViewElem.querySelector('.e-output');
+                expect(responseElem).toBeNull();
                 done();
-            }, 100, done);
+            }, 450, done);
         });
     });
     describe('AIAssistView - Streaming support', () => {
@@ -1365,6 +1662,43 @@ class HelloWorld
                     expect(responseElem.textContent).not.toContain('First part of streaming response');
                     expect(responseElem.textContent).not.toContain('Second part of streaming response');
                     expect(responseElem.textContent).toContain('End of stream');
+                    done();
+                }, 50);
+            }, 50);
+        });
+    
+        it('Check the copy icon present in the pre tag', (done: DoneFn) => {
+            aiAssistView = new AIAssistView({});
+            aiAssistView.appendTo(aiAssistViewElem);
+            aiAssistView.executePrompt('Stream this prompt');
+    
+            aiAssistView.addPromptResponse(`<pre><span class="e-icons e-code-copy e-assist-copy"></span><code class="csharp language-csharp">First part of streaming response</code></pre>`, false);
+            setTimeout(() => {
+                aiAssistView.addPromptResponse(`<pre><code class=\"csharp language-csharp\">Second part of streaming response</code></pre>`, false);
+                setTimeout(() => {
+                    aiAssistView.addPromptResponse(`<pre><code class="csharp language-csharp">End of stream</code></pre>`, true);
+                    const codeCopyElem: HTMLElement = aiAssistViewElem.querySelector('.e-output pre .e-assist-copy');
+                    expect(codeCopyElem).not.toBeNull();
+                    done();
+                }, 50);
+            }, 50);
+        });
+
+        it('Copy icon checking when click the stop response before the response execute', (done: DoneFn) => {
+            aiAssistView = new AIAssistView({});
+            aiAssistView.appendTo(aiAssistViewElem);
+            aiAssistView.executePrompt('Print a Hello world C# Program');
+            aiAssistView.addPromptResponse(`<pre><span class="e-icons e-code-copy e-assist-copy"></span><code class="csharp language-csharp">Hello</code></pre>`, false);
+            setTimeout(() => {
+                aiAssistView.addPromptResponse(`<pre><code class=\"csharp language-csharp\">World !</code></pre>`, false);
+                const stoprespondingElem: HTMLElement = aiAssistViewElem.querySelector('.e-stop-response');
+                expect(stoprespondingElem).not.toBeNull();
+                EventHandler.trigger(stoprespondingElem, 'click');
+                setTimeout(() => {
+                    aiAssistView.addPromptResponse(`<pre><code class="csharp language-csharp">Hello World !</code></pre>`, true);
+                    const responseElem: HTMLElement = aiAssistViewElem.querySelector('.e-output-container');              
+                    const codeCopyElem: HTMLElement = responseElem.querySelector('.e-output pre .e-assist-copy');
+                    expect(codeCopyElem).not.toBeNull();
                     done();
                 }, 50);
             }, 50);
@@ -1420,14 +1754,254 @@ class HelloWorld
             expect(editItem).not.toBeNull();
             editItem.click();
             setTimeout(() => {
-                const textAreaElem: HTMLTextAreaElement = aiAssistView.element.querySelector('.e-footer textarea');
-                expect(textAreaElem.value).toEqual('How can i assist you?');
+                const textAreaElem: HTMLDivElement = aiAssistView.element.querySelector('.e-footer .e-assist-textarea');
+                expect(textAreaElem.innerText).toEqual('How can i assist you?');
                 const sendBtnElem: HTMLButtonElement = aiAssistView.element.querySelector('.e-footer .e-assist-send.e-icons');
                 expect(sendBtnElem).not.toBeNull();
                 expect(sendBtnElem.classList.contains('disabled')).toEqual(false);
                 sendBtnElem.click();
                 expect(suggestionsElem.hidden).toBe(true);
             }, 100);
+        });
+    });
+
+    describe('AIAssistView - Attachment Support', () => {
+
+        let aiAssistView: AIAssistView;
+        const aiAssistViewElem: HTMLElement = document.createElement('div');
+
+        beforeEach(() => {
+            aiAssistViewElem.id = 'aiAssistViewComp';
+            document.body.appendChild(aiAssistViewElem);
+        });
+
+        afterEach(() => {
+            if (aiAssistView && !aiAssistView.isDestroyed) {
+            aiAssistView.destroy();
+            document.body.removeChild(aiAssistViewElem);
+            }
+            aiAssistView = null;
+        });
+
+        it('should initialize with default attachment settings', () => {
+            aiAssistView = new AIAssistView({
+                enableAttachments: true
+            });
+            aiAssistView.appendTo(aiAssistViewElem);
+
+            expect(aiAssistView.attachmentSettings.saveUrl).toBe('');
+            expect(aiAssistView.attachmentSettings.removeUrl).toBe('');
+            expect(aiAssistView.attachmentSettings.maxFileSize).toBe(2000000); // Default 30 MB
+        });
+
+        it('should upload a file successfully', (done: DoneFn) => {
+            let isBeforeEventCalled: boolean = false;
+            aiAssistView = new AIAssistView({
+                enableAttachments: true,
+                attachmentSettings: {
+                    saveUrl: 'https://services.syncfusion.com/js/production/api/FileUploader/Save',
+                    removeUrl: 'https://services.syncfusion.com/js/production/api/FileUploader/Remove'
+                },
+                beforeAttachmentUpload: () => {
+                    isBeforeEventCalled = true
+                },
+                attachmentUploadSuccess: (e) => {
+                    // Check for successful upload
+                    const uploadedFiles = (aiAssistView as any).uploadedFiles;
+                    expect(uploadedFiles.length).toBe(1);
+                    expect(uploadedFiles[0].name).toBe('last.txt');
+                }
+            });
+
+            aiAssistView.appendTo(aiAssistViewElem);
+            const uploadObj: any = (aiAssistView as any).uploaderObj as Uploader;
+
+            let sendBtnElem: HTMLButtonElement = aiAssistView.element.querySelector('.e-footer .e-assist-send.e-icons');
+            expect(sendBtnElem).not.toBeNull();
+            expect(sendBtnElem.classList.contains('disabled')).toEqual(true);
+
+            let fileObj: File = new File(["Nice One"], "last.txt", {lastModified: 0, type: "overide/mimetype"});
+            let fileObj1: File = new File(["2nd File"], "image.png", {lastModified: 0, type: "overide/mimetype"});
+            let eventArgs = { type: 'click', target: {files: [fileObj, fileObj1]}, preventDefault: (): void => { } };
+            uploadObj.onSelectFiles(eventArgs);
+
+            setTimeout(() => {
+                expect(isBeforeEventCalled).toBe(true);
+                setTimeout(() => {
+                    expect(sendBtnElem.classList.contains('disabled')).toEqual(false);
+                    done();
+                }, 500);
+            }, 500);
+
+        });
+
+        it('should handle attachment removal', (done: DoneFn) => {
+            let isAttachmentRemoved: boolean = false;
+            aiAssistView = new AIAssistView({
+                enableAttachments: true,
+                attachmentSettings: {
+                    saveUrl: 'https://services.syncfusion.com/js/production/api/FileUploader/Save',
+                    removeUrl: 'https://services.syncfusion.com/js/production/api/FileUploader/Remove'
+                },
+                attachmentRemoved: () => {
+                    expect((aiAssistView as any).uploadedFiles.length).toBe(0);
+                    isAttachmentRemoved = true;
+                }
+            });
+
+            aiAssistView.appendTo(aiAssistViewElem);
+
+            // Simulate adding a file to the uploader and uploading
+            const uploadObj: any = (aiAssistView as any).uploaderObj as Uploader;
+            let fileObj: File = new File(["Nice One"], "last.txt", {lastModified: 0, type: "overide/mimetype"});
+            let fileObj1: File = new File(["2nd File"], "image.png", {lastModified: 0, type: "overide/mimetype"});
+            let eventArgs = { type: 'click', target: {files: [fileObj, fileObj1]}, preventDefault: (): void => { } };
+            uploadObj.onSelectFiles(eventArgs);
+            setTimeout(() => {
+                const uploadedFileItem = (aiAssistView as any).footer.querySelector('.e-assist-uploaded-file-item');
+                const closeIcon = uploadedFileItem.querySelector('.e-icons.e-assist-clear-icon');
+                closeIcon.click();
+                setTimeout(() => {
+                    expect(isAttachmentRemoved).toBe(true);
+                    done();
+                }, 500);
+            }, 1000);
+        });
+
+        it('should initialize with default attachment settings and handle dynamic property changes', () => {
+            aiAssistView = new AIAssistView({
+                enableAttachments: true
+            });
+            aiAssistView.appendTo(aiAssistViewElem);
+
+            // Check initial values
+            expect(aiAssistView.attachmentSettings.saveUrl).toBe('');
+            expect(aiAssistView.attachmentSettings.removeUrl).toBe('');
+            expect(aiAssistView.attachmentSettings.maxFileSize).toBe(2000000); // Default max file size
+
+            // Change properties dynamically
+            aiAssistView.attachmentSettings = {
+                saveUrl: '/new/save/url',
+                removeUrl: '/new/remove/url',
+                maxFileSize: 500000
+            };
+            aiAssistView.dataBind();
+
+            // Check for updated values
+            expect(aiAssistView.attachmentSettings.saveUrl).toBe('/new/save/url');
+            expect(aiAssistView.attachmentSettings.removeUrl).toBe('/new/remove/url');
+            expect(aiAssistView.attachmentSettings.maxFileSize).toBe(500000);
+        });
+
+        it('should dynamically change the enableAttachments property', () => {
+            aiAssistView = new AIAssistView({
+                enableAttachments: true
+            });
+            aiAssistView.appendTo(aiAssistViewElem);
+
+            // Check initial state
+            expect(aiAssistView.enableAttachments).toBe(true);
+            expect(aiAssistViewElem.querySelector('.e-assist-attachment-icon')).not.toBeNull();
+
+            // Change the enableAttachments property
+            aiAssistView.enableAttachments = false;
+            aiAssistView.dataBind();
+
+            // Check for updated state
+            expect(aiAssistView.enableAttachments).toBe(false);
+            expect(aiAssistViewElem.querySelector('.e-assist-attachment-icon')).toBeNull();
+
+            // Re-enable attachments
+            aiAssistView.enableAttachments = true;
+            aiAssistView.dataBind();
+
+            // Check if attachments are enabled again
+            expect(aiAssistView.enableAttachments).toBe(true);
+            expect(aiAssistViewElem.querySelector('.e-assist-attachment-icon')).not.toBeNull();
+        });
+
+        it('should handle an attachment upload failure', (done: DoneFn) => {
+            aiAssistView = new AIAssistView({
+                enableAttachments: true,
+                attachmentSettings: {
+                    saveUrl: 'js.syncfusion.comm'
+                },
+                attachmentUploadFailure: (e) => {
+                    // Verification logic for upload failure
+                    expect(e.file.name).toBe('sample.txt');
+                    expect(e.operation).toBe('upload');
+                    done();
+                }
+            });
+            aiAssistView.appendTo(aiAssistViewElem);
+
+            // Simulate adding a file to the uploader and then trigger failure
+            const uploader = (aiAssistView as any).uploaderObj;
+            let fileObj: File = new File(["Nice One"], "sample.txt", {lastModified: 0, type: "overide/mimetype"});
+            let eventArgs = { type: 'click', target: {files: [fileObj]}, preventDefault: (): void => { } };
+            uploader.onSelectFiles(eventArgs);
+        });
+
+        it('should handle an attachment upload failure and failure element display', () => {
+            aiAssistView = new AIAssistView({
+                enableAttachments: true,
+                attachmentSettings: {
+                    saveUrl: 'js.syncfusion.comm',
+                    maxFileSize: 0
+                }
+            });
+
+            aiAssistView.appendTo(aiAssistViewElem);
+
+            // Simulate adding a file to the uploader and then trigger failure
+            const uploader = (aiAssistView as any).uploaderObj;
+            let fileObj: File = new File(["Nice One"], "sample.txt", {lastModified: 0, type: "overide/mimetype"});
+            let eventArgs = { type: 'click', target: {files: [fileObj]}, preventDefault: (): void => { } };
+            uploader.onSelectFiles(eventArgs);
+            let failureElement = aiAssistView.element.querySelector('.e-upload-failure-alert');
+            expect(failureElement.querySelector('.e-failure-message').textContent).toBe('Upload failed: File size is too large');
+            (failureElement.querySelector('.e-assist-clear-icon') as HTMLElement).click();
+            failureElement = aiAssistView.element.querySelector('.e-upload-failure-alert');
+            expect(failureElement).toBeNull();
+        });
+
+        it('should dynamically change the locale and verify the failure message text', () => {
+            L10n.load({
+                'de-DE': {
+                    'aiassistview': {
+                        fileSizeFailure: 'Upload fehlgeschlagen: Die Dateigröße ist zu groß'
+                    }
+                },
+                'fr-BE': {
+                    'aiassistview': {
+                        fileSizeFailure: 'Échec du téléchargement : La taille du fichier est trop grande'
+                    }
+                }
+            });
+            aiAssistView = new AIAssistView({
+                enableAttachments: true,
+                attachmentSettings: {
+                    saveUrl: 'js.syncfusion.comm',
+                    maxFileSize: 0
+                },
+                locale: 'de-DE'
+            });
+
+            aiAssistView.appendTo(aiAssistViewElem);
+
+            const uploader = (aiAssistView as any).uploaderObj;
+            let fileObj: File = new File(["Nice One"], "sample.txt", { lastModified: 0, type: "override/mimetype" });
+            let eventArgs = { type: 'click', target: { files: [fileObj] }, preventDefault: (): void => {} };
+            uploader.onSelectFiles(eventArgs);
+
+            let failureElement = aiAssistView.element.querySelector('.e-upload-failure-alert');
+            expect(failureElement.querySelector('.e-failure-message').textContent).toBe('Upload fehlgeschlagen: Die Dateigröße ist zu groß');
+
+            aiAssistView.locale = 'fr-BE';
+            aiAssistView.dataBind();
+            uploader.onSelectFiles(eventArgs);
+            failureElement = aiAssistView.element.querySelector('.e-upload-failure-alert');
+            expect(failureElement.querySelector('.e-failure-message').textContent).toBe('Échec du téléchargement : La taille du fichier est trop grande');
         });
     });
 });

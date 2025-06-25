@@ -6093,6 +6093,113 @@ describe('autoCalculateDateScheduling property false  ', () => {
         }
     });
 });
+describe('using public method to get tasks information  ', () => {
+    let ganttObj: Gantt;
+    beforeAll((done: Function) => {
+        ganttObj = createGantt(
+            {
+            dataSource: [
+                {
+                    TaskID: 1,
+                    TaskName: 'Product Concept',
+                    StartDate: new Date('04/02/2019'),
+                    EndDate: new Date('04/21/2019'),
+                    subtasks: [
+                        { TaskID: 2, TaskName: 'Defining the product  and its usage', BaselineStartDate: new Date('04/02/2019'), BaselineEndDate: new Date('04/06/2019'), StartDate: new Date('04/02/2019'), Duration: 3,Progress: 30 },
+                        { TaskID: 3, TaskName: 'Defining target audience', StartDate: new Date('04/02/2019'), Duration: 3, 
+                        Indicators: [
+                            {
+                                'date': '04/10/2019',
+                                'iconClass': 'e-btn-icon e-notes-info e-icons e-icon-left e-gantt e-notes-info::before',
+                                'name': 'Indicator title',
+                                'tooltip': 'tooltip'
+                            }
+                        ] 
+                    },
+                        { TaskID: 4, TaskName: 'Prepare product sketch and notes', StartDate: new Date('04/02/2019'), Duration: 3, Predecessor: "2" ,Progress: 30},
+                    ]
+                },
+            ],
+            allowSorting: true,
+            allowReordering: true,
+            enableContextMenu: true,
+            taskFields: {
+                id: 'TaskID',
+                name: 'TaskName',
+                startDate: 'StartDate',
+                duration: 'Duration',
+                progress: 'Progress',
+                dependency:'Predecessor',
+                baselineStartDate: "BaselineStartDate",
+                baselineEndDate: "BaselineEndDate",
+                child: 'subtasks',
+                indicators: 'Indicators'
+            },
+            editSettings: {
+                allowAdding: true,
+                allowEditing: true,
+                allowDeleting: true,
+                allowTaskbarEditing: true,
+                showDeleteConfirmDialog: true
+            },
+            columns: [
+                { field: 'TaskID', headerText: 'Task ID' },
+                { field: 'TaskName', headerText: 'Task Name', allowReordering: false  },
+                { field: 'StartDate', headerText: 'Start Date', allowSorting: false },
+                { field: 'Duration', headerText: 'Duration', allowEditing: false },
+                { field: 'Progress', headerText: 'Progress', allowFiltering: false }, 
+                { field: 'CustomColumn', headerText: 'CustomColumn' }
+            ],
+            toolbar: ['Add', 'Edit', 'Update', 'Delete', 'Cancel', 'ExpandAll', 'CollapseAll', 'Search', 'ZoomIn', 'ZoomOut', 'ZoomToFit', 
+            'PrevTimeSpan', 'NextTimeSpan','ExcelExport', 'CsvExport', 'PdfExport'],
+            allowExcelExport: true,
+            allowPdfExport: true,
+            allowSelection: true,
+            allowRowDragAndDrop: true,
+            selectedRowIndex: 1,
+            tooltipSettings: {
+                showTooltip: true
+            },
+            allowFiltering: true,
+            gridLines: "Both",
+            showColumnMenu: true,
+            highlightWeekends: true,
+            timelineSettings: {
+                showTooltip: true,
+                topTier: {
+                    unit: 'Week',
+                    format: 'dd/MM/yyyy'
+                },
+                bottomTier: {
+                    unit: 'Day',
+                    count: 1
+                }
+            },
+            height: '550px',
+            allowUnscheduledTasks: true,
+            allowResizing: true,
+            projectStartDate: new Date('03/25/2019'),
+            projectEndDate: new Date('05/30/2019'),
+            }, done);
+    });
+    it('using public method to get info of record', () => {
+        const ganttProps = ganttObj.getTaskInfo('1');
+        expect(ganttProps.autoTaskLeft).toBe(264);
+    });
+    it('using public method autofitColumns', () => {
+        ganttObj.autoFitColumns('TaskID');
+        expect(ganttObj.columns[0]['width']).toBe(100);
+    });
+    it('getting current view data using public method', () => {
+        const currentViewdata = ganttObj.getCurrentViewData();
+        expect(ganttObj.currentViewData.length).toBe(4)
+    });
+    afterAll(() => {
+        if (ganttObj) {
+            destroyGantt(ganttObj);
+        }
+    });
+});
 describe('public method to update datasource', () => {
     let ganttObj: Gantt;
     let data = [

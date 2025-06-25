@@ -28,7 +28,7 @@ describe('907890-Resolve script error when deleting table', () => {
         document.body.removeChild(document.getElementById('container'));
         editor = undefined;
         setTimeout(function () {
-            document.body.innerHTML = '';
+            
             done();
         }, 1000);
     });
@@ -37,12 +37,15 @@ describe('907890-Resolve script error when deleting table', () => {
         editor.selection.select('0;0;0;0;0;5','0;0;1;1;0;7');
         expect(() => { editor.editor.onBackSpace(); }).not.toThrowError();
         expect(editor.revisions.length).toBe(0);
+        expect(editor.revisions.changes.length).toBe(0);
         //undo process
         expect(() => { editor.editorHistory.undo(); }).not.toThrowError();
-        expect(editor.revisions.length).toBe(2);
+        expect(editor.revisions.length).toBe(1);
+        expect(editor.revisions.changes.length).toBe(6);
         //redo process
         expect(() => { editor.editorHistory.redo(); }).not.toThrowError();
         expect(editor.revisions.length).toBe(0);
+        expect(editor.revisions.changes.length).toBe(0);
     });
    
 });

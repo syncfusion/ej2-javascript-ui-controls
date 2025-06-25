@@ -4,7 +4,7 @@
 import { createElement, detach } from '@syncfusion/ej2-base';
 import { EditorManager } from '../../../src/editor-manager/index';
 import { RichTextEditor } from '../../../src/rich-text-editor/base/rich-text-editor';
-import { destroy, renderRTE } from '../../rich-text-editor/render.spec';
+import { destroy, renderRTE, setCursorPoint } from '../../rich-text-editor/render.spec';
 
 describe('Formats plugin', () => {
     let innerHTML: string = `
@@ -1041,6 +1041,56 @@ describe('Formats plugin', () => {
             (<HTMLElement>rteEle.querySelectorAll(".e-toolbar-item")[0] as HTMLElement).click();
             let expectContent = `<div><blockquote><p>The Rich Text Editor component is a WYSIWYG ('what you see is what you get') editor that provides the best user experience to create and update the content. Users can format their content using standard toolbar commands.</p></blockquote><p><b> Key features:</b></p></div>`
             expect(rteObj.contentModule.getEditPanel().innerHTML === expectContent).toBe(true);
+            done();
+        });
+        afterAll((done) => {
+            destroy(rteObj);
+            done();
+        });
+    });
+    describe("959495 - Code and CodeBlock format retained when converting code block element to H1 using Format toolbar option", () => {
+        let rteObj: RichTextEditor;
+        beforeAll((done: Function) => {
+            rteObj = renderRTE({
+                toolbarSettings: {
+                    items: ['Blockquote']
+                },
+                value: `<p>Rich</p><pre data-language="Plain text" spellcheck="false"><code>Text<br></code></pre><p>Editor</p>`
+            });
+            done();
+        });
+        it('Should not retain the code and codeblock format when converting code block element to H1 using Format toolbar option', (done: DoneFn) => {
+            const start: HTMLElement = rteObj.element.querySelectorAll('p')[0];
+            const end: HTMLElement = rteObj.element.querySelectorAll('p')[1];
+            rteObj.formatter.editorManager.nodeSelection.setSelectionText(document, start.firstChild, end.firstChild, 1, 2);
+            rteObj.executeCommand('formatBlock', 'H1');
+            const codeElem = rteObj.element.querySelector('code');
+            expect(codeElem).toBeNull();
+            const format = rteObj.element.querySelector('*[data-language]');
+            expect(format).toBeNull();
+            done();
+        });
+        it('Should not retain the code and codeblock format when converting code block element to Preformatted using Format toolbar option', (done: DoneFn) => {
+            rteObj.inputElement.innerHTML = `<p>Rich</p><pre data-language="Plain text" spellcheck="false"><code>Text<br></code></pre><p>Editor</p>`;
+            const start: HTMLElement = rteObj.element.querySelectorAll('p')[0];
+            const end: HTMLElement = rteObj.element.querySelectorAll('p')[1];
+            rteObj.formatter.editorManager.nodeSelection.setSelectionText(document, start.firstChild, end.firstChild, 1, 2);
+            rteObj.executeCommand('formatBlock', 'Preformatted');
+            const codeElem = rteObj.element.querySelector('code');
+            expect(codeElem).toBeNull();
+            const format = rteObj.element.querySelector('*[data-language]');
+            expect(format).toBeNull();
+            done();
+        });
+        it('Should not add the codeBlock element inside the pre format when the selection is not in the code block element', (done: DoneFn) => {
+            rteObj.inputElement.innerHTML = `<p>Rich</p><pre data-language="Plain text" spellcheck="false"><code class="language-plaintext">Text Editor<br></code></pre>`;
+            const start: HTMLElement = rteObj.element.querySelectorAll('p')[0];
+            setCursorPoint(start.firstChild, 2);
+            rteObj.executeCommand('formatBlock', 'pre');
+            const codeElem = rteObj.element.querySelector('pre:not([data-language])');
+            expect(codeElem).not.toBeNull();
+            const format = rteObj.element.querySelector('*[data-language]');
+            expect(format).not.toBeNull();
             done();
         });
         afterAll((done) => {

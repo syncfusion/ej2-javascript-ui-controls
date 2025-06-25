@@ -118,8 +118,7 @@ export class StackingAreaSeries extends LineBase {
                 const previousSeries: Series = this.getPreviousSeries(series);
                 if (previousSeries.emptyPointSettings.mode !== 'Drop' || !previousSeries.points[j as number].isEmpty) {
                     point2 = getCoordinate(visiblePoints[j as number].xValue, (!series.visible && series.isLegendClicked && series.index > 0
-                        && index !== undefined) ?
-                        this.chart.visibleSeries[index as number].stackedValues.endValues[pointIndex as number]
+                        && index !== undefined) ? this.chart.visibleSeries[index as number].stackedValues.endValues[pointIndex as number]
                         : stackedvalue.startValues[pointIndex as number], xAxis, yAxis, isInverted, series);
                     if (stackedvalue.startValues[pointIndex as number] === stackedvalue.endValues[pointIndex as number]) {
                         point2.y = Math.floor(point2.y);

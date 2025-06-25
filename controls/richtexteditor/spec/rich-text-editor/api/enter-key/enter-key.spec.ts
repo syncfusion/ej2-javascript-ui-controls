@@ -193,9 +193,9 @@ describe('927517: Link functionality breaks with enter action in Firefox browser
         rteObj.dataBind();
         rteObj.focusIn();
         const startNode: any = rteObj.inputElement.querySelector('p');
-        new NodeSelection().setSelectionText(document, startNode.childNodes[1], startNode.childNodes[1], 3, 3);
+        new NodeSelection().setSelectionText(document, startNode.childNodes[1], startNode.childNodes[1], 1, 1);
         (<any>rteObj).keyDown(keyboardEventArgs);
-        expect(rteObj.inputElement.innerHTML === '<p><a class="e-rte-anchor" href="http://d" title="http://d" target="_blank" aria-label="Open in new window">link</a>   </p><p>3</p>').toBe(true);
+        expect(rteObj.inputElement.innerHTML === '<p><a class="e-rte-anchor" href="http://d" title="http://d" target="_blank" aria-label="Open in new window">link</a> </p><p>3</p>').toBe(true);
     });
 
     afterAll(() => {
@@ -1680,12 +1680,14 @@ describe('Table Enter Key Testing', () => {
         rteObj = renderRTE({
             height: '200px',
             enterKey: 'P',
-            value: `<p>RTE Content</p><p>RTE Content</p><table class="e-rte-table" style="width: 100%; min-width: 0px;"><tbody><tr><td class="" style="width: 33.3333%;"><p class='focusNode'>RTE Content</p></td><td style="width: 33.3333%;"><br></td><td style="width: 33.3333%;"><br></td></tr><tr><td style="width: 33.3333%;"><br></td><td style="width: 33.3333%;"><br></td><td style="width: 33.3333%;"><br></td></tr></tbody></table><p><br></p>`
+            value: `<p>RTE Content</p><p>RTE Content</p><table class="e-rte-table" style="width: 100%; min-width: 0px;"><tbody><tr><td class="focusNode" style="width: 33.3333%;"><p class=''>RTE Content</p></td><td style="width: 33.3333%;"><br></td><td style="width: 33.3333%;"><br></td></tr><tr><td style="width: 33.3333%;"><br></td><td style="width: 33.3333%;"><br></td><td style="width: 33.3333%;"><br></td></tr></tbody></table><p><br></p>`
         });
         done();
     });
 
     it('Enter Key testing in table when P is configured and P content is inside', function (): void {
+        rteObj.value = '<p>RTE Content</p><p>RTE Content</p><table class="e-rte-table" style="width: 100%; min-width: 0px;"><tbody><tr><td class="" style="width: 33.3333%;"><p class="focusNode">RTE Content</p><p>test</p></td><td style="width: 33.3333%;"><br></td><td style="width: 33.3333%;"><br></td></tr><tr><td style="width: 33.3333%;"><br></td><td style="width: 33.3333%;"><br></td><td style="width: 33.3333%;"><br></td></tr></tbody></table><p><br></p>';
+        rteObj.inputElement.innerHTML = '<p>RTE Content</p><p>RTE Content</p><table class="e-rte-table" style="width: 100%; min-width: 0px;"><tbody><tr><td class="" style="width: 33.3333%;"><p class="focusNode">RTE Content</p><p>test</p></td><td style="width: 33.3333%;"><br></td><td style="width: 33.3333%;"><br></td></tr><tr><td style="width: 33.3333%;"><br></td><td style="width: 33.3333%;"><br></td><td style="width: 33.3333%;"><br></td></tr></tbody></table><p><br></p>';
         rteObj.dataBind();
         rteObj.focusIn();
         const startNode: any = rteObj.inputElement.querySelector('.focusNode');
@@ -1697,8 +1699,8 @@ describe('Table Enter Key Testing', () => {
 
     it('Enter Key testing in table when DIV is configured and P content is inside', function (): void {
         rteObj.enterKey = 'DIV';
-        rteObj.value = '<p>RTE Content</p><p>RTE Content</p><table class="e-rte-table" style="width: 100%; min-width: 0px;"><tbody><tr><td class="" style="width: 33.3333%;"><p class="focusNode">RTE Content</p></td><td style="width: 33.3333%;"><br></td><td style="width: 33.3333%;"><br></td></tr><tr><td style="width: 33.3333%;"><br></td><td style="width: 33.3333%;"><br></td><td style="width: 33.3333%;"><br></td></tr></tbody></table><p><br></p>';
-        rteObj.inputElement.innerHTML = '<p>RTE Content</p><p>RTE Content</p><table class="e-rte-table" style="width: 100%; min-width: 0px;"><tbody><tr><td class="" style="width: 33.3333%;"><p class="focusNode">RTE Content</p></td><td style="width: 33.3333%;"><br></td><td style="width: 33.3333%;"><br></td></tr><tr><td style="width: 33.3333%;"><br></td><td style="width: 33.3333%;"><br></td><td style="width: 33.3333%;"><br></td></tr></tbody></table><p><br></p>';
+        rteObj.value = '<p>RTE Content</p><p>RTE Content</p><table class="e-rte-table" style="width: 100%; min-width: 0px;"><tbody><tr><td class="" style="width: 33.3333%;"><p class="focusNode">RTE Content</p><p>test</p></td><td style="width: 33.3333%;"><br></td><td style="width: 33.3333%;"><br></td></tr><tr><td style="width: 33.3333%;"><br></td><td style="width: 33.3333%;"><br></td><td style="width: 33.3333%;"><br></td></tr></tbody></table><p><br></p>';
+        rteObj.inputElement.innerHTML = '<p>RTE Content</p><p>RTE Content</p><table class="e-rte-table" style="width: 100%; min-width: 0px;"><tbody><tr><td class="" style="width: 33.3333%;"><p class="focusNode">RTE Content</p><p>test</p></td><td style="width: 33.3333%;"><br></td><td style="width: 33.3333%;"><br></td></tr><tr><td style="width: 33.3333%;"><br></td><td style="width: 33.3333%;"><br></td><td style="width: 33.3333%;"><br></td></tr></tbody></table><p><br></p>';
         rteObj.dataBind();
         const startNode: any = rteObj.inputElement.querySelector('.focusNode');
         const sel: void = new NodeSelection().setCursorPoint(
@@ -1778,7 +1780,7 @@ describe('EJ2-55294 - Enter Key press at the start of the content when content h
         rteObj.focusIn();
         const startNode: any = rteObj.inputElement.querySelector('.focusNode');
         const sel: void = new NodeSelection().setSelectionText(
-            document, startNode.childNodes[0], startNode.childNodes[0], 5, 5);
+            document, startNode.childNodes[0], startNode.childNodes[0], 0, 0);
         (<any>rteObj).keyDown(keyboardEventArgs);
         expect(rteObj.inputElement.querySelectorAll('p').length === 2).toBe(true);
         expect(rteObj.inputElement.querySelectorAll('p')[0].querySelectorAll('br').length === 1).toBe(true);
@@ -2075,9 +2077,9 @@ describe( 'EJ2-62198 Place holder displayed again when focusing out after pressi
         rteObj.dataBind();
         rteObj.focusIn();
         let spanElemement: HTMLElement = document.querySelector( '.e-rte-placeholder' );
-        expect( spanElemement.classList.contains('enabled') ).toBe( true );
+        expect( spanElemement.classList.contains('e-placeholder-enabled') ).toBe( true );
         rteObj.focusOut();
-        expect( spanElemement.classList.contains('enabled') ).toBe( true );
+        expect( spanElemement.classList.contains('e-placeholder-enabled') ).toBe( true );
     } );
     it( 'After One Enter key Press Placeholder span element style.display should be none', () => {
         rteObj.dataBind();
@@ -2087,9 +2089,9 @@ describe( 'EJ2-62198 Place holder displayed again when focusing out after pressi
             document, startNode, startNode, 0, 0 );
         ( <any>rteObj ).keyDown( keyboardEventArgs );
         let spanElemement: HTMLElement = document.querySelector( '.e-rte-placeholder' );
-        expect( spanElemement.classList.contains('enabled') ).toBe( false );
+        expect( spanElemement.classList.contains('e-placeholder-enabled') ).toBe( false );
         rteObj.focusOut();
-        expect( spanElemement.classList.contains('enabled') ).toBe( false );
+        expect( spanElemement.classList.contains('e-placeholder-enabled') ).toBe( false );
     } );
 } );
 
@@ -2350,14 +2352,13 @@ describe( '874048 Pressing enter key when the cursor is focused on the image cap
         const sel: void = new NodeSelection().setCursorPoint(document, startNode.childNodes[0], 2);
         let cursorElem: HTMLElement;
         (<any>rteObj).keyDown(keyboardEventArgs);
-        expect(rteObj.inputElement.innerHTML === `<p>RTE content&nbsp;<span class="e-img-caption e-rte-img-caption e-caption-inline" contenteditable="false" draggable="false" style="width:auto"><span class="e-img-wrap"><img src="https://ej2.syncfusion.com/demos/src/rich-text-editor/images/RTEImage-Feather.png" class="e-rte-image e-imginline" alt="ASmall_Image" width="auto" height="auto" style="min-width: 0px; max-width: 1085px; min-height: 0px;"><span class="e-img-inner" contenteditable="true">Caption</span></span></span>  with image</p>`).toBe(true);
+        expect(rteObj.inputElement.innerHTML === `<p>RTE content&nbsp;<span class="e-img-caption e-rte-img-caption e-caption-inline" contenteditable="false" draggable="false" style="width:auto"><span class="e-img-wrap"><img src="https://ej2.syncfusion.com/demos/src/rich-text-editor/images/RTEImage-Feather.png" class="e-rte-image e-imginline" alt="ASmall_Image" width="auto" height="auto" style="min-width: 0px; max-width: 1085px; min-height: 0px;"><span class="e-img-inner" contenteditable="true">Caption</span></span></span> with image</p>`).toBe(true);
     });
 });
 
 describe('EJ2-65987 - Image duplicated when pressing enter',() => {
     let rteObj: RichTextEditor;
     let innerHTML: string = `<p><br></p><p>&nbsp;<img src="https://ej2.syncfusion.com/demos/src/rich-text-editor/images/RTEImage-Feather.png" class="e-rte-image e-imginline" alt="RTEImage-Feather.png" width="auto" height="auto" style="min-width: 0px; max-width: 1455px; min-height: 0px;"> </p>`;
-    let editObj: EditorManager = new EditorManager( { document: document, editableElement: document.getElementsByClassName("e-content")[0] });
     beforeAll(() => {
         rteObj = renderRTE({
             value: innerHTML
@@ -2368,7 +2369,7 @@ describe('EJ2-65987 - Image duplicated when pressing enter',() => {
     });
     it('check image duplicated when pressing enter',() => {
         (rteObj as any).inputElement.focus();
-        editObj.nodeSelection.setSelectionText(document,(rteObj as any).inputElement.childNodes[0].firstChild,(rteObj as any).inputElement.childNodes[0].firstChild, 0, 0);
+        rteObj.formatter.editorManager.nodeSelection.setSelectionText(document,(rteObj as any).inputElement.childNodes[0].firstChild,(rteObj as any).inputElement.childNodes[0].firstChild, 0, 0);
         (rteObj as any).keyDown(keyboardEventArgs);
         expect(rteObj.inputElement.innerHTML==`<p><br></p><p><br></p><p>&nbsp;<img src="https://ej2.syncfusion.com/demos/src/rich-text-editor/images/RTEImage-Feather.png" class="e-rte-image e-imginline" alt="RTEImage-Feather.png" width="auto" height="auto" style="min-width: 0px; max-width: 1455px; min-height: 0px;"> </p>`).toBe(true);
     });
@@ -2387,7 +2388,6 @@ describe('EJ2-65633 - Enter key Press when audio and video is focused',() => {
         <source src="https://www.w3schools.com/tags/movie.mp4" type="video/mp4">
     </video></span><br>
 </p>`;
-    let editObj: EditorManager = new EditorManager( { document: document, editableElement: document.getElementsByClassName("e-content")[0] });
     beforeAll(() => {
         rteObj = renderRTE({
             value: innerHTML
@@ -2399,9 +2399,9 @@ describe('EJ2-65633 - Enter key Press when audio and video is focused',() => {
     it('audio focus and enter key press',() => {
         (rteObj as any).inputElement.focus();
         let startNode = (rteObj as any).inputElement.querySelector('.e-audio-wrap');
-        editObj.nodeSelection.setSelectionText(document, startNode, startNode, 0, 1);
+        rteObj.formatter.editorManager.nodeSelection.setSelectionText(document, startNode, startNode, 0, 1);
         (rteObj as any).keyDown(keyboardEventArgs);
-        expect(rteObj.inputElement.innerHTML==`<p><b>Get started Quick Toolbar to click on an audio</b></p><p>By using the quick toolbar, users can replace, display, and delete the selected an audio.</p><p><br></p><p><span class="e-audio-wrap" contenteditable="false"><span class="e-clickelem"><audio controls="" class="e-rte-audio e-audio-inline">\n        <source src="https://assets.mixkit.co/sfx/preview/mixkit-rain-and-thunder-storm-2390.mp3" type="audio/mp3">\n    </audio></span></span><br>\n</p><p>Rich Text Editor allows inserting video and audio from online sources as well as the local \n    computers where you want to insert a video and audio in your content.</p><p><b>Get started Quick Toolbar to click on a video</b></p><p>By using the quick toolbar, users can replace,\n    align, display, dimension, and delete the selected a video.</p><p>\n    <span class="e-video-wrap" contenteditable="false"><video controls="" class="e-rte-video e-video-inline">\n        <source src="https://www.w3schools.com/tags/movie.mp4" type="video/mp4">\n    </video></span><br>\n</p>`).toBe(true);
+        expect(rteObj.inputElement.innerHTML==`<p><b>Get started Quick Toolbar to click on an audio</b></p><p>By using the quick toolbar, users can replace, display, and delete the selected an audio.</p><p><br></p><p><span class="e-audio-wrap" contenteditable="false"><span class="e-clickelem"><audio controls="" class="e-rte-audio e-audio-inline"> <source src="https://assets.mixkit.co/sfx/preview/mixkit-rain-and-thunder-storm-2390.mp3" type="audio/mp3"> </audio></span></span><br> </p><p>Rich Text Editor allows inserting video and audio from online sources as well as the local computers where you want to insert a video and audio in your content.</p><p><b>Get started Quick Toolbar to click on a video</b></p><p>By using the quick toolbar, users can replace, align, display, dimension, and delete the selected a video.</p><p> <span class="e-video-wrap" contenteditable="false"><video controls="" class="e-rte-video e-video-inline"> <source src="https://www.w3schools.com/tags/movie.mp4" type="video/mp4"> </video></span><br> </p>`).toBe(true);
     });
 
     it('video focus and enter key press',() => {
@@ -2418,9 +2418,9 @@ describe('EJ2-65633 - Enter key Press when audio and video is focused',() => {
         rteObj.dataBind();
         (rteObj as any).inputElement.focus();
         let startNode = (rteObj as any).inputElement.querySelector('.e-video-wrap');
-        editObj.nodeSelection.setSelectionText(document, startNode, startNode, 0, 1);
+         rteObj.formatter.editorManager.nodeSelection.setSelectionText(document, startNode, startNode, 0, 1);
         (rteObj as any).keyDown(keyboardEventArgs);
-        expect(rteObj.inputElement.innerHTML==`<p><b>Get started Quick Toolbar to click on an audio</b></p><p>By using the quick toolbar, users can replace, display, and delete the selected an audio.</p><p>\n        <span class="e-audio-wrap" contenteditable="false"><span class="e-clickelem"><audio controls="" class="e-rte-audio e-audio-inline">\n            <source src="https://assets.mixkit.co/sfx/preview/mixkit-rain-and-thunder-storm-2390.mp3" type="audio/mp3">\n        </audio></span></span><br>\n    </p><p>Rich Text Editor allows inserting video and audio from online sources as well as the local \n        computers where you want to insert a video and audio in your content.</p><p><b>Get started Quick Toolbar to click on a video</b></p><p>By using the quick toolbar, users can replace,\n        align, display, dimension, and delete the selected a video.</p><p><br></p><p><span class="e-video-wrap" contenteditable="false"><video controls="" class="e-rte-video e-video-inline">\n            <source src="https://www.w3schools.com/tags/movie.mp4" type="video/mp4">\n        </video></span><br></p>`).toBe(true);
+        expect(rteObj.inputElement.innerHTML==`<p><b>Get started Quick Toolbar to click on an audio</b></p><p>By using the quick toolbar, users can replace, display, and delete the selected an audio.</p><p> <span class="e-audio-wrap" contenteditable="false"><span class="e-clickelem"><audio controls="" class="e-rte-audio e-audio-inline"> <source src="https://assets.mixkit.co/sfx/preview/mixkit-rain-and-thunder-storm-2390.mp3" type="audio/mp3"> </audio></span></span><br> </p><p>Rich Text Editor allows inserting video and audio from online sources as well as the local computers where you want to insert a video and audio in your content.</p><p><b>Get started Quick Toolbar to click on a video</b></p><p>By using the quick toolbar, users can replace, align, display, dimension, and delete the selected a video.</p><p><br></p><p><span class="e-video-wrap" contenteditable="false"><video controls="" class="e-rte-video e-video-inline"> <source src="https://www.w3schools.com/tags/movie.mp4" type="video/mp4"> </video></span><br></p>`).toBe(true);
     });
 
     it('audio dynamically inserted and focus and enter key press',() => {
@@ -2430,9 +2430,9 @@ describe('EJ2-65633 - Enter key Press when audio and video is focused',() => {
         rteObj.dataBind();
         (rteObj as any).inputElement.focus();
         let startNode = (rteObj as any).inputElement.querySelector('.e-audio-wrap');
-        editObj.nodeSelection.setSelectionText(document, startNode, startNode, 0, 1);
+         rteObj.formatter.editorManager.nodeSelection.setSelectionText(document, startNode, startNode, 0, 1);
         (rteObj as any).keyDown(keyboardEventArgs);
-        expect(rteObj.inputElement.innerHTML==`<p><b>Get started Quick Toolbar to click on an audio</b></p><p>By using the quick toolbar, users can replace, dis</p><p><span class="e-audio-wrap" contenteditable="false" title="mixkit-rain-and-thunder-storm-2390.mp3"><span class="e-clickelem"><audio class="e-rte-audio e-audio-inline" controls=""><source src="blob:null/72bb961a-c785-4d4a-b94d-9b5701292c3b" type="audio/mp3"></audio></span></span><br>play, and delete the selected an audio</p><p>Rich Text Editor allows inserting video and audio from online sources as well as the local \n        computers where you want to insert a video and audio in your content.</p><p><b>Get started Quick Toolbar to click on a video</b></p><p>By using the quick toolbar, users can replace,\n        align, display, dimension, and delete the selected a video.</p>`).toBe(true);
+        expect(rteObj.inputElement.innerHTML==`<p><b>Get started Quick Toolbar to click on an audio</b></p><p>By using the quick toolbar, users can replace, dis</p><p><span class="e-audio-wrap" contenteditable="false" title="mixkit-rain-and-thunder-storm-2390.mp3"><span class="e-clickelem"><audio class="e-rte-audio e-audio-inline" controls=""><source src="blob:null/72bb961a-c785-4d4a-b94d-9b5701292c3b" type="audio/mp3"></audio></span></span><br>play, and delete the selected an audio</p><p>Rich Text Editor allows inserting video and audio from online sources as well as the local computers where you want to insert a video and audio in your content.</p><p><b>Get started Quick Toolbar to click on a video</b></p><p>By using the quick toolbar, users can replace, align, display, dimension, and delete the selected a video.</p>`).toBe(true);
     });
 
     it('video dynamically inserted and focus and enter key press',() => {
@@ -2442,9 +2442,9 @@ describe('EJ2-65633 - Enter key Press when audio and video is focused',() => {
         rteObj.dataBind();
         (rteObj as any).inputElement.focus();
         let startNode = (rteObj as any).inputElement.querySelector('.e-video-wrap');
-        editObj.nodeSelection.setSelectionText(document, startNode, startNode, 0, 1);
+         rteObj.formatter.editorManager.nodeSelection.setSelectionText(document, startNode, startNode, 0, 1);
         (rteObj as any).keyDown(keyboardEventArgs);
-        expect(rteObj.inputElement.innerHTML==`<p><b>Get started Quick Toolbar to click on an audio</b></p><p>By using the quick toolbar, users can replace, display, and delete the selected an audio.</p><p>Rich Text Editor allows inserting video and audio from online sources as well as the local \n        computers where you want to insert a video and audio in your content.</p><p><b>Get started Quick Toolbar to click on a video</b></p><p>By using the quick toolbar, users can replace,\n        al</p><p><span class="e-video-wrap" contenteditable="false" title="movie.mp4"><video class="e-rte-video e-video-inline" controls=""><source src="blob:null/0f59173c-61bf-42d9-84e9-bb9560da2714" type="video/mp4"></video></span><br>ign, display, dimension, and delete the selected a video.</p>`).toBe(true);
+        expect(rteObj.inputElement.innerHTML==`<p><b>Get started Quick Toolbar to click on an audio</b></p><p>By using the quick toolbar, users can replace, display, and delete the selected an audio.</p><p>Rich Text Editor allows inserting video and audio from online sources as well as the local computers where you want to insert a video and audio in your content.</p><p><b>Get started Quick Toolbar to click on a video</b></p><p>By using the quick toolbar, users can replace, al</p><p><span class="e-video-wrap" contenteditable="false" title="movie.mp4"><video class="e-rte-video e-video-inline" controls=""><source src="blob:null/0f59173c-61bf-42d9-84e9-bb9560da2714" type="video/mp4"></video></span><br>ign, display, dimension, and delete the selected a video.</p>`).toBe(true);
     });
 });
 
@@ -2509,7 +2509,7 @@ describe("EJ2-67119 - List item gets removed when press the enterkey in list sec
         range.setEnd( contentElem,0 );
         rteObj.formatter.editorManager.nodeSelection.setRange(document, range);
         (rteObj as any).keyDown(keyboardEventArgs);
-        const corrrectElemString : string = `<ol><li><span class="e-video-wrap" contenteditable="false"><video controls="" class="e-rte-video e-video-inline">\n            <source src="https://www.w3schools.com/tags/movie.mp4" type="video/mp4">\n        </video></span><br></li></ol><p><br></p>`;
+        const corrrectElemString : string = `<ol><li><span class="e-video-wrap" contenteditable="false"><video controls="" class="e-rte-video e-video-inline"> <source src="https://www.w3schools.com/tags/movie.mp4" type="video/mp4"> </video></span><br></li></ol><p><br></p>`;
         expect(rteObj.inputElement.innerHTML === corrrectElemString ).toBe(true);
     });
     afterAll( () => {
@@ -2695,7 +2695,7 @@ describe('850231 - Enter key press does not copy the styles content of Previous 
         //Testing if undo is properly saved the data when enter click for the first time.
         const tempElem: HTMLElement = createElement('div');
         tempElem.appendChild(rteObj.formatter.editorManager.undoRedoManager.undoRedoStack[0].text as DocumentFragment)
-        expect(tempElem.innerHTML === `<p class="firstNode" style="margin-bottom:1.2pt;\nline-height:200%;background:white;margin-top:0in;margin-right:0in;margin-left:0in;font-size:11.0pt;font-family:&quot;Calibri&quot;,sans-serif;"><span style="font-size:10.5pt;line-height:\n200%;font-family:&quot;Arial&quot;,sans-serif;\ncolor:#202122;"><a href="https://en.wikipedia.org/wiki/Google_Search" title="Google Search"><span style="color:#3366CC;">Google Search</span></a>&nbsp;–\na&nbsp;<a href="https://en.wikipedia.org/wiki/Search_engine" title="Search engine"><span style="color:#3366CC;">web search engine</span></a>&nbsp;and\nGoogle's core product.</span></p><p class="focusNode" style="margin-bottom:1.2pt;\nline-height:200%;background:white;margin-top:0in;margin-right:0in;margin-left:0in;font-size:11.0pt;font-family:&quot;Calibri&quot;,sans-serif;"><span style="font-size:10.5pt;line-height:\n200%;font-family:&quot;Arial&quot;,sans-serif;\ncolor:#202122;"><a href="https://en.wikipedia.org/wiki/Google_Alerts" title="Google Alerts"><span style="color:#3366CC;">Google Alerts</span></a>&nbsp;–\nan email notification service that sends alerts based on chosen search terms\nwhenever it finds new results. Alerts include web results, Google Groups\nresults, news and videos.</span></p><p style="margin-bottom:1.2pt;\nline-height:200%;background:white;margin-top:0in;margin-right:0in;margin-left:0in;font-size:11.0pt;font-family:&quot;Calibri&quot;,sans-serif;"><span style="font-size:10.5pt;line-height:\n200%;font-family:&quot;Arial&quot;,sans-serif;\ncolor:#202122;"><a href="https://en.wikipedia.org/wiki/Google_Assistant" title="Google Assistant"><span style="color:#3366CC;">Google Assistant</span></a>&nbsp;–\na&nbsp;<a href="https://en.wikipedia.org/wiki/Virtual_assistant"><span style="color:#3366CC;">virtual assistant</span></a>.</span></p><p style="margin-bottom:1.2pt;\nline-height:200%;background:white;margin-top:0in;margin-right:0in;margin-left:0in;font-size:11.0pt;font-family:&quot;Calibri&quot;,sans-serif;"><span style="font-size:10.5pt;line-height:\n200%;font-family:&quot;Arial&quot;,sans-serif;\ncolor:#202122;"><a href="https://en.wikipedia.org/wiki/Google_Books" title="Google Books"><span style="color:#3366CC;">Google Books</span></a>&nbsp;–\na search engine for books.</span></p><p style="margin-bottom:1.2pt;\nline-height:200%;background:white;margin-top:0in;margin-right:0in;margin-left:0in;font-size:11.0pt;font-family:&quot;Calibri&quot;,sans-serif;"><span style="font-size:10.5pt;line-height:\n200%;font-family:&quot;Arial&quot;,sans-serif;\ncolor:#202122;"><a href="https://en.wikipedia.org/wiki/Google_Dataset_Search" title="Google Dataset Search"><span style="color:#3366CC;">Google Dataset Search</span></a>&nbsp;–\nallows searching for datasets in data repositories and local and national\ngovernment websites.</span></p><p style="margin-bottom:1.2pt;\nline-height:200%;background:white;margin-top:0in;margin-right:0in;margin-left:0in;font-size:11.0pt;font-family:&quot;Calibri&quot;,sans-serif;"><span style="font-size:10.5pt;line-height:\n200%;font-family:&quot;Arial&quot;,sans-serif;\ncolor:#202122;"><a href="https://en.wikipedia.org/wiki/Google_Flights" title="Google Flights"><span style="color:#3366CC;">Google Flights</span></a>&nbsp;–\na search engine for flight tickets.</span></p><p style="margin-bottom:1.2pt;\nline-height:200%;background:white;margin-top:0in;margin-right:0in;margin-left:0in;font-size:11.0pt;font-family:&quot;Calibri&quot;,sans-serif;"><span style="font-size:10.5pt;line-height:\n200%;font-family:&quot;Arial&quot;,sans-serif;\ncolor:#202122;"><a href="https://en.wikipedia.org/wiki/Google_Images" title="Google Images"><span style="color:#3366CC;">Google Images</span></a>&nbsp;–\na search engine for images online.</span></p><p style="margin-bottom:1.2pt;\nline-height:200%;background:white;margin-top:0in;margin-right:0in;margin-left:0in;font-size:11.0pt;font-family:&quot;Calibri&quot;,sans-serif;"><span style="font-size:10.5pt;line-height:\n200%;font-family:&quot;Arial&quot;,sans-serif;\ncolor:#202122;"><a href="https://en.wikipedia.org/wiki/Google_Shopping" title="Google Shopping"><span style="color:#3366CC;">Google Shopping</span></a>&nbsp;–\na search engine to search for products across online shops.</span></p><p style="margin-bottom:1.2pt;\nline-height:200%;background:white;margin-top:0in;margin-right:0in;margin-left:0in;font-size:11.0pt;font-family:&quot;Calibri&quot;,sans-serif;"><span style="font-size:10.5pt;line-height:\n200%;font-family:&quot;Arial&quot;,sans-serif;\ncolor:#202122;"><a href="https://en.wikipedia.org/wiki/Google_Travel" title="Google Travel"><span style="color:#3366CC;">Google Travel</span></a>&nbsp;–\na trip planner service.</span></p><p style="margin-bottom:1.2pt;\nline-height:200%;background:white;margin-top:0in;margin-right:0in;margin-left:0in;font-size:11.0pt;font-family:&quot;Calibri&quot;,sans-serif;"><span style="font-size:10.5pt;line-height:\n200%;font-family:&quot;Arial&quot;,sans-serif;\ncolor:#202122;"><a href="https://en.wikipedia.org/wiki/Google_Videos" title="Google Videos"><span style="color:#3366CC;">Google Videos</span></a>&nbsp;–\na search engine for videos.</span></p><p><br></p>`).toBe(true);
+        expect(tempElem.innerHTML === `<p class="firstNode" style="margin-bottom:1.2pt;\nline-height:200%;background:white;margin-top:0in;margin-right:0in;margin-left:0in;font-size:11.0pt;font-family:&quot;Calibri&quot;,sans-serif;"><span style="font-size:10.5pt;line-height:\n200%;font-family:&quot;Arial&quot;,sans-serif;\ncolor:#202122;"><a href="https://en.wikipedia.org/wiki/Google_Search" title="Google Search"><span style="color:#3366CC;">Google Search</span></a>&nbsp;– a&nbsp;<a href="https://en.wikipedia.org/wiki/Search_engine" title="Search engine"><span style="color:#3366CC;">web search engine</span></a>&nbsp;and Google's core product.</span></p><p class="focusNode" style="margin-bottom:1.2pt;\nline-height:200%;background:white;margin-top:0in;margin-right:0in;margin-left:0in;font-size:11.0pt;font-family:&quot;Calibri&quot;,sans-serif;"><span style="font-size:10.5pt;line-height:\n200%;font-family:&quot;Arial&quot;,sans-serif;\ncolor:#202122;"><a href="https://en.wikipedia.org/wiki/Google_Alerts" title="Google Alerts"><span style="color:#3366CC;">Google Alerts</span></a>&nbsp;– an email notification service that sends alerts based on chosen search terms whenever it finds new results. Alerts include web results, Google Groups results, news and videos.</span></p><p style="margin-bottom:1.2pt;\nline-height:200%;background:white;margin-top:0in;margin-right:0in;margin-left:0in;font-size:11.0pt;font-family:&quot;Calibri&quot;,sans-serif;"><span style="font-size:10.5pt;line-height:\n200%;font-family:&quot;Arial&quot;,sans-serif;\ncolor:#202122;"><a href="https://en.wikipedia.org/wiki/Google_Assistant" title="Google Assistant"><span style="color:#3366CC;">Google Assistant</span></a>&nbsp;– a&nbsp;<a href="https://en.wikipedia.org/wiki/Virtual_assistant"><span style="color:#3366CC;">virtual assistant</span></a>.</span></p><p style="margin-bottom:1.2pt;\nline-height:200%;background:white;margin-top:0in;margin-right:0in;margin-left:0in;font-size:11.0pt;font-family:&quot;Calibri&quot;,sans-serif;"><span style="font-size:10.5pt;line-height:\n200%;font-family:&quot;Arial&quot;,sans-serif;\ncolor:#202122;"><a href="https://en.wikipedia.org/wiki/Google_Books" title="Google Books"><span style="color:#3366CC;">Google Books</span></a>&nbsp;– a search engine for books.</span></p><p style="margin-bottom:1.2pt;\nline-height:200%;background:white;margin-top:0in;margin-right:0in;margin-left:0in;font-size:11.0pt;font-family:&quot;Calibri&quot;,sans-serif;"><span style="font-size:10.5pt;line-height:\n200%;font-family:&quot;Arial&quot;,sans-serif;\ncolor:#202122;"><a href="https://en.wikipedia.org/wiki/Google_Dataset_Search" title="Google Dataset Search"><span style="color:#3366CC;">Google Dataset Search</span></a>&nbsp;– allows searching for datasets in data repositories and local and national government websites.</span></p><p style="margin-bottom:1.2pt;\nline-height:200%;background:white;margin-top:0in;margin-right:0in;margin-left:0in;font-size:11.0pt;font-family:&quot;Calibri&quot;,sans-serif;"><span style="font-size:10.5pt;line-height:\n200%;font-family:&quot;Arial&quot;,sans-serif;\ncolor:#202122;"><a href="https://en.wikipedia.org/wiki/Google_Flights" title="Google Flights"><span style="color:#3366CC;">Google Flights</span></a>&nbsp;– a search engine for flight tickets.</span></p><p style="margin-bottom:1.2pt;\nline-height:200%;background:white;margin-top:0in;margin-right:0in;margin-left:0in;font-size:11.0pt;font-family:&quot;Calibri&quot;,sans-serif;"><span style="font-size:10.5pt;line-height:\n200%;font-family:&quot;Arial&quot;,sans-serif;\ncolor:#202122;"><a href="https://en.wikipedia.org/wiki/Google_Images" title="Google Images"><span style="color:#3366CC;">Google Images</span></a>&nbsp;– a search engine for images online.</span></p><p style="margin-bottom:1.2pt;\nline-height:200%;background:white;margin-top:0in;margin-right:0in;margin-left:0in;font-size:11.0pt;font-family:&quot;Calibri&quot;,sans-serif;"><span style="font-size:10.5pt;line-height:\n200%;font-family:&quot;Arial&quot;,sans-serif;\ncolor:#202122;"><a href="https://en.wikipedia.org/wiki/Google_Shopping" title="Google Shopping"><span style="color:#3366CC;">Google Shopping</span></a>&nbsp;– a search engine to search for products across online shops.</span></p><p style="margin-bottom:1.2pt;\nline-height:200%;background:white;margin-top:0in;margin-right:0in;margin-left:0in;font-size:11.0pt;font-family:&quot;Calibri&quot;,sans-serif;"><span style="font-size:10.5pt;line-height:\n200%;font-family:&quot;Arial&quot;,sans-serif;\ncolor:#202122;"><a href="https://en.wikipedia.org/wiki/Google_Travel" title="Google Travel"><span style="color:#3366CC;">Google Travel</span></a>&nbsp;– a trip planner service.</span></p><p style="margin-bottom:1.2pt;\nline-height:200%;background:white;margin-top:0in;margin-right:0in;margin-left:0in;font-size:11.0pt;font-family:&quot;Calibri&quot;,sans-serif;"><span style="font-size:10.5pt;line-height:\n200%;font-family:&quot;Arial&quot;,sans-serif;\ncolor:#202122;"><a href="https://en.wikipedia.org/wiki/Google_Videos" title="Google Videos"><span style="color:#3366CC;">Google Videos</span></a>&nbsp;– a search engine for videos.</span></p><p><br></p>`).toBe(true);
     });
     it('Press enter at the middle of the container', function (): void {
         rteObj.dataBind();
@@ -2999,5 +2999,25 @@ describe('936623 - Cursor moves to next node instead of creating new element on 
     });
     afterAll(() => {
         destroy(rteObj);
+    });
+});
+
+describe('Handle Enter key press on HR element between headers', function () {
+    let rteObj: RichTextEditor;
+    keyboardEventArgs.shiftKey = false;
+    beforeAll(function (done) {
+        rteObj = renderRTE({
+            value: '<h1>Header 1</h1><hr><h3>Header 3</h3>'
+        });
+        done();
+    });
+    afterAll(function () {
+        destroy(rteObj);
+    });
+    it('Press the Enter key on the HR element between Header 1 and Header 3', () => {
+        const nodetext: any = rteObj.inputElement.childNodes[1];
+        const sel: void = new NodeSelection().setCursorPoint(document, nodetext, 0);
+        (<any>rteObj).keyDown(keyboardEventArgs);
+        expect(rteObj.inputElement.innerHTML).toBe('<h1>Header 1</h1><hr><p><br></p><h3>Header 3</h3>');
     });
 });

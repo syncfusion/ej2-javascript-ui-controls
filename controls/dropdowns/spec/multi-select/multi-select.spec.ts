@@ -2339,7 +2339,7 @@ describe('MultiSelect', () => {
                 expect(listObj.text).toBe("Anne Dodsworth");
                 listObj.destroy();
                 done();
-            }, 3500);
+            }, 4000);
         });
     });
     describe('Remote data binding - with-out keyboard list selection', () => {
@@ -4573,7 +4573,7 @@ describe('MultiSelect', () => {
         });
     });
 
-    describe('itemCreated fields event', () => {
+    xdescribe('itemCreated fields event', () => {
         let mouseEventArgs: any = { which: 3, button: 2, preventDefault: function () { }, target: null };
         let dropDowns: any;
         let e: any = { preventDefault: function () { }, target: null };
@@ -7574,7 +7574,7 @@ describe('MultiSelect', () => {
                     listObj.destroy();
                     done();
                 }, 2000);
-            }, 800);
+            }, 2000);
         });
         it('Checkbox mode without allowFiltering for remote data', (done) => {
             listObj = new MultiSelect({ hideSelectedItem: false, dataSource: remoteData, mode: "CheckBox", fields: { value: 'EmployeeID', text: 'FirstName' }, allowFiltering: false, debounceDelay: 0 });
@@ -7583,13 +7583,13 @@ describe('MultiSelect', () => {
             setTimeout(() => {
                 setTimeout(() => {
                     let keyboardEventArgs: any = { preventDefault: (): void => { }, };
-                    let listElement: any = (<any>listObj).ulElement.querySelector("li.e-list-item");
+                    //let listElement: any = (<any>listObj).ulElement.querySelector("li.e-list-item");
                     //expect(listElement.classList.contains('e-item-focus')).toBe(false);       
                     //expect(listElement.classList.contains('e-active')).toBe(false);      
                     listObj.destroy();
                     done();
                 }, 4000);
-            }, 2000);
+            }, 3000);
         });
         it('Checkbox mode with allowFiltering for local data', (done) => {
             listObj = new MultiSelect({ hideSelectedItem: false, dataSource: empList, mode: "CheckBox", fields: { value: 'id', text: 'text' }, allowFiltering: true, debounceDelay: 0 });

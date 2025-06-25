@@ -14,6 +14,8 @@ export class UndoRedo {
     private tempUndoRedoStep: number = 0;
     private tempActObj: SelectionPoint; // For text editing undo redo
     private isPreventing: boolean = false;
+    private preventEditComplete: boolean = false;
+    private preventApplyEditComplete: boolean = false;
 
     constructor(parent: ImageEditor) {
         this.parent = parent;
@@ -98,6 +100,12 @@ export class UndoRedo {
         case 'reset':
             this.reset();
             break;
+        case 'preventEditComplete':
+            args.value['obj']['bool'] = this.preventEditComplete;
+            break;
+        case 'preventApplyEditComplete':
+            this.preventApplyEditComplete = args.value['bool'];
+            break;
         }
     }
 
@@ -109,6 +117,7 @@ export class UndoRedo {
         this.tempCurrSelPoint = null; this.undoRedoStep = 0;
         this.undoRedoColl = []; this.appliedUndoRedoColl = []; this.tempActObj = null;
         this.tempUndoRedoColl = []; this.tempUndoRedoStep = 0; this.isPreventing = false;
+        this.preventEditComplete = this.preventApplyEditComplete = false;
     }
 
     private refreshUrc(refreshToolbar?: boolean): void {
@@ -791,6 +800,10 @@ export class UndoRedo {
         textArea.style.color = obj.strokeSettings.strokeColor;
         textArea.style.fontWeight = obj.textSettings.bold ? 'bold' : 'normal';
         textArea.style.fontStyle = obj.textSettings.italic ? 'italic' : 'normal';
+        textArea.style.textDecoration = (obj.textSettings.underline && obj.textSettings.strikethrough) ? 'underline line-through' :
+            (obj.textSettings.underline) ? 'underline' :
+                (obj.textSettings.strikethrough) ? 'line-through' :
+                    'none';
         textArea.style.border = '2px solid ' + parent.themeColl[parent.theme]['primaryColor'];
         textArea.value = obj.keyHistory;
         parent.activeObj = extend({}, obj, {}, true) as SelectionPoint;
@@ -1116,6 +1129,7 @@ export class UndoRedo {
             const isTextArea: boolean = parent.textArea.style.display === 'none' ? false : true;
             const temp: boolean = parent.noPushUndo;
             parent.noPushUndo = false; parent.isUndoRedoStack = true;
+            this.preventEditComplete = true;
             if (isPenDraw) {
                 const tempTogglePen: boolean = parent.togglePen;
                 const obj: Object = {freehandDrawSelectedId: null };
@@ -1142,7 +1156,14 @@ export class UndoRedo {
                     parent.enableTextEditing();
                 }
             }
-            parent.isUndoRedoStack = false;
+            if (this.preventEditComplete) {
+                parent.isUndoRedoStack = this.preventEditComplete = false;
+                if (!this.preventApplyEditComplete) {
+                    this.triggerActionCompletedEvent('shape-customize');
+                }
+                this.triggerActionCompletedEvent('shape-select');
+            }
+            parent.isUndoRedoStack = this.preventEditComplete = false;
         }
     }
 }

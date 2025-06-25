@@ -10,6 +10,7 @@ import { RowDD } from '../../src/treegrid/actions/rowdragdrop';
 import { isNullOrUndefined } from '@syncfusion/ej2-base';
 import { VirtualScroll } from '../../src/treegrid/actions/virtual-scroll';
 import { Query, DataManager } from '@syncfusion/ej2-data';
+import { select } from '@syncfusion/ej2-base';
 
 /**
  * Grid Cell Edit spec
@@ -1442,10 +1443,9 @@ describe('code coverage', () => {
                 dataSource: sampleData,
                 childMapping: 'subtasks',
                 editSettings: { allowEditing: true, mode: 'Cell', allowDeleting: true, allowAdding: true, newRowPosition: 'Top' },
-
                 treeColumnIndex: 1,
                 toolbar: ['Add', 'Edit', 'Update', 'Delete', 'Cancel', 'ExpandAll', 'CollapseAll'],
-                columns: [{ field: 'taskID', headerText: 'Task ID', isPrimaryKey: false },
+                columns: [{ field: 'taskID', headerText: 'Task ID', isPrimaryKey: true },
                     { field: 'taskName', headerText: 'Task Name' },
                     { field: 'progress', headerText: 'Progress' },
                     { field: 'startDate', headerText: 'Start Date' }
@@ -1493,3 +1493,483 @@ describe('Without bind EditSettings', () => {
         destroy(gridObj);
     });
   });
+
+describe('Deleted row reappears after sorting in TreeGrid with Row Editing', () => {
+    let gridObj: TreeGrid;
+    beforeAll((done: Function) => {
+        gridObj = createGrid(
+            {
+                dataSource: sampleData,
+                childMapping: 'subtasks',
+                treeColumnIndex: 1,
+                allowPaging: true,
+                allowFiltering: true,
+                filterSettings: {
+                    type: 'FilterBar',
+                    hierarchyMode: 'Parent'
+                },
+                allowSorting: true,
+                allowSelection: true,
+                editSettings: {
+                    allowAdding: true,
+                    allowEditing: true,
+                    allowDeleting: true,
+                    mode: 'Row',
+                    newRowPosition: 'Top'
+                },
+                height: 250,
+                toolbar: ['Add', 'Delete', 'Update', 'Cancel'],
+                columns: [
+                    { field: 'taskID', headerText: 'Task ID', isPrimaryKey: true, width: 60, textAlign: 'Right' },
+                    { field: 'taskName', headerText: 'Task Name', width: 180, textAlign: 'Left' },
+                    {
+                        field: 'startDate', headerText: 'Start Date', width: 90, textAlign: 'Right', type: 'date', format: 'yMd'
+                    },
+                    { field: 'duration', headerText: 'Duration', width: 80, textAlign: 'Right' }
+                ]
+            },
+            done
+        );
+    });
+    it('Checking data render correctly after sorting', () => {
+        gridObj.startEdit(gridObj.getRows()[1]);
+        let formEle: HTMLFormElement = gridObj.grid.editModule.formObj.element;
+        (select('#' + gridObj.grid.element.id + 'taskName', formEle) as any).value = 'test';
+        (<any>gridObj.grid.toolbarModule).toolbarClickHandler({ item: { id: gridObj.grid.element.id + '_update' } });
+        gridObj.selectRow(1);
+        (<any>gridObj.grid.toolbarModule).toolbarClickHandler({ item: { id: gridObj.grid.element.id + '_delete' } });
+        gridObj.sortByColumn("taskName", "Ascending", true);
+        gridObj.sortByColumn("taskName", "Descending", true);
+        expect((gridObj.flatData[1] as any).taskID === 3).toBe(true);
+    });
+    afterAll(() => {
+        destroy(gridObj);
+        gridObj = null;
+    });
+});
+
+describe('handling null index', () => {
+    let gridObj: TreeGrid;
+    beforeAll((done: Function) => {
+        gridObj = createGrid(
+            {
+                dataSource: sampleData,
+                childMapping: 'subtasks',
+                treeColumnIndex: 1,
+                allowPaging: true,
+                allowFiltering: true,
+                filterSettings: {
+                    type: 'FilterBar',
+                    hierarchyMode: 'Parent'
+                },
+                allowSorting: true,
+                allowSelection: true,
+                editSettings: {
+                    allowAdding: true,
+                    allowEditing: true,
+                    allowDeleting: true,
+                    mode: 'Row',
+                    newRowPosition: 'Top'
+                },
+                height: 250,
+                toolbar: ['Add', 'Delete', 'Update', 'Cancel'],
+                columns: [
+                    { field: 'taskID', headerText: 'Task ID', isPrimaryKey: true, width: 60, textAlign: 'Right' },
+                    { field: 'taskName', headerText: 'Task Name', width: 180, textAlign: 'Left' },
+                    {
+                        field: 'startDate', headerText: 'Start Date', width: 90, textAlign: 'Right', type: 'date', format: 'yMd'
+                    },
+                    { field: 'duration', headerText: 'Duration', width: 80, textAlign: 'Right' }
+                ]
+            },
+            done
+        );
+    });
+    it('handling null index with top position', (done: Function) => {
+        gridObj.addRecord({ taskID: 111, taskName: 'Child record' }, null, 'Top');
+        expect((gridObj.flatData[0] as any).taskID === 111).toBe(true);
+        done();
+    });
+    it('handling null index with Above position', (done: Function) => {
+        gridObj.addRecord({ taskID: 114, taskName: 'Child record' }, null, 'Above');
+        expect((gridObj.flatData[0] as any).taskID === 114).toBe(true);
+        done();
+    });
+    it('handling null index with Child position', (done: Function) => {
+        gridObj.addRecord({ taskID: 115, taskName: 'Child record' }, null, 'Child');
+        expect((gridObj.flatData[0] as any).taskID === 115).toBe(true);
+        done();
+    });
+    it('handling null index with Below position', (done: Function) => {
+        gridObj.addRecord({ taskID: 117, taskName: 'Child record' }, null, 'Below');
+        expect((gridObj.flatData[0] as any).taskID === 117).toBe(true);
+        done();
+    });
+    afterAll(() => {
+        destroy(gridObj);
+        gridObj = null;
+    });
+});
+
+describe('956322 - AddRecord method not working as expected after level 2', () => {
+    let gridObj: TreeGrid;
+    beforeAll((done: Function) => {
+        gridObj = createGrid(
+            {
+                dataSource: sampleData,
+                childMapping: 'subtasks',
+                treeColumnIndex: 1,
+                allowPaging:true,
+                allowSelection:true,
+                height: 400,
+                editSettings: {
+                allowAdding: true,
+                allowEditing: true,
+                allowDeleting: true,
+                mode: 'Cell',
+                newRowPosition: 'Child',
+                },
+                toolbar: ['Add', 'Delete', 'Update', 'Cancel', 'Indent', 'Outdent'],
+                columns: [
+                {
+                    field: 'taskID',
+                    headerText: 'Task ID',
+                    isPrimaryKey: true,
+                    
+                },
+                {
+                    field: 'taskName',
+                    headerText: 'Task Name',
+                    
+                   
+                },
+                
+                ],
+            },
+            done
+        );
+    });
+    it('Add new record without specifying index', (done: Function) => {
+        gridObj.selectRow(2);
+        gridObj.addRecord({
+            taskID: 100,
+            taskName: 'Fist Record',
+        });
+        gridObj.selectRow(3);
+        gridObj.addRecord({
+            taskID: 101,
+            taskName: 'Fist Record',
+        });
+        
+        expect((gridObj.flatData[3] as any).taskID === 100).toBe(true);
+        done();
+    });
+    afterAll(() => {
+        destroy(gridObj);
+    });
+});
+
+describe('Cell Editing - Add Record on Second Page', () => {
+    let gridObj: TreeGrid;
+    let actionComplete: () => void;
+    beforeAll((done: Function) => {
+        gridObj = createGrid(
+            {
+                dataSource: sampleData,
+                allowPaging: true,
+
+                childMapping: 'subtasks',
+                editSettings: { allowAdding: true , newRowPosition:'Child',mode:'Cell' },
+                treeColumnIndex: 1,
+                columns: [
+                    { field: 'taskID', headerText: 'Task ID', isPrimaryKey: true },
+                    { field: 'taskName', headerText: 'Task Name' },
+                    { field: 'progress', headerText: 'Progress' }
+                ]
+            },
+            done
+        );
+    });
+
+    beforeEach((done: Function) => {
+        // Navigate to second page before each test
+        gridObj.actionComplete = (args?: any): void => {
+            if (args.requestType === 'paging') {
+                done();
+            }
+        };
+
+
+        gridObj.goToPage(2);
+    });
+    it('should add the record as child of a selected level 0 record', (done: Function) => {
+        // Navigate to second page
+
+
+        actionComplete = (args?: any): void => {
+            if (args.requestType === 'save') {
+                expect((gridObj.flatData[20] as any).taskID === 9999).toBe(true);
+                expect((gridObj.getRows()[8].getElementsByClassName('e-rowcell')[0] as HTMLElement).innerText === '9999').toBe(true);
+                done();
+            }
+        };
+        gridObj.actionComplete = actionComplete;
+        gridObj.selectRow(0);
+        gridObj.addRecord({ taskID: 9999, taskName: 'Child of Selected Parent' });
+
+    });
+
+    afterAll(() => {
+        destroy(gridObj);
+    });
+});
+
+
+describe('Cell Editing - Add Record on Second Page', () => {
+    let gridObj: TreeGrid;
+    let actionComplete: () => void;
+    beforeAll((done: Function) => {
+        gridObj = createGrid(
+            {
+                dataSource: sampleData,
+                allowPaging: true,
+
+                childMapping: 'subtasks',
+                editSettings: { allowAdding: true , newRowPosition:'Child',mode:'Cell' },
+                treeColumnIndex: 1,
+                columns: [
+                    { field: 'taskID', headerText: 'Task ID', isPrimaryKey: true },
+                    { field: 'taskName', headerText: 'Task Name' },
+                    { field: 'progress', headerText: 'Progress' }
+                ]
+            },
+            done
+        );
+    });
+
+    beforeEach((done: Function) => {
+        // Navigate to second page before each test
+        gridObj.actionComplete = (args?: any): void => {
+            if (args.requestType === 'paging') {
+                done();
+            }
+        };
+
+        gridObj.goToPage(2);
+    });
+    it('should add the record as child of a selected level 1 record', (done: Function) => {
+        actionComplete = (args?: any): void => {
+            if (args.requestType === 'save') {
+                expect((gridObj.flatData[20] as any).taskID === 9999).toBe(true);
+                expect((gridObj.flatData[20] as any).parentItem.taskID === 14).toBe(true);
+                expect((gridObj.getRows()[8].getElementsByClassName('e-rowcell')[0] as HTMLElement).innerText === '9999').toBe(true);
+                done();
+            }
+        };
+        gridObj.actionComplete = actionComplete;
+        gridObj.selectRow(1);
+        gridObj.addRecord({ taskID: 9999, taskName: 'Child of Selected Parent' });
+    });
+    afterAll(() => {
+        destroy(gridObj);
+    });
+});
+
+describe('Cell Editing - Delete Record on Second Page', () => {
+    let gridObj: TreeGrid;
+    let actionComplete: () => void;
+    beforeAll((done: Function) => {
+        gridObj = createGrid(
+            {
+                dataSource: sampleData,
+                allowPaging: true,
+               toolbar: ['Add', 'Delete', 'Update', 'Cancel'],
+                childMapping: 'subtasks',
+                editSettings: { allowDeleting: true , newRowPosition:'Child',mode:'Cell' },
+                treeColumnIndex: 1,
+                columns: [
+                    { field: 'taskID', headerText: 'Task ID', isPrimaryKey: true },
+                    { field: 'taskName', headerText: 'Task Name' },
+                    { field: 'progress', headerText: 'Progress' }
+                ]
+            },
+            done
+        );
+    });
+    beforeEach((done: Function) => {
+        // Navigate to second page before each test
+        gridObj.actionComplete = (args?: any): void => {
+            if (args.requestType === 'paging') {
+                done();
+            }
+        };
+        gridObj.goToPage(2);
+    });
+    it('should delete the selected level 0 record', (done: Function) => {
+        actionComplete = (args?: any): void => {
+            if (args.requestType === 'delete') {
+                expect((gridObj.flatData[12] as any).taskID === 21).toBe(true);
+                expect((gridObj.getRows()[0].getElementsByClassName('e-rowcell')[0] as HTMLElement).innerText === '21').toBe(true);
+                done();
+            }
+        };
+        gridObj.actionComplete = actionComplete;
+        gridObj.selectRow(0);
+        (<any>gridObj.grid.toolbarModule).toolbarClickHandler({ item: { id: gridObj.grid.element.id + '_delete' } });
+
+    });
+    afterAll(() => {
+        destroy(gridObj);
+    });
+});
+
+
+describe('Cell Editing - Delete Record on Second Page', () => {
+    let gridObj: TreeGrid;
+    let actionComplete: () => void;
+    beforeAll((done: Function) => {
+        gridObj = createGrid(
+            {
+                dataSource: sampleData,
+                allowPaging: true,
+               toolbar: ['Add', 'Delete', 'Update', 'Cancel'],
+                childMapping: 'subtasks',
+                editSettings: { allowDeleting: true , newRowPosition:'Child',mode:'Cell' },
+                treeColumnIndex: 1,
+                columns: [
+                    { field: 'taskID', headerText: 'Task ID', isPrimaryKey: true },
+                    { field: 'taskName', headerText: 'Task Name' },
+                    { field: 'progress', headerText: 'Progress' }
+                ]
+            },
+            done
+        );
+    });
+
+    beforeEach((done: Function) => {
+        gridObj.actionComplete = (args?: any): void => {
+            if (args.requestType === 'paging') {
+                done();
+            }
+        };
+        gridObj.goToPage(2);
+    });
+
+    it('should delete the selected level 1 record', (done: Function) => {
+        actionComplete = (args?: any): void => {
+            if (args.requestType === 'delete') {
+                expect((gridObj.flatData[13] as any).taskID === 21).toBe(true);
+                expect((gridObj.getRows()[1].getElementsByClassName('e-rowcell')[0] as HTMLElement).innerText === '21').toBe(true);
+                done();
+            }
+        };
+        gridObj.actionComplete = actionComplete;
+        gridObj.selectRow(1);
+        (<any>gridObj.grid.toolbarModule).toolbarClickHandler({ item: { id: gridObj.grid.element.id + '_delete' } });
+    });
+    afterAll(() => {
+        destroy(gridObj);
+    });
+});
+
+describe('Cell Editing - Update Record on Second Page', () => {
+    let gridObj: TreeGrid;
+    let actionComplete: () => void;
+    beforeAll((done: Function) => {
+        gridObj = createGrid(
+            {
+                dataSource: sampleData,
+                allowPaging: true,
+               toolbar: ['Add', 'Delete', 'Update', 'Cancel'],
+                childMapping: 'subtasks',
+                editSettings: { allowEditing: true , newRowPosition:'Child', mode:'Cell' },
+                treeColumnIndex: 1,
+                columns: [
+                    { field: 'taskID', headerText: 'Task ID', isPrimaryKey: true },
+                    { field: 'taskName', headerText: 'Task Name' },
+                    { field: 'progress', headerText: 'Progress' }
+                ]
+            },
+            done
+        );
+    });
+    beforeEach((done: Function) => {
+        gridObj.actionComplete = (args?: any): void => {
+            if (args.requestType === 'paging') {
+                done();
+            }
+        };
+        gridObj.goToPage(2);
+    });
+    it('should Edit the level 0 record', (done: Function) => {
+
+        const event: MouseEvent = new MouseEvent('dblclick', {
+            'view': window,
+            'bubbles': true,
+            'cancelable': true
+        });
+        gridObj.getCellFromIndex(0, 1).dispatchEvent(event);
+        actionComplete = (args?: any): void => {
+               expect((gridObj.getRows()[0].getElementsByClassName('e-rowcell')[1] as HTMLElement).innerText === 'Test').toBe(true);
+                done();
+        };
+        gridObj.actionComplete = actionComplete;
+        gridObj.grid.editModule.formObj.element.getElementsByTagName('input')[0].value = 'Test';
+        (<any>gridObj.grid.toolbarModule).toolbarClickHandler({ item: { id: gridObj.grid.element.id + '_update' } }); 
+    });
+    afterAll(() => {
+        destroy(gridObj);
+    });
+});
+
+
+describe('Cell Editing - Update Record on Second Page', () => {
+    let gridObj: TreeGrid;
+    let actionComplete: () => void;
+    beforeAll((done: Function) => {
+        gridObj = createGrid(
+            {
+                dataSource: sampleData,
+                allowPaging: true,
+               toolbar: ['Add', 'Delete', 'Update', 'Cancel'],
+                childMapping: 'subtasks',
+                editSettings: { allowEditing: true , newRowPosition:'Child',mode:'Cell' },
+                treeColumnIndex: 1,
+                columns: [
+                    { field: 'taskID', headerText: 'Task ID', isPrimaryKey: true },
+                    { field: 'taskName', headerText: 'Task Name' },
+                    { field: 'progress', headerText: 'Progress' }
+                ]
+            },
+            done
+        );
+    });
+    beforeEach((done: Function) => {
+        gridObj.actionComplete = (args?: any): void => {
+            if (args.requestType === 'paging') {
+                done();
+            }
+        };
+        gridObj.goToPage(2);
+    });
+
+    it('should Edit the level 1 record', (done: Function) => {
+        const event: MouseEvent = new MouseEvent('dblclick', {
+            'view': window,
+            'bubbles': true,
+            'cancelable': true
+        });
+        gridObj.getCellFromIndex(1, 1).dispatchEvent(event);
+        actionComplete = (args?: any): void => {
+               expect((gridObj.getRows()[1].getElementsByClassName('e-rowcell')[1] as HTMLElement).innerText === 'Test').toBe(true);
+                done();
+        };
+        gridObj.actionComplete = actionComplete;
+
+        gridObj.grid.editModule.formObj.element.getElementsByTagName('input')[0].value = 'Test';
+        (<any>gridObj.grid.toolbarModule).toolbarClickHandler({ item: { id: gridObj.grid.element.id + '_update' } });
+    });
+    afterAll(() => {
+        destroy(gridObj);
+    });
+});

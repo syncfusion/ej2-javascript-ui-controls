@@ -365,3 +365,93 @@ describe('Rendering for unscheduled tasks', () => {
         destroyGantt(ganttObj);
     });
 });
+describe('Render WBS Column', () => {
+    let ganttObj: Gantt;
+    let projectNewData = [
+        {
+            TaskID: 1,
+            TaskName: 'Product Concept',
+            StartDate: new Date('04/02/2019'),
+            EndDate: new Date('04/21/2019'),
+            subtasks: [
+                { TaskID: 2, TaskName: 'Defining the product and its usage', BaselineStartDate: new Date('04/02/2019'), BaselineEndDate: new Date('04/06/2019'), StartDate: new Date('04/02/2019'), Duration: 3, Progress: 30 },
+                { TaskID: 3, TaskName: 'Defining target audience', StartDate: new Date('04/02/2019'), Duration: 3,
+                    Indicators: [
+                        {
+                            'date': '04/10/2019',
+                            'iconClass': 'e-btn-icon e-notes-info e-icons e-icon-left e-gantt e-notes-info::before',
+                            'name': 'Indicator title',
+                            'tooltip': 'tooltip'
+                        }
+                    ]
+                },
+                { TaskID: 4, TaskName: 'Prepare product sketch and notes', StartDate: new Date('04/02/2019'), Duration: 3, Predecessor: "2", Progress: 30 },
+            ]
+        },
+    ];
+    beforeAll((done: Function) => {
+        ganttObj = createGantt(
+            {
+                dataSource: projectNewData,
+        allowSorting: true,
+        allowReordering: true,
+        enableCriticalPath: true,
+        enableContextMenu: true,
+        taskFields: {
+            id: 'TaskID',
+            name: 'TaskName',
+            duration: 'Duration',
+            progress: 'Progress',
+            dependency: 'Predecessor',
+            baselineStartDate: "BaselineStartDate",
+            baselineEndDate: "BaselineEndDate",
+            child: 'subtasks',
+            indicators: 'Indicators'
+        },
+        renderBaseline: true,
+        enableWBS: true,
+        baselineColor: 'red',
+        editSettings: {
+            allowAdding: true,
+            allowEditing: true,
+            allowDeleting: true,
+            allowTaskbarEditing: true,
+            showDeleteConfirmDialog: true
+        },
+        columns: [
+            { field: 'TaskID', headerText: 'Task ID' },
+            { field: 'WBSCode', headerText: 'WBSCode' },
+            { field: 'WBSPredecessor', headerText: 'WBSPredecessor' },
+            { field: 'TaskName', headerText: 'Task Name', allowReordering: false },
+            { field: 'StartDate', headerText: 'Start Date', allowSorting: false },
+            { field: 'Duration', headerText: 'Duration', allowEditing: false },
+            { field: 'Progress', headerText: 'Progress', allowFiltering: false },
+            { field: 'CustomColumn', headerText: 'CustomColumn' }
+        ],
+        allowSelection: false,
+        enableVirtualization: false,
+        allowRowDragAndDrop: true,
+        allowFiltering: true,
+        gridLines: "Both",
+        showColumnMenu: true,
+        highlightWeekends: true,
+        allowResizing: true,
+        readOnly: false,
+        taskbarHeight: 20,
+        rowHeight: 40,
+        height: '550px',
+        allowUnscheduledTasks: true,
+        projectStartDate: new Date('03/25/2019'),
+        projectEndDate: new Date('05/30/2019'),
+            }, done);
+    });
+    it('check wbs code', () => {
+        expect(ganttObj.currentViewData[0].ganttProperties.wbsCode).toBe('1');
+        expect(ganttObj.currentViewData[1].ganttProperties.wbsCode).toBe('1.1');
+        expect(ganttObj.currentViewData[2].ganttProperties.wbsCode).toBe('1.2');
+        expect(ganttObj.getTaskInfo('1').wbsCode).toBe('1');
+    });
+    afterAll(() => {
+        destroyGantt(ganttObj);
+    });
+});

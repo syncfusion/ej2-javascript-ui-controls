@@ -30,7 +30,7 @@ describe('Customm toolbar validation', () => {
         expect(() => { container.destroy(); }).not.toThrowError();
         expect(element.childNodes.length).toBe(0);
         document.body.removeChild(element);
-        document.body.innerHTML = '';
+        
         element = undefined;
         container = undefined;
     });
@@ -61,7 +61,7 @@ describe('Custom Toolbar with Desroy Validatio', () => {
     afterAll(() => {
         expect(element.childNodes.length).toBe(0);
         document.body.removeChild(element);
-        document.body.innerHTML = '';
+        
         element = undefined;
         container = undefined;
     });
@@ -88,7 +88,7 @@ describe('updating the custom toolbar validation', () => {
         expect(() => { container.destroy(); }).not.toThrowError();
         expect(element.childNodes.length).toBe(0);
         document.body.removeChild(element);
-        document.body.innerHTML = '';
+        
         element = undefined;
         container = undefined;
     });

@@ -31,7 +31,7 @@ describe('Editor functions - 1', () => {
         document.body.removeChild(document.getElementById('container'));
         editor = undefined;
         setTimeout(function () {
-            document.body.innerHTML = '';
+            
             done();
         }, 1000);
     });
@@ -95,7 +95,7 @@ describe('Editor functions styles', () => {
         document.body.removeChild(document.getElementById('container'));
         editor = undefined;
         setTimeout(function () {
-            document.body.innerHTML = '';
+            
             done();
         }, 1000);
     });
@@ -142,7 +142,7 @@ describe('Editor functions styles', () => {
         document.body.removeChild(document.getElementById('container'));
         editor = undefined;
         setTimeout(function () {
-            document.body.innerHTML = '';
+            
             done();
         }, 1000);
     });

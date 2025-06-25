@@ -130,7 +130,8 @@ export class PivotEngine {
     private removeColumnGrandTotal: boolean = false;
     private isValueHasAdvancedAggregate: boolean = false;
     private rawIndexObject: INumberIndex = {};
-    private valueSortHeaderText: string;
+    private rowValueSortHeaderText: string;
+    private columnValueSortHeaderText: string;
     private showSubTotalsAtTop: boolean;
     private showSubTotalsAtBottom: boolean;
     private reformAxisCount: number = 0;
@@ -165,7 +166,6 @@ export class PivotEngine {
     private enableOptimizedRendering: boolean = false;
     private groupedDataType: { [key: string]: string } = {};
     private customProperties: ICustomProperties;
-    private emptyRowsLength: number = 0;
     private tabularPivotValues: IAxisSet[][] = [];
     /** @hidden */
     public viewportPageCount: number = 3;
@@ -353,7 +353,8 @@ export class PivotEngine {
             this.rowValuesLength = this.valueAxis === 1 ? this.dataSourceSettings.values.length : 1;
             this.colValuesLength = this.valueAxis === 0 ? this.dataSourceSettings.values.length : 1;
             this.valueSortSettings = dataSource.valueSortSettings ||
-                { sortOrder: 'None', headerDelimiter: '.', headerText: '', columnIndex: undefined } as IValueSortSettings;
+                { rowSortOrder: 'None', rowHeaderText: '', columnSortOrder: 'None', columnHeaderText: '', headerDelimiter: '.', columnIndex: undefined,
+                    rowIndex: undefined } as IValueSortSettings;
             this.valueSortData = [];
             this.pageSettings = customProperties ? (customProperties.pageSettings ? customProperties.pageSettings : this.pageSettings)
                 : undefined;
@@ -1150,7 +1151,15 @@ export class PivotEngine {
         }
         return isRangeAvail;
     }
-    private getPercentFormat(formatField: { [key: string]: IFormatSettings }, currentField: string): number {
+    /**
+     * It is used to define the format field number digits.
+     *
+     * @param {Object} formatField -  It contains the format settings.
+     * @param {string} currentField -  It contains the current format field.
+     * @returns {number} - Returns format digits.
+     * @hidden
+     */
+    public getPercentFormat(formatField: { [key: string]: IFormatSettings }, currentField: string): number {
         const isHavingFormat: RegExpMatchArray = (!isNullOrUndefined(formatField[currentField as string]) &&
             !isNullOrUndefined(this.formatFields[currentField as string].format)) ?
             (this.formatFields[currentField as string].format).toLowerCase().match(/p[0-9]/) : undefined;
@@ -2425,8 +2434,7 @@ export class PivotEngine {
                 this.headerCollection.rowHeadersCount = this.rowCount; this.headerCollection.columnHeadersCount = this.columnCount;
             } else {
                 this.rMembers = headerCollection.rowHeaders; this.cMembers = headerCollection.columnHeaders;
-                this.rowCount = this.customProperties.isTabularLayout ? this.rowCount + this.emptyRowsLength :
-                    headerCollection.rowHeadersCount;
+                this.rowCount = headerCollection.rowHeadersCount;
                 this.columnCount = headerCollection.columnHeadersCount;
             }
             this.calculatePagingValues();
@@ -2446,7 +2454,6 @@ export class PivotEngine {
         if (this.customProperties.isTabularLayout) {
             this.pivotValues = this.getTabularPivotValues(requireDatasourceUpdate, false, isScrolled);
             this.setRowSpan();
-            this.rowCount = this.rowCount - this.emptyRowsLength;
         }
         this.isEngineUpdated = true;
         this.isEmptyDataAvail(this.rMembers, this.cMembers);
@@ -2615,9 +2622,6 @@ export class PivotEngine {
         }
         this.frameHeaderObjectsCollection = false;
         this.headerObjectsCollection = {};
-        if (this.customProperties.isTabularLayout) {
-            this.rowCount = this.rowCount - this.emptyRowsLength;
-        }
         this.updateEngine();
     }
     /**
@@ -2701,7 +2705,9 @@ export class PivotEngine {
                         if (drilledItem.axis === 'row') {
                             sortedHeaders = this.applyValueSorting(headers[count as number].members, this.cMembers);
                             headers[count as number].members = sortedHeaders.rMembers;
-                            this.rowCount += (this.showSubTotalsAtBottom ? 1 : 0);
+                            if (!this.customProperties.isTabularLayout) {
+                                this.rowCount += (this.showSubTotalsAtBottom ? 1 : 0);
+                            }
                         } else {
                             const showSubTotals: boolean = this.dataSourceSettings.showSubTotals &&
                                 this.dataSourceSettings.showColumnSubTotals && fields[position as number].showSubTotals;
@@ -2713,7 +2719,7 @@ export class PivotEngine {
                         headers[count as number].isDrilled = false;
                         this.updateHeadersCount(headers[count as number].members, drilledItem.axis, position, fields, 'minus', true);
                         headers[count as number].members = [];
-                        if (drilledItem.axis === 'row') {
+                        if (drilledItem.axis === 'row' && !this.customProperties.isTabularLayout) {
                             this.rowCount -= (this.showSubTotalsAtBottom ? 1 : 0);
                         }
                     }
@@ -2909,9 +2915,6 @@ export class PivotEngine {
      * @hidden
      */
     public updateEngine(): void {
-        if (this.customProperties.isTabularLayout) {
-            this.rowCount = this.rowCount + this.emptyRowsLength;
-        }
         this.removeCount = 0;
         this.validateValueFields();
         this.calculatePagingValues();
@@ -2936,7 +2939,6 @@ export class PivotEngine {
         if (this.customProperties.isTabularLayout) {
             this.pivotValues = this.getTabularPivotValues(true, true);
             this.setRowSpan();
-            this.rowCount = this.rowCount - this.emptyRowsLength;
         }
         this.isEngineUpdated = true;
         this.isEmptyDataAvail(this.rMembers, this.cMembers);
@@ -2985,7 +2987,8 @@ export class PivotEngine {
             if (headers[lenCnt as number].members.length > 0) {
                 this.updateHeadersCount(headers[lenCnt as number].members, axis, position + 1, fields, action, true);
                 if (axis === 'row') {
-                    this.rowCount -= this.showSubTotalsAtBottom && headers[lenCnt as number].hasChild && headers[
+                    this.rowCount -= this.showSubTotalsAtBottom && !this.customProperties.isTabularLayout &&
+                        headers[lenCnt as number].hasChild && headers[
                         lenCnt as number
                     ].isDrilled ? 1 : 0;
                 }
@@ -3097,73 +3100,24 @@ export class PivotEngine {
      * @hidden
      */
     public applyValueSorting(rMembers?: IAxisSet[], cMembers?: IAxisSet[]): ISortedHeaders {
-
         let isNullArgument: boolean = false;
-        if (rMembers === undefined || cMembers === undefined) {
-            this.valueSortHeaderText = undefined;
-            if (this.enableValueSorting && this.valueSortSettings.headerText && !this.valueSortHeaderText &&
-                this.valueSortSettings.headerText !== '' && this.dataSourceSettings.values.length > 0) {
-                this.valueSortHeaderText = this.valueSortSettings.headerText;
-                const textArray: string[] = this.valueSortHeaderText.split(this.valueSortSettings.headerDelimiter);
-                for (const field of this.dataSourceSettings.values) {
-                    const name: string = field.caption ? field.caption : field.name;
-                    const valueIndex: number = textArray.indexOf(name);
-                    if (valueIndex > -1) {
-                        textArray.splice(valueIndex, 1);
-                        textArray.push(name);
-                        this.valueSortHeaderText = textArray.join(this.valueSortSettings.headerDelimiter);
-                        break;
-                    }
+        if (this.enableValueSorting && (this.valueSortSettings.rowHeaderText || this.valueSortSettings.columnHeaderText)
+            && this.dataSourceSettings.values.length > 0) {
+            if (rMembers === undefined || cMembers === undefined) {
+                this.rowValueSortHeaderText = undefined;
+                this.columnValueSortHeaderText = undefined;
+                if (!isNullOrUndefined(this.valueSortSettings.rowHeaderText) && this.valueSortSettings.rowHeaderText !== '') {
+                    this.rowValueSortHeaderText = this.prepareValueSortHeaderText(this.valueSortSettings.rowHeaderText);
                 }
+                if (!isNullOrUndefined(this.valueSortSettings.columnHeaderText) && this.valueSortSettings.columnHeaderText !== '') {
+                    this.columnValueSortHeaderText = this.prepareValueSortHeaderText(this.valueSortSettings.columnHeaderText);
+                }
+                rMembers = this.rMembers;
+                cMembers = this.cMembers;
+                isNullArgument = true;
             }
-            rMembers = this.rMembers;
-            cMembers = this.cMembers;
-            isNullArgument = true;
-        }
-        if (this.valueSortHeaderText) {
-            const textArray: string[] = this.valueSortHeaderText.split(this.valueSortSettings.headerDelimiter);
-            let hText: string = '';
-            let mIndex: number;
-            let mType: string;
-            let caption: string;
-            for (let i: number = 0; i < this.dataSourceSettings.values.length; i++) {
-                if (this.dataSourceSettings.values[i as number].caption === textArray[textArray.length - 1]) {
-                    caption = this.dataSourceSettings.values[i as number].name;
-                    break;
-                } else {
-                    caption = textArray[textArray.length - 1];
-                }
-            }
-            if (((this.dataSourceSettings.values.length === 1 && this.dataSourceSettings.columns.length === 0) ||
-                this.dataSourceSettings.values.length > 1) && caption && this.fieldList[caption as string]) {
-                for (let i: number = 0; i < textArray.length - 1; i++) {
-                    hText = hText === '' ? textArray[i as number] : (hText + this.valueSortSettings.headerDelimiter + textArray[i as number]);
-                }
-                mIndex = this.fieldList[caption as string].index;
-                mType = this.fieldList[caption as string].aggregateType;
-            } else {
-                if (!this.dataSourceSettings.alwaysShowValueHeader || textArray.length === 1) {
-                    hText = this.valueSortHeaderText;
-                } else {
-                    for (let i: number = 0; i < textArray.length - 1; i++) {
-                        hText = hText === '' ? textArray[i as number] : (hText + this.valueSortSettings.headerDelimiter + textArray[i as number]);
-                    }
-                }
-                mIndex = this.fieldList[this.dataSourceSettings.values[0].name].index;
-                mType = this.fieldList[this.dataSourceSettings.values[0].name].aggregateType;
-            }
-            let member: IAxisSet;
-            if (this.valueAxis === 0) {
-                member = this.getMember(cMembers, hText);
-                if (member) {
-                    rMembers = this.sortByValueRow(rMembers, member, this.valueSortSettings.sortOrder, mIndex, mType);
-                }
-            } else {
-                member = this.getMember(rMembers, hText);
-                if (member) {
-                    cMembers = this.sortByValueRow(cMembers, member, this.valueSortSettings.sortOrder, mIndex, mType);
-                }
-            }
+            cMembers = this.applySortingForAxis(this.rowValueSortHeaderText, true, rMembers, cMembers, this.rowGrandTotal);
+            rMembers = this.applySortingForAxis(this.columnValueSortHeaderText, false, cMembers, rMembers, this.columnGrandTotal);
             if (isNullArgument) {
                 this.rMembers = rMembers;
                 this.cMembers = cMembers;
@@ -3174,6 +3128,98 @@ export class PivotEngine {
             }
         }
         return { rMembers: rMembers, cMembers: cMembers };
+    }
+    private applySortingForAxis(axisHeaderText: string, isRow: boolean, members: IAxisSet[], oppositeMembers: IAxisSet[],
+                                grandTotal: IAxisSet): IAxisSet[] {
+        if (!axisHeaderText) {
+            return oppositeMembers;
+        }
+        const showGrandTotals: boolean = isRow ? this.dataSourceSettings.showRowGrandTotals
+            : this.dataSourceSettings.showColumnGrandTotals;
+        const hasMembers: boolean = isRow ? this.dataSourceSettings.rows.length > 0 : this.dataSourceSettings.columns.length > 0;
+        const flag: boolean = this.dataSourceSettings.showGrandTotals && showGrandTotals ? true : !hasMembers;
+        let grandTotalIncluded: boolean = true;
+        if (axisHeaderText.includes(this.localeObj.getConstant('grandTotal')) && !flag) {
+            members.push(grandTotal);
+            grandTotalIncluded = false;
+        }
+        const { hText, mIndex, mType } = this.getHeaderDetails(axisHeaderText, isRow);
+        const member: IAxisSet = this.getMember(members, hText);
+        if (member) {
+            oppositeMembers = this.sortByValueRow(oppositeMembers, member, isRow ?
+                this.valueSortSettings.rowSortOrder : this.valueSortSettings.columnSortOrder, mIndex, mType);
+        }
+        if (!grandTotalIncluded) {
+            members.pop();
+        }
+        return oppositeMembers;
+    }
+
+    private prepareValueSortHeaderText(sortHeaderText: string): string {
+        const textArray: string[] = sortHeaderText.split(this.valueSortSettings.headerDelimiter);
+        for (const field of this.dataSourceSettings.values) {
+            const name: string = field.caption ? field.caption : field.name;
+            const valueIndex: number = textArray.indexOf(name);
+            if (valueIndex > -1) {
+                textArray.splice(valueIndex, 1);
+                textArray.push(name);
+                sortHeaderText = textArray.join(this.valueSortSettings.headerDelimiter);
+                break;
+            }
+        }
+        return sortHeaderText;
+    }
+    private getHeaderDetails(headerText: string, isRow: boolean): { hText: string, mIndex: number, mType: string } {
+        const textArray: string[] = headerText.split(this.valueSortSettings.headerDelimiter);
+        let hText: string = '';
+        let mIndex: number;
+        let mType: string;
+        let caption: string;
+        for (let i: number = 0; i < this.dataSourceSettings.values.length; i++) {
+            if (this.dataSourceSettings.values[i as number].caption === textArray[textArray.length - 1]) {
+                caption = this.dataSourceSettings.values[i as number].name;
+                break;
+            } else {
+                caption = textArray[textArray.length - 1];
+            }
+        }
+        if ((((this.dataSourceSettings.values.length === 1 && ((!isRow && this.dataSourceSettings.valueAxis === 'column' &&
+            this.dataSourceSettings.columns.length === 0) || (isRow && this.dataSourceSettings.valueAxis === 'row' &&
+                this.dataSourceSettings.rows.length === 0)))) || ((this.dataSourceSettings.values.length > 1 && ((!isRow &&
+                    this.dataSourceSettings.valueAxis === 'column') || (isRow && this.dataSourceSettings.valueAxis === 'row'))))) &&
+            caption && this.fieldList[caption as string]) {
+            for (let i: number = 0; i < textArray.length - 1; i++) {
+                hText = hText === '' ? textArray[i as number] : (hText + this.valueSortSettings.headerDelimiter + textArray[i as number]);
+            }
+            mIndex = this.fieldList[caption as string].index;
+            mType = this.fieldList[caption as string].aggregateType;
+        } else {
+            if (!this.dataSourceSettings.alwaysShowValueHeader || textArray.length === 1 || ((isRow &&
+                this.dataSourceSettings.valueAxis !== 'row') || (!isRow && this.dataSourceSettings.valueAxis !== 'column'))) {
+                hText = headerText;
+            } else {
+                for (let i: number = 0; i < textArray.length - 1; i++) {
+                    hText = hText === '' ? textArray[i as number] : (hText + this.valueSortSettings.headerDelimiter + textArray[i as number]);
+                }
+            }
+            if (!isNullOrUndefined(this.dataSourceSettings.valueSortSettings.measure) &&
+                this.dataSourceSettings.valueSortSettings.measure !== '') {
+                for (let i: number = 0; i < this.dataSourceSettings.values.length; i++) {
+                    if (this.dataSourceSettings.valueSortSettings.measure === this.dataSourceSettings.values[i as number].name) {
+                        mIndex = this.fieldList[this.dataSourceSettings.valueSortSettings.measure].index;
+                        mType = this.fieldList[this.dataSourceSettings.valueSortSettings.measure].aggregateType;
+                        break;
+                    } else {
+                        mIndex = this.fieldList[this.dataSourceSettings.values[0].name].index;
+                        mType = this.fieldList[this.dataSourceSettings.values[0].name].aggregateType;
+                    }
+                }
+            } else {
+                mIndex = this.fieldList[this.dataSourceSettings.values[0].name].index;
+                mType = this.fieldList[this.dataSourceSettings.values[0].name].aggregateType;
+            }
+        }
+        return { hText, mIndex, mType };
     }
     private getMember(cMembers: IAxisSet[], headerText: string): IAxisSet {
         const vlen: number = cMembers.length;
@@ -3309,7 +3355,8 @@ export class PivotEngine {
                                         (cell.formattedText + ' Total')), axis: 'column', hierarchyName: cell.hierarchyName,
                                     level: -1, colIndex: colCnt, rowIndex: rowPos, valueSort: cell.valueSort
                                 };
-                            if (cell.valueSort && cell.valueSort[this.valueSortSettings.headerText]) {
+                            if (cell.valueSort && (cell.valueSort[this.valueSortSettings.rowHeaderText]
+                                || cell.valueSort[this.valueSortSettings.columnHeaderText])) {
                                 this.valueSortSettings.columnIndex = colCnt;
                             }
                             let isSpanned: boolean = false;
@@ -3607,8 +3654,9 @@ export class PivotEngine {
             for (let iln: number = 0, ilt: number = hierarchy.length; iln < ilt; iln++) {
                 if (!this.frameHeaderObjectsCollection) {
                     if (axis === 'row') {
+                        const isParent: boolean = hierarchy[iln as number].isDrilled && hierarchy[iln as number].hasChild;
                         this.rowCount += (this.rowValuesLength + (
-                            hierarchy[iln as number].isDrilled && hierarchy[iln as number].hasChild && this.showSubTotalsAtBottom ? 1 : 0
+                            isParent && this.showSubTotalsAtBottom && !this.customProperties.isTabularLayout ? 1 : 0
                         ));
                     } else {
                         this.columnCount += this.colValuesLength;
@@ -3918,11 +3966,10 @@ export class PivotEngine {
                     this.memberCnt -= !(this.dataSourceSettings.showSubTotals && this.dataSourceSettings.showColumnSubTotals &&
                         this.columnKeys[(headers[pos as number].valueSort as { [key: string]: number }).axis].showSubTotals) ?
                         this.colValuesLength : 0;
-                } else if (this.showSubTotalsAtBottom) {
+                } else if (this.showSubTotalsAtBottom && !this.customProperties.isTabularLayout) {
                     this.memberCnt++;
                 }
-                slicedHeaders[slicedHeaders.length - 1].members =
-                    this.performSlicing(headers[pos as number].members, [], startPos, axis);
+                slicedHeaders[slicedHeaders.length - 1].members = this.performSlicing(headers[pos as number].members, [], startPos, axis);
             }
             if (!this.pageInLimit) {
                 slicedHeaders.pop();
@@ -5695,7 +5742,6 @@ export class PivotEngine {
     private getTabularPivotValues(requireDatasourceUpdate?: boolean, isDrilled?: boolean, isScrolled?: boolean): IAxisSet[][] {
         this.tabularPivotValues = [];
         let colIndex: number;
-        this.emptyRowsLength = 0;
         const isGrouping: boolean = Object.keys(this.groupingFields).length > 0;
         if (this.dataSourceSettings.valueAxis === 'row' && (this.dataSourceSettings.values.length > 1 ||
             this.dataSourceSettings.alwaysShowValueHeader) && !isDrilled && !isScrolled) {
@@ -5708,6 +5754,7 @@ export class PivotEngine {
             let levelName: string;
             let levelNameParts: string[];
             let valueAxis: string;
+            let type: boolean = false;
             while (isNullOrUndefined(this.pivotValues[i as number]) && i < this.pivotValues.length) {
                 this.tabularPivotValues.length++;
                 i++;
@@ -5719,8 +5766,9 @@ export class PivotEngine {
             if (firstRow) {
                 levelName = firstRow.valueSort.levelName as string;
                 levelNameParts = levelName.split(this.dataSourceSettings.valueSortSettings.headerDelimiter);
-                if ((!this.dataSourceSettings.showSubTotals || (this.dataSourceSettings.showColumnSubTotals &&
-                    !this.dataSourceSettings.showRowSubTotals)) && firstRow.formattedText !== this.localeObj.getConstant('grandTotal')) {
+                if (((!this.dataSourceSettings.showSubTotals && firstRow.type !== 'value') ||
+                    (this.dataSourceSettings.showColumnSubTotals && !this.dataSourceSettings.showRowSubTotals)) &&
+                    firstRow.formattedText !== this.localeObj.getConstant('grandTotal')) {
                     if (firstRow.isSum) {
                         isValue = false;
                     }
@@ -5775,24 +5823,7 @@ export class PivotEngine {
                 } else {
                     firstRow.level = levelNameParts.length - 1;
                 }
-                for (let n: number = 0; n < this.drilledMembers.length; n++) {
-                    const drillItems: string[] = this.drilledMembers[n as number].items;
-                    for (let v: number = 0; v < drillItems.length; v++) {
-                        const splitdrillItems: string[] = drillItems[v as number].split(this.drilledMembers[n as number].delimiter);
-                        const rowText: string[] = firstRow.formattedText.split(' ');
-                        const rowFormatText: string[] = [];
-                        let formattedRowText: string;
-                        for (let z: number = 0; z < rowText.length; z++) {
-                            rowFormatText.push(rowText[z as number]);
-                            formattedRowText = rowFormatText.join(' ');
-                            if (formattedRowText === splitdrillItems[splitdrillItems.length - 1] &&
-                                splitdrillItems[0] === levelNameParts[0]) {
-                                drillMem = true;
-                                break;
-                            }
-                        }
-                    }
-                }
+                drillMem = PivotUtil.isMemberDrilled(firstRow, levelNameParts, this.drilledMembers);
             }
             if (isValue && levelNameParts && levelNameParts.length > 1 && firstRow.type === 'sum') {
                 if (levelNameParts[levelNameParts.length - 1] === levelNameParts[levelNameParts.length - 2]) {
@@ -5808,6 +5839,7 @@ export class PivotEngine {
                         firstRow.type === 'value' && (!this.dataSourceSettings.expandAll ? drillMem : !drillMem) ||
                         levelNameParts[0] === this.localeObj.getConstant('grandTotal')) {
                         for (let b: number = levelNameParts.length - 1; b >= 0; b--) {
+                            type = true;
                             if (levelNameParts[b as number] === levelNameParts[levelNameParts.length - 2]) {
                                 levelNameArray[b as number] = levelNameParts[levelNameParts.length - 2] + ' ' +
                                     levelNameParts[levelNameParts.length - 1];
@@ -5877,11 +5909,14 @@ export class PivotEngine {
                                     valueIsDrill : duplIsDrilled,
                                 level: level,
                                 valueSort: {
-                                    levelName: dLevelName,
+                                    levelName: type && firstRow.type === 'value' && k === this.rowMaxLevel ?
+                                        firstRow.valueSort.levelName : dLevelName,
                                     axis: isGrouping ? (valueAxis ?
                                         (valueAxis.includes('custom_group') ? valueAxis : this.dataSourceSettings.rows[k as number].name) :
-                                        firstRow.valueSort.axis) : this.dataSourceSettings.rows[k as number].name
+                                        firstRow.valueSort.axis) : (this.dataSourceSettings.rows[k as number] ?
+                                        this.dataSourceSettings.rows[k as number].name : firstRow.valueSort.axis)
                                 },
+                                type: type ? firstRow.type : undefined,
                                 colIndex: colIndex++,
                                 colSpan: 1,
                                 rowSpan: 1
@@ -5911,6 +5946,7 @@ export class PivotEngine {
                                         (valueAxis.includes('custom_group') ? valueAxis : this.dataSourceSettings.rows[k as number].name) :
                                         firstRow.valueSort.axis) : this.dataSourceSettings.rows[k as number].name
                                 },
+                                type: type ? firstRow.type : firstRow.type ? firstRow.type : undefined,
                                 colIndex: colIndex++,
                                 colSpan: span,
                                 rowSpan: 1
@@ -5937,9 +5973,6 @@ export class PivotEngine {
                     }
                     currentRow = currentRow.concat(colData);
                     this.tabularPivotValues.push(currentRow);
-                }
-                else {
-                    this.emptyRowsLength++;
                 }
             }
             else {
@@ -5974,7 +6007,7 @@ export class PivotEngine {
             }
             const currentRowindex: number = (this.dataSourceSettings.valueAxis === 'row' && (this.dataSourceSettings.values.length > 1 ||
                 this.dataSourceSettings.alwaysShowValueHeader)) ? currentRow.length - 2 : currentRow.length - 1;
-            if (f < currentRowindex && (firstRow.type !== 'grand sum' || firstRow.isSum) &&
+            if (f < currentRowindex && !firstRow.isSum &&
                 currentRow[currentRow.length - 1].formattedText !== currentRow[currentRow.length - 2].formattedText &&
                 firstRow.type !== 'grand sum') {
                 currentRow[f as number].hasChild = true;
@@ -6001,12 +6034,25 @@ export class PivotEngine {
                         if (isNullOrUndefined(tabluarValue[j - 1])) {
                             break;
                         }
-                        if (!isNullOrUndefined(tabluarValue[j - 1][m as number]) &&
-                            tabluarValue[j as number][m as number].formattedText ===
-                            tabluarValue[j - 1][m as number].formattedText) {
-                            tabluarValue[j as number][m as number].rowSpan = 0;
-                            rowSpan++;
-                            tabluarValue[j - 1][m as number].rowSpan = rowSpan;
+                        if (!isNullOrUndefined(tabluarValue[j - 1][m as number])) {
+                            const previousLevelName: string = tabluarValue[j - 1][m as number].valueSort.levelName as string;
+                            const previousLevelLastIndex: number =
+                                previousLevelName.lastIndexOf(this.dataSourceSettings.valueSortSettings.headerDelimiter);
+                            const finalpreviouslevel: string =
+                                previousLevelLastIndex !== -1 ? previousLevelName.substring(0, previousLevelLastIndex) : previousLevelName;
+                            const currentLevelName: string = tabluarValue[j as number][m as number].valueSort.levelName as string;
+                            const currentLevelLastIndex: number =
+                                currentLevelName.lastIndexOf(this.dataSourceSettings.valueSortSettings.headerDelimiter);
+                            const finalCurrentlevel: string =
+                                currentLevelLastIndex !== -1 ? currentLevelName.substring(0, currentLevelLastIndex) : currentLevelName;
+                            if (tabluarValue[j as number][m as number].formattedText ===
+                                tabluarValue[j - 1][m as number].formattedText && finalCurrentlevel === finalpreviouslevel) {
+                                tabluarValue[j as number][m as number].rowSpan = 0;
+                                rowSpan++;
+                                tabluarValue[j - 1][m as number].rowSpan = rowSpan;
+                            } else {
+                                rowSpan = 1;
+                            }
                         } else {
                             rowSpan = 1;
                         }
@@ -6429,6 +6475,24 @@ export interface IValueSortSettings {
      */
     headerText?: string;
     /**
+     * Defines the header text of the row field for which value-based sorting is applied (Relational).
+     *
+     * This should represent the exact row member path, separated using the specified `headerDelimiter`.
+     *
+     * > Note: Applicable only for relational data sources.
+     *
+     */
+    rowHeaderText?: string;
+    /**
+     * Defines the header text of the column field for which value-based sorting is applied (Relational).
+     *
+     * This should represent the exact column member path, separated using the specified `headerDelimiter`.
+     *
+     * > Note: Applicable only for relational data sources.
+     *
+     */
+    columnHeaderText?: string;
+    /**
      * It allows to set the delimiter, which is used a separator to split the given header text.
      */
     headerDelimiter?: string;
@@ -6439,9 +6503,35 @@ export interface IValueSortSettings {
      */
     sortOrder?: Sorting;
     /**
+     * Sets the sorting order for the specified row header field (Relational).
+     *
+     * Available options:
+     * - `Ascending` - Sorts field members in ascending order based on aggregated value.
+     * - `Descending` - Sorts field members in descending order based on aggregated value.
+     *
+     * > Note: Applicable only for relational data sources.
+     *
+     */
+    rowSortOrder?: Sorting;
+    /**
+     * Sets the sorting order for the specified column header field (Relational).
+     *
+     * Available options:
+     * - `Ascending` - Sorts field members in ascending order based on aggregated value.
+     * - `Descending` - Sorts field members in descending order based on aggregated value.
+     *
+     * > Note: Applicable only for relational data sources.
+     *
+     */
+    columnSortOrder?: Sorting;
+    /**
      * It allows to set the column index of the value cell.
      */
     columnIndex?: number;
+    /**
+     * It allows to set the row index of the value cell.
+     */
+    rowIndex?: number;
     /**
      * It allows to set the measure name to achieve value sorting based on this.
      * > It is applicable only for OLAP data source.

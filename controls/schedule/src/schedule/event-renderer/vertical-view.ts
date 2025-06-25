@@ -199,10 +199,15 @@ export class VerticalEvent extends EventBase {
                 blockHeight = formatUnit(this.getHeight(eStart, eEnd));
                 blockTop = formatUnit(this.getTopValue(eStart));
             }
+            if (eventObj.IsBlock) {
+                blockHeight = formatUnit(parseInt(blockHeight, 10) - 1);
+            }
             const appointmentElement: HTMLElement = this.createBlockAppointmentElement(eventObj, resource, this.isResourceEventTemplate);
-            setStyleAttribute(appointmentElement, { 'width': '100%', 'height': blockHeight, 'top': blockTop });
+            const appWidth: string = eventObj.IsBlock ? '99%' : '100%';
+            setStyleAttribute(appointmentElement, { 'width': appWidth, 'height': blockHeight, 'top': blockTop });
             const index: number = this.getDayIndex(dayIndex, resource, dayCount);
-            this.appendEvent(eventObj, appointmentElement, index, '0px');
+            const appLeft: string = eventObj.IsBlock ? '0.5px' : '0px';
+            this.appendEvent(eventObj, appointmentElement, index, appLeft);
         }
     }
 

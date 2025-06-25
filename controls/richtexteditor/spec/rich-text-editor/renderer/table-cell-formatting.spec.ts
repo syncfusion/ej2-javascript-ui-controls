@@ -70,8 +70,8 @@ describe('Table cell formatting ', () => {
             const table: HTMLTableElement = editor.inputElement.querySelector('table');
             selectTableCell(table, 0, 0);
             drawCellSelection(table, 0, 1);
-            const toolbarButtons : NodeList = editor.element.querySelectorAll('.e-tbar-btn');
-            (toolbarButtons[3] as HTMLElement).click();
+            const toolbarButton : HTMLElement = editor.element.querySelector('.e-formats-tbar-btn');
+            toolbarButton.click();
             setTimeout(() => {
                 (document.body.querySelector('.e-item.e-h1') as HTMLElement).click();
                 expect(editor.inputElement.querySelectorAll('.e-cell-select').length).toBe(2);
@@ -82,8 +82,8 @@ describe('Table cell formatting ', () => {
         });
         it('Revert to paragraph', (done: DoneFn) => {
             const table: HTMLTableElement = editor.inputElement.querySelector('table');
-            const toolbarButtons : NodeList = editor.element.querySelectorAll('.e-tbar-btn');
-            (toolbarButtons[3] as HTMLElement).click();
+            const toolbarButton : HTMLElement = editor.element.querySelector('.e-formats-tbar-btn');
+            toolbarButton.click();
             setTimeout(() => {
                 (document.body.querySelector('.e-item.e-paragraph') as HTMLElement).click();
                 expect(editor.inputElement.querySelectorAll('.e-cell-select').length).toBe(2);
@@ -110,7 +110,7 @@ describe('Table cell formatting ', () => {
             selectTableCell(table, 0, 0);
             drawCellSelection(table, 0, 1);
             const toolbarButtons : NodeList = editor.element.querySelectorAll('.e-tbar-btn');
-            (toolbarButtons[7] as HTMLElement).click();
+            (toolbarButtons[5] as HTMLElement).click();
             expect(editor.inputElement.querySelectorAll('.e-cell-select').length).toBe(2);
             expect(table.rows[0].cells[0].innerHTML === '<ul><li>Span&nbsp;<br></li><li><strong>Bold </strong><br></li><li style="font-style: italic;"><em>Italic <br></em></li></ul>').toBe(true);
             expect(table.rows[0].cells[1].innerHTML === '<ul><li>Paragraph 1</li><li>Paragraph 2</li><li>Paragraph 3</li></ul>').toBe(true);
@@ -118,7 +118,7 @@ describe('Table cell formatting ', () => {
         it('Revert the list', () => {
             const table: HTMLTableElement = editor.inputElement.querySelector('table');
             const toolbarButtons : NodeList = editor.element.querySelectorAll('.e-tbar-btn');
-            (toolbarButtons[7] as HTMLElement).click();
+            (toolbarButtons[5] as HTMLElement).click();
             expect(editor.inputElement.querySelectorAll('.e-cell-select').length).toBe(2);
             expect(table.rows[0].cells[0].innerHTML === '<p>Span&nbsp;<br></p><p><strong>Bold </strong><br></p><p style="font-style: italic;"><em>Italic <br></em></p>').toBe(true);
             expect(table.rows[0].cells[1].innerHTML === '<p>Paragraph 1</p><p>Paragraph 2</p><p>Paragraph 3</p>').toBe(true);
@@ -177,24 +177,24 @@ describe('Table cell formatting ', () => {
             const table: HTMLTableElement = editor.inputElement.querySelector('table');
             selectTableCell(table, 0, 0);
             drawCellSelection(table, 0, 1);
-            const toolbarButtons : NodeList = editor.element.querySelectorAll('.e-tbar-btn');
-            (toolbarButtons[3] as HTMLElement).click();
+            const toolbarButton : HTMLElement = editor.element.querySelector('.e-formats-tbar-btn');
+            toolbarButton.click();
             setTimeout(() => {
                 (document.body.querySelector('.e-item.e-h1') as HTMLElement).click();
                 expect(editor.inputElement.querySelectorAll('.e-cell-select').length).toBe(2);
-                expect(table.rows[0].cells[0].innerHTML === '<h1>This issue replicated only when the content is typed and then changed to list<br></h1><h1>Replication procedure<br></h1><ol><li><h1>Run the sample</h1></li><li><h1>Create a table</h1></li><li><h1>Create a list</h1></li><li><h1>Now select two cells and then apply heading</h1></li><li><h1>Now apply paragraph</h1></li></ol>').toBe(true);
+                expect(table.rows[0].cells[0].innerHTML === '<h1>This issue replicated only when the content is typed and then changed to list<br>Replication procedure<br></h1><ol><li><h1>Run the sample</h1></li><li><h1>Create a table</h1></li><li><h1>Create a list</h1></li><li><h1>Now select two cells and then apply heading</h1></li><li><h1>Now apply paragraph</h1></li></ol>').toBe(true);
                 expect(table.rows[0].cells[1].innerHTML === '<h1><br></h1>').toBe(true);
                 done();
             }, 100);
         });
         it('Revert to paragraph', (done: DoneFn) => {
             const table: HTMLTableElement = editor.inputElement.querySelector('table');
-            const toolbarButtons : NodeList = editor.element.querySelectorAll('.e-tbar-btn');
-            (toolbarButtons[3] as HTMLElement).click();
+            const toolbarButton : HTMLElement = editor.element.querySelector('.e-formats-tbar-btn');
+            toolbarButton.click();
             setTimeout(() => {
                 (document.body.querySelector('.e-item.e-paragraph') as HTMLElement).click();
                 expect(editor.inputElement.querySelectorAll('.e-cell-select').length).toBe(2);
-                expect(table.rows[0].cells[0].innerHTML === '<p>This issue replicated only when the content is typed and then changed to list<br></p><p>Replication procedure<br></p><ol><li><p>Run the sample</p></li><li><p>Create a table</p></li><li><p>Create a list</p></li><li><p>Now select two cells and then apply heading</p></li><li><p>Now apply paragraph</p></li></ol>').toBe(true);
+                expect(table.rows[0].cells[0].innerHTML === '<p>This issue replicated only when the content is typed and then changed to list<br>Replication procedure<br></p><ol><li><p>Run the sample</p></li><li><p>Create a table</p></li><li><p>Create a list</p></li><li><p>Now select two cells and then apply heading</p></li><li><p>Now apply paragraph</p></li></ol>').toBe(true);
                 expect(table.rows[0].cells[1].innerHTML === '<p><br></p>').toBe(true);
                 done();
             }, 100);
@@ -225,7 +225,7 @@ describe('Table cell formatting ', () => {
             (toolbarButtons[2] as HTMLElement).click();
             (toolbarButtons[3] as HTMLElement).click();
             setTimeout(() => {
-                expect(table.rows[0].cells[0].innerHTML === '<sub>This issue replicated only when the content is typed and then changed to list</sub><br><sub>Replication procedure</sub><br><ol><li><sub>Run the sample</sub></li><li><sub>Create a table</sub></li><li><sub>Create a list</sub></li><li><sub>Now select two cells and then apply heading</sub></li><li><sub>Now apply paragraph</sub></li></ol>').toBe(true);
+                expect(table.rows[0].cells[0].innerHTML === '<p><sub>This issue replicated only when the content is typed and then changed to list</sub><br><sub>Replication procedure</sub><br></p><ol><li><sub>Run the sample</sub></li><li><sub>Create a table</sub></li><li><sub>Create a list</sub></li><li><sub>Now select two cells and then apply heading</sub></li><li><sub>Now apply paragraph</sub></li></ol>').toBe(true);
                 expect(table.rows[0].cells[1].innerHTML === '<sub>​</sub><br>').toBe(true);
                 done();
             }, 100);

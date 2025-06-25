@@ -12,6 +12,8 @@ import { QueryCellInfoEventArgs, HeaderCellInfoEventArgs, RowDataBoundEventArgs 
 import { ColumnMenuOpenEventArgs, ColumnMenuClickEventArgs } from '@syncfusion/ej2-grids';
 import { isCountRequired, isEmptyObject } from './utils';
 import { AutoComplete } from '@syncfusion/ej2-dropdowns';
+import { ConstraintType } from './enum';
+import {CellSaveArgs} from '@syncfusion/ej2-grids';
 
 /** @hidden */
 
@@ -28,6 +30,8 @@ export class GanttTreeGrid {
     private registeredTemplate: Object;
     public addedRecord: boolean;
     public setCancelArgs: boolean = false;
+    private perviousStartDate: Date ;
+    private perviousEndDate: Date ;
     private previousScroll: { top: number, left: number } = { top: 0, left: 0 };
     /** @hidden */
     public prevCurrentView: Object;
@@ -206,6 +210,8 @@ export class GanttTreeGrid {
     }
 
     private beforeDataBound(args: object): void {
+        const arg: { result: { updatedCollection: object[] } } = { result: args['result'] };
+        this.parent.trigger('beforeDataBound', arg);
         if (!isNullOrUndefined(this.parent.selectionModule) && this.parent.selectionSettings &&
             this.parent.selectionSettings.persistSelection && this.parent.selectionModule.getSelectedRowIndexes().length > 0 &&
             args['actionArgs']['requestType'] === 'sorting') {
@@ -213,6 +219,12 @@ export class GanttTreeGrid {
         }
         this.parent.updatedRecords = this.parent.virtualScrollModule && this.parent.enableVirtualization ?
             getValue('virtualScrollModule.visualData', this.parent.treeGrid) : getValue('result', args);
+        const dataArgs: object = args['actionArgs'] || null;
+        const isNotSortingWBS: boolean = !dataArgs || dataArgs['requestType'] !== 'sorting' || dataArgs['columnName'] !== 'WBSCode';
+        const isNotFilteringWBS: boolean = !dataArgs || dataArgs['requestType'] !== 'filtering';
+        if (this.parent.enableWBS && !this.parent.isVirtualScroll && isNotSortingWBS && isNotFilteringWBS) {
+            this.parent.generateWBSCodes(this.parent.updatedRecords);
+        }
         if (this.parent.virtualScrollModule && this.parent.enableVirtualization) {
             this.parent.updateContentHeight(args);
         }
@@ -316,11 +328,7 @@ export class GanttTreeGrid {
                 document.getElementsByClassName('e-chart-rows-container')[0]['style'].height = this.parent.contentHeight + 'px';
             }
         }
-        if (!isNullOrUndefined(this.parent.loadingIndicator) && this.parent.loadingIndicator.indicatorType === 'Shimmer') {
-            this.parent.hideMaskRow();
-        } else {
-            this.parent.hideSpinner();
-        }
+        this.parent['hideLoadingIndicator']();
         this.parent.trigger('collapsed', args);
     }
     private expanded(args: object): void {
@@ -345,11 +353,7 @@ export class GanttTreeGrid {
                 document.getElementsByClassName('e-chart-rows-container')[0]['style'].height = this.parent.contentHeight + 'px';
             }
         }
-        if (!isNullOrUndefined(this.parent.loadingIndicator) && this.parent.loadingIndicator.indicatorType === 'Shimmer') {
-            this.parent.hideMaskRow();
-        } else {
-            this.parent.hideSpinner();
-        }
+        this.parent['hideLoadingIndicator']();
         this.parent.isCollapseAll = false;
         this.parent.trigger('expanded', args);
     }
@@ -363,18 +367,22 @@ export class GanttTreeGrid {
                 filterElement.style.display = 'none';
             }
         }
+        if (args && args.type === 'save' && args['rowData'] && args['rowData'].ganttProperties) {
+            this.perviousStartDate = args['rowData'].ganttProperties.startDate;
+            this.perviousEndDate = args['rowData'].ganttProperties.endDate;
+        }
         this.parent.notify('actionBegin', args);
         const flag: boolean = getValue('doubleClickTarget', this.parent.treeGrid.editModule);
         if (flag !== null) {
             setValue('doubleClickTarget', null, this.parent.treeGrid.editModule);
         }
-        this.parent.trigger('actionBegin', args);
+        if (this.parent.cellSave && args.type === 'save') {
+            this.parent.trigger('cellSave', args);
+        } else {
+            this.parent.trigger('actionBegin', args);
+        }
         if (args.requestType !== 'virtualscroll' && args.type !== 'edit' && args.requestType !== 'beginEdit' && !args.cancel) {
-            if (!isNullOrUndefined(this.parent.loadingIndicator) && this.parent.loadingIndicator.indicatorType === 'Shimmer') {
-                this.parent.showMaskRow();
-            } else {
-                this.parent.showSpinner();
-            }
+            this.parent['showLoadingIndicator']();
         }
     }// eslint-disable-next-line
     private created(args: object): void {
@@ -632,11 +640,7 @@ export class GanttTreeGrid {
             }
             this.parent.ganttChartModule.renderRangeContainer(this.parent.currentViewData);
         }
-        if (!isNullOrUndefined(this.parent.loadingIndicator) && this.parent.loadingIndicator.indicatorType === 'Shimmer') {
-            this.parent.hideMaskRow();
-        } else {
-            this.parent.hideSpinner();
-        }
+        this.parent['hideLoadingIndicator']();
     }
 
     private updateKeyConfigSettings(): void {
@@ -707,7 +711,7 @@ export class GanttTreeGrid {
         this.parent.columnByField = {};
         this.parent.customColumns = [];
         const tasksMapping: string[] = ['id', 'name', 'startDate', 'endDate', 'duration', 'dependency',
-            'progress', 'baselineStartDate', 'baselineEndDate', 'resourceInfo', 'notes', 'work', 'manual', 'type', 'milestone', 'segments'];
+            'progress', 'baselineStartDate', 'baselineEndDate', 'resourceInfo', 'notes', 'work', 'manual', 'type', 'milestone', 'segments', 'constraintType', 'constraintDate'];
         for (let i: number = 0; i < length; i++) {
             let column: GanttColumnModel = {};
             if (typeof ganttObj.columns[i as number] === 'string') {
@@ -725,9 +729,15 @@ export class GanttTreeGrid {
                 if (column.field === this.parent.resourceFields.group) {
                     continue;
                 }
-                this.parent.customColumns.push(column.field);
+                if (column.field !== 'WBSCode' && column.field !== 'WBSPredecessor') {
+                    this.parent.customColumns.push(column.field);
+                }
                 column.headerText = column.headerText ? column.headerText : column.field;
                 column.width = column.width ? column.width : 150;
+                column.allowEditing = (column.field === 'WBSCode' ? false : true);
+                if (column.field === 'WBSCode' || column.field === 'WBSPredecessor') {
+                    column.clipMode = 'EllipsisWithTooltip';
+                }
                 column.editType = column.editType ? column.editType : 'stringedit';
                 column.type = column.type ? column.type : 'string';
                 if (column.type === 'checkbox') {
@@ -757,6 +767,9 @@ export class GanttTreeGrid {
             this.composeUniqueIDColumn(column);
             this.createTreeGridColumn(column, true);
         }
+    }
+    private getLocalizedConstraintTypeText(type: string): string {
+        return this.parent.localeObj.getConstant(`constraintType${type}`);
     }
 
     /**
@@ -830,6 +843,25 @@ export class GanttTreeGrid {
                     column.edit.params = { renderDayCell: this.parent.renderWorkingDayCell.bind(this.parent) };
                 }
                 else {
+                    column.edit = { params: { renderDayCell: this.parent.renderWorkingDayCell.bind(this.parent) } };
+                }
+            }
+        } else if (taskSettings.constraintDate === column.field) {
+            if (this.parent.isLocaleChanged && previousColumn) {
+                column.headerText = previousColumn.headerText ? previousColumn.headerText : this.parent.localeObj.getConstant('constraintDate');
+            } else {
+                column.headerText = column.headerText ? column.headerText : this.parent.localeObj.getConstant('constraintDate');
+            }
+            column.format = column.format ? column.format : { type: 'date', format: this.parent.getDateFormat() };
+            column.editType = column.editType ? column.editType :
+                this.parent.getDateFormat().toLowerCase().indexOf('hh') !== -1 ? 'datetimepickeredit' : 'datepickeredit';
+            column.width = column.width ? column.width : 150;
+            if (column.edit && column.edit.params) {
+                column.edit.params['renderDayCell'] = this.parent.renderWorkingDayCell.bind(this.parent);
+            } else {
+                if (column.edit) {
+                    column.edit.params = { renderDayCell: this.parent.renderWorkingDayCell.bind(this.parent) };
+                } else {
                     column.edit = { params: { renderDayCell: this.parent.renderWorkingDayCell.bind(this.parent) } };
                 }
             }
@@ -963,6 +995,31 @@ export class GanttTreeGrid {
                         { id: 2, text: this.parent.localeObj.getConstant('auto'), value: false }
                     ],
                     fields: { text: 'text', value: 'value'}
+                }
+            };
+        } else if (taskSettings.constraintType === column.field) {
+            if (previousColumn && this.parent.isLocaleChanged) {
+                column.headerText = previousColumn.headerText ? previousColumn.headerText : this.parent.localeObj.getConstant('constraintType');
+            } else {
+                column.headerText = column.headerText ? column.headerText : this.parent.localeObj.getConstant('constraintType');
+            }
+            column.width = column.width ? column.width : 160;
+            column.editType = column.editType ? column.editType : 'dropdownedit';
+            const constraintTypeDataSource: {
+                text: string;
+                value: ConstraintType;
+            }[] = Object.keys(ConstraintType)
+                .filter((key: string) => !isNaN(Number(ConstraintType[key as any])))
+                .map((key: string) => ({
+                    text: this.getLocalizedConstraintTypeText(key),
+                    value: ConstraintType[key as keyof typeof ConstraintType]
+                }));
+            column.valueAccessor = column.valueAccessor ? column.valueAccessor : this.constraintTypeValueAccessor.bind(this);
+            column.edit = {
+                params: {
+                    dataSource: constraintTypeDataSource,
+                    fields: { text: 'text', value: 'value' },
+                    query: new Query()
                 }
             };
         }
@@ -1148,6 +1205,16 @@ export class GanttTreeGrid {
         for (const prop of Object.keys(newGanttColumn)) {
             treeGridColumn[prop as string] = ganttColumn[prop as string] = newGanttColumn[prop as string];
         }
+        if (ganttColumn.field === this.parent.taskFields.constraintDate) {
+            if (!('type' in ganttColumn)) {
+                if (ganttColumn.editType === 'datepickeredit') {
+                    ganttColumn.type = 'date';
+                } else if (ganttColumn.editType === 'datetimepickeredit') {
+                    ganttColumn.type = 'datetime';
+                }
+                treeGridColumn.type = ganttColumn.type;
+            }
+        }
         this.parent.columnByField[ganttColumn.field] = ganttColumn;
         this.parent.ganttColumns.push(new GanttColumn(ganttColumn));
         if (isDefined) {
@@ -1218,6 +1285,11 @@ export class GanttTreeGrid {
         } else {
             return 'Auto';
         }
+    }
+    private constraintTypeValueAccessor(field: string, data: IGanttData, column: GanttColumnModel): string {
+        const constraintKey: string = Object.keys(ConstraintType)
+            .find((key: string) => ConstraintType[key as keyof typeof ConstraintType] === data[field as string]);
+        return this.getLocalizedConstraintTypeText(constraintKey);
     }
 
     private idValueAccessor(field: string, data: IGanttData, column: GanttColumnModel): string {   // eslint-disable-line

@@ -8,7 +8,7 @@ import { Selection, PageLayoutViewer } from '../../src/index';
 describe('Empty selection check whether selection is in field', () => {
     let editor: DocumentEditor = undefined;
     beforeAll(() => {
-        document.body.innerHTML = '';
+        
         let ele: HTMLElement = createElement('div', { id: 'container' });
         document.body.appendChild(ele);
         editor = new DocumentEditor({ enableEditor: true, isReadOnly: false, enableEditorHistory: true, enableLocalPaste: false });
@@ -23,7 +23,7 @@ describe('Empty selection check whether selection is in field', () => {
         editor.destroy();
         document.body.removeChild(document.getElementById('container'));
         editor = undefined;
-        document.body.innerHTML = '';
+        
         setTimeout(() => {
             done();
         }, 1000);
@@ -76,7 +76,7 @@ console.log('redo after select and delete field');
 describe('Non-selection check whether selection is in field', () => {
     let editor: DocumentEditor = undefined;
     beforeAll(() => {
-        document.body.innerHTML = '';
+        
         let ele: HTMLElement = createElement('div', { id: 'container' });
         document.body.appendChild(ele);
         editor = new DocumentEditor({ enableEditor: true, isReadOnly: false, enableEditorHistory: true, enableLocalPaste: false });
@@ -91,7 +91,7 @@ describe('Non-selection check whether selection is in field', () => {
         editor.destroy();
         document.body.removeChild(document.getElementById('container'));
         editor = undefined;
-        document.body.innerHTML = '';
+        
         setTimeout(() => {
             done();
         }, 1000);
@@ -136,7 +136,7 @@ console.log('redo after select and delete field');
 describe('Insert bookmark validaiton for splitted paragraph', () => {
     let editor: DocumentEditor = undefined;
     beforeAll(() => {
-        document.body.innerHTML = '';
+        
         let ele: HTMLElement = createElement('div', { id: 'container' });
         document.body.appendChild(ele);
         editor = new DocumentEditor({ isReadOnly: false, enableSelection: true, enableEditor: true, enableEditorHistory: true, enableSfdtExport: true });
@@ -152,7 +152,7 @@ describe('Insert bookmark validaiton for splitted paragraph', () => {
         editor.destroy();
         document.body.removeChild(document.getElementById('container'));
         editor = undefined;
-        document.body.innerHTML = '';
+        
         setTimeout(() => {
             done();
         }, 1000);
@@ -187,7 +187,7 @@ console.log('navigation for bookmark splitted paragraph');
 describe('Bookmark remove validation for two paragraph', () => {
     let editor: DocumentEditor = undefined;
     beforeAll(() => {
-        document.body.innerHTML = '';
+        
         let ele: HTMLElement = createElement('div', { id: 'container' });
         document.body.appendChild(ele);
         editor = new DocumentEditor({ isReadOnly: false, enableSelection: true, enableEditor: true, enableEditorHistory: true, enableSfdtExport: true });
@@ -203,7 +203,7 @@ describe('Bookmark remove validation for two paragraph', () => {
         editor.destroy();
         document.body.removeChild(document.getElementById('container'));
         editor = undefined;
-        document.body.innerHTML = '';
+        
         setTimeout(() => {
             done();
         }, 1000);
@@ -248,7 +248,7 @@ console.log('redo after on backspace before splitted paragraph');
 describe('Resolve script error issue while delete content after search text', () => {
     let container: DocumentEditorContainer = undefined;
     beforeAll(() => {
-        document.body.innerHTML = '';
+        
         let ele: HTMLElement = createElement('div', { id: 'container' });
         document.body.appendChild(ele);
         let defaultDocument = {
@@ -265,7 +265,7 @@ describe('Resolve script error issue while delete content after search text', ()
         container.destroy();
         document.body.removeChild(document.getElementById('container'));
         container = undefined;
-        document.body.innerHTML = '';
+        
         setTimeout(() => {
             done();
         }, 1000);
@@ -289,7 +289,7 @@ describe('Resolve script error issue while delete content after search text', ()
 describe('Content control delete', () => {
     let editor: DocumentEditor = undefined;
     beforeAll(() => {
-        document.body.innerHTML = '';
+        
         let ele: HTMLElement = createElement('div', { id: 'container' });
         document.body.appendChild(ele);
         editor = new DocumentEditor({ isReadOnly: false, enableSelection: true, enableEditor: true, enableEditorHistory: true, enableSfdtExport: true });
@@ -305,7 +305,7 @@ describe('Content control delete', () => {
         editor.destroy();
         document.body.removeChild(document.getElementById('container'));
         editor = undefined;
-        document.body.innerHTML = '';
+        
         setTimeout(() => {
             done();
         }, 1000);
@@ -364,7 +364,7 @@ describe('Content control delete', () => {
 describe('single delete in content control', () => {
     let editor: DocumentEditor = undefined;
     beforeAll(() => {
-        document.body.innerHTML = '';
+        
         let ele: HTMLElement = createElement('div', { id: 'container' });
         document.body.appendChild(ele);
         editor = new DocumentEditor({ isReadOnly: false, enableSelection: true, enableEditor: true, enableEditorHistory: true, enableSfdtExport: true });
@@ -380,7 +380,7 @@ describe('single delete in content control', () => {
         editor.destroy();
         document.body.removeChild(document.getElementById('container'));
         editor = undefined;
-        document.body.innerHTML = '';
+        
         setTimeout(() => {
             done();
         }, 1000);
@@ -428,7 +428,7 @@ describe('single delete in content control', () => {
 describe('Validate the verbalize selection', () => {
     let editor: DocumentEditor = undefined;
     beforeAll(() => {
-        document.body.innerHTML = '';
+        
         let ele: HTMLElement = createElement('div', { id: 'container' });
         document.body.appendChild(ele);
         editor = new DocumentEditor({ isReadOnly: false, enableSelection: true, enableEditor: true, enableEditorHistory: true, enableSfdtExport: true });
@@ -444,7 +444,7 @@ describe('Validate the verbalize selection', () => {
         editor.destroy();
         document.body.removeChild(document.getElementById('container'));
         editor = undefined;
-        document.body.innerHTML = '';
+        
         setTimeout(() => {
             done();
         }, 1000);
@@ -453,6 +453,6 @@ describe('Validate the verbalize selection', () => {
         console.log('Validate the verbalize selection');
         editor.editorModule.insertText('Syncfusion');
         editor.selectionModule.selectAll();
-        expect(() => { editor.verbelizeFromCursorLocation() }).not.toThrowError();
+        expect(() => { editor.verbalizeFromCursorLocation() }).not.toThrowError();
     });
 });

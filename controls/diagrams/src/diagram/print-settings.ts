@@ -23,7 +23,7 @@ import { IExportOptions } from './objects/interface/interfaces';
 import { DiagramHtmlElement } from './core/elements/html-element';
 import { DiagramNativeElement } from './core/elements/native-element';
 import { DiagramElement } from './core/elements/diagram-element';
-import { Container } from './core/containers/container';
+import { GroupableView } from './core/containers/container';
 import { LinearGradient } from './core/appearance';
 
 let storeFormat: string;
@@ -524,7 +524,7 @@ export class PrintAndExport {
     }
 
     private updateWrapper(
-        canvas: Container | DiagramElement[], value: number,
+        canvas: GroupableView | DiagramElement[], value: number,
         scaleOffsetX: number, scaleOffsetY: number, isExport: boolean): void {
         if (canvas && (canvas as DiagramElement[]).length > 0) {
             for (let j: number = 0; j < (canvas as DiagramElement[]).length; j++) {
@@ -559,7 +559,7 @@ export class PrintAndExport {
         }
     }
     private updateObjectValue(value: number, scaleOffsetX: number, scaleOffsetY: number, isExport: boolean): void {
-        let wrapper: Container;
+        let wrapper: GroupableView;
         for (let i: number = 0; i < this.diagram.nodes.length; i++) {
             wrapper = this.diagram.nodes[parseInt(i.toString(), 10)].wrapper;
             this.scaleGradientValue(this.diagram.nodes[parseInt(i.toString(), 10)], value, isExport);

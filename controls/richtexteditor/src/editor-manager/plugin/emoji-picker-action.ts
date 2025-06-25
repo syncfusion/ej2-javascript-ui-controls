@@ -4,10 +4,11 @@ import { IHtmlSubCommands } from './../base/interface';
 import * as EVENTS from './../../common/constant';
 import { InsertHtml } from './inserthtml';
 import { closest } from '@syncfusion/ej2-base';
+import { IEditorModel } from '../../common/interface';
 export class EmojiPickerAction {
-    private parent: EditorManager;
+    private parent: IEditorModel;
 
-    public constructor(parent?: EditorManager) {
+    public constructor(parent?: IEditorModel) {
         this.parent = parent;
         this.addEventListener();
     }

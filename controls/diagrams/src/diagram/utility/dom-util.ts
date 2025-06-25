@@ -151,6 +151,17 @@ export function translatePoints(element: PathElement, points: PointModel[]): Poi
     return translatedPts;
 }
 
+// Cache to store connector decorator bounds
+let decoratorPathCache: { [key: string]: Rect } = {};
+/**
+ * Function to clear the cache
+ *
+ * @returns {void}
+ * @private
+ */
+export function clearDecoratorPathCache(): void {
+    decoratorPathCache = {};
+}
 /**
  * measurePath method \
  *
@@ -160,6 +171,10 @@ export function translatePoints(element: PathElement, points: PointModel[]): Poi
  */
 export function measurePath(data: string): Rect {
     if (data) {
+        // return the cached decorator path bounds.
+        if (decoratorPathCache[`${data}`]) {
+            return decoratorPathCache[`${data}`];
+        }
         const measureWindowElement: string = 'measureElement';
         window[`${measureWindowElement}`].style.visibility = 'visible';
         const svg: SVGSVGElement = window[`${measureWindowElement}`].children[2];
@@ -168,6 +183,8 @@ export function measurePath(data: string): Rect {
         const bounds: SVGRect = element.getBBox();
         const svgBounds: Rect = new Rect(bounds.x, bounds.y, bounds.width, bounds.height);
         window[`${measureWindowElement}`].style.visibility = 'hidden';
+        // Store the measured bounds in the cache.
+        decoratorPathCache[`${data}`] = svgBounds;
         return svgBounds;
     }
     return new Rect(0, 0, 0, 0);
@@ -277,7 +294,7 @@ function wordWrapping(text: TextAttributes, textValue?: string, laneWidth?: numb
     for (j = 0; j < eachLine.length; j++) {
         // eslint-disable-next-line @typescript-eslint/no-unused-vars
         txt = '';
-        words = text.textWrapping !== 'NoWrap' ? eachLine[parseInt(j.toString(), 10)].split(' ') : (text.textWrapping === 'NoWrap') ? [eachLine[parseInt(j.toString(), 10)]] : eachLine;
+        words = text.textWrapping !== 'NoWrap' ? eachLine[parseInt(j.toString(), 10)].split(' ') : [eachLine[parseInt(j.toString(), 10)]];
         for (i = 0; i < words.length; i++) {
             txtValue += (((i !== 0 || words.length === 1) && wrap && txtValue.length > 0) ? ' ' : '') + words[parseInt(i.toString(), 10)];
             //Bug 885842: Position of annotation inside the node is not aligned center.
@@ -291,7 +308,8 @@ function wordWrapping(text: TextAttributes, textValue?: string, laneWidth?: numb
             if (Math.floor(width) > (laneWidth || text.width) - 2 && txtValue.length > 0) {
                 childNodes[childNodes.length] = {
                     text: txtValue, x: 0, dy: 0,
-                    width: newText === txtValue ? width : (txtValue === existingText) ? existingWidth : bBoxText(txtValue, text)
+                    width: newText === txtValue ? width : (txtValue === existingText) ? existingWidth :
+                        bBoxText(txtValue, text)
                 };
                 txtValue = '';
             } else {
@@ -589,11 +607,11 @@ export function getDomIndex(viewId: string, elementId: string, layer: string): n
     }
     const targetId: string = elementId + postId;
     const targetElement: HTMLElement | SVGElement = document.getElementById(targetId);
-
+  
     if (targetElement && parentElement.contains(targetElement)) {
       return Array.prototype.indexOf.call(parentElement.childNodes, targetElement);
     }
-    
+  
     return index;
 }
 
@@ -988,23 +1006,7 @@ export function getContent(
     let propertyName: string;
     if (node instanceof Node) {
         sentNode = node;
-        if (node.shape.type === 'Native') {
-            isSvg = true;
-            let svgContent: string;
-            const div: SVGSVGElement = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
-            document.body.appendChild(div);
-            div.innerHTML = ((node.shape as any).content) as string;
-
-            /* tslint:disable */
-            svgContent = (div.getElementsByTagName('svg').length > 0)
-                ? div.getElementsByTagName('svg')[0].outerHTML :
-                div.getElementsByTagName('g').length > 0 ? div.getElementsByTagName('g')[0].outerHTML : "";
-            /* tslint:disable */
-            (node.shape as any).content = svgContent;
-            /* tslint:disable */
-            element.content = svgContent;
-            div.parentElement.removeChild(div);
-        }
+        ////Removed svg content re-assign from outerHtml to improve performance.
         //let blazor: string = 'Blazor';
         //Removed isBlazor code
         propertyName = "nodeTemplate";

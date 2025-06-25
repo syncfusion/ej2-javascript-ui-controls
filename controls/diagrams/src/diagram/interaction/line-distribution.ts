@@ -930,23 +930,22 @@ export class LineDistribution {
     }
     /**
      * Calculates points along a line between two given points.
-     *  @param start The starting point of the line.
-     *  @param end The ending point of the line.
-     *  @return An array of points along the line.
+     * @param start The starting point of the line.
+     * @param end The ending point of the line.
+     * @return An array of points along the line.
      */
     private pointsAlongLine(start:PointModel, end:PointModel){
-        const granularity = 1;
+        // The distance between each generated point along the line. Must be > 0. Default is 2.
+        const granularity = 2;
         const dx = end.x - start.x;
         const dy = end.y - start.y;
         const length = Math.sqrt(dx * dx + dy * dy);
-        const stepX = (dx / length) * granularity;
-        const stepY = (dy / length) * granularity;
-
+        const stepX = (dx / length);
+        const stepY = (dy / length);
         const points = [];
         for (let i = 0; i <= length; i += granularity) {
             points.push({ x: start.x + stepX * i, y: start.y + stepY * i });
         }
-
         return points;
     }
     /**

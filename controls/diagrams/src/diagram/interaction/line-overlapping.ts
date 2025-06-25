@@ -1105,7 +1105,7 @@ export class AvoidLineOverlapping {
         const connector: Connector = this.connectorMappings.get(previousSegment);
         if (connector) {
             if (!(previousSegment as LineSegment).previous) {
-                let sourceDecoratorLength: number = 5;
+                let sourceDecoratorLength: number = 7;
                 if (connector.sourceDecorator.shape !== 'None') {
                     sourceDecoratorLength = Math.max(connector.sourceDecorator.width, connector.sourceDecorator.height);
                 }
@@ -1113,7 +1113,7 @@ export class AvoidLineOverlapping {
                 previousLength -= sourceDecoratorLength + 5;
             }
             if (!(nextSegment as LineSegment).next) {
-                let targetDecoratorLength: number = 5;
+                let targetDecoratorLength: number = 7;
                 if (connector.targetDecorator.shape !== 'None') {
                     targetDecoratorLength = Math.max(connector.targetDecorator.width, connector.targetDecorator.height);
                 }

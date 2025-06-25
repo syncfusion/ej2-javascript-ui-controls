@@ -132,7 +132,7 @@ export class Search {
             /* eslint-disable-next-line max-len */
             const inlineElement: ElementInfo = (this.documentHelper.selection.end.currentWidget as LineWidget).getInline(this.owner.selectionModule.start.offset, 0);
             inline = inlineElement.element as ElementBox;
-            if (inline.revisions.length > 0) {
+            if (inline.revisionLength > 0) {
                 this.isRepalceTracking = true;
 
             }

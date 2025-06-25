@@ -29,7 +29,7 @@ describe('Print testing', () => {
         document.body.removeChild(document.getElementById('container'));
         editor = undefined;
         documentHelper = undefined;
-        document.body.innerHTML = '';
+        
         setTimeout(() => {
             done();
         }, 1000);
@@ -114,7 +114,7 @@ describe('Validate the image printing', () => {
         }
         document.body.removeChild(document.getElementById('container'));
         editor = undefined;
-        document.body.innerHTML = '';
+        
     });
     it('Validate the image printing', () => {
         console.log('Validate the image printing');

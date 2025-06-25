@@ -1007,9 +1007,12 @@ export class Slider extends Component<HTMLElement> implements INotifyPropertyCha
             });
         } else {
             const range: string[][] = !isNullOrUndefined(this.customValues) && this.customValues.length > 0 ?
-                [[min.toString(), (this.customValues[(this.value as number[])[1]]).toString()],
-                    [(this.customValues[(this.value as number[])[0]]).toString(), max.toString()]] :
-                [[min.toString(), (this.value as number[])[1].toString()], [(this.value as number[])[0].toString(), max.toString()]];
+                [[!isNullOrUndefined(min) ? min.toString() : '', (this.value as number[]).length > 1 && !isNullOrUndefined(this.customValues[(this.value as number[])[1]]) ?
+                    (this.customValues[(this.value as number[])[1]]).toString() : ''], [(this.value as number[]).length > 0 && !isNullOrUndefined(this.customValues[(this.value as number[])[0]]) ?
+                    (this.customValues[(this.value as number[])[0]]).toString() : '', !isNullOrUndefined(max) ? max.toString() : '']] : [[
+                    !isNullOrUndefined(min) ? min.toString() : '', (this.value as number[]).length > 1 && !isNullOrUndefined((this.value as number[])[1]) ? (this.value as number[])[1].toString() : ''],
+                [(this.value as number[]).length > 0 && !isNullOrUndefined((this.value as number[])[0]) ? (this.value as number[])[0].toString() : '',
+                    !isNullOrUndefined(max) ? max.toString() : '']];
             range.forEach((range: string[], index: number) => {
                 const element: Element = index === 0 ? this.firstHandle : this.secondHandle;
                 if (element) {

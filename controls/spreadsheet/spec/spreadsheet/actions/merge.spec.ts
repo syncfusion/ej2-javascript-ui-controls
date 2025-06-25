@@ -220,6 +220,8 @@ describe('Merge ->', () => {
             // Forward reverse (selection from left to right)
             helper.invoke('selectRange', ['C9:B10']);
             helper.click('#' + helper.id + '_merge');
+            helper.setAnimationToNone('.e-merge-alert-dlg.e-dialog');
+            helper.click('.e-merge-alert-dlg .e-primary');
             let cell: CellModel = helper.getInstance().sheets[0].rows[8].cells[1];
             expect(cell.rowSpan).toBe(2);
             expect(cell.colSpan).toBe(2);
@@ -234,6 +236,8 @@ describe('Merge ->', () => {
             // Reverse forward (selection from bottom to top)
             helper.invoke('selectRange', ['H12:I10']);
             helper.click('#' + helper.id + '_merge');
+            helper.setAnimationToNone('.e-merge-alert-dlg.e-dialog');
+            helper.click('.e-merge-alert-dlg .e-primary');
             cell = helper.getInstance().sheets[0].rows[9].cells[7];
             expect(cell.rowSpan).toBe(3);
             expect(cell.colSpan).toBe(2);
@@ -769,6 +773,71 @@ describe('Merge ->', () => {
                     done();
                 });
             });
+        });
+    });
+
+    describe('AllowMerge:false condition checks', () => {
+        beforeAll((done: Function) => {
+            helper.initializeSpreadsheet({
+                allowMerge: false,
+                sheets: [{
+                    ranges: [{ dataSource: defaultData }]
+                }]
+            }, done);
+        });
+        afterAll(() => {
+            helper.invoke('destroy');
+        });
+        it('Check through public method', (done: Function) => {
+            const spreadsheet = helper.getInstance();
+            helper.invoke('merge', ['A5:B5']);
+            expect(spreadsheet.sheets[0].rows[4].cells[0].colSpan).toBeUndefined();
+            expect(spreadsheet.sheets[0].rows[4].cells[0].rowSpan).toBeUndefined();
+            done();
+        });
+        it('Check through UI interaction', (done: Function) => {
+            const mergeWrapper = document.querySelector('.e-split-btn-wrapper.e-merge-ddb');
+            expect(mergeWrapper).not.toBeNull();
+            const parent = mergeWrapper.parentElement;
+            expect(parent).not.toBeNull();
+            expect(parent.classList.contains('e-overlay')).toBe(true);
+            done();
+        });
+    });
+    describe('EJ2-957414->', () => {
+        beforeAll((done: Function) => {
+            helper.initializeSpreadsheet({ sheets: [{ ranges: [{ dataSource: defaultData }] }] }, done);
+        });
+        afterAll(() => {
+            helper.invoke('destroy');
+        });
+        it('Selection misalignment issue occurs after merging and unwrapping the cells ->', (done: Function) => {
+            helper.invoke('selectRange', ['I1:J2']);
+            helper.invoke('merge', ['I1:J2']);
+            helper.invoke('updateCell', [{ value: 'Syncfusion \n Spreadsheet \n Component \n Hello' }, 'I1']);
+            expect(helper.invoke('getCell', [0, 8]).classList).toContain('e-wraptext');
+            helper.getElement('#' + helper.id + '_wrap').click();
+            expect(helper.invoke('getCell', [0, 8]).classList).toContain('e-alt-unwrap');
+            done();
+        });
+    });
+    describe('EJ2-910865 ->', () => {
+        beforeAll((done: Function) => {
+            helper.initializeSpreadsheet({ sheets: [{ ranges: [{ dataSource: defaultData }] }] }, done);
+        });
+        afterAll(() => {
+            helper.invoke('destroy');
+        });
+        it('Issue when copy-pasting merged cells', (done: Function) => {
+            const spreadsheet: Spreadsheet = helper.getInstance();
+            helper.invoke('selectRange', ['B4:C6']);
+            helper.invoke('merge', ['B4:C6']);
+            helper.invoke('copy', ['B4']).then(() => {
+                helper.invoke('paste', ['B2']);
+                let td: HTMLTableCellElement = helper.invoke('getCell', [3, 2]);
+                expect(td.style.display).toBe('none');
+                done();
+            }); 
         });
     });
 });

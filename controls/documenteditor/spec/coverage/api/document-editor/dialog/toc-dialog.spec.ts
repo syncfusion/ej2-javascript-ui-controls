@@ -23,7 +23,7 @@ describe('Form-Field-text-checkbox', () => {
         expect(() => { container.destroy(); }).not.toThrowError();
         element = undefined;
         container = undefined;
-        document.body.innerHTML = '';
+        
     });
 
     it('TOC - dialog', () => {

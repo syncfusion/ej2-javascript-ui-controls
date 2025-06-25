@@ -2,51 +2,7 @@
 
 ## [Unreleased]
 
-## 29.2.11 (2025-06-17)
-
-### DatePicker
-
-#### Bug Fixes
-
-- `#I715669` - Resolved an issue where the duplicate change event triggers when opening a `dialog` from the DatePicker change event.
-
-## 29.2.5 (2025-05-21)
-
-### DatePicker
-
-#### Bug Fixes
-
-- `#I711579` - Fixed an issue where the DatePicker popup did not close on mobile devices when clicking outside of it.
-
-### DateRangePicker
-
-#### Bug Fixes
-
-- `#709169` - Fixed an issue where the Daterangepicker popup did not update the selected range when using min and max dates with mid-month values, with depth set to year and decade.
-
-## 29.1.40 (2025-04-29)
-
-### DateRangePicker
-
-#### Bug Fixes
-
-- `#709169` - Fixed HTML accessibility errors and warnings in the popup component of the DateRangePicker.
-
-### DateTimePicker
-
-#### Bug Fixes
-
-- `#I705395` - Fixed an issue where the DateTimePicker value was not updated correctly in the form data when using `ServerTimezoneOffset` during the initial rendering.
-
-## 29.1.39 (2025-04-22)
-
-### TimePicker
-
-#### Bug Fixes
-
-- `#I705507` - Fixed an issue where a null value still displayed as `12:00` when the mask was enabled.
-
-## 29.1.35 (2025-04-01)
+## 30.1.37 (2025-06-25)
 
 ### DatePicker
 
@@ -59,6 +15,12 @@
 #### New Features
 
 - The DateTimePicker allows users to input date and time values in various valid formats, enhancing the user experience by offering flexibility in specifying date and time formats for parsing. A new API called `inputFormats` has been introduced to handle custom date and time input formats, allowing users to specify the expected format(s) for parsing date and time values. For example, `InputFormats='new string[] { "dd/MM/yyyy hh:mm", "MM/dd/yyyy HH:mm", "yyyy-MM-dd hh mm tt" }'`.
+
+### DateRangePicker
+
+#### New Features
+
+- The DateRangePicker allows users to input date values in various valid formats, enhancing the user experience by offering flexibility in specifying date formats for parsing. A new API called `inputFormats` has been introduced to handle custom date input formats, allowing users to specify the expected format(s) for parsing date and time values. For example, `InputFormats='new string[] { "dd/MM/yyyy - dd/MM/yyyy", "MM/dd/yyyy - MM/dd/yyyy", "yyyy-MM-dd - yyyy-MM-dd" }'`.
 
 ## 19.3.46 (2021-10-19)
 

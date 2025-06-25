@@ -2,49 +2,19 @@
 
 ## [Unreleased]
 
-## 29.2.10 (2025-06-10)
+## 30.1.37 (2025-06-25)
 
 ### Pivot Table
 
 #### Bug Fixes
 
-- `#I731323` - The `exportComplete` event will now be triggered correctly when exporting the pivot table to Excel using the server-side engine.
+- `#I733782` - The drill-through popup will now display the correct value header and value when the value field caption contains parentheses in the pivot table.
 
-## 29.2.8 (2025-06-03)
+#### Features
 
-### Pivot Table
-
-#### Bug Fixes
-
-- `#I722574` - The correct index is now returned after editing and selecting the first row data cell in the pivot table.
-- `#I720862` - Performance improvements have been implemented in the pivot field list when adding OLAP fields after a field search.
-- `#I728517` - The `beforeServiceInvoke` event will now be triggered correctly when applying changes through the popup field list in the pivot table.
-- `#I720862` - The `ExcelHeaderQueryCellInfo` event will now be triggered appropriately for empty cells in the first column of the pivot table during server-side engine export.
-
-## 29.1.40 (2025-04-29)
-
-### Pivot Table
-
-#### Bug Fixes
-
-- Horizontal scrolling using the mouse wheel will now work properly when virtualization is enabled in the pivot table.
-
-## 29.1.38 (2025-04-15)
-
-### Pivot Table
-
-#### Bug Fixes
-
-- `#I710876` - The 'cellClick' event now accurately returns the correct cell information when the 'allowReordering' property is enabled in the pivot table.
-
-## 29.1.37 (2025-04-08)
-
-### Pivot Table
-
-#### Bug Fixes
-
-- `#I704581` - The 'actionComplete' event now accurately returns the correct 'actionInfo' details when transitioning between pivot table and pivot chart views.
-- The pivot chart can now be successfully exported as PNG, JPEG, and SVG files, even when the 'allowPdfExport' property is disabled.
+- Support has been added for performing value sorting simultaneously on both the row and column axes, independent of the value axis. This enhancement allows for more flexible and accurate data analysis across dimensions. Explore the [demo](https://ej2.syncfusion.com/demos/#/tailwind3/pivot-table/value-sorting.html) here.
+- Support has been introduced for exporting the pivot table as a native Excel PivotTable, preserving the pivot structure in the exported file. Users can continue interacting with and customizing the pivot data directly within Excel. Explore the [demo](https://ej2.syncfusion.com/demos/#/tailwind3/pivot-table/pivot-table-exporting.html) here.
+- Support has been added for including headers and footers during Excel exporting with the server-side engine in the pivot table. Explore the [demo](https://ej2.syncfusion.com/demos/#/tailwind3/pivot-table/server-side-aggregation.html) here.
 
 ## 29.1.33 (2025-03-25)
 

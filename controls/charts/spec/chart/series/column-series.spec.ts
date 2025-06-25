@@ -21,8 +21,9 @@ import { unbindResizeEvents } from '../base/data.spec';
 import { MouseEvents } from '../base/events.spec';
 import { EmitType } from '@syncfusion/ej2-base';
 import  {profile , inMB, getMemoryProfile} from '../../common.spec';
+import { LastValueLabel } from '../../../src/chart/series/last-value-label';
 import { ILoadedEventArgs, IAnimationCompleteEventArgs, IPointRenderEventArgs } from '../../../src/chart/model/chart-interface';
-Chart.Inject(LineSeries, ColumnSeries, DataLabel, Category, DateTime, Tooltip, Crosshair, DataEditing);
+Chart.Inject(LineSeries, ColumnSeries, DataLabel, Category, DateTime, Tooltip, Crosshair, DataEditing, LastValueLabel);
 
 describe('Column Series', () => {
     let element: HTMLElement;
@@ -2352,6 +2353,57 @@ describe('Column Series', () => {
                 }
             }
             chartObj.series[0].cornerRadius = {topLeft: 10, topRight: 10, bottomLeft: 10, bottomRight: 10};
+            chartObj.refresh();
+        });
+        it('Checking lastValueLabel', function (done) {
+            loaded = (): void => {
+                const lastValueLabelGroup: Element = document.getElementById('container_LastValueLabel_Group_0');
+                const lastValueLabelBackground: Element = document.getElementById('container_LastValueLabel_Background_0');
+                const lastValueLabel: Element = document.getElementById('container_LastValueLabel_0');
+                const lastValueLabelLine: Element = document.getElementById('container_LastValueLine_0');
+                expect(lastValueLabelGroup.getAttribute('transform') === 'translate(10,141.77875)').toBe(true);
+                expect(lastValueLabelBackground.getAttribute('x')).toBe('739');
+                expect(lastValueLabelBackground.getAttribute('y') === '-13.5').toBe(true);
+                expect(lastValueLabel.getAttribute('x')).toBe('755.5');
+                expect(lastValueLabel.getAttribute('y') === '5.25').toBe(true);
+                expect(lastValueLabelLine.getAttribute('d') === 'M 0 0 L 739 0').toBe(true);
+                done();
+            };
+            chartObj.loaded = loaded;
+            chartObj.series[0].lastValueLabel.enable = true;
+            chartObj.primaryYAxis.opposedPosition = true;
+            chartObj.series[0].dataSource = [
+                { country: 'China', gold: 40 },
+                { country: 'Japan', gold: 70 },
+                { country: 'Australia', gold: 60 },
+                { country: 'France', gold: -50 },
+                { country: 'Germany', gold: 40 },
+                { country: 'Italy', gold: 40 },
+                { country: 'Sweden', gold: 30 },
+                { country: 'USA', gold: 50.30 },
+            ];
+            chartObj.refresh();
+        });
+        it('Checking lastValueLabel with canvas', function (done) {
+            loaded = (): void => {
+                expect(document.getElementById('container_canvas') !== null).toBe(true);
+                done();
+            };
+            chartObj.loaded = loaded;
+            chartObj.series[0].lastValueLabel.enable = true;
+            chartObj.enableCanvas = true;
+            chartObj.primaryYAxis.labelFormat = '{value}lastValue'
+            chartObj.primaryYAxis.opposedPosition = true;
+            chartObj.series[0].dataSource = [
+                { country: 'China', gold: 40 },
+                { country: 'Japan', gold: 70 },
+                { country: 'Australia', gold: 60 },
+                { country: 'France', gold: -50 },
+                { country: 'Germany', gold: 40 },
+                { country: 'Italy', gold: 40 },
+                { country: 'Sweden', gold: 30 },
+                { country: 'USA', gold: 50 },
+            ];
             chartObj.refresh();
         });
     });

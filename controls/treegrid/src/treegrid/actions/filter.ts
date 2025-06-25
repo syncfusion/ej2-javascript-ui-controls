@@ -80,11 +80,11 @@ export class Filter {
         this.filteredParentRecs = [];
         this.filteredResult = [];
         this.isHierarchyFilter = false;
+        const hierarchyMode: FilterHierarchyMode = this.parent.grid.searchSettings.key === '' ? this.parent.filterSettings.hierarchyMode
+            : this.parent.searchSettings.hierarchyMode;
         for (let f: number = 0; f < this.flatFilteredData.length; f++) {
             const rec: ITreeData = this.flatFilteredData[parseInt(f.toString(), 10)];
             this.addParentRecord(rec);
-            const hierarchyMode: FilterHierarchyMode = this.parent.grid.searchSettings.key === '' ? this.parent.filterSettings.hierarchyMode
-                : this.parent.searchSettings.hierarchyMode;
             if (((hierarchyMode === 'Child' || hierarchyMode === 'None') &&
             (this.parent.grid.filterSettings.columns.length !== 0 || this.parent.grid.searchSettings.key !== ''))) {
                 this.isHierarchyFilter = true;
@@ -96,8 +96,6 @@ export class Filter {
             const parent: Object = getObject('parentItem', rec);
             if (!isNullOrUndefined(parent)) {
                 const parRecord: ITreeData = getParentData(this.parent, rec.parentItem.uniqueID, true);
-                //let parRecord: Object = this.flatFilteredData.filter((e: ITreeData) => {
-                //          return e.uniqueID === rec.parentItem.uniqueID; })[0];
                 setValue('hasFilteredChildRecords', true, parRecord);
                 if (parRecord && parRecord.parentItem) {
                     this.updateParentFilteredRecord(parRecord);
@@ -121,7 +119,6 @@ export class Filter {
     }
     private addParentRecord(record: ITreeData): void {
         const parent: Object = getParentData(this.parent, record.parentUniqueID);
-        //let parent: Object = this.parent.flatData.filter((e: ITreeData) => {return e.uniqueID === record.parentUniqueID; })[0];
         const hierarchyMode: FilterHierarchyMode = this.parent.grid.searchSettings.key === '' ? this.parent.filterSettings.hierarchyMode
             : this.parent.searchSettings.hierarchyMode;
         if (hierarchyMode === 'None' && (this.parent.grid.filterSettings.columns.length !== 0

@@ -1862,6 +1862,7 @@ describe('EJ2-67363 - Bottom borderline is not shown when collapsing the last gr
 
 describe('Code Coverage - group by drag and drop simulate => ', () => {
     let gridObj: Grid;
+    let actionComplete: () => void;
     beforeAll((done: Function) => {
         gridObj = createGrid(
             {
@@ -1871,6 +1872,7 @@ describe('Code Coverage - group by drag and drop simulate => ', () => {
                 allowGrouping:true,
                 allowFiltering:true,
                 allowReordering: true,
+                actionComplete: actionComplete,
                 groupSettings: { showToggleButton: true, allowReordering: true },
                 sortSettings:{columns:[{field:"Freight",direction:'Ascending'},{field:"CustomerID",direction:'Ascending'}]},
                 columns: [
@@ -1884,7 +1886,11 @@ describe('Code Coverage - group by drag and drop simulate => ', () => {
             }, done);
     });
 
-    it('for coverage - 1', () => {
+    it('for coverage - 1', (done: Function) => {
+        let actionComplete: any = (args: any) => {
+            done();
+        };
+        gridObj.actionComplete = actionComplete;
         const dragHeaderElem: Element = gridObj.getHeaderContent().querySelectorAll('.e-headercell')[0];
         const dragColumn: any = gridObj.getColumnByIndex(0);
         (gridObj.headerModule as any).draggable.currentStateTarget = dragHeaderElem;
@@ -1911,7 +1917,11 @@ describe('Code Coverage - group by drag and drop simulate => ', () => {
         });
     });
 
-    it('for coverage - 2', () => {
+    it('for coverage - 2', (done: Function) => {
+        let actionComplete: any = (args: any) => {
+            done();
+        };
+        gridObj.actionComplete = actionComplete;
         const dragHeaderElem: Element = gridObj.getHeaderContent().querySelectorAll('.e-headercell')[1];
         const dragColumn: any = gridObj.getColumnByIndex(1);
         (gridObj.headerModule as any).draggable.currentStateTarget = dragHeaderElem;
@@ -1938,7 +1948,11 @@ describe('Code Coverage - group by drag and drop simulate => ', () => {
         });
     });
 
-    it('for coverage - 3', () => {
+    it('for coverage - 3', (done: Function) => {
+        let actionComplete: any = (args: any) => {
+            done();
+        };
+        gridObj.actionComplete = actionComplete;
         let dragGroupedElem: Element = gridObj.groupModule.element.querySelectorAll('.e-groupheadercell')[0].querySelector('.e-drag');
         let dropGroupedElem: Element = gridObj.groupModule.element.querySelectorAll('.e-groupheadercell')[1];
         (gridObj.groupModule as any).helper({

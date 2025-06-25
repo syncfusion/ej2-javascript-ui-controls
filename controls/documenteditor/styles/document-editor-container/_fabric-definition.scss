@@ -55,6 +55,7 @@ $de-toc-template-content1: 82px !default;
 $de-toc-template-content2: 63px !default;
 $de-toc-template-content3: 56px !default;
 $de-img-span-top: 7px !default;
+$de-ribbon-img-span-top: 8px !default;
 $de-img-span-left: 8px !default;
 $de-toggle-bg-color: $neutral-tertiary-alt !default;
 $de-toggle-btn-outline: $neutral-light 0 solid !default;
@@ -139,3 +140,13 @@ $de-black-color: #000 !default;
 $de-hlt-clr-height: 18px;
 $de-hlt-clr-height-bigger: 25px;
 $de-prop-btn-icon-clr: #ccc;
+$de-ribbon-property-label: 12px;
+
+// Subtract the ribbon & statusbar height
+$de-ribbon-simplified-ctnr-editor-height: calc(100% - 121px) !default;
+$de-ribbon-simplified-ctnr-editor-height-big: calc(100% - 125px) !default;
+
+$de-ribbon-classic-editor-height: calc(100% - 210px) !default;
+$de-ribbon-classic-editor-height-big: calc(100% - 205px) !default;
+$de-ctnr-layout-margin-bottom: 2px;
+$de-ctnr-picture-margin-bottom: 2px;

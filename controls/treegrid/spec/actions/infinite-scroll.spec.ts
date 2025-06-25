@@ -520,8 +520,9 @@ describe('Infinite scroll with logger', () => {
             done
         );
     });
-    it('Mapping field missing', () => {
-        // expect(treegrid.parentIdMapping === null).toBe(true);
+    it('Mapping field missing', (done: Function) => {
+        expect(treegrid.parentIdMapping === null).toBe(true);
+        done();
     });
     afterAll(() => {
         treegrid['infiniteScrollModule']['destroy']();

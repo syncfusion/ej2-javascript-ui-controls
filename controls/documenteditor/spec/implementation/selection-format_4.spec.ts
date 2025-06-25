@@ -11,7 +11,7 @@ describe('Selection Table format Bidi validation in table empty selection', () =
     let documentHelper: DocumentHelper;
     beforeAll(() => {
         let ele: HTMLElement = createElement('div', { id: 'container', styles: 'width:100%;height:500px' });
-        document.body.innerHTML = '';
+        
         document.body.appendChild(ele);
         DocumentEditor.Inject(Editor, EditorHistory, Selection);
         editor = new DocumentEditor({ enableEditor: true, isReadOnly: false, enableSelection: true, enableEditorHistory: true });
@@ -28,7 +28,7 @@ describe('Selection Table format Bidi validation in table empty selection', () =
         document.body.removeChild(document.getElementById('container'));
         editor = undefined;
         documentHelper = undefined;
-        document.body.innerHTML = '';
+        
         setTimeout(() => {
             done();
         }, 1000);
@@ -72,7 +72,7 @@ describe('Selection Table format Bidi validation in table with non empty selecti
     let documentHelper: DocumentHelper;
     beforeAll(() => {
         let ele: HTMLElement = createElement('div', { id: 'container', styles: 'width:100%;height:500px' });
-        document.body.innerHTML = '';
+        
         document.body.appendChild(ele);
         DocumentEditor.Inject(Editor, EditorHistory, Selection);
         editor = new DocumentEditor({ enableEditor: true, isReadOnly: false, enableSelection: true, enableEditorHistory: true });
@@ -89,7 +89,7 @@ describe('Selection Table format Bidi validation in table with non empty selecti
         document.body.removeChild(document.getElementById('container'));
         editor = undefined;
         documentHelper = undefined;
-        document.body.innerHTML = '';
+        
         setTimeout(() => {
             done();
         }, 1000);
@@ -135,7 +135,7 @@ console.log('Multiple undo and redo after bidi for tabl format is true');
         let documentHelper: DocumentHelper;
         beforeAll(() => {
             let ele: HTMLElement = createElement('div', { id: 'container', styles: 'width:100%;height:500px' });
-            document.body.innerHTML = '';
+            
             document.body.appendChild(ele);
             DocumentEditor.Inject(Editor, EditorHistory, Selection);
             editor = new DocumentEditor({ enableEditor: true, isReadOnly: false, enableSelection: true, enableEditorHistory: true });
@@ -152,7 +152,7 @@ console.log('Multiple undo and redo after bidi for tabl format is true');
             document.body.removeChild(document.getElementById('container'));
             editor = undefined;
             documentHelper = undefined;
-            document.body.innerHTML = '';
+            
             setTimeout(() => {
                 done();
             }, 1000);
@@ -183,7 +183,7 @@ console.log('Multiple undo and redo after bidi for tabl format is true');
         let documentHelper: DocumentHelper;
         beforeAll(() => {
             let ele: HTMLElement = createElement('div', { id: 'container', styles: 'width:100%;height:500px' });
-            document.body.innerHTML = '';
+            
             document.body.appendChild(ele);
             DocumentEditor.Inject(Editor, EditorHistory, Selection);
             editor = new DocumentEditor({ enableEditor: true, isReadOnly: false, enableSelection: true, enableEditorHistory: true });
@@ -200,7 +200,7 @@ console.log('Multiple undo and redo after bidi for tabl format is true');
             document.body.removeChild(document.getElementById('container'));
             editor = undefined;
             documentHelper = undefined;
-            document.body.innerHTML = '';
+            
             setTimeout(() => {
                 done();
             }, 1000);

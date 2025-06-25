@@ -46,7 +46,8 @@ export class CellFormat {
                     Object.assign(cell.style, <CellStyleModel>{ borderRight: args.style.border, borderBottom: args.style.border });
                     this.setLeftBorder(
                         args.style.border, cell, args.rowIdx, args.colIdx,
-                        args.colIdx === this.parent.frozenColCount(sheet) ? args.hRow : args.row, args.onActionUpdate, args.first, sheet);
+                        args.colIdx === this.parent.frozenColCount(sheet) ? args.hRow :
+                            args.row, args.onActionUpdate, args.first, sheet, args.prevCell);
                     this.setTopBorder(
                         args.style.border, cell, args.rowIdx, args.colIdx, args.pRow, args.pHRow, args.onActionUpdate, args.first,
                         args.lastCell, args.manualUpdate, sheet, <CellRenderArgs>args);
@@ -61,7 +62,8 @@ export class CellFormat {
                 if (curStyle.borderLeft !== undefined) {
                     this.setLeftBorder(
                         args.style.borderLeft, cell, args.rowIdx, args.colIdx,
-                        args.colIdx === this.parent.frozenColCount(sheet) ? args.hRow : args.row, args.onActionUpdate, args.first, sheet);
+                        args.colIdx === this.parent.frozenColCount(sheet) ? args.hRow :
+                            args.row, args.onActionUpdate, args.first, sheet, args.prevCell);
                     delete curStyle.borderLeft;
                 }
                 if (Object.keys(curStyle).length) {
@@ -227,15 +229,17 @@ export class CellFormat {
     }
     private setLeftBorder(
         border: string, cell: HTMLElement, rowIdx: number, colIdx: number, row: Element, actionUpdate: boolean, first: string,
-        sheet: SheetModel): void {
+        sheet: SheetModel, prevCell: HTMLElement): void {
         if (first && first.includes('Column')) { return; }
         const isRtl: boolean = this.parent.enableRtl;
-        const prevCell: HTMLElement = isRtl ? this.parent.getCell(rowIdx, colIdx + 1, <HTMLTableRowElement>row) :
-            this.parent.getCell(rowIdx, colIdx - 1, <HTMLTableRowElement>row);
+        const prevColIdx: number = isRtl ? colIdx + 1 : colIdx - 1;
+        if (!prevCell) {
+            prevCell = this.parent.getCell(rowIdx, prevColIdx, <HTMLTableRowElement>row);
+        }
         if (prevCell) {
-            let model: CellModel = getCell(rowIdx, colIdx - 1, sheet, false, true);
+            let model: CellModel = getCell(rowIdx, prevColIdx, sheet, false, true);
             if ((!!model.rowSpan && model.rowSpan !== 1) || (!!model.colSpan && model.colSpan !== 1)) {
-                const mergeArgs: { range: number[] } = { range: [rowIdx, colIdx - 1, rowIdx, colIdx - 1] };
+                const mergeArgs: { range: number[] } = { range: [rowIdx, prevColIdx, rowIdx, prevColIdx] };
                 this.parent.notify(activeCellMergedRange, mergeArgs);
                 model = getCell(mergeArgs.range[0], mergeArgs.range[1], sheet, false, true);
                 if (model.style && model.style.borderRight && model.style.borderRight !== 'none') {
@@ -251,7 +255,7 @@ export class CellFormat {
                 }
                 prevCell.style.borderRight = (border === 'none') ? prevCell.style.borderRight : border;
             }
-        } else {
+        } else if (!isRtl || (this.parent.scrollSettings.isFinite && colIdx === sheet.colCount - 1)) {
             cell.style.borderLeft = border;
         }
     }

@@ -61,7 +61,9 @@ export class PolarSeries extends PolarRadarPanel {
         const isRangeColumn: boolean = series.drawType === 'RangeColumn'; const isPolar: boolean = series.type === 'Polar';
         const isLogAxis: boolean = yAxis.valueType === 'Logarithmic'; const isStacking: boolean = series.drawType === 'StackingColumn';
         let direction: string = ''; let sumofYValues: number = 0; let arcValue: string ;
-        const interval: number = (series.points[1] ? series.points[1].xValue : 2 * series.points[0].xValue) - series.points[0].xValue;
+        const columnWidth: number = series.columnWidth || 1;
+        const interval: number = ((series.points[1] ? series.points[1].xValue : 2 * series.points[0].xValue) -
+                                   series.points[0].xValue) * columnWidth;
         const isInverse: boolean = xAxis.isAxisInverse;
         //customer issue ID-I249730, Polar columnSeries in OnTicks with inversed axis
         const ticks: number = (xAxis.valueType === 'Category' && xAxis.labelPlacement === 'BetweenTicks') ? 0 :

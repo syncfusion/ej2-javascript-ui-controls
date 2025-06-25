@@ -22,7 +22,8 @@ import { unbindResizeEvents, tooltipData1 } from '../base/data.spec';
 import { EmitType } from '@syncfusion/ej2-base';
 import  {profile , inMB, getMemoryProfile} from '../../common.spec';
 import { ILoadedEventArgs, IAnimationCompleteEventArgs, IPointRenderEventArgs } from '../../../src/chart/model/chart-interface';
-Chart.Inject(LineSeries, ColumnSeries, DataLabel, Category, DateTime, Legend, HiloOpenCloseSeries, Tooltip, Crosshair, Logarithmic, Selection);
+import { LastValueLabel } from '../../../src/chart/series/last-value-label';
+Chart.Inject(LineSeries, ColumnSeries, DataLabel, Category, DateTime, Legend, HiloOpenCloseSeries, Tooltip, Crosshair, Logarithmic, Selection, LastValueLabel);
 
 export let doubleData: any[] = [
     { x: 1, low: -12, high: 0, open: -1.22, close: -8.44 }, { x: 2, low: 12, high: 1, open: 5, close: 9 },
@@ -1299,6 +1300,118 @@ describe('Chart Control Series', () => {
             chartObj.series[0].setData(seriesData); 
             chartObj.refresh();
         });
+        it('Checking HiloOpenClose lastValueLabel with bearish', (done: Function) => {
+            loaded = (args: Object): void => {
+                const lastValueLabelGroup: Element = document.getElementById('container_LastValueLabel_Group_0');
+                const lastValueLabelBackground: Element = document.getElementById('container_LastValueLabel_Background_0');
+                const lastValueLabel: Element = document.getElementById('container_LastValueLabel_0');
+                const lastValueLabelLine: Element = document.getElementById('container_LastValueLine_0');
+                expect(lastValueLabelGroup.getAttribute('transform') === 'translate(10.5,472.1666666666667)').toBe(true);
+                expect(lastValueLabelBackground.getAttribute('x')).toBe('0');
+                expect(lastValueLabelBackground.getAttribute('y') === '-13.5').toBe(true);
+                expect(lastValueLabel.getAttribute('x')).toBe('12');
+                expect(lastValueLabel.getAttribute('y') === '5.25').toBe(true);
+                expect(lastValueLabelLine.getAttribute('d') === 'M 979.5 0 L 24 0').toBe(true);
+                done();
+            };
+
+            chartObj.loaded = loaded;
+            var seriesData = [
+                { x: 1, low: -12, high: 0, open: -1.22, close: -8.44 }, { x: 2, low: 12, high: 1, open: 5, close: 9 },
+                { x: 3, low: 23, high: 10, open: 13, close: 20.44 }, { x: 4, low: 20, high: 43, open: 33.22, close: 21.44 },
+                { x: 5, low: 0, high: 10, open: 8, close: 9 }, { x: 6, low: -22, high: 34, open: 3, close: 22 },
+                { x: 7, low: -12, high: 23, open: 11, close: 4 }, { x: 8, low: 12, high: 40, open: 32, close: 15 }
+            ];
+            chartObj.series[0].lastValueLabel.enable = true;
+            chartObj.primaryYAxis.labelPosition = 'Inside';
+            chartObj.series[0].setData(seriesData);
+            chartObj.refresh();
+        });
+        it('Checking HiloOpenClose lastValueLabel with bearish isTransposed', (done: Function) => {
+            loaded = (args: Object): void => {
+                const lastValueLabelGroup: Element = document.getElementById('container_LastValueLabel_Group_0');
+                const lastValueLabelBackground: Element = document.getElementById('container_LastValueLabel_Background_0');
+                const lastValueLabel: Element = document.getElementById('container_LastValueLabel_0');
+                const lastValueLabelLine: Element = document.getElementById('container_LastValueLine_0');
+                expect(lastValueLabelGroup.getAttribute('transform') === 'translate(543.5666666666666,43.25)').toBe(true);
+                expect(lastValueLabelBackground.getAttribute('x')).toBe('-12');
+                expect(lastValueLabelBackground.getAttribute('y') === '919.25').toBe(true);
+                expect(lastValueLabel.getAttribute('x')).toBe('0');
+                expect(lastValueLabel.getAttribute('y') === '938').toBe(true);
+                expect(lastValueLabelLine.getAttribute('d') === 'M 0 0 L 0 919.25').toBe(true);
+                done();
+            };
+
+            chartObj.loaded = loaded;
+            var seriesData = [
+                { x: 1, low: -12, high: 0, open: -1.22, close: -8.44 }, { x: 2, low: 12, high: 1, open: 5, close: 9 },
+                { x: 3, low: 23, high: 10, open: 13, close: 20.44 }, { x: 4, low: 20, high: 43, open: 33.22, close: 21.44 },
+                { x: 5, low: 0, high: 10, open: 8, close: 9 }, { x: 6, low: -22, high: 34, open: 3, close: 22 },
+                { x: 7, low: -12, high: 23, open: 11, close: 4 }, { x: 8, low: 12, high: 40, open: 32, close: 15 }
+            ];
+            chartObj.series[0].lastValueLabel.enable = true;
+            chartObj.isTransposed = true;
+            chartObj.primaryYAxis.labelPosition = 'Inside';
+            chartObj.series[0].setData(seriesData);
+            chartObj.refresh();
+        });
+        it('Checking HiloOpenClose lastValueLabel with bullish', (done: Function) => {
+            loaded = (args: Object): void => {
+                const lastValueLabelGroup: Element = document.getElementById('container_LastValueLabel_Group_0');
+                const lastValueLabelBackground: Element = document.getElementById('container_LastValueLabel_Background_0');
+                const lastValueLabel: Element = document.getElementById('container_LastValueLabel_0');
+                const lastValueLabelLine: Element = document.getElementById('container_LastValueLine_0');
+                expect(lastValueLabelGroup.getAttribute('transform') === 'translate(10,386.1833333333333)').toBe(true);
+                expect(lastValueLabelBackground.getAttribute('x')).toBe('955.5');
+                expect(lastValueLabelBackground.getAttribute('y') === '-13.5').toBe(true);
+                expect(lastValueLabel.getAttribute('x')).toBe('967.5');
+                expect(lastValueLabel.getAttribute('y') === '5.25').toBe(true);
+                expect(lastValueLabelLine.getAttribute('d') === 'M 0 0 L 955.5 0').toBe(true);
+                done();
+            };
+
+            chartObj.loaded = loaded;
+            var seriesData = [
+                { x: 1, low: -12, high: 0, open: -1.22, close: -8.44 }, { x: 2, low: 12, high: 1, open: 5, close: 9 },
+                { x: 3, low: 23, high: 10, open: 13, close: 20.44 }, { x: 4, low: 20, high: 43, open: 33.22, close: 21.44 },
+                { x: 5, low: 0, high: 10, open: 8, close: 9 }, { x: 6, low: -22, high: 34, open: 3, close: 22 },
+            ];
+            chartObj.series[0].lastValueLabel.enable = true;
+            chartObj.primaryYAxis.labelPosition = 'Inside';
+            chartObj.primaryYAxis.opposedPosition = true;
+            chartObj.isTransposed = false;
+            chartObj.series[0].setData(seriesData);
+            chartObj.refresh();
+        });
+        it('Checking HiloOpenClose lastValueLabel with bullish isTransposed', (done: Function) => {
+            loaded = (args: Object): void => {
+                const lastValueLabelGroup: Element = document.getElementById('container_LastValueLabel_Group_0');
+                const lastValueLabelBackground: Element = document.getElementById('container_LastValueLabel_Background_0');
+                const lastValueLabel: Element = document.getElementById('container_LastValueLabel_0');
+                const lastValueLabelLine: Element = document.getElementById('container_LastValueLine_0');
+                expect(lastValueLabelGroup.getAttribute('transform') === 'translate(632.6533333333334,43.75)').toBe(true);
+                expect(lastValueLabelBackground.getAttribute('x')).toBe('-12');
+                expect(lastValueLabelBackground.getAttribute('y') === '0').toBe(true);
+                expect(lastValueLabel.getAttribute('x')).toBe('0');
+                expect(lastValueLabel.getAttribute('y') === '18.75').toBe(true);
+                expect(lastValueLabelLine.getAttribute('d') === 'M 0 946.25 L 0 27').toBe(true);
+                done();
+            };
+
+            chartObj.loaded = loaded;
+            var seriesData = [
+                { x: 1, low: -12, high: 0, open: -1.22, close: -8.44 }, { x: 2, low: 12, high: 1, open: 5, close: 9 },
+                { x: 3, low: 23, high: 10, open: 13, close: 20.44 }, { x: 4, low: 20, high: 43, open: 33.22, close: 21.44 },
+                { x: 5, low: 0, high: 10, open: 8, close: 9 }, { x: 6, low: -22, high: 34, open: 3, close: 22 },
+            ];
+            chartObj.series[0].lastValueLabel.enable = true;
+            chartObj.primaryYAxis.labelPosition = 'Inside';
+            chartObj.primaryYAxis.opposedPosition = true;
+            chartObj.isTransposed = true;
+            chartObj.series[0].setData(seriesData);
+            chartObj.refresh();
+        });
+        
     });
     it('memory leak', () => {
         profile.sample();

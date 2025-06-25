@@ -171,3 +171,40 @@ describe('CR-Issues ->', () => {
         });
     });
 });
+describe('API allowFreezePane:false condition checks', () => {
+    let helper: SpreadsheetHelper = new SpreadsheetHelper('spreadsheet');
+    beforeAll((done: Function) => {
+        helper.initializeSpreadsheet({
+            allowFreezePane: false,
+            sheets: [{
+                ranges: [{ dataSource: defaultData }],
+                frozenRows: 2,
+                frozenColumns: 2
+            }]
+        }, done);
+    });
+    afterAll(() => {
+        helper.invoke('destroy');
+    });
+    it('Check through celldata binding and public method call', (done: Function) => {
+        const spreadsheet: Spreadsheet = helper.getInstance();
+        spreadsheet.setProperties({ sheets: spreadsheet.sheets }, true);
+        expect(spreadsheet.sheets[0].frozenRows).toBe(2);
+        expect(spreadsheet.sheets[0].frozenColumns).toBe(2);
+        spreadsheet.freezePanes(3, 3);
+        expect(spreadsheet.sheets[0].frozenRows).toBe(2);
+        expect(spreadsheet.sheets[0].frozenColumns).toBe(2);
+        done();
+    });
+    it('Check through UI interaction', (done: Function) => {
+        helper.switchRibbonTab(5);
+        helper.click('#' + helper.id + '_freezepanes');
+        const freezePaneBtn = helper.getElementFromSpreadsheet('#' + helper.id + '_freezepanes');
+        expect(freezePaneBtn.parentElement.classList.contains('e-overlay')).toBeTruthy();
+        const freezeRowsBtn = helper.getElementFromSpreadsheet('#' + helper.id + '_freezerows');
+        expect(freezeRowsBtn.parentElement.classList.contains('e-overlay')).toBeTruthy();
+        const freezeColsBtn = helper.getElementFromSpreadsheet('#' + helper.id + '_freezecolumns');
+        expect(freezeColsBtn.parentElement.classList.contains('e-overlay')).toBeTruthy();
+        done();
+    });
+});

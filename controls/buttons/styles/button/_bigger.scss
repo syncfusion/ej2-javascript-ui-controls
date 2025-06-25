@@ -157,8 +157,8 @@
     }
 
     &.e-icon-btn {
-      @if $skin-name != 'tailwind3' {
-        padding: $btn-bigger-icon-padding;
+      @if $skin-name == 'Material3' {
+        line-height: 1.2;
       }
       @if $skin-name == 'fluent2' {
         line-height: 16px;

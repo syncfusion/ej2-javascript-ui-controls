@@ -15,7 +15,7 @@ import { DiagramHtmlElement } from '../core/elements/html-element';
 import { TransformFactor as Transforms } from '../interaction/scroller';
 import { createSvgElement, createHtmlElement, getBackgroundLayerSvg } from '../utility/dom-util';
 import { removeGradient, checkBrowserInfo } from '../utility/diagram-util';
-import { Container } from '../core/containers/container';
+import { GroupableView } from '../core/containers/container';
 import { isBlazor } from '@syncfusion/ej2-base';
 import { UserHandleModel } from '../interaction/selector-model';
 import { DiagramAction } from '../enum/enum';
@@ -153,12 +153,24 @@ export class SvgRenderer implements IRenderer {
                 'rx': options.cornerRadius || 0, 'ry': options.cornerRadius || 0, 'opacity': options.opacity
             };
         } else {
+            const {
+                x, y, width, height, visible, angle,
+                pivotX, pivotY, cornerRadius = 0, opacity = 1
+            }: RectAttributes = options;
+
+            const centerX: number = x + width * pivotX;
+            const centerY: number = y + height * pivotY;
             attr = {
-                'id': id, 'x': options.x.toString(), 'y': options.y.toString(), 'width': options.width.toString(),
-                'height': options.height.toString(), 'visibility': options.visible ? 'visible' : 'hidden',
-                'transform': 'rotate(' + options.angle + ','
-                    + (options.x + options.width * options.pivotX) + ',' + (options.y + options.height * options.pivotY) + ')',
-                'rx': options.cornerRadius || 0, 'ry': options.cornerRadius || 0, 'opacity': options.opacity
+                id,
+                x: x + '',
+                y: y + '',
+                width: width + '',
+                height: height + '',
+                visibility: visible ? 'visible' : 'hidden',
+                transform: `rotate(${angle},${centerX},${centerY})`,
+                rx: cornerRadius,
+                ry: cornerRadius,
+                opacity
             };
         }
         if (ariaLabel) {
@@ -462,7 +474,7 @@ export class SvgRenderer implements IRenderer {
         canvas: SVGElement, options: TextAttributes, parentSvg?: SVGSVGElement,
         ariaLabel?: Object, diagramId?: string, scaleValue?: number, renderer?: any): void {
         if (options.content !== undefined) {
-            const parentNode: Container = renderer.groupElement;
+            const parentNode: GroupableView = renderer.groupElement;
             let textNode: Text;
             let childNodes: SubTextElement[];
             let wrapBounds: TextBounds; let position: PointModel; let child: SubTextElement;
@@ -594,11 +606,14 @@ export class SvgRenderer implements IRenderer {
     private setText(
         text: SVGTextElement, tspanElement: SVGElement, child: SubTextElement,
         textNode: Text, offsetX: number, offsetY: number, options?: TextAttributes, textlength?: number, adjustlen?: string): void {
-        if (options.textAlign !== 'justify') {
-            setAttributeSvg(tspanElement, { 'x': offsetX.toString(), 'y': offsetY.toString() });
-        } else {
-            setAttributeSvg(tspanElement, { 'x': offsetX.toString(), 'y': offsetY.toString(), 'textLength': textlength ? textlength : 0, 'lengthAdjust': adjustlen ? adjustlen : 'spacing' });
+        const x: string = offsetX.toString();
+        const y: string = offsetY.toString();
+        const attrs: Record<string, string> = { x, y };
+        if (options.textAlign === 'justify') {
+            attrs.textLength = (textlength || 0).toString();
+            attrs.lengthAdjust = adjustlen || 'spacing';
         }
+        setAttributeSvg(tspanElement, attrs);
         text.setAttribute('fill', child.text);
         tspanElement.appendChild(textNode);
         text.appendChild(tspanElement);
@@ -667,8 +682,8 @@ export class SvgRenderer implements IRenderer {
             htmlElement = canvas.querySelector('#' + element.id + '_html_element');
         }
         if (!htmlElement) {
-            parentHtmlElement = canvas.querySelector(('#' + element.id + '_html_element')) ||
-                canvas.querySelector(('#' + element.nodeId + '_html_element'));
+            parentHtmlElement = canvas.querySelector(`#${element.id}_html_element`) ||
+                canvas.querySelector(`#${element.nodeId}_html_element`);
             if (!parentHtmlElement) {
                 const attr: Object = {
                     'id': element.nodeId + '_html_element',

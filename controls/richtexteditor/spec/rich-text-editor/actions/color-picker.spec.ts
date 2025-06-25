@@ -292,6 +292,7 @@ describe(' RTE content selection with ', () => {
         let backgroundColorPicker: HTMLElement = <HTMLElement>rteEle.querySelectorAll(".e-toolbar-item .e-dropdown-btn")[1];
         backgroundColorPicker.click();
         (document.querySelector('.e-control.e-colorpicker') as any).ej2_instances[0].inline = true;
+        document.querySelector('.e-control.e-colorpicker' as any).ej2_instances[0].showButtons = true;
         (document.querySelector('.e-control.e-colorpicker') as any).ej2_instances[0].dataBind();
         let backgroundColorPickerItem: HTMLElement = <HTMLElement>document.querySelectorAll(".e-primary.e-apply")[0];
         mouseEventArgs = {
@@ -312,8 +313,7 @@ describe("'FontColor and BackgroundColor' - ColorPicker DROPDOWN", () => {
     let mouseEventArgs: any;
     let editNode: Element;
     let selectNode: Element;
-
-    beforeAll(() => {
+    beforeEach(() => {
         rteObj = renderRTE({
             toolbarSettings: {
                 items: ["FontColor", "BackgroundColor"]
@@ -338,7 +338,7 @@ describe("'FontColor and BackgroundColor' - ColorPicker DROPDOWN", () => {
         editNode = rteObj.contentModule.getEditPanel();
     });
 
-    afterAll((done: DoneFn) => {
+    afterEach((done: DoneFn) => {
         destroy(rteObj);
         done();
     });
@@ -347,9 +347,10 @@ describe("'FontColor and BackgroundColor' - ColorPicker DROPDOWN", () => {
         selectNode = editNode.querySelector('.third-p-node');
         setCursorPoint(document, selectNode.childNodes[0] as Element, 1);
         rteObj.notify('selection-save', {});
-        let backgroundColorPicker: HTMLElement = <HTMLElement>rteEle.querySelector(".e-rte-backgroundcolor-dropdown");
+        let backgroundColorPicker: HTMLElement = <HTMLElement>rteEle.querySelectorAll('.e-split-btn-wrapper .e-dropdown-btn')[1];
         backgroundColorPicker.click();
         (document.querySelector('.e-control.e-colorpicker') as any).ej2_instances[0].inline = true;
+        (document.querySelector('.e-control.e-colorpicker') as any).ej2_instances[0].showButtons = true;
         (document.querySelector('.e-control.e-colorpicker') as any).ej2_instances[0].dataBind();
         dispatchEvent(document.querySelectorAll('.e-control-wrapper.e-numeric.e-float-input.e-input-group')[7].firstElementChild, 'focusin');
         (document.querySelectorAll('.e-control-wrapper.e-numeric.e-float-input.e-input-group')[7].firstElementChild as any).value = '50';
@@ -358,7 +359,7 @@ describe("'FontColor and BackgroundColor' - ColorPicker DROPDOWN", () => {
         dispatchEvent(document.querySelectorAll('.e-control-wrapper.e-numeric.e-float-input.e-input-group')[7].firstElementChild, 'change');
         dispatchEvent(document.querySelectorAll('.e-control-wrapper.e-numeric.e-float-input.e-input-group')[7].firstElementChild, 'focusout');
         setTimeout(() => {
-            let backgroundColorPickerItem: HTMLElement = <HTMLElement>document.querySelectorAll(".e-primary.e-apply")[1];
+            let backgroundColorPickerItem: HTMLElement = <HTMLElement>document.querySelectorAll(".e-primary.e-apply")[0];
             mouseEventArgs = {
                 target: backgroundColorPickerItem
             };
@@ -373,27 +374,28 @@ describe("'FontColor and BackgroundColor' - ColorPicker DROPDOWN", () => {
         expect(rteObj.toolbarSettings.items[0]).toBe("FontColor");
         expect(rteObj.toolbarSettings.items[1]).toBe("BackgroundColor");
         rteObj.notify('selection-save', {});
-        let backgroundColorPicker: HTMLElement = <HTMLElement>rteEle.querySelectorAll(".e-toolbar-item .e-dropdown-btn .e-icons.e-icon-right")[1];
+        let backgroundColorPicker: HTMLElement = <HTMLElement>rteEle.querySelectorAll('.e-toolbar-item .e-dropdown-btn')[1];
         backgroundColorPicker.click();
-        (document.querySelector(".e-rte-backgroundcolor-colorpicker") as HTMLElement).click();
-        (document.querySelector(".e-rte-backgroundcolor-colorpicker").querySelector(".e-cancel") as HTMLElement).click();
+        (document.querySelector('.e-control.e-colorpicker') as any).ej2_instances[0].inline = true;
+        (document.querySelector('.e-control.e-colorpicker') as any).ej2_instances[0].showButtons = true;
+        (document.querySelector('.e-control.e-colorpicker') as any).ej2_instances[0].dataBind();
+        (document.querySelectorAll(".e-primary.e-apply")[0] as HTMLElement).click();
         (document.querySelectorAll(".e-mode-switch-btn")[1] as HTMLElement).click();
     });
     it("Color Picker initial rendering testing - 1", () => {
         selectNode = editNode.querySelector('.first-p-node');
         setCursorPoint(document, selectNode.childNodes[0] as Element, 1);
         rteObj.notify('selection-save', {});
-        let backgroundColorPicker: HTMLElement = <HTMLElement>rteEle.querySelector(".e-rte-backgroundcolor-dropdown");
+        let backgroundColorPicker: HTMLElement = <HTMLElement>rteEle.querySelector(".e-rte-background-colorpicker");
         backgroundColorPicker.click();
-        (backgroundColorPicker.querySelector(".e-background-color") as HTMLElement).click();
+        (backgroundColorPicker.querySelector(".e-rte-background-colorpicker .e-split-colorpicker .e-selected-color") as HTMLElement).click();
         expect(selectNode.childNodes[0].nodeName.toLocaleLowerCase()).toBe("span");
     });
     it("Color Picker initial rendering testing - 2", () => {
         selectNode = editNode.querySelector('.first-label');
         setCursorPoint(document, selectNode.childNodes[0] as Element, 1);
         rteObj.notify('selection-save', {});
-        let backgroundColorPicker: HTMLElement = <HTMLElement>rteEle.querySelector(".e-background-color.e-rte-elements");
-        backgroundColorPicker.innerText = "ABC";
+        let backgroundColorPicker: HTMLElement = <HTMLElement>rteEle.querySelector('.e-split-btn-wrapper .e-split-colorpicker');
         backgroundColorPicker.click();
         expect(selectNode.childNodes[0].nodeName.toLocaleLowerCase()).toBe("span");
     });
@@ -402,7 +404,10 @@ describe("'FontColor and BackgroundColor' - ColorPicker DROPDOWN", () => {
 describe("EJ2-16252: 'FontColor and BackgroundColor' - selection state", () => {
     let rteEle: HTMLElement;
     let rteObj: any;
-    let id: string;
+    let controlId: string;
+    let curDocument: Document;
+    let editNode: Element;
+    let selectNode: Element;
     beforeAll(() => {
         rteObj = renderRTE({
             toolbarSettings: {
@@ -416,7 +421,9 @@ describe("EJ2-16252: 'FontColor and BackgroundColor' - selection state", () => {
             <ul class='ul-third-node'><li>one-node</li><li>two-node</li><li>three-node</li></ul>`
         });
         rteEle = rteObj.element;
-        id = rteEle.id;
+        controlId = rteEle.id;
+        curDocument = rteObj.contentModule.getDocument();
+        editNode = rteObj.contentModule.getEditPanel();
     });
 
     afterAll(() => {
@@ -424,29 +431,27 @@ describe("EJ2-16252: 'FontColor and BackgroundColor' - selection state", () => {
     });
 
     it(" Test the default value selection in FontColor popup", () => {
+        selectNode = editNode.querySelector('.first-label');
+        setCursorPoint(curDocument, selectNode.childNodes[0] as Element, 1);
         rteObj.notify('selection-save', {});
-        let fontColorPicker: HTMLElement = <HTMLElement>rteEle.querySelectorAll(".e-toolbar-item .e-dropdown-btn .e-icons.e-icon-right")[0];
+        let fontColorPicker: HTMLElement = <HTMLElement>rteEle.querySelector('#' + controlId + '_toolbar_FontColor').nextElementSibling.childNodes[0];
         fontColorPicker.click();
-        let colorPickerPopup: HTMLElement = document.getElementById(id + "_toolbar_FontColor-popup");
-        let selectPalette: HTMLElement = colorPickerPopup.querySelector('.e-selected');
-        expect(selectPalette).not.toBeNull();
-        expect(selectPalette.style.backgroundColor === 'rgb(255, 0, 0)').not.toBeNull();
+        expect((selectNode.childNodes[0] as HTMLElement).style.color === 'rgb(255, 0, 0)').not.toBeNull();
     });
     it(" Test the default value selection in BackgroundColor popup", () => {
+        selectNode = editNode.querySelector('.first-p-node');
+        setCursorPoint(curDocument, selectNode.childNodes[0] as Element, 1);
         rteObj.notify('selection-save', {});
-        let fontColorPicker: HTMLElement = <HTMLElement>rteEle.querySelectorAll(".e-toolbar-item .e-dropdown-btn .e-icons.e-icon-right")[1];
+        let fontColorPicker: HTMLElement = <HTMLElement>rteEle.querySelector('#' + controlId + '_toolbar_BackgroundColor').nextElementSibling.childNodes[0];
         fontColorPicker.click();
-        let colorPickerPopup: HTMLElement = document.getElementById(id + "_toolbar_BackgroundColor-popup");
-        let selectPalette: HTMLElement = colorPickerPopup.querySelector('.e-selected');
-        expect(selectPalette).not.toBeNull();
-        expect(selectPalette.style.backgroundColor === 'rgb(255, 255, 0)').not.toBeNull();
+        expect((selectNode.childNodes[0] as HTMLElement).style.backgroundColor === 'rgb(255, 255, 0)').not.toBeNull();
     });
 });
 
 describe("EJ2-16252: 'FontColor and BackgroundColor' - Default value set", () => {
     let rteEle: HTMLElement;
     let rteObj: any;
-    let id: string;
+    let controlId: string;
     beforeAll(() => {
         rteObj = renderRTE({
             toolbarSettings: {
@@ -466,7 +471,7 @@ describe("EJ2-16252: 'FontColor and BackgroundColor' - Default value set", () =>
             <ul class='ul-third-node'><li>one-node</li><li>two-node</li><li>three-node</li></ul>`
         });
         rteEle = rteObj.element;
-        id = rteEle.id;
+        controlId = rteEle.id;
     });
 
     afterAll(() => {
@@ -475,22 +480,16 @@ describe("EJ2-16252: 'FontColor and BackgroundColor' - Default value set", () =>
 
     it(" Test the default value selection in FontColor popup", () => {
         rteObj.notify('selection-save', {});
-        let fontColorPicker: HTMLElement = <HTMLElement>rteEle.querySelectorAll(".e-toolbar-item .e-dropdown-btn .e-icons.e-icon-right")[0];
-        fontColorPicker.click();
-        let colorPickerPopup: HTMLElement = document.getElementById(id + "_toolbar_FontColor-popup");
-        let selectPalette: HTMLElement = colorPickerPopup.querySelector('.e-selected');
-        expect(selectPalette).not.toBeNull();
-        expect(selectPalette.style.backgroundColor === 'rgb(130, 59, 11)').not.toBeNull();
+        let fontColorPicker: HTMLElement = <HTMLElement>rteEle.querySelector('#' + controlId + '_toolbar_FontColor').nextElementSibling.childNodes[0];
+        let buttonEle: HTMLElement = (fontColorPicker.childNodes[0].childNodes[0] as HTMLElement);
+        expect(buttonEle.style.backgroundColor === 'rgb(130, 59, 11)').not.toBeNull();
     });
 
     it(" Test the default value selection in BackgroundColor popup", () => {
         rteObj.notify('selection-save', {});
-        let fontColorPicker: HTMLElement = <HTMLElement>rteEle.querySelectorAll(".e-toolbar-item .e-dropdown-btn .e-icons.e-icon-right")[1];
-        fontColorPicker.click();
-        let colorPickerPopup: HTMLElement = document.getElementById(id + "_toolbar_BackgroundColor-popup");
-        let selectPalette: HTMLElement = colorPickerPopup.querySelector('.e-selected');
-        expect(selectPalette).not.toBeNull();
-        expect(selectPalette.style.backgroundColor === 'rgb(0, 102, 102)').not.toBeNull();
+        let fontColorPicker: HTMLElement = <HTMLElement>rteEle.querySelector('#' + controlId + '_toolbar_BackgroundColor').nextElementSibling.childNodes[0];
+        let buttonEle: HTMLElement = (fontColorPicker.childNodes[0].childNodes[0] as HTMLElement);
+        expect(buttonEle.style.backgroundColor === 'rgb(0, 102, 102)').not.toBeNull();
     });
 
     describe('854808 - Not able to open the Font and Background popup while pressing enter key ', () => {
@@ -510,10 +509,10 @@ describe("EJ2-16252: 'FontColor and BackgroundColor' - Default value set", () =>
             keyBoardEvent.ctrlKey = false;
             keyBoardEvent.shiftKey = false;
             keyBoardEvent.action = 'enter';
-            keyBoardEvent.target = rteObj.element.querySelector(".e-toolbar-item .e-rte-fontcolor-dropdown");
+            keyBoardEvent.target = rteObj.element.querySelector(".e-toolbar-item .e-rte-font-colorpicker");
             (rteObj.toolbarModule as any).toolBarKeyDown(keyBoardEvent);
             rteObj.dataBind();
-            expect(document.querySelector(".e-dropdown-popup.e-rte-fontcolor-dropdown") != null).toBe(true);
+            expect(document.querySelector(".e-popup-open .e-color-palette") != null).toBe(true);
         });
 
         it('The background dropdown is open when you click the enter key.', () => {
@@ -522,10 +521,10 @@ describe("EJ2-16252: 'FontColor and BackgroundColor' - Default value set", () =>
             keyBoardEvent.ctrlKey = false;
             keyBoardEvent.shiftKey = false;
             keyBoardEvent.action = 'enter';
-            keyBoardEvent.target = rteObj.element.querySelector(".e-toolbar-item .e-rte-backgroundcolor-dropdown");
+            keyBoardEvent.target = rteObj.element.querySelector(".e-toolbar-item .e-rte-background-colorpicker");
             (rteObj.toolbarModule as any).toolBarKeyDown(keyBoardEvent);
             rteObj.dataBind();
-            expect(document.querySelector(".e-dropdown-popup.e-rte-backgroundcolor-dropdown") != null).toBe(true);
+            expect(document.querySelector(".e-popup-open .e-color-palette") != null).toBe(true);
         });
         afterAll(() => {
             destroy(rteObj);

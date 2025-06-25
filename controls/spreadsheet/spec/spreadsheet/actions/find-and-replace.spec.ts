@@ -371,7 +371,7 @@ describe('Find & Replace ->', () => {
                         setTimeout(() => {
                             expect(helper.getInstance().sheets[1].selectedRange).toBe('B2:B2');
                             done();
-                        });
+                        }, 10);
                     });
                 });
             });
@@ -1388,6 +1388,14 @@ describe('Find & Replace ->', () => {
                 });
             });
         });
+        it('909250->should open find and replace dialog when showDialog is true', (done: Function) => {
+            helper.invoke('replace', [{ value: 'Sneakers', replaceValue: 'Sneak', sheetIndex: 0, mode: 'Sheet', isCSen: false, isEMatch: false, showDialog: true }]);
+            setTimeout(() => {
+                const findReplaceDialog: HTMLElement = helper.getElementFromSpreadsheet('.e-find-dlg') as HTMLElement;
+                expect(findReplaceDialog).not.toBeNull();
+                done();
+            });
+        });
     });
 
     describe('916357 -> Rows and columns are not rendered properly when infinite mode is set to true.', () => {
@@ -1443,6 +1451,41 @@ describe('Find & Replace ->', () => {
                     });
                 });
             });
+        });
+    });
+
+    describe('AllowFindAndReplace:false condition checks', () => {
+        beforeAll((done: Function) => {
+            helper.initializeSpreadsheet({
+                allowFindAndReplace: false,
+                sheets: [{ ranges: [{ dataSource: defaultData }] }]
+            }, done);
+        });
+        afterAll(() => {
+            helper.invoke('destroy');
+        });
+        it('Check through public method', (done: Function) => {
+            const findOption: any = {
+                value: 'Loafers',
+                sheetIndex: 0,
+                mode: 'Sheet',
+                isCSen: false,
+                isEMatch: false,
+                findOpt: 'next'
+            };
+            const findResult = helper.invoke('find', [findOption]);
+            expect(findResult).toBeNull();
+            helper.invoke('replace', [{ replaceValue: '150', replaceBy: 'replace', value: 10 }]);
+            expect(helper.getInstance().sheets[0].rows[8].cells[4].value).toBe(10);
+            done();
+        });
+        it('Check through UI interaction', (done: Function) => {
+            const findBtn = helper.getElementFromSpreadsheet('#' + helper.id + '_findbtn');
+            expect(findBtn).toBeNull();
+            helper.triggerKeyNativeEvent(70, true);
+            const findToolDialog = helper.getElementFromSpreadsheet('.e-findtool-dlg');
+            expect(findToolDialog).toBeNull();
+            done();
         });
     });
 });

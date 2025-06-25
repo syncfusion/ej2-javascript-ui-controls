@@ -266,7 +266,22 @@
     content: '\e166';
     font-family: 'e-icons';
   }
-  
+
+  .e-pv-page-zoom-icon::before{
+    content: '\e657';
+    font-family: 'e-icons';
+  }
+
+  .e-pv-page-zoom-increase-icon::before{
+    content: '\ec31';
+    font-family: 'e-icons';
+  }
+
+  .e-pv-page-zoom-decrease-icon::before{
+    content: '\ec30';
+    font-family: 'e-icons';
+  }
+
   .e-pv-stamp-icon::before {
     content: '\ebda';
   }
@@ -525,6 +540,26 @@
 
   .e-pv-drag-and-drop-icon::before {
     content: '\e726';
+    font-family: 'e-icons';
+  }
+  .e-pv-redaction-icon::before {
+    content: '\e1a2';
+    font-family: 'e-icons';
+  }
+  .e-pv-mark-for-redaction-icon::before {
+    content: '\e20a';
+    font-family: 'e-icons';
+  }
+  .e-pv-redact-pages-icon::before {
+    content: '\E93b';
+    font-family: 'e-icons';
+  }
+  .e-pv-redaction-panel-icon::before {
+    content: '\e1a3';
+    font-family: 'e-icons';
+  }
+  .e-pv-redact::before {
+    content: '\e167';
     font-family: 'e-icons';
   }
 }

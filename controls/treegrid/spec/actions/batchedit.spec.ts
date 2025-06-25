@@ -1661,7 +1661,6 @@ describe('Code coverage improment', () => {
     });
 });
 
-
 describe('Batch Edit - Expand Collapse check after batch Editing', () => {
     let gridObj: TreeGrid;
     let actionComplete: () => void;
@@ -1712,6 +1711,738 @@ describe('Batch Edit - Expand Collapse check after batch Editing', () => {
         expect(true).toBe(true);
         done();
     });
+    afterAll(() => {
+        destroy(gridObj);
+    });
+});
+
+describe('939197 - In batch edit mode the dialog for adding values are not opened in the correct place', () => {
+    let gridObj: TreeGrid;
+    beforeAll((done: Function) => {
+        gridObj = createGrid(
+            {
+                 dataSource: sampleData,
+                   childMapping: 'subtasks',
+                   treeColumnIndex: 1,
+                   allowPaging: true,
+                   allowFiltering: true,
+                   filterSettings: { type: 'FilterBar', hierarchyMode: 'Child' },
+                   height: 400,
+                   editSettings: {
+                     allowAdding: true,
+                     allowEditing: true,
+                     allowDeleting: true,
+                     mode: 'Batch',
+                     newRowPosition: 'Child',
+                   },
+                      toolbar: [
+                     'Add',
+                     'Edit',
+                     'Delete',
+                     'Update',
+                     'Cancel',
+                     'Search',
+                     'Indent',
+                     'Outdent',
+                   ],
+                   columns: [
+                     {
+                       field: 'taskID',
+                       headerText: 'Task ID',
+                       isPrimaryKey: true,
+                       textAlign: 'Right',
+                       validationRules: { required: true, number: true },
+                       width: 90,
+                     },
+                     {
+                       field: 'taskName',
+                       headerText: 'Task Name',
+                       editType: 'stringedit',
+                       width: 220,
+                       validationRules: { required: true },
+                     },
+                     {
+                       field: 'startDate',
+                       headerText: 'Start Date',
+                       textAlign: 'Right',
+                       width: 130,
+                       editType: 'datepickeredit',
+                       format: 'yMd',
+                       validationRules: { date: true },
+                     },
+                     {
+                       field: 'duration',
+                       headerText: 'Duration',
+                       textAlign: 'Right',
+                       width: 140,
+                       editType: 'numericedit',
+                       validationRules: { number: true, min: 0 },
+                       edit: { params: { format: 'n' } },
+                     },
+                     {
+                       field: 'progress',
+                       headerText: 'Progress',
+                       textAlign: 'Right',
+                       width: 150,
+                       editType: 'numericedit',
+                       validationRules: { number: true, min: 0 },
+                       edit: { params: { format: 'n' } },
+                     },
+                     {
+                       field: 'priority',
+                       headerText: 'Priority',
+                       width: 90,
+                       editType: 'stringedit',
+                       validationRules: { required: false },
+                     },
+                   ],
+            },
+            done
+        );
+    });
+    it('In Batch Edit mode, verified that the new row is added in the correct position', (done: Function) => {
+        gridObj.selectRow(0);
+        gridObj.addRecord({ taskID: 111, taskName: 'Child record' });
+        gridObj.actionComplete = (args: any) => {
+            if (args.requestType === 'save') {
+                expect((gridObj.flatData[5] as any).taskID === 111).toBe(true);
+                done();
+            }
+        };
+        done();
+    });
+    it('In Batch Edit mode, verified that the new row is added in the correct position', (done: Function) => {
+        gridObj.selectRow(0);
+        gridObj.addRecord({ taskID: 114, taskName: 'Child record' });
+        gridObj.actionComplete = (args: any) => {
+            if (args.requestType === 'save') {
+                expect((gridObj.flatData[6] as any).taskID === 114).toBe(true);
+                done();
+            }
+        };
+        done();
+    });
+    afterAll(() => {
+        destroy(gridObj);
+    });
+});		
+describe('952900 - Incorrect Child Index When Adding a New Record Using addRecord Method in EJ2 TreeGrid', () => {
+    let gridObj: TreeGrid;
+    beforeAll((done: Function) => {
+        gridObj = createGrid(
+            {
+                dataSource: sampleData,
+                childMapping: 'subtasks',
+                treeColumnIndex: 1,
+                allowPaging:true,
+                allowSelection:true,
+                height: 400,
+                editSettings: {
+                allowAdding: true,
+                allowEditing: true,
+                allowDeleting: true,
+                mode: 'Cell',
+                newRowPosition: 'Below',
+                },
+                toolbar: ['Add', 'Delete', 'Update', 'Cancel', 'Indent', 'Outdent'],
+                columns: [
+                {
+                    field: 'taskID',
+                    headerText: 'Task ID',
+                    isPrimaryKey: true,
+                    textAlign: 'Right',
+                    validationRules: { required: true, number: true },
+                    width: 90,
+                },
+                {
+                    field: 'taskName',
+                    headerText: 'Task Name',
+                    editType: 'stringedit',
+                    width: 220,
+                    validationRules: { required: true },
+                },
+                {
+                    field: 'startDate',
+                    headerText: 'Start Date',
+                    textAlign: 'Right',
+                    width: 130,
+                    editType: 'datepickeredit',
+                    format: 'yMd',
+                    validationRules: { date: true },
+                },
+                {
+                    field: 'duration',
+                    headerText: 'Duration',
+                    textAlign: 'Right',
+                    width: 140,
+                    editType: 'numericedit',
+                    validationRules: { number: true, min: 0 },
+                    edit: { params: { format: 'n' } },
+                },
+                ],
+            },
+            done
+        );
+    });
+    it('Add the new row with correction selected position', (done: Function) => {
+        gridObj.selectRow(3);
+        gridObj.addRecord({
+            taskID: 100,
+            taskName: 'Fist Record',
+            startDate: new Date('02/03/2017'),
+            progress: 100
+        }, 0, 'Child');
+        expect((gridObj.flatData[5] as any).taskID == 100).toBe(true);
+        done();
+    });
+    afterAll(() => {
+        destroy(gridObj);
+    });
+});	
+
+describe('Maintain Expand/Collapse State After Edit Actions - Parent', () => {
+    let gridObj: TreeGrid;
+   
+    beforeAll((done: Function) => {
+        gridObj = createGrid({
+            dataSource: sampleData,
+            childMapping: 'subtasks',
+            editSettings: {
+                allowEditing: true,
+                allowDeleting: true,
+                allowAdding: true,
+                mode: 'Batch',
+                newRowPosition: 'Below'
+            },
+            treeColumnIndex: 1,
+            toolbar: ['Add', 'Edit', 'Update', 'Delete', 'Cancel'],
+            columns: [
+                { field: 'taskID', headerText: 'Task ID', isPrimaryKey: true },
+                { field: 'taskName', headerText: 'Task Name' },
+                { field: 'progress', headerText: 'Progress' },
+                { field: 'startDate', headerText: 'Start Date' }
+            ]
+        }, done);
+    });
+
+    it('should preserve expand/collapse state after editing a parent record', (done: Function) => {
+        gridObj.collapseRow(gridObj.getRows()[0], gridObj.getCurrentViewRecords()[0]);
+        gridObj.editCell(0, 'taskName');
+        (gridObj.element.querySelector('.e-editedbatchcell').querySelector('input') as any).value = 'Updated Parent Name';
+        gridObj.actionComplete = (args: any): void => {
+            if (args.requestType === 'batchsave') {
+                expect(gridObj.getRows()[0].getElementsByClassName('e-treegridexpand').length).toBe(0);  
+                expect(gridObj.getRows()[0].getElementsByClassName('e-treegridcollapse').length).toBe(1);  
+                done();
+            }
+        };
+        (gridObj.grid.toolbarModule as any).toolbarClickHandler({ item: { id: gridObj.grid.element.id + '_update' } });
+        select('#' + gridObj.element.id + '_gridcontrol' + 'EditConfirm', gridObj.element).querySelectorAll('button')[0].click();
+    });
+    it('should preserve expand/collapse state after editing a child record', (done: Function) => {
+       (gridObj.getRows()[5].getElementsByClassName('e-treegridexpand')[0] as HTMLElement).click();
+        gridObj.editCell(6, 'taskName');
+        (gridObj.element.querySelector('.e-editedbatchcell').querySelector('input') as any).value = 'Updated Child Name';
+        gridObj.actionComplete = (args: any): void => {
+            if (args.requestType === 'batchsave') {
+                expect(gridObj.getRows()[5].getElementsByClassName('e-treegridexpand').length).toBe(0);  
+                expect(gridObj.getRows()[5].getElementsByClassName('e-treegridcollapse').length).toBe(1);  
+                done();
+            }
+        };
+        (gridObj.grid.toolbarModule as any).toolbarClickHandler({ item: { id: gridObj.grid.element.id + '_update' } });
+        select('#' + gridObj.element.id + '_gridcontrol' + 'EditConfirm', gridObj.element).querySelectorAll('button')[0].click();
+    });
+
+
+    afterAll(() => {
+        destroy(gridObj);
+    });
+});
+
+describe('Batch Editing - Update Record on Second Page', () => {
+    let gridObj: TreeGrid;
+    let actionComplete: () => void;
+    beforeAll((done: Function) => {
+        gridObj = createGrid(
+            {
+                dataSource: sampleData,
+                allowPaging: true,
+               toolbar: ['Add', 'Delete', 'Update', 'Cancel'],
+                childMapping: 'subtasks',
+                editSettings: { allowEditing: true , newRowPosition:'Child', mode:'Batch' },
+                treeColumnIndex: 1,
+                columns: [
+                    { field: 'taskID', headerText: 'Task ID', isPrimaryKey: true },
+                    { field: 'taskName', headerText: 'Task Name' },
+                    { field: 'progress', headerText: 'Progress' }
+                ]
+            },
+            done
+        );
+    });
+
+    beforeEach((done: Function) => {
+        gridObj.actionComplete = (args?: any): void => {
+            if (args.requestType === 'paging') {
+                done();
+            }
+        };
+
+
+        gridObj.goToPage(2);
+    });
+
+    it('should Edit the level 0 record', (done: Function) => {
+
+        actionComplete = (args?: any): void => {
+            expect(((gridObj.flatData[13]as any).taskName === 'Test')).toBe(true);
+            done();
+        };
+        gridObj.updateCell(1,'taskName','Test');
+        (<any>gridObj.grid.toolbarModule).toolbarClickHandler({ item: { id: gridObj.grid.element.id + '_update' } });
+        select('#' + gridObj.element.id + '_gridcontrol' + 'EditConfirm', gridObj.element).querySelectorAll('button')[0].click();
+        gridObj.actionComplete = actionComplete;
+
+
+    });
+
+    afterAll(() => {
+        destroy(gridObj);
+    });
+});
+
+
+describe('Batch Editing - Update Record on Second Page', () => {
+    let gridObj: TreeGrid;
+    let actionComplete: () => void;
+
+    beforeAll((done: Function) => {
+        gridObj = createGrid(
+            {
+                dataSource: sampleData,
+                allowPaging: true,
+                toolbar: ['Add', 'Delete', 'Update', 'Cancel'],
+                childMapping: 'subtasks',
+                editSettings: { allowEditing: true, newRowPosition: 'Child', mode: 'Batch' },
+                treeColumnIndex: 1,
+                columns: [
+                    { field: 'taskID', headerText: 'Task ID', isPrimaryKey: true },
+                    { field: 'taskName', headerText: 'Task Name' },
+                    { field: 'progress', headerText: 'Progress' }
+                ]
+            },
+            done
+        );
+    });
+
+    beforeEach((done: Function) => {
+        gridObj.actionComplete = (args?: any): void => {
+            if (args.requestType === 'paging') {
+                done();
+            }
+        };
+        gridObj.goToPage(2);
+    });
+    it('should edit the level 1 record on page 2 and verify update', (done: Function) => {
+         actionComplete = (args?: any): void => {
+            expect(((gridObj.flatData[12]as any).taskName === 'Test')).toBe(true);
+            done();
+        };
+        gridObj.actionComplete = actionComplete;
+        gridObj.updateCell(0,'taskName','Test');
+        (<any>gridObj.grid.toolbarModule).toolbarClickHandler({ item: { id: gridObj.grid.element.id + '_update' } });
+        select('#' + gridObj.element.id + '_gridcontrol' + 'EditConfirm', gridObj.element).querySelectorAll('button')[0].click();
+    });
+    afterAll(() => {
+        destroy(gridObj);
+    });
+});
+
+describe('Batch Editing - Delete Record on Second Page', () => {
+    let gridObj: TreeGrid;
+    let actionComplete: () => void;
+    beforeAll((done: Function) => {
+        gridObj = createGrid(
+            {
+                dataSource: sampleData,
+                allowPaging: true,
+                toolbar: ['Add', 'Delete', 'Update', 'Cancel'],
+                childMapping: 'subtasks',
+                editSettings: { allowEditing: true, newRowPosition: 'Child', mode: 'Batch' },
+                treeColumnIndex: 1,
+                columns: [
+                    { field: 'taskID', headerText: 'Task ID', isPrimaryKey: true },
+                    { field: 'taskName', headerText: 'Task Name' },
+                    { field: 'progress', headerText: 'Progress' }
+                ]
+            },
+            done
+        );
+    });
+    beforeEach((done: Function) => {
+        // Set up actionComplete handler to detect when page navigation is complete
+        gridObj.actionComplete = (args?: any): void => {
+            if (args.requestType === 'paging') {
+                done();
+            }
+        };
+        gridObj.goToPage(2);
+    });
+
+    it('Delete record and verify update', (done: Function) => {
+         actionComplete = (args?: Object): void => {
+            if (args['requestType'] == 'batchSave' ) {
+                expect(gridObj.dataSource[1].taskID === 21).toBe(true);
+            }
+            done();
+        };
+        gridObj.grid.actionComplete = actionComplete;
+        gridObj.selectRow(1);
+        (<any>gridObj.grid.toolbarModule).toolbarClickHandler({ item: { id: gridObj.grid.element.id + '_delete' } });
+        (<any>gridObj.grid.toolbarModule).toolbarClickHandler({ item: { id: gridObj.grid.element.id + '_update' } });
+        select('#' + gridObj.element.id + '_gridcontrol' + 'EditConfirm', gridObj.element).querySelectorAll('button')[0].click();
+    });
+    afterAll(() => {
+        destroy(gridObj);
+    });
+});
+
+describe('Batch Editing - Delete Record on Last Page', () => {
+    let gridObj: TreeGrid;
+    let actionComplete: () => void;
+    beforeAll((done: Function) => {
+        gridObj = createGrid(
+            {
+                dataSource: sampleData,
+                allowPaging: true,
+                toolbar: ['Add', 'Delete', 'Update', 'Cancel'],
+                childMapping: 'subtasks',
+                editSettings: { allowAdding:true,allowEditing: true, newRowPosition: 'Child', mode: 'Batch' },
+                treeColumnIndex: 1,
+                columns: [
+                    { field: 'taskID', headerText: 'Task ID', isPrimaryKey: true },
+                    { field: 'taskName', headerText: 'Task Name' },
+                    { field: 'progress', headerText: 'Progress' }
+                ]
+            },
+            done
+        );
+    });
+
+    beforeEach((done: Function) => {
+        gridObj.actionComplete = (args?: any): void => {
+            if (args.requestType === 'paging') {
+                done();
+            }
+        };
+        gridObj.goToPage(3);
+    });
+
+    it('Delete record and cancel it', (done: Function) => {
+         actionComplete = (args?: Object): void => {
+            if (args['requestType'] == 'cancel' ) {
+                expect(gridObj.flatData.length).toBe(36);
+            }
+            done();
+        };
+        gridObj.grid.actionComplete = actionComplete;
+        gridObj.selectRow(1);
+        (<any>gridObj.grid.toolbarModule).toolbarClickHandler({ item: { id: gridObj.grid.element.id + '_add' } });
+        (gridObj.element.querySelector('.e-editedbatchcell').querySelector('input') as any).value = 41;
+        (<any>gridObj.grid.toolbarModule).toolbarClickHandler({ item: { id: gridObj.grid.element.id + '_cancel' } });
+        select('#' + gridObj.element.id + '_gridcontrol' + 'EditConfirm', gridObj.element).querySelectorAll('button')[0].click();
+    });
+
+    afterAll(() => {
+        destroy(gridObj);
+    });
+});
+
+describe('Batch Editing - Keyboard Navigation', () => {
+    let gridObj: TreeGrid;
+    const preventDefault: Function = new Function();
+
+    beforeAll((done: Function) => {
+        gridObj = createGrid(
+            {
+                dataSource: sampleData,
+                childMapping: 'subtasks',
+                editSettings: { 
+                    allowEditing: true, 
+                    allowDeleting: true, 
+                    allowAdding: true, 
+                    mode: 'Batch',
+                    allowNextRowEdit: true 
+                },
+                treeColumnIndex: 1,
+                toolbar: ['Add', 'Update', 'Delete', 'Cancel'],
+                columns: [
+                    { field: 'taskID', headerText: 'Task ID', isPrimaryKey: true },
+                    { field: 'taskName', headerText: 'Task Name' },
+                    { field: 'progress', headerText: 'Progress' },
+                    { field: 'priority', headerText: 'Priority' }
+                ]
+            },
+            done
+        );
+    });
+
+    it('Tab key should navigate to next cell in edit mode', () => {
+        gridObj.editCell(0, 'taskName');
+        expect(gridObj.element.querySelector('.e-editedbatchcell')).not.toBe(null);
+        gridObj.grid.keyboardModule.keyAction({ 
+            action: 'tab', 
+            preventDefault: preventDefault, 
+            target: gridObj.element.querySelector('.e-editedbatchcell') 
+        } as any);
+        expect(gridObj.element.querySelector('.e-editedbatchcell').getAttribute('aria-label')).toContain('progress');
+    });
+
+    it('Shift+Tab key should navigate to previous cell in edit mode', () => {
+        gridObj.editCell(0, 'progress');
+        gridObj.grid.keyboardModule.keyAction({ 
+            action: 'shiftTab', 
+            preventDefault: preventDefault, 
+            target: gridObj.element.querySelector('.e-editedbatchcell') 
+        } as any);
+        expect(gridObj.element.querySelector('.e-editedbatchcell').getAttribute('aria-label')).toContain('taskName');
+    });
+    it('Escape key should cancel current cell edit', () => {
+        gridObj.editCell(0, 'taskName');
+        (gridObj.element.querySelector('.e-editedbatchcell').querySelector('input') as any).value = 'Temporary Value';
+        gridObj.grid.keyboardModule.keyAction({ 
+            action: 'escape', 
+            preventDefault: preventDefault, 
+            target: gridObj.element.querySelector('.e-editedbatchcell') 
+        } as any);
+        expect((gridObj.getCellFromIndex(0, 1)as any).innerText).toBe("Planning");
+    });
+
+    afterAll(() => {
+        destroy(gridObj);
+    });
+});
+
+
+describe('Batch Editing - Keyboard Navigation', () => {
+    let gridObj: TreeGrid;
+    const preventDefault: Function = new Function();
+
+    beforeAll((done: Function) => {
+        gridObj = createGrid(
+            {
+                dataSource: sampleData,
+                childMapping: 'subtasks',
+                editSettings: { 
+                    allowEditing: true, 
+                    allowDeleting: true, 
+                    allowAdding: true, 
+                    mode: 'Batch',
+                    allowNextRowEdit: true 
+                },
+                treeColumnIndex: 1,
+                toolbar: ['Add', 'Update', 'Delete', 'Cancel'],
+                columns: [
+                    { field: 'taskID', headerText: 'Task ID', isPrimaryKey: true },
+                    { field: 'taskName', headerText: 'Task Name' },
+                    { field: 'progress', headerText: 'Progress' },
+                    { field: 'priority', headerText: 'Priority' }
+                ]
+            },
+            done
+        );
+    });
+
+    it('Shift+Tab key at first cell should move to last cell of previous row', () => {
+        gridObj.editCell(1, 'taskName');
+        gridObj.grid.keyboardModule.keyAction({ 
+            action: 'shiftTab', 
+            preventDefault: preventDefault, 
+            target: gridObj.element.querySelector('.e-editedbatchcell') 
+        } as any);
+        expect(gridObj.element.querySelector('.e-editedbatchcell').getAttribute('aria-label')).toContain('priority');
+        expect(gridObj.element.querySelector('.e-editedbatchcell').closest('tr').getAttribute('aria-rowindex')).toBe('1');
+    });
+
+    afterAll(() => {
+        destroy(gridObj);
+    });
+});
+
+describe('Batch Editing - Keyboard Navigation', () => {
+    let gridObj: TreeGrid;
+    const preventDefault: Function = new Function();
+
+    beforeAll((done: Function) => {
+        gridObj = createGrid(
+            {
+                dataSource: sampleData,
+                childMapping: 'subtasks',
+                editSettings: { 
+                    allowEditing: true, 
+                    allowDeleting: true, 
+                    allowAdding: true, 
+                    mode: 'Batch',
+                    allowNextRowEdit: true 
+                },
+                treeColumnIndex: 1,
+                toolbar: ['Add', 'Update', 'Delete', 'Cancel'],
+                columns: [
+                    { field: 'taskID', headerText: 'Task ID', isPrimaryKey: true },
+                    { field: 'taskName', headerText: 'Task Name' },
+                    { field: 'progress', headerText: 'Progress' },
+                    { field: 'priority', headerText: 'Priority' }
+                ]
+            },
+            done
+        );
+    });
+     it('Enter key should complete current cell edit and move to cell below', () => {
+        gridObj.editCell(0, 'taskName');
+        (gridObj.element.querySelector('.e-editedbatchcell').querySelector('input') as any).value = 'Updated Task';
+        gridObj.grid.keyboardModule.keyAction({ 
+            action: 'enter', 
+            preventDefault: preventDefault, 
+            target: gridObj.element.querySelector('.e-editedbatchcell') 
+        } as any);
+        expect((gridObj.getCellFromIndex(0, 1)as any).innerText).toBe('Updated Task');
+        expect(gridObj.element.querySelector('.e-editedbatchcell').getAttribute('aria-label')).toContain('Plan timeline');
+        expect(gridObj.element.querySelector('.e-editedbatchcell').closest('tr').getAttribute('aria-rowindex')).toBe('2');
+    });
+
+    afterAll(() => {
+        destroy(gridObj);
+    });
+});
+
+describe('Batch Editing - Keyboard Navigation', () => {
+    let gridObj: TreeGrid;
+    const preventDefault: Function = new Function();
+
+    beforeAll((done: Function) => {
+        gridObj = createGrid(
+            {
+                dataSource: sampleData,
+                childMapping: 'subtasks',
+                editSettings: { 
+                    allowEditing: true, 
+                    allowDeleting: true, 
+                    allowAdding: true, 
+                    mode: 'Batch',
+                    allowNextRowEdit: true 
+                },
+                treeColumnIndex: 1,
+                toolbar: ['Add', 'Update', 'Delete', 'Cancel'],
+                columns: [
+                    { field: 'taskID', headerText: 'Task ID', isPrimaryKey: true },
+                    { field: 'taskName', headerText: 'Task Name' },
+                    { field: 'progress', headerText: 'Progress' },
+                    { field: 'priority', headerText: 'Priority' }
+                ]
+            },
+            done
+        );
+    });
+    it('Tab key at last cell should move to first cell of next row', () => {
+        gridObj.editCell(0, 'priority');
+        gridObj.grid.keyboardModule.keyAction({ 
+            action: 'tab', 
+            preventDefault: preventDefault, 
+            target: gridObj.element.querySelector('.e-editedbatchcell') 
+        } as any);
+        expect(gridObj.element.querySelector('.e-editedbatchcell').getAttribute('aria-label')).toContain('taskName');
+        expect(gridObj.element.querySelector('.e-editedbatchcell').closest('tr').getAttribute('aria-rowindex')).toBe('2');
+    });
+
+    afterAll(() => {
+        destroy(gridObj);
+    });
+});
+describe('Batch Editing - Keyboard Navigation', () => {
+    let gridObj: TreeGrid;
+    const preventDefault: Function = new Function();
+
+    beforeAll((done: Function) => {
+        gridObj = createGrid(
+            {
+                dataSource: sampleData,
+                childMapping: 'subtasks',
+                editSettings: { 
+                    allowEditing: true, 
+                    allowDeleting: true, 
+                    allowAdding: true, 
+                    mode: 'Batch',
+                    allowNextRowEdit: true 
+                },
+                treeColumnIndex: 1,
+                toolbar: ['Add', 'Update', 'Delete', 'Cancel'],
+                columns: [
+                    { field: 'taskID', headerText: 'Task ID', isPrimaryKey: true },
+                    { field: 'taskName', headerText: 'Task Name' },
+                    { field: 'progress', headerText: 'Progress' },
+                    { field: 'priority', headerText: 'Priority' }
+                ]
+            },
+            done
+        );
+    });
+
+    it('Insert should add a new row', () => {
+        gridObj.selectRow(0);
+        gridObj.grid.keyboardModule.keyAction({ 
+            action: 'insert', 
+            preventDefault: preventDefault, 
+            target: gridObj.element 
+        } as any);
+        expect(gridObj.element.querySelector('.e-insertedrow')).not.toBe(null);
+    });
+
+    afterAll(() => {
+        destroy(gridObj);
+    });
+});
+
+describe('Batch Editing - Keyboard Navigation', () => {
+    let gridObj: TreeGrid;
+    const preventDefault: Function = new Function();
+
+    beforeAll((done: Function) => {
+        gridObj = createGrid(
+            {
+                dataSource: sampleData,
+                childMapping: 'subtasks',
+                editSettings: { 
+                    allowEditing: true, 
+                    allowDeleting: true, 
+                    allowAdding: true, 
+                    mode: 'Batch',
+                    allowNextRowEdit: true 
+                },
+                treeColumnIndex: 1,
+                toolbar: ['Add', 'Update', 'Delete', 'Cancel'],
+                columns: [
+                    { field: 'taskID', headerText: 'Task ID', isPrimaryKey: true },
+                    { field: 'taskName', headerText: 'Task Name' },
+                    { field: 'progress', headerText: 'Progress' },
+                    { field: 'priority', headerText: 'Priority' }
+                ]
+            },
+            done
+        );
+    });
+
+    it('Delete key should delete selected row', () => {
+        gridObj.selectRow(2);
+        gridObj.grid.keyboardModule.keyAction({ 
+            action: 'delete', 
+            preventDefault: preventDefault, 
+            target: gridObj.getRowByIndex(2) 
+        } as any);
+        const deletedRecords = 'deletedRecords';
+        expect(gridObj.getBatchChanges()[deletedRecords].length).toBe(1);
+    });
+
     afterAll(() => {
         destroy(gridObj);
     });

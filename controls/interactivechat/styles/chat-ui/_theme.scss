@@ -5,11 +5,27 @@
     .e-chat-content {
       color: $chat-text-color;
     }
-    .e-right .e-text {
+    .e-pinned-dropdown-popup.e-active {
+      @if ($skin-name == 'highcontrast') {
+        color: $content-font;
+      }
+      @if ($skin-name == 'highcontrast-light') {
+        color: $content-font;
+      }
+      @if ($skin-name == 'bootstrap4') {
+        color: $black;
+      }
+    }
+    .e-pinned-dropdown-popup {
+      @if ($skin-name == 'bootstrap4') {
+        color: $black;
+      }
+    }
+    .e-right .e-message-content {
       background: $chat-right-bg-color;
       color: $chat-right-text-color;
     }
-    .e-left .e-text {
+    .e-left .e-message-content {
       color: $chat-left-text-color;
       background: $chat-left-bg-color;
       &:active,
@@ -66,16 +82,28 @@
       color: $chat-seen-color;
     }
     .e-footer {
-      textarea::-webkit-scrollbar-thumb {
+      .e-chat-textarea::-webkit-scrollbar-thumb {
         background: $chat-scrollbar-color;
       }
-      // To override the default border style of the textarea component for the Material and Material3 themes.
-      .e-input-group.e-multi-line-input {
-        @if $theme-name == 'Material3' or $theme-name == 'material' or $theme-name == 'Material3-dark' or $theme-name == 'material-dark' {
-          border: 1px solid $chat-border-color !important; /* stylelint-disable-line declaration-no-important */
+      @if ($skin-name == 'Material3' or $skin-name == 'fluent2' or $skin-name == 'material' or $skin-name == 'material-dark') {
+        &.focus-wave-effect::before,
+        &.focus-wave-effect::after {
+          background-color: $chat-footer-wave-color;
         }
       }
+      .e-chat-textarea[placeholder]:empty::before {
+        color: $chat-placeholder-color;
+      }
       &:not(.e-footer-template) {
+        border: 1px solid $chat-footer-border-color;
+        border-bottom-color: $chat-footer-border-btm-color;
+        &.focused {
+          border: $chat-focused-border-width solid $chat-footer-focus-bdr-color;
+          @if ($skin-name == 'fluent2') {
+            border-bottom-color: $chat-footer-border-btm-color;
+          }
+          box-shadow: $chat-footer-border-shadow;
+        }
         .e-chat-send {
           color: $chat-send-icon-color;
           &.disabled {
@@ -92,11 +120,24 @@
     }
     .e-header-icon,
     .e-message-icon,
+    .e-message-icon img,
     .e-user-icon {
       border-radius: 50%;
       background-repeat: no-repeat;
       background-position: center center;
       background-size: cover;
+    }
+    .e-user-online {
+      background-color: $user-status-icon-online-background-color;
+    }
+    .e-user-away {
+      background-color: $user-status-icon-away-background-color;
+    }
+    .e-user-busy {
+      background-color: $user-status-icon-busy-background-color;
+    }
+    .e-user-offline {
+      background-color: $user-status-icon-offline-background-color;
     }
     .e-message-icon,
     .e-user-icon {
@@ -123,7 +164,7 @@
       }
     }
     @if ($skin-name == 'highcontrast') {
-      .e-message-group.e-left .e-text {
+      .e-message-group.e-left .e-message-content {
         &:not(:focus),
         &:not(:active),
         &:not(:hover) {
@@ -193,6 +234,27 @@
           }
         }
       }
+    }
+
+    .e-reply-wrapper {
+      background: $reply-wrapper-bg-color;
+      .e-reply-content {
+        border-left: 2px solid $reply-wrapper-border-bg-color;
+      }
+    }
+
+    .e-chat-message-toolbar:has(.e-toolbar-item) {
+      border: 1px solid $message-toolbar-border-color;
+    }
+
+    .e-forwarded-indicator {
+      color: $chat-message-forward-color;
+      .e-forward-arrow {
+        color: $chat-message-forward-icon-color;
+      }
+    }
+    .e-pinned-message-wrapper {
+      background-color: $pinned-background-color;
     }
   }
 }

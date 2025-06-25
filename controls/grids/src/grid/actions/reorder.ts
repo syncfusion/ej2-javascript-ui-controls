@@ -375,6 +375,29 @@ export class Reorder implements IAction {
     }
 
     /**
+     * Reorders a column in the Grid using column models.
+     *
+     * Moves the specified column (fromColumn) before the target column (toColumn),
+     * supporting both standard and stacked header columns.
+     *
+     * @param {Column} fromColumn - The column model to be moved.
+     * @param {Column} toColumn - The target column model before which the source column will be placed.
+     *
+     * @returns {void}
+     */
+    public reorderColumnByModel(fromColumn: Column, toColumn: Column): void {
+        if (!isNullOrUndefined(fromColumn) && !isNullOrUndefined(toColumn) && fromColumn instanceof Column && toColumn instanceof Column) {
+            if (!fromColumn.allowReordering || fromColumn.lockColumn || !toColumn.allowReordering || toColumn.lockColumn) {
+                this.parent.log('action_disabled_column', { moduleName: this.getModuleName(), column: fromColumn, destColumn: toColumn });
+                return;
+            }
+            const destinationIndex: number = this.targetParentContainerIndex(this.parent.getColumnHeaderByUid(fromColumn.uid),
+                                                                             this.parent.getColumnHeaderByUid(toColumn.uid));
+            this.moveTargetColumn(fromColumn, destinationIndex);
+        }
+    }
+
+    /**
      * Changes the position of the Grid columns by field index.
      *
      * @param  {number} fromIndex - Defines the origin field index.

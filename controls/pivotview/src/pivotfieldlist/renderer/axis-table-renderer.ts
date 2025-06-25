@@ -14,6 +14,7 @@ export class AxisTableRenderer {
 
     private leftAxisPanel: HTMLElement;
     private rightAxisPanel: HTMLElement;
+    private droppableInstances: Droppable[] = [];
 
     /** Constructor for render module */
 
@@ -73,7 +74,8 @@ export class AxisTableRenderer {
                 className: cls.AXIS_PROMPT_CLASS
             });
             axisPrompt.innerText = localePrompt;
-            new Droppable(axisContent, {});
+            const droppable: Droppable = new Droppable(axisContent, {});
+            this.droppableInstances.push(droppable);
             axis.appendChild(axisTitleWrapper);
             axis.appendChild(axisContent);
             axis.appendChild(axisPrompt);
@@ -122,5 +124,32 @@ export class AxisTableRenderer {
             removeClass([].slice.call(parentElement.querySelectorAll('.' + cls.DROP_INDICATOR_CLASS)), cls.INDICATOR_HOVER_CLASS);
             removeClass([].slice.call(parentElement.querySelectorAll('.' + cls.DROP_INDICATOR_CLASS + '-last')), cls.INDICATOR_HOVER_CLASS);
         }
+    }
+
+    /**
+     * Destroys the AxisTableRenderer instance
+     *
+     * @returns {void}
+     * @hidden
+     */
+    public destroy(): void {
+        if (this.axisTable) {
+            const axisContentElements: NodeListOf<Element> = this.axisTable.querySelectorAll('.' + cls.AXIS_CONTENT_CLASS);
+            for (let i: number = 0; i < axisContentElements.length; i++) {
+                this.unWireEvent(axisContentElements[i as number]);
+            }
+        }
+        for (let i: number = 0; i < this.droppableInstances.length; i++) {
+            if (this.droppableInstances[i as number] && !this.droppableInstances[i as number].isDestroyed) {
+                this.droppableInstances[i as number].destroy();
+            }
+        }
+        this.droppableInstances = [];
+        if (this.axisTable && this.axisTable.parentNode) {
+            this.axisTable.parentNode.removeChild(this.axisTable);
+        }
+        this.axisTable = null;
+        this.leftAxisPanel = null;
+        this.rightAxisPanel = null;
     }
 }

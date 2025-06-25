@@ -1,9 +1,9 @@
-import { Spreadsheet, DialogBeforeOpenEventArgs, getUpdateUsingRaf } from '../index';
+import { Spreadsheet, DialogBeforeOpenEventArgs } from '../index';
 import { EventHandler, KeyboardEventArgs, Browser, closest, isUndefined, isNullOrUndefined, select, detach, getComponent } from '@syncfusion/ej2-base';
-import { getRangeIndexes, getRangeFromAddress, getIndexesFromAddress, getRangeAddress, isSingleCell } from '../../workbook/common/address';
+import { getRangeIndexes, getRangeFromAddress, getIndexesFromAddress, getRangeAddress, isSingleCell, getCellAddress } from '../../workbook/common/address';
 import { keyDown, editOperation, clearCopy, enableToolbarItems, completeAction } from '../common/index';
 import { formulaBarOperation, formulaOperation, setActionData, keyUp, getCellPosition, deleteImage, focus, isLockedCells, isNavigationKey } from '../common/index';
-import { workbookEditOperation, getFormattedBarText, getFormattedCellObject, wrapEvent, isValidation, activeCellMergedRange, activeCellChanged, getUniqueRange, removeUniquecol, checkUniqueRange, reApplyFormula, refreshChart } from '../../workbook/common/event';
+import { workbookEditOperation, getFormattedBarText, getFormattedCellObject, wrapEvent, isValidation, activeCellMergedRange, activeCellChanged, getUniqueRange, removeUniquecol, checkUniqueRange, reApplyFormula, refreshChart, mergedRange } from '../../workbook/common/event';
 import { CellModel, SheetModel, getSheetName, getSheetIndex, getCell, getColumn, ColumnModel, getRowsHeight, getColumnsWidth, Workbook, checkColumnValidation, setCell } from '../../workbook/base/index';
 import { getSheetNameFromAddress, getSheet, selectionComplete, isHiddenRow, isHiddenCol, applyCF, ApplyCFArgs, setVisibleMergeIndex, isReadOnlyCells, getTypeFromFormat } from '../../workbook/index';
 import { beginAction, updateCell, CheckCellValidArgs, NumberFormatArgs, isReadOnly, getViewportIndexes, getRow } from '../../workbook/index';
@@ -207,8 +207,7 @@ export class Edit {
             if (args.endFormulaRef !== undefined) { args.endFormulaRef = this.endFormulaRef; }
             break;
         case 'refreshDependentCellValue':
-            this.refreshDependentCellValue(
-                <number>args.rowIdx, <number>args.colIdx, <number>args.sheetIdx);
+            this.refreshDependentCellValue(<number>args.rowIdx, <number>args.colIdx);
             break;
         case 'getElement':
             args.element = this.getEditElement(this.parent.getActiveSheet());
@@ -306,7 +305,9 @@ export class Edit {
                                     this.endEdit(false, e);
                                 } else {
                                     this.parent.goTo(this.editCellData.fullAddr);
-                                    this.endEdit(false, e);
+                                    if (this.isEdit) {
+                                        this.endEdit(false, e);
+                                    }
                                 }
                             }
                             break;
@@ -1216,20 +1217,26 @@ export class Edit {
             this.uniqueActCell = '';
         }
     }
-    private refreshDependentCellValue(rowIdx: number, colIdx: number, sheetIdx: number): void {
+    private refreshDependentCellValue(rowIdx: number, colIdx: number): void {
         if (rowIdx && colIdx) {
             rowIdx--; colIdx--;
-            if (((this.editCellData.rowIndex !== rowIdx || this.editCellData.colIndex !== colIdx)
-                && this.parent.activeSheetIndex === sheetIdx) || (this.uniqueCell && this.parent.activeSheetIndex === sheetIdx)) {
-                const sheet: SheetModel = getSheet(this.parent as Workbook, sheetIdx);
+            if (this.editCellData.rowIndex !== rowIdx || this.editCellData.colIndex !== colIdx || this.uniqueCell) {
+                const sheet: SheetModel = this.parent.getActiveSheet();
                 let td: HTMLElement;
                 if (!isHiddenRow(sheet, rowIdx) && !isHiddenCol(sheet, colIdx)) {
                     td = this.parent.getCell(rowIdx, colIdx);
                 }
                 if (td) {
-                    if (td.parentElement) {
-                        const curRowIdx: string = td.parentElement.getAttribute('aria-rowindex');
-                        if (curRowIdx && Number(curRowIdx) - 1 !== rowIdx) { return; }
+                    const row: HTMLElement = td.parentElement;
+                    if (row) {
+                        const curRowIdx: string = row.getAttribute('aria-rowindex');
+                        if (curRowIdx && Number(curRowIdx) - 1 !== rowIdx) {
+                            return;
+                        }
+                        const curColIdx: string = td.getAttribute('aria-colindex');
+                        if (curColIdx && Number(curColIdx) - 1 !== colIdx) {
+                            return;
+                        }
                     }
                     const cell: CellModel = getCell(rowIdx, colIdx, sheet);
                     const actCell: number[] = getRangeIndexes(sheet.activeCell);
@@ -1319,8 +1326,8 @@ export class Edit {
             this.checkUniqueRange(args);
             if (args.isUnique) { eventArgs.isSpill = this.isSpill; }
         }
-        const isValueChanged: boolean = (eventArgs.value ? eventArgs.value.toString() : eventArgs.value) !==
-            (eventArgs.oldValue || <unknown>eventArgs.oldValue === 0 ? eventArgs.oldValue.toString() : eventArgs.oldValue);
+        const isValueChanged: boolean = (eventArgs.value || <unknown>eventArgs.value === 0 ? eventArgs.value.toString() : '') !==
+            (eventArgs.oldValue || <unknown>eventArgs.oldValue === 0 ? eventArgs.oldValue.toString() : '');
         if (isValueChanged || (!pvtManualCalc && checkIsFormula(eventArgs.value) && (!cell || !cell.format ||
             getTypeFromFormat(cell.format) !== 'Text'))) {
             if (eventName !== 'cellSave') { (<CellEditEventArgs>eventArgs).cancel = false; }
@@ -1458,6 +1465,7 @@ export class Edit {
         let address: string = args.range;
         let sheetIdx: number = this.editCellData.sheetIndex;
         const editorEle: HTMLElement = this.getEditElement(this.parent.getActiveSheet());
+        address = this.getMergedAddress(address);
         if (this.parent.activeSheetIndex !== sheetIdx) {
             address = '\'' + this.parent.getActiveSheet().name + '\'' + '!' + address;
             if (args.isNameBoxSelect) {
@@ -1500,6 +1508,7 @@ export class Edit {
         const lastRange: string[] = this.parent.getActiveSheet().selectedRange.split(' ');
         let address: string = lastRange[lastRange.length - 1];
         address = isSingleCell(getIndexesFromAddress(address)) ? address.split(':')[0] : address;
+        address = this.getMergedAddress(address);
         const formulaBar: HTMLTextAreaElement = this.parent.element.querySelector('.e-formula-bar') as HTMLTextAreaElement;
         if (value && checkIsFormula(value, true)) {
             const sheetName: string = this.editCellData.fullAddr.substring(0, this.editCellData.fullAddr.lastIndexOf('!'));
@@ -1522,6 +1531,23 @@ export class Edit {
             formulaBar.value = startVal + endVal;
             this.curEndPos = startVal.length;
         }
+    }
+
+    private getMergedAddress(address: string): string {
+        const rangeIndex: number[] = getRangeIndexes(address);
+        if (rangeIndex[0] !== rangeIndex[2] || rangeIndex[1] !== rangeIndex[3]) {
+            const cellModel: CellModel = getCell(rangeIndex[0], rangeIndex[1], this.parent.getActiveSheet());
+            if (cellModel && (cellModel.rowSpan || cellModel.colSpan)) {
+                const mergeArgs: MergeArgs = { range: [rangeIndex[0], rangeIndex[1], rangeIndex[0], rangeIndex[1]] };
+                this.parent.notify(mergedRange, mergeArgs);
+                const mergedRanges: number[] = mergeArgs.range as number[];
+                if (rangeIndex[0] === mergedRanges[0] && rangeIndex[1] === mergedRanges[1] &&
+                    rangeIndex[2] === mergedRanges[2] && rangeIndex[3] === mergedRanges[3]) {
+                    return getCellAddress(mergedRanges[0], mergedRanges[1]);
+                }
+            }
+        }
+        return address;
     }
 
     private setFormulaBarCurPosition(input: HTMLTextAreaElement, selectionStart: number, selectionEnd: number): void {
@@ -1570,7 +1596,7 @@ export class Edit {
         const sheetIdx: number = this.editCellData.sheetIndex;
         if (sheetIdx !== this.parent.activeSheetIndex) {
             const elem: HTMLTextAreaElement = this.parent.element.querySelector('.e-formula-bar') as HTMLTextAreaElement;
-            if (elem.value) {
+            if (elem && elem.value) {
                 if (elem.value.indexOf(')') === this.curEndPos - 1) {
                     this.setFormulaBarCurPosition(elem, this.curEndPos - 1, this.curEndPos - 1);
                 } else {

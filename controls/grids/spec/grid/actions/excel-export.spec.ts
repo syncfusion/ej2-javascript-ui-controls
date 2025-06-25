@@ -1182,8 +1182,8 @@ describe('excel Export =>', () => {
             gridObj = null;
         });
     });
-
-    // used for code coverage
+  
+     // used for code coverage
     describe('945129: excelAggregateQueryCellInfo event triggers only for aggregate cells, not for the remaining cells', () => {
         let gridObj: Grid;
         beforeAll((done: Function) => {
@@ -1226,7 +1226,7 @@ describe('excel Export =>', () => {
                     }],
                 }, done);
         });
-
+    
         it('Group caption in excel export', (done) => {
             gridObj.exportGroupCaption = (args) => {
                 args.style = { backColor: '#99ffcc' };
@@ -1234,12 +1234,12 @@ describe('excel Export =>', () => {
             gridObj.excelExport();
             done();
         });
-
+        
         it('Group in csv export', (done) => {
             gridObj.csvExport();
             done();
         });
-
+    
         afterAll(() => {
             destroy(gridObj);
             gridObj = null;

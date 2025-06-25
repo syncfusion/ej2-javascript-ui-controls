@@ -28,7 +28,7 @@ describe('907928-undo not working when deleting table content in track changes m
         document.body.removeChild(document.getElementById('container'));
         editor = undefined;
         setTimeout(function () {
-            document.body.innerHTML = '';
+            
             done();
         }, 1000);
     });

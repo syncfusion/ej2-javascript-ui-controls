@@ -2,11 +2,12 @@
  * RTE - Image Browser module spec
  */
 import { detach, isNullOrUndefined, Browser } from "@syncfusion/ej2-base";
-import { IRenderer, RichTextEditor, QuickToolbar, PasteCleanup, ImageSuccessEventArgs } from "../../../src/rich-text-editor/index";
-import { ActionBeginEventArgs } from "../../../src/rich-text-editor/index";
-import { renderRTE, destroy } from "./../render.spec";
+import { IQuickToolbar, RichTextEditor, QuickToolbar, PasteCleanup } from "../../../src/rich-text-editor/index";
+import { ActionBeginEventArgs, ImageSuccessEventArgs } from "../../../src/common/interface";
+import { renderRTE, destroy, setCursorPoint } from "./../render.spec";
 import { Popup } from "@syncfusion/ej2-popups";
 import { Uploader } from "@syncfusion/ej2-inputs";
+import { BASIC_MOUSE_EVENT_INIT } from "../../constant.spec";
 
 let hostUrl: string = 'https://ej2-aspcore-service.azurewebsites.net/';
 
@@ -40,9 +41,9 @@ describe('FileManager module', () => {
         });
         it('FileManager class availability testing', (done: Function) => {
             (rteObj.element.querySelector('.e-toolbar-item button') as HTMLElement).click();
-            fileEle = document.body.querySelector('.e-rte-file-manager-dialog .e-filemanager');
-            expect(isNullOrUndefined(fileEle)).toBe(false);
             setTimeout(() => {
+                fileEle = document.body.querySelector('.e-rte-file-manager-dialog .e-filemanager');
+                expect(isNullOrUndefined(fileEle)).toBe(false);
                 done();
             }, 500);
         });
@@ -105,9 +106,9 @@ describe('FileManager module', () => {
         });
         it('FileManager class availability testing', (done: Function) => {
             (rteObj.element.querySelector('.e-toolbar-item button') as HTMLElement).click();
-            fileEle = document.body.querySelector('.e-rte-file-manager-dialog .e-filemanager');
-            expect(isNullOrUndefined(fileEle)).toBe(false);
             setTimeout(() => {
+                fileEle = document.body.querySelector('.e-rte-file-manager-dialog .e-filemanager');
+                expect(isNullOrUndefined(fileEle)).toBe(false);
                 done();
             }, 500);
         });
@@ -212,9 +213,9 @@ describe('FileManager module', () => {
         });
         it('FileManager class availability testing', (done: Function) => {
             (rteObj.element.querySelector('.e-toolbar-item button') as HTMLElement).click();
-            fileEle = document.body.querySelector('.e-rte-file-manager-dialog .e-filemanager');
-            expect(isNullOrUndefined(fileEle)).toBe(false);
             setTimeout(() => {
+                fileEle = document.body.querySelector('.e-rte-file-manager-dialog .e-filemanager');
+                expect(isNullOrUndefined(fileEle)).toBe(false);
                 done();
             }, 500);
         });
@@ -264,7 +265,7 @@ describe('FileManager module', () => {
         let rteEle: HTMLElement;
         let rteObj: RichTextEditor;
         let fileEle: HTMLElement;
-        let QTBarModule: IRenderer;
+        let QTBarModule: IQuickToolbar;
 
         beforeAll(() => {
             rteObj = renderRTE({
@@ -295,16 +296,18 @@ describe('FileManager module', () => {
         it('Image toolbar open test', (done: Function) => {
             let trg: HTMLElement = <HTMLElement>rteObj.element.querySelectorAll(".e-content img")[0];
             rteObj.formatter.editorManager.nodeSelection.setSelectionNode(document, trg);
-            QTBarModule.imageQTBar.showPopup(0, 0, trg);
+            const target: HTMLElement = rteObj.inputElement.querySelector('img');
+            const MOUSEUP_EVENT: MouseEvent = new MouseEvent('mouseup', BASIC_MOUSE_EVENT_INIT);
+            target.dispatchEvent(MOUSEUP_EVENT);
             setTimeout(() => {
                 let pop: Element = document.body.querySelector('.e-rte-quick-popup');
                 expect(isNullOrUndefined(pop)).toBe(false);
-                (pop.querySelector('.e-toolbar-item button') as HTMLElement).click();
+                (pop.querySelectorAll('.e-toolbar-item')[12] as HTMLElement).click();
                 setTimeout(() => {
                     fileEle = document.body.querySelector('.e-rte-file-manager-dialog .e-filemanager');
                     expect(isNullOrUndefined(fileEle)).toBe(false);
                     done();
-                }, 500);
+                }, 1000);
             }, 500);
         });
     });
@@ -338,10 +341,10 @@ describe('FileManager module', () => {
         });
         it('FileManager class availability testing', (done: Function) => {
             (rteObj.element.querySelector('.e-toolbar-item button') as HTMLElement).click();
-            fileEle = document.body.querySelector('.e-rte-file-manager-dialog');
-            expect(isNullOrUndefined(fileEle)).toBe(false);
-            rteObj.fileManagerModule.onDocumentClick({ target: ele });
             setTimeout(() => {
+                fileEle = document.body.querySelector('.e-rte-file-manager-dialog');
+                expect(isNullOrUndefined(fileEle)).toBe(false);
+                rteObj.fileManagerModule.onDocumentClick({ target: ele });
                 // Should Dialog close on document click
                 fileEle = document.body.querySelector('.e-rte-file-manager-dialog');
                 expect(isNullOrUndefined(fileEle)).toBe(true);
@@ -381,9 +384,9 @@ describe('FileManager module', () => {
         });
         it('FileManager class availability testing', (done: Function) => {
             (rteObj.element.querySelector('.e-toolbar-item button') as HTMLElement).click();
-            fileEle = document.body.querySelector('.e-rte-file-manager-dialog .e-filemanager');
-            expect(isNullOrUndefined(fileEle)).toBe(false);
             setTimeout(() => {
+                fileEle = document.body.querySelector('.e-rte-file-manager-dialog .e-filemanager');
+                expect(isNullOrUndefined(fileEle)).toBe(false);
                 done();
             }, 500);
         });
@@ -403,12 +406,18 @@ describe('FileManager module', () => {
     });
 
     describe('929530: Image src not updated when the action begin event argument are changed.', () => {
-        let rteObj: RichTextEditor;
-        let trg: HTMLElement;
-        let rteEle: HTMLElement;
-        let QTBarModule: IRenderer;
+        let editor: RichTextEditor;
+        function onActionBegin(e: ActionBeginEventArgs) {
+            if (e.requestType === 'File' || e.requestType === 'Replace') {
+                const url: string = e.itemCollection.url;
+                if (url.indexOf('?path') > -1) {
+                    const newURL: string = url.replace('?path=', '');
+                    e.itemCollection.url = newURL;
+                }
+            }
+        }
         beforeAll(() => {
-            rteObj = renderRTE({
+            editor = renderRTE({
                 toolbarSettings: {
                     items: ['FileManager']
                 },
@@ -423,51 +432,45 @@ describe('FileManager module', () => {
                 },
                 actionBegin: onActionBegin,
             });
-             function onActionBegin(e: ActionBeginEventArgs) {
-                 if (e.requestType === 'File' || e.requestType === 'Replace') {
-                     const url: string = e.itemCollection.url;
-                     if (url.indexOf('?path') > -1) {
-                         const newURL: string = url.replace('?path=', '');
-                         e.itemCollection.url = newURL;
-                     }
-                 }
-             }
-             rteEle = rteObj.element;
-             trg = <HTMLElement>rteEle.querySelectorAll(".e-content")[0];
-             let clickEvent: MouseEvent = document.createEvent("MouseEvents");
-             clickEvent.initEvent("mousedown", true, true);
-             trg.dispatchEvent(clickEvent);
-             QTBarModule = getQTBarModule(rteObj);
         });
         afterAll(() => {
-            destroy(rteObj);
+            destroy(editor);
         });
         it('Check the image src when insert image', (done: Function) => {
+            const INIT_MOUSEDOWN_EVENT: MouseEvent = new MouseEvent('mousedown', BASIC_MOUSE_EVENT_INIT);
+            editor.inputElement.dispatchEvent(INIT_MOUSEDOWN_EVENT);
+            (editor.element.querySelector('.e-toolbar-item button') as HTMLElement).click();
             setTimeout(() => {
-            (rteObj.element.querySelector('.e-toolbar-item button') as HTMLElement).click();
-            (rteObj.fileManagerModule as any).fileObj.trigger('fileSelect', { fileDetails: {  filterPath: '\\Pictures\\Employees', name: 'Adam.png', isFile: true, type: '.png' } });
-            let insertBtn: HTMLButtonElement = document.body.querySelector('.e-rte-file-manager-dialog button.e-primary');
-            insertBtn.click();
-            let imageElement: HTMLImageElement = document.body.querySelector('.e-rte-image');
-            expect(imageElement.src).toBe('https://ej2-aspcore-service.azurewebsites.net/api/FileManager/GetImage/Pictures/EmployeesAdam.png');
-            done();
-        }, 500);
-        });
-        it('Check the image src when replace image', (done: Function) => {
-            rteObj.value = '<img src="https://ej2-aspcore-service.azurewebsites.net/api/FileManager/GetImage/Pictures/Employees/Adam.png" class="e-rte-image" />';
-            rteObj.dataBind();
-            let imageElement: HTMLImageElement = rteObj.element.querySelector('.e-content .e-rte-image') as HTMLImageElement;
-            rteObj.formatter.editorManager.nodeSelection.setSelectionNode(document, imageElement);
-            QTBarModule.imageQTBar.showPopup(0, 0, imageElement);
-            setTimeout(() => {
-                let pop: Element = document.body.querySelector('.e-rte-quick-popup');
-                (pop.querySelector('.e-toolbar-item button') as HTMLElement).click();
-                (rteObj.fileManagerModule as any).fileObj.trigger('fileSelect', { fileDetails: { filterPath: '\\Pictures\\Employees', name: 'Andrew.png', isFile: true, type: '.png' } });
+                (editor.fileManagerModule as any).fileObj.trigger('fileSelect', { fileDetails: {  filterPath: '\\Pictures\\Employees\\', name: 'Adam.png', isFile: true, type: '.png' } });
                 let insertBtn: HTMLButtonElement = document.body.querySelector('.e-rte-file-manager-dialog button.e-primary');
                 insertBtn.click();
-                let imageElement: HTMLImageElement = document.body.querySelector('.e-rte-image');
-                expect(imageElement.src).toBe('https://ej2-aspcore-service.azurewebsites.net/api/FileManager/GetImage/Pictures/EmployeesAndrew.png');
-                done();
+                setTimeout(() => {
+                    let imageElement: HTMLImageElement = document.body.querySelector('.e-rte-image');
+                    expect(imageElement.src).toBe('https://ej2-aspcore-service.azurewebsites.net/api/FileManager/GetImage/Pictures/Employees/Adam.png');
+                    done();
+                }, 100);
+            }, 500);
+        });
+        it('Check the image src when replace image', (done: Function) => {
+            editor.inputElement.innerHTML = '<img src="https://ej2-aspcore-service.azurewebsites.net/api/FileManager/GetImage/Pictures/Employees/Adam.png" class="e-rte-image" />';
+            let imageElement: HTMLImageElement = editor.element.querySelector('.e-content .e-rte-image') as HTMLImageElement;
+            editor.formatter.editorManager.nodeSelection.setSelectionNode(document, imageElement);
+            const target: HTMLElement = editor.inputElement.querySelector('img');
+            const MOUSEUP_EVENT: MouseEvent = new MouseEvent('mouseup', BASIC_MOUSE_EVENT_INIT);
+            target.dispatchEvent(MOUSEUP_EVENT);
+            setTimeout(() => {
+                let pop: Element = document.body.querySelector('.e-rte-quick-popup');
+                (pop.querySelectorAll('.e-toolbar-item')[12] as HTMLElement).click();
+                setTimeout(() => {
+                    (editor.fileManagerModule as any).fileObj.trigger('fileSelect', { fileDetails: { filterPath: '\\Pictures\\Employees\\', name: 'Andrew.png', isFile: true, type: '.png' } });
+                    let insertBtn: HTMLButtonElement = document.body.querySelector('.e-rte-file-manager-dialog button.e-primary');
+                    insertBtn.click();
+                    setTimeout(() => {
+                        let imageElement: HTMLImageElement = document.body.querySelector('.e-rte-image');
+                        expect(imageElement.src).toBe('https://ej2-aspcore-service.azurewebsites.net/api/FileManager/GetImage/Pictures/Employees/Andrew.png');
+                        done();
+                    }, 100);
+                }, 100);
             }, 500);
         });
     });

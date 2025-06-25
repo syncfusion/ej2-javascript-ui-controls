@@ -104,7 +104,7 @@ export class SelectionCommands {
             const isFontStyle: boolean = (['fontcolor', 'fontname', 'fontsize', 'backgroundcolor'].indexOf(format) > -1);
             let isMACMentionStartEnd: boolean = false;
             let mentionPosition: MentionPositionType;
-            if (SelectionCommands.userAgentData.isSafari()) {
+            if (SelectionCommands.userAgentData.isSafari() && nodes.length > 0) {
                 mentionPosition = SelectionCommands.isMentionStartOrEnd(endNode as HTMLDivElement, nodes[0], nodes[nodes.length - 1]);
                 isMACMentionStartEnd = mentionPosition !== 'None';
             }
@@ -485,7 +485,7 @@ export class SelectionCommands {
             }
             if (!isNOU(liElement) && liElement.tagName.toLowerCase() === 'li' &&
                 (liElement.textContent.trim() === nodes[index as number].textContent.trim() ||
-                liElement.innerText.split('\n')[0] === nodes[index as number].textContent.trim() )) {
+                (liElement.innerText.split('\n').length === nodes.length && liElement.innerText.split('\n')[0] === nodes[index as number].textContent.trim()))) {
                 if (format === 'bold') {
                     liElement.style.fontWeight = '';
                 } else if (format === 'italic') {
@@ -689,8 +689,8 @@ export class SelectionCommands {
                             liElement = parentElement;
                         }
                         if (format === 'fontcolor' || format === 'fontname' || format === 'fontsize') {
-                            const parentElem: HTMLElement = nodes[index as number].parentElement;
-                            if (!isNOU(parentElem) && parentElem.childNodes){
+                            const parentElem: HTMLElement = parentElement && parentElement.tagName === 'LI' ? parentElement : nodes[index as number].parentElement;
+                            if (!isNOU(parentElem) && parentElem.childNodes) {
                                 for (let i: number = 0; i < parentElem.childNodes.length; i++) {
                                     if (this.concatenateTextExcludingList(nodes, index) === nodes[index as number].textContent){
                                         let liElement: HTMLElement;
@@ -798,7 +798,7 @@ export class SelectionCommands {
                         }
                         if (!isNOU(liElement) && liElement.tagName.toLowerCase() === 'li' &&
                         (liElement.textContent.trim() === nodes[index as number].textContent.trim() ||
-                        liElement.innerText.split('\n')[0] === nodes[index as number].textContent.trim() )) {
+                        (liElement.innerText.split('\n').length === nodes.length && liElement.innerText.split('\n')[0] === nodes[index as number].textContent.trim()))) {
                             if (format === 'bold') {
                                 liElement.style.fontWeight = 'bold';
                             } else if (format === 'italic') {

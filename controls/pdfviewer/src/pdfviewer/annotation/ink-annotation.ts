@@ -436,6 +436,8 @@ export class InkAnnotation {
                             updateAnnotationAllowedInteractions(currentAnnotation);
                     currentAnnotation.AnnotationSettings = currentAnnotation.AnnotationSettings ?
                         currentAnnotation.AnnotationSettings : this.pdfViewer.annotationModule.updateAnnotationSettings(currentAnnotation);
+                    currentAnnotation.State = currentAnnotation.State ? currentAnnotation.State : '';
+                    currentAnnotation.StateModel = currentAnnotation.StateModel ? currentAnnotation.StateModel : '';
                     annot = {
                         id: 'ink' + this.pdfViewerBase.inkCount, bounds: { x: currentLeft, y: currentTop, width: currentWidth, height: currentHeight }, pageIndex: pageIndex, data: data,
                         shapeAnnotationType: 'Ink', opacity: currentAnnotation.Opacity, strokeColor: currentAnnotation.StrokeColor, thickness: currentAnnotation.Thickness, annotName: currentAnnotation.AnnotName,
@@ -445,7 +447,9 @@ export class InkAnnotation {
                         author: currentAnnotation.Author, allowedInteractions: currentAnnotation.allowedInteractions,
                         subject: currentAnnotation.Subject, modifiedDate: currentAnnotation.ModifiedDate,
 
-                        review: { state: '', stateModel: '', modifiedDate: currentAnnotation.ModifiedDate, author: currentAnnotation.Author }, notes: currentAnnotation.Note, annotationSettings: currentAnnotation.AnnotationSettings,
+                        review: { state: currentAnnotation.State, stateModel: currentAnnotation.StateModel,
+                            modifiedDate: currentAnnotation.ModifiedDate, author: currentAnnotation.Author }, notes:
+                                currentAnnotation.Note, annotationSettings: currentAnnotation.AnnotationSettings,
                         annotationSelectorSettings: selectorSettings, customData: customData, isPrint: isPrint,
                         isCommentLock: currentAnnotation.IsCommentLock
                     };
@@ -679,6 +683,22 @@ export class InkAnnotation {
             const annotationStringified: string = JSON.stringify(annotObject);
             PdfViewerBase.sessionStorageManager.setItem(this.pdfViewerBase.documentId + '_annotations_ink', annotationStringified);
         }
+    }
+
+    /**
+     * @private
+     * @returns {void}
+     */
+    public destroy(): void {
+        this.newObject = null;
+        this.outputString = null;
+        this.mouseX = null;
+        this.mouseY = null;
+        this.inkAnnotationindex = null;
+        this.isAddAnnotationProgramatically = null;
+        this.currentPageNumber = null;
+        this.inkAnnotationInitialZoom = null;
+        this.inkPathDataCollection = null;
     }
 
     /**

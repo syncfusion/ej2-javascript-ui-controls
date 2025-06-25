@@ -44,7 +44,7 @@ export class FooterRenderer extends ContentRender implements IRenderer {
         const innerDiv: Element = this.parent.createElement('div', { className: 'e-summarycontent' });
         div.appendChild(innerDiv);
         this.setPanel(div);
-        if (this.parent.getPager() != null) {
+        if (this.parent.allowPaging && this.parent.getPager() != null) {
             this.parent.element.insertBefore(div, this.parent.getPager());
         } else {
             this.parent.element.appendChild(div);

@@ -3052,7 +3052,7 @@ describe('Gantt editing field as null', () => {
         input.value = -3;
         let element: HTMLElement = ganttObj.element.querySelector('#treeGrid' + ganttObj.element.id + '_gridcontrol_content_table > tbody > tr:nth-child(3) > td:nth-child(2)') as HTMLElement;
         triggerMouseEvent(element, 'click');
-        expect(ganttObj.currentViewData[1].ganttProperties.duration).toBe(0);
+        expect(ganttObj.currentViewData[1].ganttProperties.duration).toBe(3);
     });
     afterAll(() => {
         if (ganttObj) {
@@ -6594,6 +6594,7 @@ describe('Parent taskbar renders  incorrectly after adding duration to a No sche
         }
     });
 });
+
 describe('Cell editing dependency with updateOffsetOnTaskbarEdit', () => {
     let ganttObj: Gantt;
     beforeAll((done: Function) => {
@@ -6827,5 +6828,109 @@ describe('Cell editing dependency with updateOffsetOnTaskbarEdit', () => {
         if (ganttObj) {
             destroyGantt(ganttObj);
         }
+    });
+});
+describe('Coverage for cell edit', () => {
+    let ganttObj: Gantt;
+    const projectNewData = [
+        {
+            TaskID: 1,
+            TaskName: 'Product Concept',
+            StartDate: new Date('04/02/2019'),
+            EndDate: new Date('04/21/2019'),
+            BaselineStartDate: new Date('04/01/2019'),
+            BaselineEndDate: new Date('04/20/2019'),
+            taskType: 'FixedWork',
+            Duration: 0,
+            resources: [{ resourceId: 1, resourceUnit: 100 }]
+        }
+    ];
+    beforeAll((done: Function) => {
+        ganttObj = createGantt({
+            dataSource: projectNewData,
+            taskFields: {
+                id: 'TaskID',
+                name: 'TaskName',
+                startDate: 'StartDate',
+                endDate: 'EndDate',
+                duration: 'Duration',
+                progress: 'Progress',
+                baselineStartDate: "BaselineStartDate",
+                baselineEndDate: "BaselineEndDate",
+                resourceInfo: 'resources',
+                work: 'Work',
+                child: 'subtasks',
+                type: 'taskType',
+                milestone: 'isMilestone',
+                dependency: 'dependency',
+            },
+            renderBaseline: true,
+            weekWorkingTime: [{ dayOfWeek: 'Monday', timeRange: [{ from: 8, to: 17 }] }],
+            editSettings: {
+                allowAdding: true,
+                allowEditing: true,
+                allowDeleting: true,
+                allowTaskbarEditing: true,
+                showDeleteConfirmDialog: true,
+            },
+            enableContextMenu: true,
+            resources: resourceResources,
+            resourceFields: {
+                id: 'resourceId',
+                name: 'resourceName',
+                unit: 'Unit',
+            },
+            workUnit: 'Hour',
+            taskType: 'FixedDuration',
+            toolbar: [
+                'Add',
+                'Edit',
+                'Update',
+                'Delete',
+                'Cancel',
+                'ExpandAll',
+                'CollapseAll',
+                'Refresh',
+            ],
+            allowSelection: true,
+            height: '450px',
+            treeColumnIndex: 1,
+            columns: [
+                { field: 'TaskID', visible: false },
+                { field: 'TaskName', headerText: 'Task Name', width: '180' },
+                {
+                    field: 'BaselineStartDate'
+                },
+                {
+                    field: 'StartDate',
+                    headerText: 'Start Date',
+                },
+                {
+                    field: 'EndDate',
+                    headerText: 'End Date',
+                },
+                { field: 'resources', headerText: 'Resources', width: '160' },
+                { field: 'Work', width: '110' },
+                { field: 'Duration', width: '100' },
+                { field: 'taskType', headerText: 'Task Type', width: '110' },
+            ],
+        }, done);
+    });
+
+    afterAll(() => {
+        if (ganttObj) {
+            destroyGantt(ganttObj);
+        }
+    });
+
+    it('editing baseline start date', () => {
+        let baselineDate: HTMLElement = ganttObj.element.querySelector('#treeGrid' + ganttObj.element.id + '_gridcontrol_content_table > tbody > tr:nth-child(1) > td:nth-child(3)') as HTMLElement;
+        triggerMouseEvent(baselineDate, 'dblclick');
+        let input: any = (document.querySelector('#treeGrid' + ganttObj.element.id + '_gridcontrolBaselineStartDate') as any).ej2_instances[0];
+        input.value = new Date('04/04/2019');
+        input.dataBind();
+        let element: HTMLElement = ganttObj.element.querySelector('#treeGrid' + ganttObj.element.id + '_gridcontrol_content_table > tbody > tr:nth-child(1) > td:nth-child(2)') as HTMLElement;
+        triggerMouseEvent(element, 'click');
+        expect(ganttObj.flatData[0].ganttProperties.baselineStartDate.getDate()).toBe(4);
     });
 });

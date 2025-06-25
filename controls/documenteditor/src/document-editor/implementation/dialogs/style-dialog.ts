@@ -92,6 +92,7 @@ export class StyleDialog {
     private indentingDiv: HTMLElement;
     private decreaseIndent: HTMLElement;
     private increaseindent: HTMLElement;
+    private colorPickerDiv: HTMLElement;
 
     private setLeftAlignmentClickHandler: EventListenerOrEventListenerObject = this.onSetLeftAlignmentClick.bind(this);
     private setCenterAlignmentClickHandler: EventListenerOrEventListenerObject = this.onSetCenterAlignmentClick.bind(this);
@@ -353,10 +354,12 @@ export class StyleDialog {
         this.underline = this.createButtonElement(this.fontGroupButton, 'e-de-underline', 'e-de-style-icon-button-size', this.documentHelper.owner.containerId + '_style_underline');
         this.underline.setAttribute('aria-label','underline');
         this.underline.addEventListener('click', this.setUnderlinePropertyHandler);
+        this.colorPickerDiv = createElement('div', { className: 'e-de-style-font-color-picker' });
+        parentDiv.appendChild(this.colorPickerDiv);
         this.fontColorElement = createElement('input', { attrs: { type: 'color' }, className: 'e-de-style-icon-button-size' });
-        parentDiv.appendChild(this.fontColorElement);
+        this.colorPickerDiv.appendChild(this.fontColorElement);
         const {columns , createPopupOnClick  , disabled , enablePersistence , enableRtl , inline , mode , modeSwitcher , noColor , presetColors , showButtons} = this.documentHelper.owner.documentEditorSettings.colorPickerSettings;
-        this.fontColor = new ColorPicker({ cssClass: 'e-de-style-font-color-picker', enableRtl: isRtl, change: this.fontColorUpdate, locale: this.documentHelper.owner.locale, enableOpacity: false , mode:mode , modeSwitcher:modeSwitcher , showButtons: showButtons , columns:columns , createPopupOnClick : createPopupOnClick , disabled : disabled , enablePersistence : enablePersistence , inline : inline , noColor : noColor , presetColors : presetColors });
+        this.fontColor = new ColorPicker({ enableRtl: isRtl, change: this.fontColorUpdate, locale: this.documentHelper.owner.locale, enableOpacity: false , mode:mode , modeSwitcher:modeSwitcher , showButtons: showButtons , columns:columns , createPopupOnClick : createPopupOnClick , disabled : disabled , enablePersistence : enablePersistence , inline : inline , noColor : noColor , presetColors : presetColors });
         this.documentHelper.fontColor = this.fontColor;
         this.fontColor.appendTo(this.fontColorElement);
     }
@@ -1450,6 +1453,10 @@ export class StyleDialog {
         if (this.increaseindent) {
             this.increaseindent.remove();
             this.increaseindent = undefined;
+        }
+        if (this.colorPickerDiv) {
+            this.colorPickerDiv.remove();
+            this.colorPickerDiv = undefined;
         }
     }
 }

@@ -2,26 +2,27 @@
 
 ## [Unreleased]
 
-## 29.2.11 (2025-06-17)
+## 30.1.37 (2025-06-25)
 
 ### DocumentEditor
 
 #### Bug Fixes
 
-- `#I717795` - Fixed the duplicate text insertion issue on mobile devices when using a custom keyboard.
-- `#I725685` - Resolved the content overlap issue when copying and pasting list content inside a table cell.
-- `#I686769` - Fixed the RTL text layout problem in exported DOCX documents.
-- `#I682661` - Corrected the `navigateToNextEditingRegion` API to work properly when the selection is outside the editing region.
-- `#I728691` - Fixed the duplicate table issue in exported DOCX documents when the spell checker is enabled.
-- `#I725974` - Handled alert pop-ups when a dropdown form field list exceeds its maximum limit.
-- `#I731469` - Fixed a script error that occurred when double-clicking inside a table cell while using a custom toolbar.
-- `#I718435` - Improved performance when inserting text into an auto-fit table.
-- `#I723712` - Fixed the text offset issue that occurred when a line starts with a space character.
-- `#I731065` - Resolved the bookmark positioning issue when pressing the Enter key if a bookmark ends after a paragraph mark.
-- `#I727094` - Fixed the IME text insertion issue when using backward text selection.
-- `#I728082` - Resolved the rendering issue of list elements when the paragraph’s hidden property is enabled.
-- `#I726625` - Fixed the comment pane behaviour after disabling the restrict editing mode.
-- `#I724502`, `#I724504`, `#I725183` - Resolved various issues with content controls during paste and backspace operations.
+- `#I720298` - Resolved the content overlapping issue that occurred when deleting section break content.
+- `#I725100` - Fixed issues in the borders and shading dialog of the Document Editor.
+- `#I726431` - Fixed the table of contents display issue and the table layout problem in multi-column sections.
+- `#I725020` - Resolved the document opening issue on Mac devices.
+- `#I720002` - Fixed the exporting issue for nested block content controls.
+- `#I712003` - Resolved the table resizing issue when selecting a table row.
+
+##### Features
+
+- `#I364681`, `#I659735`, `#I659690`, `#I690350`, `#I706236`, `#I683493`, `#I713243`, `#I386519` - Added the ribbon interface support in Document Editor.
+- `#I702584` - Added support for removing empty paragraph based on current selection.
+- `#I712717` - Added support for grouping undo and redo action.
+- `#I710413` - Added support for synchronized scrolling.
+- `#I728576` - Added support to enable and disable layout options.
+- `#I273578` - Added support to preserve group shape.
 
 ## 29.2.10 (2025-06-10)
 

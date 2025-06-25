@@ -1,17 +1,19 @@
 /**
  * Defines util methods used by Rich Text Editor.
  */
-import { isNullOrUndefined as isNOU, addClass, removeClass, L10n, selectAll, createElement } from '@syncfusion/ej2-base';
+import { isNullOrUndefined as isNOU, addClass, removeClass, L10n, selectAll, createElement, isNullOrUndefined } from '@syncfusion/ej2-base';
 import { Browser, detach, SanitizeHtmlHelper, extend } from '@syncfusion/ej2-base';
 import * as classes from '../base/classes';
 import * as CONSTANT from '../base/constant';
 import * as model from '../models/items';
+import * as commonModel from '../../models/items';
 import { BaseToolbar } from '../actions/base-toolbar';
 import { DropDownButtons } from '../actions/dropdown-buttons';
 import { ServiceLocator } from '../services/service-locator';
-import { toolsLocale, fontNameLocale, formatsLocale, numberFormatListLocale, bulletFormatListLocale} from '../models/default-locale';
-import { IToolsItemConfigs, IRichTextEditor, BeforeSanitizeHtmlArgs } from '../base/interface';
-import { IToolbarItems, IDropDownItemModel, ISetToolbarStatusArgs, IToolbarItemModel } from './interface';
+import { toolsLocale, fontNameLocale, formatsLocale, numberFormatListLocale, bulletFormatListLocale } from '../models/default-locale';
+import { IRichTextEditor } from '../base/interface';
+import { ISetToolbarStatusArgs } from './interface';
+import { IToolbarItems, IDropDownItemModel, IToolbarItemModel, BeforeSanitizeHtmlArgs, IToolsItemConfigs } from '../../common/interface';
 
 const undoRedoItems: string[] = ['Undo', 'Redo'];
 const inlineNode: string[] = ['a', 'abbr', 'acronym', 'audio', 'b', 'bdi', 'bdo', 'big', 'br', 'button',
@@ -94,18 +96,6 @@ export function getDropDownValue(items: IDropDownItemModel[], value: string, typ
 }
 
 /**
- * @returns {boolean} - returns the boolean value
- * @hidden
- */
-export function isIDevice(): boolean {
-    let result: boolean = false;
-    if (Browser.isDevice && Browser.isIos) {
-        result = true;
-    }
-    return result;
-}
-
-/**
  * @param {string} value - specifies the value
  * @returns {string} - returns the string value
  * @hidden
@@ -163,9 +153,9 @@ export function setToolbarStatus(e: ISetToolbarStatusArgs, isPopToolbar: boolean
         for (let j: number = 0; j < e.tbItems.length; j++) {
             const item: string = e.tbItems[j as number].subCommand;
             const itemStr: string = item && item.toLocaleLowerCase();
-            if (item && (itemStr === key) || (item === 'UL' && key === 'unorderedlist') || (item === 'OL' && key === 'orderedlist') ||
-            (itemStr === 'pre' && key === 'insertcode') || (item === 'NumberFormatList' && key === 'numberFormatList' ||
-            item === 'BulletFormatList' && key === 'bulletFormatList')) {
+            if (item && (itemStr === key) || (item === 'UL' && key === 'unorderedlist') || (item === 'OL' && key === 'orderedlist') || (item === 'CodeBlock' && key === 'isCodeBlock') ||
+                (itemStr === 'pre' && key === 'insertcode') || (item === 'NumberFormatList' && key === 'numberFormatList' ||
+                    item === 'BulletFormatList' && key === 'bulletFormatList')) {
                 if (typeof data[`${key}`] === 'boolean') {
                     if (data[`${key}`] === true) {
                         addClass([e.tbElements[j as number]], [classes.CLS_ACTIVE]);
@@ -178,7 +168,7 @@ export function setToolbarStatus(e: ISetToolbarStatusArgs, isPopToolbar: boolean
                     let result: string = '';
                     switch (key) {
                     case 'formats': {
-                        if (isNOU(dropDown.formatDropDown) || isPopToolbar ||
+                        if (isNOU(dropDown.formatDropDown) ||
                                 (!isNOU(dropDown.formatDropDown) && dropDown.formatDropDown.isDestroyed)) {
                             break;
                         }
@@ -192,7 +182,8 @@ export function setToolbarStatus(e: ISetToolbarStatusArgs, isPopToolbar: boolean
                                 + (isNOU(result) ? formatContent : result) +
                                 '</span></span>');
                         dropDown.formatDropDown.dataBind();
-                        break; }
+                        break;
+                    }
                     case 'alignments': {
                         if (isNOU(dropDown.alignDropDown) ||
                                 (!isNOU(dropDown.alignDropDown) && dropDown.alignDropDown.isDestroyed)) {
@@ -202,47 +193,51 @@ export function setToolbarStatus(e: ISetToolbarStatusArgs, isPopToolbar: boolean
                         result = getDropDownValue(alignItems, value, 'subCommand', 'iconCss');
                         dropDown.alignDropDown.iconCss = isNOU(result) ? 'e-icons e-justify-left' : result;
                         dropDown.alignDropDown.dataBind();
-                        break; }
+                        break;
+                    }
                     case 'fontname': {
-                        if (isNOU(dropDown.fontNameDropDown) || isPopToolbar ||
-                            (!isNOU(dropDown.fontNameDropDown) && dropDown.fontNameDropDown.isDestroyed)) {
+                        if (isNOU(dropDown.fontNameDropDown) ||
+                                (!isNOU(dropDown.fontNameDropDown) && dropDown.fontNameDropDown.isDestroyed)) {
                             break;
                         }
                         const fontNameItems: IDropDownItemModel[] = e.parent.fontFamily.items;
                         result = value === 'empty' ? '' : getDropDownValue(fontNameItems, value, 'value', 'text');
-                        const fontNameContent: string = isNOU(e.parent.fontFamily.default) ? (fontNameItems.length === 0 ) ? self.serviceLocator.getService<L10n>('rteLocale').getConstant('fontName') : fontNameItems[0].text :
+                        const fontNameContent: string = isNOU(e.parent.fontFamily.default) ? (fontNameItems.length === 0) ? self.serviceLocator.getService<L10n>('rteLocale').getConstant('fontName') : fontNameItems[0].text :
                             e.parent.fontFamily.default;
                         const name: string = (isNOU(result) ? fontNameContent : result) === 'Default' ? self.serviceLocator.getService<L10n>('rteLocale').getConstant('fontName')
                             : (isNOU(result) ? fontNameContent : result);
                         const htmlValue: string = ('<span style="display: inline-flex;' +
-                            'width:' + e.parent.fontFamily.width + '" >' +
-                            '<span class="e-rte-dropdown-btn-text' + (isNOU(e.parent.cssClass) ? '' : ' ' + e.parent.cssClass) + '">'
-                            + name + '</span></span>');
+                                'width:' + e.parent.fontFamily.width + '" >' +
+                                '<span class="e-rte-dropdown-btn-text' + (isNOU(e.parent.cssClass) ? '' : ' ' + e.parent.cssClass) + '">'
+                                + name + '</span></span>');
                         updateDropdownContent(dropDown.fontNameDropDown, htmlValue);
-                        break; }
+                        break;
+                    }
                     case 'fontsize': {
                         if (isNOU(dropDown.fontSizeDropDown) ||
-                            (!isNOU(dropDown.fontSizeDropDown) && dropDown.fontSizeDropDown.isDestroyed)) {
+                                (!isNOU(dropDown.fontSizeDropDown) && dropDown.fontSizeDropDown.isDestroyed)) {
                             break;
                         }
                         const fontSizeItems: IDropDownItemModel[] = e.parent.fontSize.items;
-                        const fontSizeContent: string = isNOU(e.parent.fontSize.default) ? (fontSizeItems.length === 0 ) ? self.serviceLocator.getService<L10n>('rteLocale').getConstant('fontSize') : fontSizeItems[0].text :
+                        const fontSizeContent: string = isNOU(e.parent.fontSize.default) ? (fontSizeItems.length === 0) ? self.serviceLocator.getService<L10n>('rteLocale').getConstant('fontSize') : fontSizeItems[0].text :
                             e.parent.fontSize.default;
                         const fontSizeToolbarText: string = getDropDownValue(fontSizeItems, (value === '' ? fontSizeContent.replace(/\s/g, '') : value), (fontSizeItems.length > 0 && fontSizeItems[0] && fontSizeContent.replace(/\s/g, '') === fontSizeItems[0].text && value === '') ? 'text' : 'value', 'text');
                         result = value === 'empty' ? '' : (fontSizeToolbarText === 'Default') ? self.serviceLocator.getService<L10n>('rteLocale').getConstant('fontSize') : fontSizeToolbarText;
                         const htmlValue: string = ('<span style="display: inline-flex;' +
-                            'width:' + e.parent.fontSize.width + '" >' +
-                            '<span class="e-rte-dropdown-btn-text' + (isNOU(e.parent.cssClass) ? '' : ' ' + e.parent.cssClass) + '">'
-                            + getFormattedFontSize(result) + '</span></span>');
+                                'width:' + e.parent.fontSize.width + '" >' +
+                                '<span class="e-rte-dropdown-btn-text' + (isNOU(e.parent.cssClass) ? '' : ' ' + e.parent.cssClass) + '">'
+                                + getFormattedFontSize(result) + '</span></span>');
                         updateDropdownContent(dropDown.fontSizeDropDown, htmlValue);
-                        break; }
+                        break;
+                    }
                     case 'bulletFormatList':
                     case 'numberFormatList': {
                         if (value !== '') {
                             addClass([e.tbElements[j as number]], [classes.CLS_ACTIVE]);
                         } else {
                             removeClass([e.tbElements[j as number]], [classes.CLS_ACTIVE]);
-                        } }
+                        }
+                    }
                     }
                 }
             }
@@ -308,6 +303,9 @@ export function getTBarItemsIndex(items: string[], toolbarItems: IToolbarItemMod
                 } else if (items[i as number] === 'Blockquote' && toolbarItems[j as number].subCommand === 'blockquote') {
                     itemsIndex.push(j);
                     break;
+                } else if (typeof items[i as number] === 'string' && items[i as number].toLocaleLowerCase() === 'inlinecode' && toolbarItems[j as number].subCommand === 'InlineCode') {
+                    itemsIndex.push(j);
+                    break;
                 } else if (items[i as number] === 'FileManager' && toolbarItems[j as number].subCommand === 'File') {
                     itemsIndex.push(j);
                     break;
@@ -334,7 +332,7 @@ export function updateUndoRedoStatus(baseToolbar: BaseToolbar, undoRedoStatus: {
     let i: number = 0;
     const trgItems: number[] = getTBarItemsIndex(getCollection(undoRedoItems), baseToolbar.toolbarObj.items);
     const tbItems: HTMLElement[] = selectAll('.' + classes.CLS_TB_ITEM, baseToolbar.toolbarObj.element);
-    const  keys: string[] = Object.keys(undoRedoStatus);
+    const keys: string[] = Object.keys(undoRedoStatus);
     for (const key of keys) {
         const target: HTMLElement = tbItems[trgItems[i as number]];
         if (target) {
@@ -413,7 +411,7 @@ export function toObjectLowerCase(obj: { [key: string]: IToolsItemConfigs }): { 
 export function getEditValue(value: string, rteObj: IRichTextEditor): string {
     let val: string;
     if (value !== null && value !== '') {
-        val = rteObj.enableHtmlEncode ? updateTextNode(decode(value), rteObj) : updateTextNode(value, rteObj);
+        val = rteObj.enableHtmlEncode ? formatRTEContent(decode(value), rteObj) : formatRTEContent(value, rteObj);
         rteObj.setProperties({ value: val }, true);
     } else {
         if (rteObj.enterKey === 'DIV') {
@@ -432,7 +430,7 @@ export function getEditValue(value: string, rteObj: IRichTextEditor): string {
  * @returns {string} - returns the string
  * @hidden
  */
-export function updateTextNode(value: string, rteObj?: IRichTextEditor): string {
+export function formatRTEContent(value: string, rteObj?: IRichTextEditor): string {
     const tempNode: HTMLElement = document.createElement('div');
     const resultElm: HTMLElement = document.createElement('div');
     const childNodes: NodeListOf<Node> = tempNode.childNodes as NodeListOf<Node>;
@@ -444,6 +442,7 @@ export function updateTextNode(value: string, rteObj?: IRichTextEditor): string 
         let insertElem: HTMLElement;
         while (tempNode.firstChild) {
             const emptyBlockElem: NodeListOf<Element> = tempNode.querySelectorAll(CONSTANT.blockEmptyNodes);
+            let isEmptySpace: boolean = false;
             for (let i: number = 0; i < emptyBlockElem.length; i++) {
                 emptyBlockElem[i as number].innerHTML = '<br>';
             }
@@ -460,9 +459,22 @@ export function updateTextNode(value: string, rteObj?: IRichTextEditor): string 
             for (let i: number = 0; i < emptyInlineElem.length; i++) {
                 emptyInlineElem[i as number].innerHTML = '&ZeroWidthSpace;';
             }
+            if (tempNode.firstChild.nodeName === '#text' && tempNode.firstChild.textContent === ' ') {
+                const inlineElements: string[] = [
+                    'A', 'ABBR', 'ACRONYM', 'B', 'BDO', 'BIG', 'BR', 'BUTTON', 'CITE', 'CODE', 'DFN', 'EM', 'I', 'INPUT',
+                    'KBD', 'LABEL', 'MAP', 'OBJECT', 'Q', 'SAMP', 'SCRIPT', 'SELECT', 'SMALL', 'SPAN', 'STRONG', 'SUB', 'SUP',
+                    'TEXTAREA', 'TIME', 'TT', 'U', 'VAR', 'WBR'
+                ];
+                if (!isNullOrUndefined(tempNode.firstChild.nextSibling)
+                    && inlineElements.indexOf(tempNode.firstChild.nextSibling.nodeName) !== -1) {
+                    isEmptySpace = false;
+                } else {
+                    isEmptySpace = true;
+                }
+            }
             if (rteObj.enterKey !== 'BR' && ((tempNode.firstChild.nodeName === '#text' &&
-            (tempNode.firstChild.textContent.indexOf('\n') < 0 || tempNode.firstChild.textContent.trim() !== '')) ||
-            inlineNode.indexOf(tempNode.firstChild.nodeName.toLocaleLowerCase()) >= 0)) {
+                (tempNode.firstChild.textContent.indexOf('\n') < 0 || tempNode.firstChild.textContent.trim() !== '')) ||
+                inlineNode.indexOf(tempNode.firstChild.nodeName.toLocaleLowerCase()) >= 0) && !isEmptySpace) {
                 if (!isPreviousInlineElem) {
                     if (rteObj.enterKey === 'DIV') {
                         insertElem = createElement('div');
@@ -477,7 +489,7 @@ export function updateTextNode(value: string, rteObj?: IRichTextEditor): string 
                 previousParent = insertElem;
                 isPreviousInlineElem = true;
             } else if (tempNode.firstChild.nodeName === '#text' && (tempNode.firstChild.textContent === '\n' ||
-            (tempNode.firstChild.textContent.indexOf('\n') >= 0 && tempNode.firstChild.textContent.trim() === ''))) {
+                (tempNode.firstChild.textContent.indexOf('\n') >= 0 && tempNode.firstChild.textContent.trim() === '') || isEmptySpace)) {
                 detach(tempNode.firstChild);
             } else {
                 resultElm.appendChild(tempNode.firstChild);
@@ -526,9 +538,9 @@ export function getDefaultValue(rteObj: IRichTextEditor): string {
  */
 export function isEditableValueEmpty(value: string): boolean {
     return (value === '<p><br></p>' || value === '&lt;p&gt;&lt;br&gt;&lt;/p&gt;'
-    || value === '<div><br></div>' || value === '&lt;div&gt;&lt;br&gt;&lt;/div&gt;'
-    || value === '<br>' || value === '&lt;br&gt;'
-    || value === '') ? true : false;
+        || value === '<div><br></div>' || value === '&lt;div&gt;&lt;br&gt;&lt;/div&gt;'
+        || value === '<br>' || value === '&lt;br&gt;'
+        || value === '') ? true : false;
 }
 
 /**
@@ -622,24 +634,6 @@ export function parseHelper(value: string): string {
 }
 
 /**
- * @param {string} dataUrl - specifies the string value
- * @returns {BaseToolbar} - returns the value
- * @hidden
- */
-//Converting the base64 url to blob
-export function convertToBlob(dataUrl: string): Blob {
-    const arr: string[] = dataUrl.split(',');
-    const mime: string = arr[0].match(/:(.*?);/)[1];
-    const bstr: string = atob(arr[1]);
-    let n: number = bstr.length;
-    const u8arr: Uint8Array = new Uint8Array(n);
-    while (n--) {
-        u8arr[n as number] = bstr.charCodeAt(n);
-    }
-    return new Blob([u8arr], { type: mime });
-}
-
-/**
  * @param {IRichTextEditor} self - specifies the rte
  * @param {string} localeItems - specifies the locale items
  * @param {IDropDownItemModel} item - specifies the dropdown item
@@ -656,97 +650,23 @@ export function getLocaleFontFormat(self: IRichTextEditor, localeItems: { [ket: 
 }
 
 /**
- * @param {string} value - specifies the string value
- * @param {string} editorMode - specifies the string value
- * @returns {string} - returns the string value
- * @hidden
- */
-export function resetContentEditableElements(value: string, editorMode: string): string {
-    if (editorMode && editorMode === 'HTML' && value) {
-        const valueElementWrapper: HTMLElement = document.createElement('div');
-        valueElementWrapper.innerHTML = value;
-        valueElementWrapper.querySelectorAll('.e-img-inner').forEach((el: Element) => {
-            el.setAttribute('contenteditable', 'true');
-        });
-        value = valueElementWrapper.innerHTML;
-        valueElementWrapper.remove();
-    }
-    return value;
-}
-
-/**
- * @param {string} value - specifies the string value
- * @param {string} editorMode - specifies the string value
- * @returns {string} - returns the string value
- * @hidden
- */
-export function cleanupInternalElements(value: string, editorMode: string): string {
-    if (value && editorMode) {
-        const valueElementWrapper: HTMLElement = document.createElement('div');
-        if (editorMode === 'HTML') {
-            valueElementWrapper.innerHTML = value;
-            valueElementWrapper.querySelectorAll('.e-img-inner').forEach((el: Element) => {
-                el.setAttribute('contenteditable', 'false');
-            });
-            const item: NodeListOf<Element> = valueElementWrapper.querySelectorAll('.e-column-resize, .e-row-resize, .e-table-box, .e-table-rhelper, .e-img-resize, .e-vid-resize');
-            if (item.length > 0) {
-                for (let i: number = 0; i < item.length; i++) {
-                    detach(item[i as number]);
-                }
-            }
-            removeSelectionClassStates(valueElementWrapper);
-        } else {
-            valueElementWrapper.textContent = value;
-        }
-        return (editorMode === 'Markdown') ? valueElementWrapper.textContent.replace(/&lt;/g, '<').replace(/&gt;/g, '>').replace(/&amp;/g, '&') : valueElementWrapper.innerHTML;
-    }
-    return value;
-}
-
-/**
- * @param {HTMLElement} element - specifies the element
- * @returns {void}
- * @hidden
- */
-export function removeSelectionClassStates(element: HTMLElement): void {
-    const classNames: string[] = [classes.CLS_IMG_FOCUS, classes.CLS_TABLE_SEL,
-        classes.CLS_TABLE_MULTI_CELL, classes.CLS_TABLE_SEL_END, classes.CLS_VID_FOCUS,
-        classes.CLS_AUD_FOCUS, classes.CLS_RESIZE, classes.CLS_RTE_DRAG_IMAGE];
-    for (let i: number = 0; i < classNames.length; i++) {
-        const item: NodeListOf<Element> = element.querySelectorAll('.' + classNames[i as number]);
-        removeClass(item, classNames[i as number]);
-        if (item.length === 0) { continue; }
-        for (let j: number = 0; j < item.length; j++) {
-            if (item[j as number].classList.length === 0) {
-                item[j as number].removeAttribute('class');
-            }
-            if ((item[j as number].nodeName === 'IMG' || item[j as number].nodeName === 'VIDEO') &&
-                (item[j as number] as HTMLElement).style.outline !== '') {
-                (item[j as number] as HTMLElement).style.outline = '';
-            }
-        }
-    }
-    element.querySelectorAll('[class=""]').forEach((el: Element) => {
-        el.removeAttribute('class');
-    });
-}
-
-/**
  * @param {IRichTextEditor} self - specifies the rte
  * @returns {void}
  * @hidden
  */
 export function updateDropDownFontFormatLocale(self: IRichTextEditor): void {
-    model.fontFamily.forEach((item: IDropDownItemModel, i: number) => {
-        model.fontFamily[i as number].text = getLocaleFontFormat(self, fontNameLocale, model.fontFamily[i as number]);
+    commonModel.fontFamily.forEach((item: IDropDownItemModel, i: number) => {
+        commonModel.fontFamily[i as number].text = getLocaleFontFormat(self, fontNameLocale, commonModel.fontFamily[i as number]);
     });
-    model.formatItems.forEach((item: IDropDownItemModel, i: number) => {
-        model.formatItems[i as number].text = getLocaleFontFormat(self, formatsLocale, model.formatItems[i as number]);
+    commonModel.formatItems.forEach((item: IDropDownItemModel, i: number) => {
+        commonModel.formatItems[i as number].text = getLocaleFontFormat(self, formatsLocale, commonModel.formatItems[i as number]);
     });
-    model.numberFormatList.forEach((item: IDropDownItemModel, i: number) => {
-        model.numberFormatList[i as number].text = getLocaleFontFormat(self, numberFormatListLocale, model.numberFormatList[i as number]);
+    commonModel.numberFormatList.forEach((item: IDropDownItemModel, i: number) => {
+        commonModel.numberFormatList[i as number].text = getLocaleFontFormat(
+            self, numberFormatListLocale, commonModel.numberFormatList[i as number]);
     });
-    model.bulletFormatList.forEach((item: IDropDownItemModel, i: number) => {
-        model.bulletFormatList[i as number].text = getLocaleFontFormat(self, bulletFormatListLocale, model.bulletFormatList[i as number]);
+    commonModel.bulletFormatList.forEach((item: IDropDownItemModel, i: number) => {
+        commonModel.bulletFormatList[i as number].text = getLocaleFontFormat(
+            self, bulletFormatListLocale, commonModel.bulletFormatList[i as number]);
     });
 }

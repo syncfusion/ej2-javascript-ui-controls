@@ -315,7 +315,6 @@ describe('ComboBox', () => {
         });
     });
 
-
     describe('EJ2-17113-check clear button-enabled readonly', () => {
         let comboEle: HTMLInputElement = <HTMLInputElement>createElement('input', { id: 'ComboBox' });
         let data: { [key: string]: Object }[] = [

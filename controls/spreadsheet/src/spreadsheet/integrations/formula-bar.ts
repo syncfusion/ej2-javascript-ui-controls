@@ -43,6 +43,7 @@ export class FormulaBar {
             this.destroy(); return;
         }
         const l10n: L10n = this.parent.serviceLocator.getService(locale); const id: string = this.parent.element.id;
+        const isRTL: boolean = this.parent.enableRtl;
         const fBarWrapper: HTMLElement = this.parent.createElement('div', { className: 'e-formula-bar-panel' });
         if (!this.parent.isMobileView()) {
             const nameBox: HTMLElement = this.parent.createElement(
@@ -51,6 +52,7 @@ export class FormulaBar {
             this.comboBoxInstance = new ComboBox({
                 value: 'A1',
                 cssClass: 'e-name-box',
+                enableRtl: isRTL,
                 width: '',
                 noRecordsTemplate: initializeCSPTemplate(function (): string { return ''; }),
                 fields: { text: 'name', value: 'refersTo' },
@@ -453,6 +455,7 @@ export class FormulaBar {
                 let categoryPopupOpen: boolean;
                 this.categoryList = new DropDownList({
                     dataSource: this.categoryCollection, cssClass: 'e-ss-formula-category', index: 0, width: '285px', popupHeight: '210px',
+                    enableRtl: this.parent.enableRtl,
                     select: this.dropDownSelect.bind(this),
                     open: () => categoryPopupOpen = true,
                     close: () => categoryPopupOpen = false
@@ -462,6 +465,7 @@ export class FormulaBar {
                 this.formulaCollection = listArgs.formulaCollection;
                 this.formulaList = new ListView({
                     dataSource: this.formulaCollection.sort(),
+                    enableRtl: this.parent.enableRtl,
                     actionComplete: this.updateFormulaList.bind(this),
                     select: this.listSelected.bind(this), width: '285px', height: '200px'
                 });
@@ -473,6 +477,7 @@ export class FormulaBar {
                     descriptionContent.outerHTML + formulaDescription.outerHTML,
                     width: '320px', height: '485px', cssClass: 'e-spreadsheet-function-dlg',
                     showCloseIcon: true, isModal: true,
+                    enableRtl: this.parent.enableRtl,
                     beforeOpen: (args: BeforeOpenEventArgs): void => {
                         const dlgArgs: DialogBeforeOpenEventArgs = {
                             dialogName: 'InsertFunctionDialog', element: args.element, target: args.target, cancel: args.cancel };

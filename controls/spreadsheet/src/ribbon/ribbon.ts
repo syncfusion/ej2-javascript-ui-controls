@@ -11,6 +11,7 @@ import { Spreadsheet } from '../spreadsheet/base';
 
 /**
  * Objects used for configuring the Ribbon tab header properties.
+ *
  * @hidden
  */
 export class RibbonHeader extends ChildProperty<RibbonHeader> {
@@ -44,6 +45,7 @@ export class RibbonHeader extends ChildProperty<RibbonHeader> {
 
 /**
  * An array of object that is used to configure the Tab.
+ *
  * @hidden
  */
 export class RibbonItem extends ChildProperty<RibbonItem> {
@@ -79,6 +81,7 @@ export class RibbonItem extends ChildProperty<RibbonItem> {
 
 /**
  * Interface for ribbon content expand/collapse event.
+ *
  * @hidden
  */
 export interface ExpandCollapseEventArgs {
@@ -98,6 +101,7 @@ interface ExtendedItemModel extends ItemModel {
 
 /**
  * Represents Ribbon component.
+ *
  * @hidden
  */
 @NotifyPropertyChanges
@@ -273,7 +277,11 @@ export class Ribbon extends Component<HTMLDivElement> implements INotifyProperty
         }
         if (this.menuItems.length) {
             const fileMenu: HTMLElement = document.getElementById(`${this.element.id}_menu`);
-            if (fileMenu) { (getComponent(fileMenu, 'menu') as Menu).destroy(); }
+            if (fileMenu) {
+                const fileMenuObj: Menu = getComponent(fileMenu, 'menu') as Menu;
+                fileMenuObj.setProperties({ animationSettings: { effect: 'None' } }, true);
+                fileMenuObj.destroy();
+            }
         }
         if (this.toolbarObj) { this.toolbarObj.destroy(); }
         if (this.tabObj) { this.tabObj.destroy(); }
@@ -307,6 +315,7 @@ export class Ribbon extends Component<HTMLDivElement> implements INotifyProperty
             cssClass: 'e-file-menu',
             items: menuItems,
             showItemOnClick: true,
+            enableRtl: this.enableRtl,
             beforeOpen: (args: BeforeOpenCloseMenuEventArgs): void => {
                 if (args.parentItem.text === menuItems[0].text) { menuObj.showItemOnClick = false; }
                 this.trigger('beforeOpen', args);
@@ -315,7 +324,7 @@ export class Ribbon extends Component<HTMLDivElement> implements INotifyProperty
                 this.trigger('fileMenuItemSelect', args);
             },
             beforeClose: (args: BeforeOpenCloseMenuEventArgs): void => {
-                if (args.event.type === 'mouseover' && !closest(args.event.target as Element, '.e-menu-popup')) {
+                if (args.event && args.event.type === 'mouseover' && !closest(args.event.target as Element, '.e-menu-popup')) {
                     args.cancel = true; return;
                 }
                 this.trigger('beforeClose', args);
@@ -345,6 +354,7 @@ export class Ribbon extends Component<HTMLDivElement> implements INotifyProperty
         let isShortcut: boolean;
         this.toolbarObj = new Toolbar({
             items: this.items[this.selectedTab].content,
+            enableRtl: this.enableRtl,
             clicked: (args: ClickEventArgs) => this.trigger('clicked', args)
         });
         this.toolbarObj.createElement = this.createElement;
@@ -353,6 +363,7 @@ export class Ribbon extends Component<HTMLDivElement> implements INotifyProperty
             selectedItem: this.getIndex(this.selectedTab),
             animation: { next: { duration: 0 }, previous: { duration: 0 } },
             items: this.getTabItems(),
+            enableRtl: this.enableRtl,
             selecting: (args: SelectingEventArgs): void => {
                 if (args.isSwiped) {
                     args.cancel = true;

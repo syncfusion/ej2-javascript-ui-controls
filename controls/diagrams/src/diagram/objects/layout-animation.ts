@@ -4,7 +4,7 @@ import { Node } from '../objects/node';
 import { Layout, ILayout } from '../layout/layout-base';
 import { ConnectorModel } from '../objects/connector-model';
 import { NodeModel } from '../objects/node-model';
-import { Container } from '../core/containers/container';
+import { GroupableView } from '../core/containers/container';
 import { DiagramEvent, RealAction, DiagramConstraints } from '../enum/enum';
 import { IExpandStateChangeEventArgs } from '../objects/interface/IElement';
 import { cloneObject as clone } from '../utility/base-util';
@@ -150,7 +150,7 @@ export class LayoutAnimation {
             for (let j: number = 0; j < connector.wrapper.children.length; j++) {
                 connector.wrapper.children[parseInt(j.toString(), 10)].style.opacity = value;
                 target.style.opacity = value;
-                if (target.wrapper instanceof Container) {
+                if (target.wrapper instanceof GroupableView) {
                     diagram.updateNodeProperty(target.wrapper, undefined, value);
                 }
             }

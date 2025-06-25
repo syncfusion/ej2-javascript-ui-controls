@@ -1,7 +1,8 @@
-import { EventHandler, detach, L10n, isNullOrUndefined, KeyboardEventArgs, select, extend, isNullOrUndefined as isNOU } from '@syncfusion/ej2-base';
+import { detach, L10n, isNullOrUndefined, KeyboardEventArgs, select, extend, isNullOrUndefined as isNOU, EventHandler } from '@syncfusion/ej2-base';
 import { closest, addClass, removeClass, Browser } from '@syncfusion/ej2-base';
-import { IRichTextEditor, NotifyArgs, IRenderer, IImageNotifyArgs, IToolbarItemModel, IShowPopupArgs, ICssClassArgs } from './../base/interface';
-import { IDropDownItemModel } from './../base/interface';
+import { IRichTextEditor, IImageNotifyArgs, ICssClassArgs, IQuickToolbar, IRenderer } from './../base/interface';
+import {  } from './../base/interface';
+import { IDropDownItemModel, IToolbarItemModel, IShowPopupArgs, NotifyArgs } from '../../common/interface';
 import { ServiceLocator } from './../services/service-locator';
 import * as events from '../base/constant';
 import { CLS_RTE_ELEMENTS } from '../base/classes';
@@ -14,6 +15,7 @@ import { RenderType } from '../base/enum';
 import { dispatchEvent, parseHtml } from '../base/util';
 import { DialogRenderer } from './dialog-renderer';
 import { isIDevice } from '../../common/util';
+import { LinkCommand } from '../../editor-manager/plugin/link';
 
 /**
  * `Link` module is used to handle undo actions.
@@ -27,7 +29,7 @@ export class Link {
     private checkBoxObj: CheckBox;
     public serviceLocator: ServiceLocator;
     private rendererFactory: RendererFactory;
-    private quickToolObj: IRenderer;
+    private quickToolObj: IQuickToolbar;
     private dialogRenderObj: DialogRenderer;
     private isDestroyed: boolean;
     private mouseDown: EventListenerOrEventListenerObject;
@@ -62,6 +64,12 @@ export class Link {
         this.parent.on(events.editAreaClick, this.editAreaClickHandler, this);
         this.parent.on(events.bindCssClass, this.setCssClass, this);
         this.parent.on(events.destroy, this.destroy, this);
+        this.parent.on(events.bindOnEnd, this.bindOnEnd, this);
+    }
+    private bindOnEnd(): void {
+        if (this.parent.formatter.editorManager && !this.parent.formatter.editorManager.linkObj) {
+            this.parent.formatter.editorManager.linkObj = new LinkCommand(this.parent.formatter.editorManager);
+        }
     }
     private onToolbarAction(args: NotifyArgs): void {
         const item: IToolbarItemModel = (args.args as ClickEventArgs).item as IToolbarItemModel;
@@ -92,6 +100,7 @@ export class Link {
         this.parent.off(events.editAreaClick, this.editAreaClickHandler);
         this.parent.off(events.bindCssClass, this.setCssClass);
         this.parent.off(events.destroy, this.destroy);
+        this.parent.off(events.bindOnEnd, this.bindOnEnd);
         if (!isNullOrUndefined(this.contentModule)) {
             (this.parent.element.ownerDocument as Document).removeEventListener('mousedown', this.mouseDown);
             this.mouseDown = null;
@@ -147,24 +156,24 @@ export class Link {
                 pageY = window.pageYOffset + ((this.parent.iframeSettings.enable) ?
                     (parentTop + tbHeight + linkTop) : (parentTop + linkPos));
                 this.linkQTPopupTime = setTimeout(() => {
-                    this.showLinkPopup(pageX, pageY, range);
+                    this.showLinkPopup(pageX, pageY, range, e.args as MouseEvent );
                 }, 400);
             } else {
                 let args: Touch | MouseEvent;
                 args = (e.args as TouchEvent).touches ? (e.args as TouchEvent).changedTouches[0] : args = e.args as MouseEvent;
                 pageX = (this.parent.iframeSettings.enable) ? window.pageXOffset + parentLeft + args.clientX : args.pageX;
                 pageY = (this.parent.iframeSettings.enable) ? window.pageYOffset + parentTop + args.clientY : args.pageY;
-                this.showLinkPopup(pageX, pageY, range);
+                this.showLinkPopup(pageX, pageY, range, e.args as MouseEvent);
             }
             if (this.quickToolObj.linkQTBar) {
-                this.quickToolObj.linkQTBar.showPopup(pageX, pageY, range.endContainer as Element, 'link');
+                this.quickToolObj.linkQTBar.showPopup(range.endContainer as Element, e.args as MouseEvent);
             }
         }
     }
 
-    private showLinkPopup(pageX: number, pageY: number, range: Range): void {
+    private showLinkPopup(pageX: number, pageY: number, range: Range, originalEvent: KeyboardEvent | MouseEvent): void {
         if (this.quickToolObj.linkQTBar) {
-            this.quickToolObj.linkQTBar.showPopup(pageX, pageY, range.endContainer as Element, 'link');
+            this.quickToolObj.linkQTBar.showPopup(range.endContainer as Element, originalEvent);
         }
     }
 
@@ -190,13 +199,9 @@ export class Link {
             let target: HTMLElement = args.target as HTMLElement;
             target = this.getAnchorNode([target]);
             this.contentModule = this.rendererFactory.getRenderer(RenderType.Content);
-            const isPopupOpen: boolean = this.quickToolObj.linkQTBar.element.classList.contains('e-rte-pop');
             if (target.nodeName === 'A' && (target.childNodes.length > 0 && target.childNodes[0].nodeName !== 'IMG') &&
             ((e.args as MouseEvent).target as HTMLElement).nodeName !== 'IMG' &&
             !isNOU(closest(this.parent.getRange().startContainer.parentElement, 'A')) && (!isNOU(closest(this.parent.getRange().endContainer.parentElement, 'A')) || ismacRightClick)) {
-                if (isPopupOpen) {
-                    return;
-                }
                 if ((e.args as MouseEvent).ctrlKey === false) {
                     this.showLinkQuickToolbar({
                         args: args,
@@ -343,7 +348,8 @@ export class Link {
         const linkInsert: string = this.i10n.getConstant('dialogInsert');
         const linkCancel: string = this.i10n.getConstant('dialogCancel');
         const selection: NodeSelection = e.selection;
-        const selectObj: NotifyArgs = { selfLink: this, selection: e.selection, selectParent: e.selectParent, args: e.args as MouseEvent };
+        const selectObj: NotifyArgs = {
+            selection: e.selection, selectParent: e.selectParent, args: e.args as MouseEvent };
         const dialogModel: DialogModel = {
             header: this.i10n.getConstant('linkHeader'),
             content: linkContent,
@@ -353,10 +359,10 @@ export class Link {
             showCloseIcon: true, closeOnEscape: true, width: (Browser.isDevice) ? '290px' : '310px',
             isModal: (Browser.isDevice as boolean),
             buttons: [{
-                click: this.insertlink.bind(selectObj),
+                click: this.insertlink.bind(this, selectObj),
                 buttonModel: { content: linkInsert, cssClass: 'e-flat e-insertLink' + this.parent.getCssClass(true), isPrimary: true }
             },
-            { click: this.cancelDialog.bind(selectObj), buttonModel: { cssClass: 'e-flat' + this.parent.getCssClass(true), content: linkCancel } }],
+            { click: this.cancelDialog.bind(this, selectObj), buttonModel: { cssClass: 'e-flat' + this.parent.getCssClass(true), content: linkCancel } }],
             target: (Browser.isDevice) ? document.body : this.parent.element,
             animationSettings: { effect: 'None' },
             close: (event: { [key: string]: object }) => {
@@ -419,91 +425,91 @@ export class Link {
     }
 
     // eslint-disable-next-line
-    private insertlink(e: MouseEvent | KeyboardEvent): void {
-        const linkEle: HTMLElement = (this as NotifyArgs).selfLink.dialogObj.element as HTMLElement;
+    private insertlink(e: NotifyArgs): void {
+        const linkEle: HTMLElement = this.dialogObj.element as HTMLElement;
         let linkUrl: string = (linkEle.querySelector('.e-rte-linkurl') as HTMLInputElement).value.trim();
         let linkText: string = (linkEle.querySelector('.e-rte-linkText') as HTMLInputElement).value;
         let linkTitle: string;
-        if ((this as NotifyArgs).selfLink.parent.editorMode === 'HTML') {
+        if (this.parent.editorMode === 'HTML') {
             linkTitle = (linkEle.querySelector('.e-rte-linkTitle') as HTMLInputElement).value;
         }
-        const target: string = ((this as NotifyArgs).selfLink.checkBoxObj.checked) ? '_blank' : null;
-        const linkLabel : string | null = ((this as NotifyArgs).selfLink.checkBoxObj.checked) ? (this as NotifyArgs).selfLink.i10n.getConstant('linkAriaLabel') : null;
-        if ((this as NotifyArgs).selfLink.parent.editorMode === 'Markdown' && linkUrl === '') {
+        const target: string = (this.checkBoxObj.checked) ? '_blank' : null;
+        const linkLabel : string | null = (this.checkBoxObj.checked) ? this.i10n.getConstant('linkAriaLabel') : null;
+        if (this.parent.editorMode === 'Markdown' && linkUrl === '') {
             linkUrl = 'https://';
         }
         if (linkUrl === '') {
-            (this as NotifyArgs).selfLink.checkUrl(true);
+            this.checkUrl(true);
             return;
         }
-        if ((this as NotifyArgs).selfLink.parent.editorMode === 'Markdown') {
+        if (this.parent.editorMode === 'Markdown') {
             linkText = (linkText.trim() !== '') ? linkText : '';
         } else {
             linkText = (linkText.trim() === '') ? linkUrl : linkText;
         }
-        if (!(this as NotifyArgs).selfLink.isUrl(linkUrl)) {
-            if (!(this as NotifyArgs).selfLink.parent.enableAutoUrl) {
+        if (!this.isUrl(linkUrl)) {
+            if (!this.parent.enableAutoUrl) {
                 linkUrl = linkUrl.indexOf('https') > -1 ? linkUrl : 'https://' + linkUrl;
             } else {
                 // eslint-disable-next-line
                 linkUrl = linkUrl;
             }
         } else {
-            (this as NotifyArgs).selfLink.checkUrl(false);
+            this.checkUrl(false);
         }
-        const proxy: Link = (this as NotifyArgs).selfLink;
+        const proxy: Link = this as Link;
         if (proxy.parent.editorMode === 'HTML' && isNullOrUndefined(
             closest(
-                (this as IImageNotifyArgs).selection.range.startContainer.parentNode, '[id='
+                (e as IImageNotifyArgs).selection.range.startContainer.parentNode, '[id='
                 // eslint-disable-next-line
                 + "'" + proxy.parent.contentModule.getPanel().id + "'" + ']'))) {
             (proxy.parent.contentModule.getEditPanel() as HTMLElement).focus();
             if (Browser.isIE && proxy.parent.iframeSettings.enable) {
-                (this as NotifyArgs).selection.restore();
+                e.selection.restore();
             }
             const range: Range = proxy.parent.formatter.editorManager.nodeSelection.getRange(proxy.parent.contentModule.getDocument());
-            (this as NotifyArgs).selection = proxy.parent.formatter.editorManager.nodeSelection.save(
+            e.selection = proxy.parent.formatter.editorManager.nodeSelection.save(
                 range, proxy.parent.contentModule.getDocument());
-            (this as NotifyArgs).selectParent = proxy.parent.formatter.editorManager.nodeSelection.getParentNodeCollection(range);
+            e.selectParent = proxy.parent.formatter.editorManager.nodeSelection.getParentNodeCollection(range);
         }
         const value: NotifyArgs = {
             url: linkUrl, text: linkText, title: linkTitle, target: target, ariaLabel: linkLabel,
-            selection: (this as NotifyArgs).selection, selectParent: (this as NotifyArgs).selectParent
+            selection: e.selection, selectParent: e.selectParent
         };
         if (document.body.contains(proxy.dialogObj.element)) {
-            (this as NotifyArgs).selfLink.dialogObj.hide({ returnValue: false } as Event);
+            this.dialogObj.hide({ returnValue: false } as Event);
         }
-        if ((this as NotifyArgs).selfLink.dialogObj !== null) {
+        if (this.dialogObj !== null) {
             return;
         }
         if (isIDevice() && proxy.parent.iframeSettings.enable) {
             (<HTMLIFrameElement>select('iframe', proxy.parent.element)).contentWindow.focus();
         }
         if (proxy.parent.editorMode === 'HTML') {
-            (this as NotifyArgs).selection.restore();
+            e.selection.restore();
         }
         if (proxy.parent.formatter.getUndoRedoStack().length === 0) {
             proxy.parent.formatter.saveData();
         }
         let argsValue: KeyboardEvent | MouseEvent | ClickEventArgs | ClipboardEvent | TouchEvent | Object;
-        if (!isNullOrUndefined((this as NotifyArgs).args as KeyboardEvent) &&
-            ((this as NotifyArgs).args as KeyboardEvent).code === 'KeyK') {
-            const originalEvent: KeyboardEventArgs = (this as NotifyArgs).args as KeyboardEventArgs;
+        if (!isNullOrUndefined(e.args as KeyboardEvent) &&
+            (e.args as KeyboardEvent).code === 'KeyK') {
+            const originalEvent: KeyboardEventArgs = e.args as KeyboardEventArgs;
             extend(
-                (this as NotifyArgs).args,
+                e.args,
                 { item: { command: 'Links', subCommand: 'CreateLink' } as IToolbarItemModel, originalEvent: originalEvent },
                 true);
             const argsVal: Object = {
                 item: { command: 'Links', subCommand: 'CreateLink' } as IToolbarItemModel, originalEvent: originalEvent };
             argsValue = argsVal;
         } else {
-            argsValue = (this as NotifyArgs).args;
+            argsValue = e.args;
         }
-        (this as NotifyArgs).selfLink.parent.formatter.process(
-            (this as NotifyArgs).selfLink.parent, argsValue,
-            (!isNullOrUndefined((this as NotifyArgs).args as ClickEventArgs) &&
-            ((this as NotifyArgs).args as ClickEventArgs).originalEvent), value);
-        ((this as NotifyArgs).selfLink.parent.contentModule.getEditPanel() as HTMLElement).focus();
+        this.parent.formatter.process(
+            this.parent, argsValue,
+            (!isNullOrUndefined(e.args as ClickEventArgs) &&
+            (e.args as ClickEventArgs).originalEvent), value);
+        (this.parent.contentModule.getEditPanel() as HTMLElement).focus();
     }
     private isUrl(url: string): boolean {
         const regExp: RegExpConstructor = RegExp;
@@ -590,15 +596,15 @@ export class Link {
     }
 
     // eslint-disable-next-line
-    private cancelDialog(e: MouseEvent): void {
-        (this as NotifyArgs).selfLink.parent.isBlur = false;
-        (this as NotifyArgs).selfLink.dialogObj.hide({ returnValue: true } as Event);
+    private cancelDialog(e: NotifyArgs): void {
+        this.parent.isBlur = false;
+        this.dialogObj.hide({ returnValue: true } as Event);
         if (isIDevice()) {
-            (this as NotifyArgs).selection.restore();
+            e.selection.restore();
         } else {
             const x: number = window.scrollX;
             const y: number = window.scrollY;
-            ((this as NotifyArgs).selfLink.parent.contentModule.getEditPanel() as HTMLElement).focus();
+            (this.parent.contentModule.getEditPanel() as HTMLElement).focus();
             window.scrollTo(x, y);
         }
     }

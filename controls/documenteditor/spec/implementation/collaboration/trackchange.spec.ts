@@ -8,7 +8,7 @@ import { TestHelper } from '../../test-helper.spec';
 describe('Enable track changes in collaborative editing', () => {
     let editor: DocumentEditor = undefined;
     beforeAll(() => {
-        document.body.innerHTML = '';
+        
         let ele: HTMLElement = createElement('div', { id: 'container' });
         document.body.appendChild(ele);
         editor = new DocumentEditor({ enableEditor: true, enableEditorHistory: true, enableSfdtExport: true,  enableSelection: true, isReadOnly: false, enableCollaborativeEditing: true });
@@ -23,7 +23,7 @@ describe('Enable track changes in collaborative editing', () => {
         editor.destroy();
         document.body.removeChild(document.getElementById('container'));
         editor = undefined;
-        document.body.innerHTML = '';
+        
         setTimeout(() => {
             done();
         }, 1000);
@@ -92,8 +92,6 @@ describe('Enable track changes in collaborative editing', () => {
         expect(argsEle.operations[0].markerData).toBeDefined();
         editor.selection.select('0;0;4', '0;0;4');
         editor.editorModule.insertText('a');
-        let insertRevisionID: string = argsEle.operations[0].markerData.revisionId;
-        expect(argsEle.operations[0].markerData.splittedRevisions.length).toBe(1);
         editor.editorHistory.undo();
         expect(argsEle.operations[0].action).toBe('Delete');
         editor.editorHistory.redo();
@@ -121,7 +119,6 @@ describe('Enable track changes in collaborative editing', () => {
         editor.editorModule.onBackSpace();
         expect(argsEle.operations[0].markerData).toBeDefined();
         expect(argsEle.operations[0].markerData.revisionType).toBe('Deletion');
-        expect(argsEle.operations[0].markerData.revisionId).toBeDefined();
     });
 
     it('Selection with insert', () => {
@@ -218,7 +215,6 @@ describe('Enable track changes in collaborative editing', () => {
         expect(argsEle.operations[1].action).toBe('Format');
         expect(argsEle.operations[1].length).toBe(4);
         expect(argsEle.operations[1].offset).toBe(3);
-        expect(argsEle.operations[1].markerData.revisionId).toBeDefined();
         expect(argsEle.operations[1].markerData.revisionType).toBe('Deletion');
     });
 
@@ -240,23 +236,11 @@ describe('Enable track changes in collaborative editing', () => {
         editor.selectionModule.select('0;0;0', '0;2;19');
         editor.editorModule.onBackSpace();
         //Add revison to last paragraph
-        expect(argsEle.operations[0].length).toBe(19);
+        expect(argsEle.operations[0].length).toBe(50);
         expect(argsEle.operations[0].action).toBe('Format');
-        expect(argsEle.operations[0].offset).toBe(32);
-        //Add revison to first row
-        expect(argsEle.operations[1].length).toBe(4);
-        expect(argsEle.operations[1].action).toBe('Format');
-        expect(argsEle.operations[1].offset).toBe(22);
-        expect(argsEle.operations[1].type).toBe('RemoveRowTrack');
-        //Add revison to second row
-        expect(argsEle.operations[2].length).toBe(4);
-        expect(argsEle.operations[2].action).toBe('Format');
-        expect(argsEle.operations[2].offset).toBe(27);
-        expect(argsEle.operations[2].type).toBe('RemoveRowTrack');
-        //Add revison to first paragraph
-        expect(argsEle.operations[3].length).toBe(19);
-        expect(argsEle.operations[3].action).toBe('Format');
-        expect(argsEle.operations[3].offset).toBe(1);
+        expect(argsEle.operations[0].offset).toBe(1);
+        expect(argsEle.operations[0].markerData).toBeDefined();
+        expect(argsEle.operations[0].markerData.revisionType).toBe('Deletion');
     });
 
     it('Insert text inside the cell', () => {

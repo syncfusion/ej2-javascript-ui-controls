@@ -1,6 +1,6 @@
 import { Dialog } from '@syncfusion/ej2-popups';
 import { classList, createElement, initializeCSPTemplate, isNullOrUndefined, L10n, Property } from '@syncfusion/ej2-base';
-import { NumericTextBox } from '@syncfusion/ej2-inputs';
+import { ChangeEventArgs, NumericTextBox } from '@syncfusion/ej2-inputs';
 import { WTableFormat, WBorder, WBorders, WShading, WCellFormat, WParagraphFormat } from '../format/index';
 import { LineStyle } from '../../base/types';
 import { TablePropertiesDialog } from './table-properties-dialog';
@@ -88,13 +88,13 @@ export class BordersAndShadingDialog {
     private settingText: HTMLDivElement;
     private settingsSubContiner: HTMLDivElement;
     private noneDivContainer: HTMLDivElement;
-    private noneDivLabel: HTMLLabelElement;
+    private noneDivLabel: HTMLDivElement;
     private boxDivContainer: HTMLDivElement;
-    private boxDivLabel: HTMLLabelElement;
+    private boxDivLabel: HTMLDivElement;
     private allDivContainer: HTMLDivElement;
-    private allDivLabel: HTMLLabelElement;
+    private allDivLabel: HTMLDivElement;
     private customDivContainer: HTMLDivElement;
-    private customDivLabel: HTMLLabelElement;
+    private customDivLabel: HTMLDivElement;
     private previewDivHorizontalContainer: HTMLDivElement;
     private previewDivVerticalContainer: HTMLDivElement;
     private previewText: HTMLDivElement;
@@ -183,48 +183,56 @@ export class BordersAndShadingDialog {
             className: 'e-de-dlg-row'
         });
         this.noneDivContainer = <HTMLDivElement>createElement('div', {
-            id: this.target.id + '_None_Div_Container'
+            id: this.target.id + '_None_Div_Container',
+            styles: 'display:flex; flex-direction:column; align-items:center'
         });
         this.noneDiv = <HTMLDivElement>createElement('div', {
             id: this.target.id + '_None_Div',
             className: 'e-de-table-border-inside-setting e-de-table-border-setting-genral'
         });
-        this.noneDivLabel = <HTMLLabelElement>createElement('label', {
+        this.noneDivLabel = <HTMLDivElement>createElement('div', {
             innerHTML: localeValue.getConstant('None'), className: 'e-de-table-setting-labels-heading',
-            id: this.target.id + '_None_Div_Label'
+            id: this.target.id + '_None_Div_Label',
+            styles: 'text-align: center; margin-right: 14px; margin-top: 3px; margin-left: 10px; overflow-wrap: anywhere'
         });
         this.boxDivContainer = <HTMLDivElement>createElement('div', {
-            id: this.target.id + '_Box_Div_Container'
+            id: this.target.id + '_Box_Div_Container',
+            styles: 'display:flex; flex-direction:column; align-items:center'
         });
         this.boxDiv = <HTMLDivElement>createElement('div', {
             id: this.target.id + '_Box_Div',
             className: 'e-de-table-border-inside-setting e-de-table-border-setting-genral'
         });
-        this.boxDivLabel = <HTMLLabelElement>createElement('label', {
+        this.boxDivLabel = <HTMLDivElement>createElement('div', {
             innerHTML: localeValue.getConstant('Box'), className: 'e-de-table-setting-labels-heading',
-            id: this.target.id + '_Box_Div_Label'
+            id: this.target.id + '_Box_Div_Label',
+            styles: 'text-align: center; margin-right: 14px; margin-top: 3px; margin-left: 10px; overflow-wrap: anywhere'
         });
         this.allDivContainer = <HTMLDivElement>createElement('div', {
-            id: this.target.id + '_All_Div_Container'
+            id: this.target.id + '_All_Div_Container',
+            styles: 'display:flex; flex-direction:column; align-items:center'
         });
         this.allDiv = <HTMLDivElement>createElement('div', {
             id: this.target.id + '_All_Div',
             className: 'e-de-table-border-inside-setting e-de-table-border-setting-genral'
         });
-        this.allDivLabel = <HTMLLabelElement>createElement('label', {
+        this.allDivLabel = <HTMLDivElement>createElement('div', {
             innerHTML: localeValue.getConstant('All'), className: 'e-de-table-setting-labels-heading',
-            id: this.target.id + '_All_Div_Label'
+            id: this.target.id + '_All_Div_Label',
+            styles: 'text-align: center; margin-right: 14px; margin-top: 3px; margin-left: 10px; overflow-wrap: anywhere'
         });
         this.customDivContainer = <HTMLDivElement>createElement('div', {
-            id: this.target.id + '_Custom_Div_Container'
+            id: this.target.id + '_Custom_Div_Container',
+            styles: 'display:flex; flex-direction:column; align-items:center; width: 62px'
         });
         this.customDiv = <HTMLDivElement>createElement('div', {
             id: this.target.id + '_Custom_Div',
             className: 'e-de-table-border-inside-setting e-de-table-border-setting-genral'
         });
-        this.customDivLabel = <HTMLLabelElement>createElement('label', {
+        this.customDivLabel = <HTMLDivElement>createElement('div', {
             innerHTML: localeValue.getConstant('Custom'), className: 'e-de-table-setting-labels-heading',
-            id: this.target.id + '_Custom_Div_Label'
+            id: this.target.id + '_Custom_Div_Label',
+            styles: 'text-align: center; margin-right: 7px; margin-top: 3px;margin-left: 10px; overflow-wrap: anywhere'
         });
         this.noneDivTransparent = createElement('div', {
             id: this.target.id + '_None_Div_Transparent', className: 'e-icons e-de-table-border-setting e-de-table-border-none-setting'
@@ -249,25 +257,25 @@ export class BordersAndShadingDialog {
         });
         this.previewDiv = createElement('div', {
             id: this.target.id + '_Preview_Div', className: 'e-de-border-dlg-preview-div',
-            styles: 'position: relative'
+            styles: 'position: relative; overflow: hidden'
         }) as HTMLDivElement;
         this.previewRightDiagonalDiv = createElement('div', {
-            styles: 'position: absolute;width:1px;height:111px;left: 38px;top: -17px;transform: rotate(135deg); background-color: black',
+            styles: 'position: absolute;width:1px;height:113.14px;left: 50%;top: 50%;transform: translate(-50%, -50%) rotate(-45deg); background-color: black',
             id: this.target.id + '_Preview_Div_Right_Diagonal',
             className: 'e-de-border-dlg-preview-inside-divs'
         }) as HTMLDivElement;
         this.previewLeftDiagonalDiv = createElement('div', {
-            styles: 'position: absolute;width: 1px;height: 111px;left: 38px;top: -17px;transform:rotate(45deg); background-color: black',
+            styles: 'position: absolute;width: 1px;height: 113.14px;left: 50%;top: 50%;transform: translate(-50%, -50%) rotate(45deg); background-color: black',
             id: this.target.id + '_Preview_Div_Left_Diagonal',
             className: 'e-de-border-dlg-preview-inside-divs'
         }) as HTMLDivElement;
         this.previewVerticalDiv = createElement('div', {
-            styles: 'width: 1px;height: 80px;position: absolute;left: 39px;top: -1px; background-color: black',
+            styles: 'width: 1px;height: 100%;position: absolute;left: 50%; background-color: black',
             id: this.target.id + '_Preview_Div_Vertical',
             className: 'e-de-border-dlg-preview-inside-divs'
         }) as HTMLDivElement;
         this.previewHorizontalDiv = createElement('div', {
-            styles: 'width: 80px;height: 1px;position: absolute;left: -1px;top: 41px; background-color: black',
+            styles: 'width: 100%;height: 1px;position: absolute;top: 50%; background-color: black',
             id: this.target.id + '_Preview_Div_Horizontal',
             className: 'e-de-border-dlg-preview-inside-divs'
         }) as HTMLDivElement;
@@ -506,7 +514,7 @@ export class BordersAndShadingDialog {
         this.borderWidth = new NumericTextBox({
             value: 0.5, min: 0.25, max: 6, decimals: 2, step: 0.25,
             floatLabelType: 'Always', placeholder: localeValue.getConstant('Width'),
-            enablePersistence: false
+            enablePersistence: false, change : this.applyPreviewTableBorderWidth
         });
         this.borderWidth.appendTo(this.widthNumeric);
         const empList: any = [
@@ -689,7 +697,7 @@ export class BordersAndShadingDialog {
                 editorModule.applyBordersInternal(this.tableFormat.borders, new WBorders());
             }
             // Once option has been added for texture and foreground, need to handle this similar to Shading Fill.
-            if (!isNullOrUndefined(currentTableFormat.shading)) {
+            if (!isNullOrUndefined(currentTableFormat.shading) && currentTableFormat.shading.foregroundColor !== 'empty') {
                 shading.foregroundColor = currentTableFormat.shading.foregroundColor;
                 shading.textureStyle = currentTableFormat.shading.textureStyle;
             }
@@ -916,7 +924,7 @@ export class BordersAndShadingDialog {
             this.previewVerticalDiv.style.display = 'none';
             break;
         case 'box':
-            this.previewDiv.style.border = '1px solid rgba(0, 0, 0, .54)';
+            this.previewDiv.style.border = `${this.borderWidth.value}px solid ${this.borderColorPicker.value}`;
             this.previewRightDiagonalDiv.style.display = 'none';
             this.previewLeftDiagonalDiv.style.display = 'none';
             this.previewHorizontalDiv.style.display = 'none';
@@ -924,13 +932,13 @@ export class BordersAndShadingDialog {
             break;
         case 'all':
             if (this.ulelementShading.value === 'Cell' || this.ulelementShading.value === 'Table') {
-                this.previewDiv.style.border = '1px solid rgba(0, 0, 0, .54)';
+                this.previewDiv.style.border = `${this.borderWidth.value}px solid ${this.borderColorPicker.value}`;
                 this.previewRightDiagonalDiv.style.display = 'none';
                 this.previewLeftDiagonalDiv.style.display = 'none';
                 this.previewHorizontalDiv.style.display = 'block';
                 this.previewVerticalDiv.style.display = 'block';
             } else {
-                this.previewDiv.style.border = '1px solid rgba(0, 0, 0, .54)';
+                this.previewDiv.style.border = `${this.borderWidth.value}px solid ${this.borderColorPicker.value}`;
                 this.previewRightDiagonalDiv.style.display = 'none';
                 this.previewLeftDiagonalDiv.style.display = 'none';
                 this.previewHorizontalDiv.style.display = 'none';
@@ -1023,7 +1031,7 @@ export class BordersAndShadingDialog {
     private setPropertyPreviewDivElement(ele: HTMLDivElement, compareElement: HTMLElement, compareClass: string, property: string): void {
         if (compareElement.classList.contains(compareClass) && property.split('-')[0] === 'border') {
             /* eslint-disable @typescript-eslint/no-explicit-any */
-            (ele as any).style[`${property}`] = '1px solid rgba(0, 0, 0, .54)';
+            (ele as any).style[`${property}`] = `${this.borderWidth.value}px solid ${this.borderColorPicker.value}`;
         } else if (compareElement.classList.contains(compareClass) && property === 'display') {
             (ele as any).style[`${property}`] = 'block';
         } else {
@@ -1106,6 +1114,19 @@ export class BordersAndShadingDialog {
             this.previewHorizontalDiv.style.backgroundColor = color;
         }
     };
+    /**
+     * @private
+     * @param {ChangeEventArgs} args - Specifies the event args.
+     * @returns {void}
+     */
+    private applyPreviewTableBorderWidth = (args: ChangeEventArgs): void => {
+        const thickness: string = args.value.toString() + 'px';
+        this.previewDiv.style.borderWidth = thickness;
+        this.previewVerticalDiv.style.width = thickness;
+        this.previewHorizontalDiv.style.height = thickness;
+        this.previewLeftDiagonalDiv.style.width = thickness;
+        this.previewRightDiagonalDiv.style.width = thickness;
+    };
     private loadBordersShadingsPropertiesDialog(localeValue: L10n): void {
         let lineStyle: number;
         let borderColor: string;
@@ -1159,6 +1180,9 @@ export class BordersAndShadingDialog {
             this.shadingColorPicker.disabled = true;
         }
         this.borderColorPicker.value = borderColor;
+        this.applyPreviewTableBorderColor({
+            currentValue: { hex: this.borderColorPicker.value }
+        } as any);
         this.previewDivLeftDiagonal.style.display = 'none';
         this.previewDivDiagonalRight.style.display = 'none';
         this.borderWidth.value = borderWidth;
@@ -1203,28 +1227,28 @@ export class BordersAndShadingDialog {
         let customBorder: boolean = false;
         let diagonalUpBorder: boolean = false;
         if (borders !== null) {
-            if (borders.top && (borders.top.hasNoneStyle || borders.top.lineStyle !== 'None')) {
+            if (borders.top && borders.top.lineStyle !== 'None') {
                 topBorder = true;
             }
-            if (borders.bottom && (borders.bottom.hasNoneStyle || borders.bottom.lineStyle !== 'None')) {
+            if (borders.bottom && borders.bottom.lineStyle !== 'None') {
                 bottomBorder = true;
             }
-            if (borders.left && (borders.left.hasNoneStyle || borders.left.lineStyle !== 'None')) {
+            if (borders.left && borders.left.lineStyle !== 'None') {
                 leftBorder = true;
             }
-            if (borders.right && (borders.right.hasNoneStyle || borders.right.lineStyle !== 'None')) {
+            if (borders.right && borders.right.lineStyle !== 'None') {
                 rightBorder = true;
             }
-            if (borders.horizontal && (borders.horizontal.hasNoneStyle || borders.horizontal.lineStyle !== 'None')) {
+            if (borders.horizontal && borders.horizontal.lineStyle !== 'None') {
                 horizontalBorder = true;
             }
-            if (borders.vertical && (borders.vertical.hasNoneStyle || borders.vertical.lineStyle !== 'None')) {
+            if (borders.vertical && borders.vertical.lineStyle !== 'None') {
                 verticalBorder = true;
             }
-            if (borders.diagonalDown && (borders.diagonalDown.hasNoneStyle || borders.diagonalDown.lineStyle !== 'None')) {
+            if (borders.diagonalDown && borders.diagonalDown.lineStyle !== 'None') {
                 diagonalDownBorder = true;
             }
-            if (borders.diagonalUp && (borders.diagonalUp.hasNoneStyle || borders.diagonalUp.lineStyle !== 'None')) {
+            if (borders.diagonalUp && borders.diagonalUp.lineStyle !== 'None') {
                 diagonalUpBorder = true;
             }
 
@@ -1295,6 +1319,7 @@ export class BordersAndShadingDialog {
                         this.previewDivTopTop.classList.add('e-de-table-border-inside-preview-click');
                     } else {
                         this.previewDivTopTop.classList.remove('e-de-table-border-inside-preview-click');
+                        this.previewDiv.style.borderTop = '0px';
                     }
                 } else {
                     if (topBorder) {
@@ -1310,6 +1335,7 @@ export class BordersAndShadingDialog {
                         this.previewDivTopBottom.classList.add('e-de-table-border-inside-preview-click');
                     } else {
                         this.previewDivTopBottom.classList.remove('e-de-table-border-inside-preview-click');
+                        this.previewDiv.style.borderBottom = '0px';
                     }
                 } else {
                     if (bottomBorder) {
@@ -1325,6 +1351,7 @@ export class BordersAndShadingDialog {
                         this.previewDivBottomLeft.classList.add('e-de-table-border-inside-preview-click');
                     } else {
                         this.previewDivBottomLeft.classList.remove('e-de-table-border-inside-preview-click');
+                        this.previewDiv.style.borderLeft = '0px';
                     }
                 } else {
                     if (leftBorder) {
@@ -1340,6 +1367,7 @@ export class BordersAndShadingDialog {
                         this.previewDivBottomRight.classList.add('e-de-table-border-inside-preview-click');
                     } else {
                         this.previewDivBottomRight.classList.remove('e-de-table-border-inside-preview-click');
+                        this.previewDiv.style.borderRight = '0px';
                     }
                 } else {
                     if (rightBorder) {

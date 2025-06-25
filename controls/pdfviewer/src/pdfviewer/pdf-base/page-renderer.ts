@@ -427,7 +427,7 @@ export class PageRenderer{
                             }
                             if (annotation._dictionary.has('Name')) {
                                 rubberStampAnnotation.Name = annotation._dictionary.get('Name');
-                                if (annotation._dictionary.get('Name').name && (annotation._dictionary.get('Name').name.includes('#23D') || annotation._dictionary.get('Name').name.includes('#D'))) {
+                                if (annotation._dictionary.get('Name').name && (annotation._dictionary.get('Name').name.includes('#23D') || annotation._dictionary.get('Name').name.includes('#D')) && !(annotation._dictionary.get('Name').name.includes('#Draft'))) {
                                     rubberStampAnnotation.IsDynamic = true;
                                 }
                             }
@@ -870,6 +870,41 @@ export class PageRenderer{
             this.convertPointToPixel(bounds.width)), bounds.height, bounds.width);
         }
         return bound;
+    }
+
+
+    /**
+     * @private
+     * @returns {void}
+     */
+    public destroy(): void {
+        this.shapeAnnotationList =  null;
+        this.textMarkupAnnotationList =  null;
+        this.measureAnnotationList =  null;
+        this.stickyAnnotationList =  null;
+        this.rubberStampAnnotationList =  null;
+        this.freeTextAnnotationList =  null;
+        this.signatureAnnotationList =  null;
+        this.signatureInkAnnotationList =  null;
+        this.annotationOrder =  null;
+        this.hyperlinks =  null;
+        this.imageData =  null;
+        this.isMaskedImage =  null;
+        this.hyperlinkBounds =  null;
+        this.annotationDestPage =  null;
+        this.annotationList =  null;
+        this.annotationYPosition =  null;
+        this.digitalSignaturePresent =  null;
+        this.annotationCount =  null;
+        this.isAnnotationPresent =  null;
+        this.htmldata =  null;
+        this.renderingMode =  null;
+        this.textString =  null;
+        this.currentFont =  null;
+        this.baseFont =  null;
+        this.fontSize =  null;
+        this.Imagedata =  null;
+        this.IsMaskedImage =  null;
     }
 
     private getRubberStampBounds(innerTemplateBounds: any, bounds: any, pageHeight: number, pageWidth: number, pageRotation: number): Rect {

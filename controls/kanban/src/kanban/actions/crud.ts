@@ -1,6 +1,6 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { Kanban } from '../base/kanban';
-import { isNullOrUndefined as isNoU, closest } from '@syncfusion/ej2-base';
+import { isNullOrUndefined as isNoU, closest, SanitizeHtmlHelper } from '@syncfusion/ej2-base';
 import { ActionEventArgs, SaveChanges } from '../base/interface';
 import * as events from '../base/constant';
 import * as cls from '../base/css-constant';
@@ -62,6 +62,13 @@ export class Crud {
                         index = 0;
                     }
                     modifiedData = this.priorityOrder(modifiedData, index);
+                }
+                if (this.parent.enableHtmlSanitizer) {
+                    const field: string = this.parent.cardSettings.contentField;
+                    if (this.parent.enableHtmlSanitizer && typeof field === 'string') {
+                        (cardData as Record<string, any>)[field as string] =
+                        SanitizeHtmlHelper.sanitize((cardData as Record<string, any>)[field as string]);
+                    }
                 }
                 const addedRecords: Record<string, any>[] = (cardData instanceof Array) ? cardData : [cardData];
                 const changedRecords: Record<string, any>[] =

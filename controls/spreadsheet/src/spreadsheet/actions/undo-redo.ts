@@ -163,7 +163,8 @@ export class UndoRedo {
             if (undoRedoArgs.action === 'autofillWithCF') {
                 undoRedoArgs.action = 'autofill';
                 const conditionalFormat: ConditionalFormatModel[] = sheet.conditionalFormats;
-                if (conditionalFormat[conditionalFormat.length - 1].action === 'autofillWithCF' && args.isUndo) {
+                if (conditionalFormat.length && conditionalFormat[conditionalFormat.length - 1].action === 'autofillWithCF'
+                    && args.isUndo) {
                     if (!conditionalFormat[conditionalFormat.length - 1].value) {
                         this.parent.notify(clearCFRule, { range: conditionalFormat[conditionalFormat.length - 1].range, isAction: true });
                     } else {
@@ -1025,6 +1026,12 @@ export class UndoRedo {
                 this.parent.notify(wrapEvent, {
                     range: [cells[i as number].rowIndex, cells[i as number].colIndex, cells[i as number].rowIndex,
                         cells[i as number].colIndex], wrap: false, sheet: sheet, initial: true
+                });
+            } else if (args && args.action === 'cellSave' && (prevCell.wrap && cells[i as number].wrap && prevCell.value &&
+                prevCell.value.toString().includes('\n') && cells[i as number].value && !cells[i as number].value.toString().includes('\n'))) {
+                this.parent.notify(wrapEvent, {
+                    range: [cells[i as number].rowIndex, cells[i as number].colIndex, cells[i as number].rowIndex,
+                        cells[i as number].colIndex], wrap: true, sheet: sheet, initial: true, isOtherAction: true
                 });
             }
             if (args && cells[i as number].hyperlink && args.action === 'clear') {

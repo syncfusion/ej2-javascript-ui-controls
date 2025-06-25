@@ -320,6 +320,9 @@ export class LinkAnnotation {
                 }
             }
         }
+        this.linkAnnotation = null;
+        this.linkPage = null;
+        this.annotationY = null;
     }
 
     /**

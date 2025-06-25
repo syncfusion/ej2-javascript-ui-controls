@@ -264,9 +264,11 @@ export class MonthEvent extends EventBase {
             const diffInDays: number = eventData.count as number;
             let appWidth: number = this.getEventWidth(startTime, endTime, event[this.fields.isAllDay] as boolean, diffInDays);
             appWidth = (appWidth <= 0) ? this.cellWidth : appWidth;
-            const appLeft: number = (this.parent.enableRtl) ? 0 : position;
-            const appRight: number = (this.parent.enableRtl) ? position : 0;
-            const appHeight: number = this.cellHeight - this.monthHeaderHeight;
+            appWidth = event.IsBlock ? appWidth - 1 : appWidth;
+            const appLeft: number = (this.parent.enableRtl) ? 0 : event.IsBlock ? position + 1 : position;
+            const appRight: number = (this.parent.enableRtl) ? event.IsBlock ? position + 1 : position : 0;
+            let appHeight: number = this.cellHeight - this.monthHeaderHeight;
+            appHeight = event.IsBlock ? appHeight - 1 : appHeight;
             const appTop: number = this.getRowTop(resIndex);
             const blockElement: HTMLElement = this.createBlockAppointmentElement(event, resIndex, this.isResourceEventTemplate);
             setStyleAttribute(blockElement, {

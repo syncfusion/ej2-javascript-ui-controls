@@ -2,7 +2,7 @@ import { Property, ChildProperty, Complex, Collection, DateFormatOptions, getVal
 import { isNullOrUndefined, extend } from '@syncfusion/ej2-base';
 import { DataLabelSettingsModel, MarkerSettingsModel, TrendlineModel, ChartSegmentModel, ParetoOptionsModel } from '../series/chart-series-model';
 import { StackValues, RectOption, ControlPoints, PolarArc, appendChildElement, appendClipElement, getElement } from '../../common/utils/helper';
-import { ErrorBarSettingsModel, ErrorBarCapSettingsModel } from '../series/chart-series-model';
+import { ErrorBarSettingsModel, ErrorBarCapSettingsModel, LastValueLabelSettingsModel} from '../series/chart-series-model';
 import { firstToLowerCase, ChartLocation, CircleOption, IHistogramValues, getColorByValue} from '../../common/utils/helper';
 import { Rect, SvgRenderer, CanvasRenderer, Size } from '@syncfusion/ej2-svg-base';
 import { ChartSeriesType, ChartShape, SeriesValueType, SplineType, StepPosition } from '../utils/enum';
@@ -23,6 +23,85 @@ import { getVisiblePoints, setRange, findClipRect } from '../../common/utils/hel
 import { Browser } from '@syncfusion/ej2-base';
 import { StockSeries } from '../../stock-chart/index';
 import { CartesianAxisLayoutPanel } from '../axis/cartesian-panel';
+
+
+/**
+ * This class is used to introduce a grid line indicator to highlight the last value of each series.
+ */
+
+export class LastValueLabelSettings extends ChildProperty<LastValueLabelSettings> {
+
+    /**
+     * Enables or disables the display of the last value labels.
+     *
+     * @default false
+     */
+    @Property(false)
+    public enable: boolean;
+
+    /**
+     * The font proerties of the last value labels.
+     */
+    @Complex<FontModel>({ size: null, color: null, fontStyle: null, fontWeight: null, fontFamily: null }, Font)
+    public font: FontModel;
+
+    /**
+     * The background color for the label.
+     *
+     * @default 'null'
+     */
+    @Property(null)
+    public background: string;
+
+    /**
+     * The border properties for the label.
+     */
+    @Complex<BorderModel>({}, Border)
+    public border: BorderModel;
+
+    /**
+     * The line color for grid lines behind the labels.
+     *
+     * @default ''
+     */
+    @Property('')
+    public lineColor: string;
+
+    /**
+     * The width of the grid lines behind the labels.
+     *
+     * @default 1
+     */
+    @Property(1)
+    public lineWidth: number;
+
+    /**
+     * The dash array of the grid lines behind the labels.
+     *
+     * @default ''
+     */
+    @Property('')
+    public dashArray: string;
+
+    /**
+     * Specifies the X-axis rounded corner radius for the last value label.
+     > Note that `border` values must not be null for this feature to work.
+     *
+     * @default 5
+     */
+    @Property(5)
+    public rx: number;
+
+    /**
+     * Specifies the Y-axis rounded corner radius for the last value label.
+     > Note that `border` values must not be null for this feature to work.
+     *
+     * @default 5
+     */
+    @Property(5)
+    public ry: number;
+
+}
 
 /**
  * This class provides options to customize the appearance and behavior of data labels within a series.
@@ -1885,6 +1964,13 @@ export class Series extends SeriesBase {
     @Complex<BorderModel>({ color: null, width: 0 }, Border)
     public border: BorderModel;
 
+
+    /**
+     * Options for customizing and displaying the last value in the series.
+     */
+    @Complex<LastValueLabelSettingsModel>({}, LastValueLabelSettings)
+    public lastValueLabel: LastValueLabelSettingsModel;
+
     /**
      * Sets the opacity of the series, with a value between 0 and 1 where 0 is fully transparent and 1 is fully opaque.
      *
@@ -2292,6 +2378,8 @@ export class Series extends SeriesBase {
     /** @private */
     public textElement: Element;
     /** @private */
+    public lastValueLabelElement: Element;
+    /** @private */
     public pathElement: Element;
     /** @private */
     public sourceIndex: number;
@@ -2613,6 +2701,9 @@ export class Series extends SeriesBase {
                         chart.dataLabelModule.render(this, this.chart, this.marker.dataLabel);
                     }
                 }
+                if (!this.chart.enableCanvas && this.lastValueLabel.enable) {
+                    chart.lastValueLabelModule.render(this, this.chart, this.lastValueLabel);
+                }
                 this.appendSeriesElement(chart.seriesElements, chart);
             }
             if (!this.chart.enableCanvas) {
@@ -2705,6 +2796,7 @@ export class Series extends SeriesBase {
     public appendSeriesElement(element: Element, chart: Chart): void {
         const marker: MarkerSettingsModel = this.marker;
         const dataLabel: DataLabelSettingsModel = marker.dataLabel;
+        const lastValueLabel: LastValueLabelSettingsModel = this.lastValueLabel;
         const redraw: boolean = chart.redraw;
         if (this.category !== 'TrendLine') {
             appendChildElement(chart.enableCanvas, chart.seriesElements, this.seriesElement, redraw);
@@ -2730,6 +2822,9 @@ export class Series extends SeriesBase {
         }
         if (!chart.enableCanvas && chart.dataLabelElements.hasChildNodes()) {
             chart.seriesElements.appendChild(chart.dataLabelElements);
+        }
+        if (lastValueLabel.enable && this.lastValueLabelElement) {
+            appendChildElement(chart.enableCanvas, chart.lastValueLabelElements, this.lastValueLabelElement, redraw);
         }
     }
     /**
@@ -2826,6 +2921,7 @@ export class Series extends SeriesBase {
                 series.points[i as number].y = series.points[i as number].yValue = series.currentViewData[i as number][series.yName];
             }
         }
+        this.visiblePoints.push(this.points[this.points.length - 1]);
         this.updateSplineValue();
         this.chart.calculateStackValues();
         this.chart.redraw = this.chart.enableAnimation;
@@ -2905,7 +3001,7 @@ export class Series extends SeriesBase {
             const yMax: number = this.yMax;
             this.yMin = Infinity; this.xMin = Infinity;
             this.yMax = -Infinity; this.xMax = -Infinity;
-            if (this.xAxis.valueType.indexOf('Category') > -1 && this.chart.series.length === 1) {
+            if (this.xAxis.valueType.indexOf('Category') > -1) {
                 this.xAxis.labels = []; this.xAxis.indexLabels = {};
             }
             if (index === 0) { this.chart.pointsRemoved = this.chart.enableAnimation; }
@@ -2955,7 +3051,7 @@ export class Series extends SeriesBase {
         };
         const dateParser: Function = this.chart.intl.getDateParser(option);
         const dateFormatter: Function = this.chart.intl.getDateFormat(option);
-        if (this.xAxis.valueType === 'Category' && this.chart.series.length === 1) {
+        if (this.xAxis.valueType === 'Category') {
             this.pushCategoryData(point, index, <string>point.x);
         } else if (this.xAxis.valueType === 'DateTimeCategory' && this.chart.series.length === 1) {
             this.pushCategoryData(point, index, Date.parse(dateParser(dateFormatter(point.x))).toString());
@@ -3117,6 +3213,13 @@ export class Series extends SeriesBase {
             if (yMax === this.yMax && yMin === this.yMin && this.visible) {
                 this.chart.pointsAdded = false;
                 this.chart[firstToLowerCase((this.category === 'Pareto' ? 'Column' : this.type.replace('100', ''))) + 'SeriesModule'].updateDirection(this, points, this.chart.requireInvertedAxis);
+                if (this.lastValueLabel.enable && this.chart.lastValueLabelModule) {
+                    this.chart.lastValueLabelCollections = [];
+                    this.chart.lastValueLabelModule.render(this, this.chart, this.lastValueLabel, true);
+                    if (this.lastValueLabelElement) {
+                        appendChildElement(this.chart.enableCanvas, this.chart.lastValueLabelElements, this.lastValueLabelElement, true);
+                    }
+                }
                 if (this.chart.annotationModule) {
                     this.chart.annotationModule.renderAnnotations(getElement((this.chart.element.id) + '_Secondary_Element'));
                 }
@@ -3226,6 +3329,14 @@ export class Series extends SeriesBase {
                         appendChildElement(series.chart.enableCanvas, series.chart.dataLabelElements, series.shapeElement, true);
                         series.textElement.setAttribute('transform', transform);
                         appendChildElement(series.chart.enableCanvas, series.chart.dataLabelElements, series.textElement, true);
+                    }
+                }
+                if (series.lastValueLabel.enable && series.chart.lastValueLabelModule) {
+                    series.chart.lastValueLabelCollections = [];
+                    series.chart.lastValueLabelModule.render(series, series.chart, series.lastValueLabel, true);
+                    if (series.lastValueLabelElement) {
+                        appendChildElement(series.chart.enableCanvas
+                            , series.chart.lastValueLabelElements, series.lastValueLabelElement, true);
                     }
                 }
                 if (series.chart.annotationModule) {

@@ -4,6 +4,7 @@ import { BaseHistoryInfo, MarkerInfo, Operation } from './base-history-info';
 import { CommentCharacterElementBox, EditRangeStartElementBox, ElementBox } from '../viewer/page';
 import { DocumentHelper } from '../viewer';
 import { Action, CONTROL_CHARACTERS } from '../../base/types';
+import { TextPosition} from '../index';
 /**
  * EditorHistory preservation class
  */
@@ -127,9 +128,11 @@ export class HistoryInfo extends BaseHistoryInfo {
                     const operation: Operation = currentHistory.getInsertOperation('Enter');
                     const breakOperation: Operation = this.getInsertOperation(action);
                     operation.markerData = markerData;
-                    breakOperation.markerData =
-                        this.owner.editorModule.getMarkerData(undefined, undefined,
-                                                              this.owner.editorModule.getRevision(markerData.revisionId));
+                    breakOperation.markerData = {
+                        author: markerData.author,
+                        date: markerData.date,
+                        revisionType: markerData.revisionType
+                    };
                     operations.push(operation);
                     operations.push(breakOperation);
                     operations.push(operation);
@@ -365,7 +368,7 @@ export class HistoryInfo extends BaseHistoryInfo {
             } else {
                 for (let i: number = 0; i < this.modifiedActions.length; i++) {
                     const currentHistory: BaseHistoryInfo = this.modifiedActions[parseInt(i.toString(), 10)];
-                    if (!isNullOrUndefined(currentHistory.cellOperation) && currentHistory.cellOperation.length > 0) {
+                    if (currentHistory.action === 'RemoveRowTrack' && !isNullOrUndefined(currentHistory.cellOperation) && currentHistory.cellOperation.length > 0) {
                         operations.push(currentHistory.cellOperation[0]);
                         isSkip = true;
                         currentHistory.cellOperation = [];
@@ -504,6 +507,13 @@ export class HistoryInfo extends BaseHistoryInfo {
             this.modifiedActions[this.modifiedActions.length - 1].type = 'CellFormat';
             operations = this.modifiedActions[this.modifiedActions.length - 1].getSelectedCellOperation('CellOptions', false, false, false, true).slice();
             break;
+        case 'Reject Change':
+            for (let i: number = 0; i < this.modifiedActions.length; i++) {
+                const currentHistory: BaseHistoryInfo = this.modifiedActions[parseInt(i.toString(), 10)];
+                const operation: Operation[] = currentHistory.getActionInfo();
+                operations.push(...operation);
+            }
+            break;
         }
         return operations;
     }
@@ -541,6 +551,24 @@ export class HistoryInfo extends BaseHistoryInfo {
                 this.owner.editorModule.updateRangeCollection(this.editRangeStart, user);
             }
             this.owner.selectionModule.updateEditRangeCollection();
+        }
+        if (this.action === 'Accept All' || this.action === 'Reject All') {
+            let startTextPosition: TextPosition;
+            let endTextPosition: TextPosition;
+            if (this.editorHistory.isUndoing) {
+                startTextPosition = !isNullOrUndefined(this.selectionStart)
+                    ? this.owner.selectionModule.getTextPosBasedOnLogicalIndex(this.selectionStart) : undefined;
+                endTextPosition = !isNullOrUndefined(this.selectionEnd)
+                    ? this.owner.selectionModule.getTextPosBasedOnLogicalIndex(this.selectionEnd) : undefined;
+            } else {
+                startTextPosition = !isNullOrUndefined(this.insertPosition)
+                    ? this.owner.selectionModule.getTextPosBasedOnLogicalIndex(this.insertPosition) : undefined;
+                endTextPosition = !isNullOrUndefined(this.endPosition)
+                    ? this.owner.selectionModule.getTextPosBasedOnLogicalIndex(this.endPosition) : undefined;
+            }
+            if (startTextPosition && endTextPosition) {
+                this.owner.selectionModule.selectRange(startTextPosition, endTextPosition);
+            }
         }
         if (!this.isChildHistoryInfo) {
             this.editorHistory.updateComplexHistory();

@@ -27,6 +27,18 @@
     direction: rtl;
   }
 
+  .e-de-ctnr-layout-tab {
+    position: relative;
+    width: 100%;
+    display: flex;
+    align-content: center;
+  }
+
+  .e-de-ctnr-layout-ribbon-segment.e-de-ctnr-layout-tab .e-textbox,
+  .e-de-ctnr-layout-ribbon-segment.e-de-ctnr-layout-tab .e-textbox {
+    width: 100%;
+  }
+
   .e-de-ctnr-hglt-btn {
     border: .5px solid transparent;
     display: inline-block;

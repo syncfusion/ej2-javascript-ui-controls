@@ -31,7 +31,7 @@ describe('Displayed Auto of Before & After spacing in Paragraph Dialog', functio
         editor = undefined;
         dialog = undefined;
         document.body.removeChild(document.getElementById('container'));
-        document.body.innerHTML = '';
+        
         setTimeout(function () {
             done();
         }, 2000);
@@ -79,7 +79,7 @@ describe('Paragraph format-before spacing and left Indent Applying validation vi
         editor = undefined;
         dialog = undefined;
         document.body.removeChild(document.getElementById('container'));
-        document.body.innerHTML = '';
+        
         setTimeout(function () {
             done();
         }, 2000);
@@ -142,7 +142,7 @@ describe('Paragraph format-after spacing and left Indent Applying validation via
         editor = undefined;
         dialog = undefined;
         document.body.removeChild(document.getElementById('container'));
-        document.body.innerHTML = '';
+        
         setTimeout(function () {
             done();
         }, 2000);
@@ -208,7 +208,7 @@ describe('Paragraph format using paragraph dialog- right to left changes in empt
         editor = undefined;
         dialog = undefined;
         document.body.removeChild(document.getElementById('container'));
-        document.body.innerHTML = '';
+        
         setTimeout(function () {
             done();
         }, 2000);
@@ -281,7 +281,7 @@ describe('Paragraph format using paragraph dialog- right to left changes in empt
         editor = undefined;
         dialog = undefined;
         document.body.removeChild(document.getElementById('container'));
-        document.body.innerHTML = '';
+        
         setTimeout(function () {
             done();
         }, 2000);
@@ -348,7 +348,7 @@ describe('Paragraph format using paragraph dialog- right to left changes in non-
         editor = undefined;
         dialog = undefined;
         document.body.removeChild(document.getElementById('container'));
-        document.body.innerHTML = '';
+        
         setTimeout(function () {
             done();
         }, 2000);
@@ -422,7 +422,7 @@ describe('Paragraph format using paragraph dialog- right to left changes in non-
         editor = undefined;
         dialog = undefined;
         document.body.removeChild(document.getElementById('container'));
-        document.body.innerHTML = '';
+        
         setTimeout(function () {
             done();
         }, 2000);
@@ -498,7 +498,7 @@ describe('Paragraph Format Apply Dialog Test Case Validation', function () {
         editor = undefined;
         dialog = undefined;
         document.body.removeChild(document.getElementById('container'));
-        document.body.innerHTML = '';
+        
         setTimeout(function () {
             done();
         }, 2000);

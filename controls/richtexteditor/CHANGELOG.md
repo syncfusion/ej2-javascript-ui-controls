@@ -2,99 +2,55 @@
 
 ## [Unreleased]
 
-## 29.2.11 (2025-06-17)
+## 30.1.37 (2025-06-25)
 
 ### RichTextEditor
 
 #### Bug Fixes
 
-- `#I732468` - Now, The issue with the arrow key navigation behaves incorrectly in pasted tables within the Rich Text Editor has now been resolved.
+- `#I733621` - Now, The issue with applying bold to the main bullet, which also affected sub-bullets in the Rich Text Editor, has now been resolved.
 
-## 29.2.10 (2025-06-10)
+- `#I733547` - Now, The issue with the setting Default in the FontSize toolbar does not reset the fontSize in the RichTextEditor has now been resolved.
 
-### RichTextEditor
+- `#I732468` - Now, The issue with arrow key navigation behaves incorrectly in pasted tables with in the Rich Text Editor has now been resolved.
 
-#### Bug Fixes
+- `#I733361` - Now, The issue with the entire paragraph becomes a hyperlink when pasted after a link in the Rich Text Editor has now been resolved.
 
-- `#I723009` - Now, The issue with the Rich Text Editor related to delete and paste actions when a list is present at the end of the content has now been resolved.
+#### Breaking Changes
 
-- `#I731671` - Now, The issue where the `contentEditable` attribute of an image caption is not set to false when reusing extracted HTML content in the RichTextEditor has been resolved.
+**Quick Toolbar Positioning Improvements**
 
-- `#I731567` - Now, The issue with the display text does not update the first time when inserting a link in the RichTextEditor has now been resolved.
+- **Enhanced positioning logic**: The Rich Text Editor's positioning system has been completely redesigned to prevent content from being hidden when editing tables and images.
 
-- `#I674632` - Now, The issue where an exception was thrown when applying the Bold format after pressing Shift+Enter in the Rich Text Editor has been resolved.
+- **Default scroll behavior change**: The `actionOnScroll` property in `QuickToolbarSettings` has been changed from `hide` to `none` by default.
 
-- `#I725085` - Now, The issue with the table resize element being misaligned in the Rich Text Editor when used within Bootstrap grid columns has now been resolved.
+- **Deprecated event arguments**: The `positionX` and `positionY` arguments in the `beforeQuickToolbarOpen` event have been deprecated and will be removed in future versions.
 
-- `#I717938` - Now, the styles are correctly applied in the exported documents from the Rich Text Editor.
+- **Default items**: The default order of the items in Table, Image, Audio and Video quick toolbar has been changed. The quick toolbar items will appear on a single line by default.
 
-## 29.2.8 (2025-06-03)
+**Previous value**
 
-### RichTextEditor
+```ts
+{
+    actionOnScroll: 'hide',
+    table: ['TableHeader', 'TableRows', 'TableColumns', 'BackgroundColor', '-', 'TableRemove', 'Alignments', 'TableCellVerticalAlign', 'Styles'],
+    image: ['Replace', 'Align', 'Caption', 'Remove', '-', 'InsertLink', 'Display', 'AltText', 'Dimension'],
+    audio: ['AudioReplace', 'AudioRemove', 'AudioLayoutOption'],
+    video: ['VideoReplace', 'VideoAlign', 'VideoRemove', 'VideoLayoutOption', 'VideoDimension']
+}
+```
 
-#### Bug Fixes
+**New value**
 
-- `#I725085` - Now, The issue with the table resize element being misaligned in the Rich Text Editor when used within Bootstrap grid columns has now been resolved.
-- `#I729572` - Now, The issue where formatted styles were removed when modifying an inserted link in the Rich Text Editor has been resolved.
-
-## 29.2.5 (2025-05-21)
-
-### RichTextEditor
-
-#### Bug Fixes
-
-- `#I723390` - Now, The issue with the Table Tools Alignment and Vertical Align Not Applied on Row/Column Selection has been resolved.
-- `#I724398` - Now, the issue with the console error while running `Vitest` unit tests in the rich text editor has been resolved.
-- `#FB67289` - Now, the issue where the Edit Link popup did not retain the URL after applying font color in the Rich Text Editor has been resolved.
-
-## 29.1.40 (2025-04-29)
-
-### RichTextEditor
-
-#### Bug Fixes
-
-- `#I698253` - Now, The issue with the page becoming unresponsive when removing inline code in the RichTextEditor has been resolved.
-- `#I709931` - Now, when pasting content into the Rich Text Editor with the Enter key configuration set to `<br>`, only a single `<br>` tag is inserted instead of the expected two.
-- `#I715942` - Now, the issue where setting the value property to null resulted in focus inside the editor has been resolved.
-- `#I714681` - Now the issue where the drag and drop file upload popup appeared outside the Rich Text Editor container has been resolved.
-
-## 29.1.39 (2025-04-22)
-
-### RichTextEditor
-
-#### Bug Fixes
-
-- `#I706947` - Now, The issue with the Two new lines created when using Shift Enter key in the RichTextEditor has been resolved.
-
-- `#I712784` - Now, the issue with the cursor position not being restored when inserting a table using the `showDialog` method in the RichTextEditor component has been resolved.
-
-## 29.1.37 (2025-04-08)
-
-### RichTextEditor
-
-#### Bug Fixes
-
-- `#I707199` - Now, when pasting content with spaces before and after it while `enableHtmlSanitizer` is disabled, the Rich Text Editor no longer inserts `&nbsp;` for spaces.
-
-## 29.1.35 (2025-04-01)
-
-### RichTextEditor
-
-#### Bug Fixes
-
-- `#F196437` - Now, the issue with the script error that throws when pasting an Excel table into the IFrame RichTextEditor has now been resolved.
-
-- `#I694099` - Now, plain formatting works properly, clearing the `div` elements, and works similar to 'Paste as Plain Text'.
-
-- `#I691787` - Now, the link drag and drop functionality works properly in the Rich Text Editor.
-
-- `#I694974` - Now, the enter actions works properly within the format tags in the Rich Text Editor.
-
-- `#I690911` - Now, the backspace action works properly in the list item in the Rich Text Editor.
-
-- `#I699752` - Now, the quick toolbar works properly when rendering images with captions inside tables in the Rich Text Editor.
-
-- Now, the issue with pressing the Enter key at the end of the list causing the list to revert has now been resolved.
+```ts
+{
+    actionOnScroll: 'none',
+    table: ['TableHeader', 'TableRemove', '|', 'TableRows', 'TableColumns', '|', 'Styles', 'BackgroundColor', 'Alignments', 'TableCellVerticalAlign'],
+    image: ['AltText', 'Caption', '|', 'Align', 'Display', '|', 'InsertLink', 'OpenImageLink', 'EditImageLink', 'RemoveImageLink', '|', 'Dimension', 'Replace', 'Remove'],
+    audio: ['AudioLayoutOption', 'AudioReplace', 'AudioRemove'],
+    video: ['VideoLayoutOption', 'VideoAlign', '|', 'VideoDimension', 'VideoReplace', 'VideoRemove']
+}
+```
 
 ## 29.1.33 (2025-03-25)
 

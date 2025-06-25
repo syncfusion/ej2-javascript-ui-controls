@@ -1577,6 +1577,62 @@ export class FreeTextAnnotation {
         this.inputBoxElement.style.borderWidth = (this.borderWidth * zoomFactor) + 'px';
         this.inputBoxElement.style.fontSize = (this.fontSize * zoomFactor) + 'px';
     }
+
+    /**
+     * @private
+     * @returns {void}
+     */
+    public destroy(): void {
+        if (this.inputBoxElement) {
+            this.inputBoxElement.removeEventListener('focusout', this.onFocusOutInputBox.bind(this));
+            this.inputBoxElement.removeEventListener('keydown', this.onKeyDownInputBox.bind(this));
+            this.inputBoxElement.removeEventListener('mouseup', this.onMouseUpInputBox.bind(this));
+        }
+        this.currentAnnotationMode = null;
+        this.opacity = null;
+        this.borderColor = null;
+        this.borderWidth = null;
+        this.defautWidth = null;
+        this.defaultHeight = null;
+        this.inputBoxElement = null;
+        this.borderStyle = null;
+        this.author = null;
+        this.subject = null;
+        this.isNewFreeTextAnnot = null;
+        this.isNewAddedAnnot = null;
+        this.inputBoxCount = null;
+        this.selectedAnnotation = null;
+        this.isFreeTextValueChange = null;
+        this.isAddAnnotationProgramatically = null;
+        this.isInuptBoxInFocus = null;
+        this.fontSize = null;
+        this.annodationIntent = null;
+        this.annotationFlags = null;
+        this.fillColor = null;
+        this.fontColor = null;
+        this.fontFamily = null;
+        this.freeTextPageNumbers = null;
+        this.selectedText = null;
+        this.isTextSelected = null;
+        this.selectionStart = null;
+        this.selectionEnd = null;
+        this.isBold = null;
+        this.isItalic = null;
+        this.isUnderline = null;
+        this.isStrikethrough = null;
+        this.textAlign = null;
+        this.defaultText = null;
+        this.isReadonly = null;
+        this.isMaximumWidthReached = null;
+        this.padding = null;
+        this.wordBreak = null;
+        this.freeTextPaddingLeft = null;
+        this.freeTextPaddingTop = null;
+        this.defaultFontSize = null;
+        this.lineGap = null;
+        this.previousText = null;
+        this.currentPosition = null;
+    }
 }
 
 interface RGBA {

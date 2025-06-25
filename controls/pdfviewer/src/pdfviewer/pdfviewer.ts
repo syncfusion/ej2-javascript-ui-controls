@@ -1,6 +1,6 @@
 import { Component, INotifyPropertyChanged, NotifyPropertyChanges, ChildProperty, L10n, Collection, Complex, isBlazor, Browser } from '@syncfusion/ej2-base';
 import { ModuleDeclaration, isNullOrUndefined, Property, Event, EmitType, SanitizeHtmlHelper } from '@syncfusion/ej2-base';
-import { PdfViewerModel, HighlightSettingsModel, UnderlineSettingsModel, StrikethroughSettingsModel, LineSettingsModel, ArrowSettingsModel, RectangleSettingsModel, CircleSettingsModel, PolygonSettingsModel, StampSettingsModel, StickyNotesSettingsModel, CustomStampSettingsModel, VolumeSettingsModel, RadiusSettingsModel, AreaSettingsModel, PerimeterSettingsModel, DistanceSettingsModel, MeasurementSettingsModel, FreeTextSettingsModel, AnnotationSelectorSettingsModel, TextSearchColorSettingsModel, PageInfoModel, DocumentTextCollectionSettingsModel, TextDataSettingsModel, RectangleBoundsModel, SignatureFieldSettingsModel, InitialFieldSettingsModel, SignatureIndicatorSettingsModel, TextFieldSettingsModel, PasswordFieldSettingsModel, CheckBoxFieldSettingsModel, RadioButtonFieldSettingsModel, DropdownFieldSettingsModel, ListBoxFieldSettingsModel, ItemModel, SignatureDialogSettingsModel, PageOrganizerSettingsModel } from './pdfviewer-model';
+import { PdfViewerModel, HighlightSettingsModel, UnderlineSettingsModel, SquigglySettingsModel, StrikethroughSettingsModel, LineSettingsModel, ArrowSettingsModel, RectangleSettingsModel, CircleSettingsModel, PolygonSettingsModel, StampSettingsModel, StickyNotesSettingsModel, CustomStampSettingsModel, VolumeSettingsModel, RadiusSettingsModel, AreaSettingsModel, PerimeterSettingsModel, DistanceSettingsModel, MeasurementSettingsModel, FreeTextSettingsModel, AnnotationSelectorSettingsModel, TextSearchColorSettingsModel, PageInfoModel, DocumentTextCollectionSettingsModel, TextDataSettingsModel, RectangleBoundsModel, SignatureFieldSettingsModel, InitialFieldSettingsModel, SignatureIndicatorSettingsModel, TextFieldSettingsModel, PasswordFieldSettingsModel, CheckBoxFieldSettingsModel, RadioButtonFieldSettingsModel, DropdownFieldSettingsModel, ListBoxFieldSettingsModel, ItemModel, SignatureDialogSettingsModel, PageOrganizerSettingsModel } from './pdfviewer-model';
 import { ToolbarSettingsModel, ShapeLabelSettingsModel, KeyGestureModel, KeyboardCommandModel, CommandManagerModel } from './pdfviewer-model';
 import { ServerActionSettingsModel, AjaxRequestSettingsModel, CustomStampModel, CustomToolbarItemModel, HandWrittenSignatureSettingsModel, AnnotationSettingsModel, TileRenderingSettingsModel, ScrollSettingsModel, FormFieldModel, InkAnnotationSettingsModel } from './pdfviewer-model';
 import { IAnnotationPoint, IPoint, PdfViewerBase, PdfiumRunner, TextMarkupAnnotation } from './index';
@@ -21,7 +21,7 @@ import { FormFields } from './index';
 import { FormDesigner } from './index';
 import { Print, CalibrationUnit } from './index';
 import { PageOrganizer } from './index';
-import { UnloadEventArgs, LoadEventArgs, LoadFailedEventArgs, AjaxRequestFailureEventArgs, PageChangeEventArgs, PageClickEventArgs, ZoomChangeEventArgs, HyperlinkClickEventArgs, HyperlinkMouseOverArgs, ImportStartEventArgs, ImportSuccessEventArgs, ImportFailureEventArgs, ExportStartEventArgs, ExportSuccessEventArgs, ExportFailureEventArgs, AjaxRequestInitiateEventArgs, PageRenderInitiateEventArgs, AjaxRequestSuccessEventArgs, PageRenderCompleteEventArgs, PageOrganizerSaveAsEventArgs } from './index';
+import { UnloadEventArgs, LoadEventArgs, LoadFailedEventArgs, AjaxRequestFailureEventArgs, PageChangeEventArgs, PageClickEventArgs, ZoomChangeEventArgs, HyperlinkClickEventArgs, HyperlinkMouseOverArgs, ImportStartEventArgs, ImportSuccessEventArgs, ImportFailureEventArgs, ExportStartEventArgs, ExportSuccessEventArgs, ExportFailureEventArgs, AjaxRequestInitiateEventArgs, PageRenderInitiateEventArgs, AjaxRequestSuccessEventArgs, PageRenderCompleteEventArgs, PageOrganizerSaveAsEventArgs, PageOrganizerZoomChangedEventArgs } from './index';
 import { AnnotationAddEventArgs, AnnotationRemoveEventArgs, AnnotationPropertiesChangeEventArgs, AnnotationResizeEventArgs, AnnotationSelectEventArgs, AnnotationMoveEventArgs, AnnotationDoubleClickEventArgs, AnnotationMouseoverEventArgs, PageMouseoverEventArgs, AnnotationMouseLeaveEventArgs , ButtonFieldClickEventArgs} from './index';
 import { TextSelectionStartEventArgs, TextSelectionEndEventArgs, DownloadStartEventArgs, DownloadEndEventArgs, ExtractTextCompletedEventArgs, PrintStartEventArgs, PrintEndEventArgs } from './index';
 import { TextSearchStartEventArgs, TextSearchCompleteEventArgs, TextSearchHighlightEventArgs } from './index';
@@ -78,6 +78,7 @@ import { PdfViewerUtils, PdfiumTaskScheduler, TaskPriorityLevel } from './base/p
  *          "HighlightTool",
  *          "UnderlineTool",
  *          "StrikethroughTool",
+ *          "SquigglyTool",
  *          "ColorEditTool",
  *          "OpacityEditTool",
  *          "AnnotationDeleteTool",
@@ -919,6 +920,128 @@ export class StrikethroughSettings extends ChildProperty<StrikethroughSettings> 
     /**
      * Gets or sets the allowed interactions for the locked strikethrough annotations.
      * IsLock can be configured using strikethrough settings.
+     *
+     * @default ['None']
+     */
+    @Property(['None'])
+    public allowedInteractions: AllowedInteraction[];
+
+    /**
+     * specifies whether the individual annotations are included or not in print actions.
+     */
+    @Property(true)
+    public isPrint: boolean;
+
+    /**
+     * specifies the subject of the annotation.
+     */
+    @Property('')
+    public subject: string;
+}
+
+/**
+ * The `SquigglySettings` module is used to provide the properties to Squiggly annotation.
+ *
+ * ```html
+ * <div id="pdfViewer" style="height: 100%;width: 100%;"></div>
+ * ```
+ * ```ts
+ *  let viewer: PdfViewer = new PdfViewer();
+ *  // Change the squiggly annotation settings.
+ *  viewer.squigglySettings = {
+ *      opacity: 1,
+ *      color: '#ff0000',
+ *      author: 'Guest',
+ *      annotationSelectorSettings: {
+ *          selectionBorderColor: '',
+ *          resizerBorderColor: 'black',
+ *          resizerFillColor: '#FF4081',
+ *          resizerSize: 8,
+ *          selectionBorderThickness: 1,
+ *          resizerShape: 'Square',
+ *          selectorLineDashArray: [],
+ *          resizerLocation: AnnotationResizerLocation.Corners | AnnotationResizerLocation.Edges
+ *      },
+ *      isLock: false,
+ *      enableMultiPageAnnotation: false,
+ *      enableTextMarkupResizer: false,
+ *      allowedInteractions: ['None'],
+ *      isPrint: true
+ *  };
+ *  viewer.appendTo("#pdfViewer");
+ * ```
+ *
+ */
+export class SquigglySettings extends ChildProperty<SquigglySettings> {
+
+    /**
+     * Get or set page number of the annotation.
+     */
+    @Property(1)
+    public pageNumber: number;
+
+    /**
+     * Get or set bounds of the annotation.
+     *
+     * @default []
+     */
+    public bounds: IAnnotationPoint[];
+
+    /**
+     * specifies the opacity of the annotation.
+     */
+    @Property(1)
+    public opacity: number;
+
+    /**
+     * specifies the color of the annotation.
+     */
+    @Property('#ff0000')
+    public color: string;
+
+    /**
+     * specifies the author of the annotation.
+     */
+    @Property('Guest')
+    public author: string;
+
+    /**
+     * specifies the annotation selector settings of the annotation.
+     */
+    @Property('')
+    public annotationSelectorSettings: AnnotationSelectorSettingsModel;
+
+    /**
+     * specifies the custom data of the annotation.
+     */
+    @Property(null)
+    public customData: object;
+
+    /**
+     * specifies the locked action of the annotation.
+     */
+    @Property(false)
+    public isLock: boolean;
+
+    /**
+     * Enables or disables the multi-page text markup annotation selection in UI.
+     *
+     * @default false
+     */
+    @Property(false)
+    public enableMultiPageAnnotation: boolean;
+
+    /**
+     * Enable or disable the text markup resizer to modify the bounds in UI.
+     *
+     * @default false
+     */
+    @Property(false)
+    public enableTextMarkupResizer: boolean;
+
+    /**
+     * Gets or sets the allowed interactions for the locked squiggly annotations.
+     * IsLock can be configured using squiggly settings.
      *
      * @default ['None']
      */
@@ -5525,7 +5648,11 @@ export class CommandManager extends ChildProperty<CommandManager> {
  *           canRotate: true,
  *           canCopy: true,
  *           canRearrange: true,
- *           canImport: true;
+ *           canImport: true,
+ *           imageZoom: 1,
+ *           showImageZoomingSlider: false,
+ *           imageZoomMin: 1,
+ *           imageZoomMax: 5
  *   };
  *  viewer.appendTo("#pdfViewer");
  * ```
@@ -5568,6 +5695,31 @@ export class PageOrganizerSettings extends ChildProperty<PageOrganizerSettings> 
      */
     @Property(true)
     public canImport: boolean;
+
+    /**
+     * Controls visibility of the zooming slider UI in the page organizer.
+     * When enabled, a slider is shown to zoom in / out the page thumbnails
+     */
+    @Property(false)
+    public showImageZoomingSlider: boolean;
+
+    /**
+     * Minimum value for the image zoom scale in the page organizer view.
+     */
+    @Property(1)
+    public imageZoomMin: number;
+
+    /**
+     * Maximum value for the image zoom scale in the page organizer view.
+     */
+    @Property(5)
+    public imageZoomMax: number;
+
+    /**
+     * Current zoom scale of the images in the page organizer view.
+     */
+    @Property(1)
+    public imageZoom: number;
 
 }
 
@@ -6025,7 +6177,8 @@ export class PdfViewer extends Component<HTMLElement> implements INotifyProperty
      * {% codeBlock src='pdfviewer/pageOrganizerSettings/index.md' %}{% endcodeBlock %}
      *
      */
-    @Property({canDelete: true, canInsert: true, canRotate: true, canCopy: true, canRearrange: true, canImport: true})
+    // eslint-disable-next-line max-len
+    @Property({canDelete: true, canInsert: true, canRotate: true, canCopy: true, canRearrange: true, canImport: true, showImageZoomingSlider: false, imageZoomMin: 1, imageZoomMax: 5, imageZoom: 1})
     public pageOrganizerSettings: PageOrganizerSettingsModel;
 
     /**
@@ -6615,7 +6768,7 @@ export class PdfViewer extends Component<HTMLElement> implements INotifyProperty
      *
      */
 
-    @Property({ showTooltip: true, toolbarItems: ['OpenOption', 'UndoRedoTool', 'PageNavigationTool', 'MagnificationTool', 'PanTool', 'SelectionTool', 'CommentTool', 'SubmitForm', 'AnnotationEditTool', 'FormDesignerEditTool', 'FreeTextAnnotationOption', 'InkAnnotationOption', 'ShapeAnnotationOption', 'StampAnnotation', 'SignatureOption', 'SearchOption', 'PrintOption', 'DownloadOption'], annotationToolbarItems: ['HighlightTool', 'UnderlineTool', 'StrikethroughTool', 'ColorEditTool', 'OpacityEditTool', 'AnnotationDeleteTool', 'StampAnnotationTool', 'HandWrittenSignatureTool', 'InkAnnotationTool', 'ShapeTool', 'CalibrateTool', 'StrokeColorEditTool', 'ThicknessEditTool', 'FreeTextAnnotationTool', 'FontFamilyAnnotationTool', 'FontSizeAnnotationTool', 'FontStylesAnnotationTool', 'FontAlignAnnotationTool', 'FontColorAnnotationTool', 'CommentPanelTool'], formDesignerToolbarItems: ['TextboxTool', 'PasswordTool', 'CheckBoxTool', 'RadioButtonTool', 'DropdownTool', 'ListboxTool', 'DrawSignatureTool', 'DeleteTool'] })
+    @Property({ showTooltip: true, toolbarItems: ['OpenOption', 'UndoRedoTool', 'PageNavigationTool', 'MagnificationTool', 'PanTool', 'SelectionTool', 'CommentTool', 'SubmitForm', 'AnnotationEditTool', 'FormDesignerEditTool', 'FreeTextAnnotationOption', 'InkAnnotationOption', 'ShapeAnnotationOption', 'StampAnnotation', 'SignatureOption', 'SearchOption', 'PrintOption', 'DownloadOption'], annotationToolbarItems: ['HighlightTool', 'UnderlineTool', 'StrikethroughTool', 'SquigglyTool', 'ColorEditTool', 'OpacityEditTool', 'AnnotationDeleteTool', 'StampAnnotationTool', 'HandWrittenSignatureTool', 'InkAnnotationTool', 'ShapeTool', 'CalibrateTool', 'StrokeColorEditTool', 'ThicknessEditTool', 'FreeTextAnnotationTool', 'FontFamilyAnnotationTool', 'FontSizeAnnotationTool', 'FontStylesAnnotationTool', 'FontAlignAnnotationTool', 'FontColorAnnotationTool', 'CommentPanelTool'], formDesignerToolbarItems: ['TextboxTool', 'PasswordTool', 'CheckBoxTool', 'RadioButtonTool', 'DropdownTool', 'ListboxTool', 'DrawSignatureTool', 'DeleteTool'] })
     public toolbarSettings: ToolbarSettingsModel;
 
     /**
@@ -6687,6 +6840,16 @@ export class PdfViewer extends Component<HTMLElement> implements INotifyProperty
 
     @Property({ opacity: 1, color: '#ff0000', author: 'Guest', annotationSelectorSettings: { selectionBorderColor: '', resizerBorderColor: 'black', resizerFillColor: '#FF4081', resizerSize: 8, selectionBorderThickness: 1, resizerShape: 'Square', selectorLineDashArray: [], resizerLocation: AnnotationResizerLocation.Corners | AnnotationResizerLocation.Edges }, isLock: false, enableMultiPageAnnotation: false, enableTextMarkupResizer: false, allowedInteractions: ['None'], isPrint: true, subject: 'Strikethrough' })
     public strikethroughSettings: StrikethroughSettingsModel;
+
+    /**
+     * Defines the settings of squiggly annotation.
+     *
+     * {% codeBlock src='pdfviewer/squigglySettings/index.md' %}{% endcodeBlock %}
+     *
+     */
+
+    @Property({ opacity: 1, color: '#ff0000', author: 'Guest', annotationSelectorSettings: { selectionBorderColor: '', resizerBorderColor: 'black', resizerFillColor: '#FF4081', resizerSize: 8, selectionBorderThickness: 1, resizerShape: 'Square', selectorLineDashArray: [], resizerLocation: AnnotationResizerLocation.Corners | AnnotationResizerLocation.Edges }, isLock: false, enableMultiPageAnnotation: false, enableTextMarkupResizer: false, allowedInteractions: ['None'], isPrint: true, subject: 'Squiggly' })
+    public squigglySettings: SquigglySettingsModel;
 
     /**
      * Defines the settings of underline annotation.
@@ -7002,7 +7165,7 @@ export class PdfViewer extends Component<HTMLElement> implements INotifyProperty
      *
      */
 
-    @Property({ contextMenuAction: 'RightClick', contextMenuItems: [ContextMenuItem.Comment, ContextMenuItem.Copy, ContextMenuItem.Cut, ContextMenuItem.Delete, ContextMenuItem.Highlight, ContextMenuItem.Paste, ContextMenuItem.Properties, ContextMenuItem.ScaleRatio, ContextMenuItem.Strikethrough, ContextMenuItem.Underline] })
+    @Property({ contextMenuAction: 'RightClick', contextMenuItems: [ContextMenuItem.Comment, ContextMenuItem.Copy, ContextMenuItem.Cut, ContextMenuItem.Delete, ContextMenuItem.Highlight, ContextMenuItem.Paste, ContextMenuItem.Properties, ContextMenuItem.ScaleRatio, ContextMenuItem.Strikethrough, ContextMenuItem.Underline, ContextMenuItem.Squiggly] })
     public contextMenuSettings: ContextMenuSettingsModel;
     /**
      * Defines the custom context menu items.
@@ -7956,6 +8119,14 @@ export class PdfViewer extends Component<HTMLElement> implements INotifyProperty
     public pageOrganizerSaveAs: EmitType<PageOrganizerSaveAsEventArgs>;
 
     /**
+     * Triggers when the zoom level changes in the Page Organizer view.
+     *
+     * This event provides details about the previous and current zoom values
+     */
+    @Event()
+    public pageOrganizerZoomChanged: EmitType<PageOrganizerZoomChangedEventArgs>
+
+    /**
      * PDF document annotation collection.
      *
      * @private
@@ -8305,6 +8476,25 @@ export class PdfViewer extends Component<HTMLElement> implements INotifyProperty
             case 'enableLocalStorage':
                 this.updateLocalStorage(this.enableLocalStorage);
                 break;
+            case 'enableTextSelection':
+                if (!Browser.isDevice || this.enableDesktopMode) {
+                    this.interactionMode = 'TextSelection';
+                    if (!isNullOrUndefined(this.toolbarModule) && !isNullOrUndefined(this.formDesignerModule) &&
+                         this.toolbarModule.formDesignerToolbarModule && this.isFormDesignerToolbarVisible) {
+                        this.viewerBase.disableTextSelectionMode();
+                    }
+                    else{
+                        this.toolbarModule.updateInteractionItems();
+                    }
+                }
+                else{
+                    if (this.enableTextSelection && this.textSelectionModule) {
+                        this.textSelectionModule.enableTextSelectionMode();
+                    } else {
+                        this.viewerBase.disableTextSelectionMode();
+                    }
+                }
+                break;
             case 'enableCommentPanel':
                 this.notify('', { module: 'annotation', enable: this.enableCommentPanel });
                 requireRefresh = true;
@@ -8393,6 +8583,7 @@ export class PdfViewer extends Component<HTMLElement> implements INotifyProperty
             case 'highlightSettings':
             case 'underlineSettings':
             case 'strikethroughSettings':
+            case 'squigglySettings':
                 if (this.annotationModule && this.annotationModule.textMarkupAnnotationModule) {
                     this.annotationModule.textMarkupAnnotationModule.updateTextMarkupSettings(prop);
                 }
@@ -8488,23 +8679,19 @@ export class PdfViewer extends Component<HTMLElement> implements INotifyProperty
                 break;
             case 'pageOrganizerSettings':
                 if (!isNullOrUndefined(newProp.pageOrganizerSettings)){
-                    if (isNullOrUndefined(newProp.pageOrganizerSettings.canDelete)){
-                        this.pageOrganizerSettings.canDelete = true;
-                    }
-                    if (isNullOrUndefined(newProp.pageOrganizerSettings.canRotate)){
-                        this.pageOrganizerSettings.canRotate = true;
-                    }
-                    if (isNullOrUndefined(newProp.pageOrganizerSettings.canInsert)){
-                        this.pageOrganizerSettings.canInsert = true;
-                    }
-                    if (isNullOrUndefined(newProp.pageOrganizerSettings.canCopy)){
-                        this.pageOrganizerSettings.canCopy = true;
-                    }
-                    if (isNullOrUndefined(newProp.pageOrganizerSettings.canRearrange)){
-                        this.pageOrganizerSettings.canRearrange = true;
-                    }
-                    if (isNullOrUndefined(newProp.pageOrganizerSettings.canImport)){
-                        this.pageOrganizerSettings.canImport = true;
+                    if (!isNullOrUndefined(this.pageOrganizer)) {
+                        this.pageOrganizer.setPageOrganizerSettings(newProp.pageOrganizerSettings);
+                        if (oldProp.pageOrganizerSettings.imageZoomMax !== newProp.pageOrganizerSettings.imageZoomMax
+                            || oldProp.pageOrganizerSettings.imageZoomMin !== newProp.pageOrganizerSettings.imageZoomMin) {
+                            this.pageOrganizer.handleImageSizeBoundsChange(newProp.pageOrganizerSettings);
+                        }
+                        if (oldProp.pageOrganizerSettings.showImageZoomingSlider !== newProp.pageOrganizerSettings.showImageZoomingSlider) {
+                            this.pageOrganizer.handleImageResizerVisibility(newProp.pageOrganizerSettings.showImageZoomingSlider);
+                        }
+                        if (oldProp.pageOrganizerSettings.imageZoom !== newProp.pageOrganizerSettings.imageZoom) {
+                            this.pageOrganizer.handlePageZoomChange(
+                                newProp.pageOrganizerSettings.imageZoom, oldProp.pageOrganizerSettings.imageZoom);
+                        }
                     }
                 }
                 break;
@@ -8645,6 +8832,9 @@ export class PdfViewer extends Component<HTMLElement> implements INotifyProperty
         'Save As': 'Save As',
         'Select All': 'Select All',
         'Import Document': 'Import Document',
+        'Change Page Zoom': 'Change Page Zoom',
+        'Increase Page Zoom': 'Increase Page Zoom',
+        'Decrease Page Zoom': 'Decrease Page Zoom',
         'Password Protected': 'Password Required',
         'Copy': 'Copy',
         'Text Selection': 'Text selection tool',
@@ -8668,6 +8858,7 @@ export class PdfViewer extends Component<HTMLElement> implements INotifyProperty
         'Highlight': 'Highlight Text',
         'Underline': 'Underline Text',
         'Strikethrough': 'Strikethrough Text',
+        'Squiggly': 'Squiggly Text',
         'Delete': 'Delete annotation',
         'Opacity': 'Opacity',
         'Color edit': 'Change Color',
@@ -8675,6 +8866,7 @@ export class PdfViewer extends Component<HTMLElement> implements INotifyProperty
         'Highlight context': 'Highlight',
         'Underline context': 'Underline',
         'Strikethrough context': 'Strikethrough',
+        'Squiggly context': 'Squiggly',
 
         'Server error': 'Web-service is not listening. PDF Viewer depends on web-service for all it\'s features. Please start the web service to continue.',
 
@@ -9416,7 +9608,8 @@ export class PdfViewer extends Component<HTMLElement> implements INotifyProperty
      * @returns {void}
      */
     public unload(): void {
-        if (!isNullOrUndefined(this.viewerBase.pdfViewerRunner) && this.viewerBase.pageCount > 0 && !this.viewerBase.isPasswordProtected) {
+        if (!isNullOrUndefined(this.viewerBase.pdfViewerRunner) && !this.viewerBase.isPasswordProtected
+            && this.toolbar && !this.viewerBase.skipOnReload) {
             this.viewerBase.pdfViewerRunner.addTask({ message: 'unloadFPDF' }, TaskPriorityLevel.High);
         }
         this.viewerBase.clear(true);
@@ -11081,6 +11274,17 @@ export class PdfViewer extends Component<HTMLElement> implements INotifyProperty
         } else {
             return true;
         }
+    }
+
+    /**
+     * @param {number} previousZoom Gets the previous image zoom value
+     * @param {number} currentZoom Gets the current image zoom value
+     * @private
+     * @returns {void}
+     */
+    public firePageOrganizerZoomChanged(previousZoom: number, currentZoom: number): void {
+        const eventArgs: PageOrganizerZoomChangedEventArgs = {previousZoom: previousZoom, currentZoom: currentZoom };
+        this.trigger('pageOrganizerZoomChanged', eventArgs);
     }
 
     /**

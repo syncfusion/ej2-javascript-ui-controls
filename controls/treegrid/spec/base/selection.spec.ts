@@ -11,6 +11,7 @@ import { Filter } from '../../src/treegrid/actions/filter';
 import { Toolbar } from '../../src/treegrid/actions/toolbar';
 import { SelectedEventArgs } from '@syncfusion/ej2-inputs';
 import { profile, inMB, getMemoryProfile } from '../common.spec';
+import { select } from '@syncfusion/ej2-base';
 
 /**
  * Grid base spec
@@ -1336,5 +1337,72 @@ describe('Bug 919833: Script Error throws while clicking Up and down Arrow', () 
 
     afterAll(() => {
         destroy(gridObj);
+    });
+});
+
+describe('941596: Selection not applied properly when adding data with paging enabled', () => {
+    let gridObj: TreeGrid;
+    let actionComplete: () => void;
+    let rows: Element[];
+    beforeAll((done: Function) => {
+        gridObj = createGrid(
+            {
+                dataSource: sampleData,
+                childMapping: 'subtasks',
+                treeColumnIndex: 1,
+                editSettings: { allowEditing: true, allowAdding: true, allowDeleting: true, mode: 'Cell', newRowPosition: 'Below' },
+                allowPaging: true,
+                pageSettings: { pageSize: 10 },
+                height: 300,
+                toolbar: ['Add', 'Edit', 'Delete', 'Update', 'Cancel'],
+                columns: [
+                    { field: 'taskID', headerText: 'Task ID', textAlign: 'Right', width: 100, isPrimaryKey: true },
+                    { field: 'taskName', headerText: 'Task Name', width: 260 }
+                ]
+            }, done);
+    });
+
+    it('Go to page 2', (done: Function) => {
+        gridObj.actionComplete = (args: any) => {
+            if (args.requestType === 'paging') {
+                expect(1).toBe(1);
+                done();
+            }
+        };
+        gridObj.goToPage(2);
+    });
+
+    it('Add row - below', (done: Function) => {
+        actionComplete = null;
+        actionComplete = (args?: any): void => {
+          if (args.requestType === 'add') {
+            expect(1).toBe(1);
+            done();
+          }
+        };
+        gridObj.actionComplete = actionComplete;
+        gridObj.grid.selectRow(0);
+        (<any>gridObj.grid.toolbarModule).toolbarClickHandler({ item: { id: gridObj.grid.element.id + '_add' } });
+    });
+
+    it('Add row - below datasource and check selection applied', (done: Function) => {
+        actionComplete = null;
+        let formEle: HTMLFormElement = gridObj.grid.editModule.formObj.element;
+        actionComplete = (args?: any): void => {
+          let cells: NodeListOf<Element> = gridObj.grid.getRows()[1].querySelectorAll('.e-rowcell');
+          expect(cells[0].textContent === '123').toBeTruthy();
+          expect(cells[1].textContent).toBe('third');
+          expect(gridObj.getRows()[1].getElementsByClassName('e-selectionbackground').length > 0).toBe(true);
+          done();
+        };
+        gridObj.actionComplete = actionComplete;
+        (select('#' + gridObj.grid.element.id + 'taskID', formEle) as any).value = '123';
+        (select('#' + gridObj.grid.element.id + 'taskName', formEle) as any).value = 'third';
+        (gridObj.grid.editModule as any).endEdit();
+    });
+
+    afterAll(() => {
+        destroy(gridObj);
+        gridObj = null;
     });
 });

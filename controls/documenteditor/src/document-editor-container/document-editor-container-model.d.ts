@@ -1,4 +1,4 @@
-import { Component, Property, INotifyPropertyChanged, NotifyPropertyChanges, ModuleDeclaration, L10n, Complex, isNullOrUndefined, formatUnit } from '@syncfusion/ej2-base';import { Event, EmitType } from '@syncfusion/ej2-base';import { Toolbar } from './tool-bar/tool-bar';import { DocumentEditor, DocumentEditorSettings, DocumentSettings } from '../document-editor/document-editor';import { HeaderFooterProperties } from './properties-pane/header-footer-pane';import { ImageProperties } from './properties-pane/image-properties-pane';import { TocProperties } from './properties-pane/table-of-content-pane';import { TableProperties } from './properties-pane/table-properties-pane';import { StatusBar } from './properties-pane/status-bar';import { ViewChangeEventArgs, RequestNavigateEventArgs, ContainerContentChangeEventArgs, ContainerSelectionChangeEventArgs, ContainerDocumentChangeEventArgs, CustomContentMenuEventArgs, BeforeOpenCloseCustomContentMenuEventArgs, BeforePaneSwitchEventArgs, LayoutType, CommentDeleteEventArgs, RevisionActionEventArgs, ServiceFailureArgs, CommentActionEventArgs, XmlHttpRequestEventArgs } from '../document-editor/base';import { createSpinner } from '@syncfusion/ej2-popups';import { ContainerServerActionSettingsModel, DocumentEditorModel, DocumentEditorSettingsModel, DocumentSettingsModel, FormFieldSettingsModel } from '../document-editor/document-editor-model';import { CharacterFormatProperties, ParagraphFormatProperties, SectionFormatProperties } from '../document-editor/implementation';import { ToolbarItem } from '../document-editor/base/types';import { CustomToolbarItemModel, TrackChangeEventArgs, AutoResizeEventArgs, ContentChangeEventArgs } from '../document-editor/base/events-helper';import { ClickEventArgs } from '@syncfusion/ej2-navigations';import { beforeAutoResize, internalAutoResize, internalZoomFactorChange, beforeCommentActionEvent, commentDeleteEvent, contentChangeEvent, trackChangeEvent, beforePaneSwitchEvent, serviceFailureEvent, documentChangeEvent, selectionChangeEvent, customContextMenuSelectEvent, customContextMenuBeforeOpenEvent, internalviewChangeEvent, beforeXmlHttpRequestSend, protectionTypeChangeEvent, internalDocumentEditorSettingsChange, internalStyleCollectionChange, revisionActionEvent, trackChanges, internalOptionPaneChange } from '../document-editor/base/constants';import { HelperMethods } from '../index';import { SanitizeHtmlHelper } from '@syncfusion/ej2-base';import { DialogUtility } from '@syncfusion/ej2-popups';import { Text } from './properties-pane/text-properties';
+import { Component, Property, INotifyPropertyChanged, NotifyPropertyChanges, ModuleDeclaration, L10n, Complex, isNullOrUndefined, formatUnit } from '@syncfusion/ej2-base';import { Event, EmitType } from '@syncfusion/ej2-base';import { Toolbar } from './tool-bar/tool-bar';import { DocumentEditor, DocumentEditorSettings, DocumentSettings } from '../document-editor/document-editor';import { HeaderFooterProperties } from './properties-pane/header-footer-pane';import { ImageProperties } from './properties-pane/image-properties-pane';import { TocProperties } from './properties-pane/table-of-content-pane';import { TableProperties } from './properties-pane/table-properties-pane';import { StatusBar } from './properties-pane/status-bar';import { ViewChangeEventArgs, RequestNavigateEventArgs, ContainerContentChangeEventArgs, ContainerSelectionChangeEventArgs, ContainerDocumentChangeEventArgs, CustomContentMenuEventArgs, BeforeOpenCloseCustomContentMenuEventArgs, BeforePaneSwitchEventArgs, LayoutType, CommentDeleteEventArgs, RevisionActionEventArgs, ServiceFailureArgs, CommentActionEventArgs, XmlHttpRequestEventArgs, ToolbarItem, ToolbarMode, FileMenuItemType, RibbonLayoutType } from '../document-editor/base';import { createSpinner } from '@syncfusion/ej2-popups';import { ContainerServerActionSettingsModel, DocumentEditorModel, DocumentEditorSettingsModel, DocumentSettingsModel, FormFieldSettingsModel } from '../document-editor/document-editor-model';import { CharacterFormatProperties, ParagraphFormatProperties, SectionFormatProperties } from '../document-editor/implementation';import { CustomToolbarItemModel, TrackChangeEventArgs, AutoResizeEventArgs, ContentChangeEventArgs } from '../document-editor/base/events-helper';import { ClickEventArgs, MenuItemModel } from '@syncfusion/ej2-navigations';import { beforeAutoResize, internalAutoResize, internalZoomFactorChange, beforeCommentActionEvent, commentDeleteEvent, contentChangeEvent, trackChangeEvent, beforePaneSwitchEvent, serviceFailureEvent, documentChangeEvent, selectionChangeEvent, customContextMenuSelectEvent, customContextMenuBeforeOpenEvent, internalviewChangeEvent, beforeXmlHttpRequestSend, protectionTypeChangeEvent, internalDocumentEditorSettingsChange, internalStyleCollectionChange, revisionActionEvent, trackChanges, internalOptionPaneChange } from '../document-editor/base/constants';import { HelperMethods } from '../index';import { SanitizeHtmlHelper } from '@syncfusion/ej2-base';import { DialogUtility } from '@syncfusion/ej2-popups';import { Text } from './properties-pane/text-properties';import { Ribbon } from './ribbon/ribbon';import { BackStageMenuModel } from '@syncfusion/ej2-ribbon';import { defaultLocaleStrings } from './locale-strings';import { IToolbarHandler } from './helper/toolbar-handler';
 import {ComponentModel} from '@syncfusion/ej2-base';
 
 /**
@@ -14,7 +14,7 @@ export interface DocumentEditorContainerModel extends ComponentModel{
     showPropertiesPane?: boolean;
 
     /**
-     * Enable or disable the toolbar in document editor container.
+     * Enable or disable either `Toolbar` or `Ribbon` based on the `toolbarMode` property.
      *
      * @default true
      */
@@ -142,6 +142,21 @@ export interface DocumentEditorContainerModel extends ComponentModel{
     autoResizeOnVisibilityChange?: boolean;
 
     /**
+     * Specifies the toolbar mode for the document editor container. Two modes are available: 'Toolbar' and 'Ribbon'.
+     * @default 'Toolbar'
+     */
+    toolbarMode?: ToolbarMode;
+
+    /**
+     * Specifies the current ribbon layout type, either 'Classic' or 'Simplified'.
+     *
+     * Note: This property is only considered when the `toolbarMode` property is set to `Ribbon`.
+     *
+     * @default 'Simplified'
+     */
+    ribbonLayout?: RibbonLayoutType;
+
+    /**
      * Triggers when the component is created
      *
      * @event created
@@ -182,6 +197,15 @@ export interface DocumentEditorContainerModel extends ComponentModel{
      * @event toolbarClick
      */
     toolbarClick?: EmitType<ClickEventArgs>;
+
+    /**
+     * Triggers when toolbar item is clicked.
+     *
+     * Note: This event is only considered when the `toolbarMode` property is set to `Ribbon`.
+     *
+     * @event fileMenuItemClick
+     */
+    fileMenuItemClick?: EmitType<ClickEventArgs>;
 
     /**
      * Triggers while selecting the custom context-menu option.
@@ -283,5 +307,24 @@ export interface DocumentEditorContainerModel extends ComponentModel{
      * @default []
      */
     headers?: object[];
+
+    /**
+     * Defines file menu items for Ribbon.
+     *
+     * Note: This property is only considered when the `toolbarMode` property is set to `Ribbon`.
+     *
+     * @default ['New', 'Open', 'Export','Print']
+     */
+    fileMenuItems?: (FileMenuItemType | MenuItemModel)[];
+
+    /**
+     * Gets or sets the backstage menu configuration.
+     * When set, this will replace the traditional file menu with a backstage view.
+     *
+     * Note: This property is only considered when the `toolbarMode` property is set to `Ribbon`.
+     *
+     * @default undefined
+     */
+    backstageMenu?: BackStageMenuModel;
 
 }

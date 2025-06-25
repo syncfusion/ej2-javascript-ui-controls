@@ -224,7 +224,7 @@ export class Crosshair {
             (chart.tooltip.enable && chart.tooltipModule && chart.tooltipModule.valueX ? chart.tooltipModule.valueX : chart.mouseX);
         this.valueY = chart.crosshair.snapToData || chart.crosshair.highlightCategory ? this.valueY :
             (chart.tooltip.enable && chart.tooltipModule && chart.tooltipModule.valueY ? chart.tooltipModule.valueY : chart.mouseY);
-        if (!chart.enableCanvas) {
+        if (!chart.enableCanvas && crossGroup) {
             crossGroup.setAttribute('opacity', '1');
         }
         if (crosshair.lineType === 'Both' || crosshair.lineType === 'Horizontal') {

@@ -616,6 +616,7 @@ export class Crud {
             if (!deleteArgs.cancel) {
                 const fields: EventFieldsMapping = this.parent.eventFields;
                 const editParams: SaveChanges = { addedRecords: [], changedRecords: [], deletedRecords: [] };
+                const cloneEvents: Record<string, any>[] = extend([], deleteArgs.deletedRecords, null, true) as Record<string, any>[];
                 for (let a: number = 0, count: number = deleteArgs.deletedRecords.length; a < count; a++) {
                     let isDelete: boolean = isNullOrUndefined(deleteArgs.deletedRecords[parseInt(a.toString(), 10)][this.parent.eventFields.recurrenceRule]);
                     if (!isDelete) {
@@ -646,8 +647,7 @@ export class Crud {
                     }
                 }
                 const promise: Promise<any> = this.parent.dataModule.dataManager.saveChanges(editParams, fields.id, this.getTable(), this.getQuery()) as Promise<any>;
-                const cloneEvent: Record<string, any> = extend({}, deleteArgs.deletedRecords[deleteArgs.deletedRecords.length - 1], null, true) as Record<string, any>;
-                this.parent.eventBase.selectWorkCellByTime([this.parent.eventBase.processTimezone(cloneEvent)]);
+                this.parent.eventBase.selectWorkCellByTime(cloneEvents);
                 const crudArgs: CrudArgs = {
                     requestType: 'eventRemoved', cancel: false, data: deleteArgs.deletedRecords, promise: promise, editParams: editParams
                 };

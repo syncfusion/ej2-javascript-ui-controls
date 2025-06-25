@@ -3,7 +3,7 @@ import * as CONSTANT from './../base/constant';
 import { NodeSelection } from './../../selection';
 import { IHtmlSubCommands } from './../base/interface';
 import { IHtmlKeyboardEvent } from './../../editor-manager/base/interface';
-import { KeyboardEventArgs } from '@syncfusion/ej2-base';
+import { isNullOrUndefined, KeyboardEventArgs } from '@syncfusion/ej2-base';
 import * as EVENTS from './../../common/constant';
 import { isIDevice, setEditFrameFocus } from '../../common/util';
 /**
@@ -54,6 +54,15 @@ export class Indents {
         const editEle: HTMLElement = this.parent.editableElement as HTMLElement;
         const isRtl: boolean = editEle.classList.contains('e-rtl');
         const range: Range = this.parent.nodeSelection.getRange(this.parent.currentDocument);
+        if (!isNullOrUndefined(this.parent.codeBlockObj)) {
+            const isWithinCodeBlock: boolean = this.parent.codeBlockObj.
+                isSelectionWithinCodeBlock(range,  range.startContainer, range.endContainer);
+            if (isWithinCodeBlock) {
+                this.parent.observer.
+                    notify(EVENTS.CODEBLOCK_INDENTATION, {e: e, event: e.event, subCommand: e.subCommand, callBack: e.callBack});
+                return;
+            }
+        }
         let save: NodeSelection = this.parent.nodeSelection.save(range, this.parent.currentDocument);
         this.parent.domNode.setMarker(save);
         let indentsNodes: Node[] = this.parent.domNode.blockNodes();
@@ -90,14 +99,16 @@ export class Indents {
             const parentNode: HTMLElement = indentsNodes[i as number] as HTMLElement;
             const marginLeftOrRight: string = isRtl ? parentNode.style.marginRight : parentNode.style.marginLeft;
             let indentsValue: string;
-            if (e.subCommand === 'Indent') {
-                /* eslint-disable */
-                indentsValue = marginLeftOrRight === '' ? this.indentValue + 'px' : parseInt(marginLeftOrRight, null) + this.indentValue + 'px';
-                isRtl ? (parentNode.style.marginRight = indentsValue) : (parentNode.style.marginLeft = indentsValue);
-            } else {
-                indentsValue = (marginLeftOrRight === '' || marginLeftOrRight === '0px' || marginLeftOrRight === '0in') ? '' : (parseInt(marginLeftOrRight, null) - this.indentValue < 0) ? '0px' : (parseInt(marginLeftOrRight, null) - this.indentValue) + 'px';
-                isRtl ? (parentNode.style.marginRight = indentsValue) : (parentNode.style.marginLeft = indentsValue);
-                /* eslint-enable */
+            if (parentNode.tagName !== 'HR') {
+                if (e.subCommand === 'Indent') {
+                    /* eslint-disable */
+                    indentsValue = marginLeftOrRight === '' ? this.indentValue + 'px' : parseInt(marginLeftOrRight, null) + this.indentValue + 'px';
+                    isRtl ? (parentNode.style.marginRight = indentsValue) : (parentNode.style.marginLeft = indentsValue);
+                } else {
+                    indentsValue = (marginLeftOrRight === '' || marginLeftOrRight === '0px' || marginLeftOrRight === '0in') ? '' : (parseInt(marginLeftOrRight, null) - this.indentValue < 0) ? '0px' : (parseInt(marginLeftOrRight, null) - this.indentValue) + 'px';
+                    isRtl ? (parentNode.style.marginRight = indentsValue) : (parentNode.style.marginLeft = indentsValue);
+                    /* eslint-enable */
+                }
             }
         }
         editEle.focus({ preventScroll: true });

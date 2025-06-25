@@ -5,7 +5,7 @@
 import { createElement } from '@syncfusion/ej2-base';
 import { Diagram } from '../../../src/diagram/diagram';
 import { DiagramElement } from '../../../src/diagram/core/elements/diagram-element';
-import { Container } from '../../../src/diagram/core/containers/container';
+import { GroupableView } from '../../../src/diagram/core/containers/container';
 import { DiagramModel } from '../../../src/diagram/index';
 import { profile, inMB, getMemoryProfile } from '../../../spec/common.spec';
 
@@ -23,7 +23,7 @@ describe('Diagram Control', () => {
             }
             ele = createElement('div', { id: 'diagram' });
             document.body.appendChild(ele);
-            let container: Container = new Container();
+            let container: GroupableView = new GroupableView();
             container.pivot = { x: 0, y: 0 };
             container.offsetX = 200;
             container.offsetY = 100;
@@ -58,7 +58,7 @@ describe('Diagram Control', () => {
             ele = createElement('div', { id: 'diagram1' });
             document.body.appendChild(ele);
 
-            let container: Container = new Container();
+            let container: GroupableView = new GroupableView();
             container.style = { fill: 'transparent' };
             let element: DiagramElement = new DiagramElement();
             element.width = 100;
@@ -83,13 +83,13 @@ describe('Diagram Control', () => {
         });
 
         it('Checking before, after, Simple container with two child', (done: Function) => {
-            let failure: boolean = false; let container: Container = new Container();
+            let failure: boolean = false; let container: GroupableView = new GroupableView();
 
 
             for (let i: number = 0; i < diagram.basicElements.length; i++) {
                 let container: DiagramElement;
                 container = diagram.basicElements[i];
-                if (container instanceof Container) {
+                if (container instanceof GroupableView) {
                     if (container.actualSize.width === 300 && container.actualSize.height === 100) {
                         failure = true;
                     }
@@ -115,7 +115,7 @@ describe('Diagram Control', () => {
     describe('Simple container with two child and one rotated child', () => {
         let diagram: Diagram;
         let ele: HTMLElement;
-        let container: Container;
+        let container: GroupableView;
         let element: DiagramElement;
         let element1: DiagramElement;
         beforeAll((): void => {
@@ -128,7 +128,7 @@ describe('Diagram Control', () => {
             ele = createElement('div', { id: 'diagram2' });
             document.body.appendChild(ele);
 
-            let container: Container = new Container();
+            let container: GroupableView = new GroupableView();
             container.style = { fill: 'transparent' };
             element = new DiagramElement();
             element.width = 100;
@@ -155,13 +155,13 @@ describe('Diagram Control', () => {
 
         it('Checking before, after, Simple container with two child  and one rotated child', (done: Function) => {
             let failure: boolean = false;
-            let container: Container;
+            let container: GroupableView;
             let element: DiagramElement;
 
             for (let i: number = 0; i < diagram.basicElements.length; i++) {
                 let container: DiagramElement;
                 container = diagram.basicElements[i];
-                if (container instanceof Container) {
+                if (container instanceof GroupableView) {
                     if (container.actualSize.width === 361.605 && container.actualSize.height === 186.60000000000002) {
                         failure = true;
                     }
@@ -197,7 +197,7 @@ describe('Diagram Control', () => {
             ele = createElement('div', { id: 'diagram3' });
             document.body.appendChild(ele);
 
-            let container: Container = new Container();
+            let container: GroupableView = new GroupableView();
             container.style = { fill: 'transparent' };
             container.rotateAngle = 120;
 
@@ -225,14 +225,14 @@ describe('Diagram Control', () => {
 
         it('Checking before, after, Simple container with rotation and rotated child', (done: Function) => {
             let failure: boolean = false;
-            let container: Container;
+            let container: GroupableView;
             let element: DiagramElement;
 
 
             for (let i: number = 0; i < diagram.basicElements.length; i++) {
                 let container: DiagramElement;
                 container = diagram.basicElements[i];
-                if (container instanceof Container) {
+                if (container instanceof GroupableView) {
                     if (container.actualSize.width === 400 && container.actualSize.height === 450) {
                         failure = true;
                     }
@@ -258,7 +258,7 @@ describe('Diagram Control', () => {
     describe('Simple container with rotateangle and rotatedchild', () => {
         let diagram: Diagram;
         let ele: HTMLElement;
-        let container: Container;
+        let container: GroupableView;
         beforeAll((): void => {
             const isDef = (o: any) => o !== undefined && o !== null;
             if (!isDef(window.performance)) {
@@ -269,7 +269,7 @@ describe('Diagram Control', () => {
             ele = createElement('div', { id: 'diagram4' });
             document.body.appendChild(ele);
 
-            let container: Container = new Container();
+            let container: GroupableView = new GroupableView();
             container.style = { fill: 'transparent' };
             container.rotateAngle = 120;
             let element: DiagramElement = new DiagramElement();
@@ -298,12 +298,12 @@ describe('Diagram Control', () => {
 
         it('Checking before, after, Simple container with rotation and rotated child', (done: Function) => {
             let failure: boolean = false;
-            let container: Container;
+            let container: GroupableView;
             let element: DiagramElement;
             for (let i: number = 0; i < diagram.basicElements.length; i++) {
                 let container: DiagramElement;
                 container = diagram.basicElements[i];
-                if (container instanceof Container) {
+                if (container instanceof GroupableView) {
                     if (container.actualSize.width === 425.345 && container.actualSize.height === 236.59999999999997
                     ) {
                         failure = true;

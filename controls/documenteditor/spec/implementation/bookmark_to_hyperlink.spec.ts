@@ -30,7 +30,7 @@ describe('Bookmark to HyperLink conversion', () => {
         document.body.removeChild(document.getElementById('container'));
         editor = undefined;
         setTimeout(function () {
-            document.body.innerHTML = '';
+            
             done();
         }, 1000);
     });

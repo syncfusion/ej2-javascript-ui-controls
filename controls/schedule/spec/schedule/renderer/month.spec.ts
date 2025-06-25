@@ -1110,7 +1110,7 @@ describe('Schedule Month view', () => {
         it('block event initial rendering testing', () => {
             expect(schObj.element.querySelectorAll('.e-block-appointment').length).toEqual(4);
             const blockEvent: HTMLElement = schObj.element.querySelector('[data-id="Appointment_2"]') as HTMLElement;
-            expect(blockEvent.offsetWidth).toEqual(70);
+            expect(blockEvent.offsetWidth).toEqual(69);
             expect(blockEvent.offsetHeight).toBeGreaterThanOrEqual(57);
         });
 

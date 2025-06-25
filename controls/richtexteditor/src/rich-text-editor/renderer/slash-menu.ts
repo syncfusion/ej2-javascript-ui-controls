@@ -1,11 +1,14 @@
 import { FieldSettingsModel, Mention, MentionModel, SelectEventArgs } from '@syncfusion/ej2-dropdowns';
-import { DialogType, IRichTextEditor, ISlashMenuItem, RichTextEditorModel, SlashMenuItems, SlashMenuItemSelectArgs } from '../base';
+import { IRichTextEditor, RichTextEditorModel, SlashMenuItemSelectArgs } from '../base';
 import { ServiceLocator } from '../services';
 import { isNullOrUndefined as isNOU, L10n } from '@syncfusion/ej2-base';
-import { defaultSlashMenuDataModel, injectibleSlashMenuDataModel, ISlashMenuModel, ModuleSlashMenuModel } from '../models/slash-menu-settings';
+import { defaultSlashMenuDataModel, injectibleSlashMenuDataModel, ISlashMenuModel, ModuleSlashMenuModel } from '../../models/slash-menu-settings';
 import { NodeSelection } from '../../selection/selection';
 import { slashMenuCommandsKey } from '../models/default-locale';
 import * as events from '../base/constant';
+import { DialogType, SlashMenuItems} from '../../common/enum';
+import { ICodeBlockLanguageModel, ISlashMenuItem} from '../../common/interface';
+import { CodeBlockSettingsModel } from '../../models/toolbar-settings-model';
 
 export class SlashMenu {
     private parent: IRichTextEditor;
@@ -70,34 +73,34 @@ export class SlashMenu {
     }
 
     private generateMentionModel(): MentionModel {
-        const dataSource: {[key: string]: Object; }[] = this.getItems();
+        const dataSource: { [key: string]: Object; }[] = this.getItems();
         const model: MentionModel = {
             dataSource: dataSource,
             cssClass: 'e-slash-menu' + this.parent.getCssClass(),
             fields: { text: 'text', groupBy: 'type', iconCss: 'iconCss', value: 'description' },
-            mentionChar : '/',
+            mentionChar: '/',
             target: this.parent.inputElement,
             popupHeight: this.parent.slashMenuSettings.popupHeight,
             popupWidth: this.parent.slashMenuSettings.popupWidth,
             allowSpaces: true,
             itemTemplate: '${if(iconCss && description)}' +
-                            '<div class="e-rte-slash-menu-item-content" style="display: grid; grid-template-columns: auto 1fr; gap: 10px; align-items: center;">' +
-                                '<div class="e-slash-menu-icon"style="padding: 15px 15px 15px 15px;"><div class="${iconCss}"></div></div> ' +
-                                '<div style="display: flex; flex-direction: column;">' +
-                                    '<span class="e-rte-slash-menu-item-text" style="font-weight: 500;">${text}</span>' +
-                                    '${if(description)}' +
-                                        '<span class="e-rte-slash-menu-item-description">${description}</span>' +
-                                    '${/if}' +
-                                '</div>' +
-                            '</div>' +
-                        '${else}' +
-                            '${if(iconCss && text)}' +
-                                '<div class="e-rte-slash-menu-item-content" style="display: flex; flex-direction: row; align-items: center; height: 25px; font-weight: 500;">' +
-                                    '<div class="e-slash-menu-icon"style="margin-left: 15px; width: 30px"><div class="${iconCss}"></div></div> ' +
-                                    '<span class="e-rte-slash-menu-item-icon-text">${text}</span>' +
-                                '</div>' +
-                            '${/if}' +
-                        '${/if}' ,
+                '<div class="e-rte-slash-menu-item-content-description">' +
+                '<div class="e-slash-menu-icon"><div class="${iconCss}"></div></div> ' +
+                '<div class="e-rte-slash-menu-item-text-column">' +
+                '<span class="e-rte-slash-menu-item-text">${text}</span>' +
+                '${if(description)}' +
+                '<span class="e-rte-slash-menu-item-description">${description}</span>' +
+                '${/if}' +
+                '</div>' +
+                '</div>' +
+                '${else}' +
+                '${if(iconCss && text)}' +
+                '<div class="e-rte-slash-menu-item-content-text">' +
+                '<div class="e-slash-menu-icon"><div class="${iconCss}"></div></div> ' +
+                '<span class="e-rte-slash-menu-item-icon-text">${text}</span>' +
+                '</div>' +
+                '${/if}' +
+                '${/if}',
             beforeOpen: () => {
                 // Add notification to prevent zero-width space removal in html-editor keyUp event
                 this.parent.notify(events.slashMenuOpening, {});
@@ -111,7 +114,7 @@ export class SlashMenu {
         return model;
     }
 
-    private handleSelect(args: SelectEventArgs ): void {
+    private handleSelect(args: SelectEventArgs): void {
         args.cancel = true;
         this.parent.focusIn();
         this.savedSelection.restore();
@@ -168,6 +171,18 @@ export class SlashMenu {
                             this.parent.showEmojiPicker();
                         }, 100);
                         break;
+                    case 'CodeBlock':
+                        if (!isNOU(this.parent.codeBlockModule)) {
+                            let defaultItem: ICodeBlockLanguageModel;
+                            if (this.parent.codeBlockSettings.languages && this.parent.codeBlockSettings.languages.length > 0) {
+                                const filteredItems: ICodeBlockLanguageModel[] = !isNOU(this.parent.codeBlockSettings.defaultLanguage) ?
+                                    this.parent.codeBlockSettings.languages.filter((item: { [key: string]: CodeBlockSettingsModel }) =>
+                                        item.language === this.parent.codeBlockSettings.defaultLanguage) : [];
+                                defaultItem = filteredItems.length > 0 ? filteredItems[0] : this.parent.codeBlockSettings.languages[0];
+                                this.parent.executeCommand('insertCodeBlock', defaultItem);
+                            }
+                        }
+                        break;
                     default:
                         this.parent.executeCommand('formatBlock', itemModel.subCommand);
                         break;
@@ -186,7 +201,7 @@ export class SlashMenu {
         });
     }
 
-    private getItems(): {[key: string]: Object; }[] {
+    private getItems(): { [key: string]: Object; }[] {
         const items: (SlashMenuItems | ISlashMenuItem)[] = this.parent.slashMenuSettings.items;
         const dataSource: { [key: string]: Object }[] = [];
         for (let i: number = 0; i < items.length; i++) {
@@ -195,11 +210,11 @@ export class SlashMenu {
                 const commnadName: string = items[i as number] as string;
                 let model: ISlashMenuModel = this.defaultItems.filter(
                     (item: ISlashMenuModel) => item.command === commnadName
-                ) [0];
+                )[0];
                 if (isNOU(model)) {
-                    model = this.injectibleItems.filter((item: ModuleSlashMenuModel) => item.module.toLowerCase().replace(' ' , '') === commnadName.toLowerCase().replace(' ' , ''))[0];
+                    model = this.injectibleItems.filter((item: ModuleSlashMenuModel) => item.module.toLowerCase().replace(' ', '') === commnadName.toLowerCase().replace(' ', ''))[0];
                 }
-                const localeVariable: {text: string, description: string} = slashMenuCommandsKey.get(commnadName as SlashMenuItems);
+                const localeVariable: { text: string, description: string } = slashMenuCommandsKey.get(commnadName as SlashMenuItems);
                 dataSource.push({
                     text: this.L10n.getConstant(localeVariable.text),
                     command: model.command,
@@ -226,7 +241,7 @@ export class SlashMenu {
     public render(): void {
         if (this.parent.editorMode === 'HTML' && this.parent.slashMenuSettings.enable) {
             const options: MentionModel = this.generateMentionModel();
-            this.mention  = new Mention(options);
+            this.mention = new Mention(options);
             this.mention.appendTo(this.parent.rootContainer.appendChild(this.parent.createElement('div', { className: 'e-rte-slash-menu', id: this.parent.getID() + '_slash_menu' })));
         }
     }

@@ -1,11 +1,10 @@
-import { detach, isNullOrUndefined} from '@syncfusion/ej2-base';
+import { detach, isNullOrUndefined, KeyboardEventArgs } from '@syncfusion/ej2-base';
 import * as events from '../base/constant';
 import { IRichTextEditor, IRenderer } from '../base/interface';
 import { RenderType } from '../base/enum';
 import { ServiceLocator } from '../services/service-locator';
 import { RendererFactory } from '../services/renderer-factory';
 import { CLS_COUNT, CLS_WARNING, CLS_ERROR } from '../base/classes';
-import { KeyboardEventArgs } from '../actions/keyboard';
 
 /**
  * `Count` module is used to handle Count actions.

@@ -38,7 +38,7 @@ describe('List dialog validation-2', () => {
         editor.destroy();
         document.body.removeChild(document.getElementById('container'));
         editor = undefined;
-        document.body.innerHTML = '';
+        
         setTimeout(function () {
             done();
         }, 1000);
@@ -106,7 +106,7 @@ describe('ListDialogViewModel class validation', () => {
         editor = undefined;
         dialog = undefined;
         viewModel = undefined;
-        document.body.innerHTML = '';
+        
         setTimeout(function () {
             done();
         }, 1000);
@@ -156,7 +156,7 @@ describe('dialog event validation-1', () => {
         dialog = undefined;
         document.body.removeChild(document.getElementById('container'));
         editor = undefined;
-        document.body.innerHTML = '';
+        
         setTimeout(function () {
             done();
         }, 500);
@@ -224,7 +224,7 @@ describe('dialog event validation', () => {
         dialog = undefined;
         document.body.removeChild(document.getElementById('container'));
         editor = undefined;
-        document.body.innerHTML = '';
+        
         setTimeout(function () {
             done();
         }, 500);
@@ -288,7 +288,7 @@ describe('dialog event validation', () => {
         dialog = undefined;
         document.body.removeChild(document.getElementById('container'));
         editor = undefined;
-        document.body.innerHTML = '';
+        
         setTimeout(function () {
             done();
         }, 1000);
@@ -389,7 +389,7 @@ describe('List dialog event validation-3', () => {
         dialog = undefined;
         document.body.removeChild(document.getElementById('container'));
         editor = undefined;
-        document.body.innerHTML = '';
+        
         setTimeout(function () {
             done();
         }, 500);

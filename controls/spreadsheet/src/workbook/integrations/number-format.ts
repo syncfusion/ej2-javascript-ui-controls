@@ -1764,8 +1764,14 @@ export class WorkbookNumberFormat {
         if (val.includes(this.localeObj.dateSeparator) && ((!val.includes(` ${this.localeObj.am}`) &&
             !val.includes(` ${this.localeObj.pm}`)) ||
             val.replace(` ${this.localeObj.am}`, '').replace(` ${this.localeObj.pm}`, '').includes(this.localeObj.dateSeparator))) {
+            if (val.trim().startsWith('-')) {
+                return { val: 'Invalid', format: '' };
+            }
             separator = this.localeObj.dateSeparator;
         } else if (val.indexOf('-') > 0) {
+            if (val.trim().startsWith('-')) {
+                return { val: 'Invalid', format: '' };
+            }
             separator = '-';
         } else if (val.indexOf(',') > 0) {
             const intl: Internationalization = new Internationalization(this.parent.locale);

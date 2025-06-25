@@ -51,7 +51,46 @@
     .e-message-item {
       display: flex;
       flex-direction: column;
+      position: relative;
       margin-bottom: $message-item-bottom;
+      .e-chat-message-toolbar {
+        border-radius: 4px;
+        display: none;
+        position: absolute;
+        height: 32px !important; /* stylelint-disable-line declaration-no-important */
+        min-height: 32px;
+        z-index: 10;
+        &.e-show,
+        &:hover {
+          display: block;
+        }
+        .e-toolbar-items .e-toolbar-item {
+          padding: 2px 4px;
+          min-height: 28px;
+          &:first-child {
+            margin-left: 2px;
+          }
+          &:last-child {
+            margin-right: 2px;
+          }
+          .e-tbar-btn {
+            min-height: 28px;
+            padding: 2px;
+          }
+        }
+      }
+      .e-forwarded-indicator {
+        font-size: 12px;
+        display: flex;
+        align-items: center;
+        gap: 5px;
+        margin-bottom: 4px;
+        .e-forward-arrow {
+          font-weight: normal;
+          font-size: 14px;
+          padding: 1px 4px;
+        }
+      }
     }
     .e-message-header-container {
       display: flex;
@@ -67,7 +106,7 @@
       font-size: $message-time-size;
       white-space: nowrap;
     }
-    .e-text {
+    .e-message-content {
       white-space: pre-wrap;
       padding: $chat-text-padding;
       border-radius: $text-border-radius;
@@ -77,7 +116,7 @@
       text-align: left;
     }
     .e-right,
-    .e-right .e-text,
+    .e-right .e-message-content,
     .e-right .e-time {
       align-self: flex-end;
     }
@@ -93,69 +132,90 @@
       top: 20px;
       left: 0;
     }
+
+    /* ======== Asssit Footer Styles ======== */
     .e-footer {
       position: relative;
       margin: 0 auto;
       align-self: flex-end;
-      .e-clear-icon:not(.e-clear-icon-hide) {
-        display: flex;
-        justify-content: flex-end;
-        padding-bottom: $chat-clear-icon-bottom;
-      }
-      textarea::-webkit-scrollbar-thumb {
+      width: calc(100% - 10px); //for margin space
+      .e-chat-textarea::-webkit-scrollbar-thumb {
         border-radius: 10px;
       }
-      textarea::-webkit-scrollbar {
+      .e-chat-textarea::-webkit-scrollbar {
         width: 4px;
       }
-      .hide-scrollbar textarea {
+      .hide-scrollbar .e-chat-textarea {
         scrollbar-width: none;
       }
-      &:has(.e-rtl):not(.e-footer-template) .e-chat-send {
-        right: unset;
-        left: 20px;
+      .e-footer-icons-wrapper {
+        display: flex;
+        align-items: center;
+        gap: $chat-footer-icons-gap;
+        padding: $chat-footer-icons-padding;
+        .e-icons {
+          cursor: pointer;
+        }
       }
-      .e-multi-line-input {
-        margin: 0 5px;
-        padding-right: 35px;
+      .e-chat-textarea {
+        height: 100%;
+        width: 100%;
+        min-height: $chat-textarea-min-height;
+        outline: none;
+        overflow-y: auto;
+        max-height: 280px;
+        line-height: $chat-textarea-line-height;
+        padding: $chat-textarea-padding;
+        font-size: 14px;
       }
-      .e-multi-line-input.e-rtl {
-        padding-left: 35px;
-        padding-right: unset;
-        &.e-input-group.e-control-wrapper {
-          .e-textarea {
-            @if $theme-name == 'Material3' or $theme-name == 'material' or $theme-name == 'Material3-dark' or $theme-name == 'material-dark' {
-              padding: 4px 12px 4px 8px;
-            }
+      .e-chat-textarea[placeholder]:empty::before {
+        content: attr(placeholder);
+      }
+      &.focus-wave-effect {
+        @if ($skin-name == 'Material3' or $skin-name == 'fluent2' or $skin-name == 'material' or $skin-name == 'material-dark') {
+          &::before,
+          &::after {
+            content: '';
+            position: absolute;
+            bottom: 0;
+            height: 2px;
+            width: 0;
+            transition: width .2s ease-out;
+          }
+          &::before {
+            left: 50%;
+          }
+          &::after {
+            right: 50%;
+          }
+          &.focused::before {
+            width: 50%;
+          }
+          &.focused::after {
+            width: 50%;
           }
         }
       }
-      .e-input-group.e-multi-line-input {
+
+      &:not(.e-footer-template) {
+        display: flex;
+        flex-direction: column;
+        border-radius: $chat-footer-border-radius;
         @if $theme-name == 'Material3' or $theme-name == 'material' or $theme-name == 'Material3-dark' or $theme-name == 'material-dark' {
           border-top-right-radius: 4px;
           border-top-left-radius: 4px;
         }
-        .e-textarea {
-          @if $theme-name == 'Material3' or $theme-name == 'material' or $theme-name == 'Material3-dark' or $theme-name == 'material-dark' {
-            padding: 4px 8px 4px 12px;
-            box-sizing: border-box;
-            min-height: 30px;
+        &.expanded .e-textarea-icons-wrapper {
+          display: block;
+          .e-footer-icons-wrapper {
+            justify-content: end;
           }
-          @if ($skin-name == 'FluentUI') {
-            min-height: 34px;
+          .e-chat-textarea {
+            width: 100%;
           }
-        }
-      }
-      &:not(.e-footer-template) {
-        .e-textarea {
-          max-height: 280px;
         }
         .e-chat-send {
-          position: absolute;
-          right: 15px;
           font-size: $chat-send-icon-size;
-          bottom: $chat-send-icon-bottom;
-          padding-top: 2px;
         }
         .e-chat-send.disabled {
           pointer-events: none;
@@ -167,6 +227,16 @@
           opacity: 1;
           cursor: pointer;
         }
+        .e-textarea-icons-wrapper {
+          display: flex;
+          flex-direction: row;
+        }
+      }
+      .e-hidden-textarea {
+        display: none;
+      }
+      &[hidden]{
+        display: none;
       }
     }
     .e-footer:not(.e-footer-template) .e-chat-send:not(.disabled):focus-visible {
@@ -177,7 +247,8 @@
       display: flex;
       flex-direction: column;
     }
-    .e-message-icon {
+    .e-message-icon,
+    .e-message-icon img {
       height: 32px;
       width: 32px;
       font-size: 14px;
@@ -280,6 +351,8 @@
       animation-delay: .9999s;
     }
     .e-header-icon {
+      position: relative;
+      display: inline-block;
       width: 32px;
       height: 32px;
     }
@@ -325,7 +398,7 @@
       height: 35px;
     }
     &.e-rtl {
-      .e-text {
+      .e-message-content {
         text-align: right;
       }
       .e-left {
@@ -365,6 +438,12 @@
         margin-right: unset;
         margin-left: 18px;
       }
+      .e-footer {
+        .e-footer-icons-wrapper {
+          padding: $chat-footer-icons-rtl-padding;
+          padding-right: unset;
+        }
+      }
     }
     @if ($skin-name == 'highcontrast') {
       .e-chat-header .e-toolbar .e-toolbar-item .e-tbar-btn {
@@ -396,6 +475,78 @@
     }
     .e-empty-chat-template {
       margin: auto;
+    }
+    .e-user-status-icon {
+      position: absolute;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      bottom: 0;
+      right: 0;
+      height: $user-status-icon-font-size;
+      width: $user-status-icon-font-size;
+      border: 1px solid;
+      border-color: $user-status-icon-border-color;
+      border-radius: $user-status-icon-border-radius;
+      font-size: $user-status-icon-font-size;
+  
+      &:not(.e-user-offline)
+      {
+        color: $user-status-icon-color;
+      }
+    }
+    .e-reply-wrapper {
+      display: flex;
+      align-items: center;
+      padding: 10px 8px 8px;
+      margin: 5px;
+      border-radius: 5px;
+      position: relative;
+      width: fit-content;
+      white-space: normal;
+      cursor: pointer;
+      .e-reply-content {
+        padding-left: 8px;
+      }
+      .e-reply-message-details {
+        display: flex;
+        flex-direction: row;
+        align-items: center;
+        gap: 5px;
+        padding-bottom: 4px;
+        .e-chat-close {
+          margin-left: auto;
+          font-size: 14px;
+          cursor: pointer;
+        }
+      }
+      .e-reply-message-user {
+        font-size: 12px;
+        font-weight: 500;
+      }
+      .e-reply-message-text {
+        font-size: 14px;
+      }
+      .e-reply-message-time {
+        font-size: 10px;
+      }
+    }
+    .e-pinned-message-wrapper {
+      display: none;
+      align-items: center;
+      padding: 10px;
+      .e-pinned-message {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        font-size: 14px;
+      }
+      .e-pinned-dropdown-popup {
+        border: none;
+        background: none;
+        box-shadow: none;
+        margin-left: auto;
+      }
     }
   }
 }

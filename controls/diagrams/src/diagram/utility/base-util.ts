@@ -140,15 +140,16 @@ export function cornersPointsBeforeRotation(ele: DiagramElement): Rect {
 export function getBounds(element: DiagramElement): Rect {
     let bounds: Rect = new Rect();
     //let corners: Rect;
-    const corners: Rect = cornersPointsBeforeRotation(element);
-    let middleLeft: PointModel = corners.middleLeft;
-    let topCenter: PointModel = corners.topCenter;
-    let bottomCenter: PointModel = corners.bottomCenter;
-    let middleRight: PointModel = corners.middleRight;
-    let topLeft: PointModel = corners.topLeft;
-    let topRight: PointModel = corners.topRight;
-    let bottomLeft: PointModel = corners.bottomLeft;
-    let bottomRight: PointModel = corners.bottomRight;
+    let {
+        middleLeft,
+        topCenter,
+        bottomCenter,
+        middleRight,
+        topLeft,
+        topRight,
+        bottomLeft,
+        bottomRight
+    }: Rect = cornersPointsBeforeRotation(element);
     element.corners = {
         topLeft: topLeft, topCenter: topCenter, topRight: topRight, middleLeft: middleLeft,
         middleRight: middleRight, bottomLeft: bottomLeft, bottomCenter: bottomCenter, bottomRight: bottomRight
@@ -434,26 +435,25 @@ export function wordBreakToString(value: TextWrap | TextDecoration): string {
     return state;
 }
 
+// Create an offscreen canvas
+const canvas: HTMLCanvasElement = document.createElement('canvas');
+const context: CanvasRenderingContext2D = canvas.getContext('2d');
+
 /**
- * bBoxText method\
+ * measures the width of text
  *
- * @returns { number }    bBoxText method .\
+ * @returns { number } text width
  * @param {string} textContent - provide the textContent value.
  * @param {string} options - provide the options value.
  *
  * @private
  */
 export function bBoxText(textContent: string, options: TextAttributes): number {
-    const measureWindowElement: string = 'measureElement';
-    window[`${measureWindowElement}`].style.visibility = 'visible';
-    const svg: SVGElement = window[`${measureWindowElement}`].children[2];
-    const text: SVGTextElement = getChildNode(svg)[1] as SVGTextElement;
-    text.textContent = textContent;
-    applyStyleAgainstCsp(text, 'font-size:' + options.fontSize + 'px; font-family:'
-        + options.fontFamily + ';font-weight:' + (options.bold ? 'bold' : 'normal'));
-    const bBox: number = text.getBBox().width;
-    window[`${measureWindowElement}`].style.visibility = 'hidden';
-    return bBox;
+    // Set the font with specified style options
+    context.font = `${options.bold ? 'bold' : 'normal'} ${options.fontSize}px ${options.fontFamily}`;
+    // Measure the text
+    const metrics: TextMetrics = context.measureText(textContent);
+    return metrics.width;
 }
 /**
  * middleElement method\

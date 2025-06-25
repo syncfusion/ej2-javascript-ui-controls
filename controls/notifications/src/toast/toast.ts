@@ -615,6 +615,9 @@ export class Toast extends Component<HTMLElement> implements INotifyPropertyChan
             this.refElement = undefined;
         }
         if (!this.isBlazorServer()) { super.destroy(); }
+        if (this.element && this.element.parentElement ){
+            this.element.parentElement.removeChild(this.element);
+        }
     }
 
     /**

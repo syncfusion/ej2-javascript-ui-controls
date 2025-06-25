@@ -256,7 +256,9 @@ export class DOMNode {
      */
     public replaceWith(element: Element, value: string): void {
         const parentNode: Element = element.parentNode as Element;
-        parentNode.insertBefore(this.parseHTMLFragment(value), element);
+        if (parentNode !== null) {
+            parentNode.insertBefore(this.parseHTMLFragment(value), element);
+        }
         detach(element);
     }
 
@@ -636,7 +638,7 @@ export class DOMNode {
                 this.replaceWith(start, this.marker(markerClassName.endSelection, this.encode(start.textContent)));
                 const markerEnd: Element = (range.endContainer as HTMLElement).querySelector('.' + markerClassName.endSelection);
                 markerEnd.appendChild(start);
-            } else {
+            } else if (start.nodeName !== 'HR') {
                 const marker: string = this.marker(className, '');
                 append([this.parseHTMLFragment(marker)], start);
             }
@@ -663,8 +665,17 @@ export class DOMNode {
             (element.classList.contains(markerClassName.startSelection) ||
                 element.classList.contains(markerClassName.endSelection))) ||
             textContent.replace(/\n/g, '').replace(/(^ *)|( *$)/g, '').length > 0 ||
-            textContent.length && textContent.indexOf('\n') < 0)) {
+            textContent.length && textContent.indexOf('\n') < 0 && textContent !== ' ')) {
             const wrapper: string = '<' + CONSTANT.DEFAULT_TAG + '></' + CONSTANT.DEFAULT_TAG + '>';
+            if (element.parentNode && !this.isBlockNode(element.parentNode as Element)) {
+                const closestBlockNode: Node = this.getImmediateBlockNode(element);
+                for (const child of Array.from(closestBlockNode.childNodes)) {
+                    if ((child as Element) && (child as Element).contains(element)) {
+                        element = child as Element;
+                        break;
+                    }
+                }
+            }
             const target: Element = element;
             element = this.wrap(element, this.parseHTMLFragment(wrapper));
             const ignoreBr: boolean = target.nodeType === Node.ELEMENT_NODE && target.firstChild && target.firstChild.nodeName === 'BR'

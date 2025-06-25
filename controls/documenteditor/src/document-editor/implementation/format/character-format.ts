@@ -23,7 +23,7 @@ export class WCharacterFormat {
     /**
      * @private
      */
-    public revisions: Revision[] = [];
+    private revisions: Revision[] = [];
     public get bold(): boolean {
         return this.getPropertyValue('bold') as boolean;
     }
@@ -854,5 +854,72 @@ export class WCharacterFormat {
         return hasValue;
     }
 
+    /**
+     * @private
+     */
+    get revisionLength(): number {
+        if (!isNullOrUndefined(this.revisions)) {
+            return this.revisions.length;
+        }
+        return 0;
+    }
+    /**
+     * @private
+     */
+    public getRevision(index: number): Revision {
+        if (!isNullOrUndefined(this.revisions)) {
+            return this.revisions[index];
+        }
+        return undefined;
+    }
+    /**
+     * @private
+     */
+    public addRevision(revision: Revision): void {
+        if (this.revisions.indexOf(revision) === -1) {
+            this.revisions.push(revision);
+        }
+        revision.hasChanges = true;
+    }
+    /**
+     * @private
+     */
+    public insertRevisionAt(index: number, revision: Revision): void {
+        this.revisions.splice(index, 0, revision)
+        revision.hasChanges = true;
+    }
+    /**
+     * @private
+     */
+    public removeRevision(index: number): Revision {
+        let revision: Revision = this.revisions.splice(index, 1)[0];
+        revision.hasChanges = true;
+        return revision;
+    }
+
+    /**
+     * @private
+     */
+    public getAllRevision(): Revision[] {
+        return this.revisions;
+    }
+
+    /**
+     * @private
+     */
+    public clearRevision(): void {
+        this.revisions = [];
+    }
+
+    /**
+     * @private
+     */
+    public getRevisionRange(revision: Revision): WCharacterFormat[] {
+        let range: WCharacterFormat[] = [];
+        if (this.revisions.indexOf(revision) !== -1) {
+            range.push(this)
+        }
+        return range;
+    }
     
 }

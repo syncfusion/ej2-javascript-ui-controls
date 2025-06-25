@@ -32,6 +32,7 @@ export class ContextMenu implements IContextMenu {
     private defaultUnderlineId: string;
     private defaultHighlightId: string;
     private defaultStrikethroughId: string;
+    private defaultSquigglyId: string;
     private defaultScaleratioId: string;
     private defaultPropertiesId: string;
     private copyShowCustomContextMenuBottom: any;
@@ -57,6 +58,7 @@ export class ContextMenu implements IContextMenu {
         this.defaultUnderlineId = this.pdfViewer.element.id + '_contextmenu_underline';
         this.defaultHighlightId = this.pdfViewer.element.id + '_contextmenu_highlight';
         this.defaultStrikethroughId = this.pdfViewer.element.id + '_contextmenu_strikethrough';
+        this.defaultSquigglyId = this.pdfViewer.element.id + '_contextmenu_squiggly';
         this.defaultScaleratioId = this.pdfViewer.element.id + '_contextmenu_scaleratio';
         this.defaultPropertiesId = this.pdfViewer.element.id + '_contextmenu_properties';
         this.copyContextMenu = [
@@ -65,6 +67,7 @@ export class ContextMenu implements IContextMenu {
             { text: this.pdfViewer.localeObj.getConstant('Highlight context'), iconCss: 'e-pv-highlight-icon', id: this.defaultHighlightId },
             { text: this.pdfViewer.localeObj.getConstant('Underline context'), iconCss: 'e-pv-underline-icon', id: this.defaultUnderlineId },
             { text: this.pdfViewer.localeObj.getConstant('Strikethrough context'), iconCss: 'e-pv-strikethrough-icon', id: this.defaultStrikethroughId },
+            { text: this.pdfViewer.localeObj.getConstant('Squiggly context'), iconCss: 'e-pv-squiggly-icon', id: this.defaultSquigglyId },
             { text: this.pdfViewer.localeObj.getConstant('Paste'), iconCss: 'e-pv-paste-icon', id: this.defaultPasteId },
             { text: this.pdfViewer.localeObj.getConstant('Delete Context'), iconCss: 'e-pv-delete-icon', id: this.defaultDeleteId },
             { text: this.pdfViewer.localeObj.getConstant('Scale Ratio'), iconCss: 'e-pv-scale-ratio-icon', id: this.defaultScaleratioId },
@@ -100,7 +103,7 @@ export class ContextMenu implements IContextMenu {
 
     private contextMenuOnCreated(args: Event): void {
         const items: string[] = [this.defaultHighlightId, this.defaultUnderlineId,
-            this.defaultStrikethroughId];
+            this.defaultStrikethroughId, this.defaultSquigglyId];
         if (this.pdfViewer.annotationModule) {
             if (!this.pdfViewer.annotationModule.textMarkupAnnotationModule) {
                 this.contextMenuObj.enableItems(items, false, true);
@@ -144,7 +147,7 @@ export class ContextMenu implements IContextMenu {
             this.pdfViewerBase.isFreeTextContextMenu = true;
         }
         this.defaultContextMenuItems = [this.pdfViewer.localeObj.getConstant('Cut'), this.pdfViewer.localeObj.getConstant('Copy'), this.pdfViewer.localeObj.getConstant('Highlight context'),
-            this.pdfViewer.localeObj.getConstant('Underline context'), this.pdfViewer.localeObj.getConstant('Strikethrough context'), this.pdfViewer.localeObj.getConstant('Paste'),
+            this.pdfViewer.localeObj.getConstant('Underline context'), this.pdfViewer.localeObj.getConstant('Strikethrough context'), this.pdfViewer.localeObj.getConstant('Squiggly context'), this.pdfViewer.localeObj.getConstant('Paste'),
             this.pdfViewer.localeObj.getConstant('Delete Context'), this.pdfViewer.localeObj.getConstant('Scale Ratio'), this.pdfViewer.localeObj.getConstant('Comment'), this.pdfViewer.localeObj.getConstant('Properties')
         ];
         const customItems: string[] = this.customMenuItems.length > 0 ?
@@ -175,7 +178,7 @@ export class ContextMenu implements IContextMenu {
                 const isClickWithinSelectionBounds: boolean = this.pdfViewerBase.isClickWithinSelectionBounds(args.event);
                 if (this.pdfViewerBase.isFreeTextContextMenu) {
                     this.contextMenuObj.hideItems([this.defaultHighlightId, this.defaultUnderlineId, this.defaultStrikethroughId,
-                        this.defaultPropertiesId, this.defaultCommentId,
+                        this.defaultSquigglyId, this.defaultPropertiesId, this.defaultCommentId,
                         this.defaultScaleratioId, this.defaultDeleteId], true);
                     this.pdfViewerBase.getElement('_context_menu_separator').classList.add('e-menu-hide');
                     this.pdfViewerBase.getElement('_context_menu_comment_separator').classList.add('e-menu-hide');
@@ -233,7 +236,7 @@ export class ContextMenu implements IContextMenu {
                     } else if (this.pdfViewerBase.isCalibrateAnnotationModule() &&
                      this.pdfViewer.annotationModule.measureAnnotationModule.currentAnnotationMode && !currentAnnotSettings) {
                         this.contextMenuObj.hideItems([this.defaultHighlightId, this.defaultUnderlineId,
-                            this.defaultStrikethroughId, this.defaultPropertiesId], true);
+                            this.defaultStrikethroughId, this.defaultSquigglyId, this.defaultPropertiesId], true);
                         this.pdfViewerBase.getElement('_context_menu_separator').classList.add('e-menu-hide');
                         this.pdfViewerBase.getElement('_context_menu_comment_separator').classList.remove('e-menu-hide');
                         this.contextMenuObj.enableItems([this.defaultCutId, this.defaultCopyId, this.defaultPasteId,
@@ -242,7 +245,7 @@ export class ContextMenu implements IContextMenu {
                          annotationModule.textMarkupAnnotationModule.currentTextMarkupAnnotation &&
                           !annotationModule.textMarkupAnnotationModule.currentTextMarkupAnnotation.annotationSettings.isLock) {
                         this.contextMenuObj.hideItems([this.defaultHighlightId, this.defaultUnderlineId, this.defaultStrikethroughId,
-                            this.defaultPropertiesId, this.defaultCutId,
+                            this.defaultSquigglyId, this.defaultPropertiesId, this.defaultCutId,
                             this.defaultCopyId, this.defaultPasteId, this.defaultScaleratioId], true);
                         this.pdfViewerBase.getElement('_context_menu_separator').classList.add('e-menu-hide');
                         this.pdfViewerBase.getElement('_context_menu_comment_separator').classList.remove('e-menu-hide');
@@ -299,6 +302,9 @@ export class ContextMenu implements IContextMenu {
                         break;
                     case 'Strikethrough':
                         menuItem = 'Strikethrough context';
+                        break;
+                    case 'Squiggly':
+                        menuItem = 'Squiggly context';
                         break;
                     case 'Delete':
                         menuItem = 'Delete Context';
@@ -364,6 +370,9 @@ export class ContextMenu implements IContextMenu {
                 case 'Strikethrough':
                     menuItem = 'Strikethrough context';
                     break;
+                case 'Squiggly':
+                    menuItem = 'Squiggly context';
+                    break;
                 case 'Delete':
                     menuItem = 'Delete Context';
                     break;
@@ -379,7 +388,7 @@ export class ContextMenu implements IContextMenu {
 
     private contextMenuCollection(): MenuItemModel[] {
         return this.contextMenuList = [{ text: 'Cut' }, { text: 'Copy' }, { text: 'Highlight' }, { text: 'Underline' }, { text: 'Strikethrough' },
-            { text: 'Paste' }, { text: 'Delete' }, { text: 'ScaleRatio' }, { text: 'Comment' }, { text: 'Properties' }];
+            { text: 'Squiggly' }, { text: 'Paste' }, { text: 'Delete' }, { text: 'ScaleRatio' }, { text: 'Comment' }, { text: 'Properties' }];
     }
     private getEnabledItemCount(ul: HTMLElement): number {
         let enabledItemCount: number = this.copyContextMenu.length;
@@ -421,7 +430,7 @@ export class ContextMenu implements IContextMenu {
             this.contextMenuObj.enableItems([this.defaultPasteId], false, true);
         }
         this.contextMenuObj.hideItems([this.defaultHighlightId, this.defaultUnderlineId, this.defaultStrikethroughId,
-            this.defaultScaleratioId], true);
+            this.defaultSquigglyId, this.defaultScaleratioId], true);
         if (isProp) {
             if (this.pdfViewer.selectedItems.annotations.length !== 0 && (this.pdfViewer.selectedItems.annotations[0].shapeAnnotationType === 'Distance' || this.pdfViewer.selectedItems.annotations[0].measureType === 'Perimeter' ||
                 this.pdfViewer.selectedItems.annotations[0].subject === 'Perimeter calculation' || this.pdfViewer.selectedItems.annotations[0].shapeAnnotationType === 'Polygon' ||
@@ -476,6 +485,7 @@ export class ContextMenu implements IContextMenu {
             this.pdfViewerBase.OnItemSelected(args.item.text);
         }
     }
+
     /**
      * @private
      * @returns {void}
@@ -484,8 +494,29 @@ export class ContextMenu implements IContextMenu {
         if (this.contextMenuObj) {
             this.previousAction = '';
             this.contextMenuObj.destroy();
+            this.contextMenuObj = null;
         }
+        this.contextMenuElement = null;
+        this.copyContextMenu = null;
+        this.contextMenuList = null;
+        this.customMenuItems = null;
+        this.defaultLength = null;
+        this.filteredCustomItemsIds = null;
+        this.defaultContextMenuItems = null;
+        this.defaultCopyId = null;
+        this.defaultCutId = null;
+        this.defaultPasteId = null;
+        this.defaultDeleteId = null;
+        this.defaultCommentId = null;
+        this.defaultUnderlineId = null;
+        this.defaultHighlightId = null;
+        this.defaultStrikethroughId = null;
+        this.defaultScaleratioId = null;
+        this.defaultPropertiesId = null;
+        this.copyShowCustomContextMenuBottom = null;
+        this.currentTarget = null;
     }
+
     /**
      * @private
      * @returns {void}

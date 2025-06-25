@@ -1,6 +1,6 @@
 import { SpreadsheetHelper } from '../util/spreadsheethelper.spec';
 import { defaultData, GDPData, productData } from '../util/datasource.spec';
-import { CellModel, ChartModel, getColumnsWidth, getFormatFromType, setCell, SheetModel, Spreadsheet } from '../../../src/index';
+import { CellModel, ChartModel, ExtendedAxisModel, getColumnsWidth, getFormatFromType, setCell, SheetModel, Spreadsheet } from '../../../src/index';
 import { Overlay } from '../../../src/spreadsheet/services/index';
 import { getComponent, EventHandler } from '@syncfusion/ej2-base';
 import { Chart, Export } from '@syncfusion/ej2-charts';
@@ -1563,6 +1563,147 @@ describe('Chart ->', () => {
         });
     });
 
+    describe('EJ2-883265 -> Testing bar chart with Add chart elements UI interaction->', () => {
+        beforeAll((done: Function) => {
+            helper.initializeSpreadsheet({ sheets: [{ ranges: [{ dataSource: defaultData }] }] }, done);
+        });
+        afterAll(() => {
+            helper.invoke('destroy');
+        });
+        it('Checking Horizontal Axes->', (done: Function) => {
+            helper.invoke('selectRange', ['D1:E5']);
+            helper.switchRibbonTab(2);
+            helper.getElement('#' + helper.id + '_chart-btn').click();
+            const target1: HTMLElement = helper.getElement('#' + helper.id + '_chart-btn-popup .e-menu-item[aria-label="Bar"]');
+            (getComponent(target1.parentElement, 'menu') as any).animationSettings.effect = 'None';
+            helper.triggerMouseAction('mouseover', { x: target1.getBoundingClientRect().left + 5, y: target1.getBoundingClientRect().top + 5 }, document, target1);
+            helper.getElement('#clusteredBar').click();
+            helper.getElement('#' + helper.id + '_addchart').click();
+            const target: HTMLElement = helper.getElement('#' + helper.id + '_addchart-popup .e-menu-item[aria-label="Axes"]');
+            (getComponent(target.parentElement, 'menu') as any).animationSettings.effect = 'None';
+            helper.triggerMouseAction('mouseover', { x: target.getBoundingClientRect().left + 5, y: target.getBoundingClientRect().top + 5 }, document, target);
+            helper.getElement('#PHAxes').click();
+            setTimeout(() => {
+                let chartId: string = `#${helper.getInstance().sheets[0].rows[0].cells[3].chart[0].id}`;
+                let chartEle: HTMLElement = helper.getInstance().element.querySelector(chartId) as HTMLElement;
+                let chart: Chart = getComponent(chartEle, 'chart');
+                expect(chart.primaryYAxis.labelStyle.size).toBe('0px');
+                expect(chart.primaryYAxis.majorTickLines.width).toBe(0);
+                done();
+            });
+        });
+        it('Checking Vertical Axes->', (done: Function) => {
+            helper.getElement('#' + helper.id + '_addchart').click();
+            const target: HTMLElement = helper.getElement('#' + helper.id + '_addchart-popup .e-menu-item[aria-label="Axes"]');
+            (getComponent(target.parentElement, 'menu') as any).animationSettings.effect = 'None';
+            helper.triggerMouseAction('mouseover', { x: target.getBoundingClientRect().left + 5, y: target.getBoundingClientRect().top + 5 }, document, target);
+            helper.getElement('#PVAxes').click();
+            setTimeout(() => {
+                let chartId: string = `#${helper.getInstance().sheets[0].rows[0].cells[3].chart[0].id}`;
+                let chartEle: HTMLElement = helper.getInstance().element.querySelector(chartId) as HTMLElement;
+                let chart: Chart = getComponent(chartEle, 'chart');
+                expect(chart.primaryXAxis.labelStyle.size).toBe('0px');
+                expect(chart.primaryXAxis.majorTickLines.width).toBe(0);
+                done();
+            });
+        });
+        it('Checking Horizontal Title->', (done: Function) => {
+            helper.getElement('#' + helper.id + '_addchart').click();
+            const target: HTMLElement = helper.getElement('#' + helper.id + '_addchart-popup .e-menu-item[aria-label="Axis Title"]');
+            (getComponent(target.parentElement, 'menu') as any).animationSettings.effect = 'None';
+            helper.triggerMouseAction('mouseover', { x: target.getBoundingClientRect().left + 5, y: target.getBoundingClientRect().top + 5 }, document, target);
+            helper.getElement('#PHAxisTitle').click();
+            setTimeout(() => {
+                helper.setAnimationToNone('.e-title-dlg.e-dialog')
+                const input: HTMLInputElement = helper.getElement('#' + helper.id + ' .e-title-dlg .e-dlg-content .e-input') as HTMLInputElement;
+                input.value = 'Horizontal';
+                helper.click('.e-title-dlg .e-primary');
+                setTimeout(() => {
+                    let chartId: string = `#${helper.getInstance().sheets[0].rows[0].cells[3].chart[0].id}`;
+                    let chartEle: HTMLElement = helper.getInstance().element.querySelector(chartId) as HTMLElement;
+                    let chart: Chart = getComponent(chartEle, 'chart');
+                    expect(chart.primaryYAxis.title).toBe("Horizontal");
+                    done();
+                });
+            });
+        });
+        it('Checking Vertical Title->', (done: Function) => {
+            helper.getElement('#' + helper.id + '_addchart').click();
+            const target: HTMLElement = helper.getElement('#' + helper.id + '_addchart-popup .e-menu-item[aria-label="Axis Title"]');
+            (getComponent(target.parentElement, 'menu') as any).animationSettings.effect = 'None';
+            helper.triggerMouseAction('mouseover', { x: target.getBoundingClientRect().left + 5, y: target.getBoundingClientRect().top + 5 }, document, target);
+            helper.getElement('#PVAxisTitle').click();
+            setTimeout(() => {
+                helper.setAnimationToNone('.e-title-dlg.e-dialog')
+                const input: HTMLInputElement = helper.getElement('#' + helper.id + ' .e-title-dlg .e-dlg-content .e-input') as HTMLInputElement;
+                input.value = 'Vertical';
+                helper.click('.e-title-dlg .e-primary');
+                setTimeout(() => {
+                    let chartId: string = `#${helper.getInstance().sheets[0].rows[0].cells[3].chart[0].id}`;
+                    let chartEle: HTMLElement = helper.getInstance().element.querySelector(chartId) as HTMLElement;
+                    let chart: Chart = getComponent(chartEle, 'chart');
+                    expect(chart.primaryXAxis.title).toBe("Vertical");
+                    done();
+                });
+            });
+        });
+        it('Checking Major Horizonatal Gridlines->', (done: Function) => {
+            helper.invoke('selectRange', ['G1:H5']);
+            helper.switchRibbonTab(2);
+            helper.getElement('#' + helper.id + '_chart-btn').click();
+            const target1: HTMLElement = helper.getElement('#' + helper.id + '_chart-btn-popup .e-menu-item[aria-label="Bar"]');
+            (getComponent(target1.parentElement, 'menu') as any).animationSettings.effect = 'None';
+            helper.triggerMouseAction('mouseover', { x: target1.getBoundingClientRect().left + 5, y: target1.getBoundingClientRect().top + 5 }, document, target1);
+            helper.getElement('#stackedBar').click();
+            helper.getElement('#' + helper.id + '_addchart').click();
+            const target: HTMLElement = helper.getElement('#' + helper.id + '_addchart-popup .e-menu-item[aria-label="Gridlines"]');
+            (getComponent(target.parentElement, 'menu') as any).animationSettings.effect = 'None';
+            helper.triggerMouseAction('mouseover', { x: target.getBoundingClientRect().left + 5, y: target.getBoundingClientRect().top + 5 }, document, target);
+            helper.getElement('#GLMajorHorizontal').click();
+            setTimeout(() => {
+                const chart: HTMLElement = helper.getElement().querySelector('.e-datavisualization-chart');
+                expect(chart).not.toBeNull();
+                done();
+            }, 20);
+        });
+        it('Apply Major Vertical Gridlines->', (done: Function) => {
+            helper.getElement('#' + helper.id + '_addchart').click();
+            const target: HTMLElement = helper.getElement('#' + helper.id + '_addchart-popup .e-menu-item[aria-label="Gridlines"]');
+            (getComponent(target.parentElement, 'menu') as any).animationSettings.effect = 'None';
+            helper.triggerMouseAction('mouseover', { x: target.getBoundingClientRect().left + 5, y: target.getBoundingClientRect().top + 5 }, document, target);
+            helper.getElement('#GLMajorVertical').click();
+            setTimeout(() => {
+                const chart: HTMLElement = helper.getElement().querySelector('.e-datavisualization-chart');
+                expect(chart).not.toBeNull();
+                done();
+            }, 20);
+        });
+        it('Apply Minor Horizontal Gridlines->', (done: Function) => {
+            helper.getElement('#' + helper.id + '_addchart').click();
+            const target: HTMLElement = helper.getElement('#' + helper.id + '_addchart-popup .e-menu-item[aria-label="Gridlines"]');
+            (getComponent(target.parentElement, 'menu') as any).animationSettings.effect = 'None';
+            helper.triggerMouseAction('mouseover', { x: target.getBoundingClientRect().left + 5, y: target.getBoundingClientRect().top + 5 }, document, target);
+            helper.getElement('#GLMinorHorizontal').click();
+            setTimeout(() => {
+                const chart: HTMLElement = helper.getElement().querySelector('.e-datavisualization-chart');
+                expect(chart).not.toBeNull();
+                done();
+            }, 20);
+        });
+        it('Apply Minor Vertical Gridlines->', (done: Function) => {
+            helper.getElement('#' + helper.id + '_addchart').click();
+            const target: HTMLElement = helper.getElement('#' + helper.id + '_addchart-popup .e-menu-item[aria-label="Gridlines"]');
+            (getComponent(target.parentElement, 'menu') as any).animationSettings.effect = 'None';
+            helper.triggerMouseAction('mouseover', { x: target.getBoundingClientRect().left + 5, y: target.getBoundingClientRect().top + 5 }, document, target);
+            helper.getElement('#GLMinorVertical').click();
+            setTimeout(() => {
+                const chart: HTMLElement = helper.getElement().querySelector('.e-datavisualization-chart');
+                expect(chart).not.toBeNull();
+                done();
+            }, 20);
+        });
+    });
+
     describe('Chart data refreshing after merge action->', () => {
         beforeAll((done: Function) => {
             let model: SheetModel[] = [{ ranges: [{ dataSource: defaultData, startCell: 'C3' }],
@@ -1894,6 +2035,8 @@ describe('Chart ->', () => {
         it('Merge with chart applied range - 19', (done: Function) => {
             helper.invoke('selectRange', ['H3:G13']);
             helper.click('#spreadsheet_merge');
+            helper.setAnimationToNone('.e-merge-alert-dlg.e-dialog');
+            helper.click('.e-merge-alert-dlg .e-primary');
             setTimeout(() => {  
                 expect(document.getElementById('e_spreadsheet_chart_1_Series_1_Point_0').getAttribute('aria-label')).toBe('1:0, Price');
                 done();
@@ -2014,7 +2157,55 @@ describe('Chart ->', () => {
             });
         });
     });
-    
+
+    describe('EJ2-884357 -> Chart Design tab not displayed properly on pressing undo button.', () => {
+        beforeAll((done: Function) => {
+            helper.initializeSpreadsheet({ sheets: [{ ranges: [{ dataSource: defaultData }] }, {}] }, done);
+        });
+        afterAll(() => {
+            helper.invoke('destroy');
+        });
+        it('Inserting chart then cut and paste the chart in the other sheet->', (done: Function) => {
+            const spreadsheet: Spreadsheet = helper.getInstance();
+            helper.invoke('selectRange', ['D1:E5']);
+            helper.switchRibbonTab(2);
+            helper.getElement('#' + helper.id + '_chart-btn').click();
+            const target: HTMLElement = helper.getElement('#' + helper.id + '_chart-btn-popup .e-menu-item[aria-label="Line"]');
+            (getComponent(target.parentElement, 'menu') as any).animationSettings.effect = 'None';
+            helper.triggerMouseAction('mouseover', { x: target.getBoundingClientRect().left + 5, y: target.getBoundingClientRect().top + 5 }, document, target);
+            helper.getElement('#line').click();
+            helper.invoke('cut').then(function () {
+                const args = { action: 'gotoSheet', eventArgs: { currentSheetIndex: 1, previousSheetIndex: 0 } };
+                helper.getInstance().updateAction(args);
+                setTimeout((): void => {
+                    expect(spreadsheet.activeSheetIndex).toEqual(1);
+                    helper.invoke('paste');
+                    expect(spreadsheet.sheets[1].rows[0].cells[0].chart[0]).not.toBeUndefined();
+                    done();
+                });
+            });
+        });
+        it('Delete the chart and perform undo->', (done: Function) => {
+            const spreadsheet: Spreadsheet = helper.getInstance();
+            spreadsheet.deleteChart()
+            setTimeout(() => {
+                expect(spreadsheet.activeSheetIndex).toBe(1);
+                expect(spreadsheet.sheets[1].rows[0].cells[0].chart[0]).toBeUndefined();
+                const args = { action: 'gotoSheet', eventArgs: { currentSheetIndex: 0, previousSheetIndex: 1 } };
+                helper.getInstance().updateAction(args);
+                setTimeout(() => {
+                    helper.switchRibbonTab(1);
+                    helper.click('#spreadsheet_undo');
+                    setTimeout(() => {
+                        expect(spreadsheet.activeSheetIndex).toBe(0);
+                        expect(spreadsheet.sheets[1].rows[0].cells[0].chart[0]).not.toBeUndefined();
+                        done();
+                    });
+                });
+            });
+        });
+    });
+
     describe('CR-Issues ->', () => {
         // describe('I315401, I281820 ->', () => {
         //     beforeEach((done: Function) => {
@@ -2572,6 +2763,98 @@ describe('Chart ->', () => {
             const chart: HTMLElement = helper.getElement().querySelector('.e-datavisualization-chart');
             const marker: HTMLCollectionOf<SVGEllipseElement> = chart.getElementsByTagName("ellipse");
             expect(marker.length).not.toBe(0);
+            done();
+        });
+    });
+    describe('Provide Canvas rendering support for charts with large datasets', () => {
+        beforeAll((done: Function) => {
+            helper.initializeSpreadsheet({
+                sheets: [{ ranges: [{ dataSource: defaultData }] }],
+                actionBegin(args: any) {
+                    if (args.action === 'beforeInsertChart') {
+                        if (args.args.eventArgs) { args.args.eventArgs.enableCanvas = true; }
+                    }
+                }
+            }, done);
+        });
+        afterAll(() => {
+            helper.invoke('destroy');
+        });
+        it('Insert Column chart using UI interaction', (done: Function) => {
+            helper.invoke('selectRange', ['A1:CX51']);
+            helper.switchRibbonTab(2);
+            helper.getElement('#' + helper.id + '_chart').click();
+            const target: HTMLElement = helper.getElement('#' + helper.id + '_chart-btn-popup .e-menu-item[aria-label="Column"]');
+            helper.triggerMouseAction('mouseover', { x: target.getBoundingClientRect().left + 5, y: target.getBoundingClientRect().top + 5 }, document, target);
+            helper.getElement('#clusteredColumn').click();
+            const chart: HTMLElement = helper.getElement().querySelector('.e-datavisualization-chart');
+            expect(chart.querySelector('canvas')).not.toBeNull();
+            expect(helper.getInstance().sheets[0].rows[0].cells[0].chart[0].enableCanvas).toBeTruthy();
+            helper.invoke('deleteChart');
+            done();
+        });
+        it('Insert Column chart using insertChart method', (done: Function) => {
+            helper.invoke('insertChart', [[{ type: 'Column', range: 'D1:CZ51'}]]);
+            const chart: HTMLElement = helper.getElement().querySelector('.e-datavisualization-chart');
+            expect(chart.querySelector('canvas')).not.toBeNull();
+            helper.invoke('deleteChart');
+            done();
+        });
+        it('Insert Bar chart using UI interaction', (done: Function) => {
+            helper.invoke('selectRange', ['A1:CX51']);
+            helper.switchRibbonTab(2);
+            helper.getElement('#' + helper.id + '_chart').click();
+            const target: HTMLElement = helper.getElement('#' + helper.id + '_chart-btn-popup .e-menu-item[aria-label="Bar"]');
+            helper.triggerMouseAction('mouseover', { x: target.getBoundingClientRect().left + 5, y: target.getBoundingClientRect().top + 5 }, document, target);
+            helper.getElement('#clusteredBar').click();
+            const chart: HTMLElement = helper.getElement().querySelector('.e-datavisualization-chart');
+            expect(chart.querySelector('canvas')).not.toBeNull();
+            helper.invoke('deleteChart');
+            done();
+        });
+        it('Insert Bar chart using insertChart method', (done: Function) => {
+            helper.invoke('insertChart', [[{ type: 'Bar', range: 'D1:CZ51'}]]);
+            const chart: HTMLElement = helper.getElement().querySelector('.e-datavisualization-chart');
+            expect(chart.querySelector('canvas')).not.toBeNull();
+            helper.invoke('deleteChart');
+            done();
+        });
+        it('Insert Area chart using UI interaction', (done: Function) => {
+            helper.invoke('selectRange', ['A1:CX51']);
+            helper.switchRibbonTab(2);
+            helper.getElement('#' + helper.id + '_chart').click();
+            const target: HTMLElement = helper.getElement('#' + helper.id + '_chart-btn-popup .e-menu-item[aria-label="Area"]');
+            helper.triggerMouseAction('mouseover', { x: target.getBoundingClientRect().left + 5, y: target.getBoundingClientRect().top + 5 }, document, target);
+            helper.getElement('#area').click();
+            const chart: HTMLElement = helper.getElement().querySelector('.e-datavisualization-chart');
+            expect(chart.querySelector('canvas')).not.toBeNull();
+            helper.invoke('deleteChart');
+            done();
+        });
+        it('Insert Area chart using insertChart method', (done: Function) => {
+            helper.invoke('insertChart', [[{ type: 'Area', range: 'D1:CZ51'}]]);
+            const chart: HTMLElement = helper.getElement().querySelector('.e-datavisualization-chart');
+            expect(chart.querySelector('canvas')).not.toBeNull();
+            helper.invoke('deleteChart');
+            done();
+        });
+        it('Insert Line chart using UI interaction', (done: Function) => {
+            helper.invoke('selectRange', ['A1:CX51']);
+            helper.switchRibbonTab(2);
+            helper.getElement('#' + helper.id + '_chart').click();
+            const target: HTMLElement = helper.getElement('#' + helper.id + '_chart-btn-popup .e-menu-item[aria-label="Line"]');
+            helper.triggerMouseAction('mouseover', { x: target.getBoundingClientRect().left + 5, y: target.getBoundingClientRect().top + 5 }, document, target);
+            helper.getElement('#line').click();
+            const chart: HTMLElement = helper.getElement().querySelector('.e-datavisualization-chart');
+            expect(chart.querySelector('canvas')).not.toBeNull();
+            helper.invoke('deleteChart');
+            done();
+        });
+        it('Insert Line chart using insertChart method', (done: Function) => {
+            helper.invoke('insertChart', [[{ type: 'Line', range: 'D1:CZ51' }]]);
+            const chart: HTMLElement = helper.getElement().querySelector('.e-datavisualization-chart');
+            expect(chart.querySelector('canvas')).not.toBeNull();
+            helper.invoke('deleteChart');
             done();
         });
     });
@@ -3320,6 +3603,131 @@ describe('Chart ->', () => {
                     done();
                 });
             });
+        });
+    });
+
+    describe('EJ2-883261 - Unable to add axis title when both primary and horizontal axes are hidden ->', () => {
+        beforeAll((done: Function) => {
+            helper.initializeSpreadsheet({ sheets: [{ ranges: [{ dataSource: defaultData }] }] }, done);
+        });
+        afterAll(() => {
+            helper.invoke('destroy');
+        });
+        it('Inserting chart and hiding horizontal axes ->', (done: Function) => {
+            helper.invoke('selectRange', ['D1:H11']);
+            helper.switchRibbonTab(2);
+            helper.getElement('#' + helper.id + '_chart-btn').click();
+            const target1: HTMLElement = helper.getElement('#' + helper.id + '_chart-btn-popup .e-menu-item[aria-label="Column"]');
+            (getComponent(target1.parentElement, 'menu') as any).animationSettings.effect = 'None';
+            helper.triggerMouseAction('mouseover', { x: target1.getBoundingClientRect().left + 5, y: target1.getBoundingClientRect().top + 5 }, document, target1);
+            helper.getElement('#clusteredColumn').click();
+            helper.getElement('#' + helper.id + '_addchart').click();
+            const target: HTMLElement = helper.getElement('#' + helper.id + '_addchart-popup .e-menu-item[aria-label="Axes"]');
+            (getComponent(target.parentElement, 'menu') as any).animationSettings.effect = 'None';
+            helper.triggerMouseAction('mouseover', { x: target.getBoundingClientRect().left + 5, y: target.getBoundingClientRect().top + 5 }, document, target);
+            helper.getElement('#PHAxes').click();
+            setTimeout(() => {
+                let chartId: string = `#${helper.getInstance().sheets[0].rows[0].cells[3].chart[0].id}`;
+                let chartEle: HTMLElement = helper.getInstance().element.querySelector(chartId) as HTMLElement;
+                let chart: Chart = getComponent(chartEle, 'chart');
+                expect(chart.primaryXAxis.labelStyle.size).toBe('0px');
+                expect(chart.primaryXAxis.majorTickLines.width).toBe(0);
+                done();
+            });
+        });
+        it('Hiding Vertical Axes->', (done: Function) => {
+            helper.getElement('#' + helper.id + '_addchart').click();
+            const target: HTMLElement = helper.getElement('#' + helper.id + '_addchart-popup .e-menu-item[aria-label="Axes"]');
+            (getComponent(target.parentElement, 'menu') as any).animationSettings.effect = 'None';
+            helper.triggerMouseAction('mouseover', { x: target.getBoundingClientRect().left + 5, y: target.getBoundingClientRect().top + 5 }, document, target);
+            helper.getElement('#PVAxes').click();
+            setTimeout(() => {
+                let chartId: string = `#${helper.getInstance().sheets[0].rows[0].cells[3].chart[0].id}`;
+                let chartEle: HTMLElement = helper.getInstance().element.querySelector(chartId) as HTMLElement;
+                let chart: Chart = getComponent(chartEle, 'chart');
+                expect(chart.primaryYAxis.labelStyle.size).toBe('0px');
+                expect(chart.primaryYAxis.majorTickLines.width).toBe(0);
+                done();
+            });
+        });
+        it('Adding Chart Horizontal Title->', (done: Function) => {
+            helper.getElement('#' + helper.id + '_addchart').click();
+            const target: HTMLElement = helper.getElement('#' + helper.id + '_addchart-popup .e-menu-item[aria-label="Axis Title"]');
+            (getComponent(target.parentElement, 'menu') as any).animationSettings.effect = 'None';
+            helper.triggerMouseAction('mouseover', { x: target.getBoundingClientRect().left + 5, y: target.getBoundingClientRect().top + 5 }, document, target);
+            helper.getElement('#PHAxisTitle').click();
+            setTimeout(() => {
+                helper.setAnimationToNone('.e-title-dlg.e-dialog')
+                const input: HTMLInputElement = helper.getElement('#' + helper.id + ' .e-title-dlg .e-dlg-content .e-input') as HTMLInputElement;
+                input.value = 'Purchase Details';
+                helper.click('.e-title-dlg .e-primary');
+                setTimeout(() => {
+                    let chartId: string = `#${helper.getInstance().sheets[0].rows[0].cells[3].chart[0].id}`;
+                    let chartEle: HTMLElement = helper.getInstance().element.querySelector(chartId) as HTMLElement;
+                    let chart: Chart = getComponent(chartEle, 'chart');
+                    expect(chart.primaryXAxis.title).toBe('Purchase Details');
+                    done();
+                });
+            });
+        });
+        it('Adding Chart Vertical Title->', (done: Function) => {
+            helper.getElement('#' + helper.id + '_addchart').click();
+            const target: HTMLElement = helper.getElement('#' + helper.id + '_addchart-popup .e-menu-item[aria-label="Axis Title"]');
+            (getComponent(target.parentElement, 'menu') as any).animationSettings.effect = 'None';
+            helper.triggerMouseAction('mouseover', { x: target.getBoundingClientRect().left + 5, y: target.getBoundingClientRect().top + 5 }, document, target);
+            helper.getElement('#PVAxisTitle').click();
+            setTimeout(() => {
+                helper.setAnimationToNone('.e-title-dlg.e-dialog')
+                const input: HTMLInputElement = helper.getElement('#' + helper.id + ' .e-title-dlg .e-dlg-content .e-input') as HTMLInputElement;
+                input.value = 'Price Details';
+                helper.click('.e-title-dlg .e-primary');
+                setTimeout(() => {
+                    let chartId: string = `#${helper.getInstance().sheets[0].rows[0].cells[3].chart[0].id}`;
+                    let chartEle: HTMLElement = helper.getInstance().element.querySelector(chartId) as HTMLElement;
+                    let chart: Chart = getComponent(chartEle, 'chart');
+                    expect(chart.primaryYAxis.title).toBe('Price Details');
+                    done();
+                });
+            });
+        });
+        it('Performing undo action after adding chart title', (done: Function) => {
+            helper.switchRibbonTab(1);
+            helper.click('#spreadsheet_undo');
+            const chartCell: ChartModel = helper.getInstance().sheets[0].rows[0].cells[3].chart[0];
+            setTimeout(() => {
+                expect(chartCell.primaryYAxis.title).toBeUndefined();
+                helper.click('#spreadsheet_undo');
+                setTimeout(() => {
+                    expect(chartCell.primaryXAxis.title).toBeUndefined();
+                    done();
+                });
+            });
+        });
+        it('Performing undo action after hiding axes', (done: Function) => {
+            helper.switchRibbonTab(1);
+            helper.click('#spreadsheet_undo');
+            const chartCell: ChartModel = helper.getInstance().sheets[0].rows[0].cells[3].chart[0];
+            setTimeout(() => {
+                expect((chartCell.primaryYAxis as ExtendedAxisModel).labelStyle.size).toBe('12px');
+                expect((chartCell.primaryYAxis as ExtendedAxisModel).majorTickLines.width).toBe(1);
+                helper.click('#spreadsheet_undo');
+                setTimeout(() => {
+                    expect((chartCell.primaryXAxis as ExtendedAxisModel).labelStyle.size).toBe('12px');
+                    expect((chartCell.primaryXAxis as ExtendedAxisModel).majorTickLines.width).toBe(1);
+                    done();
+                });
+            });
+        });
+        it('Inserting chart using public method with primary axis visible false', (done: Function) => {
+            helper.invoke('insertChart', [[{ type: 'Column', range: 'E1:F5', primaryXAxis: { visible: false }, primaryYAxis: { visible: false } }]]);
+            let chartId: string = `#${helper.getInstance().sheets[0].rows[0].cells[4].chart[0].id}`;
+            let chartEle: HTMLElement = helper.getInstance().element.querySelector(chartId) as HTMLElement;
+            let chart: Chart = getComponent(chartEle, 'chart');
+            expect(chart.primaryXAxis.labelStyle.size).toBe('0px');
+            expect(chart.primaryXAxis.majorTickLines.width).toBe(0);
+            expect(chart.primaryYAxis.labelStyle.size).toBe('0px');
+            expect(chart.primaryYAxis.majorTickLines.width).toBe(0);
+            done();
         });
     });
 

@@ -596,12 +596,13 @@ export class ConnectorLine {
                 }
             }
         }
-        if (this.parent.currentViewData[data.parentIndex] && this.parent.currentViewData[data.childIndex] &&
+        const expandedData: IGanttData[] = this.parent.connectorLineModule.expandedRecords;
+        if (expandedData[data.parentIndex] && expandedData[data.childIndex] &&
             this.parent.allowParentDependency) {
-            const fromRecordIsParent: boolean = this.parent.currentViewData[data.parentIndex].hasChildRecords;
-            const toRecordIsParent: boolean = this.parent.currentViewData[data.childIndex].hasChildRecords;
-            const fromRecordIsManual: boolean = this.parent.currentViewData[data.parentIndex].ganttProperties.isAutoSchedule;
-            const toRecordIsManual: boolean = this.parent.currentViewData[data.childIndex].ganttProperties.isAutoSchedule;
+            const fromRecordIsParent: boolean = expandedData[data.parentIndex].hasChildRecords;
+            const toRecordIsParent: boolean = expandedData[data.childIndex].hasChildRecords;
+            const fromRecordIsManual: boolean = expandedData[data.parentIndex].ganttProperties.isAutoSchedule;
+            const toRecordIsManual: boolean = expandedData[data.childIndex].ganttProperties.isAutoSchedule;
             let isValid: boolean = true;
             if (((fromRecordIsParent && fromRecordIsManual) && !toRecordIsParent) || ((toRecordIsParent && toRecordIsManual) &&
                 !fromRecordIsParent) || (fromRecordIsParent && fromRecordIsManual && toRecordIsManual && toRecordIsParent)

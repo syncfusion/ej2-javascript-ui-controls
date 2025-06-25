@@ -1,4 +1,4 @@
-import { getRangeIndexes, ChartModel, getSwapRange, getRangeAddress, addDPRValue } from '../common/index';
+import { getRangeIndexes, ChartModel, getSwapRange, getRangeAddress, addDPRValue, ExtendedChartModel } from '../common/index';
 import { SheetModel, setCell, getSheetIndex, Workbook, CellModel, getCell, getSheetIndexFromId } from '../base/index';
 import { setChart, initiateChart, deleteChartColl, refreshChartSize, focusChartBorder, getChartRowIdxFromClientY, getChartColIdxFromClientX, refreshChartCellOnInit } from '../common/event';
 import { closest, isNullOrUndefined, getComponent, isUndefined, getUniqueID } from '@syncfusion/ej2-base';
@@ -44,7 +44,7 @@ export class WorkbookChart {
         args.isInitCell = isNullOrUndefined(args.isInitCell) ? false : args.isInitCell;
         args.isUndoRedo = isNullOrUndefined(args.isUndoRedo) ? true : args.isUndoRedo;
         args.isPaste = isNullOrUndefined(args.isPaste) ? false : args.isPaste;
-        const chart: ChartModel[] = args.chart; let chartModel: ChartModel; let chartLength: number;
+        const chart: ChartModel[] = args.chart; let chartModel: ExtendedChartModel; let chartLength: number;
         if (chart.length > 0) {
             while (i < chart.length) {
                 if (args.isCut === false) {
@@ -54,7 +54,8 @@ export class WorkbookChart {
                         markerSettings: chart[i as number].markerSettings,
                         title: chart[i as number].title, legendSettings: chart[i as number].legendSettings,
                         primaryXAxis: chart[i as number].primaryXAxis, primaryYAxis: chart[i as number].primaryYAxis,
-                        dataLabelSettings: chart[i as number].dataLabelSettings
+                        dataLabelSettings: chart[i as number].dataLabelSettings,
+                        height: chart[i as number].height, width: chart[i as number].width
                     };
                 }
                 if (document.getElementById(args.chart[i as number].id)) {

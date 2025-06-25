@@ -339,6 +339,29 @@ export class AutoComplete extends ComboBox {
         }
         return filterQuery;
     }
+    protected performFiltering(e: KeyboardEventArgs | MouseEvent): void {
+        const eventArgs: { [key: string]: Object } = {
+            preventDefaultAction: false,
+            text: this.filterInput ? this.filterInput.value : null,
+            updateData: (
+                dataSource: { [key: string]: Object }[] | DataManager | string[] | number[], query?: Query,
+                fields?: FieldSettingsModel) => {
+                if (eventArgs.cancel) {
+                    return;
+                }
+                this.isFiltered = true;
+                this.customFilterQuery = query;
+                this.filterAction(dataSource, query, fields);
+            },
+            cancel: false
+        };
+        this.trigger('filtering', eventArgs, (eventArgs: FilteringEventArgs) => {
+            if (!eventArgs.cancel && !this.isFiltered && !eventArgs.preventDefaultAction) {
+                this.searchList = true;
+                this.filterAction(this.dataSource, null, this.fields, e);
+            }
+        });
+    }
     protected searchLists(e: KeyboardEventArgs | MouseEvent): void {
         this.isTyped = true;
         this.isDataFetched = this.isSelectCustom = false;
@@ -363,30 +386,6 @@ export class AutoComplete extends ComboBox {
         else {
             this.performFiltering(e);
         }
-    }
-
-    protected performFiltering(e: KeyboardEventArgs | MouseEvent): void {
-        const eventArgs: { [key: string]: Object } = {
-            preventDefaultAction: false,
-            text: this.filterInput.value,
-            updateData: (
-                dataSource: { [key: string]: Object }[] | DataManager | string[] | number[], query?: Query,
-                fields?: FieldSettingsModel) => {
-                if (eventArgs.cancel) {
-                    return;
-                }
-                this.isFiltered = true;
-                this.customFilterQuery = query;
-                this.filterAction(dataSource, query, fields);
-            },
-            cancel: false
-        };
-        this.trigger('filtering', eventArgs, (eventArgs: FilteringEventArgs) => {
-            if (!eventArgs.cancel && !this.isFiltered && !eventArgs.preventDefaultAction) {
-                this.searchList = true;
-                this.filterAction(this.dataSource, null, this.fields, e);
-            }
-        });
     }
 
     /**

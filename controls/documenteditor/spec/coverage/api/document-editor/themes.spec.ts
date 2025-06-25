@@ -18,7 +18,7 @@ describe('Themes spec for coverage ', () => {
         documenteditor.destroy();
         document.body.removeChild(document.getElementById('container'));
         documenteditor = undefined;
-        document.body.innerHTML = '';
+        
         setTimeout(function () {
             done();
         }, 1000);

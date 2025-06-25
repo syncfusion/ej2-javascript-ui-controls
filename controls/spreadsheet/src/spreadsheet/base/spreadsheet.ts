@@ -4,7 +4,7 @@ import { Property, NotifyPropertyChanges, INotifyPropertyChanged, ModuleDeclarat
 import { addClass, removeClass, EmitType, Complex, formatUnit, L10n, isNullOrUndefined, Browser } from '@syncfusion/ej2-base';
 import { detach, select, closest, setStyleAttribute, EventHandler, getComponent } from '@syncfusion/ej2-base';
 import { MenuItemModel, BeforeOpenCloseMenuEventArgs, ItemModel } from '@syncfusion/ej2-navigations';
-import { mouseDown, spreadsheetDestroyed, keyUp, BeforeOpenEventArgs, clearViewer, refreshSheetTabs, positionAutoFillElement, readonlyAlert, deInitProperties, UndoRedoEventArgs, isColumnRange, isRowRange } from '../common/index';
+import { mouseDown, spreadsheetDestroyed, keyUp, BeforeOpenEventArgs, clearViewer, refreshSheetTabs, positionAutoFillElement, readonlyAlert, deInitProperties, UndoRedoEventArgs, isColumnRange, isRowRange, findDlg } from '../common/index';
 import { performUndoRedo, overlay, DialogBeforeOpenEventArgs, createImageElement, deleteImage, removeHyperlink } from '../common/index';
 import { HideShowEventArgs, sheetNameUpdate, updateUndoRedoCollection, getUpdateUsingRaf, setAutoFit } from '../common/index';
 import { actionEvents, CollaborativeEditArgs, keyDown, enableFileMenuItems, hideToolbarItems, updateAction } from '../common/index';
@@ -961,6 +961,9 @@ export class Spreadsheet extends Workbook implements INotifyPropertyChanged {
         if (this.cssClass) {
             addClass([this.element], this.cssClass.split(' '));
         }
+        if (this.enableRtl) {
+            this.element.classList.add('e-rtl');
+        }
         this.setHeight(); this.setWidth();
         createSpinner({ target: this.element }, this.createElement);
         if (this.cssClass && this.cssClass.indexOf('e-mobile-view') === -1 && this.isMobileView()) {
@@ -1067,13 +1070,17 @@ export class Spreadsheet extends Workbook implements INotifyPropertyChanged {
      * @returns {void} - To replace the specified cell value.
      */
     public replace(args: FindOptions): void {
-        args = {
-            value: args.value, mode: args.mode ? args.mode : 'Sheet', isCSen: args.isCSen ? args.isCSen : false,
-            isEMatch: args.isEMatch ? args.isEMatch : false, searchBy: args.searchBy ? args.searchBy : 'By Row',
-            replaceValue: args.replaceValue, replaceBy: args.replaceBy,
-            sheetIndex: isUndefined(args.sheetIndex) ? this.activeSheetIndex : args.sheetIndex, findOpt: args.findOpt ? args.findOpt : ''
-        };
-        super.replaceHandler(args);
+        if (args.showDialog) {
+            this.notify(findDlg, args);
+        } else {
+            args = {
+                value: args.value, mode: args.mode ? args.mode : 'Sheet', isCSen: args.isCSen ? args.isCSen : false,
+                isEMatch: args.isEMatch ? args.isEMatch : false, searchBy: args.searchBy ? args.searchBy : 'By Row',
+                replaceValue: args.replaceValue, replaceBy: args.replaceBy,
+                sheetIndex: isUndefined(args.sheetIndex) ? this.activeSheetIndex : args.sheetIndex, findOpt: args.findOpt ? args.findOpt : ''
+            };
+            super.replaceHandler(args);
+        }
     }
     /**
      * To Find All the Match values Address within Sheet or Workbook.
@@ -1110,6 +1117,10 @@ export class Spreadsheet extends Workbook implements INotifyPropertyChanged {
      * @returns {void} - Used to navigate to cell address within workbook.
      */
     public goTo(address: string): void {
+        if (!this.allowScrolling) {
+            this.selectRange(address);
+            return;
+        }
         if (address.includes('!')) {
             const idx: number = getSheetIndex(this, getSheetNameFromAddress(address));
             if (idx === undefined) { return; }
@@ -1912,6 +1923,7 @@ export class Spreadsheet extends Workbook implements INotifyPropertyChanged {
         }
         if (isNew) {
             this.notify(clearCopy, null);
+            this.notify(workbookFormulaOperation, { action: 'unRegisterSheet', isNewWorkBook: true });
             this.sheets.length = 0;
             this.sheetNameCount = 1;
             this.notify(sheetsDestroyed, {});
@@ -2196,16 +2208,12 @@ export class Spreadsheet extends Workbook implements INotifyPropertyChanged {
             value = circularArgs.argValue;
         }
         super.setValueRowCol(sheetId, value, rowIndex, colIndex, formula, isRandomFormula);
-        if (this.allowEditing) {
-            this.notify(
-                editOperation, {
-                    action: 'refreshDependentCellValue', rowIdx: rowIndex, colIdx: colIndex,
-                    sheetIdx: getSheetIndexFromId(this as Workbook, sheetId)
-                });
-        } else {
-            const sheetIdx: number = getSheetIndexFromId(this as Workbook, sheetId);
-            rowIndex--; colIndex--;
-            if (this.activeSheetIndex === sheetIdx) {
+        const sheetIdx: number = getSheetIndexFromId(this as Workbook, sheetId);
+        if (this.activeSheetIndex === sheetIdx) {
+            if (this.allowEditing) {
+                this.notify(editOperation, { action: 'refreshDependentCellValue', rowIdx: rowIndex, colIdx: colIndex });
+            } else {
+                rowIndex--; colIndex--;
                 const sheet: SheetModel = getSheet(this as Workbook, sheetIdx);
                 let td: HTMLElement;
                 if (!isHiddenRow(sheet, rowIndex) && !isHiddenCol(sheet, colIndex)) {
@@ -2214,7 +2222,13 @@ export class Spreadsheet extends Workbook implements INotifyPropertyChanged {
                 if (td) {
                     if (td.parentElement) {
                         const curRowIdx: string = td.parentElement.getAttribute('aria-rowindex');
-                        if (curRowIdx && Number(curRowIdx) - 1 !== rowIndex) { return; }
+                        if (curRowIdx && Number(curRowIdx) - 1 !== rowIndex) {
+                            return;
+                        }
+                        const curColIdx: string = td.getAttribute('aria-colindex');
+                        if (curColIdx && Number(curColIdx) - 1 !== colIndex) {
+                            return;
+                        }
                     }
                     const cell: CellModel = getCell(rowIndex, colIndex, sheet);
                     const nodeEventArgs: NumberFormatArgs = {
@@ -2640,6 +2654,9 @@ export class Spreadsheet extends Workbook implements INotifyPropertyChanged {
         this.element.style.removeProperty('width');
         this.element.style.removeProperty('min-height');
         this.element.style.removeProperty('min-width');
+        if (this.enableRtl) {
+            this.element.classList.remove('e-rtl');
+        }
         if (this.sheetModule) { this.sheetModule.destroy(); }
     }
 
@@ -3020,9 +3037,11 @@ export class Spreadsheet extends Workbook implements INotifyPropertyChanged {
                 if (!header) { break; }
                 if (newProp.enableRtl) {
                     header.style.marginRight = '';
+                    this.element.classList.add('e-rtl');
                     document.getElementById(this.element.id + '_sheet_panel').classList.add('e-rtl');
                 } else {
                     header.style.marginLeft = '';
+                    this.element.classList.remove('e-rtl');
                     document.getElementById(this.element.id + '_sheet_panel').classList.remove('e-rtl');
                 }
                 if (this.allowScrolling) {
@@ -3194,7 +3213,7 @@ export class Spreadsheet extends Workbook implements INotifyPropertyChanged {
                 this.refresh();
                 break;
             case 'currencyCode':
-                if (!newProp.locale) {
+                if (!newProp.locale && (!oldProp || newProp.currencyCode !== oldProp.currencyCode)) {
                     this.refresh();
                 }
                 break;
@@ -3246,11 +3265,17 @@ export class Spreadsheet extends Workbook implements INotifyPropertyChanged {
             case 'allowNumberFormatting':
             case 'allowWrap':
             case 'allowCellFormatting':
+            case 'allowMerge':
                 this.notify(ribbon, { prop: prop, onPropertyChange: true });
                 this.notify(updateView, {});
                 break;
             case 'showAggregate':
                 this.notify(showAggregate, { remove: !this.showAggregate });
+                break;
+            case 'allowAutoFill':
+                if (newProp.allowAutoFill) {
+                    this.notify(positionAutoFillElement, { onPropertyChange: true });
+                }
                 break;
             }
         }

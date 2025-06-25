@@ -1,7 +1,7 @@
 import { getColIdxFromClientX, getClientY, getClientX, selectAutoFillRange, setPosition, completeAction, showAggregate, dialog, locale, hideAutoFillOptions, performUndoRedo, hideAutoFillElement, removeAllChildren } from '../../spreadsheet/index';
 import { Spreadsheet, contentLoaded, positionAutoFillElement, getCellPosition, getRowIdxFromClientY } from '../../spreadsheet/index';
 import { performAutoFill, isLockedCells } from '../../spreadsheet/index';
-import { ICellRenderer, editAlert, AutoFillEventArgs, FillRangeInfo, readonlyAlert } from '../common/index';
+import { ICellRenderer, editAlert, AutoFillEventArgs, FillRangeInfo, readonlyAlert, getUpdateUsingRaf } from '../common/index';
 import { updateSelectedRange, isHiddenRow, setAutoFill, AutoFillType, AutoFillDirection, refreshCell, getFillInfo, getautofillDDB, isReadOnlyCells } from '../../workbook/index';
 import { getRangeIndexes, getSwapRange, Workbook, getRowsHeight, getColumnsWidth, isInRange } from '../../workbook/index';
 import { getCell, CellModel, SheetModel, getRangeAddress, isHiddenCol, beginAction, refreshRibbonIcons } from '../../workbook/index';
@@ -153,7 +153,20 @@ export class AutoFill {
         }
         this.autoFillDropDown.dataBind();
     }
-    private positionAutoFillElement(args?: { isautofill?: boolean, preventAnimation?: boolean }): void {
+    private positionAutoFillElement(args?: { isautofill?: boolean, preventAnimation?: boolean, onPropertyChange?: boolean,
+        isSelection?: boolean }): void {
+        if (args) {
+            if (args.onPropertyChange) {
+                this.createAutoFillElement();
+            } else if (args.isSelection) {
+                const autoFillEle: HTMLElement = this.parent.element.querySelector('.e-autofill');
+                if (!autoFillEle) {
+                    delete args.isSelection;
+                    getUpdateUsingRaf(() => this.positionAutoFillElement(args));
+                    return;
+                }
+            }
+        }
         let top: number = 0; let left: number = 0;
         const sheet: SheetModel = this.parent.getActiveSheet();
         const indexes: number[] = getSwapRange(getRangeIndexes(sheet.selectedRange));

@@ -4,7 +4,7 @@ import { TreeGrid } from '../base';
 import * as events from '../base/constant';
 import { DataManager } from '@syncfusion/ej2-data';
 import { findChildrenRecords, getParentData, extendArray } from '../utils';
-import { BeforeBatchSaveArgs, getUid, CellSaveArgs, NotifyArgs, Column, Row, BatchChanges, BeforeBatchDeleteArgs } from '@syncfusion/ej2-grids';
+import { BeforeBatchSaveArgs, getUid, CellSaveArgs, NotifyArgs, Column, Row, BatchChanges, BeforeBatchDeleteArgs, CellFocusArgs } from '@syncfusion/ej2-grids';
 import { BatchAddArgs, BeforeBatchAddArgs } from '@syncfusion/ej2-grids';
 import { updateParentRow, editAction } from './crud-actions';
 import { FocusStrategy } from '@syncfusion/ej2-grids/src/grid/services/focus-strategy';
@@ -55,6 +55,7 @@ export class BatchEdit {
         this.parent.on('batchCancelAction', this.batchCancelAction, this);
         this.parent.grid.on('immutable-batch-cancel', this.immutableBatchAction, this);
         this.parent.grid.on('next-cell-index', this.nextCellIndex, this);
+        this.parent.grid.on('cellfocused', this.onCellFocused, this);
     }
     /**
      * @hidden
@@ -72,6 +73,7 @@ export class BatchEdit {
         this.parent.off('batchCancelAction', this.batchCancelAction);
         this.parent.grid.off('immutable-batch-cancel', this.immutableBatchAction);
         this.parent.grid.off('next-cell-index', this.nextCellIndex);
+        this.parent.grid.off('cellfocused', this.onCellFocused);
     }
     /**
      * To destroy the editModule
@@ -113,11 +115,11 @@ export class BatchEdit {
     private batchPageAction(): void {
         const data: Object[] = <Object[]>(this.parent.grid.dataSource instanceof DataManager ?
             this.parent.grid.dataSource.dataSource.json : this.parent.grid.dataSource);
-        const primaryKey: string = this.parent.grid.getPrimaryKeyFieldNames()[0];
+        const primaryKeyField: string = this.parent.grid.getPrimaryKeyFieldNames()[0];
         let index: number;
         if (!isNullOrUndefined(this.batchAddedRecords) && this.batchAddedRecords.length) {
             for (let i: number = 0; i < this.batchAddedRecords.length; i++) {
-                index = data.map((e: Object) => { return e[`${primaryKey}`]; }).indexOf(this.batchAddedRecords[parseInt(i.toString(), 10)][`${primaryKey}`]);
+                index = data.findIndex((e: Object) => { return e[`${primaryKeyField}`] === this.batchAddedRecords[parseInt(i.toString(), 10)][`${primaryKeyField}`]; });
                 data.splice(index, 1);
             }
         }
@@ -327,7 +329,7 @@ export class BatchEdit {
         childs.push(data);
         records = childs;
         for (let i: number = 0; i < records.length; i++) {
-            const indexvalue: number = this.batchRecords.map((e: Object) => { return e[`${primarykey}`]; }).indexOf(records[parseInt(i.toString(), 10)][`${primarykey}`]);
+            const indexvalue: number = this.batchRecords.findIndex((e: Object) => { return e[`${primarykey}`] === records[parseInt(i.toString(), 10)][`${primarykey}`]; });
             if (indexvalue !== -1) {
                 this.batchRecords.splice(indexvalue , 1);
             }
@@ -346,11 +348,11 @@ export class BatchEdit {
     }
     private updateChildCount(records: Object[]): void {
         const primaryKey: string = this.parent.grid.getPrimaryKeyFieldNames()[0];
-        const addedRecords: string = 'addedRecords';
+        const addedRecords: any = (<any>this.parent.getBatchChanges()).addedRecords || [];
         const parentItem: string = this.parent.editSettings.newRowPosition === 'Child' ? 'primaryParent' : 'parentItem';
-        for (let i: number = 0; i < this.parent.getBatchChanges()[`${addedRecords}`].length; i++ ) {
-            if (!isNullOrUndefined(this.parent.getBatchChanges()[`${addedRecords}`][parseInt(i.toString(), 10)][`${parentItem}`])) {
-                if (this.parent.getBatchChanges()[`${addedRecords}`][parseInt(i.toString(), 10)][`${parentItem}`][`${primaryKey}`] === records[parseInt(this.addRowIndex.toString(), 10)][`${primaryKey}`]) {
+        for (let i: number = 0; i < addedRecords.length; i++ ) {
+            if (!isNullOrUndefined(addedRecords[parseInt(i.toString(), 10)][`${parentItem}`])) {
+                if (addedRecords[parseInt(i.toString(), 10)][`${parentItem}`][`${primaryKey}`] === records[parseInt(this.addRowIndex.toString(), 10)][`${primaryKey}`]) {
                     this.batchChildCount = this.batchChildCount + 1;
                 }
             }
@@ -397,7 +399,7 @@ export class BatchEdit {
         const primaryKey: string = this.parent.grid.getPrimaryKeyFieldNames()[0];
         if (!isNullOrUndefined(this.batchAddedRecords)) {
             for (let i: number = 0; i < this.batchAddedRecords.length; i++) {
-                index = data.map((e: Object) => { return e[`${primaryKey}`]; }).indexOf(this.batchAddedRecords[parseInt(i.toString(), 10)][`${primaryKey}`]);
+                index = data.findIndex((e: Object) => { return e[`${primaryKey}`] === this.batchAddedRecords[parseInt(i.toString(), 10)][`${primaryKey}`]; });
                 if (index !== -1) {
                     data.splice(index, 1);
                 }
@@ -409,7 +411,7 @@ export class BatchEdit {
                         const children: Object[] = currentViewRecords[parseInt(index.toString(), 10)][`${childRecords}`];
                         for (let j: number = 0; children && j < children.length; j++) {
                             if (children[parseInt(j.toString(), 10)][`${primaryKey}`] === this.batchAddedRecords[parseInt(i.toString(), 10)][`${primaryKey}`]) {
-                                currentViewRecords[parseInt(index.toString(), 10)][`${childRecords}`].splice(j, 1);
+                                children.splice(j, 1);
                             }
                         }
                     }
@@ -524,9 +526,12 @@ export class BatchEdit {
                     const indexValue: number = currentViewRecords.map((e: Object) => { return e[`${primarykey}`]; })
                         .indexOf(addRecords[parseInt(i.toString(), 10)][`${parentItem}`][`${primarykey}`]);
                     const children: Object[] = currentViewRecords[parseInt(indexValue.toString(), 10)][`${childRecords}`];
-                    for (let j: number = 0; j < children.length; j++) {
-                        if (children[parseInt(j.toString(), 10)][`${primarykey}`] === addRecords[parseInt(i.toString(), 10)][`${primarykey}`]) {
-                            currentViewRecords[parseInt(indexValue.toString(), 10)][`${childRecords}`].splice(j, 1);
+                    if (!isNullOrUndefined(addRowIndex) && children.some((records: ITreeData) =>
+                        records.uniqueID === addRowRecord.uniqueID)) {
+                        for (let j: number = 0; j < children.length; j++) {
+                            if (children[parseInt(j.toString(), 10)][`${primarykey}`] === addRecords[parseInt(i.toString(), 10)][`${primarykey}`]) {
+                                currentViewRecords[parseInt(indexValue.toString(), 10)][`${childRecords}`].splice(j, 1);
+                            }
                         }
                     }
                 }
@@ -609,7 +614,14 @@ export class BatchEdit {
         }
     }
 
+    private onCellFocused(e: CellFocusArgs): void {
+        if (this.parent.editSettings.mode === 'Cell' && this.parent.grid.isEdit && e.keyArgs) {
+            if (e.keyArgs.action === 'shiftEnter') {
+                e.keyArgs.preventDefault();
+                this.parent.endEdit();
+                return;
+            }
+        }
+    }
+
 }
-
-
-

@@ -27,6 +27,7 @@ To install Schedule and its dependent packages, use the following command.
 npm install @syncfusion/ej2-schedule
 ```
 
+
 ## Supported frameworks
 
 Schedule control is also available in the following list of frameworks.

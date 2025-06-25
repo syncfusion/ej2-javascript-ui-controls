@@ -2,10 +2,11 @@
  * Link module spec
  */
 import { isNullOrUndefined, Browser, createElement } from '@syncfusion/ej2-base';
-import { DialogType, RichTextEditor } from './../../../src/index';
+import { RichTextEditor } from './../../../src/index';
+import { DialogType } from "../../../src/common/enum";
 import { NodeSelection } from './../../../src/selection/index';
-import { renderRTE, destroy, dispatchEvent, androidUA, iPhoneUA, currentBrowserUA } from "./../render.spec";
-import { BACKSPACE_EVENT_INIT, ENTERKEY_EVENT_INIT } from '../../constant.spec';
+import { renderRTE, destroy, dispatchEvent, androidUA, iPhoneUA, currentBrowserUA, setCursorPoint } from "./../render.spec";
+import { BACKSPACE_EVENT_INIT, BASIC_CONTEXT_MENU_EVENT_INIT, BASIC_MOUSE_EVENT_INIT, ENTERKEY_EVENT_INIT } from '../../constant.spec';
 
 let keyboardEventArgs = {
     preventDefault: function () { },
@@ -20,6 +21,14 @@ let keyboardEventArgs = {
     code: 22,
     action: 'insert-link'
 };
+
+const MOUSEUP_EVENT: MouseEvent = new MouseEvent('mouseup', BASIC_MOUSE_EVENT_INIT);
+
+const RIGHT_CLICK_EVENT: MouseEvent = new MouseEvent('mouseup', BASIC_CONTEXT_MENU_EVENT_INIT);
+
+const INIT_MOUSEDOWN_EVENT: MouseEvent = new MouseEvent('mousedown', BASIC_MOUSE_EVENT_INIT);
+
+
 describe('Link Module', () => {
     describe('div content mobile ui', () => {
         let rteObj: RichTextEditor;
@@ -109,14 +118,15 @@ describe('Link Module', () => {
                 target: anchorElement, args: args, event: MouseEvent, selfLink: (<any>rteObj).linkModule, selection: save,
                 selectParent: selectParent, selectNode: selectNode
             };
-            let eventArgs: any = { args: evnArg, isNotify: true, type: 'Links', elements: [document.querySelector('.e-toolbar-item'), document.body] };
-            (<any>rteObj).linkModule.showLinkQuickToolbar(eventArgs);
+            const target: HTMLElement = rteObj.inputElement.querySelector('a.e-rte-anchor');
+            setCursorPoint(target.firstChild, 1);
+            target.dispatchEvent(MOUSEUP_EVENT);
             setTimeout(() => {
                 expect(document.querySelectorAll('.e-rte-quick-popup')[0].id.indexOf('Link_Quick_Popup') >= 0).toBe(true);
                 (<any>rteObj).linkModule.editAreaClickHandler({ args: evnArg });
-                expect(document.querySelectorAll('.e-rte-quick-popup')[0].id.indexOf('Link_Quick_Popup') >= 0).toBe(true);
+                expect(document.querySelector('.e-rte-quick-popup')).toBe(null);
                 done();
-            },500);
+            }, 500);
         });
 
         it('show link quick toolbar with touch event arguments testing', (done: Function) => {
@@ -131,49 +141,23 @@ describe('Link Module', () => {
                 target: anchorElement, args: args, event: MouseEvent, selfLink: (<any>rteObj).linkModule, selection: save,
                 selectParent: selectParent, selectNode: selectNode, touches: { length: 0 }, changedTouches: [{ pageX: 0, pageY: 0, clientX: 0 }]
             };
-            let eventArgs: any = { args: evnArg, isNotify: true, type: 'Links', elements: [document.querySelector('.e-toolbar-item'), document.body] };
-            (<any>rteObj).linkModule.showLinkQuickToolbar(eventArgs);
+            const target: HTMLElement = rteObj.inputElement.querySelector('a.e-rte-anchor');
+            setCursorPoint(target.firstChild, 1);
+            target.dispatchEvent(MOUSEUP_EVENT);
             setTimeout(() => {
                 expect(document.querySelectorAll('.e-rte-quick-popup')[0].id.indexOf('Link_Quick_Popup') >= 0).toBe(true);
                 (<any>rteObj).linkModule.editAreaClickHandler({ args: evnArg });
-                expect(document.querySelectorAll('.e-rte-quick-popup')[0].id.indexOf('Link_Quick_Popup') >= 0).toBe(true);
+                expect(document.querySelector('.e-rte-quick-popup')).toBe(null);
                 done();
-            },500);
+            }, 500);
         });
 
-        it('iframe - show link quick toolbar testing', (done: Function) => {
-            destroy(rteObj);
-            rteObj = undefined;
-            rteObj = renderRTE({
-                iframeSettings: {
-                    enable: true
-                }
-            });
-            let args: any = { preventDefault: function () { }, originalEvent: { target: rteObj.toolbarModule.getToolbarElement() }, item: { command: 'Links', subCommand: 'CreateLink' } };
-            let range: any = new NodeSelection().getRange(document);
-            let save: any = new NodeSelection().save(range, document);
-            let selectParent: any = new NodeSelection().getParentNodeCollection(range)
-            let selectNode: any = new NodeSelection().getNodeCollection(range);
-            let evnArg = {
-                target: '', args: args, event: MouseEvent, selfLink: (<any>rteObj).linkModule, selection: save,
-                selectParent: selectParent, selectNode: selectNode
-            };
-            dispatchEvent(rteObj.inputElement, 'mousedown');
-            rteObj.inputElement.click();
-            dispatchEvent(rteObj.inputElement, 'mouseup');
-            let eventArgs: any = { args: evnArg, isNotify: true, type: 'Links', elements: [document.querySelector('.e-toolbar-item'), document.body] };
-           (<any>rteObj).linkModule.showLinkQuickToolbar(eventArgs);
-           setTimeout(() => {
-            expect(document.querySelectorAll('.e-rte-quick-popup')[0].id.indexOf('Link_Quick_Popup') >= 0).toBe(true);
-            done();
-       },500);
-        });
     });
 
     describe('927520 - The link is not applied to the entire selected text in the Rich Text Editor', () => {
         let rteEle: HTMLElement;
         let rteObj: RichTextEditor;
-        beforeEach(() => {
+        beforeAll(() => {
             rteObj = renderRTE({
                 value: '<p>Example <a class="e-rte-anchor" href="https://www.existing-link.com">link</a> text is here.</p>',
                 toolbarSettings: {
@@ -182,7 +166,7 @@ describe('Link Module', () => {
             });
             rteEle = rteObj.element;
         });
-        afterEach(() => {
+        afterAll(() => {
             destroy(rteObj);
         });
         it('The link is not applied to the entire selected text in the Rich Text Editor', (done) => {
@@ -284,9 +268,9 @@ describe('Link Module', () => {
                     expect((<any>rteObj).linkModule.dialogObj.contentEle.querySelector('.e-rte-linkTitle').value === 'http://data').toBe(true);
                     evnArg.target = (<any>rteObj).linkModule.dialogObj.primaryButtonEle;
                     (<any>rteObj).linkModule.dialogObj.primaryButtonEle.click(evnArg);
-                    evnArg.args.item = {command: 'Links', subCommand: 'OpenLink'};
+                    evnArg.args.item = { command: 'Links', subCommand: 'OpenLink' };
                     (<any>rteObj).linkModule.openLink(evnArg);
-                    evnArg.args.item = { command: 'Links', subCommand: 'CreateLink'};
+                    evnArg.args.item = { command: 'Links', subCommand: 'CreateLink' };
                     (<any>rteObj).contentModule.getEditPanel().querySelector('.e-rte-anchor').target = '';
                     (<any>rteObj).linkModule.linkDialog(evnArg);
                     setTimeout(() => {
@@ -307,10 +291,10 @@ describe('Link Module', () => {
     describe('Link actions with LinkPath API property set as Relative', () => {
         let rteObj: RichTextEditor;
         beforeAll(() => {
-            rteObj = renderRTE({ 
+            rteObj = renderRTE({
                 value: '<p>test</p>',
                 enableAutoUrl: true
-             });
+            });
         });
         afterAll(() => {
             destroy(rteObj);
@@ -393,7 +377,7 @@ describe('Link Module', () => {
             };
             (<any>rteObj).contentModule.getEditPanel().querySelector('.e-rte-anchor').target = '_blank';
             (<any>rteObj).linkModule.editLink(evnArg);
-            (<any>rteObj).linkModule.dialogObj.contentEle.querySelector('.e-rte-linkText').value = 'Provides <IFRAME> and <DIV> modes Value';        
+            (<any>rteObj).linkModule.dialogObj.contentEle.querySelector('.e-rte-linkText').value = 'Provides <IFRAME> and <DIV> modes Value';
             evnArg.target = (<any>rteObj).linkModule.dialogObj.primaryButtonEle;
             (<any>rteObj).linkModule.dialogObj.primaryButtonEle.click(evnArg);
             expect((<any>rteObj).contentModule.getEditPanel().innerText === `Provides <IFRAME> and <DIV> modes Value`).toBe(true);
@@ -424,9 +408,9 @@ describe('Link Module', () => {
                 target: '', args: args,
                 selfLink: (<any>rteObj).linkModule, selection: save, selectParent: selectParent, selectNode: selectNode
             };
-            evnArg.args.item = {command: 'Links', subCommand: 'OpenLink'};
+            evnArg.args.item = { command: 'Links', subCommand: 'OpenLink' };
             (<any>rteObj).linkModule.openLink(evnArg);
-            evnArg.args.item = {command: 'Links', subCommand: 'CreateLink'};
+            evnArg.args.item = { command: 'Links', subCommand: 'CreateLink' };
             (<any>rteObj).linkModule.editLink(evnArg);
             expect(isNullOrUndefined((<any>rteObj).linkModule.dialogObj)).toBe(true);
             (rteObj.toolbarModule.getToolbarElement().querySelectorAll('.e-toolbar-item button')[8] as HTMLElement).click();
@@ -467,17 +451,15 @@ describe('Link Module', () => {
             let eventsArgs: any = { target: document, preventDefault: function () { } };
             (rteObj.contentModule.getEditPanel() as HTMLElement).focus();
             let clickEvent: any = document.createEvent("MouseEvents");
-            eventsArgs = { pageX: 50, pageY: 300, ctrlKey: false, target: selectParent[0],  preventDefault: function () { } };
+            eventsArgs = { pageX: 50, pageY: 300, ctrlKey: false, target: selectParent[0], preventDefault: function () { } };
             clickEvent.initEvent("mousedown", false, true);
             trg.dispatchEvent(clickEvent);
-            (<any>rteObj).linkModule.editAreaClickHandler({ args: eventsArgs });
-            eventsArgs = { pageX: 50, pageY: 300, ctrlKey: false, target: rteObj.element, preventDefault: function () { } };
-            (<any>rteObj).linkModule.editAreaClickHandler({ args: eventsArgs });
-            eventsArgs = { pageX: 50, pageY: 300, ctrlKey: false, target: selectParent[0], preventDefault: function () { } };
-            (<any>rteObj).linkModule.editAreaClickHandler({ args: eventsArgs });
+            const target: HTMLElement = rteObj.inputElement.querySelector('a.e-rte-anchor');
+            setCursorPoint(target.firstChild, 1);
+            target.dispatchEvent(MOUSEUP_EVENT);
             let linkPop: HTMLElement = <HTMLElement>document.querySelectorAll('.e-rte-quick-popup')[0];
             let linkTBItems: NodeList = linkPop.querySelectorAll('.e-toolbar-item');
-            expect(linkPop.querySelectorAll('.e-rte-toolbar').length).toBe(1);
+            expect(linkPop.querySelectorAll('.e-rte-quick-toolbar').length).toBe(1);
             expect(linkTBItems.length).toBe(3);
             expect((<HTMLElement>linkTBItems.item(0)).title).toBe('Open Link');
             expect((<HTMLElement>linkTBItems.item(1)).title).toBe('Edit Link');
@@ -637,8 +619,10 @@ describe('Link Module', () => {
         afterAll(() => {
             destroy(rteObj);
         });
-        it('check link text', () => {
-            (rteObj.contentModule.getEditPanel() as HTMLElement).focus();
+        it('check link text', (done: DoneFn) => {
+            const INIT_MOUSEDOWN_EVENT: MouseEvent = new MouseEvent('mousedown', BASIC_MOUSE_EVENT_INIT);
+            rteObj.focusIn();
+            rteObj.inputElement.dispatchEvent(INIT_MOUSEDOWN_EVENT);
             let selObj: any = new NodeSelection();
             selObj.setSelectionNode(rteObj.contentModule.getDocument(), rteObj.contentModule.getEditPanel().childNodes[0]);
             (<HTMLElement>rteEle.querySelectorAll(".e-toolbar-item")[0] as HTMLElement).click();
@@ -646,16 +630,23 @@ describe('Link Module', () => {
             expect((<any>rteObj).linkModule.dialogObj.contentEle.querySelector('.e-rte-linkText').value === 'syncfusion').toBe(true);
             let target: any = (<any>rteObj).linkModule.dialogObj.primaryButtonEle;
             (<any>rteObj).linkModule.dialogObj.primaryButtonEle.click({ target: target, preventDefault: function () { } });
-            expect(rteObj.contentModule.getEditPanel().querySelector('a').text === 'syncfusion').toBe(true);
-            keyboardEventArgs.ctrlKey = true;
-            keyboardEventArgs.keyCode = 90;
-            keyboardEventArgs.action = 'undo';
-            (<any>rteObj).formatter.editorManager.undoRedoManager.keyDown({ event: keyboardEventArgs });
-            expect(rteObj.contentModule.getEditPanel().querySelector('a')).toBe(null);
+            setTimeout(() => {
+                expect(rteObj.contentModule.getEditPanel().querySelector('a').text === 'syncfusion').toBe(true);
+                keyboardEventArgs.ctrlKey = true;
+                keyboardEventArgs.keyCode = 90;
+                keyboardEventArgs.action = 'undo';
+                (<any>rteObj).formatter.editorManager.undoRedoManager.keyDown({ event: keyboardEventArgs });
+                setTimeout(() => {
+                    expect(rteObj.contentModule.getEditPanel().querySelector('a')).toBe(null);
+                    done();
+                }, 100);
+            }, 500);
         });
 
-        it('check display text', () => {
-            (rteObj.contentModule.getEditPanel() as HTMLElement).focus();
+        it('check display text', (done: DoneFn) => {
+            const INIT_MOUSEDOWN_EVENT: MouseEvent = new MouseEvent('mousedown', BASIC_MOUSE_EVENT_INIT);
+            rteObj.focusIn();
+            rteObj.inputElement.dispatchEvent(INIT_MOUSEDOWN_EVENT);
             let selObj: any = new NodeSelection();
             selObj.setSelectionNode(rteObj.contentModule.getDocument(), rteObj.contentModule.getEditPanel().childNodes[0]);
             (<HTMLElement>rteEle.querySelectorAll(".e-toolbar-item")[0] as HTMLElement).click();
@@ -663,18 +654,27 @@ describe('Link Module', () => {
             expect((<any>rteObj).linkModule.dialogObj.contentEle.querySelector('.e-rte-linkText').value === 'syncfusion').toBe(true);
             let target: any = (<any>rteObj).linkModule.dialogObj.primaryButtonEle;
             (<any>rteObj).linkModule.dialogObj.primaryButtonEle.click({ target: target, preventDefault: function () { } });
-            expect(rteObj.contentModule.getEditPanel().querySelector('a').text === 'syncfusion').toBe(true);
-            (<HTMLElement>rteEle.querySelectorAll(".e-toolbar-item")[0] as HTMLElement).click();
-            expect((rteObj as any).linkModule.dialogObj.contentEle.querySelector('.e-rte-linkurl').value === 'https://www.syncfusion.com').toBe(true);
-            expect((rteObj as any).linkModule.dialogObj.contentEle.querySelector('.e-rte-linkText').value === 'syncfusion').toBe(true);
-            expect((rteObj as any).linkModule.dialogObj.contentEle.querySelector('.e-rte-linkTitle').value).toBe('https://www.syncfusion.com');
-            (<any>rteObj).linkModule.dialogObj.primaryButtonEle.click({ target: target, preventDefault: function () { } });
-            expect((rteObj as any).element.getElementsByTagName('a')[0].firstChild.textContent).toBe("syncfusion");          
+            setTimeout(() => {
+                expect(rteObj.contentModule.getEditPanel().querySelector('a').text === 'syncfusion').toBe(true);
+                (<HTMLElement>rteEle.querySelectorAll(".e-toolbar-item")[0] as HTMLElement).click();
+                setTimeout(() => {
+                    expect((rteObj as any).linkModule.dialogObj.contentEle.querySelector('.e-rte-linkurl').value === 'https://www.syncfusion.com').toBe(true);
+                    expect((rteObj as any).linkModule.dialogObj.contentEle.querySelector('.e-rte-linkText').value === 'syncfusion').toBe(true);
+                    expect((rteObj as any).linkModule.dialogObj.contentEle.querySelector('.e-rte-linkTitle').value).toBe('https://www.syncfusion.com');
+                    (<any>rteObj).linkModule.dialogObj.primaryButtonEle.click({ target: target, preventDefault: function () { } });
+                    setTimeout(() => {
+                        expect((rteObj as any).element.getElementsByTagName('a')[0].firstChild.textContent).toBe("syncfusion");
+                        done();
+                    }, 100);
+                }, 100);
+            }, 500);
         });
-        it('Apply link to the link element along with extra text', () => {
+        it('Apply link to the link element along with extra text', (done: DoneFn) => {
             rteObj.value = '<p>hello<a>syncfusion</a>test</p>';
             rteObj.dataBind();
-            (rteObj.contentModule.getEditPanel() as HTMLElement).focus();
+            const INIT_MOUSEDOWN_EVENT: MouseEvent = new MouseEvent('mousedown', BASIC_MOUSE_EVENT_INIT);
+            rteObj.focusIn();
+            rteObj.inputElement.dispatchEvent(INIT_MOUSEDOWN_EVENT);
             let selObj: any = new NodeSelection();
             selObj.setSelectionNode(rteObj.contentModule.getDocument(), rteObj.contentModule.getEditPanel().childNodes[0]);
             rteObj.selectAll();
@@ -682,13 +682,18 @@ describe('Link Module', () => {
             (rteObj as any).linkModule.dialogObj.contentEle.querySelector('.e-rte-linkurl').value = 'https://www.syncfusion.com';
             let target: any = (<any>rteObj).linkModule.dialogObj.primaryButtonEle;
             (<any>rteObj).linkModule.dialogObj.primaryButtonEle.click({ target: target, preventDefault: function () { } });
-            expect(rteObj.contentModule.getEditPanel().querySelector('p').children[0].tagName === 'A').toBe(true);
+            setTimeout(() => {
+                expect(rteObj.contentModule.getEditPanel().querySelector('p').children[0].tagName === 'A').toBe(true);
+                done();
+            }, 500);
         });
 
-        it('872981 - Apply link to the content with multipel link element along with extra text', () => {
+        it('872981 - Apply link to the content with multipel link element along with extra text', (done: DoneFn) => {
             rteObj.value = `<p>The Rich Text Editor is a WYSIWYG ("what you see is what you get") editor useful to create and edit c<strong class="startNode">ontent and return the valid </strong><a href="https://ej2.syncfusion.com/home/" target="_blank"><strong>HTML markup</strong></a><strong> or </strong><a href="https://ej2.syncfusion.com/home/" target="_blank"><strong>markdown</strong></a><strong class="endNode"> of the c</strong>ontent</p>`;
             rteObj.dataBind();
-            (rteObj.contentModule.getEditPanel() as HTMLElement).focus();
+            const INIT_MOUSEDOWN_EVENT: MouseEvent = new MouseEvent('mousedown', BASIC_MOUSE_EVENT_INIT);
+            rteObj.focusIn();
+            rteObj.inputElement.dispatchEvent(INIT_MOUSEDOWN_EVENT);
             let startNode = rteObj.element.querySelector('.startNode');
             let endNode = rteObj.element.querySelector('.endNode');
             let selObj: any = new NodeSelection();
@@ -697,12 +702,15 @@ describe('Link Module', () => {
             (rteObj as any).linkModule.dialogObj.contentEle.querySelector('.e-rte-linkurl').value = 'https://www.syncfusion.com';
             let target: any = (<any>rteObj).linkModule.dialogObj.primaryButtonEle;
             (<any>rteObj).linkModule.dialogObj.primaryButtonEle.click({ target: target, preventDefault: function () { } });
-            const expectedElem: string = `<p>The Rich Text Editor is a WYSIWYG ("what you see is what you get") editor useful to create and edit c<a class="e-rte-anchor" href="https://www.syncfusion.com" title="https://www.syncfusion.com" target="_blank" aria-label="Open in new window"><strong class="startNode">ontent and return the valid </strong><strong>HTML markup</strong><strong> or </strong><strong>markdown</strong><strong class="endNode"> of the c</strong></a>ontent</p>`;
-            expect(rteObj.contentModule.getEditPanel().innerHTML === expectedElem).toBe(true);
-            expect(window.getSelection().anchorNode.nodeName === '#text').toBe(true);
-            expect(window.getSelection().focusNode.nodeName === '#text').toBe(true);
-            expect(window.getSelection().anchorOffset === 0).toBe(true);
-            expect(window.getSelection().focusOffset === 9).toBe(true);
+            setTimeout(() => {
+                const expectedElem: string = `<p>The Rich Text Editor is a WYSIWYG ("what you see is what you get") editor useful to create and edit c<a class="e-rte-anchor" href="https://www.syncfusion.com" title="https://www.syncfusion.com" target="_blank" aria-label="Open in new window"><strong class="startNode">ontent and return the valid </strong><strong>HTML markup</strong><strong> or </strong><strong>markdown</strong><strong class="endNode"> of the c</strong></a>ontent</p>`;
+                expect(rteObj.contentModule.getEditPanel().innerHTML === expectedElem).toBe(true);
+                expect(window.getSelection().anchorNode.nodeName === '#text').toBe(true);
+                expect(window.getSelection().focusNode.nodeName === '#text').toBe(true);
+                expect(window.getSelection().anchorOffset === 0).toBe(true);
+                expect(window.getSelection().focusOffset === 9).toBe(true);
+                done();
+            }, 500);
         });
     });
 
@@ -736,7 +744,9 @@ describe('Link Module', () => {
             destroy(rteObj);
         });
         it(' css class dependency initial load and dynamic change ', () => {
-            (rteObj.contentModule.getEditPanel() as HTMLElement).focus();
+            const INIT_MOUSEDOWN_EVENT: MouseEvent = new MouseEvent('mousedown', BASIC_MOUSE_EVENT_INIT);
+            rteObj.focusIn();
+            rteObj.inputElement.dispatchEvent(INIT_MOUSEDOWN_EVENT);
             let selObj: any = new NodeSelection();
             selObj.setSelectionNode(rteObj.contentModule.getDocument(), rteObj.contentModule.getEditPanel().childNodes[0]);
             (<HTMLElement>rteEle.querySelectorAll(".e-toolbar-item")[0] as HTMLElement).click();
@@ -748,7 +758,7 @@ describe('Link Module', () => {
             expect(document.querySelector('.e-checkbox-wrapper').classList.contains('changedClass')).toBe(true);
         });
     });
-    
+
     describe('EJ2-57822 - insert link to the content before link content issue', () => {
         let rteEle: HTMLElement;
         let rteObj: RichTextEditor;
@@ -765,7 +775,9 @@ describe('Link Module', () => {
             destroy(rteObj);
         });
         it('insert link to the content before link content issue', () => {
-            (rteObj.contentModule.getEditPanel() as HTMLElement).focus();
+            const INIT_MOUSEDOWN_EVENT: MouseEvent = new MouseEvent('mousedown', BASIC_MOUSE_EVENT_INIT);
+            rteObj.focusIn();
+            rteObj.inputElement.dispatchEvent(INIT_MOUSEDOWN_EVENT);
             let focusNode = rteObj.element.querySelector('.focusNode');
             let selObj: any = new NodeSelection();
             selObj.setSelectionText(rteObj.contentModule.getDocument(), focusNode.childNodes[0], focusNode.childNodes[0], 76, 84);
@@ -793,7 +805,9 @@ describe('Link Module', () => {
             destroy(rteObj);
         });
         it('More space between the text and Inserting a new link removes the space between the words issue', () => {
-            (rteObj.contentModule.getEditPanel() as HTMLElement).focus();
+            const INIT_MOUSEDOWN_EVENT: MouseEvent = new MouseEvent('mousedown', BASIC_MOUSE_EVENT_INIT);
+            rteObj.focusIn();
+            rteObj.inputElement.dispatchEvent(INIT_MOUSEDOWN_EVENT);
             let focusNode = rteObj.element.querySelector('.focusNode');
             let selObj: any = new NodeSelection();
             selObj.setSelectionText(rteObj.contentModule.getDocument(), focusNode.childNodes[0], focusNode.childNodes[0], 70, 75);
@@ -818,7 +832,7 @@ describe('Link Module', () => {
         afterAll(() => {
             destroy(rteObj);
         });
-    
+
         it('RTE insert link validation fails when display text is empty', () => {
             (rteObj.contentModule.getEditPanel() as HTMLElement).focus();
             let args: any = { preventDefault: function () { }, item: { command: 'Links', subCommand: 'CreateLink' } };
@@ -836,7 +850,7 @@ describe('Link Module', () => {
             (<any>rteObj).linkModule.dialogObj.contentEle.querySelector('.e-rte-linkText').value = ' ';
             let target: any = (<any>rteObj).linkModule.dialogObj.primaryButtonEle;
             (<any>rteObj).linkModule.dialogObj.primaryButtonEle.click({ target: target, preventDefault: function () { } });
-            
+
             const anchor: HTMLAnchorElement = rteObj.contentModule.getEditPanel().querySelector('a');
             expect(anchor.href).toBe('https://www.example.com/');
             expect(anchor.textContent).toBe('www.example.com');
@@ -871,7 +885,7 @@ describe('Link Module', () => {
         afterAll(() => {
             destroy(rteObj);
         });
-        it('Applying link for multiple nodes selected', () => {
+        it('Applying link for multiple nodes selected', (done: DoneFn) => {
             (rteObj.contentModule.getEditPanel() as HTMLElement).focus();
             rteObj.formatter.editorManager.nodeSelection.setSelectionText(document, rteObj.contentModule.getEditPanel().childNodes[0].firstChild, (rteObj.contentModule.getEditPanel().childNodes[3] as any).lastElementChild.firstChild, 0, 12);
             (<HTMLElement>rteEle.querySelectorAll(".e-toolbar-item")[0] as HTMLElement).click();
@@ -879,15 +893,20 @@ describe('Link Module', () => {
             expect((<any>rteObj).linkModule.dialogObj.contentEle.querySelector('.e-rte-linkText').value === 'syncfusion 1syncfusion 2syncfusion 3syncfusion 4').toBe(true);
             let target: any = (<any>rteObj).linkModule.dialogObj.primaryButtonEle;
             (<any>rteObj).linkModule.dialogObj.primaryButtonEle.click({ target: target, preventDefault: function () { } });
-            expect((rteObj.contentModule.getEditPanel().childNodes[0] as any).querySelector('a').text === 'syncfusion 1').toBe(true);
-            expect((rteObj.contentModule.getEditPanel().childNodes[1] as any).querySelector('a').text === 'syncfusion 2').toBe(true);
-            expect((rteObj.contentModule.getEditPanel().childNodes[2] as any).querySelector('a').text === 'syncfusion 3').toBe(true);
-            expect((rteObj.contentModule.getEditPanel().childNodes[3] as any).querySelector('a').text === 'syncfusion 4').toBe(true);
-            keyboardEventArgs.ctrlKey = true;
-            keyboardEventArgs.keyCode = 90;
-            keyboardEventArgs.action = 'undo';
-            (<any>rteObj).formatter.editorManager.undoRedoManager.keyDown({ event: keyboardEventArgs });
-            expect(rteObj.contentModule.getEditPanel().querySelector('a')).toBe(null);
+            setTimeout(() => {
+                expect((rteObj.contentModule.getEditPanel().childNodes[0] as any).querySelector('a').text === 'syncfusion 1').toBe(true);
+                expect((rteObj.contentModule.getEditPanel().childNodes[1] as any).querySelector('a').text === 'syncfusion 2').toBe(true);
+                expect((rteObj.contentModule.getEditPanel().childNodes[2] as any).querySelector('a').text === 'syncfusion 3').toBe(true);
+                expect((rteObj.contentModule.getEditPanel().childNodes[3] as any).querySelector('a').text === 'syncfusion 4').toBe(true);
+                keyboardEventArgs.ctrlKey = true;
+                keyboardEventArgs.keyCode = 90;
+                keyboardEventArgs.action = 'undo';
+                (<any>rteObj).formatter.editorManager.undoRedoManager.keyDown({ event: keyboardEventArgs });
+                setTimeout(() => {
+                    expect(rteObj.contentModule.getEditPanel().querySelector('a')).toBe(null);
+                    done();
+                }, 100);
+            }, 100);
         });
     });
 
@@ -925,7 +944,9 @@ describe('Link Module', () => {
             destroy(rteObj);
         });
         it('check link text', () => {
-            (rteObj.contentModule.getEditPanel() as HTMLElement).focus();
+            const INIT_MOUSEDOWN_EVENT: MouseEvent = new MouseEvent('mousedown', BASIC_MOUSE_EVENT_INIT);
+            rteObj.focusIn();
+            rteObj.inputElement.dispatchEvent(INIT_MOUSEDOWN_EVENT);
             let selObj: any = new NodeSelection();
             selObj.setSelectionNode(rteObj.contentModule.getDocument(), rteObj.contentModule.getEditPanel().childNodes[0]);
             (<HTMLElement>rteEle.querySelectorAll(".e-toolbar-item")[0] as HTMLElement).click();
@@ -945,18 +966,19 @@ describe('Link Module', () => {
     describe(' toolbarSettings property - Items - ', () => {
         let rteObj: RichTextEditor;
         let controlId: string;
-        beforeEach((done: Function) => {
+        beforeAll(() => {
             rteObj = renderRTE({
                 value: '<span id="rte">RTE</span>'
             });
             controlId = rteObj.element.id;
-            done();
         });
-        afterEach((done: Function) => {
+        afterAll(() => {
             destroy(rteObj);
-            done();
         });
         it(' Test - Click the CreateLink item - set the disable the new window option', (done) => {
+            const INIT_MOUSEDOWN_EVENT: MouseEvent = new MouseEvent('mousedown', BASIC_MOUSE_EVENT_INIT);
+            rteObj.focusIn();
+            rteObj.inputElement.dispatchEvent(INIT_MOUSEDOWN_EVENT);
             let pEle: HTMLElement = rteObj.element.querySelector('#rte');
             rteObj.formatter.editorManager.nodeSelection.setSelectionText(document, pEle.childNodes[0], pEle.childNodes[0], 0, 3);
             let item: HTMLElement = rteObj.element.querySelector('#' + controlId + '_toolbar_CreateLink');
@@ -971,7 +993,7 @@ describe('Link Module', () => {
                 expect(anchor.hasAttribute('target')).toBe(false);
                 done();
             }, 100);
-            
+
         });
     })
 
@@ -990,13 +1012,13 @@ describe('Link Module', () => {
             done();
         });
         it(' Test - open quickToolbar after applied selection command (italic)', (done) => {
+            rteObj.focusIn();
+            rteObj.inputElement.dispatchEvent(INIT_MOUSEDOWN_EVENT);
             let link: HTMLElement = rteObj.element.querySelector("#link");
-            rteObj.formatter.editorManager.nodeSelection.setSelectionText(document, link.childNodes[0].childNodes[0], link.childNodes[0].childNodes[0], 0, 3);
             let item: HTMLElement = rteObj.element.querySelector('#' + controlId + '_toolbar_Italic');
             item.click();
-            dispatchEvent(link, 'mousedown');
-            link.click();
-            dispatchEvent(link, 'mouseup');
+            rteObj.formatter.editorManager.nodeSelection.setSelectionText(document, link.childNodes[0].childNodes[2], link.childNodes[0].childNodes[2], 0, 3);
+            link.dispatchEvent(MOUSEUP_EVENT)
             setTimeout(() => {
                 let linkBtn: HTMLElement = document.getElementById(controlId + "_quick_EditLink");
                 expect(!isNullOrUndefined(linkBtn)).toBe(true);
@@ -1005,11 +1027,13 @@ describe('Link Module', () => {
         });
 
         it(' Test - link toolbar - Update the link', (done) => {
+            const INIT_MOUSEDOWN_EVENT: MouseEvent = new MouseEvent('mousedown', BASIC_MOUSE_EVENT_INIT);
+            rteObj.focusIn();
+            rteObj.inputElement.dispatchEvent(INIT_MOUSEDOWN_EVENT);
             let link: HTMLElement = rteObj.element.querySelector("#link");
             rteObj.formatter.editorManager.nodeSelection.setSelectionText(document, link.childNodes[0].childNodes[0], link.childNodes[0].childNodes[0], 1, 2);
             dispatchEvent(link, 'mousedown');
-            link.click();
-            dispatchEvent(link, 'mouseup');
+            link.dispatchEvent(MOUSEUP_EVENT)
             setTimeout(() => {
                 let linkBtn: HTMLElement = document.getElementById(controlId + "_quick_EditLink");
                 linkBtn.click();
@@ -1032,11 +1056,13 @@ describe('Link Module', () => {
         });
 
         it(' Test - link toolbar - remove link', (done) => {
+            const INIT_MOUSEDOWN_EVENT: MouseEvent = new MouseEvent('mousedown', BASIC_MOUSE_EVENT_INIT);
+            rteObj.focusIn();
+            rteObj.inputElement.dispatchEvent(INIT_MOUSEDOWN_EVENT);
             let link: HTMLElement = rteObj.element.querySelector("#link");
             rteObj.formatter.editorManager.nodeSelection.setSelectionText(document, link.childNodes[0].childNodes[0], link.childNodes[0].childNodes[0], 1, 2);
             dispatchEvent(link, 'mousedown');
-            link.click();
-            dispatchEvent(link, 'mouseup');
+            link.dispatchEvent(MOUSEUP_EVENT)
             setTimeout(() => {
                 let linkBtn: HTMLElement = document.getElementById(controlId + "_quick_RemoveLink");
                 linkBtn.click();
@@ -1205,7 +1231,7 @@ describe('Link Module', () => {
     describe('dialog hide when link on the link when inline mode is set true', () => {
         let rteObj: RichTextEditor;
         let controlId: string;
-        beforeEach((done: Function) => {
+        beforeEach(() => {
             rteObj = renderRTE({
                 value: `<p><a id="link" href="https://ej2.syncfusion.com/home/" target='_blank'><strong>HTML</strong></a></p>`,
                 inlineMode: {
@@ -1213,11 +1239,9 @@ describe('Link Module', () => {
                 }
             });
             controlId = rteObj.element.id;
-            done();
         });
-        afterEach((done: Function) => {
+        afterEach(() => {
             destroy(rteObj);
-            done();
         });
 
         it(' Test - link toolbar - and dialog hide', (done) => {
@@ -1258,7 +1282,7 @@ describe('Link Module', () => {
             clickEvent.initEvent("mousedown", false, true);
             cntTarget.dispatchEvent(clickEvent);
             let target: HTMLElement = ele.querySelector('#link-container a');
-            let eventsArg: any = { pageX: 50, pageY: 300,ctrlKey: false, target: target, which: 2 };
+            let eventsArg: any = { pageX: 50, pageY: 300, ctrlKey: false, target: target, which: 2 };
             rteObj.mouseUp(eventsArg);
             setTimeout(() => {
                 let quickPop: any = <HTMLElement>document.querySelectorAll('.e-rte-quick-popup')[0];
@@ -1303,7 +1327,7 @@ describe('Link Module', () => {
             cntTarget.dispatchEvent(clickEvent);
             let target: HTMLElement = ele.querySelector('#link-container a');
             new NodeSelection().setSelectionText(document, target.childNodes[0].childNodes[0], target.childNodes[0].childNodes[0], 0, 0);
-            let eventsArg: any = { pageX: 50, pageY: 300,ctrlKey: false, target: target, which: 1 };
+            let eventsArg: any = { pageX: 50, pageY: 300, ctrlKey: false, target: target, which: 1 };
             rteObj.mouseUp(eventsArg);
             setTimeout(() => {
                 let quickPop: any = document.querySelectorAll('.e-rte-quick-popup') as NodeList;
@@ -1453,7 +1477,7 @@ describe('Link Module', () => {
             rteObj.dataBind();
             let target: HTMLElement = ele.querySelector('#link-container a');
             new NodeSelection().setSelectionText(document, target.childNodes[0].childNodes[0], target.childNodes[0].childNodes[0], 0, 0);
-            let eventsArg: any = { pageX: 50, pageY: 300,  ctrlKey: false, target: target, which: 1 };
+            let eventsArg: any = { pageX: 50, pageY: 300, ctrlKey: false, target: target, which: 1 };
             expect(rteObj.quickToolbarSettings.showOnRightClick).toEqual(false);
             rteObj.mouseUp(eventsArg);
             setTimeout(() => {
@@ -1512,7 +1536,7 @@ describe('Link Module', () => {
             cntTarget.dispatchEvent(clickEvent);
             let target: HTMLElement = ele.querySelector('#link-container a');
             new NodeSelection().setSelectionText(document, target.childNodes[0].childNodes[0], target.childNodes[0].childNodes[0], 0, 0);
-            let eventsArg: any = { pageX: 50, pageY: 300, ctrlKey: false, target: target, which: 1, clientX: rteObj.clickPoints.clientX , clientY: rteObj.clickPoints.clientY };
+            let eventsArg: any = { pageX: 50, pageY: 300, ctrlKey: false, target: target, which: 1, clientX: rteObj.clickPoints.clientX, clientY: rteObj.clickPoints.clientY };
             rteObj.mouseUp(eventsArg);
             setTimeout(() => {
                 let quickPop: any = document.querySelectorAll('.e-rte-quick-popup') as NodeList;
@@ -1538,7 +1562,7 @@ describe('Link Module', () => {
             cntTarget.dispatchEvent(clickEvent);
             let target: HTMLElement = ele.querySelector('#link-container a');
             new NodeSelection().setSelectionText(document, target.childNodes[0].childNodes[0], target.childNodes[0].childNodes[0], 0, 0);
-            let eventsArg: any = { pageX: 50, pageY: 300, ctrlKey: false, target: target, which: 3, clientX: rteObj.clickPoints.clientX , clientY: rteObj.clickPoints.clientY };
+            let eventsArg: any = { pageX: 50, pageY: 300, ctrlKey: false, target: target, which: 3, clientX: rteObj.clickPoints.clientX, clientY: rteObj.clickPoints.clientY };
             rteObj.touchHandler({ originalEvent: eventsArg });
             rteObj.mouseUp(eventsArg);
             setTimeout(() => {
@@ -1569,7 +1593,7 @@ describe('Link Module', () => {
             rteObj.dataBind();
             let target: HTMLElement = ele.querySelector('#link-container a');
             new NodeSelection().setSelectionText(document, target.childNodes[0].childNodes[0], target.childNodes[0].childNodes[0], 0, 0);
-            let eventsArg: any = { pageX: 50, pageY: 300, ctrlKey: false, target: target, which: 1, clientX: rteObj.clickPoints.clientX , clientY: rteObj.clickPoints.clientY };
+            let eventsArg: any = { pageX: 50, pageY: 300, ctrlKey: false, target: target, which: 1, clientX: rteObj.clickPoints.clientX, clientY: rteObj.clickPoints.clientY };
             expect(rteObj.quickToolbarSettings.showOnRightClick).toEqual(false);
             rteObj.mouseUp(eventsArg);
             setTimeout(() => {
@@ -1600,7 +1624,7 @@ describe('Link Module', () => {
             rteObj.dataBind();
             let target: HTMLElement = ele.querySelector('#link-container a');
             new NodeSelection().setSelectionText(document, target.childNodes[0].childNodes[0], target.childNodes[0].childNodes[0], 0, 0);
-            let eventsArg: any = { pageX: 50, pageY: 300, ctrlKey: false, target: target, which: 3, clientX: rteObj.clickPoints.clientX , clientY: rteObj.clickPoints.clientY };
+            let eventsArg: any = { pageX: 50, pageY: 300, ctrlKey: false, target: target, which: 3, clientX: rteObj.clickPoints.clientX, clientY: rteObj.clickPoints.clientY };
             expect(rteObj.quickToolbarSettings.showOnRightClick).toEqual(true);
             rteObj.touchHandler({ originalEvent: eventsArg });
             rteObj.mouseUp(eventsArg);
@@ -1661,14 +1685,14 @@ describe('Link Module', () => {
                     expect(rteEle.querySelectorAll('.e-rte-content .e-content a').length).toBe(0);
                     done();
                 }, 500);
-            },600);
+            }, 600);
         });
     });
-    
-    describe('Checking tags while applying link', function() {
+
+    describe('Checking tags while applying link', function () {
         let rteEle: HTMLElement;
         let rteObj: any;
-        beforeAll(function() {
+        beforeAll(function () {
             rteObj = renderRTE({
                 value: '<p>sync<strong>fusion</strong></p><p><strong>Chennai</strong></p>',
                 toolbarSettings: {
@@ -1677,42 +1701,52 @@ describe('Link Module', () => {
             });
             rteEle = rteObj.element;
         });
-        afterAll(function() {
+        afterAll(function () {
             destroy(rteObj);
         });
-        it('For Multiple block elements', function() {
-            let pEle : HTMLElement= rteObj.inputElement;
+        it('For Multiple block elements', function (done: DoneFn) {
+            const INIT_MOUSEDOWN_EVENT: MouseEvent = new MouseEvent('mousedown', BASIC_MOUSE_EVENT_INIT);
+            rteObj.focusIn();
+            rteObj.inputElement.dispatchEvent(INIT_MOUSEDOWN_EVENT);
+            let pEle: HTMLElement = rteObj.inputElement;
             rteObj.contentModule.getEditPanel().focus();
             rteObj.formatter.editorManager.nodeSelection.setSelectionText(document, pEle.childNodes[0], pEle.childNodes[1], 0, 1);
             (rteEle.querySelectorAll(".e-toolbar-item")[0] as HTMLElement).click();
             rteObj.linkModule.dialogObj.contentEle.querySelector('.e-rte-linkurl').value = 'https://www.syncfusion.com';
-            let target : HTMLElement= rteObj.linkModule.dialogObj.primaryButtonEle;
-            rteObj.linkModule.dialogObj.primaryButtonEle.click({ target: target, preventDefault: function() {} });
-            let firstChild : string = '<a class="e-rte-anchor" href="https://www.syncfusion.com" title="https://www.syncfusion.com" target="_blank" aria-label="Open in new window">sync<strong>fusion</strong></a>';
-            expect((pEle.childNodes[0] as HTMLElement).innerHTML === firstChild).toBe(true);
-            let secondChild : string = '<a class="e-rte-anchor" href="https://www.syncfusion.com" title="https://www.syncfusion.com" target="_blank" aria-label="Open in new window"><strong>Chennai</strong></a>';
-            expect((pEle.childNodes[1] as HTMLElement).innerHTML === secondChild).toBe(true);
+            let target: HTMLElement = rteObj.linkModule.dialogObj.primaryButtonEle;
+            rteObj.linkModule.dialogObj.primaryButtonEle.click({ target: target, preventDefault: function () { } });
+            setTimeout(() => {
+                let firstChild: string = '<a class="e-rte-anchor" href="https://www.syncfusion.com" title="https://www.syncfusion.com" target="_blank" aria-label="Open in new window">sync<strong>fusion</strong></a>';
+                expect((pEle.childNodes[0] as HTMLElement).innerHTML === firstChild).toBe(true);
+                let secondChild: string = '<a class="e-rte-anchor" href="https://www.syncfusion.com" title="https://www.syncfusion.com" target="_blank" aria-label="Open in new window"><strong>Chennai</strong></a>';
+                expect((pEle.childNodes[1] as HTMLElement).innerHTML === secondChild).toBe(true);
+                done();
+            }, 500);
         });
-        it('For single element with bold and image', function() {
-            rteObj.value = '<p style="cursor: auto;">Sync<strong>fusion</strong><img class="e-rte-image e-imginline e-resize" width="109" height="42" alt="undefined"' +
+        it('For single element with bold and image', function (done: DoneFn) {
+            rteObj.inputElement.innerHTML = '<p style="cursor: auto;">Sync<strong>fusion</strong><img class="e-rte-image e-imginline e-resize" width="109" height="42" alt="undefined"' +
                 'src="https://js.syncfusion.com/demos/web/content/images/accordion/baked-chicken-and-cheese.png" style="min-width: 0px; min-height: 0px;"> RichTextEditor</p>';
-            rteObj.dataBind();
-            rteObj.contentModule.getEditPanel().focus();
+            const INIT_MOUSEDOWN_EVENT: MouseEvent = new MouseEvent('mousedown', BASIC_MOUSE_EVENT_INIT);
+            rteObj.focusIn();
+            rteObj.inputElement.dispatchEvent(INIT_MOUSEDOWN_EVENT);
             rteObj.formatter.editorManager.nodeSelection.setSelectionText(document, rteObj.inputElement.childNodes[0], rteObj.inputElement.childNodes[0], 0, 3);
             (rteEle.querySelectorAll(".e-toolbar-item")[0] as HTMLElement).click();
             rteObj.linkModule.dialogObj.contentEle.querySelector('.e-rte-linkurl').value = 'https://www.syncfusion.com';
-            let target : string = rteObj.linkModule.dialogObj.primaryButtonEle;
-            rteObj.linkModule.dialogObj.primaryButtonEle.click({ target: target, preventDefault: function() {} });
-            (rteEle.querySelectorAll(".e-toolbar-item")[0] as HTMLElement).click();
-            let firstChild : string= '<a class="e-rte-anchor" href="https://www.syncfusion.com" title="https://www.syncfusion.com" target="_blank" aria-label="Open in new window">Sync<strong>fusion</strong></a><img class="e-rte-image e-imginline e-resize" width="109" height="42" alt="undefined" src="https://js.syncfusion.com/demos/web/content/images/accordion/baked-chicken-and-cheese.png" style="min-width: 0px; min-height: 0px;"> RichTextEditor';
-            expect(rteObj.inputElement.childNodes[0].innerHTML === firstChild).toBe(true);
+            let target: string = rteObj.linkModule.dialogObj.primaryButtonEle;
+            rteObj.linkModule.dialogObj.primaryButtonEle.click({ target: target, preventDefault: function () { } });
+            setTimeout(() => {
+                (rteEle.querySelectorAll(".e-toolbar-item")[0] as HTMLElement).click();
+                let firstChild: string = '<a class="e-rte-anchor" href="https://www.syncfusion.com" title="https://www.syncfusion.com" target="_blank" aria-label="Open in new window">Sync<strong>fusion</strong></a><img class="e-rte-image e-imginline" width="109" height="42" alt="undefined" src="https://js.syncfusion.com/demos/web/content/images/accordion/baked-chicken-and-cheese.png" style="min-width: 0px; min-height: 0px;"> RichTextEditor';
+                expect(rteObj.inputElement.childNodes[0].innerHTML === firstChild).toBe(true);
+                done();
+            }, 500);
         });
     });
 
-    describe('Checking tags while applying link-Iframe', function() {
+    describe('Checking tags while applying link-Iframe', function () {
         let rteEle: HTMLElement;
         let rteObj: any;
-        beforeAll(function() {
+        beforeAll(function () {
             rteObj = renderRTE({
                 value: '<p>sync<strong>fusion</strong></p><p><strong>Chennai</strong></p>',
                 toolbarSettings: {
@@ -1724,68 +1758,46 @@ describe('Link Module', () => {
             });
             rteEle = rteObj.element;
         });
-        afterAll(function() {
+        afterAll(function () {
             destroy(rteObj);
         });
-        it('For Multiple block elements-Iframe', function() {
-            let pEle : HTMLElement = rteObj.inputElement;
+        it('For Multiple block elements-Iframe', function (done: DoneFn) {
+            const INIT_MOUSEDOWN_EVENT: MouseEvent = new MouseEvent('mousedown', BASIC_MOUSE_EVENT_INIT);
+            rteObj.focusIn();
+            rteObj.inputElement.dispatchEvent(INIT_MOUSEDOWN_EVENT);
+            let pEle: HTMLElement = rteObj.inputElement;
             rteObj.contentModule.getEditPanel().focus();
             rteObj.formatter.editorManager.nodeSelection.setSelectionText(rteObj.contentModule.getDocument(), rteObj.inputElement.childNodes[0], rteObj.inputElement.childNodes[1], 0, 1);
             (rteEle.querySelectorAll(".e-toolbar-item")[0] as HTMLElement).click();
             rteObj.linkModule.dialogObj.contentEle.querySelector('.e-rte-linkurl').value = 'https://www.syncfusion.com';
-            let target : HTMLElement= rteObj.linkModule.dialogObj.primaryButtonEle;
-            rteObj.linkModule.dialogObj.primaryButtonEle.click({ target: target, preventDefault: function() {} });
-            let firstChild : string = '<a class="e-rte-anchor" href="https://www.syncfusion.com" title="https://www.syncfusion.com" target="_blank" aria-label="Open in new window">sync<strong>fusion</strong></a>';
-            expect((pEle.childNodes[0] as HTMLElement).innerHTML === firstChild).toBe(true);
-            let secondChild : string = '<a class="e-rte-anchor" href="https://www.syncfusion.com" title="https://www.syncfusion.com" target="_blank" aria-label="Open in new window"><strong>Chennai</strong></a>';
-            expect((pEle.childNodes[1] as HTMLElement).innerHTML === secondChild).toBe(true);
+            let target: HTMLElement = rteObj.linkModule.dialogObj.primaryButtonEle;
+            rteObj.linkModule.dialogObj.primaryButtonEle.click({ target: target, preventDefault: function () { } });
+            setTimeout(() => {
+                let firstChild: string = '<a class="e-rte-anchor" href="https://www.syncfusion.com" title="https://www.syncfusion.com" target="_blank" aria-label="Open in new window">sync<strong>fusion</strong></a>';
+                expect((pEle.childNodes[0] as HTMLElement).innerHTML === firstChild).toBe(true);
+                let secondChild: string = '<a class="e-rte-anchor" href="https://www.syncfusion.com" title="https://www.syncfusion.com" target="_blank" aria-label="Open in new window"><strong>Chennai</strong></a>';
+                expect((pEle.childNodes[1] as HTMLElement).innerHTML === secondChild).toBe(true);
+                done();
+            }, 500);
         });
-        it('For single element with bold and image-Iframe', function() {
+        it('For single element with bold and image-Iframe', function (done: DoneFn) {
             rteObj.value = '<p style="cursor: auto;">Sync<strong>fusion</strong><img class="e-rte-image e-imginline e-resize" width="109" height="42" alt="undefined"' +
                 'src="https://js.syncfusion.com/demos/web/content/images/accordion/baked-chicken-and-cheese.png" style="min-width: 0px; min-height: 0px;"> RichTextEditor</p>';
             rteObj.dataBind();
-            rteObj.contentModule.getEditPanel().focus();
+            const INIT_MOUSEDOWN_EVENT: MouseEvent = new MouseEvent('mousedown', BASIC_MOUSE_EVENT_INIT);
+            rteObj.focusIn();
+            rteObj.inputElement.dispatchEvent(INIT_MOUSEDOWN_EVENT);
             rteObj.formatter.editorManager.nodeSelection.setSelectionText(rteObj.contentModule.getDocument(), rteObj.inputElement.childNodes[0], rteObj.inputElement.childNodes[0], 0, 3);
             (rteEle.querySelectorAll(".e-toolbar-item")[0] as HTMLElement).click();
             rteObj.linkModule.dialogObj.contentEle.querySelector('.e-rte-linkurl').value = 'https://www.syncfusion.com';
-            let target : string = rteObj.linkModule.dialogObj.primaryButtonEle;
-            rteObj.linkModule.dialogObj.primaryButtonEle.click({ target: target, preventDefault: function() {} });
-            (rteEle.querySelectorAll(".e-toolbar-item")[0] as HTMLElement).click();
-            let firstChild : string= '<a class="e-rte-anchor" href="https://www.syncfusion.com" title="https://www.syncfusion.com" target="_blank" aria-label="Open in new window">Sync<strong>fusion</strong></a><img class="e-rte-image e-imginline e-resize" width="109" height="42" alt="undefined" src="https://js.syncfusion.com/demos/web/content/images/accordion/baked-chicken-and-cheese.png" style="min-width: 0px; min-height: 0px;"> RichTextEditor';
-            expect(rteObj.inputElement.childNodes[0].innerHTML === firstChild).toBe(true);
-        });
-    });
-
-    describe(' quickToolbarSettings property - link quick toolbar - ', function() {
-        let rteObj: any;
-        let controlId : any;
-        beforeEach(function(done) {
-            rteObj = renderRTE({
-                value: "<p><a id=\"link\" href=\"https://ej2.syncfusion.com/home/\" target='_blank'><strong>HTML</strong></a></p><p><a href=\"https://ej2.syncfusion.com/home/\" target='_blank'>sync</a></p>"
-            });
-            controlId = rteObj.element.id;
-            done();
-        });
-        afterEach(function(done) {
-            destroy(rteObj);
-            done();
-        });
-        it(' Test - open quickToolbar after applied selection command (italic)', function(done) {
-            let link : HTMLElement = rteObj.element.querySelector("#link");
-            let linkNodes : Node[] = rteObj.element.querySelectorAll('a');
-            rteObj.formatter.editorManager.nodeSelection.setSelectionText(document, linkNodes[0].childNodes[0].childNodes[0], linkNodes[1].childNodes[0], 0, 3);
-            let item : any= rteObj.element.querySelector('#' + controlId + '_toolbar_Italic');
-            item.click();
-            dispatchEvent(link, 'mousedown');
-            link.click();
-            dispatchEvent(link, 'mouseup');
-            setTimeout(function() {
-                let linkBtn : HTMLElement= document.getElementById(controlId + "_quick_RemoveLink");
-                linkBtn.click();
-                let link : Element= rteObj.element.querySelector("#link");
-                expect(isNullOrUndefined(link)).toBe(true);
+            let target: string = rteObj.linkModule.dialogObj.primaryButtonEle;
+            rteObj.linkModule.dialogObj.primaryButtonEle.click({ target: target, preventDefault: function () { } });
+            setTimeout(() => {
+                (rteEle.querySelectorAll(".e-toolbar-item")[0] as HTMLElement).click();
+                let firstChild: string = '<a class="e-rte-anchor" href="https://www.syncfusion.com" title="https://www.syncfusion.com" target="_blank" aria-label="Open in new window">Sync<strong>fusion</strong></a><img class="e-rte-image e-imginline e-resize" width="109" height="42" alt="undefined" src="https://js.syncfusion.com/demos/web/content/images/accordion/baked-chicken-and-cheese.png" style="min-width: 0px; min-height: 0px;"> RichTextEditor';
+                expect(rteObj.inputElement.childNodes[0].innerHTML === firstChild).toBe(true);
                 done();
-            }, 100);
+            }, 500);
         });
     });
 
@@ -1804,8 +1816,10 @@ describe('Link Module', () => {
         afterAll(() => {
             destroy(rteObj);
         });
-        it('apply same url through inert link dialog', () => {
+        it('apply same url through inert link dialog', (done: DoneFn) => {
             (rteObj.contentModule.getEditPanel() as HTMLElement).focus();
+            const INIT_MOUSEDOWN_EVENT: MouseEvent = new MouseEvent('mousedown', BASIC_MOUSE_EVENT_INIT);
+            rteObj.inputElement.dispatchEvent(INIT_MOUSEDOWN_EVENT);
             let selectioncursor: NodeSelection = new NodeSelection();
             let range: Range = document.createRange();
             range.setStart(rteObj.element.querySelector('a'), 1);
@@ -1816,16 +1830,19 @@ describe('Link Module', () => {
             expect((<any>rteObj).linkModule.dialogObj.contentEle.querySelector('.e-rte-linkTitle').value).toBe("");
             (rteObj as any).linkModule.dialogObj.contentEle.querySelector('.e-rte-linkurl').value = 'https://www.syncfusion.com';
             let target: any = (<any>rteObj).linkModule.dialogObj.primaryButtonEle;
-            (<any>rteObj).linkModule.dialogObj.primaryButtonEle.click({ target: target, preventDefault: function () { } });
-            expect(rteObj.contentModule.getEditPanel().querySelector('a').text === 'https://www.syncfusion.com').toBe(true);
-            expect(rteObj.contentModule.getEditPanel().querySelector('a').href === 'https://www.syncfusion.com/').toBe(true);
+            setTimeout(() => {
+                (<any>rteObj).linkModule.dialogObj.primaryButtonEle.click({ target: target, preventDefault: function () { } });
+                expect(rteObj.contentModule.getEditPanel().querySelector('a').text === 'https://www.syncfusion.com').toBe(true);
+                expect(rteObj.contentModule.getEditPanel().querySelector('a').href === 'https://www.syncfusion.com/').toBe(true);
+                done();
+            }, 500);
         });
     });
 
     describe('EJ2-44372 - BeforeDialogOpen eventArgs args.cancel is not working properly', () => {
         let rteObj: RichTextEditor;
         let count: number = 0;
-        beforeAll((done: Function) => {
+        beforeAll(() => {
             rteObj = renderRTE({
                 toolbarSettings: {
                     items: ['CreateLink'],
@@ -1838,11 +1855,9 @@ describe('Link Module', () => {
                     count = count + 1;
                 }
             });
-            done();
         });
-        afterAll((done: Function) => {
+        afterAll(() => {
             destroy(rteObj);
-            done();
         });
         it('dialogClose event trigger testing', (done) => {
             expect(count).toBe(0);
@@ -1859,7 +1874,7 @@ describe('Link Module', () => {
     describe('EJ2-48903 - BeforeDialogOpen event is not called for second time', () => {
         let rteObj: RichTextEditor;
         let count: number = 0;
-        beforeAll((done: Function) => {
+        beforeAll(() => {
             rteObj = renderRTE({
                 toolbarSettings: {
                     items: ['CreateLink']
@@ -1869,11 +1884,9 @@ describe('Link Module', () => {
                     count = count + 1;
                 }
             });
-            done();
         });
-        afterAll((done: Function) => {
+        afterAll(() => {
             destroy(rteObj);
-            done();
         });
         it('beforeDialogOpen event trigger testing', (done) => {
             expect(count).toBe(0);
@@ -1891,15 +1904,16 @@ describe('Link Module', () => {
 
     describe('EJ2-49981 - ShowDialog, CloseDialog method testing', () => {
         let rteObj: RichTextEditor;
-        beforeAll((done: Function) => {
-            rteObj = renderRTE({ });
-            done();
+        beforeAll(() => {
+            rteObj = renderRTE({});
         });
-        afterAll((done: Function) => {
+        afterAll(() => {
             destroy(rteObj);
-            done();
         });
         it('beforeDialogOpen event trigger testing', (done) => {
+            const INIT_MOUSEDOWN_EVENT: MouseEvent = new MouseEvent('mousedown', BASIC_MOUSE_EVENT_INIT);
+            rteObj.focusIn();
+            rteObj.inputElement.dispatchEvent(INIT_MOUSEDOWN_EVENT);
             rteObj.showDialog(DialogType.InsertLink);
             setTimeout(() => {
                 expect(document.body.querySelectorAll('.e-rte-link-dialog.e-dialog').length).toBe(1);
@@ -1912,10 +1926,10 @@ describe('Link Module', () => {
         });
     });
 
-    describe('EJ2-59978 - Insert link after Max char count - Link Module', function() {
+    describe('EJ2-59978 - Insert link after Max char count - Link Module', function () {
         let rteEle: HTMLElement;
         let rteObj: any;
-        beforeAll(function() {
+        beforeAll(function () {
             rteObj = renderRTE({
                 value: '<p class="focusNode">RTE Content with RTE</p>',
                 toolbarSettings: {
@@ -1926,17 +1940,17 @@ describe('Link Module', () => {
             });
             rteEle = rteObj.element;
         });
-        afterAll(function() {
+        afterAll(function () {
             destroy(rteObj);
         });
-        it(' - Insert link after Max char count - ', function() {
+        it(' - Insert link after Max char count - ', function () {
             rteObj.contentModule.getEditPanel().focus();
             let focusNode: any = rteObj.inputElement.childNodes[0].childNodes[0];
             rteObj.formatter.editorManager.nodeSelection.setSelectionText(rteObj.contentModule.getDocument(), focusNode, focusNode, 0, 0);
             (rteEle.querySelectorAll(".e-toolbar-item")[0] as HTMLElement).click();
             rteObj.linkModule.dialogObj.contentEle.querySelector('.e-rte-linkurl').value = 'https://www.syncfusion.com';
-            let target : HTMLElement= rteObj.linkModule.dialogObj.primaryButtonEle;
-            rteObj.linkModule.dialogObj.primaryButtonEle.click({ target: target, preventDefault: function() {} });
+            let target: HTMLElement = rteObj.linkModule.dialogObj.primaryButtonEle;
+            rteObj.linkModule.dialogObj.primaryButtonEle.click({ target: target, preventDefault: function () { } });
             expect(rteObj.inputElement.textContent === `RTE Content with RTE`).toBe(true);
         });
     });
@@ -1973,10 +1987,10 @@ describe('Link Module', () => {
             expect(rteObj.inputElement.textContent == "TestingGoogle");
         });
     });
-    
+
     describe('849561- Unable to do any formatting action for the link content in the RTE', () => {
         let rteObj: RichTextEditor;
-        beforeEach(() => {
+        beforeAll(() => {
             rteObj = renderRTE({
                 value: '<p><a href="https://www.google.com">google</a></p>',
                 toolbarSettings: {
@@ -1984,7 +1998,7 @@ describe('Link Module', () => {
                 }
             });
         });
-        afterEach(() => {
+        afterAll(() => {
             destroy(rteObj);
         });
         it('Should not disable the toolbar items after the link is clicked', (done: DoneFn) => {
@@ -2012,9 +2026,9 @@ describe('Link Module', () => {
             shiftKey: false,
             char: '',
             key: '',
-            target:'',
+            target: '',
         };
-    
+
         beforeEach(() => {
             rteObj = renderRTE({
                 value: '<p><a href="https://www.google.com" target="_blank">google</a></p>',
@@ -2032,7 +2046,7 @@ describe('Link Module', () => {
             mousedownEvent.initEvent("mousedown", false, true);
             target.dispatchEvent(mousedownEvent);
             let trg = document.querySelector('a');
-            (<any>rteObj).formatter.editorManager.nodeSelection.setCursorPoint(document, trg.firstChild, trg.firstChild,0,0);
+            (<any>rteObj).formatter.editorManager.nodeSelection.setCursorPoint(document, trg.firstChild, trg.firstChild, 0, 0);
             let clickEvent: any = document.createEvent("MouseEvents");
             clickEvent.initEvent("mouseup", false, true);
             trg.dispatchEvent(clickEvent);
@@ -2043,10 +2057,10 @@ describe('Link Module', () => {
         });
     });
 
-    describe('846359 - Need to allow to insertion of empty hyperlink/images in the markdown', function() {
+    describe('846359 - Need to allow to insertion of empty hyperlink/images in the markdown', function () {
         let rteEle: HTMLElement;
         let rteObj: any;
-        beforeAll(function() {
+        beforeAll(function () {
             rteObj = renderRTE({
                 toolbarSettings: {
                     items: ['CreateLink', 'Image']
@@ -2055,16 +2069,16 @@ describe('Link Module', () => {
             });
             rteEle = rteObj.element;
         });
-        afterAll(function() {
+        afterAll(function () {
             destroy(rteObj);
         });
-        it(' Checking the insertion of empty hyperlink/images in the markdown - ', function() {
+        it(' Checking the insertion of empty hyperlink/images in the markdown - ', function () {
             rteObj.contentModule.getEditPanel().focus();
             (rteEle.querySelectorAll(".e-toolbar-item")[0] as HTMLElement).click();
             rteObj.linkModule.dialogObj.contentEle.querySelector('.e-rte-linkurl').value = '';
             rteObj.linkModule.dialogObj.contentEle.querySelector('.e-rte-linkText').value = '';
-            let target : HTMLElement= rteObj.linkModule.dialogObj.primaryButtonEle;
-            rteObj.linkModule.dialogObj.primaryButtonEle.click({ target: target, preventDefault: function() {} });
+            let target: HTMLElement = rteObj.linkModule.dialogObj.primaryButtonEle;
+            rteObj.linkModule.dialogObj.primaryButtonEle.click({ target: target, preventDefault: function () { } });
             expect(rteObj.inputElement.value === `[](https://)`).toBe(true);
         });
     });
@@ -2134,21 +2148,22 @@ describe('Link Module', () => {
             (rteObj as any).formatter.editorManager.nodeSelection.setSelectionText(rteObj.contentModule.getDocument(), target.childNodes[0].childNodes[0], target.childNodes[0].childNodes[0], 3, 3);
             clickEvent.initEvent("mousedown", false, true);
             target.dispatchEvent(clickEvent);
-            (<any>rteObj).linkModule.editAreaClickHandler({args:clickEvent});
+            setCursorPoint(target.firstChild, 1);
+            target.dispatchEvent(MOUSEUP_EVENT);
             setTimeout(() => {
                 const editlink: HTMLElement = document.querySelector('[title="Edit Link"]');
                 (editlink.childNodes[0] as HTMLElement).click();
                 (document.querySelector('.e-rte-linkText') as HTMLInputElement).value = 'Editor';
                 let target: any = (<any>rteObj).linkModule.dialogObj.primaryButtonEle;
                 (<any>rteObj).linkModule.dialogObj.primaryButtonEle.click({ target: target, preventDefault: function () { } });
-                let result : string = document.querySelector('a').childNodes[0].nodeName;
+                let result: string = document.querySelector('a').childNodes[0].nodeName;
                 expect(result === 'STRONG').toBe(true);
                 done();
-            },200);
+            }, 200);
         });
     });
 
-describe('After clicking on outside, link dialog still open state', function () {
+    describe('After clicking on outside, link dialog still open state', function () {
         let rteEle: HTMLElement;
         let rteObj: any;
         let controlId: string;
@@ -2166,7 +2181,7 @@ describe('After clicking on outside, link dialog still open state', function () 
             destroy(rteObj);
         });
         it('link dialog not closing when create link toolbar item is clicked for second time and then editorarea is clicked', (done: Function) => {
-            let item : any= rteObj.element.querySelector('#' + controlId + '_toolbar_CreateLink');
+            let item: any = rteObj.element.querySelector('#' + controlId + '_toolbar_CreateLink');
             item.click();
             let eventsArgs = { target: document, preventDefault: function () { } };
             (<any>rteObj).linkModule.onDocumentClick(eventsArgs);
@@ -2210,9 +2225,10 @@ describe('After clicking on outside, link dialog still open state', function () 
             clickEvent.initEvent("mousedown", false, true);
             target.dispatchEvent(clickEvent);
             let eventsArg: any = { target: target, which: 3, ctrlKey: false };
-            (rteObj.linkModule as any).editAreaClickHandler({ args: eventsArg });
+            setCursorPoint(target.firstChild, 1);
+            target.dispatchEvent(RIGHT_CLICK_EVENT);
             setTimeout(() => {
-                let quickPop: HTMLElement =document.querySelector('.e-rte-quick-toolbar.e-rte-toolbar.e-control.e-toolbar.e-lib.e-keyboard');
+                let quickPop: HTMLElement = document.querySelector('.e-rte-quick-toolbar.e-rte-quick-toolbar.e-control.e-toolbar.e-lib.e-keyboard');
                 expect(!isNullOrUndefined(quickPop)).toBe(true);
                 done();
             }, 100);
@@ -2236,7 +2252,7 @@ describe('After clicking on outside, link dialog still open state', function () 
         });
         it('Insert link in list item', (done: Function) => {
             const elem: HTMLElement = rteEle.querySelector('li');
-            rteObj.formatter.editorManager.nodeSelection.setCursorPoint(rteObj.contentModule.getDocument(), elem.childNodes[0] , 0);
+            rteObj.formatter.editorManager.nodeSelection.setCursorPoint(rteObj.contentModule.getDocument(), elem.childNodes[0], 0);
             const createLinkButton: HTMLElement = rteEle.querySelector('#' + rteObj.element.id + '_toolbar_CreateLink');
             createLinkButton.click();
             const linkUrlInput: HTMLInputElement = document.querySelector('.e-rte-linkurl');
@@ -2254,19 +2270,16 @@ describe('After clicking on outside, link dialog still open state', function () 
 
     describe('913697: After inserting the link by pressing the enter key, the quick toolbar did not open', () => {
         let rteObj: RichTextEditor;
-        let keyDownEvent: any = { preventDefault: function () { }, key: 'Enter', stopPropagation: function () { }, shiftKey: false, ctrlKey: false, altKey: false, metaKey: false, which: 13 };
-        beforeAll((done: Function) => {
+        beforeAll(() => {
             rteObj = renderRTE({
                 toolbarSettings: {
                     items: ['CreateLink']
                 },
                 value: '<p><br></p>'
             });
-            done();
         });
-        afterEach((done: Function) => {
+        afterEach(() => {
             destroy(rteObj);
-            done();
         });
         it('Checking the quick toolbar', (done: Function) => {
             rteObj.focusIn();
@@ -2284,16 +2297,16 @@ describe('After clicking on outside, link dialog still open state', function () 
             setTimeout(() => {
                 expect(document.querySelector('.e-rte-quick-popup')).not.toBe(null);
                 done();
-            },500);
+            }, 500);
         });
     });
     describe('940236 -  Removing validation when the values are entered', () => {
         let rteObj: RichTextEditor;
         beforeAll(() => {
-            rteObj = renderRTE({ 
+            rteObj = renderRTE({
                 value: '<p>test</p>',
                 enableAutoUrl: true
-             });
+            });
         });
         afterAll(() => {
             destroy(rteObj);
@@ -2317,7 +2330,7 @@ describe('After clicking on outside, link dialog still open state', function () 
             evnArg.target = (<any>rteObj).linkModule.dialogObj.primaryButtonEle;
             (<any>rteObj).linkModule.dialogObj.primaryButtonEle.click(evnArg);
             expect((<any>rteObj).linkModule.dialogObj.contentEle.querySelector('.e-rte-linkurl').classList.contains('e-error')).toBe(true);
-            let  inputElement = (<any>rteObj).linkModule.dialogObj.contentEle.querySelector('.e-rte-linkurl');
+            let inputElement = (<any>rteObj).linkModule.dialogObj.contentEle.querySelector('.e-rte-linkurl');
             inputElement.value = 'h';
             let inputChangeEvent = new Event('input', {
                 bubbles: true,
@@ -2363,7 +2376,7 @@ describe('After clicking on outside, link dialog still open state', function () 
                 selectParent: selectParent
             };
             (<any>rteObj).linkModule.editLink(evnArg);
-            expect((<any>rteObj).linkModule.dialogObj.contentEle.querySelector('.e-rte-linkurl').value === 'https://Examplelink').toBe(true);        
+            expect((<any>rteObj).linkModule.dialogObj.contentEle.querySelector('.e-rte-linkurl').value === 'https://Examplelink').toBe(true);
         });
     });
 });

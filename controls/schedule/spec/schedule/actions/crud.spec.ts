@@ -2450,6 +2450,51 @@ describe('Schedule CRUD', () => {
         });
     });
 
+    describe('Cell selection after deleting event with timezone', () => {
+        let schObj: Schedule;
+        beforeAll((done: DoneFn) => {
+            const timezone: Timezone = new Timezone();
+            const fifaEvents: Record<string, any>[] = [{
+                "Id": 1,
+                "Subject": "RUSSIA vs SAUDI ARABIA",
+                "StartTime": "2021-06-14T09:30:00.000Z",
+                "EndTime": "2021-06-14T11:30:00.000Z",
+                "StartTimezone": "Europe/Moscow",
+                "EndTimezone": "Europe/Moscow",
+            }];
+            for (const fifaEvent of fifaEvents) {
+                fifaEvent.StartTime = timezone.removeLocalOffset(new Date(fifaEvent.StartTime));
+                fifaEvent.EndTime = timezone.removeLocalOffset(new Date(fifaEvent.EndTime));
+            }
+            const schOptions: ScheduleModel = {
+                height: '500px',
+                selectedDate: new Date(2021, 5, 14),
+                timezone: 'UTC'
+            };
+            schObj = util.createSchedule(schOptions, fifaEvents, done);
+        });
+        afterAll(() => {
+            util.destroy(schObj);
+        });
+
+        it('should select cell at event start time after deletion', (done: DoneFn) => {
+            const appointmentElement: Element = schObj.element.querySelector('[data-id="Appointment_1"]');
+            const eventDetails: Record<string, any> = schObj.getEventDetails(appointmentElement);
+            expect(eventDetails).toBeTruthy();
+            expect(eventDetails.StartTime).toBeDefined();
+            expect(eventDetails.StartTime.getTime()).toBe(1623663000000);
+            expect(eventDetails.EndTime).toBeDefined();
+            expect(eventDetails.EndTime.getTime()).toBe(1623670200000);
+            schObj.dataBound = () => {
+                const selectedCell: Element = schObj.element.querySelector('.e-work-cells.e-selected-cell');
+                expect(selectedCell).toBeTruthy();
+                expect(selectedCell.getAttribute('data-date')).toBe('1623663000000');
+                done();
+            };
+            schObj.deleteEvent(1, 'Delete');
+        });
+    });
+
     it('memory leak', () => {
         profile.sample();
         const average: number = inMB(profile.averageChange);

@@ -17,7 +17,7 @@ import { Dialog } from '../services';
 import { refreshFilterCellsOnResize, ICellRenderer, updateWrapCell } from '../common/index';
 import { IFilterArgs, PredicateModel, ExcelFilterBase, beforeFltrcMenuOpen, CheckBoxFilterBase, getUid } from '@syncfusion/ej2-grids';
 import { filterCmenuSelect, filterCboxValue, filterDialogCreated, filterDialogClose, createCboxWithWrap } from '@syncfusion/ej2-grids';
-import { parentsUntil, toogleCheckbox, fltrPrevent, beforeCustomFilterOpen } from '@syncfusion/ej2-grids';
+import { parentsUntil, toogleCheckbox, fltrPrevent, customFilterOpen } from '@syncfusion/ej2-grids';
 import { Query, DataManager, Predicate, Deferred } from '@syncfusion/ej2-data';
 import { SortOrder, MenuItemModel, NodeKeyPressEventArgs, NodeClickEventArgs, NodeCheckEventArgs } from '@syncfusion/ej2-navigations';
 import { TreeView } from '@syncfusion/ej2-navigations';
@@ -46,7 +46,9 @@ export class Filter {
         this.parent = parent;
         this.filterCollection = new Map();
         this.filterRange = new Map();
-        this.filterBtn = parent.createElement('div', { className: 'e-filter-btn e-control e-btn e-lib e-filter-iconbtn e-icon-btn' });
+        this.filterBtn = parent.createElement('div', {
+            className: 'e-filter-btn e-control e-btn e-lib e-filter-iconbtn e-icon-btn' + (this.parent.enableRtl ? ' e-rtl' : '')
+        });
         this.filterBtn.appendChild(parent.createElement('span', { className: 'e-btn-icon e-icons e-filter-icon' }));
         this.addEventListener();
     }
@@ -108,7 +110,7 @@ export class Filter {
         this.parent.on(filterDialogClose, this.removeFilterClass, this);
         this.parent.on(duplicateSheetFilterHandler, this.duplicateSheetFilterHandler, this);
         this.parent.on(fltrPrevent, this.beforeFilteringHandler, this);
-        this.parent.on(beforeCustomFilterOpen, this.customFilterOpen, this);
+        this.parent.on(customFilterOpen, this.customFilterOpen, this);
         this.parent.on(moveSheetHandler, this.moveSheetHandler, this);
         this.parent.on(refreshFilterCellsOnResize, this.refreshFilterCellsOnResize, this);
     }
@@ -141,7 +143,7 @@ export class Filter {
             this.parent.off(filterDialogClose, this.removeFilterClass);
             this.parent.off(duplicateSheetFilterHandler, this.duplicateSheetFilterHandler);
             this.parent.off(fltrPrevent, this.beforeFilteringHandler);
-            this.parent.off(beforeCustomFilterOpen, this.customFilterOpen);
+            this.parent.off(customFilterOpen, this.customFilterOpen);
             this.parent.off(moveSheetHandler, this.moveSheetHandler);
             this.parent.off(refreshFilterCellsOnResize, this.refreshFilterCellsOnResize);
         }

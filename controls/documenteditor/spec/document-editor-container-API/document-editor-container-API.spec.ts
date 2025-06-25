@@ -11,7 +11,7 @@ import { SfdtExport } from "../../src/document-editor/implementation/writer/sfdt
 describe('CurrentuserAPI', () => {
     let container: DocumentEditor;
     beforeAll(() => {
-        document.body.innerHTML = '';
+        
         let ele: HTMLElement = createElement('div', { id: 'container' });
         document.body.appendChild(ele);
         DocumentEditor.Inject(Editor, Selection, EditorHistory, SfdtExport);
@@ -26,7 +26,7 @@ describe('CurrentuserAPI', () => {
         container.destroy();
         document.body.removeChild(document.getElementById('container'));
         container = undefined;
-        document.body.innerHTML = '';
+        
         setTimeout(function () {
             done();
         }, 1000);
@@ -45,7 +45,7 @@ describe('CurrentuserAPI', () => {
 describe('documentEditorSettingsAPI', () => {
     let container: DocumentEditor;
     beforeAll(() => {
-        document.body.innerHTML = '';
+        
         let ele: HTMLElement = createElement('div', { id: 'container' });
         document.body.appendChild(ele);
         DocumentEditor.Inject(Editor, Selection, EditorHistory, SfdtExport);
@@ -60,7 +60,7 @@ describe('documentEditorSettingsAPI', () => {
         container.destroy();
         document.body.removeChild(document.getElementById('container'));
         container = undefined;
-        document.body.innerHTML = '';
+        
         setTimeout(function () {
             done();
         }, 1000);
@@ -99,7 +99,7 @@ describe('Script error throws whenever using refresh API,', () => {
         documentEditor.destroy();
         document.body.removeChild(document.getElementById('container'));
         documentEditor = undefined;
-        document.body.innerHTML = '';
+        
         setTimeout(function () {
             done();
         }, 1000);
@@ -114,7 +114,7 @@ describe('Script error throws whenever using refresh API,', () => {
 describe('isDocumentEmptyAPI', () => {
     let container: DocumentEditor;
     beforeAll(() => {
-        document.body.innerHTML = '';
+        
         let ele: HTMLElement = createElement('div', { id: 'container' });
         document.body.appendChild(ele);
         DocumentEditor.Inject(Editor, Selection, EditorHistory, SfdtExport);
@@ -129,7 +129,7 @@ describe('isDocumentEmptyAPI', () => {
         container.destroy();
         document.body.removeChild(document.getElementById('container'));
         container = undefined;
-        document.body.innerHTML = '';
+        
         setTimeout(function () {
             done();
         }, 1000);

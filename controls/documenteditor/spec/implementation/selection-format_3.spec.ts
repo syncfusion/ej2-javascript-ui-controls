@@ -11,7 +11,7 @@ describe('Selection table format validation-1', () => {
     let documentHelper: DocumentHelper;
     beforeAll(() => {
         let ele: HTMLElement = createElement('div', { id: 'container', styles: 'width:100%;height:500px' });
-        document.body.innerHTML = '';
+        
         document.body.appendChild(ele);
         DocumentEditor.Inject(Editor, EditorHistory, Selection);
         editor = new DocumentEditor({ enableEditor: true, isReadOnly: false, enableSelection: true, enableEditorHistory: true });
@@ -28,7 +28,7 @@ describe('Selection table format validation-1', () => {
         document.body.removeChild(document.getElementById('container'));
         editor = undefined;
         documentHelper = undefined;
-        document.body.innerHTML = '';
+        
         setTimeout(() => {
             done();
         }, 1000);
@@ -147,7 +147,7 @@ describe('Selection table format validation-2', () => {
     let documentHelper: DocumentHelper;
     beforeAll(() => {
         let ele: HTMLElement = createElement('div', { id: 'container', styles: 'width:100%;height:500px' });
-        document.body.innerHTML = '';
+        
         document.body.appendChild(ele);
         DocumentEditor.Inject(Editor, EditorHistory, Selection);
         editor = new DocumentEditor({ enableEditor: true, isReadOnly: false, enableSelection: true, enableEditorHistory: true });
@@ -164,7 +164,7 @@ describe('Selection table format validation-2', () => {
         document.body.removeChild(document.getElementById('container'));
         editor = undefined;
         documentHelper = undefined;
-        document.body.innerHTML = '';
+        
         setTimeout(() => {
             done();
         }, 1000);
@@ -283,7 +283,7 @@ describe('Selection table format validation-3', () => {
     let documentHelper: DocumentHelper;
     beforeAll(() => {
         let ele: HTMLElement = createElement('div', { id: 'container', styles: 'width:100%;height:500px' });
-        document.body.innerHTML = '';
+        
         document.body.appendChild(ele);
         DocumentEditor.Inject(Editor, EditorHistory, Selection);
         editor = new DocumentEditor({ enableEditor: true, isReadOnly: false, enableSelection: true, enableEditorHistory: true });
@@ -300,7 +300,7 @@ describe('Selection table format validation-3', () => {
         document.body.removeChild(document.getElementById('container'));
         editor = undefined;
         documentHelper = undefined;
-        document.body.innerHTML = '';
+        
         setTimeout(() => {
             done();
         }, 1000);
@@ -427,7 +427,7 @@ describe('Selection row format validation', () => {
     let documentHelper: DocumentHelper;
     beforeAll(() => {
         let ele: HTMLElement = createElement('div', { id: 'container', styles: 'width:100%;height:500px' });
-        document.body.innerHTML = '';
+        
         document.body.appendChild(ele);
         DocumentEditor.Inject(Editor, EditorHistory, Selection);
         editor = new DocumentEditor({ enableEditor: true, isReadOnly: false, enableSelection: true, enableEditorHistory: true });
@@ -444,7 +444,7 @@ describe('Selection row format validation', () => {
         document.body.removeChild(document.getElementById('container'));
         editor = undefined;
         documentHelper = undefined;
-        document.body.innerHTML = '';
+        
         setTimeout(() => {
             done();
         }, 1000);
@@ -600,7 +600,7 @@ describe('Selection cell format validation-1', () => {
     let documentHelper: DocumentHelper;
     beforeAll(() => {
         let ele: HTMLElement = createElement('div', { id: 'container', styles: 'width:100%;height:500px' });
-        document.body.innerHTML = '';
+        
         document.body.appendChild(ele);
         DocumentEditor.Inject(Editor, EditorHistory, Selection);
         editor = new DocumentEditor({ enableEditor: true, isReadOnly: false, enableSelection: true, enableEditorHistory: true });
@@ -617,7 +617,7 @@ describe('Selection cell format validation-1', () => {
         document.body.removeChild(document.getElementById('container'));
         editor = undefined;
         documentHelper = undefined;
-        document.body.innerHTML = '';
+        
         setTimeout(() => {
             done();
         }, 1000);
@@ -736,7 +736,7 @@ describe('Selection cell format validation-2', () => {
     let documentHelper: DocumentHelper;
     beforeAll(() => {
         let ele: HTMLElement = createElement('div', { id: 'container', styles: 'width:100%;height:500px' });
-        document.body.innerHTML = '';
+        
         document.body.appendChild(ele);
         DocumentEditor.Inject(Editor, EditorHistory, Selection);
         editor = new DocumentEditor({ enableEditor: true, isReadOnly: false, enableSelection: true, enableEditorHistory: true });
@@ -753,7 +753,7 @@ describe('Selection cell format validation-2', () => {
         document.body.removeChild(document.getElementById('container'));
         editor = undefined;
         documentHelper = undefined;
-        document.body.innerHTML = '';
+        
         setTimeout(() => {
             done();
         }, 1000);
@@ -841,7 +841,7 @@ describe('Selection cell format validation-3', () => {
     let documentHelper: DocumentHelper;
     beforeAll(() => {
         let ele: HTMLElement = createElement('div', { id: 'container', styles: 'width:100%;height:500px' });
-        document.body.innerHTML = '';
+        
         document.body.appendChild(ele);
         DocumentEditor.Inject(Editor, EditorHistory, Selection);
         editor = new DocumentEditor({ enableEditor: true, isReadOnly: false, enableSelection: true, enableEditorHistory: true });
@@ -858,7 +858,7 @@ describe('Selection cell format validation-3', () => {
         document.body.removeChild(document.getElementById('container'));
         editor = undefined;
         documentHelper = undefined;
-        document.body.innerHTML = '';
+        
         setTimeout(() => {
             done();
         }, 1000);

@@ -302,8 +302,6 @@ export const removeDesignChart: string = 'removeDesignChart';
 /** @hidden */
 export const chartDesignTab: string = 'chartDesignTab';
 /** @hidden */
-export const addChartEle: string = 'addChartEle';
-/** @hidden */
 export const undoRedoForChartDesign: string = 'undoRedoForChartDesign';
 /** @hidden */
 export const protectWorkbook: string = 'protectWorkbook';

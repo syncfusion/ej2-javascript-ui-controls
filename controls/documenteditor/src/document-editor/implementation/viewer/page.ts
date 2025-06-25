@@ -222,10 +222,16 @@ export abstract class Widget implements IWidget {
             if (index > 0 && !(widget.containerWidget instanceof FootNoteWidget)) {
                 widget = widget.page.bodyWidgets[index - 1];
             } else if ((widget.containerWidget instanceof FootNoteWidget) && !widget.page.documentHelper.owner.editorModule.removeEditRange) {
-                if (index <= 0) {
-                    return undefined;
+                const isEndnote = widget.containerWidget.footNoteType === 'Endnote';
+                const isFirstInContainer = index === 0;
+                if (isEndnote && isFirstInContainer && !isNullOrUndefined(widget.page.previousPage)
+                    && !isNullOrUndefined(widget.page.previousPage.endnoteWidget) && !isNullOrUndefined(widget.page.previousPage.endnoteWidget.bodyWidgets[widget.page.previousPage.endnoteWidget.bodyWidgets.length - 1])) {
+                    widget = widget.page.previousPage.endnoteWidget.bodyWidgets[widget.page.previousPage.endnoteWidget.bodyWidgets.length - 1];
+                } else if (index <= 0) {
+                    widget = undefined;
+                } else {
+                    widget = widget.containerWidget.bodyWidgets[index - 1];
                 }
-                widget = widget.containerWidget.bodyWidgets[index - 1];
             } else {
                 let page: Page = widget.page.previousPage;
                 widget = page && page.bodyWidgets.length > 0 ? page.bodyWidgets[page.bodyWidgets.length - 1] : undefined;
@@ -276,10 +282,17 @@ export abstract class Widget implements IWidget {
             if (index < widget.page.bodyWidgets.length - 1 && !(widget.containerWidget instanceof FootNoteWidget)) {
                 widget = widget.page.bodyWidgets[index + 1];
             } else if (widget.containerWidget instanceof FootNoteWidget) {
-                if (index >= widget.containerWidget.bodyWidgets.length - 1 && !widget.page.documentHelper.owner.editorModule.removeEditRange) {
-                    return undefined;
+                const isEndnote = widget.containerWidget.footNoteType === 'Endnote';
+                const isLastInContainer = index === widget.containerWidget.bodyWidgets.length - 1;
+                if (isEndnote && isLastInContainer && !isNullOrUndefined(widget.page.nextPage)
+                    && !isNullOrUndefined(widget.page.nextPage.endnoteWidget) && !isNullOrUndefined(widget.page.nextPage.endnoteWidget.bodyWidgets[0])) {
+                    widget = widget.page.nextPage.endnoteWidget.bodyWidgets[0];
                 }
-                widget = widget.containerWidget.bodyWidgets[index + 1];
+                else if (index >= widget.containerWidget.bodyWidgets.length - 1 && !widget.page.documentHelper.owner.editorModule.removeEditRange) {
+                    widget = undefined;
+                } else {
+                    widget = widget.containerWidget.bodyWidgets[index + 1];
+                }
             } else if (widget.page.allowNextPageRendering) {
                 let page: Page = widget.page.nextPage;
                 widget = page && page.bodyWidgets.length > 0 ? page.bodyWidgets[0] : undefined;
@@ -328,28 +341,14 @@ export abstract class Widget implements IWidget {
             return widget.getPreviousSplitWidget();
         } else {
             let previous: Widget = widget.previousRenderedWidget;
-            if (widget instanceof BodyWidget && previous instanceof BodyWidget && widget.equals(previous) && !(widget.containerWidget instanceof FootNoteWidget && widget.containerWidget.footNoteType === 'Endnote')) {
+            if (widget instanceof BodyWidget && previous instanceof BodyWidget && widget.equals(previous)) {
+                if (widget.containerWidget instanceof FootNoteWidget && widget.containerWidget.footNoteType === 'Endnote' && widget.index !== previous.index) {
+                    return undefined;
+                }
                 return previous;
             } else if (previous instanceof BlockWidget && widget.index === previous.index && widget.equals(previous)) {
                 return previous;
-            } else if (widget instanceof BodyWidget && widget.containerWidget instanceof FootNoteWidget
-                && widget.containerWidget.footNoteType === 'Endnote' && !isNullOrUndefined(widget.page.previousPage)
-                && !isNullOrUndefined(widget.page.previousPage.endnoteWidget)) {
-                previous = widget.page.previousPage.endnoteWidget.bodyWidgets[widget.page.previousPage.endnoteWidget.bodyWidgets.length - 1];
-                if (previous && previous instanceof BodyWidget && widget.index === previous.index && widget.equals(previous)) {
-                    return previous;
-                }
-            } else if (widget instanceof BlockWidget && widget.bodyWidget
-                && widget.bodyWidget.containerWidget instanceof FootNoteWidget && widget.bodyWidget.containerWidget.footNoteType === 'Endnote'
-                && !isNullOrUndefined(widget.bodyWidget.page.previousPage) && !isNullOrUndefined(widget.bodyWidget.page.previousPage.endnoteWidget)
-                && widget.bodyWidget.page.previousPage.endnoteWidget.bodyWidgets.length > 0) {
-                const previousEndnotePage = widget.bodyWidget.page.previousPage.endnoteWidget;
-                const lastBodyWidget = previousEndnotePage.bodyWidgets[previousEndnotePage.bodyWidgets.length - 1];
-                previous = lastBodyWidget.childWidgets[lastBodyWidget.childWidgets.length - 1] as BlockWidget;
-                if (previous && previous instanceof BlockWidget && widget.index === previous.index && widget.equals(previous)) {
-                    return previous;
-                }
-            }
+            } 
         }
         return undefined;
     }
@@ -359,25 +358,13 @@ export abstract class Widget implements IWidget {
             return widget.getNextSplitWidget();
         } else {
             let next: Widget = widget.nextRenderedWidget;
-            if (widget instanceof BodyWidget && next instanceof BodyWidget && widget.equals(next) && !(widget.containerWidget instanceof FootNoteWidget && widget.containerWidget.footNoteType === 'Endnote')) {
+            if (widget instanceof BodyWidget && next instanceof BodyWidget && widget.equals(next)) {
+                if (widget.containerWidget instanceof FootNoteWidget && widget.containerWidget.footNoteType === 'Endnote' && widget.index !== next.index) {
+                    return undefined;
+                }
                 return next;
             } else if (next instanceof BlockWidget && widget.index === next.index && widget.equals(next)) {
                 return next;
-            } else if (widget instanceof BodyWidget && widget.containerWidget instanceof FootNoteWidget
-                && widget.containerWidget.footNoteType === 'Endnote' && !isNullOrUndefined(widget.page.nextPage)
-                && !isNullOrUndefined(widget.page.nextPage.endnoteWidget)) {
-                next = widget.page.nextPage.endnoteWidget.bodyWidgets[0];
-                if (next && next instanceof BodyWidget && widget.index === next.index && widget.equals(next)) {
-                    return next;
-                }
-            } else if (widget instanceof BlockWidget && widget.bodyWidget
-                && widget.bodyWidget.containerWidget instanceof FootNoteWidget && widget.bodyWidget.containerWidget.footNoteType === 'Endnote'
-                && !isNullOrUndefined(widget.bodyWidget.page.nextPage) && !isNullOrUndefined(widget.bodyWidget.page.nextPage.endnoteWidget)
-                && widget.bodyWidget.page.nextPage.endnoteWidget.bodyWidgets.length > 0) {
-                next = widget.bodyWidget.page.nextPage.endnoteWidget.bodyWidgets[0].childWidgets[0] as BlockWidget;
-                if (next && next instanceof BlockWidget && widget.index === next.index && widget.equals(next)) {
-                    return next;
-                }
             }
         }
         return undefined;
@@ -913,7 +900,16 @@ export abstract class BlockWidget extends Widget {
         let widget: Widget = this;
         while (widget.containerWidget) {
             if (widget.containerWidget instanceof TextFrame) {
-                let paragraph: ParagraphWidget = widget.containerWidget.containerShape.line.paragraph;
+                let paragraph: ParagraphWidget;
+                if (widget.containerWidget.containerShape instanceof ShapeElementBox) {
+                    let shape: ShapeElementBox | GroupShapeElementBox = widget.containerWidget.containerShape;
+                    while (!isNullOrUndefined(shape.containerShape)) {
+                        shape = shape.containerShape;
+                    }
+                    paragraph = shape.line.paragraph;
+                } else {
+                    paragraph = widget.containerWidget.containerShape.line.paragraph;
+                }
                 if (paragraph) {
                     return paragraph.bodyWidget;
                 }
@@ -1187,6 +1183,59 @@ export class ParagraphWidget extends BlockWidget {
         this.paragraphFormat = new WParagraphFormat(this);
         this.characterFormat = new WCharacterFormat(this);
     }
+
+    public getRevisionRange(revision: Revision): ElementBox[] {
+        let paragraphView: ParagraphWidget[] = this.getSplitWidgets() as ParagraphWidget[];
+        let range: ElementBox[] = [];
+        for (let i: number = 0; i < paragraphView.length; i++) {
+            let paragraph: ParagraphWidget = paragraphView[i];
+            for (let j: number = 0; j < paragraph.childWidgets.length; j++) {
+                let line: LineWidget = paragraph.childWidgets[j] as LineWidget;
+                for (let k: number = 0; k < line.children.length; k++) {
+                    let element: ElementBox = line.children[k] as ElementBox;
+                    if (!isNullOrUndefined(element.getAllRevision()) && element.getAllRevision().indexOf(revision) !== -1) {
+                        range.push(element);
+                    }
+                }
+            }
+        }
+        return range;
+    }
+
+    /**
+     * @private
+     * @param isUpdateOwnerNode Used for updating ownerNode of the revisions.
+     * @returns {Revision[]} Returns the revisions of the paragraph.
+     */
+    public getAllRevisions(isUpdateOwnerNode?: boolean): Revision[] {
+        let paragraphRevisions: Revision[] = [];
+        for (let j: number = 0; j < this.childWidgets.length; j++) {
+            let lineWidget: LineWidget = this.childWidgets[j] as LineWidget;
+            for (let k: number = 0; k < lineWidget.children.length; k++) {
+                let element: ElementBox = lineWidget.children[k] as ElementBox;
+                for (let i: number = 0; i < element.revisionLength; i++) {
+                    let revision: Revision = element.getRevision(i);
+                    if (paragraphRevisions.indexOf(revision) === -1) {
+                        paragraphRevisions.push(revision);
+                        if (isUpdateOwnerNode) {
+                            revision.ownerNode = this;
+                        }
+                    }
+                }
+            }
+        }
+        for (var i: number = 0; i < this.characterFormat.revisionLength; i++) {
+            var revision: Revision = this.characterFormat.getRevision(i);
+            if (paragraphRevisions.indexOf(revision) === -1) {
+                paragraphRevisions.push(revision);
+                if (isUpdateOwnerNode) {
+                    revision.ownerNode = this.characterFormat;
+                }
+            }
+        }
+        return paragraphRevisions;
+    }
+
     public equals(widget: Widget): boolean {
         return widget instanceof ParagraphWidget && widget.paragraphFormat === this.paragraphFormat;
     }
@@ -1218,7 +1267,7 @@ export class ParagraphWidget extends BlockWidget {
                 }
                 if (inline instanceof TextElementBox || inline instanceof ImageElementBox || inline instanceof BookmarkElementBox
                     || inline instanceof EditRangeEndElementBox || inline instanceof EditRangeStartElementBox
-                    || inline instanceof ChartElementBox || inline instanceof ShapeElementBox
+                    || inline instanceof ChartElementBox || inline instanceof ShapeElementBox || inline instanceof GroupShapeElementBox
                     || inline instanceof ContentControl || (inline instanceof CommentCharacterElementBox && !layoutCheck)
                     || (inline instanceof FieldElementBox && HelperMethods.isLinkedFieldCharacter((inline as FieldElementBox)))) {
                     return false;
@@ -1245,7 +1294,7 @@ export class ParagraphWidget extends BlockWidget {
                         continue;
                     }
                     if (!isStarted && (inline instanceof TextElementBox || inline instanceof ImageElementBox
-                        || inline instanceof ShapeElementBox
+                        || inline instanceof ShapeElementBox || inline instanceof GroupShapeElementBox
                         || inline instanceof BookmarkElementBox || inline instanceof FieldElementBox
                         && HelperMethods.isLinkedFieldCharacter(inline as FieldElementBox))
                         || inline instanceof ChartElementBox || inline instanceof ContentControl || inline instanceof CommentCharacterElementBox) {
@@ -1628,7 +1677,7 @@ export class ParagraphWidget extends BlockWidget {
                                 lineWidget.children.splice(i + j, 0, clonedtextElement);
                                 clonedtextElement.line = lineWidget;
                                 iIncrementer++;
-                                if (textElement.revisions.length > 0) {
+                                if (textElement.revisionLength > 0) {
                                     this.updateTextElementInRevisionRange(textElement, clonedtextElement);
                                 }
                             }
@@ -1704,7 +1753,7 @@ export class ParagraphWidget extends BlockWidget {
                                 lineWidget.children.splice(i + j, 0, clonedTextElement);
                                 clonedTextElement.line = lineWidget;
                                 iIncrementer++;
-                                if (textElement.revisions.length > 0) {
+                                if (textElement.revisionLength > 0) {
                                     this.updateTextElementInRevisionRange(textElement, clonedTextElement);
                                 }
                             } else {
@@ -1724,11 +1773,9 @@ export class ParagraphWidget extends BlockWidget {
     }
 
     private updateTextElementInRevisionRange(inline: TextElementBox, splittedElementBox: TextElementBox): void {
-        for (let i: number = 0; i < inline.revisions.length; i++) {
-            let revision: Revision = inline.revisions[i];
-            let inlineIndex: number = revision.range.indexOf(inline);
-            revision.range.splice(inlineIndex + 1, 0, splittedElementBox);
-            splittedElementBox.revisions.push(revision);
+        for (let i: number = 0; i < inline.revisionLength; i++) {
+            let revision: Revision = inline.getRevision(i);
+            splittedElementBox.addRevision(revision);
             splittedElementBox.removedIds = [];
         }
     }
@@ -1757,14 +1804,14 @@ export class ParagraphWidget extends BlockWidget {
                         && currentTxtRange.characterRange == CharacterRangeType.RightToLeft && nextTxtRange.characterRange == CharacterRangeType.RightToLeft)) &&
                         currentTxtRange.text.length > 0 && nextTxtRange.text.length > 0 &&
                         !textHelper.isWordSplitChar(currentTxtRange.text[currentTxtRange.text.length - 1]) && !textHelper.isWordSplitChar(nextTxtRange.text[0])
-                        && currentTxtRange.characterFormat.isEqualFormat(nextTxtRange.characterFormat) && this.compareRevisions(currentTxtRange.revisions, nextTxtRange.revisions)) {
+                        && currentTxtRange.characterFormat.isEqualFormat(nextTxtRange.characterFormat) && this.compareRevisions(currentTxtRange.getAllRevision(), nextTxtRange.getAllRevision())) {
                         currentTxtRange.text = currentTxtRange.text + nextTxtRange.text;
                         lineWidget.children.splice(i + 1, 1);
                         i--;
                     } else if (currentTxtRange.characterRange == CharacterRangeType.RightToLeft && nextTxtRange.characterRange == CharacterRangeType.RightToLeft &&
                         currentTxtRange.text.length > 0 && nextTxtRange.text.length > 0 &&
                         textHelper.isWordSplitChar(currentTxtRange.text[currentTxtRange.text.length - 1]) && textHelper.isWordSplitChar(nextTxtRange.text[0])
-                        && currentTxtRange.characterFormat.isEqualFormat(nextTxtRange.characterFormat) && this.compareRevisions(currentTxtRange.revisions, nextTxtRange.revisions)) {
+                        && currentTxtRange.characterFormat.isEqualFormat(nextTxtRange.characterFormat) && this.compareRevisions(currentTxtRange.getAllRevision(), nextTxtRange.getAllRevision())) {
                         currentTxtRange.text = currentTxtRange.text + nextTxtRange.text;
                         lineWidget.children.splice(i + 1, 1);
                         i--;
@@ -1796,7 +1843,7 @@ export class ParagraphWidget extends BlockWidget {
             paragraph.childWidgets.push(cloneLine);
             for (let j: number = 0; j < cloneLine.children.length; j++) {
                 let element: ElementBox = cloneLine.children[j];
-                if ((element instanceof ImageElementBox && element.textWrappingStyle !== 'Inline') || element instanceof ShapeElementBox) {
+                if ((element instanceof ImageElementBox && element.textWrappingStyle !== 'Inline') || element instanceof ShapeElementBox || element instanceof GroupShapeElementBox) {
                     paragraph.floatingElements.push(element);
                 }
             }
@@ -4770,7 +4817,7 @@ export class LineWidget implements IWidget {
                 continue;
             }
             if (!isStarted && (inlineElement instanceof TextElementBox || inlineElement instanceof ImageElementBox
-                || inlineElement instanceof ShapeElementBox || inlineElement instanceof ContentControl
+                || inlineElement instanceof ShapeElementBox || inlineElement instanceof ContentControl || inlineElement instanceof GroupShapeElementBox
                 || inlineElement instanceof BookmarkElementBox || inlineElement instanceof EditRangeEndElementBox
                 || inlineElement instanceof EditRangeStartElementBox || inlineElement instanceof CommentCharacterElementBox
                 || inlineElement instanceof FieldElementBox
@@ -4778,7 +4825,7 @@ export class LineWidget implements IWidget {
                 isStarted = true;
             }
             if (isStarted && offset <= count + inlineElement.length) {
-                if (inlineElement instanceof TextElementBox && ((inlineElement as TextElementBox).text === ' ' && inlineElement.revisions.length === 0 && isInsert)) {
+                if (inlineElement instanceof TextElementBox && ((inlineElement as TextElementBox).text === ' ' && inlineElement.revisionLength === 0 && isInsert)) {
                     let currentElement: ElementBox = this.getNextTextElement(this, i + 1);
                     inlineElement = !isNullOrUndefined(currentElement) ? currentElement : inlineElement;
                     indexInInline = isNullOrUndefined(currentElement) ? (offset - count) : 0;
@@ -4842,6 +4889,9 @@ export class LineWidget implements IWidget {
             let clone: ElementBox = element.clone();
             line.children.push(clone);
             clone.line = line;
+            if (clone instanceof GroupShapeElementBox) {
+                this.updateLineForGroupChildren(clone, line);
+            }
         }
         line.width = this.width;
         line.height = this.height;
@@ -4849,6 +4899,15 @@ export class LineWidget implements IWidget {
             line.margin = this.margin.clone();
         }
         return line;
+    }
+    private updateLineForGroupChildren(group: GroupShapeElementBox, line: LineWidget): void {
+        for (let i = 0; i < group.childWidgets.length; i++) {
+            const child = group.childWidgets[i];
+            child.line = line;
+            if (child instanceof GroupShapeElementBox) {
+                this.updateLineForGroupChildren(child, line);
+            }
+        }
     }
     /**
      * @private
@@ -4948,7 +5007,7 @@ export abstract class ElementBox {
     /**
      * @private
      */
-    public ischangeDetected: boolean = false;
+    public isChangeDetected: boolean = false;
     /**
      * @private
      */
@@ -4964,7 +5023,7 @@ export abstract class ElementBox {
     /**
      * @private
      */
-    public revisions: Revision[] = [];
+    protected revisions: Revision[] = [];
     /**
      * @private
      */
@@ -4973,10 +5032,6 @@ export abstract class ElementBox {
      * @private
      */
     public removedIds: string[] = [];
-    /**
-     * @private
-     */
-    public isMarkedForRevision: boolean = false;
     /**
      * @private
      */
@@ -5026,6 +5081,69 @@ export abstract class ElementBox {
         }
         return false;
     }
+    /**
+     * @private
+     */
+    get revisionLength(): number {
+        if (!isNullOrUndefined(this.revisions)) {
+            return this.revisions.length;
+        }
+        return 0;
+    }
+    /**
+     * @private
+     */
+    public getRevision(index: number): Revision {
+        if (!isNullOrUndefined(this.revisions)) {
+            return this.revisions[index];
+        }
+        return undefined;
+    }
+    /**
+     * @private
+     */
+    public addRevision(revision: Revision): void {
+        if (this.revisions.indexOf(revision) === -1) {
+            this.revisions.push(revision);
+        }
+        revision.hasChanges = true;
+    }
+    /**
+     * @private
+     */
+    public insertRevisionAt(index: number, revision: Revision): void {
+        this.revisions.splice(index, 0, revision)
+        revision.hasChanges = true;
+    }
+    /**
+     * @private
+     */
+    public removeRevision(index: number): void {
+        let revision: Revision = this.revisions.splice(index, 1)[0];
+        revision.hasChanges = true;
+    }
+    /**
+     * @private
+     */
+    public getAllRevision(): Revision[] {
+        return this.revisions;
+    }
+
+    /**
+     * @private
+     */
+    public setRevision(index: number, revision: Revision): void {
+        if (this.revisions) {
+            this.revisions[index] = revision;
+        }
+    }
+    /**
+     * @private
+     */
+    public clearRevision(): void {
+        this.revisions = []
+    }
+
     /**
      * @private
      */
@@ -5217,6 +5335,9 @@ export abstract class ElementBox {
      * @private
      */
     get indexInOwner(): number {
+        if ((this instanceof ShapeElementBox || this instanceof GroupShapeElementBox || this instanceof ImageElementBox || this instanceof ChartElementBox) && this.containerShape) {
+            return this.containerShape.childWidgets.indexOf(this);
+        }
         return this.line instanceof LineWidget && this.line.children ? this.line.children.indexOf(this) : -1;
     }
     /**
@@ -5224,7 +5345,10 @@ export abstract class ElementBox {
      */
     get previousElement(): ElementBox {
         let index: number = this.indexInOwner;
-        if (index > 0 && index < this.line.children.length) {
+        if ((this instanceof ShapeElementBox || this instanceof GroupShapeElementBox || this instanceof ImageElementBox || this instanceof ChartElementBox) && this.containerShape) {
+            return (index > 0 && index < this.containerShape.childWidgets.length) ? this.containerShape.childWidgets[index - 1] : undefined;
+        }
+        else if (index > 0 && index < this.line.children.length) {
             return this.line.children[index - 1];
         }
         return undefined;
@@ -5234,7 +5358,10 @@ export abstract class ElementBox {
      */
     get nextElement(): ElementBox {
         let index: number = this.indexInOwner;
-        if (index > -1 && index < this.line.children.length - 1) {
+        if ((this instanceof ShapeElementBox || this instanceof GroupShapeElementBox || this instanceof ImageElementBox || this instanceof ChartElementBox) && this.containerShape) {
+            return (index > -1 && index < this.containerShape.childWidgets.length - 1) ? this.containerShape.childWidgets[index + 1] : undefined;
+        }
+        else if (index > -1 && index < this.line.children.length - 1) {
             return this.line.children[index + 1];
         }
         return undefined;
@@ -5243,14 +5370,21 @@ export abstract class ElementBox {
      * @private
      */
     get nextNode(): ElementBox {
-        let index: number = this.line.children.indexOf(this);
-        let lineIndex: number = this.line.paragraph.childWidgets.indexOf(this.line);
-        if (index < this.line.children.length - 1) {
-            return this.line.children[index + 1];
-        } else if (lineIndex < this.line.paragraph.childWidgets.length - 1) {
-            return (this.line.paragraph.childWidgets[lineIndex + 1] as LineWidget).children[0];
+        if ((this instanceof ShapeElementBox || this instanceof GroupShapeElementBox || this instanceof ImageElementBox || this instanceof ChartElementBox) && this.containerShape) {
+            let index: number = this.containerShape.childWidgets.indexOf(this);
+            return (index < this.containerShape.childWidgets.length - 1) ? this.containerShape.childWidgets[index + 1] : undefined;
         }
-        return undefined;
+        else {
+            let index: number = this.line.children.indexOf(this);
+            let lineIndex: number = this.line.paragraph.childWidgets.indexOf(this.line);
+            if (index < this.line.children.length - 1) {
+                return this.line.children[index + 1];
+            } else if (lineIndex < this.line.paragraph.childWidgets.length - 1) {
+                return (this.line.paragraph.childWidgets[lineIndex + 1] as LineWidget).children[0];
+            }
+            return undefined;
+        }
+        
     }
     /**
      * @private
@@ -5276,17 +5410,24 @@ export abstract class ElementBox {
      * @private
      */
     get previousNode(): ElementBox {
-        let index: number = this.line.children.indexOf(this);
-        let lineIndex: number = this.line.paragraph.childWidgets.indexOf(this.line);
-        if (index > 0) {
-            return this.line.children[index - 1];
-        } else if (lineIndex > 0) {
-            let lineWidget: LineWidget = this.line.paragraph.childWidgets[lineIndex - 1] as LineWidget;
-            return lineWidget.children[lineWidget.children.length - 1];
+        if ((this instanceof ShapeElementBox || this instanceof GroupShapeElementBox || this instanceof ImageElementBox || this instanceof ChartElementBox) && this.containerShape) {
+            let index: number = this.containerShape.childWidgets.indexOf(this);
+            return (index > 0) ? this.containerShape.childWidgets[index - 1] : undefined; 
         }
-        return undefined;
+        else {
+            let index: number = this.line.children.indexOf(this);
+            let lineIndex: number = this.line.paragraph.childWidgets.indexOf(this.line);
+            if (index > 0) {
+                return this.line.children[index - 1];
+            } else if (lineIndex > 0) {
+                let lineWidget: LineWidget = this.line.paragraph.childWidgets[lineIndex - 1] as LineWidget;
+                return lineWidget.children[lineWidget.children.length - 1];
+            }
+            return undefined;
+        }
     }
     /** 
+     * 
      * @private 
      */
     get paragraph(): ParagraphWidget {
@@ -5449,15 +5590,15 @@ export class FieldElementBox extends ElementBox {
         field.width = this.width;
         field.height = this.height;
         if (!isNullOrUndefined(this.paragraph) && this.paragraph.isInHeaderFooter) {
-            if (this.revisions.length > 0) {
-                for (let i: number = 0; i < this.revisions.length; i++) {
-                    let revision: Revision = this.revisions[i];
-                    field.revisions.push(revision.clone());
+            if (this.revisionLength > 0) {
+                for (let i: number = 0; i < this.revisionLength; i++) {
+                    let revision: Revision = this.getRevision(i);
+                    field.addRevision(revision.clone());
                 }
             }
         } else {
-            if (this.revisions.length > 0) {
-                field.removedIds = Revision.cloneRevisions(this.revisions);
+            if (this.revisionLength > 0) {
+                field.removedIds = Revision.cloneRevisions(this.getAllRevision());
                 if (this.fieldEnd) {
                     field.hasFieldEnd = this.hasFieldEnd;
                 }
@@ -5821,10 +5962,10 @@ export class TextElementBox extends ElementBox {
         }
         textEle.baselineOffset = this.baselineOffset;
         if (!isNullOrUndefined(this.paragraph) && this.paragraph.isInHeaderFooter) {
-            if (this.revisions.length > 0) {
-                for (let i: number = 0; i < this.revisions.length; i++) {
-                    let revision: Revision = this.revisions[i];
-                    textEle.revisions.push(revision.clone());
+            if (this.revisionLength > 0) {
+                for (let i: number = 0; i < this.revisionLength; i++) {
+                    let revision: Revision = this.getRevision(i);
+                    textEle.addRevision(revision.clone());
                 }
             }
         } else {
@@ -5832,8 +5973,8 @@ export class TextElementBox extends ElementBox {
             if (this.paragraph && this.paragraph.isInsideTable && this.paragraph.containerWidget instanceof TableCellWidget && this.paragraph.containerWidget.ownerRow.rowFormat.isHeader) {
                 textEle.revisions = this.revisions;
             } else {
-                if (this.revisions.length > 0) {
-                    textEle.removedIds = Revision.cloneRevisions(this.revisions);
+                if (this.revisionLength > 0) {
+                    textEle.removedIds = Revision.cloneRevisions(this.getAllRevision());
                 } else {
                     textEle.removedIds = this.removedIds.slice();
                 }
@@ -6007,15 +6148,15 @@ export class FootnoteElementBox extends TextElementBox {
         }
         span.bodyWidget.page = this.bodyWidget.page;
         if (!isNullOrUndefined(this.paragraph) && this.paragraph.isInHeaderFooter) {
-            if (this.revisions.length > 0) {
-                for (let i: number = 0; i < this.revisions.length; i++) {
-                    let revision: Revision = this.revisions[i];
-                    span.revisions.push(revision.clone());
+            if (this.revisionLength > 0) {
+                for (let i: number = 0; i < this.revisionLength; i++) {
+                    let revision: Revision = this.getRevision(i);
+                    span.addRevision(revision.clone());
                 }
             }
         } else {
-            if (this.revisions.length > 0) {
-                span.removedIds = Revision.cloneRevisions(this.revisions);
+            if (this.revisionLength > 0) {
+                span.removedIds = Revision.cloneRevisions(this.getAllRevision());
             } else {
                 span.removedIds = this.removedIds.slice();
             }
@@ -6124,15 +6265,15 @@ export class FieldTextElementBox extends TextElementBox {
             fieldSpan.margin = this.margin.clone();
         }
         if (!isNullOrUndefined(this.paragraph) && this.paragraph.isInHeaderFooter) {
-            if (this.revisions.length > 0) {
-                for (let i: number = 0; i < this.revisions.length; i++) {
-                    let revisionChanges: Revision = this.revisions[i];
-                    fieldSpan.revisions.push(revisionChanges.clone());
+            if (this.revisionLength > 0) {
+                for (let i: number = 0; i < this.revisionLength; i++) {
+                    let revisionChanges: Revision = this.getRevision(i);
+                    fieldSpan.addRevision(revisionChanges.clone());
                 }
             }
         } else {
-            if (this.revisions.length > 0) {
-                fieldSpan.removedIds = Revision.cloneRevisions(this.revisions);
+            if (this.revisionLength > 0) {
+                fieldSpan.removedIds = Revision.cloneRevisions(this.getAllRevision());
             } else {
                 fieldSpan.removedIds = this.removedIds.slice();
             }
@@ -6197,15 +6338,15 @@ export class TabElementBox extends TextElementBox {
         tabSpan.width = this.width;
         tabSpan.height = this.height;
         if (!isNullOrUndefined(this.paragraph) && this.paragraph.isInHeaderFooter) {
-            if (this.revisions.length > 0) {
-                for (let i: number = 0; i < this.revisions.length; i++) {
-                    let revision: Revision = this.revisions[i];
-                    tabSpan.revisions.push(revision.clone());
+            if (this.revisionLength > 0) {
+                for (let i: number = 0; i < this.revisionLength; i++) {
+                    let revision: Revision = this.getRevision(i);
+                    tabSpan.addRevision(revision.clone());
                 }
             }
         } else {
-            if (this.revisions.length > 0) {
-                tabSpan.removedIds = Revision.cloneRevisions(this.revisions);
+            if (this.revisionLength > 0) {
+                tabSpan.removedIds = Revision.cloneRevisions(this.getAllRevision());
             } else {
                 tabSpan.removedIds = this.removedIds.slice();
             }
@@ -6306,8 +6447,8 @@ export class BookmarkElementBox extends ElementBox {
         if (this.margin) {
             span.margin = this.margin.clone();
         }
-        if (this.revisions.length > 0) {
-            span.removedIds = Revision.cloneRevisions(this.revisions);
+        if (this.revisionLength > 0) {
+            span.removedIds = Revision.cloneRevisions(this.getAllRevision());
         } else {
             span.removedIds = this.removedIds.slice();
         }
@@ -6363,15 +6504,15 @@ export class ContentControl extends ElementBox {
             span.margin = this.margin.clone();
         }
         if (!isNullOrUndefined(this.paragraph) && this.paragraph.isInHeaderFooter) {
-            if (this.revisions.length > 0) {
-                for (let i: number = 0; i < this.revisions.length; i++) {
-                    let revisionChange: Revision = this.revisions[i];
-                    span.revisions.push(revisionChange.clone());
+            if (this.revisionLength > 0) {
+                for (let i: number = 0; i < this.revisionLength; i++) {
+                    let revisionChange: Revision = this.getRevision(i);
+                    span.addRevision(revisionChange.clone());
                 }
             }
         } else {
-            if (this.revisions.length > 0) {
-                span.removedIds = Revision.cloneRevisions(this.revisions);
+            if (this.revisionLength > 0) {
+                span.removedIds = Revision.cloneRevisions(this.getAllRevision());
             } else {
                 span.removedIds = this.removedIds.slice();
             }
@@ -6767,15 +6908,34 @@ export class ShapeCommon extends ElementBox {
      */
 
     public clone(): ShapeCommon {
-        let shape: ShapeElementBox = new ShapeElementBox();
+        let shape: GroupShapeElementBox | ShapeElementBox = this instanceof GroupShapeElementBox ? new GroupShapeElementBox() : new ShapeElementBox();
         return shape;
-
     }
 }
 /** 
  * @private
  */
 export class ShapeBase extends ShapeCommon {
+    /**
+     * @private
+     */
+    public shapeX: number;
+    /**
+     * @private
+     */
+    public shapeY: number;
+    /**
+     * @private
+     */
+    public shapeHeight: number;
+    /**
+     * @private
+     */
+    public shapeWidth: number;
+    /**
+     * @private
+     */
+    public containerShape: GroupShapeElementBox;
     /**
      * @private
      */
@@ -6924,6 +7084,10 @@ export class ShapeElementBox extends ShapeBase {
         shape.layoutInCell = this.layoutInCell;
         shape.lockAnchor = this.lockAnchor;
         shape.autoShapeType = this.autoShapeType;
+        shape.shapeX = this.shapeX;
+        shape.shapeY = this.shapeY;
+        shape.shapeHeight = this.shapeHeight;
+        shape.shapeWidth = this.shapeWidth;
         if (this.lineFormat) {
             shape.lineFormat = this.lineFormat.clone();
         }
@@ -6938,20 +7102,145 @@ export class ShapeElementBox extends ShapeBase {
             shape.margin = this.margin.clone();
         }
         if (!isNullOrUndefined(this.paragraph) && this.paragraph.isInHeaderFooter) {
-            if (this.revisions.length > 0) {
-                for (let i: number = 0; i < this.revisions.length; i++) {
-                    let revision: Revision = this.revisions[i];
-                    shape.revisions.push(revision.clone());
+            if (this.revisionLength > 0) {
+                for (let i: number = 0; i < this.revisionLength; i++) {
+                    let revision: Revision = this.getRevision(i);
+                    shape.addRevision(revision.clone());
                 }
             }
         } else {
-            if (this.revisions.length > 0) {
-                shape.removedIds = Revision.cloneRevisions(this.revisions);
+            if (this.revisionLength > 0) {
+                shape.removedIds = Revision.cloneRevisions(this.getAllRevision());
             } else {
                 shape.removedIds = this.removedIds.slice();
             }
         }
         return shape;
+    }
+}
+/** 
+ * @private
+ */
+export class GroupShapeElementBox  extends ShapeBase {
+    /**
+     * @private
+     */
+    public isZeroHeight: boolean;
+    /**
+     * @private
+     */
+    public autoShapeType: AutoShapeType;
+    /**
+     * @private
+     */
+    public childWidgets: any[] = [];
+    /**
+     * @private
+     */
+    public offsetXValue: number;
+    /**
+     * @private
+     */
+    public offsetYValue: number;
+    /**
+     * @private
+     */
+    public extentXValue: number;
+    /**
+     * @private
+     */
+    public extentYValue: number;
+    /**
+     * @private
+     */
+    public clone(): GroupShapeElementBox {
+        const group = new GroupShapeElementBox();
+        group.characterFormat.copyFormat(this.characterFormat);
+        group.x = this.x;
+        group.y = this.y;
+        group.width = this.width;
+        group.height = this.height;
+        group.shapeId = this.shapeId;
+        group.name = this.name;
+        group.alternateText = this.alternateText;
+        group.title = this.title;
+        group.widthScale = this.widthScale;
+        group.heightScale = this.heightScale;
+        group.visible = this.visible;
+        group.verticalPosition = this.verticalPosition;
+        group.verticalAlignment = this.verticalAlignment;
+        group.verticalOrigin = this.verticalOrigin;
+        group.verticalRelativePercent = this.verticalRelativePercent;
+        group.horizontalPosition = this.horizontalPosition;
+        group.horizontalAlignment = this.horizontalAlignment;
+        group.horizontalOrigin = this.horizontalOrigin;
+        group.horizontalRelativePercent = this.horizontalRelativePercent;
+        group.heightRelativePercent = this.heightRelativePercent;
+        group.widthRelativePercent = this.widthRelativePercent;
+        group.zOrderPosition = this.zOrderPosition;
+        group.allowOverlap = this.allowOverlap;
+        group.textWrappingStyle = this.textWrappingStyle;
+        group.textWrappingType = this.textWrappingType;
+        group.distanceBottom = this.distanceBottom;
+        group.distanceLeft = this.distanceLeft;
+        group.distanceRight = this.distanceRight;
+        group.distanceTop = this.distanceTop;
+        group.editingPoints = this.editingPoints;
+        group.layoutInCell = this.layoutInCell;
+        group.lockAnchor = this.lockAnchor;
+        group.isZeroHeight = this.isZeroHeight;
+        group.autoShapeType = this.autoShapeType;
+        group.offsetXValue = this.offsetXValue;
+        group.offsetYValue = this.offsetYValue;
+        group.extentXValue = this.extentXValue;
+        group.extentYValue = this.extentYValue;
+        group.shapeX = this.shapeX;
+        group.shapeY = this.shapeY;
+        group.shapeHeight =  this.shapeHeight;
+        group.shapeWidth = this.shapeWidth;
+        if (this.lineFormat) {
+            group.lineFormat = this.lineFormat.clone();
+        }
+        if (this.fillFormat) {
+            group.fillFormat = this.fillFormat.clone();
+        }
+        if (this.margin) {
+            group.margin = this.margin.clone();
+        }
+        if (!isNullOrUndefined(this.paragraph) && this.paragraph.isInHeaderFooter) {
+            if (this.revisions.length > 0) {
+                for (let i: number = 0; i < this.revisions.length; i++) {
+                    let revision: Revision = this.revisions[i];
+                    group.revisions.push(revision.clone());
+                }
+            }
+        } else {
+            if (this.revisions.length > 0) {
+                group.removedIds = Revision.cloneRevisions(this.revisions);
+            } else {
+                group.removedIds = this.removedIds.slice();
+            }
+        }
+        for (let i: number = 0; i < this.childWidgets.length; i++) {
+            let child: any = this.childWidgets[i];
+            child = (child as ElementBox).clone();
+            if (isNullOrUndefined(child.line)) {
+                child.line = this.line;
+            }
+            child.containerShape = group;
+            group.childWidgets.push(child);
+        }
+        return group;
+    }
+    public destroy(): void {
+        this.isZeroHeight = undefined;
+        this.autoShapeType = undefined;
+        this.childWidgets = undefined;
+        this.offsetXValue = undefined;
+        this.offsetYValue = undefined;
+        this.extentXValue = undefined;
+        this.extentYValue = undefined;
+        super.destroy();
     }
 }
 /** 
@@ -7234,19 +7523,23 @@ export class ImageElementBox extends ShapeBase {
         image.isCrop = this.isCrop;
         image.x = this.x;
         image.y = this.y;
+        image.shapeX = this.shapeX;
+        image.shapeY = this.shapeY;
+        image.shapeHeight = this.shapeHeight;
+        image.shapeWidth = this.shapeWidth;
         if (this.margin) {
             image.margin = this.margin.clone();
         }
         if (!isNullOrUndefined(this.paragraph) && this.paragraph.isInHeaderFooter) {
-            if (this.revisions.length > 0) {
-                for (let i: number = 0; i < this.revisions.length; i++) {
-                    let revision: Revision = this.revisions[i];
-                    image.revisions.push(revision.clone());
+            if (this.revisionLength > 0) {
+                for (let i: number = 0; i < this.revisionLength; i++) {
+                    let revision: Revision = this.getRevision(i);
+                    image.addRevision(revision.clone());
                 }
             }
         } else {
-            if (this.revisions.length > 0) {
-                image.removedIds = Revision.cloneRevisions(this.revisions);
+            if (this.revisionLength > 0) {
+                image.removedIds = Revision.cloneRevisions(this.getAllRevision());
             } else {
                 image.removedIds = this.removedIds.slice();
             }
@@ -7641,12 +7934,21 @@ export class ChartElementBox extends ImageElementBox {
      */
     public clone(): ChartElementBox {
         let chart: ChartElementBox = new ChartElementBox();
+        chart.x = this.x;
+        chart.y = this.y;
         chart.chartTitle = this.chartTitle;
         chart.chartType = this.chartType;
         chart.height = this.height;
         chart.width = this.width;
         chart.gapWidth = this.gapWidth;
         chart.overlap = this.overlap;
+        chart.imageString = this.imageString;
+        chart.element.src = this.imageString;
+        chart.officeChart = this.officeChart;
+        chart.shapeX = this.shapeX;
+        chart.shapeY = this.shapeY;
+        chart.shapeHeight = this.shapeHeight;
+        chart.shapeWidth = this.shapeWidth;
         for (let i: number = 0; i < this.chartCategory.length; i++) {
             let chartCategory: ChartCategory = (this.chartCategory[i] as ChartCategory).clone();
             chart.chartCategory.push(chartCategory);
@@ -10222,15 +10524,15 @@ export class FootnoteEndnoteMarkerElementBox extends TextElementBox {
         }
         footEndEle.baselineOffset = this.baselineOffset;
         if (!isNullOrUndefined(this.paragraph) && this.paragraph.isInHeaderFooter) {
-            if (this.revisions.length > 0) {
-                for (let i: number = 0; i < this.revisions.length; i++) {
-                    let revision: Revision = this.revisions[i];
-                    footEndEle.revisions.push(revision.clone());
+            if (this.revisionLength > 0) {
+                for (let i: number = 0; i < this.revisionLength; i++) {
+                    let revision: Revision = this.getRevision(i);
+                    footEndEle.addRevision(revision.clone());
                 }
             }
         } else {
-            if (this.revisions.length > 0) {
-                footEndEle.removedIds = Revision.cloneRevisions(this.revisions);
+            if (this.revisionLength > 0) {
+                footEndEle.removedIds = Revision.cloneRevisions(this.getAllRevision());
             } else {
                 footEndEle.removedIds = this.removedIds.slice();
             }

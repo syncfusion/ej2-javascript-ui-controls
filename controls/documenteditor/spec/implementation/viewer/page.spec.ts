@@ -26,9 +26,9 @@ describe('Numbering apply validation in different scenario', () => {
     editor.destroy();
     document.body.removeChild(document.getElementById('container'));
     editor = undefined;
-    document.body.innerHTML = '';
+    
     setTimeout(function () {
-      document.body.innerHTML = '';
+      
       done();
     }, 1000);
   });
@@ -63,9 +63,9 @@ describe('Get Minimum and maximum width form cell', () => {
     editor.destroy();
     document.body.removeChild(document.getElementById('container'));
     editor = undefined;
-    document.body.innerHTML = '';
+    
     setTimeout(() => {
-      document.body.innerHTML = '';
+      
       done();
     }, 500);
   });
@@ -115,7 +115,7 @@ describe('Comment element validation', () => {
     editor.destroy();
     document.body.removeChild(document.getElementById('container'));
     editor = undefined;
-    document.body.innerHTML = '';
+    
     setTimeout(function () {
       done();
     }, 1000);
@@ -144,7 +144,7 @@ describe('Table width greater than container width validation', () => {
     editor.destroy();
     document.body.removeChild(document.getElementById('container'));
     editor = undefined;
-    document.body.innerHTML = '';
+    
     setTimeout(function () {
       done();
     }, 1000);
@@ -175,7 +175,7 @@ describe('Page number validation', () => {
     editor.destroy();
     document.body.removeChild(document.getElementById('container'));
     editor = undefined;
-    document.body.innerHTML = '';
+    
     setTimeout(function () {
       done();
     }, 1000);

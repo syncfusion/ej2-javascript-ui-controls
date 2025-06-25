@@ -81,7 +81,7 @@ export class WorkbookHyperlink {
                 if (cell.rowSpan < 1 || cell.colSpan < 1) {
                     continue;
                 }
-                cellModel = { hyperlink: hyperlink };
+                cellModel = { hyperlink: typeof hyperlink === 'object' ? Object.assign({}, hyperlink) : hyperlink };
                 if (!isNullOrUndefined(args.displayText)) {
                     if (args.triggerEvt || args.isUndoRedo) {
                         if (rIdx === activeCell[0] && cIdx === activeCell[1]) {
@@ -100,6 +100,7 @@ export class WorkbookHyperlink {
                 }
             }
         }
+        this.parent.setUsedRange(cellIdx[2], cellIdx[3]);
     }
 
     /**

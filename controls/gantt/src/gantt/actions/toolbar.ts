@@ -277,11 +277,7 @@ export class Toolbar {
                 return;
             } else {
                 if (arg.item['properties'].id === this.parent.element.id + '_pdfexport' || arg.item['properties'].id === this.parent.element.id + '_critical-path') {
-                    if (!isNullOrUndefined(this.parent.loadingIndicator) && this.parent.loadingIndicator.indicatorType === 'Shimmer') {
-                        this.parent.showMaskRow();
-                    } else {
-                        this.parent.showSpinner();
-                    }
+                    this.parent['showLoadingIndicator']();
                 }
                 if (this.parent.isAdaptive === true) {
                     if (args.item.id === gID + '_edit' || args.item.id === gID + '_add' || args.item.id === gID + '_delete'

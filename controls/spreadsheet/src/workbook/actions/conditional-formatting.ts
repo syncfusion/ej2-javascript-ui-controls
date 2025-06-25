@@ -101,7 +101,12 @@ export class WorkbookConditionalFormat {
                     }
                 });
             }
-            cfRule.push(...args.oldCFModel.map((item: ConditionalFormatModel) => Object.assign({}, item)));
+            cfRule.push(...args.oldCFModel.map((item: ConditionalFormat): ConditionalFormat => {
+                return <ConditionalFormat>{
+                    range: item.range, type: item.type, cFColor: item.cFColor, value: item.value,
+                    format: item.format, result: item.result, action: item.action
+                };
+            }));
             this.parent.notify(applyCF, <ApplyCFArgs>{ cfModel: args.oldCFModel, isAction: true });
             if (args.sheetIdx !== this.parent.activeSheetIndex) {
                 this.parent.notify(goto, { address: sheet.name + '!' + args.range });

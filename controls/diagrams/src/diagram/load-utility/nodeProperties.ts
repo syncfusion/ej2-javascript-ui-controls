@@ -1,6 +1,6 @@
 import { Gradient } from '../core/appearance';
 import { Canvas } from '../core/containers/canvas';
-import { Container } from '../core/containers/container';
+import { GroupableView } from '../core/containers/container';
 import { Diagram } from '../diagram';
 import { GradientType, HorizontalAlignment, IconShapes, NodeConstraints, VerticalAlignment } from '../enum/enum';
 import { AnnotationModel } from '../objects/annotation-model';

@@ -19,6 +19,73 @@
     .e-de-ctnr-group-btn-middle button {
         border-radius: 0px;
     }
+    .e-de-property-label-container {
+        align-content: center;
+        width: 100px;
+    }
+    .e-de-indent-label-container {
+        align-content: center;
+        width: 80px;
+    }
+
+    .e-de-picture-label-container {
+        align-content: center;
+        width: 45px; 
+    }
+
+    .e-de-ctnr-picture-format-tab {
+        position: relative;
+        width: 100%;
+        display: flex;
+        @if $skin-name != 'Material3' {
+        height: 30px;
+        }
+    }
+
+    .e-de-ribbon-property-label {
+        font-size: $de-ribbon-property-label;
+    }
+
+    .e-ribbon-gallery-wrapper .e-ribbon-gallery-item .e-ribbon-gallery-text,
+    .e-ribbon-gallery-popup.e-popup .e-ribbon-gallery-item .e-ribbon-gallery-text {
+        font-family: inherit;
+        font-size: inherit;
+        color: inherit;
+        font-weight: inherit;
+    }
+
+    .e-de-ctnr-layout-ribbon-segment {
+        margin-right: $de-ctnr-margin-bottom;
+        margin-bottom: $de-ctnr-layout-margin-bottom;
+    }
+    .e-de-ctnr-picture-ribbon-segment {
+        @if $skin-name != 'Material3' {
+        margin-right: $de-ctnr-margin-bottom;
+        margin-bottom: $de-ctnr-picture-margin-bottom;
+        }
+    }
+
+    .e-de-ribbon-border-size-button,
+    .e-de-ribbon-border-color-picker {
+        height: $de-border-size-button-height;
+        @if $skin-name =='tailwind' {
+            width: 85px;
+        }
+        @else if $skin-name == 'tailwind3' {
+            width: 103px;
+        }
+        @else {
+            width: $de-border-size-button-width;
+            margin-top: 2px;
+        }
+    }
+    .e-de-prop-bordersize .e-split-btn-wrapper .e-split-colorpicker .e-selected-color {
+    width: 50px !important;
+}
+    .e-de-ribbon-border-color-picker .e-selected-color {
+        width: 50px !important;
+    }
+
     @if ($skin-name=='Material3') {
         .e-de-review-pane button.e-de-close-icon {
             background: transparent;
@@ -317,6 +384,14 @@
         height: $de-ctnr-editor-height;
         width: 100%;
     }
+    .e-de-ribbon-simplified-ctnr-properties-pane {
+        height: $de-ribbon-simplified-ctnr-editor-height;
+        width: 100%;
+    }
+    .e-de-ribbon-classic-ctnr-properties-pane {
+        height: $de-ribbon-classic-editor-height;
+        width: 100%;
+    }
     .e-de-statusbar-separator {
         border-left: 1px solid $e-de-statusbar-separator-color;
         height: 16px;
@@ -374,7 +449,9 @@
         }
     }
     .e-de-tool-ctnr-properties-pane,
-    .e-de-ctnr-properties-pane {
+    .e-de-ctnr-properties-pane,
+    .e-de-ribbon-simplified-ctnr-properties-pane,
+    .e-de-ribbon-classic-ctnr-properties-pane {
         background: $de-ctnr-prop-bg-clr;
         border-bottom: 1px solid $de-panel-border;
         border-top: 1px solid $de-panel-border;
@@ -656,6 +733,9 @@
         pointer-events: none;
         touch-action: none;
         width: 100%;
+    }
+    .e-de-hide-track-btn {
+        display: none;
     }
     @if $skin-name == 'bootstrap5.3' {
         .e-de-status-bar {
@@ -1490,6 +1570,7 @@
         margin-top: $de-table-prop-border-margin;
         width: $de-border-size-button-width;
     }
+
     .e-de-color-picker {
         height: $de-border-size-button-height;
         width: $de-border-size-button-width;

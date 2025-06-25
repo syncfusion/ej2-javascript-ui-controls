@@ -502,7 +502,7 @@ export class Resize extends ActionBase {
             }
             this.actionObj.event[this.parent.eventFields.isAllDay] = false;
         }
-        let width: number = !isLeft && ((offsetWidth + this.actionObj.clone.offsetLeft > this.scrollArgs.width)) ?
+        let width: number = !isLeft && (Math.floor(offsetWidth + this.actionObj.clone.offsetLeft) > this.scrollArgs.width) ?
             this.parent.getElementWidth(this.actionObj.clone) : (offsetWidth < this.actionObj.cellWidth) ? offsetWidth : offsetWidth;
         if (this.parent.enableRtl) {
             let rightValue: number = isTimelineView ? parseInt(this.actionObj.element.style.right, 10) :

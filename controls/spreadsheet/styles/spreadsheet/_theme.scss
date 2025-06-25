@@ -871,6 +871,53 @@
             border-right-color: $spreadsheet-hdr-selection-border-color;
           }
         }
+        & .e-cell.e-vborderright,
+        .e-cell.e-vcborderright {
+          border-left: 1px dashed $vborder-selection;
+        }
+        & .e-cell.e-pborderright {
+          border-left: 1px dashed $pborder-selection;
+        }
+        & .e-cell.e-cborderright {
+          border-left: 1px dashed $cborder-selection;
+        }
+        & .e-cell.e-gborderright {
+          border-left: 1px dashed $gborder-selection;
+        }
+        & .e-cell.e-oborderright {
+          border-left: 1px dashed $oborder-selection;
+        }
+        & .e-cell.e-bborderright,
+        .e-cell.e-bcborderright {
+          border-left: 1px dashed $bborder-selection;
+        }
+        & .e-cell.e-rcborderright {
+          border-left: 1px dashed $dlg-error-color;
+        }
+      }
+
+      & .e-cell.e-vborderbottom,
+      .e-cell.e-vcborderbottom {
+        border-bottom: 1px dashed $vborder-selection;
+      }
+      & .e-cell.e-pborderbottom {
+        border-bottom: 1px dashed $pborder-selection;
+      }
+      & .e-cell.e-cborderbottom {
+        border-bottom: 1px dashed $cborder-selection;
+      }
+      & .e-cell.e-gborderbottom {
+        border-bottom: 1px dashed $gborder-selection;
+      }
+      & .e-cell.e-oborderbottom {
+        border-bottom: 1px dashed $oborder-selection;
+      }
+      & .e-cell.e-bborderbottom,
+      .e-cell.e-bcborderbottom {
+        border-bottom: 1px dashed $bborder-selection;
+      }
+      & .e-cell.e-rcborderbottom {
+        border-bottom: 1px dashed $dlg-error-color;
       }
     }
 
@@ -1072,67 +1119,384 @@
         }
       }
     }
-    
+
+    &.sf-spreadsheet {
+
+      .e-table tr .e-cell .e-hyperlink-style {
+        text-decoration: underline;
+      }
+      .e-table tr .e-cell .e-hyperlink-style:visited {
+        color: rgba(149, 79, 114);
+      }
+      .e-row-header .e-row.e-row-hidetext .e-header-cell {
+        color: $header-cell-bg-color;
+      }
+      .e-sheet-content .e-table .e-row.e-row-hidetext .e-cell {
+        color: $cell-background;
+        .e-hyperlink-style {
+          color: $cell-background;
+        }
+      }
+      .e-resize-helper,
+      .e-sheet-panel .e-resize-helper {
+        border-color: $selection-border-color;
+      }
+      .e-spreadsheet-ribbon {
+        .e-ribbon-simplified-mode {
+          .e-ribbon-file-menu:not(:hover):not(.e-active),
+          .e-tab-header,
+          .e-ribbon-help-template {
+            @if $skin-name == 'fluent2' {
+              background-color: var(--color-sf-content-bg-color-alt1);
+            }
+            @else if $skin-name == 'FluentUI' {
+              background: $sheet-tab-bg-color;
+            }
+          }
+          .e-ribbon-tab {
+            @if $skin-name == 'FluentUI' {
+              background: $sheet-tab-bg-color;
+            }
+          }
+          .e-tab-header .e-toolbar-item {
+            .e-tab-wrap:hover .e-tab-text {
+              @if $skin-name =='fluent2' {
+                color: var(--color-sf-content-text-color);
+              }
+            }
+
+            &:not(.e-active) .e-tab-wrap {
+              @if $skin-name =='tailwind3' {
+                color: var(--color-sf-content-text-color-alt3);
+              }
+            }
+
+            &:not(.e-active) .e-tab-wrap:hover .e-tab-text {
+              @if $skin-name =='tailwind3' {
+                color: var(--color-sf-content-text-color-alt1);
+              }
+            }
+          }
+          .e-ribbon-file-menu {
+            @if $skin-name =='fluent2' {
+              color: var(--color-sf-content-text-color);
+            }
+
+            &:hover:not(.e-active) {
+              @if $skin-name =='fluent2' {
+                color: var(--color-sf-content-text-color);
+                background-color: var(--color-sf-content-bg-color-hover);
+                border-radius: 0;
+              }
+
+              @else if $skin-name =='tailwind3' {
+                color: var(--color-sf-content-text-color-alt3);
+              }
+
+              @else if $skin-name =='bootstrap5' {
+                color: $gray-900;
+              }
+
+              @else if $skin-name =='Material3' {
+                color: rgba(var(--color-sf-on-surface));
+              }
+            }
+
+            &.e-active {
+              @if $skin-name =='fluent2' {
+                /* stylelint-disable */
+                background: var(--color-sf-primary) !important;
+                color: var(--color-sf-primary-text-color) !important;
+                border-radius: 0;
+                /* stylelint-enable */
+              }
+              @else if $skin-name =='tailwind3' {
+                background: var(--color-sf-secondary-bg-color-pressed);
+                color: var(--color-sf-content-text-color-alt3);
+              }
+            }
+          }
+
+          .e-content {
+            .e-btn {
+              &.e-flat:focus {
+                @if $skin-name == 'bootstrap5' {
+                  box-shadow: none;
+                }
+              }
+              &:not(.e-ribbon-file-menu):hover {
+                @if $skin-name == 'fluent2' {
+                  border-color: rgba(0, 0, 0, 0);
+                }
+              }
+              &:not(:focus):not(.e-tbar-btn) {
+                &:not(:hover):not(.e-active):not(.e-overlay) .e-icons {
+                  @if $skin-name == 'tailwind3'{
+                    color: var(--color-sf-icon-color);
+                  }
+                }
+                &:hover:not(.e-active) {
+                  @if $skin-name == 'fluent2' {
+                    background: var(--color-sf-content-bg-color-hover);
+                    border-color: rgba(0, 0, 0, 0);
+                    color: var(--color-sf-content-text-color-hover);
+                  }
+                  @else if $skin-name =='tailwind3' {
+                    border-color: rgba(0, 0, 0, 0);
+                    background: var(--color-sf-secondary-bg-color-hover);
+                  }
+                  @else if $skin-name == 'FluentUI'{
+                    background: $gray30;
+                    border-color: rgba(0, 0, 0, 0);
+                  }
+                  @else if $skin-name == 'tailwind'{
+                    background: $cool-gray-200;
+                    color: $cool-gray-700;
+                  }
+                  @else if $skin-name == 'highcontrast'{
+                    color: rgb(255, 255, 255);
+                    background: rgb(104, 87, 8);
+                    border-color: rgb(255, 255, 255);
+                  }
+                }
+                &.e-active {
+                  @if $skin-name == 'tailwind3'{
+                    border-color: rgba(0, 0, 0, 0);
+                  }
+                  & .e-btn-icon.e-icons:not(.e-caret) {
+                    @if $skin-name =='fluent2' {
+                      color: var(--color-sf-toolbar-icon-color);
+                    }
+                  }
+                  &:not(:focus):not(.e-tbar-btn) .e-btn-icon.e-icons:not(.e-caret) {
+                    @if $skin-name == 'tailwind3'{
+                      color: var(--color-sf-flyout-text-color);
+                    }
+                  }
+                }
+              }
+
+              &:focus:not(.e-active) {
+                .e-btn-icon.e-icons:not(.e-caret) {
+                  @if $skin-name =='fluent2' {
+                    color: var(--color-sf-toolbar-icon-color);
+                  }
+                }
+              }
+              &.e-active {
+                .e-btn-icon.e-icons:not(.e-caret) {
+                  @if $skin-name =='fluent2' {
+                    color: var(--color-sf-toolbar-icon-color);
+                  }
+                }
+              }
+              &:not(.e-tbar-btn).e-active{
+                @if $skin-name == 'Material3' {
+                  background: rgba(var(--color-sf-primary-container));
+                  border-color: rgba(0, 0, 0, 0);
+                  border-radius: 4px;
+                }
+              }
+            }
+            .e-dropdown-btn.e-color-picker {
+              &.e-active,
+              &:hover {
+                @if $skin-name == 'bootstrap5' {
+                  background: rgb(91.8, 99.45, 106.25);
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+
     & .e-datavalidation-dlg .e-dlg-error {
       color: $dlg-error-color;
     }
   }
 
+  .e-ribbon-overflow-target .e-ribbonoverflow {
+    .e-btn {
+      &:hover {
+        @if $skin-name == 'fluent2' {
+          border-color: rgba(0, 0, 0, 0);
+        }
+      }
+
+      &:not(.e-active):hover {
+        @if $skin-name == 'fluent2' {
+          & .e-btn-icon.e-icons:not(.e-caret) {
+            color: var(--color-sf-toolbar-icon-color);
+          }
+        }
+      }
+
+      &:not(:focus):not(.e-tbar-btn) {
+        &:not(:hover):not(.e-active):not(.e-overlay) .e-icons {
+          @if $skin-name == 'tailwind3'{
+            color: var(--color-sf-icon-color);
+          }
+          @if $skin-name == 'bootstrap5'{
+            color: var(--bs-gray);
+          }
+        }
+        &:hover:not(.e-active) {
+          @if $skin-name == 'fluent2' {
+            background: var(--color-sf-content-bg-color-hover);
+            border-color: rgba(0, 0, 0, 0);
+            color: var(--color-sf-content-text-color-hover);
+          }
+          @else if $skin-name =='tailwind3' {
+            border-color: rgba(0, 0, 0, 0);
+            background: var(--color-sf-secondary-bg-color-hover);
+          }
+          @else if $skin-name == 'FluentUI'{
+            background: $gray30;
+            border-color: rgba(0, 0, 0, 0);
+          }
+          @else if $skin-name == 'tailwind'{
+            background: $cool-gray-200;
+            color: $cool-gray-700;
+          }
+          @else if $skin-name == 'highcontrast'{
+            color: rgb(255, 255, 255);
+            background: rgb(104, 87, 8);
+            border-color: rgb(255, 255, 255);
+          }
+          & .e-icons {
+            @if $skin-name == 'bootstrap5'{
+              color: var(--bs-white);
+            }
+          }
+        }
+        &.e-active {
+          @if $skin-name == 'tailwind3'{
+            border-color: rgba(0, 0, 0, 0);
+          }
+          & .e-btn-icon.e-icons:not(.e-caret) {
+            @if $skin-name =='fluent2' {
+              color: var(--color-sf-toolbar-icon-color);
+            }
+            @if $skin-name =='bootstrap5' {
+              color: var(--bs-white);
+            }
+          }
+          & .e-btn-icon.e-caret {
+            @if $skin-name == 'bootstrap5' {
+              color: var(--bs-white);
+            }
+          }
+        }
+      }
+    
+      &.e-flat:not(:hover):not(.e-active) {
+        @if $skin-name == 'bootstrap5' {
+          color: $gray-900;
+        }
+      }
+
+      &:not(:hover):not(.e-active) {
+        @if $skin-name == 'bootstrap5' {
+          color: $gray-900;
+        }
+      }
+      &.e-flat:focus {
+        @if $skin-name == 'bootstrap5' {
+          box-shadow: none;
+        }
+      }
+      &:focus:not(.e-active) {
+        .e-btn-icon.e-icons:not(.e-caret) {
+          @if $skin-name =='fluent2' {
+            color: var(--color-sf-toolbar-icon-color);
+          }
+        }
+      }
+      &.e-active {
+        .e-btn-icon.e-icons:not(.e-caret) {
+          @if $skin-name =='fluent2' {
+            color: var(--color-sf-toolbar-icon-color);
+          }
+          @else if $skin-name =='bootstrap5' {
+            color: var(--bs-white);
+          }
+        }
+      }
+      &:not(.e-tbar-btn).e-active{
+        @if $skin-name == 'Material3' {
+          background: rgba(var(--color-sf-primary-container));
+          border-color: rgba(0, 0, 0, 0);
+          border-radius: 4px;
+        }
+      }
+    }
+    .e-dropdown-btn.e-color-picker {
+      &.e-active,
+      &:hover {
+        @if $skin-name == 'bootstrap5' {
+          background: rgb(91.8, 99.45, 106.25);
+        }
+      }
+    }
+    .e-btn.e-color-picker {
+      @if $skin-name == 'bootstrap5'{
+        margin-left: 0;
+        background: rgba(0, 0, 0, 0);
+        border-color: rgba(0, 0, 0, 0);
+        box-shadow: none;
+        color: $gray-600;
+      
+        &:hover:not(.e-active){
+          background: rgb(91.8, 99.45, 106.25);
+          border-color: rgb(86.4, 93.6, 100);
+          box-shadow: none;
+          color: var(--bs-white);
+        }
+        &:not(:hover):not(.e-active) {
+          color: $gray-900;
+        }
+      }
+    }
+  }
+
+  .e-dropdown-popup.e-ribbon-dropdown-group-button {
+    & #horizontalAlignmentGroup_grpbtn.e-btn-group .e-btn.e-ribbon-group-button.e-active .e-btn-icon {
+      @if $skin-name =='fluent2' {
+        color: var(--color-sf-toolbar-icon-color);
+      }
+    }
+    & #verticalAlignmentGroup_grpbtn.e-btn-group .e-btn.e-ribbon-group-button.e-active .e-btn-icon {
+      @if $skin-name =='fluent2' {
+        color: var(--color-sf-toolbar-icon-color);
+      }
+    }
+  }
   .e-spreadsheet .e-sheet-panel:not(.e-rtl) {
     & .e-cell.e-vborderright,
     .e-cell.e-vcborderright {
       border-right: 1px dashed $vborder-selection;
     }
 
-    & .e-cell.e-vborderbottom,
-    .e-cell.e-vcborderbottom {
-      border-bottom: 1px dashed $vborder-selection;
-    }
-
     & .e-cell.e-pborderright {
       border-right: 1px dashed $pborder-selection;
-    }
-
-    & .e-cell.e-pborderbottom {
-      border-bottom: 1px dashed $pborder-selection;
     }
 
     & .e-cell.e-cborderright {
       border-right: 1px dashed $cborder-selection;
     }
 
-    & .e-cell.e-cborderbottom {
-      border-bottom: 1px dashed $cborder-selection;
-    }
-
     & .e-cell.e-gborderright {
       border-right: 1px dashed $gborder-selection;
-    }
-
-    & .e-cell.e-gborderbottom {
-      border-bottom: 1px dashed $gborder-selection;
     }
 
     & .e-cell.e-oborderright {
       border-right: 1px dashed $oborder-selection;
     }
 
-    & .e-cell.e-oborderbottom {
-      border-bottom: 1px dashed $oborder-selection;
-    }
-
     & .e-cell.e-bborderright,
     .e-cell.e-bcborderright {
       border-right: 1px dashed $bborder-selection;
-    }
-
-    & .e-cell.e-bborderbottom,
-    .e-cell.e-bcborderbottom {
-      border-bottom: 1px dashed $bborder-selection;
-    }
-
-    & .e-cell.e-rcborderbottom {
-      border-bottom: 1px dashed $dlg-error-color;
     }
 
     & .e-cell.e-rcborderright {

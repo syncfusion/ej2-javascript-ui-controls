@@ -419,3 +419,38 @@ beforeAll((done: Function) => {
     destroy(gridObj);
   });
 });
+
+describe('Last row border after sorting', () => {
+    let gridObj: TreeGrid;
+    let actionComplete: () => void;
+    beforeAll((done: Function) => {
+      gridObj = createGrid(
+        {
+          dataSource: sampleData,
+                allowPaging: true,
+
+                childMapping: 'subtasks',
+               allowSorting:true,
+                treeColumnIndex: 1,
+                columns: [
+                    { field: 'taskID', headerText: 'Task ID', isPrimaryKey: true },
+                    { field: 'taskName', headerText: 'Task Name' },
+                    { field: 'progress', headerText: 'Progress' }
+                ]
+        },done);
+    });
+
+    it('check last row border', (done: Function) => {
+      actionComplete = (args?: Object): void => {
+         expect(gridObj.getRows()[2].getElementsByClassName('e-rowcell').length === 3).toBe(true);
+
+         done();
+      }
+      gridObj.grid.actionComplete = actionComplete;
+      gridObj.sortByColumn("taskName", "Descending", true);
+    });
+    afterAll(() => {
+      destroy(gridObj);
+    });
+  });
+  

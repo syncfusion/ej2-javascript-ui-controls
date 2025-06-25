@@ -30,7 +30,7 @@ describe('Tab dialog functions', () => {
         expect(() => { editor.destroy(); }).not.toThrowError();
         element = undefined;
         editor = undefined;
-        document.body.innerHTML = '';
+        
     });
     it('Tab dialog functions apply paragraphformat', () => {
         console.log('Tab dialog functions apply paragraphformat');

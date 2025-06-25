@@ -617,7 +617,7 @@ describe('MultiSelect', () => {
             Browser.userAgent = temp;
         });
     });
-    xdescribe('EJ2-14133 -Remote data binding', () => {
+    describe('EJ2-14133 -Remote data binding', () => {
         let listObj: MultiSelect;
         let popupObj: any;
         let originalTimeout: number;

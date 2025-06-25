@@ -25,7 +25,7 @@ import { DocumentEditor } from '../../../src/document-editor/document-editor';
 //         editor.destroy();
 //         editor = undefined;
 //         document.body.removeChild(document.getElementById('container'));
-//         document.body.innerHTML = '';
+//         
 //         setTimeout(function () {
 //             done();
 //         }, 1000);

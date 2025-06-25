@@ -29,7 +29,7 @@ describe('Restrict editing dialog validation', () => {
     afterAll((done) => {
         editor.destroy();
         document.body.removeChild(document.getElementById('container'));
-        document.body.innerHTML = '';
+        
         editor = undefined;
         setTimeout(function () {
             done();
@@ -92,7 +92,7 @@ describe('Restrict editing dialog protection type validation', () => {
     afterAll((done) => {
         editor.destroy();
         document.body.removeChild(document.getElementById('container'));
-        document.body.innerHTML = '';
+        
         editor = undefined;
         setTimeout(function () {
             done();
@@ -158,7 +158,7 @@ describe('Restrict editing dialog show ignored validation', () => {
     afterAll((done) => {
         editor.destroy();
         document.body.removeChild(document.getElementById('container'));
-        document.body.innerHTML = '';
+        
         editor = undefined;
         setTimeout(function () {
             done();
@@ -221,7 +221,7 @@ describe('Add use dialog validation', () => {
     afterAll((done) => {
         editor.destroy();
         document.body.removeChild(document.getElementById('container'));
-        document.body.innerHTML = '';
+        
         editor = undefined;
         setTimeout(function () {
             done();
@@ -266,7 +266,7 @@ describe('Enforce dialog validation', () => {
     afterAll((done) => {
         editor.destroy();
         document.body.removeChild(document.getElementById('container'));
-        document.body.innerHTML = '';
+        
         editor = undefined;
         setTimeout(function () {
             done();
@@ -307,7 +307,7 @@ describe('Enforce dialog validation', () => {
     afterAll((done) => {
         editor.destroy();
         document.body.removeChild(document.getElementById('container'));
-        document.body.innerHTML = '';
+        
         editor = undefined;
         setTimeout(function () {
             done();

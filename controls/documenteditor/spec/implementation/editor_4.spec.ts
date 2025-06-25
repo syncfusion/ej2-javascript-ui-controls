@@ -37,7 +37,7 @@ describe('insert hyperlink validation', () => {
         document.body.removeChild(document.getElementById('container'));
         editor = undefined;
         setTimeout(function () {
-            document.body.innerHTML = '';
+            
             done();
         }, 1000);
     });
@@ -77,7 +77,7 @@ describe('Edit hyperlink validation', () => {
         document.body.removeChild(document.getElementById('container'));
         editor = undefined;
         setTimeout(function () {
-            document.body.innerHTML = '';
+            
             done();
         }, 1000);
     });
@@ -144,7 +144,7 @@ describe('Remove Hyperlink valdiation', () => {
         document.body.removeChild(document.getElementById('container'));
         editor = undefined;
         setTimeout(function () {
-            document.body.innerHTML = '';
+            
             done();
         }, 1000);
     });
@@ -204,7 +204,7 @@ describe('XML insert content Control API validation', () => {
         document.body.removeChild(document.getElementById('container'));
         editor = undefined;
         setTimeout(function () {
-            document.body.innerHTML = '';
+            
             done();
         }, 1000);
     });
@@ -502,7 +502,7 @@ describe('XML set content Control API validation', () => {
         document.body.removeChild(document.getElementById('container'));
         editor = undefined;
         setTimeout(function () {
-            document.body.innerHTML = '';
+            
             done();
         }, 1000);
     });
@@ -739,7 +739,7 @@ describe('XML content Control Pane validation', () => {
         document.body.removeChild(document.getElementById('container'));
         editor = undefined;
         setTimeout(function () {
-            document.body.innerHTML = '';
+            
             done();
         }, 1000);
     });
@@ -803,7 +803,7 @@ describe('footnote undo redo validation', () => {
         document.body.removeChild(document.getElementById('container'));
         editor = undefined;
         setTimeout(function () {
-            document.body.innerHTML = '';
+            
             done();
         }, 1000);
     });
@@ -848,7 +848,7 @@ describe('footnote undo redo validation', () => {
 //         document.body.removeChild(document.getElementById('container'));
 //         editor = undefined;
 //         setTimeout(function () {
-//             document.body.innerHTML = '';
+//             
 //             done();
 //         }, 1000);
 //     });
@@ -880,7 +880,7 @@ describe('Select and delete multiple paragraph', () => {
         document.body.removeChild(document.getElementById('container'));
         editor = undefined;
         setTimeout(function () {
-            document.body.innerHTML = '';
+            
             done();
         }, 1000);
     });
@@ -922,7 +922,7 @@ describe('Insert text after and before the block content control', () => {
         document.body.removeChild(document.getElementById('container'));
         editor = undefined;
         setTimeout(function () {
-            document.body.innerHTML = '';
+            
             done();
         }, 1000);
     });

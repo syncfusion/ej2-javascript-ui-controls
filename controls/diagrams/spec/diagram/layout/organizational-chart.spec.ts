@@ -5,7 +5,7 @@ import { createElement } from '@syncfusion/ej2-base';
 import { Diagram } from '../../../src/diagram/diagram';
 import {
     ConnectorModel, Node, TextModel, Connector, IExpandStateChangeEventArgs, LineRouting,
-    DataBinding, HierarchicalTree, NodeModel, Rect, TextElement, LayoutAnimation, Container, StackPanel, ImageElement, TreeInfo, SnapConstraints, DiagramConstraints, OrthogonalSegmentModel
+    DataBinding, HierarchicalTree, NodeModel, Rect, TextElement, LayoutAnimation, GroupableView, StackPanel, ImageElement, TreeInfo, SnapConstraints, DiagramConstraints, OrthogonalSegmentModel
 } from '../../../src/diagram/index';
 import { profile, inMB, getMemoryProfile } from '../../../spec/common.spec';
 Diagram.Inject(DataBinding, HierarchicalTree);
@@ -1216,7 +1216,7 @@ describe('Tree Layout', () => {
                 return obj;
             },
 
-            setNodeTemplate: (obj: Node, diagram: Diagram): Container => {
+            setNodeTemplate: (obj: Node, diagram: Diagram): GroupableView => {
                 let content: StackPanel = new StackPanel();
                 content.id = obj.id + '_outerstack';
                 content.style.strokeColor = 'darkgreen';
@@ -1370,7 +1370,7 @@ describe('Tree Layout expand collapse operation of icon take place distance from
                 return obj;
             },
 
-            setNodeTemplate: (obj: Node, diagram: Diagram): Container => {
+            setNodeTemplate: (obj: Node, diagram: Diagram): GroupableView => {
                 let content: StackPanel = new StackPanel();
                 content.id = obj.id + '_outerstack';
                 content.style.strokeColor = 'darkgreen';
@@ -1598,7 +1598,7 @@ describe('Tree Layout', () => {
         ele = createElement('div', { id: 'diagramanimationlayputorientation' });
         document.body.appendChild(ele);
         let items1 = new DataManager(data1, new Query().take(7));
-        window['setNodeTemplate'] = function (obj: Node, diagram: Diagram): Container {
+        window['setNodeTemplate'] = function (obj: Node, diagram: Diagram): GroupableView {
             let content: StackPanel = new StackPanel();
             content.id = obj.id + '_outerstack';
             content.style.strokeColor = 'darkgreen';
@@ -1762,7 +1762,7 @@ describe('Tree Layout', () => {
                 return connector;
             },
 
-            setNodeTemplate: (obj: Node, diagram: Diagram): Container => {
+            setNodeTemplate: (obj: Node, diagram: Diagram): GroupableView => {
                 let content: StackPanel = new StackPanel();
                 content.id = obj.id + '_outerstack';
                 content.style.strokeColor = 'darkgreen';
@@ -1861,7 +1861,7 @@ describe('Tree Layout', () => {
                 return connector;
             },
 
-            setNodeTemplate: (obj: Node, diagram: Diagram): Container => {
+            setNodeTemplate: (obj: Node, diagram: Diagram): GroupableView => {
                 let content: StackPanel = new StackPanel();
                 content.id = obj.id + '_outerstack';
                 content.style.strokeColor = 'darkgreen';
@@ -1980,7 +1980,7 @@ describe('Tree Layout', () => {
                 return connector;
             },
 
-            setNodeTemplate: (obj: Node, diagram: Diagram): Container => {
+            setNodeTemplate: (obj: Node, diagram: Diagram): GroupableView => {
                 let content: StackPanel = new StackPanel();
                 content.id = obj.id + '_outerstack';
                 content.style.strokeColor = 'darkgreen';
@@ -2138,7 +2138,7 @@ describe('Layout collapse  ', () => {
                 return connector;
             },
 
-            setNodeTemplate: (obj: Node, diagram: Diagram): Container => {
+            setNodeTemplate: (obj: Node, diagram: Diagram): GroupableView => {
                 let content: StackPanel = new StackPanel();
                 content.id = obj.id + '_outerstack';
                 content.style.strokeColor = 'darkgreen';
@@ -2438,7 +2438,7 @@ describe('Node and connector default for layout', () => {
                 },
             },
 
-            setNodeTemplate: (obj: Node, diagram: Diagram): Container => {
+            setNodeTemplate: (obj: Node, diagram: Diagram): GroupableView => {
                 let content: StackPanel = new StackPanel();
                 content.id = obj.id + '_outerstack';
                 content.style.strokeColor = 'darkgreen';
@@ -2998,7 +2998,7 @@ describe('layout-info assistant support', () => {
                     return connector;
                 },
 
-                setNodeTemplate: (obj: Node, diagram: Diagram): Container => {
+                setNodeTemplate: (obj: Node, diagram: Diagram): GroupableView => {
                     var nodePanel: StackPanel = new StackPanel();
                     nodePanel.id = obj.id + '_nodePanel';
                     nodePanel.orientation = 'Horizontal';

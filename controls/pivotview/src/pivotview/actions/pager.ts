@@ -16,6 +16,7 @@ export class Pager {
     public pager: GridPager;
     /** @hidden */
     public parent: PivotView;
+    private uiComponents: { type: string, instance: DropDownList | NumericTextBox }[] = [];
 
     constructor(parent: PivotView) {
         this.parent = parent;
@@ -61,9 +62,23 @@ export class Pager {
         this.parent.off(events.initPivotPager, this.createPager);
     }
 
+    /**
+     * Track UI component for later cleanup
+     *
+     * @param {string} type Component type
+     * @param {DropDownList | NumericTextBox} instance Component instance
+     * @returns {void}
+     */
+    private trackUIComponent(type: string, instance: DropDownList | NumericTextBox): void {
+        if (instance && typeof instance === 'object') {
+            this.uiComponents.push({ type, instance });
+        }
+    }
+
     private createPager(): void {
-        if (select('#' + this.parent.element.id + 'pivot-pager', this.parent.element) !== null) {
-            remove(select('#' + this.parent.element.id + 'pivot-pager', this.parent.element));
+        const existingPager: HTMLElement = select('#' + this.parent.element.id + 'pivot-pager', this.parent.element);
+        if (existingPager !== null) {
+            remove(existingPager);
             this.destroy();
             this.addEventListener();
         }
@@ -118,6 +133,7 @@ export class Pager {
                             cssClass: this.parent.cssClass
                         });
                         rowPagerTextBox.appendTo(select('#' + this.parent.element.id + '_row_textbox', this.parent.element));
+                        this.trackUIComponent('NumericTextBox', rowPagerTextBox);
                     }
                     if (pagerOptions.showRowPageSize) {
                         const rowPages: number[] = this.parent.pagerSettings.rowPageSizes.slice(0);
@@ -137,6 +153,7 @@ export class Pager {
                             cssClass: this.parent.cssClass
                         });
                         rowPageSizeDropDown.appendTo(select('#' + this.parent.element.id + '_' + 'row' + '_size_list', this.parent.element));
+                        this.trackUIComponent('DropDownList', rowPageSizeDropDown);
                     }
                 }
                 if (pagerOptions.showColumnPager) {
@@ -157,6 +174,7 @@ export class Pager {
                             cssClass: this.parent.cssClass
                         });
                         columnPagerTextBox.appendTo(select('#' + this.parent.element.id + '_column_textbox', this.parent.element));
+                        this.trackUIComponent('NumericTextBox', columnPagerTextBox);
                     }
                     if (pagerOptions.showColumnPageSize) {
                         const columnPages: number[] = this.parent.pagerSettings.columnPageSizes.slice(0);
@@ -176,6 +194,7 @@ export class Pager {
                             cssClass: this.parent.cssClass
                         });
                         columnPageSizeDropDown.appendTo(select('#' + this.parent.element.id + '_' + 'column' + '_size_list', this.parent.element));
+                        this.trackUIComponent('DropDownList', columnPageSizeDropDown);
                     }
                 }
                 this.unWireEvent();
@@ -448,6 +467,24 @@ export class Pager {
     }
 
     /**
+     * Clean up all UI components
+     *
+     * @returns {void}
+     * @private
+     */
+    private cleanupUIComponents(): void {
+        if (this.uiComponents && this.uiComponents.length > 0) {
+            for (let i: number = 0; i < this.uiComponents.length; i++) {
+                const component: DropDownList | NumericTextBox = this.uiComponents[i as number].instance;
+                if (component && typeof component.destroy === 'function') {
+                    component.destroy();
+                }
+            }
+            this.uiComponents = [];
+        }
+    }
+
+    /**
      * To destroy the pager.
      *
      * @returns {void}
@@ -455,37 +492,30 @@ export class Pager {
      */
     public destroy(): void {
         this.removeEventListener();
+        this.unWireEvent();
+        this.cleanupUIComponents();
         if (this.parent.pagerModule) {
-            let element: HTMLElement = select('#' + this.parent.element.id + '_column_textbox', this.parent.element);
-            let columnPagerTextBox: NumericTextBox = element ? getInstance(element, NumericTextBox) as NumericTextBox : null;
-            if (columnPagerTextBox) {
-                columnPagerTextBox.destroy();
-                columnPagerTextBox = null;
-            }
-            element = select('#' + this.parent.element.id + '_row_textbox', this.parent.element);
-            let rowPagerTextBox: NumericTextBox = element ? getInstance(element, NumericTextBox) as NumericTextBox : null;
-            if (rowPagerTextBox) {
-                rowPagerTextBox.destroy();
-                rowPagerTextBox = null;
-            }
-            element = select('#' + this.parent.element.id + '_' + 'column' + '_size_list', this.parent.element);
-            let columnPageSizeDropDown: DropDownList = element ? getInstance(element, DropDownList) as DropDownList : null;
-            if (columnPageSizeDropDown) {
-                columnPageSizeDropDown.destroy();
-                columnPageSizeDropDown = null;
-            }
-            element = select('#' + this.parent.element.id + '_' + 'row' + '_size_list', this.parent.element);
-            let rowPageSizeDropDown: DropDownList = element ? getInstance(element, DropDownList) as DropDownList : null;
-            if (rowPageSizeDropDown) {
-                rowPageSizeDropDown.destroy();
-                rowPageSizeDropDown = null;
+            const selectors: string[] = [
+                '#' + this.parent.element.id + '_column_textbox',
+                '#' + this.parent.element.id + '_row_textbox',
+                '#' + this.parent.element.id + '_column_size_list',
+                '#' + this.parent.element.id + '_row_size_list'
+            ];
+            for (const selector of selectors) {
+                const element: HTMLElement = select(selector, this.parent.element);
+                if (element) {
+                    const instance: NumericTextBox | DropDownList = getInstance(
+                        element, (selector.includes('textbox') ? NumericTextBox : DropDownList)
+                    ) as NumericTextBox | DropDownList;
+                    if (instance && typeof instance.destroy === 'function') {
+                        instance.destroy();
+                    }
+                }
             }
             if (this.pager) {
                 this.pager.destroy();
             }
             this.pager = null;
-        } else {
-            return;
         }
     }
 }

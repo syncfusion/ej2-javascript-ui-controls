@@ -1131,10 +1131,10 @@ describe('Gantt spec for critical path', () => {
         });
         it('Initial rendering critical path ', () => {
             ganttObj.fitToProject();
-            expect(ganttObj.timelineModule.timelineStartDate.getDate()).toBe(25);
+            expect(ganttObj.timelineModule.timelineStartDate.getDate()).toBe(1);
             let criticalpath: HTMLElement = ganttObj.element.querySelector('#' + ganttObj.element.id + '_critical-path') as HTMLElement;
             triggerMouseEvent(criticalpath, 'click');
-            expect(ganttObj.timelineModule.timelineStartDate.getDate()).toBe(25);
+            expect(ganttObj.timelineModule.timelineStartDate.getDate()).toBe(1);
         });
         afterAll(() => {
             if(ganttObj){

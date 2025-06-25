@@ -3,6 +3,7 @@ import { SpreadsheetHelper } from '../util/spreadsheethelper.spec';
 import { defaultData } from '../util/datasource.spec';
 import { createElement, EventHandler } from '@syncfusion/ej2-base';
 import { getRangeAddress, DialogBeforeOpenEventArgs } from "../../../src/index";
+import { Overlay } from '../../../src/spreadsheet/services/index';
 
 /**
  *  Clipboard test cases
@@ -310,7 +311,7 @@ describe('Clipboard ->', () => {
             helper.invoke('copy', ['A2']).then(() => {
                 expect(helper.getElementFromSpreadsheet('.e-copy-indicator')).not.toBeNull();
                 helper.invoke('insertRow', [2]);
-                expect(JSON.stringify(helper.getInstance().sheets[0].rows[2])).toEqual('{"cells":[null,{"wrap":true}]}');
+                expect(JSON.stringify(helper.getInstance().sheets[0].rows[2])).toEqual('{"cells":[null,{"wrap":true,"format":"m/d/yyyy"},{"format":"m/d/yyyy"},{"format":"h:mm:ss AM/PM"}]}');
                 expect(helper.getInstance().sheets[0].rows[3].cells[0].value).toBe('Sports Shoes');
                 done();
             });
@@ -322,7 +323,7 @@ describe('Clipboard ->', () => {
             helper.invoke('copy', ['A5:A6']).then(() => {
                 expect(helper.getElementFromSpreadsheet('.e-copy-indicator')).not.toBeNull();
                 helper.invoke('insertRow', [5]);
-                expect(helper.getInstance().sheets[0].rows[5]).toEqual({});
+                expect(JSON.stringify(helper.getInstance().sheets[0].rows[5])).toEqual('{"cells":[null,{"format":"m/d/yyyy"},{"format":"m/d/yyyy"},{"format":"h:mm:ss AM/PM"}]}');
                 expect(helper.getInstance().sheets[0].rows[6].cells[0].value).toBe('Sandals & Floaters');
                 done();
             });
@@ -336,7 +337,7 @@ describe('Clipboard ->', () => {
                 helper.setAnimationToNone('#' + helper.id + '_contextmenu');
                 helper.openAndClickCMenuItem(8, 0, [6, 1], true);
                 setTimeout(() => {
-                    expect(helper.getInstance().sheets[0].rows[8]).toEqual({});
+                    expect(JSON.stringify(helper.getInstance().sheets[0].rows[8])).toEqual('{"cells":[null,{"format":"m/d/yyyy"},{"format":"m/d/yyyy"},{"format":"h:mm:ss AM/PM"}]}');
                     expect(helper.getInstance().sheets[0].rows[9].cells[0].value).toBe('Sneakers');
                     done(); 
                 });
@@ -1742,6 +1743,157 @@ describe('Clipboard ->', () => {
                         });
                     });
                 });
+            });
+        });
+    });
+    describe('EJ2-912034 -> Issue with copy-pasting the chart after resizing', () => {
+        beforeAll((done: Function) => {
+            helper.initializeSpreadsheet({
+                sheets: [{
+                    ranges: [{ dataSource: defaultData }], rows: [{
+                        index: 1, cells: [{ index: 7, chart: [{ type: 'Column', range: 'H2:H10' }] }]
+                    }]
+                }]
+            }, done);
+        });
+        afterAll(() => {
+            helper.invoke('destroy');
+        });
+        it("Copy, Paste the chart after resizing it", (done: Function) => {
+            const chart: HTMLElement = helper.getElement().querySelector('.e-datavisualization-chart');
+            expect(chart).not.toBeNull();
+            helper.triggerMouseAction('mousedown', { x: chart.getBoundingClientRect().left + 1, y: chart.getBoundingClientRect().top + 1 }, chart, chart);
+            helper.triggerMouseAction('mouseup', { x: chart.getBoundingClientRect().left + 1, y: chart.getBoundingClientRect().top + 1 }, document, chart);
+            expect(helper.getInstance().sheets[0].rows[1].cells[7].chart[0].width).toBe(480);
+            expect(helper.getInstance().sheets[0].rows[1].cells[7].chart[0].height).toBe(290);
+            const overlay: HTMLElement = helper.getElementFromSpreadsheet('.e-ss-overlay-active');
+            expect(overlay).not.toBeNull();
+            const overlayRightHandle: HTMLElement = overlay.querySelector('.e-ss-overlay-r');
+            let offsetRight: DOMRect = overlayRightHandle.getBoundingClientRect() as DOMRect;
+            helper.triggerMouseAction('mousedown', { x: offsetRight.left, y: offsetRight.top }, overlay, overlayRightHandle);
+            helper.triggerMouseAction('mousemove', { x: offsetRight.left - 80, y: offsetRight.top }, overlay, overlayRightHandle);
+            helper.triggerMouseAction('mouseup', { x: offsetRight.left - 80, y: offsetRight.top }, document, overlayRightHandle);
+            const overlayBottomHandle: HTMLElement = overlay.querySelector('.e-ss-overlay-b');
+            let offsetBottom: DOMRect = overlayBottomHandle.getBoundingClientRect() as DOMRect;
+            helper.triggerMouseAction('mousedown', { x: offsetBottom.left, y: offsetBottom.top }, overlay, overlayBottomHandle);
+            helper.triggerMouseAction('mousemove', { x: offsetBottom.left, y: offsetBottom.top - 90 }, overlay, overlayBottomHandle);
+            helper.triggerMouseAction('mouseup', { x: offsetBottom.left, y: offsetBottom.top - 90 }, document, overlayBottomHandle);
+            expect(helper.getInstance().sheets[0].rows[1].cells[7].chart[0].width).not.toBe(480);
+            expect(helper.getInstance().sheets[0].rows[1].cells[7].chart[0].height).not.toBe(290);
+            helper.invoke('copy').then(() => {
+                helper.invoke('paste', ['A11']);
+                let chart = helper.getInstance().sheets[0].rows[9].cells[0].chart[0];
+                expect(chart).not.toBeNull;
+                expect(chart.height).not.toBe(290);
+                expect(chart.width).not.toBe(480);
+                done();
+            });
+        });
+    });
+    describe('EJ2- 931294 -> Row height changes when cut and paste the resized cell values into other sheets.', () => {
+        beforeAll((done: Function) => {
+            helper.initializeSpreadsheet({
+                sheets: [{ ranges: [{ dataSource: defaultData }] }, { index: 1, name: 'Inserted Sheet', ranges: [{ dataSource: defaultData }] }]
+            }, done);
+        });
+        afterAll(() => {
+            helper.invoke('destroy');
+        });
+        it("should maintain row size of the previous sheet after cut/paste of cell to another sheet", (done: Function) => {
+            helper.invoke('setRowHeight', [40, 2]);
+            expect(helper.getInstance().sheets[0].rows[2].height).toBe(40);
+            helper.invoke('cut', ['A3']).then(() => {
+                const args = { action: 'gotoSheet', eventArgs: { currentSheetIndex: 1, previousSheetIndex: 0 } };
+                helper.getInstance().updateAction(args);
+                setTimeout(() => {
+                    helper.invoke('paste', ['B12']);
+                    expect(helper.getInstance().sheets[0].rows[2].height).toBe(40);
+                    expect(helper.getInstance().sheets[1].rows[11].height).not.toBe(40);
+                    done();
+                });
+            });
+        });
+    });
+
+        describe('EJ2-910307 ->', () => {
+        beforeAll((done: Function) => {
+            helper.initializeSpreadsheet({ sheets: [{ ranges: [{ dataSource: defaultData }] }, {}], activeSheetIndex: 0 }, done);
+        });
+        afterAll(() => {
+            helper.invoke('destroy');
+        });
+        it('Row height remains unchanged when cut/paste the wrap applied cells->', (done: Function) => {
+            helper.edit('A1', 'Item Name \n\n\n\n');
+            const spreadsheet: Spreadsheet = helper.getInstance();
+            expect(helper.invoke('getCell', [0, 0]).classList).toContain('e-wraptext');
+            helper.invoke('cut', ['A1']).then(() => {
+                helper.invoke('paste', ['H2']);
+                expect(spreadsheet.sheets[0].rows[1].cells[7].value.toString()).toBe('Item Name \n\n\n\n');
+                expect(spreadsheet.sheets[0].rows[1].cells[7].wrap).toBeTruthy();
+                expect(spreadsheet.sheets[0].rows[1].height).toBeGreaterThan(20);
+                expect(helper.invoke('getCell', [1, 7]).classList).toContain('e-wraptext');
+                expect(spreadsheet.sheets[0].rows[0].cells[0]).toBeNull();
+                expect(spreadsheet.sheets[0].rows[0].height).toBe(20);
+                expect(helper.invoke('getCell', [0, 0]).classList).not.toContain('e-wraptext');
+                helper.click('#spreadsheet_undo');
+                done();
+            });
+        });
+        it('Pasting the wrap applied in other sheet after performing cut', (done: Function) => {
+            const spreadsheet: Spreadsheet = helper.getInstance();
+            expect(helper.invoke('getCell', [0, 0]).classList).toContain('e-wraptext');
+            helper.invoke('cut', ['A1']).then(() => {
+                helper.invoke('goTo', ['Sheet2!H2']);
+                setTimeout(() => {
+                    helper.invoke('paste', ['Sheet2!H2']);
+                    expect(spreadsheet.sheets[1].rows[1].cells[7].value.toString()).toBe('Item Name \n\n\n\n');
+                    expect(spreadsheet.sheets[1].rows[1].height).toBeGreaterThan(20);
+                    expect(spreadsheet.sheets[1].rows[1].cells[7].wrap).toBeTruthy();
+                    expect(helper.invoke('getCell', [1, 7]).classList).toContain('e-wraptext');
+                    expect(spreadsheet.sheets[0].rows[0].cells[0]).toBeNull();
+                    expect(spreadsheet.sheets[0].rows[0].height).toBe(20);
+                    done();
+                });
+            });
+        });
+        it('Testing undo cases', (done: Function) => {
+            const spreadsheet: Spreadsheet = helper.getInstance();
+            helper.click('#spreadsheet_undo');
+            setTimeout(() => {
+                expect(spreadsheet.activeSheetIndex).toBe(1);
+                expect(helper.invoke('getCell', [1, 7]).classList).not.toContain('e-wraptext');
+                expect(spreadsheet.sheets[1].rows[1].cells[7].value).toBe('');
+                expect(spreadsheet.sheets[1].rows[1].height).toBe(20);
+                expect(spreadsheet.sheets[1].rows[1].cells[7].wrap).toBeUndefined();
+                helper.click('#spreadsheet_undo');
+                setTimeout(() => {
+                    expect(spreadsheet.activeSheetIndex).toBe(0);
+                    expect(spreadsheet.sheets[0].rows[0].cells[0].value).toBe('Item Name');
+                    expect(spreadsheet.sheets[0].rows[0].height).toBe(38);
+                    done();
+                });
+            });
+        });
+        it('Testing Redo Cases', (done: Function) => {
+            const spreadsheet: Spreadsheet = helper.getInstance();
+            helper.click('#spreadsheet_redo');
+            setTimeout(() => {
+                expect(spreadsheet.activeSheetIndex).toBe(0);
+                expect(spreadsheet.sheets[0].rows[0].cells[0].value).toBe('Item Name \n\n\n\n');
+                expect(spreadsheet.sheets[0].rows[0].cells[0].wrap).toBeTruthy();
+                expect(spreadsheet.sheets[0].rows[0].height).toBeGreaterThan(20);
+                expect(helper.invoke('getCell', [0, 0]).classList).toContain('e-wraptext');
+                helper.click('#spreadsheet_redo');
+                setTimeout(() => {
+                    expect(spreadsheet.activeSheetIndex).toBe(1);
+                    expect(spreadsheet.sheets[1].rows[1].cells[7].value.toString()).toBe('Item Name \n\n\n\n');
+                    expect(spreadsheet.sheets[1].rows[1].cells[7].wrap).toBeTruthy();
+                    expect(spreadsheet.sheets[1].rows[1].height).toBeGreaterThan(20);
+                    expect(helper.invoke('getCell', [1, 7]).classList).toContain('e-wraptext');
+                    expect(spreadsheet.sheets[0].rows[0].cells[0]).toBeNull();
+                    expect(spreadsheet.sheets[0].rows[0].height).toBe(20);
+                    done();
+                })
             });
         });
     });

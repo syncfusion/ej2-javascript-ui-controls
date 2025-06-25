@@ -26,7 +26,7 @@ import { ChartData } from './utils/get-data';
 import { LineType, ZoomMode, ToolbarItems } from './utils/enum';
 import { SelectionMode, HighlightMode, ChartTheme } from '../common/utils/enum';
 import { Points, Series, SeriesBase } from './series/chart-series';
-import { SeriesModel } from './series/chart-series-model';
+import { LastValueLabelSettingsModel, SeriesModel } from './series/chart-series-model';
 import { Data } from '../common/model/data';
 import { LineSeries } from './series/line-series';
 import { AreaSeries } from './series/area-series';
@@ -64,6 +64,7 @@ import { Legend } from './legend/legend';
 import { Zoom } from './user-interaction/zooming';
 import { Selection } from './user-interaction/selection';
 import { DataLabel } from './series/data-label';
+import { LastValueLabel } from './series/last-value-label';
 import { StripLine } from './axis/strip-line';
 import { MultiLevelLabel } from './axis/multi-level-labels';
 import { BoxAndWhiskerSeries } from './series/box-and-whisker-series';
@@ -506,6 +507,10 @@ export class Chart extends Component<HTMLElement> implements INotifyPropertyChan
      * `crosshairModule` is used to manipulate and add crosshair to the chart.
      */
     public crosshairModule: Crosshair;
+    /**
+     * 'lastValueLabelModule' is used to manipulate and add last value indicator to the series.
+     */
+    public lastValueLabelModule: LastValueLabel;
     /**
      * `errorBarModule` is used to manipulate and add errorBar for series.
      */
@@ -1600,9 +1605,13 @@ export class Chart extends Component<HTMLElement> implements INotifyPropertyChan
     /** @private */
     public dataLabelCollections: Rect[];
     /** @private */
+    public lastValueLabelCollections: Rect[];
+    /** @private */
     public rotatedDataLabelCollections: ChartLocation[][] = [];
     /** @private */
     public dataLabelElements: Element;
+    /** @private */
+    public lastValueLabelElements: Element;
     /** @private */
     public mouseX: number;
     /** @private */
@@ -2107,6 +2116,7 @@ export class Chart extends Component<HTMLElement> implements INotifyPropertyChan
     }
     private initializeModuleElements(): void {
         this.dataLabelCollections = [];
+        this.lastValueLabelCollections = [];
         const elementId: string = this.element.id;
         if (this.series.length) {
             this.seriesElements = this.svgRenderer.createGroup({ id: elementId + 'SeriesCollection' });
@@ -2116,6 +2126,9 @@ export class Chart extends Component<HTMLElement> implements INotifyPropertyChan
         }
         if (this.hasTrendlines()) {
             this.trendLineElements = this.renderer.createGroup({ id: elementId + 'TrendLineCollection' });
+        }
+        if (this.lastValueLabelModule) {
+            this.lastValueLabelElements = this.renderer.createGroup({id: elementId + 'LastValueLabelCollection'});
         }
         this.dataLabelElements = this.renderer.createGroup({ id: elementId + 'DataLabelCollection' });
     }
@@ -2171,6 +2184,13 @@ export class Chart extends Component<HTMLElement> implements INotifyPropertyChan
             this.initializeTrendLine();
 
             this.renderSeries();
+            if (this.enableCanvas) {
+                for (const series of this.visibleSeries) {
+                    if (series.lastValueLabel.enable) {
+                        this.lastValueLabelModule.render(series, this, series.lastValueLabel);
+                    }
+                }
+            }
             // Trendline is append to DOM after the series
             if (this.trendLineElements) {
                 appendChildElement(this.enableCanvas, this.svgObject, this.trendLineElements, this.redraw);
@@ -2196,6 +2216,12 @@ export class Chart extends Component<HTMLElement> implements INotifyPropertyChan
                 visibility = this.series[item.sourceIndex].trendlines[item.index].visible;
             } else {
                 visibility = item.visible;
+            }
+            if (!visibility) {
+                if (item.lastValueLabelElement) {
+                    removeElement(item.lastValueLabelElement.id);
+                    item.lastValueLabelElement = null;
+                }
             }
             if (visibility) {
                 this.visible++;
@@ -2309,6 +2335,9 @@ export class Chart extends Component<HTMLElement> implements INotifyPropertyChan
         }
         if (this.stockChart) {
             this.stockChart.calculateStockEvents();
+        }
+        if (this.lastValueLabelElements && this.lastValueLabelElements.hasChildNodes()) {
+            appendChildElement(this.enableCanvas, this.svgObject, this.lastValueLabelElements, this.redraw);
         }
     }
     private applyZoomkit(): void {
@@ -2558,7 +2587,7 @@ export class Chart extends Component<HTMLElement> implements INotifyPropertyChan
         let axis: Axis;
         let axes: AxisModel[] = [this.primaryXAxis, this.primaryYAxis];
         axes = this.chartAreaType === 'Cartesian' ? axes.concat(this.axes) : axes;
-        if (this.paretoSeriesModule && this.series[0].type === 'Pareto') {
+        if (this.paretoSeriesModule && this.series[0] && this.series[0].type === 'Pareto') {
             axes = axes.concat(this.paretoSeriesModule.paretoAxes);
         }
         this.axisCollections = [];
@@ -2967,7 +2996,7 @@ export class Chart extends Component<HTMLElement> implements INotifyPropertyChan
     public addSeries(seriesCollection: SeriesModel[]): void {
         const scrollTop: number = window.scrollY || document.documentElement.scrollTop;
         for (let series of seriesCollection) {
-            series = new Series(this, 'series', series);
+            series = new Series(this, 'series', series, true);
             this.series.push(series);
         }
         this.refresh();
@@ -3073,6 +3102,8 @@ export class Chart extends Component<HTMLElement> implements INotifyPropertyChan
         this.dataLabelCollections = null;
         this.visibleSeriesCount = null;
         this.dataLabelElements = null;
+        this.lastValueLabelCollections = null;
+        this.lastValueLabelElements = null;
         this.yAxisElements = null;
         const element: HTMLElement = document.getElementById(this.element.id + 'Keyboard_chart_focus');
         if (element) { element.remove(); }
@@ -4183,6 +4214,7 @@ export class Chart extends Component<HTMLElement> implements INotifyPropertyChan
         let moduleName: string; let errorBarVisible: boolean = false;
         let isPointDrag: boolean = false;
         let dataLabelEnable: boolean = false; const zooming: ZoomSettingsModel = this.zoomSettings;
+        let lastValueLabelEnable: boolean = false;
         this.chartAreaType = (series.length > 0 && (series[0].type === 'Polar' || series[0].type === 'Radar')) ? 'PolarRadar' : 'Cartesian';
         if (this.tooltip.enable) {
             modules.push({
@@ -4195,6 +4227,7 @@ export class Chart extends Component<HTMLElement> implements INotifyPropertyChan
             moduleName = value.type.indexOf('100') !== -1 ? value.type.replace('100', '') + 'Series' : value.type + 'Series';
             errorBarVisible = value.errorBar.visible || errorBarVisible;
             dataLabelEnable = value.marker.dataLabel.visible || dataLabelEnable || (value.type === 'Pareto' && value.paretoOptions.marker.dataLabel.visible);
+            lastValueLabelEnable = value.lastValueLabel.enable || lastValueLabelEnable;
             isPointDrag = value.dragSettings.enable || isPointDrag;
             if (!modules.some((currentModule: ModuleDeclaration) => {
                 return currentModule.member === moduleName;
@@ -4281,6 +4314,12 @@ export class Chart extends Component<HTMLElement> implements INotifyPropertyChan
         if (dataLabelEnable || this.stackLabels.visible) {
             modules.push({
                 member: 'DataLabel',
+                args: [this, series]
+            });
+        }
+        if (lastValueLabelEnable) {
+            modules.push({
+                member: 'LastValueLabel',
                 args: [this, series]
             });
         }
@@ -4528,7 +4567,7 @@ export class Chart extends Component<HTMLElement> implements INotifyPropertyChan
             axis.rect = new Rect(undefined, undefined, 0, 0 );
             axis.isStack100 = false;
         }
-        if (this.paretoSeriesModule && this.series[0].type === 'Pareto') {
+        if (this.paretoSeriesModule && this.series[0] && this.series[0].type === 'Pareto') {
             for (const item of this.paretoSeriesModule.paretoAxes) {
                 axis = <Axis>item;
                 axis.rect = new Rect(undefined, undefined, 0, 0);
@@ -4844,6 +4883,24 @@ export class Chart extends Component<HTMLElement> implements INotifyPropertyChan
                     for (let i: number = 0; i < len; i++) {
                         series = newProp.series[i as number];
                         // I264774 blazor series visible property binding not working issue fixed.
+                        if (!isNullOrUndefined(series) && series.lastValueLabel && this.series[i as number]
+                            .lastValueLabel.enable && this.lastValueLabelModule) {
+                            this.lastValueLabelCollections = [];
+                            const updatedLabelSettings: LastValueLabelSettingsModel = extend(
+                                this.series[i as number].lastValueLabel, series.lastValueLabel);
+                            this.lastValueLabelModule.render(this.series[i as number] as Series
+                                , this, updatedLabelSettings, true);
+                            if ((this.series[i as number] as Series).lastValueLabelElement) {
+                                appendChildElement(this.enableCanvas, this.lastValueLabelElements
+                                    , (this.series[i as number] as Series).lastValueLabelElement, true);
+                            }
+                        }
+                        else if (!isNullOrUndefined(series) && series.lastValueLabel
+                            && !series.lastValueLabel.enable && (this.series[i as number] as Series)
+                            && (this.series[i as number] as Series).lastValueLabelElement) {
+                            removeElement((this.series[i as number] as Series).lastValueLabelElement.id);
+                            (this.series[i as number] as Series).lastValueLabelElement = null;
+                        }
                         if (this.isBlazor && series && ((series.visible !== oldProp.series[i as number].visible) || series.isClosed ||
                             series.marker || series.emptyPointSettings || series.type || series.boxPlotMode || series.showMean)) {
                             blazorProp = true;

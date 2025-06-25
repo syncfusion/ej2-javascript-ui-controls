@@ -1,0 +1,121 @@
+@include export-module('grid-chart-bootstrap-icons') {
+
+  .e-grid-chart-export-icon::before {
+    content: '\e72e';
+  }
+
+  .e-grid-chart-print::before {
+    content: '\e75d';
+  }
+
+  .e-grid-chart-jpeg::before {
+    content: '\e94b';
+  }
+
+  .e-grid-chart-png::before {
+    content: '\e7ee';
+  }
+
+  .e-grid-chart-svg::before {
+    content: '\e7cf';
+  }
+
+  .e-grid-chart-pdf::before {
+    content: '\e700';
+  }
+
+  .e-grid-chart-xlsx::before {
+    content: '\e781';
+  }
+
+  .e-grid-chart-csv::before {
+    content: '\e7ba';
+  }
+
+  #{&}.e-grid-context-menu-dialog {
+
+    .e-grid-chart-icon::before {
+      content: '\e826';
+    }
+
+    .e-grid-bar-chart-icon::before {
+      content: '\e86c';
+    }
+
+    .e-grid-bar-icon::before {
+      content: '\e86c';
+    }
+
+    .e-grid-stacking-bar-icon::before {
+      content: '\e866';
+    }
+
+    .e-grid-stacking-bar-100-icon::before {
+      content: '\e86d';
+    }
+
+    .e-grid-pie-icon::before {
+      content: '\e869';
+    }
+
+    .e-grid-column-chart-icon::before {
+      content: '\e86a';
+    }
+
+    .e-grid-column-icon::before {
+      content: '\e86a';
+    }
+
+    .e-grid-stacking-column-icon::before {
+      content: '\e875';
+    }
+
+    .e-grid-stacking-column-100-icon::before {
+      content: '\e86f';
+    }
+
+    .e-grid-line-chart-icon::before {
+      content: '\e86e';
+    }
+
+    .e-grid-line-icon::before {
+      content: '\e86e';
+    }
+
+    .e-grid-stacking-line-icon::before {
+      content: '\e867';
+    }
+
+    .e-grid-stacking-line-100-icon::before {
+      content: '\e870';
+    }
+
+    .e-grid-area-chart-icon::before {
+      content: '\e873';
+    }
+
+    .e-grid-area-icon::before {
+      content: '\e873';
+    }
+
+    .e-grid-stacking-area-icon::before {
+      content: '\e871';
+    }
+
+    .e-grid-stacking-area-100-icon::before {
+      content: '\e86b';
+    }
+
+    .e-grid-scatter-icon::before {
+      content: '\e847';
+    }
+
+    .e-grid-chart-max-icon::before {
+      content: '\e81c';
+    }
+
+    .e-grid-chart-min-icon::before {
+      content: '\e7b0';
+    }
+  }
+}

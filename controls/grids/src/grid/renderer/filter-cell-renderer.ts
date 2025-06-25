@@ -234,6 +234,19 @@ export class FilterCellRenderer extends CellRenderer implements ICellRenderer<Co
         const col: Column = gObj.getColumnByUid((<{ element?: HTMLElement }>e).element.getAttribute('id'));
         (<{ column?: object }>e).column = col;
         gObj.filterModule.operators[col.field] = (<{value ?: string }>e).value;
+        const value: string = (<{value ?: string }>e).value;
+        if (gObj.filterModule && gObj.filterModule['filterSettings'].showFilterBarOperator) {
+            const valInput: HTMLInputElement = document.getElementById(col.field + '_filterBarcell') as HTMLInputElement;
+            if (value === 'isempty' || value === 'isnotempty' ||
+                value === 'isnotnull' || value === 'isnull') {
+                valInput.setAttribute('readOnly', 'true');
+                gObj.filterModule.filterByColumn(col.field, value, null, gObj.filterModule['predicate'], gObj.filterModule['filterSettings'].enableCaseSensitivity, gObj.filterModule['ignoreAccent'], col.isForeignColumn());
+            }
+            else if (valInput && valInput.readOnly) {
+                valInput.removeAttribute('readOnly');
+                gObj.filterModule.removeFilteredColsByField(col.field);
+            }
+        }
         gObj.notify(events.getFilterBarOperator, e);
     }
 }

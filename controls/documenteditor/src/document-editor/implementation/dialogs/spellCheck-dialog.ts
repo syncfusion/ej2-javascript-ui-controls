@@ -186,12 +186,12 @@ export class SpellCheckDialog {
             showSpinner(this.documentHelper.dialog.element);
             const elements: ElementBox[] = this.parent.spellCheckerModule.errorWordCollection.get(this.errorText);
             for (let i: number = elements.length - 1; i >= 0; i--) {
-                if (elements[i] instanceof ErrorTextElementBox && !elements[i].ischangeDetected) {
+                if (elements[i] instanceof ErrorTextElementBox && !elements[i].isChangeDetected) {
                     this.parent.spellCheckerModule.manageReplace(this.selectedText, elements[i]);
                 } else if (elements[i] instanceof TextElementBox) {
                     const matchResults: MatchResults = this.parent.spellCheckerModule.getMatchedResultsFromElement(elements[i]);
                     const results: TextSearchResults = matchResults.textResults;
-                    const markIndex: number = (elements[i].ischangeDetected) ?
+                    const markIndex: number = (elements[i].isChangeDetected) ?
                         (elements[i] as ErrorTextElementBox).start.offset : elements[i].line.getOffset(elements[i], 0);
                     this.parent.searchModule.textSearch.updateMatchedTextLocation(matchResults.matches, results, matchResults.elementInfo,
                         0, elements[i], false, null, markIndex);

@@ -1,10 +1,10 @@
 import { Formatter } from './formatter';
-import { IEditorModel, IHtmlFormatterModel } from './../base/interface';
+import { IEditorModel, IHtmlFormatterModel }from './../../common/interface';
 import { EditorManager } from './../../editor-manager/base/editor-manager';
 import { extend } from '@syncfusion/ej2-base';
 import { htmlKeyConfig } from './../../common/config';
 import { HtmlToolbarStatus } from '../actions/html-toolbar-status';
-import { FormatPainterSettingsModel } from '../models';
+import { FormatPainterSettingsModel } from '../../models';
 
 /**
  * HTML adapter

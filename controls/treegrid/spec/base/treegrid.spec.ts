@@ -4,7 +4,7 @@ import { sampleData, projectData, expandStateData, testdata, treeMappedData, mul
 import { PageEventArgs, extend, doesImplementInterface, getObject, FilterEventArgs, SearchEventArgs, SortEventArgs, RowSelectEventArgs, ResizeArgs, ColumnModel } from '@syncfusion/ej2-grids';
 import { RowExpandingEventArgs, RowCollapsingEventArgs } from '../../src';
 import { ColumnMenu } from '../../src/treegrid/actions/column-menu';
-import { Toolbar } from '../../src/treegrid/actions/toolbar';
+import {Toolbar} from '../../src/treegrid/actions/toolbar';
 import { isNullOrUndefined, L10n, createElement, EmitType, select, remove } from '@syncfusion/ej2-base';
 import { profile, inMB, getMemoryProfile } from '../common.spec';
 import { Page } from '../../src/treegrid/actions/page';
@@ -67,8 +67,8 @@ describe('TreeGrid base module', () => {
                     treeColumnIndex: 1,
                     showColumnMenu: true,
                     columns: ['taskID', 'taskName', 'startDate', 'endDate', 'duration', 'progress'],
-                    actionBegin: (args: PageEventArgs) => { return true; },
-                    actionComplete: (args: PageEventArgs) => { return true; }
+                    actionBegin: (args: PageEventArgs) => {return true; },
+                    actionComplete: (args: PageEventArgs) => {return true; }
                 },
                 done
             );
@@ -86,7 +86,6 @@ describe('TreeGrid base module', () => {
         });
         afterAll(() => {
             destroy(gridObj);
-            gridObj = null;
         });
     });
 
@@ -137,7 +136,6 @@ describe('Self Reference Data Basic Rendering', () => {
     });
     afterAll(() => {
         destroy(gridObj);
-        gridObj = null;
     });
 });
 
@@ -158,7 +156,7 @@ describe('Self Reference DataSource update', () => {
     });
     it('dataSource Update', (done: Function) => {
         const data: Object[] = projectData.slice();
-        data.push({ TaskID: 52, TaskName: 'Test' });
+        data.push({TaskID : 52, TaskName : 'Test'});
         gridObj.dataBound = (args: PageEventArgs) => {
             rows = gridObj.getRows();
             expect((rows[rows.length - 1] as HTMLTableRowElement).cells[1].textContent).toBe('Test');
@@ -169,7 +167,6 @@ describe('Self Reference DataSource update', () => {
     });
     afterAll(() => {
         destroy(gridObj);
-        gridObj = null;
     });
 });
 
@@ -214,7 +211,6 @@ describe('expandcollapse method', () => {
 
     afterAll(() => {
         destroy(gridObj);
-        gridObj = null;
     });
 });
 
@@ -254,7 +250,6 @@ describe('grid methods, setmodel', () => {
     });
     afterAll(() => {
         destroy(gridObj);
-        gridObj = null;
     });
 });
 
@@ -278,7 +273,6 @@ describe('flat Data Basic Rendering', () => {
     });
     afterAll(() => {
         destroy(gridObj);
-        gridObj = null;
     });
 });
 
@@ -293,8 +287,8 @@ describe('RTL Testing', () => {
                 showColumnMenu: true,
                 toolbar: ['ExpandAll', 'CollapseAll'],
                 columns: ['taskID', 'taskName', 'startDate', 'endDate', 'duration', 'progress'],
-                actionBegin: (args: PageEventArgs) => { return true; },
-                actionComplete: (args: PageEventArgs) => { return true; }
+                actionBegin: (args: PageEventArgs) => {return true; },
+                actionComplete: (args: PageEventArgs) => {return true; }
             },
             done
         );
@@ -322,7 +316,6 @@ describe('RTL Testing', () => {
     });
     afterAll(() => {
         destroy(gridObj);
-        gridObj = null;
     });
 });
 
@@ -386,7 +379,6 @@ describe('grid expand methods and properties', () => {
     });
     afterAll(() => {
         destroy(gridObj);
-        gridObj = null;
     });
 });
 
@@ -408,41 +400,28 @@ describe('keyBoard Interaction for collapse particular parent row', () => {
     });
     it('keyBoard Interaction', () => {
         gridObj.selectCell({ cellIndex: 1, rowIndex: 0 }, true);
-        gridObj.keyboardModule.keyAction({
-            action: 'ctrlShiftUpArrow', preventDefault: preventDefault,
-            target: gridObj.getRows()[0].getElementsByClassName('e-rowcell')[1]
-        } as any);
+        gridObj.keyboardModule.keyAction({ action: 'ctrlShiftUpArrow', preventDefault: preventDefault,
+            target: gridObj.getRows()[0].getElementsByClassName('e-rowcell')[1] } as any);
         rows = gridObj.getRows();
         expect(rows[1].classList.contains('e-childrow-hidden')).toBe(true);
-        gridObj.keyboardModule.keyAction({
-            action: 'ctrlShiftDownArrow', preventDefault: preventDefault,
-            target: gridObj.getRows()[0].getElementsByClassName('e-rowcell')[1]
-        } as any);
+        gridObj.keyboardModule.keyAction({ action: 'ctrlShiftDownArrow', preventDefault: preventDefault,
+            target: gridObj.getRows()[0].getElementsByClassName('e-rowcell')[1] } as any);
         expect(rows[1].classList.contains('e-childrow-visible')).toBe(true);
-        gridObj.keyboardModule.keyAction({
-            action: 'ctrlUpArrow', preventDefault: preventDefault,
-            target: gridObj.getRows()[0].getElementsByClassName('e-rowcell')[1]
-        } as any);
+        gridObj.keyboardModule.keyAction({ action: 'ctrlUpArrow', preventDefault: preventDefault,
+            target: gridObj.getRows()[0].getElementsByClassName('e-rowcell')[1] } as any);
         expect(gridObj.getRows()[1].classList.contains('e-childrow-hidden')).toBe(true);
-        gridObj.keyboardModule.keyAction({
-            action: 'ctrlDownArrow', preventDefault: preventDefault,
-            target: gridObj.getRows()[0].getElementsByClassName('e-rowcell')[1]
-        } as any);
+        gridObj.keyboardModule.keyAction({ action: 'ctrlDownArrow', preventDefault: preventDefault,
+            target: gridObj.getRows()[0].getElementsByClassName('e-rowcell')[1] } as any);
         expect(gridObj.getRows()[1].classList.contains('e-childrow-visible')).toBe(true);
-        gridObj.keyboardModule.keyAction({
-            action: 'downArrow', preventDefault: preventDefault,
-            target: gridObj.getRows()[0].getElementsByClassName('e-rowcell')[1]
-        } as any);
+        gridObj.keyboardModule.keyAction({ action: 'downArrow', preventDefault: preventDefault,
+            target: gridObj.getRows()[0].getElementsByClassName('e-rowcell')[1] } as any);
         expect(gridObj.getRows()[1].querySelectorAll('.e-focused').length).toBe(1);
-        gridObj.keyboardModule.keyAction({
-            action: 'upArrow', preventDefault: preventDefault,
-            target: gridObj.getRows()[1].getElementsByClassName('e-rowcell')[1]
-        } as any);
+        gridObj.keyboardModule.keyAction({ action: 'upArrow', preventDefault: preventDefault,
+            target: gridObj.getRows()[1].getElementsByClassName('e-rowcell')[1] } as any);
         expect(gridObj.getRows()[0].querySelectorAll('.e-focused').length).toBe(1);
     });
     afterAll(() => {
         destroy(gridObj);
-        gridObj = null;
     });
 });
 
@@ -471,7 +450,6 @@ describe('Self Reference -multiple child levels', () => {
     });
     afterAll(() => {
         destroy(gridObj);
-        gridObj = null;
     });
 });
 
@@ -496,7 +474,6 @@ describe('Set height and width as 100%', () => {
     });
     afterAll(() => {
         destroy(gridObj);
-        gridObj = null;
     });
 });
 
@@ -522,7 +499,6 @@ describe('Set height and width as 100% using set model', () => {
     });
     afterAll(() => {
         destroy(gridObj);
-        gridObj = null;
     });
 });
 
@@ -554,7 +530,6 @@ describe('Checking dataSource property after updating', () => {
     });
     afterAll(() => {
         destroy(gridObj);
-        gridObj = null;
     });
 });
 
@@ -573,12 +548,11 @@ describe('columnMenu, setmodel', () => {
         );
     });
     it('setmodel', () => {
-        gridObj.columnMenuItems = [{ text: 'Clear Sorting', id: 'gridclearsorting' }];
+        gridObj.columnMenuItems = [{text: 'Clear Sorting', id: 'gridclearsorting'}];
         expect(gridObj.columnMenuModule.getColumnMenu().children.length).toBeGreaterThan(0);
     });
     afterAll(() => {
         destroy(gridObj);
-        gridObj = null;
     });
 });
 
@@ -602,7 +576,6 @@ describe('Checking dataSource when Children property is empty', () => {
     });
     afterAll(() => {
         destroy(gridObj);
-        gridObj = null;
     });
 });
 
@@ -625,7 +598,6 @@ describe('Check ParentData for Hierarchy data', () => {
     });
     afterAll(() => {
         destroy(gridObj);
-        gridObj = null;
     });
 });
 
@@ -649,7 +621,6 @@ describe('Check ParentData for Selfreference data', () => {
     });
     afterAll(() => {
         destroy(gridObj);
-        gridObj = null;
     });
 });
 
@@ -696,7 +667,6 @@ describe('EJ2-22983: DataSource is not proper whose parentIDMapping record is no
     });
     afterAll(() => {
         destroy(gridObj);
-        gridObj = null;
     });
 });
 
@@ -723,7 +693,6 @@ describe('Self Reference Data Basic Rendering with ParentIDMapping value as Null
     });
     afterAll(() => {
         destroy(gridObj);
-        gridObj = null;
     });
 });
 
@@ -746,12 +715,11 @@ describe('EJ2-25219: uniqueIDCollection is not updated if the datasource contain
             done
         );
     });
-    it('Checking uniqueIDCollection values', () => {
+    it('Checking uniqueIDCollection values', ()  => {
         expect(Object.keys(getObject('uniqueIDCollection', gridObj)).length !== 0).toBe(true);
     });
     afterAll(() => {
         destroy(gridObj);
-        gridObj = null;
     });
 });
 
@@ -771,17 +739,14 @@ describe('keyBoard Interaction for collapse particular parent row by selecting a
         );
     });
     it('keyBoard Interaction', () => {
-        //gridObj.selectCell({ cellIndex: 3, rowIndex: 0 }, true);
-        gridObj.keyboardModule.keyAction({
-            action: 'ctrlShiftUpArrow', preventDefault: preventDefault,
-            target: gridObj.getRows()[0].getElementsByClassName('e-rowcell')[3]
-        } as any);
+    //gridObj.selectCell({ cellIndex: 3, rowIndex: 0 }, true);
+        gridObj.keyboardModule.keyAction({ action: 'ctrlShiftUpArrow', preventDefault: preventDefault,
+            target: gridObj.getRows()[0].getElementsByClassName('e-rowcell')[3] } as any);
         rows = gridObj.getRows();
         expect(rows[1].classList.contains('e-childrow-hidden')).toBe(true);
     });
     afterAll(() => {
         destroy(gridObj);
-        gridObj = null;
     });
 });
 
@@ -806,7 +771,7 @@ describe('EJ2-25984: check enablePersistence property in TreeGrid - pageSettings
             done
         );
     });
-    it('Checking pageSettings property with enablePersistence', (done: Function) => {
+    it('Checking pageSettings property with enablePersistence', (done: Function)  => {
         actionComplete = (args?: PageEventArgs): void => {
             if (args.requestType == 'paging') {
                 expect(gridObj.pageSettings.currentPage == 2).toBe(true);
@@ -818,7 +783,6 @@ describe('EJ2-25984: check enablePersistence property in TreeGrid - pageSettings
     });
     afterAll(() => {
         destroy(gridObj);
-        gridObj = null;
     });
 });
 
@@ -844,7 +808,7 @@ describe('EJ2-25984: check enablePersistence property in TreeGrid - filterSettin
             done
         );
     });
-    it('Checking filterSettings property with enablePersistence', (done: Function) => {
+    it('Checking filterSettings property with enablePersistence', (done: Function)  => {
         actionComplete = (args?: FilterEventArgs): void => {
             if (args.requestType == 'filtering') {
                 expect(gridObj.filterSettings.columns[0].value == 'Plan').toBe(true);
@@ -856,7 +820,6 @@ describe('EJ2-25984: check enablePersistence property in TreeGrid - filterSettin
     });
     afterAll(() => {
         destroy(gridObj);
-        gridObj = null;
     });
 });
 
@@ -871,7 +834,7 @@ describe('EJ2-25984: check enablePersistence property in TreeGrid - searchSettin
                 treeColumnIndex: 1,
                 allowPaging: true,
                 allowFiltering: true,
-                toolbar: ['Search'],
+                toolbar: [ 'Search'],
                 columns: [
                     { field: 'taskID', headerText: 'Task ID', textAlign: 'Right', width: 80 },
                     { field: 'taskName', headerText: 'Task Name', width: 200 },
@@ -883,7 +846,7 @@ describe('EJ2-25984: check enablePersistence property in TreeGrid - searchSettin
             done
         );
     });
-    it('Checking searchSettings property with enablePersistence', (done: Function) => {
+    it('Checking searchSettings property with enablePersistence', (done: Function)  => {
         actionComplete = (args?: SearchEventArgs): void => {
             if (args.requestType == 'searching') {
                 expect(gridObj.searchSettings.key == 'Testing').toBe(true);
@@ -895,7 +858,6 @@ describe('EJ2-25984: check enablePersistence property in TreeGrid - searchSettin
     });
     afterAll(() => {
         destroy(gridObj);
-        gridObj = null;
     });
 });
 
@@ -934,7 +896,6 @@ describe('Checking setCellValue method', () => {
     });
     afterAll(() => {
         destroy(gridObj);
-        gridObj = null;
     });
 });
 
@@ -960,7 +921,7 @@ describe('EJ2-25984: check enablePersistence property in TreeGrid - sortSettings
             done
         );
     });
-    it('Checking sortSettings property with enablePersistence ', (done: Function) => {
+    it('Checking sortSettings property with enablePersistence ', (done: Function)  => {
         actionComplete = (args?: SortEventArgs): void => {
             if (args.requestType == 'sorting') {
                 expect(gridObj.sortSettings.columns[0].direction == 'Ascending').toBe(true);
@@ -973,7 +934,6 @@ describe('EJ2-25984: check enablePersistence property in TreeGrid - sortSettings
     });
     afterAll(() => {
         destroy(gridObj);
-        gridObj = null;
     });
 });
 
@@ -1009,7 +969,6 @@ describe('EJ2-22122-Locale change using SetModel', () => {
     });
     afterAll(() => {
         destroy(gridObj);
-        gridObj = null;
     });
 });
 
@@ -1044,7 +1003,6 @@ describe('Checking aria-expanded attribute for tr element', () => {
     });
     afterAll(() => {
         destroy(gridObj);
-        gridObj = null;
     });
 });
 
@@ -1073,7 +1031,6 @@ describe('Checking template position', () => {
     });
     afterAll(() => {
         destroy(gridObj);
-        gridObj = null;
     });
 });
 
@@ -1106,7 +1063,6 @@ describe('borderline testing after expand and collapse records', () => {
     });
     afterAll(() => {
         destroy(gridObj);
-        gridObj = null;
     });
 });
 
@@ -1132,7 +1088,6 @@ describe('Checking borderline for last record after initial rendering', () => {
     });
     afterAll(() => {
         destroy(gridObj);
-        gridObj = null;
     });
 });
 
@@ -1151,11 +1106,11 @@ describe('Self Reference Data ExpandState Mapping for multiple levels', () => {
                 columns: [
                     { field: 'TaskID', headerText: 'Task ID', textAlign: 'Right', width: 140 },
                     { field: 'TaskName', headerText: 'Task Name', width: 160 },
-                    { field: 'StartDate', headerText: 'Start Date', textAlign: 'Right', width: 120, format: { skeleton: 'yMd', type: 'date' } },
-                    { field: 'EndDate', headerText: 'End Date', textAlign: 'Right', width: 120, format: { skeleton: 'yMd', type: 'date' } },
-                    { field: 'Duration', headerText: 'Duration', textAlign: 'Right', width: 110 },
-                    { field: 'Progress', headerText: 'Progress', textAlign: 'Right', width: 110 },
-                    { field: 'Priority', headerText: 'Priority', width: 110 }
+                    { field: 'StartDate', headerText: 'Start Date', textAlign: 'Right', width: 120, format: { skeleton: 'yMd', type: 'date' }},
+                    { field: 'EndDate', headerText: 'End Date', textAlign: 'Right', width: 120, format: { skeleton: 'yMd', type: 'date' }},
+                    { field: 'Duration', headerText: 'Duration', textAlign: 'Right', width: 110},
+                    { field: 'Progress', headerText: 'Progress', textAlign: 'Right', width: 110},
+                    { field: 'Priority', headerText: 'Priority', width: 110}
                 ]
             },
             done
@@ -1181,7 +1136,6 @@ describe('Self Reference Data ExpandState Mapping for multiple levels', () => {
 
     afterAll(() => {
         destroy(gridObj);
-        gridObj = null;
     });
 });
 
@@ -1200,11 +1154,11 @@ describe('Self Reference Data ExpandState Mapping for multiple levels', () => {
                 columns: [
                     { field: 'TaskID', headerText: 'Task ID', textAlign: 'Right', width: 140 },
                     { field: 'TaskName', headerText: 'Task Name', width: 160 },
-                    { field: 'StartDate', headerText: 'Start Date', textAlign: 'Right', width: 120, format: { skeleton: 'yMd', type: 'date' } },
-                    { field: 'EndDate', headerText: 'End Date', textAlign: 'Right', width: 120, format: { skeleton: 'yMd', type: 'date' } },
-                    { field: 'Duration', headerText: 'Duration', textAlign: 'Right', width: 110 },
-                    { field: 'Progress', headerText: 'Progress', textAlign: 'Right', width: 110 },
-                    { field: 'Priority', headerText: 'Priority', width: 110 }
+                    { field: 'StartDate', headerText: 'Start Date', textAlign: 'Right', width: 120, format: { skeleton: 'yMd', type: 'date' }},
+                    { field: 'EndDate', headerText: 'End Date', textAlign: 'Right', width: 120, format: { skeleton: 'yMd', type: 'date' }},
+                    { field: 'Duration', headerText: 'Duration', textAlign: 'Right', width: 110},
+                    { field: 'Progress', headerText: 'Progress', textAlign: 'Right', width: 110},
+                    { field: 'Priority', headerText: 'Priority', width: 110}
                 ]
             },
             done
@@ -1230,7 +1184,6 @@ describe('Self Reference Data ExpandState Mapping for multiple levels', () => {
 
     afterAll(() => {
         destroy(gridObj);
-        gridObj = null;
     });
 });
 
@@ -1263,7 +1216,6 @@ describe('borderline testing after expand and collapse records', () => {
     });
     afterAll(() => {
         destroy(gridObj);
-        gridObj = null;
     });
 });
 
@@ -1289,7 +1241,6 @@ describe('Checking borderline for last record after initial rendering', () => {
     });
     afterAll(() => {
         destroy(gridObj);
-        gridObj = null;
     });
 });
 
@@ -1297,22 +1248,14 @@ describe('sort comparer', () => {
     let gridObj: TreeGrid;
     let actionComplete: () => void;
     const data = [
-        {
-            'TaskID': 1, 'TaskName': 'Parent Task 1', 'StartDate': new Date('03/14/2017'),
-            'EndDate': new Date('02/27/2017'), 'Duration': 3, 'Progress': '40', 'Priority': 'Normal'
-        },
-        {
-            'TaskID': 5, 'TaskName': 'Parent Task 2', 'StartDate': null,
-            'EndDate': new Date('03/18/2017'), 'Duration': 6, 'Progress': '40', 'Priority': 'Normal'
-        },
-        {
-            'TaskID': 6, 'TaskName': 'Child Task 1', 'StartDate': null,
-            'EndDate': new Date('03/06/2017'), 'Duration': 11, 'Progress': '40', 'parentID': 5, 'Priority': 'High'
-        },
-        {
-            'TaskID': 7, 'TaskName': 'Child Task 2', 'StartDate': new Date('03/02/2017'),
-            'EndDate': new Date('03/06/2017'), 'Duration': 7, 'Progress': '40', 'parentID': 5, 'Priority': 'Critical'
-        }
+        { 'TaskID': 1, 'TaskName': 'Parent Task 1', 'StartDate': new Date('03/14/2017'),
+            'EndDate': new Date('02/27/2017'), 'Duration': 3, 'Progress': '40', 'Priority': 'Normal' },
+        { 'TaskID': 5, 'TaskName': 'Parent Task 2', 'StartDate': null,
+            'EndDate': new Date('03/18/2017'), 'Duration': 6, 'Progress': '40', 'Priority': 'Normal' },
+        { 'TaskID': 6, 'TaskName': 'Child Task 1', 'StartDate': null,
+            'EndDate': new Date('03/06/2017'), 'Duration': 11, 'Progress': '40', 'parentID': 5, 'Priority': 'High' },
+        { 'TaskID': 7, 'TaskName': 'Child Task 2', 'StartDate': new Date('03/02/2017'),
+            'EndDate': new Date('03/06/2017'), 'Duration': 7, 'Progress': '40', 'parentID': 5, 'Priority': 'Critical' }
     ];
     const data1: DataManager = new DataManager({
         json: data,
@@ -1351,7 +1294,7 @@ describe('sort comparer', () => {
      * @param reference
      * @param comparer
      */
-    function sortComparer(reference: any, comparer: any) {
+    function sortComparer (reference: any, comparer: any) {
         const sortAsc = action === 'Ascending' ? true : false;
         if (sortAsc && reference === null) {
             return 1;
@@ -1376,21 +1319,20 @@ describe('sort comparer', () => {
     });
     afterAll(() => {
         destroy(gridObj);
-        gridObj = null;
     });
 });
 
 describe('sub level parent expand/collapse icon', () => {
     let gridObj: TreeGrid;
     let rows: Element[];
-    const data = [{ 'TaskId': 1, 'TaskName': 'Parent Task 1', 'Duration': 10, 'ParentId': null, 'isParent': true, 'isExpanded': true },
-    { 'TaskId': 2, 'TaskName': 'Child task 1', 'Duration': 4, 'ParentId': 1, 'isParent': null, 'isExpanded': true },
-    { 'TaskId': 15, 'TaskName': 'Sub task 1', 'Duration': 4, 'ParentId': 2, 'isParent': null, 'isExpanded': true },
-    { 'TaskId': 13, 'TaskName': 'Child task 5', 'Duration': 4, 'ParentId': 15, 'isParent': null, 'isExpanded': false },
-    { 'TaskId': 5, 'TaskName': 'Parent Task 2', 'Duration': 10, 'ParentId': null, 'isParent': true, 'isExpanded': true },
-    { 'TaskId': 6, 'TaskName': 'Child task 2', 'Duration': 4, 'ParentId': 5, 'isParent': null, 'isExpanded': false },
-    { 'TaskId': 10, 'TaskName': 'Parent Task 3', 'Duration': 10, 'ParentId': null, 'isParent': true, 'isExpanded': true },
-    { 'TaskId': 11, 'TaskName': 'Child task 3', 'Duration': 4, 'ParentId': 10, 'isParent': false, 'isExpanded': false }];
+    const data = [{'TaskId': 1, 'TaskName': 'Parent Task 1', 'Duration': 10, 'ParentId': null, 'isParent': true, 'isExpanded': true},
+        {'TaskId': 2, 'TaskName': 'Child task 1', 'Duration': 4, 'ParentId': 1, 'isParent': null, 'isExpanded': true},
+        {'TaskId': 15, 'TaskName': 'Sub task 1', 'Duration': 4, 'ParentId': 2, 'isParent': null, 'isExpanded': true},
+        {'TaskId': 13, 'TaskName': 'Child task 5', 'Duration': 4, 'ParentId': 15, 'isParent': null, 'isExpanded': false},
+        {'TaskId': 5, 'TaskName': 'Parent Task 2', 'Duration': 10, 'ParentId': null, 'isParent': true, 'isExpanded': true},
+        {'TaskId': 6, 'TaskName': 'Child task 2', 'Duration': 4, 'ParentId': 5, 'isParent': null, 'isExpanded': false},
+        {'TaskId': 10, 'TaskName': 'Parent Task 3', 'Duration': 10, 'ParentId': null, 'isParent': true, 'isExpanded': true},
+        {'TaskId': 11, 'TaskName': 'Child task 3', 'Duration': 4, 'ParentId': 10, 'isParent': false, 'isExpanded': false}];
     beforeAll((done: Function) => {
         gridObj = createGrid(
             {
@@ -1419,7 +1361,6 @@ describe('sub level parent expand/collapse icon', () => {
 
     afterAll(() => {
         destroy(gridObj);
-        gridObj = null;
     });
 });
 
@@ -1436,10 +1377,10 @@ describe('Refresh', () => {
                 treeColumnIndex: 1,
                 toolbar: ['Add', 'Edit', 'Update', 'Delete', 'Cancel', 'ExpandAll', 'CollapseAll'],
                 columns: [{ field: 'taskID', headerText: 'Task ID', isPrimaryKey: true },
-                { field: 'taskName', headerText: 'Task Name' },
-                { field: 'progress', headerText: 'Progress' },
-                { field: 'duration', headerText: 'Duration' },
-                { field: 'startDate', headerText: 'Start Date' }
+                    { field: 'taskName', headerText: 'Task Name' },
+                    { field: 'progress', headerText: 'Progress' },
+                    { field: 'duration', headerText: 'Duration' },
+                    { field: 'startDate', headerText: 'Start Date' }
                 ]
             },
             done
@@ -1463,7 +1404,6 @@ describe('Refresh', () => {
 
     afterAll(() => {
         destroy(gridObj);
-        gridObj = null;
     });
 });
 
@@ -1496,7 +1436,6 @@ describe('Checking template column Expand/Collapse', () => {
     });
     afterAll(() => {
         destroy(gridObj);
-        gridObj = null;
     });
 });
 
@@ -1507,13 +1446,13 @@ describe('EJ2-51954-Expand/Collapse At level method', () => {
         gridObj = createGrid(
             {
                 dataSource: [{ 'ID': 'projectXYZ', 'GUID': 'A66B74DE-97B2-4A77-B6D5-7B9D5353C458', 'Description': 'Description 1', 'NodeType': 'Project', 'Name': 'Project XYW', 'hasChild': true },
-                { 'ID': '2361861', 'GUID': 'A66B74DE-97B2-4A77-B6D5-7B9D5353C458', 'Description': 'Description 2', 'NodeType': 'Type1', 'Name': '0000', 'PID': 'projectXYZ' },
-                { 'ID': '2361848', 'GUID': '8C1B0509-B50C-4DEA-A2DC-9049F6FA0D99', 'Description': 'Description 3', 'NodeType': 'Type1', 'Name': '3', 'PID': '2361861' },
-                { 'ID': '2361827', 'GUID': '677DE6EA-FACF-4B4F-BBCF-E2003B7AC98F', 'Description': 'Description 13', 'NodeType': 'Type1', 'Name': '1', 'PID': '2361861' },
-                { 'ID': '2361857', 'GUID': '9F5E2D4A-60C5-40A2-8273-BF6A8A2E97B0', 'Description': 'Description 14', 'NodeType': 'Type1', 'Name': '13', 'PID': '2361848' },
-                { 'ID': '2361858', 'GUID': '9F5E2D4A-60C5-40A2-8273-BF6A8A2E97B0', 'Description': 'Description 15', 'NodeType': 'Type1', 'Name': '14', 'PID': '2361827' },
-                { 'ID': '2361850', 'GUID': '9F5E2D4A-60C5-40A2-8273-BF6A8A2E97B0', 'Description': 'Description 16', 'NodeType': 'Type1', 'Name': '15', 'PID': '2361857' },
-                { 'ID': '236185809', 'GUID': '9F5E2D4A-60C5-40A2-8273-BF6A8A2E97B0', 'Description': 'Description 15', 'NodeType': 'Type1', 'Name': '16', 'PID': '2361858' }
+                    { 'ID': '2361861', 'GUID': 'A66B74DE-97B2-4A77-B6D5-7B9D5353C458', 'Description': 'Description 2', 'NodeType': 'Type1', 'Name': '0000', 'PID': 'projectXYZ' },
+                    { 'ID': '2361848', 'GUID': '8C1B0509-B50C-4DEA-A2DC-9049F6FA0D99', 'Description': 'Description 3', 'NodeType': 'Type1', 'Name': '3', 'PID': '2361861' },
+                    { 'ID': '2361827', 'GUID': '677DE6EA-FACF-4B4F-BBCF-E2003B7AC98F', 'Description': 'Description 13', 'NodeType': 'Type1', 'Name': '1', 'PID': '2361861' },
+                    { 'ID': '2361857', 'GUID': '9F5E2D4A-60C5-40A2-8273-BF6A8A2E97B0', 'Description': 'Description 14', 'NodeType': 'Type1', 'Name': '13', 'PID': '2361848' },
+                    { 'ID': '2361858', 'GUID': '9F5E2D4A-60C5-40A2-8273-BF6A8A2E97B0', 'Description': 'Description 15', 'NodeType': 'Type1', 'Name': '14', 'PID': '2361827' },
+                    { 'ID': '2361850', 'GUID': '9F5E2D4A-60C5-40A2-8273-BF6A8A2E97B0', 'Description': 'Description 16', 'NodeType': 'Type1', 'Name': '15', 'PID': '2361857' },
+                    { 'ID': '236185809', 'GUID': '9F5E2D4A-60C5-40A2-8273-BF6A8A2E97B0', 'Description': 'Description 15', 'NodeType': 'Type1', 'Name': '16', 'PID': '2361858' }
                 ],
                 idMapping: 'ID',
                 parentIdMapping: 'PID',
@@ -1539,7 +1478,6 @@ describe('EJ2-51954-Expand/Collapse At level method', () => {
     });
     afterAll(() => {
         destroy(gridObj);
-        gridObj = null;
     });
 });
 
@@ -1712,7 +1650,6 @@ describe('EJ2-53010-Expand At level method', () => {
 
     afterAll(() => {
         destroy(gridObj);
-        gridObj = null;
     });
 });
 
@@ -1772,7 +1709,6 @@ describe('EJ2-54516-expandByKey method testing', () => {
 
     afterAll(() => {
         destroy(gridObj);
-        gridObj = null;
     });
 });
 
@@ -1818,10 +1754,10 @@ describe('EJ2-54516-expand/collapse level method test with params', () => {
                     },
                     { field: 'priority', headerText: 'Priority', width: 90 }
                 ],
-                expanding: function (args: RowExpandingEventArgs) {
+                expanding: function(args: RowExpandingEventArgs) {
                     args.expandAll = true;
                 },
-                collapsing: function (args: RowCollapsingEventArgs) {
+                collapsing: function(args: RowCollapsingEventArgs) {
                     args.collapseAll = true;
                 }
             },
@@ -1839,7 +1775,6 @@ describe('EJ2-54516-expand/collapse level method test with params', () => {
 
     afterAll(() => {
         destroy(gridObj);
-        gridObj = null;
     });
 });
 
@@ -1854,7 +1789,7 @@ describe('EJ2-57180 - Last grid Line missing after collapsing all records while 
                 treeColumnIndex: 1,
                 height: 400,
                 toolbar: ['CollapseAll'],
-                collapsed: function (args) {
+                collapsed: function(args){
                     const dataId = args.data.taskID;
                     gridObj.setRowData(dataId, args.data);
                 },
@@ -1878,7 +1813,6 @@ describe('EJ2-57180 - Last grid Line missing after collapsing all records while 
     });
     afterAll(() => {
         destroy(gridObj);
-        gridObj = null;
     });
 });
 
@@ -1905,7 +1839,6 @@ describe('RTL with Tree column alignment Testing - EJ2-57397', () => {
     });
     afterAll(() => {
         destroy(gridObj);
-        gridObj = null;
     });
 });
 
@@ -1914,7 +1847,7 @@ describe('ExpandStateMapping not update issue - EJ2-59094', () => {
     beforeAll((done: Function) => {
         gridObj = createGrid(
             {
-                dataSource: [{
+                dataSource: [ {
                     taskID: 1,
                     taskName: 'Planning',
                     startDate: new Date('02/03/2017'),
@@ -1963,7 +1896,6 @@ describe('ExpandStateMapping not update issue - EJ2-59094', () => {
     });
     afterAll(() => {
         destroy(gridObj);
-        gridObj = null;
     });
 });
 
@@ -1978,7 +1910,7 @@ describe('EJ2-58631 - Extra line adding when using setRowData method', () => {
                 treeColumnIndex: 1,
                 height: 400,
                 toolbar: ['CollapseAll'],
-                collapsed: function (args) {
+                collapsed: function(args){
                     const dataId = args.data.taskID;
                     gridObj.setRowData(dataId, args.data);
                 },
@@ -2002,7 +1934,6 @@ describe('EJ2-58631 - Extra line adding when using setRowData method', () => {
     });
     afterAll(() => {
         destroy(gridObj);
-        gridObj = null;
     });
 });
 
@@ -2029,7 +1960,6 @@ describe('EJ2-64501 - shimmer effect check for normal tree grid', () => {
     });
     afterAll(() => {
         destroy(gridObj);
-        gridObj = null;
     });
 });
 
@@ -2058,7 +1988,6 @@ describe('EJ2-65573- The expanded or collapsed state is not read properly by the
     });
     afterAll(() => {
         destroy(gridObj);
-        gridObj = null;
     });
 });
 
@@ -2098,7 +2027,6 @@ describe('EJ2-65701- With the frozenRows property, the methods expand & collpase
     });
     afterAll(() => {
         destroy(gridObj);
-        gridObj = null;
     });
 });
 
@@ -2114,12 +2042,12 @@ describe('EJ2-66816- Collapsing the records after filtering thows script error',
                 height: 350,
                 treeColumnIndex: 1,
                 columns: [
-                    { field: 'taskID', headerText: 'Task ID', textAlign: 'Right', width: 90, isPrimaryKey: true },
-                    { field: 'taskName', headerText: 'Task Name', width: 130 },
-                    { field: 'startDate', headerText: 'Start Date', width: 90, textAlign: 'Right', format: 'yMd' },
-                    { field: 'progress', headerText: 'Progress', width: 90, textAlign: 'Right' },
-                    { field: 'duration', headerText: 'Duration', width: 90, textAlign: 'Right' },
-                    { field: 'priority', headerText: 'Priority', width: 90 }
+                    {field: 'taskID', headerText: 'Task ID', textAlign: 'Right', width: 90,  isPrimaryKey: true },
+                    {field: 'taskName', headerText: 'Task Name', width: 130 },
+                    {field: 'startDate', headerText: 'Start Date', width: 90, textAlign: 'Right', format: 'yMd'},
+                    {field: 'progress', headerText: 'Progress', width: 90, textAlign: 'Right' },
+                    {field: 'duration', headerText: 'Duration', width: 90, textAlign: 'Right' },
+                    {field: 'priority', headerText: 'Priority', width: 90 }
                 ]
             },
             done
@@ -2129,7 +2057,7 @@ describe('EJ2-66816- Collapsing the records after filtering thows script error',
     it('collapseAll after filtering the records', (done: Function) => {
         actionComplete = (args?: Object): void => {
             gridObj.collapseAll();
-            expect(gridObj.getVisibleRecords().length === 1).toBe(true);
+	  expect(gridObj.getVisibleRecords().length === 1).toBe(true);
             done();
         };
         gridObj.grid.actionComplete = actionComplete;
@@ -2137,95 +2065,94 @@ describe('EJ2-66816- Collapsing the records after filtering thows script error',
     });
     afterAll(() => {
         destroy(gridObj);
-        gridObj = null;
     });
 });
 
 describe('EJ2-58631 - Script Error thrown while calling lastRowBorder method', () => {
 
-    type MockAjaxReturn = { promise: Promise<Object>, request: JasmineAjaxRequest };
-    type ResponseType = { result: Object[], count: number | string };
+  type MockAjaxReturn = { promise: Promise<Object>, request: JasmineAjaxRequest };
+  type ResponseType = { result: Object[], count: number | string };
 
-    const mockAjax: Function = (d: { data: { [o: string]: Object | Object[] } | Object[], dm?: DataManager }, query: Query | Function, response?: Object):
-        MockAjaxReturn => {
-        jasmine.Ajax.install();
-        const dataManager = d.dm || new DataManager({
-            url: '/api/Employees'
-        });
-        const prom: Promise<Object> = dataManager.executeQuery(query);
-        let request: JasmineAjaxRequest;
-        const defaults: Object = {
-            'status': 200,
-            'contentType': 'application/json',
-            'responseText': JSON.stringify(d.data)
-        };
-        const responses: Object = {};
-        request = jasmine.Ajax.requests.mostRecent();
-        extend(responses, defaults, response);
-        request.respondWith(responses);
-        return {
-            promise: prom,
-            request: request
-        };
-    };
+  const mockAjax: Function = (d: { data: { [o: string]: Object | Object[] } | Object[], dm?: DataManager }, query: Query | Function, response?: Object):
+  MockAjaxReturn => {
+      jasmine.Ajax.install();
+      const dataManager = d.dm || new DataManager({
+          url: '/api/Employees'
+      });
+      const prom: Promise<Object> = dataManager.executeQuery(query);
+      let request: JasmineAjaxRequest;
+      const defaults: Object = {
+          'status': 200,
+          'contentType': 'application/json',
+          'responseText': JSON.stringify(d.data)
+      };
+      const responses: Object = {};
+      request = jasmine.Ajax.requests.mostRecent();
+      extend(responses, defaults, response);
+      request.respondWith(responses);
+      return {
+          promise: prom,
+          request: request
+      };
+  };
 
-    let gridObj: TreeGrid;
-    const elem: HTMLElement = createElement('div', { id: 'Grid' });
-    let request: JasmineAjaxRequest;
-    let rows: HTMLTableRowElement[];
-    let dataManager: DataManager;
-    let originalTimeout: number;
-    beforeAll((done: Function) => {
-        const dataBound: EmitType<Object> = () => { done(); };
-        spyOn(window, 'fetch').and.returnValue(Promise.resolve(
-            new Response(JSON.stringify({ d: data.filter((e: { [x: string]: Object; }) => { return isNullOrUndefined(e['parentID']); }), __count: 15 }), {
-                status: 200
-            })
-        ));
-        originalTimeout = jasmine.DEFAULT_TIMEOUT_INTERVAL;
-        jasmine.DEFAULT_TIMEOUT_INTERVAL = 4000;
-        dataManager = new DataManager({
-            url: 'http://localhost:50499/Home/UrlData',
-            crossDomain: true
-        });
-        document.body.appendChild(elem);
-        gridObj = new TreeGrid(
-            {
-                dataSource: dataManager, dataBound: dataBound,
-                hasChildMapping: 'isParent',
-                idMapping: 'TaskID',
-                parentIdMapping: 'ParentID',
-                treeColumnIndex: 1,
-                columns: [
-                    { field: 'TaskID', isPrimaryKey: true, headerText: 'Task Id' },
-                    { field: 'TaskName', headerText: 'Task Name' },
-                    { field: 'StartDate', headerText: 'Start Date' },
-                    { field: 'EndDate', headerText: 'End Date' },
-                    { field: 'Progress', headerText: 'Progress' }
-                ]
-            });
-        gridObj.appendTo('#Grid');
-        request = window.fetch['calls'].mostRecent();
-    });
+  let gridObj: TreeGrid;
+  const elem: HTMLElement = createElement('div', { id: 'Grid' });
+  let request: JasmineAjaxRequest;
+  let rows: HTMLTableRowElement[];
+  let dataManager: DataManager;
+  let originalTimeout: number;
+  beforeAll((done: Function) => {
+      const dataBound: EmitType<Object> = () => { done(); };
+      spyOn(window, 'fetch').and.returnValue(Promise.resolve(
+          new Response(JSON.stringify({ d: data.filter((e: { [x: string]: Object; }) => { return isNullOrUndefined(e['parentID']); }), __count: 15 }), {
+              status: 200
+          })
+      ));
+      originalTimeout = jasmine.DEFAULT_TIMEOUT_INTERVAL;
+      jasmine.DEFAULT_TIMEOUT_INTERVAL = 4000;
+      dataManager = new DataManager({
+          url: 'http://localhost:50499/Home/UrlData',
+          crossDomain: true
+      });
+      document.body.appendChild(elem);
+      gridObj = new TreeGrid(
+          {
+              dataSource: dataManager, dataBound: dataBound,
+              hasChildMapping: 'isParent',
+              idMapping: 'TaskID',
+              parentIdMapping: 'ParentID',
+              treeColumnIndex: 1,
+              columns: [
+                  { field: 'TaskID', isPrimaryKey: true, headerText: 'Task Id' },
+                  { field: 'TaskName', headerText: 'Task Name' },
+                  { field: 'StartDate', headerText: 'Start Date' },
+                  { field: 'EndDate', headerText: 'End Date' },
+                  { field: 'Progress', headerText: 'Progress' }
+              ]
+          });
+      gridObj.appendTo('#Grid');
+      request = window.fetch['calls'].mostRecent();
+  });
 
-    it('checking script error', (done: Function) => {
-        const firstdata = { TaskID: 1, Duration: 2, TaskName: 'newChild', Progress: 45 };
-        const lastdata = { TaskID: 3, Duration: 2, TaskName: 'newChild', Progress: 45 };
-        gridObj.setRowData(firstdata.TaskID, firstdata as object);
-        rows = gridObj.getRows();
-        const lenValue = (gridObj.getRows().length) - 1;
-        expect(rows[0].cells[0].classList.contains('e-lastrowcell')).toBe(false);
-        gridObj.setRowData(lastdata.TaskID, lastdata as object);
-        expect(rows[lenValue].cells[0].classList.contains('e-lastrowcell')).toBe(true);
-        done();
-    });
+  it('checking script error', (done: Function) => {
+      const firstdata = { TaskID: 1, Duration: 2, TaskName: 'newChild', Progress: 45 };
+      const lastdata = { TaskID: 3, Duration: 2, TaskName: 'newChild', Progress: 45 };
+      gridObj.setRowData(firstdata.TaskID, firstdata as object);
+      rows = gridObj.getRows();
+      const lenValue = (gridObj.getRows().length) - 1;
+      expect(rows[0].cells[0].classList.contains('e-lastrowcell')).toBe(false);
+      gridObj.setRowData(lastdata.TaskID, lastdata as object);
+      expect(rows[lenValue].cells[0].classList.contains('e-lastrowcell')).toBe(true);
+      done();
+  });
 
-    afterAll(() => {
-        jasmine.DEFAULT_TIMEOUT_INTERVAL = originalTimeout;
-        gridObj.destroy();
-        remove(elem);
-        jasmine.Ajax.uninstall();
-    });
+  afterAll(() => {
+      jasmine.DEFAULT_TIMEOUT_INTERVAL = originalTimeout;
+      gridObj.destroy();
+      remove(elem);
+      jasmine.Ajax.uninstall();
+  });
 });
 
 describe('keyBoard Interaction for expand/collapse child row', () => {
@@ -2268,7 +2195,6 @@ describe('keyBoard Interaction for expand/collapse child row', () => {
     });
     afterAll(() => {
         destroy(gridObj);
-        gridObj = null;
     });
 });
 
@@ -2297,7 +2223,7 @@ describe('EJ2-68334 - Column width(resizing) not persisted while using Stacked C
                         headerText: 'Order Details', textAlign: 'Center', columns: [
                             { field: 'orderID', headerText: 'Order ID', textAlign: 'Right', width: 90 },
                             { field: 'orderName', headerText: 'Order Name', textAlign: 'Left', width: 150, minWidth: 50, maxWidth: 250 },
-                            { field: 'orderDate', headerText: 'Order Date', textAlign: 'Right', width: 120, format: 'yMd' }
+                            { field: 'orderDate', headerText: 'Order Date', textAlign: 'Right', width: 120, format: 'yMd'}
                         ]
                     },
                     {
@@ -2355,7 +2281,7 @@ describe('EJ2-69752 - Resizing not works when persistence enable while resizing 
                     {
                         headerText: 'Order Details', textAlign: 'Center', columns: [
                             { field: 'orderName', headerText: 'Order Name', textAlign: 'Left', width: 150, minWidth: 50, maxWidth: 250 },
-                            { field: 'orderDate', headerText: 'Order Date', textAlign: 'Right', width: 120, format: 'yMd' }
+                            { field: 'orderDate', headerText: 'Order Date', textAlign: 'Right', width: 120, format: 'yMd'}
                         ]
                     },
                     {
@@ -2448,18 +2374,17 @@ describe('EJ2-70639 - Provide XSS- security for Tree Grid', () => {
         );
     });
     it('test the html sanitizer', () => {
-        expect((gridObj.getRowByIndex(0) as any).cells[1].innerHTML.includes('<img id="target" src="x" onerror="alert(document.domain)">')).toBe(false);
-        expect((gridObj.getRowByIndex(4) as any).cells[1].innerHTML.includes('<img id="target" src="x" onerror="alert(document.domain)">')).toBe(false);
+        expect((gridObj.getRowByIndex(0) as any ).cells[1].innerHTML.includes('<img id="target" src="x" onerror="alert(document.domain)">')).toBe(false);
+        expect((gridObj.getRowByIndex(4) as any ).cells[1].innerHTML.includes('<img id="target" src="x" onerror="alert(document.domain)">')).toBe(false);
     });
     afterAll(() => {
         destroy(gridObj);
-        gridObj = null;
     });
 });
 
 describe('878792 - OnClick event was not binded while creating button in treegrid with HtmlEncode enabled in Javascript Treegrid', () => {
     let TreeGridObj: TreeGrid;
-
+    
     beforeAll((done: Function) => {
         TreeGridObj = createGrid(
             {
@@ -2476,13 +2401,13 @@ describe('878792 - OnClick event was not binded while creating button in treegri
                 columns: [
                     { type: 'checkbox', width: 60 },
                     {
-                        field: 'taskName',
-                        headerText: 'Task Name',
-                        width: 200,
-                        textAlign: 'Left',
-                        disableHtmlEncode: false,
+                      field: 'taskName',
+                      headerText: 'Task Name',
+                      width: 200,
+                      textAlign: 'Left',
+                      disableHtmlEncode: false,
                     },
-                ],
+                  ],
             }, done);
     });
 
@@ -2530,7 +2455,6 @@ describe('EJ2-71118 - Tab navigation throws script error while navigating to the
     });
     afterAll(() => {
         destroy(gridObj);
-        gridObj = null;
     });
 });
 
@@ -2547,7 +2471,7 @@ describe('Bug 839261: Column template is not working properly when using getPers
                 columns: [
                     { field: 'taskID', headerText: 'Task ID', isPrimaryKey: true },
                     { field: 'taskName', template: '<span>test</span>', headerText: 'Task Name' },
-                    { field: 'startDate', headerText: 'Start Date' },
+                    { field: 'startDate', headerText: 'Start Date'},
                     { field: 'duration', headerText: 'duration' }
                 ]
             },
@@ -2561,7 +2485,6 @@ describe('Bug 839261: Column template is not working properly when using getPers
     });
     afterAll(() => {
         destroy(gridObj);
-        gridObj = null;
     });
 });
 
@@ -2576,7 +2499,7 @@ describe('Null or undefined check', () => {
                 columns: [
                     { field: 'taskID', headerText: 'Task ID', isPrimaryKey: true },
                     { field: 'taskName', template: '<span>test</span>', headerText: 'Task Name' },
-                    { field: 'startDate', headerText: 'Start Date' },
+                    { field: 'startDate', headerText: 'Start Date'},
                     { field: 'duration', headerText: 'duration' }
                 ]
             },
@@ -2702,7 +2625,7 @@ describe('Null or undefined check', () => {
         gridObj.enableAutoFill = undefined;
         gridObj.dataBind();
         expect(gridObj.enableAutoFill).toBe(undefined);
-    });
+    });    
     it('Initial rendering collapsed state', () => {
         gridObj.enableCollapseAll = null;
         gridObj.dataBind();
@@ -3127,7 +3050,7 @@ describe('Null or undefined check', () => {
         // Test with undefined value
         gridObj.editSettings.allowAdding = undefined;
         gridObj.editSettings.allowDeleting = undefined;
-        gridObj.editSettings.allowEditOnDblClick = undefined;
+        gridObj.editSettings.allowEditOnDblClick= undefined;
         gridObj.editSettings.allowEditing = undefined;
         gridObj.editSettings.allowNextRowEdit = undefined;
         gridObj.editSettings.dialog = undefined;
@@ -3195,7 +3118,7 @@ describe('Null or undefined check', () => {
         expect(gridObj.infiniteScrollSettings.initialBlocks).toBe(undefined);
         expect(gridObj.infiniteScrollSettings.maxBlocks).toBe(undefined);
     });
-
+    
 
     it("selectionSettings", () => {
         // Test with null value
@@ -3239,17 +3162,17 @@ describe('Null or undefined check', () => {
 
     it("rowDropSettings", () => {
         // Test with null value
-        gridObj.rowDropSettings.targetID = null;
+        gridObj.rowDropSettings.targetID= null;
         gridObj.dataBind();
         expect(gridObj.rowDropSettings.targetID).toBe(null);
 
         // Test with undefined value
-        gridObj.rowDropSettings.targetID = undefined;
+        gridObj.rowDropSettings.targetID= undefined;
         gridObj.dataBind();
         expect(gridObj.rowDropSettings.targetID).toBe(undefined);
     });
 
-
+    
     it("sortSettings", () => {
         // Test with null value
         gridObj.sortSettings.allowUnsort = null;
@@ -3280,7 +3203,6 @@ describe('Null or undefined check', () => {
     // });
     afterAll(() => {
         destroy(gridObj);
-        gridObj = null;
     });
 });
 
@@ -3311,7 +3233,6 @@ describe('Logger module with row drag and drop', () => {
     });
     afterAll(() => {
         destroy(gridObj);
-        gridObj = null;
     });
 });
 
@@ -3331,7 +3252,7 @@ describe('ActionFailure with sorting', () => {
                     allowDeleting: true,
                     mode: 'Cell',
                     newRowPosition: 'Below'
-
+    
                 },
                 toolbar: ['Add', 'Delete', 'Update', 'Cancel', 'Indent', 'Outdent'],
                 allowSelection: true,
@@ -3353,7 +3274,6 @@ describe('ActionFailure with sorting', () => {
     });
     afterAll(() => {
         destroy(gridObj);
-        gridObj = null;
     });
 });
 
@@ -3363,7 +3283,7 @@ describe('Print action', () => {
     beforeAll((done: Function) => {
         gridObj = createGrid(
             {
-                dataSource: sampleData,
+                dataSource:sampleData,
                 allowSorting: true,
                 childMapping: 'subtasks',
                 height: 400,
@@ -3375,7 +3295,7 @@ describe('Print action', () => {
                     newRowPosition: 'Below'
                 },
                 allowPaging: true,
-                treeColumnIndex: 1,
+                treeColumnIndex:1,
                 columns: [
                     { field: 'taskID', headerText: 'Task ID', isPrimaryKey: false },
                     { field: 'taskName', headerText: 'Task Name' },
@@ -3384,7 +3304,7 @@ describe('Print action', () => {
                 ]
             },
             done
-        );
+    );
     });
     it('Print action', (done: Function) => {
         let printComplete = (args?: { element: Element }): void => {
@@ -3399,7 +3319,6 @@ describe('Print action', () => {
     afterAll(() => {
         gridObj.printModule.destroy();
         destroy(gridObj);
-        gridObj = null;
     });
 });
 
@@ -3429,7 +3348,6 @@ describe('Enable virtualization action without virtual scroll module', () => {
     });
     afterAll(() => {
         destroy(gridObj);
-        gridObj = null;
     });
 });
 
@@ -3461,7 +3379,6 @@ describe('Checkbox column', () => {
     });
     afterAll(() => {
         destroy(gridObj);
-        gridObj = null;
     });
 });
 
@@ -3496,7 +3413,6 @@ describe('Remote data', () => {
     });
     afterAll(() => {
         destroy(gridObj);
-        gridObj = null;
     });
 });
 
@@ -3546,7 +3462,6 @@ describe('Remote data with TotalRecords count', () => {
     });
     afterAll(() => {
         destroy(gridObj);
-        gridObj = null;
     });
 });
 
@@ -3565,7 +3480,7 @@ describe('Checking template position in react', () => {
                         template: '<button id="button">Button</button>', width: 90
                     }
                 ],
-                load: function () {
+                load: function(){
                     this.isReact = true
                 }
             },
@@ -3578,7 +3493,6 @@ describe('Checking template position in react', () => {
 
     afterAll(() => {
         destroy(gridObj);
-        gridObj = null;
     });
 });
 
@@ -3593,12 +3507,12 @@ describe('column template', () => {
                 autoCheckHierarchy: true,
                 height: 400,
                 columns: [
-                    { field: "taskID", headerText: "Task Id", width: 90, template: 'Test1' },
-                    { field: 'taskName', headerText: 'taskName', width: 60, template: 'Test2' },
+                    { field: "taskID", headerText: "Task Id", width: 90, template:'Test1' },
+                    { field: 'taskName', headerText: 'taskName', width: 60, template:'Test2'},
                     { field: 'duration', headerText: 'duration', textAlign: 'Right', width: 90 },
                     { field: 'progress', headerText: 'progress', textAlign: 'Right', width: 90 },
                 ],
-                load: function () {
+                load: function(){
                     this.isReact = true
                 }
             },
@@ -3612,7 +3526,6 @@ describe('column template', () => {
     });
     afterAll(() => {
         destroy(gridObj);
-        gridObj = null;
         gridObj.renderModule.destroy();
     });
 });
@@ -3659,7 +3572,6 @@ describe('Bug 887848: Script Error shown in Column Template sample', () => {
     });
     afterAll(() => {
         destroy(gridObj);
-        gridObj = null;
         gridObj.renderModule.destroy();
     });
 });
@@ -3706,7 +3618,6 @@ describe('Bug 887848: Script Error shown in Column Template sample', () => {
     });
     afterAll(() => {
         destroy(gridObj);
-        gridObj = null;
         gridObj.renderModule.destroy();
     });
 })
@@ -3749,7 +3660,6 @@ describe('code improvement', () => {
 
     afterAll(() => {
         destroy(gridObj);
-        gridObj = null;
         gridObj.renderModule.destroy();
     });
 });
@@ -3785,12 +3695,11 @@ describe('Remote data', () => {
         setTimeout(done, 500);
     });
     it('expand action with paging', (done: Function) => {
-        // expect(gridObj.getRows()[0].querySelectorAll('.e-treegridexpand').length == 1).toBe(true);
+        //expect(gridObj.getRows()[0].querySelectorAll('.e-treegridexpand').length == 1).toBe(true);
         done();
     });
     afterAll(() => {
         destroy(gridObj);
-        gridObj = null;
     });
 });
 
@@ -3830,7 +3739,6 @@ describe('Remote data', () => {
 //     });
 //     afterAll(() => {
 //         destroy(gridObj);
-//         gridObj = null;
 //     });
 // });
 
@@ -3865,12 +3773,12 @@ describe('Remote data', () => {
         gridObj.collapseRow(gridObj.getRows()[0]);
         setTimeout(done, 100);
     });
-    it('expand action with paging', () => {
-        // expect(gridObj.grid.currentViewData.length == 12).toBe(true);
+    it('expand action with paging', (done: Function) => {
+        //expect(gridObj.grid.currentViewData.length == 12).toBe(true);
+        done();
     });
     afterAll(() => {
         destroy(gridObj);
-        gridObj = null;
     });
 });
 
@@ -3899,12 +3807,12 @@ describe('Remote data', () => {
             done
         );
     });
-    it('Current View Data length', () => {
-        // expect(gridObj.grid.currentViewData.length == 60).toBe(true);
+    it('Current View Data length', (done: Function) => {
+        expect(gridObj.grid.currentViewData.length == 60).toBe(true);
+        done();
     });
     afterAll(() => {
         destroy(gridObj);
-        gridObj = null;
     });
 });
 
@@ -3928,7 +3836,6 @@ describe('code coverage improvement', () => {
     });
     afterAll(() => {
         destroy(gridObj);
-        gridObj = null;
     });
 });
 describe('Remote data', () => {
@@ -3963,12 +3870,11 @@ describe('Remote data', () => {
         setTimeout(done, 500);
     });
     it('expand action with virtualization', (done: Function) => {
-        // expect(gridObj.grid.sortModule['sortedColumns'].length == 1).toBe(true);
+        expect(gridObj.grid.sortModule['sortedColumns'].length== 1).toBe(true);
         done();
     });
     afterAll(() => {
         destroy(gridObj);
-        gridObj = null;
     });
 });
 
@@ -4008,7 +3914,6 @@ describe('check actionFailure', () => {
 
     afterAll(() => {
         destroy(gridObj);
-        gridObj = null;
     });
 });
 
@@ -4026,7 +3931,7 @@ describe('HasChildRecords property value is not updated properly ', () => {
             priority: 'Normal',
             approved: false,
             subtasks: [
-                { taskID: 2, taskName: 'Plan timeline', startDate: new Date('02/03/2017'), endDate: new Date('02/07/2017'), duration: 5, progress: 100, priority: 'Normal', approved: false, subtasks: [] },
+                { taskID: 2, taskName: 'Plan timeline', startDate: new Date('02/03/2017'), endDate: new Date('02/07/2017'), duration: 5, progress: 100, priority: 'Normal', approved: false, subtasks:[] },
                 { taskID: 3, taskName: 'Plan budget', startDate: new Date('02/03/2017'), endDate: new Date('02/07/2017'), duration: 5, progress: 100, approved: true },
                 { taskID: 4, taskName: 'Allocate resources', startDate: new Date('02/03/2017'), endDate: new Date('02/07/2017'), duration: 5, progress: 100, priority: 'Critical', approved: false },
                 { taskID: 5, taskName: 'Planning complete', startDate: new Date('02/07/2017'), endDate: new Date('02/07/2017'), duration: 0, progress: 0, priority: 'Low', approved: true }
@@ -4049,7 +3954,6 @@ describe('HasChildRecords property value is not updated properly ', () => {
     });
     afterAll(() => {
         destroy(gridObj);
-        gridObj = null;
     });
 });
 
@@ -4076,7 +3980,6 @@ describe('Bug 911555: script error throws while passing the collpaseRow method w
     });
     afterAll(() => {
         destroy(gridObj);
-        gridObj = null;
     });
 });
 
@@ -4097,18 +4000,17 @@ describe('Bug 905624: Freeze Direction was not working properly', () => {
     it('should update tree column index correctly when a non-tree column is set to freeze left', () => {
         const updatedColumns = (gridObj.columns as any).map((col: any, index: number) => {
             if (index === 2) {
-                const updatedCol = { ...col, freeze: 'Left' };
+                const updatedCol = { ...col, freeze: 'Left' }; 
                 return updatedCol;
             }
             return col;
         });
         gridObj.columns = updatedColumns;
         gridObj.refreshColumns();
-        expect(gridObj.treeColumnIndex === 2).toBe(true);
+        expect(gridObj.treeColumnIndex===2).toBe(true);
     });
     afterAll(() => {
         destroy(gridObj);
-        gridObj = null;
     });
 });
 
@@ -4127,11 +4029,11 @@ describe('Coverage', () => {
                 columns: [
                     { field: 'TaskID', headerText: 'Task ID', textAlign: 'Right', width: 140 },
                     { field: 'TaskName', headerText: 'Task Name', width: 160 },
-                    { field: 'StartDate', headerText: 'Start Date', textAlign: 'Right', width: 120, format: { skeleton: 'yMd', type: 'date' } },
-                    { field: 'EndDate', headerText: 'End Date', textAlign: 'Right', width: 120, format: { skeleton: 'yMd', type: 'date' } },
-                    { field: 'Duration', headerText: 'Duration', textAlign: 'Right', width: 110 },
-                    { field: 'Progress', headerText: 'Progress', textAlign: 'Right', width: 110 },
-                    { field: 'Priority', headerText: 'Priority', width: 110 }
+                    { field: 'StartDate', headerText: 'Start Date', textAlign: 'Right', width: 120, format: { skeleton: 'yMd', type: 'date' }},
+                    { field: 'EndDate', headerText: 'End Date', textAlign: 'Right', width: 120, format: { skeleton: 'yMd', type: 'date' }},
+                    { field: 'Duration', headerText: 'Duration', textAlign: 'Right', width: 110},
+                    { field: 'Progress', headerText: 'Progress', textAlign: 'Right', width: 110},
+                    { field: 'Priority', headerText: 'Priority', width: 110}
                 ]
             },
             done
@@ -4148,7 +4050,6 @@ describe('Coverage', () => {
 
     afterAll(() => {
         destroy(gridObj);
-        gridObj = null;
     });
 });
 
@@ -4262,7 +4163,6 @@ describe('Bug 923526: Updating row Data (not in currentview) using setRowData() 
 
     afterAll(() => {
         destroy(gridObj);
-        gridObj = null;
     });
 });
 
@@ -4300,7 +4200,6 @@ describe('Bug 905621: RowSelecting event handling during expand/collapse actions
     });
     afterAll(() => {
         destroy(gridObj);
-        gridObj = null;
     });
 });
 
@@ -4312,14 +4211,14 @@ describe('Bug 926999: Warning throws on using freeze feature in treegrid.', () =
                 dataSource: sampleData,
                 childMapping: 'subtasks',
                 treeColumnIndex: 1,
-                height: 400,
+                height: 400,                
                 columns: [
                     { field: 'taskID', headerText: 'Task ID', isPrimaryKey: true, textAlign: 'Right', width: 90 },
                     { field: 'taskName', headerText: 'Task Name', editType: 'stringedit', width: 220 },
                     { field: 'startDate', headerText: 'Start Date', textAlign: 'Right', width: 130, format: 'yMd' },
                     { field: 'duration', headerText: 'Duration', textAlign: 'Right', width: 100 },
                     { field: 'progress', headerText: 'Progress', textAlign: 'Right', width: 80 },
-                    { field: 'priority', headerText: 'Priority', width: 90, freeze: 'Left' }
+                    { field: 'priority', headerText: 'Priority', width: 90 ,freeze: 'Left'}
                 ]
             },
             done
@@ -4334,7 +4233,6 @@ describe('Bug 926999: Warning throws on using freeze feature in treegrid.', () =
     });
     afterAll(() => {
         destroy(gridObj);
-        gridObj = null;
     });
 });
 
@@ -4389,7 +4287,6 @@ describe('TreeGrid - Expand and Collapse Row with expandCollapseAllChildren cove
 
     afterAll(() => {
         destroy(gridObj);
-        gridObj = null;
     });
 });
 
@@ -4428,7 +4325,6 @@ describe('TreeGrid - coverage', () => {
 
     afterAll(() => {
         destroy(gridObj);
-        gridObj = null;
     });
 });
 
@@ -4458,16 +4354,102 @@ describe('Bug 908257: Last row border line is not visible', () => {
             done
         );
     });
-
+    
     it('checking if last row border is visible after sorting', () => {
         gridObj.collapseAll();
         gridObj.sortByColumn('taskName', 'Descending', false);
-
-        const rows: NodeListOf<HTMLTableRowElement> = gridObj.getContentTable().querySelectorAll('tr.e-row');
+        
+	const rows: NodeListOf<HTMLTableRowElement> = gridObj.getContentTable().querySelectorAll('tr.e-row');
         const visibleRows: HTMLTableRowElement[] = Array.from(rows).filter((row: HTMLTableRowElement): boolean => !row.classList.contains('e-childrow-hidden'));
         const lastVisibleRow: HTMLTableRowElement = visibleRows[visibleRows.length - 1];
+        
+	expect(lastVisibleRow.cells[0].classList.contains('e-lastrowcell')).toBe(true);
+    });
 
-        expect(lastVisibleRow.cells[0].classList.contains('e-lastrowcell')).toBe(true);
+    afterAll(() => {
+        destroy(gridObj);
+    });
+});
+
+describe('938693: Cell Focus Lost After Collapse All and First Record Selection', () => {
+    let gridObj: TreeGrid;
+    let rows: any;
+    var preventDefault = new Function();
+    beforeAll((done: Function) => {
+        gridObj = createGrid({
+            dataSource: sampleData,
+            childMapping: 'subtasks',
+            treeColumnIndex: 1,
+            allowPaging: true,
+            height: 400,
+            columns: [
+                { field: 'taskID', headerText: 'Task ID', textAlign: 'Right', width: 100 },
+                { field: 'taskName', headerText: 'Task Name', width: 260 }
+            ]
+        }, done);
+    });
+
+    it('should retain focus when clicking a cell, collaspeAll, then click same cell again', (done: Function) => {
+        gridObj.getRows()[0].cells[1].click();
+        gridObj.keyboardModule.keyAction({
+            action: 'ctrlShiftUpArrow', preventDefault: preventDefault,
+            target: gridObj.getRows()[0].getElementsByClassName('e-rowcell')[1]
+        });
+        gridObj.getRows()[0].cells[1].click();
+        expect((gridObj as any).element.querySelectorAll('.e-row')[0].cells[1].classList.contains('e-focused')).toBe(true);
+        done();
+    });
+
+    afterAll(() => {
+        destroy(gridObj);
+        gridObj = null;
+    });
+});
+
+describe('953594: Console error thrown in Playwright Treegrid Sample', () => {
+    let gridObj: TreeGrid;
+    let actionComplete: () => void;
+    beforeAll((done: Function) => {
+        gridObj = createGrid({
+            dataSource: sampleData,
+            childMapping: 'subtasks',
+            treeColumnIndex: 1,
+            allowPaging: true,
+            editSettings: {
+                allowEditing: true,
+                allowAdding: true,
+                allowDeleting: true,
+                mode: 'Row',
+                newRowPosition: 'Top'
+            },
+            toolbar: ['Add', 'Edit', 'Update', 'Delete', 'Cancel'],
+            height: 400,
+            columns: [
+                { field: 'taskID', headerText: 'Task ID', textAlign: 'Right', width: 100, isPrimaryKey: true },
+                { field: 'taskName', headerText: 'Task Name', width: 260 }
+            ]
+        }, done);
+    });
+
+    it('should not throw null or undefined console error', (done: Function) => {
+        actionComplete = (args?: Object): void => {
+            if (args['requestType'] === 'batchsave' ) {
+                expect(gridObj.dataSource[1].subtasks.length === 5).toBe(true);
+            }
+            done();
+        };
+        const addedRecords = 'addedRecords';
+        gridObj.grid.actionComplete = actionComplete;
+        (gridObj as any).setProperties({ editSettings: { allowEditing: true, allowAdding: true, allowDeleting: true, mode: 'Batch', newRowPosition: 'Below' }, enableCollapseAll: false});
+        gridObj.selectRow(5);
+        (<any>gridObj.grid.toolbarModule).toolbarClickHandler({ item: { id: gridObj.grid.element.id + '_delete' } });
+        (<any>gridObj.grid.toolbarModule).toolbarClickHandler({ item: { id: gridObj.grid.element.id + '_add' } });
+        (gridObj.element.querySelector('.e-editedbatchcell').querySelector('input') as any).value = 41;
+        (<any>gridObj.grid.toolbarModule).toolbarClickHandler({ item: { id: gridObj.grid.element.id + '_add' } });
+        (gridObj.element.querySelector('.e-editedbatchcell').querySelector('input') as any).value = 42;
+        expect(gridObj.getBatchChanges()[addedRecords].length === 2).toBe(true);
+        (<any>gridObj.grid.toolbarModule).toolbarClickHandler({ item: { id: gridObj.grid.element.id + '_update' } });
+        select('#' + gridObj.element.id + '_gridcontrol' + 'EditConfirm', gridObj.element).querySelectorAll('button')[0].click();
     });
 
     afterAll(() => {
@@ -4506,5 +4488,349 @@ describe('coverage', () => {
     afterAll(() => {
         destroy(gridObj);
         gridObj = null;
+    });
+});
+
+describe('Last row border after changing row height', () => {
+    let gridObj: TreeGrid;
+    let actionComplete: () => void;
+    beforeAll((done: Function) => {
+      gridObj = createGrid(
+        {
+          dataSource: sampleData,
+                allowPaging: true,
+
+                childMapping: 'subtasks',
+               allowSorting:true,
+                treeColumnIndex: 1,
+                columns: [
+                    { field: 'taskID', headerText: 'Task ID', isPrimaryKey: true },
+                    { field: 'taskName', headerText: 'Task Name' },
+                    { field: 'progress', headerText: 'Progress' }
+                ]
+        },done);
+    });
+
+    it('last row border should exists', (done: Function) => {
+         gridObj.dataBound = (args: Object) => {
+            expect(gridObj.getRows()[2].getElementsByClassName('e-rowcell').length === 3).toBe(true);
+            done();
+        };
+        gridObj.rowHeight = 40;
+        gridObj.dataBind();
+
+    });
+    afterAll(() => {
+      destroy(gridObj);
+    });
+  });
+describe('Prevent multiple event triggers for the same action', () => {
+  let gridObj: TreeGrid;
+  let eventCounter: number = 0;
+  
+  beforeAll((done: Function) => {
+    gridObj = createGrid(
+      {
+        dataSource: sampleData,
+        childMapping: 'subtasks',
+        treeColumnIndex: 1,
+        enableCollapseAll:true,
+        columns: [
+          { field: 'taskID', headerText: 'Task ID', width: 90 },
+          { field: 'taskName', headerText: 'Task Name', width: 150 },
+          { field: 'startDate', headerText: 'Start Date', width: 120 },
+          { field: 'duration', headerText: 'Duration', width: 90 }
+        ]
+      },
+      done
+    );
+  });
+
+  it('should trigger expand event only once when expanding a row', (done: Function) => {
+   
+    eventCounter = 0;
+    
+    let expandHandler = (args?: any): void => {
+      eventCounter=1;
+    };
+    
+     gridObj.expanded = expandHandler;
+    
+   
+    gridObj.expandRow(gridObj.getRows()[0]);
+    
+   
+    
+        expect(eventCounter).toBe(1);
+        done();
+     
+  });
+
+  it('should trigger collapse event only once when collapsing a row', (done: Function) => {
+    
+    eventCounter = 0;
+    
+   
+    let collapseHandler = (args?: any): void => {
+      eventCounter=1;
+    };
+    
+    gridObj.collapsed = collapseHandler;
+    
+    gridObj.collapseRow(gridObj.getRows()[0]);
+    expect(eventCounter).toBe(1);
+    done();
+    
+    
+  });
+
+  it('should trigger selection event only once when selecting a row', (done: Function) => {
+    eventCounter = 0;
+    
+    let rowSelectHandler = (args?: any): void => {
+      eventCounter=1;
+    };
+    
+    gridObj.rowSelected = rowSelectHandler;
+    
+    gridObj.selectRow(1);
+    
+   
+        expect(eventCounter).toBe(1);
+        done();
+     
+  });
+
+  afterAll(() => {
+    destroy(gridObj);
+  });
+});
+
+describe('Prevent multiple event triggers', () => {
+  let gridObj: TreeGrid;
+  let eventCounter: number = 0;
+  
+  beforeAll((done: Function) => {
+    gridObj = createGrid(
+      {
+        dataSource: sampleData,
+        childMapping: 'subtasks',
+        treeColumnIndex: 1,
+        enableCollapseAll:true,
+        columns: [
+          { field: 'taskID', headerText: 'Task ID', width: 90 },
+          { field: 'taskName', headerText: 'Task Name', width: 150 },
+          { field: 'startDate', headerText: 'Start Date', width: 120 },
+          { field: 'duration', headerText: 'Duration', width: 90 }
+        ]
+      },
+      done
+    );
+  });
+
+  it('should trigger expand event only once when expanding a row', (done: Function) => {
+   
+    eventCounter = 0;
+    
+    let expandHandler = (args?: any): void => {
+      eventCounter=1;
+    };
+    
+     gridObj.expanded = expandHandler;
+    
+   
+    gridObj.expandAll();
+    
+   
+    
+        expect(eventCounter).toBe(1);
+        done();
+     
+  });
+
+  it('should trigger collapse event only once when collapsing a row', (done: Function) => {
+    
+    eventCounter = 0;
+    
+   
+    let collapseHandler = (args?: any): void => {
+      eventCounter=1;
+    };
+    
+    gridObj.collapsed = collapseHandler;
+    
+    gridObj.collapseAll();
+    expect(eventCounter).toBe(1);
+    done();
+    
+    
+  });
+
+
+  afterAll(() => {
+    destroy(gridObj);
+  });
+});
+
+describe('Expand/collapse methods or properties - self reference data', () => {
+    let gridObj: TreeGrid;
+    let rows: HTMLTableRowElement[];
+    beforeAll((done: Function) => {
+        gridObj = createGrid(
+            {
+                dataSource: projectData,
+                idMapping: 'TaskID',
+                parentIdMapping: 'parentID',
+                treeColumnIndex: 1,
+                columns: ['TaskID', 'TaskName', 'StartDate', 'EndDate'],
+                enableCollapseAll: true,
+                height: 400
+            },
+            done
+        );
+    });
+          
+    it('enableCollapseAll testing', () => {
+        expect(gridObj.element.querySelectorAll('.e-treegridexpand').length).toBe(0);
+        gridObj.enableCollapseAll = false;
+        gridObj.dataBind();
+        expect(gridObj.element.querySelectorAll('.e-treegridexpand').length).toBe(2);
+        gridObj.enableCollapseAll = true;
+        gridObj.dataBind();
+        expect(gridObj.element.querySelectorAll('.e-treegridcollapse').length).toBe(2);
+        gridObj.enableCollapseAll = false;
+    });
+    it('expandstatemapping testing', (done: Function) => {
+        gridObj.actionComplete = (args: Object) => {
+            expect(gridObj.element.querySelectorAll('.e-treegridcollapse').length).toBe(0);
+            done();
+        };
+        gridObj.expandStateMapping = 'isInExpandState';
+        gridObj.dataBind();
+    });
+    it('collapseAtLevel testing', () => {
+        gridObj.collapseAtLevel(1);
+        expect(gridObj.getRows()[1].querySelectorAll('.e-treegridcollapse').length).toBe(0);
+        gridObj.expandAtLevel(1);
+        expect(gridObj.getRows()[2].querySelectorAll('.e-treegridexpand').length).toBe(1);
+        expect(gridObj.getDataModule()).toBeDefined();
+    });
+    it('expandrow event testing', () => {
+        rows = <HTMLTableRowElement[]>gridObj.getRows();
+        gridObj.expandAll();
+        gridObj.collapseRow(rows[1]);
+        gridObj.collapsing = (args: RowCollapsingEventArgs) => {
+            args.cancel = true;
+        };
+        gridObj.collapseRow(rows[0]);
+        expect(gridObj.element.querySelectorAll('.e-treegridcollapse').length).toBe(0);
+        gridObj.collapsing = undefined;
+        gridObj.collapseRow(rows[0]);
+        gridObj.expanding = (args: RowExpandingEventArgs) => {
+            args.cancel = true;
+        };
+        gridObj.expandRow(rows[0]);
+        expect(gridObj.element.querySelectorAll('.e-treegridcollapse').length).toBe(1);
+    });
+    afterAll(() => {
+        destroy(gridObj);
+    });
+});
+
+describe('keyBoard Interaction for collapse particular parent row - self reference data' , () => {
+    let gridObj: TreeGrid;
+    let rows: Element[];
+    const preventDefault: Function = new Function();
+    beforeAll((done: Function) => {
+        gridObj = createGrid(
+            {
+                dataSource: projectData,
+                idMapping: 'TaskID',
+                parentIdMapping: 'parentID',
+                treeColumnIndex: 1,
+                columns: ['TaskID', 'TaskName', 'StartDate', 'EndDate'],
+                selectionSettings: { mode: 'Cell' },
+                
+            },
+            done
+        );
+    });
+    it('keyBoard Interaction - self reference data', () => {
+        gridObj.selectCell({ cellIndex: 1, rowIndex: 0 }, true);
+        gridObj.keyboardModule.keyAction({ action: 'ctrlShiftUpArrow', preventDefault: preventDefault,
+            target: gridObj.getRows()[0].getElementsByClassName('e-rowcell')[1] } as any);
+        rows = gridObj.getRows();
+        expect(rows[1].classList.contains('e-childrow-hidden')).toBe(true);
+        gridObj.keyboardModule.keyAction({ action: 'ctrlShiftDownArrow', preventDefault: preventDefault,
+            target: gridObj.getRows()[0].getElementsByClassName('e-rowcell')[1] } as any);
+        expect(rows[1].classList.contains('e-childrow-visible')).toBe(true);
+        gridObj.keyboardModule.keyAction({ action: 'ctrlUpArrow', preventDefault: preventDefault,
+            target: gridObj.getRows()[0].getElementsByClassName('e-rowcell')[1] } as any);
+        expect(gridObj.getRows()[1].classList.contains('e-childrow-hidden')).toBe(true);
+        gridObj.keyboardModule.keyAction({ action: 'ctrlDownArrow', preventDefault: preventDefault,
+            target: gridObj.getRows()[0].getElementsByClassName('e-rowcell')[1] } as any);
+        expect(gridObj.getRows()[1].classList.contains('e-childrow-visible')).toBe(true);
+        gridObj.keyboardModule.keyAction({ action: 'downArrow', preventDefault: preventDefault,
+            target: gridObj.getRows()[0].getElementsByClassName('e-rowcell')[1] } as any);
+        expect(gridObj.getRows()[1].querySelectorAll('.e-focused').length).toBe(1);
+        gridObj.keyboardModule.keyAction({ action: 'upArrow', preventDefault: preventDefault,
+            target: gridObj.getRows()[1].getElementsByClassName('e-rowcell')[1] } as any);
+        expect(gridObj.getRows()[0].querySelectorAll('.e-focused').length).toBe(1);
+    });
+    afterAll(() => {
+        destroy(gridObj);
+    });
+});
+
+describe('keyBoard Interaction for expand/collapse child row - self reference data' , () => {
+    let gridObj: TreeGrid;
+    const preventDefault: Function = new Function();
+    beforeAll((done: Function) => {
+        gridObj = createGrid(
+            {
+                 dataSource: projectData,
+                idMapping: 'TaskID',
+                parentIdMapping: 'parentID',
+                treeColumnIndex: 1,
+                allowPaging: true,
+                pageSettings: { pageSize: 10 },
+                allowSelection: true,
+                columns: [
+                    { field: 'TskID', headerText: 'Task ID', isPrimaryKey: true, width: 70, textAlign: 'Right' },
+                    { field: 'TaskName', headerText: 'Task Name', width: 180, textAlign: 'Left' },
+                    { field: 'StartDate', headerText: 'Start Date', width: 90, textAlign: 'Right', type: 'date', format: 'yMd' },
+                    { field: 'Duration', headerText: 'Duration', width: 80, textAlign: 'Right' },
+                    { field: 'Progress', headerText: 'Progress', width: 80, textAlign: 'Right' },
+                    { field: 'Priority', headerText: 'Priority', width: 90 }
+                ]
+            },
+            done
+        );
+    });
+    it('keyBoard Interaction - self reference data', () => {
+        gridObj.selectRow(1);
+        gridObj.keyboardModule.keyAction({
+            action: 'ctrlShiftUpArrow', preventDefault: preventDefault,
+            target: gridObj.getRows()[1].getElementsByClassName('e-rowcell')[1]
+        } as any);
+        expect(gridObj.getRows()[0].getElementsByClassName('e-treecolumn-container')[0].children[0].classList.contains('e-treegridexpand')).toBe(true);
+        gridObj.keyboardModule.keyAction({
+            action: 'ctrlShiftDownArrow', preventDefault: preventDefault,
+            target: gridObj.getRows()[1].getElementsByClassName('e-rowcell')[1]
+        } as any);
+        expect(gridObj.getRows()[0].getElementsByClassName('e-treecolumn-container')[0].children[0].classList.contains('e-treegridexpand')).toBe(true);
+    });
+     it('should retain focus when clicking a cell, collaspeAll, then click same cell again', (done: Function) => {
+        gridObj.getRows()[0].cells[1].click();
+        gridObj.keyboardModule.keyAction({
+            action: 'ctrlShiftUpArrow', preventDefault: preventDefault,
+            target: gridObj.getRows()[0].getElementsByClassName('e-rowcell')[1]
+        });
+        gridObj.getRows()[0].cells[1].click();
+        expect((gridObj as any).element.querySelectorAll('.e-row')[0].cells[1].classList.contains('e-focused')).toBe(true);
+        done();
+    });
+    afterAll(() => {
+        destroy(gridObj);
     });
 });

@@ -294,8 +294,10 @@ export class WorkbookSort {
     private sortComparer(sortDescriptor: SortDescriptor, caseSensitive: boolean, x: CellModel, y: CellModel): number {
         const direction: string = sortDescriptor.order || '';
         const comparer: Function = DataUtil.fnSort(direction);
-        let xVal: string | CellModel = x ? x.value : x;
-        let yVal: string | CellModel = y ? y.value : y;
+        let xVal: string | CellModel = x ? ((x.hyperlink && !x.value && <unknown>x.value !== 0) ? (typeof x.hyperlink === 'object' ?
+            x.hyperlink.address : x.hyperlink) : x.value) : x;
+        let yVal: string | CellModel = y ? ((y.hyperlink && !y.value && <unknown>y.value !== 0) ? (typeof y.hyperlink === 'object' ?
+            y.hyperlink.address : y.hyperlink) : y.value) : y;
         if (x && y && (typeof xVal === 'string' || typeof yVal === 'string') && xVal !== '' && yVal !== '') {
             let isXStringVal: boolean; let isYStringVal: boolean;
             if (isNumber(x.value)) { // Imported number values are of string type, need to handle this case in server side

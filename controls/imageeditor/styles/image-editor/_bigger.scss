@@ -134,6 +134,25 @@
       }
     }
 
+    & .e-ie-save-dialog .e-dialog .e-dlg-content .e-ie-dlg-right-content .e-dropdown-btn,
+    & .e-blr-ie-save-dialog .e-dialog .e-dlg-content .e-ie-dlg-right-content .e-dropdown-btn {
+      @if $skin-name == 'Material3' {
+        padding: 10px;
+      }
+      @if $skin-name == 'highcontrast' {
+        padding: 3px 14px;
+      }
+      @if $skin-name == 'FluentUI' {
+        padding: 7px 14px;
+      }
+    }
+    
+    & .e-blr-ie-save-dialog .e-dialog .e-dlg-content .e-ie-dlg-right-content .e-dropdown-btn {
+      @if $skin-name == 'fluent2' {
+        padding: 8.2px 14px;
+      }
+    }
+
     @if $skin-name == 'fluent2' {
       & .e-dropdown-btn.e-ie-ddb-popup {
         padding-left: 16px;
@@ -212,5 +231,42 @@
     @if $skin-name == 'fabric' or $skin-name == 'bootstrap' {
       width: calc(64% - 13px) !important; /* stylelint-disable-line declaration-no-important */
     }
+  }
+}
+
+.e-bigger .e-device.e-image-editor {
+  .e-ie-img-save-dlg {
+    @if $skin-name == 'Material3' {
+      width: 106px;
+    }
+    @else if $skin-name == 'fabric' or $skin-name == 'fabric-dark' {
+      width: 120px;
+    }
+    @else if $skin-name == 'FluentUI' {
+      width: 107px;
+    }
+    @else if $skin-name == 'material' {
+      width: 102px;
+    }
+    @else if $skin-name == 'tailwind' {
+      width: 106px;
+    }
+  }
+  .e-ie-img-save-name {
+    @if $skin-name == 'fabric' or $skin-name == 'fabric-dark' {
+      width: calc(64% - 27px) !important; /* stylelint-disable-line declaration-no-important */
+    }
+  }
+}
+
+.e-bigger .e-device.e-image-editor .e-blr-ie-save-dialog .e-ie-img-save-dlg {
+  @if $skin-name == 'fabric' or $skin-name == 'fabric-dark' {
+    width: 115px;
+  }
+}
+
+.e-blr-ie-save-dialog.e-device .e-ie-img-save-name {
+  @if $skin-name == 'fabric' or $skin-name == 'fabric-dark' {
+    width: calc(64% - 35px) !important; /* stylelint-disable-line declaration-no-important */
   }
 }

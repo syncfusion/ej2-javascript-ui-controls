@@ -1195,3 +1195,15 @@ export type GridLayout =
      'Compact' |
      /** Displays the pivot table in a traditional format with separate columns for row headers, creating a more detailed table format. */
      'Tabular';
+
+/**
+ * Specifies the available export formats for pivot table data.
+ * The available export options are:
+ * - Excel: Exports the data in Microsoft Excel format.
+ * - CSV: Exports the data in CSV (Comma-Separated Values) format.
+ */
+export type ExportType =
+    /** Exports the data in Microsoft Excel format. This format retains the native Excel pivot table structure, allowing interactive features such as filtering, field manipulation, and drill-down. */
+    'Excel' |
+    /** Exports the data in CSV (Comma-Separated Values) format. The data is flattened into a plain tabular format without pivot-specific features. */
+    'CSV';

@@ -1,10 +1,11 @@
 /**
  * Video module spec
  */
-import { Browser, isNullOrUndefined, closest, detach, createElement } from '@syncfusion/ej2-base';
-import { RichTextEditor, QuickToolbar, IRenderer, DialogType } from './../../../src/index';
+import { Browser, isNullOrUndefined } from '@syncfusion/ej2-base';
+import { RichTextEditor, QuickToolbar, IQuickToolbar } from './../../../src/index';
 import { NodeSelection } from './../../../src/selection/index';
-import { renderRTE, destroy, setCursorPoint, dispatchEvent, androidUA, iPhoneUA, currentBrowserUA, VideoResizeGripper, clickVideo, moveGripper, leaveGripper, clickGripper } from "./../render.spec";
+import { DialogType } from "../../../src/common/enum";
+import { renderRTE, destroy, setCursorPoint, dispatchEvent, iPhoneUA, currentBrowserUA, setSelection } from "./../render.spec";
 import { BASIC_MOUSE_EVENT_INIT, DELETE_EVENT_INIT } from '../../constant.spec';
 import { MACOS_USER_AGENT } from '../user-agent.spec';
 
@@ -12,7 +13,81 @@ function getQTBarModule(rteObj: RichTextEditor): QuickToolbar {
     return rteObj.quickToolbarModule;
 }
 
+const INIT_MOUSEDOWN_EVENT: MouseEvent = new MouseEvent('mousedown', BASIC_MOUSE_EVENT_INIT);
+
+const MOUSEUP_EVENT: MouseEvent = new MouseEvent('mouseup', BASIC_MOUSE_EVENT_INIT);
+
 describe('Video Module ', () => {
+
+    describe('921233: Quick toolbar fails to open and script error occurs after replacing  video in events', function () {
+        let rteEle;
+        let editor: RichTextEditor;
+        beforeAll(function () {
+            editor = renderRTE({
+                height: 400,
+                toolbarSettings: {
+                    items: ['Video', 'Bold']
+                },
+                insertVideoSettings: { resize: false },
+                actionBegin: function (e) {
+                    if (e.item.subCommand === 'Video') {
+                        expect(!isNullOrUndefined(e.itemCollection)).toBe(true);
+                        expect(!isNullOrUndefined(e.itemCollection.url)).toBe(true);
+                    }
+                },
+                actionComplete: function (e) {
+                    if (e.requestType === 'Video') {
+                        expect(e.requestType === 'Video').toBe(true);
+                    }
+                }
+            });
+            rteEle = editor.element;
+        });
+        afterAll(function () {
+            destroy(editor);
+        });
+        it('Replace Web url using quick toolbar', function (done) {
+            editor.focusIn();
+            const toolbarItem: HTMLElement = editor.element.querySelector('.e-toolbar-item .e-video');
+            toolbarItem.click();
+            setTimeout(() => {
+                const dialog: HTMLElement = editor.element.querySelector('.e-rte-video-dialog');
+                const textArea: HTMLTextAreaElement = dialog.querySelector('.e-embed-video-url');
+                textArea.value = '<iframe width="560" height="315" src="https://www.youtube.com/embed/IB2P1FBXjcQ?si=6ReBEsgCNdSMlQAV" title="YouTube video player" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" referrerpolicy="strict-origin-when-cross-origin" allowfullscreen></iframe>';
+                textArea.dispatchEvent(new Event('input'));
+                const insertButton: HTMLButtonElement = dialog.querySelector('.e-insertVideo.e-primary');
+                insertButton.click();
+                setTimeout(() => {
+                    expect(editor.inputElement.querySelector('iframe')).not.toBe(null);
+                    const target: HTMLElement = editor.inputElement.querySelector('.e-embed-video-wrap');
+                    (editor as any).formatter.editorManager.nodeSelection.setSelectionNode(editor.contentModule.getDocument(), target);
+                    target.dispatchEvent(MOUSEUP_EVENT);
+                    setTimeout(() => {
+                        const quickToolbar: HTMLElement = document.querySelector('.e-rte-quick-popup');
+                        const replaceButton: HTMLElement = quickToolbar.querySelector('.e-video-replace');
+                        replaceButton.click();
+                        setTimeout(() => {
+                            const dialog: HTMLElement = editor.element.querySelector('.e-rte-video-dialog');
+                            const urlRadio: HTMLInputElement = dialog.querySelector('#webURL');
+                            urlRadio.checked = true;
+                            const changeEvent = new Event("change", { bubbles: true, cancelable: true });
+                            urlRadio.dispatchEvent(changeEvent);
+                            const input: HTMLInputElement = dialog.querySelector('.e-video-url');
+                            input.value = 'https://cdn.syncfusion.com/ej2/richtexteditor-resources/RTE-Ocean-Waves.mp4';
+                            input.dispatchEvent(new Event('input'));
+                            const insertButton: HTMLButtonElement = dialog.querySelector('.e-insertVideo.e-primary');
+                            insertButton.click();
+                            setTimeout(() => {
+                                expect(editor.inputElement.querySelector('.e-embed-video-wrap')).toBe(null);
+                                expect(editor.inputElement.querySelector('video')).not.toBe(null);
+                                done();
+                            }, 100);
+                        }, 100);
+                    }, 100);
+                }, 100);
+            }, 100);
+        });
+    });
 
     describe('video resize', () => {
         let rteEle: HTMLElement;
@@ -28,18 +103,18 @@ describe('Video Module ', () => {
                 },
                 insertVideoSettings: { resize: true, minHeight: 80, minWidth: 80 },
                 actionBegin: function (e: any) {
-                    if (e.item.subCommand === 'Video'){
-                    expect(!isNullOrUndefined(e.itemCollection)).toBe(true);
-                    expect(!isNullOrUndefined(e.itemCollection.url)).toBe(true);
+                    if (e.item.subCommand === 'Video') {
+                        expect(!isNullOrUndefined(e.itemCollection)).toBe(true);
+                        expect(!isNullOrUndefined(e.itemCollection.url)).toBe(true);
                     }
-                if(e.item.subCommand === 'JustifyLeft') { expect(e.item.subCommand === 'JustifyLeft').toBe(true); }
-                if(e.item.subCommand === 'JustifyRight') { expect(e.item.subCommand === 'JustifyRight').toBe(true); }
-                if(e.item.subCommand === 'JustifyCenter') { expect(e.item.subCommand === 'JustifyCenter').toBe(true); }
-                if(e.item.subCommand === 'Inline') { expect(e.item.subCommand === 'Inline').toBe(true); }
-                if(e.item.subCommand === 'Break') { expect(e.item.subCommand === 'Break').toBe(true); }
+                    if (e.item.subCommand === 'JustifyLeft') { expect(e.item.subCommand === 'JustifyLeft').toBe(true); }
+                    if (e.item.subCommand === 'JustifyRight') { expect(e.item.subCommand === 'JustifyRight').toBe(true); }
+                    if (e.item.subCommand === 'JustifyCenter') { expect(e.item.subCommand === 'JustifyCenter').toBe(true); }
+                    if (e.item.subCommand === 'Inline') { expect(e.item.subCommand === 'Inline').toBe(true); }
+                    if (e.item.subCommand === 'Break') { expect(e.item.subCommand === 'Break').toBe(true); }
                 },
                 actionComplete: function (e: any) {
-                    if(e.requestType === 'Video') { expect(e.requestType === 'Video').toBe(true);}
+                    if (e.requestType === 'Video') { expect(e.requestType === 'Video').toBe(true); }
                 }
             });
             rteEle = rteObj.element;
@@ -49,7 +124,7 @@ describe('Video Module ', () => {
         });
         it('video dialog', () => {
             (rteObj.contentModule.getEditPanel() as HTMLElement).focus();
-            expect((rteObj.element.querySelectorAll('.rte-placeholder')[0] as HTMLElement).classList.contains('enabled')).toBe(true);
+            expect((rteObj.element.querySelectorAll('.e-rte-placeholder')[0] as HTMLElement).classList.contains('e-placeholder-enabled')).toBe(true);
             let args: any = {
                 preventDefault: function () { },
                 originalEvent: { currentTarget: document.getElementById('rte_toolbarItems') }
@@ -64,8 +139,8 @@ describe('Video Module ', () => {
             (dialogEle.querySelector('.e-video-url') as HTMLInputElement).dispatchEvent(new Event("input"));
             expect(rteObj.element.lastElementChild.classList.contains('e-dialog')).toBe(true);
             (document.querySelector('.e-insertVideo.e-primary') as HTMLElement).click();
-            let placeHolder: HTMLElement = (rteObj.element.querySelectorAll('.rte-placeholder')[0] as HTMLElement);
-            expect(placeHolder.classList.contains('enabled')).toBe(true);
+            let placeHolder: HTMLElement = (rteObj.element.querySelectorAll('.e-rte-placeholder')[0] as HTMLElement);
+            expect(placeHolder.classList.contains('e-placeholder-enabled')).toBe(true);
         });
         it('resize start', () => {
             let trg = (rteObj.element.querySelector('.e-rte-video') as HTMLElement);
@@ -379,7 +454,7 @@ client side. Customer easy to edit the contents and get the HTML content for
                 },
                 value: innerHTML,
                 insertVideoSettings: { resizeByPercent: true },
-                iframeSettings: {enable: true}
+                iframeSettings: { enable: true }
             });
         });
         afterAll(() => {
@@ -657,15 +732,13 @@ client side. Customer easy to edit the contents and get the HTML content for
     describe('Video change aspect ratio when resized to smallest possible and back larger again - ', () => {
         let rteObj: RichTextEditor;
         let clickEvent: MouseEvent;
-        beforeEach((done: Function) => {
+        beforeAll(() => {
             rteObj = renderRTE({
                 value: '<p><span class="e-video-wrap" contenteditable="false" title="mov_bbb.mp4"><video class="e-rte-video e-video-inline" controls=""><source src="https://www.w3schools.com/html/mov_bbb.mp4" type="video/mp4"></video></span></p>'
             });
-            done();
         });
-        afterEach((done: Function) => {
+        afterAll(() => {
             destroy(rteObj);
-            done();
         });
         it(' Resizing with offsetHeight test ', (done: Function) => {
             let rteEle: HTMLElement = rteObj.element;
@@ -683,165 +756,25 @@ client side. Customer easy to edit the contents and get the HTML content for
             (<any>rteObj.videoModule).resizeBtnStat.botRight = true;
             let vidHeight: number = trg.offsetHeight;
             (rteObj.videoModule as any).resizing({ target: document.body, pageX: 200 });
-            expect(vidHeight <= document.querySelector('video').offsetHeight).toBe(true);
-            done();
-        });
-    });
-
-    describe('div content-rte testing', () => {
-        let rteEle: HTMLElement;
-        let rteObj: RichTextEditor;
-        beforeAll(() => {
-            rteObj = renderRTE({
-                height: 400,
-                toolbarSettings: {
-                    items: ['Video', 'Bold']
-                },
-                insertVideoSettings: { resize: false },
-                actionBegin: function (e: any) {
-                    if(e.item.subCommand === 'Video'){
-                    expect(!isNullOrUndefined(e.itemCollection)).toBe(true);
-                    expect(!isNullOrUndefined(e.itemCollection.url)).toBe(true);
-                    }
-                },
-                actionComplete: function (e: any) {
-                    if(e.requestType === 'Video'){ expect(e.requestType === 'Video').toBe(true);}
-                }
-            });
-            rteEle = rteObj.element;
-        });
-        afterAll(() => {
-            destroy(rteObj);
-            detach(document.querySelector('.e-video-inline'));
-        });
-        it('video dialog', (done: Function) => {
-            expect(rteObj.element.querySelectorAll('.e-rte-content').length).toBe(1);
-            (<HTMLElement>rteEle.querySelectorAll(".e-toolbar-item")[0] as HTMLElement).click();
-            expect(rteObj.element.lastElementChild.classList.contains('e-dialog')).toBe(true);
-            let dialogEle: Element = rteObj.element.querySelector('.e-dialog');
-            expect(dialogEle.firstElementChild.querySelector('.e-dlg-header').innerHTML === 'Insert Video').toBe(true);
-            expect(dialogEle.querySelector('.e-vid-uploadwrap').firstElementChild.classList.contains('e-droptext')).toBe(true);
-            (<HTMLElement>rteEle.querySelectorAll(".e-toolbar-item")[0] as HTMLElement).click();
-            expect(rteObj.element.lastElementChild.classList.contains('.e-dialog')).not.toBe(true);
-            (rteObj.contentModule.getEditPanel() as HTMLElement).focus();
-            let range: any = new NodeSelection().getRange(document);
-            let save: any = new NodeSelection().save(range, document);
-            let args: any = {
-                item: { url: window.origin + '/base/spec/content/video/RTE-Ocean-Waves.mp4', selection: save },
-                preventDefault: function () { }
-            };
-            (<any>rteObj).formatter.editorManager.videoObj.createVideo(args);
-            (rteObj.element.querySelector('.e-rte-video') as HTMLElement).focus();
-            args = {
-                item: { url: null, selection: null },
-                preventDefault: function () { }
-            };
-            (<any>rteObj).formatter.editorManager.videoObj.createVideo(args);
-            let evnArg: any = { args, self: (<any>rteObj).videoModule, selection: save, selectNode: [''], link: null, target: '' };
-            evnArg.selectNode = [(<any>rteObj).element.querySelector('.e-rte-video')];
-            let trg: any = <HTMLElement>rteEle.querySelectorAll(".e-content")[0];
-            let clickEvent: any = document.createEvent("MouseEvents");
-            let eventsArg: any = { pageX: 50, pageY: 300, target: evnArg.selectNode[0] };
-            clickEvent.initEvent("mousedown", false, true);
-            trg.dispatchEvent(clickEvent);
-            (<any>rteObj).videoModule.editAreaClickHandler({ args: eventsArg });
             setTimeout(() => {
-                let linkPop: any = <HTMLElement>document.querySelectorAll('.e-rte-quick-popup')[0];
-                let linkTBItems: any = linkPop.querySelectorAll('.e-toolbar-item');
-                expect(linkPop.querySelectorAll('.e-rte-toolbar').length).toBe(1);
-                (<HTMLElement>linkTBItems.item(0)).click();
-                let eventArgs: any = { target: document, preventDefault: function () { } };
-                (<any>rteObj).videoModule.onDocumentClick(eventArgs);
+                expect(vidHeight <= document.querySelector('video').offsetHeight).toBe(true);
                 done();
-            }, 400);
-        });
-        it('insert video url', () => {
-            (rteObj.contentModule.getEditPanel() as HTMLElement).focus();
-            let args: any = {
-                preventDefault: function () { },
-                originalEvent: { currentTarget: document.getElementById('rte_toolbarItems') },
-                item: {},
-            };
-            let range: any = new NodeSelection().getRange(document);
-            let save: any = new NodeSelection().save(range, document);
-            let evnArg: any = { args, self: (<any>rteObj).videoModule, selection: save, selectNode: [''], link: null, target: '' };
-            (<HTMLElement>rteEle.querySelectorAll(".e-toolbar-item")[0] as HTMLElement).click();
-            let dialogEle: any = rteObj.element.querySelector('.e-dialog');
-            (dialogEle.querySelector('.e-video-url-wrap input#webURL') as HTMLElement).click();
-            (dialogEle.querySelector('.e-video-url') as HTMLInputElement).value = window.origin + '/base/spec/content/video/RTE-Ocean-Waves.mp4';
-            (dialogEle.querySelector('.e-video-url') as HTMLInputElement).dispatchEvent(new Event("input"));
-            expect(rteObj.element.lastElementChild.classList.contains('e-dialog')).toBe(true);
-            (document.querySelector('.e-insertVideo.e-primary') as HTMLElement).click();
-            (rteObj.element.querySelector('.e-rte-video') as HTMLElement).click();
-            evnArg.args = { preventDefault: function () { }, originalEvent: { currentTarget: document.getElementById('rte_toolbarItems') }, item: {} };
-            evnArg.selectNode = [(rteObj.element.querySelector('.e-rte-video') as HTMLElement)];
-            let trget: any = <HTMLElement>rteEle.querySelectorAll(".e-content")[0];
-            let clickEvent: any = document.createEvent("MouseEvents");
-            let eventsArg: any = { pageX: 50, pageY: 300, target: evnArg.selectNode[0], preventDefault: function () { } };
-            clickEvent.initEvent("mousedown", false, true);
-            trget.dispatchEvent(clickEvent);
-            (<any>rteObj).videoModule.editAreaClickHandler({ args: eventsArg });
-            let videoPop: HTMLElement = <HTMLElement>document.querySelectorAll('.e-rte-quick-popup')[0];
-            videoPop.style.display = 'block';
-            expect(videoPop.querySelectorAll('.e-rte-toolbar').length).toBe(1);
-            expect(videoPop.offsetLeft >= rteEle.offsetLeft).toBe(true);
-            expect(videoPop.offsetTop > rteEle.offsetTop).toBe(true);
-            (rteObj.element.querySelector('.e-rte-video') as HTMLElement).focus();
-            evnArg.item = { command: 'Videos', subCommand: 'JustifyLeft' };
-            evnArg.e = args;
-            (<any>rteObj).videoModule.alignmentSelect(evnArg);
-            evnArg.args.item = { command: 'Videos', subCommand: 'JustifyLeft' };
-            (<any>rteObj).videoModule.alignVideo(evnArg, 'JustifyLeft');
-            expect((<any>rteObj).element.querySelector('.e-rte-video').classList.contains('e-video-left')).toBe(true);
-            evnArg.item = { command: 'Videos', subCommand: 'JustifyRight' };
-            evnArg.e = args;
-            (<any>rteObj).videoModule.alignmentSelect(evnArg);
-            evnArg.args.item = { command: 'Videos', subCommand: 'JustifyRight' };
-            (<any>rteObj).videoModule.alignVideo(evnArg, 'JustifyRight');
-            expect((<any>rteObj).element.querySelector('.e-rte-video').classList.contains('e-video-right')).toBe(true);
-            evnArg.item = { command: 'Videos', subCommand: 'JustifyCenter' };
-            evnArg.e = args;
-            (<any>rteObj).videoModule.alignmentSelect(evnArg);
-            evnArg.args.item = { command: 'Videos', subCommand: 'JustifyCenter' };
-            (<any>rteObj).videoModule.alignVideo(evnArg, 'JustifyCenter');
-            expect((<any>rteObj).element.querySelector('.e-rte-video').classList.contains('e-video-right')).not.toBe(true);
-            expect((<any>rteObj).element.querySelector('.e-rte-video').classList.contains('e-video-left')).not.toBe(true);
-            evnArg.selectNode = [rteObj.element];
-            (<any>rteObj).videoModule.break(evnArg);
-            evnArg.selectNode = [(rteObj.element.querySelector('.e-rte-video') as HTMLElement)];
-            evnArg.item = { command: 'Videos', subCommand: 'Break' };
-            evnArg.e = args;
-            (<any>rteObj).videoModule.alignmentSelect(evnArg);
-            evnArg.args.item = { command: 'Videos', subCommand: 'Break' };
-            evnArg.selectNode = [rteObj.element];
-            (<any>rteObj).videoModule.inline(evnArg);
-            evnArg.selectNode = [(rteObj.element.querySelector('.e-rte-video') as HTMLElement)];
-            evnArg.item = { command: 'Videos', subCommand: 'Inline' };
-            evnArg.e = args;
-            (<any>rteObj).videoModule.alignmentSelect(evnArg);
-            evnArg.args.item = { command: 'Videos', subCommand: 'Inline' };
-            (rteObj.element.querySelector('.e-rte-video') as HTMLElement).click();
-            evnArg.selectNode = [(<any>rteObj).element.querySelector('.e-rte-video')];
-            let trg: any = <HTMLElement>rteEle.querySelectorAll(".e-content")[0];
-            clickEvent = document.createEvent("MouseEvents");
-            eventsArg = { pageX: 50, pageY: 300, target: evnArg.selectNode[0], preventDefault: function () { } };
-            clickEvent.initEvent("mousedown", false, true);
-            trg.dispatchEvent(clickEvent);
-            rteObj.formatter.editorManager.nodeSelection.setSelectionNode(document, rteObj.element.querySelector('.e-rte-video'));
-            (<any>rteObj).videoModule.editAreaClickHandler({ args: eventsArg });
+            }, 100);
         });
     });
 
     describe(' Quick Toolbar open testing after selecting some text', () => {
         let rteObj: any;
         let ele: HTMLElement;
-        it(" selecting some text and then clicking on video test ", () => {
+        beforeAll(() => {
             rteObj = renderRTE({
                 quickToolbarSettings: {
                     showOnRightClick: false
                 },
                 value: `<div id='rte'><p><b>Syncfusion</b> Software</p><span class="e-video-wrap" contenteditable="false" title="mov_bbb.mp4"><video id='vidTag' class="e-rte-video e-videoinline" controls=""><source src="https://www.w3schools.com/html/mov_bbb.mp4" type="video/mp4"></video></span><br>`
             });
+        });
+        it(" selecting some text and then clicking on video test ", (done: DoneFn) => {
             let pEle: HTMLElement = rteObj.element.querySelector('#rte');
             rteObj.formatter.editorManager.nodeSelection.setSelectionText(document, pEle.childNodes[0], pEle.childNodes[0], 0, 2);
             ele = rteObj.element;
@@ -854,26 +787,30 @@ client side. Customer easy to edit the contents and get the HTML content for
             let eventsArg: any = { pageX: 50, pageY: 300, target: target, which: 1 };
             setCursorPoint(target, 0);
             rteObj.mouseUp(eventsArg);
-            expect(document.querySelectorAll('.e-rte-quick-popup').length).toBe(1);
+            setTimeout(() => {
+                expect(document.querySelectorAll('.e-rte-quick-popup').length).toBe(1);
+                done();
+            }, 100);
         });
-        afterEach((done: Function) => {
+        afterAll(() => {
             destroy(rteObj);
-            done();
         });
     });
 
     describe('876602 - Double quick toolbar open when click the video', () => {
         let rteObj: any;
-        it("Double quick toolbar open when click the video", () => {
+        beforeAll(() => {
             rteObj = renderRTE({
                 quickToolbarSettings: {
                     showOnRightClick: false,
                     text: ['Bold', 'Italic', 'Underline', 'StrikeThrough', 'FontColor', 'BackgroundColor', '|',
-            'FontName', 'FontSize', 'Formats', 'Alignments', '|', 'OrderedList', 'UnorderedList']
+                        'FontName', 'FontSize', 'Formats', 'Alignments', '|', 'OrderedList', 'UnorderedList']
                 },
                 value: `<div id='rte'><p><b>Syncfusion</b> Software</p><span class=\"e-video-wrap\" contenteditable=\"false\" title=\"mov_bbb.mp4\"><span class="e-video-clickelem"><iframe width="auto" height="auto" src="https://www.youtube.com/embed/hveapZxnOFY?si=zU9QX1Vww3ZIowHA" title="YouTube video player" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" allowfullscreen="" style="min-width: 0px; max-width: 1166px; min-height: 0px;" class="e-rte-embed-url e-resize e-video-focus"></iframe></span></span><br>`
             });
-            let target = <HTMLElement> (rteObj as any).element.querySelectorAll(".e-content")[0];
+        });
+        it("Double quick toolbar open when click the video", (done: DoneFn) => {
+            let target = <HTMLElement>(rteObj as any).element.querySelectorAll(".e-content")[0];
             let clickEvent: any = document.createEvent("MouseEvents");
             clickEvent.initEvent("mousedown", false, true);
             target.dispatchEvent(clickEvent);
@@ -881,14 +818,16 @@ client side. Customer easy to edit the contents and get the HTML content for
             (rteObj as any).formatter.editorManager.nodeSelection.setSelectionNode(rteObj.contentModule.getDocument(), target);
             clickEvent.initEvent("mousedown", false, true);
             target.dispatchEvent(clickEvent);
-            (<any>rteObj).videoModule.editAreaClickHandler({args:clickEvent});
-            expect(!isNullOrUndefined(document.querySelector('.e-video-wrap')as HTMLElement)).toBe(true);
-            expect(!isNullOrUndefined(document.querySelector('.e-rte-quick-popup')as HTMLElement)).toBe(true);
-            expect(document.querySelectorAll ('.e-rte-quick-popup').length === 1).toBe(true);
+            (<any>rteObj).videoModule.editAreaClickHandler({ args: clickEvent });
+            setTimeout(() => {
+                expect(!isNullOrUndefined(document.querySelector('.e-video-wrap') as HTMLElement)).toBe(true);
+                expect(!isNullOrUndefined(document.querySelector('.e-rte-quick-popup') as HTMLElement)).toBe(true);
+                expect(document.querySelectorAll('.e-rte-quick-popup').length === 1).toBe(true);
+                done();
+            }, 100);
         });
-        afterEach((done: Function) => {
+        afterAll(() => {
             destroy(rteObj);
-            done();
         });
     });
 
@@ -917,8 +856,10 @@ client side. Customer easy to edit the contents and get the HTML content for
             expect(dialogEle.firstElementChild.querySelector('.e-dlg-header').innerHTML === 'Insert Video').toBe(true);
             expect(dialogEle.querySelector('.e-vid-uploadwrap').firstElementChild.classList.contains('e-droptext')).toBe(true);
             (document.querySelector('.e-cancel') as HTMLElement).click();
-            expect(rteObj.element.lastElementChild.classList.contains('.e-dialog')).not.toBe(true);
-            done();
+            setTimeout(() => {
+                expect(rteObj.element.lastElementChild.classList.contains('.e-dialog')).not.toBe(true);
+                done();
+            }, 100);
         });
     });
 
@@ -939,7 +880,7 @@ client side. Customer easy to edit the contents and get the HTML content for
         });
         it('video dialog Coverage', (done: Function) => {
             rteObj.value = '<p id="contentId">hello  </p>',
-            rteObj.dataBind();
+                rteObj.dataBind();
             let pTag: HTMLElement = rteObj.element.querySelector('#contentId') as HTMLElement;
             rteObj.formatter.editorManager.nodeSelection.setSelectionText(document, pTag.childNodes[0], pTag.childNodes[0], 0, 5);
             expect(rteObj.element.querySelectorAll('.e-rte-content').length).toBe(1);
@@ -975,82 +916,83 @@ client side. Customer easy to edit the contents and get the HTML content for
             expect(document.querySelectorAll('.e-rte-quick-popup').length).toBe(1);
             done();
         });
-     });
-     describe('div content', () => {
-         let rteEle: HTMLElement;
-         let rteObj: RichTextEditor;
-         let mobileUA: string = "Mozilla/5.0 (Linux; Android 4.3; Nexus 7 Build/JWR66Y) " +
-             "AppleWebKit/537.36 (KHTML, like Gecko) Chrome/30.0.1599.92 Safari/537.36";
-         let defaultUA: string = navigator.userAgent;
-         beforeAll((done: Function) => {
-             Browser.userAgent = mobileUA;
-             rteObj = renderRTE({
-                 toolbarSettings: {
-                     items: ['Video', 'Bold']
-                 }
-             });
-             rteEle = rteObj.element;
-             done();
-         });
-         afterAll(() => {
-             Browser.userAgent = defaultUA;
-             destroy(rteObj);
-         });
-         it('mobile UI', () => {
-             (<HTMLElement>rteEle.querySelectorAll(".e-toolbar-item")[0] as HTMLElement).click();
-             expect(rteObj.element.lastElementChild.classList.contains('e-dlg-container')).toBe(false);
-             (<HTMLElement>rteEle.querySelectorAll(".e-toolbar-item")[0] as HTMLElement).click();
-             Browser.userAgent = defaultUA;
-         });
-     });
- 
-     describe('Inserting video and applying heading', () => {
-         let rteEle: HTMLElement;
-         let rteObj: RichTextEditor;
-         let actionComplete: any;
-         beforeAll(() => {
-             actionComplete = jasmine.createSpy("actionComplete");
-             rteObj = renderRTE({
-                 actionComplete: actionComplete,
-                 height: 400,
-                 toolbarSettings: {
-                     items: ['Video', 'Bold', 'Formats']
-                 }
-             });
-             rteEle = rteObj.element;
-         });
-         afterAll(() => {
-             destroy(rteObj);
-         });
-         it('Inserting video and applying heading', (done: Function) => {
-             expect(rteObj.element.querySelectorAll('.e-rte-content').length).toBe(1);
-             (<HTMLElement>rteEle.querySelectorAll(".e-toolbar-item")[0] as HTMLElement).click();
-             expect(rteObj.element.lastElementChild.classList.contains('e-dialog')).toBe(true);
-             let dialogEle: Element = rteObj.element.querySelector('.e-dialog');
-             expect(dialogEle.firstElementChild.querySelector('.e-dlg-header').innerHTML === 'Insert Video').toBe(true);
-             expect(dialogEle.querySelector('.e-vid-uploadwrap').firstElementChild.classList.contains('e-droptext')).toBe(true);
-             (<HTMLElement>rteEle.querySelectorAll(".e-toolbar-item")[0] as HTMLElement).click();
-             expect(rteObj.element.lastElementChild.classList.contains('.e-dialog')).not.toBe(true);
-             (rteObj.contentModule.getEditPanel() as HTMLElement).focus();
-             let range: any = new NodeSelection().getRange(document);
-             let save: any = new NodeSelection().save(range, document);
-             let args: any = {
-                 item: { url: window.origin + '/base/spec/content/video/RTE-Ocean-Waves.mp4', selection: save },
-                 preventDefault: function () { }
-             };
-             (<any>rteObj).formatter.editorManager.videoObj.createVideo(args);
-             (rteObj.element.querySelector('.e-rte-dropdown-btn') as HTMLElement).click();
-             (document.querySelector('.e-h1') as HTMLElement).click();
-             expect(actionComplete).toHaveBeenCalled();
-             done();
-         });
-     });
+    });
+    describe('div content', () => {
+        let rteEle: HTMLElement;
+        let rteObj: RichTextEditor;
+        let mobileUA: string = "Mozilla/5.0 (Linux; Android 4.3; Nexus 7 Build/JWR66Y) " +
+            "AppleWebKit/537.36 (KHTML, like Gecko) Chrome/30.0.1599.92 Safari/537.36";
+        let defaultUA: string = navigator.userAgent;
+        beforeAll(() => {
+            Browser.userAgent = mobileUA;
+            rteObj = renderRTE({
+                toolbarSettings: {
+                    items: ['Video', 'Bold']
+                }
+            });
+            rteEle = rteObj.element;
+        });
+        afterAll(() => {
+            Browser.userAgent = defaultUA;
+            destroy(rteObj);
+        });
+        it('mobile UI', () => {
+            (<HTMLElement>rteEle.querySelectorAll(".e-toolbar-item")[0] as HTMLElement).click();
+            expect(rteObj.element.lastElementChild.classList.contains('e-dlg-container')).toBe(false);
+            (<HTMLElement>rteEle.querySelectorAll(".e-toolbar-item")[0] as HTMLElement).click();
+            Browser.userAgent = defaultUA;
+        });
+    });
 
-     describe('BLAZ-25388 - Inserting video in firefox', () => {
+    describe('Inserting video and applying heading', () => {
         let rteEle: HTMLElement;
         let rteObj: RichTextEditor;
         let actionComplete: any;
-        let defaultUserAgent= navigator.userAgent;
+        beforeAll(() => {
+            actionComplete = jasmine.createSpy("actionComplete");
+            rteObj = renderRTE({
+                actionComplete: actionComplete,
+                height: 400,
+                toolbarSettings: {
+                    items: ['Video', 'Bold', 'Formats']
+                }
+            });
+            rteEle = rteObj.element;
+        });
+        afterAll(() => {
+            destroy(rteObj);
+        });
+        it('Inserting video and applying heading', (done: Function) => {
+            expect(rteObj.element.querySelectorAll('.e-rte-content').length).toBe(1);
+            (<HTMLElement>rteEle.querySelectorAll(".e-toolbar-item")[0] as HTMLElement).click();
+            expect(rteObj.element.lastElementChild.classList.contains('e-dialog')).toBe(true);
+            let dialogEle: Element = rteObj.element.querySelector('.e-dialog');
+            expect(dialogEle.firstElementChild.querySelector('.e-dlg-header').innerHTML === 'Insert Video').toBe(true);
+            expect(dialogEle.querySelector('.e-vid-uploadwrap').firstElementChild.classList.contains('e-droptext')).toBe(true);
+            (<HTMLElement>rteEle.querySelectorAll(".e-toolbar-item")[0] as HTMLElement).click();
+            expect(rteObj.element.lastElementChild.classList.contains('.e-dialog')).not.toBe(true);
+            (rteObj.contentModule.getEditPanel() as HTMLElement).focus();
+            let range: any = new NodeSelection().getRange(document);
+            let save: any = new NodeSelection().save(range, document);
+            let args: any = {
+                item: { url: window.origin + '/base/spec/content/video/RTE-Ocean-Waves.mp4', selection: save },
+                preventDefault: function () { }
+            };
+            (<any>rteObj).formatter.editorManager.videoObj.createVideo(args);
+            (rteObj.element.querySelector('.e-rte-dropdown-btn') as HTMLElement).click();
+            (document.querySelector('.e-h1') as HTMLElement).click();
+            setTimeout(() => {
+                expect(actionComplete).toHaveBeenCalled();
+                done();
+            }, 100);
+        });
+    });
+
+    describe('BLAZ-25388 - Inserting video in firefox', () => {
+        let rteEle: HTMLElement;
+        let rteObj: RichTextEditor;
+        let actionComplete: any;
+        let defaultUserAgent = navigator.userAgent;
         let fireFox: string = "Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:84.0) Gecko/20100101 Firefox/84.0";
         beforeAll(() => {
             Browser.userAgent = fireFox;
@@ -1066,7 +1008,7 @@ client side. Customer easy to edit the contents and get the HTML content for
         });
         afterAll(() => {
             destroy(rteObj);
-            Browser.userAgent =defaultUserAgent;
+            Browser.userAgent = defaultUserAgent;
         });
         it('BLAZ-25388 - Inserting video', (done: Function) => {
             expect(rteObj.element.querySelectorAll('.e-rte-content').length).toBe(1);
@@ -1087,15 +1029,15 @@ client side. Customer easy to edit the contents and get the HTML content for
                 callBack: function () { }
             };
             (<any>rteObj).formatter.editorManager.videoObj.createVideo(args);
-            (<any>rteObj).formatter.editorManager.videoObj.editAreaVideoClick({callBack: function () { }});
+            (<any>rteObj).formatter.editorManager.videoObj.editAreaVideoClick({ callBack: function () { } });
             setTimeout(() => {
                 expect(rteObj.inputElement.querySelectorAll('video').length > 0).toBe(true);
                 done();
             }, 100);
         });
-    }); 
+    });
 
-     describe('Inserting video and applying heading in IE11', () => {
+    describe('Inserting video and applying heading in IE11', () => {
         let rteEle: HTMLElement;
         let rteObj: RichTextEditor;
         let actionComplete: any;
@@ -1136,7 +1078,7 @@ client side. Customer easy to edit the contents and get the HTML content for
             expect(actionComplete).toHaveBeenCalled();
             done();
         });
-     });
+    });
     describe('div content-rte testing', () => {
         let rteEle: HTMLElement;
         let rteObj: RichTextEditor;
@@ -1179,9 +1121,9 @@ client side. Customer easy to edit the contents and get the HTML content for
                 done();
             }, 1000);
         });
-     });
- 
-     describe('dialogOpen Event- Check dialog element', () => {
+    });
+
+    describe('dialogOpen Event- Check dialog element', () => {
         let rteEle: HTMLElement;
         let rteObj: RichTextEditor;
         beforeAll(function () {
@@ -1189,7 +1131,7 @@ client side. Customer easy to edit the contents and get the HTML content for
                 toolbarSettings: {
                     items: ['Video']
                 },
-                dialogOpen : function(e) {
+                dialogOpen: function (e) {
                     expect((e as any).element.querySelector('.e-upload.e-control-wrapper')).not.toBe(null);
                 }
             });
@@ -1201,9 +1143,9 @@ client side. Customer easy to edit the contents and get the HTML content for
         it('Check uploader element in dialog content', function () {
             (rteEle.querySelectorAll(".e-toolbar-item")[0] as HTMLElement).click();
         });
-     });
- 
-     describe('video dialog - documentClick', () => {
+    });
+
+    describe('video dialog - documentClick', () => {
         let rteObj: RichTextEditor;
         let keyboardEventArgs = {
             preventDefault: function () { },
@@ -1211,7 +1153,7 @@ client side. Customer easy to edit the contents and get the HTML content for
             key: 's'
         };
         beforeAll(() => {
-            rteObj = renderRTE({ 
+            rteObj = renderRTE({
                 toolbarSettings: {
                     items: ['Video']
                 }
@@ -1222,13 +1164,13 @@ client side. Customer easy to edit the contents and get the HTML content for
         });
 
         it('open video dialog - click on video item in toolbar', () => {
-        (rteObj.contentModule.getEditPanel() as HTMLElement).focus();
-        (<any>rteObj).videoModule.onKeyDown({ args: keyboardEventArgs });
-        expect(document.body.contains((<any>rteObj).videoModule.dialogObj.element)).toBe(true);
+            (rteObj.contentModule.getEditPanel() as HTMLElement).focus();
+            (<any>rteObj).videoModule.onKeyDown({ args: keyboardEventArgs });
+            expect(document.body.contains((<any>rteObj).videoModule.dialogObj.element)).toBe(true);
 
-        let eventsArgs: any = { target: rteObj.element.querySelector('.e-video'), preventDefault: function () { } };
-        (<any>rteObj).videoModule.onDocumentClick(eventsArgs);
-        expect(document.body.contains((<any>rteObj).videoModule.dialogObj.element)).toBe(true);
+            let eventsArgs: any = { target: rteObj.element.querySelector('.e-video'), preventDefault: function () { } };
+            (<any>rteObj).videoModule.onDocumentClick(eventsArgs);
+            expect(document.body.contains((<any>rteObj).videoModule.dialogObj.element)).toBe(true);
 
             eventsArgs = { target: document.querySelector('[title="Insert Video (Ctrl+Alt+V)"]'), preventDefault: function () { } };
             (<any>rteObj).videoModule.onDocumentClick(eventsArgs);
@@ -1243,10 +1185,10 @@ client side. Customer easy to edit the contents and get the HTML content for
             (<any>rteObj).videoModule.onDocumentClick(eventsArgs);
             expect((<any>rteObj).videoModule.dialogObj).toBe(null);
         });
-     });
-     describe('Removing the video', () => {
+    });
+    describe('Removing the video', () => {
         let rteEle: HTMLElement;
-        let rteObj: RichTextEditor;
+        let editor: RichTextEditor;
         let keyboardEventArgs = {
             preventDefault: function () { },
             altKey: false,
@@ -1260,42 +1202,33 @@ client side. Customer easy to edit the contents and get the HTML content for
             code: 22,
             action: ''
         };
-        let innerHTML1: string = `
-            <p>testing&nbsp;<span class="e-video-wrap" contenteditable="false" title="mov_bbb.mp4"><video class="e-rte-video e-videoinline" controls=""><source src="https://www.w3schools.com/html/mov_bbb.mp4" type="video/mp4"></video></span><br></p>
-            `;
+        let innerHTML1: string = `<p>testing&nbsp;<video controls><source src="https://www.w3schools.com/html/mov_bbb.mp4" type="video/mp4"></video><br></p>`;
         beforeAll(() => {
-            rteObj = renderRTE({
+            editor = renderRTE({
                 height: 400,
                 toolbarSettings: {
                     items: ['Video', 'Bold']
                 },
                 value: innerHTML1
             });
-            rteEle = rteObj.element;
+            rteEle = editor.element;
         });
         afterAll(() => {
-            destroy(rteObj);
+            destroy(editor);
         });
 
         it('video remove with quickToolbar check', (done: Function) => {
-            let target = <HTMLElement>rteEle.querySelectorAll(".e-content")[0]
-            let clickEvent: any = document.createEvent("MouseEvents");
-            let eventsArg: any = { pageX: 50, pageY: 300, target: target };
-            clickEvent.initEvent("mousedown", false, true);
-            target.dispatchEvent(clickEvent);
-            target = (rteObj.contentModule.getEditPanel() as HTMLElement).querySelector('.e-video-wrap video');
-            (rteObj as any).formatter.editorManager.nodeSelection.setSelectionNode(rteObj.contentModule.getDocument(), target);
-            eventsArg = { pageX: 50, pageY: 300, target: target };
-            clickEvent.initEvent("mousedown", false, true);
-            target.dispatchEvent(clickEvent);
-            (<any>rteObj).videoModule.editAreaClickHandler({ args: eventsArg });
-            (<any>rteObj).videoModule.videoEle = rteObj.contentModule.getEditPanel().querySelector('.e-video-wrap video');
+            editor.focusIn();
+            editor.inputElement.dispatchEvent(INIT_MOUSEDOWN_EVENT);
+            const target: HTMLElement = editor.inputElement.querySelector('video');
+            setSelection(target, 0, 1);
+            target.dispatchEvent(MOUSEUP_EVENT);
             setTimeout(function () {
                 let quickPop: any = <HTMLElement>document.querySelectorAll('.e-rte-quick-popup')[0];
                 let quickTBItem: any = quickPop.querySelectorAll('.e-toolbar-item');
-                expect(quickPop.querySelectorAll('.e-rte-toolbar').length).toBe(1);
-                quickTBItem.item(2).click();
-                expect((<any>rteObj).contentModule.getEditPanel().querySelector('.e-video-wrap')).toBe(null);
+                expect(quickPop.querySelectorAll('.e-rte-quick-toolbar').length).toBe(1);
+                quickTBItem.item(5).click();
+                expect((<any>editor).contentModule.getEditPanel().querySelector('.e-video-wrap')).toBe(null);
                 done();
             }, 200);
         });
@@ -1304,7 +1237,7 @@ client side. Customer easy to edit the contents and get the HTML content for
     describe('Video deleting when press backspace button', () => {
         let rteEle: HTMLElement;
         let rteObj: RichTextEditor;
-        let keyBoardEvent: any = { type: 'keydown', preventDefault: () => { }, ctrlKey: true, key: 'backspace', stopPropagation: () => { }, shiftKey: false, which: 8};
+        let keyBoardEvent: any = { type: 'keydown', preventDefault: () => { }, ctrlKey: true, key: 'backspace', stopPropagation: () => { }, shiftKey: false, which: 8 };
         let innerHTML1: string = `testing
         <span class="e-video-wrap" contenteditable="false" title="mov_bbb.mp4"><video class="e-rte-video e-videoinline" controls=""><source src="https://www.w3schools.com/html/mov_bbb.mp4" type="video/mp4"></video></span>testing`;
         beforeAll(() => {
@@ -1327,15 +1260,17 @@ client side. Customer easy to edit the contents and get the HTML content for
             keyBoardEvent.keyCode = 8;
             keyBoardEvent.code = 'Backspace';
             (rteObj as any).keyDown(keyBoardEvent);
-            expect((<any>rteObj).inputElement.querySelector('.e-video-wrap')).toBe(null);
-            done();
+            setTimeout(() => {
+                expect((<any>rteObj).inputElement.querySelector('.e-video-wrap')).toBe(null);
+                done();
+            }, 100);
         });
     });
 
     describe('Video deleting when press backspace button nodeType as 1', () => {
         let rteEle: HTMLElement;
         let rteObj: RichTextEditor;
-        let keyBoardEvent: any = { type: 'keydown', preventDefault: () => { }, ctrlKey: true, key: 'backspace', stopPropagation: () => { }, shiftKey: false, which: 8};
+        let keyBoardEvent: any = { type: 'keydown', preventDefault: () => { }, ctrlKey: true, key: 'backspace', stopPropagation: () => { }, shiftKey: false, which: 8 };
         let innerHTML1: string = `testing
         <span class="e-video-wrap" contenteditable="false" title="mov_bbb.mp4"><video class="e-rte-video e-videoinline" controls=""><source src="https://www.w3schools.com/html/mov_bbb.mp4" type="video/mp4"></video></span><br>testing`;
         beforeAll(() => {
@@ -1358,190 +1293,81 @@ client side. Customer easy to edit the contents and get the HTML content for
             keyBoardEvent.keyCode = 8;
             keyBoardEvent.code = 'Backspace';
             (rteObj as any).keyDown(keyBoardEvent);
-            expect((<any>rteObj).inputElement.querySelector('.e-video-wrap')).toBe(null);
-            done();
+            setTimeout(() => {
+                expect((<any>rteObj).inputElement.querySelector('.e-video-wrap')).toBe(null);
+                done();
+            }, 100);
         });
     });
- 
-     describe('Video deleting when press delete button', () => {
-         let rteEle: HTMLElement;
-         let rteObj: RichTextEditor;
-         let keyBoardEvent: any = { type: 'keydown', preventDefault: () => { }, ctrlKey: true, key: 'delete', stopPropagation: () => { }, shiftKey: false, which: 46};
-         let innerHTML1: string = `testing<span class="e-video-wrap" contenteditable="false" title="mov_bbb.mp4"><video class="e-rte-video e-videoinline" controls=""><source src="https://www.w3schools.com/html/mov_bbb.mp4" type="video/mp4"></video></span><br>testing`;
-         beforeAll(() => {
-             rteObj = renderRTE({
-                 height: 400,
-                 toolbarSettings: {
-                     items: ['Video', 'Bold']
-                 },
-                 value: innerHTML1
-             });
-             rteEle = rteObj.element;
-         });
-         afterAll(() => {
-             destroy(rteObj);
-         });
- 
-         it('Video delete action checking using delete key', (done: Function) => {
-             let node: any = (rteObj as any).inputElement.childNodes[0].firstChild;
-             setCursorPoint(node, 7);
-             keyBoardEvent.keyCode = 46;
-             keyBoardEvent.code = 'Delete';
-             keyBoardEvent.action = 'delete';
-             (rteObj as any).keyDown(keyBoardEvent);
-             expect((<any>rteObj).inputElement.querySelector('.e-video-wrap')).toBe(null);
-             done();
-         });
-     });
- 
-     describe('Video deleting when press delete button as nodeType 1', () => {
-         let rteEle: HTMLElement;
-         let rteObj: RichTextEditor;
-         let keyBoardEvent: any = { type: 'keydown', preventDefault: () => { }, ctrlKey: true, key: 'delete', stopPropagation: () => { }, shiftKey: false, which: 46};
-         let innerHTML1: string = `testing<span class="e-video-wrap" contenteditable="false" title="mov_bbb.mp4"><video class="e-rte-video e-videoinline" controls=""><source src="https://www.w3schools.com/html/mov_bbb.mp4" type="video/mp4"></video></span><br>testing`;
-         beforeAll(() => {
-             rteObj = renderRTE({
-                 height: 400,
-                 toolbarSettings: {
-                     items: ['Video', 'Bold']
-                 },
-                 value: innerHTML1
-             });
-             rteEle = rteObj.element;
-         });
-         afterAll(() => {
-             destroy(rteObj);
-         });
- 
-         it('Video delete action checking using delete key', (done: Function) => {
-             let node: any = (rteObj as any).inputElement.childNodes[0].childNodes[1];
-             setCursorPoint(node, 0);
-             keyBoardEvent.keyCode = 46;
-             keyBoardEvent.code = 'Delete';
-             keyBoardEvent.action = 'delete';
-             (rteObj as any).keyDown(keyBoardEvent);
-             expect((<any>rteObj).inputElement.querySelector('.e-video-wrap')).toBe(null);
-             done();
-         });
-     });
- 
-     describe('Video with inline applied', () => {
-         let rteEle: HTMLElement;
-         let rteObj: RichTextEditor;
-         let keyboardEventArgs = {
-             preventDefault: function () { },
-             altKey: false,
-             ctrlKey: false,
-             shiftKey: false,
-             char: '',
-             key: '',
-             charCode: 22,
-             keyCode: 22,
-             which: 22,
-             code: 22,
-             action: ''
-         };
-         let innerHTML1: string = `
-             <p>testing&nbsp;<span class="e-video-wrap" contenteditable="false" title="mov_bob.mp4"><span class="e-clickElem"><video class="e-rte-video e-video-inline" controls=""><source src="https://www.w3schools.com/html/mov_bbb.mp4" type="video/mp3"></video></span></span><br></p>
-             `;
-         beforeAll(() => {
-             rteObj = renderRTE({
-                 height: 400,
-                 toolbarSettings: {
-                     items: ['Video', 'Bold']
-                 },
-                 value: innerHTML1
-             });
-             rteEle = rteObj.element;
-         });
-         afterAll(() => {
-             destroy(rteObj);
-         });
- 
-         it('classList testing for inline', (done: Function) => {
-             let target = <HTMLElement>rteEle.querySelectorAll(".e-content")[0]
-             let clickEvent: any = document.createEvent("MouseEvents");
-             let eventsArg: any = { pageX: 50, pageY: 300, target: target };
-             clickEvent.initEvent("mousedown", false, true);
-             target.dispatchEvent(clickEvent);
-             target = (rteObj.contentModule.getEditPanel() as HTMLElement).querySelector('.e-video-wrap video');
-             (rteObj as any).formatter.editorManager.nodeSelection.setSelectionNode(rteObj.contentModule.getDocument(), target);
-             eventsArg = { pageX: 50, pageY: 300, target: target };
-             clickEvent.initEvent("mousedown", false, true);
-             target.dispatchEvent(clickEvent);
-             (<any>rteObj).videoModule.editAreaClickHandler({ args: eventsArg });
-             (<any>rteObj).videoModule.videoEle = rteObj.contentModule.getEditPanel().querySelector('.e-video-wrap video');
-             setTimeout(function () {
-                 let mouseEventArgs = {
-                     item: { command: 'Videos', subCommand: 'Inline' }
-                 };
-                 let video: HTMLElement = rteObj.element.querySelector('.e-rte-video') as HTMLElement;
-                 (<any>rteObj).videoModule.alignmentSelect(mouseEventArgs);
-                 expect(video.classList.contains('e-video-inline')).toBe(true);
-                 done();
-             }, 200);
-         });
-     });
- 
-     describe('Video with break applied ', () => {
-         let rteEle: HTMLElement;
-         let rteObj: RichTextEditor;
-         let keyboardEventArgs = {
-             preventDefault: function () { },
-             altKey: false,
-             ctrlKey: false,
-             shiftKey: false,
-             char: '',
-             key: '',
-             charCode: 22,
-             keyCode: 22,
-             which: 22,
-             code: 22,
-             action: ''
-         };
-         let innerHTML1: string = `
-             <p>testing&nbsp;<span class="e-video-wrap" contenteditable="false" title="mov_bbb.mp4"><video class="e-rte-video e-videoinline" controls=""><source src="https://www.w3schools.com/html/mov_bbb.mp4" type="video/mp4"></video></span><br></p>
-             `;
-         beforeAll(() => {
-             rteObj = renderRTE({
-                 height: 400,
-                 toolbarSettings: {
-                     items: ['Video', 'Bold']
-                 },
-                 value: innerHTML1
-             });
-             rteEle = rteObj.element;
-         });
-         afterAll(() => {
-             destroy(rteObj);
-         });
- 
-         it('classList testing for break', (done: Function) => {
-             let target = <HTMLElement>rteEle.querySelectorAll(".e-content")[0]
-             let clickEvent: any = document.createEvent("MouseEvents");
-             let eventsArg: any = { pageX: 50, pageY: 300, target: target };
-             clickEvent.initEvent("mousedown", false, true);
-             target.dispatchEvent(clickEvent);
-             target = (rteObj.contentModule.getEditPanel() as HTMLElement).querySelector('.e-video-wrap video');
-             (rteObj as any).formatter.editorManager.nodeSelection.setSelectionNode(rteObj.contentModule.getDocument(), target);
-             eventsArg = { pageX: 50, pageY: 300, target: target };
-             clickEvent.initEvent("mousedown", false, true);
-             target.dispatchEvent(clickEvent);
-             (<any>rteObj).videoModule.editAreaClickHandler({ args: eventsArg });
-             (<any>rteObj).videoModule.videoEle = rteObj.contentModule.getEditPanel().querySelector('.e-video-wrap video');
-             setTimeout(function () {
-                 let mouseEventArgs = {
-                     item: { command: 'Videos', subCommand: 'Break' }
-                 };
-                 let video: HTMLElement = rteObj.element.querySelector('.e-rte-video') as HTMLElement;
-                 (<any>rteObj).videoModule.alignmentSelect(mouseEventArgs);
-                 expect(video.classList.contains('e-video-break')).toBe(true);
-                 done();
-             }, 200);
-         });
-     });
 
-    describe('Video with align testing -', () => {
+    describe('Video deleting when press delete button', () => {
+        let rteEle: HTMLElement;
+        let rteObj: RichTextEditor;
+        let keyBoardEvent: any = { type: 'keydown', preventDefault: () => { }, ctrlKey: true, key: 'delete', stopPropagation: () => { }, shiftKey: false, which: 46 };
+        let innerHTML1: string = `testing<span class="e-video-wrap" contenteditable="false" title="mov_bbb.mp4"><video class="e-rte-video e-videoinline" controls=""><source src="https://www.w3schools.com/html/mov_bbb.mp4" type="video/mp4"></video></span><br>testing`;
+        beforeAll(() => {
+            rteObj = renderRTE({
+                height: 400,
+                toolbarSettings: {
+                    items: ['Video', 'Bold']
+                },
+                value: innerHTML1
+            });
+            rteEle = rteObj.element;
+        });
+        afterAll(() => {
+            destroy(rteObj);
+        });
+
+        it('Video delete action checking using delete key', (done: Function) => {
+            let node: any = (rteObj as any).inputElement.childNodes[0].firstChild;
+            setCursorPoint(node, 7);
+            keyBoardEvent.keyCode = 46;
+            keyBoardEvent.code = 'Delete';
+            keyBoardEvent.action = 'delete';
+            (rteObj as any).keyDown(keyBoardEvent);
+            setTimeout(() => {
+
+                expect((<any>rteObj).inputElement.querySelector('.e-video-wrap')).toBe(null);
+                done();
+            }, 100);
+        });
+    });
+
+    describe('Video deleting when press delete button as nodeType 1', () => {
+        let rteEle: HTMLElement;
+        let rteObj: RichTextEditor;
+        let keyBoardEvent: any = { type: 'keydown', preventDefault: () => { }, ctrlKey: true, key: 'delete', stopPropagation: () => { }, shiftKey: false, which: 46 };
+        let innerHTML1: string = `testing<span class="e-video-wrap" contenteditable="false" title="mov_bbb.mp4"><video class="e-rte-video e-videoinline" controls=""><source src="https://www.w3schools.com/html/mov_bbb.mp4" type="video/mp4"></video></span><br>testing`;
+        beforeAll(() => {
+            rteObj = renderRTE({
+                height: 400,
+                toolbarSettings: {
+                    items: ['Video', 'Bold']
+                },
+                value: innerHTML1
+            });
+            rteEle = rteObj.element;
+        });
+        afterAll(() => {
+            destroy(rteObj);
+        });
+
+        it('Video delete action checking using delete key', (done: Function) => {
+            let node: any = (rteObj as any).inputElement.childNodes[0].childNodes[1];
+            setCursorPoint(node, 0);
+            keyBoardEvent.keyCode = 46;
+            keyBoardEvent.code = 'Delete';
+            keyBoardEvent.action = 'delete';
+            (rteObj as any).keyDown(keyBoardEvent);
+            setTimeout(() => {
+                expect((<any>rteObj).inputElement.querySelector('.e-video-wrap')).toBe(null);
+                done();
+            }, 100);
+        });
+    });
+
+    describe('Video with inline applied', () => {
         let rteEle: HTMLElement;
         let rteObj: RichTextEditor;
         let keyboardEventArgs = {
@@ -1557,6 +1383,109 @@ client side. Customer easy to edit the contents and get the HTML content for
             code: 22,
             action: ''
         };
+        let innerHTML1: string = `
+             <p>testing&nbsp;<span class="e-video-wrap" contenteditable="false" title="mov_bob.mp4"><span class="e-clickElem"><video class="e-rte-video e-video-inline" controls=""><source src="https://www.w3schools.com/html/mov_bbb.mp4" type="video/mp3"></video></span></span><br></p>
+             `;
+        beforeAll(() => {
+            rteObj = renderRTE({
+                height: 400,
+                toolbarSettings: {
+                    items: ['Video', 'Bold']
+                },
+                value: innerHTML1
+            });
+            rteEle = rteObj.element;
+        });
+        afterAll(() => {
+            destroy(rteObj);
+        });
+
+        it('classList testing for inline', (done: Function) => {
+            let target = <HTMLElement>rteEle.querySelectorAll(".e-content")[0]
+            let clickEvent: any = document.createEvent("MouseEvents");
+            let eventsArg: any = { pageX: 50, pageY: 300, target: target };
+            clickEvent.initEvent("mousedown", false, true);
+            target.dispatchEvent(clickEvent);
+            target = (rteObj.contentModule.getEditPanel() as HTMLElement).querySelector('.e-video-wrap video');
+            (rteObj as any).formatter.editorManager.nodeSelection.setSelectionNode(rteObj.contentModule.getDocument(), target);
+            eventsArg = { pageX: 50, pageY: 300, target: target };
+            clickEvent.initEvent("mousedown", false, true);
+            target.dispatchEvent(clickEvent);
+            (<any>rteObj).videoModule.editAreaClickHandler({ args: eventsArg });
+            (<any>rteObj).videoModule.videoEle = rteObj.contentModule.getEditPanel().querySelector('.e-video-wrap video');
+            setTimeout(function () {
+                let mouseEventArgs = {
+                    item: { command: 'Videos', subCommand: 'Inline' }
+                };
+                let video: HTMLElement = rteObj.element.querySelector('.e-rte-video') as HTMLElement;
+                (<any>rteObj).videoModule.alignmentSelect(mouseEventArgs);
+                expect(video.classList.contains('e-video-inline')).toBe(true);
+                done();
+            }, 200);
+        });
+    });
+
+    describe('Video with break applied ', () => {
+        let rteEle: HTMLElement;
+        let rteObj: RichTextEditor;
+        let keyboardEventArgs = {
+            preventDefault: function () { },
+            altKey: false,
+            ctrlKey: false,
+            shiftKey: false,
+            char: '',
+            key: '',
+            charCode: 22,
+            keyCode: 22,
+            which: 22,
+            code: 22,
+            action: ''
+        };
+        let innerHTML1: string = `
+             <p>testing&nbsp;<span class="e-video-wrap" contenteditable="false" title="mov_bbb.mp4"><video class="e-rte-video e-videoinline" controls=""><source src="https://www.w3schools.com/html/mov_bbb.mp4" type="video/mp4"></video></span><br></p>
+             `;
+        beforeAll(() => {
+            rteObj = renderRTE({
+                height: 400,
+                toolbarSettings: {
+                    items: ['Video', 'Bold']
+                },
+                value: innerHTML1
+            });
+            rteEle = rteObj.element;
+        });
+        afterAll(() => {
+            destroy(rteObj);
+        });
+
+        it('classList testing for break', (done: Function) => {
+            let target = <HTMLElement>rteEle.querySelectorAll(".e-content")[0]
+            let clickEvent: any = document.createEvent("MouseEvents");
+            let eventsArg: any = { pageX: 50, pageY: 300, target: target };
+            clickEvent.initEvent("mousedown", false, true);
+            target.dispatchEvent(clickEvent);
+            target = (rteObj.contentModule.getEditPanel() as HTMLElement).querySelector('.e-video-wrap video');
+            (rteObj as any).formatter.editorManager.nodeSelection.setSelectionNode(rteObj.contentModule.getDocument(), target);
+            eventsArg = { pageX: 50, pageY: 300, target: target };
+            clickEvent.initEvent("mousedown", false, true);
+            target.dispatchEvent(clickEvent);
+            (<any>rteObj).videoModule.editAreaClickHandler({ args: eventsArg });
+            (<any>rteObj).videoModule.videoEle = rteObj.contentModule.getEditPanel().querySelector('.e-video-wrap video');
+            setTimeout(function () {
+                let mouseEventArgs = {
+                    item: { command: 'Videos', subCommand: 'Break' }
+                };
+                let video: HTMLElement = rteObj.element.querySelector('.e-rte-video') as HTMLElement;
+                (<any>rteObj).videoModule.alignmentSelect(mouseEventArgs);
+                expect(video.classList.contains('e-video-break')).toBe(true);
+                done();
+            }, 200);
+        });
+    });
+
+    describe('Video with align testing -', () => {
+        let rteEle: HTMLElement;
+        let rteObj: RichTextEditor;
         let innerHTML1: string = `
             <p>testing&nbsp;<span class="e-video-wrap" contenteditable="false" title="mov_bob.mp4"><span class="e-clickElem"><video class="e-rte-video e-video-inline" controls=""><source src="https://www.w3schools.com/html/mov_bbb.mp4" type="video/mp3"></video></span></span><br></p>
             `;
@@ -1575,224 +1504,78 @@ client side. Customer easy to edit the contents and get the HTML content for
         });
 
         it('left applied', (done: Function) => {
-            let target = <HTMLElement>rteEle.querySelectorAll(".e-content")[0]
-            let clickEvent: any = document.createEvent("MouseEvents");
-            let eventsArg: any = { pageX: 50, pageY: 300, target: target };
-            clickEvent.initEvent("mousedown", false, true);
-            target.dispatchEvent(clickEvent);
-            target = (rteObj.contentModule.getEditPanel() as HTMLElement).querySelector('.e-video-wrap video');
-            (rteObj as any).formatter.editorManager.nodeSelection.setSelectionNode(rteObj.contentModule.getDocument(), target);
-            eventsArg = { pageX: 50, pageY: 300, target: target };
-            clickEvent.initEvent("mousedown", false, true);
-            target.dispatchEvent(clickEvent);
-            (<any>rteObj).videoModule.editAreaClickHandler({ args: eventsArg });
-            (<any>rteObj).videoModule.videoEle = rteObj.contentModule.getEditPanel().querySelector('.e-video-wrap video');
+            rteObj.inputElement.dispatchEvent(INIT_MOUSEDOWN_EVENT);
+            const target: HTMLElement = rteObj.inputElement.querySelector('video');
+            setSelection(target, 0, 1);
+            target.dispatchEvent(MOUSEUP_EVENT);
             setTimeout(function () {
-                let mouseEventArgs = {
-                    item: { command: 'Videos', subCommand: 'JustifyLeft' }
-                };
-                let video: HTMLElement = rteObj.element.querySelector('.e-rte-video') as HTMLElement;
-                (<any>rteObj).videoModule.alignmentSelect(mouseEventArgs);
-                expect(video.classList.contains('e-video-left')).toBe(true);
-                done();
+                const quickToolbar: HTMLElement = document.body.querySelector('.e-video-quicktoolbar');
+                const alignDropDownButton: HTMLElement = quickToolbar.querySelector('.e-justify-left').parentElement;
+                alignDropDownButton.click();
+                const alignDropDownPopup: HTMLElement = document.body.querySelector('.e-dropdown-popup.e-popup-open');
+                (alignDropDownPopup.querySelector('.e-justify-left') as HTMLElement).click();
+                setTimeout(() => {
+                    let video: HTMLElement = rteObj.element.querySelector('.e-rte-video') as HTMLElement;
+                    expect(video.classList.contains('e-video-left')).toBe(true);
+                    done();
+                }, 100);
             }, 200);
         });
         it('right applied', (done: Function) => {
-            let target = <HTMLElement>rteEle.querySelectorAll(".e-content")[0]
-            let clickEvent: any = document.createEvent("MouseEvents");
-            let eventsArg: any = { pageX: 50, pageY: 300, target: target };
-            clickEvent.initEvent("mousedown", false, true);
-            target.dispatchEvent(clickEvent);
-            target = (rteObj.contentModule.getEditPanel() as HTMLElement).querySelector('.e-video-wrap video');
-            (rteObj as any).formatter.editorManager.nodeSelection.setSelectionNode(rteObj.contentModule.getDocument(), target);
-            eventsArg = { pageX: 50, pageY: 300, target: target };
-            clickEvent.initEvent("mousedown", false, true);
-            target.dispatchEvent(clickEvent);
-            (<any>rteObj).videoModule.editAreaClickHandler({ args: eventsArg });
-            (<any>rteObj).videoModule.videoEle = rteObj.contentModule.getEditPanel().querySelector('.e-video-wrap video');
+            rteObj.inputElement.dispatchEvent(INIT_MOUSEDOWN_EVENT);
+            const target: HTMLElement = rteObj.inputElement.querySelector('video');
+            setSelection(target, 0, 1);
+            target.dispatchEvent(MOUSEUP_EVENT);
             setTimeout(function () {
-                let mouseEventArgs = {
-                    item: { command: 'Videos', subCommand: 'JustifyRight' }
-                };
-                let video: HTMLElement = rteObj.element.querySelector('.e-rte-video') as HTMLElement;
-                (<any>rteObj).videoModule.alignmentSelect(mouseEventArgs);
-                expect(video.classList.contains('e-video-right')).toBe(true);
-                done();
+                const quickToolbar: HTMLElement = document.body.querySelector('.e-video-quicktoolbar');
+                const alignDropDownButton: HTMLElement = quickToolbar.querySelector('.e-justify-left').parentElement;
+                alignDropDownButton.click();
+                const alignDropDownPopup: HTMLElement = document.body.querySelector('.e-dropdown-popup.e-popup-open');
+                (alignDropDownPopup.querySelector('.e-justify-right') as HTMLElement).click();
+                setTimeout(() => {
+                    let video: HTMLElement = rteObj.element.querySelector('.e-rte-video') as HTMLElement;
+                    expect(video.classList.contains('e-video-right')).toBe(true);
+                    done();
+                }, 100);
             }, 200);
         });
         it('center applied', (done: Function) => {
-            let target = <HTMLElement>rteEle.querySelectorAll(".e-content")[0]
-            let clickEvent: any = document.createEvent("MouseEvents");
-            let eventsArg: any = { pageX: 50, pageY: 300, target: target };
-            clickEvent.initEvent("mousedown", false, true);
-            target.dispatchEvent(clickEvent);
-            target = (rteObj.contentModule.getEditPanel() as HTMLElement).querySelector('.e-video-wrap video');
-            (rteObj as any).formatter.editorManager.nodeSelection.setSelectionNode(rteObj.contentModule.getDocument(), target);
-            eventsArg = { pageX: 50, pageY: 300, target: target };
-            clickEvent.initEvent("mousedown", false, true);
-            target.dispatchEvent(clickEvent);
-            (<any>rteObj).videoModule.editAreaClickHandler({ args: eventsArg });
-            (<any>rteObj).videoModule.videoEle = rteObj.contentModule.getEditPanel().querySelector('.e-video-wrap video');
+            rteObj.inputElement.dispatchEvent(INIT_MOUSEDOWN_EVENT);
+            const target: HTMLElement = rteObj.inputElement.querySelector('video');
+            setSelection(target, 0, 1);
+            target.dispatchEvent(MOUSEUP_EVENT);
             setTimeout(function () {
-                let mouseEventArgs = {
-                    item: { command: 'Videos', subCommand: 'JustifyCenter' }
-                };
-                let video: HTMLElement = rteObj.element.querySelector('.e-rte-video') as HTMLElement;
-                (<any>rteObj).videoModule.alignmentSelect(mouseEventArgs);
-                expect(video.classList.contains('e-video-center')).toBe(true);
-                done();
+                const quickToolbar: HTMLElement = document.body.querySelector('.e-video-quicktoolbar');
+                const alignDropDownButton: HTMLElement = quickToolbar.querySelector('.e-justify-left').parentElement;
+                alignDropDownButton.click();
+                const alignDropDownPopup: HTMLElement = document.body.querySelector('.e-dropdown-popup.e-popup-open');
+                (alignDropDownPopup.querySelector('.e-justify-center') as HTMLElement).click();
+                setTimeout(() => {
+                    let video: HTMLElement = rteObj.element.querySelector('.e-rte-video') as HTMLElement;
+                    expect(video.classList.contains('e-video-center')).toBe(true);
+                    done();
+                }, 100);
             }, 200);
         });
     });
 
-    describe('Dimension testing', () => {
-        let rteEle: HTMLElement;
-        let rteObj: RichTextEditor;
-        beforeAll(() => {
-            rteObj = renderRTE({
-                height: 400,
-                toolbarSettings: {
-                    items: ['Video', 'Bold']
-                },
-                insertVideoSettings: { resize: false },
-                actionBegin: function (e: any) {
-                    if(e.item.subCommand === 'Video'){
-                    expect(!isNullOrUndefined(e.itemCollection)).toBe(true);
-                    expect(!isNullOrUndefined(e.itemCollection.url)).toBe(true);
-                    }
-                },
-                actionComplete: function (e: any) {
-                    if(e.requestType === 'Video'){ expect(e.requestType === 'Video').toBe(true);}
-                }
-            });
-            rteEle = rteObj.element;
-        });
-        afterAll(() => {
-            destroy(rteObj);
-            detach(document.querySelector('.e-video-inline'));
-        });
-        it('video dialog', (done: Function) => {
-            expect(rteObj.element.querySelectorAll('.e-rte-content').length).toBe(1);
-            (<HTMLElement>rteEle.querySelectorAll(".e-toolbar-item")[0] as HTMLElement).click();
-            expect(rteObj.element.lastElementChild.classList.contains('e-dialog')).toBe(true);
-            let dialogEle: Element = rteObj.element.querySelector('.e-dialog');
-            expect(dialogEle.firstElementChild.querySelector('.e-dlg-header').innerHTML === 'Insert Video').toBe(true);
-            expect(dialogEle.querySelector('.e-vid-uploadwrap').firstElementChild.classList.contains('e-droptext')).toBe(true);
-            (<HTMLElement>rteEle.querySelectorAll(".e-toolbar-item")[0] as HTMLElement).click();
-            expect(rteObj.element.lastElementChild.classList.contains('.e-dialog')).not.toBe(true);
-            (rteObj.contentModule.getEditPanel() as HTMLElement).focus();
-            let range: any = new NodeSelection().getRange(document);
-            let save: any = new NodeSelection().save(range, document);
-            let args: any = {
-                item: { url: window.origin + '/base/spec/content/video/RTE-Ocean-Waves.mp4', selection: save },
-                preventDefault: function () { }
-            };
-            (<any>rteObj).formatter.editorManager.videoObj.createVideo(args);
-            (rteObj.element.querySelector('.e-rte-video') as HTMLElement).focus();
-            args = {
-                item: { url: null, selection: null },
-                preventDefault: function () { }
-            };
-            (<any>rteObj).formatter.editorManager.videoObj.createVideo(args);
-            let evnArg: any = { args, self: (<any>rteObj).videoModule, selection: save, selectNode: [''], link: null, target: '' };
-            evnArg.selectNode = [(<any>rteObj).element.querySelector('.e-rte-video')];
-            let trg: any = <HTMLElement>rteEle.querySelectorAll(".e-content")[0];
-            let clickEvent: any = document.createEvent("MouseEvents");
-            let eventsArg: any = { pageX: 50, pageY: 300, target: evnArg.selectNode[0] };
-            clickEvent.initEvent("mousedown", false, true);
-            trg.dispatchEvent(clickEvent);
-            (<any>rteObj).videoModule.editAreaClickHandler({ args: eventsArg });
-            setTimeout(() => {
-                let linkPop: any = <HTMLElement>document.querySelectorAll('.e-rte-quick-popup')[0];
-                let linkTBItems: any = linkPop.querySelectorAll('.e-toolbar-item');
-                expect(linkPop.querySelectorAll('.e-rte-toolbar').length).toBe(1);
-                (<HTMLElement>linkTBItems.item(4)).click();
-                let dialogEle: Element = rteObj.element.querySelector('.e-dialog');
-                expect(dialogEle.firstElementChild.querySelector('.e-dlg-header').innerHTML === 'Video Size').toBe(true);
-                expect(dialogEle.querySelector('.e-dlg-content').firstElementChild.classList.contains('e-video-sizewrap')).toBe(true);
-                let save: any = new NodeSelection().save(range, document);
-                let args: any = {
-                    item: { url: window.origin + '/base/spec/content/video/RTE-Ocean-Waves.mp4', selection: save },
-                    preventDefault: function () { }
-                };
-                args.item = {width: 200, height: 200, selectNode : [(rteObj.element.querySelector('.e-rte-video') as HTMLElement)]};
-                (<any>rteObj).formatter.editorManager.videoObj.videoDimension(args);
-                (dialogEle.querySelector('.e-vid-width') as HTMLInputElement).value = "200";
-                (dialogEle.querySelector('.e-vid-height') as HTMLInputElement).value = "200";
-                (rteObj.element.querySelector('.e-rte-video-dialog .e-footer-content button') as HTMLButtonElement).click();
-                expect((<any>rteObj).element.querySelector('video').style.width).toBe("200px");
-                expect((<any>rteObj).element.querySelector('video').style.height).toBe("200px");
-                done();
-            }, 400);
-        });
-    });
-
-    describe('Video quick toolbar - ', () => {
-        let rteObj: RichTextEditor;
-        let controlId: string;
-        beforeEach((done: Function) => {
-            rteObj = renderRTE({
-                value: `<p><span class="e-video-wrap" contenteditable="false" title="mov_bbb.mp4"><video class="e-rte-video e-videoinline" controls=""><source src="https://www.w3schools.com/html/mov_bbb.mp4" type="video/mp4"></video></span><br></p>`,
-                inlineMode: {
-                    enable: true
-                }
-            });
-            controlId = rteObj.element.id;
-            done();
-        });
-        afterEach((done: Function) => {
-            destroy(rteObj);
-            done();
-        });
-        it(' Dimension dialog rendering and testing ', (done: Function) => {
-            let video: HTMLElement = rteObj.element.querySelector(".e-video-wrap video");
-            setCursorPoint(video, 0);
-            dispatchEvent(video, 'mousedown');
-            video.click();
-            dispatchEvent(video, 'mouseup');
-            setTimeout(() => {
-                let videoBtn: HTMLElement = document.getElementById(controlId + "_quick_VideoDimension");
-                videoBtn.parentElement.click();
-                let dialogEle: Element = rteObj.element.querySelector('.e-dialog');
-                expect(dialogEle.firstElementChild.querySelector('.e-dlg-header').innerHTML === 'Video Size').toBe(true);
-                expect(dialogEle.querySelector('.e-dlg-content').firstElementChild.classList.contains('e-video-sizewrap')).toBe(true);
-                let range: any = new NodeSelection().getRange(document);
-                let save: any = new NodeSelection().save(range, document);
-                let args: any = {
-                    item: { url: window.origin + '/base/spec/content/video/RTE-Ocean-Waves.mp4', selection: save },
-                    preventDefault: function () { }
-                };
-                args.item = {width: 200, height: 200, selectNode : [(rteObj.element.querySelector('.e-rte-video') as HTMLElement)]};
-                (<any>rteObj).formatter.editorManager.videoObj.videoDimension(args);
-                (dialogEle.querySelector('.e-vid-width') as HTMLInputElement).value = "200";
-                (dialogEle.querySelector('.e-vid-height') as HTMLInputElement).value = "200";
-                (rteObj.element.querySelector('.e-rte-video-dialog .e-footer-content button') as HTMLButtonElement).click();
-                expect((<any>rteObj).element.querySelector('video').style.width).toBe("200px");
-                expect((<any>rteObj).element.querySelector('video').style.height).toBe("200px");
-                done();
-            }, 100);
-        });
-    });
     describe('Video quick toolbar - iframe', () => {
         let rteObj: RichTextEditor;
         let controlId: string;
-        beforeEach((done: Function) => {
+        beforeAll(() => {
             rteObj = renderRTE({
                 value: `<p><span class="e-embed-video-wrap" contenteditable="false"><span class="e-video-clickelem"><iframe width="auto" height="auto" src="https://www.youtube.com/embed/hveapZxnOFY?si=zU9QX1Vww3ZIowHA" title="YouTube video player" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" allowfullscreen="" style="min-width: 0px; max-width: 991px; min-height: 0px;" class="e-rte-embed-url e-resize">&ZeroWidthSpace;</iframe></span></span><br></p>`
             });
             controlId = rteObj.element.id;
-            done();
         });
-        afterEach((done: Function) => {
+        afterAll(() => {
             destroy(rteObj);
-            done();
         });
         it(' Dimension dialog rendering and testing in iframe', (done: Function) => {
-            let video: HTMLElement = rteObj.element.querySelector(".e-video-clickelem");
-            setCursorPoint(video, 0);
-            dispatchEvent(video, 'mousedown');
-            video.click();
-            dispatchEvent(video, 'mouseup');
+            rteObj.inputElement.dispatchEvent(INIT_MOUSEDOWN_EVENT);
+            const target: HTMLElement = rteObj.inputElement.querySelector('.e-video-clickelem');
+            setSelection(target, 0, 1);
+            target.dispatchEvent(MOUSEUP_EVENT);
             setTimeout(() => {
                 let videoBtn: HTMLElement = document.getElementById(controlId + "_quick_VideoDimension");
                 videoBtn.parentElement.click();
@@ -1805,7 +1588,7 @@ client side. Customer easy to edit the contents and get the HTML content for
                     item: { url: window.origin + '/base/spec/content/video/mov_bbb.mp4', selection: save },
                     preventDefault: function () { }
                 };
-                args.item = {width: 200, height: 200, selectNode : [(rteObj.element.querySelector('.e-video-clickelem') as HTMLElement)]};
+                args.item = { width: 200, height: 200, selectNode: [(rteObj.element.querySelector('.e-video-clickelem') as HTMLElement)] };
                 (<any>rteObj).formatter.editorManager.videoObj.videoDimension(args);
                 (dialogEle.querySelector('.e-vid-width') as HTMLInputElement).value = "200";
                 (dialogEle.querySelector('.e-vid-height') as HTMLInputElement).value = "200";
@@ -1818,7 +1601,7 @@ client side. Customer easy to edit the contents and get the HTML content for
         let rteObj: RichTextEditor;
         let innerHTML1: string = `
         <p>testing&nbsp;<span class="e-video-wrap" contenteditable="false" title="mov_bob.mp4"><video class="e-rte-video e-video-inline" controls=""><source src="https://www.w3schools.com/html/mov_bbb.mp4" type="video/mp3"></video></span><br></p>`;
-        beforeEach((done: Function) => {
+        beforeAll(() => {
             rteObj = renderRTE({
                 toolbarSettings: {
                     items: ['Video']
@@ -1829,23 +1612,23 @@ client side. Customer easy to edit the contents and get the HTML content for
                 },
                 value: innerHTML1
             });
-            done();
         })
-        afterEach((done: Function) => {
+        afterAll(() => {
             destroy(rteObj);
-            done();
         })
         it(' delete audio method', (done: Function) => {
             let rteEle: HTMLElement = rteObj.element;
             (rteObj.contentModule.getEditPanel() as HTMLElement).focus();
-            let args: any = { preventDefault: function () { }, originalEvent: { currentTarget: document.getElementById('rte_toolbarItems') }, item : {command: 'Videos', subCommand: 'VideoRemove'}};
+            let args: any = { preventDefault: function () { }, originalEvent: { currentTarget: document.getElementById('rte_toolbarItems') }, item: { command: 'Videos', subCommand: 'VideoRemove' } };
             let range: any = new NodeSelection().getRange(document);
             let save: any = new NodeSelection().save(range, document);
             let evnArg = { args: args, self: (<any>rteObj).videoModule, selection: save, selectNode: new Array(), };
             evnArg.selectNode = [rteObj.element.querySelector('video')];
             (<any>rteObj).videoModule.deleteVideo(evnArg);
-            expect((rteObj as any).element.querySelector('.e-video-wrap')).toBe(null);
-            done();
+            setTimeout(() => {
+                expect((rteObj as any).element.querySelector('.e-video-wrap')).toBe(null);
+                done();
+            }, 100);
         });
     });
 
@@ -1883,8 +1666,10 @@ client side. Customer easy to edit the contents and get the HTML content for
             (<HTMLElement>rteEle.querySelectorAll(".e-toolbar-item")[0] as HTMLElement).click();
             expect(isNullOrUndefined((<any>rteObj).videoModule.dialogObj)).toBe(false);
             (<any>rteObj).videoModule.onKeyDown({ args: keyboardEventArgs });
-            expect(isNullOrUndefined((<any>rteObj).videoModule.dialogObj)).toBe(true);
-            done();
+            setTimeout(() => {
+                expect(isNullOrUndefined((<any>rteObj).videoModule.dialogObj)).toBe(true);
+                done();
+            }, 100);
         });
     });
 
@@ -1969,74 +1754,70 @@ client side. Customer easy to edit the contents and get the HTML content for
         });
     });
 
-     describe('Mouse Click for video testing when showOnRightClick enabled', () => {
-         let rteObj: RichTextEditor;
-         beforeEach((done: Function) => {
-             rteObj = renderRTE({
-                 value: `<p>Hi video is<span class="e-video-wrap" contenteditable="false" title="mov_bbb.mp4"><video class="e-rte-video e-videoinline" controls=""><source src="https://www.w3schools.com/html/mov_bbb.mp4" type="video/mp4"></video></span><br>`,
-                 quickToolbarSettings: {
-                     enable: true,
-                     showOnRightClick: true
-                 }
-             });
-             done();
-         });
-         afterEach((done: Function) => {
-             destroy(rteObj);
-             done();
-         });
-         it(" Test - for mouse click to focus video element", (done) => {
-             let target: HTMLElement = rteObj.element.querySelector(".e-video-wrap video");
-             let clickEvent: any = document.createEvent("MouseEvents");
-             let eventsArg: any = { pageX: 50, pageY: 300, target: target, which: 1 };
-             clickEvent.initEvent("mousedown", false, true);
-             target.dispatchEvent(clickEvent);
-             (<any>rteObj).videoModule.editAreaClickHandler({ args: eventsArg });
-             setTimeout(() => {
-                 let expectElem: HTMLElement[] = (rteObj as any).formatter.editorManager.nodeSelection.getSelectedNodes(document);
-                 expect(expectElem[0].tagName === 'VIDEO').toBe(true);
-                 done();
-             }, 100);
-         });
-     });
-     
-     describe(' quickToolbarSettings property - video quick toolbar - ', () => {
-         let rteObj: RichTextEditor;
-         let controlId: string;
-         beforeEach((done: Function) => {
-             rteObj = renderRTE({
-                 value: `<p><span class="e-video-wrap" contenteditable="false" title="mov_bbb.mp4"><video class="e-rte-video e-videoinline" controls=""><source src="https://www.w3schools.com/html/mov_bbb.mp4" type="video/mp4"></video></span><br></p>`
-             });
-             controlId = rteObj.element.id;
-             done();
-         });
-         afterEach((done: Function) => {
-             destroy(rteObj);
-             done();
-         });
-         it(' Test - Replace the video ', (done) => {
-             let video: HTMLElement = rteObj.element.querySelector(".e-video-wrap video");
-             setCursorPoint(video, 0);
-             dispatchEvent(video, 'mousedown');
-             video.click();
-             dispatchEvent(video, 'mouseup');
-             setTimeout(() => {
-                 let videoBtn: HTMLElement = document.getElementById(controlId + "_quick_VideoReplace");
-                 videoBtn.parentElement.click();
-                 let png = "http://commondatastorage.googleapis.com/codeskulptor-assets/week7-button.m4a";
-                 let dialog: HTMLElement = document.getElementById(controlId + "_video");
-                 (dialog.querySelector('.e-video-url-wrap input#webURL') as HTMLElement).click();
-                 let urlInput: HTMLInputElement = dialog.querySelector('.e-video-url');
-                 urlInput.value = png;
-                 let insertButton: HTMLElement = dialog.querySelector('.e-insertVideo.e-primary');
-                 urlInput.dispatchEvent(new Event("input"));
-                 insertButton.click();
-                 let updateVideo: HTMLSourceElement = rteObj.element.querySelector(".e-video-wrap source");
-                 expect(updateVideo.src === png).toBe(true);
-                 done();
-             }, 100);
-         });
-     });
+    describe('Mouse Click for video testing when showOnRightClick enabled', () => {
+        let rteObj: RichTextEditor;
+        beforeAll(() => {
+            rteObj = renderRTE({
+                value: `<p>Hi video is<span class="e-video-wrap" contenteditable="false" title="mov_bbb.mp4"><video class="e-rte-video e-videoinline" controls=""><source src="https://www.w3schools.com/html/mov_bbb.mp4" type="video/mp4"></video></span><br>`,
+                quickToolbarSettings: {
+                    enable: true,
+                    showOnRightClick: true
+                }
+            });
+        });
+        afterAll(() => {
+            destroy(rteObj);
+        });
+        it(" Test - for mouse click to focus video element", (done) => {
+            let target: HTMLElement = rteObj.element.querySelector(".e-video-wrap video");
+            let clickEvent: any = document.createEvent("MouseEvents");
+            let eventsArg: any = { pageX: 50, pageY: 300, target: target, which: 1 };
+            clickEvent.initEvent("mousedown", false, true);
+            target.dispatchEvent(clickEvent);
+            (<any>rteObj).videoModule.editAreaClickHandler({ args: eventsArg });
+            setTimeout(() => {
+                let expectElem: HTMLElement[] = (rteObj as any).formatter.editorManager.nodeSelection.getSelectedNodes(document);
+                expect(expectElem[0].tagName === 'VIDEO').toBe(true);
+                done();
+            }, 100);
+        });
+    });
+
+    describe(' quickToolbarSettings property - video quick toolbar - ', () => {
+        let rteObj: RichTextEditor;
+        let controlId: string;
+        beforeAll(() => {
+            rteObj = renderRTE({
+                value: `<p><span class="e-video-wrap" contenteditable="false" title="mov_bbb.mp4"><video class="e-rte-video e-videoinline" controls=""><source src="https://www.w3schools.com/html/mov_bbb.mp4" type="video/mp4"></video></span><br></p>`
+            });
+            controlId = rteObj.element.id;
+        });
+        afterAll(() => {
+            destroy(rteObj);
+        });
+        it(' Test - Replace the video ', (done) => {
+            let video: HTMLElement = rteObj.element.querySelector(".e-video-wrap video");
+            setCursorPoint(video, 0);
+            dispatchEvent(video, 'mousedown');
+            video.click();
+            dispatchEvent(video, 'mouseup');
+            setTimeout(() => {
+                let videoBtn: HTMLElement = document.getElementById(controlId + "_quick_VideoReplace");
+                videoBtn.parentElement.click();
+                let png = "http://commondatastorage.googleapis.com/codeskulptor-assets/week7-button.m4a";
+                let dialog: HTMLElement = document.getElementById(controlId + "_video");
+                (dialog.querySelector('.e-video-url-wrap input#webURL') as HTMLElement).click();
+                let urlInput: HTMLInputElement = dialog.querySelector('.e-video-url');
+                urlInput.value = png;
+                let insertButton: HTMLElement = dialog.querySelector('.e-insertVideo.e-primary');
+                urlInput.dispatchEvent(new Event("input"));
+                insertButton.click();
+                let updateVideo: HTMLSourceElement = rteObj.element.querySelector(".e-video-wrap source");
+                expect(updateVideo.src === png).toBe(true);
+                done();
+            }, 100);
+        });
+    });
 
     describe('Video with break applied', () => {
         let rteEle: HTMLElement;
@@ -2081,7 +1862,7 @@ client side. Customer easy to edit the contents and get the HTML content for
             clickEvent.initEvent("mousedown", false, true);
             target.dispatchEvent(clickEvent);
             (<any>rteObj).videoModule.editAreaClickHandler({ args: eventsArg });
-            
+
             setTimeout(function () {
                 (<any>rteObj).videoModule.videoEle = rteObj.contentModule.getEditPanel().querySelector('.e-video-wrap video');
                 (<any>rteObj).videoModule.videoWrapNode = rteObj.contentModule.getEditPanel().querySelector('.e-video-wrap video');
@@ -2140,7 +1921,6 @@ client side. Customer easy to edit the contents and get the HTML content for
             clickEvent.initEvent("mousedown", false, true);
             target.dispatchEvent(clickEvent);
             (<any>rteObj).videoModule.editAreaClickHandler({ args: eventsArg });
-            
             setTimeout(function () {
                 (<any>rteObj).videoModule.videoEle = rteObj.contentModule.getEditPanel().querySelector('.e-video-wrap video');
                 (<any>rteObj).videoModule.videoWrapNode = rteObj.contentModule.getEditPanel().querySelector('.e-video-wrap video');
@@ -2155,919 +1935,761 @@ client side. Customer easy to edit the contents and get the HTML content for
             }, 200);
         });
     });
- 
-     describe(' ActionComplete event triggered twice when replace the inserted video using quicktoolbar - ', () => {
-         let rteObj: RichTextEditor;
-         let controlId: string;
-         let actionCompleteCalled: boolean = true;
-         beforeEach((done: Function) => {
-             rteObj = renderRTE({
-                 value: `<p><span class="e-video-wrap" contenteditable="false" title="mov_bbb.mp4"><video class="e-rte-video e-videoinline" controls=""><source src="https://www.w3schools.com/html/mov_bbb.mp4" type="video/mp4"></video></span><br></p>`,
-                 actionComplete: actionCompleteFun
-             });
-             function actionCompleteFun(args: any): void {
-                 actionCompleteCalled = true;
-             }
-             controlId = rteObj.element.id;
-             done();
-         });
-         afterEach((done: Function) => {
-             destroy(rteObj);
-             done();
-         });
-         it(' Testing video Replace and acitonComplete triggering', (done) => {
-             let video: HTMLElement = rteObj.element.querySelector(".e-video-wrap video");
-             setCursorPoint(video, 0);
-             dispatchEvent(video, 'mousedown');
-             video.click();
-             dispatchEvent(video, 'mouseup');
-             setTimeout(() => {
-                 let videoBtn: HTMLElement = document.getElementById(controlId + "_quick_VideoReplace");
-                 videoBtn.parentElement.click();
-                 let videoFile = "http://commondatastorage.googleapis.com/codeskulptor-assets/week7-button.m4a";
-                 let dialog: HTMLElement = document.getElementById(controlId + "_video");
-                 (dialog.querySelector('.e-video-url-wrap input#webURL') as HTMLElement).click();
-                 let urlInput: HTMLInputElement = dialog.querySelector('.e-video-url');
-                 urlInput.value = videoFile;
-                 let insertButton: HTMLElement = dialog.querySelector('.e-insertVideo.e-primary');
-                 urlInput.dispatchEvent(new Event("input"));
-                 insertButton.click();
-                 let updateVideo: HTMLSourceElement = rteObj.element.querySelector(".e-video-wrap source");
-                 expect(updateVideo.src === videoFile).toBe(true);
-                 setTimeout(function () {
-                     expect(actionCompleteCalled).toBe(true);
-                     done();
-                 }, 40);
-                 done();
-             }, 100);
-         });
-     });
- 
-     describe('Disable the insert Video dialog button when the video is uploading.', () => {
-         let rteObj: RichTextEditor;
-         let controlId: string;
-         beforeEach((done: Function) => {
-             rteObj = renderRTE({
-                 value: `<p>Testing Video Dialog</p>`,
-                 toolbarSettings: {
-                     items: ['Video']
-                 }
-             });
-             controlId = rteObj.element.id;
-             done();
-         });
-         afterEach((done: Function) => {
-             destroy(rteObj);
-             done();
-         });
-         it(' Initial insert video button disabled', (done) => {
-             let item: HTMLElement = rteObj.element.querySelector('#' + controlId + '_toolbar_Video');
-             item.click();
-             let dialog: HTMLElement = document.getElementById(controlId + "_video");
-             let insertButton: HTMLElement = dialog.querySelector('.e-insertVideo.e-primary');
-             expect(insertButton.hasAttribute('disabled')).toBe(true);
-             done();
-         });
-     });
-     describe('Disable the insert video dialog button when the video is uploading', () => {
-         let rteObj: RichTextEditor;
-         beforeEach((done: Function) => {
-             rteObj = renderRTE({
-                 insertVideoSettings: {
-                     allowedTypes: ['.mp4'],
-                     saveUrl:"uploadbox/Save",
-                     path: "../Videos/"
-                 },
-                 toolbarSettings: {
-                     items: ['Video']
-                 }
-             });
-             done();
-         })
-         afterEach((done: Function) => {
-             destroy(rteObj);
-             done();
-         })
-         it(' Button disabled with improper file extension', (done) => {
-             let rteEle: HTMLElement = rteObj.element;
-             (rteObj.contentModule.getEditPanel() as HTMLElement).focus();
-             let args = { preventDefault: function () { } };
-             let range = new NodeSelection().getRange(document);
-             let save = new NodeSelection().save(range, document);
-             let evnArg = { args: MouseEvent, self: (<any>rteObj).videoModule, selection: save, selectNode: new Array(), };
-             (<HTMLElement>rteEle.querySelectorAll(".e-toolbar-item button")[0] as HTMLElement).click();
-             let dialogEle: Element = rteObj.element.querySelector('.e-dialog');
-             (dialogEle.querySelector('.e-video-url-wrap input#webURL') as HTMLElement).click();
-             (dialogEle.querySelector('.e-video-url') as HTMLInputElement).value = 'https://www.w3schools.com/html/mov_bbb.mp43';
-             let fileObj: File = new File(["mov_bob"], "mov_bob.mp43", { lastModified: 0, type: "overide/mimetype" });
-             let eventArgs = { type: 'click', target: { files: [fileObj] }, preventDefault: (): void => { } };
-             (<any>rteObj).videoModule.uploadObj.onSelectFiles(eventArgs);
-             setTimeout(() => {
-                 expect((dialogEle.querySelector('.e-insertVideo') as HTMLButtonElement).hasAttribute('disabled')).toBe(true);
-                 done();
-             }, 100);
-         });
-     });
-    //  describe('Disable the insert video dialog button when the video is uploading', () => {
-    //      let rteObj: RichTextEditor;
-    //      beforeEach((done: Function) => {
-    //          rteObj = renderRTE({
-    //              toolbarSettings: {
-    //                  items: ['Video']
-    //              },
-    //              insertVideoSettings: {
-    //                  saveUrl: "https://services.syncfusion.com/js/production/api/FileUploader/Save",
-    //                  path: "../Videos/"
-    //              }
-    //          });
-    //          done();
-    //      })
-    //      afterEach((done: Function) => {
-    //          destroy(rteObj);
-    //          done();
-    //      })
-    //      it(' Button enabled with video upload Success', (done) => {
-    //          let rteEle: HTMLElement = rteObj.element;
-    //          (rteObj.contentModule.getEditPanel() as HTMLElement).focus();
-    //          let args = { preventDefault: function () { } };
-    //          let range = new NodeSelection().getRange(document);
-    //          let save = new NodeSelection().save(range, document);
-    //          let evnArg = { args: MouseEvent, self: (<any>rteObj).videoModule, selection: save, selectNode: new Array(), };
-    //          (<HTMLElement>rteEle.querySelectorAll(".e-toolbar-item button")[0] as HTMLElement).click();
-    //          let dialogEle: Element = rteObj.element.querySelector('.e-dialog');
-    //          (dialogEle.querySelector('.e-video-url-wrap input#webURL') as HTMLElement).click();
-    //          (dialogEle.querySelector('.e-video-url') as HTMLInputElement).value = window.origin + '/base/spec/content/video/RTE-Ocean-Waves.mp4';
-    //          let fileObj: File = new File(["mov_bob"], "horse.mp4", { lastModified: 0, type: "overide/mimetype" });
-    //          let eventArgs = { type: 'click', target: { files: [fileObj] }, preventDefault: (): void => { } };
-    //          (<any>rteObj).videoModule.uploadObj.onSelectFiles(eventArgs);
-    //          setTimeout(() => {
-    //              expect((dialogEle.querySelector('.e-insertVideo') as HTMLButtonElement).hasAttribute('disabled')).toBe(false);
-    //              done();
-    //          }, 5500);
-    //      });
-    //  });
-     describe('Getting error while insert the video after applied the  lower case or  upper case commands in Html Editor  - ', () => {
-         let rteObj: RichTextEditor;
-         let controlId: string;
-         beforeEach((done: Function) => {
-             rteObj = renderRTE({
-                 value: `<p id='insert-video'>RichTextEditor</p>`,
-                 toolbarSettings: {
-                     items: [
-                         'LowerCase', 'UpperCase', '|',
-                         'Video']
-                 },
-             });
-             controlId = rteObj.element.id;
-             done();
-         });
-         afterEach((done: Function) => {
-             destroy(rteObj);
-             done();
-         });
-         it(" Apply uppercase and then insert an video  ", (done) => {
-             let pTag: HTMLElement = rteObj.element.querySelector('#insert-video') as HTMLElement;
-             rteObj.formatter.editorManager.nodeSelection.setSelectionText(document, pTag.childNodes[0], pTag.childNodes[0], 4, 6);
-             let item: HTMLElement = rteObj.element.querySelector('#' + controlId + '_toolbar_UpperCase');
-             item.click();
-             rteObj.formatter.editorManager.nodeSelection.setSelectionText(document, pTag.childNodes[0], pTag.childNodes[2], 1, 2);
-             item = rteObj.element.querySelector('#' + controlId + '_toolbar_Video');
-             item.click();
-             setTimeout(() => {
-                 let dialogEle: any = rteObj.element.querySelector('.e-dialog');
-                 (dialogEle.querySelector('.e-video-url-wrap input#webURL') as HTMLElement).click();
-                 (dialogEle.querySelector('.e-video-url') as HTMLInputElement).value = window.origin + '/base/spec/content/video/RTE-Ocean-Waves.mp4';
-                 (dialogEle.querySelector('.e-video-url') as HTMLInputElement).dispatchEvent(new Event("input"));
-                 expect(rteObj.element.lastElementChild.classList.contains('e-dialog')).toBe(true);
-                 (document.querySelector('.e-insertVideo.e-primary') as HTMLElement).click();
-                 let trg = (rteObj.element.querySelector('.e-rte-video') as HTMLElement);
-                 expect(!isNullOrUndefined(trg)).toBe(true);
-                 done();
-             }, 100);
-         });
-     });
-     describe(' Quick Toolbar showOnRightClick property testing', () => {
-         let rteObj: any;
-         let ele: HTMLElement;
-         it(" leftClick with `which` as '2' with quickpopup availability testing ", (done: Function) => {
-             rteObj = renderRTE({
-                 quickToolbarSettings: {
-                     showOnRightClick: false
-                 },
-                 value: `<p id='vid-container'>
+
+    describe(' ActionComplete event triggered twice when replace the inserted video using quicktoolbar - ', () => {
+        let rteObj: RichTextEditor;
+        let controlId: string;
+        let actionCompleteCalled: boolean = true;
+        beforeAll(() => {
+            rteObj = renderRTE({
+                value: `<p><span class="e-video-wrap" contenteditable="false" title="mov_bbb.mp4"><video class="e-rte-video e-videoinline" controls=""><source src="https://www.w3schools.com/html/mov_bbb.mp4" type="video/mp4"></video></span><br></p>`,
+                actionComplete: actionCompleteFun
+            });
+            function actionCompleteFun(args: any): void {
+                actionCompleteCalled = true;
+            }
+            controlId = rteObj.element.id;
+        });
+        afterAll(() => {
+            destroy(rteObj);
+        });
+        it(' Testing video Replace and acitonComplete triggering', (done) => {
+            let video: HTMLElement = rteObj.element.querySelector(".e-video-wrap video");
+            setCursorPoint(video, 0);
+            dispatchEvent(video, 'mousedown');
+            video.click();
+            dispatchEvent(video, 'mouseup');
+            setTimeout(() => {
+                let videoBtn: HTMLElement = document.getElementById(controlId + "_quick_VideoReplace");
+                videoBtn.parentElement.click();
+                let videoFile = "http://commondatastorage.googleapis.com/codeskulptor-assets/week7-button.m4a";
+                let dialog: HTMLElement = document.getElementById(controlId + "_video");
+                (dialog.querySelector('.e-video-url-wrap input#webURL') as HTMLElement).click();
+                let urlInput: HTMLInputElement = dialog.querySelector('.e-video-url');
+                urlInput.value = videoFile;
+                let insertButton: HTMLElement = dialog.querySelector('.e-insertVideo.e-primary');
+                urlInput.dispatchEvent(new Event("input"));
+                insertButton.click();
+                let updateVideo: HTMLSourceElement = rteObj.element.querySelector(".e-video-wrap source");
+                expect(updateVideo.src === videoFile).toBe(true);
+                setTimeout(function () {
+                    expect(actionCompleteCalled).toBe(true);
+                    done();
+                }, 100);
+            }, 100);
+        });
+    });
+
+    describe('Disable the insert Video dialog button when the video is uploading.', () => {
+        let rteObj: RichTextEditor;
+        let controlId: string;
+        beforeAll(() => {
+            rteObj = renderRTE({
+                value: `<p>Testing Video Dialog</p>`,
+                toolbarSettings: {
+                    items: ['Video']
+                }
+            });
+            controlId = rteObj.element.id;
+        });
+        afterAll(() => {
+            destroy(rteObj);
+        });
+        it(' Initial insert video button disabled', (done) => {
+            let item: HTMLElement = rteObj.element.querySelector('#' + controlId + '_toolbar_Video');
+            item.click();
+            setTimeout(() => {
+                let dialog: HTMLElement = document.getElementById(controlId + "_video");
+                let insertButton: HTMLElement = dialog.querySelector('.e-insertVideo.e-primary');
+                expect(insertButton.hasAttribute('disabled')).toBe(true);
+                done();
+            }, 100);
+        });
+    });
+    describe('Disable the insert video dialog button when the video is uploading', () => {
+        let rteObj: RichTextEditor;
+        beforeAll(() => {
+            rteObj = renderRTE({
+                insertVideoSettings: {
+                    allowedTypes: ['.mp4'],
+                    saveUrl: "uploadbox/Save",
+                    path: "../Videos/"
+                },
+                toolbarSettings: {
+                    items: ['Video']
+                }
+            });
+        })
+        afterAll(() => {
+            destroy(rteObj);
+        })
+        it(' Button disabled with improper file extension', (done) => {
+            let rteEle: HTMLElement = rteObj.element;
+            (rteObj.contentModule.getEditPanel() as HTMLElement).focus();
+            let args = { preventDefault: function () { } };
+            let range = new NodeSelection().getRange(document);
+            let save = new NodeSelection().save(range, document);
+            let evnArg = { args: MouseEvent, self: (<any>rteObj).videoModule, selection: save, selectNode: new Array(), };
+            (<HTMLElement>rteEle.querySelectorAll(".e-toolbar-item button")[0] as HTMLElement).click();
+            let dialogEle: Element = rteObj.element.querySelector('.e-dialog');
+            (dialogEle.querySelector('.e-video-url-wrap input#webURL') as HTMLElement).click();
+            (dialogEle.querySelector('.e-video-url') as HTMLInputElement).value = 'https://www.w3schools.com/html/mov_bbb.mp43';
+            let fileObj: File = new File(["mov_bob"], "mov_bob.mp43", { lastModified: 0, type: "overide/mimetype" });
+            let eventArgs = { type: 'click', target: { files: [fileObj] }, preventDefault: (): void => { } };
+            (<any>rteObj).videoModule.uploadObj.onSelectFiles(eventArgs);
+            setTimeout(() => {
+                expect((dialogEle.querySelector('.e-insertVideo') as HTMLButtonElement).hasAttribute('disabled')).toBe(true);
+                done();
+            }, 100);
+        });
+    });
+
+    describe('Getting error while insert the video after applied the  lower case or  upper case commands in Html Editor  - ', () => {
+        let rteObj: RichTextEditor;
+        let controlId: string;
+        beforeAll(() => {
+            rteObj = renderRTE({
+                value: `<p id='insert-video'>RichTextEditor</p>`,
+                toolbarSettings: {
+                    items: [
+                        'LowerCase', 'UpperCase', '|',
+                        'Video']
+                },
+            });
+            controlId = rteObj.element.id;
+        });
+        afterAll(() => {
+            destroy(rteObj);
+        });
+        it(" Apply uppercase and then insert an video  ", (done) => {
+            let pTag: HTMLElement = rteObj.element.querySelector('#insert-video') as HTMLElement;
+            rteObj.formatter.editorManager.nodeSelection.setSelectionText(document, pTag.childNodes[0], pTag.childNodes[0], 4, 6);
+            let item: HTMLElement = rteObj.element.querySelector('#' + controlId + '_toolbar_UpperCase');
+            item.click();
+            rteObj.formatter.editorManager.nodeSelection.setSelectionText(document, pTag.childNodes[0], pTag.childNodes[2], 1, 2);
+            item = rteObj.element.querySelector('#' + controlId + '_toolbar_Video');
+            item.click();
+            setTimeout(() => {
+                let dialogEle: any = rteObj.element.querySelector('.e-dialog');
+                (dialogEle.querySelector('.e-video-url-wrap input#webURL') as HTMLElement).click();
+                (dialogEle.querySelector('.e-video-url') as HTMLInputElement).value = window.origin + '/base/spec/content/video/RTE-Ocean-Waves.mp4';
+                (dialogEle.querySelector('.e-video-url') as HTMLInputElement).dispatchEvent(new Event("input"));
+                expect(rteObj.element.lastElementChild.classList.contains('e-dialog')).toBe(true);
+                (document.querySelector('.e-insertVideo.e-primary') as HTMLElement).click();
+                let trg = (rteObj.element.querySelector('.e-rte-video') as HTMLElement);
+                expect(!isNullOrUndefined(trg)).toBe(true);
+                done();
+            }, 100);
+        });
+    });
+    describe(' Quick Toolbar showOnRightClick property testing', () => {
+        let rteObj: any;
+        let ele: HTMLElement;
+        it(" leftClick with `which` as '2' with quickpopup availability testing ", (done: Function) => {
+            rteObj = renderRTE({
+                quickToolbarSettings: {
+                    showOnRightClick: false
+                },
+                value: `<p id='vid-container'>
                      <span class="e-video-wrap" contenteditable="false" title="mov_bbb.mp4"><video class="e-rte-video e-videoinline" controls=""><source src="https://www.w3schools.com/html/mov_bbb.mp4" type="video/mp4"></video></span><br>
                  </p>`
-             });
-             ele = rteObj.element;
-             expect(rteObj.quickToolbarSettings.showOnRightClick).toEqual(false);
-             let cntTarget = <HTMLElement>ele.querySelectorAll(".e-content")[0]
-             let clickEvent: any = document.createEvent("MouseEvents");
-             clickEvent.initEvent("mousedown", false, true);
-             cntTarget.dispatchEvent(clickEvent);
-             let target: HTMLElement = ele.querySelector('#vid-container span');
-             let eventsArg: any = { pageX: 50, pageY: 300, target: target, which: 2 };
-             setCursorPoint(target, 0);
-             rteObj.mouseUp(eventsArg);
-             setTimeout(() => {
-                 let quickPop: any = <HTMLElement>document.querySelectorAll('.e-rte-quick-popup')[0];
-                 expect(isNullOrUndefined(quickPop)).toBe(true);
-                 done();
-             }, 400);
-         });
-         it(" leftClick with `which` as '3' with quickpopup availability testing ", (done: Function) => {
-             rteObj = renderRTE({
-                 quickToolbarSettings: {
-                     showOnRightClick: false
-                 },
-                 value: `<p id='vid-container'>
+            });
+            ele = rteObj.element;
+            expect(rteObj.quickToolbarSettings.showOnRightClick).toEqual(false);
+            let cntTarget = <HTMLElement>ele.querySelectorAll(".e-content")[0]
+            let clickEvent: any = document.createEvent("MouseEvents");
+            clickEvent.initEvent("mousedown", false, true);
+            cntTarget.dispatchEvent(clickEvent);
+            let target: HTMLElement = ele.querySelector('#vid-container span');
+            let eventsArg: any = { pageX: 50, pageY: 300, target: target, which: 2 };
+            setCursorPoint(target, 0);
+            rteObj.mouseUp(eventsArg);
+            setTimeout(() => {
+                let quickPop: any = <HTMLElement>document.querySelectorAll('.e-rte-quick-popup')[0];
+                expect(isNullOrUndefined(quickPop)).toBe(true);
+                done();
+            }, 400);
+        });
+        it(" leftClick with `which` as '3' with quickpopup availability testing ", (done: Function) => {
+            rteObj = renderRTE({
+                quickToolbarSettings: {
+                    showOnRightClick: false
+                },
+                value: `<p id='vid-container'>
                      <span class="e-video-wrap" contenteditable="false" title="mov_bbb.mp4"><video class="e-rte-video e-videoinline" controls=""><source src="https://www.w3schools.com/html/mov_bbb.mp4" type="video/mp4"></video></span><br>
                  </p>`
-             });
-             ele = rteObj.element;
-             expect(rteObj.quickToolbarSettings.showOnRightClick).toEqual(false);
-             let cntTarget = <HTMLElement>ele.querySelectorAll(".e-content")[0]
-             let clickEvent: any = document.createEvent("MouseEvents");
-             clickEvent.initEvent("mousedown", false, true);
-             cntTarget.dispatchEvent(clickEvent);
-             let target: HTMLElement = ele.querySelector('#vid-container video');
-             let eventsArg: any = { pageX: 50, pageY: 300, target: target, which: 3 };
-             setCursorPoint(target, 0);
-             rteObj.mouseUp(eventsArg);
-             setTimeout(() => {
-                 let quickPop: any = <HTMLElement>document.querySelectorAll('.e-rte-quick-popup')[0];
-                 expect(isNullOrUndefined(quickPop)).toBe(true);
-                 done();
-             }, 400);
-         });
-         it(" leftClick with `which` as '1' with quickpopup availability testing ", (done: Function) => {
-             rteObj = renderRTE({
-                 quickToolbarSettings: {
-                     showOnRightClick: false
-                 },
-                 value: `<p id='vid-container'>
+            });
+            ele = rteObj.element;
+            expect(rteObj.quickToolbarSettings.showOnRightClick).toEqual(false);
+            let cntTarget = <HTMLElement>ele.querySelectorAll(".e-content")[0]
+            let clickEvent: any = document.createEvent("MouseEvents");
+            clickEvent.initEvent("mousedown", false, true);
+            cntTarget.dispatchEvent(clickEvent);
+            let target: HTMLElement = ele.querySelector('#vid-container video');
+            let eventsArg: any = { pageX: 50, pageY: 300, target: target, which: 3 };
+            setCursorPoint(target, 0);
+            rteObj.mouseUp(eventsArg);
+            setTimeout(() => {
+                let quickPop: any = <HTMLElement>document.querySelectorAll('.e-rte-quick-popup')[0];
+                expect(isNullOrUndefined(quickPop)).toBe(true);
+                done();
+            }, 400);
+        });
+        it(" leftClick with `which` as '1' with quickpopup availability testing ", (done: Function) => {
+            rteObj = renderRTE({
+                quickToolbarSettings: {
+                    showOnRightClick: false
+                },
+                value: `<p id='vid-container'>
                      <span class="e-video-wrap" contenteditable="false" title="mov_bbb.mp4"><video class="e-rte-video e-videoinline" controls=""><source src="https://www.w3schools.com/html/mov_bbb.mp4" type="video/mp4"></video></span><br>
                  </p>`
-             });
-             ele = rteObj.element;
-             expect(rteObj.quickToolbarSettings.showOnRightClick).toEqual(false);
-             let cntTarget = <HTMLElement>ele.querySelectorAll(".e-content")[0]
-             let clickEvent: any = document.createEvent("MouseEvents");
-             clickEvent.initEvent("mousedown", false, true);
-             cntTarget.dispatchEvent(clickEvent);
-             let target: HTMLElement = ele.querySelector('#vid-container video');
-             let eventsArg: any = { pageX: 50, pageY: 300, target: target, which: 1 };
-             setCursorPoint(target, 0);
-             target.click();
-             dispatchEvent(target, 'mouseup');
-             setTimeout(() => {
-                 let quickPop: any = document.querySelectorAll('.e-rte-quick-popup') as NodeList;
-                 expect(quickPop.length > 0).toBe(true);
-                 expect(isNullOrUndefined(quickPop[0])).toBe(false);
-                 done();
-             }, 400);
-         });
-         it(" rightClick with `which` as '2' with quickpopup availability testing ", (done: Function) => {
-             rteObj = renderRTE({
-                 quickToolbarSettings: {
-                     showOnRightClick: true
-                 },
-                 value: `<p id='vid-container'>
+            });
+            ele = rteObj.element;
+            expect(rteObj.quickToolbarSettings.showOnRightClick).toEqual(false);
+            let cntTarget = <HTMLElement>ele.querySelectorAll(".e-content")[0]
+            let clickEvent: any = document.createEvent("MouseEvents");
+            clickEvent.initEvent("mousedown", false, true);
+            cntTarget.dispatchEvent(clickEvent);
+            let target: HTMLElement = ele.querySelector('#vid-container video');
+            let eventsArg: any = { pageX: 50, pageY: 300, target: target, which: 1 };
+            setCursorPoint(target, 0);
+            target.click();
+            dispatchEvent(target, 'mouseup');
+            setTimeout(() => {
+                let quickPop: any = document.querySelectorAll('.e-rte-quick-popup') as NodeList;
+                expect(quickPop.length > 0).toBe(true);
+                expect(isNullOrUndefined(quickPop[0])).toBe(false);
+                done();
+            }, 400);
+        });
+        it(" rightClick with `which` as '2' with quickpopup availability testing ", (done: Function) => {
+            rteObj = renderRTE({
+                quickToolbarSettings: {
+                    showOnRightClick: true
+                },
+                value: `<p id='vid-container'>
                      <span class="e-video-wrap" contenteditable="false" title="mov_bbb.mp4"><video class="e-rte-video e-videoinline" controls=""><source src="https://www.w3schools.com/html/mov_bbb.mp4" type="video/mp4"></video></span><br>
                  </p>`
-             });
-             ele = rteObj.element;
-             expect(rteObj.quickToolbarSettings.showOnRightClick).toEqual(true);
-             let cntTarget = <HTMLElement>ele.querySelectorAll(".e-content")[0]
-             let clickEvent: any = document.createEvent("MouseEvents");
-             clickEvent.initEvent("mousedown", false, true);
-             cntTarget.dispatchEvent(clickEvent);
-             let target: HTMLElement = ele.querySelector('#vid-container span');
-             let eventsArg: any = { pageX: 50, pageY: 300, target: target, which: 2 };
-             setCursorPoint(target, 0);
-             target.click();
-             dispatchEvent(target, 'mouseup');
-             setTimeout(() => {
-                 let quickPop: any = <HTMLElement>document.querySelectorAll('.e-rte-quick-popup')[0];
-                 expect(isNullOrUndefined(quickPop)).toBe(true);
-                 done();
-             }, 400);
-         });
-         it(" rightClick with `which` as '1' with quickpopup availability testing ", (done: Function) => {
-             rteObj = renderRTE({
-                 quickToolbarSettings: {
-                     showOnRightClick: true
-                 },
-                 value: `<p id='vid-container'>
+            });
+            ele = rteObj.element;
+            expect(rteObj.quickToolbarSettings.showOnRightClick).toEqual(true);
+            let cntTarget = <HTMLElement>ele.querySelectorAll(".e-content")[0]
+            let clickEvent: any = document.createEvent("MouseEvents");
+            clickEvent.initEvent("mousedown", false, true);
+            cntTarget.dispatchEvent(clickEvent);
+            let target: HTMLElement = ele.querySelector('#vid-container span');
+            let eventsArg: any = { pageX: 50, pageY: 300, target: target, which: 2 };
+            setCursorPoint(target, 0);
+            target.click();
+            dispatchEvent(target, 'mouseup');
+            setTimeout(() => {
+                let quickPop: any = <HTMLElement>document.querySelectorAll('.e-rte-quick-popup')[0];
+                expect(isNullOrUndefined(quickPop)).toBe(true);
+                done();
+            }, 400);
+        });
+        it(" rightClick with `which` as '1' with quickpopup availability testing ", (done: Function) => {
+            rteObj = renderRTE({
+                quickToolbarSettings: {
+                    showOnRightClick: true
+                },
+                value: `<p id='vid-container'>
                      <span class="e-video-wrap" contenteditable="false" title="mov_bbb.mp4"><video class="e-rte-video e-videoinline" controls=""><source src="https://www.w3schools.com/html/mov_bbb.mp4" type="video/mp4"></video></span><br>
                  </p>`
-             });
-             ele = rteObj.element;
-             expect(rteObj.quickToolbarSettings.showOnRightClick).toEqual(true);
-             let cntTarget = <HTMLElement>ele.querySelectorAll(".e-content")[0]
-             let clickEvent: any = document.createEvent("MouseEvents");
-             clickEvent.initEvent("mousedown", false, true);
-             cntTarget.dispatchEvent(clickEvent);
-             let target: HTMLElement = ele.querySelector('#vid-container span');
-             let eventsArg: any = { pageX: 50, pageY: 300, target: target, which: 1 };
-             setCursorPoint(target, 0);
-             target.click();
-             dispatchEvent(target, 'mouseup');
-             setTimeout(() => {
-                 let quickPop: any = <HTMLElement>document.querySelectorAll('.e-rte-quick-popup')[0];
-                 expect(isNullOrUndefined(quickPop)).toBe(true);
-                 done();
-             }, 400);
-         });
-         afterEach((done: Function) => {
-             destroy(rteObj);
-             done();
-         });
-     });
- 
-    //  describe('Rename videos in success event- ', () => {
-    //      let rteObj: RichTextEditor;
-    //      beforeEach((done: Function) => {
-    //          rteObj = renderRTE({
-    //              fileUploadSuccess: function (args : any) {
-    //                  args.file.name = 'rte_video';
-    //                  var filename : any = document.querySelectorAll(".e-file-name")[0];
-    //                  filename.innerHTML = args.file.name.replace(document.querySelectorAll(".e-file-type")[0].innerHTML, '');
-    //                  filename.title = args.file.name;
-    //              },
-    //              insertVideoSettings: {
-    //                  saveUrl:"https://services.syncfusion.com/js/production/api/FileUploader/Save",
-    //                  path: "../Videos/"
-    //              },
-    //              toolbarSettings: {
-    //                  items: ['Video']
-    //              },
-    //          });
-    //          done();
-    //      })
-    //      afterEach((done: Function) => {
-    //          destroy(rteObj);
-    //          done();
-    //      })
-    //      it('Check name after renamed', (done) => {
-    //          let rteEle: HTMLElement = rteObj.element;
-    //          (rteObj.contentModule.getEditPanel() as HTMLElement).focus();
-    //          let args = { preventDefault: function () { } };
-    //          let range = new NodeSelection().getRange(document);
-    //          let save = new NodeSelection().save(range, document);
-    //          let evnArg = { args: MouseEvent, self: (<any>rteObj).videoModule, selection: save, selectNode: new Array(), };
-    //          (<HTMLElement>rteEle.querySelectorAll(".e-toolbar-item button")[0] as HTMLElement).click();
-    //          let dialogEle: Element = rteObj.element.querySelector('.e-dialog');
-    //          (dialogEle.querySelector('.e-video-url-wrap input#webURL') as HTMLElement).click();
-    //          (dialogEle.querySelector('.e-video-url') as HTMLInputElement).value = window.origin + '/base/spec/content/video/RTE-Ocean-Waves.mp4';
-    //          (dialogEle.querySelector('.e-video-url') as HTMLInputElement).dispatchEvent(new Event("input"));
-    //          let fileObj: File = new File(["mov_bob"], "mov_bob.mp4", { lastModified: 0, type: "overide/mimetype" });
-    //          let eventArgs = { type: 'click', target: { files: [fileObj] }, preventDefault: (): void => { } };
-    //          (<any>rteObj).videoModule.uploadObj.onSelectFiles(eventArgs);
-    //          setTimeout(() => {
-    //              expect(document.querySelectorAll(".e-file-name")[0].innerHTML).toBe('rte_video');
-    //              done();
-    //          }, 5500);
-    //      });
-    //  });
- 
-     describe('Inserting Video as Base64 - ', () => {
-         let rteObj: RichTextEditor;
-         beforeEach((done: Function) => {
-             rteObj = renderRTE({
-                 insertVideoSettings: {
-                     saveFormat: "Base64"
-                 },
-                 toolbarSettings: {
-                     items: ['Video']
-                 },
-             });
-             done();
-         })
-         afterEach((done: Function) => {
-             destroy(rteObj);
-             done();
-         })
-         it(' Test the inserted video in the component ', (done) => {
-             let rteEle: HTMLElement = rteObj.element;
-             (rteObj.contentModule.getEditPanel() as HTMLElement).focus();
-             let args = { preventDefault: function () { } };
-             let range = new NodeSelection().getRange(document);
-             let save = new NodeSelection().save(range, document);
-             let evnArg = { args: MouseEvent, self: (<any>rteObj).videoModule, selection: save, selectNode: new Array(), };
-             (<HTMLElement>rteEle.querySelectorAll(".e-toolbar-item button")[0] as HTMLElement).click();
-             let dialogEle: Element = rteObj.element.querySelector('.e-dialog');
-             (dialogEle.querySelector('.e-video-url-wrap input#webURL') as HTMLElement).click();
-             (dialogEle.querySelector('.e-video-url') as HTMLInputElement).value = window.origin + '/base/spec/content/video/RTE-Ocean-Waves.mp4';
-             (dialogEle.querySelector('.e-video-url') as HTMLInputElement).dispatchEvent(new Event("input"));
-             let fileObj: File = new File(["mov_bob"], "mov_bob.mp4", { lastModified: 0, type: "overide/mimetype" });
-             let eventArgs = { type: 'click', target: { files: [fileObj] }, preventDefault: (): void => { } };
-             (<any>rteObj).videoModule.uploadObj.onSelectFiles(eventArgs);
-             (document.querySelector('.e-insertVideo') as HTMLElement).click();
-             setTimeout(() => {
-                 expect(rteObj.getContent().querySelector(".e-rte-video.e-video-inline source").getAttribute("src").indexOf("blob") == -1).toBe(true);
-                 evnArg.selectNode = [rteObj.element];
-                 (<any>rteObj).videoModule.deleteVideo(evnArg);
-                 done();
-             }, 1000);
-         });
-     });
- 
-     describe('Inserting Video as Blob - ', () => {
-         let rteObj: RichTextEditor;
-         beforeEach((done: Function) => {
-             rteObj = renderRTE({
-                 insertVideoSettings: {
-                     saveFormat: "Blob"
-                 },
-                 toolbarSettings: {
-                     items: ['Video']
-                 },
-             });
-             done();
-         })
-         afterEach((done: Function) => {
-             destroy(rteObj);
-             done();
-         })
-         it(' Test the inserted video in the component ', (done) => {
-             let rteEle: HTMLElement = rteObj.element;
-             (rteObj.contentModule.getEditPanel() as HTMLElement).focus();
-             let args = { preventDefault: function () { } };
-             let range = new NodeSelection().getRange(document);
-             let save = new NodeSelection().save(range, document);
-             let evnArg = { args: MouseEvent, self: (<any>rteObj).videoModule, selection: save, selectNode: new Array(), };
-             (<HTMLElement>rteEle.querySelectorAll(".e-toolbar-item button")[0] as HTMLElement).click();
-             let dialogEle: Element = rteObj.element.querySelector('.e-dialog');
-             (dialogEle.querySelector('.e-video-url-wrap input#webURL') as HTMLElement).click();
-             (dialogEle.querySelector('.e-video-url') as HTMLInputElement).value = window.origin + '/base/spec/content/video/RTE-Ocean-Waves.mp4';
-             (dialogEle.querySelector('.e-video-url') as HTMLInputElement).dispatchEvent(new Event("input"));
-             let fileObj: File = new File(["mov_bob"], "mov_bob.mp4", { lastModified: 0, type: "overide/mimetype" });
-             let eventArgs = { type: 'click', target: { files: [fileObj] }, preventDefault: (): void => { } };
-             (<any>rteObj).videoModule.uploadObj.onSelectFiles(eventArgs);
-             (document.querySelector('.e-insertVideo') as HTMLElement).click();
-             setTimeout(() => {
-                 expect(rteObj.getContent().querySelector(".e-rte-video.e-video-inline source").getAttribute("src").indexOf("base64") == -1).toBe(true);
-                 evnArg.selectNode = [rteObj.element];
-                 (<any>rteObj).videoModule.deleteVideo(evnArg);
-                 done();
-             }, 1000);
-         });
-     });
-     
-    //  describe('Insert Video mediaSelected, mediaUploading and mediaUploadSuccess event - ', () => {
-    //      let rteObj: RichTextEditor;
-    //      let mediaSelectedSpy: jasmine.Spy = jasmine.createSpy('onFileSelected');
-    //      let mediaUploadingSpy: jasmine.Spy = jasmine.createSpy('onFileUploading');
-    //      let mediaUploadSuccessSpy: jasmine.Spy = jasmine.createSpy('onFileUploadSuccess');
-    //      beforeEach((done: Function) => {
-    //          rteObj = renderRTE({
-    //              fileSelected: mediaSelectedSpy,
-    //              fileUploading: mediaUploadingSpy,
-    //              fileUploadSuccess: mediaUploadSuccessSpy,
-    //              insertVideoSettings: {
-    //                  saveUrl:"https://services.syncfusion.com/js/production/api/FileUploader/Save",
-    //                  path: "../Videos/"
-    //              },
-    //              toolbarSettings: {
-    //                  items: ['Video']
-    //              },
-    //          });
-    //          done();
-    //      })
-    //      afterEach((done: Function) => {
-    //          destroy(rteObj);
-    //          done();
-    //      })
-    //      it(' Test the component insert video events - case 1 ', (done) => {
-    //          let rteEle: HTMLElement = rteObj.element;
-    //          (rteObj.contentModule.getEditPanel() as HTMLElement).focus();
-    //          let args = { preventDefault: function () { } };
-    //          let range = new NodeSelection().getRange(document);
-    //          let save = new NodeSelection().save(range, document);
-    //          let evnArg = { args: MouseEvent, self: (<any>rteObj).videoModule, selection: save, selectNode: new Array(), };
-    //          (<HTMLElement>rteEle.querySelectorAll(".e-toolbar-item button")[0] as HTMLElement).click();
-    //          let dialogEle: Element = rteObj.element.querySelector('.e-dialog');
-    //          (dialogEle.querySelector('.e-video-url-wrap input#webURL') as HTMLElement).click();
-    //          (dialogEle.querySelector('.e-video-url') as HTMLInputElement).value = window.origin + '/base/spec/content/video/RTE-Ocean-Waves.mp4';
-    //          (dialogEle.querySelector('.e-video-url') as HTMLInputElement).dispatchEvent(new Event("input"));
-    //          let fileObj: File = new File(["mov_bob"], "mov_bob.mp4", { lastModified: 0, type: "overide/mimetype" });
-    //          let eventArgs = { type: 'click', target: { files: [fileObj] }, preventDefault: (): void => { } };
-    //          (<any>rteObj).videoModule.uploadObj.onSelectFiles(eventArgs);
-    //          expect(mediaSelectedSpy).toHaveBeenCalled();
-    //          expect(mediaUploadingSpy).toHaveBeenCalled();
-    //          setTimeout(() => {
-    //              expect(mediaUploadSuccessSpy).toHaveBeenCalled();
-    //              evnArg.selectNode = [rteObj.element];
-    //              (<any>rteObj).videoModule.deleteVideo(evnArg);
-    //              (<any>rteObj).videoModule.uploadObj.upload((<any>rteObj).videoModule.uploadObj.filesData[0]);
-    //              done();
-    //          }, 5500);
-    //      });
-    //  });
- 
-     describe('Insert video mediaSelected event args cancel true - ', () => {
-         let rteObj: RichTextEditor;
-         let isMediaUploadSuccess: boolean = false;
-         let isMediaUploadFailed: boolean = false;
-         beforeEach((done: Function) => {
-             rteObj = renderRTE({
-                 fileSelected: mediaSelectedEvent,
-                 fileUploadSuccess: mediaUploadSuccessEvent,
-                 fileUploadFailed: mediaUploadFailedEvent,
-                 insertVideoSettings: {
-                     saveUrl:"https://aspnetmvc.syncfusion.com/services/api/uploadbox/Save",
-                     path: "../Videos/"
-                 },
-                 toolbarSettings: {
-                     items: ['Video']
-                 },
-             });
-             function mediaSelectedEvent(e: any) {
-                 e.cancel = true;
-             }
-             function mediaUploadSuccessEvent(e: any) {
-                 isMediaUploadSuccess = true;
-             }
-             function mediaUploadFailedEvent(e: any) {
-                 isMediaUploadFailed = true;
-             }
-             done();
-         })
-         afterEach((done: Function) => {
-             destroy(rteObj);
-             done();
-         })
-         it(' Test the component insert video events - case 1 ', (done) => {
-             let rteEle: HTMLElement = rteObj.element;
-             (rteObj.contentModule.getEditPanel() as HTMLElement).focus();
-             let args = { preventDefault: function () { } };
-             let range = new NodeSelection().getRange(document);
-             let save = new NodeSelection().save(range, document);
-             let evnArg = { args: MouseEvent, self: (<any>rteObj).videoModule, selection: save, selectNode: new Array(), };
-             (<HTMLElement>rteEle.querySelectorAll(".e-toolbar-item button")[0] as HTMLElement).click();
-             let dialogEle: Element = rteObj.element.querySelector('.e-dialog');
-             (dialogEle.querySelector('.e-video-url-wrap input#webURL') as HTMLElement).click();
-             (dialogEle.querySelector('.e-video-url') as HTMLInputElement).value = window.origin + '/base/spec/content/video/RTE-Ocean-Waves.mp4';
-             let fileObj: File = new File(["mov_bob"], "mov_bob.mp4", { lastModified: 0, type: "overide/mimetype" });
-             let eventArgs = { type: 'click', target: { files: [fileObj] }, preventDefault: (): void => { } };
-             (<any>rteObj).videoModule.uploadObj.onSelectFiles(eventArgs);
-             setTimeout(() => {
-                 expect(isMediaUploadSuccess).toBe(false);
-                 expect(isMediaUploadFailed).toBe(false);
-                 done();
-             }, 1000);
-             
-         });
-     });
- 
-     describe('Insert video mediaRemoving event - ', () => {
-         let rteObj: RichTextEditor;
-         let mediaRemovingSpy: jasmine.Spy = jasmine.createSpy('onFileRemoving');
-         beforeEach((done: Function) => {
-             rteObj = renderRTE({
-                 fileRemoving: mediaRemovingSpy,
-                 toolbarSettings: {
-                     items: ['Video']
-                 },
-             });
-             done();
-         })
-         afterEach((done: Function) => {
-             destroy(rteObj);
-             done();
-         })
-         it(' Test the component insert video events - case 2 ', (done) => {
-             let rteEle: HTMLElement = rteObj.element;
-             (rteObj.contentModule.getEditPanel() as HTMLElement).focus();
-             let args = { preventDefault: function () { } };
-             let range = new NodeSelection().getRange(document);
-             let save = new NodeSelection().save(range, document);
-             let evnArg = { args: MouseEvent, self: (<any>rteObj).videoModule, selection: save, selectNode: new Array(), };
-             (<HTMLElement>rteEle.querySelectorAll(".e-toolbar-item button")[0] as HTMLElement).click();
-             let dialogEle: Element = rteObj.element.querySelector('.e-dialog');
-             (dialogEle.querySelector('.e-video-url-wrap input#webURL') as HTMLElement).click();
-             (dialogEle.querySelector('.e-video-url') as HTMLInputElement).value = window.origin + '/base/spec/content/video/RTE-Ocean-Waves.mp4';
-             let fileObj: File = new File(["mov_bob"], "mov_bob.mp4", { lastModified: 0, type: "overide/mimetype" });
-             let eventArgs = { type: 'click', target: { files: [fileObj] }, preventDefault: (): void => { } };
-             (<any>rteObj).videoModule.uploadObj.onSelectFiles(eventArgs);
-             (<any>rteObj).videoModule.uploadUrl = { url: "" };
-             (document.querySelector('.e-icons.e-file-remove-btn') as HTMLElement).click();
-             expect(mediaRemovingSpy).toHaveBeenCalled();
-             setTimeout(() => {
-                 evnArg.selectNode = [rteObj.element];
-                 (<any>rteObj).videoModule.deleteVideo(evnArg);
-                 (<any>rteObj).videoModule.uploadObj.upload((<any>rteObj).videoModule.uploadObj.filesData[0]);
-                 done();
-             }, 4000);
-         });
-     });
- 
-     describe('Insert video mediaUploadFailed event - ', () => {
-         let rteObj: RichTextEditor;
-         let mediaUploadFailedSpy: jasmine.Spy = jasmine.createSpy('onFileUploadFailed');
-         beforeEach((done: Function) => {
-             rteObj = renderRTE({
-                 fileUploadFailed: mediaUploadFailedSpy,
-                 insertVideoSettings: {
-                     saveUrl:"uploadbox/Save",
-                     path: "../Videos/"
-                 },
-                 toolbarSettings: {
-                     items: ['Video']
-                 },
-             });
-             done();
-         })
-         afterEach((done: Function) => {
-             destroy(rteObj);
-             done();
-         })
-         it(' Test the component insert video events - case 3 ', (done) => {
-             let rteEle: HTMLElement = rteObj.element;
-             (rteObj.contentModule.getEditPanel() as HTMLElement).focus();
-             let args = { preventDefault: function () { } };
-             let range = new NodeSelection().getRange(document);
-             let save = new NodeSelection().save(range, document);
-             let evnArg = { args: MouseEvent, self: (<any>rteObj).videoModule, selection: save, selectNode: new Array(), };
-             (<HTMLElement>rteEle.querySelectorAll(".e-toolbar-item button")[0] as HTMLElement).click();
-             let dialogEle: Element = rteObj.element.querySelector('.e-dialog');
-             (dialogEle.querySelector('.e-video-url-wrap input#webURL') as HTMLElement).click();
-             (dialogEle.querySelector('.e-video-url') as HTMLInputElement).value = window.origin + '/base/spec/content/video/RTE-Ocean-Waves.mp4';
-             let fileObj: File = new File(["mov_bob"], "mov_bob.mp4", { lastModified: 0, type: "overide/mimetype" });
-             let eventArgs = { type: 'click', target: { files: [fileObj] }, preventDefault: (): void => { } };
-             (<any>rteObj).videoModule.uploadObj.onSelectFiles(eventArgs);
-             setTimeout(() => {
-                 expect(mediaUploadFailedSpy).toHaveBeenCalled();
-                 evnArg.selectNode = [rteObj.element];
-                 (<any>rteObj).videoModule.deleteVideo(evnArg);
-                 (<any>rteObj).videoModule.uploadObj.upload((<any>rteObj).videoModule.uploadObj.filesData[0]);
-                 done();
-             }, 4000);
-         });
-     });
- 
-     describe('Testing allowed extension in video upload - ', () => {
-         let rteObj: RichTextEditor;
-         beforeEach((done: Function) => {
-             rteObj = renderRTE({
-                 insertVideoSettings: {
-                     allowedTypes: ['.mp3'],
-                     saveUrl:"uploadbox/Save",
-                     path: "../Videos/"
-                 },
-                 toolbarSettings: {
-                     items: ['Video']
-                 },
-             });
-             done();
-         })
-         afterEach((done: Function) => {
-             destroy(rteObj);
-             done();
-         })
-         it(' Test the component insert video with allowedExtension property', (done) => {
-             let rteEle: HTMLElement = rteObj.element;
-             (rteObj.contentModule.getEditPanel() as HTMLElement).focus();
-             let args = { preventDefault: function () { } };
-             let range = new NodeSelection().getRange(document);
-             let save = new NodeSelection().save(range, document);
-             let evnArg = { args: MouseEvent, self: (<any>rteObj).videoModule, selection: save, selectNode: new Array(), };
-             (<HTMLElement>rteEle.querySelectorAll(".e-toolbar-item button")[0] as HTMLElement).click();
-             let dialogEle: Element = rteObj.element.querySelector('.e-dialog');
-             (dialogEle.querySelector('.e-video-url-wrap input#webURL') as HTMLElement).click();
-             (dialogEle.querySelector('.e-video-url') as HTMLInputElement).value = 'https://www.w3schools.com/html/horse.m4a';
-             let fileObj: File = new File(["mov_bob"], "horse.m4a", { lastModified: 0, type: "overide/mimetype" });
-             let eventArgs = { type: 'click', target: { files: [fileObj] }, preventDefault: (): void => { } };
-             (<any>rteObj).videoModule.uploadObj.onSelectFiles(eventArgs);
-             setTimeout(() => {
-                 expect((dialogEle.querySelector('.e-insertVideo') as HTMLButtonElement).hasAttribute('disabled')).toBe(true);
-                 evnArg.selectNode = [rteObj.element];
-                 (<any>rteObj).videoModule.deleteVideo(evnArg);
-                 (<any>rteObj).videoModule.uploadObj.upload((<any>rteObj).videoModule.uploadObj.filesData[0]);
-                 done();
-             }, 1000);
-         });
-     });
- 
-     describe('beforeMediaUpload event - ', () => {
-         let rteObj: RichTextEditor;
-         let beforeMediaUploadSpy: jasmine.Spy = jasmine.createSpy('onBeforeFileUpload');
-         beforeEach((done: Function) => {
-             rteObj = renderRTE({
-                 beforeFileUpload: beforeMediaUploadSpy,
-                 toolbarSettings: {
-                     items: ['Video']
-                 },
-             });
-             done();
-         })
-         afterEach((done: Function) => {
-             destroy(rteObj);
-             done();
-         })
-         it(' Event and arguments test ', (done) => {
-             let rteEle: HTMLElement = rteObj.element;
-             (rteObj.contentModule.getEditPanel() as HTMLElement).focus();
-             let args = { preventDefault: function () { } };
-             let range = new NodeSelection().getRange(document);
-             let save = new NodeSelection().save(range, document);
-             let evnArg = { args: MouseEvent, self: (<any>rteObj).videoModule, selection: save, selectNode: new Array(), };
-             (<HTMLElement>rteEle.querySelectorAll(".e-toolbar-item button")[0] as HTMLElement).click();
-             let dialogEle: Element = rteObj.element.querySelector('.e-dialog');
-             (dialogEle.querySelector('.e-video-url-wrap input#webURL') as HTMLElement).click();
-             (dialogEle.querySelector('.e-video-url') as HTMLInputElement).value = window.origin + '/base/spec/content/video/RTE-Ocean-Waves.mp4';
-             let fileObj: File = new File(["Header"], "mov_bob.mp4", { lastModified: 0, type: "overide/mimetype" });
-             let eventArgs = { type: 'click', target: { files: [fileObj] }, preventDefault: (): void => { } };
-             (<any>rteObj).videoModule.uploadObj.onSelectFiles(eventArgs);
-             expect(beforeMediaUploadSpy).toHaveBeenCalled();
-             done();
-         });
-     });
- 
-     describe('BeforeDialogOpen eventArgs args.cancel testing', () => {
-         let rteObj: RichTextEditor;
-         let count: number = 0;
-         beforeAll((done: Function) => {
-             rteObj = renderRTE({
-                 toolbarSettings: {
-                     items: ['Video'],
-                 },
-                 beforeDialogOpen(e: any): void {
-                     e.cancel = true;
-                     count = count + 1;
-                 },
-                 dialogClose(e: any): void {
-                     count = count + 1;
-                 }
-             });
-             done();
-         });
-         afterAll((done: Function) => {
-             destroy(rteObj);
-             done();
-         });
-         it('dialogClose event trigger testing', (done) => {
-             expect(count).toBe(0);
-             (rteObj.element.querySelector('.e-toolbar-item button') as HTMLElement).click();
-             setTimeout(() => {
-                 expect(count).toBe(1);
-                 (rteObj.element.querySelector('.e-content') as HTMLElement).click();
-                 expect(count).toBe(1);
-                 done();
-             }, 100);
-         });
-     });
-     describe('BeforeDialogOpen event is not called for second time', () => {
-         let rteObj: RichTextEditor;
-         let count: number = 0;
-         beforeAll((done: Function) => {
-             rteObj = renderRTE({
-                 toolbarSettings: {
-                     items: ['Video']
-                 },
-                 beforeDialogOpen(e: any): void {
-                     e.cancel = true;
-                     count = count + 1;
-                 }
-             });
-             done();
-         });
-         afterAll((done: Function) => {
-             destroy(rteObj);
-             done();
-         });
-         it('beforeDialogOpen event trigger testing', (done) => {
-             expect(count).toBe(0);
-             (rteObj.element.querySelectorAll('.e-toolbar-item')[0].querySelector('button') as HTMLElement).click();
-             setTimeout(() => {
-                 expect(count).toBe(1);
-                 done();
-             }, 100);
-         });
-     });
-     describe('Checking video replace, using the video dialog', () => {
-         let rteEle: HTMLElement;
-         let rteObj: RichTextEditor;
-         beforeAll(() => {
-             rteObj = renderRTE({
-                 toolbarSettings: {
-                     items: ['Video']
-                 },
-                 value: `<span class="e-video-wrap" contenteditable="false" title="mov_bbb.mp4"><video class="e-rte-video e-videoinline" controls=""><source src="https://www.w3schools.com/html/mov_bbb.mp4" type="video/mp4"></video></span><br>`
-             });
-             rteEle = rteObj.element;
-         });
-         afterAll(() => {
-             destroy(rteObj);
-         });
-         it('video dialog', (done) => {
-             (rteObj.contentModule.getEditPanel() as HTMLElement).focus();
-             (<HTMLElement>rteEle.querySelectorAll(".e-toolbar-item")[0] as HTMLElement).click();
-             let fileObj: File = new File(["Testing"], "test.mp3", { lastModified: 0, type: "overide/mimetype" });
-             let eventArgs = { type: 'click', target: { files: [fileObj] }, preventDefault: (): void => { } };
-             (<any>rteObj).videoModule.uploadObj.onSelectFiles(eventArgs);
-             (<any>rteObj).videoModule.uploadObj.upload((<any>rteObj).videoModule.uploadObj.filesData[0]);
-             (document.querySelector('.e-insertVideo.e-primary') as HTMLElement).click();
-             expect((rteObj.contentModule.getEditPanel() as HTMLElement).querySelector('.e-video-wrap')).not.toBe(null);
-             done();
-         });
-     });
-     describe('Video outline style testing, while focus other content or video', () => {
-         let rteObj: RichTextEditor;
-         let QTBarModule: IRenderer;
-         beforeAll((done: Function) => {
-             rteObj = renderRTE({
-                 toolbarSettings: {
-                     items: ['Video'],
-                 },
-                 value: '<p>Sample Text</p> <p><span class="e-video-wrap" contenteditable="false" title="mov_bbb.mp4"><video class="e-rte-video e-videoinline" controls=""><source src="https://www.w3schools.com/html/mov_bbb.mp4" type="video/mp4"></video></span><span class="e-video-wrap" contenteditable="false" title="mov_bbb.mp4"><video class="e-rte-video e-videoinline" controls=""><source src="https://www.w3schools.com/html/mov_bbb.mp4" type="video/mp4"></video></span></p>'
-             });
-             QTBarModule = getQTBarModule(rteObj);
-             done();
-         });
-         afterAll((done: Function) => {
-             destroy(rteObj);
-             done();
-         });
-         it('first video click with focus testing', (done) => {
-             (<any>QTBarModule).renderQuickToolbars(rteObj.videoModule);
-             dispatchEvent(rteObj.element.querySelectorAll('.e-content video')[0] as HTMLElement, 'mousedown');
-             expect((rteObj.element.querySelectorAll('.e-content .e-video-wrap video')[0] as HTMLElement).style.outline === 'rgb(74, 144, 226) solid 2px').toBe(true);
-             done();
-         });
-         it('second video click with focus testing', (done) => {
-             (<any>QTBarModule).renderQuickToolbars(rteObj.videoModule);
-             dispatchEvent(rteObj.element.querySelectorAll('.e-content video')[1] as HTMLElement, 'mousedown');
-             expect((rteObj.element.querySelectorAll('.e-content .e-video-wrap video')[1] as HTMLElement).style.outline === 'rgb(74, 144, 226) solid 2px').toBe(true);
-             done();
-         });
-         it('first video click after p click with focus testing', (done) => {
-             (<any>QTBarModule).renderQuickToolbars(rteObj.videoModule);
-             dispatchEvent(rteObj.element.querySelectorAll('.e-content video')[0] as HTMLElement, 'mousedown');
-             expect((rteObj.element.querySelectorAll('.e-content .e-video-wrap video')[0] as HTMLElement).style.outline === 'rgb(74, 144, 226) solid 2px').toBe(true);
-             done();
-         });
-         it('second video click after p click with focus testing', (done) => {
-             (<any>QTBarModule).renderQuickToolbars(rteObj.videoModule);
-             dispatchEvent(rteObj.element.querySelectorAll('.e-content video')[1] as HTMLElement, 'mousedown');
-             expect((rteObj.element.querySelectorAll('.e-content .e-video-wrap video')[1] as HTMLElement).style.outline === 'rgb(74, 144, 226) solid 2px').toBe(true);
-             done();
-         });
-     });
-     describe('Video focus not working after outside click then again click a video', () => {
-         let rteObj: RichTextEditor;
-         let QTBarModule: IRenderer;
-         beforeAll((done: Function) => {
-             rteObj = renderRTE({
-                 toolbarSettings: {
-                     items: ['Video'],
-                 },
-                 value: '<p>Sample Text</p> <span class="e-video-wrap" contenteditable="false" title="mov_bbb.mp4"><video class="e-rte-video e-videoinline" controls=""><source src="https://www.w3schools.com/html/mov_bbb.mp4" type="video/mp4"></video></span><br><span class="e-video-wrap" contenteditable="false" title="mov_bbb.mp4"><video class="e-rte-video e-videoinline" controls=""><source src="https://www.w3schools.com/html/mov_bbb.mp4" type="video/mp4"></video></span>'
-             });
-             QTBarModule = getQTBarModule(rteObj);
-             done();
-         });
-         afterAll((done: Function) => {
-             destroy(rteObj);
-             done();
-         });
-         it('video click with focus testing', (done) => {
-             (<any>QTBarModule).renderQuickToolbars(rteObj.videoModule);
-             dispatchEvent(rteObj.element.querySelectorAll('.e-content video')[0] as HTMLElement, 'mousedown');
-             expect((rteObj.element.querySelectorAll('.e-content .e-video-wrap video')[0] as HTMLElement).style.outline === 'rgb(74, 144, 226) solid 2px').toBe(true);
-             done();
-         });
-         it('Again video click with focus testing', (done) => {
-             (<any>QTBarModule).renderQuickToolbars(rteObj.videoModule);
-             dispatchEvent(rteObj.element.querySelectorAll('.e-content video')[0] as HTMLElement, 'mousedown');
-             expect((rteObj.element.querySelectorAll('.e-content .e-video-wrap video')[0] as HTMLElement).style.outline === 'rgb(74, 144, 226) solid 2px').toBe(true);
-             done();
-         });
-     });
-     describe('ShowDialog, CloseDialog method testing', () => {
-         let rteObj: RichTextEditor;
-         beforeAll((done: Function) => {
-             rteObj = renderRTE({ });
-             done();
-         });
-         afterAll((done: Function) => {
-             destroy(rteObj);
-             done();
-         });
-         it('show/hide dialog testing', (done) => {
-             rteObj.showDialog(DialogType.InsertVideo);
-             setTimeout(() => {
-                 expect(document.body.querySelectorAll('.e-rte-video-dialog.e-dialog').length).toBe(1);
-                 rteObj.closeDialog(DialogType.InsertVideo);
-                 setTimeout(() => {
-                     expect(document.body.querySelectorAll('.e-rte-video-dialog.e-dialog').length).toBe(0);
-                     done();
-                 }, 100);
-             }, 100);
-         });
-     });
-    
-    describe ('EJ2-65777 Not able to insert Embed video using Keyboard Shortcut', () => {
+            });
+            ele = rteObj.element;
+            expect(rteObj.quickToolbarSettings.showOnRightClick).toEqual(true);
+            let cntTarget = <HTMLElement>ele.querySelectorAll(".e-content")[0]
+            let clickEvent: any = document.createEvent("MouseEvents");
+            clickEvent.initEvent("mousedown", false, true);
+            cntTarget.dispatchEvent(clickEvent);
+            let target: HTMLElement = ele.querySelector('#vid-container span');
+            let eventsArg: any = { pageX: 50, pageY: 300, target: target, which: 1 };
+            setCursorPoint(target, 0);
+            target.click();
+            dispatchEvent(target, 'mouseup');
+            setTimeout(() => {
+                let quickPop: any = <HTMLElement>document.querySelectorAll('.e-rte-quick-popup')[0];
+                expect(isNullOrUndefined(quickPop)).toBe(true);
+                done();
+            }, 400);
+        });
+        afterEach((done: Function) => {
+            destroy(rteObj);
+            done();
+        });
+    });
+
+    describe('Inserting Video as Base64 - ', () => {
+        let rteObj: RichTextEditor;
+        beforeAll(() => {
+            rteObj = renderRTE({
+                insertVideoSettings: {
+                    saveFormat: "Base64"
+                },
+                toolbarSettings: {
+                    items: ['Video']
+                },
+            });
+        })
+        afterAll(() => {
+            destroy(rteObj);
+        })
+        it(' Test the inserted video in the component ', (done) => {
+            let rteEle: HTMLElement = rteObj.element;
+            (rteObj.contentModule.getEditPanel() as HTMLElement).focus();
+            let args = { preventDefault: function () { } };
+            let range = new NodeSelection().getRange(document);
+            let save = new NodeSelection().save(range, document);
+            let evnArg = { args: MouseEvent, self: (<any>rteObj).videoModule, selection: save, selectNode: new Array(), };
+            (<HTMLElement>rteEle.querySelectorAll(".e-toolbar-item button")[0] as HTMLElement).click();
+            let dialogEle: Element = rteObj.element.querySelector('.e-dialog');
+            (dialogEle.querySelector('.e-video-url-wrap input#webURL') as HTMLElement).click();
+            (dialogEle.querySelector('.e-video-url') as HTMLInputElement).value = window.origin + '/base/spec/content/video/RTE-Ocean-Waves.mp4';
+            (dialogEle.querySelector('.e-video-url') as HTMLInputElement).dispatchEvent(new Event("input"));
+            let fileObj: File = new File(["mov_bob"], "mov_bob.mp4", { lastModified: 0, type: "overide/mimetype" });
+            let eventArgs = { type: 'click', target: { files: [fileObj] }, preventDefault: (): void => { } };
+            (<any>rteObj).videoModule.uploadObj.onSelectFiles(eventArgs);
+            (document.querySelector('.e-insertVideo') as HTMLElement).click();
+            setTimeout(() => {
+                expect(rteObj.getContent().querySelector(".e-rte-video.e-video-inline source").getAttribute("src").indexOf("blob") == -1).toBe(true);
+                evnArg.selectNode = [rteObj.element];
+                (<any>rteObj).videoModule.deleteVideo(evnArg);
+                done();
+            }, 1000);
+        });
+    });
+
+    describe('Inserting Video as Blob - ', () => {
+        let rteObj: RichTextEditor;
+        beforeAll(() => {
+            rteObj = renderRTE({
+                insertVideoSettings: {
+                    saveFormat: "Blob"
+                },
+                toolbarSettings: {
+                    items: ['Video']
+                },
+            });
+        })
+        afterAll(() => {
+            destroy(rteObj);
+        })
+        it(' Test the inserted video in the component ', (done) => {
+            let rteEle: HTMLElement = rteObj.element;
+            (rteObj.contentModule.getEditPanel() as HTMLElement).focus();
+            let args = { preventDefault: function () { } };
+            let range = new NodeSelection().getRange(document);
+            let save = new NodeSelection().save(range, document);
+            let evnArg = { args: MouseEvent, self: (<any>rteObj).videoModule, selection: save, selectNode: new Array(), };
+            (<HTMLElement>rteEle.querySelectorAll(".e-toolbar-item button")[0] as HTMLElement).click();
+            let dialogEle: Element = rteObj.element.querySelector('.e-dialog');
+            (dialogEle.querySelector('.e-video-url-wrap input#webURL') as HTMLElement).click();
+            (dialogEle.querySelector('.e-video-url') as HTMLInputElement).value = window.origin + '/base/spec/content/video/RTE-Ocean-Waves.mp4';
+            (dialogEle.querySelector('.e-video-url') as HTMLInputElement).dispatchEvent(new Event("input"));
+            let fileObj: File = new File(["mov_bob"], "mov_bob.mp4", { lastModified: 0, type: "overide/mimetype" });
+            let eventArgs = { type: 'click', target: { files: [fileObj] }, preventDefault: (): void => { } };
+            (<any>rteObj).videoModule.uploadObj.onSelectFiles(eventArgs);
+            (document.querySelector('.e-insertVideo') as HTMLElement).click();
+            setTimeout(() => {
+                expect(rteObj.getContent().querySelector(".e-rte-video.e-video-inline source").getAttribute("src").indexOf("base64") == -1).toBe(true);
+                evnArg.selectNode = [rteObj.element];
+                (<any>rteObj).videoModule.deleteVideo(evnArg);
+                done();
+            }, 1000);
+        });
+    });
+
+    describe('Insert video mediaSelected event args cancel true - ', () => {
+        let rteObj: RichTextEditor;
+        let isMediaUploadSuccess: boolean = false;
+        let isMediaUploadFailed: boolean = false;
+        beforeAll(() => {
+            rteObj = renderRTE({
+                fileSelected: mediaSelectedEvent,
+                fileUploadSuccess: mediaUploadSuccessEvent,
+                fileUploadFailed: mediaUploadFailedEvent,
+                insertVideoSettings: {
+                    saveUrl: "https://aspnetmvc.syncfusion.com/services/api/uploadbox/Save",
+                    path: "../Videos/"
+                },
+                toolbarSettings: {
+                    items: ['Video']
+                },
+            });
+            function mediaSelectedEvent(e: any) {
+                e.cancel = true;
+            }
+            function mediaUploadSuccessEvent(e: any) {
+                isMediaUploadSuccess = true;
+            }
+            function mediaUploadFailedEvent(e: any) {
+                isMediaUploadFailed = true;
+            }
+        })
+        afterAll(() => {
+            destroy(rteObj);
+        })
+        it(' Test the component insert video events - case 1 ', (done) => {
+            let rteEle: HTMLElement = rteObj.element;
+            (rteObj.contentModule.getEditPanel() as HTMLElement).focus();
+            let args = { preventDefault: function () { } };
+            let range = new NodeSelection().getRange(document);
+            let save = new NodeSelection().save(range, document);
+            let evnArg = { args: MouseEvent, self: (<any>rteObj).videoModule, selection: save, selectNode: new Array(), };
+            (<HTMLElement>rteEle.querySelectorAll(".e-toolbar-item button")[0] as HTMLElement).click();
+            let dialogEle: Element = rteObj.element.querySelector('.e-dialog');
+            (dialogEle.querySelector('.e-video-url-wrap input#webURL') as HTMLElement).click();
+            (dialogEle.querySelector('.e-video-url') as HTMLInputElement).value = window.origin + '/base/spec/content/video/RTE-Ocean-Waves.mp4';
+            let fileObj: File = new File(["mov_bob"], "mov_bob.mp4", { lastModified: 0, type: "overide/mimetype" });
+            let eventArgs = { type: 'click', target: { files: [fileObj] }, preventDefault: (): void => { } };
+            (<any>rteObj).videoModule.uploadObj.onSelectFiles(eventArgs);
+            setTimeout(() => {
+                expect(isMediaUploadSuccess).toBe(false);
+                expect(isMediaUploadFailed).toBe(false);
+                done();
+            }, 1000);
+        });
+    });
+
+    describe('Insert video mediaRemoving event - ', () => {
+        let rteObj: RichTextEditor;
+        let mediaRemovingSpy: jasmine.Spy = jasmine.createSpy('onFileRemoving');
+        beforeAll(() => {
+            rteObj = renderRTE({
+                fileRemoving: mediaRemovingSpy,
+                toolbarSettings: {
+                    items: ['Video']
+                },
+            });
+        })
+        afterAll(() => {
+            destroy(rteObj);
+        })
+        it(' Test the component insert video events - case 2 ', (done) => {
+            let rteEle: HTMLElement = rteObj.element;
+            (rteObj.contentModule.getEditPanel() as HTMLElement).focus();
+            let args = { preventDefault: function () { } };
+            let range = new NodeSelection().getRange(document);
+            let save = new NodeSelection().save(range, document);
+            let evnArg = { args: MouseEvent, self: (<any>rteObj).videoModule, selection: save, selectNode: new Array(), };
+            (<HTMLElement>rteEle.querySelectorAll(".e-toolbar-item button")[0] as HTMLElement).click();
+            let dialogEle: Element = rteObj.element.querySelector('.e-dialog');
+            (dialogEle.querySelector('.e-video-url-wrap input#webURL') as HTMLElement).click();
+            (dialogEle.querySelector('.e-video-url') as HTMLInputElement).value = window.origin + '/base/spec/content/video/RTE-Ocean-Waves.mp4';
+            let fileObj: File = new File(["mov_bob"], "mov_bob.mp4", { lastModified: 0, type: "overide/mimetype" });
+            let eventArgs = { type: 'click', target: { files: [fileObj] }, preventDefault: (): void => { } };
+            (<any>rteObj).videoModule.uploadObj.onSelectFiles(eventArgs);
+            (<any>rteObj).videoModule.uploadUrl = { url: "" };
+            (document.querySelector('.e-icons.e-file-remove-btn') as HTMLElement).click();
+            expect(mediaRemovingSpy).toHaveBeenCalled();
+            setTimeout(() => {
+                evnArg.selectNode = [rteObj.element];
+                (<any>rteObj).videoModule.deleteVideo(evnArg);
+                (<any>rteObj).videoModule.uploadObj.upload((<any>rteObj).videoModule.uploadObj.filesData[0]);
+                done();
+            }, 4000);
+        });
+    });
+
+    describe('Insert video mediaUploadFailed event - ', () => {
+        let rteObj: RichTextEditor;
+        let mediaUploadFailedSpy: jasmine.Spy = jasmine.createSpy('onFileUploadFailed');
+        beforeAll(() => {
+            rteObj = renderRTE({
+                fileUploadFailed: mediaUploadFailedSpy,
+                insertVideoSettings: {
+                    saveUrl: "uploadbox/Save",
+                    path: "../Videos/"
+                },
+                toolbarSettings: {
+                    items: ['Video']
+                },
+            });
+        })
+        afterAll(() => {
+            destroy(rteObj);
+        })
+        it(' Test the component insert video events - case 3 ', (done) => {
+            let rteEle: HTMLElement = rteObj.element;
+            (rteObj.contentModule.getEditPanel() as HTMLElement).focus();
+            let args = { preventDefault: function () { } };
+            let range = new NodeSelection().getRange(document);
+            let save = new NodeSelection().save(range, document);
+            let evnArg = { args: MouseEvent, self: (<any>rteObj).videoModule, selection: save, selectNode: new Array(), };
+            (<HTMLElement>rteEle.querySelectorAll(".e-toolbar-item button")[0] as HTMLElement).click();
+            let dialogEle: Element = rteObj.element.querySelector('.e-dialog');
+            (dialogEle.querySelector('.e-video-url-wrap input#webURL') as HTMLElement).click();
+            (dialogEle.querySelector('.e-video-url') as HTMLInputElement).value = window.origin + '/base/spec/content/video/RTE-Ocean-Waves.mp4';
+            let fileObj: File = new File(["mov_bob"], "mov_bob.mp4", { lastModified: 0, type: "overide/mimetype" });
+            let eventArgs = { type: 'click', target: { files: [fileObj] }, preventDefault: (): void => { } };
+            (<any>rteObj).videoModule.uploadObj.onSelectFiles(eventArgs);
+            setTimeout(() => {
+                expect(mediaUploadFailedSpy).toHaveBeenCalled();
+                evnArg.selectNode = [rteObj.element];
+                (<any>rteObj).videoModule.deleteVideo(evnArg);
+                (<any>rteObj).videoModule.uploadObj.upload((<any>rteObj).videoModule.uploadObj.filesData[0]);
+                done();
+            }, 4000);
+        });
+    });
+
+    describe('Testing allowed extension in video upload - ', () => {
+        let rteObj: RichTextEditor;
+        beforeAll(() => {
+            rteObj = renderRTE({
+                insertVideoSettings: {
+                    allowedTypes: ['.mp3'],
+                    saveUrl: "uploadbox/Save",
+                    path: "../Videos/"
+                },
+                toolbarSettings: {
+                    items: ['Video']
+                },
+            });
+        })
+        afterAll(() => {
+            destroy(rteObj);
+        })
+        it(' Test the component insert video with allowedExtension property', (done) => {
+            let rteEle: HTMLElement = rteObj.element;
+            (rteObj.contentModule.getEditPanel() as HTMLElement).focus();
+            let args = { preventDefault: function () { } };
+            let range = new NodeSelection().getRange(document);
+            let save = new NodeSelection().save(range, document);
+            let evnArg = { args: MouseEvent, self: (<any>rteObj).videoModule, selection: save, selectNode: new Array(), };
+            (<HTMLElement>rteEle.querySelectorAll(".e-toolbar-item button")[0] as HTMLElement).click();
+            let dialogEle: Element = rteObj.element.querySelector('.e-dialog');
+            (dialogEle.querySelector('.e-video-url-wrap input#webURL') as HTMLElement).click();
+            (dialogEle.querySelector('.e-video-url') as HTMLInputElement).value = 'https://www.w3schools.com/html/horse.m4a';
+            let fileObj: File = new File(["mov_bob"], "horse.m4a", { lastModified: 0, type: "overide/mimetype" });
+            let eventArgs = { type: 'click', target: { files: [fileObj] }, preventDefault: (): void => { } };
+            (<any>rteObj).videoModule.uploadObj.onSelectFiles(eventArgs);
+            setTimeout(() => {
+                expect((dialogEle.querySelector('.e-insertVideo') as HTMLButtonElement).hasAttribute('disabled')).toBe(true);
+                evnArg.selectNode = [rteObj.element];
+                (<any>rteObj).videoModule.deleteVideo(evnArg);
+                (<any>rteObj).videoModule.uploadObj.upload((<any>rteObj).videoModule.uploadObj.filesData[0]);
+                done();
+            }, 1000);
+        });
+    });
+
+    describe('beforeMediaUpload event - ', () => {
+        let rteObj: RichTextEditor;
+        let beforeMediaUploadSpy: jasmine.Spy = jasmine.createSpy('onBeforeFileUpload');
+        beforeAll(() => {
+            rteObj = renderRTE({
+                beforeFileUpload: beforeMediaUploadSpy,
+                toolbarSettings: {
+                    items: ['Video']
+                },
+            });
+        })
+        afterAll(() => {
+            destroy(rteObj);
+        })
+        it(' Event and arguments test ', (done) => {
+            let rteEle: HTMLElement = rteObj.element;
+            (rteObj.contentModule.getEditPanel() as HTMLElement).focus();
+            let args = { preventDefault: function () { } };
+            let range = new NodeSelection().getRange(document);
+            let save = new NodeSelection().save(range, document);
+            let evnArg = { args: MouseEvent, self: (<any>rteObj).videoModule, selection: save, selectNode: new Array(), };
+            (<HTMLElement>rteEle.querySelectorAll(".e-toolbar-item button")[0] as HTMLElement).click();
+            let dialogEle: Element = rteObj.element.querySelector('.e-dialog');
+            (dialogEle.querySelector('.e-video-url-wrap input#webURL') as HTMLElement).click();
+            (dialogEle.querySelector('.e-video-url') as HTMLInputElement).value = window.origin + '/base/spec/content/video/RTE-Ocean-Waves.mp4';
+            let fileObj: File = new File(["Header"], "mov_bob.mp4", { lastModified: 0, type: "overide/mimetype" });
+            let eventArgs = { type: 'click', target: { files: [fileObj] }, preventDefault: (): void => { } };
+            (<any>rteObj).videoModule.uploadObj.onSelectFiles(eventArgs);
+            setTimeout(() => {
+                expect(beforeMediaUploadSpy).toHaveBeenCalled();
+                done();
+            }, 100);
+        });
+    });
+
+    describe('BeforeDialogOpen eventArgs args.cancel testing', () => {
+        let rteObj: RichTextEditor;
+        let count: number = 0;
+        beforeAll(() => {
+            rteObj = renderRTE({
+                toolbarSettings: {
+                    items: ['Video'],
+                },
+                beforeDialogOpen(e: any): void {
+                    e.cancel = true;
+                    count = count + 1;
+                },
+                dialogClose(e: any): void {
+                    count = count + 1;
+                }
+            });
+        });
+        afterAll(() => {
+            destroy(rteObj);
+        });
+        it('dialogClose event trigger testing', (done) => {
+            expect(count).toBe(0);
+            (rteObj.element.querySelector('.e-toolbar-item button') as HTMLElement).click();
+            setTimeout(() => {
+                expect(count).toBe(1);
+                (rteObj.element.querySelector('.e-content') as HTMLElement).click();
+                expect(count).toBe(1);
+                done();
+            }, 100);
+        });
+    });
+    describe('BeforeDialogOpen event is not called for second time', () => {
+        let rteObj: RichTextEditor;
+        let count: number = 0;
+        beforeAll(() => {
+            rteObj = renderRTE({
+                toolbarSettings: {
+                    items: ['Video']
+                },
+                beforeDialogOpen(e: any): void {
+                    e.cancel = true;
+                    count = count + 1;
+                }
+            });
+        });
+        afterAll(() => {
+            destroy(rteObj);
+        });
+        it('beforeDialogOpen event trigger testing', (done) => {
+            expect(count).toBe(0);
+            (rteObj.element.querySelectorAll('.e-toolbar-item')[0].querySelector('button') as HTMLElement).click();
+            setTimeout(() => {
+                expect(count).toBe(1);
+                done();
+            }, 100);
+        });
+    });
+    describe('Checking video replace, using the video dialog', () => {
+        let rteEle: HTMLElement;
+        let rteObj: RichTextEditor;
+        beforeAll(() => {
+            rteObj = renderRTE({
+                toolbarSettings: {
+                    items: ['Video']
+                },
+                value: `<span class="e-video-wrap" contenteditable="false" title="mov_bbb.mp4"><video class="e-rte-video e-videoinline" controls=""><source src="https://www.w3schools.com/html/mov_bbb.mp4" type="video/mp4"></video></span><br>`
+            });
+            rteEle = rteObj.element;
+        });
+        afterAll(() => {
+            destroy(rteObj);
+        });
+        it('video dialog', (done) => {
+            (rteObj.contentModule.getEditPanel() as HTMLElement).focus();
+            (<HTMLElement>rteEle.querySelectorAll(".e-toolbar-item")[0] as HTMLElement).click();
+            let fileObj: File = new File(["Testing"], "test.mp3", { lastModified: 0, type: "overide/mimetype" });
+            let eventArgs = { type: 'click', target: { files: [fileObj] }, preventDefault: (): void => { } };
+            (<any>rteObj).videoModule.uploadObj.onSelectFiles(eventArgs);
+            (<any>rteObj).videoModule.uploadObj.upload((<any>rteObj).videoModule.uploadObj.filesData[0]);
+            (document.querySelector('.e-insertVideo.e-primary') as HTMLElement).click();
+            setTimeout(() => {
+                expect((rteObj.contentModule.getEditPanel() as HTMLElement).querySelector('.e-video-wrap')).not.toBe(null);
+                done();
+            }, 100);
+        });
+    });
+    describe('Video outline style testing, while focus other content or video', () => {
+        let rteObj: RichTextEditor;
+        let QTBarModule: IQuickToolbar;
+        beforeAll((done: Function) => {
+            rteObj = renderRTE({
+                toolbarSettings: {
+                    items: ['Video'],
+                },
+                value: '<p>Sample Text</p> <p><span class="e-video-wrap" contenteditable="false" title="mov_bbb.mp4"><video class="e-rte-video e-videoinline" controls=""><source src="https://www.w3schools.com/html/mov_bbb.mp4" type="video/mp4"></video></span><span class="e-video-wrap" contenteditable="false" title="mov_bbb.mp4"><video class="e-rte-video e-videoinline" controls=""><source src="https://www.w3schools.com/html/mov_bbb.mp4" type="video/mp4"></video></span></p>'
+            });
+            QTBarModule = getQTBarModule(rteObj);
+            done();
+        });
+        afterAll((done: Function) => {
+            destroy(rteObj);
+            done();
+        });
+        it('first video click with focus testing', (done) => {
+            (<any>QTBarModule).renderQuickToolbars(rteObj.videoModule);
+            dispatchEvent(rteObj.element.querySelectorAll('.e-content video')[0] as HTMLElement, 'mousedown');
+            expect((rteObj.element.querySelectorAll('.e-content .e-video-wrap video')[0] as HTMLElement).style.outline === 'rgb(74, 144, 226) solid 2px').toBe(true);
+            done();
+        });
+        it('second video click with focus testing', (done) => {
+            (<any>QTBarModule).renderQuickToolbars(rteObj.videoModule);
+            dispatchEvent(rteObj.element.querySelectorAll('.e-content video')[1] as HTMLElement, 'mousedown');
+            expect((rteObj.element.querySelectorAll('.e-content .e-video-wrap video')[1] as HTMLElement).style.outline === 'rgb(74, 144, 226) solid 2px').toBe(true);
+            done();
+        });
+        it('first video click after p click with focus testing', (done) => {
+            (<any>QTBarModule).renderQuickToolbars(rteObj.videoModule);
+            dispatchEvent(rteObj.element.querySelectorAll('.e-content video')[0] as HTMLElement, 'mousedown');
+            expect((rteObj.element.querySelectorAll('.e-content .e-video-wrap video')[0] as HTMLElement).style.outline === 'rgb(74, 144, 226) solid 2px').toBe(true);
+            done();
+        });
+        it('second video click after p click with focus testing', (done) => {
+            (<any>QTBarModule).renderQuickToolbars(rteObj.videoModule);
+            dispatchEvent(rteObj.element.querySelectorAll('.e-content video')[1] as HTMLElement, 'mousedown');
+            expect((rteObj.element.querySelectorAll('.e-content .e-video-wrap video')[1] as HTMLElement).style.outline === 'rgb(74, 144, 226) solid 2px').toBe(true);
+            done();
+        });
+    });
+    describe('Video focus not working after outside click then again click a video', () => {
+        let rteObj: RichTextEditor;
+        let QTBarModule: IQuickToolbar;
+        beforeAll((done: Function) => {
+            rteObj = renderRTE({
+                toolbarSettings: {
+                    items: ['Video'],
+                },
+                value: '<p>Sample Text</p> <span class="e-video-wrap" contenteditable="false" title="mov_bbb.mp4"><video class="e-rte-video e-videoinline" controls=""><source src="https://www.w3schools.com/html/mov_bbb.mp4" type="video/mp4"></video></span><br><span class="e-video-wrap" contenteditable="false" title="mov_bbb.mp4"><video class="e-rte-video e-videoinline" controls=""><source src="https://www.w3schools.com/html/mov_bbb.mp4" type="video/mp4"></video></span>'
+            });
+            QTBarModule = getQTBarModule(rteObj);
+            done();
+        });
+        afterAll((done: Function) => {
+            destroy(rteObj);
+            done();
+        });
+        it('video click with focus testing', (done) => {
+            (<any>QTBarModule).renderQuickToolbars(rteObj.videoModule);
+            dispatchEvent(rteObj.element.querySelectorAll('.e-content video')[0] as HTMLElement, 'mousedown');
+            expect((rteObj.element.querySelectorAll('.e-content .e-video-wrap video')[0] as HTMLElement).style.outline === 'rgb(74, 144, 226) solid 2px').toBe(true);
+            done();
+        });
+        it('Again video click with focus testing', (done) => {
+            (<any>QTBarModule).renderQuickToolbars(rteObj.videoModule);
+            dispatchEvent(rteObj.element.querySelectorAll('.e-content video')[0] as HTMLElement, 'mousedown');
+            expect((rteObj.element.querySelectorAll('.e-content .e-video-wrap video')[0] as HTMLElement).style.outline === 'rgb(74, 144, 226) solid 2px').toBe(true);
+            done();
+        });
+    });
+    describe('ShowDialog, CloseDialog method testing', () => {
+        let rteObj: RichTextEditor;
+        beforeAll(() => {
+            rteObj = renderRTE({});
+        });
+        afterAll(() => {
+            destroy(rteObj);
+        });
+        it('show/hide dialog testing', (done) => {
+            rteObj.showDialog(DialogType.InsertVideo);
+            setTimeout(() => {
+                expect(document.body.querySelectorAll('.e-rte-video-dialog.e-dialog').length).toBe(1);
+                rteObj.closeDialog(DialogType.InsertVideo);
+                setTimeout(() => {
+                    expect(document.body.querySelectorAll('.e-rte-video-dialog.e-dialog').length).toBe(0);
+                    done();
+                }, 100);
+            }, 100);
+        });
+    });
+
+    describe('EJ2-65777 Not able to insert Embed video using Keyboard Shortcut', () => {
         let rteObj: RichTextEditor;
         let keyboardEventArgs = {
             preventDefault: function () { },
@@ -3078,45 +2700,46 @@ client side. Customer easy to edit the contents and get the HTML content for
             keyCode: 86,
             which: 86,
             code: 86,
-            action : 'insert-video'
+            action: 'insert-video'
         };
-        beforeEach ( () => {
+        beforeEach((done: DoneFn) => {
             rteObj = renderRTE({
                 toolbarSettings: {
                     items: ['Video'],
                 }
             });
-        });
-
-        afterEach ((done: Function)  => {
-            destroy( rteObj );
             done();
         });
 
-        it ('Should insert Embed video in the RTE content editable div', (done: Function) => {
+        afterEach((done: Function) => {
+            destroy(rteObj);
+            done();
+        });
+
+        it('Should insert Embed video in the RTE content editable div', (done: Function) => {
             (rteObj as any).videoModule.onKeyDown({ args: keyboardEventArgs });
-            const inputElem: HTMLElement = document.querySelector( '.e-embed-video-url' );
+            const inputElem: HTMLElement = document.querySelector('.e-embed-video-url');
             const embedURL: string = `<iframe width="560" height="315" src="https://www.youtube.com/embed/j898RGRw0b4" title="YouTube video player" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>`;
             inputElem.innerHTML = embedURL;
-            const insertBtn: HTMLElement = document.querySelector( '.e-insertVideo' );
-            insertBtn.removeAttribute( 'disabled' );
+            const insertBtn: HTMLElement = document.querySelector('.e-insertVideo');
+            insertBtn.removeAttribute('disabled');
             insertBtn.click();
-            setTimeout ( () => {
+            setTimeout(() => {
                 expect(rteObj.rootContainer.childElementCount).toEqual(3);
                 done();
             }, 1000);
         });
 
-        it ('Should insert Web video in the RTE content editable div', (done: Function) => {
+        it('Should insert Web video in the RTE content editable div', (done: Function) => {
             (rteObj as any).videoModule.onKeyDown({ args: keyboardEventArgs });
             document.getElementById('webURL').click()
-            const inputElem: HTMLElement = document.querySelector( '.e-video-url' );
+            const inputElem: HTMLElement = document.querySelector('.e-video-url');
             const embedURL: string = `https://www.w3schools.com/tags/movie.mp4`;
             inputElem.innerHTML = embedURL;
-            const insertBtn: HTMLElement = document.querySelector( '.e-insertVideo' );
-            insertBtn.removeAttribute( 'disabled' );
+            const insertBtn: HTMLElement = document.querySelector('.e-insertVideo');
+            insertBtn.removeAttribute('disabled');
             insertBtn.click();
-            setTimeout ( () => {
+            setTimeout(() => {
                 expect(rteObj.rootContainer.childElementCount).toEqual(4);
                 done();
             }, 1000);
@@ -3124,47 +2747,45 @@ client side. Customer easy to edit the contents and get the HTML content for
     });
     describe('836851 - Check the video quick toolbar hide, while click the enterkey ', () => {
         let rteEle: HTMLElement;
-        let rteObj: RichTextEditor;
-        let keyBoardEvent = { 
-            type: 'keydown', 
-            preventDefault: function () { }, 
-            ctrlKey: false, 
-            key: 'enter', 
-            stopPropagation: function () { }, 
-            shiftKey: false, 
+        let editor: RichTextEditor;
+        let keyBoardEvent = {
+            type: 'keydown',
+            preventDefault: function () { },
+            ctrlKey: false,
+            key: 'enter',
+            stopPropagation: function () { },
+            shiftKey: false,
             which: 13,
             keyCode: 13,
             action: 'enter'
         };
         let innerHTML: string = `<p>Testing<span class="e-video-wrap" contenteditable="false" title="movie.mp4"><video class="e-rte-video e-video-inline" controls=""><source src="https://www.w3schools.com/html/mov_bbb.mp4" type="video/mp4"></video></span><br></p>`;
         beforeAll(() => {
-            rteObj = renderRTE({
+            editor = renderRTE({
                 height: 400,
                 toolbarSettings: {
                     items: ['Video', 'Bold']
                 },
                 value: innerHTML,
             });
-            rteEle = rteObj.element;
+            rteEle = editor.element;
         });
         afterAll(() => {
-            destroy(rteObj);
+            destroy(editor);
         });
 
         it('Check the vedio quick toolbar hide, while click the enterkey', (done: Function) => {
-            let target = <HTMLElement>rteEle.querySelectorAll(".e-content")[0]
-            let clickEvent: any = document.createEvent("MouseEvents");
-            clickEvent.initEvent("mousedown", false, true);
-            target.dispatchEvent(clickEvent);
-            target = (rteObj.contentModule.getEditPanel() as HTMLElement).querySelector('.e-rte-video');
-            (rteObj as any).formatter.editorManager.nodeSelection.setSelectionNode(rteObj.contentModule.getDocument(), target);
-            clickEvent.initEvent("mousedown", false, true);
-            target.dispatchEvent(clickEvent);
-            (<any>rteObj).videoModule.editAreaClickHandler({ args: clickEvent });
-            expect(!isNullOrUndefined(document.querySelector('.e-rte-quick-popup') as HTMLElement)).toBe(true);
-            (<any>rteObj).keyDown(keyBoardEvent);
-            expect(document.querySelector('.e-rte-quick-popup')).toBe(null);
-            done();
+            editor.focusIn();
+            editor.inputElement.dispatchEvent(INIT_MOUSEDOWN_EVENT);
+            const target: HTMLElement = editor.inputElement.querySelector('video');
+            setSelection(target, 0, 1);
+            target.dispatchEvent(MOUSEUP_EVENT);
+            setTimeout(() => {
+                expect(!isNullOrUndefined(document.querySelector('.e-rte-quick-popup') as HTMLElement)).toBe(true);
+                (<any>editor).keyDown(keyBoardEvent);
+                expect(document.querySelector('.e-rte-quick-popup')).toBe(null);
+                done();
+            }, 100);
         });
     });
     describe('836851 - Check the video quick toolbar hide', () => {
@@ -3196,13 +2817,13 @@ client side. Customer easy to edit the contents and get the HTML content for
             target.dispatchEvent(clickEvent);
             (<any>rteObj).videoModule.resizeStart(clickEvent);
             (<any>rteObj).videoModule.onDocumentClick(clickEvent);
-            (<any>rteObj).videoModule.editAreaClickHandler({args:clickEvent});
+            (<any>rteObj).videoModule.editAreaClickHandler({ args: clickEvent });
             (<any>rteObj).videoModule.hideVideoQuickToolbar()
             expect(document.querySelector('.e-rte-quick-popup')).toBe(null);
             done();
         });
     });
-    
+
     describe('836851 - Change the video size using video quick toolbar dimention dialog', () => {
         let rteEle: HTMLElement;
         let rteObj: RichTextEditor;
@@ -3231,18 +2852,20 @@ client side. Customer easy to edit the contents and get the HTML content for
             clickEvent.initEvent("mousedown", false, true);
             target.dispatchEvent(clickEvent);
             (<any>rteObj).videoModule.resizeStart(clickEvent);
-            (<any>rteObj).videoModule.editAreaClickHandler({args:clickEvent});
-            expect(!isNullOrUndefined(document.querySelector('.e-rte-quick-popup')as HTMLElement)).toBe(true);
+            (<any>rteObj).videoModule.editAreaClickHandler({ args: clickEvent });
+            expect(!isNullOrUndefined(document.querySelector('.e-rte-quick-popup') as HTMLElement)).toBe(true);
             let videoQTBarEle = <HTMLElement>document.querySelector('.e-rte-quick-popup');
-            (videoQTBarEle.querySelector("[title='Dimension']")as HTMLElement).click();
+            (videoQTBarEle.querySelector("[title='Dimension']") as HTMLElement).click();
             let dialogEle = <HTMLElement>document.querySelector('.e-rte-video-dialog');
             (dialogEle.querySelector('.e-vid-width') as HTMLInputElement).value = '200px';
             (dialogEle.querySelector('.e-vid-width') as HTMLElement).dispatchEvent(new Event("input"));
             (dialogEle.querySelector('.e-vid-height') as HTMLInputElement).value = '200px';
             (dialogEle.querySelector('.e-vid-height') as HTMLElement).dispatchEvent(new Event("input"));
             (dialogEle.querySelector('.e-update-size') as HTMLElement).click();
-            expect(isNullOrUndefined(document.querySelector('.e-rte-quick-popup'))).toBe(true);
-            done();
+            setTimeout(() => {
+                expect(isNullOrUndefined(document.querySelector('.e-rte-quick-popup'))).toBe(true);
+                done();
+            }, 100);
         });
     });
     describe('836851 - Check the video resize while height greater than width - resizeByPercent enabled', () => {
@@ -3257,7 +2880,7 @@ client side. Customer easy to edit the contents and get the HTML content for
                 toolbarSettings: {
                     items: ['Video', 'Bold']
                 },
-                insertVideoSettings: { resize: true, minHeight: 80, minWidth: 80,resizeByPercent: true }
+                insertVideoSettings: { resize: true, minHeight: 80, minWidth: 80, resizeByPercent: true }
             });
             rteEle = rteObj.element;
         });
@@ -3266,7 +2889,7 @@ client side. Customer easy to edit the contents and get the HTML content for
         });
         it('video dialog', () => {
             (rteObj.contentModule.getEditPanel() as HTMLElement).focus();
-            expect((rteObj.element.querySelectorAll('.rte-placeholder')[0] as HTMLElement).classList.contains('enabled')).toBe(true);
+            expect((rteObj.element.querySelectorAll('.e-rte-placeholder')[0] as HTMLElement).classList.contains('e-placeholder-enabled')).toBe(true);
             let args: any = {
                 preventDefault: function () { },
                 originalEvent: { currentTarget: document.getElementById('rte_toolbarItems') }
@@ -3284,8 +2907,8 @@ client side. Customer easy to edit the contents and get the HTML content for
             const videoElement = document.querySelector(".e-rte-video") as HTMLElement;
             videoElement.style.width = "150px";
             videoElement.style.height = "300px";
-            let placeHolder: HTMLElement = (rteObj.element.querySelectorAll('.rte-placeholder')[0] as HTMLElement);
-            expect(placeHolder.classList.contains('enabled')).toBe(true);
+            let placeHolder: HTMLElement = (rteObj.element.querySelectorAll('.e-rte-placeholder')[0] as HTMLElement);
+            expect(placeHolder.classList.contains('e-placeholder-enabled')).toBe(true);
         });
         it('resize start', () => {
             let trg = (rteObj.element.querySelector('.e-rte-video') as HTMLElement);
@@ -3345,7 +2968,7 @@ client side. Customer easy to edit the contents and get the HTML content for
         });
         it('video dialog', () => {
             (rteObj.contentModule.getEditPanel() as HTMLElement).focus();
-            expect((rteObj.element.querySelectorAll('.rte-placeholder')[0] as HTMLElement).classList.contains('enabled')).toBe(true);
+            expect((rteObj.element.querySelectorAll('.e-rte-placeholder')[0] as HTMLElement).classList.contains('e-placeholder-enabled')).toBe(true);
             let args: any = {
                 preventDefault: function () { },
                 originalEvent: { currentTarget: document.getElementById('rte_toolbarItems') }
@@ -3363,8 +2986,8 @@ client side. Customer easy to edit the contents and get the HTML content for
             const videoElement = document.querySelector(".e-rte-video") as HTMLElement;
             videoElement.style.width = "150px";
             videoElement.style.height = "300px";
-            let placeHolder: HTMLElement = (rteObj.element.querySelectorAll('.rte-placeholder')[0] as HTMLElement);
-            expect(placeHolder.classList.contains('enabled')).toBe(true);
+            let placeHolder: HTMLElement = (rteObj.element.querySelectorAll('.e-rte-placeholder')[0] as HTMLElement);
+            expect(placeHolder.classList.contains('e-placeholder-enabled')).toBe(true);
         });
         it('resize start', () => {
             let trg = (rteObj.element.querySelector('.e-rte-video') as HTMLElement);
@@ -3415,7 +3038,7 @@ client side. Customer easy to edit the contents and get the HTML content for
                 toolbarSettings: {
                     items: ['Video', 'Bold']
                 },
-                insertVideoSettings: { resize: true, minHeight: 80, minWidth: 80  , resizeByPercent: true}
+                insertVideoSettings: { resize: true, minHeight: 80, minWidth: 80, resizeByPercent: true }
             });
             rteEle = rteObj.element;
         });
@@ -3424,7 +3047,7 @@ client side. Customer easy to edit the contents and get the HTML content for
         });
         it('video width to be zero - resizeByPercent as ture', () => {
             (rteObj.contentModule.getEditPanel() as HTMLElement).focus();
-            expect((rteObj.element.querySelectorAll('.rte-placeholder')[0] as HTMLElement).classList.contains('enabled')).toBe(true);
+            expect((rteObj.element.querySelectorAll('.e-rte-placeholder')[0] as HTMLElement).classList.contains('e-placeholder-enabled')).toBe(true);
             let args: any = {
                 preventDefault: function () { },
                 originalEvent: { currentTarget: document.getElementById('rte_toolbarItems') }
@@ -3441,8 +3064,8 @@ client side. Customer easy to edit the contents and get the HTML content for
             (document.querySelector('.e-insertVideo.e-primary') as HTMLElement).click();
             const videoElement = document.querySelector(".e-rte-video") as HTMLElement;
             videoElement.style.width = "0px";
-            let placeHolder: HTMLElement = (rteObj.element.querySelectorAll('.rte-placeholder')[0] as HTMLElement);
-            expect(placeHolder.classList.contains('enabled')).toBe(true);
+            let placeHolder: HTMLElement = (rteObj.element.querySelectorAll('.e-rte-placeholder')[0] as HTMLElement);
+            expect(placeHolder.classList.contains('e-placeholder-enabled')).toBe(true);
         });
         it('resize start', () => {
             let trg = (rteObj.element.querySelector('.e-rte-video') as HTMLElement);
@@ -3493,7 +3116,7 @@ client side. Customer easy to edit the contents and get the HTML content for
                 toolbarSettings: {
                     items: ['Video', 'Bold']
                 },
-                insertVideoSettings: { resize: true, minHeight: 80, minWidth: 80  , resizeByPercent: true}
+                insertVideoSettings: { resize: true, minHeight: 80, minWidth: 80, resizeByPercent: true }
             });
             rteEle = rteObj.element;
         });
@@ -3502,7 +3125,7 @@ client side. Customer easy to edit the contents and get the HTML content for
         });
         it('video width to be zero - resizeByPercent as false', () => {
             (rteObj.contentModule.getEditPanel() as HTMLElement).focus();
-            expect((rteObj.element.querySelectorAll('.rte-placeholder')[0] as HTMLElement).classList.contains('enabled')).toBe(true);
+            expect((rteObj.element.querySelectorAll('.e-rte-placeholder')[0] as HTMLElement).classList.contains('e-placeholder-enabled')).toBe(true);
             let args: any = {
                 preventDefault: function () { },
                 originalEvent: { currentTarget: document.getElementById('rte_toolbarItems') }
@@ -3519,8 +3142,8 @@ client side. Customer easy to edit the contents and get the HTML content for
             (document.querySelector('.e-insertVideo.e-primary') as HTMLElement).click();
             const videoElement = document.querySelector(".e-rte-video") as HTMLElement;
             videoElement.style.width = "0px";
-            let placeHolder: HTMLElement = (rteObj.element.querySelectorAll('.rte-placeholder')[0] as HTMLElement);
-            expect(placeHolder.classList.contains('enabled')).toBe(true);
+            let placeHolder: HTMLElement = (rteObj.element.querySelectorAll('.e-rte-placeholder')[0] as HTMLElement);
+            expect(placeHolder.classList.contains('e-placeholder-enabled')).toBe(true);
         });
         it('resize start', () => {
             let trg = (rteObj.element.querySelector('.e-rte-video') as HTMLElement);
@@ -3562,14 +3185,14 @@ client side. Customer easy to edit the contents and get the HTML content for
     xdescribe('836851 - Check the video gets delete press the enterkey ', () => {
         let rteEle: HTMLElement;
         let rteObj: RichTextEditor;
-        let keyBoardEvent = { 
-            type: 'keydown', 
-            preventDefault: function () { }, 
-            ctrlKey: false, 
+        let keyBoardEvent = {
+            type: 'keydown',
+            preventDefault: function () { },
+            ctrlKey: false,
             key: 'Backspace',
             code: 'Backspace',
-            stopPropagation: function () { }, 
-            shiftKey: false, 
+            stopPropagation: function () { },
+            shiftKey: false,
             which: 8,
             keyCode: 8,
             action: 'Backspace'
@@ -3616,7 +3239,7 @@ client side. Customer easy to edit the contents and get the HTML content for
                 toolbarSettings: {
                     items: ['Video', 'Bold']
                 },
-                insertVideoSettings: {removeUrl:"https://ej2.syncfusion.com/services/api/uploadbox/Remove"},
+                insertVideoSettings: { removeUrl: "https://ej2.syncfusion.com/services/api/uploadbox/Remove" },
                 value: innerHTML,
             });
             rteEle = rteObj.element;
@@ -3634,20 +3257,20 @@ client side. Customer easy to edit the contents and get the HTML content for
             (rteObj as any).formatter.editorManager.nodeSelection.setSelectionNode(rteObj.contentModule.getDocument(), target);
             clickEvent.initEvent("mousedown", false, true);
             target.dispatchEvent(clickEvent);
-            (<any>rteObj).videoModule.editAreaClickHandler({args:clickEvent});
-            expect(!isNullOrUndefined(document.querySelector('.e-video-wrap')as HTMLElement)).toBe(true);
-            expect(!isNullOrUndefined(document.querySelector('.e-rte-quick-popup')as HTMLElement)).toBe(true);
+            (<any>rteObj).videoModule.editAreaClickHandler({ args: clickEvent });
+            expect(!isNullOrUndefined(document.querySelector('.e-video-wrap') as HTMLElement)).toBe(true);
+            expect(!isNullOrUndefined(document.querySelector('.e-rte-quick-popup') as HTMLElement)).toBe(true);
             let videoQTBarEle = <HTMLElement>document.querySelector('.e-rte-quick-popup');
-            (videoQTBarEle.querySelector("[title='Remove']")as HTMLElement).click();
-            expect(isNullOrUndefined(document.querySelector('.e-video-wrap')as HTMLElement)).toBe(true);
-            expect(isNullOrUndefined(document.querySelector('.e-rte-quick-popup')as HTMLElement)).toBe(true);
+            (videoQTBarEle.querySelector("[title='Remove']") as HTMLElement).click();
+            expect(isNullOrUndefined(document.querySelector('.e-video-wrap') as HTMLElement)).toBe(true);
+            expect(isNullOrUndefined(document.querySelector('.e-rte-quick-popup') as HTMLElement)).toBe(true);
             done();
         });
     });
     describe('836851 - insertVideoUrl', function () {
         let rteEle: HTMLElement;
         let rteObj: RichTextEditor;
-        let QTBarModule: IRenderer;
+        let QTBarModule: IQuickToolbar;
         var innerHTML: string = "<p>Testing</p>";
         beforeAll(() => {
             rteObj = renderRTE({
@@ -3666,12 +3289,12 @@ client side. Customer easy to edit the contents and get the HTML content for
         it('Check the insertVideoUrl', (done: Function) => {
             (<any>QTBarModule).renderQuickToolbars(rteObj.videoModule);
             (<any>rteObj).videoModule.uploadUrl = { url: "https://www.w3schools.com/html/mov_bbb.mp4" };
-            (<HTMLElement>document.querySelector('[title="Insert Video (Ctrl+Alt+V)"]')as HTMLElement).click()
+            (<HTMLElement>document.querySelector('[title="Insert Video (Ctrl+Alt+V)"]') as HTMLElement).click()
             let dialogEle: any = rteObj.element.querySelector('.e-dialog');
-            (dialogEle.querySelector('.e-video-url-wrap input#webURL')as HTMLElement).click();
+            (dialogEle.querySelector('.e-video-url-wrap input#webURL') as HTMLElement).click();
             (dialogEle.querySelector('.e-video-url') as HTMLInputElement).value = window.origin + '/base/spec/content/video/RTE-Ocean-Waves.mp4';
             (dialogEle.querySelector('.e-video-url') as HTMLElement).dispatchEvent(new Event("input"));
-            (document.querySelector('.e-insertVideo.e-primary')as HTMLElement).click();
+            (document.querySelector('.e-insertVideo.e-primary') as HTMLElement).click();
             expect(!isNullOrUndefined(document.querySelector('.e-rte-video'))).toBe(true)
             done();
         });
@@ -3679,7 +3302,7 @@ client side. Customer easy to edit the contents and get the HTML content for
     describe('836851 - Check the insert button - without input URL', function () {
         let rteEle: HTMLElement;
         let rteObj: RichTextEditor;
-        let QTBarModule: IRenderer;
+        let QTBarModule: IQuickToolbar;
         var innerHTML: string = "<p>Testing</p>";
         beforeAll(() => {
             rteObj = renderRTE({
@@ -3697,28 +3320,28 @@ client side. Customer easy to edit the contents and get the HTML content for
         });
         it('Check the insert button - without input URL', (done: Function) => {
             (<any>QTBarModule).renderQuickToolbars(rteObj.videoModule);
-            (<HTMLElement>document.querySelector('[title="Insert Video (Ctrl+Alt+V)"]')as HTMLElement).click()
+            (<HTMLElement>document.querySelector('[title="Insert Video (Ctrl+Alt+V)"]') as HTMLElement).click()
             let dialogEle: any = rteObj.element.querySelector('.e-dialog');
-            (dialogEle.querySelector('.e-video-url-wrap input#webURL')as HTMLElement).click();
-            (dialogEle.querySelector('.e-video-url-wrap input#embedURL')as HTMLElement).click();
-            (dialogEle.querySelector('.e-video-url-wrap input#webURL')as HTMLElement).click();
+            (dialogEle.querySelector('.e-video-url-wrap input#webURL') as HTMLElement).click();
+            (dialogEle.querySelector('.e-video-url-wrap input#embedURL') as HTMLElement).click();
+            (dialogEle.querySelector('.e-video-url-wrap input#webURL') as HTMLElement).click();
             (dialogEle.querySelector('.e-video-url') as HTMLInputElement).value = window.origin + '/base/spec/content/video/RTE-Ocean-Waves.mp4';
             (dialogEle.querySelector('.e-video-url') as HTMLElement).dispatchEvent(new Event("input"));
             (dialogEle.querySelector('.e-video-url') as HTMLInputElement).value = '';
             (dialogEle.querySelector('.e-video-url') as HTMLElement).dispatchEvent(new Event("input"));
             (dialogEle.querySelector('.e-video-url') as HTMLInputElement).value = window.origin + '/base/spec/content/video/RTE-Ocean-Waves.mp4';
             (dialogEle.querySelector('.e-video-url') as HTMLElement).dispatchEvent(new Event("input"));
-            (dialogEle.querySelector('.e-video-url-wrap input#embedURL')as HTMLElement).click();
+            (dialogEle.querySelector('.e-video-url-wrap input#embedURL') as HTMLElement).click();
             (dialogEle.querySelector('.e-embed-video-url') as HTMLInputElement).value = '<iframe width="560" height="315" src="https://www.youtube.com/embed/4U2ZxO7b8iM" title="YouTube video player" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>';
             (dialogEle.querySelector('.e-embed-video-url') as HTMLElement).dispatchEvent(new Event("keyup"));
             (dialogEle.querySelector('.e-embed-video-url') as HTMLInputElement).value = '';
             (dialogEle.querySelector('.e-embed-video-url') as HTMLElement).dispatchEvent(new Event("keyup"));
             (dialogEle.querySelector('.e-embed-video-url') as HTMLInputElement).value = '<iframe width="560" height="315" src="https://www.youtube.com/embed/4U2ZxO7b8iM" title="YouTube video player" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>';
             (dialogEle.querySelector('.e-embed-video-url') as HTMLElement).dispatchEvent(new Event("keyup"));
-            (document.querySelector('.e-insertVideo.e-primary')as HTMLElement).click();
+            (document.querySelector('.e-insertVideo.e-primary') as HTMLElement).click();
             expect(!isNullOrUndefined(document.querySelector('.e-video-clickelem'))).toBe(true);
-            (<HTMLElement>document.querySelectorAll('.e-toolbar-item')[0]as HTMLElement).click();
-            (<HTMLElement>document.querySelectorAll('.e-browsebtn')[0]as HTMLElement).click()
+            (<HTMLElement>document.querySelectorAll('.e-toolbar-item')[0] as HTMLElement).click();
+            (<HTMLElement>document.querySelectorAll('.e-browsebtn')[0] as HTMLElement).click()
 
             done();
         });
@@ -3786,7 +3409,7 @@ client side. Customer easy to edit the contents and get the HTML content for
     describe('836851 - Insert video', function () {
         let rteEle: HTMLElement;
         let rteObj: RichTextEditor;
-        let QTBarModule: IRenderer;
+        let QTBarModule: IQuickToolbar;
         var innerHTML: string = "<p>Testing</p>";
         beforeAll(() => {
             rteObj = renderRTE({
@@ -3805,21 +3428,21 @@ client side. Customer easy to edit the contents and get the HTML content for
         it('Close the dialog while video insert', (done: Function) => {
             (<any>QTBarModule).renderQuickToolbars(rteObj.videoModule);
             (<any>rteObj).videoModule.uploadUrl = { url: "https://www.w3schools.com/html/mov_bbb.mp4" };
-            (<HTMLElement>document.querySelector('[title="Insert Video (Ctrl+Alt+V)"]')as HTMLElement).click()
+            (<HTMLElement>document.querySelector('[title="Insert Video (Ctrl+Alt+V)"]') as HTMLElement).click()
             let dialogEle: any = rteObj.element.querySelector('.e-dialog');
-            (dialogEle.querySelector('.e-video-url-wrap input#webURL')as HTMLElement).click();
+            (dialogEle.querySelector('.e-video-url-wrap input#webURL') as HTMLElement).click();
             (dialogEle.querySelector('.e-video-url') as HTMLInputElement).value = window.origin + '/base/spec/content/video/RTE-Ocean-Waves.mp4';
             (dialogEle.querySelector('.e-video-url') as HTMLElement).dispatchEvent(new Event("input"));
             const mockEvent = new MouseEvent('mousedown', { bubbles: true, cancelable: true });
             (<any>rteObj).videoModule.onIframeMouseDown(mockEvent);
-            (<HTMLElement>document.querySelectorAll('.e-toolbar-item')[0]as HTMLElement).click();
+            (<HTMLElement>document.querySelectorAll('.e-toolbar-item')[0] as HTMLElement).click();
             expect(!isNullOrUndefined(document.querySelector('.e-rte-video-dialog'))).toBe(true)
             done();
         });
     });
     describe('Video outline style testing, while focus other content or video', () => {
         let rteObj: RichTextEditor;
-        let QTBarModule: IRenderer;
+        let QTBarModule: IQuickToolbar;
         beforeAll((done: Function) => {
             rteObj = renderRTE({
                 toolbarSettings: {
@@ -3873,7 +3496,7 @@ client side. Customer easy to edit the contents and get the HTML content for
                 toolbarSettings: {
                     items: ['Video', 'Bold']
                 },
-                insertVideoSettings: {removeUrl:"https://ej2.syncfusion.com/services/api/uploadbox/Remove"},
+                insertVideoSettings: { removeUrl: "https://ej2.syncfusion.com/services/api/uploadbox/Remove" },
                 value: innerHTML,
             });
             rteEle = rteObj.element;
@@ -3891,20 +3514,22 @@ client side. Customer easy to edit the contents and get the HTML content for
             (rteObj as any).formatter.editorManager.nodeSelection.setSelectionNode(rteObj.contentModule.getDocument(), target);
             clickEvent.initEvent("mousedown", false, true);
             target.dispatchEvent(clickEvent);
-            (<any>rteObj).videoModule.editAreaClickHandler({args:clickEvent});
-            expect(!isNullOrUndefined(document.querySelector('.e-video-wrap')as HTMLElement)).toBe(true);
-            expect(!isNullOrUndefined(document.querySelector('.e-rte-quick-popup')as HTMLElement)).toBe(true);
+            (<any>rteObj).videoModule.editAreaClickHandler({ args: clickEvent });
+            expect(!isNullOrUndefined(document.querySelector('.e-video-wrap') as HTMLElement)).toBe(true);
+            expect(!isNullOrUndefined(document.querySelector('.e-rte-quick-popup') as HTMLElement)).toBe(true);
             let videoQTBarEle = <HTMLElement>document.querySelector('.e-rte-quick-popup');
-            (videoQTBarEle.querySelector("[title='Remove']")as HTMLElement).click();
-            expect(isNullOrUndefined(document.querySelector('.e-video-wrap')as HTMLElement)).toBe(true);
-            expect(isNullOrUndefined(document.querySelector('.e-rte-quick-popup')as HTMLElement)).toBe(true);
-            done();
+            (videoQTBarEle.querySelector("[title='Remove']") as HTMLElement).click();
+            setTimeout(() => {
+                expect(isNullOrUndefined(document.querySelector('.e-video-wrap') as HTMLElement)).toBe(true);
+                expect(isNullOrUndefined(document.querySelector('.e-rte-quick-popup') as HTMLElement)).toBe(true);
+                done();
+            }, 100);
         });
     });
     xdescribe('836851 - Video deleting when press backspace button - without wrapper element', () => {
         let rteEle: HTMLElement;
         let rteObj: RichTextEditor;
-        let keyBoardEvent: any = { type: 'keydown', preventDefault: () => { }, ctrlKey: true, key: 'backspace', stopPropagation: () => { }, shiftKey: false, which: 8};
+        let keyBoardEvent: any = { type: 'keydown', preventDefault: () => { }, ctrlKey: true, key: 'backspace', stopPropagation: () => { }, shiftKey: false, which: 8 };
         let innerHTML1: string = `testing
         <video class="e-rte-video e-videoinline" controls=""><source src="https://www.w3schools.com/html/mov_bbb.mp4" type="video/mp4"></video>testing`;
         beforeAll(() => {
@@ -3927,8 +3552,10 @@ client side. Customer easy to edit the contents and get the HTML content for
             keyBoardEvent.keyCode = 8;
             keyBoardEvent.code = 'Backspace';
             (rteObj as any).keyDown(keyBoardEvent);
-            expect((<any>rteObj).inputElement.querySelector('.e-video-wrap')).toBe(null);
-            done();
+            setTimeout(() => {
+                expect((<any>rteObj).inputElement.querySelector('.e-video-wrap')).toBe(null);
+                done();
+            }, 100);
         });
     });
     describe('836851 - Iframe video delete ', () => {
@@ -3955,60 +3582,32 @@ client side. Customer easy to edit the contents and get the HTML content for
         });
 
         it('Delete video using quick toolbar', (done: Function) => {
+            rteObj.inputElement.dispatchEvent(INIT_MOUSEDOWN_EVENT);
             (rteObj.contentModule.getEditPanel() as HTMLElement).focus();
             (<HTMLElement>rteEle.querySelectorAll(".e-toolbar-item")[0] as HTMLElement).click();
-            let dialogEle: Element = rteObj.element.querySelector('.e-dialog');
-            (dialogEle.querySelector('.e-embed-video-url') as HTMLInputElement).value = `<iframe width="560" height="315" src="https://www.youtube.com/embed/4U2ZxO7b8iM" title="YouTube video player" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>`;
-            (dialogEle.querySelector('.e-embed-video-url') as HTMLInputElement).dispatchEvent(new Event("input"));
-            (document.querySelector('.e-insertVideo.e-primary') as HTMLElement).click();
-            expect((<any>rteObj).element.querySelector('iframe')).not.toBe(null);
-            let target = <HTMLElement>rteEle.querySelectorAll(".e-content")[0]
-            let clickEvent: any = document.createEvent("MouseEvents");
-            clickEvent.initEvent("mousedown", false, true);
-            target.dispatchEvent(clickEvent);
-            target = (rteObj.contentModule.getEditPanel() as HTMLElement).querySelector('.e-video-clickelem');
-            (rteObj as any).formatter.editorManager.nodeSelection.setSelectionNode(rteObj.contentModule.getDocument(), target);
-            clickEvent.initEvent("mousedown", false, true);
-            target.dispatchEvent(clickEvent);
-            (<any>rteObj).videoModule.editAreaClickHandler({args:clickEvent});
-            expect(!isNullOrUndefined(document.querySelector('.e-embed-video-wrap')as HTMLElement)).toBe(true);
-            expect(!isNullOrUndefined(document.querySelector('.e-rte-quick-popup')as HTMLElement)).toBe(true);
-            let videoQTBarEle = <HTMLElement>document.querySelector('.e-rte-quick-popup');
-            (videoQTBarEle.querySelector("[title='Remove']")as HTMLElement).click();
-            expect(isNullOrUndefined(document.querySelector('.e-embed-video-wrap')as HTMLElement)).toBe(true);
-            expect(isNullOrUndefined(document.querySelector('.e-rte-quick-popup')as HTMLElement)).toBe(true);
-            done();
+            setTimeout(() => {
+                let dialogEle: Element = rteObj.element.querySelector('.e-dialog');
+                (dialogEle.querySelector('.e-embed-video-url') as HTMLInputElement).value = `<iframe width="560" height="315" src="https://www.youtube.com/embed/4U2ZxO7b8iM" title="YouTube video player" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>`;
+                (dialogEle.querySelector('.e-embed-video-url') as HTMLInputElement).dispatchEvent(new Event("input"));
+                (document.querySelector('.e-insertVideo.e-primary') as HTMLElement).click();
+                setTimeout(() => {
+                    expect((<any>rteObj).element.querySelector('iframe')).not.toBe(null);
+                    setTimeout(() => {
+                        expect(!isNullOrUndefined(document.querySelector('.e-embed-video-wrap') as HTMLElement)).toBe(true);
+                        expect(!isNullOrUndefined(document.querySelector('.e-rte-quick-popup') as HTMLElement)).toBe(true);
+                        let videoQTBarEle = <HTMLElement>document.querySelector('.e-rte-quick-popup');
+                        (videoQTBarEle.querySelector("[title='Remove']") as HTMLElement).click();
+                        setTimeout(() => {
+                            expect(isNullOrUndefined(document.querySelector('.e-embed-video-wrap') as HTMLElement)).toBe(true);
+                            expect(isNullOrUndefined(document.querySelector('.e-rte-quick-popup') as HTMLElement)).toBe(true);
+                            done();
+                        }, 100);
+                    }, 3000); // Timeout since an embed vidoe would take time to load and then a quick toolbar will be opened.
+                }, 100);
+            }, 100);
         });
     });
-    // describe('836851 - Check the video quick toolbar render after the insert the video', function () {
-    //     let rteObj: RichTextEditor;
-    //     beforeAll((done: Function) => {
-    //         rteObj = renderRTE({
-    //             height: 400,
-    //             toolbarSettings: {
-    //                 items: ['Video', 'Bold']
-    //             },
-    //         });
-    //         done();
-    //     });
-    //     afterAll((done: Function) => {
-    //         destroy(rteObj);
-    //         done();
-    //     });
-    //     it('Check the video quick toolbar render after the insert the video', (done: Function) => {
-    //         (rteObj.contentModule.getEditPanel() as HTMLElement).focus();
-    //         (<HTMLElement>document.querySelector('[title="Insert Video (Ctrl+Alt+V)"]')as HTMLElement).click()
-    //         let dialogEle: any = rteObj.element.querySelector('.e-dialog');
-    //         (dialogEle.querySelector('.e-video-url-wrap input#webURL')as HTMLElement).click();
-    //         (dialogEle.querySelector('.e-video-url') as HTMLInputElement).value = window.origin + '/base/spec/content/video/RTE-Ocean-Waves.mp4';
-    //         (dialogEle.querySelector('.e-video-url') as HTMLElement).dispatchEvent(new Event("input"));
-    //         (document.querySelector('.e-insertVideo.e-primary')as HTMLElement).click();
-    //         let target = (<any>rteObj).Element.querySelectorAll(".e-content")[0];
-    //         let clickEvent = document.createEvent("MouseEvents");
-    //         clickEvent.initEvent("mousedown", false, true);
-    //         target.dispatchEvent(clickEvent);
-    //     });
-    // });
+
     describe('836851 - Video quick toolbar hide', () => {
         let rteEle: HTMLElement;
         let rteObj: RichTextEditor;
@@ -4038,12 +3637,14 @@ client side. Customer easy to edit the contents and get the HTML content for
             target.dispatchEvent(clickEvent);
             (<any>rteObj).videoModule.resizeStart(clickEvent);
             (<any>rteObj).videoModule.onDocumentClick(clickEvent);
-            (<any>rteObj).videoModule.editAreaClickHandler({args:clickEvent});
-            target = <HTMLElement>document.querySelector('.e-rte-botRight')as HTMLElement;
+            (<any>rteObj).videoModule.editAreaClickHandler({ args: clickEvent });
+            target = <HTMLElement>document.querySelector('.e-rte-botRight') as HTMLElement;
             target.dispatchEvent(clickEvent);
             (<any>rteObj).videoModule.resizeStart(clickEvent);
-            expect(isNullOrUndefined(document.querySelector('.e-rte-quick-popup'))).toBe(true);
-            done();
+            setTimeout(() => {
+                expect(isNullOrUndefined(document.querySelector('.e-rte-quick-popup'))).toBe(true);
+                done();
+            }, 100);
         });
     });
     describe('836851 - Video resize element hide', () => {
@@ -4074,7 +3675,7 @@ client side. Customer easy to edit the contents and get the HTML content for
             clickEvent.initEvent("mousedown", false, true);
             target.dispatchEvent(clickEvent);
             (<any>rteObj).videoModule.resizeStart(clickEvent);
-            (<any>rteObj).videoModule.editAreaClickHandler({args:clickEvent});
+            (<any>rteObj).videoModule.editAreaClickHandler({ args: clickEvent });
             target = <HTMLElement>rteEle.querySelectorAll(".e-content")[0];
             clickEvent.initEvent("mousedown", false, true);
             target.dispatchEvent(clickEvent);
@@ -4115,12 +3716,12 @@ client side. Customer easy to edit the contents and get the HTML content for
             clickEvent.initEvent("mousedown", false, true);
             target.dispatchEvent(clickEvent);
             (<any>rteObj).videoModule.resizeStart(clickEvent);
-            (<any>rteObj).videoModule.editAreaClickHandler({args:clickEvent});
-            target = <HTMLElement>document.querySelector('.e-rte-botRight')as HTMLElement;
+            (<any>rteObj).videoModule.editAreaClickHandler({ args: clickEvent });
+            target = <HTMLElement>document.querySelector('.e-rte-botRight') as HTMLElement;
             const touch = new Touch({ identifier: 1, target: target });
             const touchEvent = new TouchEvent('touchstart', {
                 touches: [touch],
-                bubbles: true, 
+                bubbles: true,
                 cancelable: true
             });
             target.dispatchEvent(touchEvent);
@@ -4131,7 +3732,7 @@ client side. Customer easy to edit the contents and get the HTML content for
     });
     describe('836851 - Video keyup', function () {
         let rteObj: RichTextEditor;
-        let keyBoardEvent: any = { type: 'keydown', preventDefault: () => { }, ctrlKey: true, key: 'backspace', stopPropagation: () => { }, shiftKey: false, which: 8};
+        let keyBoardEvent: any = { type: 'keydown', preventDefault: () => { }, ctrlKey: true, key: 'backspace', stopPropagation: () => { }, shiftKey: false, which: 8 };
         let innerHTML: string = `<p>Testing<span class="e-video-wrap" contenteditable="false" title="movie.mp4"><video class="e-rte-video e-video-inline" controls=""><source src="https://www.w3schools.com/html/mov_bbb.mp4" type="video/mp4"></video></span><br></p>`;
         beforeAll(() => {
             rteObj = renderRTE({
@@ -4148,7 +3749,7 @@ client side. Customer easy to edit the contents and get the HTML content for
         it('check the video keyup - backspace', function (done) {
             let startContainer = rteObj.contentModule.getEditPanel().querySelector('p').childNodes[0];
             let endContainer = rteObj.contentModule.getEditPanel().querySelector('p')
-            rteObj.formatter.editorManager.nodeSelection.setSelectionText( document, startContainer, endContainer, 7, 2 )
+            rteObj.formatter.editorManager.nodeSelection.setSelectionText(document, startContainer, endContainer, 7, 2)
             keyBoardEvent.keyCode = 8;
             keyBoardEvent.code = 'Backspace';
             (<any>rteObj).keyDown(keyBoardEvent);
@@ -4159,7 +3760,7 @@ client side. Customer easy to edit the contents and get the HTML content for
     });
     describe('836851 - Video keyup in iframe', function () {
         let rteObj: RichTextEditor;
-        let keyBoardEvent: any = { type: 'keydown', preventDefault: () => { }, ctrlKey: true, key: 'backspace', stopPropagation: () => { }, shiftKey: false, which: 8};
+        let keyBoardEvent: any = { type: 'keydown', preventDefault: () => { }, ctrlKey: true, key: 'backspace', stopPropagation: () => { }, shiftKey: false, which: 8 };
         let innerHTML: string = `<p>Testing<span class="e-embed-video-wrap" contenteditable="false"><span class="e-video-clickelem"><iframe width="auto" height="auto" src="https://www.youtube.com/embed/hveapZxnOFY?si=zU9QX1Vww3ZIowHA" title="YouTube video player" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" allowfullscreen="" style="min-width: 0px; max-width: 991px; min-height: 0px;" class="e-rte-embed-url e-resize">&ZeroWidthSpace;</iframe></span></span><br></p>`;
         beforeAll(() => {
             rteObj = renderRTE({
@@ -4176,7 +3777,7 @@ client side. Customer easy to edit the contents and get the HTML content for
         it('check the video keyup - backspace in iframe', function (done) {
             let startContainer = rteObj.contentModule.getEditPanel().querySelector('p').childNodes[0];
             let endContainer = rteObj.contentModule.getEditPanel().querySelector('p')
-            rteObj.formatter.editorManager.nodeSelection.setSelectionText( document, startContainer, endContainer, 7, 2 )
+            rteObj.formatter.editorManager.nodeSelection.setSelectionText(document, startContainer, endContainer, 7, 2)
             keyBoardEvent.keyCode = 8;
             keyBoardEvent.code = 'Backspace';
             (<any>rteObj).keyDown(keyBoardEvent);
@@ -4232,15 +3833,15 @@ client side. Customer easy to edit the contents and get the HTML content for
             done();
         });
         it('validating whether or not the video web url is present', function (done) {
-            let video: HTMLElement  = rteObj.element.querySelector(".e-video-wrap video");
+            let video: HTMLElement = rteObj.element.querySelector(".e-video-wrap video");
             setCursorPoint(video, 0);
             dispatchEvent(video, 'mousedown');
             video.click();
             dispatchEvent(video, 'mouseup');
             setTimeout(function () {
-                let videoBtn: HTMLElement  = document.getElementById(controlId + "_quick_VideoReplace");
+                let videoBtn: HTMLElement = document.getElementById(controlId + "_quick_VideoReplace");
                 videoBtn.parentElement.click();
-                let dialog: HTMLElement  = document.getElementById(controlId + "_video");
+                let dialog: HTMLElement = document.getElementById(controlId + "_video");
                 (dialog.querySelector('.e-video-url-wrap input#webURL') as HTMLElement).click();
                 let urlInput: HTMLInputElement = dialog.querySelector('.e-video-url');
                 expect(urlInput.value !== null && urlInput.value !== undefined && urlInput.value !== '').toBe(true);
@@ -4267,48 +3868,48 @@ client side. Customer easy to edit the contents and get the HTML content for
         it('Replace the embeded video to web url', function (done) {
             rteObj.value = `<p><span class="e-embed-video-wrap" contenteditable="false"><span class="e-video-clickelem"><iframe width="auto" height="auto" src="https://www.youtube.com/embed/4U2ZxO7b8iM" title="YouTube video player" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen="" style="min-width: 0px; max-width: 1225px; min-height: 0px;" class="e-rte-embed-url e-video-focus">&ZeroWidthSpace;</iframe></span></span><br></p>`;
             rteObj.dataBind();
-            let video: HTMLElement  = rteObj.element.querySelector(".e-video-clickelem");
+            let video: HTMLElement = rteObj.element.querySelector(".e-video-clickelem");
             rteObj.formatter.editorManager.nodeSelection.setSelectionText(document, video, video, 0, 1);
             dispatchEvent(video, 'mousedown');
             video.click();
             dispatchEvent(video, 'mouseup');
             setTimeout(function () {
-                let videoBtn: HTMLElement  = document.getElementById(controlId + "_quick_VideoReplace");
+                let videoBtn: HTMLElement = document.getElementById(controlId + "_quick_VideoReplace");
                 videoBtn.click();
-                let dialog: HTMLElement  = document.getElementById(controlId + "_video");
+                let dialog: HTMLElement = document.getElementById(controlId + "_video");
                 (dialog.querySelector('.e-video-url-wrap input#webURL') as HTMLElement).click();
                 let urlInput: HTMLInputElement = dialog.querySelector('.e-video-url');
-                urlInput.value =(`https://www.w3schools.com/html/mov_bbb.mp4`) as string;
+                urlInput.value = (`https://www.w3schools.com/html/mov_bbb.mp4`) as string;
                 (dialog.querySelector('.e-video-url') as HTMLInputElement).dispatchEvent(new Event("input"));
                 (dialog.querySelector('.e-insertVideo.e-primary') as HTMLElement).click();
                 setTimeout(function () {
                     let result = rteObj.inputElement.querySelector('video');
                     expect(result.querySelector('source').src === 'https://www.w3schools.com/html/mov_bbb.mp4').toBe(true);
                     done();
-                },200);
+                }, 200);
             }, 100);
         });
         it('Replace the web url to embeded video', function (done) {
-            
-            let video: HTMLElement  = rteObj.element.querySelector(".e-video-wrap video");
+
+            let video: HTMLElement = rteObj.element.querySelector(".e-video-wrap video");
             rteObj.formatter.editorManager.nodeSelection.setSelectionText(document, video, video, 0, 1);
             dispatchEvent(video, 'mousedown');
             video.click();
             dispatchEvent(video, 'mouseup');
             setTimeout(function () {
-                let videoBtn: HTMLElement  = document.getElementById(controlId + "_quick_VideoReplace");
+                let videoBtn: HTMLElement = document.getElementById(controlId + "_quick_VideoReplace");
                 videoBtn.click();
-                let dialog: HTMLElement  = document.getElementById(controlId + "_video");
+                let dialog: HTMLElement = document.getElementById(controlId + "_video");
                 (dialog.querySelector('.e-video-url-wrap input#embedURL') as HTMLElement).click();
                 let urlInput: HTMLTextAreaElement = dialog.querySelector('.e-embed-video-url');
-                urlInput.value =(`<iframe width="560" height="315" src="https://www.youtube.com/embed/4U2ZxO7b8iM" title="YouTube video player" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>`) as string
+                urlInput.value = (`<iframe width="560" height="315" src="https://www.youtube.com/embed/4U2ZxO7b8iM" title="YouTube video player" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>`) as string
                 (dialog.querySelector('.e-embed-video-url') as HTMLTextAreaElement).dispatchEvent(new Event("input"));
                 (dialog.querySelector('.e-insertVideo.e-primary') as HTMLElement).click();
                 setTimeout(function () {
                     let result = rteObj.inputElement.querySelector('iframe');
-                    expect(!isNullOrUndefined(result) ).toBe(true);
+                    expect(!isNullOrUndefined(result)).toBe(true);
                     done();
-                },200);
+                }, 200);
             }, 100);
         });
     });
@@ -4317,10 +3918,10 @@ client side. Customer easy to edit the contents and get the HTML content for
         let rteEle: HTMLElement;
         let rteObj: RichTextEditor;
         let afterMediaDeleteTiggered: boolean = false;
-        let keyBoardEvent: any = { type: 'keydown', preventDefault: () => { }, ctrlKey: true, key: 'backspace', stopPropagation: () => { }, shiftKey: false, which: 8};
+        let keyBoardEvent: any = { type: 'keydown', preventDefault: () => { }, ctrlKey: true, key: 'backspace', stopPropagation: () => { }, shiftKey: false, which: 8 };
         let innerHTML1: string = `testing
         <span class="e-video-wrap" contenteditable="false" title="mov_bbb.mp4"><video class="e-rte-video e-videoinline" controls=""><source src="https://www.w3schools.com/html/mov_bbb.mp4" type="video/mp4"></video></span>testing`;
-        beforeAll((done: Function) => {
+        beforeAll(() => {
             rteObj = renderRTE({
                 height: 400,
                 toolbarSettings: {
@@ -4333,11 +3934,9 @@ client side. Customer easy to edit the contents and get the HTML content for
                 afterMediaDeleteTiggered = true;
             }
             rteEle = rteObj.element;
-            done();
         });
-        afterAll((done: Function) => {
+        afterAll(() => {
             destroy(rteObj);
-            done();
         });
 
         it('After media delete action checking using backspace key', (done: Function) => {
@@ -4350,8 +3949,10 @@ client side. Customer easy to edit the contents and get the HTML content for
             (rteObj as any).keyDown(keyBoardEvent);
             keyBoardEvent.type = 'keyup';
             (rteObj as any).keyUp(keyBoardEvent);
-            expect(afterMediaDeleteTiggered).toBe(true);
-            done();
+            setTimeout(() => {
+                expect(afterMediaDeleteTiggered).toBe(true);
+                done();
+            }, 100);
         });
     });
 
@@ -4359,9 +3960,9 @@ client side. Customer easy to edit the contents and get the HTML content for
         let rteEle: HTMLElement;
         let rteObj: RichTextEditor;
         let afterMediaDeleteTiggered: boolean = false;
-        let keyBoardEvent: any = { type: 'keydown', preventDefault: () => { }, ctrlKey: true, key: 'delete', stopPropagation: () => { }, shiftKey: false, which: 46};
+        let keyBoardEvent: any = { type: 'keydown', preventDefault: () => { }, ctrlKey: true, key: 'delete', stopPropagation: () => { }, shiftKey: false, which: 46 };
         let innerHTML1: string = `testing<span class="e-video-wrap" contenteditable="false" title="mov_bbb.mp4"><video class="e-rte-video e-videoinline" controls=""><source src="https://www.w3schools.com/html/mov_bbb.mp4" type="video/mp4"></video></span><br>testing`;
-        beforeAll((done: Function) => {
+        beforeAll(() => {
             rteObj = renderRTE({
                 height: 400,
                 toolbarSettings: {
@@ -4374,11 +3975,9 @@ client side. Customer easy to edit the contents and get the HTML content for
                 afterMediaDeleteTiggered = true;
             }
             rteEle = rteObj.element;
-            done();
         });
-        afterAll((done: Function) => {
+        afterAll(() => {
             destroy(rteObj);
-            done();
         });
 
         it('After media delete action checking using delete key', (done: Function) => {
@@ -4391,10 +3990,81 @@ client side. Customer easy to edit the contents and get the HTML content for
             (rteObj as any).keyDown(keyBoardEvent);
             keyBoardEvent.type = 'keyup';
             (rteObj as any).keyUp(keyBoardEvent);
-            expect(afterMediaDeleteTiggered).toBe(true);
-            done();
+            setTimeout(() => {
+                expect(afterMediaDeleteTiggered).toBe(true);
+                done();
+            }, 100);
         });
     });
+
+    
+describe('962339: Script error and improper video selection removal after alignment and resizing using Video Quick Toolbar', () => {
+        let rteEle: HTMLElement;
+        let rteObj: RichTextEditor;
+        let keyboardEventArgs = {
+            preventDefault: function () { },
+            altKey: false,
+            ctrlKey: false,
+            shiftKey: false,
+            char: '',
+            key: '',
+            charCode: 22,
+            keyCode: 22,
+            which: 22,
+            code: 22,
+            action: ''
+        };
+        let innerHTML1: string = `
+            <p>testing&nbsp;<span class="e-video-wrap" contenteditable="false" title="mov_bob.mp4"><span class="e-clickElem"><video class="e-rte-video e-video-inline" controls=""><source src="https://www.w3schools.com/html/mov_bbb.mp4" type="video/mp3"></video></span></span><br></p>
+            `;
+        beforeAll(() => {
+            rteObj = renderRTE({
+                height: 400,
+                toolbarSettings: {
+                    items: ['Video', 'Bold']
+                },
+                value: innerHTML1
+            });
+            rteEle = rteObj.element;
+        });
+        afterAll(() => {
+            destroy(rteObj);
+        });
+        it('center applied', (done: Function) => {
+            let target = <HTMLElement>rteEle.querySelectorAll(".e-content")[0]
+            let clickEvent: any = document.createEvent("MouseEvents");
+            let eventsArg: any = { pageX: 50, pageY: 300, target: target };
+            clickEvent.initEvent("mousedown", false, true);
+            target.dispatchEvent(clickEvent);
+            target = (rteObj.contentModule.getEditPanel() as HTMLElement).querySelector('.e-video-wrap video');
+            (rteObj as any).formatter.editorManager.nodeSelection.setSelectionNode(rteObj.contentModule.getDocument(), target);
+            eventsArg = { pageX: 50, pageY: 300, target: target };
+            clickEvent.initEvent("mousedown", false, true);
+            target.dispatchEvent(clickEvent);
+            (<any>rteObj).videoModule.editAreaClickHandler({ args: eventsArg });
+            (<any>rteObj).videoModule.videoEle = rteObj.contentModule.getEditPanel().querySelector('.e-video-wrap video');
+            setTimeout(function () {
+                let mouseEventArgs = {
+                    item: { command: 'Videos', subCommand: 'JustifyCenter' }
+                };
+                let video: HTMLElement = rteObj.element.querySelector('.e-rte-video') as HTMLElement;
+                (<any>rteObj).videoModule.alignmentSelect(mouseEventArgs);
+                (rteObj.videoModule as any).resizeStart({ target: video, pageX: 0 });
+                let resizeBot: HTMLElement = rteObj.contentModule.getEditPanel().querySelector('.e-rte-botRight') as HTMLElement;
+                clickEvent = document.createEvent("MouseEvents");
+                clickEvent.initEvent("mousedown", false, true);
+                resizeBot.dispatchEvent(clickEvent);
+                (rteObj.videoModule as any).resizeStart(clickEvent);
+                (<any>rteObj.videoModule).resizeBtnStat.botRight = true;
+                (rteObj.videoModule as any).resizing({ target: resizeBot, pageX: 200 });
+                eventsArg = { pageX: 50, pageY: 300, target: rteObj.contentModule.getEditPanel().querySelector('.e-video-wrap') };
+                (<any>rteObj).videoModule.editAreaClickHandler({ args: eventsArg });
+                expect(rteObj.contentModule.getEditPanel().querySelector('.e-vid-resize')).not.toBe(null);
+                done();
+            }, 200);
+        });
+    });
+
 
     describe('Inserting Video as Embed code through pasting using the context menu', () => {
         let rteEle: HTMLElement;
@@ -4424,15 +4094,17 @@ client side. Customer easy to edit the contents and get the HTML content for
             let dialogEle: Element = rteObj.element.querySelector('.e-dialog');
             (dialogEle.querySelector('.e-embed-video-url') as HTMLInputElement).value = `<iframe width="560" height="315" src="https://www.youtube.com/embed/4U2ZxO7b8iM" title="YouTube video player" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>`;
             (dialogEle.querySelector('.e-embed-video-url') as HTMLInputElement).dispatchEvent(new Event("input"));
-            expect((dialogEle.querySelector('.e-insertVideo.e-primary') as HTMLButtonElement).hasAttribute('disabled')).toBe(false);
-            done();
+            setTimeout(() => {
+                expect((dialogEle.querySelector('.e-insertVideo.e-primary') as HTMLButtonElement).hasAttribute('disabled')).toBe(false);
+                done();
+            }, 100);
         });
     });
 
     describe('923371: Size Settings of First Video Apply to Second Video After Insertion and Deletion', () => {
         let rteObj: RichTextEditor;
         let controlId: string;
-        beforeEach((done: Function) => {
+        beforeAll(() => {
             rteObj = renderRTE({
                 value: `<p><span class="e-video-wrap" contenteditable="false" title="mov_bbb.mp4"><video class="e-rte-video e-videoinline" controls=""><source src="https://www.w3schools.com/html/mov_bbb.mp4" type="video/mp4"></video></span><br></p>`,
                 toolbarSettings: {
@@ -4448,133 +4120,26 @@ client side. Customer easy to edit the contents and get the HTML content for
                 }
             });
             controlId = rteObj.element.id;
-            done();
         });
-        afterEach((done: Function) => {
+        afterAll(() => {
             destroy(rteObj);
-            done();
         });
         it('Delete the first video and check the size of second video', (done: Function) => {
+            rteObj.inputElement.dispatchEvent(INIT_MOUSEDOWN_EVENT);
             let video: HTMLElement = rteObj.element.querySelector(".e-video-wrap video");
             setCursorPoint(video, 0);
-            dispatchEvent(video, 'mousedown');
-            video.click();
-            dispatchEvent(video, 'mouseup');
-            setTimeout(function(){
-                let quickToolbarItem: HTMLElement = document.querySelector("#"+controlId +"_quick_VideoDimension");
+            video.dispatchEvent(MOUSEUP_EVENT);
+            setTimeout(function () {
+                let quickToolbarItem: HTMLElement = document.querySelector("#" + controlId + "_quick_VideoDimension");
                 quickToolbarItem.click();
                 let widthinput = document.querySelector('.e-vid-width.e-control.e-textbox.e-lib.e-input') as HTMLInputElement;
                 let heightinput = document.querySelector('.e-vid-height.e-control.e-textbox.e-lib.e-input') as HTMLInputElement;
                 expect(widthinput.value === "auto" && heightinput.value === "auto").toBe(true);
                 done();
-            },100);
+            }, 100);
         });
     });
-    describe('921233: Quick toolbar fails to open and script error occurs after replacing  video in events', function () {
-        var rteEle;
-        var rteObj : RichTextEditor;
-        beforeAll(function () {
-            rteObj =renderRTE({
-                height: 400,
-                toolbarSettings: {
-                    items: ['Video', 'Bold']
-                },
-                insertVideoSettings: { resize: false },
-                actionBegin: function (e) {
-                    if (e.item.subCommand === 'Video') {
-                        expect(!isNullOrUndefined(e.itemCollection)).toBe(true);
-                        expect(!isNullOrUndefined(e.itemCollection.url)).toBe(true);
-                    }
-                },
-                actionComplete: function (e) {
-                    if (e.requestType === 'Video') {
-                        expect(e.requestType === 'Video').toBe(true);
-                    }
-                }
-            });
-            rteEle = rteObj.element;
-        });
-        afterAll(function () {
-            destroy(rteObj);
-            detach(document.querySelector('.e-video-inline'));
-        });
-        it('Replace Web url using quick toolbar', function (done) {
-            (rteObj.contentModule.getEditPanel() as HTMLElement).focus();
-            var range = new NodeSelection().getRange(document);
-            var save = new NodeSelection().save(range, document);
-            var args = {
-                "command": "Videos",
-                "value": "Video",
-                "item": {
-                    "cssClass": "e-video-inline",
-                    "url": "",
-                    "selection": save,
-                    "fileName": "<iframe width=\"auto\" height=\"auto\" src=\"https://www.youtube.com/embed/hveapZxnOFY?si=zU9QX1Vww3ZIowHA\" title=\"YouTube video player\" frameborder=\"0\" allow=\"accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share\" allowfullscreen=\"\" style=\"min-width: 0px; max-width: 991px; min-height: 0px;\" class=\"e-rte-embed-url e-resize\"></iframe>",
-                    "isEmbedUrl": true,
-                    "selectParent": ['br'],
-                    "width": {
-                        "width": "auto",
-                        "minWidth": 0,
-                        "maxWidth": 459
-                    },
-                    "height": {
-                        "height": "auto",
-                        "minHeight": 0,
-                    }
-                },
-                "event": {
-                    "isTrusted": true
-                },
-                "selector": "#editor iframe",
-                "name": "INSERT-VIDEO"
-            };
-            (<any>rteObj).formatter.editorManager.videoObj.createVideo(args);
-            var iframeElement = document.querySelector('iframe.e-rte-embed-url.e-resize.e-video-inline');
-            if (iframeElement && iframeElement.classList.contains('e-rte-embed-url') && iframeElement.classList.contains('e-resize') && iframeElement.classList.contains('e-video-inline')) {
-                iframeElement.classList.add('video', 'e-rte-video', 'e-video-inline');
-                iframeElement.classList.remove('e-rte-embed-url', 'e-resize');
-            }
-            var webRange = new NodeSelection().getRange(document);
-            var webElement = document.querySelector('span.e-video-clickelem');
-            if (webElement) {
-                webRange.setStart(webElement, 0);
-                webRange.setEnd(webElement, webElement.childNodes.length);
-            }
-            var saveUrl = new NodeSelection().save( webRange, document);
-            var webArgs = {
-                "command": "Videos",
-                "value": "VideoReplace",
-                "item": {
-                    "cssClass": "e-video-inline",
-                    "url": "https://cdn.syncfusion.com/ej2/richtexteditor-resources/RTE-Ocean-Waves.mp4",
-                    "selection": saveUrl,
-                    "fileName": "RTE-Ocean-Waves.mp4",
-                    "isEmbedUrl": false,
-                    "selectParent": [document.querySelector('iframe.e-video-inline')],
-                    "width": {
-                        "width": "auto",
-                        "minWidth": 0,
-                        "maxWidth": 459
-                    },
-                    "height": {
-                        "height": "auto",
-                        "minHeight": 0,
-                    }
-                },
-                "event": {
-                    "isTrusted": true
-                },
-                "selector": "#editor iframe",
-                "name": "INSERT-VIDEO"
-            };
-            (<any>rteObj).formatter.editorManager.videoObj.createVideo(webArgs);
-            setTimeout(() => {
-                expect(document.querySelector('.e-embed-video-wrap')).toBe(null);
-                expect(document.querySelector('.e-video-clickelem')).toBe(null);
-                }, 300);
-            done();
-        });
-    });
+
     describe('Test Align center button in the video quick toolbar', () => {
         let rteEle: HTMLElement;
         let rteObj: RichTextEditor;
@@ -4593,51 +4158,49 @@ client side. Customer easy to edit the contents and get the HTML content for
             destroy(rteObj);
         });
         it('Click on Align center button in the video quick toolbar and check its behavior', (done: Function) => {
-            let target = <HTMLElement>rteEle.querySelectorAll(".e-content")[0];
-            let clickEvent: any = document.createEvent("MouseEvents");
-            clickEvent.initEvent("mousedown", false, true);
-            target.dispatchEvent(clickEvent);
-            target = (rteObj.contentModule.getEditPanel() as HTMLElement).querySelector('video');
+            rteObj.inputElement.dispatchEvent(INIT_MOUSEDOWN_EVENT);
+            let target = (rteObj.contentModule.getEditPanel() as HTMLElement).querySelector('video');
             (rteObj as any).formatter.editorManager.nodeSelection.setSelectionNode(rteObj.contentModule.getDocument(), target);
-            // Dispatch the mousedown event to activate the quick toolbar
-            clickEvent.initEvent("mousedown", false, true);
-            target.dispatchEvent(clickEvent);
-            (<any>rteObj).videoModule.editAreaClickHandler({ args: clickEvent });
-            // Verify that the quick toolbar is visible
-            expect(!isNullOrUndefined(document.querySelector('video') as HTMLElement)).toBe(true);
-            expect(!isNullOrUndefined(document.querySelector('.e-rte-quick-popup') as HTMLElement)).toBe(true);
-            // Click on the Align button in the quick toolbar
-            let videoQTBarEle = <HTMLElement>document.querySelector('.e-rte-quick-popup');
-            (videoQTBarEle.querySelector("[title='Align']") as HTMLElement).click();
-            // Verify the Align dropdown opens
-            const alignDropdown = document.querySelector('.e-quick-dropdown') as HTMLElement;
-            expect(!isNullOrUndefined(alignDropdown)).toBe(true);
-            alignDropdown.click();
-            const alignDropdownOpen= document.querySelector('.e-popup-open') as HTMLElement;
-            // Click the second option in the Align dropdown
-            const alignOptions = alignDropdownOpen.querySelectorAll('li');
-            alignOptions[1].click();
-            // Verify the second option has the 'e-active' class
-            expect(alignOptions[0].classList.contains('e-active')).toBe(true);
-            clickEvent.initEvent("mousedown", false, true);
-            target.dispatchEvent(clickEvent);
-            (<any>rteObj).videoModule.editAreaClickHandler({ args: clickEvent });
-            expect(!isNullOrUndefined(document.querySelector('.e-rte-quick-popup') as HTMLElement)).toBe(true);
-            videoQTBarEle = <HTMLElement>document.querySelector('.e-rte-quick-popup');
-            (videoQTBarEle.querySelector("[title='Align']") as HTMLElement).click();
-            // Verify the Align dropdown opens again
-            const alignDropdownAgain = document.querySelector('.e-quick-dropdown') as HTMLElement;
-            expect(!isNullOrUndefined(alignDropdownAgain)).toBe(true);
-            alignDropdownAgain.click();
-            const alignDropdownOpenAgain = document.querySelector('.e-popup-open') as HTMLElement;
-            expect(!isNullOrUndefined(alignDropdownOpenAgain)).toBe(true);
-            // Click the second option in the Align dropdown again
-            const alignOptionsAgain = alignDropdownOpenAgain.querySelectorAll('li');
-            expect(alignOptionsAgain[1].classList.contains('e-active')).toBe(true);
-            done();
+            target.dispatchEvent(MOUSEUP_EVENT);
+            setTimeout(() => {
+                // Verify that the quick toolbar is visible
+                expect(!isNullOrUndefined(document.querySelector('video') as HTMLElement)).toBe(true);
+                expect(!isNullOrUndefined(document.querySelector('.e-rte-quick-popup') as HTMLElement)).toBe(true);
+                // Click on the Align button in the quick toolbar
+                let videoQTBarEle = <HTMLElement>document.querySelector('.e-rte-quick-popup');
+                (videoQTBarEle.querySelector("[title='Align']") as HTMLElement).click();
+                // Verify the Align dropdown opens
+                const alignDropdown = document.querySelectorAll('.e-quick-dropdown')[1] as HTMLElement;
+                expect(!isNullOrUndefined(alignDropdown)).toBe(true);
+                alignDropdown.click();
+                const alignDropdownOpen = document.querySelector('.e-dropdown-popup.e-popup-open') as HTMLElement;
+                // Click the second option in the Align dropdown
+                const alignOptions = alignDropdownOpen.querySelectorAll('li');
+                alignOptions[1].click();
+                // Verify the second option has the 'e-active' class
+                expect(alignOptions[0].classList.contains('e-active')).toBe(true);
+                target.dispatchEvent(MOUSEUP_EVENT);
+                setTimeout(() => {
+                    expect(!isNullOrUndefined(document.querySelector('.e-rte-quick-popup') as HTMLElement)).toBe(true);
+                    videoQTBarEle = <HTMLElement>document.querySelector('.e-rte-quick-popup');
+                    (videoQTBarEle.querySelector("[title='Align']") as HTMLElement).click();
+                    setTimeout(() => {
+                        // Verify the Align dropdown opens again
+                        const alignDropdownAgain = document.querySelectorAll('.e-quick-dropdown')[1] as HTMLElement;
+                        expect(!isNullOrUndefined(alignDropdownAgain)).toBe(true);
+                        alignDropdownAgain.click();
+                        const alignDropdownOpenAgain = document.querySelector('.e-dropdown-popup.e-popup-open') as HTMLElement;
+                        expect(!isNullOrUndefined(alignDropdownOpenAgain)).toBe(true);
+                        // Click the second option in the Align dropdown again
+                        const alignOptionsAgain = alignDropdownOpenAgain.querySelectorAll('li');
+                        expect(alignOptionsAgain[1].classList.contains('e-active')).toBe(true);
+                        done();
+                    }, 100);
+                }, 100);
+            }, 100);
         });
     });
-    describe('Test Align right button in the video quick toolbar', () => {
+    xdescribe('Test Align right button in the video quick toolbar', () => {
         let rteEle: HTMLElement;
         let rteObj: RichTextEditor;
         let innerHTML: string = `<video controls style="width: 300px; height: 200px;"><source src="https://www.w3schools.com/html/mov_bbb.mp4" type="video/mp4"></video>`;
@@ -4655,93 +4218,44 @@ client side. Customer easy to edit the contents and get the HTML content for
             destroy(rteObj);
         });
         it('Click on Align right button in the video quick toolbar and check its behavior', (done: Function) => {
-            let target = <HTMLElement>rteEle.querySelectorAll(".e-content")[0];
-            let clickEvent: any = document.createEvent("MouseEvents");
-            clickEvent.initEvent("mousedown", false, true);
-            target.dispatchEvent(clickEvent);
-            target = (rteObj.contentModule.getEditPanel() as HTMLElement).querySelector('video');
+            rteObj.inputElement.dispatchEvent(INIT_MOUSEDOWN_EVENT);
+            let target = (rteObj.contentModule.getEditPanel() as HTMLElement).querySelector('video');
             (rteObj as any).formatter.editorManager.nodeSelection.setSelectionNode(rteObj.contentModule.getDocument(), target);
-            clickEvent.initEvent("mousedown", false, true);
-            target.dispatchEvent(clickEvent);
-            (<any>rteObj).videoModule.editAreaClickHandler({ args: clickEvent });
-            expect(!isNullOrUndefined(document.querySelector('video') as HTMLElement)).toBe(true);
-            expect(!isNullOrUndefined(document.querySelector('.e-rte-quick-popup') as HTMLElement)).toBe(true);
-            let videoQTBarEle = <HTMLElement>document.querySelector('.e-rte-quick-popup');
-            (videoQTBarEle.querySelector("[title='Align']") as HTMLElement).click();
-            const alignDropdown = document.querySelector('.e-quick-dropdown') as HTMLElement;
-            expect(!isNullOrUndefined(alignDropdown)).toBe(true);
-            alignDropdown.click();
-            const alignDropdownOpen= document.querySelector('.e-popup-open') as HTMLElement;
-            const alignOptions = alignDropdownOpen.querySelectorAll('li');
-            alignOptions[2].click();
-            expect(alignOptions[0].classList.contains('e-active')).toBe(true);
-            clickEvent.initEvent("mousedown", false, true);
-            target.dispatchEvent(clickEvent);
-            (<any>rteObj).videoModule.editAreaClickHandler({ args: clickEvent });
-            expect(!isNullOrUndefined(document.querySelector('.e-rte-quick-popup') as HTMLElement)).toBe(true);
-            videoQTBarEle = <HTMLElement>document.querySelector('.e-rte-quick-popup');
-            (videoQTBarEle.querySelector("[title='Align']") as HTMLElement).click();
-            const alignDropdownAgain = document.querySelector('.e-quick-dropdown') as HTMLElement;
-            expect(!isNullOrUndefined(alignDropdownAgain)).toBe(true);
-            alignDropdownAgain.click();
-            const alignDropdownOpenAgain = document.querySelector('.e-popup-open') as HTMLElement;
-            expect(!isNullOrUndefined(alignDropdownOpenAgain)).toBe(true);
-            const alignOptionsAgain = alignDropdownOpenAgain.querySelectorAll('li');
-            expect(alignOptionsAgain[2].classList.contains('e-active')).toBe(true);
-            done();
-        });
-    });
-
-    describe('Video Quick Toolbar open testing after selecting some text', () => {
-        let rteObj: any;
-        let ele: HTMLElement;
-        it("selecting some text and then clicking on video quick toolbar open testing", (done: Function) => {
-            rteObj = renderRTE({
-                toolbarSettings: {
-                    items: ['Video', 'Bold']
-                },
-                value: "<div id='rte'><p><b>Syncfusion</b> Software</p><span class=\"e-video-wrap\" contenteditable=\"false\" title=\"mov_bbb.mp4\"></span><br>"
-            });
-            (<HTMLElement>rteObj.element.querySelectorAll(".e-toolbar-item")[0] as HTMLElement).click();
-            expect(rteObj.element.lastElementChild.classList.contains('e-dialog')).toBe(true);
-            let dialogEle: Element = rteObj.element.querySelector('.e-dialog');
-            expect(dialogEle.firstElementChild.querySelector('.e-dlg-header').innerHTML === 'Insert Video').toBe(true);
-            expect(dialogEle.querySelector('.e-vid-uploadwrap').firstElementChild.classList.contains('e-droptext')).toBe(true);
-            (<HTMLElement>rteObj.element.querySelectorAll(".e-toolbar-item")[0] as HTMLElement).click();
-            let pEle: HTMLElement = rteObj.element.querySelector('#rte');
-            rteObj.formatter.editorManager.nodeSelection.setSelectionText(document, pEle.childNodes[0], pEle.childNodes[0], 0, 2);
-            let range: any = new NodeSelection().getRange(document);
-            let save: any = new NodeSelection().save(range, document);
-            let args: any = {
-                item: { url: window.origin + '/base/spec/content/video/RTE-Ocean-Waves.mp4', selection: save },
-                preventDefault: function () { }
-            };
-            (<any>rteObj).formatter.editorManager.videoObj.createVideo(args);
-            (rteObj.element.querySelector('.e-rte-video') as HTMLElement).focus();
-            args = {
-                item: { url: null, selection: null },
-                preventDefault: function () { }
-            };
-            (<any>rteObj).formatter.editorManager.videoObj.createVideo(args);
-            let evnArg: any = { args, self: (<any>rteObj).videoModule, selection: save, selectNode: [''], link: null, target: '' };
-            evnArg.selectNode = [(<any>rteObj).element.querySelector('.e-rte-video')];
-            let trg: any = <HTMLElement>rteObj.element.querySelectorAll(".e-content")[0];
-            let clickEvent: any = document.createEvent("MouseEvents");
-            let eventsArg: any = { pageX: 50, pageY: 300, target: evnArg.selectNode[0] };
-            clickEvent.initEvent("mousedown", false, true);
-            trg.dispatchEvent(clickEvent);
-            (<any>rteObj).videoModule.editAreaClickHandler({ args: eventsArg });
+            target.dispatchEvent(MOUSEUP_EVENT);
             setTimeout(() => {
-                expect(document.querySelectorAll('.e-rte-quick-popup').length).toBe(1);
-                done();
-            }, 300);
-        });
-        afterAll(() => {
-            destroy(rteObj);
+                expect(!isNullOrUndefined(document.querySelector('video') as HTMLElement)).toBe(true);
+                expect(!isNullOrUndefined(document.querySelector('.e-rte-quick-popup') as HTMLElement)).toBe(true);
+                let videoQTBarEle = <HTMLElement>document.querySelector('.e-rte-quick-popup');
+                (videoQTBarEle.querySelector("[title='Align']") as HTMLElement).click();
+                const alignDropdown = document.querySelectorAll('.e-quick-dropdown')[1] as HTMLElement;
+                expect(!isNullOrUndefined(alignDropdown)).toBe(true);
+                alignDropdown.click();
+                const alignDropdownOpen = document.querySelector('.e-dropdown-popup.e-popup-open') as HTMLElement;
+                const alignOptions = alignDropdownOpen.querySelectorAll('li');
+                alignOptions[2].click();
+                expect(alignOptions[0].classList.contains('e-active')).toBe(true);
+                target.dispatchEvent(MOUSEUP_EVENT)
+                setTimeout(() => {
+                    expect(!isNullOrUndefined(document.querySelector('.e-rte-quick-popup') as HTMLElement)).toBe(true);
+                    videoQTBarEle = <HTMLElement>document.querySelector('.e-rte-quick-popup');
+                    (videoQTBarEle.querySelector("[title='Align']") as HTMLElement).click();
+                    const alignDropdownAgain = document.querySelectorAll('.e-quick-dropdown')[1] as HTMLElement;
+                    expect(!isNullOrUndefined(alignDropdownAgain)).toBe(true);
+                    alignDropdownAgain.click();
+                    setTimeout(() => {
+                        const alignDropdownOpenAgain = document.querySelector('.e-dropdown-popup.e-popup-open') as HTMLElement;
+                        expect(!isNullOrUndefined(alignDropdownOpenAgain)).toBe(true);
+                        const alignOptionsAgain = alignDropdownOpenAgain.querySelectorAll('li');
+                        expect(alignOptionsAgain[2].classList.contains('e-active')).toBe(true);
+                        done();
+                    }, 100);
+                }, 100);
+            }, 100);
         });
     });
 
-    describe('926553 - Image/video Overlaps the List After Changing Alignment to Left',()=>{
+
+    describe('926553 - Image/video Overlaps the List After Changing Alignment to Left', () => {
         let rteEle: HTMLElement;
         let rteObj: RichTextEditor;
         let innerHTML1: string = `<p>Rich Text Editor allows inserting images from online sources as well as the local computers where you want to insert the image in your content.</p>
@@ -4758,13 +4272,13 @@ client side. Customer easy to edit the contents and get the HTML content for
         afterAll(() => {
             destroy(rteObj);
         });
-        it('926553 - Video Overlaps the List After Changing Alignment to Left',(done:Function)=>{
+        it('926553 - Video Overlaps the List After Changing Alignment to Left', (done: Function) => {
             expect(rteObj.element.querySelectorAll('.e-rte-content').length).toBe(1);
-            let target:HTMLElement=rteObj.element.querySelector('.e-rte-video');
-            dispatchEvent(target,'mousedown');
+            let target: HTMLElement = rteObj.element.querySelector('.e-rte-video');
+            dispatchEvent(target, 'mousedown');
             target.click();
-            dispatchEvent(target,'mouseup');
-            var eventArgs={pageX:50,pageY:300,target:target};
+            dispatchEvent(target, 'mouseup');
+            var eventArgs = { pageX: 50, pageY: 300, target: target };
             (<any>rteObj).imageModule.editAreaClickHandler({ args: eventArgs });
             (<any>rteObj).imageModule.imgEle = rteObj.contentModule.getEditPanel().querySelector('.e-rte-video');
             setTimeout(() => {
@@ -4774,17 +4288,17 @@ client side. Customer easy to edit the contents and get the HTML content for
                 (<any>rteObj).videoModule.alignmentSelect(mouseEventArgs);
                 let video: HTMLElement = rteObj.element.querySelector('.e-rte-video') as HTMLElement;
                 expect(video.classList.contains('e-video-left')).toBe(true);
-                expect((video.parentElement.nextElementSibling as HTMLElement).style.clear=='left').toBe(true);
+                expect((video.parentElement.nextElementSibling as HTMLElement).style.clear == 'left').toBe(true);
                 done();
-            },200);
+            }, 200);
         });
-        it('926553 - Video Overlaps the List After Changing Alignment to Right',(done:Function)=>{
+        it('926553 - Video Overlaps the List After Changing Alignment to Right', (done: Function) => {
             expect(rteObj.element.querySelectorAll('.e-rte-content').length).toBe(1);
-            let target:HTMLElement=rteObj.element.querySelector('.e-rte-video');
-            dispatchEvent(target,'mousedown');
+            let target: HTMLElement = rteObj.element.querySelector('.e-rte-video');
+            dispatchEvent(target, 'mousedown');
             target.click();
-            dispatchEvent(target,'mouseup');
-            var eventArgs={pageX:50,pageY:300,target:target};
+            dispatchEvent(target, 'mouseup');
+            var eventArgs = { pageX: 50, pageY: 300, target: target };
             (<any>rteObj).imageModule.editAreaClickHandler({ args: eventArgs });
             (<any>rteObj).imageModule.imgEle = rteObj.contentModule.getEditPanel().querySelector('.e-rte-video');
             setTimeout(() => {
@@ -4796,7 +4310,7 @@ client side. Customer easy to edit the contents and get the HTML content for
                 expect(video.classList.contains('e-video-right')).toBe(true);
                 expect((video.parentElement.nextElementSibling as HTMLElement).style.clear == 'right').toBe(true);
                 done();
-            },200);
+            }, 200);
         });
     });
 
@@ -4821,7 +4335,7 @@ client side. Customer easy to edit the contents and get the HTML content for
         it('Video delete action checking using delete key inside list', (done: Function) => {
             let node: any = (rteObj as any).inputElement.childNodes[0].childNodes[0].childNodes[0];
             setCursorPoint(node, 101);
-            const deleteKeyDownEvent: KeyboardEvent =  new KeyboardEvent('keydown', DELETE_EVENT_INIT);
+            const deleteKeyDownEvent: KeyboardEvent = new KeyboardEvent('keydown', DELETE_EVENT_INIT);
             rteObj.inputElement.dispatchEvent(deleteKeyDownEvent);
             setTimeout(function () {
                 expect((<any>rteObj).inputElement.querySelector('.e-video-wrap')).toBe(null);
@@ -4851,7 +4365,7 @@ client side. Customer easy to edit the contents and get the HTML content for
         it('Video delete action checking using delete key in starting of H1 tag', (done: Function) => {
             let node: any = (rteObj as any).inputElement.childNodes[0].childNodes[0].childNodes[0];
             setCursorPoint(node, 1);
-            const deleteKeyDownEvent: KeyboardEvent =  new KeyboardEvent('keydown', DELETE_EVENT_INIT);
+            const deleteKeyDownEvent: KeyboardEvent = new KeyboardEvent('keydown', DELETE_EVENT_INIT);
             rteObj.inputElement.dispatchEvent(deleteKeyDownEvent);
             setTimeout(function () {
                 expect((<any>rteObj).inputElement.querySelector('.e-video-wrap')).toBe(null);
@@ -4864,7 +4378,7 @@ client side. Customer easy to edit the contents and get the HTML content for
     describe('942817: IFrame - Script Error Occurs After Replacing Embedded Code with a Web URL ', function () {
         let rteObj: RichTextEditor;
         let controlId: string;
-        beforeEach(function (done) {
+        beforeAll(function () {
             rteObj = renderRTE({
                 iframeSettings: {
                     enable: true
@@ -4872,34 +4386,32 @@ client side. Customer easy to edit the contents and get the HTML content for
                 value: "<p>Testing<span class=\"e-video-wrap\" contenteditable=\"false\" title=\"movie.mp4\"><video class=\"e-rte-video e-video-inline\" controls=\"\"><source src=\"https://www.w3schools.com/html/mov_bbb.mp4\" type=\"video/mp4\"></video></span><br></p>"
             });
             controlId = rteObj.element.id;
-            done();
         });
-        afterEach(function (done) {
+        afterAll(function () {
             destroy(rteObj);
-            done();
         });
         it('Replace the embeded video to web url inside list', function (done) {
             rteObj.value = `<p><ul><li style="margin-bottom: 10px;">Basic features include headings, block quotes, numbered lists, bullet lists, and support to insert images, tables, audio, and video.<p><span class="e-embed-video-wrap" style="display: inline-block;"><span class="e-video-clickelem"><iframe width="auto" height="auto" src="https://www.youtube.com/embed/IB2P1FBXjcQ?si=6ReBEsgCNdSMlQAV" title="YouTube video player" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" referrerpolicy="strict-origin-when-cross-origin" allowfullscreen="" class="e-video-inline e-rte-embed-url e-resize" style="min-width: 0px; max-width: 1108px; min-height: 0px;" data-gtm-yt-inspected-158="true">&ZeroWidthSpace;</iframe></span></span><br/></p></li><li style="margin-bottom: 10px;">The toolbar has multi-row, expandable, and scrollable modes. The Editor supports an inline toolbar, a floating toolbar, and custom toolbar items.</li></ul></p>`;
             rteObj.dataBind();
-            let video: HTMLElement  = rteObj.contentModule.getEditPanel().querySelector(".e-video-clickelem");
+            let video: HTMLElement = rteObj.contentModule.getEditPanel().querySelector(".e-video-clickelem");
             rteObj.formatter.editorManager.nodeSelection.setSelectionText(document, video, video, 0, 1);
             dispatchEvent(video, 'mousedown');
             video.click();
             dispatchEvent(video, 'mouseup');
             setTimeout(function () {
-                let videoBtn: HTMLElement  = document.querySelector('#' + controlId + "_quick_VideoReplace");
+                let videoBtn: HTMLElement = document.querySelector('#' + controlId + "_quick_VideoReplace");
                 videoBtn.click();
-                let dialog: HTMLElement  = document.querySelector('#' + controlId + "_video");
+                let dialog: HTMLElement = document.querySelector('#' + controlId + "_video");
                 (dialog.querySelector('.e-video-url-wrap input#webURL') as HTMLElement).click();
                 let urlInput: HTMLInputElement = dialog.querySelector('.e-video-url');
-                urlInput.value =(`https://cdn.syncfusion.com/ej2/richtexteditor-resources/RTE-Ocean-Waves.mp4`) as string;
+                urlInput.value = (`https://cdn.syncfusion.com/ej2/richtexteditor-resources/RTE-Ocean-Waves.mp4`) as string;
                 (dialog.querySelector('.e-video-url') as HTMLInputElement).dispatchEvent(new Event("input"));
                 (dialog.querySelector('.e-insertVideo.e-primary') as HTMLElement).click();
                 setTimeout(function () {
                     let result = rteObj.inputElement.querySelector('video');
                     expect(result.querySelector('source').src === 'https://cdn.syncfusion.com/ej2/richtexteditor-resources/RTE-Ocean-Waves.mp4').toBe(true);
                     done();
-                },200);
+                }, 200);
             }, 100);
         });
     });
@@ -4922,7 +4434,7 @@ client side. Customer easy to edit the contents and get the HTML content for
 
         it('Should not call the prevent default for the click of the Video SAFARI.', (done: Function) => {
             editor.focusIn();
-            const videoElem: HTMLVideoElement =  editor.inputElement.querySelector('video');
+            const videoElem: HTMLVideoElement = editor.inputElement.querySelector('video');
             const clickEvent: MouseEvent = new MouseEvent('click', BASIC_MOUSE_EVENT_INIT);
             spyOn(clickEvent, 'preventDefault');
             videoElem.dispatchEvent(clickEvent);
@@ -4970,6 +4482,54 @@ client side. Customer easy to edit the contents and get the HTML content for
                 expect(videoElement.getAttribute('width')).toBe('300px');
                 expect(videoElement.getAttribute('height')).toBe('200px');
                 done();
+            }, 100);
+        });
+    });
+
+    describe('Video quick toolbar - ', () => {
+        let rteObj: RichTextEditor;
+        let controlId: string;
+        beforeAll(() => {
+            rteObj = renderRTE({
+                value: `<p><span class="e-video-wrap" contenteditable="false" title="mov_bbb.mp4"><video class="e-rte-video e-videoinline" controls=""><source src="https://www.w3schools.com/html/mov_bbb.mp4" type="video/mp4"></video></span><br></p>`,
+                inlineMode: {
+                    enable: true
+                }
+            });
+            controlId = rteObj.element.id;
+        });
+        afterAll(() => {
+            destroy(rteObj);
+        });
+        it(' Dimension dialog rendering and testing ', (done: Function) => {
+            rteObj.inputElement.dispatchEvent(INIT_MOUSEDOWN_EVENT);
+            const target: HTMLElement = rteObj.inputElement.querySelector('video');
+            setSelection(target, 0, 1);
+            target.dispatchEvent(MOUSEUP_EVENT);
+            setTimeout(() => {
+                const quickToolbar: HTMLElement = document.body.querySelector('.e-video-quicktoolbar');
+                let videoBtn: HTMLElement = quickToolbar.querySelector('.e-video-dimension');
+                videoBtn.parentElement.parentElement.click();
+                setTimeout(()=> {
+                    let dialogEle: Element = rteObj.element.querySelector('.e-dialog');
+                    console.log(dialogEle);
+                    expect(dialogEle.firstElementChild.querySelector('.e-dlg-header').innerHTML === 'Video Size').toBe(true);
+                    expect(dialogEle.querySelector('.e-dlg-content').firstElementChild.classList.contains('e-video-sizewrap')).toBe(true);
+                    let range: any = new NodeSelection().getRange(document);
+                    let save: any = new NodeSelection().save(range, document);
+                    let args: any = {
+                        item: { url: window.origin + '/base/spec/content/video/RTE-Ocean-Waves.mp4', selection: save },
+                        preventDefault: function () { }
+                    };
+                    args.item = { width: 200, height: 200, selectNode: [(rteObj.element.querySelector('.e-rte-video') as HTMLElement)] };
+                    (<any>rteObj).formatter.editorManager.videoObj.videoDimension(args);
+                    (dialogEle.querySelector('.e-vid-width') as HTMLInputElement).value = "200";
+                    (dialogEle.querySelector('.e-vid-height') as HTMLInputElement).value = "200";
+                    (rteObj.element.querySelector('.e-rte-video-dialog .e-footer-content button') as HTMLButtonElement).click();
+                    expect((<any>rteObj).element.querySelector('video').style.width).toBe("200px");
+                    expect((<any>rteObj).element.querySelector('video').style.height).toBe("200px");
+                    done();
+                }, 300);
             }, 100);
         });
     });

@@ -28,7 +28,7 @@ describe('check apply content control', () => {
         document.body.removeChild(document.getElementById('container'));
         editor = undefined;
         setTimeout(function () {
-            document.body.innerHTML = '';
+            
             done();
         }, 1000);
     });
@@ -142,7 +142,7 @@ describe('Validate getContentControinfo', () => {
         document.body.removeChild(document.getElementById('container'));
         editor = undefined;
         setTimeout(function () {
-            document.body.innerHTML = '';
+            
             done();
         }, 1000);
     });
@@ -224,5 +224,68 @@ describe('Validate getContentControinfo', () => {
         expect(widgets.length).toBe(2);
         expect((((widgets[0] as ParagraphWidget).childWidgets[0] as LineWidget).children[1] as TextElementBox).text).toBe('Insering the plain text content control and using getContentControlInfo method');
         expect((((widgets[1] as ParagraphWidget).childWidgets[0] as LineWidget).children[0] as TextElementBox).text).toBe('Insering the rich text content control and using getContentControlInfo method');
+    });
+});
+
+describe('Nested content control check apply content control', () => {
+    let editor: DocumentEditor;
+    let event: any;
+    beforeAll((): void => {
+        let ele: HTMLElement = createElement('div', { id: 'container' });
+        document.body.appendChild(ele);
+        editor = new DocumentEditor({ isReadOnly: false });
+        editor.enableAllModules();
+        (editor.documentHelper as any).containerCanvasIn = TestHelper.containerCanvas;
+        (editor.documentHelper as any).selectionCanvasIn = TestHelper.selectionCanvas;
+        (editor.documentHelper.render as any).pageCanvasIn = TestHelper.pageCanvas;
+        (editor.documentHelper.render as any).selectionCanvasIn = TestHelper.pageSelectionCanvas;
+        editor.appendTo('#container');
+    });
+    afterAll((done): void => {
+        editor.destroy();
+        document.body.removeChild(document.getElementById('container'));
+        editor = undefined;
+        setTimeout(function () {
+            
+            done();
+        }, 1000);
+    });
+
+    it('Insert Rich text content control and add text content', () => {
+        // Insert Rich text content control
+        editor.editor.insertContentControl('RichText');
+        
+        // Enter add text one
+        editor.editor.insertText('add text one');
+        
+        // Verify the content control was inserted and text was added
+        expect(editor.documentHelper.contentControlCollection.length).toBe(1);
+        expect(editor.documentHelper.contentControlCollection[0].contentControlProperties.type).toBe('RichText');
+    });
+
+    it('Add second rich text content control', () => {
+        
+        editor.editor.onEnter();
+        
+        // Enter add test two
+        editor.editor.insertText(' add test two');
+         editor.editor.onEnter();
+        editor.editor.onEnter();
+        editor.editor.onEnter();
+        editor.selection.handleUpKey();
+        editor.selection.handleUpKey();
+        editor.editor.insertContentControl('RichText');
+        
+        // Enter add text one
+        editor.editor.insertText('1');
+       expect(editor.documentHelper.contentControlCollection.length).toBe(2);
+    });
+
+
+    it('Verify the export case with nested content control', () => {
+        // Clear existing content
+        let sfdtText = editor.serialize();
+        editor.open(sfdtText);
+        expect(editor.documentHelper.contentControlCollection.length).toBe(2);
     });
 });

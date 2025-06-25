@@ -105,6 +105,20 @@ export class FormFieldsBase {
         }
     }
 
+    /**
+     * @private
+     * @returns {void}
+     */
+    public destroy(): void {
+        this.formFieldLoadedDocument = null;
+        this.defaultAppearanceFields = null;
+        this.pageRenderer = null;
+        this.mIsDigitalSignaturePresent = null;
+        this.showDigitalSignatureAppearance = null;
+        this.hideEmptyDigitalSignatureFields = null;
+        this.PdfRenderedFormFields = null;
+    }
+
     private getRotateAngle(angleString: PdfRotationAngle): number {
         let angle: number = 0;
         switch (angleString) {

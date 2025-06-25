@@ -3,9 +3,12 @@ import { getValue, createElement, extend } from '@syncfusion/ej2-base';
 import { Gantt } from '../base/gantt';
 import * as cls from '../base/css-constants';
 import { parentsUntil, formatString, isScheduledTask, getIndex } from '../base/utils';
-import { IGanttData, IPredecessor, IConnectorLineObject, ITaskData, ITaskbarEditedEventArgs, IValidateArgs } from '../base/interface';
+import { IGanttData, IPredecessor, IConnectorLineObject, ITaskData, ITaskbarEditedEventArgs, IValidateArgs, IActionBeginEventArgs, IParent } from '../base/interface';
 import { Dialog } from '@syncfusion/ej2-popups';
 import { DateProcessor } from '../base/date-processor';
+import { ViolationType } from '../base/enum';
+import { TaskFieldsModel } from '../models/task-fields-model';
+import { RadioButton } from '@syncfusion/ej2-buttons';
 /**
  * File for handling connector line edit operation in Gantt.
  *
@@ -534,53 +537,122 @@ export class ConnectorLineEdit {
      * @private
      */
     public renderValidationDialog(): void {
+        const taskFields: TaskFieldsModel = this.parent.taskFields;
+        const validationHeader: string = (
+            taskFields.constraintType && taskFields.constraintDate
+        )
+            ? this.parent.localeObj.getConstant('schedulingConflicts')
+            : this.parent.localeObj.getConstant('validateEditing');
+        const containerId: string = this.parent.element.id + '_dialogValidationRule';
+        let container: HTMLElement = document.getElementById(containerId);
+        if (container) {
+            container.innerHTML = '';
+            container.style.zIndex = '2000';
+        } else {
+            container = document.createElement('div');
+            container.id = containerId;
+            container.style.zIndex = '2000'; // Set z-index here
+            document.body.appendChild(container);
+        }
         const validationDialog: Dialog = new Dialog({
-            header: 'Validate Editing',
+            header: validationHeader,
             isModal: true,
             enableRtl: this.parent.enableRtl,
             visible: false,
             width: '50%',
             showCloseIcon: true,
+            zIndex: 2000,
             close: this.validationDialogClose.bind(this),
             content: '',
             buttons: [
                 {
                     click: this.validationDialogOkButton.bind(this),
-                    buttonModel: { content: this.parent.localeObj.getConstant('okText'), isPrimary: true }
+                    buttonModel: {
+                        content: this.parent.localeObj.getConstant('okText'),
+                        isPrimary: true
+                    }
                 },
                 {
                     click: this.validationDialogCancelButton.bind(this),
-                    buttonModel: { content: this.parent.localeObj.getConstant('cancel') }
-                }],
-            target: this.parent.element,
+                    buttonModel: {
+                        content: this.parent.localeObj.getConstant('cancel')
+                    }
+                }
+            ],
+            target: document.body,
             animationSettings: { effect: 'None' }
         });
-        document.getElementById(this.parent.element.id + '_dialogValidationRule').innerHTML = '';
         validationDialog.isStringTemplate = true;
-        validationDialog.appendTo('#' + this.parent.element.id + '_dialogValidationRule');
+        validationDialog.appendTo('#' + containerId);
         this.parent.validationDialogElement = validationDialog;
     }
 
     private validationDialogOkButton(): void {
         const currentArgs: IValidateArgs = this.parent.currentEditedArgs;
-        currentArgs.validateMode.preserveLinkWithEditing =
-            (document.getElementById(this.parent.element.id + '_ValidationAddlineOffset') as HTMLInputElement).checked;
-        currentArgs.validateMode.removeLink =
-            (document.getElementById(this.parent.element.id + '_ValidationRemoveline') as HTMLInputElement).checked;
-        currentArgs.validateMode.respectLink =
-            (document.getElementById(this.parent.element.id + '_ValidationCancel') as HTMLInputElement).checked;
-        this.applyPredecessorOption();
+        const addOffsetCheckbox: HTMLInputElement = document.getElementById(this.parent.element.id + '_ValidationAddlineOffset') as HTMLInputElement | null;
+        const removeLineCheckbox: HTMLInputElement = document.getElementById(this.parent.element.id + '_ValidationRemoveline') as HTMLInputElement | null;
+        const cancelCheckbox: HTMLInputElement = document.getElementById(this.parent.element.id + '_ValidationCancel') as HTMLInputElement | null;
+        const removeConstraintCheckbox: HTMLInputElement = document.getElementById(this.parent.element.id + '_RemoveConstraint') as HTMLInputElement | null;
+        const removeDependencyCheckbox: HTMLInputElement = document.getElementById(this.parent.element.id + '_RemoveDependency') as HTMLInputElement | null;
+        const cancelChangeCheckbox: HTMLInputElement = document.getElementById(this.parent.element.id + '_CancelChange') as HTMLInputElement | null;
+        const violationArgs: object = this.parent.editModule['violationArgs'];
+        const modifiedTask: IGanttData = violationArgs['matchedModifiedTask'];
+        const validationArgs: any = violationArgs['args'];
+        const pairedTask: IGanttData | null = violationArgs['matchedParedRecord'] || null;
+        if (removeConstraintCheckbox !== null && removeConstraintCheckbox.checked) {
+            modifiedTask.ganttProperties.constraintType = 4;
+            this.parent.constraintViolationType = '';
+            this.parent.editModule.initiateSaveAction(validationArgs);
+        } else if (removeDependencyCheckbox !== null && removeDependencyCheckbox.checked) {
+            let matchedPredecessors: IPredecessor[] = [];
+            const currentTaskId: number | string = pairedTask
+                ? pairedTask.ganttProperties.taskId
+                : validationArgs.data.ganttProperties.taskId;
+            if (modifiedTask && Array.isArray(modifiedTask.ganttProperties.predecessor)) {
+                for (const predecessor of modifiedTask.ganttProperties.predecessor) {
+                    if (predecessor.from.toString() === currentTaskId.toString()) {
+                        matchedPredecessors = [predecessor];
+                        break;
+                    }
+                }
+            }
+            this.parent.editModule.reUpdatePreviousRecords(undefined, undefined, modifiedTask.uniqueID);
+            if (modifiedTask.parentItem && modifiedTask.parentItem.taskId) {
+                const parentItem: IGanttData = this.parent.getRecordByID(modifiedTask.parentItem.taskId);
+                this.parent.dataOperation.updateParentItems(parentItem, true);
+            }
+            this.removePredecessors(modifiedTask, matchedPredecessors);
+            this.parent.editModule.initiateSaveAction(validationArgs);
+        } else if (cancelChangeCheckbox !== null && cancelChangeCheckbox.checked) {
+            currentArgs.validateMode.respectLink = true;
+            this.applyPredecessorOption();
+        }
+        const noPrimaryActionTaken: boolean =
+            !(removeConstraintCheckbox !== null && removeConstraintCheckbox.checked) &&
+            !(removeDependencyCheckbox !== null && removeDependencyCheckbox.checked) &&
+            !(cancelChangeCheckbox !== null && cancelChangeCheckbox.checked);
+        if (noPrimaryActionTaken) {
+            currentArgs.validateMode.preserveLinkWithEditing =
+                addOffsetCheckbox !== null && addOffsetCheckbox.checked;
+            currentArgs.validateMode.removeLink =
+                removeLineCheckbox !== null && removeLineCheckbox.checked;
+            currentArgs.validateMode.respectLink =
+                cancelCheckbox !== null && cancelCheckbox.checked;
+            this.applyPredecessorOption();
+        }
         this.parent.validationDialogElement.hide();
     }
 
     private validationDialogCancelButton(): void {
+        this.parent.constraintViolationType = '';
         this.parent.currentEditedArgs.validateMode.respectLink = true;
         this.applyPredecessorOption();
         this.parent.validationDialogElement.hide();
     }
 
     private validationDialogClose(e: object): void {
-        if (getValue('isInteraction', e)) {
+        this.parent.constraintViolationType = '';
+        if (getValue('isInteracted', e)) {
             this.parent.currentEditedArgs.validateMode.respectLink = true;
             this.applyPredecessorOption();
         }
@@ -652,7 +724,20 @@ export class ConnectorLineEdit {
         }
     }
     private checkChildRecords(ganttRecord: IGanttData): void {
-        this.validationPredecessor = ganttRecord.ganttProperties.predecessor;
+        const matchingPredecessors: IPredecessor[] = [];
+        const currentTaskId: string = ganttRecord.ganttProperties.taskId;
+        const allPredecessors: IPredecessor[] = ganttRecord.ganttProperties.predecessor;
+        if (isNullOrUndefined(allPredecessors)) {
+            this.validationPredecessor = allPredecessors;
+        } else {
+            for (let i: number = 0; i < allPredecessors.length; i++) {
+                const predecessorLink: IPredecessor = allPredecessors[i as number];
+                if (predecessorLink.to.toString() === currentTaskId.toString()) {
+                    matchingPredecessors.push(predecessorLink);
+                }
+            }
+            this.validationPredecessor = matchingPredecessors;
+        }
         if (!isNullOrUndefined(this.validationPredecessor)) {
             this.removePredecessors(ganttRecord, this.validationPredecessor);
         }
@@ -681,6 +766,62 @@ export class ConnectorLineEdit {
         }
         return keys1.every((key: string) => obj1[key as string] === obj2[key as string]);
     }
+    private getOffsetForPredecessor(
+        predecessor: IPredecessor,
+        parentTask: IGanttData,
+        record: IGanttData
+    ): number {
+        let offset: number = 0;
+        if ((parentTask.ganttProperties.startDate || parentTask.ganttProperties.endDate) &&
+            (record.ganttProperties.startDate || record.ganttProperties.endDate)) {
+            let tempStartDate: Date;
+            let tempEndDate: Date;
+            let tempDuration: number;
+            let isNegativeOffset: boolean;
+            switch (predecessor.type) {
+            case 'FS':
+                tempStartDate = new Date((parentTask.ganttProperties.endDate || parentTask.ganttProperties.startDate).getTime());
+                tempEndDate = new Date((record.ganttProperties.startDate || record.ganttProperties.endDate).getTime());
+                break;
+            case 'SS':
+                tempStartDate = new Date((parentTask.ganttProperties.startDate || parentTask.ganttProperties.endDate).getTime());
+                tempEndDate = new Date((record.ganttProperties.startDate || record.ganttProperties.endDate).getTime());
+                break;
+            case 'SF':
+                tempStartDate = new Date((parentTask.ganttProperties.startDate || parentTask.ganttProperties.endDate).getTime());
+                tempEndDate = new Date((record.ganttProperties.endDate || record.ganttProperties.startDate).getTime());
+                break;
+            case 'FF':
+                tempStartDate = new Date((parentTask.ganttProperties.endDate || parentTask.ganttProperties.startDate).getTime());
+                tempEndDate = new Date((record.ganttProperties.endDate || record.ganttProperties.startDate).getTime());
+                break;
+            }
+
+            if (tempStartDate.getTime() < tempEndDate.getTime()) {
+                tempStartDate = this.dateValidateModule.checkStartDate(tempStartDate);
+                tempEndDate = this.dateValidateModule.checkEndDate(tempEndDate, null);
+                isNegativeOffset = false;
+            } else {
+                const tempDate: Date = new Date(tempStartDate.getTime());
+                tempStartDate = this.dateValidateModule.checkStartDate(tempEndDate);
+                tempEndDate = this.dateValidateModule.checkEndDate(tempDate, null);
+                isNegativeOffset = true;
+            }
+
+            if (tempStartDate.getTime() < tempEndDate.getTime()) {
+                tempDuration = this.dateValidateModule.getDuration(
+                    tempStartDate, tempEndDate, predecessor.offsetUnit, true, false);
+
+                if (this.parent.durationUnit === predecessor.offsetUnit &&
+                    ((parentTask.ganttProperties.startDate && isNullOrUndefined(parentTask.ganttProperties.endDate)) ||
+                        (isNullOrUndefined(parentTask.ganttProperties.startDate) && parentTask.ganttProperties.endDate))) {
+                    tempDuration -= 1;
+                }
+                offset = isNegativeOffset ? -tempDuration : tempDuration;
+            }
+        }
+        return offset;
+    }
     private calculateOffset(record: IGanttData, isRecursive?: boolean): void {
         if (!this.parent.autoCalculateDateScheduling || (this.parent.isLoad && this.parent.treeGrid.loadChildOnDemand
             && this.parent.taskFields.hasChildMapping)) {
@@ -702,61 +843,7 @@ export class ConnectorLineEdit {
                             parentTask.ganttProperties.predecessor.push(validPredecessor[i as number]);
                         }
                     }
-                    let offset: number;
-                    if ((parentTask.ganttProperties.startDate || parentTask.ganttProperties.endDate) &&
-                        (record.ganttProperties.startDate || record.ganttProperties.endDate)) {
-                        let tempStartDate: Date;
-                        let tempEndDate: Date;
-                        let tempDuration: number;
-                        let isNegativeOffset: boolean;
-                        switch (predecessor.type) {
-                        case 'FS':
-                            tempStartDate = new Date((parentTask.ganttProperties.endDate ||
-                                parentTask.ganttProperties.startDate).getTime());
-                            tempEndDate = new Date((record.ganttProperties.startDate || record.ganttProperties.endDate).getTime());
-                            break;
-                        case 'SS':
-                            tempStartDate = new Date((parentTask.ganttProperties.startDate ||
-                                parentTask.ganttProperties.endDate).getTime());
-                            tempEndDate = new Date((record.ganttProperties.startDate || record.ganttProperties.endDate).getTime());
-                            break;
-                        case 'SF':
-                            tempStartDate = new Date((parentTask.ganttProperties.startDate ||
-                                parentTask.ganttProperties.endDate).getTime());
-                            tempEndDate = new Date((record.ganttProperties.endDate || record.ganttProperties.startDate).getTime());
-                            break;
-                        case 'FF':
-                            tempStartDate = new Date((parentTask.ganttProperties.endDate ||
-                                parentTask.ganttProperties.startDate).getTime());
-                            tempEndDate = new Date((record.ganttProperties.endDate || record.ganttProperties.startDate).getTime());
-                            break;
-                        }
-
-                        if (tempStartDate.getTime() < tempEndDate.getTime()) {
-                            tempStartDate = this.dateValidateModule.checkStartDate(tempStartDate);
-                            tempEndDate = this.dateValidateModule.checkEndDate(tempEndDate, null);
-                            isNegativeOffset = false;
-                        } else {
-                            const tempDate: Date = new Date(tempStartDate.getTime());
-                            tempStartDate = this.dateValidateModule.checkStartDate(tempEndDate);
-                            tempEndDate = this.dateValidateModule.checkEndDate(tempDate, null);
-                            isNegativeOffset = true;
-                        }
-                        if (tempStartDate.getTime() < tempEndDate.getTime()) {
-                            tempDuration = this.dateValidateModule.getDuration(
-                                tempStartDate, tempEndDate, predecessor.offsetUnit, true, false);
-                            if (this.parent.durationUnit === predecessor.offsetUnit &&
-                                ((parentTask.ganttProperties.startDate && isNullOrUndefined(parentTask.ganttProperties.endDate)) ||
-                                (isNullOrUndefined(parentTask.ganttProperties.startDate) && parentTask.ganttProperties.endDate))) {
-                                tempDuration = tempDuration - 1;
-                            }
-                            offset = isNegativeOffset ? (tempDuration * -1) : tempDuration;
-                        } else {
-                            offset = 0;
-                        }
-                    } else {
-                        offset = 0;
-                    }
+                    const offset: number = this.getOffsetForPredecessor(predecessor, parentTask, record);
                     const preIndex: number = getIndex(predecessor, 'from', prevPredecessor, 'to');
                     if (preIndex !== -1) {
                         prevPredecessor[preIndex as number].offset = offset;
@@ -820,10 +907,19 @@ export class ConnectorLineEdit {
                 }
             }
             else if (record.parentItem) {
-                const parentItem: IGanttData = this.parent.getRecordByID(record.parentItem.taskId);
-                if (this.validatedOffsetIds.indexOf(parentItem.ganttProperties.taskId.toString()) === -1 &&
-                parentItem.ganttProperties.predecessor && parentItem.ganttProperties.predecessor.length > 0) {
-                    this.calculateOffset(parentItem);
+                let currentParent: IParent = record.parentItem;
+                while (currentParent) {
+                    const parentItem: IGanttData = this.parent.getRecordByID(currentParent.taskId);
+                    const parentIdStr: string = parentItem.ganttProperties.taskId.toString();
+                    if (
+                        this.validatedOffsetIds.indexOf(parentIdStr) === -1 &&
+                        parentItem.ganttProperties.predecessor &&
+                        parentItem.ganttProperties.predecessor.length > 0
+                    ) {
+                        this.calculateOffset(parentItem);
+                        break;
+                    }
+                    currentParent = parentItem.parentItem;
                 }
             }
         }
@@ -860,6 +956,9 @@ export class ConnectorLineEdit {
             this.parent.setRecordValue(this.parent.taskFields.dependency, predecessorString, ganttRecord);
         }
     }
+    private formatViolationType(violationType: string): string {
+        return violationType.replace(/([a-z])([A-Z])/g, '$1 $2');
+    }
 
     /**
      * To open predecessor validation dialog
@@ -871,6 +970,12 @@ export class ConnectorLineEdit {
     public openValidationDialog(args: object): void {
         const contentTemplate: HTMLElement = this.validationDialogTemplate(args);
         this.parent.validationDialogElement.setProperties({ content: contentTemplate });
+        const contentId: string = this.parent.element.id + '_dialogValidationRule_dialog-content';
+        const contentElement: HTMLElement = this.parent.validationDialogElement.element.querySelector<HTMLElement>('#' + contentId);
+        contentElement.style.paddingTop = '10px';
+        const headerId: string = this.parent.element.id + '_dialogValidationRule_dialog-header';
+        const headerElement: HTMLElement = this.parent.validationDialogElement.element.querySelector<HTMLElement>('#' + headerId);
+        headerElement.style.padding = '8px 16px';
         this.parent.validationDialogElement.show();
     }
 
@@ -888,42 +993,215 @@ export class ConnectorLineEdit {
         });
         const taskData: IGanttData = getValue('task', args);
         const parenttaskData: IGanttData = getValue('parentTask', args);
-        const violationType: string = getValue('violationType', args);
+        let violationType: string = getValue('violationType', args);
         const recordName: string = taskData.ganttProperties.taskName;
-        const recordNewStartDate: string = this.parent.getFormatedDate(taskData.ganttProperties.startDate, this.parent.dateFormat);
+        const dateFormat: string = !isNullOrUndefined(this.parent.dateFormat) ? this.parent.dateFormat : 'M/d/yyyy h:mm a';
+        const recordNewStartDate: string = this.parent.getFormatedDate(taskData.ganttProperties.startDate, dateFormat);
         const parentName: string = parenttaskData.ganttProperties.taskName;
         const recordArgs: string[] = [recordName, parentName];
-        let topContentText: string;
-        if (violationType === 'taskBeforePredecessor_FS') {
-            topContentText = this.parent.localeObj.getConstant('taskBeforePredecessor_FS');
-        } else if (violationType === 'taskAfterPredecessor_FS') {
-            topContentText = this.parent.localeObj.getConstant('taskAfterPredecessor_FS');
-        } else if (violationType === 'taskBeforePredecessor_SS') {
-            topContentText = this.parent.localeObj.getConstant('taskBeforePredecessor_SS');
-        } else if (violationType === 'taskAfterPredecessor_SS') {
-            topContentText = this.parent.localeObj.getConstant('taskAfterPredecessor_SS');
-        } else if (violationType === 'taskBeforePredecessor_FF') {
-            topContentText = this.parent.localeObj.getConstant('taskBeforePredecessor_FF');
-        } else if (violationType === 'taskAfterPredecessor_FF') {
-            topContentText = this.parent.localeObj.getConstant('taskAfterPredecessor_FF');
-        } else if (violationType === 'taskBeforePredecessor_SF') {
-            topContentText = this.parent.localeObj.getConstant('taskBeforePredecessor_SF');
-        } else if (violationType === 'taskAfterPredecessor_SF') {
-            topContentText = this.parent.localeObj.getConstant('taskAfterPredecessor_SF');
+        let topContentText: string = '';
+        if (
+            violationType !== 'MustStartOn' &&
+            violationType !== 'MustFinishOn' &&
+            violationType !== 'StartNoLaterThan' &&
+            violationType !== 'FinishNoLaterThan'
+        ) {
+            if (violationType === 'taskBeforePredecessor_FS') {
+                topContentText = this.parent.localeObj.getConstant('taskBeforePredecessor_FS');
+            } else if (violationType === 'taskAfterPredecessor_FS') {
+                topContentText = this.parent.localeObj.getConstant('taskAfterPredecessor_FS');
+            } else if (violationType === 'taskBeforePredecessor_SS') {
+                topContentText = this.parent.localeObj.getConstant('taskBeforePredecessor_SS');
+            } else if (violationType === 'taskAfterPredecessor_SS') {
+                topContentText = this.parent.localeObj.getConstant('taskAfterPredecessor_SS');
+            } else if (violationType === 'taskBeforePredecessor_FF') {
+                topContentText = this.parent.localeObj.getConstant('taskBeforePredecessor_FF');
+            } else if (violationType === 'taskAfterPredecessor_FF') {
+                topContentText = this.parent.localeObj.getConstant('taskAfterPredecessor_FF');
+            } else if (violationType === 'taskBeforePredecessor_SF') {
+                topContentText = this.parent.localeObj.getConstant('taskBeforePredecessor_SF');
+            } else if (violationType === 'taskAfterPredecessor_SF') {
+                topContentText = this.parent.localeObj.getConstant('taskAfterPredecessor_SF');
+            }
+            topContentText = formatString(topContentText, recordArgs);
         }
-        topContentText =  formatString(topContentText, recordArgs);
-        const topContent: string = '<div id="' + ganttId + '_ValidationText">' + topContentText + '<div>';
-        const innerTable: string = '<table>' +
-            '<tr><td><input type="radio" id="' + ganttId + '_ValidationCancel" name="ValidationRule" checked/><label for="'
-            + ganttId + '_ValidationCancel" id= "' + ganttId + '_cancelLink">Cancel, keep the existing link</label></td></tr>' +
-            '<tr><td><input type="radio" id="' + ganttId + '_ValidationRemoveline" name="ValidationRule"/><label for="'
-            + ganttId + '_ValidationRemoveline" id="' + ganttId + '_removeLink">Remove the link and move <b>'
-            + recordName + '</b> to start on <b>' + recordNewStartDate + '</b>.</label></td></tr>' +
-            '<tr><td><input type="radio" id="' + ganttId + '_ValidationAddlineOffset" name="ValidationRule"/><label for="'
-            + ganttId + '_ValidationAddlineOffset" id="' + ganttId + '_preserveLink">Move the <b>'
-            + recordName + '</b> to start on <b>' + recordNewStartDate + '</b> and keep the link.</label></td></tr></table>';
+        const topContent: string = '<div id="' + ganttId + '_ValidationText">' + topContentText + '</div>';
+        const cancelText: string = this.parent.localeObj.getConstant('cancelLink');
+        const removeLinkTextTemplate: string = this.parent.localeObj.getConstant('removeLink');
+        const removeLinkText: string = formatString(removeLinkTextTemplate, [recordName, recordNewStartDate]);
+        const removeConstraintTextTemplate: string = this.parent.localeObj.getConstant('removeConstraint');
+        violationType = this.formatViolationType(violationType);
+        const removeConstraintText: string = formatString(removeConstraintTextTemplate, [violationType, recordName]);
+        const preserveLinkTextTemplate: string = this.parent.localeObj.getConstant('preserveLink');
+        const preserveLinkText: string = formatString(preserveLinkTextTemplate, [recordName, recordNewStartDate]);
+        const innerTable: string = `
+        <table>
+            <tr><td><input type="radio" id="${ganttId}_ValidationCancel" name="ValidationRule" checked/></td></tr>
+            <tr><td><input type="radio" id="${ganttId}_ValidationRemoveline" name="ValidationRule"/></td></tr>
+            <tr><td><input type="radio" id="${ganttId}_RemoveConstraint" name="ValidationRule"/></td></tr>
+            <tr><td><input type="radio" id="${ganttId}_ValidationAddlineOffset" name="ValidationRule"/></td></tr>
+        </table>`;
         contentdiv.innerHTML = topContent + innerTable;
+        const cancelInput: HTMLInputElement = contentdiv.querySelector(`#${ganttId}_ValidationCancel`) as HTMLInputElement;
+        const removeLinkInput: HTMLInputElement = contentdiv.querySelector(`#${ganttId}_ValidationRemoveline`) as HTMLInputElement;
+        const removeConstraintInput: HTMLInputElement = contentdiv.querySelector(`#${ganttId}_RemoveConstraint`) as HTMLInputElement;
+        const preserveLinkInput: HTMLInputElement = contentdiv.querySelector(`#${ganttId}_ValidationAddlineOffset`) as HTMLInputElement;
+        if (cancelInput) {
+            new RadioButton({
+                label: cancelText,
+                name: 'ValidationRule',
+                value: 'cancel',
+                checked: true,
+                cssClass: cls.constraintLabel
+            }).appendTo(cancelInput);
+        }
+        if (removeLinkInput) {
+            new RadioButton({
+                label: removeLinkText,
+                name: 'ValidationRule',
+                value: 'removeLink',
+                cssClass: cls.constraintLabel
+            }).appendTo(removeLinkInput);
+        }
+        if (removeConstraintInput) {
+            new RadioButton({
+                label: removeConstraintText,
+                name: 'ValidationRule',
+                value: 'removeConstraint',
+                cssClass: cls.constraintLabel
+            }).appendTo(removeConstraintInput);
+        }
+        if (preserveLinkInput) {
+            new RadioButton({
+                label: preserveLinkText,
+                name: 'ValidationRule',
+                value: 'preserveLink',
+                cssClass: cls.constraintLabel
+            }).appendTo(preserveLinkInput);
+        }
+        const radioWrapper: NodeListOf<Element> = contentdiv.querySelectorAll('.e-radio-wrapper');
+        radioWrapper.forEach((wrapperElement: Element) => {
+            (wrapperElement as HTMLElement).style.padding = '6px';
+            (wrapperElement.querySelector('span') as HTMLElement).style.fontWeight = 'normal';
+        });
         return contentdiv;
+    }
+    /**
+     * To open constraint validation dialog
+     *
+     * @param {object} args - { violationType: string, parentRecord: IGanttData, record: IGanttData }
+     * @returns {void}
+     * @private
+     */
+    public openConstraintValidationDialog(
+        args: {
+            violationType: ViolationType,
+            parentRecord: IGanttData,
+            record: IGanttData,
+            predecessorLink: any
+        }
+    ): void {
+        const contentTemplate: HTMLElement = this.constraintValidationDialogTemplate(args);
+        const constraintConflictHeader: string = this.parent.localeObj.getConstant('schedulingConflicts');
+        this.parent.validationDialogElement.setProperties({
+            content: contentTemplate,
+            header: constraintConflictHeader
+        });
+        const contentId: string = this.parent.element.id + '_dialogValidationRule_dialog-content';
+        const contentElement: HTMLElement = this.parent.validationDialogElement.element.querySelector<HTMLElement>('#' + contentId);
+        contentElement.style.paddingTop = '10px';
+        const headerId: string = this.parent.element.id + '_dialogValidationRule_dialog-header';
+        const headerElement: HTMLElement = this.parent.validationDialogElement.element.querySelector<HTMLElement>('#' + headerId);
+        headerElement.style.padding = '8px 16px';
+        this.parent.validationDialogElement.show();
+    }
+    /**
+     * Constraint validation dialog template
+     *
+     * @param {object} args - { violationType: string, parentRecord: IGanttData, record: IGanttData }
+     * @returns {HTMLElement} The HTML element representing the constraint validation dialog
+     * @private
+     */
+    public constraintValidationDialogTemplate(args: {
+        violationType: string,
+        parentRecord: IGanttData,
+        record: IGanttData,
+        predecessorLink: any
+    }): HTMLElement {
+        const ganttId: string = this.parent.element.id;
+        const { parentRecord, record, predecessorLink } = args;
+        let { violationType } = args;
+        const contentDiv: HTMLElement = createElement('div', { className: 'e-ValidationContent' });
+        const recordName: string = record.ganttProperties.taskName;
+        let parentName: string = '';
+        if (parentRecord && parentRecord.ganttProperties && parentRecord.ganttProperties.taskName) {
+            parentName = parentRecord.ganttProperties.taskName;
+        }
+        const removeConstraintTemplate: string = this.parent.localeObj.getConstant('removeConstraint');
+        const removeDependencyTemplate: string = this.parent.localeObj.getConstant('removeDependency');
+        const cancelChangeText: string = this.parent.localeObj.getConstant('cancelChange');
+        violationType = this.formatViolationType(violationType);
+        const removeConstraintText: string = formatString(removeConstraintTemplate, [violationType, recordName]);
+        const removeDependencyText: string = formatString(removeDependencyTemplate, [parentName, recordName]);
+        let innerHtml: string = '<table>';
+        innerHtml += `
+        <tr>
+            <td>
+                <input type="radio" id="${ganttId}_RemoveConstraint" name="ValidationRule" />
+            </td>
+        </tr>`;
+        if (predecessorLink !== undefined) {
+            innerHtml += `
+        <tr>
+            <td>
+                <input type="radio" id="${ganttId}_RemoveDependency" name="ValidationRule"/>
+            </td>
+        </tr>`;
+        }
+        innerHtml += `
+        <tr>
+            <td>
+                <input type="radio" id="${ganttId}_CancelChange" name="ValidationRule"/>
+            </td>
+        </tr>`;
+        innerHtml += '</table>';
+        contentDiv.innerHTML = innerHtml;
+        const removeConstraintElem: HTMLElement = contentDiv.querySelector(`#${ganttId}_RemoveConstraint`) as HTMLElement;
+        if (removeConstraintElem) {
+            new RadioButton({
+                label: removeConstraintText,
+                name: 'ValidationRule',
+                value: 'removeConstraint',
+                checked: true,
+                cssClass: cls.constraintLabel
+            }).appendTo(removeConstraintElem);
+        }
+        if (predecessorLink !== undefined) {
+            const removeDependencyElem: HTMLElement = contentDiv.querySelector(`#${ganttId}_RemoveDependency`) as HTMLElement;
+            if (removeDependencyElem) {
+                new RadioButton({
+                    label: removeDependencyText,
+                    name: 'ValidationRule',
+                    value: 'removeDependency',
+                    cssClass: cls.constraintLabel
+                }).appendTo(removeDependencyElem);
+            }
+        }
+        const cancelChangeElem: HTMLElement = contentDiv.querySelector(`#${ganttId}_CancelChange`) as HTMLElement;
+        if (cancelChangeElem) {
+            new RadioButton({
+                label: cancelChangeText,
+                name: 'ValidationRule',
+                value: 'cancelChange',
+                cssClass: cls.constraintLabel
+            }).appendTo(cancelChangeElem);
+        }
+        const radioWrapper: NodeListOf<Element> = contentDiv.querySelectorAll('.e-radio-wrapper');
+        radioWrapper.forEach((wrapperElement: Element) => {
+            (wrapperElement as HTMLElement).style.padding = '6px';
+            (wrapperElement.querySelector('span') as HTMLElement).style.fontWeight = 'normal';
+        });
+        return contentDiv;
     }
 
     /**
@@ -941,7 +1219,7 @@ export class ConnectorLineEdit {
         let violatedParent: IGanttData;
         let ganttTaskData: ITaskData;
         let violateType: string;
-        const startDate: Date = this.parent.predecessorModule.getPredecessorDate(ganttRecord, predecessor);
+        const startDate: Date = this.parent.predecessorModule.getPredecessorDate(ganttRecord, predecessor, null, true);
         if (data) {
             ganttTaskData  = data.ganttProperties;
         } else {
@@ -954,15 +1232,15 @@ export class ConnectorLineEdit {
             parentGanttRecord = this.parent.connectorLineModule.getRecordByID(predecessor[i as number].from as string);
             let violationType: string = null;
             if (predecessor[i as number].type === 'FS') {
-                if (
-                    this.parent.dateValidationModule.getDuration(
-                        startDate,
-                        ganttTaskData.startDate,
-                        this.parent.durationUnit,
-                        ganttTaskData.isAutoSchedule,
-                        ganttTaskData.isMilestone, true
-                    ) !== 0
-                ) {
+                const duration: number = this.parent.dateValidationModule.getDuration(
+                    startDate,
+                    ganttTaskData.startDate,
+                    this.parent.durationUnit,
+                    ganttTaskData.isAutoSchedule,
+                    ganttTaskData.isMilestone,
+                    true
+                );
+                if (duration !== 0 || (duration === 0 && this.parent.updateOffsetOnTaskbarEdit === false)) {
                     if (ganttTaskData.startDate < startDate) {
                         this.validationPredecessor.push(predecessor[parseInt(i.toString(), 10)]);
                         violationType = 'taskBeforePredecessor_FS';
@@ -1000,14 +1278,16 @@ export class ConnectorLineEdit {
                     violationType = 'taskAfterPredecessor_SS';
                 }
             } else if (predecessor[i as number].type === 'FF') {
+                const duration: number = this.parent.dateValidationModule.getDuration(
+                    startDate,
+                    parentGanttRecord.ganttProperties.endDate,
+                    this.parent.durationUnit,
+                    parentGanttRecord.ganttProperties.isAutoSchedule,
+                    parentGanttRecord.ganttProperties.isMilestone,
+                    true
+                );
                 if (
-                    this.parent.dateValidationModule.getDuration(
-                        startDate,
-                        parentGanttRecord.ganttProperties.endDate,
-                        this.parent.durationUnit,
-                        parentGanttRecord.ganttProperties.isAutoSchedule,
-                        parentGanttRecord.ganttProperties.isMilestone, true
-                    ) !== 0
+                    duration !== 0 || (duration === 0 && this.parent.updateOffsetOnTaskbarEdit === false)
                 ) {
                     if (endDate <= parentGanttRecord.ganttProperties.endDate) {
                         this.validationPredecessor.push(predecessor[parseInt(i.toString(), 10)]);
@@ -1018,15 +1298,15 @@ export class ConnectorLineEdit {
                     }
                 }
             } else if (predecessor[i as number].type === 'SF') {
-                if (
-                    this.parent.dateValidationModule.getDuration(
-                        parentGanttRecord.ganttProperties.startDate,
-                        endDate,
-                        this.parent.durationUnit,
-                        parentGanttRecord.ganttProperties.isAutoSchedule,
-                        parentGanttRecord.ganttProperties.isMilestone, true
-                    ) !== 0
-                ) {
+                const duration: number = this.parent.dateValidationModule.getDuration(
+                    parentGanttRecord.ganttProperties.startDate,
+                    endDate,
+                    this.parent.durationUnit,
+                    parentGanttRecord.ganttProperties.isAutoSchedule,
+                    parentGanttRecord.ganttProperties.isMilestone,
+                    true
+                );
+                if (duration !== 0 || (duration === 0 && this.parent.updateOffsetOnTaskbarEdit === false)) {
                     if (endDate < parentGanttRecord.ganttProperties.startDate) {
                         this.validationPredecessor.push(predecessor[parseInt(i.toString(), 10)]);
                         violationType = 'taskBeforePredecessor_SF';
@@ -1058,7 +1338,8 @@ export class ConnectorLineEdit {
      */
     public addRemovePredecessor(data: IGanttData): void {
         const prevData: IGanttData = this.parent.previousRecords[data.uniqueID];
-        const newPredecessor: IPredecessor[] = data.ganttProperties.predecessor.slice();
+        const newPredecessor: IPredecessor[] = !isNullOrUndefined(data.ganttProperties.predecessor) ?
+            data.ganttProperties.predecessor.slice() : data.ganttProperties.predecessor;
         // eslint-disable-next-line
         if (prevData && prevData.ganttProperties && prevData.ganttProperties.hasOwnProperty('predecessor')) {
             const prevPredecessor: IPredecessor[] = prevData.ganttProperties.predecessor;

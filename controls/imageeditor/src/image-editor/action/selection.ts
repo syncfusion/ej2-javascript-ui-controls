@@ -58,6 +58,7 @@ export class Selection {
     private isMouseUp: boolean = false;
     private mouseWheel: number = 0;
     private isTransformedShape: boolean = false;
+    private mouseClickPoint: Point = {x: 0, y: 0};
 
     constructor(parent: ImageEditor) {
         this.parent = parent;
@@ -232,7 +233,8 @@ export class Selection {
                 parent.activeObj.textSettings.fontSize = 11;
                 parent.activeObj.keyHistory = 'Enter Text';
                 parent.notify('shape', { prop: 'initializeTextShape', onPropertyChange: false,
-                    value: {text: null, fontFamily: null, fontSize: null, bold: null, italic: null, strokeColor: null }});
+                    value: {text: null, fontFamily: null, fontSize: null, bold: null, italic: null,
+                        underline: null, strikethrough: null, strokeColor: null }});
             } else if (args.value['shape'] === 'path') {
                 parent.activeObj.pointColl = [];
             }
@@ -420,7 +422,7 @@ export class Selection {
         this.isFhdEditing = false; this.pathAdjustedIndex = null; this.touchTime = 0; this.isImageClarity = true;
         this.currentDrawingShape = ''; this.initialPrevObj = {} as CurrentObject; this.resizedElement = '';
         this.mouseDown = ''; this.isSliderActive = false; this.arrowShape = [ArrowheadType.None, ArrowheadType.SolidArrow];
-        this.isMouseDown = this.isMouseUp = this.isTransformedShape = false;
+        this.isMouseDown = this.isMouseUp = this.isTransformedShape = false; this.mouseClickPoint = {x: 0, y: 0};
     }
 
     private performTabAction(): void {
@@ -2219,7 +2221,7 @@ export class Selection {
                     const width: number = this.upperContext.measureText(parent.activeObj.textSettings.text).width +
                         parent.activeObj.textSettings.fontSize * 0.5;
                     actPoint.endX = actPoint.startX + width;
-                    actPoint.endY = actPoint.startY + parent.activeObj.textSettings.fontSize;
+                    actPoint.endY = actPoint.startY + (parent.activeObj.textSettings.fontSize * 1.18);
                     actPoint.width = actPoint.endX - actPoint.startX;
                     actPoint.height = actPoint.endY - actPoint.startY;
                     tempActiveObj = extend({}, parent.activeObj, null, true) as SelectionPoint;
@@ -2978,6 +2980,7 @@ export class Selection {
         const parent: ImageEditor = this.parent;
         let activePoint: ActivePoint = parent.activeObj.activePoint;
         const x: number = imageEditorClickEventArgs.point.x; const y: number = imageEditorClickEventArgs.point.y;
+        this.mouseClickPoint = {x: x, y: y };
         const cursor: string = parent.activeObj.shape && parent.activeObj.shape === 'text' ?
             parent.cursor : 'default';
         const tempCursor: string = parent.upperCanvas.style.cursor;
@@ -3026,7 +3029,7 @@ export class Selection {
                 const width: number =
                     this.upperContext.measureText(parent.activeObj.textSettings.text).width + parent.activeObj.textSettings.fontSize * 0.5;
                 activePoint.endX = activePoint.startX + width;
-                activePoint.endY = activePoint.startY + parent.activeObj.textSettings.fontSize;
+                activePoint.endY = activePoint.startY + (parent.activeObj.textSettings.fontSize * 1.18);
                 activePoint.width = activePoint.endX - activePoint.startX;
                 activePoint.height = activePoint.endY - activePoint.startY;
             } else if (this.currentDrawingShape === 'arrow') {
@@ -3422,6 +3425,12 @@ export class Selection {
             }
             const bbox: DOMRect = parent.lowerCanvas.getBoundingClientRect() as DOMRect;
             x -= bbox.left; y -= bbox.top;
+            if (parent.drawingShape === 'text' && this.mouseDownPoint && this.mouseDownPoint.x === x && this.mouseDownPoint.y === y) {
+                parent.notify('shape', { prop: 'refreshActiveObj', onPropertyChange: false });
+                if (!parent.activeObj.keyHistory) {
+                    parent.activeObj.keyHistory = 'Enter Text';
+                }
+            }
             let activeObjShape: string; const currentDrawingShape: string = this.currentDrawingShape;
             let dummyClick: boolean = false;
             if (e.type === 'touchend') {
@@ -3582,6 +3591,12 @@ export class Selection {
                             }
                         }
                         if (!isCropSelection) {
+                            let isDummyClick: boolean = false;
+                            if (Math.round(x) === Math.round(this.mouseClickPoint.x) && Math.round(y) ===
+                                Math.round(this.mouseClickPoint.y)) {
+                                isDummyClick = true;
+                                parent.notify('undo-redo', { prop: 'preventApplyEditComplete', value: {bool: true }});
+                            }
                             this.adjustActObjForLineArrow();
                             if (parent.isShapeDrawing) {
                                 const temp: string = this.currentDrawingShape;
@@ -3589,6 +3604,9 @@ export class Selection {
                                 this.currentDrawingShape = temp;
                             } else {
                                 parent.notify('undo-redo', { prop: 'updateUndoRedoStack', onPropertyChange: false});
+                            }
+                            if (isDummyClick) {
+                                parent.notify('undo-redo', { prop: 'preventApplyEditComplete', value: {bool: false }});
                             }
                         }
                     }
@@ -3643,7 +3661,7 @@ export class Selection {
             parent.isShapeDrawing = false;
             parent.notify('freehand-draw', { prop: 'resetSelPoints', onPropertyChange: false });
         }
-        this.isMouseUp = false;
+        this.isMouseUp = false;  this.mouseClickPoint = {x: 0, y: 0 };
     }
 
     private adjustActObjForLineArrow(obj?: SelectionPoint): boolean {
@@ -3917,7 +3935,8 @@ export class Selection {
                 (obj.textSettings && Math.round(obj.textSettings.fontRatio) !== Math.round(this.tempActiveObj.textSettings.fontRatio)) ||
                 (obj.textSettings && obj.textSettings.bold !== this.tempActiveObj.textSettings.bold) ||
                 (obj.textSettings && obj.textSettings.italic !== this.tempActiveObj.textSettings.italic) ||
-                (obj.textSettings && obj.textSettings.underline !== this.tempActiveObj.textSettings.underline)) {
+                (obj.textSettings && obj.textSettings.underline !== this.tempActiveObj.textSettings.underline) ||
+                (obj.textSettings && obj.textSettings.strikethrough !== this.tempActiveObj.textSettings.strikethrough)) {
                 isApply = true;
             }
             if (this.isInitialTextEdited && !isApply) {
@@ -4894,6 +4913,18 @@ export class Selection {
         } else {
             parent.activeObj.textSettings.italic = false;
         }
+        parent.activeObj.textSettings.underline = parent.activeObj.textSettings.strikethrough = false;
+        if (parent.textArea.style.textDecoration === 'underline line-through') {
+            parent.activeObj.textSettings.underline = true;
+            parent.activeObj.textSettings.strikethrough = true;
+        }
+        else if (parent.textArea.style.textDecoration === 'underline'){
+            parent.activeObj.textSettings.underline = true;
+        }
+        else if (parent.textArea.style.textDecoration === 'line-through')
+        {
+            parent.activeObj.textSettings.strikethrough = true;
+        }
         parent.activeObj.textSettings.fontSize = (parseFloat(parent.textArea.style.fontSize));
     }
 
@@ -5043,6 +5074,9 @@ export class Selection {
             }
             if (parent.activeObj.textSettings.underline) {
                 fontStyle.push('underline');
+            }
+            if (parent.activeObj.textSettings.strikethrough) {
+                fontStyle.push('strikethrough');
             }
         }
         const { startX, startY, endX, endY, width, height } : ActivePoint = parent.activeObj.activePoint;

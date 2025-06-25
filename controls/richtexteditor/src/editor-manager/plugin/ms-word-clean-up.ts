@@ -1,6 +1,6 @@
 import { EditorManager } from '../base/editor-manager';
 import * as EVENTS from '../../common/constant';
-import { NotifyArgs } from '../../rich-text-editor/base/interface';
+import { ListItemProperties, NotifyArgs } from '../../common/interface';
 import { createElement, isNullOrUndefined as isNOU, detach, addClass, Browser } from '@syncfusion/ej2-base';
 import { PASTE_SOURCE } from '../base/constant';
 import { InsertMethods } from './insert-methods';
@@ -12,6 +12,12 @@ import { InsertMethods } from './insert-methods';
  */
 export class MsWordPaste {
     private parent: EditorManager;
+    /**
+     * Initializes a new instance of the MsWordPaste class
+     *
+     * @param {EditorManager} parent - The parent editor manager instance
+     * @returns {void} - No return value
+     */
     public constructor(parent?: EditorManager) {
         this.parent = parent;
         this.addEventListener();
@@ -34,6 +40,7 @@ export class MsWordPaste {
         'square',
         'circle'
     ];
+    /** List of HTML node names that should not be ignored during cleanup */
     private ignorableNodes: string[] = ['A', 'APPLET', 'B', 'BLOCKQUOTE', 'BR',
         'BUTTON', 'CENTER', 'CODE', 'COL', 'COLGROUP', 'DD', 'DEL', 'DFN', 'DIR', 'DIV',
         'DL', 'DT', 'EM', 'FIELDSET', 'FONT', 'FORM', 'FRAME', 'FRAMESET', 'H1', 'H2',
@@ -41,6 +48,7 @@ export class MsWordPaste {
         'LI', 'OL', 'OPTION', 'P', 'PARAM', 'PRE', 'Q', 'S', 'SELECT', 'SPAN', 'STRIKE',
         'STRONG', 'SUB', 'SUP', 'TABLE', 'TBODY', 'TD', 'TEXTAREA', 'TFOOT', 'TH',
         'THEAD', 'TITLE', 'TR', 'TT', 'U', 'UL'];
+    /** List of HTML block node names */
     private blockNode: string[] = ['div', 'p', 'h1', 'h2', 'h3', 'h4', 'h5', 'h6',
         'address', 'blockquote', 'button', 'center', 'dd', 'dir', 'dl', 'dt', 'fieldset',
         'frameset', 'hr', 'iframe', 'isindex', 'li', 'map', 'menu', 'noframes', 'noscript',
@@ -66,351 +74,508 @@ export class MsWordPaste {
     }
     private cropImageDimensions: { [key: string]: string | boolean | number }[] = [];
 
-    private wordCleanup(e: NotifyArgs): void {
-        const wordPasteStyleConfig: string[] = !isNOU(e.allowedStylePropertiesArray) ? e.allowedStylePropertiesArray : [];
+    /* Cleans up MS Word content from clipboard data */
+    private wordCleanup(notifyArgs: NotifyArgs): void {
+        const wordPasteStyleConfig: string[] = !isNOU(notifyArgs.allowedStylePropertiesArray) ?
+            notifyArgs.allowedStylePropertiesArray : [];
         let listNodes: Element[] = [];
-        let tempHTMLContent: string = (e.args as ClipboardEvent).clipboardData.getData('text/HTML');
-        const rtfData: string = (e.args as ClipboardEvent).clipboardData.getData('text/rtf');
-        const elm: HTMLElement = createElement('p') as HTMLElement;
-        elm.setAttribute('id', 'MSWord-Content');
-        elm.innerHTML = tempHTMLContent;
-        this.addDoubleBr(elm);
-        const patern: RegExp = /class='?Mso|style='[^ ]*\bmso-/i;
-        const patern2: RegExp = /class="?Mso|style="[^ ]*\bmso-/i;
-        const patern3: RegExp =
+        let clipboardHtmlContent: string = (notifyArgs.args as ClipboardEvent).clipboardData.getData('text/HTML');
+        const rtfData: string = (notifyArgs.args as ClipboardEvent).clipboardData.getData('text/rtf');
+
+        const clipboardDataElement: HTMLElement = createElement('p') as HTMLElement;
+        clipboardDataElement.setAttribute('id', 'MSWord-Content');
+        clipboardDataElement.innerHTML = clipboardHtmlContent;
+        this.addDoubleBr(clipboardDataElement);
+
+        const msoClassSingleQuotePattern: RegExp = /class='?Mso|style='[^ ]*\bmso-/i;
+        const msoClassDoubleQuotePattern: RegExp = /class="?Mso|style="[^ ]*\bmso-/i;
+        const msoComplexPattern: RegExp =
             /(class="?Mso|class='?Mso|class="?Xl|class='?Xl|class=Xl|style="[^"]*\bmso-|style='[^']*\bmso-|w:WordDocument)/gi;
-        const pattern4: RegExp = /style='mso-width-source:/i;
-        const source: string = this.findSource(elm);
-        if (patern.test(tempHTMLContent) || patern2.test(tempHTMLContent) || patern3.test(tempHTMLContent) ||
-            pattern4.test(tempHTMLContent)) {
-            tempHTMLContent = tempHTMLContent.replace(/<img[^>]+>/i, '');
-            this.addListClass(elm);
-            listNodes = this.cleanUp(elm, listNodes);
+        const msoWidthSourcePattern: RegExp = /style='mso-width-source:/i;
+        const contentSource: string = this.findSource(clipboardDataElement);
+
+        if (msoClassSingleQuotePattern.test(clipboardHtmlContent) || msoClassDoubleQuotePattern.test(clipboardHtmlContent) ||
+            msoComplexPattern.test(clipboardHtmlContent) || msoWidthSourcePattern.test(clipboardHtmlContent)) {
+            clipboardHtmlContent = clipboardHtmlContent.replace(/<img[^>]+>/i, '');
+            this.addListClass(clipboardDataElement);
+            listNodes = this.listCleanUp(clipboardDataElement, listNodes);
             if (!isNOU(listNodes[0]) && listNodes[0].parentElement.tagName !== 'UL' &&
                 listNodes[0].parentElement.tagName !== 'OL') {
                 this.listConverter(listNodes);
             }
-            this.imageConversion(elm, rtfData);
-            this.cleanList(elm, 'UL');
-            this.cleanList(elm, 'OL');
-            this.styleCorrection(elm, wordPasteStyleConfig);
-            this.removingComments(elm);
-            this.removeUnwantedElements(elm);
-            this.removeEmptyElements(elm);
-            this.removeEmptyAnchorTag(elm);
-            this.breakLineAddition(elm);
-            this.processMargin(elm);
-            this.removeClassName(elm);
-            if (pattern4.test(tempHTMLContent)) {
-                this.addTableBorderClass(elm);
+
+            this.imageConversion(clipboardDataElement, rtfData);
+            this.cleanList(clipboardDataElement, 'UL');
+            this.cleanList(clipboardDataElement, 'OL');
+            this.styleCorrection(clipboardDataElement, wordPasteStyleConfig);
+            this.removingComments(clipboardDataElement);
+            this.removeUnwantedElements(clipboardDataElement);
+            this.removeEmptyElements(clipboardDataElement);
+            this.removeEmptyAnchorTag(clipboardDataElement);
+            this.breakLineAddition(clipboardDataElement);
+            this.processMargin(clipboardDataElement);
+            this.removeClassName(clipboardDataElement);
+
+            if (msoWidthSourcePattern.test(clipboardHtmlContent)) {
+                this.addTableBorderClass(clipboardDataElement);
             }
-            e.callBack(elm.innerHTML, this.cropImageDimensions, source);
+            notifyArgs.callBack(clipboardDataElement.innerHTML, this.cropImageDimensions, contentSource);
         } else {
-            if (source === PASTE_SOURCE[2]) {
-                this.handleOneNoteContent(elm);
+            if (contentSource === PASTE_SOURCE[2]) {
+                this.handleOneNoteContent(clipboardDataElement);
             }
-            this.removeEmptyMetaTags(elm);
-            e.callBack(elm.innerHTML, null, source);
+            this.removeEmptyMetaTags(clipboardDataElement);
+            notifyArgs.callBack(clipboardDataElement.innerHTML, null, contentSource);
         }
     }
 
-    private addDoubleBr(elm: HTMLElement): void {
-        const newline: HTMLElement = elm.querySelector('.Apple-interchange-newline');
-        if (!isNOU(newline) && Browser.userAgent.indexOf('Chrome') !== -1 && newline.parentElement.nodeName === 'P' && elm !== newline.parentElement) {
-            for (let i: number = 0; i < elm.childNodes.length; i++) {
-                const node: Node = elm.childNodes[i as number];
-                if (node.nodeType === Node.COMMENT_NODE && node.nodeValue.includes('StartFragment')) {
-                    const newElement: HTMLElement = document.createElement('p');
-                    newElement.innerHTML = '<br>';
-                    const cssText: string = newline.parentElement.style.cssText;
-                    const currentStyle: string = newElement.getAttribute('style') || '';
-                    const newStyle: string = currentStyle + cssText;
-                    newElement.style.cssText = newStyle;
-                    elm.insertBefore(newElement, node.nextSibling);
-                    detach(newline);
+    /* Adds double line breaks for Apple-interchange-newline elements in Chrome. */
+    private addDoubleBr(clipboardDataElement: HTMLElement): void {
+        const newlineElement: HTMLElement = clipboardDataElement.querySelector('.Apple-interchange-newline');
+        const isValidNewline: boolean = !isNOU(newlineElement) && Browser.userAgent.indexOf('Chrome') !== -1 &&
+            newlineElement.parentElement.nodeName === 'P' && clipboardDataElement !== newlineElement.parentElement;
+        if (isValidNewline) {
+            for (let i: number = 0; i < clipboardDataElement.childNodes.length; i++) {
+                const currentNode: Node = clipboardDataElement.childNodes[i as number];
+                const isStartFragment: boolean = currentNode.nodeType === Node.COMMENT_NODE &&
+                    currentNode.nodeValue.indexOf('StartFragment') !== -1;
+                if (isStartFragment) {
+                    const paragraphElement: HTMLElement = createElement('p');
+                    paragraphElement.innerHTML = '<br>';
+                    const parentStyles: string = newlineElement.parentElement.style.cssText;
+                    const currentStyles: string = paragraphElement.getAttribute('style') || '';
+                    const combinedStyles: string = currentStyles + parentStyles;
+                    paragraphElement.style.cssText = combinedStyles;
+                    clipboardDataElement.insertBefore(paragraphElement, currentNode.nextSibling);
+                    detach(newlineElement);
                     break;
                 }
             }
         }
     }
 
-    private cleanList(elm: HTMLElement, listTag: string): void {
-        const replacableElem: NodeListOf<Element> = elm.querySelectorAll(listTag + ' div');
-        for (let j: number = replacableElem.length - 1; j >= 0; j--) {
-            const parentElem: Node = replacableElem[j as number].parentNode;
-            while (replacableElem[j as number].firstChild) {
-                parentElem.insertBefore(replacableElem[j as number].firstChild, replacableElem[j as number]);
+    /* Cleans list elements by removing div elements and restructuring the list */
+    private cleanList(clipboardDataElement: HTMLElement, listTagName: string): void {
+        const divElements: NodeListOf<Element> = clipboardDataElement.querySelectorAll(listTagName + ' div');
+        for (let i: number = divElements.length - 1; i >= 0; i--) {
+            const currentDiv: Element = divElements[i as number];
+            const parentNode: Node = currentDiv.parentNode;
+            // Move all children of the div to its parent
+            while (currentDiv.firstChild) {
+                parentNode.insertBefore(currentDiv.firstChild, currentDiv);
             }
-            const closestListElem: Element = this.findClosestListElem(replacableElem[j as number]);
-            if (closestListElem) {
-                this.insertAfter(replacableElem[j as number], closestListElem);
+            // Find the closest list element and insert the div after it
+            const closestListElement: Element = this.findClosestListElem(currentDiv);
+            if (closestListElement) {
+                this.insertAfter(currentDiv, closestListElement);
             }
         }
     }
 
+    /* Inserts a node after a reference node */
     private insertAfter(newNode: Element, referenceNode: Element): void {
-        referenceNode.parentNode.insertBefore(newNode, referenceNode.nextSibling);
+        if (referenceNode.parentNode) {
+            referenceNode.parentNode.insertBefore(newNode, referenceNode.nextSibling);
+        }
     }
 
-    private findClosestListElem(listElem: Element): Element {
-        let closestListElem: Element;
-        while (!isNOU(listElem)) {
-            listElem = !isNOU(listElem.closest('ul')) && listElem.tagName !== 'UL' ?
-                listElem.closest('ul') : (listElem.tagName !== 'OL' ? listElem.closest('ol') : null);
-            closestListElem = !isNOU(listElem) ? listElem : closestListElem;
+    /* Finds the closest list element (UL or OL) to the given element */
+    private findClosestListElem(currentElement: Element): Element {
+        let closestListElement: Element;
+        while (!isNOU(currentElement)) {
+            const hasUlParent: boolean = !isNOU(currentElement.closest('ul')) && currentElement.tagName !== 'UL';
+            const hasOlParent: boolean = currentElement.tagName !== 'OL' && !isNOU(currentElement.closest('ol'));
+            if (hasUlParent) {
+                currentElement = currentElement.closest('ul');
+            } else if (hasOlParent) {
+                currentElement = currentElement.closest('ol');
+            } else {
+                currentElement = null;
+            }
+            closestListElement = !isNOU(currentElement) ? currentElement : closestListElement;
         }
-        return closestListElem;
+        return closestListElement;
     }
-    private addListClass(elm: HTMLElement): void {
-        const allNodes: NodeListOf<Element> = elm.querySelectorAll('*');
-        for (let index: number = 0; index < allNodes.length; index++) {
-            if (!isNOU(allNodes[index as number].getAttribute('style')) && allNodes[index as number].getAttribute('style').replace(/ /g, '').replace('\n', '').indexOf('mso-list:l') >= 0 &&
-                (allNodes[index as number] as Element).className.toLowerCase().indexOf('msolistparagraph') === -1 &&
-                allNodes[index as number].tagName.charAt(0) !== 'H' && allNodes[index as number].tagName !== 'LI' &&
-                allNodes[index as number].tagName !== 'OL' && allNodes[index as number].tagName !== 'UL') {
-                allNodes[index as number].classList.add('msolistparagraph');
+
+    /* Adds 'msolistparagraph' class to elements that have MS Word list styles */
+    private addListClass(clipboardDataElement: HTMLElement): void {
+        const allElements: NodeListOf<Element> = clipboardDataElement.querySelectorAll('*');
+        for (let i: number = 0; i < allElements.length; i++) {
+            const currentElement: Element = allElements[i as number];
+            const elementStyle: string = currentElement.getAttribute('style');
+            if (isNOU(elementStyle)) {
+                continue;
+            }
+            // Remove all spaces and the first newline character from the elementStyle string
+            const normalizedStyle: string = elementStyle.replace(/ /g, '').replace('\n', '');
+            const hasMsoListStyle: boolean = normalizedStyle.indexOf('mso-list:l') >= 0;
+            const hasNoMsoListClass: boolean = currentElement.className.toLowerCase().indexOf('msolistparagraph') === -1;
+            const isNotHeading: boolean = currentElement.tagName.charAt(0) !== 'H';
+            const isNotListElement: boolean = currentElement.tagName !== 'LI' &&
+                currentElement.tagName !== 'OL' && currentElement.tagName !== 'UL';
+            if (hasMsoListStyle && hasNoMsoListClass && isNotHeading && isNotListElement) {
+                currentElement.classList.add('msolistparagraph');
             }
         }
     }
 
-    private addTableBorderClass(elm: HTMLElement): void {
-        const allTableElm: NodeListOf<HTMLElement> = elm.querySelectorAll('table');
-        let hasTableBorder: boolean = false;
-        for (let i: number = 0; i < allTableElm.length; i++) {
+    /* Adds 'e-rte-table-border' class to tables that have border styles */
+    private addTableBorderClass(containerElement: HTMLElement): void {
+        const tableElements: NodeListOf<HTMLElement> = containerElement.querySelectorAll('table');
+        let hasBorderStyle: boolean = false;
+        for (let i: number = 0; i < tableElements.length; i++) {
             for (let j: number = 0; j < this.borderStyle.length; j++) {
-                if (allTableElm[i as number].innerHTML.indexOf(this.borderStyle[j as number]) >= 0) {
-                    hasTableBorder = true;
+                if (tableElements[i as number].innerHTML.indexOf(this.borderStyle[j as number]) >= 0) {
+                    hasBorderStyle = true;
                     break;
                 }
             }
-            if (hasTableBorder) {
-                allTableElm[i as number].classList.add('e-rte-table-border');
-                hasTableBorder = false;
+            if (hasBorderStyle) {
+                tableElements[i as number].classList.add('e-rte-table-border');
+                hasBorderStyle = false;  // Reset for the next table
             }
         }
     }
 
-    private imageConversion(elm: HTMLElement, rtfData: string): void {
-        this.checkVShape(elm);
-        let imgElem: NodeListOf<HTMLImageElement> = elm.querySelectorAll('img');
-        for (let i: number = 0; i < imgElem.length; i++) {
-            if (!isNOU(imgElem[i as number].getAttribute('v:shapes')) &&
-                imgElem[i as number].getAttribute('v:shapes').indexOf('Picture') < 0 &&
-                imgElem[i as number].getAttribute('v:shapes').indexOf('Chart') < 0 &&
-                imgElem[i as number].getAttribute('v:shapes').indexOf('圖片') < 0 &&
-                imgElem[i as number].getAttribute('v:shapes').indexOf('Grafik') < 0 &&
-                imgElem[i as number].getAttribute('v:shapes').toLowerCase().indexOf('image') < 0 &&
-                imgElem[i as number].getAttribute('v:shapes').indexOf('Graphic') < 0 &&
-                imgElem[i as number].getAttribute('v:shapes').indexOf('_x0000_s') < 0 &&
-                imgElem[i as number].getAttribute('v:shapes').indexOf('_x0000_i') < 0 &&
-                imgElem[i as number].getAttribute('v:shapes').indexOf('img1') < 0 &&
-                imgElem[i as number].getAttribute('v:shapes').indexOf('Immagine') < 0) {
-                imgElem[i as number].classList.add('e-rte-image-unsupported');
-            }
-            imgElem[i as number].removeAttribute('v:shapes');
+    /* Converts images from MS Word to appropriate formats */
+    private imageConversion(clipboardDataElement: HTMLElement, rtfData: string): void {
+        this.checkVShape(clipboardDataElement);
+        // First pass: Mark unsupported images and remove v:shapes attribute
+        let imageElements: NodeListOf<HTMLImageElement> = clipboardDataElement.querySelectorAll('img');
+        this.markUnsupportedImages(imageElements);
+        // Second pass: Process supported images
+        imageElements = clipboardDataElement.querySelectorAll('img');
+        if (imageElements.length === 0) {
+            return;
         }
-        imgElem = elm.querySelectorAll('img');
-        const imgSrc: string[] = [];
-        const base64Src: { [key: string]: string | boolean }[] = [];
-        const imgName: string[] = [];
+        const imageSources: string[] = [];
+        const base64Sources: { [key: string]: string | boolean }[] = [];
+        const imageNames: string[] = [];
+        // Extract image sources and names
+        this.extractImageInfo(imageElements, imageSources, imageNames);
+        // Convert hex data to base64
+        const hexValues: { [key: string]: string | boolean | number }[] = this.hexConversion(rtfData);
+        this.processHexValues(hexValues, base64Sources);
+        // Update image sources
+        this.updateImageSources(clipboardDataElement, imageSources, base64Sources, imageNames);
+        // Clean up unsupported images
+        this.cleanUnsupportedImages(clipboardDataElement);
+    }
+
+    /* Marks unsupported images and removes v:shapes attribute */
+    private markUnsupportedImages(imageElements: NodeListOf<HTMLImageElement>): void {
+        for (let i: number = 0; i < imageElements.length; i++) {
+            const currentImage: HTMLImageElement = imageElements[i as number];
+            const shapesAttribute: string = currentImage.getAttribute('v:shapes');
+            if (!isNOU(shapesAttribute)) {
+                const isUnsupported: boolean = this.isUnsupportedImageShape(shapesAttribute);
+                if (isUnsupported) {
+                    currentImage.classList.add('e-rte-image-unsupported');
+                }
+                currentImage.removeAttribute('v:shapes');
+            }
+        }
+    }
+
+    /* Determines if an image shape is unsupported */
+    private isUnsupportedImageShape(shapesValue: string): boolean {
+        const supportedShapes: string[] = [
+            'Picture', 'Chart', '圖片', 'Grafik', 'image', 'Graphic',
+            '_x0000_s', '_x0000_i', 'img1', 'Immagine'
+        ];
+        for (let i: number = 0; i < supportedShapes.length; i++) {
+            const shape: string = supportedShapes[i as number];
+            if (shape === 'image') {
+                if (shapesValue.toLowerCase().indexOf(shape) >= 0) {
+                    return false;
+                }
+            } else if (shapesValue.indexOf(shape) >= 0) {
+                return false;
+            }
+        }
+        return true;
+    }
+
+    /* Extracts image information from image elements */
+    private extractImageInfo(imageElements: NodeListOf<HTMLImageElement>, imageSources: string[], imageNames: string[]): void {
+        for (let i: number = 0; i < imageElements.length; i++) {
+            const currentImage: HTMLImageElement = imageElements[i as number];
+            if (!currentImage.classList.contains('e-rte-image-unsupported')) {
+                const src: string = currentImage.getAttribute('src');
+                imageSources.push(src);
+                const srcParts: string[] = src.split('/');
+                const lastPart: string = srcParts[srcParts.length - 1];
+                const imageName: string = lastPart.split('.')[0] + i;
+                imageNames.push(imageName);
+            }
+        }
+    }
+
+    /* Processes hex values and converts them to base64 */
+    private processHexValues(
+        hexValues: { [key: string]: string | boolean | number }[],
+        base64Sources: { [key: string]: string | boolean }[]
+    ): void {
+        for (let i: number = 0; i < hexValues.length; i++) {
+            const currentHex: { [key: string]: string | boolean | number } = hexValues[i as number];
+            base64Sources.push({
+                base64Data: !isNOU(currentHex.hex) ? this.convertToBase64(currentHex) as string : null,
+                isCroppedImage: currentHex.isCroppedImage as boolean
+            });
+            if (currentHex.isCroppedImage) {
+                this.cropImageDimensions.push({
+                    goalWidth: (currentHex.goalWidth as number),
+                    goalHeight: (currentHex.goalHeight as number),
+                    cropLength: (currentHex.cropLength as number),
+                    cropTop: (currentHex.cropTop as number),
+                    cropR: (currentHex.cropR as number),
+                    cropB: (currentHex.cropB as number)
+                });
+            }
+        }
+    }
+
+    /* Updates image sources with base64 data or marks as unsupported */
+    private updateImageSources(
+        clipboardDataElement: HTMLElement,
+        imageSources: string[],
+        base64Sources: { [key: string]: string | boolean }[],
+        imageNames: string[]
+    ): void {
         // eslint-disable-next-line
         const linkRegex: RegExp = new RegExp(/([^\S]|^)(((https?\:\/\/)|(www\.)|(blob\:))(\S+))/gi);
-        if (imgElem.length > 0) {
-            for (let i: number = 0; i < imgElem.length; i++) {
-                if (!imgElem[i as number].classList.contains('e-rte-image-unsupported')) {
-                    imgSrc.push(imgElem[i as number].getAttribute('src'));
-                    const imageName: string = imgElem[i as number].getAttribute('src').split('/')[imgElem[i as number].getAttribute('src').split('/').length - 1].split('.')[0] + i;
-                    imgName.push(imageName);
-                }
-            }
-            const hexValue: { [key: string]: string | boolean | number }[] = this.hexConversion(rtfData);
-            for (let i: number = 0; i < hexValue.length; i++) {
-                base64Src.push({
-                    base64Data: !isNOU(hexValue[i as number].hex) ? this.convertToBase64(hexValue[i as number]) as string : null,
-                    isCroppedImage: hexValue[i as number].isCroppedImage as boolean
-                });
-                if (hexValue[i as number].isCroppedImage) {
-                    this.cropImageDimensions.push({
-                        goalWidth: (hexValue[i as number].goalWidth as number),
-                        goalHeight: hexValue[i as number].goalHeight as number,
-                        cropLength: hexValue[i as number].cropLength as number,
-                        cropTop: hexValue[i as number].cropTop as number,
-                        cropR: hexValue[i as number].cropR as number,
-                        cropB: hexValue[i as number].cropB as number
-                    });
-                }
-            }
-            imgElem = elm.querySelectorAll('img:not(.e-rte-image-unsupported');
-            for (let i: number = 0; i < imgElem.length; i++) {
-                if (imgSrc[i as number].match(linkRegex)) {
-                    imgElem[i as number].setAttribute('src', imgSrc[i as number]);
+        const imageElements: NodeListOf<HTMLImageElement> = clipboardDataElement.querySelectorAll('img:not(.e-rte-image-unsupported)');
+        for (let i: number = 0; i < imageElements.length; i++) {
+            const currentImage: HTMLImageElement = imageElements[i as number];
+            const currentSource: string = imageSources[i as number];
+            if (currentSource.match(linkRegex)) {
+                currentImage.setAttribute('src', currentSource);
+            } else {
+                const currentBase64: { [key: string]: string | boolean } = base64Sources[i as number];
+                if (!isNOU(currentBase64) && !isNOU(currentBase64.base64Data)) {
+                    currentImage.setAttribute('src', currentBase64.base64Data as string);
                 } else {
-                    if (!isNOU(base64Src[i as number]) && !isNOU(base64Src[i as number].base64Data)) {
-                        imgElem[i as number].setAttribute('src', base64Src[i as number].base64Data as string);
-                    } else {
-                        imgElem[i as number].removeAttribute('src');
-                        imgElem[i as number].classList.add('e-rte-image-unsupported');
-                    }
-                    if (!isNOU(base64Src[i as number]) && base64Src[i as number].isCroppedImage as boolean) {
-                        imgElem[i as number].classList.add('e-img-cropped');
-                    }
+                    currentImage.removeAttribute('src');
+                    currentImage.classList.add('e-rte-image-unsupported');
                 }
-                imgElem[i as number].setAttribute('id', 'msWordImg-' + imgName[i as number]);
+                if (!isNOU(currentBase64) && currentBase64.isCroppedImage as boolean) {
+                    currentImage.classList.add('e-img-cropped');
+                }
             }
-            imgElem = elm.querySelectorAll('.e-rte-image-unsupported');
-            for (let i: number = 0; i < imgElem.length; i++) {
-                imgElem[i as number].removeAttribute('src');
-            }
+            currentImage.setAttribute('id', 'msWordImg-' + imageNames[i as number]);
         }
     }
 
-    private checkVShape(elm: HTMLElement): void {
-        const allNodes: NodeListOf<Element> = elm.querySelectorAll('*');
-        for (let i: number = 0; i < allNodes.length; i++) {
-            switch (allNodes[i as number].nodeName) {
+    /* Removes src attribute from unsupported images */
+    private cleanUnsupportedImages(clipboardDataElement: HTMLElement): void {
+        const unsupportedImages: NodeListOf<HTMLImageElement> = clipboardDataElement.querySelectorAll('.e-rte-image-unsupported');
+        for (let i: number = 0; i < unsupportedImages.length; i++) {
+            unsupportedImages[i as number].removeAttribute('src');
+        }
+    }
+
+    /* Processes V:SHAPE elements and converts them to standard image elements */
+    private checkVShape(clipboardDataElement: HTMLElement): void {
+        const allElements: NodeListOf<Element> = clipboardDataElement.querySelectorAll('*');
+        for (let i: number = 0; i < allElements.length; i++) {
+            const currentElement: Element = allElements[i as number];
+            const elementNodeName: string = currentElement.nodeName;
+            switch (elementNodeName) {
             case 'V:SHAPETYPE':
-                detach(allNodes[i as number]);
+                detach(currentElement);
                 break;
             case 'V:SHAPE':
-                if (allNodes[i as number].firstElementChild.nodeName === 'V:IMAGEDATA') {
-                    const src: string = (allNodes[i as number].firstElementChild as HTMLElement).getAttribute('src');
-                    const imgElement: HTMLElement = createElement('img') as HTMLElement;
-                    imgElement.setAttribute('src', src);
-                    allNodes[i as number].parentElement.insertBefore(imgElement, allNodes[i as number]);
-                    detach(allNodes[i as number]);
-                }
+                this.processVShapeElement(currentElement);
                 break;
             }
         }
     }
 
+    /* Processes a V:SHAPE element and converts it to a standard image if it contains image data */
+    private processVShapeElement(shapeElement: Element): void {
+        const firstChild: Element = shapeElement.firstElementChild;
+        if (firstChild && firstChild.nodeName === 'V:IMAGEDATA') {
+            const imageSrc: string = (firstChild as HTMLElement).getAttribute('src');
+            const imageElement: HTMLElement = createElement('img') as HTMLElement;
+            imageElement.setAttribute('src', imageSrc);
+            // Insert the new image before the V:SHAPE element
+            shapeElement.parentElement.insertBefore(imageElement, shapeElement);
+            // Remove the original V:SHAPE element
+            detach(shapeElement);
+        }
+    }
+
+    /* Converts hex value to base64 string */
     private convertToBase64(hexValue: { [key: string]: string | boolean | number }): string {
         const byteArr: number[] = this.conHexStringToBytes(hexValue.hex as string);
         const base64String: string = this.conBytesToBase64(byteArr);
-        const base64: string = hexValue.type ? 'data:' + hexValue.type + ';base64,' + base64String : null;
-        return base64;
+        const mimeType: string = hexValue.type as string;
+        const dataUri: string = mimeType ? 'data:' + mimeType + ';base64,' + base64String : null;
+        return dataUri;
     }
 
-    private conBytesToBase64(byteArr: number[]): string {
-        let base64Str: string = '';
-        const base64Char: string = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/';
-        const byteArrLen: number = byteArr.length;
-        for (let i: number = 0; i < byteArrLen; i += 3) {
-            const array3: number[] = byteArr.slice(i, i + 3);
-            const array3length: number = array3.length;
-            const array4: number[] = [];
-            if (array3length < 3) {
-                for (let j: number = array3length; j < 3; j++) {
-                    array3[j as number] = 0;
+    /* Converts byte array to base64 string */
+    private conBytesToBase64(byteArray: number[]): string {
+        let base64String: string = '';
+        const base64Chars: string = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/';
+        const byteArrayLength: number = byteArray.length;
+        // Process bytes in groups of 3
+        for (let i: number = 0; i < byteArrayLength; i += 3) {
+            // Get a slice of 3 bytes (or fewer at the end)
+            const threeBytes: number[] = byteArray.slice(i, i + 3);
+            const threeBytesLength: number = threeBytes.length;
+            const fourChars: number[] = [];
+            // Pad the array if needed
+            if (threeBytesLength < 3) {
+                for (let j: number = threeBytesLength; j < 3; j++) {
+                    threeBytes[j as number] = 0;
                 }
             }
-            array4[0] = (array3[0] & 0xFC) >> 2;
-            array4[1] = ((array3[0] & 0x03) << 4) | (array3[1] >> 4);
-            array4[2] = ((array3[1] & 0x0F) << 2) | ((array3[2] & 0xC0) >> 6);
-            array4[3] = array3[2] & 0x3F;
+            // Convert 3 bytes (24 bits) into 4 base64 characters (6 bits each)
+            fourChars[0] = (threeBytes[0] & 0xFC) >> 2;
+            fourChars[1] = ((threeBytes[0] & 0x03) << 4) | (threeBytes[1] >> 4);
+            fourChars[2] = ((threeBytes[1] & 0x0F) << 2) | ((threeBytes[2] & 0xC0) >> 6);
+            fourChars[3] = threeBytes[2] & 0x3F;
+            // Convert indices to base64 characters
             for (let j: number = 0; j < 4; j++) {
-                if (j <= array3length) {
-                    base64Str += base64Char.charAt(array4[j as number]);
+                // Add padding '=' for incomplete byte groups
+                if (j <= threeBytesLength) {
+                    base64String += base64Chars.charAt(fourChars[j as number]);
                 } else {
-                    base64Str += '=';
+                    base64String += '=';
                 }
             }
         }
-        return base64Str;
+        return base64String;
     }
 
-    private conHexStringToBytes(hex: string): number[] {
-        const byteArr: number[] = [];
-        const byteArrLen: number = hex.length / 2;
-        for (let i: number = 0; i < byteArrLen; i++) {
-            byteArr.push(parseInt(hex.substr(i * 2, 2), 16));
+    /* Converts a hexadecimal string to an array of bytes */
+    private conHexStringToBytes(hexString: string): number[] {
+        const byteArray: number[] = [];
+        const byteCount: number = hexString.length / 2;
+        for (let i: number = 0; i < byteCount; i++) {
+            const hexByte: string = hexString.substr(i * 2, 2);
+            const byte: number = parseInt(hexByte, 16);
+            byteArray.push(byte);
         }
-        return byteArr;
+        return byteArray;
     }
 
+    /* Converts RTF data to hex values for image processing */
     private hexConversion(rtfData: string): { [key: string]: string | boolean | number }[] {
         const regExp: RegExpConstructor = RegExp;
-        const picHead: RegExp = new regExp('\\{\\\\pict[\\s\\S]+?\\\\bliptag-?\\d+(\\\\blipupi-?\\d+)?(\\{\\\\\\*\\\\blipuid\\s?[\\da-fA-F]+)?[\\s\\}]*?');
-        const pic: RegExp = new regExp('(?:(' + picHead.source + '))([\\da-fA-F\\s]+)\\}', 'g');
-        const fullImg: RegExpMatchArray = rtfData.match(pic);
-        let imgType: string;
+        const pictureHeaderPattern: RegExp = new regExp('\\{\\\\pict[\\s\\S]+?\\\\bliptag-?\\d+(\\\\blipupi-?\\d+)?(\\{\\\\\\*\\\\blipuid\\s?[\\da-fA-F]+)?[\\s\\}]*?');
+        const picturePattern: RegExp = new regExp('(?:(' + pictureHeaderPattern.source + '))([\\da-fA-F\\s]+)\\}', 'g');
+        const matchedImages: RegExpMatchArray = rtfData.match(picturePattern);
         const result: { [key: string]: string | boolean | number }[] = [];
-        if (!isNOU(fullImg)) {
-            for (let i: number = 0; i < fullImg.length; i++) {
-                if (fullImg[i as number].indexOf('fIsBullet') !== -1 && fullImg[i as number].indexOf('wzName') === -1){
-                    continue;
-                }
-                let isCroppedImage: boolean = false;
-                let goalWidth: number = 0;
-                let goalHeight: number = 0;
-                let cropLength: number = 0;
-                let cropTop: number = 0;
-                let cropR: number = 0;
-                let cropB: number = 0;
-                if (picHead.test(fullImg[i as number])) {
-                    if (fullImg[i as number].indexOf('\\pngblip') !== -1) {
-                        imgType = 'image/png';
-                    } else if (fullImg[i as number].indexOf('\\jpegblip') !== -1) {
-                        imgType = 'image/jpeg';
-                    } else if (fullImg[i as number].indexOf('\\emfblip') !== -1) {
-                        imgType = null;
-                    } else {
-                        continue;
-                    }
-                    isCroppedImage = ((this.extractCropValue('cropl', fullImg[i as number]) > 0 &&
-                        this.extractCropValue('cropt', fullImg[i as number]) > 0) ||
-                        this.extractCropValue('cropr', fullImg[i as number]) > 0 ||
-                        this.extractCropValue('cropb', fullImg[i as number])) ? true : false;
-                    if (isCroppedImage) {
-                        goalWidth = this.extractCropValue('wgoal', fullImg[i as number]);
-                        goalHeight = this.extractCropValue('hgoal', fullImg[i as number]);
-                        cropLength = this.extractCropValue('cropl', fullImg[i as number]);
-                        cropTop = this.extractCropValue('cropt', fullImg[i as number]);
-                        cropR = this.extractCropValue('cropr', fullImg[i as number]);
-                        cropB = this.extractCropValue('cropb', fullImg[i as number]);
-                    }
-                    result.push({
-                        hex: imgType ? fullImg[i as number].replace(picHead, '').replace(/[^\da-fA-F]/g, '') : null,
-                        type: imgType,
-                        isCroppedImage: isCroppedImage,
-                        goalWidth: goalWidth,
-                        goalHeight: goalHeight,
-                        cropLength: cropLength,
-                        cropTop: cropTop,
-                        cropR: cropR,
-                        cropB: cropB
-                    });
-                }
+        if (isNOU(matchedImages)) {
+            return result;
+        }
+        for (let i: number = 0; i < matchedImages.length; i++) {
+            const currentImage: string = matchedImages[i as number];
+            // Skip bullet images
+            if (currentImage.indexOf('fIsBullet') !== -1 && currentImage.indexOf('wzName') === -1) {
+                continue;
+            }
+            if (!pictureHeaderPattern.test(currentImage)) {
+                continue;
+            }
+            const imageData: { [key: string]: string | boolean | number } = this.extractImageData(currentImage, pictureHeaderPattern);
+            if (imageData) {
+                result.push(imageData);
             }
         }
         return result;
     }
 
-    private extractCropValue(crop: string, rtfData: string): number {
-        const regExp: RegExpConstructor = RegExp;
-        const result: string = new regExp('\\\\pic' + crop + '(\\-?\\d+)\\\\').exec(rtfData.replace(/\r\n\\/g, '\\').replace(/\n/g, '\\'))[1];
-        return parseInt(result, 10);
+    /* Extracts image data from RTF picture content */
+    private extractImageData(imageContent: string, pictureHeaderPattern: RegExp): { [key: string]: string | boolean | number } {
+        let imageType: string = null;
+        // Determine image type
+        if (imageContent.indexOf('\\pngblip') !== -1) {
+            imageType = 'image/png';
+        } else if (imageContent.indexOf('\\jpegblip') !== -1) {
+            imageType = 'image/jpeg';
+        } else if (imageContent.indexOf('\\emfblip') !== -1) {
+            imageType = null;
+        } else {
+            return null;
+        }
+        // Check if image is cropped
+        const isCroppedImage: boolean = this.isImageCropped(imageContent);
+        const cropData: { [key: string]: number } = {
+            goalWidth: 0,
+            goalHeight: 0,
+            cropLength: 0,
+            cropTop: 0,
+            cropR: 0,
+            cropB: 0
+        };
+        if (isCroppedImage) {
+            cropData.goalWidth = this.extractCropValue('wgoal', imageContent);
+            cropData.goalHeight = this.extractCropValue('hgoal', imageContent);
+            cropData.cropLength = this.extractCropValue('cropl', imageContent);
+            cropData.cropTop = this.extractCropValue('cropt', imageContent);
+            cropData.cropR = this.extractCropValue('cropr', imageContent);
+            cropData.cropB = this.extractCropValue('cropb', imageContent);
+        }
+        return {
+            hex: imageType ? imageContent.replace(pictureHeaderPattern, '').replace(/[^\da-fA-F]/g, '') : null,
+            type: imageType,
+            isCroppedImage: isCroppedImage,
+            goalWidth: cropData.goalWidth,
+            goalHeight: cropData.goalHeight,
+            cropLength: cropData.cropLength,
+            cropTop: cropData.cropTop,
+            cropR: cropData.cropR,
+            cropB: cropData.cropB
+        };
     }
 
-    private removeClassName(elm: HTMLElement): void {
-        const elmWithClass: NodeListOf<Element> = elm.querySelectorAll('*[class]:not(.e-img-cropped):not(.e-rte-image-unsupported)');
-        for (let i: number = 0; i < elmWithClass.length; i++) {
-            elmWithClass[i as number].removeAttribute('class');
+    /* Determines if an image is cropped based on crop values */
+    private isImageCropped(rtfData: string): boolean {
+        const hasLeftTopCrop: boolean = this.extractCropValue('cropl', rtfData) > 0 &&
+            this.extractCropValue('cropt', rtfData) > 0;
+        const hasRightCrop: boolean = this.extractCropValue('cropr', rtfData) > 0;
+        const hasBottomCrop: boolean = this.extractCropValue('cropb', rtfData) > 0;
+        return hasLeftTopCrop || hasRightCrop || hasBottomCrop;
+    }
+
+    /* Extracts crop value from RTF data for a specific crop property */
+    private extractCropValue(cropProperty: string, rtfData: string): number {
+        // Normalize RTF data by handling line breaks
+        const normalizedRtfData: string = rtfData
+            .replace(/\r\n\\/g, '\\')
+            .replace(/\n/g, '\\');
+        const regExp: RegExpConstructor = RegExp;
+        const cropPattern: RegExp = new regExp('\\\\pic' + cropProperty + '(\\-?\\d+)\\\\');
+        // Execute the pattern against the normalized RTF data
+        const matchResult: RegExpExecArray = cropPattern.exec(normalizedRtfData);
+        // Return 0 if no match found or match doesn't have the expected format
+        if (!matchResult || matchResult.length < 2) {
+            return 0;
+        }
+        return parseInt(matchResult[1], 10);
+    }
+
+    /* Removes class attributes from elements except for specific classes */
+    private removeClassName(clipboardDataElement: HTMLElement): void {
+        const elementsWithClass: NodeListOf<Element> = clipboardDataElement.querySelectorAll(
+            '*[class]:not(.e-img-cropped):not(.e-rte-image-unsupported)'
+        );
+        for (let i: number = 0; i < elementsWithClass.length; i++) {
+            elementsWithClass[i as number].removeAttribute('class');
         }
     }
-
-    private breakLineAddition(elm: HTMLElement): void {
-        const allElements: NodeListOf<Element> = elm.querySelectorAll('*');
+    /* Adds line breaks in place of empty elements with &nbsp; */
+    private breakLineAddition(clipboardDataElement: HTMLElement): void {
+        const allElements: NodeListOf<Element> = clipboardDataElement.querySelectorAll('*');
         for (let i: number = 0; i < allElements.length; i++) {
-            if (allElements[i as number].children.length === 0 && allElements[i as number].innerHTML === '&nbsp;' &&
-                (allElements[i as number].innerHTML === '&nbsp;' && !allElements[i as number].closest('li')) &&
-                !allElements[i as number].closest('td') && (allElements[i as number].nodeName !== 'SPAN' ||
-                    allElements[i as number].nodeName === 'SPAN' && (isNOU(allElements[i as number].previousElementSibling) &&
-                        isNOU(allElements[i as number].nextElementSibling)))) {
-                const detachableElement: HTMLElement = this.findDetachElem(allElements[i as number]);
+            const currentElement: Element = allElements[i as number];
+            if (this.isReplacableWithBreak(currentElement)) {
+                const detachableElement: HTMLElement = this.findDetachElem(currentElement);
                 const brElement: HTMLElement = createElement('br') as HTMLElement;
-                const hasNbsp: boolean = detachableElement.textContent.length > 0 && detachableElement.textContent.match(/\u00a0/g)
-                    && detachableElement.textContent.match(/\u00a0/g).length > 0;
+                const hasNbsp: boolean = this.hasNonBreakingSpace(detachableElement);
                 if (!hasNbsp && !isNOU(detachableElement.parentElement)) {
                     detachableElement.parentElement.insertBefore(brElement, detachableElement);
                     detach(detachableElement);
@@ -418,54 +583,94 @@ export class MsWordPaste {
             }
         }
     }
+
+    /* Determines if an element should be replaced with a line break */
+    private isReplacableWithBreak(element: Element): boolean {
+        const hasNoChildren: boolean = element.children.length === 0;
+        const hasNbspContent: boolean = element.innerHTML === '&nbsp;';
+        const isNotInListItem: boolean = !element.closest('li');
+        const isNotInTableCell: boolean = !element.closest('td');
+        const isNotSpan: boolean = element.nodeName !== 'SPAN';
+        const isIsolatedSpan: boolean = element.nodeName === 'SPAN' &&
+            isNOU(element.previousElementSibling) && isNOU(element.nextElementSibling);
+        return hasNoChildren && hasNbspContent && isNotInListItem &&
+            isNotInTableCell && (isNotSpan || isIsolatedSpan);
+    }
+
+    /* Checks if an element contains non-breaking space characters */
+    private hasNonBreakingSpace(element: HTMLElement): boolean {
+        const hasText: boolean = element.textContent.length > 0;
+        const nbspMatches: RegExpMatchArray = element.textContent.match(/\u00a0/g);
+        const hasNbspMatches: boolean = nbspMatches !== null && nbspMatches.length > 0;
+        return hasText && hasNbspMatches;
+    }
+
+    /* Finds the topmost empty parent element that should be removed */
     private findDetachElem(element: Element): HTMLElement {
-        let removableElement: HTMLElement;
-        if (!isNOU(element.parentElement) &&
-            element.parentElement.textContent.trim() === '' && element.parentElement.tagName !== 'TD' &&
-            isNOU(element.parentElement.querySelector('img'))) {
-            removableElement = this.findDetachElem(element.parentElement);
-        } else {
-            removableElement = element as HTMLElement;
+        const parent: Element = element.parentElement;
+        if (isNOU(parent)) {
+            return element as HTMLElement;
         }
-        return removableElement;
+        const isEmptyParent: boolean = parent.textContent.trim() === '';
+        const isNotTableCell: boolean = parent.tagName !== 'TD' && parent.tagName !== 'TH';
+        const hasNoImages: boolean = isNOU(parent.querySelector('img'));
+        if (isEmptyParent && isNotTableCell && hasNoImages) {
+            return this.findDetachElem(parent);
+        }
+        return element as HTMLElement;
     }
 
-    private removeUnwantedElements(elm: HTMLElement): void {
-        const styleElm: HTMLElement = elm.querySelector('style');
-        if (!isNOU(styleElm)) {
-            detach(styleElm);
+    /* Removes unwanted elements from the HTML content */
+    private removeUnwantedElements(clipboardDataElement: HTMLElement): void {
+        // Remove style elements
+        this.removeStyleElements(clipboardDataElement);
+        // Remove elements by tag name using regex
+        this.removeElementsByTagName(clipboardDataElement);
+    }
+
+    /* Removes style elements from the container */
+    private removeStyleElements(clipboardDataElement: HTMLElement): void {
+        const styleElement: HTMLElement = clipboardDataElement.querySelector('style');
+        if (!isNOU(styleElement)) {
+            detach(styleElement);
         }
-        let innerElement: string = elm.innerHTML;
+    }
+
+    /* Removes elements by tag name using regex */
+    private removeElementsByTagName(clipboardDataElement: HTMLElement): void {
+        let htmlContent: string = clipboardDataElement.innerHTML;
+        const regExpConstructor: RegExpConstructor = RegExp;
         for (let i: number = 0; i < this.removableElements.length; i++) {
-            const regExp: RegExpConstructor = RegExp;
-            const regExpStartElem: RegExp = new regExp('<' + this.removableElements[i as number] + '\\s*[^>]*>', 'g');
-            const regExpEndElem: RegExp = new regExp('</' + this.removableElements[i as number] + '>', 'g');
-            innerElement = innerElement.replace(regExpStartElem, '');
-            innerElement = innerElement.replace(regExpEndElem, '');
+            const tagName: string = this.removableElements[i as number];
+            const startTagPattern: RegExp = new regExpConstructor('<' + tagName + '\\s*[^>]*>', 'g');
+            const endTagPattern: RegExp = new regExpConstructor('</' + tagName + '>', 'g');
+            htmlContent = htmlContent.replace(startTagPattern, '');
+            htmlContent = htmlContent.replace(endTagPattern, '');
         }
-        elm.innerHTML = innerElement;
-        elm.querySelectorAll(':empty');
+        clipboardDataElement.innerHTML = htmlContent;
+        clipboardDataElement.querySelectorAll(':empty');
     }
 
-
+    /* Finds the topmost empty parent element that should be removed */
     private findDetachEmptyElem(element: Element): HTMLElement {
-        let removableElement: HTMLElement;
-        if (!isNOU(element.parentElement)) {
-            const hasNbsp: boolean = element.parentElement.textContent.length > 0 && element.parentElement.textContent.match(/\u00a0/g)
-                && element.parentElement.textContent.match(/\u00a0/g).length > 0;
-            if (!hasNbsp && element.parentElement.textContent.trim() === '' &&
-                element.parentElement.getAttribute('id') !== 'MSWord-Content' &&
-                !(this.hasParentWithClass(element as HTMLElement, 'MsoListParagraph')) &&
-                isNOU(element.parentElement.querySelector('img'))) {
-                removableElement = this.findDetachEmptyElem(element.parentElement);
-            } else {
-                removableElement = element as HTMLElement;
-            }
-        } else {
-            removableElement = null;
+        if (isNOU(element.parentElement)) {
+            return null;
         }
-        return removableElement;
+        const parentElement: Element = element.parentElement;
+        // Check if parent has non-breaking spaces
+        const hasNbsp: boolean = this.hasNonBreakingSpace(parentElement as HTMLElement);
+        // Check if parent is empty and not a special element
+        const isEmptyParent: boolean = !hasNbsp && parentElement.textContent.trim() === '';
+        const isNotMsWordContent: boolean = parentElement.getAttribute('id') !== 'MSWord-Content';
+        const isNotMsoListParagraph: boolean = !this.hasParentWithClass(element as HTMLElement, 'MsoListParagraph');
+        const hasNoImages: boolean = isNOU(parentElement.querySelector('img'));
+        if (isEmptyParent && isNotMsWordContent && isNotMsoListParagraph && hasNoImages) {
+            return this.findDetachEmptyElem(parentElement);
+        }
+        return element as HTMLElement;
     }
+
+    /* Checks if an element has a parent with the specified class */
     private hasParentWithClass(element: HTMLElement, className: string): boolean {
         let currentParentElem: HTMLElement = element.parentElement;
         while (!isNOU(currentParentElem)) {
@@ -476,636 +681,1164 @@ export class MsWordPaste {
         }
         return false;
     }
-    private removeEmptyElements(element: HTMLElement): void {
-        const emptyElements: NodeListOf<Element> = element.querySelectorAll(':empty');
+
+    /* Removes empty elements from the HTML content */
+    private removeEmptyElements(containerElement: HTMLElement): void {
+        const emptyElements: NodeListOf<Element> = containerElement.querySelectorAll(':empty');
         for (let i: number = 0; i < emptyElements.length; i++) {
-            if (!isNOU(emptyElements[i as number].closest('td')) &&
-                !isNOU(emptyElements[i as number].closest('td').querySelector('.MsoNormal'))) {
-                emptyElements[i as number].innerHTML = '-';
+            const currentElement: Element = emptyElements[i as number];
+            // Handle empty cells with MsoNormal class
+            if (this.isEmptyCellWithMsoNormal(currentElement)) {
+                currentElement.innerHTML = '-';
             }
-            let lineWithDiv: boolean = true;
-            if (emptyElements[i as number].tagName === 'DIV') {
-                lineWithDiv = (emptyElements[i as number] as HTMLElement).style.borderBottom === 'none' ||
-                    (emptyElements[i as number] as HTMLElement).style.borderBottom === '' ? true : false;
-            }
-            if (emptyElements[i as number].tagName !== 'IMG' && emptyElements[i as number].tagName !== 'BR' &&
-                emptyElements[i as number].tagName !== 'IFRAME' && emptyElements[i as number].tagName !== 'TD' &&
-                emptyElements[i as number].tagName !== 'HR' && lineWithDiv) {
-                const detachableElement: HTMLElement = this.findDetachEmptyElem(emptyElements[i as number]);
+            // Check if div has border
+            const isDivWithoutBorder: boolean = this.isDivWithoutBorder(currentElement);
+            // Skip certain elements that should remain empty
+            if (this.shouldRemoveEmptyElement(currentElement, isDivWithoutBorder)) {
+                const detachableElement: HTMLElement = this.findDetachEmptyElem(currentElement);
                 if (!isNOU(detachableElement)) {
                     detach(detachableElement);
                 }
             }
         }
     }
-    private removeEmptyMetaTags(element: HTMLElement): void {
-        const metaTags: NodeListOf<HTMLMetaElement> = element.querySelectorAll('meta:empty');
-        for (let i: number = metaTags.length - 1; i >= 0; i--) {
-            const metaTag: Element = metaTags[i as number] as Element;
+
+    /* Checks if an element is an empty cell with MsoNormal class */
+    private isEmptyCellWithMsoNormal(element: Element): boolean {
+        const parentCell: Element = element.closest('td');
+        return !isNOU(parentCell) && !isNOU(parentCell.querySelector('.MsoNormal'));
+    }
+
+    /* Checks if a div element has no border */
+    private isDivWithoutBorder(element: Element): boolean {
+        if (element.tagName !== 'DIV') {
+            return true;
+        }
+        const borderBottom: string = (element as HTMLElement).style.borderBottom;
+        return borderBottom === 'none' || borderBottom === '';
+    }
+
+    /* Determines if an empty element should be removed */
+    private shouldRemoveEmptyElement(element: Element, isDivWithoutBorder: boolean): boolean {
+        const preservedTags: string[] = ['IMG', 'BR', 'IFRAME', 'TD', 'TH', 'HR'];
+        return preservedTags.indexOf(element.tagName) === -1 && isDivWithoutBorder;
+    }
+
+    /* Removes empty meta tags from the HTML content */
+    private removeEmptyMetaTags(clipboardDataElement: HTMLElement): void {
+        const emptyMetaTags: NodeListOf<HTMLMetaElement> = clipboardDataElement.querySelectorAll('meta:empty');
+        // Process in reverse order to avoid index issues when removing elements
+        for (let i: number = emptyMetaTags.length - 1; i >= 0; i--) {
+            const metaTag: Element = emptyMetaTags[i as number] as Element;
             if (metaTag.textContent === '') {
                 detach(metaTag);
             }
         }
     }
-    private styleCorrection(elm: HTMLElement, wordPasteStyleConfig: string[]): void {
-        const styleElement: NodeListOf<HTMLStyleElement> = elm.querySelectorAll('style');
-        let styles: string[] = [];
-        if (styleElement.length > 0) {
-            if (!isNOU(styleElement[0].innerHTML.match(/[\S ]+\s+{[\s\S]+?}/gi))) {
-                styles = styleElement[0].innerHTML.match(/[\S ]+\s+{[\s\S]+?}/gi);
-            } else if (styleElement.length > 1) {
-                styles = styleElement[1].innerHTML.match(/[\S ]+\s+{[\s\S]+?}/gi);
-            }
-            const styleClassObject: { [key: string]: string } = !isNOU(styles) ? this.findStyleObject(styles) : null;
-            if (!isNOU(styleClassObject)) {
-                const keys: string[] = Object.keys(styleClassObject);
-                let values: string[] = keys.map((key: string) => {
-                    return styleClassObject[`${key}`];
-                });
-                values = this.removeUnwantedStyle(values, wordPasteStyleConfig);
-                this.filterStyles(elm, wordPasteStyleConfig);
-                let resultElem: HTMLCollectionOf<Element> | NodeListOf<Element>;
-                let fromClass: boolean = false;
-                const regex: RegExp = /^(p|div|li)\.(1|10|11)$/;
-                for (let i: number = 0; i < keys.length; i++) {
-                    if (keys[i as number].split('.')[0] === '') {
-                        resultElem = elm.getElementsByClassName(keys[i as number].split('.')[1]);
-                        fromClass = true;
-                    } else if ((keys[i as number].split('.').length === 1 && keys[i as number].split('.')[0].indexOf('@') >= 0) || (regex.test(keys[i as number]))) {
-                        continue;
-                    } else if (keys[i as number].split('.').length === 1 && keys[i as number].split('.')[0].indexOf('@') < 0) {
-                        resultElem = elm.getElementsByTagName(keys[i as number]);
-                    } else {
-                        resultElem = elm.querySelectorAll(keys[i as number]);
-                    }
-                    for (let j: number = 0; j < resultElem.length; j++) {
-                        if (resultElem[j as number].closest('li') && keys[i as number] === 'p') {
-                            continue;
-                        }
-                        const styleProperty: string = resultElem[j as number].getAttribute('style');
-                        if (!isNOU(styleProperty) && styleProperty.trim() !== '') {
-                            const valueSplit: string[] = values[i as number].split(';');
-                            for (let q: number = 0; q < valueSplit.length; q++) {
-                                if (valueSplit[q as number].split(':')[0] === 'border' && valueSplit[q as number].split(':')[1] === 'none') {
-                                    valueSplit.splice(q, 1);
-                                    q--;
-                                }
-                            }
-                            if (!fromClass) {
-                                for (let k: number = 0; k < valueSplit.length; k++) {
-                                    const propertyName: string = valueSplit[k as number].split(':')[0];
-                                    if (styleProperty.includes(propertyName + ':')) {
-                                        valueSplit.splice(k, 1);
-                                        k--;
-                                    }
-                                }
-                            }
-                            const changedValue: string = valueSplit.join(';') + ';' + styleProperty;
-                            (resultElem[j as number] as HTMLElement).style.cssText = changedValue;
-                        } else {
-                            values[i as number] = values[i as number]
-                                .replace(/text-indent:-.*?;?/g, '') // Remove 'text-indent'
-                                .replace(/border:\s*none;?/g, '') // Remove 'border:none'
-                                .trim();
-                            (resultElem[j as number] as HTMLElement).style.cssText = values[i as number];
-                        }
-                    }
-                    fromClass = false;
+
+    /* Corrects styles in the HTML content based on Word paste style configuration */
+    private styleCorrection(clipboardDataElement: HTMLElement, allowedStyleProperties: string[]): void {
+        const styleElements: NodeListOf<HTMLStyleElement> = clipboardDataElement.querySelectorAll('style');
+        let styleRules: string[] = [];
+        if (styleElements.length === 0) {
+            return;
+        }
+        // Extract style rules from the first or second style element
+        const styleRulePattern: RegExp = /[\S ]+\s+{[\s\S]+?}/gi;
+        if (!isNOU(styleElements[0].innerHTML.match(styleRulePattern))) {
+            styleRules = styleElements[0].innerHTML.match(styleRulePattern);
+        } else if (styleElements.length > 1) {
+            styleRules = styleElements[1].innerHTML.match(styleRulePattern);
+        }
+        // Convert style rules to a structured object
+        const styleClassObject: { [key: string]: string } = !isNOU(styleRules) ? this.findStyleObject(styleRules) : null;
+        if (isNOU(styleClassObject)) {
+            return;
+        }
+        // Process style rules
+        const selectors: string[] = Object.keys(styleClassObject);
+        let styleValues: string[] = selectors.map((selector: string) => {
+            return styleClassObject[`${selector}`];
+        });
+        // Remove unwanted styles and filter existing styles
+        styleValues = this.removeUnwantedStyle(styleValues, allowedStyleProperties);
+        this.filterStyles(clipboardDataElement, allowedStyleProperties);
+        // Apply styles to matching elements
+        this.applyStylesToElements(clipboardDataElement, selectors, styleValues);
+        // Process list-specific styles
+        this.processListStyles(clipboardDataElement, selectors, styleValues);
+    }
+
+    /* Filters inline styles to keep only allowed style properties */
+    private filterStyles(clipboardDataElement: HTMLElement, allowedStyleProperties: string[]): void {
+        const elementsWithStyle: NodeListOf<Element> = clipboardDataElement.querySelectorAll('*[style]');
+        for (let i: number = 0; i < elementsWithStyle.length; i++) {
+            const currentElement: Element = elementsWithStyle[i as number];
+            const styleDeclarations: string[] = currentElement.getAttribute('style').split(';');
+            let filteredStyle: string = '';
+            // Process each style declaration
+            for (let j: number = 0; j < styleDeclarations.length; j++) {
+                const declaration: string = styleDeclarations[j as number];
+                const propertyName: string = declaration.split(':')[0].trim();
+                // Keep only allowed style properties
+                if (allowedStyleProperties.indexOf(propertyName) >= 0) {
+                    filteredStyle += declaration + ';';
                 }
-                const listClass: string[] = ['MsoListParagraphCxSpFirst', 'MsoListParagraphCxSpMiddle', 'MsoListParagraphCxSpLast'];
-                for (let i: number = 0; i < listClass.length; i++) {
-                    if (keys.indexOf('li.' + listClass[i as number]) > -1) {
-                        const olULElems: NodeListOf<Element> = elm.querySelectorAll('ol.' + listClass[i as number] + ', ul.' + listClass[i as number]);
-                        for (let j: number = 0; j < olULElems.length; j++) {
-                            const styleProperty: string = olULElems[j as number].getAttribute('style');
-                            if (!isNOU(styleProperty) && styleProperty.trim() !== '' && (olULElems[j as number] as HTMLElement).style.marginLeft !== '') {
-                                const valueSplit: string[] = values[keys.indexOf('li.' + listClass[i as number])].split(';');
-                                for (let k: number = 0; k < valueSplit.length; k++) {
-                                    if ('margin-left'.indexOf(valueSplit[k as number].split(':')[0]) >= 0) {
-                                        if (!isNOU(valueSplit[k as number].split(':')[1]) &&
-                                            valueSplit[k as number].split(':')[1].indexOf('in') >= 0 &&
-                                            (olULElems[j as number] as HTMLElement).style.marginLeft.indexOf('in') >= 0) {
-                                            const classStyle: number = parseFloat(valueSplit[k as number].split(':')[1].split('in')[0]);
-                                            const inlineStyle: number = parseFloat((olULElems[j as number] as HTMLElement).style.marginLeft.split('in')[0]);
-                                            (olULElems[j as number] as HTMLElement).style.marginLeft = (inlineStyle - classStyle) + 'in';
-                                        }
-                                    }
-                                }
-                            }
-                        }
+            }
+            // Apply filtered styles back to the element
+            (currentElement as HTMLElement).style.cssText = filteredStyle;
+        }
+    }
+
+
+    /* Applies styles to elements matching the selectors */
+    private applyStylesToElements(clipboardDataElement: HTMLElement, selectors: string[], styleValues: string[]): void {
+        let matchedElements: HTMLCollectionOf<Element> | NodeListOf<Element>;
+        let isClassSelector: boolean = false;
+        const specialSelectorPattern: RegExp = /^(p|div|li)\.(1|10|11)$/;
+        for (let i: number = 0; i < selectors.length; i++) {
+            const currentSelector: string = selectors[i as number];
+            const selectorParts: string[] = currentSelector.split('.');
+            const baseSelector: string = selectorParts[0];
+            // Determine how to select elements based on the selector format
+            if (baseSelector === '') {
+                // Class selector (className)
+                const className: string = selectorParts[1];
+                matchedElements = clipboardDataElement.getElementsByClassName(className);
+                isClassSelector = true;
+            } else if ((selectorParts.length === 1 && baseSelector.indexOf('@') >= 0) ||
+                (specialSelectorPattern.test(currentSelector))) {
+                // Skip special selectors
+                continue;
+            } else if (selectorParts.length === 1 && baseSelector.indexOf('@') < 0) {
+                // Tag selector (tagName)
+                matchedElements = clipboardDataElement.getElementsByTagName(baseSelector);
+            } else {
+                // Complex selector (tag.class, etc.)
+                matchedElements = clipboardDataElement.querySelectorAll(currentSelector);
+            }
+            // Apply styles to each matching element
+            this.applyStyleToElementCollection(
+                matchedElements, currentSelector,
+                styleValues[i as number], isClassSelector
+            );
+            isClassSelector = false;
+        }
+    }
+
+    /* Applies styles to a collection of elements */
+    private applyStyleToElementCollection(
+        elements: HTMLCollectionOf<Element> | NodeListOf<Element>,
+        selector: string,  styleValue: string, isClassSelector: boolean
+    ): void {
+        for (let j: number = 0; j < elements.length; j++) {
+            const currentElement: Element = elements[j as number];
+            // Skip paragraph elements inside list items
+            if (currentElement.closest('li') && selector === 'p') {
+                continue;
+            }
+            const existingStyle: string = currentElement.getAttribute('style');
+            const hasExistingStyle: boolean = !isNOU(existingStyle) && existingStyle.trim() !== '';
+            if (hasExistingStyle) {
+                // Process existing style
+                const styleDeclarations: string[] = styleValue.split(';');
+                this.removeBorderNoneStyles(styleDeclarations);
+                if (!isClassSelector) {
+                    this.removeOverlappingStyles(styleDeclarations, existingStyle);
+                }
+                const combinedStyle: string = styleDeclarations.join(';') + ';' + existingStyle;
+                (currentElement as HTMLElement).style.cssText = combinedStyle;
+            } else {
+                // Apply clean style
+                styleValue = styleValue
+                    .replace(/text-indent:-.*?;?/g, '') // Remove 'text-indent'
+                    .replace(/border:\s*none;?/g, '') // Remove 'border:none'
+                    .trim();
+                (currentElement as HTMLElement).style.cssText = styleValue;
+            }
+        }
+    }
+
+    /* Removes 'border: none' styles from the style array */
+    private removeBorderNoneStyles(styleDeclarations: string[]): void {
+        for (let i: number = 0; i < styleDeclarations.length; i++) {
+            const declarationParts: string[] = styleDeclarations[i as number].split(':');
+            if (declarationParts[0] === 'border' && declarationParts[1] === 'none') {
+                styleDeclarations.splice(i, 1);
+                i--;
+            }
+        }
+    }
+
+    /* Removes styles that would overlap with existing inline styles */
+    private removeOverlappingStyles(styleDeclarations: string[], existingStyle: string): void {
+        for (let i: number = 0; i < styleDeclarations.length; i++) {
+            const propertyName: string = styleDeclarations[i as number].split(':')[0];
+            if (existingStyle.indexOf(propertyName + ':') >= 0) {
+                styleDeclarations.splice(i, 1);
+                i--;
+            }
+        }
+    }
+
+    /* Processes list-specific styles */
+    private processListStyles(containerElement: HTMLElement, selectors: string[], styleValues: string[]): void {
+        const listClasses: string[] = [
+            'MsoListParagraphCxSpFirst',
+            'MsoListParagraphCxSpMiddle',
+            'MsoListParagraphCxSpLast'
+        ];
+        for (let i: number = 0; i < listClasses.length; i++) {
+            const listClassName: string = listClasses[i as number];
+            const listSelector: string = 'li.' + listClassName;
+            const selectorIndex: number = selectors.indexOf(listSelector);
+            if (selectorIndex > -1) {
+                const listElements: NodeListOf<Element> = containerElement.querySelectorAll(
+                    'ol.' + listClassName + ', ul.' + listClassName
+                );
+                this.adjustListMargins(listElements, styleValues[selectorIndex as number]);
+            }
+        }
+    }
+
+    /* Adjusts margins for list elements */
+    private adjustListMargins(listElements: NodeListOf<Element>, styleValue: string): void {
+        for (let j: number = 0; j < listElements.length; j++) {
+            const listElement: HTMLElement = listElements[j as number] as HTMLElement;
+            const existingStyle: string = listElement.getAttribute('style');
+            const hasValidStyle: boolean = !isNOU(existingStyle) &&
+                existingStyle.trim() !== '' && listElement.style.marginLeft !== '';
+            if (hasValidStyle) {
+                const styleDeclarations: string[] = styleValue.split(';');
+                for (let k: number = 0; k < styleDeclarations.length; k++) {
+                    const declaration: string = styleDeclarations[k as number];
+                    const propertyName: string = declaration.split(':')[0];
+                    if ('margin-left'.indexOf(propertyName) >= 0) {
+                        this.adjustMarginLeftValue(listElement, declaration);
                     }
                 }
             }
         }
     }
 
-    private filterStyles(elm: HTMLElement, wordPasteStyleConfig: string[]): void {
-        const elmWithStyles: NodeListOf<Element> = elm.querySelectorAll('*[style]');
-        for (let i: number = 0; i < elmWithStyles.length; i++) {
-            const elemStyleProperty: string[] = elmWithStyles[i as number].getAttribute('style').split(';');
-            let styleValue: string = '';
-            for (let j: number = 0; j < elemStyleProperty.length; j++) {
-                if (wordPasteStyleConfig.indexOf(elemStyleProperty[j as number].split(':')[0].trim()) >= 0) {
-                    styleValue += elemStyleProperty[j as number] + ';';
-                }
-            }
-            (elmWithStyles[i as number] as HTMLElement).style.cssText = styleValue;
+    /* Adjusts the margin-left value for a list element */
+    private adjustMarginLeftValue(element: HTMLElement, marginDeclaration: string): void {
+        const declarationParts: string[] = marginDeclaration.split(':');
+        const marginValue: string = declarationParts[1];
+        const elementMargin: string = element.style.marginLeft;
+        const hasInchUnits: boolean = !isNOU(marginValue) &&
+            marginValue.indexOf('in') >= 0 && elementMargin.indexOf('in') >= 0;
+        if (hasInchUnits) {
+            const classStyleValue: number = parseFloat(marginValue.split('in')[0]);
+            const inlineStyleValue: number = parseFloat(elementMargin.split('in')[0]);
+            element.style.marginLeft = (inlineStyleValue - classStyleValue) + 'in';
         }
     }
 
-    private removeUnwantedStyle(values: string[], wordPasteStyleConfig: string[]): string[] {
-        for (let i: number = 0; i < values.length; i++) {
-            const styleValues: string[] = values[i as number].split(';');
-            values[i as number] = '';
-            for (let j: number = 0; j < styleValues.length; j++) {
-                if (wordPasteStyleConfig.indexOf(styleValues[j as number].split(':')[0]) >= 0) {
-                    values[i as number] += styleValues[j as number] + ';';
+    /* Filters style values to keep only allowed style properties */
+    private removeUnwantedStyle(styleValues: string[], allowedStyleProperties: string[]): string[] {
+        const filteredValues: string[] = [];
+        for (let i: number = 0; i < styleValues.length; i++) {
+            const styleDeclarations: string[] =  styleValues[i as number].split(';');
+            let filteredDeclarations: string = '';
+            for (let j: number = 0; j < styleDeclarations.length; j++) {
+                const declaration: string = styleDeclarations[j as number];
+                const propertyName: string = declaration.split(':')[0];
+                // Keep only allowed style properties
+                if (allowedStyleProperties.indexOf(propertyName) >= 0) {
+                    filteredDeclarations += declaration + ';';
                 }
             }
+            filteredValues[i as number] = filteredDeclarations;
         }
-        return values;
+        return filteredValues;
     }
 
-    private findStyleObject(styles: string[]): { [key: string]: string } {
+    /* Converts CSS rule strings into a structured object mapping selectors to style declarations */
+    private findStyleObject(styleRules: string[]): { [key: string]: string } {
         const styleClassObject: { [key: string]: string } = {};
-        for (let i: number = 0; i < styles.length; i++) {
-            const tempStyle: string = styles[i as number];
-            let classNameCollection: string = tempStyle.replace(/([\S ]+\s+){[\s\S]+?}/gi, '$1');
-            let stylesCollection: string = tempStyle.replace(/[\S ]+\s+{([\s\S]+?)}/gi, '$1');
-            classNameCollection = classNameCollection.replace(/^[\s]|[\s]$/gm, '');
-            stylesCollection = stylesCollection.replace(/^[\s]|[\s]$/gm, '');
-            classNameCollection = classNameCollection.replace(/\n|\r|\n\r/g, '');
-            stylesCollection = stylesCollection.replace(/\n|\r|\n\r/g, '');
-            for (let classNames: string[] = classNameCollection.split(', '), j: number = 0; j < classNames.length; j++) {
-                styleClassObject[classNames[j as number]] = stylesCollection;
+        for (let i: number = 0; i < styleRules.length; i++) {
+            const currentRule: string = styleRules[i as number];
+            // Extract selector and style parts from the rule
+            let selectorText: string = currentRule.replace(/([\S ]+\s+){[\s\S]+?}/gi, '$1');
+            let styleText: string = currentRule.replace(/[\S ]+\s+{([\s\S]+?)}/gi, '$1');
+            // Clean up whitespace and line breaks
+            selectorText = this.cleanupStyleText(selectorText);
+            styleText = this.cleanupStyleText(styleText);
+            // Map each selector to the style declarations
+            const selectors: string[] = selectorText.split(', ');
+            for (let j: number = 0; j < selectors.length; j++) {
+                styleClassObject[selectors[j as number]] = styleText;
             }
         }
         return styleClassObject;
     }
 
-    private removingComments(elm: HTMLElement): void {
-        let innerElement: string = elm.innerHTML;
-        innerElement = innerElement.replace(/<!--[\s\S]*?-->/g, '');
-        elm.innerHTML = innerElement;
+    /* Cleans up style text by removing whitespace and line breaks */
+    private cleanupStyleText(text: string): string {
+        let cleanedText: string = text;
+        // Remove leading and trailing whitespace
+        cleanedText = cleanedText.replace(/^[\s]|[\s]$/gm, '');
+        // Remove line breaks
+        cleanedText = cleanedText.replace(/\n|\r|\n\r/g, '');
+        return cleanedText;
     }
 
-    private cleanUp(node: HTMLElement, listNodes: Element[]): Element[] {
-        const tempCleaner: Element[] = [];
-        let prevflagState: boolean;
-        const allNodes: NodeListOf<Element> = node.querySelectorAll('*');
-        for (let index: number = 0; index < allNodes.length; index++) {
-            if (this.ignorableNodes.indexOf(allNodes[index as number].nodeName) === -1 ||
-                (allNodes[index as number].nodeType === 3 && allNodes[index as number].textContent.trim() === '')) {
-                tempCleaner.push(allNodes[index as number] as Element);
+    /* Removes HTML comments from an element */
+    private removingComments(clipboardDataElement: HTMLElement): void {
+        const htmlContent: string = clipboardDataElement.innerHTML;
+        const commentPattern: RegExp = /<!--[\s\S]*?-->/g;
+        const cleanedContent: string = htmlContent.replace(commentPattern, '');
+        clipboardDataElement.innerHTML = cleanedContent;
+    }
+
+    /* Cleans up HTML content and identifies list nodes for conversion */
+    private listCleanUp(containerElement: HTMLElement, listNodes: Element[]): Element[] {
+        const nodesToRemove: Element[] = [];
+        let previousWasMsoList: boolean = false;
+        const allElements: NodeListOf<Element> = containerElement.querySelectorAll('*');
+        for (let i: number = 0; i < allElements.length; i++) {
+            const currentElement: Element = allElements[i as number];
+            // Check if element should be ignored
+            if (this.shouldIgnoreElement(currentElement)) {
+                nodesToRemove.push(currentElement);
                 continue;
-            } else if ((allNodes[index as number] as Element).className &&
-                (allNodes[index as number] as Element).className.toLowerCase().indexOf('msolistparagraph') !== -1 &&
-                !isNOU(allNodes[index as number].getAttribute('style')) &&
-                allNodes[index as number].getAttribute('style').indexOf('mso-list:') >= 0) {
-                if (allNodes[index as number].className.indexOf('MsoListParagraphCxSpFirst') >= 0 && listNodes.length > 0 &&
+            }
+            // Check if element is an MS Word list paragraph
+            if (this.isMsoListParagraph(currentElement)) {
+                // Add a null separator for new list if needed
+                if (this.isFirstListItem(currentElement) && listNodes.length > 0 &&
                     listNodes[listNodes.length - 1] !== null) {
                     listNodes.push(null);
                 }
-                listNodes.push(allNodes[index as number] as Element);
+                // Add the list node
+                listNodes.push(currentElement);
             }
-            if (prevflagState && (this.blockNode.indexOf(allNodes[index as number].nodeName.toLowerCase()) !== -1) &&
-                !((allNodes[index as number] as Element).className &&
-                    (allNodes[index as number] as Element).className.toLowerCase().indexOf('msolistparagraph') !== -1 && !isNOU(allNodes[index as number].getAttribute('style')) &&
-                    allNodes[index as number].getAttribute('style').indexOf('mso-list:') >= 0)) {
+            // Add a null separator when transitioning from list to non-list block
+            if (this.shouldAddListSeparator(previousWasMsoList, currentElement)) {
                 listNodes.push(null);
             }
-            if (this.blockNode.indexOf(allNodes[index as number].nodeName.toLowerCase()) !== -1) {
-                if ((allNodes[index as number] as Element).className &&
-                    (allNodes[index as number] as Element).className.toLowerCase().indexOf('msolistparagraph') !== -1 && !isNOU(allNodes[index as number].getAttribute('style')) &&
-                    allNodes[index as number].getAttribute('style').indexOf('mso-list:') >= 0) {
-                    prevflagState = true;
-                } else {
-                    prevflagState = false;
-                }
+
+            // Update previous state flag for next iteration
+            if (this.isBlockElement(currentElement)) {
+                previousWasMsoList = this.isMsoListParagraph(currentElement);
             }
         }
-        if (listNodes.length && (listNodes[listNodes.length - 1] !== null)) {
+        // Add a final null separator if needed
+        if (listNodes.length > 0 && listNodes[listNodes.length - 1] !== null) {
             listNodes.push(null);
         }
         return listNodes;
     }
 
+    /* Determines if an element should be ignored during cleanup */
+    private shouldIgnoreElement(element: Element): boolean {
+        const isNotInIgnorableList: boolean = this.ignorableNodes.indexOf(element.nodeName) === -1;
+        const isEmptyTextNode: boolean = element.nodeType === 3 && element.textContent.trim() === '';
+        return isNotInIgnorableList || isEmptyTextNode;
+    }
+
+    /* Determines if an element is an MS Word list paragraph */
+    private isMsoListParagraph(element: Element): boolean {
+        const elementClass: string = element.className;
+        const hasClassName: boolean = elementClass && elementClass.toLowerCase().indexOf('msolistparagraph') !== -1;
+        const elementStyles: string = element.getAttribute('style');
+        const hasMsoListStyle: boolean = !isNOU(elementStyles) && elementStyles.indexOf('mso-list:') >= 0;
+        return hasClassName && hasMsoListStyle;
+    }
+
+    /* Determines if an element is the first item in a list */
+    private isFirstListItem(element: Element): boolean {
+        return element.className.indexOf('MsoListParagraphCxSpFirst') >= 0;
+    }
+
+    /* Determines if a list separator should be added */
+    private shouldAddListSeparator(previousWasMsoList: boolean, currentElement: Element): boolean {
+        return previousWasMsoList &&
+            this.isBlockElement(currentElement) && !this.isMsoListParagraph(currentElement);
+    }
+
+    /* Determines if an element is a block element */
+    private isBlockElement(element: Element): boolean {
+        return this.blockNode.indexOf(element.nodeName.toLowerCase()) !== -1;
+    }
+
+    /**
+     * Converts MS Word list nodes to standard HTML lists
+     *
+     * @param {Element[]} listNodes - Array of list nodes to convert
+     * @returns {void} - No return value
+     * @private
+     */
     private listConverter(listNodes: Element[]): void {
-        let level: number;
-        const data: { content: HTMLElement; node: Element }[] = [];
-        let listFormatOverride: number;
-        let collection: {
-            listType: string; content: string[]; nestedLevel: number; listFormatOverride: number,
-            class: string, listStyle: string, listStyleTypeName: string, start: number, styleMarginLeft: string
+        const convertedLists: { content: HTMLElement; node: Element }[] = [];
+        const listCollection: {
+            listType: string;
+            content: string[];
+            nestedLevel: number;
+            listFormatOverride: number;
+            class: string;
+            listStyle: string;
+            listStyleTypeName: string;
+            start: number;
+            styleMarginLeft: string
         }[] = [];
-        let content: string = '';
-        let stNode: Element;
-        let currentListStyle: string = '';
+        const currentListStyle: string = '';
+        // Process list nodes and build collection
+        this.processListNodes(listNodes, convertedLists, listCollection, currentListStyle);
+        // Replace original nodes with converted lists
+        this.replaceNodesWithLists(listNodes, convertedLists);
+    }
+
+    /* Processes list nodes and builds collection of list data */
+    private processListNodes(
+        listNodes: Element[],
+        convertedLists: { content: HTMLElement; node: Element }[],
+        listCollection: ListItemProperties[],
+        currentListStyle: string
+    ): void {
+        let listFormatOverride: number;
         for (let i: number = 0; i < listNodes.length; i++) {
-            if (listNodes[i as number] === null) {
-                data.push({ content: this.makeConversion(collection), node: listNodes[i - 1] });
-                collection = [];
+            const currentNode: Element = listNodes[i as number];
+            // Handle null separator - convert collected items to list
+            if (currentNode === null) {
+                convertedLists.push({
+                    content: this.makeConversion(listCollection),
+                    node: listNodes[i - 1]
+                });
+                listCollection = [];
                 continue;
             }
-            if (listNodes[i as number].getAttribute('style') && listNodes[i as number].getAttribute('style').indexOf('mso-outline-level') !== -1) {
-                (listNodes[i as number] as HTMLElement).style.cssText = listNodes[i as number].getAttribute('style').replace('mso-outline-level', 'mso-outline');
-            }
-            content = listNodes[i as number].getAttribute('style');
-            if (content && content.indexOf('level') !== -1) {
-                // eslint-disable-next-line
-                level = parseInt(content.charAt(content.indexOf('level') + 5), null);
-            } else {
-                level = 1;
-            }
-            if (content && content.indexOf('mso-list:') !== -1) {
-                let msoListValue: string[];
-                if (content.match(/mso-list:[^;]+;?/)) {
-                    const changedContent: string = content.replace(new RegExp('\\n', 'g'), '').split(' ').join('');
-                    msoListValue = changedContent.match(/mso-list:[^;]+;?/)[0].split(':l');
-                    listFormatOverride = isNOU(msoListValue) ? null : parseInt(msoListValue[1].split('level')[0], 10);
-                } else {
-                    listFormatOverride = null;
-                }
-            }
+            // Fix outline level in style
+            this.fixOutlineLevel(currentNode);
+            // Extract list properties
+            const nodeStyle: string = currentNode.getAttribute('style') || '';
+            const nestingLevel: number = this.extractNestingLevel(nodeStyle);
+            listFormatOverride = this.extractListFormatOverride(nodeStyle, listFormatOverride);
+            // Process list content
             this.listContents = [];
-            this.getListContent(listNodes[i as number]);
-            let type: string;
-            let listStyleType: string;
-            let startAttr: number;
-            let styleMarginLeft: string;
-            if (!isNOU(this.listContents[0])) {
-                type = this.listContents[0].trim().length > 1 ? 'ol' : 'ul';
-                listStyleType = this.getlistStyleType(this.listContents[0], type);
-                if (type === 'ol' && (i === 0 || listNodes[i as number - 1] === null)) {
-                    const startString: string = this.listContents[0].split('.')[0];
-                    const listTypes: string[] = ['A', 'a', 'I', 'i', 'α', '1', '01', '1-']; // Add '1-' for rare list type.
-                    if (listTypes.indexOf(startString) === -1) {
-                        if (listStyleType === 'decimal') {
-                            // Bug in getlistStyleType() list style stype is returned as decimal for nested list with start attribute
-                            if (!isNaN(parseInt(startString, 10))) {
-                                startAttr = parseInt(startString, 10);
-                            }
-                        } else if (listStyleType === 'decimal-leading-zero') {
-                            if (!isNaN(parseInt(startString, 10))) {
-                                startAttr = parseInt(startString, 10);
-                            }
-                        } else if (listStyleType === 'upper-alpha') {
-                            startAttr = (startString.split('.')[0].charCodeAt(0) - 64);
-                        } else if (listStyleType === 'lower-alpha') {
-                            startAttr = (startString.split('.')[0].charCodeAt(0) - 96);
-                        } else if (listStyleType === 'upper-roman') {
-                            startAttr = this.upperRomanNumber.indexOf(this.listContents[0].split('.')[0]) + 1;
-                        } else if (listStyleType === 'lower-roman') {
-                            startAttr = this.lowerRomanNumber.indexOf(this.listContents[0].split('.')[0]) + 1;
-                        } else if (listStyleType === 'lower-greek') {
-                            startAttr = this.lowerGreekNumber.indexOf(this.listContents[0].split('.')[0]) + 1;
-                        }
-                    }
-                }
-                if ((listNodes[i as number] as HTMLElement).style.marginLeft !== '') {
-                    styleMarginLeft = (listNodes[i as number] as HTMLElement).style.marginLeft;
-                }
-                const tempNode: string[] = [];
-                for (let j: number = 1; j < this.listContents.length; j++) {
-                    tempNode.push(this.listContents[j as number]);
-                }
-                let currentClassName: string;
-                if (!isNOU(listNodes[i as number].className)) {
-                    currentClassName = listNodes[i as number].className;
-                }
-                if (!isNOU(listNodes[i as number].getAttribute('style'))) {
-                    (listNodes[i as number] as HTMLElement).style.cssText = listNodes[i as number].getAttribute('style').replace('text-align:start;', '');
-                    (listNodes[i as number] as HTMLElement).style.textIndent = '';
-                    currentListStyle = listNodes[i as number].getAttribute('style');
-                }
-                collection.push({
-                    listType: type, content: tempNode, nestedLevel: level,
-                    listFormatOverride: listFormatOverride, class: currentClassName,
-                    listStyle: currentListStyle, listStyleTypeName: listStyleType, start: startAttr, styleMarginLeft: styleMarginLeft
-                });
+            this.getListContent(currentNode);
+            // Skip if no list content
+            if (isNOU(this.listContents[0])) {
+                continue;
             }
+            // Determine list properties
+            const listProperties: {
+                type: string;
+                styleType: string;
+                startAttr?: number;
+                marginLeft?: string;
+            } = this.determineListProperties(this.listContents[0], i, listNodes, currentNode);
+            // Collect content items
+            const contentItems: string[] = [];
+            for (let j: number = 1; j < this.listContents.length; j++) {
+                contentItems.push(this.listContents[j as number]);
+            }
+            // Get class name and update style
+            const className: string = !isNOU(currentNode.className) ? currentNode.className : '';
+            currentListStyle = this.updateNodeStyle(currentNode, nodeStyle);
+            // Add to collection
+            listCollection.push({
+                listType: listProperties.type,
+                content: contentItems,
+                nestedLevel: nestingLevel,
+                listFormatOverride: listFormatOverride,
+                class: className,
+                listStyle: currentListStyle,
+                listStyleTypeName: listProperties.styleType,
+                start: listProperties.startAttr,
+                styleMarginLeft: listProperties.marginLeft
+            });
         }
-        stNode = listNodes.shift();
-        while (stNode) {
-            const elemColl: Element[] = [];
-            for (let temp1: number = 0; temp1 < data.length; temp1++) {
-                if (data[temp1 as number].node === stNode) {
-                    for (let index: number = 0; index < data[temp1 as number].content.childNodes.length; index++) {
-                        elemColl.push(data[temp1 as number].content.childNodes[index as number] as HTMLElement);
-                    }
-                    for (let index: number = 0; index < elemColl.length; index++) {
-                        stNode.parentElement.insertBefore(elemColl[index as number], stNode);
-                    }
-                    break;
-                }
-            }
-            stNode.remove();
-            stNode = listNodes.shift();
-            if (!stNode) {
-                stNode = listNodes.shift();
-            }
-        }
-    }
-    private getlistStyleType(listContent: string, type: string): string {
-        let currentListClass: string;
-        if (type === 'ol') {
-            const charCode: number = listContent.split('.')[0].charCodeAt(0);
-            switch (true) {
-            case this.upperRomanNumber.indexOf(listContent.split('.')[0]) > -1:
-                currentListClass = 'upper-roman';
-                break;
-            case this.lowerRomanNumber.indexOf(listContent.split('.')[0]) > -1:
-                currentListClass = 'lower-roman';
-                break;
-            case this.lowerGreekNumber.indexOf(listContent.split('.')[0]) > -1:
-                currentListClass = 'lower-greek';
-                break;
-            case (charCode > 64 && charCode < 91):
-                currentListClass = 'upper-alpha';
-                break;
-            case (charCode > 96 && charCode < 123):
-                currentListClass = 'lower-alpha';
-                break;
-            case (listContent.split('.')[0].length > 1 && listContent.split('.')[0][0] === '0' && !isNaN(Number(listContent.split('.')[0]))):
-                currentListClass = 'decimal-leading-zero';
-                break;
-            default:
-                currentListClass = 'decimal';
-                break;
-            }
-        } else {
-            switch (listContent.split('.')[0]) {
-            case 'o':
-                currentListClass = 'circle';
-                break;
-            case '§':
-                currentListClass = 'square';
-                break;
-            default:
-                currentListClass = 'disc';
-                break;
-            }
-        }
-        return currentListClass;
     }
 
-    private makeConversion(
-        collection: {
-            listType: string; content: string[]; nestedLevel: number; listFormatOverride: number; class: string,
-            listStyle: string, listStyleTypeName: string, start: number, styleMarginLeft: string
-        }[]): HTMLElement {
-        const root: HTMLElement = createElement('div');
-        let temp: HTMLElement;
-        let pLevel: number = 1;
-        let prevList: HTMLElement;
-        let listCount: number = 0;
-        let elem: HTMLElement;
-        let lfo: number = collection[0].listFormatOverride;
-        for (let index: number = 0; index < collection.length; index++) {
-            const listClass: string[] = ['MsoListParagraphCxSpFirst', 'MsoListParagraphCxSpMiddle', 'MsoListParagraphCxSpLast'];
-            let isNormalList: boolean = false;
-            for (let i: number = 0; i < listClass.length; i++) {
-                if (listClass[i as number].indexOf(collection[index as number].class) >= 0) {
-                    isNormalList = true;
-                    break;
-                }
-            }
-            if (!isNOU(prevList) && index !== 0 &&
-                collection[index as number - 1].listType !== collection[index as number].listType &&
-                !isNormalList) {
-                prevList = null;
-            }
-            const pElement: Element = createElement('p', { className: 'MsoNoSpacing'});
-            pElement.innerHTML = collection[index as number].content.join(' ');
-            if ((collection[index as number].nestedLevel === 1) &&
-            (listCount === 0 || lfo !== collection[index as number].listFormatOverride) &&
-            collection[index as number].content) {
-                root.appendChild(
-                    temp = createElement(collection[index as number].listType,
-                                         { className: collection[index as number].class }));
-                prevList = createElement('li');
-                prevList.appendChild(pElement);
-                temp.appendChild(prevList);
-                temp.setAttribute('level', collection[index as number].nestedLevel.toString());
-                if (collection[index as number].class !== 'msolistparagraph') {
-                    temp.style.marginLeft = collection[index as number].styleMarginLeft;
-                } else {
-                    addClass([temp], 'marginLeftIgnore');
-                }
-                temp.style.listStyleType = collection[index as number].listStyleTypeName;
-            } else if (collection[index as number].nestedLevel === pLevel &&
-                lfo === collection[index as number].listFormatOverride) {
-                if (!isNOU(prevList) && !isNOU(prevList.parentElement)
-                    && prevList.parentElement.tagName.toLowerCase() === collection[index as number].listType) {
-                    prevList.parentElement.appendChild(prevList = createElement('li'));
-                    prevList.appendChild(pElement);
-                } else if (isNOU(prevList)) {
-                    temp = createElement(collection[index as number].listType);
-                    temp.style.listStyleType = collection[index as number].listStyleTypeName;
-                    prevList = createElement('li');
-                    prevList.appendChild(pElement);
-                    temp.appendChild(prevList);
-                    temp.setAttribute('level', collection[index as number].nestedLevel.toString());
-                    root.appendChild(temp);
-                } else {
-                    temp = createElement(collection[index as number].listType);
-                    temp.style.listStyleType = collection[index as number].listStyleTypeName;
-                    prevList.parentElement.parentElement.appendChild(temp);
-                    prevList = createElement('li');
-                    prevList.appendChild(pElement);
-                    temp.appendChild(prevList);
-                    temp.setAttribute('level', collection[index as number].nestedLevel.toString());
-                }
-            } else if (collection[index as number].nestedLevel > pLevel) {
-                if (!isNOU(prevList)) {
-                    for (let j: number = 0; j < collection[index as number].nestedLevel - pLevel; j++) {
-                        prevList.appendChild(temp = createElement(collection[index as number].listType));
-                        prevList = createElement('li');
-                        if (j !== collection[index as number].nestedLevel - pLevel - 1 &&
-                            collection[index as number].nestedLevel - pLevel > 1) {
-                            prevList.style.listStyleType = 'none';
-                        }
-                        temp.appendChild(prevList);
-                    }
-                    prevList.appendChild(pElement);
-                    temp.setAttribute('level', collection[index as number].nestedLevel.toString());
-                    temp.style.listStyleType = collection[index as number].listStyleTypeName;
-                } else {
-                    if (collection[index as number].nestedLevel > pLevel && isNormalList) {
-                        const initialNode: HTMLElement = createElement(collection[index as number].listType);
-                        prevList = createElement('li');
-                        initialNode.appendChild(prevList);
-                        initialNode.style.listStyleType = 'none';
-                        for (let j: number = 0; j < collection[index as number].nestedLevel - 1; j++) {
-                            prevList.appendChild(temp = createElement(collection[index as number].listType));
-                            prevList = createElement('li');
-                            temp.appendChild(prevList);
-                            temp.style.listStyleType = 'none';
-                        }
-                        prevList.appendChild(pElement);
-                        root.appendChild(initialNode);
-                        temp.setAttribute('level', collection[index as number].nestedLevel.toString());
-                        temp.style.listStyleType = collection[index as number].listStyleTypeName;
-                    } else {
-                        root.appendChild(temp = createElement(collection[index as number].listType));
-                        prevList = createElement('li');
-                        prevList.appendChild(pElement);
-                        temp.appendChild(prevList);
-                        temp.setAttribute('level', collection[index as number].nestedLevel.toString());
-                        if (collection[index as number].class !== 'msolistparagraph') {
-                            temp.style.marginLeft = collection[index as number].styleMarginLeft;
-                        } else {
-                            addClass([temp], 'marginLeftIgnore');
-                        }
-                        temp.style.listStyleType = collection[index as number].listStyleTypeName;
-                    }
-                }
-            } else if (collection[index as number].nestedLevel === 1) {
-                if ((root.lastChild as HTMLElement).tagName.toLowerCase() === collection[index as number].listType) {
-                    temp = root.lastChild as HTMLElement;
-                } else {
-                    root.appendChild(temp = createElement(collection[index as number].listType));
-                    temp.style.listStyleType = collection[index as number].listStyleTypeName;
-                }
-                prevList = createElement('li');
-                prevList.appendChild(pElement);
-                temp.appendChild(prevList);
-                temp.setAttribute('level', collection[index as number].nestedLevel.toString());
+    /* Fixes outline level in style attribute */
+    private fixOutlineLevel(node: Element): void {
+        const style: string = node.getAttribute('style');
+        if (style && style.indexOf('mso-outline-level') !== -1) {
+            (node as HTMLElement).style.cssText = style.replace('mso-outline-level', 'mso-outline');
+        }
+    }
+
+    /* Extracts nesting level from style */
+    private extractNestingLevel(style: string): number {
+        if (style && style.indexOf('level') !== -1) {
+            // eslint-disable-next-line
+            return parseInt(style.charAt(style.indexOf('level') + 5), null);
+        }
+        return 1;
+    }
+
+    /* Extracts list format override from style */
+    private extractListFormatOverride(style: string, listFormatOverride: number): number {
+        if (style && style.indexOf('mso-list:') !== -1) {
+            if (style.match(/mso-list:[^;]+;?/)) {
+                const normalizedStyle: string = style.replace(new RegExp('\\n', 'g'), '').split(' ').join('');
+                const msoListValue: string[] = normalizedStyle.match(/mso-list:[^;]+;?/)[0].split(':l');
+                return isNOU(msoListValue) ? null : parseInt(msoListValue[1].split('level')[0], 10);
             } else {
-                elem = prevList;
-                while (elem.parentElement) {
-                    elem = elem.parentElement;
-                    if (elem.attributes.getNamedItem('level')) {
-                        if (parseInt(elem.attributes.getNamedItem('level').textContent, 10) === collection[index as number].nestedLevel &&
-                        lfo === collection[index as number].listFormatOverride) {
-                            prevList = createElement('li');
-                            prevList.appendChild(pElement);
-                            elem.appendChild(prevList);
-                            break;
-                            // eslint-disable-next-line
-                        } else if (parseInt(elem.attributes.getNamedItem('level').textContent, null) === collection[index as number].nestedLevel &&
-                        lfo !== collection[index as number].listFormatOverride) {
-                            temp = createElement(collection[index as number].listType);
-                            prevList = createElement('li');
-                            temp.appendChild(prevList);
-                            if (collection[index as number].nestedLevel > 1) {
-                                for (let k: number = 0; k < collection[index as number].nestedLevel - 1; k++) {
-                                    prevList.appendChild(temp = createElement(collection[index as number].listType));
-                                    prevList = createElement('li');
-                                    temp.appendChild(prevList);
-                                    temp.style.listStyleType = 'none';
-                                }
-                            }
-                            prevList.appendChild(pElement);
-                            elem.appendChild(temp);
-                            temp.setAttribute('level', collection[index as number].nestedLevel.toString());
-                            temp.style.listStyleType = collection[index as number].listStyleTypeName;
-                            break;
-                        } else if (collection[index as number].nestedLevel > parseInt(elem.attributes.getNamedItem('level').textContent, 10)) {
-                            elem.appendChild(temp = createElement(collection[index as number].listType));
-                            prevList = createElement('li');
-                            prevList.appendChild(pElement);
-                            temp.appendChild(prevList);
-                            temp.setAttribute('level', collection[index as number].nestedLevel.toString());
-                            temp.style.listStyleType = collection[index as number].listStyleTypeName;
-                            break;
-                        }
-                    }
-                    continue;
-                }
-            }
-            prevList.setAttribute('class', collection[index as number].class);
-            prevList.style.cssText = (!isNOU(collection[index as number].listStyle) ? collection[index as number].listStyle : '');
-            pLevel = collection[index as number].nestedLevel;
-            lfo = collection[index as number].listFormatOverride;
-            listCount++;
-            if (!isNOU(collection[index as number].start && collection[index as number].start !== 1 && collection[index as number].listType === 'ol')) {
-                temp.setAttribute('start', collection[index as number].start.toString());
+                return null;
             }
         }
-        return root;
+        return listFormatOverride;
     }
 
-    private getListContent(elem: Element): void {
-        let pushContent: string = '';
-        const firstChild: Element = elem.firstElementChild;
-        if (firstChild.textContent.trim() === '' && !isNOU(firstChild.firstElementChild) &&
-            firstChild.firstElementChild.nodeName === 'IMG') {
-            pushContent = elem.innerHTML.trim();
-            this.listContents.push('');
-            this.listContents.push(pushContent);
+    /* Determines list properties based on content */
+    private determineListProperties(
+        listContent: string,
+        index: number,
+        listNodes: Element[],
+        currentNode: Element
+    ): { type: string; styleType: string; startAttr?: number; marginLeft?: string } {
+        const result: {
+            type: string;
+            styleType: string;
+            startAttr?: number;
+            marginLeft?: string
+        } = {
+            type: listContent.trim().length > 1 ? 'ol' : 'ul',
+            styleType: ''
+        };
+        // Determine list style type
+        result.styleType = this.getlistStyleType(listContent, result.type);
+        // Determine start attribute for ordered lists
+        if (result.type === 'ol' && (index === 0 || listNodes[index - 1] === null)) {
+            result.startAttr = this.determineStartAttribute(listContent, result.styleType);
+        }
+        // Get margin-left if present
+        if ((currentNode as HTMLElement).style.marginLeft !== '') {
+            result.marginLeft = (currentNode as HTMLElement).style.marginLeft;
+        }
+        return result;
+    }
+
+    /* Determines start attribute for ordered lists */
+    private determineStartAttribute(listContent: string, listStyleType: string): number {
+        const startString: string = listContent.split('.')[0];
+        const standardListTypes: string[] = ['A', 'a', 'I', 'i', 'α', '1', '01', '1-']; // Add '1-' for rare list type
+        if (standardListTypes.indexOf(startString) !== -1) {
+            return undefined;
+        }
+        switch (listStyleType) {
+        case 'decimal':
+        case 'decimal-leading-zero':
+            if (!isNaN(parseInt(startString, 10))) {
+                return parseInt(startString, 10);
+            }
+            break;
+        case 'upper-alpha':
+            return startString.split('.')[0].charCodeAt(0) - 64;
+        case 'lower-alpha':
+            return startString.split('.')[0].charCodeAt(0) - 96;
+        case 'upper-roman':
+            return this.upperRomanNumber.indexOf(startString.split('.')[0]) + 1;
+        case 'lower-roman':
+            return this.lowerRomanNumber.indexOf(startString.split('.')[0]) + 1;
+        case 'lower-greek':
+            return this.lowerGreekNumber.indexOf(startString.split('.')[0]) + 1;
+        default:
+            return undefined;
+        }
+        return undefined;
+    }
+
+    /* Updates node style */
+    private updateNodeStyle(node: Element, style: string): string {
+        if (!isNOU(node.getAttribute('style'))) {
+            (node as HTMLElement).style.cssText = style.replace('text-align:start;', '');
+            (node as HTMLElement).style.textIndent = '';
+            return node.getAttribute('style');
+        }
+        return '';
+    }
+
+    /* Replaces original nodes with converted lists */
+    private replaceNodesWithLists(
+        listNodes: Element[],
+        convertedLists: { content: HTMLElement; node: Element }[]
+    ): void {
+        let currentNode: Element = listNodes.shift();
+        while (currentNode) {
+            const elementsToInsert: Element[] = [];
+            // Find matching converted list
+            for (let i: number = 0; i < convertedLists.length; i++) {
+                if (convertedLists[i as number].node === currentNode) {
+                    const convertedContent: HTMLElement = convertedLists[i as number].content;
+                    // Collect all child nodes
+                    for (let j: number = 0; j < convertedContent.childNodes.length; j++) {
+                        elementsToInsert.push(convertedContent.childNodes[j as number] as HTMLElement);
+                    }
+                    // Insert before the original node
+                    for (let j: number = 0; j < elementsToInsert.length; j++) {
+                        currentNode.parentElement.insertBefore(elementsToInsert[j as number], currentNode);
+                    }
+                    break;
+                }
+            }
+            // Remove the original node
+            currentNode.remove();
+            // Get next node
+            currentNode = listNodes.shift();
+            if (!currentNode) {
+                currentNode = listNodes.shift();
+            }
+        }
+    }
+
+    /* Determines the CSS list-style-type based on list content and type */
+    private getlistStyleType(listContent: string, listType: string): string {
+        // Extract the marker text before any period
+        const markerText: string = listContent.split('.')[0];
+        if (listType === 'ol') {
+            return this.getOrderedListStyleType(markerText);
         } else {
+            return this.getUnorderedListStyleType(markerText);
+        }
+    }
+
+    /* Determines the CSS list-style-type for ordered lists */
+    private getOrderedListStyleType(markerText: string): string {
+        const charCode: number = markerText.charCodeAt(0);
+        // Check for Roman numerals
+        if (this.upperRomanNumber.indexOf(markerText) > -1) {
+            return 'upper-roman';
+        }
+        if (this.lowerRomanNumber.indexOf(markerText) > -1) {
+            return 'lower-roman';
+        }
+        // Check for Greek letters
+        if (this.lowerGreekNumber.indexOf(markerText) > -1) {
+            return 'lower-greek';
+        }
+        // Check for uppercase letters (A-Z)
+        if (charCode > 64 && charCode < 91) {
+            return 'upper-alpha';
+        }
+        // Check for lowercase letters (a-z)
+        if (charCode > 96 && charCode < 123) {
+            return 'lower-alpha';
+        }
+        // Check for leading zero numbers (01, 02, etc.)
+        const isLeadingZeroNumber: boolean = markerText.length > 1 &&
+            markerText[0] === '0' && !isNaN(Number(markerText));
+        if (isLeadingZeroNumber) {
+            return 'decimal-leading-zero';
+        }
+        // Default to decimal
+        return 'decimal';
+    }
+
+    /* Determines the CSS list-style-type for unordered lists */
+    private getUnorderedListStyleType(markerText: string): string {
+        switch (markerText) {
+        case 'o':
+            return 'circle';
+        case '§':
+            return 'square';
+        default:
+            return 'disc';
+        }
+    }
+
+    /* Converts a collection of MSWord list items into HTML list elements */
+    private makeConversion(collection: ListItemProperties[]): HTMLElement {
+        const rootElement: HTMLElement = createElement('div');
+        const CURRENT_ITEM_CLASS: string = 'e-current-list-item';
+        if (collection.length === 0) {
+            return rootElement;
+        }
+        let currentListElement: HTMLElement;
+        let currentNestingLevel: number = 1;
+        let currentListItem: HTMLElement;
+        let listItemCount: number = 0;
+        let currentFormatOverride: number = collection[0].listFormatOverride;
+        for (let i: number = 0; i < collection.length; i++) {
+            const currentItem: ListItemProperties = collection[i as number];
+            const isStandardList: boolean = this.isStandardListType(currentItem.class);
+            // Remove tracking class from previous item
+            if (currentListItem) {
+                currentListItem.classList.remove(CURRENT_ITEM_CLASS);
+            }
+            // Reset previous list item if list type changes
+            if (this.shouldResetListItem(currentListItem, i, collection, isStandardList)) {
+                currentListItem = null;
+            }
+            // Create paragraph element with content
+            const paragraphElement: Element = this.createParagraphWithContent(currentItem);
+            // Handle different nesting scenarios
+            if (this.isNewRootList(currentItem, listItemCount, currentFormatOverride)) {
+                // Create new root list
+                currentListElement = this.createRootList(rootElement, currentItem, paragraphElement);
+                currentListItem = currentListElement.querySelector('.' + CURRENT_ITEM_CLASS);
+            } else if (this.isSameLevelList(currentItem, currentNestingLevel, currentFormatOverride)) {
+                // Add item to same level list
+                currentListElement = this.addToSameLevelList(
+                    currentItem, currentListElement, paragraphElement, currentListItem, rootElement
+                );
+                currentListItem = currentListElement.querySelector('.' + CURRENT_ITEM_CLASS);
+            } else if (this.isDeeperNestedList(currentItem, currentNestingLevel)) {
+                // Create deeper nested list
+                currentListElement = this.createNestedList(
+                    currentItem, currentListItem, paragraphElement, isStandardList, rootElement, currentNestingLevel
+                );
+                currentListItem = currentListElement.querySelector('.' + CURRENT_ITEM_CLASS);
+            } else if (this.isTopLevelList(currentItem)) {
+                // Create or use existing top-level list
+                currentListElement = this.handleTopLevelList(currentItem, rootElement, paragraphElement);
+                currentListItem = currentListElement.querySelector('.' + CURRENT_ITEM_CLASS);
+            } else {
+                // Handle other nesting scenarios
+                this.handleOtherNestingScenarios(currentItem, currentListItem, paragraphElement, currentFormatOverride);
+                currentListItem = rootElement.querySelector('.' + CURRENT_ITEM_CLASS);
+            }
+            // Apply styles and attributes to list item
+            this.applyListItemStyles(currentListItem, currentItem);
+            // Update state for next iteration
+            currentNestingLevel = currentItem.nestedLevel;
+            currentFormatOverride = currentItem.listFormatOverride;
+            listItemCount++;
+            // Set start attribute if needed
+            this.setStartAttributeIfNeeded(currentListElement, currentItem);
+        }
+        // Clean up - remove tracking class from any remaining elements
+        const trackedItems: NodeListOf<Element> = rootElement.querySelectorAll('.' + CURRENT_ITEM_CLASS);
+        for (let i: number = 0; i < trackedItems.length; i++) {
+            trackedItems[i as number].classList.remove(CURRENT_ITEM_CLASS);
+            if (trackedItems[i as number].className === '') {
+                trackedItems[i as number].removeAttribute('class');
+            }
+        }
+        return rootElement;
+    }
+
+    /* Checks if the list item is a standard list type */
+    private isStandardListType(className: string): boolean {
+        const standardListClasses: string[] = [
+            'MsoListParagraphCxSpFirst',
+            'MsoListParagraphCxSpMiddle',
+            'MsoListParagraphCxSpLast'
+        ];
+        for (let i: number = 0; i < standardListClasses.length; i++) {
+            if (!isNOU(className) && standardListClasses[i as number].indexOf(className) >= 0) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    /* Determines if the list item should be reset */
+    private shouldResetListItem(
+        listItem: HTMLElement,
+        index: number,
+        collection: ListItemProperties[],
+        isStandardList: boolean
+    ): boolean {
+        return !isNOU(listItem) &&
+            index !== 0 &&
+            collection[index - 1].listType !== collection[index as number].listType &&
+            !isStandardList;
+    }
+
+    /* Creates a paragraph element with content */
+    private createParagraphWithContent(item: ListItemProperties): Element {
+        const paragraphElement: Element = createElement('p', { className: 'MsoNoSpacing' });
+        paragraphElement.innerHTML = item.content.join(' ');
+        return paragraphElement;
+    }
+
+    /* Checks if this is a new root list */
+    private isNewRootList(item: ListItemProperties, listCount: number, formatOverride: number): boolean {
+        return item.nestedLevel === 1 &&
+            (listCount === 0 || formatOverride !== item.listFormatOverride) &&
+            item.content.length > 0;
+    }
+
+    /* Creates a root list element */
+    private createRootList(rootElement: HTMLElement, item: ListItemProperties, paragraphElement: Element): HTMLElement {
+        const listElement: HTMLElement = createElement(item.listType, { className: item.class });
+        const listItem: HTMLElement = createElement('li');
+        listItem.appendChild(paragraphElement);
+        listElement.appendChild(listItem);
+        rootElement.appendChild(listElement);
+        listElement.setAttribute('level', item.nestedLevel.toString());
+        if (item.class !== 'msolistparagraph') {
+            listElement.style.marginLeft = item.styleMarginLeft;
+        } else {
+            addClass([listElement], 'marginLeftIgnore');
+        }
+        listElement.style.listStyleType = item.listStyleTypeName;
+        listItem.classList.add('e-current-list-item');
+        return listElement;
+    }
+
+    /* Checks if this is a same level list item */
+    private isSameLevelList(item: ListItemProperties, currentLevel: number, formatOverride: number): boolean {
+        return item.nestedLevel === currentLevel && formatOverride === item.listFormatOverride;
+    }
+
+    /* Adds an item to a same level list */
+    private addToSameLevelList(
+        item: ListItemProperties,
+        listElement: HTMLElement,
+        paragraphElement: Element,
+        listItem: HTMLElement,
+        rootElement: HTMLElement
+    ): HTMLElement {
+        if (!isNOU(listItem) && !isNOU(listItem.parentElement) &&
+            listItem.parentElement.tagName.toLowerCase() === item.listType) {
+            // Add to existing list
+            const newListItem: HTMLElement = createElement('li');
+            newListItem.classList.add('e-current-list-item');
+            newListItem.appendChild(paragraphElement);
+            listItem.parentElement.appendChild(newListItem);
+            return listItem.parentElement;
+        } else if (isNOU(listItem)) {
+            // Create new list
+            const newListElement: HTMLElement = createElement(item.listType);
+            newListElement.style.listStyleType = item.listStyleTypeName;
+            const newListItem: HTMLElement = createElement('li');
+            newListItem.classList.add('e-current-list-item');
+            newListItem.appendChild(paragraphElement);
+            newListElement.appendChild(newListItem);
+            newListElement.setAttribute('level', item.nestedLevel.toString());
+            rootElement.appendChild(newListElement);
+            return newListElement;
+        } else {
+            // Create new list at parent level
+            const newListElement: HTMLElement = createElement(item.listType);
+            newListElement.style.listStyleType = item.listStyleTypeName;
+            const newListItem: HTMLElement = createElement('li');
+            newListItem.classList.add('e-current-list-item');
+            newListItem.appendChild(paragraphElement);
+            newListElement.appendChild(newListItem);
+            newListElement.setAttribute('level', item.nestedLevel.toString());
+            listItem.parentElement.parentElement.appendChild(newListElement);
+            return newListElement;
+        }
+    }
+
+    /* Checks if this is a deeper nested list */
+    private isDeeperNestedList(item: ListItemProperties, currentLevel: number): boolean {
+        return item.nestedLevel > currentLevel;
+    }
+
+    /* Creates a nested list */
+    private createNestedList(
+        item: ListItemProperties,
+        listItem: HTMLElement,
+        paragraphElement: Element,
+        isStandardList: boolean,
+        rootElement: HTMLElement,
+        currentNestingLevel: number
+    ): HTMLElement {
+        let listElement: HTMLElement;
+        if (!isNOU(listItem)) {
+            // Create nested list inside existing list item
+            const levelDifference: number = item.nestedLevel - currentNestingLevel;
+            for (let j: number = 0; j < levelDifference; j++) {
+                listElement = createElement(item.listType);
+                listItem.appendChild(listElement);
+                listItem = createElement('li');
+                // Set list-style-type: none for intermediate levels
+                if (j !== levelDifference - 1 && levelDifference > 1) {
+                    listItem.style.listStyleType = 'none';
+                }
+                listElement.appendChild(listItem);
+            }
+            listItem.classList.add('e-current-list-item');
+            listItem.appendChild(paragraphElement);
+            listElement.setAttribute('level', item.nestedLevel.toString());
+            listElement.style.listStyleType = item.listStyleTypeName;
+            return listElement;
+        } else if (isStandardList) {
+            // Create nested list for standard list type
+            return this.createStandardNestedList(item, paragraphElement, rootElement);
+        } else {
+            // Create new root list with nesting level
+            return this.createRootList(rootElement, item, paragraphElement);
+        }
+    }
+
+    /* Creates a standard nested list */
+    private createStandardNestedList(
+        item: ListItemProperties,
+        paragraphElement: Element,
+        rootElement: HTMLElement
+    ): HTMLElement {
+        const initialNode: HTMLElement = createElement(item.listType);
+        let listItem: HTMLElement = createElement('li');
+        let listElement: HTMLElement;
+        initialNode.appendChild(listItem);
+        initialNode.style.listStyleType = 'none';
+        for (let j: number = 0; j < item.nestedLevel - 1; j++) {
+            listElement = createElement(item.listType);
+            listItem.appendChild(listElement);
+            listItem = createElement('li');
+            listElement.appendChild(listItem);
+            listElement.style.listStyleType = 'none';
+        }
+        listItem.classList.add('e-current-list-item');
+        listItem.appendChild(paragraphElement);
+        rootElement.appendChild(initialNode);
+        listElement.setAttribute('level', item.nestedLevel.toString());
+        listElement.style.listStyleType = item.listStyleTypeName;
+        return listElement;
+    }
+
+    /* Gets the last list item from a list element */
+    private getLastListItem(listElement: HTMLElement): HTMLElement {
+        return listElement.querySelector('li:last-child');
+    }
+
+    /* Checks if this is a top-level list */
+    private isTopLevelList(item: ListItemProperties): boolean {
+        return item.nestedLevel === 1;
+    }
+
+    /* Handles top-level list creation or reuse */
+    private handleTopLevelList(
+        item: ListItemProperties,
+        rootElement: HTMLElement,
+        paragraphElement: Element
+    ): HTMLElement {
+        let listElement: HTMLElement;
+        const lastChild: HTMLElement = rootElement.lastChild as HTMLElement;
+        if (lastChild && lastChild.tagName.toLowerCase() === item.listType) {
+            // Reuse existing list
+            listElement = lastChild;
+        } else {
+            // Create new list
+            listElement = createElement(item.listType);
+            listElement.style.listStyleType = item.listStyleTypeName;
+            rootElement.appendChild(listElement);
+        }
+        const listItem: HTMLElement = createElement('li');
+        listItem.appendChild(paragraphElement);
+        listElement.appendChild(listItem);
+        listElement.setAttribute('level', item.nestedLevel.toString());
+        listItem.classList.add('e-current-list-item');
+        return listElement;
+    }
+
+    /* Handles other nesting scenarios */
+    private handleOtherNestingScenarios(
+        item: ListItemProperties,
+        listItem: HTMLElement,
+        paragraphElement: Element,
+        currentFormatOverride: number
+    ): void {
+        let currentElement: HTMLElement = listItem;
+        let listElement: HTMLElement;
+        while (currentElement.parentElement) {
+            currentElement = currentElement.parentElement;
+            const levelAttribute: Attr = currentElement.attributes.getNamedItem('level');
+            if (levelAttribute) {
+                const elementLevel: number = parseInt(levelAttribute.textContent, 10);
+                if (elementLevel === item.nestedLevel && currentFormatOverride === item.listFormatOverride) {
+                    // Same level and format - add to existing list
+                    const newListItem: HTMLElement = createElement('li');
+                    newListItem.appendChild(paragraphElement);
+                    currentElement.appendChild(newListItem);
+                    newListItem.classList.add('e-current-list-item');
+                    break;
+                } else if (elementLevel === item.nestedLevel && currentFormatOverride !== item.listFormatOverride) {
+                    // Same level but different format - create new list
+                    this.createDifferentFormatList(item, currentElement, paragraphElement);
+                    break;
+                } else if (item.nestedLevel > elementLevel) {
+                    // Deeper level - create nested list
+                    listElement = createElement(item.listType);
+                    const newListItem: HTMLElement = createElement('li');
+                    newListItem.appendChild(paragraphElement);
+                    listElement.appendChild(newListItem);
+                    currentElement.appendChild(listElement);
+                    listElement.setAttribute('level', item.nestedLevel.toString());
+                    listElement.style.listStyleType = item.listStyleTypeName;
+                    newListItem.classList.add('e-current-list-item');
+                    break;
+                }
+            }
+        }
+    }
+
+    /* Creates a list with different format override */
+    private createDifferentFormatList(
+        item: ListItemProperties,
+        parentElement: HTMLElement,
+        paragraphElement: Element
+    ): void {
+        let listElement: HTMLElement = createElement(item.listType);
+        let listItem: HTMLElement = createElement('li');
+        listElement.appendChild(listItem);
+        if (item.nestedLevel > 1) {
+            for (let k: number = 0; k < item.nestedLevel - 1; k++) {
+                listItem.appendChild(listElement = createElement(item.listType));
+                listItem = createElement('li');
+                listElement.appendChild(listItem);
+                listElement.style.listStyleType = 'none';
+            }
+        }
+        listItem.appendChild(paragraphElement);
+        listItem.classList.add('e-current-list-item');
+        parentElement.appendChild(listElement);
+        listElement.setAttribute('level', item.nestedLevel.toString());
+        listElement.style.listStyleType = item.listStyleTypeName;
+    }
+
+    /* Applies styles and attributes to a list item */
+    private applyListItemStyles(listItem: HTMLElement, item: ListItemProperties): void {
+        if (isNOU(listItem)) {
+            return;
+        }
+        listItem.setAttribute('class', item.class);
+        listItem.style.cssText = !isNOU(item.listStyle) ? item.listStyle : '';
+    }
+
+    /* Sets start attribute if needed */
+    private setStartAttributeIfNeeded(listElement: HTMLElement, item: ListItemProperties): void {
+        const needsStartAttribute: boolean = !isNOU(item.start) &&
+            item.start !== 1 && item.listType === 'ol';
+        if (needsStartAttribute) {
+            listElement.setAttribute('start', item.start.toString());
+        }
+    }
+
+    /* Extracts list content from an element */
+    private getListContent(element: Element): void {
+        const firstChild: Element = element.firstElementChild;
+        if (this.isImageList(firstChild)) {
+            this.handleImageList(element);
+        } else if (firstChild.childNodes.length > 0) {
             //Add to support separate list which looks like same list and also to add all tags as it is inside list
-            if (firstChild.childNodes.length > 0) {
-                const listIgnoreTag: NodeListOf<Element> = firstChild.querySelectorAll('[style*="mso-list"]');
-                for (let i: number = 0; i < listIgnoreTag.length; i++) {
-                    listIgnoreTag[i as number].setAttribute('style', listIgnoreTag[i as number].getAttribute('style').replace(/\n/g, ''));
-                }
-                const listOrderCleanup: Element = firstChild.querySelector('span[style*="mso-list"]');
-                if (listOrderCleanup) {
-                    let style: string = listOrderCleanup.getAttribute('style');
-                    if (style) {
-                        style = style.replace(/\s*:\s*/g, ':');
-                        listOrderCleanup.setAttribute('style', style);
-                    }
-                }
-                let listOrder: Element = firstChild.querySelector('span[style="mso-list:Ignore"]');
-                const isEmptyMarkerSpan: boolean = isNOU(listOrder);
-                listOrder =  isEmptyMarkerSpan ? firstChild : listOrder;
-                if (!isNOU(listOrder)) {
-                    let textContent: string = listOrder.textContent.trim();
-                    if (isEmptyMarkerSpan) {
-                        const bulletPattern: RegExp = /^(\d{1,2}|[a-zA-Z]|[*#~•○■])(\.|\)|-)\s*/;
-                        const textContentMatch: RegExpMatchArray | null = textContent.match(bulletPattern);
-                        if (!isNOU(textContentMatch)) {
-                            textContent = textContentMatch[0].trim();
-                            listOrder.textContent = listOrder.textContent.trim().substring(textContent.length).trim();
-                        }
-                    }
-                    this.listContents.push(textContent);
-                    if (!isEmptyMarkerSpan){
-                        detach(listOrder);
-                    }
-                    this.removingComments(elem as HTMLElement);
-                    this.removeUnwantedElements(elem as HTMLElement);
-                }
-            }
+            this.handleTextList(element, firstChild);
         }
-        this.listContents.push(elem.innerHTML);
+        this.listContents.push(element.innerHTML);
     }
 
-    private processMargin(element: HTMLElement): void {
-        const liChildren: NodeListOf<HTMLLIElement> = element.querySelectorAll('li');
-        if (liChildren.length > 0) {
-            for (let i: number = 0; i < liChildren.length; i++) {
-                if (!isNOU((liChildren[i as number]).style.marginLeft) && !liChildren[i as number].parentElement.classList.contains('marginLeftIgnore')){
-                    (liChildren[i as number]).style.marginLeft = '';
-                }
-            }
-        }
-        const tableChildren: NodeListOf<HTMLTableElement> = element.querySelectorAll('table');
-        if (tableChildren.length > 0) {
-            for (let i: number = 0; i < tableChildren.length; i++) {
-                if (!isNOU((tableChildren[i as number]).style.marginLeft) &&
-                    (tableChildren[i as number]).style.marginLeft.indexOf('-') >= 0) {
-                    (tableChildren[i as number]).style.marginLeft = '';
-                }
-            }
-        }
-        const ignoredNode: NodeListOf<HTMLElement> = element.querySelectorAll('.marginLeftIgnore li');
-        if (ignoredNode.length > 0) {
-            for (let i: number = 0; i < ignoredNode.length; i++) {
-                if (!isNOU((ignoredNode[i as number]).style.marginLeft) && (ignoredNode[i as number]).style.marginLeft !== '') {
-                    const marginLeft: string = (ignoredNode[i as number]).style.marginLeft;
-                    const marginLeftValue: number = parseFloat(marginLeft.split('in')[0]);
-                    const result: number = marginLeftValue - 0.5;
-                    (ignoredNode[i as number]).style.marginLeft = result.toString() + 'in';
-                }
-            }
+    /* Checks if this is an image list */
+    private isImageList(firstChild: Element): boolean {
+        return firstChild.textContent.trim() === '' &&
+            !isNOU(firstChild.firstElementChild) &&
+            firstChild.firstElementChild.nodeName === 'IMG';
+    }
+
+    /* Handles image list content */
+    private handleImageList(element: Element): void {
+        const content: string = element.innerHTML.trim();
+        this.listContents.push('');
+        this.listContents.push(content);
+    }
+
+    /* Handles text list content */
+    private handleTextList(element: Element, firstChild: Element): void {
+        // Clean up list ignore tags
+        this.cleanupListIgnoreTags(firstChild);
+        // Clean up list order
+        const listOrderElement: Element = this.cleanupListOrder(firstChild);
+        this.processListOrderElement(element, firstChild, listOrderElement);
+    }
+
+    /* Cleans up list ignore tags */
+    private cleanupListIgnoreTags(firstChild: Element): void {
+        const listIgnoreTags: NodeListOf<Element> = firstChild.querySelectorAll('[style*="mso-list"]');
+        for (let i: number = 0; i < listIgnoreTags.length; i++) {
+            const tag: Element = listIgnoreTags[i as number];
+            const style: string = tag.getAttribute('style').replace(/\n/g, '');
+            tag.setAttribute('style', style);
         }
     }
 
-    private removeEmptyAnchorTag(element: HTMLElement): void {
+    /* Cleans up list order element */
+    private cleanupListOrder(firstChild: Element): Element {
+        const listOrderCleanup: Element = firstChild.querySelector('span[style*="mso-list"]');
+        if (listOrderCleanup) {
+            let style: string = listOrderCleanup.getAttribute('style');
+            if (style) {
+                style = style.replace(/\s*:\s*/g, ':');
+                listOrderCleanup.setAttribute('style', style);
+            }
+        }
+        return firstChild.querySelector('span[style="mso-list:Ignore"]');
+    }
+
+    /* Processes list order element */
+    private processListOrderElement(element: Element, firstChild: Element, listOrderElement: Element): void {
+        const isEmptyMarkerSpan: boolean = isNOU(listOrderElement);
+        listOrderElement =  isEmptyMarkerSpan ? firstChild : listOrderElement;
+        if (!isNOU(listOrderElement)) {
+            let textContent: string = listOrderElement.textContent.trim();
+            if (isEmptyMarkerSpan) {
+                textContent = this.extractBulletMarker(listOrderElement, textContent);
+            }
+            this.listContents.push(textContent);
+            if (!isEmptyMarkerSpan) {
+                detach(listOrderElement);
+            }
+            this.removingComments(element as HTMLElement);
+            this.removeUnwantedElements(element as HTMLElement);
+        }
+    }
+
+    /* Extracts bullet marker from text content */
+    private extractBulletMarker(listOrderElement: Element, textContent: string): string {
+        const bulletPattern: RegExp = /^(\d{1,2}|[a-zA-Z]|[*#~•○■])(\.|\)|-)\s*/;
+        const textContentMatch: RegExpMatchArray | null = textContent.match(bulletPattern);
+        if (!isNOU(textContentMatch)) {
+            const markerText: string = textContentMatch[0].trim();
+            listOrderElement.textContent = listOrderElement.textContent.trim().substring(markerText.length).trim();
+            return markerText;
+        }
+        return textContent;
+    }
+
+    /* Processes margins for different element types in the document */
+    private processMargin(clipboardDataElement: HTMLElement): void {
+        this.processListItemMargins(clipboardDataElement);
+        this.processTableMargins(clipboardDataElement);
+        this.processIgnoredNodeMargins(clipboardDataElement);
+    }
+
+    /* Processes margins for list items */
+    private processListItemMargins(clipboardDataElement: HTMLElement): void {
+        const listItems: NodeListOf<HTMLLIElement> = clipboardDataElement.querySelectorAll('li');
+        for (let i: number = 0; i < listItems.length; i++) {
+            const listItem: HTMLLIElement = listItems[i as number];
+            // Clear margin-left for list items unless parent has 'marginLeftIgnore' class
+            if (!isNOU(listItem.style.marginLeft) && !listItem.parentElement.classList.contains('marginLeftIgnore')) {
+                listItem.style.marginLeft = '';
+            }
+        }
+    }
+
+    /* Processes margins for tables */
+    private processTableMargins(clipboardDataElement: HTMLElement): void {
+        const tables: NodeListOf<HTMLTableElement> = clipboardDataElement.querySelectorAll('table');
+        for (let i: number = 0; i < tables.length; i++) {
+            const table: HTMLTableElement = tables[i as number];
+            const marginLeft: string = table.style.marginLeft;
+            // Clear negative margin-left values for tables
+            if (!isNOU(marginLeft) && marginLeft.indexOf('-') >= 0) {
+                table.style.marginLeft = '';
+            }
+        }
+    }
+
+    /* Processes margins for nodes with 'marginLeftIgnore' class */
+    private processIgnoredNodeMargins(clipboardDataElement: HTMLElement): void {
+        const ignoredNodes: NodeListOf<HTMLElement> = clipboardDataElement.querySelectorAll('.marginLeftIgnore li');
+        for (let i: number = 0; i < ignoredNodes.length; i++) {
+            const node: HTMLElement = ignoredNodes[i as number];
+            const marginLeft: string = node.style.marginLeft;
+            // Adjust margin-left for ignored nodes
+            if (!isNOU(marginLeft) && marginLeft !== '') {
+                const marginValue: number = parseFloat(marginLeft.split('in')[0]);
+                const adjustedValue: number = marginValue - 0.5;
+                node.style.marginLeft = adjustedValue.toString() + 'in';
+            }
+        }
+    }
+
+    private removeEmptyAnchorTag1(element: HTMLElement): void {
         const removableElement: NodeListOf<Element> = element.querySelectorAll('a:not([href])');
         for (let j: number = removableElement.length - 1; j >= 0; j--) {
             const parentElem: Node = removableElement[j as number].parentNode;
@@ -1116,16 +1849,38 @@ export class MsWordPaste {
         }
     }
 
-    private findSource(element: HTMLElement): string {
-        const metaNodes: NodeListOf<Element> = element.querySelectorAll('meta');
-        for (let i: number = 0; i < metaNodes.length; i++) {
-            const metaNode: Element = metaNodes[i as number];
-            const content: string = metaNode.getAttribute('content');
-            const name: string = metaNode.getAttribute('name');
-            if (name && name.toLowerCase().indexOf('generator') >= 0 && content && content.toLowerCase().indexOf('microsoft') >= 0) {
+    /* Removes empty anchor tags and preserves their contents */
+    private removeEmptyAnchorTag(clipboardDataElement: HTMLElement): void {
+        // Select anchor tags without href attribute
+        const emptyAnchors: NodeListOf<Element> = clipboardDataElement.querySelectorAll('a:not([href])');
+        // Process in reverse order to avoid index issues when removing elements
+        for (let i: number = emptyAnchors.length - 1; i >= 0; i--) {
+            const anchor: Element = emptyAnchors[i as number];
+            const parentNode: Node = anchor.parentNode;
+            // Move all children of the anchor to its parent
+            while (anchor.firstChild) {
+                parentNode.insertBefore(anchor.firstChild, anchor);
+            }
+            parentNode.removeChild(anchor);
+        }
+    }
+
+    /* Determines the source of the clipboard content based on meta tags */
+    private findSource(containerElement: HTMLElement): string {
+        const metaTags: NodeListOf<Element> = containerElement.querySelectorAll('meta');
+        for (let i: number = 0; i < metaTags.length; i++) {
+            const metaTag: Element = metaTags[i as number];
+            const contentAttribute: string = metaTag.getAttribute('content');
+            const nameAttribute: string = metaTag.getAttribute('name');
+            const isMicrosoftGenerator: boolean = nameAttribute &&
+                nameAttribute.toLowerCase().indexOf('generator') >= 0 &&
+                contentAttribute && contentAttribute.toLowerCase().indexOf('microsoft') >= 0;
+            if (isMicrosoftGenerator) {
+                // Check against known paste sources
                 for (let j: number = 0; j < PASTE_SOURCE.length; j++) {
-                    if (content.toLowerCase().indexOf(PASTE_SOURCE[j as number]) >= 0) {
-                        return PASTE_SOURCE[j as number];
+                    const source: string = PASTE_SOURCE[j as number];
+                    if (contentAttribute.toLowerCase().indexOf(source) >= 0) {
+                        return source;
                     }
                 }
             }
@@ -1133,19 +1888,26 @@ export class MsWordPaste {
         return 'html';
     }
 
-    private handleOneNoteContent(element: HTMLElement): void {
-        const allListElements: NodeListOf<HTMLElement> = element.querySelectorAll('ul, ol') as NodeListOf<HTMLElement>;
-        if (allListElements.length > 0) {
-            for (let i: number = 0; i < allListElements.length; i++) {
-                // Removing the ul and ol parent node for the p tag
-                const currentList: HTMLElement = allListElements[i as number];
-                if (currentList.querySelectorAll('li').length === 0 && currentList.childNodes.length > 0) {
-                    InsertMethods.unwrap(currentList);
-                }
+    /* Handles OneNote-specific content by unwrapping empty list elements */
+    private handleOneNoteContent(clipboardDataElement: HTMLElement): void {
+        const listElements: NodeListOf<HTMLElement> = clipboardDataElement.querySelectorAll('ul, ol') as NodeListOf<HTMLElement>;
+        for (let i: number = 0; i < listElements.length; i++) {
+            const listElement: HTMLElement = listElements[i as number];
+            const hasNoListItems: boolean = listElement.querySelectorAll('li').length === 0;
+            const hasChildNodes: boolean = listElement.childNodes.length > 0;
+            // Unwrap list elements that have no list items but have other content
+            if (hasNoListItems && hasChildNodes) {
+                InsertMethods.unwrap(listElement);
             }
         }
     }
 
+    /**
+     * Cleans up resources when the component is destroyed
+     *
+     * @returns {void} - No return value
+     * @public
+     */
     public destroy(): void {
         this.removeEventListener();
     }

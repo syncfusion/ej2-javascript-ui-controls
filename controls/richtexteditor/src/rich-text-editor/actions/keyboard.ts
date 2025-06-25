@@ -1,15 +1,7 @@
-import { Property, NotifyPropertyChanges, INotifyPropertyChanged, Event } from '@syncfusion/ej2-base';
+import { Property, NotifyPropertyChanges, INotifyPropertyChanged, Event, KeyboardEventArgs } from '@syncfusion/ej2-base';
 import { Base, EmitType } from '@syncfusion/ej2-base';
 import { KeyboardEventsModel } from '@syncfusion/ej2-base';
-/**
- * KeyboardEvents
- */
-export interface KeyboardEventArgs extends KeyboardEvent {
-    /**
-     * action of the KeyboardEvent
-     */
-    action: string
-}
+
 
 const keyCode: { [key: string]: number } = {
     'backspace': 8,

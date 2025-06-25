@@ -176,4 +176,27 @@ export class TaskFields extends ChildProperty<TaskFields> {
      */
     @Property(null)
     public segmentId: string;
+    /**
+     * Maps the constraint type value from the data source for each task.
+     * This property determines how and when a task should be scheduled based on the defined constraint rule.
+     *
+     * The value can be provided either as a number (e.g., `constraintType: 0`) or a stringified number (e.g., `constraintType: "0"`),
+     * and it is used to assign the appropriate constraint type for the task.
+     *
+     * Refer to the [`ConstraintType`](../constraintType) enumeration for the list of supported constraint types.
+     *
+     * @default null
+     */
+    @Property(null)
+    public constraintType: string;
+    /**
+     * Maps the constraint date value from the data source for each task.
+     *
+     * This date is used along with the `constraintType` mapping to control how the task is scheduled.
+     * The date value can be a valid `Date` object or a date string.
+     *
+     * @default null
+     */
+    @Property(null)
+    public constraintDate: string;
 }

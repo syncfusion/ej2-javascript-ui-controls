@@ -26,7 +26,7 @@ describe('Sfdt Export auto spacing properties', () => {
         }
         document.body.removeChild(document.getElementById('container'));
         editor = undefined;
-        document.body.innerHTML = '';
+        
     });
     it("Check value is true", () => {
         editor.openBlank();
@@ -83,7 +83,7 @@ describe('Check that the text with the same character format is combined correct
         }
         document.body.removeChild(document.getElementById('container'));
         editor = undefined;
-        document.body.innerHTML = '';
+        
     });
     it("Check that the text with the same character format is combined correctly", () => {
         editor.openBlank();
@@ -115,7 +115,7 @@ describe('Validate the bullet list symbol is not render issue on exported docume
         }
         document.body.removeChild(document.getElementById('container'));
         editor = undefined;
-        document.body.innerHTML = '';
+        
     });
     it("Validate the bullet list symbol is not render issue on exported document", () => {
         editor.openBlank();
@@ -150,7 +150,7 @@ describe('Ensure the minimal section content on exported sfdt document', () => {
         }
         document.body.removeChild(document.getElementById('container'));
         editor = undefined;
-        document.body.innerHTML = '';
+        
     });
     it("Validate the minimal content if pages length is zero", () => {
         editor.openBlank();

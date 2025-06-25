@@ -12,19 +12,20 @@ import { ITreeData } from '../../src';
 import { select } from '@syncfusion/ej2-base';
 import { RowDD } from '../../src/treegrid/actions/rowdragdrop';
 import { VirtualScroll } from '../../src/treegrid/actions/virtual-scroll';
+import { Page } from '../../src/treegrid/actions/page';
 
 
 /**
  * Grid Row Edit spec 
  */
-TreeGrid.Inject(Edit, Toolbar, Sort, RowDD, VirtualScroll);
+TreeGrid.Inject(Edit, Toolbar, Sort, RowDD, VirtualScroll, Page);
 describe('Edit module', () => {
   beforeAll(() => {
     const isDef = (o: any) => o !== undefined && o !== null;
     if (!isDef(window.performance)) {
-        console.log("Unsupported environment, window.performance.memory is unavailable");
-        pending(); //Skips test (in Chai)
-        return;
+      console.log("Unsupported environment, window.performance.memory is unavailable");
+      pending(); //Skips test (in Chai)
+      return;
     }
   });
 
@@ -34,17 +35,17 @@ describe('Edit module', () => {
     beforeAll((done: Function) => {
       gridObj = createGrid(
         {
-            dataSource: sampleData,
-            childMapping: 'subtasks',
-            editSettings: { allowEditing: true, mode: 'Row', allowDeleting: true, allowAdding: true, newRowPosition: 'Top' },
+          dataSource: sampleData,
+          childMapping: 'subtasks',
+          editSettings: { allowEditing: true, mode: 'Row', allowDeleting: true, allowAdding: true, newRowPosition: 'Top' },
 
-            treeColumnIndex: 1,
-            toolbar: ['Add', 'Edit', 'Update', 'Delete', 'Cancel', 'ExpandAll', 'CollapseAll'],
-              columns: [{ field: 'taskID', headerText: 'Task ID', isPrimaryKey: true },
-              { field: 'taskName', headerText: 'Task Name' },
-              { field: 'progress', headerText: 'Progress' },
-              { field: 'startDate', headerText: 'Start Date' }
-              ]
+          treeColumnIndex: 1,
+          toolbar: ['Add', 'Edit', 'Update', 'Delete', 'Cancel', 'ExpandAll', 'CollapseAll'],
+          columns: [{ field: 'taskID', headerText: 'Task ID', isPrimaryKey: true },
+          { field: 'taskName', headerText: 'Task Name' },
+          { field: 'progress', headerText: 'Progress' },
+          { field: 'startDate', headerText: 'Start Date' }
+          ]
         },
         done
       );
@@ -58,7 +59,7 @@ describe('Edit module', () => {
       };
       gridObj.actionComplete = actionComplete;
       (<any>gridObj.grid.toolbarModule).toolbarClickHandler({ item: { id: gridObj.grid.element.id + '_add' } });
-      
+
     });
     it('Add row - select row', (done: Function) => {
       let formEle: HTMLFormElement = gridObj.grid.editModule.formObj.element;
@@ -66,8 +67,8 @@ describe('Edit module', () => {
       (select('#' + gridObj.grid.element.id + 'taskName', formEle) as any).value = 'first';
       actionComplete = (args?: any): void => {
         let cells: NodeListOf<Element> = gridObj.grid.getRows()[0].querySelectorAll('.e-rowcell');
-        expect(cells[0].textContent === '121' ).toBeTruthy();
-        expect(cells[1].textContent ).toBe('first');
+        expect(cells[0].textContent === '121').toBeTruthy();
+        expect(cells[1].textContent).toBe('first');
         expect(gridObj.dataSource[0].taskID === 121).toBeTruthy();
         expect(gridObj.dataSource[0].taskName).toBe('first');
         done();
@@ -92,8 +93,8 @@ describe('Edit module', () => {
       (select('#' + gridObj.grid.element.id + 'taskName', formEle) as any).value = 'second';
       actionComplete = (args?: any): void => {
         let cells: NodeListOf<Element> = gridObj.grid.getRows()[0].querySelectorAll('.e-rowcell');
-        expect(cells[0].textContent === '122' ).toBeTruthy();
-        expect(cells[1].textContent ).toBe('second');
+        expect(cells[0].textContent === '122').toBeTruthy();
+        expect(cells[1].textContent).toBe('second');
         expect(gridObj.dataSource[0].taskID === 122).toBeTruthy();
         expect(gridObj.dataSource[0].taskName).toBe('second');
         done();
@@ -109,8 +110,8 @@ describe('Edit module', () => {
       (select('#' + gridObj.grid.element.id + 'taskName', formEle) as any).value = 'test1';
       actionComplete = (args?: any): void => {
         let cells: NodeListOf<Element> = gridObj.grid.getRows()[0].querySelectorAll('.e-rowcell');
-        expect(cells[0].textContent === '122' ).toBeTruthy();
-        expect(cells[1].textContent ).toBe('test1');
+        expect(cells[0].textContent === '122').toBeTruthy();
+        expect(cells[1].textContent).toBe('test1');
         expect(gridObj.dataSource[0].taskID === 122).toBeTruthy();
         expect(gridObj.dataSource[0].taskName).toBe('test1');
         done();
@@ -126,8 +127,8 @@ describe('Edit module', () => {
       (select('#' + gridObj.grid.element.id + 'taskName', formEle) as any).value = 'test2';
       actionComplete = (args?: any): void => {
         let cells: NodeListOf<Element> = gridObj.grid.getRows()[15].querySelectorAll('.e-rowcell');
-        expect(cells[0].textContent === '14' ).toBeTruthy();
-        expect(cells[1].textContent ).toBe('test2');
+        expect(cells[0].textContent === '14').toBeTruthy();
+        expect(cells[1].textContent).toBe('test2');
         expect(gridObj.dataSource[4].subtasks[0].subtasks[0].taskID === 14).toBeTruthy();
         expect(gridObj.dataSource[4].subtasks[0].subtasks[0].taskName).toBe('test2');
         done();
@@ -140,7 +141,7 @@ describe('Edit module', () => {
       actionComplete = (args?: any): void => {
         let cells: NodeListOf<Element> = gridObj.grid.getRows()[15].querySelectorAll('.e-rowcell');
         let previousrowCell: NodeListOf<Element> = gridObj.grid.getRows()[14].querySelectorAll('.e-rowcell');
-        expect(cells[0].textContent === '21' ).toBeTruthy();
+        expect(cells[0].textContent === '21').toBeTruthy();
         expect(previousrowCell[1].querySelector('.e-treegridexpand')).toBeNull();
         done();
       };
@@ -149,6 +150,7 @@ describe('Edit module', () => {
     });
     afterAll(() => {
       destroy(gridObj);
+      gridObj = null;
     });
   });
 
@@ -160,7 +162,7 @@ describe('Edit module', () => {
     let memory: any = inMB(getMemoryProfile())
     //Check the final memory usage against the first usage, there should be little change if everything was properly deallocated
     expect(memory).toBeLessThan(profile.samples[0] + 0.25);
-}); 
+  });
 });
 
 describe('Hirarchy editing - Add at Bottom', () => {
@@ -170,17 +172,17 @@ describe('Hirarchy editing - Add at Bottom', () => {
   beforeAll((done: Function) => {
     gridObj = createGrid(
       {
-          dataSource: sampleData,
-          childMapping: 'subtasks',
-          editSettings: { allowEditing: true, mode: 'Row', allowDeleting: true, allowAdding: true, newRowPosition: 'Bottom' },
+        dataSource: sampleData,
+        childMapping: 'subtasks',
+        editSettings: { allowEditing: true, mode: 'Row', allowDeleting: true, allowAdding: true, newRowPosition: 'Bottom' },
 
-          treeColumnIndex: 1,
-          toolbar: ['Add', 'Edit', 'Update', 'Delete', 'Cancel', 'ExpandAll', 'CollapseAll'],
-            columns: [{ field: 'taskID', headerText: 'Task ID', isPrimaryKey: true },
-            { field: 'taskName', headerText: 'Task Name' },
-            { field: 'progress', headerText: 'Progress' },
-            { field: 'startDate', headerText: 'Start Date' }
-            ]
+        treeColumnIndex: 1,
+        toolbar: ['Add', 'Edit', 'Update', 'Delete', 'Cancel', 'ExpandAll', 'CollapseAll'],
+        columns: [{ field: 'taskID', headerText: 'Task ID', isPrimaryKey: true },
+        { field: 'taskName', headerText: 'Task Name' },
+        { field: 'progress', headerText: 'Progress' },
+        { field: 'startDate', headerText: 'Start Date' }
+        ]
       },
       done
     );
@@ -195,7 +197,7 @@ describe('Hirarchy editing - Add at Bottom', () => {
     };
     gridObj.actionComplete = actionComplete;
     (<any>gridObj.grid.toolbarModule).toolbarClickHandler({ item: { id: gridObj.grid.element.id + '_add' } });
-    
+
   });
   it('Add row - no selection datasource', (done: Function) => {
     let formEle: HTMLFormElement = gridObj.grid.editModule.formObj.element;
@@ -204,8 +206,8 @@ describe('Hirarchy editing - Add at Bottom', () => {
     actionComplete = (args?: any): void => {
       rows = gridObj.grid.getRows();
       let cells: NodeListOf<Element> = rows[rows.length - 1].querySelectorAll('.e-rowcell');
-      expect(cells[0].textContent === '121' ).toBeTruthy();
-      expect(cells[1].textContent ).toBe('first');
+      expect(cells[0].textContent === '121').toBeTruthy();
+      expect(cells[1].textContent).toBe('first');
       expect(gridObj.dataSource[sampleData.length].taskID === 121).toBeTruthy();
       expect(gridObj.dataSource[sampleData.length].taskName).toBe('first');
       done();
@@ -232,8 +234,8 @@ describe('Hirarchy editing - Add at Bottom', () => {
     actionComplete = (args?: any): void => {
       rows = gridObj.grid.getRows();
       let cells: NodeListOf<Element> = rows[rows.length - 1].querySelectorAll('.e-rowcell');
-      expect(cells[0].textContent === '122' ).toBeTruthy();
-      expect(cells[1].textContent ).toBe('second');
+      expect(cells[0].textContent === '122').toBeTruthy();
+      expect(cells[1].textContent).toBe('second');
       expect(gridObj.dataSource[sampleData.length + 1].taskID === 122).toBeTruthy();
       expect(gridObj.dataSource[sampleData.length + 1].taskName).toBe('second');
       done();
@@ -250,8 +252,8 @@ describe('Hirarchy editing - Add at Bottom', () => {
     (select('#' + gridObj.grid.element.id + 'taskName', formEle) as any).value = 'test1';
     actionComplete = (args?: any): void => {
       let cells: NodeListOf<Element> = gridObj.grid.getRows()[rows.length - 1].querySelectorAll('.e-rowcell');
-      expect(cells[0].textContent === '122' ).toBeTruthy();
-      expect(cells[1].textContent ).toBe('test1');
+      expect(cells[0].textContent === '122').toBeTruthy();
+      expect(cells[1].textContent).toBe('test1');
       expect(gridObj.dataSource[sampleData.length + 1].taskID === 122).toBeTruthy();
       expect(gridObj.dataSource[sampleData.length + 1].taskName).toBe('test1');
       done();
@@ -267,8 +269,8 @@ describe('Hirarchy editing - Add at Bottom', () => {
     (select('#' + gridObj.grid.element.id + 'taskName', formEle) as any).value = 'test2';
     actionComplete = (args?: any): void => {
       let cells: NodeListOf<Element> = gridObj.grid.getRows()[13].querySelectorAll('.e-rowcell');
-      expect(cells[0].textContent === '14' ).toBeTruthy();
-      expect(cells[1].textContent ).toBe('test2');
+      expect(cells[0].textContent === '14').toBeTruthy();
+      expect(cells[1].textContent).toBe('test2');
       expect(gridObj.dataSource[2].subtasks[0].subtasks[0].taskID === 14).toBeTruthy();
       expect(gridObj.dataSource[2].subtasks[0].subtasks[0].taskName).toBe('test2');
       done();
@@ -281,7 +283,7 @@ describe('Hirarchy editing - Add at Bottom', () => {
     actionComplete = (args?: any): void => {
       let cells: NodeListOf<Element> = gridObj.grid.getRows()[13].querySelectorAll('.e-rowcell');
       let previousrowCell: NodeListOf<Element> = gridObj.grid.getRows()[12].querySelectorAll('.e-rowcell');
-      expect(cells[0].textContent === '21' ).toBeTruthy();
+      expect(cells[0].textContent === '21').toBeTruthy();
       expect(previousrowCell[1].querySelector('.e-treegridexpand')).toBeNull();
       done();
     };
@@ -290,6 +292,7 @@ describe('Hirarchy editing - Add at Bottom', () => {
   });
   afterAll(() => {
     destroy(gridObj);
+    gridObj = null;
   });
 });
 
@@ -300,17 +303,17 @@ describe('Hirarchy editing - Add at Above', () => {
   beforeAll((done: Function) => {
     gridObj = createGrid(
       {
-          dataSource: sampleData,
-          childMapping: 'subtasks',
-          editSettings: { allowEditing: true, mode: 'Row', allowDeleting: true, allowAdding: true, newRowPosition: 'Above' },
+        dataSource: sampleData,
+        childMapping: 'subtasks',
+        editSettings: { allowEditing: true, mode: 'Row', allowDeleting: true, allowAdding: true, newRowPosition: 'Above' },
 
-          treeColumnIndex: 1,
-          toolbar: ['Add', 'Edit', 'Update', 'Delete', 'Cancel', 'ExpandAll', 'CollapseAll'],
-            columns: [{ field: 'taskID', headerText: 'Task ID', isPrimaryKey: true },
-            { field: 'taskName', headerText: 'Task Name' },
-            { field: 'progress', headerText: 'Progress' },
-            { field: 'startDate', headerText: 'Start Date' }
-            ]
+        treeColumnIndex: 1,
+        toolbar: ['Add', 'Edit', 'Update', 'Delete', 'Cancel', 'ExpandAll', 'CollapseAll'],
+        columns: [{ field: 'taskID', headerText: 'Task ID', isPrimaryKey: true },
+        { field: 'taskName', headerText: 'Task Name' },
+        { field: 'progress', headerText: 'Progress' },
+        { field: 'startDate', headerText: 'Start Date' }
+        ]
       },
       done
     );
@@ -324,7 +327,7 @@ describe('Hirarchy editing - Add at Above', () => {
     };
     gridObj.actionComplete = actionComplete;
     (<any>gridObj.grid.toolbarModule).toolbarClickHandler({ item: { id: gridObj.grid.element.id + '_add' } });
-    
+
   });
   it('Add row - no selection datasource', (done: Function) => {
     let formEle: HTMLFormElement = gridObj.grid.editModule.formObj.element;
@@ -333,8 +336,8 @@ describe('Hirarchy editing - Add at Above', () => {
     actionComplete = (args?: any): void => {
       rows = gridObj.grid.getRows();
       let cells: NodeListOf<Element> = rows[0].querySelectorAll('.e-rowcell');
-      expect(cells[0].textContent === '121' ).toBeTruthy();
-      expect(cells[1].textContent ).toBe('first');
+      expect(cells[0].textContent === '121').toBeTruthy();
+      expect(cells[1].textContent).toBe('first');
       expect(gridObj.dataSource[0].taskID === 121).toBeTruthy();
       expect(gridObj.dataSource[0].taskName).toBe('first');
       done();
@@ -361,8 +364,8 @@ describe('Hirarchy editing - Add at Above', () => {
     actionComplete = (args?: any): void => {
       rows = gridObj.grid.getRows();
       let cells: NodeListOf<Element> = rows[6].querySelectorAll('.e-rowcell');
-      expect(cells[0].textContent === '122' ).toBeTruthy();
-      expect(cells[1].textContent ).toBe('second');
+      expect(cells[0].textContent === '122').toBeTruthy();
+      expect(cells[1].textContent).toBe('second');
       expect(gridObj.dataSource[2].taskID === 122).toBeTruthy();
       expect(gridObj.dataSource[2].taskName).toBe('second');
       done();
@@ -389,8 +392,8 @@ describe('Hirarchy editing - Add at Above', () => {
     actionComplete = (args?: any): void => {
       rows = gridObj.grid.getRows();
       let cells: NodeListOf<Element> = rows[9].querySelectorAll('.e-rowcell');
-      expect(cells[0].textContent === '123' ).toBeTruthy();
-      expect(cells[1].textContent ).toBe('third');
+      expect(cells[0].textContent === '123').toBeTruthy();
+      expect(cells[1].textContent).toBe('third');
       expect(gridObj.dataSource[3].subtasks[1].taskID === 123).toBeTruthy();
       expect(gridObj.dataSource[3].subtasks[1].taskName).toBe('third');
       done();
@@ -417,8 +420,8 @@ describe('Hirarchy editing - Add at Above', () => {
     actionComplete = (args?: any): void => {
       rows = gridObj.grid.getRows();
       let cells: NodeListOf<Element> = rows[16].querySelectorAll('.e-rowcell');
-      expect(cells[0].textContent === '124' ).toBeTruthy();
-      expect(cells[1].textContent ).toBe('fourth');
+      expect(cells[0].textContent === '124').toBeTruthy();
+      expect(cells[1].textContent).toBe('fourth');
       expect(gridObj.dataSource[4].subtasks[0].subtasks[0].taskID === 124).toBeTruthy();
       expect(gridObj.dataSource[4].subtasks[0].subtasks[0].taskName).toBe('fourth');
       done();
@@ -435,8 +438,8 @@ describe('Hirarchy editing - Add at Above', () => {
     (select('#' + gridObj.grid.element.id + 'taskName', formEle) as any).value = 'test1';
     actionComplete = (args?: any): void => {
       let cells: NodeListOf<Element> = gridObj.grid.getRows()[16].querySelectorAll('.e-rowcell');
-      expect(cells[0].textContent === '124' ).toBeTruthy();
-      expect(cells[1].textContent ).toBe('test1');
+      expect(cells[0].textContent === '124').toBeTruthy();
+      expect(cells[1].textContent).toBe('test1');
       expect(gridObj.dataSource[4].subtasks[0].subtasks[0].taskID === 124).toBeTruthy();
       expect(gridObj.dataSource[4].subtasks[0].subtasks[0].taskName).toBe('test1');
       done();
@@ -452,8 +455,8 @@ describe('Hirarchy editing - Add at Above', () => {
     (select('#' + gridObj.grid.element.id + 'taskName', formEle) as any).value = 'test3';
     actionComplete = (args?: any): void => {
       let cells: NodeListOf<Element> = gridObj.grid.getRows()[18].querySelectorAll('.e-rowcell');
-      expect(cells[0].textContent === '15' ).toBeTruthy();
-      expect(cells[1].textContent ).toBe('test3');
+      expect(cells[0].textContent === '15').toBeTruthy();
+      expect(cells[1].textContent).toBe('test3');
       expect(gridObj.dataSource[4].subtasks[0].subtasks[1].subtasks[0].taskID === 15).toBeTruthy();
       expect(gridObj.dataSource[4].subtasks[0].subtasks[1].subtasks[0].taskName).toBe('test3');
       done();
@@ -464,7 +467,7 @@ describe('Hirarchy editing - Add at Above', () => {
   it('delete row - deep child parent row - 1', (done: Function) => {
     actionComplete = (args?: any): void => {
       let cells: NodeListOf<Element> = gridObj.grid.getRows()[16].querySelectorAll('.e-rowcell');
-      expect(cells[0].textContent === '14' ).toBeTruthy();
+      expect(cells[0].textContent === '14').toBeTruthy();
       done();
     };
     gridObj.actionComplete = actionComplete;
@@ -474,7 +477,7 @@ describe('Hirarchy editing - Add at Above', () => {
     actionComplete = (args?: any): void => {
       let cells: NodeListOf<Element> = gridObj.grid.getRows()[16].querySelectorAll('.e-rowcell');
       let previousrowCell: NodeListOf<Element> = gridObj.grid.getRows()[15].querySelectorAll('.e-rowcell');
-      expect(cells[0].textContent === '21' ).toBeTruthy();
+      expect(cells[0].textContent === '21').toBeTruthy();
       expect(previousrowCell[1].querySelector('.e-treegridexpand')).toBeNull();
       done();
     };
@@ -483,6 +486,7 @@ describe('Hirarchy editing - Add at Above', () => {
   });
   afterAll(() => {
     destroy(gridObj);
+    gridObj = null;
   });
 });
 
@@ -493,17 +497,17 @@ describe('Hirarchy editing - Add at Below', () => {
   beforeAll((done: Function) => {
     gridObj = createGrid(
       {
-          dataSource: sampleData,
-          childMapping: 'subtasks',
-          editSettings: { allowEditing: true, mode: 'Row', allowDeleting: true, allowAdding: true, newRowPosition: 'Below' },
+        dataSource: sampleData,
+        childMapping: 'subtasks',
+        editSettings: { allowEditing: true, mode: 'Row', allowDeleting: true, allowAdding: true, newRowPosition: 'Below' },
 
-          treeColumnIndex: 1,
-          toolbar: ['Add', 'Edit', 'Update', 'Delete', 'Cancel', 'ExpandAll', 'CollapseAll'],
-            columns: [{ field: 'taskID', headerText: 'Task ID', isPrimaryKey: true },
-            { field: 'taskName', headerText: 'Task Name' },
-            { field: 'progress', headerText: 'Progress' },
-            { field: 'startDate', headerText: 'Start Date' }
-            ]
+        treeColumnIndex: 1,
+        toolbar: ['Add', 'Edit', 'Update', 'Delete', 'Cancel', 'ExpandAll', 'CollapseAll'],
+        columns: [{ field: 'taskID', headerText: 'Task ID', isPrimaryKey: true },
+        { field: 'taskName', headerText: 'Task Name' },
+        { field: 'progress', headerText: 'Progress' },
+        { field: 'startDate', headerText: 'Start Date' }
+        ]
       },
       done
     );
@@ -517,7 +521,7 @@ describe('Hirarchy editing - Add at Below', () => {
     };
     gridObj.actionComplete = actionComplete;
     (<any>gridObj.grid.toolbarModule).toolbarClickHandler({ item: { id: gridObj.grid.element.id + '_add' } });
-    
+
   });
   it('Add row - no selection datasource', (done: Function) => {
     let formEle: HTMLFormElement = gridObj.grid.editModule.formObj.element;
@@ -526,8 +530,8 @@ describe('Hirarchy editing - Add at Below', () => {
     actionComplete = (args?: any): void => {
       rows = gridObj.grid.getRows();
       let cells: NodeListOf<Element> = rows[0].querySelectorAll('.e-rowcell');
-      expect(cells[0].textContent === '121' ).toBeTruthy();
-      expect(cells[1].textContent ).toBe('first');
+      expect(cells[0].textContent === '121').toBeTruthy();
+      expect(cells[1].textContent).toBe('first');
       expect(gridObj.dataSource[0].taskID === 121).toBeTruthy();
       expect(gridObj.dataSource[0].taskName).toBe('first');
       done();
@@ -554,8 +558,8 @@ describe('Hirarchy editing - Add at Below', () => {
     actionComplete = (args?: any): void => {
       rows = gridObj.grid.getRows();
       let cells: NodeListOf<Element> = rows[12].querySelectorAll('.e-rowcell');
-      expect(cells[0].textContent === '122' ).toBeTruthy();
-      expect(cells[1].textContent ).toBe('second');
+      expect(cells[0].textContent === '122').toBeTruthy();
+      expect(cells[1].textContent).toBe('second');
       expect(gridObj.dataSource[3].taskID === 122).toBeTruthy();
       expect(gridObj.dataSource[3].taskName).toBe('second');
       done();
@@ -582,8 +586,8 @@ describe('Hirarchy editing - Add at Below', () => {
     actionComplete = (args?: any): void => {
       rows = gridObj.grid.getRows();
       let cells: NodeListOf<Element> = rows[9].querySelectorAll('.e-rowcell');
-      expect(cells[0].textContent === '123' ).toBeTruthy();
-      expect(cells[1].textContent ).toBe('third');
+      expect(cells[0].textContent === '123').toBeTruthy();
+      expect(cells[1].textContent).toBe('third');
       expect(gridObj.dataSource[2].subtasks[2].taskID === 123).toBeTruthy();
       expect(gridObj.dataSource[2].subtasks[2].taskName).toBe('third');
       done();
@@ -610,8 +614,8 @@ describe('Hirarchy editing - Add at Below', () => {
     actionComplete = (args?: any): void => {
       rows = gridObj.grid.getRows();
       let cells: NodeListOf<Element> = rows[23].querySelectorAll('.e-rowcell');
-      expect(cells[0].textContent === '124' ).toBeTruthy();
-      expect(cells[1].textContent ).toBe('fourth');
+      expect(cells[0].textContent === '124').toBeTruthy();
+      expect(cells[1].textContent).toBe('fourth');
       expect(gridObj.dataSource[4].subtasks[0].subtasks[1].taskID === 124).toBeTruthy();
       expect(gridObj.dataSource[4].subtasks[0].subtasks[1].taskName).toBe('fourth');
       done();
@@ -628,8 +632,8 @@ describe('Hirarchy editing - Add at Below', () => {
     (select('#' + gridObj.grid.element.id + 'taskName', formEle) as any).value = 'test1';
     actionComplete = (args?: any): void => {
       let cells: NodeListOf<Element> = gridObj.grid.getRows()[23].querySelectorAll('.e-rowcell');
-      expect(cells[0].textContent === '124' ).toBeTruthy();
-      expect(cells[1].textContent ).toBe('test1');
+      expect(cells[0].textContent === '124').toBeTruthy();
+      expect(cells[1].textContent).toBe('test1');
       expect(gridObj.dataSource[4].subtasks[0].subtasks[1].taskID === 124).toBeTruthy();
       expect(gridObj.dataSource[4].subtasks[0].subtasks[1].taskName).toBe('test1');
       done();
@@ -641,7 +645,7 @@ describe('Hirarchy editing - Add at Below', () => {
     gridObj.actionComplete = null;
     actionComplete = (args?: any): void => {
       let cells: NodeListOf<Element> = gridObj.grid.getRows()[23].querySelectorAll('.e-rowcell');
-      expect(cells[0].textContent === '21' ).toBeTruthy();
+      expect(cells[0].textContent === '21').toBeTruthy();
       done();
     };
     gridObj.actionComplete = actionComplete;
@@ -651,7 +655,7 @@ describe('Hirarchy editing - Add at Below', () => {
     actionComplete = (args?: any): void => {
       let cells: NodeListOf<Element> = gridObj.grid.getRows()[16].querySelectorAll('.e-rowcell');
       let previousrowCell: NodeListOf<Element> = gridObj.grid.getRows()[15].querySelectorAll('.e-rowcell');
-      expect(cells[0].textContent === '21' ).toBeTruthy();
+      expect(cells[0].textContent === '21').toBeTruthy();
       expect(previousrowCell[1].querySelector('.e-treegridexpand')).toBeNull();
       done();
     };
@@ -660,6 +664,7 @@ describe('Hirarchy editing - Add at Below', () => {
   });
   afterAll(() => {
     destroy(gridObj);
+    gridObj = null;
   });
 });
 
@@ -670,16 +675,16 @@ describe('Hirarchy editing - Add at Child', () => {
   beforeAll((done: Function) => {
     gridObj = createGrid(
       {
-          dataSource: sampleData,
-          childMapping: 'subtasks',
-          editSettings: { allowEditing: true, mode: 'Row', allowDeleting: true, allowAdding: true, newRowPosition: 'Child' },
-          treeColumnIndex: 1,
-          toolbar: ['Add', 'Edit', 'Update', 'Delete', 'Cancel', 'ExpandAll', 'CollapseAll'],
-            columns: [{ field: 'taskID', headerText: 'Task ID', isPrimaryKey: true },
-            { field: 'taskName', headerText: 'Task Name' },
-            { field: 'progress', headerText: 'Progress' },
-            { field: 'startDate', headerText: 'Start Date' }
-            ]
+        dataSource: sampleData,
+        childMapping: 'subtasks',
+        editSettings: { allowEditing: true, mode: 'Row', allowDeleting: true, allowAdding: true, newRowPosition: 'Child' },
+        treeColumnIndex: 1,
+        toolbar: ['Add', 'Edit', 'Update', 'Delete', 'Cancel', 'ExpandAll', 'CollapseAll'],
+        columns: [{ field: 'taskID', headerText: 'Task ID', isPrimaryKey: true },
+        { field: 'taskName', headerText: 'Task Name' },
+        { field: 'progress', headerText: 'Progress' },
+        { field: 'startDate', headerText: 'Start Date' }
+        ]
       },
       done
     );
@@ -693,7 +698,7 @@ describe('Hirarchy editing - Add at Child', () => {
     };
     gridObj.actionComplete = actionComplete;
     (<any>gridObj.grid.toolbarModule).toolbarClickHandler({ item: { id: gridObj.grid.element.id + '_add' } });
-    
+
   });
   it('Add row - no selection datasource', (done: Function) => {
     let formEle: HTMLFormElement = gridObj.grid.editModule.formObj.element;
@@ -702,8 +707,8 @@ describe('Hirarchy editing - Add at Child', () => {
     actionComplete = (args?: any): void => {
       rows = gridObj.grid.getRows();
       let cells: NodeListOf<Element> = rows[0].querySelectorAll('.e-rowcell');
-      expect(cells[0].textContent === '121' ).toBeTruthy();
-      expect(cells[1].textContent ).toBe('first');
+      expect(cells[0].textContent === '121').toBeTruthy();
+      expect(cells[1].textContent).toBe('first');
       expect(gridObj.dataSource[0].taskID === 121).toBeTruthy();
       expect(gridObj.dataSource[0].taskName).toBe('first');
       done();
@@ -730,8 +735,8 @@ describe('Hirarchy editing - Add at Child', () => {
     actionComplete = (args?: any): void => {
       rows = gridObj.grid.getRows();
       let cells: NodeListOf<Element> = rows[8].querySelectorAll('.e-rowcell');
-      expect(cells[0].textContent === '122' ).toBeTruthy();
-      expect(cells[1].textContent ).toBe('second');
+      expect(cells[0].textContent === '122').toBeTruthy();
+      expect(cells[1].textContent).toBe('second');
       expect(gridObj.dataSource[2].subtasks[0].subtasks[0].taskID === 122).toBeTruthy();
       expect(gridObj.dataSource[2].subtasks[0].subtasks[0].taskName).toBe('second');
       done();
@@ -758,8 +763,8 @@ describe('Hirarchy editing - Add at Child', () => {
     actionComplete = (args?: any): void => {
       rows = gridObj.grid.getRows();
       let cells: NodeListOf<Element> = rows[38].querySelectorAll('.e-rowcell');
-      expect(cells[0].textContent === '123' ).toBeTruthy();
-      expect(cells[1].textContent ).toBe('third');
+      expect(cells[0].textContent === '123').toBeTruthy();
+      expect(cells[1].textContent).toBe('third');
       expect(gridObj.dataSource[3].subtasks[3].taskID === 123).toBeTruthy();
       expect(gridObj.dataSource[3].subtasks[3].taskName).toBe('third');
       done();
@@ -776,8 +781,8 @@ describe('Hirarchy editing - Add at Child', () => {
     (select('#' + gridObj.grid.element.id + 'taskName', formEle) as any).value = 'test1';
     actionComplete = (args?: any): void => {
       let cells: NodeListOf<Element> = gridObj.grid.getRows()[8].querySelectorAll('.e-rowcell');
-      expect(cells[0].textContent === '122' ).toBeTruthy();
-      expect(cells[1].textContent ).toBe('test1');
+      expect(cells[0].textContent === '122').toBeTruthy();
+      expect(cells[1].textContent).toBe('test1');
       expect(gridObj.dataSource[2].subtasks[0].subtasks[0].taskID === 122).toBeTruthy();
       expect(gridObj.dataSource[2].subtasks[0].subtasks[0].taskName).toBe('test1');
       done();
@@ -790,8 +795,8 @@ describe('Hirarchy editing - Add at Child', () => {
     actionComplete = (args?: any): void => {
       let cells: NodeListOf<Element> = gridObj.grid.getRows()[8].querySelectorAll('.e-rowcell');
       let previousCells: NodeListOf<Element> = gridObj.grid.getRows()[7].querySelectorAll('.e-rowcell');
-      expect(cells[0].textContent === '8' ).toBeTruthy();
-      expect(previousCells[1].querySelector('.e-treegridexpand') ).toBeNull();
+      expect(cells[0].textContent === '8').toBeTruthy();
+      expect(previousCells[1].querySelector('.e-treegridexpand')).toBeNull();
       done();
     };
     gridObj.actionComplete = actionComplete;
@@ -799,6 +804,7 @@ describe('Hirarchy editing - Add at Child', () => {
   });
   afterAll(() => {
     destroy(gridObj);
+    gridObj = null;
   });
 });
 
@@ -815,11 +821,11 @@ describe('SelfReference editing - Add at top', () => {
 
         treeColumnIndex: 1,
         toolbar: ['Add', 'Edit', 'Update', 'Delete', 'Cancel', 'ExpandAll', 'CollapseAll'],
-        columns: [{field: 'TaskID', headerText: 'Task ID', isPrimaryKey: true},
-                  {field: 'TaskName', headerText: 'Task Name'},
-                  {field: 'StartDate', headerText: 'Start Date'},
-                  {field: 'Progress', headerText: 'Progress'}
-                ]
+        columns: [{ field: 'TaskID', headerText: 'Task ID', isPrimaryKey: true },
+        { field: 'TaskName', headerText: 'Task Name' },
+        { field: 'StartDate', headerText: 'Start Date' },
+        { field: 'Progress', headerText: 'Progress' }
+        ]
       },
       done
     );
@@ -924,6 +930,7 @@ describe('SelfReference editing - Add at top', () => {
   });
   afterAll(() => {
     destroy(gridObj);
+    gridObj = null;
   });
 });
 
@@ -934,18 +941,18 @@ describe('Self Reference editing - Add at Bottom', () => {
   beforeAll((done: Function) => {
     gridObj = createGrid(
       {
-          dataSource: selfEditData, 
-          idMapping: 'TaskID',
+        dataSource: selfEditData,
+        idMapping: 'TaskID',
         parentIdMapping: 'parentID',
         editSettings: { allowEditing: true, mode: 'Row', allowDeleting: true, allowAdding: true, newRowPosition: 'Bottom' },
 
         treeColumnIndex: 1,
         toolbar: ['Add', 'Edit', 'Update', 'Delete', 'Cancel', 'ExpandAll', 'CollapseAll'],
-        columns: [{field: 'TaskID', headerText: 'Task ID', isPrimaryKey: true},
-                  {field: 'TaskName', headerText: 'Task Name'},
-                  {field: 'StartDate', headerText: 'Start Date'},
-                  {field: 'Progress', headerText: 'Progress'}
-                ]
+        columns: [{ field: 'TaskID', headerText: 'Task ID', isPrimaryKey: true },
+        { field: 'TaskName', headerText: 'Task Name' },
+        { field: 'StartDate', headerText: 'Start Date' },
+        { field: 'Progress', headerText: 'Progress' }
+        ]
       },
       done
     );
@@ -960,7 +967,7 @@ describe('Self Reference editing - Add at Bottom', () => {
     };
     gridObj.actionComplete = actionComplete;
     (<any>gridObj.grid.toolbarModule).toolbarClickHandler({ item: { id: gridObj.grid.element.id + '_add' } });
-    
+
   });
   it('Add row - no selection datasource', (done: Function) => {
     let formEle: HTMLFormElement = gridObj.grid.editModule.formObj.element;
@@ -969,8 +976,8 @@ describe('Self Reference editing - Add at Bottom', () => {
     actionComplete = (args?: any): void => {
       rows = gridObj.grid.getRows();
       let cells: NodeListOf<Element> = rows[rows.length - 1].querySelectorAll('.e-rowcell');
-      expect(cells[0].textContent === '121' ).toBeTruthy();
-      expect(cells[1].textContent ).toBe('first');
+      expect(cells[0].textContent === '121').toBeTruthy();
+      expect(cells[1].textContent).toBe('first');
       expect(gridObj.dataSource[selfEditData.length].TaskID === 121).toBeTruthy();
       expect(gridObj.dataSource[selfEditData.length].TaskName).toBe('first');
       done();
@@ -997,8 +1004,8 @@ describe('Self Reference editing - Add at Bottom', () => {
     actionComplete = (args?: any): void => {
       rows = gridObj.grid.getRows();
       let cells: NodeListOf<Element> = rows[rows.length - 1].querySelectorAll('.e-rowcell');
-      expect(cells[0].textContent === '122' ).toBeTruthy();
-      expect(cells[1].textContent ).toBe('second');
+      expect(cells[0].textContent === '122').toBeTruthy();
+      expect(cells[1].textContent).toBe('second');
       expect(gridObj.dataSource[selfEditData.length + 1].TaskID === 122).toBeTruthy();
       expect(gridObj.dataSource[selfEditData.length + 1].TaskName).toBe('second');
       done();
@@ -1015,8 +1022,8 @@ describe('Self Reference editing - Add at Bottom', () => {
     (select('#' + gridObj.grid.element.id + 'TaskName', formEle) as any).value = 'test1';
     actionComplete = (args?: any): void => {
       let cells: NodeListOf<Element> = gridObj.grid.getRows()[rows.length - 1].querySelectorAll('.e-rowcell');
-      expect(cells[0].textContent === '122' ).toBeTruthy();
-      expect(cells[1].textContent ).toBe('test1');
+      expect(cells[0].textContent === '122').toBeTruthy();
+      expect(cells[1].textContent).toBe('test1');
       expect(gridObj.dataSource[selfEditData.length + 1].TaskID === 122).toBeTruthy();
       expect(gridObj.dataSource[selfEditData.length + 1].TaskName).toBe('test1');
       done();
@@ -1032,8 +1039,8 @@ describe('Self Reference editing - Add at Bottom', () => {
     (select('#' + gridObj.grid.element.id + 'TaskName', formEle) as any).value = 'test2';
     actionComplete = (args?: any): void => {
       let cells: NodeListOf<Element> = gridObj.grid.getRows()[2].querySelectorAll('.e-rowcell');
-      expect(cells[0].textContent === '22' ).toBeTruthy();
-      expect(cells[1].textContent ).toBe('test2');
+      expect(cells[0].textContent === '22').toBeTruthy();
+      expect(cells[1].textContent).toBe('test2');
       expect(gridObj.dataSource[2].TaskID === 22).toBeTruthy();
       expect(gridObj.dataSource[2].TaskName).toBe('test2');
       done();
@@ -1047,7 +1054,7 @@ describe('Self Reference editing - Add at Bottom', () => {
     actionComplete = (args?: any): void => {
       rows = gridObj.grid.getRows();
       let cells: NodeListOf<Element> = rows[rows.length - 1].querySelectorAll('.e-rowcell');
-      expect(cells[0].textContent === '121' ).toBeTruthy();
+      expect(cells[0].textContent === '121').toBeTruthy();
       done();
     };
     gridObj.actionComplete = actionComplete;
@@ -1055,6 +1062,7 @@ describe('Self Reference editing - Add at Bottom', () => {
   });
   afterAll(() => {
     destroy(gridObj);
+    gridObj = null;
   });
 });
 
@@ -1066,18 +1074,18 @@ describe('Hirarchy editing - Add at Above', () => {
   beforeAll((done: Function) => {
     gridObj = createGrid(
       {
-        dataSource: selfEditData, 
+        dataSource: selfEditData,
         idMapping: 'TaskID',
         parentIdMapping: 'parentID',
         editSettings: { allowEditing: true, mode: 'Row', allowDeleting: true, allowAdding: true, newRowPosition: 'Above' },
 
         treeColumnIndex: 1,
         toolbar: ['Add', 'Edit', 'Update', 'Delete', 'Cancel', 'ExpandAll', 'CollapseAll'],
-        columns: [{field: 'TaskID', headerText: 'Task ID', isPrimaryKey: true},
-                {field: 'TaskName', headerText: 'Task Name'},
-                {field: 'StartDate', headerText: 'Start Date'},
-                {field: 'Progress', headerText: 'Progress'}
-              ]
+        columns: [{ field: 'TaskID', headerText: 'Task ID', isPrimaryKey: true },
+        { field: 'TaskName', headerText: 'Task Name' },
+        { field: 'StartDate', headerText: 'Start Date' },
+        { field: 'Progress', headerText: 'Progress' }
+        ]
       },
       done
     );
@@ -1091,7 +1099,7 @@ describe('Hirarchy editing - Add at Above', () => {
     };
     gridObj.actionComplete = actionComplete;
     (<any>gridObj.grid.toolbarModule).toolbarClickHandler({ item: { id: gridObj.grid.element.id + '_add' } });
-    
+
   });
   it('Add row - no selection datasource', (done: Function) => {
     let formEle: HTMLFormElement = gridObj.grid.editModule.formObj.element;
@@ -1100,8 +1108,8 @@ describe('Hirarchy editing - Add at Above', () => {
     actionComplete = (args?: any): void => {
       rows = gridObj.grid.getRows();
       let cells: NodeListOf<Element> = rows[0].querySelectorAll('.e-rowcell');
-      expect(cells[0].textContent === '121' ).toBeTruthy();
-      expect(cells[1].textContent ).toBe('first');
+      expect(cells[0].textContent === '121').toBeTruthy();
+      expect(cells[1].textContent).toBe('first');
       expect(gridObj.dataSource[0].TaskID === 121).toBeTruthy();
       expect(gridObj.dataSource[0].TaskName).toBe('first');
       done();
@@ -1128,8 +1136,8 @@ describe('Hirarchy editing - Add at Above', () => {
     actionComplete = (args?: any): void => {
       rows = gridObj.grid.getRows();
       let cells: NodeListOf<Element> = rows[4].querySelectorAll('.e-rowcell');
-      expect(cells[0].textContent === '122' ).toBeTruthy();
-      expect(cells[1].textContent ).toBe('second');
+      expect(cells[0].textContent === '122').toBeTruthy();
+      expect(cells[1].textContent).toBe('second');
       expect(gridObj.dataSource[4].TaskID === 122).toBeTruthy();
       expect(gridObj.dataSource[4].TaskName).toBe('second');
       expect(gridObj.dataSource[4].parentID === 1).toBeTruthy();
@@ -1157,8 +1165,8 @@ describe('Hirarchy editing - Add at Above', () => {
     actionComplete = (args?: any): void => {
       rows = gridObj.grid.getRows();
       let cells: NodeListOf<Element> = rows[7].querySelectorAll('.e-rowcell');
-      expect(cells[0].textContent === '123' ).toBeTruthy();
-      expect(cells[1].textContent ).toBe('third');
+      expect(cells[0].textContent === '123').toBeTruthy();
+      expect(cells[1].textContent).toBe('third');
       expect(gridObj.dataSource[7].TaskID === 123).toBeTruthy();
       expect(gridObj.dataSource[7].TaskName).toBe('third');
       done();
@@ -1185,8 +1193,8 @@ describe('Hirarchy editing - Add at Above', () => {
     actionComplete = (args?: any): void => {
       rows = gridObj.grid.getRows();
       let cells: NodeListOf<Element> = rows[3].querySelectorAll('.e-rowcell');
-      expect(cells[0].textContent === '124' ).toBeTruthy();
-      expect(cells[1].textContent ).toBe('fourth');
+      expect(cells[0].textContent === '124').toBeTruthy();
+      expect(cells[1].textContent).toBe('fourth');
       expect(gridObj.dataSource[3].TaskID === 124).toBeTruthy();
       expect(gridObj.dataSource[3].TaskName).toBe('fourth');
       expect(gridObj.dataSource[3].parentID === 2).toBeTruthy();
@@ -1204,8 +1212,8 @@ describe('Hirarchy editing - Add at Above', () => {
     (select('#' + gridObj.grid.element.id + 'TaskName', formEle) as any).value = 'test1';
     actionComplete = (args?: any): void => {
       let cells: NodeListOf<Element> = gridObj.grid.getRows()[3].querySelectorAll('.e-rowcell');
-      expect(cells[0].textContent === '124' ).toBeTruthy();
-      expect(cells[1].textContent ).toBe('test1');
+      expect(cells[0].textContent === '124').toBeTruthy();
+      expect(cells[1].textContent).toBe('test1');
       expect(gridObj.dataSource[3].TaskID === 124).toBeTruthy();
       expect(gridObj.dataSource[3].TaskName).toBe('test1');
       done();
@@ -1221,8 +1229,8 @@ describe('Hirarchy editing - Add at Above', () => {
     (select('#' + gridObj.grid.element.id + 'TaskName', formEle) as any).value = 'test3';
     actionComplete = (args?: any): void => {
       let cells: NodeListOf<Element> = gridObj.grid.getRows()[4].querySelectorAll('.e-rowcell');
-      expect(cells[0].textContent === '22' ).toBeTruthy();
-      expect(cells[1].textContent ).toBe('test3');
+      expect(cells[0].textContent === '22').toBeTruthy();
+      expect(cells[1].textContent).toBe('test3');
       expect(gridObj.dataSource[4].TaskID === 22).toBeTruthy();
       expect(gridObj.dataSource[4].TaskName).toBe('test3');
       done();
@@ -1233,7 +1241,7 @@ describe('Hirarchy editing - Add at Above', () => {
   it('delete row - deep child parent row - 1', (done: Function) => {
     actionComplete = (args?: any): void => {
       let cells: NodeListOf<Element> = gridObj.grid.getRows()[4].querySelectorAll('.e-rowcell');
-      expect(cells[0].textContent === '122' ).toBeTruthy();
+      expect(cells[0].textContent === '122').toBeTruthy();
       done();
     };
     gridObj.actionComplete = actionComplete;
@@ -1243,7 +1251,7 @@ describe('Hirarchy editing - Add at Above', () => {
     actionComplete = (args?: any): void => {
       let cells: NodeListOf<Element> = gridObj.grid.getRows()[3].querySelectorAll('.e-rowcell');
       let previousrowCell: NodeListOf<Element> = gridObj.grid.getRows()[2].querySelectorAll('.e-rowcell');
-      expect(cells[0].textContent === '122' ).toBeTruthy();
+      expect(cells[0].textContent === '122').toBeTruthy();
       expect(previousrowCell[1].querySelector('.e-treegridexpand')).toBeNull();
       done();
     };
@@ -1252,6 +1260,7 @@ describe('Hirarchy editing - Add at Above', () => {
   });
   afterAll(() => {
     destroy(gridObj);
+    gridObj = null;
   });
 });
 
@@ -1304,7 +1313,7 @@ describe('Self Reference editing - Add at Bottom', () => {
     };
     gridObj.actionComplete = actionComplete;
     (<any>gridObj.grid.toolbarModule).toolbarClickHandler({ item: { id: gridObj.grid.element.id + '_add' } });
-    
+
   });
   it('Add row - no selection datasource', (done: Function) => {
     let formEle: HTMLFormElement = gridObj.grid.editModule.formObj.element;
@@ -1313,8 +1322,8 @@ describe('Self Reference editing - Add at Bottom', () => {
     actionComplete = (args?: any): void => {
       rows = gridObj.grid.getRows();
       let cells: NodeListOf<Element> = rows[rows.length - 1].querySelectorAll('.e-rowcell');
-      expect(cells[0].textContent === '121' ).toBeTruthy();
-      expect(cells[1].textContent ).toBe('first');
+      expect(cells[0].textContent === '121').toBeTruthy();
+      expect(cells[1].textContent).toBe('first');
       expect(gridObj.dataSource[selfEditData.length].TaskID === 121).toBeTruthy();
       expect(gridObj.dataSource[selfEditData.length].TaskName).toBe('first');
       done();
@@ -1341,8 +1350,8 @@ describe('Self Reference editing - Add at Bottom', () => {
     actionComplete = (args?: any): void => {
       rows = gridObj.grid.getRows();
       let cells: NodeListOf<Element> = rows[rows.length - 1].querySelectorAll('.e-rowcell');
-      expect(cells[0].textContent === '122' ).toBeTruthy();
-      expect(cells[1].textContent ).toBe('second');
+      expect(cells[0].textContent === '122').toBeTruthy();
+      expect(cells[1].textContent).toBe('second');
       expect(gridObj.dataSource[selfEditData.length + 1].TaskID === 122).toBeTruthy();
       expect(gridObj.dataSource[selfEditData.length + 1].TaskName).toBe('second');
       done();
@@ -1359,8 +1368,8 @@ describe('Self Reference editing - Add at Bottom', () => {
     (select('#' + gridObj.grid.element.id + 'TaskName', formEle) as any).value = 'test1';
     actionComplete = (args?: any): void => {
       let cells: NodeListOf<Element> = gridObj.grid.getRows()[rows.length - 1].querySelectorAll('.e-rowcell');
-      expect(cells[0].textContent === '122' ).toBeTruthy();
-      expect(cells[1].textContent ).toBe('test1');
+      expect(cells[0].textContent === '122').toBeTruthy();
+      expect(cells[1].textContent).toBe('test1');
       expect(gridObj.dataSource[selfEditData.length + 1].TaskID === 122).toBeTruthy();
       expect(gridObj.dataSource[selfEditData.length + 1].TaskName).toBe('test1');
       done();
@@ -1376,8 +1385,8 @@ describe('Self Reference editing - Add at Bottom', () => {
     (select('#' + gridObj.grid.element.id + 'TaskName', formEle) as any).value = 'test2';
     actionComplete = (args?: any): void => {
       let cells: NodeListOf<Element> = gridObj.grid.getRows()[2].querySelectorAll('.e-rowcell');
-      expect(cells[0].textContent === '22' ).toBeTruthy();
-      expect(cells[1].textContent ).toBe('test2');
+      expect(cells[0].textContent === '22').toBeTruthy();
+      expect(cells[1].textContent).toBe('test2');
       expect(gridObj.dataSource[2].TaskID === 22).toBeTruthy();
       expect(gridObj.dataSource[2].TaskName).toBe('test2');
       done();
@@ -1391,7 +1400,7 @@ describe('Self Reference editing - Add at Bottom', () => {
     actionComplete = (args?: any): void => {
       rows = gridObj.grid.getRows();
       let cells: NodeListOf<Element> = rows[rows.length - 1].querySelectorAll('.e-rowcell');
-      expect(cells[0].textContent === '121' ).toBeTruthy();
+      expect(cells[0].textContent === '121').toBeTruthy();
       done();
     };
     gridObj.actionComplete = actionComplete;
@@ -1399,6 +1408,7 @@ describe('Self Reference editing - Add at Bottom', () => {
   });
   afterAll(() => {
     destroy(gridObj);
+    gridObj = null;
   });
 });
 
@@ -1411,16 +1421,16 @@ describe('Hirarchy editing - Add at Below', () => {
       {
         dataSource: selfEditData,
         idMapping: 'TaskID',
-      parentIdMapping: 'parentID',
-      editSettings: { allowEditing: true, mode: 'Row', allowDeleting: true, allowAdding: true, newRowPosition: 'Below' },
+        parentIdMapping: 'parentID',
+        editSettings: { allowEditing: true, mode: 'Row', allowDeleting: true, allowAdding: true, newRowPosition: 'Below' },
 
-      treeColumnIndex: 1,
-      toolbar: ['Add', 'Edit', 'Update', 'Delete', 'Cancel', 'ExpandAll', 'CollapseAll'],
-      columns: [{field: 'TaskID', headerText: 'Task ID', isPrimaryKey: true},
-                {field: 'TaskName', headerText: 'Task Name'},
-                {field: 'StartDate', headerText: 'Start Date'},
-                {field: 'Progress', headerText: 'Progress'}
-              ]
+        treeColumnIndex: 1,
+        toolbar: ['Add', 'Edit', 'Update', 'Delete', 'Cancel', 'ExpandAll', 'CollapseAll'],
+        columns: [{ field: 'TaskID', headerText: 'Task ID', isPrimaryKey: true },
+        { field: 'TaskName', headerText: 'Task Name' },
+        { field: 'StartDate', headerText: 'Start Date' },
+        { field: 'Progress', headerText: 'Progress' }
+        ]
       },
       done
     );
@@ -1434,7 +1444,7 @@ describe('Hirarchy editing - Add at Below', () => {
     };
     gridObj.actionComplete = actionComplete;
     (<any>gridObj.grid.toolbarModule).toolbarClickHandler({ item: { id: gridObj.grid.element.id + '_add' } });
-    
+
   });
   it('Add row - no selection datasource', (done: Function) => {
     let formEle: HTMLFormElement = gridObj.grid.editModule.formObj.element;
@@ -1443,8 +1453,8 @@ describe('Hirarchy editing - Add at Below', () => {
     actionComplete = (args?: any): void => {
       rows = gridObj.grid.getRows();
       let cells: NodeListOf<Element> = rows[0].querySelectorAll('.e-rowcell');
-      expect(cells[0].textContent === '121' ).toBeTruthy();
-      expect(cells[1].textContent ).toBe('first');
+      expect(cells[0].textContent === '121').toBeTruthy();
+      expect(cells[1].textContent).toBe('first');
       expect(gridObj.dataSource[0].TaskID === 121).toBeTruthy();
       expect(gridObj.dataSource[0].TaskName).toBe('first');
       done();
@@ -1471,8 +1481,8 @@ describe('Hirarchy editing - Add at Below', () => {
     actionComplete = (args?: any): void => {
       rows = gridObj.grid.getRows();
       let cells: NodeListOf<Element> = rows[5].querySelectorAll('.e-rowcell');
-      expect(cells[0].textContent === '122' ).toBeTruthy();
-      expect(cells[1].textContent ).toBe('second');
+      expect(cells[0].textContent === '122').toBeTruthy();
+      expect(cells[1].textContent).toBe('second');
       expect(gridObj.dataSource[5].TaskID === 122).toBeTruthy();
       expect(gridObj.dataSource[5].TaskName).toBe('second');
       expect(gridObj.dataSource[5].parentID === 1).toBeTruthy();
@@ -1500,8 +1510,8 @@ describe('Hirarchy editing - Add at Below', () => {
     actionComplete = (args?: any): void => {
       rows = gridObj.grid.getRows();
       let cells: NodeListOf<Element> = rows[12].querySelectorAll('.e-rowcell');
-      expect(cells[0].textContent === '123' ).toBeTruthy();
-      expect(cells[1].textContent ).toBe('third');
+      expect(cells[0].textContent === '123').toBeTruthy();
+      expect(cells[1].textContent).toBe('third');
       expect(gridObj.dataSource[8].TaskID === 123).toBeTruthy();
       expect(gridObj.dataSource[8].TaskName).toBe('third');
       done();
@@ -1528,8 +1538,8 @@ describe('Hirarchy editing - Add at Below', () => {
     actionComplete = (args?: any): void => {
       rows = gridObj.grid.getRows();
       let cells: NodeListOf<Element> = rows[4].querySelectorAll('.e-rowcell');
-      expect(cells[0].textContent === '124' ).toBeTruthy();
-      expect(cells[1].textContent ).toBe('fourth');
+      expect(cells[0].textContent === '124').toBeTruthy();
+      expect(cells[1].textContent).toBe('fourth');
       expect(gridObj.dataSource[4].TaskID === 124).toBeTruthy();
       expect(gridObj.dataSource[4].TaskName).toBe('fourth');
       expect(gridObj.dataSource[4].parentID === 2).toBeTruthy();
@@ -1547,8 +1557,8 @@ describe('Hirarchy editing - Add at Below', () => {
     (select('#' + gridObj.grid.element.id + 'TaskName', formEle) as any).value = 'test1';
     actionComplete = (args?: any): void => {
       let cells: NodeListOf<Element> = gridObj.grid.getRows()[4].querySelectorAll('.e-rowcell');
-      expect(cells[0].textContent === '124' ).toBeTruthy();
-      expect(cells[1].textContent ).toBe('test1');
+      expect(cells[0].textContent === '124').toBeTruthy();
+      expect(cells[1].textContent).toBe('test1');
       expect(gridObj.dataSource[4].TaskID === 124).toBeTruthy();
       expect(gridObj.dataSource[4].TaskName).toBe('test1');
       done();
@@ -1564,8 +1574,8 @@ describe('Hirarchy editing - Add at Below', () => {
     (select('#' + gridObj.grid.element.id + 'TaskName', formEle) as any).value = 'test3';
     actionComplete = (args?: any): void => {
       let cells: NodeListOf<Element> = gridObj.grid.getRows()[3].querySelectorAll('.e-rowcell');
-      expect(cells[0].textContent === '22' ).toBeTruthy();
-      expect(cells[1].textContent ).toBe('test3');
+      expect(cells[0].textContent === '22').toBeTruthy();
+      expect(cells[1].textContent).toBe('test3');
       expect(gridObj.dataSource[3].TaskID === 22).toBeTruthy();
       expect(gridObj.dataSource[3].TaskName).toBe('test3');
       done();
@@ -1576,7 +1586,7 @@ describe('Hirarchy editing - Add at Below', () => {
   it('delete row - deep child parent row - 1', (done: Function) => {
     actionComplete = (args?: any): void => {
       let cells: NodeListOf<Element> = gridObj.grid.getRows()[4].querySelectorAll('.e-rowcell');
-      expect(cells[0].textContent === '3' ).toBeTruthy();
+      expect(cells[0].textContent === '3').toBeTruthy();
       done();
     };
     gridObj.actionComplete = actionComplete;
@@ -1586,7 +1596,7 @@ describe('Hirarchy editing - Add at Below', () => {
     actionComplete = (args?: any): void => {
       let cells: NodeListOf<Element> = gridObj.grid.getRows()[3].querySelectorAll('.e-rowcell');
       let previousrowCell: NodeListOf<Element> = gridObj.grid.getRows()[2].querySelectorAll('.e-rowcell');
-      expect(cells[0].textContent === '3' ).toBeTruthy();
+      expect(cells[0].textContent === '3').toBeTruthy();
       expect(previousrowCell[1].querySelector('.e-treegridexpand')).toBeNull();
       done();
     };
@@ -1595,6 +1605,7 @@ describe('Hirarchy editing - Add at Below', () => {
   });
   afterAll(() => {
     destroy(gridObj);
+    gridObj = null;
   });
 });
 
@@ -1607,16 +1618,16 @@ describe('Hirarchy editing - Add at Child', () => {
       {
         dataSource: selfEditData,
         idMapping: 'TaskID',
-      parentIdMapping: 'parentID',
-      editSettings: { allowEditing: true, mode: 'Row', allowDeleting: true, allowAdding: true, newRowPosition: 'Child' },
+        parentIdMapping: 'parentID',
+        editSettings: { allowEditing: true, mode: 'Row', allowDeleting: true, allowAdding: true, newRowPosition: 'Child' },
 
-      treeColumnIndex: 1,
-      toolbar: ['Add', 'Edit', 'Update', 'Delete', 'Cancel', 'ExpandAll', 'CollapseAll'],
-      columns: [{field: 'TaskID', headerText: 'Task ID', isPrimaryKey: true},
-                {field: 'TaskName', headerText: 'Task Name'},
-                {field: 'StartDate', headerText: 'Start Date'},
-                {field: 'Progress', headerText: 'Progress'}
-              ]
+        treeColumnIndex: 1,
+        toolbar: ['Add', 'Edit', 'Update', 'Delete', 'Cancel', 'ExpandAll', 'CollapseAll'],
+        columns: [{ field: 'TaskID', headerText: 'Task ID', isPrimaryKey: true },
+        { field: 'TaskName', headerText: 'Task Name' },
+        { field: 'StartDate', headerText: 'Start Date' },
+        { field: 'Progress', headerText: 'Progress' }
+        ]
       },
       done
     );
@@ -1630,7 +1641,7 @@ describe('Hirarchy editing - Add at Child', () => {
     };
     gridObj.actionComplete = actionComplete;
     (<any>gridObj.grid.toolbarModule).toolbarClickHandler({ item: { id: gridObj.grid.element.id + '_add' } });
-    
+
   });
   it('Add row - no selection datasource', (done: Function) => {
     let formEle: HTMLFormElement = gridObj.grid.editModule.formObj.element;
@@ -1639,8 +1650,8 @@ describe('Hirarchy editing - Add at Child', () => {
     actionComplete = (args?: any): void => {
       rows = gridObj.grid.getRows();
       let cells: NodeListOf<Element> = rows[0].querySelectorAll('.e-rowcell');
-      expect(cells[0].textContent === '121' ).toBeTruthy();
-      expect(cells[1].textContent ).toBe('first');
+      expect(cells[0].textContent === '121').toBeTruthy();
+      expect(cells[1].textContent).toBe('first');
       expect(gridObj.dataSource[0].TaskID === 121).toBeTruthy();
       expect(gridObj.dataSource[0].TaskName).toBe('first');
       done();
@@ -1667,8 +1678,8 @@ describe('Hirarchy editing - Add at Child', () => {
     actionComplete = (args?: any): void => {
       rows = gridObj.grid.getRows();
       let cells: NodeListOf<Element> = rows[11].querySelectorAll('.e-rowcell');
-      expect(cells[0].textContent === '122' ).toBeTruthy();
-      expect(cells[1].textContent ).toBe('second');
+      expect(cells[0].textContent === '122').toBeTruthy();
+      expect(cells[1].textContent).toBe('second');
       expect(gridObj.dataSource[7].TaskID === 122).toBeTruthy();
       expect(gridObj.dataSource[7].TaskName).toBe('second');
       expect(gridObj.dataSource[7].parentID === 5).toBeTruthy();
@@ -1686,8 +1697,8 @@ describe('Hirarchy editing - Add at Child', () => {
     (select('#' + gridObj.grid.element.id + 'TaskName', formEle) as any).value = 'test1';
     actionComplete = (args?: any): void => {
       let cells: NodeListOf<Element> = gridObj.grid.getRows()[11].querySelectorAll('.e-rowcell');
-      expect(cells[0].textContent === '122' ).toBeTruthy();
-      expect(cells[1].textContent ).toBe('test1');
+      expect(cells[0].textContent === '122').toBeTruthy();
+      expect(cells[1].textContent).toBe('test1');
       expect(gridObj.dataSource[7].TaskID === 122).toBeTruthy();
       expect(gridObj.dataSource[7].TaskName).toBe('test1');
       done();
@@ -1703,8 +1714,8 @@ describe('Hirarchy editing - Add at Child', () => {
     (select('#' + gridObj.grid.element.id + 'TaskName', formEle) as any).value = 'test2';
     actionComplete = (args?: any): void => {
       let cells: NodeListOf<Element> = gridObj.grid.getRows()[3].querySelectorAll('.e-rowcell');
-      expect(cells[0].textContent === '22' ).toBeTruthy();
-      expect(cells[1].textContent ).toBe('test2');
+      expect(cells[0].textContent === '22').toBeTruthy();
+      expect(cells[1].textContent).toBe('test2');
       expect(gridObj.dataSource[3].TaskID === 22).toBeTruthy();
       expect(gridObj.dataSource[3].TaskName).toBe('test2');
       done();
@@ -1717,7 +1728,7 @@ describe('Hirarchy editing - Add at Child', () => {
     actionComplete = (args?: any): void => {
       let cells: NodeListOf<Element> = gridObj.grid.getRows()[3].querySelectorAll('.e-rowcell');
       let previousrowCell: NodeListOf<Element> = gridObj.grid.getRows()[2].querySelectorAll('.e-rowcell');
-      expect(cells[0].textContent === '3' ).toBeTruthy();
+      expect(cells[0].textContent === '3').toBeTruthy();
       expect(previousrowCell[1].querySelector('.e-treegridexpand')).toBeNull();
       done();
     };
@@ -1728,7 +1739,7 @@ describe('Hirarchy editing - Add at Child', () => {
     gridObj.selectRow(3);
     actionComplete = (args?: any): void => {
       let cells: NodeListOf<Element> = gridObj.grid.getRows()[3].querySelectorAll('.e-rowcell');
-      expect(cells[0].textContent === '4' ).toBeTruthy();
+      expect(cells[0].textContent === '4').toBeTruthy();
       done();
     };
     gridObj.actionComplete = actionComplete;
@@ -1736,6 +1747,7 @@ describe('Hirarchy editing - Add at Child', () => {
   });
   afterAll(() => {
     destroy(gridObj);
+    gridObj = null;
   });
 });
 
@@ -1784,6 +1796,7 @@ describe('Hirarchy editing - Add at Child', () => {
   });
   afterAll(() => {
     destroy(gridObj);
+    gridObj = null;
   });
 });
 
@@ -1793,25 +1806,27 @@ describe('Add new row as child collapsed rows', () => {
   beforeAll((done: Function) => {
     gridObj = createGrid(
       {
-          dataSource: sampleData,
-          childMapping: 'subtasks',
-          height: 300,
-          editSettings: { allowEditing: true, mode: 'Row', allowDeleting: true, allowAdding: true, newRowPosition: 'Child' },
+        dataSource: sampleData,
+        childMapping: 'subtasks',
+        height: 300,
+        editSettings: { allowEditing: true, mode: 'Row', allowDeleting: true, allowAdding: true, newRowPosition: 'Child' },
 
-          treeColumnIndex: 1,
-          toolbar: ['Add', 'Delete', 'Update', 'Cancel'],
-            columns: [
-            {
-              field: 'taskID', headerText: 'Task ID', textAlign: 'Right',
-              width: 90, isPrimaryKey: true
-          },
-          { field: 'taskName', headerText: 'Task Name', editType: 'stringedit', width: 220},
-          { field: 'startDate', headerText: 'Start Date', textAlign: 'Right', width: 130,
-              format: 'yMd' },
+        treeColumnIndex: 1,
+        toolbar: ['Add', 'Delete', 'Update', 'Cancel'],
+        columns: [
           {
-              field: 'duration', headerText: 'Duration', textAlign: 'Right', width: 100,
+            field: 'taskID', headerText: 'Task ID', textAlign: 'Right',
+            width: 90, isPrimaryKey: true
+          },
+          { field: 'taskName', headerText: 'Task Name', editType: 'stringedit', width: 220 },
+          {
+            field: 'startDate', headerText: 'Start Date', textAlign: 'Right', width: 130,
+            format: 'yMd'
+          },
+          {
+            field: 'duration', headerText: 'Duration', textAlign: 'Right', width: 100,
           }
-            ]
+        ]
       },
       done
     );
@@ -1839,10 +1854,11 @@ describe('Add new row as child collapsed rows', () => {
     gridObj.actionComplete = actionComplete;
     let formEle: HTMLFormElement = gridObj.grid.editModule.formObj.element;
     (select('#' + gridObj.grid.element.id + 'taskID', formEle) as any).value = 133;
-    (<any>gridObj.grid.toolbarModule).toolbarClickHandler({ item: { id: gridObj.grid.element.id + '_update' } });      
+    (<any>gridObj.grid.toolbarModule).toolbarClickHandler({ item: { id: gridObj.grid.element.id + '_update' } });
   });
   afterAll(() => {
     destroy(gridObj);
+    gridObj = null;
   });
 });
 
@@ -1852,24 +1868,26 @@ describe('Add new row as child collapsed rows after delete', () => {
   beforeAll((done: Function) => {
     gridObj = createGrid(
       {
-          dataSource: sampleData,
-          childMapping: 'subtasks',
-          height: 300,
-          editSettings: { allowEditing: true, mode: 'Row', allowDeleting: true, allowAdding: true, newRowPosition: 'Child' },
-          treeColumnIndex: 1,
-          toolbar: ['Add', 'Delete', 'Update', 'Cancel'],
-            columns: [
-            {
-              field: 'taskID', headerText: 'Task ID', textAlign: 'Right',
-              width: 90, isPrimaryKey: true
-          },
-          { field: 'taskName', headerText: 'Task Name', editType: 'stringedit', width: 220},
-          { field: 'startDate', headerText: 'Start Date', textAlign: 'Right', width: 130,
-              format: 'yMd' },
+        dataSource: sampleData,
+        childMapping: 'subtasks',
+        height: 300,
+        editSettings: { allowEditing: true, mode: 'Row', allowDeleting: true, allowAdding: true, newRowPosition: 'Child' },
+        treeColumnIndex: 1,
+        toolbar: ['Add', 'Delete', 'Update', 'Cancel'],
+        columns: [
           {
-              field: 'duration', headerText: 'Duration', textAlign: 'Right', width: 100,
+            field: 'taskID', headerText: 'Task ID', textAlign: 'Right',
+            width: 90, isPrimaryKey: true
+          },
+          { field: 'taskName', headerText: 'Task Name', editType: 'stringedit', width: 220 },
+          {
+            field: 'startDate', headerText: 'Start Date', textAlign: 'Right', width: 130,
+            format: 'yMd'
+          },
+          {
+            field: 'duration', headerText: 'Duration', textAlign: 'Right', width: 100,
           }
-            ]
+        ]
       },
       done
     );
@@ -1910,10 +1928,11 @@ describe('Add new row as child collapsed rows after delete', () => {
     let formEle: HTMLFormElement = gridObj.grid.editModule.formObj.element;
     (select('#' + gridObj.grid.element.id + 'taskID', formEle) as any).value = 133;
     (<any>gridObj.grid.toolbarModule).toolbarClickHandler({ item: { id: gridObj.grid.element.id + '_update' } });
-    
+
   });
   afterAll(() => {
     destroy(gridObj);
+    gridObj = null;
   });
 });
 
@@ -1923,50 +1942,51 @@ describe('Editing - Addrecord through method', () => {
   beforeAll((done: Function) => {
     gridObj = createGrid(
       {
-      dataSource: sampleData,
-      childMapping: 'subtasks',
-      editSettings: { allowEditing: true, mode: 'Row', allowDeleting: true, allowAdding: true,},
-      treeColumnIndex: 1,
-      toolbar: ['Add', 'Edit', 'Update', 'Delete', 'Cancel', 'ExpandAll', 'CollapseAll'],
-      columns: [{field: 'taskID', headerText: 'Task ID', isPrimaryKey: true},
-                {field: 'taskName', headerText: 'Task Name'},
-                {field: 'startDate', headerText: 'Start Date'},
-                {field: 'progress', headerText: 'Progress'}]
+        dataSource: sampleData,
+        childMapping: 'subtasks',
+        editSettings: { allowEditing: true, mode: 'Row', allowDeleting: true, allowAdding: true, },
+        treeColumnIndex: 1,
+        toolbar: ['Add', 'Edit', 'Update', 'Delete', 'Cancel', 'ExpandAll', 'CollapseAll'],
+        columns: [{ field: 'taskID', headerText: 'Task ID', isPrimaryKey: true },
+        { field: 'taskName', headerText: 'Task Name' },
+        { field: 'startDate', headerText: 'Start Date' },
+        { field: 'progress', headerText: 'Progress' }]
       },
       done
     );
   });
   it('Addrecordmethod - add as child', (done: Function) => {
     actionComplete = (args?: any): void => {
-        expect(gridObj.dataSource[0][gridObj.childMapping][2][gridObj.childMapping][0].taskID).toBe(111);
-        expect(gridObj.grid.dataSource[4].taskID).toBe(111);
-        done();
+      expect(gridObj.dataSource[0][gridObj.childMapping][2][gridObj.childMapping][0].taskID).toBe(111);
+      expect(gridObj.grid.dataSource[4].taskID).toBe(111);
+      done();
     }
     gridObj.actionComplete = actionComplete;
-    gridObj.addRecord({taskID:111,taskName: 'test'}, 3, 'Child');
+    gridObj.addRecord({ taskID: 111, taskName: 'test' }, 3, 'Child');
   });
   it('Addrecordmethod - add To Below', (done: Function) => {
     actionComplete = (args?: any): void => {
-        expect(gridObj.dataSource[0][gridObj.childMapping].length).toBe(5);
-        expect(gridObj.grid.dataSource[2].taskID).toBe(123);
-        expect(gridObj.dataSource[0]["subtasks"][1].taskID).toBe(123);
-        done();
+      expect(gridObj.dataSource[0][gridObj.childMapping].length).toBe(5);
+      expect(gridObj.grid.dataSource[2].taskID).toBe(123);
+      expect(gridObj.dataSource[0]["subtasks"][1].taskID).toBe(123);
+      done();
     }
     gridObj.actionComplete = actionComplete;
-    gridObj.addRecord({taskID:123,taskName: 'Below record'}, 1, 'Below');
+    gridObj.addRecord({ taskID: 123, taskName: 'Below record' }, 1, 'Below');
   });
   it('Addrecordmethod - add as Above', (done: Function) => {
     actionComplete = (args?: any): void => {
       expect(gridObj.dataSource[0]["subtasks"][0].taskID).toBe(124);
       expect(gridObj.grid.dataSource[1].taskID).toBe(124);
-        expect(gridObj.dataSource[0][gridObj.childMapping].length).toBe(6);
-        done();
+      expect(gridObj.dataSource[0][gridObj.childMapping].length).toBe(6);
+      done();
     }
     gridObj.actionComplete = actionComplete;
-    gridObj.addRecord({taskID:124, taskName: 'Above record'}, 1, 'Above');
+    gridObj.addRecord({ taskID: 124, taskName: 'Above record' }, 1, 'Above');
   });
   afterAll(() => {
     destroy(gridObj);
+    gridObj = null;
   });
 });
 
@@ -1976,18 +1996,18 @@ describe('Editing with Sorting', () => {
   beforeAll((done: Function) => {
     gridObj = createGrid(
       {
-          dataSource: sampleData,
-          childMapping: 'subtasks',
-          editSettings: { allowEditing: true, mode: 'Row', allowDeleting: true, allowAdding: true, newRowPosition: 'Child' },
-          allowSorting: true,
-          sortSettings: {columns: [{field: 'taskName', direction: 'Ascending'}]},
-          treeColumnIndex: 1,
-          toolbar: ['Add', 'Edit', 'Update', 'Delete', 'Cancel', 'ExpandAll', 'CollapseAll'],
-            columns: [{ field: 'taskID', headerText: 'Task ID', isPrimaryKey: true },
-            { field: 'taskName', headerText: 'Task Name' },
-            { field: 'progress', headerText: 'Progress' },
-            { field: 'startDate', headerText: 'Start Date' }
-          ]
+        dataSource: sampleData,
+        childMapping: 'subtasks',
+        editSettings: { allowEditing: true, mode: 'Row', allowDeleting: true, allowAdding: true, newRowPosition: 'Child' },
+        allowSorting: true,
+        sortSettings: { columns: [{ field: 'taskName', direction: 'Ascending' }] },
+        treeColumnIndex: 1,
+        toolbar: ['Add', 'Edit', 'Update', 'Delete', 'Cancel', 'ExpandAll', 'CollapseAll'],
+        columns: [{ field: 'taskID', headerText: 'Task ID', isPrimaryKey: true },
+        { field: 'taskName', headerText: 'Task Name' },
+        { field: 'progress', headerText: 'Progress' },
+        { field: 'startDate', headerText: 'Start Date' }
+        ]
       },
       done
     );
@@ -1996,7 +2016,7 @@ describe('Editing with Sorting', () => {
     gridObj.selectRow(1);
     actionComplete = (args?: any): void => {
       let cells: NodeListOf<Element> = gridObj.grid.getRows()[1].querySelectorAll('.e-rowcell');
-      expect(cells[0].textContent === '10' ).toBeTruthy();
+      expect(cells[0].textContent === '10').toBeTruthy();
       expect(cells[1].textContent === 'Design Documentation').toBeTruthy();
       done();
     };
@@ -2011,12 +2031,12 @@ describe('Editing with Sorting', () => {
         (select('#' + gridObj.grid.element.id + 'taskID', formEle) as any).value = '121';
         (select('#' + gridObj.grid.element.id + 'taskName', formEle) as any).value = 'child1';
       }
-      if(args.requestType === 'save'){
+      if (args.requestType === 'save') {
         expect(gridObj.getRows().length).toBe(36);
         expect(gridObj.dataSource[1].subtasks[3].subtasks[0].taskID === 121).toBe(true);
         expect(gridObj.dataSource[1].subtasks[3].subtasks[0].taskName === 'child1').toBe(true);
         done();
-      } 
+      }
     };
     gridObj.actionComplete = actionComplete;
     (<any>gridObj.grid.toolbarModule).toolbarClickHandler({ item: { id: gridObj.grid.element.id + '_add' } });
@@ -2024,81 +2044,7 @@ describe('Editing with Sorting', () => {
   });
   afterAll(() => {
     destroy(gridObj);
-  });
-});
-
-describe('EJ2-31696-Default contextmenu Expand collapse throw script error in All platform', () => {
-  let gridObj: TreeGrid;
-  beforeAll((done: Function) => {
-    gridObj = createGrid(
-      {
-          dataSource: sampleData,
-          childMapping: 'subtasks',
-          editSettings: { allowEditing: true, mode: 'Row', allowDeleting: true, allowAdding: true, newRowPosition: 'Child' },
-          allowSorting: true,
-          sortSettings: {columns: [{field: 'taskName', direction: 'Ascending'}]},
-          treeColumnIndex: 1,
-          toolbar: ['Add', 'Edit', 'Update', 'Delete', 'Cancel', 'ExpandAll', 'CollapseAll'],
-            columns: [{ field: 'taskID', headerText: 'Task ID', isPrimaryKey: true },
-            { field: 'taskName', headerText: 'Task Name' },
-            { field: 'progress', headerText: 'Progress' },
-            { field: 'startDate', headerText: 'Start Date' }
-          ]
-      },
-      done
-    );
-  });
-  it('Throw script error while expand collapse', () => {
-    let event: MouseEvent = new MouseEvent('dblclick', {
-      'view': window,
-      'bubbles': true,
-      'cancelable': true
-    });
-    gridObj.getCellFromIndex(0,1).querySelector(".e-treegridexpand").dispatchEvent(event);
-    gridObj.selectRow(2);
-    expect(gridObj.getRows()[2].getElementsByClassName('e-rowcell').length > 0).toBe(true);
-  });
-  afterAll(() => {
-    destroy(gridObj);
-  });
-});
-
-describe('Expand Collapse with Editing', () => {
-  let gridObj: TreeGrid;
-  let actionComplete: () => void;
-  beforeAll((done: Function) => {
-    gridObj = createGrid(
-      {
-          dataSource: sampleData,
-          childMapping: 'subtasks',
-          editSettings: { allowEditing: true, mode: 'Row', allowDeleting: true, allowAdding: true, newRowPosition: 'Child' },
-          treeColumnIndex: 1,
-          toolbar: ['Add', 'Edit', 'Update', 'Delete', 'Cancel', 'ExpandAll', 'CollapseAll'],
-            columns: [{ field: 'taskID', headerText: 'Task ID', isPrimaryKey: true },
-            { field: 'taskName', headerText: 'Task Name' },
-            { field: 'progress', headerText: 'Progress' },
-            { field: 'startDate', headerText: 'Start Date' }
-          ]
-      },
-      done
-    );
-  });
-  it('Cancel Edit after Collapsing Row', (done: Function) => {
-    gridObj.selectRow(0);
-    actionComplete = (args?: any): void => {
-      expect(gridObj.getRows()[0].querySelectorAll('.e-treegridcollapse').length).toBe(1);
-      done();
-    };
-    (<any>gridObj.grid.toolbarModule).toolbarClickHandler({ item: { id: gridObj.grid.element.id + '_edit' } });
-    (<any>gridObj.grid.toolbarModule).toolbarClickHandler({ item: { id: gridObj.grid.element.id + '_cancel' } });
-    gridObj.collapseRow(gridObj.getRows()[0]);      
-    (<any>gridObj.grid.toolbarModule).toolbarClickHandler({ item: { id: gridObj.grid.element.id + '_edit' } });
-    gridObj.actionComplete = actionComplete;
-    (<any>gridObj.grid.toolbarModule).toolbarClickHandler({ item: { id: gridObj.grid.element.id + '_cancel' } });
-  });
-  
-  afterAll(() => {
-    destroy(gridObj);
+    gridObj = null;
   });
 });
 
@@ -2111,16 +2057,16 @@ describe('EJ2-31696-Default contextmenu Expand collapse throw script error in Al
         childMapping: 'subtasks',
         editSettings: { allowEditing: true, mode: 'Row', allowDeleting: true, allowAdding: true, newRowPosition: 'Child' },
         allowSorting: true,
-        sortSettings: {columns: [{field: 'taskName', direction: 'Ascending'}]},
+        sortSettings: { columns: [{ field: 'taskName', direction: 'Ascending' }] },
         treeColumnIndex: 1,
         toolbar: ['Add', 'Edit', 'Update', 'Delete', 'Cancel', 'ExpandAll', 'CollapseAll'],
         columns: [{ field: 'taskID', headerText: 'Task ID', isPrimaryKey: true },
-          { field: 'taskName', headerText: 'Task Name' },
-          { field: 'progress', headerText: 'Progress' },
-          { field: 'startDate', headerText: 'Start Date' }
+        { field: 'taskName', headerText: 'Task Name' },
+        { field: 'progress', headerText: 'Progress' },
+        { field: 'startDate', headerText: 'Start Date' }
         ]
       },
-    done
+      done
     );
   });
   it('Throw script error while expand collapse', () => {
@@ -2129,13 +2075,91 @@ describe('EJ2-31696-Default contextmenu Expand collapse throw script error in Al
       'bubbles': true,
       'cancelable': true
     });
-    gridObj.getCellFromIndex(0,1).querySelector(".e-treegridexpand").dispatchEvent(event);
+    gridObj.getCellFromIndex(0, 1).querySelector(".e-treegridexpand").dispatchEvent(event);
+    gridObj.selectRow(2);
+    expect(gridObj.getRows()[2].getElementsByClassName('e-rowcell').length > 0).toBe(true);
+  });
+  afterAll(() => {
+    destroy(gridObj);
+    gridObj = null;
+  });
+});
+
+describe('Expand Collapse with Editing', () => {
+  let gridObj: TreeGrid;
+  let actionComplete: () => void;
+  beforeAll((done: Function) => {
+    gridObj = createGrid(
+      {
+        dataSource: sampleData,
+        childMapping: 'subtasks',
+        editSettings: { allowEditing: true, mode: 'Row', allowDeleting: true, allowAdding: true, newRowPosition: 'Child' },
+        treeColumnIndex: 1,
+        toolbar: ['Add', 'Edit', 'Update', 'Delete', 'Cancel', 'ExpandAll', 'CollapseAll'],
+        columns: [{ field: 'taskID', headerText: 'Task ID', isPrimaryKey: true },
+        { field: 'taskName', headerText: 'Task Name' },
+        { field: 'progress', headerText: 'Progress' },
+        { field: 'startDate', headerText: 'Start Date' }
+        ]
+      },
+      done
+    );
+  });
+  it('Cancel Edit after Collapsing Row', (done: Function) => {
+    gridObj.selectRow(0);
+    actionComplete = (args?: any): void => {
+      expect(gridObj.getRows()[0].querySelectorAll('.e-treegridcollapse').length).toBe(1);
+      done();
+    };
+    (<any>gridObj.grid.toolbarModule).toolbarClickHandler({ item: { id: gridObj.grid.element.id + '_edit' } });
+    (<any>gridObj.grid.toolbarModule).toolbarClickHandler({ item: { id: gridObj.grid.element.id + '_cancel' } });
+    gridObj.collapseRow(gridObj.getRows()[0]);
+    (<any>gridObj.grid.toolbarModule).toolbarClickHandler({ item: { id: gridObj.grid.element.id + '_edit' } });
+    gridObj.actionComplete = actionComplete;
+    (<any>gridObj.grid.toolbarModule).toolbarClickHandler({ item: { id: gridObj.grid.element.id + '_cancel' } });
+  });
+
+  afterAll(() => {
+    destroy(gridObj);
+    gridObj = null;
+  });
+});
+
+describe('EJ2-31696-Default contextmenu Expand collapse throw script error in All platform', () => {
+  let gridObj: TreeGrid;
+  beforeAll((done: Function) => {
+    gridObj = createGrid(
+      {
+        dataSource: sampleData,
+        childMapping: 'subtasks',
+        editSettings: { allowEditing: true, mode: 'Row', allowDeleting: true, allowAdding: true, newRowPosition: 'Child' },
+        allowSorting: true,
+        sortSettings: { columns: [{ field: 'taskName', direction: 'Ascending' }] },
+        treeColumnIndex: 1,
+        toolbar: ['Add', 'Edit', 'Update', 'Delete', 'Cancel', 'ExpandAll', 'CollapseAll'],
+        columns: [{ field: 'taskID', headerText: 'Task ID', isPrimaryKey: true },
+        { field: 'taskName', headerText: 'Task Name' },
+        { field: 'progress', headerText: 'Progress' },
+        { field: 'startDate', headerText: 'Start Date' }
+        ]
+      },
+      done
+    );
+  });
+  it('Throw script error while expand collapse', () => {
+    let event: MouseEvent = new MouseEvent('dblclick', {
+      'view': window,
+      'bubbles': true,
+      'cancelable': true
+    });
+    gridObj.getCellFromIndex(0, 1).querySelector(".e-treegridexpand").dispatchEvent(event);
     gridObj.selectRow(2);
     expect(gridObj.getRows()[2].getElementsByClassName('e-active').length >= 0).toBe(true);
     expect(gridObj.grid.editModule.formObj === undefined).toBe(true);
   });
   afterAll(() => {
     destroy(gridObj);
+    gridObj = null;
   });
 });
 
@@ -2146,16 +2170,16 @@ describe('EJ2-31713-While add after expand through script error in platform', ()
   beforeAll((done: Function) => {
     gridObj = createGrid(
       {
-          dataSource: sampleData,
-          childMapping: 'subtasks',
-          editSettings: { allowEditing: true, mode: 'Row', allowDeleting: true, allowAdding: true },
-          treeColumnIndex: 1,
-          toolbar: ['Add', 'Edit', 'Update', 'Delete', 'Cancel'],
-            columns: [{ field: 'taskID', headerText: 'Task ID', isPrimaryKey: true },
-            { field: 'taskName', headerText: 'Task Name' },
-            { field: 'progress', headerText: 'Progress' },
-            { field: 'startDate', headerText: 'Start Date' }
-          ]
+        dataSource: sampleData,
+        childMapping: 'subtasks',
+        editSettings: { allowEditing: true, mode: 'Row', allowDeleting: true, allowAdding: true },
+        treeColumnIndex: 1,
+        toolbar: ['Add', 'Edit', 'Update', 'Delete', 'Cancel'],
+        columns: [{ field: 'taskID', headerText: 'Task ID', isPrimaryKey: true },
+        { field: 'taskName', headerText: 'Task Name' },
+        { field: 'progress', headerText: 'Progress' },
+        { field: 'startDate', headerText: 'Start Date' }
+        ]
       },
       done
     );
@@ -2164,7 +2188,7 @@ describe('EJ2-31713-While add after expand through script error in platform', ()
     (<any>gridObj.grid.toolbarModule).toolbarClickHandler({ item: { id: gridObj.grid.element.id + '_add' } });
     actionComplete = (args?: any): void => {
       let cells: NodeListOf<Element> = gridObj.grid.getRows()[0].querySelectorAll('.e-rowcell');
-      expect(cells[0].textContent === '121' ).toBeTruthy();
+      expect(cells[0].textContent === '121').toBeTruthy();
       expect(cells[1].textContent === 'first').toBeTruthy();
       done()
     };
@@ -2173,11 +2197,12 @@ describe('EJ2-31713-While add after expand through script error in platform', ()
     (select('#' + gridObj.grid.element.id + 'taskID', formEle) as any).value = '121';
     (select('#' + gridObj.grid.element.id + 'taskName', formEle) as any).value = 'first';
     (select('#' + gridObj.grid.element.id + 'progress', formEle) as any).value = '23';
-    rows = gridObj.getRows();      
-    (rows[0].getElementsByClassName('e-treegridexpand')[0] as HTMLElement).click();      
+    rows = gridObj.getRows();
+    (rows[0].getElementsByClassName('e-treegridexpand')[0] as HTMLElement).click();
   });
   afterAll(() => {
     destroy(gridObj);
+    gridObj = null;
   });
 });
 
@@ -2188,17 +2213,17 @@ describe('EJ2-32035- Adding a new row after collapsing a row does not maintain c
   beforeAll((done: Function) => {
     gridObj = createGrid(
       {
-          dataSource: sampleData,
-          childMapping: 'subtasks',
-          allowPaging: true,
-          editSettings: { allowEditing: true, mode: 'Row', allowDeleting: true, allowAdding: true },
-          treeColumnIndex: 1,
-          toolbar: ['Add', 'Edit', 'Update', 'Delete', 'Cancel'],
-            columns: [{ field: 'taskID', headerText: 'Task ID', isPrimaryKey: true },
-            { field: 'taskName', headerText: 'Task Name' },
-            { field: 'progress', headerText: 'Progress' },
-            { field: 'startDate', headerText: 'Start Date' }
-          ]
+        dataSource: sampleData,
+        childMapping: 'subtasks',
+        allowPaging: true,
+        editSettings: { allowEditing: true, mode: 'Row', allowDeleting: true, allowAdding: true },
+        treeColumnIndex: 1,
+        toolbar: ['Add', 'Edit', 'Update', 'Delete', 'Cancel'],
+        columns: [{ field: 'taskID', headerText: 'Task ID', isPrimaryKey: true },
+        { field: 'taskName', headerText: 'Task Name' },
+        { field: 'progress', headerText: 'Progress' },
+        { field: 'startDate', headerText: 'Start Date' }
+        ]
       },
       done
     );
@@ -2209,7 +2234,7 @@ describe('EJ2-32035- Adding a new row after collapsing a row does not maintain c
     (<any>gridObj.grid.toolbarModule).toolbarClickHandler({ item: { id: gridObj.grid.element.id + '_add' } });
     actionComplete = (args?: any): void => {
       let cells: NodeListOf<Element> = gridObj.grid.getRows()[0].querySelectorAll('.e-rowcell');
-      expect(cells[0].textContent === '121' ).toBeTruthy();
+      expect(cells[0].textContent === '121').toBeTruthy();
       expect(cells[1].textContent === 'first').toBeTruthy();
       expect(gridObj.grid.getRows()[1].getElementsByClassName('e-treegridcollapse').length).toBe(1);
       expect(gridObj.grid.getRows()[2].getElementsByClassName('e-treegridexpand').length).toBe(1);
@@ -2224,6 +2249,7 @@ describe('EJ2-32035- Adding a new row after collapsing a row does not maintain c
   });
   afterAll(() => {
     destroy(gridObj);
+    gridObj = null;
   });
 });
 
@@ -2234,17 +2260,17 @@ describe('EJ2-34712- Edit form does not generated when we add new record with co
   beforeAll((done: Function) => {
     gridObj = createGrid(
       {
-          dataSource: sampleData,
-          childMapping: 'subtasks',
-          allowPaging: true,
-          editSettings: { allowEditing: true, mode: 'Row', allowDeleting: true, allowAdding: true, newRowPosition: "Child" },
-          treeColumnIndex: 1,
-          toolbar: ['Add', 'Edit', 'Update', 'Delete', 'Cancel'],
-            columns: [{ field: 'taskID', headerText: 'Task ID', isPrimaryKey: true },
-            { field: 'taskName', headerText: 'Task Name' },
-            { field: 'progress', headerText: 'Progress' },
-            { field: 'startDate', headerText: 'Start Date' }
-          ]
+        dataSource: sampleData,
+        childMapping: 'subtasks',
+        allowPaging: true,
+        editSettings: { allowEditing: true, mode: 'Row', allowDeleting: true, allowAdding: true, newRowPosition: "Child" },
+        treeColumnIndex: 1,
+        toolbar: ['Add', 'Edit', 'Update', 'Delete', 'Cancel'],
+        columns: [{ field: 'taskID', headerText: 'Task ID', isPrimaryKey: true },
+        { field: 'taskName', headerText: 'Task Name' },
+        { field: 'progress', headerText: 'Progress' },
+        { field: 'startDate', headerText: 'Start Date' }
+        ]
       },
       done
     );
@@ -2256,7 +2282,7 @@ describe('EJ2-34712- Edit form does not generated when we add new record with co
     (<any>gridObj.grid.toolbarModule).toolbarClickHandler({ item: { id: gridObj.grid.element.id + '_add' } });
     actionComplete = (args?: any): void => {
       let cells: NodeListOf<Element> = gridObj.grid.getRows()[11].querySelectorAll('.e-rowcell');
-      expect(cells[0].textContent === '121' ).toBeTruthy();
+      expect(cells[0].textContent === '121').toBeTruthy();
       expect(cells[1].textContent === 'first').toBeTruthy();
       expect(gridObj.grid.getRows()[5].getElementsByClassName('e-treegridexpand').length).toBe(1);
       done()
@@ -2270,6 +2296,7 @@ describe('EJ2-34712- Edit form does not generated when we add new record with co
   });
   afterAll(() => {
     destroy(gridObj);
+    gridObj = null;
   });
 });
 
@@ -2279,15 +2306,15 @@ describe('Ensuring random adding in newRowPosition Below', () => {
   beforeAll((done: Function) => {
     gridObj = createGrid(
       {
-      dataSource: sampleData,
-      childMapping: 'subtasks',
-      editSettings: { allowEditing: true, mode: 'Row', allowDeleting: true, allowAdding: true, newRowPosition: 'Below'},
-      treeColumnIndex: 1,
-      toolbar: ['Add', 'Edit', 'Update', 'Delete', 'Cancel', 'ExpandAll', 'CollapseAll'],
-      columns: [{field: 'taskID', headerText: 'Task ID', isPrimaryKey: true},
-                {field: 'taskName', headerText: 'Task Name'},
-                {field: 'startDate', headerText: 'Start Date'},
-                {field: 'progress', headerText: 'Progress'}]
+        dataSource: sampleData,
+        childMapping: 'subtasks',
+        editSettings: { allowEditing: true, mode: 'Row', allowDeleting: true, allowAdding: true, newRowPosition: 'Below' },
+        treeColumnIndex: 1,
+        toolbar: ['Add', 'Edit', 'Update', 'Delete', 'Cancel', 'ExpandAll', 'CollapseAll'],
+        columns: [{ field: 'taskID', headerText: 'Task ID', isPrimaryKey: true },
+        { field: 'taskName', headerText: 'Task Name' },
+        { field: 'startDate', headerText: 'Start Date' },
+        { field: 'progress', headerText: 'Progress' }]
       },
       done
     );
@@ -2304,14 +2331,15 @@ describe('Ensuring random adding in newRowPosition Below', () => {
     gridObj.grid.editModule.formObj.element.getElementsByTagName('input')[0].value = "1111";
     (<any>gridObj.grid.toolbarModule).toolbarClickHandler({ item: { id: gridObj.grid.element.id + '_update' } });
   });
-  
+
   afterAll(() => {
     destroy(gridObj);
+    gridObj = null;
   });
 });
 
 describe('Remote Data Editing with Child Mode', () => {
-    
+
   let gridObj: TreeGrid;
   let elem: HTMLElement = createElement('div', { id: 'Grid' });
   let request: JasmineAjaxRequest;
@@ -2320,69 +2348,69 @@ describe('Remote Data Editing with Child Mode', () => {
   let actionBegin: (args: any) => void;
   let actionComplete: (args: any) => void;
   beforeAll((done: Function) => {
-      let dataBound: EmitType<Object> = () => { done(); };
-      jasmine.Ajax.install();
-      spyOn(window, 'fetch').and.returnValue(Promise.resolve(
-        new Response(JSON.stringify({ d: data.slice(0, 3), __count: 3 }), {
-          status: 200,
+    let dataBound: EmitType<Object> = () => { done(); };
+    jasmine.Ajax.install();
+    spyOn(window, 'fetch').and.returnValue(Promise.resolve(
+      new Response(JSON.stringify({ d: data.slice(0, 3), __count: 3 }), {
+        status: 200,
 
-        })
-      ));
-      originalTimeout = jasmine.DEFAULT_TIMEOUT_INTERVAL;
-      jasmine.DEFAULT_TIMEOUT_INTERVAL = 4000;
-      dataManager = new DataManager({
-          url: 'http://localhost:50499/Home/UrlData',
-          crossDomain: true
+      })
+    ));
+    originalTimeout = jasmine.DEFAULT_TIMEOUT_INTERVAL;
+    jasmine.DEFAULT_TIMEOUT_INTERVAL = 4000;
+    dataManager = new DataManager({
+      url: 'http://localhost:50499/Home/UrlData',
+      crossDomain: true
+    });
+    document.body.appendChild(elem);
+    gridObj = new TreeGrid(
+      {
+        dataSource: dataManager, dataBound: dataBound,
+        hasChildMapping: 'isParent',
+        idMapping: 'TaskID',
+        toolbar: ['Add', 'Edit', 'Update', 'Delete', 'Cancel', 'ExpandAll', 'CollapseAll'],
+        editSettings: { allowEditing: true, mode: 'Row', allowDeleting: true, allowAdding: true, newRowPosition: 'Child' },
+        parentIdMapping: 'parentID',
+        treeColumnIndex: 1,
+        columns: [
+          { field: "TaskID", headerText: "Task Id", isPrimaryKey: true },
+          { field: "TaskName", headerText: "Task Name" },
+          { field: "StartDate", headerText: "Start Date" },
+          { field: "EndDate", headerText: "End Date" },
+          { field: "Progress", headerText: "Progress" }
+        ]
       });
-      document.body.appendChild(elem);
-      gridObj = new TreeGrid(
-          {
-              dataSource: dataManager, dataBound: dataBound,
-              hasChildMapping: 'isParent',
-              idMapping: 'TaskID',
-              toolbar: ['Add', 'Edit', 'Update', 'Delete', 'Cancel', 'ExpandAll', 'CollapseAll'],
-              editSettings: { allowEditing: true, mode: 'Row', allowDeleting: true, allowAdding: true, newRowPosition: 'Child' },
-              parentIdMapping: 'parentID',
-              treeColumnIndex: 1,
-              columns: [
-                  { field: "TaskID", headerText: "Task Id", isPrimaryKey: true },
-                  { field: "TaskName", headerText: "Task Name" },
-                  { field: "StartDate", headerText: "Start Date" },
-                  { field: "EndDate", headerText: "End Date" },                    
-                  { field: "Progress", headerText: "Progress" }
-            ]
-          });
-      gridObj.appendTo('#Grid');
-      request = window.fetch['calls'].mostRecent();
+    gridObj.appendTo('#Grid');
+    request = window.fetch['calls'].mostRecent();
   });
 
   it('Add Row - No Selection', function (done) {
-      actionComplete = function (args) {
-          if (args.requestType === 'add') {
-              expect(args.row.rowIndex).toBe(0);
-              done();
-          }
-      };
-      gridObj.actionComplete = actionComplete;
-      (<any>gridObj.grid.toolbarModule).toolbarClickHandler({ item: { id: gridObj.grid.element.id + '_add' } });
+    actionComplete = function (args) {
+      if (args.requestType === 'add') {
+        expect(args.row.rowIndex).toBe(0);
+        done();
+      }
+    };
+    gridObj.actionComplete = actionComplete;
+    (<any>gridObj.grid.toolbarModule).toolbarClickHandler({ item: { id: gridObj.grid.element.id + '_add' } });
   });
   it('Add Row - ActionBegin Event', function (done) {
-      var formEle = gridObj.grid.editModule.formObj.element;
-      (select('#' + gridObj.grid.element.id + 'TaskID', formEle) as any).value = '121';
-      (select('#' + gridObj.grid.element.id + 'TaskName', formEle) as any).value = 'first';
-      (select('#' + gridObj.grid.element.id + 'Progress', formEle) as any).value = '23';
-      actionBegin = function (args) {
-          expect(args.data.TaskName === 'first').toBe(true);
-          done();
-      };
-      gridObj.actionBegin = actionBegin;
-      (<any>gridObj.grid.toolbarModule).toolbarClickHandler({ item: { id: gridObj.grid.element.id + '_update' } });
+    var formEle = gridObj.grid.editModule.formObj.element;
+    (select('#' + gridObj.grid.element.id + 'TaskID', formEle) as any).value = '121';
+    (select('#' + gridObj.grid.element.id + 'TaskName', formEle) as any).value = 'first';
+    (select('#' + gridObj.grid.element.id + 'Progress', formEle) as any).value = '23';
+    actionBegin = function (args) {
+      expect(args.data.TaskName === 'first').toBe(true);
+      done();
+    };
+    gridObj.actionBegin = actionBegin;
+    (<any>gridObj.grid.toolbarModule).toolbarClickHandler({ item: { id: gridObj.grid.element.id + '_update' } });
   });
   afterAll(() => {
-      jasmine.DEFAULT_TIMEOUT_INTERVAL = originalTimeout;
-      gridObj.destroy();
-      remove(elem);
-      jasmine.Ajax.uninstall();
+    jasmine.DEFAULT_TIMEOUT_INTERVAL = originalTimeout;
+    gridObj.destroy();
+    remove(elem);
+    jasmine.Ajax.uninstall();
   });
 });
 
@@ -2391,34 +2419,35 @@ describe('Hirarchy misalignment when setrowdata is used to replace the value', (
   beforeAll((done: Function) => {
     gridObj = createGrid(
       {
-          dataSource: sampleData,
-          childMapping: 'subtasks',
-          editSettings: { allowEditing: true, mode: 'Row', allowDeleting: true, allowAdding: true, newRowPosition: 'Bottom' },
+        dataSource: sampleData,
+        childMapping: 'subtasks',
+        editSettings: { allowEditing: true, mode: 'Row', allowDeleting: true, allowAdding: true, newRowPosition: 'Bottom' },
 
-          treeColumnIndex: 1,
-          toolbar: ['Add', 'Edit', 'Update', 'Delete', 'Cancel', 'ExpandAll', 'CollapseAll'],
-            columns: [{ field: 'taskID', headerText: 'Task ID', isPrimaryKey: true },
-            { field: 'taskName', headerText: 'Task Name' },
-            { field: 'progress', headerText: 'Progress' },
-            { field: 'startDate', headerText: 'Start Date' }
-            ]
+        treeColumnIndex: 1,
+        toolbar: ['Add', 'Edit', 'Update', 'Delete', 'Cancel', 'ExpandAll', 'CollapseAll'],
+        columns: [{ field: 'taskID', headerText: 'Task ID', isPrimaryKey: true },
+        { field: 'taskName', headerText: 'Task Name' },
+        { field: 'progress', headerText: 'Progress' },
+        { field: 'startDate', headerText: 'Start Date' }
+        ]
       },
       done
     );
   });
   it('hierarchical misalignment', (done: Function) => {
-    gridObj.setRowData(2,{taskID: 2, taskName :"aaaa"} as ITreeData);
+    gridObj.setRowData(2, { taskID: 2, taskName: "aaaa" } as ITreeData);
     expect(gridObj.getRows()[1].getElementsByClassName('e-treecolumn-container')[0].querySelectorAll('span.e-icons').length).toBe(3);
-        done();
+    done();
   });
   afterAll(() => {
     destroy(gridObj);
+    gridObj = null;
   });
 });
 
 describe('update rows methods', () => {
   let gridObj: TreeGrid;
-  let actionComplete: ()=> void;
+  let actionComplete: () => void;
   beforeAll((done: Function) => {
     gridObj = createGrid(
       {
@@ -2431,22 +2460,23 @@ describe('update rows methods', () => {
         { field: 'progress', headerText: 'Progress' },
         { field: 'startDate', headerText: 'Start Date' }
         ]
-      },     
+      },
       done
     );
   });
   it('methods', (done: Function) => {
-    actionComplete = (args?:EditEventArgs): void => {
+    actionComplete = (args?: EditEventArgs): void => {
       if (args.requestType == 'save') {
-        expect(gridObj.dataSource[0].taskName=='test');
+        expect(gridObj.dataSource[0].taskName == 'test');
         done();
-  }
-}
-gridObj.actionComplete = actionComplete;
-gridObj.updateRow(0,{taskID:1, taskName:"test"});
+      }
+    }
+    gridObj.actionComplete = actionComplete;
+    gridObj.updateRow(0, { taskID: 1, taskName: "test" });
   });
   afterAll(() => {
     destroy(gridObj);
+    gridObj = null;
   });
 });
 
@@ -2456,37 +2486,38 @@ describe('Editing - Add', () => {
   beforeAll((done: Function) => {
     gridObj = createGrid(
       {
-          dataSource:[] ,
-          childMapping: 'subtasks',
-          editSettings: { allowEditing: true, mode: 'Cell', allowDeleting: true, allowAdding: true, newRowPosition: 'Bottom' },
+        dataSource: [],
+        childMapping: 'subtasks',
+        editSettings: { allowEditing: true, mode: 'Cell', allowDeleting: true, allowAdding: true, newRowPosition: 'Bottom' },
 
-          treeColumnIndex: 1,
-          toolbar: ['Add', 'Edit', 'Update', 'Delete'],
-            columns: [{ field: 'taskID', headerText: 'Task ID', isPrimaryKey: true },
-            { field: 'taskName', headerText: 'Task Name' },
-            { field: 'progress', headerText: 'Progress' },
-            { field: 'startDate', headerText: 'Start Date' }
-            ]
+        treeColumnIndex: 1,
+        toolbar: ['Add', 'Edit', 'Update', 'Delete'],
+        columns: [{ field: 'taskID', headerText: 'Task ID', isPrimaryKey: true },
+        { field: 'taskName', headerText: 'Task Name' },
+        { field: 'progress', headerText: 'Progress' },
+        { field: 'startDate', headerText: 'Start Date' }
+        ]
       },
       done
     );
   });
-  
-    
-      it('Add row ', (done: Function) => {
-        actionComplete = (args?: any): void => {
-          if (args.requestType === 'save') {
-            expect(gridObj.getRows().length == 1).toBe(true);
-            done();
-          }
-        };
-        gridObj.actionComplete = actionComplete;
-        (<any>gridObj.grid.toolbarModule).toolbarClickHandler({ item: { id: gridObj.grid.element.id + '_add' } });
-        gridObj.grid.editModule.formObj.element.getElementsByTagName('input')[0].value = "11";
-        (<any>gridObj.grid.toolbarModule).toolbarClickHandler({ item: { id: gridObj.grid.element.id + '_update' } });
-       });
-       afterAll(() => {
+
+
+  it('Add row ', (done: Function) => {
+    actionComplete = (args?: any): void => {
+      if (args.requestType === 'save') {
+        expect(gridObj.getRows().length == 1).toBe(true);
+        done();
+      }
+    };
+    gridObj.actionComplete = actionComplete;
+    (<any>gridObj.grid.toolbarModule).toolbarClickHandler({ item: { id: gridObj.grid.element.id + '_add' } });
+    gridObj.grid.editModule.formObj.element.getElementsByTagName('input')[0].value = "11";
+    (<any>gridObj.grid.toolbarModule).toolbarClickHandler({ item: { id: gridObj.grid.element.id + '_update' } });
+  });
+  afterAll(() => {
     destroy(gridObj);
+    gridObj = null;
   });
 });
 
@@ -2496,34 +2527,35 @@ describe('Editing - Add', () => {
   beforeAll((done: Function) => {
     gridObj = createGrid(
       {
-          dataSource:[] ,
-          childMapping: 'subtasks',
-          editSettings: { allowEditing: true, mode: 'Cell', allowDeleting: true, allowAdding: true, newRowPosition: 'Below' },
-          treeColumnIndex: 1,
-          toolbar: ['Add', 'Edit', 'Update', 'Delete'],
-            columns: [{ field: 'taskID', headerText: 'Task ID', isPrimaryKey: true },
-            { field: 'taskName', headerText: 'Task Name' },
-            { field: 'progress', headerText: 'Progress' },
-            { field: 'startDate', headerText: 'Start Date' }
-            ]
+        dataSource: [],
+        childMapping: 'subtasks',
+        editSettings: { allowEditing: true, mode: 'Cell', allowDeleting: true, allowAdding: true, newRowPosition: 'Below' },
+        treeColumnIndex: 1,
+        toolbar: ['Add', 'Edit', 'Update', 'Delete'],
+        columns: [{ field: 'taskID', headerText: 'Task ID', isPrimaryKey: true },
+        { field: 'taskName', headerText: 'Task Name' },
+        { field: 'progress', headerText: 'Progress' },
+        { field: 'startDate', headerText: 'Start Date' }
+        ]
       },
       done
     );
   });
-      it('Add row with Below position', (done: Function) => {
-        actionComplete = (args?: any): void => {
-          if (args.requestType === 'save') {
-            expect(gridObj.getRows().length == 1).toBe(true);
-            done();
-          }
-        };
-        gridObj.actionComplete = actionComplete;
-        (<any>gridObj.grid.toolbarModule).toolbarClickHandler({ item: { id: gridObj.grid.element.id + '_add' } });
-        gridObj.grid.editModule.formObj.element.getElementsByTagName('input')[0].value = "11";
-        (<any>gridObj.grid.toolbarModule).toolbarClickHandler({ item: { id: gridObj.grid.element.id + '_update' } });
-       });
-       afterAll(() => {
+  it('Add row with Below position', (done: Function) => {
+    actionComplete = (args?: any): void => {
+      if (args.requestType === 'save') {
+        expect(gridObj.getRows().length == 1).toBe(true);
+        done();
+      }
+    };
+    gridObj.actionComplete = actionComplete;
+    (<any>gridObj.grid.toolbarModule).toolbarClickHandler({ item: { id: gridObj.grid.element.id + '_add' } });
+    gridObj.grid.editModule.formObj.element.getElementsByTagName('input')[0].value = "11";
+    (<any>gridObj.grid.toolbarModule).toolbarClickHandler({ item: { id: gridObj.grid.element.id + '_update' } });
+  });
+  afterAll(() => {
     destroy(gridObj);
+    gridObj = null;
   });
 });
 
@@ -2531,33 +2563,33 @@ describe('Expand / Collapse Icon Issue when adding a new record', () => {
   let gridObj: TreeGrid;
   let rows: Element[];
   let actionComplete: () => void;
-  let data =[{"TaskId":1,"TaskName":"Parent Task 1","Duration":10,"ParentId":null,"isParent":true,"isExpanded":true},
-  {"TaskId":2,"TaskName":"Child task 1","Duration":4,"ParentId":null,"isParent":null,"isExpanded":true},
-  {"TaskId":13,"TaskName":"Child task 5","Duration":4,"ParentId":2,"isParent":null,"isExpanded":false},
-  {"TaskId":5,"TaskName":"Parent Task 2","Duration":10,"ParentId":null,"isParent":true,"isExpanded":true},
-  {"TaskId":6,"TaskName":"Child task 2","Duration":4,"ParentId":5,"isParent":null,"isExpanded":false},
-  {"TaskId":10,"TaskName":"Parent Task 3","Duration":10,"ParentId":null,"isParent":true,"isExpanded":true},
-  {"TaskId":11,"TaskName":"Child task 3","Duration":4,"ParentId":10,"isParent":false,"isExpanded":false}];
+  let data = [{ "TaskId": 1, "TaskName": "Parent Task 1", "Duration": 10, "ParentId": null, "isParent": true, "isExpanded": true },
+  { "TaskId": 2, "TaskName": "Child task 1", "Duration": 4, "ParentId": null, "isParent": null, "isExpanded": true },
+  { "TaskId": 13, "TaskName": "Child task 5", "Duration": 4, "ParentId": 2, "isParent": null, "isExpanded": false },
+  { "TaskId": 5, "TaskName": "Parent Task 2", "Duration": 10, "ParentId": null, "isParent": true, "isExpanded": true },
+  { "TaskId": 6, "TaskName": "Child task 2", "Duration": 4, "ParentId": 5, "isParent": null, "isExpanded": false },
+  { "TaskId": 10, "TaskName": "Parent Task 3", "Duration": 10, "ParentId": null, "isParent": true, "isExpanded": true },
+  { "TaskId": 11, "TaskName": "Child task 3", "Duration": 4, "ParentId": 10, "isParent": false, "isExpanded": false }];
   beforeAll((done: Function) => {
     gridObj = createGrid(
       {
         dataSource: data,
         idMapping: 'TaskId',
-         treeColumnIndex: 1,
-                parentIdMapping: 'ParentId',
-                expandStateMapping: "isExpanded",
-                        editSettings: {
-                allowAdding: true,
-                allowEditing: true,
-                allowDeleting: true,
-                mode: 'Row',
-                newRowPosition: 'Below'
-            },
-             toolbar: ['Add', 'Delete', 'Update', 'Cancel'],
+        treeColumnIndex: 1,
+        parentIdMapping: 'ParentId',
+        expandStateMapping: "isExpanded",
+        editSettings: {
+          allowAdding: true,
+          allowEditing: true,
+          allowDeleting: true,
+          mode: 'Row',
+          newRowPosition: 'Below'
+        },
+        toolbar: ['Add', 'Delete', 'Update', 'Cancel'],
         columns: [
-          { field: 'TaskID', headerText: 'Task ID', textAlign: 'Right', isPrimaryKey:true, width: 140 },
+          { field: 'TaskID', headerText: 'Task ID', textAlign: 'Right', isPrimaryKey: true, width: 140 },
           { field: 'TaskName', headerText: 'Task Name', width: 160 }
-         
+
         ]
       },
       done
@@ -2566,26 +2598,27 @@ describe('Expand / Collapse Icon Issue when adding a new record', () => {
   it(' New row Add with the position below', (done: Function) => {
     gridObj.selectRow(0);
     actionComplete = (args?: any): void => {
-    if (args.requestType === 'save') {
-      rows = gridObj.getRows();
-      let cells: NodeListOf<Element> = gridObj.grid.getRows()[1].querySelectorAll('.e-rowcell');
-      expect(rows.length == 8).toBe(true);
-      expect(cells[0].textContent === '25' ).toBeTruthy();
-      expect(rows[0].getElementsByClassName('e-treegridexpand').length).toBe(0);
-      expect(rows[1].getElementsByClassName('e-treegridexpand').length).toBe(0);
-      done();
-     }
-      };
-      gridObj.actionComplete = actionComplete;
-      (<any>gridObj.grid.toolbarModule).toolbarClickHandler({ item: { id: gridObj.grid.element.id + '_add' } });
-      gridObj.grid.editModule.formObj.element.getElementsByTagName('input')[0].value = "25";
-      (<any>gridObj.grid.toolbarModule).toolbarClickHandler({ item: { id: gridObj.grid.element.id + '_update' } });
-    });
-  
+      if (args.requestType === 'save') {
+        rows = gridObj.getRows();
+        let cells: NodeListOf<Element> = gridObj.grid.getRows()[1].querySelectorAll('.e-rowcell');
+        expect(rows.length == 8).toBe(true);
+        expect(cells[0].textContent === '25').toBeTruthy();
+        expect(rows[0].getElementsByClassName('e-treegridexpand').length).toBe(0);
+        expect(rows[1].getElementsByClassName('e-treegridexpand').length).toBe(0);
+        done();
+      }
+    };
+    gridObj.actionComplete = actionComplete;
+    (<any>gridObj.grid.toolbarModule).toolbarClickHandler({ item: { id: gridObj.grid.element.id + '_add' } });
+    gridObj.grid.editModule.formObj.element.getElementsByTagName('input')[0].value = "25";
+    (<any>gridObj.grid.toolbarModule).toolbarClickHandler({ item: { id: gridObj.grid.element.id + '_update' } });
+  });
+
   afterAll(() => {
     destroy(gridObj);
+    gridObj = null;
   });
-}); 
+});
 
 describe('Updaterow method with self reference data', () => {
   let gridObj: TreeGrid;
@@ -2596,29 +2629,30 @@ describe('Updaterow method with self reference data', () => {
         idMapping: 'TaskID',
         parentIdMapping: 'parentID',
         treeColumnIndex: 1,
-        allowPaging:true,
-        pageSettings: {pageSize:10},
-        columns: [{field: 'TaskID', headerText: 'Task ID', isPrimaryKey: true},
-                  {field: 'TaskName', headerText: 'Task Name'},
-                  {field: 'StartDate', headerText: 'Start Date'},
-                  {field: 'Progress', headerText: 'Progress'}
-       ]
-      },     
+        allowPaging: true,
+        pageSettings: { pageSize: 10 },
+        columns: [{ field: 'TaskID', headerText: 'Task ID', isPrimaryKey: true },
+        { field: 'TaskName', headerText: 'Task Name' },
+        { field: 'StartDate', headerText: 'Start Date' },
+        { field: 'Progress', headerText: 'Progress' }
+        ]
+      },
       done
     );
   });
   it(' update row method', () => {
-    gridObj.updateRow(undefined,{TaskID:7, TaskName:"Changed"});
-    expect(gridObj.dataSource[7].TaskName=='Changed');
-    });
-    
+    gridObj.updateRow(undefined, { TaskID: 7, TaskName: "Changed" });
+    expect(gridObj.dataSource[7].TaskName == 'Changed');
+  });
+
   it(' update row method with index value', () => {
-    gridObj.updateRow(1,{TaskID:2, TaskName:"test"});
-    expect(gridObj.dataSource[1].TaskName=='test');
-   });
+    gridObj.updateRow(1, { TaskID: 2, TaskName: "test" });
+    expect(gridObj.dataSource[1].TaskName == 'test');
+  });
 
   afterAll(() => {
     destroy(gridObj);
+    gridObj = null;
   });
 });
 
@@ -2758,6 +2792,7 @@ describe('EJ2-48145 - Adding parent and child together with addRecord method', (
   });
   afterAll(() => {
     destroy(gridObj);
+    gridObj = null;
   });
 });
 
@@ -3029,8 +3064,8 @@ describe('EJ2-48935 - Adding record with addRecord method at last row position w
   });
   it('Adding a record to last row with rowPosition as Below', function (done) {
     actionComplete = (): void => {
-        expect(gridObj.dataSource[0].subtasks[4].taskID).toBe(1000);
-        done();
+      expect(gridObj.dataSource[0].subtasks[4].taskID).toBe(1000);
+      done();
     };
     gridObj.grid.actionComplete = actionComplete;
     gridObj.addRecord(arr[0], 4, "Below");
@@ -3076,8 +3111,8 @@ describe('EJ2-48935 - Adding record with addRecord method at last to second row 
   });
   it('Adding a record to last to second row with rowPosition as Below', function (done) {
     actionComplete = (): void => {
-        expect(gridObj.dataSource[0].subtasks[3].taskID).toBe(1000);
-        done();
+      expect(gridObj.dataSource[0].subtasks[3].taskID).toBe(1000);
+      done();
     };
     gridObj.grid.actionComplete = actionComplete;
     gridObj.addRecord(arr[0], 3, "Below");
@@ -3085,34 +3120,35 @@ describe('EJ2-48935 - Adding record with addRecord method at last to second row 
 });
 
 describe('Editing - double click on icon', () => {
-	let gridObj: TreeGrid;
-	beforeAll((done: Function) => {
-		gridObj = createGrid(
-			{
-				dataSource: [],
-				childMapping: 'subtasks',
-				editSettings: { allowEditing: true, mode: 'Cell', allowDeleting: true, allowAdding: true, newRowPosition: 'Below' },
-				treeColumnIndex: 1,
-				toolbar: ['Add', 'Edit', 'Update', 'Delete'],
-				columns: [{ field: 'taskID', headerText: 'Task ID', isPrimaryKey: true },
-				{ field: 'taskName', headerText: 'Task Name' },
-				{ field: 'progress', headerText: 'Progress' },
-				{ field: 'startDate', headerText: 'Start Date' }
-				]
-			},
-			done
-		);
-	});
-	it('double click on icon', () => {
-		for (let i: number = 0; i<gridObj.getInjectedModules().length; i++) {
-			if (gridObj.getInjectedModules()[i].name != "Freeze") {
-				expect(gridObj.getInjectedModules()[i].name != "Freeze").toBe(true);
-			}
-		}		
-	});
-	afterAll(() => {
-		destroy(gridObj);
-	});
+  let gridObj: TreeGrid;
+  beforeAll((done: Function) => {
+    gridObj = createGrid(
+      {
+        dataSource: [],
+        childMapping: 'subtasks',
+        editSettings: { allowEditing: true, mode: 'Cell', allowDeleting: true, allowAdding: true, newRowPosition: 'Below' },
+        treeColumnIndex: 1,
+        toolbar: ['Add', 'Edit', 'Update', 'Delete'],
+        columns: [{ field: 'taskID', headerText: 'Task ID', isPrimaryKey: true },
+        { field: 'taskName', headerText: 'Task Name' },
+        { field: 'progress', headerText: 'Progress' },
+        { field: 'startDate', headerText: 'Start Date' }
+        ]
+      },
+      done
+    );
+  });
+  it('double click on icon', () => {
+    for (let i: number = 0; i < gridObj.getInjectedModules().length; i++) {
+      if (gridObj.getInjectedModules()[i].name != "Freeze") {
+        expect(gridObj.getInjectedModules()[i].name != "Freeze").toBe(true);
+      }
+    }
+  });
+  afterAll(() => {
+    destroy(gridObj);
+    gridObj = null;
+  });
 });
 
 describe('EJ2-54664 - delete the parent and child record using deleteRecord method', () => {
@@ -3122,36 +3158,38 @@ describe('EJ2-54664 - delete the parent and child record using deleteRecord meth
     gridObj = createGrid(
       {
         dataSource: sampleData,
-            enableVirtualization:true,
-            childMapping: 'subtasks',
-            treeColumnIndex: 1,
-            height: 400,
-            editSettings: {
-                allowAdding: true,
-                allowEditing: true,
-                allowDeleting: true,
-                mode: 'Row',
+        enableVirtualization: true,
+        childMapping: 'subtasks',
+        treeColumnIndex: 1,
+        height: 400,
+        editSettings: {
+          allowAdding: true,
+          allowEditing: true,
+          allowDeleting: true,
+          mode: 'Row',
 
-            },
-            toolbar: ['Add', 'Delete', 'Update', 'Cancel'],
-            columns: [
-                {
-                    field: 'taskID', headerText: 'Task ID', isPrimaryKey: true, textAlign: 'Right', width: 90
-                },
-                { field: 'taskName', headerText: 'Task Name', editType: 'stringedit', width: 220 },
-                { field: 'startDate', headerText: 'Start Date', textAlign: 'Right', width: 130,
-                  format: 'yMd' },
-                {
-                    field: 'duration', headerText: 'Duration', textAlign: 'Right', width: 100,
-                }
-            ],
-            actionFailure: actionFailedFunction
+        },
+        toolbar: ['Add', 'Delete', 'Update', 'Cancel'],
+        columns: [
+          {
+            field: 'taskID', headerText: 'Task ID', isPrimaryKey: true, textAlign: 'Right', width: 90
+          },
+          { field: 'taskName', headerText: 'Task Name', editType: 'stringedit', width: 220 },
+          {
+            field: 'startDate', headerText: 'Start Date', textAlign: 'Right', width: 130,
+            format: 'yMd'
+          },
+          {
+            field: 'duration', headerText: 'Duration', textAlign: 'Right', width: 100,
+          }
+        ],
+        actionFailure: actionFailedFunction
       },
       done
     );
   });
   it('Delete -  Parent and Child record', (done: Function) => {
-    gridObj.deleteRecord('taskID', {taskID:1});
+    gridObj.deleteRecord('taskID', { taskID: 1 });
     expect(gridObj.flatData.length === 31).toBe(true);
     done();
   });
@@ -3174,26 +3212,28 @@ describe('EJ2-69973 - script error throws while collapsing a record after editin
         treeColumnIndex: 1,
         height: 400,
         editSettings: {
-            allowAdding: true,
-            allowEditing: true,
-            allowDeleting: true,
-            mode: 'Row',
-            newRowPosition: 'Below'
+          allowAdding: true,
+          allowEditing: true,
+          allowDeleting: true,
+          mode: 'Row',
+          newRowPosition: 'Below'
 
         },
         toolbar: ['Add', 'Edit', 'Delete', 'Update', 'Cancel'],
         columns: [
-            {
-                field: 'taskID', headerText: 'Task ID', isPrimaryKey: true, textAlign: 'Right',
-                validationRules: { required: true, number: true}, width: 90
-            },
-            { field: 'taskName', headerText: 'Task Name', editType: 'stringedit', width: 220, validationRules: {required: true} },
-            { field: 'startDate', headerText: 'Start Date', textAlign: 'Right', width: 130, editType: 'datepickeredit',
-              format: 'yMd', validationRules: { date: true} },
-            {
-                field: 'duration', headerText: 'Duration', textAlign: 'Right', width: 100, editType: 'numericedit',
-                validationRules: { number: true, min: 0}, edit: { params: {  format: 'n'}}
-            }
+          {
+            field: 'taskID', headerText: 'Task ID', isPrimaryKey: true, textAlign: 'Right',
+            validationRules: { required: true, number: true }, width: 90
+          },
+          { field: 'taskName', headerText: 'Task Name', editType: 'stringedit', width: 220, validationRules: { required: true } },
+          {
+            field: 'startDate', headerText: 'Start Date', textAlign: 'Right', width: 130, editType: 'datepickeredit',
+            format: 'yMd', validationRules: { date: true }
+          },
+          {
+            field: 'duration', headerText: 'Duration', textAlign: 'Right', width: 100, editType: 'numericedit',
+            validationRules: { number: true, min: 0 }, edit: { params: { format: 'n' } }
+          }
         ]
       },
       done
@@ -3216,6 +3256,7 @@ describe('EJ2-69973 - script error throws while collapsing a record after editin
   });
   afterAll(() => {
     destroy(gridObj);
+    gridObj = null;
   });
 });
 
@@ -3225,16 +3266,16 @@ describe('Add rows - Add rows as child', () => {
   beforeAll((done: Function) => {
     gridObj = createGrid(
       {
-          dataSource: sampleData,
-          childMapping: 'subtasks',
-          editSettings: { allowEditing: true, mode: 'Row', allowDeleting: true, allowAdding: true, newRowPosition: 'Child' },
-          treeColumnIndex: 1,
-          toolbar: ['Add', 'Edit', 'Update', 'Delete', 'Cancel', 'ExpandAll', 'CollapseAll'],
-            columns: [{ field: 'taskID', headerText: 'Task ID', isPrimaryKey: true },
-            { field: 'taskName', headerText: 'Task Name' },
-            { field: 'progress', headerText: 'Progress' },
-            { field: 'startDate', headerText: 'Start Date' }
-            ]
+        dataSource: sampleData,
+        childMapping: 'subtasks',
+        editSettings: { allowEditing: true, mode: 'Row', allowDeleting: true, allowAdding: true, newRowPosition: 'Child' },
+        treeColumnIndex: 1,
+        toolbar: ['Add', 'Edit', 'Update', 'Delete', 'Cancel', 'ExpandAll', 'CollapseAll'],
+        columns: [{ field: 'taskID', headerText: 'Task ID', isPrimaryKey: true },
+        { field: 'taskName', headerText: 'Task Name' },
+        { field: 'progress', headerText: 'Progress' },
+        { field: 'startDate', headerText: 'Start Date' }
+        ]
       },
       done
     );
@@ -3252,6 +3293,7 @@ describe('Add rows - Add rows as child', () => {
   });
   afterAll(() => {
     destroy(gridObj);
+    gridObj = null;
   });
 });
 
@@ -3262,16 +3304,16 @@ describe('ActionBegin action called twice while on Row Editing - 828869', () => 
   beforeAll((done: Function) => {
     gridObj = createGrid(
       {
-          dataSource: sampleData,
-          childMapping: 'subtasks',
-          editSettings: { allowEditing: true, mode: 'Row', allowDeleting: true, allowAdding: true, newRowPosition: 'Child' },
-          treeColumnIndex: 1,
-          toolbar: ['Add', 'Edit', 'Update', 'Delete', 'Cancel'],
-            columns: [{ field: 'taskID', headerText: 'Task ID', isPrimaryKey: true },
-            { field: 'taskName', headerText: 'Task Name' },
-            { field: 'progress', headerText: 'Progress' },
-            { field: 'startDate', headerText: 'Start Date' }
-            ]
+        dataSource: sampleData,
+        childMapping: 'subtasks',
+        editSettings: { allowEditing: true, mode: 'Row', allowDeleting: true, allowAdding: true, newRowPosition: 'Child' },
+        treeColumnIndex: 1,
+        toolbar: ['Add', 'Edit', 'Update', 'Delete', 'Cancel'],
+        columns: [{ field: 'taskID', headerText: 'Task ID', isPrimaryKey: true },
+        { field: 'taskName', headerText: 'Task Name' },
+        { field: 'progress', headerText: 'Progress' },
+        { field: 'startDate', headerText: 'Start Date' }
+        ]
       },
       done
     );
@@ -3289,7 +3331,8 @@ describe('ActionBegin action called twice while on Row Editing - 828869', () => 
   });
   afterAll(() => {
     destroy(gridObj);
-  });  
+    gridObj = null;
+  });
 });
 
 describe('Code coverage improment', () => {
@@ -3297,16 +3340,16 @@ describe('Code coverage improment', () => {
   beforeAll((done: Function) => {
     gridObj = createGrid(
       {
-          dataSource: sampleData,
-          childMapping: 'subtasks',
-          editSettings: { allowEditing: true, mode: 'Row', allowDeleting: true, allowAdding: true, newRowPosition: 'Child' },
-          treeColumnIndex: 1,
-          toolbar: ['Add', 'Edit', 'Update', 'Delete', 'Cancel', 'ExpandAll', 'CollapseAll'],
-            columns: [{ field: 'taskID', headerText: 'Task ID', isPrimaryKey: true },
-            { field: 'taskName', headerText: 'Task Name' },
-            { field: 'progress', headerText: 'Progress' },
-            { field: 'startDate', headerText: 'Start Date' }
-            ]
+        dataSource: sampleData,
+        childMapping: 'subtasks',
+        editSettings: { allowEditing: true, mode: 'Row', allowDeleting: true, allowAdding: true, newRowPosition: 'Child' },
+        treeColumnIndex: 1,
+        toolbar: ['Add', 'Edit', 'Update', 'Delete', 'Cancel', 'ExpandAll', 'CollapseAll'],
+        columns: [{ field: 'taskID', headerText: 'Task ID', isPrimaryKey: true },
+        { field: 'taskName', headerText: 'Task Name' },
+        { field: 'progress', headerText: 'Progress' },
+        { field: 'startDate', headerText: 'Start Date' }
+        ]
       },
       done
     );
@@ -3318,10 +3361,11 @@ describe('Code coverage improment', () => {
   });
   afterAll(() => {
     destroy(gridObj);
+    gridObj = null;
   });
 });
 
-describe('Remote Data Editing with Below Mode', () => {    
+describe('Remote Data Editing with Below Mode', () => {
   let gridObj: TreeGrid;
   let elem: HTMLElement = createElement('div', { id: 'Grid' });
   let request: JasmineAjaxRequest;
@@ -3330,73 +3374,73 @@ describe('Remote Data Editing with Below Mode', () => {
   let actionBegin: (args: any) => void;
   let actionComplete: (args: any) => void;
   beforeAll((done: Function) => {
-      let dataBound: EmitType<Object> = () => { done(); };
-      spyOn(window, 'fetch').and.returnValue(Promise.resolve(
-        new Response(JSON.stringify({ d: data.slice(0, 3), __count: 3 }), {
-          status: 200,
+    let dataBound: EmitType<Object> = () => { done(); };
+    spyOn(window, 'fetch').and.returnValue(Promise.resolve(
+      new Response(JSON.stringify({ d: data.slice(0, 3), __count: 3 }), {
+        status: 200,
 
-        })
-      ));
-      originalTimeout = jasmine.DEFAULT_TIMEOUT_INTERVAL;
-      jasmine.DEFAULT_TIMEOUT_INTERVAL = 4000;
-      dataManager = new DataManager({
-          url: 'http://localhost:50499/Home/UrlData',
-          crossDomain: true
+      })
+    ));
+    originalTimeout = jasmine.DEFAULT_TIMEOUT_INTERVAL;
+    jasmine.DEFAULT_TIMEOUT_INTERVAL = 4000;
+    dataManager = new DataManager({
+      url: 'http://localhost:50499/Home/UrlData',
+      crossDomain: true
+    });
+    document.body.appendChild(elem);
+    gridObj = new TreeGrid(
+      {
+        dataSource: dataManager, dataBound: dataBound,
+        hasChildMapping: 'isParent',
+        idMapping: 'TaskID',
+        toolbar: ['Add', 'Edit', 'Update', 'Delete', 'Cancel', 'ExpandAll', 'CollapseAll'],
+        editSettings: { allowEditing: true, mode: 'Row', allowDeleting: true, allowAdding: true, newRowPosition: 'Below' },
+        parentIdMapping: 'parentID',
+        treeColumnIndex: 1,
+        columns: [
+          { field: "TaskID", headerText: "Task Id", isPrimaryKey: true },
+          { field: "TaskName", headerText: "Task Name" },
+          { field: "StartDate", headerText: "Start Date" },
+          { field: "EndDate", headerText: "End Date" },
+          { field: "Progress", headerText: "Progress" }
+        ]
       });
-      document.body.appendChild(elem);
-      gridObj = new TreeGrid(
-          {
-              dataSource: dataManager, dataBound: dataBound,
-              hasChildMapping: 'isParent',
-              idMapping: 'TaskID',
-              toolbar: ['Add', 'Edit', 'Update', 'Delete', 'Cancel', 'ExpandAll', 'CollapseAll'],
-              editSettings: { allowEditing: true, mode: 'Row', allowDeleting: true, allowAdding: true, newRowPosition: 'Below' },
-              parentIdMapping: 'parentID',
-              treeColumnIndex: 1,
-              columns: [
-                  { field: "TaskID", headerText: "Task Id", isPrimaryKey: true },
-                  { field: "TaskName", headerText: "Task Name" },
-                  { field: "StartDate", headerText: "Start Date" },
-                  { field: "EndDate", headerText: "End Date" },                    
-                  { field: "Progress", headerText: "Progress" }
-            ]
-          });
-      gridObj.appendTo('#Grid');
-      request = window.fetch['calls'].mostRecent();
+    gridObj.appendTo('#Grid');
+    request = window.fetch['calls'].mostRecent();
   });
 
   it('Add Row - No Selection', function (done) {
-      actionComplete = function (args) {
-          if (args.requestType === 'add') {
-              expect(args.row.rowIndex).toBe(0);
-              done();
-          }
-      };
-      gridObj.actionComplete = actionComplete;
-      (<any>gridObj.grid.toolbarModule).toolbarClickHandler({ item: { id: gridObj.grid.element.id + '_add' } });
+    actionComplete = function (args) {
+      if (args.requestType === 'add') {
+        expect(args.row.rowIndex).toBe(0);
+        done();
+      }
+    };
+    gridObj.actionComplete = actionComplete;
+    (<any>gridObj.grid.toolbarModule).toolbarClickHandler({ item: { id: gridObj.grid.element.id + '_add' } });
   });
   it('Add Row - ActionBegin Event', function (done) {
-      var formEle = gridObj.grid.editModule.formObj.element;
-      (select('#' + gridObj.grid.element.id + 'TaskID', formEle) as any).value = '121';
-      (select('#' + gridObj.grid.element.id + 'TaskName', formEle) as any).value = 'first';
-      (select('#' + gridObj.grid.element.id + 'Progress', formEle) as any).value = '23';
-      actionBegin = function (args) {
-          expect(args.data.TaskName === 'first').toBe(true);
-          done();
-      };
-      gridObj.actionBegin = actionBegin;
-      (<any>gridObj.grid.toolbarModule).toolbarClickHandler({ item: { id: gridObj.grid.element.id + '_update' } });
+    var formEle = gridObj.grid.editModule.formObj.element;
+    (select('#' + gridObj.grid.element.id + 'TaskID', formEle) as any).value = '121';
+    (select('#' + gridObj.grid.element.id + 'TaskName', formEle) as any).value = 'first';
+    (select('#' + gridObj.grid.element.id + 'Progress', formEle) as any).value = '23';
+    actionBegin = function (args) {
+      expect(args.data.TaskName === 'first').toBe(true);
+      done();
+    };
+    gridObj.actionBegin = actionBegin;
+    (<any>gridObj.grid.toolbarModule).toolbarClickHandler({ item: { id: gridObj.grid.element.id + '_update' } });
   });
   afterAll(() => {
-      jasmine.DEFAULT_TIMEOUT_INTERVAL = originalTimeout;
-      gridObj.destroy();
-      remove(elem);
-      jasmine.Ajax.uninstall();
+    jasmine.DEFAULT_TIMEOUT_INTERVAL = originalTimeout;
+    gridObj.destroy();
+    remove(elem);
+    jasmine.Ajax.uninstall();
   });
 });
 
 describe('Remote Data Editing with Above Mode', () => {
-    
+
   let gridObj: TreeGrid;
   let elem: HTMLElement = createElement('div', { id: 'Grid' });
   let request: JasmineAjaxRequest;
@@ -3405,68 +3449,68 @@ describe('Remote Data Editing with Above Mode', () => {
   let actionBegin: (args: any) => void;
   let actionComplete: (args: any) => void;
   beforeAll((done: Function) => {
-      let dataBound: EmitType<Object> = () => { done(); };
-      spyOn(window, 'fetch').and.returnValue(Promise.resolve(
-        new Response(JSON.stringify({ d: data.slice(0, 3), __count: 3 }), {
-          status: 200,
+    let dataBound: EmitType<Object> = () => { done(); };
+    spyOn(window, 'fetch').and.returnValue(Promise.resolve(
+      new Response(JSON.stringify({ d: data.slice(0, 3), __count: 3 }), {
+        status: 200,
 
-        })
-      ));
-      originalTimeout = jasmine.DEFAULT_TIMEOUT_INTERVAL;
-      jasmine.DEFAULT_TIMEOUT_INTERVAL = 4000;
-      dataManager = new DataManager({
-          url: 'http://localhost:50499/Home/UrlData',
-          crossDomain: true
+      })
+    ));
+    originalTimeout = jasmine.DEFAULT_TIMEOUT_INTERVAL;
+    jasmine.DEFAULT_TIMEOUT_INTERVAL = 4000;
+    dataManager = new DataManager({
+      url: 'http://localhost:50499/Home/UrlData',
+      crossDomain: true
+    });
+    document.body.appendChild(elem);
+    gridObj = new TreeGrid(
+      {
+        dataSource: dataManager, dataBound: dataBound,
+        hasChildMapping: 'isParent',
+        idMapping: 'TaskID',
+        toolbar: ['Add', 'Edit', 'Update', 'Delete', 'Cancel', 'ExpandAll', 'CollapseAll'],
+        editSettings: { allowEditing: true, mode: 'Row', allowDeleting: true, allowAdding: true, newRowPosition: 'Above' },
+        parentIdMapping: 'parentID',
+        treeColumnIndex: 1,
+        columns: [
+          { field: "TaskID", headerText: "Task Id", isPrimaryKey: true },
+          { field: "TaskName", headerText: "Task Name" },
+          { field: "StartDate", headerText: "Start Date" },
+          { field: "EndDate", headerText: "End Date" },
+          { field: "Progress", headerText: "Progress" }
+        ]
       });
-      document.body.appendChild(elem);
-      gridObj = new TreeGrid(
-          {
-              dataSource: dataManager, dataBound: dataBound,
-              hasChildMapping: 'isParent',
-              idMapping: 'TaskID',
-              toolbar: ['Add', 'Edit', 'Update', 'Delete', 'Cancel', 'ExpandAll', 'CollapseAll'],
-              editSettings: { allowEditing: true, mode: 'Row', allowDeleting: true, allowAdding: true, newRowPosition: 'Above' },
-              parentIdMapping: 'parentID',
-              treeColumnIndex: 1,
-              columns: [
-                  { field: "TaskID", headerText: "Task Id", isPrimaryKey: true },
-                  { field: "TaskName", headerText: "Task Name" },
-                  { field: "StartDate", headerText: "Start Date" },
-                  { field: "EndDate", headerText: "End Date" },                    
-                  { field: "Progress", headerText: "Progress" }
-            ]
-          });
-      gridObj.appendTo('#Grid');
-      request = window.fetch['calls'].mostRecent();
+    gridObj.appendTo('#Grid');
+    request = window.fetch['calls'].mostRecent();
   });
 
   it('Add Row - No Selection', function (done) {
-      actionComplete = function (args) {
-          if (args.requestType === 'add') {
-              expect(args.row.rowIndex).toBe(0);
-              done();
-          }
-      };
-      gridObj.actionComplete = actionComplete;
-      (<any>gridObj.grid.toolbarModule).toolbarClickHandler({ item: { id: gridObj.grid.element.id + '_add' } });
+    actionComplete = function (args) {
+      if (args.requestType === 'add') {
+        expect(args.row.rowIndex).toBe(0);
+        done();
+      }
+    };
+    gridObj.actionComplete = actionComplete;
+    (<any>gridObj.grid.toolbarModule).toolbarClickHandler({ item: { id: gridObj.grid.element.id + '_add' } });
   });
   it('Add Row - ActionBegin Event', function (done) {
-      var formEle = gridObj.grid.editModule.formObj.element;
-      (select('#' + gridObj.grid.element.id + 'TaskID', formEle) as any).value = '121';
-      (select('#' + gridObj.grid.element.id + 'TaskName', formEle) as any).value = 'first';
-      (select('#' + gridObj.grid.element.id + 'Progress', formEle) as any).value = '23';
-      actionBegin = function (args) {
-          expect(args.data.TaskName === 'first').toBe(true);
-          done();
-      };
-      gridObj.actionBegin = actionBegin;
-      (<any>gridObj.grid.toolbarModule).toolbarClickHandler({ item: { id: gridObj.grid.element.id + '_update' } });
+    var formEle = gridObj.grid.editModule.formObj.element;
+    (select('#' + gridObj.grid.element.id + 'TaskID', formEle) as any).value = '121';
+    (select('#' + gridObj.grid.element.id + 'TaskName', formEle) as any).value = 'first';
+    (select('#' + gridObj.grid.element.id + 'Progress', formEle) as any).value = '23';
+    actionBegin = function (args) {
+      expect(args.data.TaskName === 'first').toBe(true);
+      done();
+    };
+    gridObj.actionBegin = actionBegin;
+    (<any>gridObj.grid.toolbarModule).toolbarClickHandler({ item: { id: gridObj.grid.element.id + '_update' } });
   });
   afterAll(() => {
-      jasmine.DEFAULT_TIMEOUT_INTERVAL = originalTimeout;
-      gridObj.destroy();
-      remove(elem);
-      jasmine.Ajax.uninstall();
+    jasmine.DEFAULT_TIMEOUT_INTERVAL = originalTimeout;
+    gridObj.destroy();
+    remove(elem);
+    jasmine.Ajax.uninstall();
   });
 });
 
@@ -3482,9 +3526,9 @@ describe('Code coverage improment', () => {
         editSettings: { allowEditing: true, mode: 'Row', allowDeleting: true, allowAdding: true, newRowPosition: 'Top' },
         height: '410',
         columns: [
-            { field: 'taskID', headerText: 'Task ID', width: 60, textAlign: 'Right', isPrimaryKey: true },
-            { field: 'taskName', headerText: 'Task Name', width: 150, textAlign: 'Left'},
-            { field: 'startDate', headerText: 'Start Date', width: 90, textAlign: 'Right', type: 'date', format: 'yMd' },
+          { field: 'taskID', headerText: 'Task ID', width: 60, textAlign: 'Right', isPrimaryKey: true },
+          { field: 'taskName', headerText: 'Task Name', width: 150, textAlign: 'Left' },
+          { field: 'startDate', headerText: 'Start Date', width: 90, textAlign: 'Right', type: 'date', format: 'yMd' },
         ]
       },
       done
@@ -3500,5 +3544,244 @@ describe('Code coverage improment', () => {
   });
   afterAll(() => {
     destroy(gridObj);
+    gridObj = null;
   });
+});
+
+
+describe('Maintain expand/collapse state after editing the parent record', () => {
+  let gridObj: TreeGrid;
+  beforeAll((done: Function) => {
+    gridObj = createGrid(
+      {
+        dataSource: sampleData,
+        childMapping: 'subtasks',
+        editSettings: { allowEditing: true, mode: 'Row', allowDeleting: true, allowAdding: true, newRowPosition: 'Child' },
+        treeColumnIndex: 1,
+        toolbar: ['Add', 'Edit', 'Update', 'Delete', 'Cancel', 'ExpandAll', 'CollapseAll'],
+        columns: [{ field: 'taskID', headerText: 'Task ID', isPrimaryKey: true },
+        { field: 'taskName', headerText: 'Task Name' },
+        { field: 'progress', headerText: 'Progress' },
+        { field: 'startDate', headerText: 'Start Date' }
+        ]
+      },
+      done
+    );
+  });
+ it('should retain expand/collapse state after editing a parent record', (done: Function) => {
+   (gridObj.getRows()[0].getElementsByClassName('e-treegridexpand')[0] as HTMLElement).click();
+    gridObj.selectRow(0);
+    gridObj.startEdit();
+    let formEle: HTMLFormElement = gridObj.grid.editModule.formObj.element;
+    (select('#' + gridObj.grid.element.id + 'taskName', formEle) as any).value = 'Updated Parent Record';
+    gridObj.actionComplete = (args?: any): void => {
+        if(args.requestType === 'save') {
+            expect(gridObj.getRows()[0].querySelector('.e-treegridcollapse')).not.toBeNull();
+            done();
+        }
+    };
+    (<any>gridObj.grid.toolbarModule).toolbarClickHandler({ item: { id: gridObj.grid.element.id + '_update' } });
+});
+  afterAll(() => {
+    destroy(gridObj);
+    gridObj = null;
+  });
+});
+describe('Maintain expand/collapse state after editing the child record', () => {
+  let gridObj: TreeGrid;
+  beforeAll((done: Function) => {
+    gridObj = createGrid(
+      {
+        dataSource: sampleData,
+        childMapping: 'subtasks',
+        editSettings: { allowEditing: true, mode: 'Row', allowDeleting: true, allowAdding: true, newRowPosition: 'Child' },
+        treeColumnIndex: 1,
+        toolbar: ['Add', 'Edit', 'Update', 'Delete', 'Cancel', 'ExpandAll', 'CollapseAll'],
+        columns: [{ field: 'taskID', headerText: 'Task ID', isPrimaryKey: true },
+        { field: 'taskName', headerText: 'Task Name' },
+        { field: 'progress', headerText: 'Progress' },
+        { field: 'startDate', headerText: 'Start Date' }
+        ]
+      },
+      done
+    );
+  });
+ it('should retain expand/collapse state after editing a child record', (done: Function) => {
+    (gridObj.getRows()[0].getElementsByClassName('e-treegridexpand')[0] as HTMLElement).click();
+  
+  gridObj.selectRow(1);
+    gridObj.startEdit();
+    let formEle: HTMLFormElement = gridObj.grid.editModule.formObj.element;
+    (select('#' + gridObj.grid.element.id + 'taskName', formEle) as any).value = 'Updated Child Record';
+    gridObj.actionComplete = (args?: any): void => {
+        if(args.requestType === 'save') {
+            expect(gridObj.getRows()[0].querySelector('.e-treegridexpand')).toBeNull();
+            done();
+        }
+    };
+    (<any>gridObj.grid.toolbarModule).toolbarClickHandler({ item: { id: gridObj.grid.element.id + '_update' } });
+});
+
+  afterAll(() => {
+    destroy(gridObj);
+    gridObj = null;
+  });
+});
+
+describe('Row Editing - Update Record on Second Page', () => {
+    let gridObj: TreeGrid;
+    let actionComplete: () => void;
+    beforeAll((done: Function) => {
+        gridObj = createGrid(
+            {
+                dataSource: sampleData,
+                allowPaging: true,
+               toolbar: ['Add','Edit', 'Delete', 'Update', 'Cancel'],
+                childMapping: 'subtasks',
+                editSettings: { allowAdding:true , allowDeleting:true, allowEditing: true , newRowPosition:'Child', mode: 'Row' },
+                treeColumnIndex: 1,
+                columns: [
+                    { field: 'taskID', headerText: 'Task ID', isPrimaryKey: true },
+                    { field: 'taskName', headerText: 'Task Name' },
+                    { field: 'progress', headerText: 'Progress' }
+                ]
+            },
+            done
+        );
+    });
+
+    beforeEach((done: Function) => {
+        gridObj.actionComplete = (args?: any): void => {
+            if (args.requestType === 'paging') {
+                done();
+            }
+        };
+        gridObj.goToPage(2);
+    });
+
+    it('should Edit the level 0 record', (done: Function) => {
+      const event: MouseEvent = new MouseEvent('dblclick', {
+            'view': window,
+            'bubbles': true,
+            'cancelable': true
+        });
+        (gridObj.getRows()[0].getElementsByClassName('e-rowcell')[1] as HTMLElement).dispatchEvent(event);
+        actionComplete = (args?: any): void => {
+               expect((gridObj.getRows()[0].getElementsByClassName('e-rowcell')[1] as HTMLElement).innerText === 'Test').toBe(true);
+                done();
+        };
+        gridObj.actionComplete = actionComplete;
+        gridObj.grid.editModule.formObj.element.getElementsByTagName('input')[1].value = 'Test';
+        (<any>gridObj.grid.toolbarModule).toolbarClickHandler({ item: { id: gridObj.grid.element.id + '_update' } });
+    });
+
+    afterAll(() => {
+        destroy(gridObj);
+    });
+});
+
+
+describe('Row Editing - Update Record on Second Page', () => {
+    let gridObj: TreeGrid;
+    let actionComplete: () => void;
+    beforeAll((done: Function) => {
+        gridObj = createGrid(
+            {
+                dataSource: sampleData,
+                allowPaging: true,
+               toolbar: ['Add','Edit', 'Delete', 'Update', 'Cancel'],
+                childMapping: 'subtasks',
+                editSettings: { allowAdding:true , allowDeleting:true, allowEditing: true , newRowPosition:'Child', mode: 'Row' },
+                treeColumnIndex: 1,
+                columns: [
+                    { field: 'taskID', headerText: 'Task ID', isPrimaryKey: true },
+                    { field: 'taskName', headerText: 'Task Name' },
+                    { field: 'progress', headerText: 'Progress' }
+                ]
+            },
+            done
+        );
+    });
+
+    beforeEach((done: Function) => {
+        gridObj.actionComplete = (args?: any): void => {
+            if (args.requestType === 'paging') {
+                done();
+            }
+        };
+        gridObj.goToPage(2);
+    });
+
+    it('should Edit the level 1 record', (done: Function) => {
+      const event: MouseEvent = new MouseEvent('dblclick', {
+            'view': window,
+            'bubbles': true,
+            'cancelable': true
+        });
+        (gridObj.getRows()[1].getElementsByClassName('e-rowcell')[1] as HTMLElement).dispatchEvent(event);
+        actionComplete = (args?: any): void => {
+               expect((gridObj.getRows()[1].getElementsByClassName('e-rowcell')[1] as HTMLElement).innerText === 'Test').toBe(true);
+                done();
+        };
+        gridObj.actionComplete = actionComplete;
+        gridObj.grid.editModule.formObj.element.getElementsByTagName('input')[1].value = 'Test';
+        (<any>gridObj.grid.toolbarModule).toolbarClickHandler({ item: { id: gridObj.grid.element.id + '_update' } });
+    });
+
+    afterAll(() => {
+        destroy(gridObj);
+    });
+});
+
+
+describe('Row Editing - Add record in last page then cancel', () => {
+    let gridObj: TreeGrid;
+    let actionComplete: () => void;
+    beforeAll((done: Function) => {
+        gridObj = createGrid(
+            {
+                dataSource: sampleData,
+                allowPaging: true,
+                childMapping: 'subtasks',
+                editSettings: { allowEditing: true, allowDeleting: true, allowAdding: true, mode: 'Row' },
+                treeColumnIndex: 1,
+                toolbar: ['Add', 'Edit', 'Update', 'Delete', 'Cancel'],
+                columns: [
+                    { field: 'taskID', headerText: 'Task ID', isPrimaryKey: true },
+                    { field: 'taskName', headerText: 'Task Name' },
+                    { field: 'progress', headerText: 'Progress' }
+                ]
+            },
+            done
+        );
+    });
+
+    beforeEach((done: Function) => {
+        gridObj.actionComplete = (args?: any): void => {
+            if (args.requestType === 'paging') {
+                done();
+            }
+        };
+        gridObj.goToPage(3);
+    });
+
+    it('should not add record when canceled on last page', (done: Function) => {
+        const initialDataLength = gridObj.flatData.length;
+        (<any>gridObj.grid.toolbarModule).toolbarClickHandler({ item: { id: gridObj.grid.element.id + '_add' } });
+        let formEle = gridObj.grid.editModule.formObj.element;
+        (select('#' + gridObj.grid.element.id + 'taskID', formEle) as any).value = '9999';
+        (select('#' + gridObj.grid.element.id + 'taskName', formEle) as any).value = 'Test Record on Last Page';
+        actionComplete = (args?: any): void => {
+            if (args.requestType === 'cancel') {
+                expect(gridObj.flatData.length).toBe(initialDataLength);
+                done();
+            }
+        };
+        gridObj.actionComplete = actionComplete;
+        (<any>gridObj.grid.toolbarModule).toolbarClickHandler({ item: { id: gridObj.grid.element.id + '_cancel' } });
+    });
+
+    afterAll(() => {
+        destroy(gridObj);
+    });
 });

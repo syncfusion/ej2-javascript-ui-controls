@@ -455,7 +455,7 @@ export class TableResizer {
             if (this.resizerPosition === 0) {
                 this.resizeColumnAtStart(table, dragValue, selectedCells);
             } else if (table !== null && (this.resizerPosition === table.tableHolder.columns.length
-                || (cellwidget.x + cellwidget.width) + 1 <= this.startingPoint.x)) {
+                || cellwidget.x <= this.startingPoint.x)) {
                 const leftColumnCollection: TableCellWidget[] = this.getColumnCells(table, this.resizerPosition, true);
                 for (let i: number = 0; i < leftColumnCollection.length; i++) {
                     const cell: TableCellWidget = leftColumnCollection[parseInt(i.toString(), 10)];
@@ -507,7 +507,7 @@ export class TableResizer {
                         }
                     }
                 }
-                this.changeWidthOfCells(table, leftColumnCollection, rightColumnCollection, dragValue);
+                dragValue = this.changeWidthOfCells(table, leftColumnCollection, rightColumnCollection, dragValue);
                 if (table.tableFormat.allowAutoFit) {
                     table.updateWidth(dragValue);
                 }
@@ -528,7 +528,18 @@ export class TableResizer {
         if (rowFormat.beforeWidth > 0) {
             const newGridBefore: number = rowFormat.beforeWidth + dragValue;
             if (newGridBefore > 0) {
-                this.updateGridBefore(selectedRow, dragValue);
+                for (let i: number = 0; i < table.childWidgets.length; i++) {
+                    const tableRow: TableRowWidget = table.childWidgets[parseInt(i.toString(), 10)] as TableRowWidget;
+                    if (selectedCells.indexOf(tableRow.childWidgets[0] as TableCellWidget) !== -1) {
+                        const cellWidget: TableCellWidget = tableRow.childWidgets[0] as TableCellWidget;
+                        if (!isNullOrUndefined(cellWidget) &&
+                            cellWidget.cellFormat.preferredWidth - dragValue <= cellWidget.ownerColumn.minimumWidth) {
+                            dragValue = cellWidget.cellFormat.preferredWidth - cellWidget.ownerColumn.minimumWidth;
+                        }
+                        this.updateGridBefore(tableRow, dragValue);
+                        this.increaseOrDecreaseWidth(cellWidget, dragValue, false);
+                    }
+                }
             } else {
                 const leastGridBefore: number = this.getLeastGridBefore(table, selectedRow);
                 if (newGridBefore < leastGridBefore && offset !== newGridBefore) {
@@ -536,7 +547,11 @@ export class TableResizer {
                     table.tableFormat.leftIndent = newIndent >= -1440 ? (newIndent <= 1440 ? newIndent : 1440) : -1440;
                     for (let i: number = 0; i < table.childWidgets.length; i++) {
                         const tableRow: TableRowWidget = table.childWidgets[parseInt(i.toString(), 10)] as TableRowWidget;
-                        if (selectedRow !== tableRow) {
+                        if (selectedCells.indexOf(tableRow.childWidgets[0] as TableCellWidget) !== -1) {
+                            this.updateGridBefore(tableRow, -tableRow.rowFormat.beforeWidth);
+                            this.increaseOrDecreaseWidth(tableRow.childWidgets[0] as TableCellWidget, dragValue, false);
+                        }
+                        else {
                             this.updateGridBefore(tableRow, -newGridBefore);
                         }
                     }
@@ -805,7 +820,7 @@ export class TableResizer {
         return isRightCellResized;
     }
     /* eslint-disable-next-line max-len */
-    private changeWidthOfCells(table: TableWidget, leftColumnCollection: TableCellWidget[], rightColumnCollection: TableCellWidget[], dragValue: number): void {
+    private changeWidthOfCells(table: TableWidget, leftColumnCollection: TableCellWidget[], rightColumnCollection: TableCellWidget[], dragValue: number): number {
         let isRightCellWidthUpdated: boolean = false;
         if (leftColumnCollection.length > 0) {
             let flag: boolean = false;
@@ -825,6 +840,9 @@ export class TableResizer {
             for (let i: number = 0; i < rightColumnCollection.length; i++) {
                 const cell: TableCellWidget = rightColumnCollection[parseInt(i.toString(), 10)];
                 if (cell.cellIndex === 0) {
+                    if (cell.cellFormat.preferredWidth - dragValue <= cell.ownerColumn.minimumWidth) {
+                        dragValue = cell.cellFormat.preferredWidth - cell.ownerColumn.minimumWidth;
+                    }
                     const newGridBefore: number = cell.ownerRow.rowFormat.beforeWidth + dragValue;
                     if (newGridBefore >= 0) {
                         this.updateGridBefore(cell.ownerRow, dragValue);
@@ -849,6 +867,7 @@ export class TableResizer {
                 }
             }
         }
+        return dragValue;
     }
     private updateRowsGridAfterWidth(table: TableWidget): void {
         const maxRowWidth: number = this.getMaxRowWidth(table, true);

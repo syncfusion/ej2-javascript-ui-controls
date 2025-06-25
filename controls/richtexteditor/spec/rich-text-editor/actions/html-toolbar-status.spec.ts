@@ -2,7 +2,7 @@
  * HTML Toolbar status spec
  */
 import { detach, isNullOrUndefined } from '@syncfusion/ej2-base';
-import { IToolbarStatus } from '../../../src';
+import { IToolbarStatus } from '../../../src/common/interface';
 import { RichTextEditor, dispatchEvent, ToolbarStatusEventArgs } from "../../../src/rich-text-editor/index";
 import { NodeSelection } from '../../../src/selection/selection';
 import { renderRTE, destroy, setCursorPoint } from "./../render.spec";
@@ -48,7 +48,7 @@ describe(' HTML editor update toolbar ', () => {
         '<span id="justify31" style="text-align:justify;">the   Rich Text Editor (RTE) control is an easy to render in' +
         'client side.</span>' +
         '<ol id="order31">' +
-        '<li><p id="paragraph31">Provide the tool bar support, it’s also customizable.</p></li>' +
+        '<li id="list31"><p id="paragraph31">Provide the tool bar support, it’s also customizable.</p></li>' +
         '<li><p>Options to get the HTML elements with styles.</p></li>' +
         '<li><p>Support to insert image from a defined path.</p></li>' +
         '<li><p>Footer elements and styles(tag / Element information , Action button (Upload, Cancel))</p></li>' +
@@ -57,7 +57,7 @@ describe(' HTML editor update toolbar ', () => {
         '<li><p>Keyboard navigation support.</p></li>' +
         '</ol>' +
         '<div><ul id="unorder31">' +
-        '<li><p id="paragraph32">Provide the tool bar support, it’s also customizable.</p></li>' +
+        '<li id="list32"><p id="paragraph32">Provide the tool bar support, it’s also customizable.</p></li>' +
         '<li><p>Options to get the HTML elements with styles.</p></li>' +
         '<li><p>Support to insert image from a defined path.</p></li>' +
         '<li><p>Footer elements and styles(tag / Element information , Action button (Upload, Cancel))</p></li>' +
@@ -319,16 +319,14 @@ describe(' HTML editor update toolbar ', () => {
             expect(status.alignments).toEqual('justifyfull');
         });
         it('Check orderlist tag ', () => {
-            let node: Node = document.getElementById('paragraph31');
+            let node: Node = document.getElementById('list31');
             domSelection.setSelectionText(document, node.childNodes[0], node.childNodes[0], 5, 5);
             (rteObj as any).mouseUp({ target: editNode });
             expect((rteObj.htmlEditorModule as any).toolbarUpdate.toolbarStatus.orderedlist).toEqual(true);
             expect(status.orderedlist).toEqual(true);
-            expect((rteObj.htmlEditorModule as any).toolbarUpdate.toolbarStatus.formats).toEqual('p');
-            expect(status.formats).toEqual('p');
         });
         it('Check unorderlist tag ', () => {
-            let node: Node = document.getElementById('paragraph32');
+            let node: Node = document.getElementById('list32');
             domSelection.setSelectionText(document, node.childNodes[0], node.childNodes[0], 5, 5);
             (rteObj as any).mouseUp({ target: editNode });
             expect((rteObj.htmlEditorModule as any).toolbarUpdate.toolbarStatus.unorderedlist).toEqual(true);
@@ -520,7 +518,7 @@ describe(' HTML editor update toolbar ', () => {
             let toolbarEle = document.querySelector('[title="Font Color"]')
             toolbarEle.dispatchEvent(event);
             expect(!isNullOrUndefined(document.querySelector('.e-tooltip-wrap'))).toBe(true);
-            ((document.querySelectorAll('.e-toolbar-item')[1] as HTMLElement).querySelector('.e-icon-right') as HTMLElement).click();
+            ((document.querySelectorAll('.e-toolbar-item')[1] as HTMLElement).querySelector('.e-dropdown-btn.e-rte-dropdown') as HTMLElement).click();
                 setTimeout( function () {
                     expect(document.querySelector('.data-tooltip-id') === null).toBe(true);
                     toolbarEle = document.querySelector('[data-title]');

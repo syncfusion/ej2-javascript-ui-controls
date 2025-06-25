@@ -1069,6 +1069,7 @@ describe('Chart Crosshair', () => {
             chartObj.refresh();
         });
     });
+
     it('memory leak', () => {
         profile.sample();
         let average: any = inMB(profile.averageChange)

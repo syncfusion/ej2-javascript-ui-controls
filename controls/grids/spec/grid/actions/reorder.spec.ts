@@ -1237,4 +1237,44 @@ describe('Reorder module', () => {
             destroy(gridObj);
         });
     });
+
+    describe('EJ2-951501 - Support programmatic reordering of stacked headers in Grid', () => {
+        let gridObj: Grid;
+        beforeAll((done: Function) => {
+            gridObj = createGrid(
+                {
+                    dataSource: data,
+                    allowPaging: true,
+                    allowReordering: true,
+                    columns: [
+                        {
+                            field: 'OrderID', headerText: 'Order ID', minWidth: 120, width: 200, textAlign: 'Right'
+                        },
+                        {
+                            field: 'CustomerID', headerText: 'Customer Name', minWidth: 8, width: 200
+                        },
+                        { field: 'Freight', width: 150, format: 'C2' },
+                        {
+                            headerText: 'Ship Details',
+                            columns: [
+                                { field: 'ShipName', headerText: 'Ship Name', width: 300 },
+                                { field: 'ShipCountry', headerText: 'Ship Country', width: 300 }
+                            ]
+                        }
+                    ]
+                }, done);
+        });
+
+        it('Reorder the stacked Column', (done: Function) => {
+            gridObj.dataBound = function(args: any) {
+                expect((gridObj as any).columns[2].field).toBe('CustomerID');
+                done();
+            }
+            gridObj.reorderColumnByModel((gridObj as any).columns[3], (gridObj as any).columns[1]);
+        });
+
+        afterAll(() => {
+            destroy(gridObj);
+        });
+    });
 });

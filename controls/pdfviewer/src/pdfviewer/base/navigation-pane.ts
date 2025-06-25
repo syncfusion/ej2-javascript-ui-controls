@@ -1668,24 +1668,113 @@ export class NavigationPane {
      * @returns {void}
      */
     public destroy(): void {
-        const bookmarkButtonInstance: any = this.bookmarkButton;
-        const thumbnailButtonInstance: any = this.thumbnailButton;
-        const organizeButtonInstance: any = this.organizePageButton;
+        if (this.sideBarResizer) {
+            this.sideBarResizer.removeEventListener('mousedown', this.resizePanelMouseDown);
+        }
+        if (this.pdfViewerBase.mainContainer) {
+            this.pdfViewerBase.mainContainer.removeEventListener('mousemove', this.resizePanelMouseMove);
+            this.pdfViewerBase.mainContainer.removeEventListener('mouseup', this.resizeViewerMouseLeave);
+        }
+        if (this.sideBarToolbar) {
+            this.sideBarToolbar.removeEventListener('mouseup', this.sideToolbarOnMouseup.bind(this));
+        }
+        if (this.sideBarContentContainer) {
+            this.sideBarContentContainer.removeEventListener('mouseup', this.sideBarTitleOnMouseup.bind(this));
+        }
+        if (this.commentPanelResizer) {
+            this.commentPanelResizer.removeEventListener('mousedown', this.commentPanelMouseDown);
+        }
+        if (this.annotationInputElement) {
+            this.annotationInputElement.removeEventListener('change', this.loadImportAnnotation);
+        }
+        if (this.annotationXFdfInputElement) {
+            this.annotationXFdfInputElement.removeEventListener('change', this.loadImportAnnotation);
+        }
+        if (this.searchInput) {
+            this.searchInput.removeEventListener('keyup', (event: KeyboardEvent) => {
+                this.enableSearchItems(true);
+                const searchString: string = (this.searchInput as HTMLInputElement).value;
+                if (event.which === 13) {
+                    this.initiateTextSearch();
+                    this.setSearchInputWidth();
+                } else {
+                    this.pdfViewer.textSearchModule.resetVariables();
+                }
+            });
+        }
+        if (this.resizeIcon) {
+            this.resizeIcon.removeEventListener('click', this.sideToolbarOnClose);
+            this.resizeIcon.removeEventListener('mouseover', this.resizeIconMouseOver);
+        }
+        if (this.closeDiv) {
+            this.closeDiv.removeEventListener('click', this.sideToolbarOnClose);
+        }
+        let bookmarkButtonInstance: any = this.bookmarkButton;
+        let thumbnailButtonInstance: any = this.thumbnailButton;
+        let organizeButtonInstance: any = this.organizePageButton;
         if (bookmarkButtonInstance && bookmarkButtonInstance.ej2_instances && bookmarkButtonInstance.ej2_instances.length > 0) {
+            bookmarkButtonInstance.removeEventListener('click', this.bookmarkButtonOnClick);
             bookmarkButtonInstance.ej2_instances[0].destroy();
+            bookmarkButtonInstance = null;
         }
         if (thumbnailButtonInstance && thumbnailButtonInstance.ej2_instances && thumbnailButtonInstance.ej2_instances.length > 0) {
+            thumbnailButtonInstance.removeEventListener('click', this.sideToolbarOnClick);
             thumbnailButtonInstance.ej2_instances[0].destroy();
+            thumbnailButtonInstance = null;
         }
         if (organizeButtonInstance && organizeButtonInstance.ej2_instances && organizeButtonInstance.ej2_instances.length > 0) {
+            organizeButtonInstance.removeEventListener('click', this.organizeButtonOnClick);
             organizeButtonInstance.ej2_instances[0].destroy();
+            organizeButtonInstance = null;
         }
         if (this.annotationMenuObj) {
             const annotationMenuElement : any = this.annotationMenuObj.element;
             if (annotationMenuElement && annotationMenuElement.ej2_instances && annotationMenuElement.ej2_instances.length > 0) {
                 this.annotationMenuObj.destroy();
+                this.annotationMenuObj = null;
             }
         }
+        this.sideBarResizer = null;
+        this.sideBarContentSplitter = null;
+        this.sideBarTitleContainer = null;
+        this.thumbnailWidthMin = null;
+        this.mainContainerWidth = null;
+        this.closeDiv = null;
+        this.resizeIcon = null;
+        this.isDown = null;
+        this.offset = null;
+        this.contentContainerScrollWidth = null;
+        this.closeButtonLeft = null;
+        this.previousX = null;
+        this.toolbarElement = null;
+        this.toolbar = null;
+        this.searchInput = null;
+        this.toastObject = null;
+        this.isTooltipCreated = null;
+        this.annotationInputElement = null;
+        this.annotationXFdfInputElement = null;
+        this.annotationContextMenu = null;
+        this.isCommentPanelShow = null;
+        this.commentPanelWidthMin = null;
+        this.commentPanelResizeIcon = null;
+        this.isThumbnail = null;
+        this.isThumbnailAddedProgrammatically = null;
+        this.isBookmarkOpenProgrammatically = null;
+        this.sideBarTitle = null;
+        this.isNavigationToolbarVisible = null;
+        this.isBookmarkListOpen = null;
+        this.isNavigationPaneResized = null;
+        this.sideBarToolbar = null;
+        this.sideBarContent = null;
+        this.sideBarContentContainer = null;
+        this.sideBarToolbarSplitter = null;
+        this.isBookmarkOpen = null;
+        this.isThumbnailOpen = null;
+        this.commentPanelContainer = null;
+        this.commentsContentContainer = null;
+        this.accordionContentContainer = null;
+        this.commentPanelResizer = null;
+        this.restrictUpdateZoomValue = null;
     }
 
     /**

@@ -71,6 +71,7 @@ export class Render {
     private actualText: string = '';
     private drilledLevelInfo: { [key: string]: boolean } = {};
     private timeOutObj: ReturnType<typeof setTimeout>;
+    private modifiedHeaderText: string | number | Date;
     /** Constructor for render module
      *
      * @param {PivotView} parent - Instance of pivot table.
@@ -89,6 +90,11 @@ export class Render {
 
     public render(refreshRequired?: boolean): void {
         if (refreshRequired) {
+            if (this.timeOutObj) {
+                clearTimeout(this.timeOutObj);
+                this.timeOutObj = undefined;
+            }
+            this.removeAllHyperlinkEventHandlers();
             this.initProperties();
         }
         this.resColWidth = this.parent.isTabular ? this.gridSettings.columnWidth :
@@ -359,7 +365,7 @@ export class Render {
     private cellSelecting(args: CellSelectingEventArgs): void {
         const target: HTMLElement = this.parent.grid.selectionModule['actualTarget'];
         if (!isNullOrUndefined(target) && ((target.classList.contains('e-expand') || target.classList.contains('e-collapse'))
-            || (this.parent.allowGrouping && !!target.closest('.e-valuescontent')))) {
+            || (this.parent.allowGrouping && !isNullOrUndefined(target.closest('.e-valuescontent'))))) {
             args.cancel = true;
         }
         this.parent.trigger(events.selecting, args);
@@ -798,7 +804,7 @@ export class Render {
             this.parent.setProperties({
                 dataSourceSettings: {
                     valueSortSettings: {
-                        headerText: (pivotValue as IAxisSet).valueSort.levelName as string,
+                        columnHeaderText: (pivotValue as IAxisSet).valueSort.levelName as string,
                         headerDelimiter: this.parent.dataSourceSettings.valueSortSettings.headerDelimiter
                     }
                 }
@@ -809,7 +815,7 @@ export class Render {
             this.parent.setProperties({
                 dataSourceSettings: {
                     valueSortSettings: {
-                        headerText: (pivotValue as IAxisSet).valueSort.levelName as string,
+                        columnHeaderText: (pivotValue as IAxisSet).valueSort.levelName as string,
                         headerDelimiter: this.parent.dataSourceSettings.valueSortSettings.headerDelimiter
                     }
                 }
@@ -988,19 +994,22 @@ export class Render {
     private appendValueSortIcon(cell: IAxisSet, tCell: HTMLElement, rCnt: number, cCnt: number, column: Column): HTMLElement {
         const engine: PivotEngine | OlapEngine = this.parent.dataType === 'pivot' ? this.parent.engineModule : this.parent.olapEngineModule;
         const vSort: IValueSortSettings = this.parent.dataSourceSettings.valueSortSettings;
-        if (this.parent.enableValueSorting && vSort && vSort.headerText !== '') {
+        const headerText: string = vSort && this.parent.dataType === 'pivot' && this.parent.dataSourceSettings.mode !== 'Server'
+            ? vSort.columnHeaderText : vSort.headerText;
+        const columnOrder: string = vSort && this.parent.dataType === 'pivot' && this.parent.dataSourceSettings.mode !== 'Server'
+            ? vSort.columnSortOrder : vSort.sortOrder;
+        if (this.parent.enableValueSorting && vSort && headerText !== '') {
             const len: number = (cell.type === 'grand sum' &&
                 this.parent.dataSourceSettings.values.length === 1 && !this.parent.dataSourceSettings.alwaysShowValueHeader) ? 0 :
                 (this.parent.dataSourceSettings.values.length > 1 || this.parent.dataSourceSettings.alwaysShowValueHeader) ?
                     (engine.headerContent.length - 1) :
                     this.parent.dataSourceSettings.columns.length === 0 ? 0 : (engine.headerContent.length - 1);
-            const lock: boolean = (vSort && vSort.headerText) ? cell.valueSort.levelName === vSort.headerText : cCnt === vSort.columnIndex;
+            const lock: boolean = (vSort && headerText) ? cell.valueSort.levelName === headerText : cCnt === vSort.columnIndex;
             if (vSort !== undefined && lock && (rCnt === len || (rCnt + 1) === len && cell.level > -1 &&
                 engine.headerContent[(rCnt + 1)][cCnt as number]
-                && engine.headerContent[(rCnt + 1)][cCnt as number].level === -1)
-                && this.parent.dataSourceSettings.valueAxis === 'column') {
+                && engine.headerContent[(rCnt + 1)][cCnt as number].level === -1)) {
                 tCell.querySelector('div div').appendChild(createElement('span', {
-                    className: (vSort.sortOrder === 'Descending' ?
+                    className: (columnOrder === 'Descending' ?
                         'e-icon-descending e-icons e-descending e-sortfilterdiv e-value-sort-icon' :
                         'e-icon-ascending e-icons e-ascending e-sortfilterdiv e-value-sort-icon') + (cell.hasChild ? ' e-value-sort-align' : ''),
                     styles: column.headerTextAlign === 'Right' ? 'float : left' : ''
@@ -1145,7 +1154,8 @@ export class Render {
         });
         if (tCell && (this.parent.notEmpty) && this.engine.headerContent) {
             const customClass: string = this.parent.hyperlinkSettings.cssClass;
-            const colIndex: number = parseInt(tCell.getAttribute('aria-colindex'), 10) - 1;
+            const colIndex: number = args.column && args.column.customAttributes && args.column.customAttributes.cell ?
+                (args.column.customAttributes.cell as IAxisSet).colIndex : parseInt(tCell.getAttribute('aria-colindex'), 10) - 1;
             const index: string = this.parent.isTabular ? colIndex.toString() : '0';
             let cell: IAxisSet = (args.data as IGridValues)[Number(index) as number] as IAxisSet;
             const isRowFieldsAvail: boolean = cell.valueSort && cell.valueSort.levelName === (this.parent.dataSourceSettings.rows.length === 0 && this.parent.dataSourceSettings.valueAxis === 'row' &&
@@ -1261,17 +1271,47 @@ export class Render {
                 }));
                 const vSort: IValueSortSettings = this.parent.pivotView.dataSourceSettings.valueSortSettings;
                 if (this.parent.enableValueSorting) {
-                    if (vSort && vSort.headerText && this.parent.dataSourceSettings.valueAxis === 'row' &&
-                        this.parent.pivotValues[Number(tCell.getAttribute('index'))][0] &&
-                        (this.parent.pivotValues[Number(tCell.getAttribute('index'))][0] as IAxisSet).valueSort.levelName) {
-                        if ((this.parent.pivotValues[Number(tCell.getAttribute('index'))][0] as IAxisSet).valueSort.levelName
-                            === vSort.headerText) {
+                    let headerText: string | number | Date = vSort && this.parent.dataType === 'pivot' &&
+                        this.parent.dataSourceSettings.mode !== 'Server' ? vSort.rowHeaderText : vSort.headerText;
+                    const rowOrder: string = vSort && this.parent.dataType === 'pivot' && this.parent.dataSourceSettings.mode !== 'Server'
+                        ? vSort.rowSortOrder : vSort.sortOrder;
+                    let rowIndex: number = Number(tCell.getAttribute('index'));
+                    const colIndex: number = Number(tCell.getAttribute('aria-colindex'));
+                    const cell: IAxisSet = this.parent.pivotValues && this.parent.pivotValues[Number(tCell.getAttribute('index'))] ?
+                        this.parent.pivotValues[Number(tCell.getAttribute('index'))][colIndex - 1] : undefined;
+                    if (this.parent.dataType === 'pivot' && this.parent.dataSourceSettings.mode !== 'Server'
+                        && this.parent.dataSourceSettings.valueAxis === 'row' && this.parent.dataSourceSettings.valueIndex === -1 &&
+                        !this.parent.isTabular && cell.valueSort.levelName === headerText && cell.type !== 'value') {
+                        if (this.parent.dataSourceSettings.subTotalsPosition !== 'Bottom') {
+                            if (this.parent.pivotValues[rowIndex + 1] && this.parent.pivotValues[rowIndex + 1][colIndex - 1].type === 'value') {
+                                rowIndex = cell.type === 'value' || cell.memberType === 3 ? rowIndex : (rowIndex + 1);
+                                this.modifiedHeaderText =
+                                    this.parent.pivotValues[rowIndex as number][colIndex - 1].valueSort.levelName;
+                            }
+                        } else if (this.parent.dataSourceSettings.subTotalsPosition === 'Bottom' &&
+                                   this.parent.dataSourceSettings.values.length > 0) {
+                            if (isNullOrUndefined(vSort.measure)) {
+                                this.modifiedHeaderText =
+                                    headerText + vSort.headerDelimiter + this.parent.dataSourceSettings.values[0].name;
+                            } else if (!isNullOrUndefined(vSort.measure)) {
+                                this.modifiedHeaderText = headerText + vSort.headerDelimiter + vSort.measure;
+                            }
+                        }
+                    }
+                    headerText = this.parent.dataSourceSettings.valueAxis === 'row' &&
+                        this.modifiedHeaderText ? this.modifiedHeaderText : headerText;
+                    const isValidHeader: boolean = this.parent.dataType === 'pivot' && this.parent.dataSourceSettings.subTotalsPosition
+                        === 'Bottom' && this.parent.dataSourceSettings.rows.length > 1 && cell.hasChild ? false : true;
+                    if (vSort && headerText && cell && cell.valueSort && cell.valueSort.levelName) {
+                        if ((!this.parent.isTabular && cell.valueSort.levelName === headerText && isValidHeader) ||
+                            (this.parent.isTabular && cell.valueSort.levelName === headerText && cell.rowSpan === 1)) {
                             rowOuterDiv.appendChild(createElement('span', {
-                                className: (vSort.sortOrder === 'Descending' ?
+                                className: (rowOrder === 'Descending' ?
                                     'e-icon-descending e-icons e-descending e-sortfilterdiv e-value-sort-icon' :
                                     'e-icon-ascending e-icons e-ascending e-sortfilterdiv e-value-sort-icon') + (cell.hasChild ? ' e-value-sort-align' : ''),
                                 styles: rowOuterDiv.style.textAlign === 'right' ? 'float: left' : ''
                             }));
+                            this.modifiedHeaderText = undefined;
                         }
                     }
                 }
@@ -1299,7 +1339,7 @@ export class Render {
                 tCell.appendChild(createElement('span', {
                     className: cls.CELLVALUE,
                     innerHTML: ((tCell.className.indexOf('e-summary') !== -1 && this.parent.isSummaryCellHyperlink) ||
-                        (tCell.className.indexOf('e-summary') === -1 && this.parent.isValueCellHyperlink) || cell.enableHyperlink ?
+                        (tCell.className.indexOf('e-summary') === -1 && this.parent.isValueCellHyperlink && pivotValue) || cell.enableHyperlink ?
                         '<a data-url="' + innerText + '" class="e-hyperlinkcell ' + customClass + '">' + innerText + '</a>' : innerText)
                 }));
                 if (this.parent.gridSettings.allowReordering) {
@@ -1605,11 +1645,12 @@ export class Render {
             }
         } else {
             if (this.parent.isTabular) {
+                const colIndex: number = args.cell && args.cell.column && args.cell.column.index;
                 const colSpan: number = this.parent.engineModule.rowMaxLevel + 1;
-                if (args.cell && args.cell.column && args.cell.column.index === 0) {
+                if (colIndex === 0) {
                     args.node.setAttribute('colspan', colSpan.toString());
                     args.node.classList.add(cls.FREEZE_LEFT_BORDER);
-                } else {
+                } else if (this.parent.engineModule.rowMaxLevel >= colIndex) {
                     (args.node as HTMLElement).style.display = 'none';
                 }
             }
@@ -2031,6 +2072,8 @@ export class Render {
                 this.updatePivotColumn(this.pivotColumns, 0, autoFitApplied, refreshColumn, gridColumns);
             }
         } else {
+            this.resColWidth = (this.parent.showGroupingBar && this.parent.groupingBarModule) ? (this.parent.isAdaptive ? 180 : 250) :
+                (this.parent.isAdaptive ? 140 : 200);
             this.pivotColumns = this.frameEmptyColumns();
         }
         if (this.parent.toolbarModule && this.parent.showToolbar) {
@@ -2052,10 +2095,12 @@ export class Render {
                 let rowHeaderWidth: number = 0;
                 const buttonDivs: NodeListOf<HTMLElement> = this.parent.element.querySelector('.' + cls.GROUP_ROW)
                     .querySelectorAll('.e-pvt-btn-div');
-                for (let i: number = 0; i < buttonDivs.length; i++) {
-                    rowHeaderWidth += buttonDivs[i as number].getBoundingClientRect().width + 6;
+                if (buttonDivs.length > 1) {
+                    for (let i: number = 0; i < buttonDivs.length; i++) {
+                        rowHeaderWidth += buttonDivs[i as number].getBoundingClientRect().width + 6;
+                    }
+                    width = rowHeaderWidth;
                 }
-                width = rowHeaderWidth;
             }
             width = this.parent.resizeInfo[column as string] ? this.parent.resizeInfo[column as string] : width;
         }
@@ -2089,8 +2134,9 @@ export class Render {
                     format = (fString.indexOf('#') > -1 || fString.match(/\d/) !== null) ? fString : (fString[0] + '2');
                 }
             } else {
-                if ((['PercentageOfDifferenceFrom', 'PercentageOfRowTotal', 'PercentageOfColumnTotal', 'PercentageOfGrandTotal', 'PercentageOfParentRowTotal', 'PercentageOfParentColumnTotal', 'PercentageOfParentTotal']).indexOf(field.type) > -1) {
-                    format = 'P2';
+                const advancedAggregateTypes: string[] = ['PercentageOfDifferenceFrom', 'PercentageOfRowTotal', 'PercentageOfColumnTotal', 'PercentageOfGrandTotal', 'PercentageOfParentRowTotal', 'PercentageOfParentColumnTotal', 'PercentageOfParentTotal'];
+                if ((advancedAggregateTypes).indexOf(field.type) > -1) {
+                    format = 'P' + (this.engine as PivotEngine).getPercentFormat(this.engine.formatFields, field.name);
                 } else if (['PopulationStDev', 'SampleStDev', 'PopulationVar', 'SampleVar', 'Index'].indexOf(field.type) > -1) {
                     format = undefined;
                 }
@@ -2098,7 +2144,9 @@ export class Render {
                     for (let fCnt: number = 0; fCnt < this.parent.dataSourceSettings.formatSettings.length; fCnt++) {
                         const formatSettings: IFormatSettings = this.parent.dataSourceSettings.formatSettings[fCnt as number];
                         if (field.name === formatSettings.name) {
-                            format = formatSettings.format;
+                            if (advancedAggregateTypes.indexOf(field.type) === -1) {
+                                format = formatSettings.format;
+                            }
                             break;
                         } else {
                             continue;
@@ -2352,7 +2400,7 @@ export class Render {
         return args;
     }
     private unWireEvents(cell: HTMLElement): void {
-        if (cell.querySelector('.e-hyperlinkcell')) {
+        if (cell && cell.querySelector('.e-hyperlinkcell')) {
             EventHandler.remove(cell.querySelector('.e-hyperlinkcell'), this.parent.isAdaptive ? 'touchend' : 'click', this.onHyperCellClick);
         } else {
             return;
@@ -2375,8 +2423,9 @@ export class Render {
         }
     }
 
-    private updatePivotColumn(pivotColumns: ColumnModel[], n: number, autoFitApplied: boolean, refreshColumn: boolean,
-                              gridColumns: ColumnModel[]): void {
+    private updatePivotColumn(
+        pivotColumns: ColumnModel[], n: number, autoFitApplied: boolean, refreshColumn: boolean, gridColumns: ColumnModel[]
+    ): void {
         pivotColumns[n as number] = {
             field: (n + '.formattedText'),
             width: (autoFitApplied && !refreshColumn && !this.parent.isEmptyGrid && pivotColumns[n as number].autoFit)
@@ -2398,5 +2447,50 @@ export class Render {
             totalColumnWidth += buttonWidth + 6;
         }
         return totalColumnWidth;
+    }
+
+    /**
+     * Add a destroy method to clean up resources
+     *
+     * @returns {void}
+     * @hidden
+     */
+    public destroy(): void {
+        if (this.timeOutObj) {
+            clearTimeout(this.timeOutObj);
+            this.timeOutObj = undefined;
+        }
+        this.removeAllHyperlinkEventHandlers();
+        if (this.aggMenu) {
+            this.aggMenu.destroy();
+            this.aggMenu = undefined;
+        }
+        this.engine = null;
+        this.gridSettings = null;
+        this.formatList = null;
+        this.lastColumn = null;
+        this.pivotColumns = [];
+        this.indentCollection = {};
+        this.lvlCollection = {};
+        this.hierarchyCollection = {};
+        this.lvlPosCollection = {};
+        this.hierarchyPosCollection = {};
+        this.drilledLevelInfo = {};
+        this.aggMenu = null;
+    }
+
+    /**
+     * Remove all event handlers from hyperlink cells
+     *
+     * @returns {void}
+     * @private
+     */
+    private removeAllHyperlinkEventHandlers(): void {
+        if (this.parent && this.parent.element) {
+            const hyperlinkCells: NodeListOf<Element> = this.parent.element.querySelectorAll('.e-hyperlinkcell');
+            for (let i: number = 0; i < hyperlinkCells.length; i++) {
+                EventHandler.remove(hyperlinkCells[i as number], this.parent.isAdaptive ? 'touchend' : 'click', this.onHyperCellClick);
+            }
+        }
     }
 }

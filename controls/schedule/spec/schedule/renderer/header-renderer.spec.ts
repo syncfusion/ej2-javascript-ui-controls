@@ -6,7 +6,7 @@ import { Browser, remove } from '@syncfusion/ej2-base';
 import { ItemModel } from '@syncfusion/ej2-navigations';
 import { DropDownList } from '@syncfusion/ej2-dropdowns';
 import {
-    Schedule, Day, Week, WorkWeek, Month, Agenda, MonthAgenda, ActionEventArgs, ScheduleModel
+    Schedule, Day, Week, WorkWeek, Month, Agenda, MonthAgenda, ActionEventArgs, ScheduleModel,HeaderRenderer
 } from '../../../src/schedule/index';
 import * as util from '../util.spec';
 import { profile, inMB, getMemoryProfile } from '../../common.spec';
@@ -621,6 +621,34 @@ describe('Schedule header bar', () => {
             expect(wasClicked).toBe(true);
 
         }); 
+    });
+
+    describe('HeaderRenderer - hasSelectedDate Method', () => {
+        let scheduleObj: Schedule;
+        let headerRenderer: HeaderRenderer;
+
+        beforeEach((done: DoneFn) => {
+            const model: ScheduleModel = {
+                selectedDate: new Date(2022, 9, 5),
+                currentView: 'Month',
+                views: ['Month']
+            };
+
+            scheduleObj = util.createSchedule(model, [], done);
+            headerRenderer = new HeaderRenderer(scheduleObj);
+        });
+
+        afterEach(() => {
+            util.destroy(scheduleObj);
+        });
+
+        it('should return true if selectedDate is within the current view date range', () => {
+            const selectedDate = new Date(2022, 9, 5);
+            scheduleObj.selectedDate = selectedDate;
+            spyOn(scheduleObj, 'getCurrentViewDates').and.returnValue([new Date(2022, 9, 1), new Date(2022, 9, 31)]);
+            const result = (headerRenderer as any).hasSelectedDate();
+            expect(result).toBe(true);
+        });
     });
 
     it('memory leak', () => {

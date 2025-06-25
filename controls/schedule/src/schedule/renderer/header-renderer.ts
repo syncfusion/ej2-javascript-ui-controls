@@ -41,10 +41,11 @@ export class HeaderRenderer {
         const closestEle: Element = closest(e.event.target as HTMLElement, '.e-date-range,.e-header-popup,.e-day,.e-selected');
         const closestPop: Element = closest(e.event.target as HTMLElement, '.e-hor-nav,.e-toolbar-pop');
         const contentWrap: HTMLElement = this.parent.element.querySelector('.' + cls.CONTENT_WRAP_CLASS);
+        const toolbarPop: HTMLElement = this.parent.element.querySelector('.e-toolbar-pop');
         if (this.parent.isAdaptive) {
             if (!isNullOrUndefined(closestPop) && (closestPop.classList.contains('e-toolbar-pop') ||
                 closestPop.classList.contains('e-hor-nav')) && !(closestPop.classList.contains('e-hor-nav') &&
-                    this.element.querySelector('.e-toolbar-pop').classList.contains(cls.POPUP_OPEN))) {
+                    toolbarPop && toolbarPop.classList.contains(cls.POPUP_OPEN))) {
                 addClass([contentWrap], cls.SCROLL_HIDDEN);
             } else {
                 removeClass([contentWrap], cls.SCROLL_HIDDEN);

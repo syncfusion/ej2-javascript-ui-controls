@@ -8,7 +8,7 @@ export class Shape {
     private lowerContext: CanvasRenderingContext2D;
     private upperContext: CanvasRenderingContext2D;
     private textSettings: TextSettings =
-    {text: 'Enter Text', fontFamily: '', fontSize: null, fontRatio: null, bold: false, italic: false, underline: false};
+    {text: 'Enter Text', fontFamily: '', fontSize: null, fontRatio: null, bold: false, italic: false, underline: false, strikethrough: false};
     private strokeSettings: StrokeSettings = {strokeColor: '#fff', fillColor: '', strokeWidth: null, radius: null, outlineColor: '', outlineWidth: null};
     private keyHistory: string = '';  // text history
     private prevObj: CurrentObject;
@@ -66,7 +66,7 @@ export class Shape {
             this.drawText(args.value['x'], args.value['y'], args.value['text'], args.value['fontFamily'],
                           args.value['fontSize'], args.value['bold'], args.value['italic'], args.value['color'],
                           args.value['isSelected'], args.value['degree'], args.value['fillColor'], args.value['outlineColor'],
-                          args.value['outlineWidth'], args.value['transformCollection']);
+                          args.value['outlineWidth'], args.value['transformCollection'], args.value['underline'], args.value['strikethrough']);
             break;
         case 'redrawActObj':
             this.redrawActObj(args.value['x'], args.value['y'], args.value['isMouseDown']);
@@ -226,7 +226,7 @@ export class Shape {
             break;
         case 'initializeTextShape':
             this.initializeTextShape(args.value['text'], args.value['fontFamily'], args.value['fontSize'],
-                                     args.value['bold'], args.value['italic'], args.value['strokeColor'],
+                                     args.value['bold'], args.value['italic'], args.value['underline'], args.value['strikethrough'], args.value['strokeColor'],
                                      args.value['fillColor'], args.value['outlineColor'], args.value['outlineWidth']);
             break;
         case 'stopPathDrawing':
@@ -325,7 +325,7 @@ export class Shape {
 
     private reset(): void {
         this.textSettings =
-            {text: 'Enter Text', fontFamily: this.parent.fontFamily.default, fontSize: null, fontRatio: null, bold: false, italic: false, underline: false};
+            {text: 'Enter Text', fontFamily: this.parent.fontFamily.default, fontSize: null, fontRatio: null, bold: false, italic: false, underline: false, strikethrough: false};
         this.strokeSettings = {strokeColor: '#fff', fillColor: '', strokeWidth: null, radius: null, outlineColor: '', outlineWidth: null};
         this.preventFrameAnnotation = false;
     }
@@ -379,9 +379,10 @@ export class Shape {
 
     private drawText(x?: number, y?: number, text?: string, fontFamily?: string, fontSize?: number, bold?: boolean, italic?: boolean,
                      color?: string, isSelected?: boolean, degree?: number, fillColor?: string, outlineColor?: string,
-                     outlineWidth?: number, transformCollection?: TransformationCollection[]): void {
-        this.drawShapeText(text, fontFamily, fontSize, bold, italic, color, x, y, isSelected, degree, fillColor, outlineColor,
-                           outlineWidth, transformCollection);
+                     outlineWidth?: number, transformCollection?: TransformationCollection[], underline?: boolean,
+                     strikethrough?: boolean): void {
+        this.drawShapeText(text, fontFamily, fontSize, bold, italic, color, x, y, isSelected, degree,
+                           fillColor, outlineColor, outlineWidth, transformCollection, underline, strikethrough);
     }
 
     private initializeShape(type: string): void {
@@ -565,9 +566,9 @@ export class Shape {
     }
 
     private drawShapeText(text?: string, fontFamily?: string, fontSize?: number, bold?: boolean, italic?: boolean,
-                          strokeColor?: string, x?: number, y?: number, isSelected?: boolean, degree?: number,
-                          fillColor?: string, outlineColor?: string, outlineWidth?: number,
-                          transformCollection?: TransformationCollection[]): void {
+                          strokeColor?: string, x?: number, y?: number, isSelected?: boolean, degree?: number, fillColor?: string,
+                          outlineColor?: string, outlineWidth?: number, transformCollection?: TransformationCollection[],
+                          underline?: boolean, strikethrough?: boolean): void {
         const parent: ImageEditor = this.parent;
         if (!parent.disabled && parent.isImageLoaded) {
             if (parent.currObjType.shape === 'freehanddraw') {
@@ -580,7 +581,8 @@ export class Shape {
             this.prevObjColl();
             this.refreshActiveObj(); parent.activeObj.shape = parent.currObjType.shape = 'text';
             parent.currObjType.isCustomCrop = false;
-            this.initializeTextShape(text, fontFamily, fontSize, bold, italic, strokeColor, fillColor, outlineColor, outlineWidth);
+            this.initializeTextShape(text, fontFamily, fontSize, bold, italic, underline, strikethrough, strokeColor, fillColor,
+                                     outlineColor, outlineWidth);
             parent.currObjType.isText = parent.currObjType.isInitialText = true;
             if (isNullOrUndefined(parent.activeObj.textSettings.fontSize)) {
                 parent.getFontSizes();
@@ -730,8 +732,10 @@ export class Shape {
         parent.notify('toolbar', { prop: 'update-toolbar-items', onPropertyChange: false});
     }
 
-    private initializeTextShape(text?: string, fontFamily?: string, fontSize?: number, bold?: boolean, italic?: boolean,
-                                strokeColor?: string, fillColor?: string, outlineColor?: string, outlineWidth?: number): void {
+    private initializeTextShape(
+        text?: string, fontFamily?: string, fontSize?: number, bold?: boolean, italic?: boolean,
+        underline?: boolean, strikethrough?: boolean, strokeColor?: string, fillColor?: string, outlineColor?: string, outlineWidth?: number
+    ): void {
         const parent: ImageEditor = this.parent;
         this.keyHistory = ''; parent.upperCanvas.style.display = 'block';
         parent.activeObj.strokeSettings.strokeColor = strokeColor || parent.activeObj.strokeSettings.strokeColor;
@@ -741,6 +745,8 @@ export class Shape {
         parent.activeObj.textSettings.fontSize = fontSize || parent.activeObj.textSettings.fontSize;
         parent.activeObj.textSettings.bold = bold || parent.activeObj.textSettings.bold;
         parent.activeObj.textSettings.italic = italic || parent.activeObj.textSettings.italic;
+        parent.activeObj.textSettings.underline = underline || parent.activeObj.textSettings.underline;
+        parent.activeObj.textSettings.strikethrough = strikethrough || parent.activeObj.textSettings.strikethrough;
         parent.activeObj.strokeSettings.outlineColor = outlineColor || parent.activeObj.strokeSettings.outlineColor;
         parent.activeObj.strokeSettings.outlineWidth = outlineWidth || parent.activeObj.strokeSettings.outlineWidth;
     }
@@ -926,7 +932,7 @@ export class Shape {
             }
             if (parent.activeObj.shape === 'text' && parent.activeObj.textSettings) {
                 parent.activeObj.textSettings.bold = false; parent.activeObj.textSettings.italic = false;
-                parent.activeObj.textSettings.underline = false;
+                parent.activeObj.textSettings.underline = false; parent.activeObj.textSettings.strikethrough = false;
                 for (let i: number = 0; i < shapeSettings.fontStyle.length; i++) {
                     switch (shapeSettings.fontStyle[i as number]) {
                     case 'bold':
@@ -934,6 +940,12 @@ export class Shape {
                         break;
                     case 'italic':
                         parent.activeObj.textSettings.italic = true;
+                        break;
+                    case 'underline':
+                        parent.activeObj.textSettings.underline = true;
+                        break;
+                    case 'strikethrough':
+                        parent.activeObj.textSettings.strikethrough = true;
                         break;
                     }
                 }
@@ -950,7 +962,7 @@ export class Shape {
             this.upperContext.clearRect(0, 0, parent.upperCanvas.width, parent.upperCanvas.height);
             this.updateFontStyles();
             const width: number = this.upperContext.measureText(this.keyHistory).width + fontSize * 0.5;
-            const height: number = fontSize;
+            const height: number = fontSize * 1.18;
             this.upperContext.fillText(this.keyHistory, parent.activeObj.activePoint.startX,
                                        parent.activeObj.activePoint.startY + fontSize);
             this.upperContext.clearRect(0, 0, parent.upperCanvas.width, parent.upperCanvas.height);
@@ -962,7 +974,7 @@ export class Shape {
 
     private redrawText(): void {
         const parent: ImageEditor = this.parent;
-        const {fontSize, fontFamily, bold, italic} : TextSettings = parent.activeObj.textSettings;
+        const {fontSize, fontFamily, bold, italic } : TextSettings = parent.activeObj.textSettings;
         let fontStyle: string = '';
         if (bold) {
             fontStyle += 'bold ';
@@ -975,7 +987,7 @@ export class Shape {
         const text: string = (parent.textArea.style.display === 'block' || parent.textArea.style.display === 'inline-block') ?
             this.getMaxText(true) : this.getMaxText();
         const width: number = this.upperContext.measureText(text).width + fontSize * 0.5;
-        let height: number = rows.length * fontSize;
+        let height: number = rows.length * fontSize * 1.18;
         if (rows.length > 1) {height += (fontSize * 0.50); }
         parent.notify('selection', { prop: 'setTextSelection', onPropertyChange: false,
             value: {width: width, height: height}});
@@ -1006,7 +1018,7 @@ export class Shape {
         parent.activeObj.keyHistory = parent.textArea.value; parent.textArea.style.display = 'none';
         parent.textArea.value = ''; this.updateFontStyles();
         let width: number = this.upperContext.measureText(parent.activeObj.keyHistory).width + fontSize * 0.5;
-        let height: number = fontSize;
+        let height: number = fontSize * 1.18;
         const rows: string[] = parent.activeObj.keyHistory.split('\n');
         if (rows.length > 1) {
             height *= rows.length;
@@ -1709,6 +1721,9 @@ export class Shape {
         }
         parent.textArea.style.fontWeight = actObj.textSettings.bold ? 'bold' : 'normal';
         parent.textArea.style.fontStyle = actObj.textSettings.italic ? 'italic' : 'normal';
+        parent.textArea.style.textDecoration = (actObj.textSettings.underline && actObj.textSettings.strikethrough) ? 'underline line-through' :
+            (actObj.textSettings.underline) ? 'underline' :
+                (actObj.textSettings.strikethrough) ? 'line-through' : 'none';
         parent.textArea.style.border = '2px solid ' + parent.themeColl[parent.theme]['primaryColor'];
         parent.textArea.value = actObj.keyHistory; parent.textArea.style.overflow = 'hidden';
         parent.textArea.style.width = 'auto'; parent.textArea.style.height = 'auto';
@@ -2169,7 +2184,7 @@ export class Shape {
         /* eslint-disable-next-line @typescript-eslint/no-explicit-any */
         const fileData: any = filesData;
         const fileExtension: string = fileData.name && fileData.name.split('.').pop().toLowerCase();
-        if (fileExtension && ['jpg', 'jpeg', 'png', 'svg', 'webp'].indexOf(fileExtension) === -1) {
+        if (fileExtension && ['jpg', 'jpeg', 'png', 'svg', 'webp', 'bmp'].indexOf(fileExtension) === -1) {
             this.refreshActiveObj();
             return;
         }
@@ -2465,32 +2480,92 @@ export class Shape {
         const obj: Object = {shapeSettingsObj: {} as ShapeSettings };
         parent.notify('selection', { prop: 'updatePrevShapeSettings', onPropertyChange: false, value: {obj: obj}});
         const shapeSettings: ShapeSettings = obj['shapeSettingsObj'];
+        let isObjPushed: boolean = false;
+        const collLength: number = parent.objColl.length;
         this.pushActItemIntoObj();
+        if (collLength !== parent.objColl.length) {isObjPushed = true; }
         const objColl: SelectionPoint[] = extend([], parent.objColl, [], true) as SelectionPoint[];
-        parent.objColl.pop();
-        if (parent.textArea.style.display === 'none') {this.updateFontRatio(parent.activeObj); }
-        else {this.updateFontRatio(parent.activeObj, true); }
+        if (isObjPushed) {
+            parent.objColl.pop();
+        }
+        if (parent.textArea.style.display === 'none') { this.updateFontRatio(parent.activeObj); }
+        else { this.updateFontRatio(parent.activeObj, true); }
         switch (item) {
         case 'default':
-            this.updateFontStyle(item, objColl, 'normal', 'normal');
+            this.updateFontStyle(item, objColl, 'normal', 'normal', false, false);
             break;
         case 'bold':
-            this.updateFontStyle(item, objColl, 'bold', 'normal');
+            this.updateFontStyle(item, objColl, 'bold', 'normal', false, false);
             break;
         case 'italic':
-            this.updateFontStyle(item, objColl, 'normal', 'italic');
+            this.updateFontStyle(item, objColl, 'normal', 'italic', false, false);
             break;
         case 'bolditalic':
-            this.updateFontStyle(item, objColl, 'bold', 'italic');
+            this.updateFontStyle(item, objColl, 'bold', 'italic', false, false);
+            break;
+        case 'underline':
+            this.updateFontStyle(item, objColl, 'normal', 'normal', true, false);
+            break;
+        case 'boldunderline':
+            this.updateFontStyle(item, objColl, 'bold', 'normal', true, false);
+            break;
+        case 'italicunderline':
+            this.updateFontStyle(item, objColl, 'normal', 'italic', true, false);
+            break;
+        case 'bolditalicunderline':
+            this.updateFontStyle(item, objColl, 'bold', 'italic', true, false);
+            break;
+        case 'strikethrough':
+            this.updateFontStyle(item, objColl, 'normal', 'normal', false, true);
+            break;
+        case 'boldstrikethrough':
+            this.updateFontStyle(item, objColl, 'bold', 'normal', false, true);
+            break;
+        case 'italicstrikethrough':
+            this.updateFontStyle(item, objColl, 'normal', 'italic', false, true);
+            break;
+        case 'underlinestrikethrough':
+            this.updateFontStyle(item, objColl, 'normal', 'normal', true, true);
+            break;
+        case 'bolditalicstrikethrough':
+            this.updateFontStyle(item, objColl, 'bold', 'italic', false, true);
+            break;
+        case 'boldunderlinestrikethrough':
+            this.updateFontStyle(item, objColl, 'bold', 'normal', true, true);
+            break;
+        case 'italicunderlinestrikethrough':
+            this.updateFontStyle(item, objColl, 'normal', 'italic', true, true);
+            break;
+        case 'bolditalicunderlinestrikethrough':
+            this.updateFontStyle(item, objColl, 'bold', 'italic', true, true);
             break;
         }
         const shapeChangedArgs: ShapeChangeEventArgs = {action: 'font-style', currentShapeSettings: extend({}, shapeSettings, {}, true) as ShapeSettings};
-        shapeChangedArgs.currentShapeSettings.fontStyle = [item];
+        shapeChangedArgs.currentShapeSettings.fontStyle = this.getFontStyleArray(item);
         parent.trigger('shapeChange', shapeChangedArgs);
         parent.editCompleteArgs = shapeChangedArgs;
     }
 
-    private updateFontStyle(item: string, objColl: SelectionPoint[], fontWeight: string, fontStyle: string): void {
+    private getFontStyleArray(item: string): string[] {
+        const styleArray: string[] = [];
+        const lowerItem: string = item.toLowerCase();
+        if (lowerItem.indexOf('bold') > -1) {
+            styleArray.push('bold');
+        }
+        if (lowerItem.indexOf('italic') > -1) {
+            styleArray.push('italic');
+        }
+        if (lowerItem.indexOf('underline') > -1) {
+            styleArray.push('underline');
+        }
+        if (lowerItem.indexOf('strikethrough') > -1) {
+            styleArray.push('strikethrough');
+        }
+        return styleArray;
+    }
+
+    private updateFontStyle(item: string, objColl: SelectionPoint[], fontWeight: string, fontStyle: string, underline: boolean,
+                            strikethrough: boolean): void {
         const parent: ImageEditor = this.parent;
         const style: CSSStyleDeclaration = parent.textArea.style;
         if (style.display === 'block' || style.display === 'inline-block') {
@@ -2498,14 +2573,51 @@ export class Shape {
             else {style.fontWeight = 'normal'; }
             if (fontStyle === 'italic') {style.fontStyle = 'italic'; }
             else {style.fontStyle = 'normal'; }
-            const value: string = (style.fontWeight === 'normal' && style.fontStyle === 'normal' ? 'default' :
-                (style.fontWeight === 'bold' && style.fontStyle === 'normal' ? 'bold' :
-                    (style.fontWeight === 'normal' && style.fontStyle === 'italic' ? 'italic' : 'bolditalic')));
+            if (underline && strikethrough) {
+                style.textDecoration = 'underline line-through';
+            }
+            else if (strikethrough)
+            {
+                style.textDecoration = 'line-through';
+            }
+            else if (underline) {
+                style.textDecoration = 'underline';
+            }
+            else {
+                style.textDecoration = 'none';
+            }
+            const key: string = [
+                style.fontWeight === 'bold' ? 'bold' : '',
+                style.fontStyle === 'italic' ? 'italic' : '',
+                typeof style.textDecoration === 'string' && style.textDecoration.indexOf('underline') > -1 ? 'underline' : '',
+                typeof style.textDecoration === 'string' && style.textDecoration.indexOf('line-through') > -1 ? 'strikethrough' : ''
+            ].filter(Boolean).join('');
+            const valueMap: Record<string, string> = {
+                '': 'default',
+                bold: 'bold',
+                italic: 'italic',
+                underline: 'underline',
+                strikethrough: 'strikethrough',
+                bolditalic: 'bolditalic',
+                boldunderline: 'boldunderline',
+                boldstrikethrough: 'boldstrikethrough',
+                italicunderline: 'italicunderline',
+                italicstrikethrough: 'italicstrikethrough',
+                underlinestrikethrough: 'underlinestrikethrough',
+                bolditalicunderline: 'bolditalicunderline',
+                bolditalicstrikethrough: 'bolditalicstrikethrough',
+                boldunderlinestrikethrough: 'boldunderlinestrikethrough',
+                italicunderlinestrikethrough: 'italicunderlinestrikethrough',
+                bolditalicunderlinestrikethrough: 'bolditalicunderlinestrikethrough'
+            };
+            const value: string = key in valueMap ? valueMap[key as string] : 'default';
             const width: number = this.getTextAreaWidth(value); style.width = width + 'px';
             this.updateObjColl(item, objColl);
         } else {
             this.textSettings.bold = parent.activeObj.textSettings.bold = fontWeight === 'normal' ? false : true;
             this.textSettings.italic = parent.activeObj.textSettings.italic = fontStyle === 'normal' ? false : true;
+            this.textSettings.underline = parent.activeObj.textSettings.underline = underline ? true : false;
+            this.textSettings.strikethrough = parent.activeObj.textSettings.strikethrough = strikethrough ? true : false;
             if (parent.activeObj.activePoint.width !== 0 || parent.activeObj.activePoint.height !== 0) {
                 this.redrawText();
             }
@@ -2590,24 +2702,107 @@ export class Shape {
         parent.notify('freehand-draw', { prop: 'getSelPointColl', onPropertyChange: false,
             value: {obj: selPointCollObj }});
         prevObj.selPointColl = extend([], selPointCollObj['selPointColl'], [], true) as Point[];
-        const tempBold: boolean = parent.activeObj.textSettings.bold;
-        const tempItalic: boolean = parent.activeObj.textSettings.italic;
+        const textSettings: TextSettings = parent.activeObj.textSettings;
+        const tempBold: boolean = textSettings.bold;
+        const tempItalic: boolean = textSettings.italic;
+        const tempUnderline: boolean = textSettings.underline;
+        const tempStrikethrough: boolean = textSettings.strikethrough;
         switch (item) {
         case 'default':
-            parent.activeObj.textSettings.bold = false;
-            parent.activeObj.textSettings.italic = false;
+            textSettings.bold = false;
+            textSettings.italic = false;
+            textSettings.underline = false;
+            textSettings.strikethrough = false;
             break;
         case 'bold':
-            parent.activeObj.textSettings.bold = true;
-            parent.activeObj.textSettings.italic = false;
+            textSettings.bold = true;
+            textSettings.italic = false;
+            textSettings.underline = false;
+            textSettings.strikethrough = false;
             break;
         case 'italic':
-            parent.activeObj.textSettings.bold = false;
-            parent.activeObj.textSettings.italic = true;
+            textSettings.bold = false;
+            textSettings.italic = true;
+            textSettings.underline = false;
+            textSettings.strikethrough = false;
             break;
         case 'bolditalic':
-            parent.activeObj.textSettings.bold = true;
-            parent.activeObj.textSettings.italic = true;
+            textSettings.bold = true;
+            textSettings.italic = true;
+            textSettings.underline = false;
+            textSettings.strikethrough = false;
+            break;
+        case 'underline':
+            textSettings.bold = false;
+            textSettings.italic = false;
+            textSettings.underline = true;
+            textSettings.strikethrough = false;
+            break;
+        case 'boldunderline':
+            textSettings.bold = true;
+            textSettings.italic = false;
+            textSettings.underline = true;
+            textSettings.strikethrough = false;
+            break;
+        case 'italicunderline':
+            textSettings.bold = false;
+            textSettings.italic = true;
+            textSettings.underline = true;
+            textSettings.strikethrough = false;
+            break;
+        case 'bolditalicunderline':
+            textSettings.bold = true;
+            textSettings.italic = true;
+            textSettings.underline = true;
+            textSettings.strikethrough = false;
+            break;
+        case 'strikethrough':
+            textSettings.bold = false;
+            textSettings.italic = false;
+            textSettings.underline = false;
+            textSettings.strikethrough = true;
+            break;
+        case 'boldstrikethrough':
+            textSettings.bold = true;
+            textSettings.italic = false;
+            textSettings.underline = false;
+            textSettings.strikethrough = true;
+            break;
+        case 'italicstrikethrough':
+            textSettings.bold = false;
+            textSettings.italic = true;
+            textSettings.underline = false;
+            textSettings.strikethrough = true;
+            break;
+        case 'underlinestrikethrough':
+            textSettings.bold = false;
+            textSettings.italic = false;
+            textSettings.underline = true;
+            textSettings.strikethrough = true;
+            break;
+        case 'bolditalicstrikethrough':
+            textSettings.bold = true;
+            textSettings.italic = true;
+            textSettings.underline = false;
+            textSettings.strikethrough = true;
+            break;
+        case 'boldunderlinestrikethrough':
+            textSettings.bold = true;
+            textSettings.italic = false;
+            textSettings.underline = true;
+            textSettings.strikethrough = true;
+            break;
+        case 'italicunderlinestrikethrough':
+            textSettings.bold = false;
+            textSettings.italic = true;
+            textSettings.underline = true;
+            textSettings.strikethrough = true;
+            break;
+        case 'bolditalicunderlinestrikethrough':
+            textSettings.bold = true;
+            textSettings.italic = true;
+            textSettings.underline = true;
+            textSettings.strikethrough = true;
             break;
         }
         parent.objColl.push(parent.activeObj);
@@ -2617,7 +2812,8 @@ export class Shape {
                 previousCropObj: prevCropObj, previousText: null,
                 currentText: null, previousFilter: null, isCircleCrop: null}});
         parent.objColl.pop();
-        parent.activeObj.textSettings.bold = tempBold; parent.activeObj.textSettings.italic = tempItalic;
+        textSettings.bold = tempBold; textSettings.italic = tempItalic;
+        textSettings.underline = tempUnderline; textSettings.strikethrough = tempStrikethrough;
     }
 
     private pushActItemIntoObj(): void {
@@ -2793,32 +2989,120 @@ export class Shape {
 
     private getTextAreaWidth(item: string): number {
         const parent: ImageEditor = this.parent;
-        const tempBold: boolean = parent.activeObj.textSettings.bold;
-        const tempItalic: boolean = parent.activeObj.textSettings.italic;
+        const textSettings: TextSettings = parent.activeObj.textSettings;
+        const tempBold: boolean = textSettings.bold;
+        const tempItalic: boolean = textSettings.italic;
+        const tempUnderline: boolean = textSettings.underline;
+        const tempStrikethrough: boolean = textSettings.strikethrough;
         switch (item) {
         case 'default':
-            parent.activeObj.textSettings.bold = false; parent.activeObj.textSettings.italic = false;
+            textSettings.bold = false;
+            textSettings.italic = false;
+            textSettings.underline = false;
+            textSettings.strikethrough = false;
             break;
         case 'bold':
-            parent.activeObj.textSettings.bold = true; parent.activeObj.textSettings.italic = false;
+            textSettings.bold = true;
+            textSettings.italic = false;
+            textSettings.underline = false;
+            textSettings.strikethrough = false;
             break;
         case 'italic':
-            parent.activeObj.textSettings.bold = false; parent.activeObj.textSettings.italic = true;
+            textSettings.bold = false;
+            textSettings.italic = true;
+            textSettings.underline = false;
+            textSettings.strikethrough = false;
             break;
         case 'bolditalic':
-            parent.activeObj.textSettings.bold = true; parent.activeObj.textSettings.italic = true;
+            textSettings.bold = true;
+            textSettings.italic = true;
+            textSettings.underline = false;
+            textSettings.strikethrough = false;
+            break;
+        case 'underline':
+            textSettings.bold = false;
+            textSettings.italic = false;
+            textSettings.underline = true;
+            textSettings.strikethrough = false;
+            break;
+        case 'boldunderline':
+            textSettings.bold = true;
+            textSettings.italic = false;
+            textSettings.underline = true;
+            textSettings.strikethrough = false;
+            break;
+        case 'italicunderline':
+            textSettings.bold = false;
+            textSettings.italic = true;
+            textSettings.underline = true;
+            textSettings.strikethrough = false;
+            break;
+        case 'bolditalicunderline':
+            textSettings.bold = true;
+            textSettings.italic = true;
+            textSettings.underline = true;
+            textSettings.strikethrough = false;
+            break;
+        case 'strikethrough':
+            textSettings.bold = false;
+            textSettings.italic = false;
+            textSettings.underline = false;
+            textSettings.strikethrough = true;
+            break;
+        case 'boldstrikethrough':
+            textSettings.bold = true;
+            textSettings.italic = false;
+            textSettings.underline = false;
+            textSettings.strikethrough = true;
+            break;
+        case 'italicstrikethrough':
+            textSettings.bold = false;
+            textSettings.italic = true;
+            textSettings.underline = false;
+            textSettings.strikethrough = true;
+            break;
+        case 'underlinestrikethrough':
+            textSettings.bold = false;
+            textSettings.italic = false;
+            textSettings.underline = true;
+            textSettings.strikethrough = true;
+            break;
+        case 'bolditalicstrikethrough':
+            textSettings.bold = true;
+            textSettings.italic = true;
+            textSettings.underline = false;
+            textSettings.strikethrough = true;
+            break;
+        case 'boldunderlinestrikethrough':
+            textSettings.bold = true;
+            textSettings.italic = false;
+            textSettings.underline = true;
+            textSettings.strikethrough = true;
+            break;
+        case 'italicunderlinestrikethrough':
+            textSettings.bold = false;
+            textSettings.italic = true;
+            textSettings.underline = true;
+            textSettings.strikethrough = true;
+            break;
+        case 'bolditalicunderlinestrikethrough':
+            textSettings.bold = true;
+            textSettings.italic = true;
+            textSettings.underline = true;
+            textSettings.strikethrough = true;
             break;
         }
         const isTextArea: boolean = parent.textArea.style.display === 'none' ? false : true;
         this.updateFontStyles(isTextArea); let width: number;
         if (!isTextArea) {
             width = this.upperContext.measureText(parent.activeObj.keyHistory).width +
-            parent.activeObj.textSettings.fontSize * 0.5;
+            textSettings.fontSize * 0.5;
         } else {
             width = this.upperContext.measureText(parent.textArea.value).width +
-            parent.activeObj.textSettings.fontSize * 0.5;
+            textSettings.fontSize * 0.5;
         }
-        parent.activeObj.textSettings.bold = tempBold; parent.activeObj.textSettings.italic = tempItalic;
+        textSettings.bold = tempBold; textSettings.italic = tempItalic;
+        textSettings.underline = tempUnderline; textSettings.strikethrough = tempStrikethrough;
         return width;
     }
 
@@ -2890,6 +3174,8 @@ export class Shape {
             shapeDetails.fontStyle = [];
             if (obj.textSettings.bold) {shapeDetails.fontStyle.push('bold'); }
             if (obj.textSettings.italic) {shapeDetails.fontStyle.push('italic'); }
+            if (obj.textSettings.underline) {shapeDetails.fontStyle.push('underline'); }
+            if (obj.textSettings.strikethrough) {shapeDetails.fontStyle.push('strikethrough'); }
             shapeDetails.degree = obj.rotatedAngle * (180 / Math.PI);
             parent.notify('selection', {prop: 'updateTransColl', onPropertyChange: false, value: {obj: transformObj, object: obj}});
             shapeDetails.transformCollection = transformObj['coll'];
@@ -3152,6 +3438,7 @@ export class Shape {
             this.lowerContext.clearRect(0, 0, parent.lowerCanvas.width, parent.lowerCanvas.height);
             parent.notify('draw', { prop: 'redrawImgWithObj', onPropertyChange: false});
             parent.notify('toolbar', { prop: 'refresh-main-toolbar', onPropertyChange: false});
+            parent.notify('undo-redo', {prop: 'updateCurrUrc', value: {type: 'ok' }});
         }
     }
 

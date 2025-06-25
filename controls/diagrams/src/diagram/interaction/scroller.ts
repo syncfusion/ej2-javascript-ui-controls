@@ -394,7 +394,6 @@ export class DiagramScroller {
             }
         }
         this.diagram.protectPropertyChange(false);
-
         const newObjects: string[] = this.getObjects(oObjectsID, this.oldCollectionObjects);
         if (this.oldCollectionObjects.length === 0) {
             this.oldCollectionObjects = oObjectsID;

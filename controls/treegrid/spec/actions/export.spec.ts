@@ -4,8 +4,8 @@ import { sampleData, projectData, summaryRowData } from '../base/datasource.spec
 import { isNullOrUndefined, setValue, EmitType, createElement, remove } from '@syncfusion/ej2-base';
 import { actionComplete, getObject, ExcelQueryCellInfoEventArgs, PdfQueryCellInfoEventArgs, ExcelExportProperties } from '@syncfusion/ej2-grids';
 import { Filter } from '../../src/treegrid/actions/filter';
-import { ExcelExport } from '../../src/treegrid/actions/excel-export';
-import { PdfExport } from '../../src/treegrid/actions/pdf-export';
+import {ExcelExport } from '../../src/treegrid/actions/excel-export';
+import {  PdfExport } from '../../src/treegrid/actions/pdf-export';
 import { TreeGridExcelExportProperties, TreeGridPdfExportProperties } from '../../src';
 import { Page } from '../../src/treegrid/actions/page';
 import { DataManager, WebApiAdaptor } from '@syncfusion/ej2-data';
@@ -35,14 +35,13 @@ describe('Exporting Module Test cases', () => {
             );
         });
         it('Checking the excel export', (done: Function) => {
-            gridObj.excelExport().then((doc: Workbook) => {
+            gridObj.excelExport().then((doc: Workbook)=>{
                 expect(doc).not.toBeUndefined();
                 done();
             });
         });
         afterAll(() => {
             destroy(gridObj);
-            gridObj = null;
         });
     });
 });
@@ -50,33 +49,32 @@ describe('Exporting Module Test cases', () => {
 describe('Excel Exporting custom data', () => {
     let gridObj: TreeGrid;
     beforeAll((done: Function) => {
-        gridObj = createGrid(
-            {
-                dataSource: sampleData,
-                childMapping: 'subtasks',
-                treeColumnIndex: 1,
-                allowPaging: true,
-                allowExcelExport: true,
-                allowPdfExport: true,
-                columns: ['taskID', 'taskName', 'startDate', 'endDate', 'duration', 'progress']
-            },
-            done
-        );
+      gridObj = createGrid(
+        {
+          dataSource: sampleData,
+          childMapping: 'subtasks',
+          treeColumnIndex: 1,
+          allowPaging: true,
+          allowExcelExport: true,
+          allowPdfExport: true,
+          columns: ['taskID', 'taskName', 'startDate', 'endDate', 'duration', 'progress']
+        },
+        done
+      );
     });
     it('Checking the export with custom data source', (done: Function) => {
         let excelExportProperties: TreeGridExcelExportProperties = {
-            dataSource: sampleData.slice(0, 1),
+            dataSource: sampleData.slice(0,1),
             exportType: 'AllPages',
             isCollapsedStatePersist: true
         }
-        gridObj.excelExport(excelExportProperties).then((doc: Workbook) => {
+        gridObj.excelExport(excelExportProperties).then((doc: Workbook)=>{
             expect(doc).not.toBeUndefined();
             done();
         });
     });
     afterAll(() => {
-        destroy(gridObj);
-        gridObj = null;
+      destroy(gridObj);
     });
 });
 
@@ -96,46 +94,44 @@ describe('Pdf Exporting local data', () => {
         );
     });
     it('Checking the pdf export', (done: Function) => {
-        gridObj.pdfExport().then((doc) => {
+        gridObj.pdfExport().then((doc)=>{
             expect(doc).not.toBeUndefined();
             done();
         });
     });
     afterAll(() => {
         destroy(gridObj);
-        gridObj = null;
     });
 });
 
 describe('Pdf Exporting custom data', () => {
     let gridObj: TreeGrid;
     beforeAll((done: Function) => {
-        gridObj = createGrid(
-            {
-                dataSource: sampleData,
-                childMapping: 'subtasks',
-                treeColumnIndex: 1,
-                allowPaging: true,
-                allowExcelExport: true,
-                allowPdfExport: true,
-                columns: ['taskID', 'taskName', 'startDate', 'endDate', 'duration', 'progress']
-            },
-            done
-        );
+      gridObj = createGrid(
+        {
+          dataSource: sampleData,
+          childMapping: 'subtasks',
+          treeColumnIndex: 1,
+          allowPaging: true,
+          allowExcelExport: true,
+          allowPdfExport: true,
+          columns: ['taskID', 'taskName', 'startDate', 'endDate', 'duration', 'progress']
+        },
+        done
+      );
     });
     it('Checking the export with custom data source', (done: Function) => {
         let pdfExportProperties: TreeGridPdfExportProperties = {
-            dataSource: sampleData.slice(0, 1),
+            dataSource: sampleData.slice(0,1),
             isCollapsedStatePersist: true
         }
-        gridObj.pdfExport(pdfExportProperties).then((doc) => {
+        gridObj.pdfExport(pdfExportProperties).then((doc)=>{
             expect(doc).not.toBeUndefined();
             done();
         });
     });
     afterAll(() => {
-        destroy(gridObj);
-        gridObj = null;
+      destroy(gridObj);
     });
 });
 
@@ -168,14 +164,13 @@ describe('Excel Exporting Remote data', () => {
         );
     });
     it('Checking the excel export', (done: Function) => {
-        gridObj.excelExport().then((doc: Workbook) => {
+        gridObj.excelExport().then((doc: Workbook)=>{
             expect(doc).not.toBeUndefined();
             done();
         });
     });
     afterAll(() => {
         destroy(gridObj);
-        gridObj = null;
     });
 });
 
@@ -214,15 +209,14 @@ describe('Excel Exporting Remote data with custom data source', () => {
             isCollapsedStatePersist: true,
             exportType: 'CurrentPage'
         }
-        gridObj.excelExport(excelExportProperties).then((doc) => {
+        gridObj.excelExport(excelExportProperties).then((doc)=>{
             expect(doc).not.toBeUndefined();
             done();
         })
-
+        
     });
     afterAll(() => {
         destroy(gridObj);
-        gridObj = null;
     });
 });
 
@@ -261,7 +255,6 @@ describe('Excel Exporting Remote data with custom data source', () => {
 //     });
 //     afterAll(() => {
 //         destroy(gridObj);
-// gridObj = null;
 //     });
 // });
 
@@ -306,7 +299,6 @@ describe('Excel Exporting Remote data with custom data source', () => {
 //     });
 //     afterAll(() => {
 //         destroy(gridObj);
-// gridObj = null;
 //     });
 // });
 
@@ -326,14 +318,13 @@ describe('Csv Exporting local data', () => {
         );
     });
     it('Checking the csv export', (done: Function) => {
-        gridObj.csvExport().then((doc) => {
+        gridObj.csvExport().then((doc)=>{
             expect(doc).not.toBeUndefined();
             done();
         });
     });
     afterAll(() => {
         destroy(gridObj);
-        gridObj = null;
     });
 });
 
@@ -381,14 +372,13 @@ describe('Exporting with aggregates', () => {
         });
     });
     it('Checking the excelExport', (done: Function) => {
-        gridObj.excelExport().then((doc) => {
+        gridObj.excelExport().then((doc)=>{
             expect(doc).not.toBeUndefined();
             done();
         });
     });
     afterAll(() => {
         destroy(gridObj);
-        gridObj = null;
     });
 });
 
@@ -430,14 +420,13 @@ describe('Exporting with aggregates', () => {
         );
     });
     it('Checking the excelExport', (done: Function) => {
-        gridObj.excelExport().then((doc) => {
+        gridObj.excelExport().then((doc)=>{
             expect(doc).not.toBeUndefined();
             done();
         });
     });
     afterAll(() => {
         destroy(gridObj);
-        gridObj = null;
     });
 });
 
@@ -481,7 +470,6 @@ describe('Excel Exporting Remote data without exportType', () => {
     afterAll(() => {
         destroy(gridObj);
         gridObj.excelExportModule.destroy();
-        gridObj = null;
     });
 });
 
@@ -509,7 +497,6 @@ describe('Pdf Exporting local data without enable the property', () => {
     });
     afterAll(() => {
         destroy(gridObj);
-        gridObj = null;
     });
 });
 
@@ -545,7 +532,7 @@ describe('Excel Exporting Remote data with exportType as AllPage', () => {
     it('Checking the excel export', (done: Function) => {
         gridObj.filterModule = null;
         let excelExportProperties: any = {
-            exportType: 'AllPages'
+            exportType:'AllPages'
         }
         gridObj.excelExport(excelExportProperties);
         done();
@@ -553,6 +540,5 @@ describe('Excel Exporting Remote data with exportType as AllPage', () => {
     afterAll(() => {
         destroy(gridObj);
         gridObj.excelExportModule.destroy();
-        gridObj = null;
     });
 });

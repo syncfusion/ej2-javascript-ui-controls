@@ -28,7 +28,7 @@ describe('907949-Resolve script error when deleting splitted table in track chan
         document.body.removeChild(document.getElementById('container'));
         editor = undefined;
         setTimeout(function () {
-            document.body.innerHTML = '';
+            
             done();
         }, 1000);
     });
@@ -37,13 +37,13 @@ describe('907949-Resolve script error when deleting splitted table in track chan
         editor.enableTrackChanges=true;
         editor.selection.select('0;4;1;1;0;0','0;4;2;1;3;11');
         expect(() => { editor.editor.delete(); }).not.toThrowError();
-        expect(editor.revisions.length).toBe(1);
+        expect(editor.revisions.length).toBe(2);
         //undo process
         expect(() => { editor.editorHistory.undo(); }).not.toThrowError();
         expect(editor.revisions.length).toBe(0);
         //redo process
         expect(() => { editor.editorHistory.redo(); }).not.toThrowError();
-        expect(editor.revisions.length).toBe(1);
+        expect(editor.revisions.length).toBe(2);
     });
    
 });

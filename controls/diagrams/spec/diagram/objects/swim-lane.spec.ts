@@ -12,7 +12,7 @@ import { NodeModel, SwimLaneModel, SelectorModel } from '../../../src/diagram/ob
 import { Node, Html, SwimLane } from '../../../src/diagram/objects/node';
 import { MouseEvents } from '../interaction/mouseevents.spec';
 import { Selector } from '../../../src/diagram/objects/node';
-import { Container } from '../../../src/diagram/core/containers/container';
+import { GroupableView } from '../../../src/diagram/core/containers/container';
 import { ConnectorModel } from '../../../src/diagram/objects/connector-model';
 import { PhaseModel, LaneModel } from '../../../src/diagram/objects/node-model';
 import { SymbolPalette, SymbolInfo, PaletteModel, } from '../../../src/symbol-palette/index'; 
@@ -58,7 +58,7 @@ function drag(diagram: Diagram) {
     left = diagram.element.offsetLeft; top = diagram.element.offsetTop;
     let mouseEvents: MouseEvents = new MouseEvents();
     if ((diagram.selectedItems as Selector).nodes.length) {
-        let container: Container = diagram.selectedItems.wrapper;
+        let container: GroupableView = diagram.selectedItems.wrapper;
         let centerX = container.offsetX;
         let centerY = container.offsetY;
         mouseEvents.mouseDownEvent(diagramCanvas, centerX + diagram.element.offsetLeft, centerY + diagram.element.offsetTop);
@@ -256,7 +256,7 @@ describe('Diagram Control', () => {
             expect(shape.lanes[0].addInfo).toEqual({name:'lane1 info changed'});
             done();
         });
-    
+
         it('Checking addInfo in phases at initial rendering',(done:Function)=>{
             let shape = diagram.nodes[0].shape as SwimLaneModel;
             console.log('addInfo for phases')
@@ -1114,7 +1114,6 @@ describe('Diagram Control', () => {
                                         }
                                     ],
                                 },
-                             
                             ],
                             phases: [
                                 {
@@ -1144,7 +1143,7 @@ describe('Diagram Control', () => {
                     height: '800px',
                     nodes: nodes,
                     connectors: connectors
-                   
+
                 });
                 diagram.appendTo('#SwimlaneDiagram5');
             });
@@ -1159,11 +1158,11 @@ describe('Diagram Control', () => {
                 diagram.paste();
                 expect(diagram.nodes.length>0).toBe(true);
                 done();
-               
+
             });
         });
     });
-    
+
     describe('Swimlane - Text editing', () => {
         let diagram: Diagram;
         let ele: HTMLElement;
@@ -2174,7 +2173,7 @@ describe('Diagram Control', () => {
             it('Check-Connector z index', (done: Function) => {
                 let connector = diagram.connectors[0];
                 diagram.select([connector]);
-                expect(diagram.selectedItems.connectors[0].zIndex == 16).toBe(true);
+                expect(diagram.selectedItems.connectors[0].zIndex == 24).toBe(true);
                 done();
         });
 
@@ -2183,7 +2182,7 @@ describe('Diagram Control', () => {
                 diagram.loadDiagram(save);
                 let connector = diagram.connectors[0];
                 diagram.select([connector]);
-                expect(diagram.selectedItems.connectors[0].zIndex == 16).toBe(true);
+                expect(diagram.selectedItems.connectors[0].zIndex == 24).toBe(true);
                 done();
         });
 
@@ -2224,7 +2223,7 @@ describe('Diagram Control', () => {
         });
 
         });
-        
+
     });
     describe('Swimlane interaction', () => {
         describe('Horizontal Orientation', () => {
@@ -9914,6 +9913,251 @@ describe('929543 - Code coverage - Swimlane restructure', () => {
         mouseEvents.mouseMoveEvent(diagramCanvas, 1250, 550);
         mouseEvents.mouseMoveEvent(diagramCanvas, 1250, 500);
         mouseEvents.mouseUpEvent(diagramCanvas, 1250, 500);
+        done();
+    });
+});
+
+describe('scale Horizontal Swimlane', () => {
+    let diagram: Diagram;
+    let mouseEvents: MouseEvents = new MouseEvents();
+    let ele: HTMLElement;
+    beforeAll((): void => {
+        ele = createElement('div', { id: 'diagramSwimlaneScale' });
+        document.body.appendChild(ele);
+        var pathData = 'M 120 24.9999 C 120 38.8072 109.642 50 96.8653 50 L 23.135' +
+        ' 50 C 10.3578 50 0 38.8072 0 24.9999 L 0 24.9999 C' +
+        '0 11.1928 10.3578 0 23.135 0 L 96.8653 0 C 109.642 0 120 11.1928 120 24.9999 Z';
+    var darkColor = '#C7D4DF';
+    var lightColor = '#f5f5f5';
+        let nodes: NodeModel[] = [
+            {
+                id: 'swimlane',
+                shape: {
+                    type: 'SwimLane',
+                    orientation: 'Horizontal',
+                    header: {
+                        annotation: { content: 'ONLINE PURCHASE STATUS' },
+                        height: 50, style: { fill: darkColor, fontSize: 11 },
+                    },
+                    lanes: [
+                        {
+                            id: 'stackCanvas1',
+                            header: {
+                                annotation: { content: 'CUSTOMER' }, width: 50,
+                                style: { fill: darkColor, fontSize: 11 }
+                            },
+                            style: { fill: lightColor },
+                            height: 100,
+                            children: [
+                                {
+                                    id: 'Order',
+                                    shape: { type: 'Path', data: pathData },
+                                    annotations: [
+                                        {
+                                            content: 'ORDER',
+                                            style: { fontSize: 11 }
+                                        }
+                                    ],
+                                    margin: { left: 400, top: 20 },
+                                    height: 40, width: 130,
+                                }
+                            ],
+                        },
+                       
+                    ],
+                    phases: [
+                        {
+                            id: 'phase1', offset: 170,
+                            style: { strokeWidth: 1, strokeDashArray: '3,3', strokeColor: '#606060' },
+                            header: { annotation: { content: 'Phase' } }
+                        },
+                        
+                    ],
+                    phaseSize: 20,
+                },
+                offsetX: 420, offsetY: 270,
+                height: 100,
+                width: 750
+            },
+            
+        ];
+        diagram = new Diagram({ width: 1000, height: 1000, nodes: nodes });
+        diagram.appendTo('#diagramSwimlaneScale');
+    });
+    afterAll((): void => {
+        diagram.destroy();
+        ele.remove();
+    });
+    it('Checking Horizontal swimlane scale method', (done: Function) => {
+        const firstSwimlane = diagram.nodes[0]; 
+        diagram.scale(firstSwimlane, 0.5,0.5, { x: 0, y: 0 });
+        expect(diagram.nodes[0].width == 550).toBe(true);
+        done();
+    });
+});
+describe('scale Vertical Swimlane', () => {
+    let diagram: Diagram;
+    let mouseEvents: MouseEvents = new MouseEvents();
+    let ele: HTMLElement;
+    beforeAll((): void => {
+        ele = createElement('div', { id: 'diagramSwimlaneScale2' });
+        document.body.appendChild(ele);
+        var pathData = 'M 120 24.9999 C 120 38.8072 109.642 50 96.8653 50 L 23.135' +
+        ' 50 C 10.3578 50 0 38.8072 0 24.9999 L 0 24.9999 C' +
+        '0 11.1928 10.3578 0 23.135 0 L 96.8653 0 C 109.642 0 120 11.1928 120 24.9999 Z';
+    var darkColor = '#C7D4DF';
+    var lightColor = '#f5f5f5';
+        let nodes: NodeModel[] = [
+            {
+                id: 'swimlane',
+                shape: {
+                    type: 'SwimLane',
+                    orientation: 'Vertical',
+                    header: {
+                        annotation: { content: 'ONLINE PURCHASE STATUS' },
+                        height: 50, style: { fill: darkColor, fontSize: 11 },
+                    },
+                    lanes: [
+                        {
+                            id: 'stackCanvas1',
+                            header: {
+                                annotation: { content: 'CUSTOMER' }, width: 50,
+                                style: { fill: darkColor, fontSize: 11 }
+                            },
+                            style: { fill: lightColor },
+                            height: 100,
+                            children: [
+                                {
+                                    id: 'Order',
+                                    shape: { type: 'Path', data: pathData },
+                                    annotations: [
+                                        {
+                                            content: 'ORDER',
+                                            style: { fontSize: 11 }
+                                        }
+                                    ],
+                                    margin: { left: 400, top: 20 },
+                                    height: 40, width: 130,
+                                }
+                            ],
+                        },
+                       
+                    ],
+                    phases: [
+                        {
+                            id: 'phase1', offset: 170,
+                            style: { strokeWidth: 1, strokeDashArray: '3,3', strokeColor: '#606060' },
+                            header: { annotation: { content: 'Phase' } }
+                        },
+                        
+                    ],
+                    phaseSize: 20,
+                },
+                offsetX: 420, offsetY: 270,
+                height: 100,
+                width: 750
+            },
+            
+        ];
+        diagram = new Diagram({ width: 1000, height: 1000, nodes: nodes });
+        diagram.appendTo('#diagramSwimlaneScale2');
+    });
+    afterAll((): void => {
+        diagram.destroy();
+        ele.remove();
+    });
+    it('Checking vertical swimlane scale method', (done: Function) => {
+        const firstSwimlane = diagram.nodes[0]; 
+        diagram.scale(firstSwimlane, 0.5,0.5, { x: 0, y: 0 });
+        expect(diagram.nodes[0].width == 550).toBe(true);
+        done();
+    });
+});
+describe('962315 - Edit Swimlane header text', () => {
+    let diagram: Diagram;
+    let mouseEvents: MouseEvents = new MouseEvents();
+    let ele: HTMLElement;
+    beforeAll((): void => {
+        ele = createElement('div', { id: 'diagramSwimlaneEditHeader' });
+        document.body.appendChild(ele);
+        var pathData = 'M 120 24.9999 C 120 38.8072 109.642 50 96.8653 50 L 23.135' +
+        ' 50 C 10.3578 50 0 38.8072 0 24.9999 L 0 24.9999 C' +
+        '0 11.1928 10.3578 0 23.135 0 L 96.8653 0 C 109.642 0 120 11.1928 120 24.9999 Z';
+    var darkColor = '#C7D4DF';
+    var lightColor = '#f5f5f5';
+        let nodes: NodeModel[] = [
+            {
+                id: 'swimlane',
+                shape: {
+                    type: 'SwimLane',
+                    orientation: 'Horizontal',
+                    header: {
+                        annotation: { content: 'ONLINE PURCHASE STATUS' },
+                        height: 50, style: { fill: "red", fontSize: 11 },
+                    },
+                    lanes: [
+                        {
+                            id: 'stackCanvas1',
+                            header: {
+                                annotation: { content: 'CUSTOMER' }, width: 50,
+                                style: { fill: "yellow", fontSize: 11 }
+                            },
+                            style: { fill: "lime" },
+                            height: 100,
+                            children: [
+                                {
+                                    id: 'Order',
+                                    shape: { type: 'Path', data: pathData },
+                                    annotations: [
+                                        {
+                                            content: 'ORDER',
+                                            style: { fontSize: 11 }
+                                        }
+                                    ],
+                                    margin: { left: 400, top: 20 },
+                                    height: 40, width: 130,
+                                }
+                            ],
+                        },
+                        {
+                            id: 'stackCanvas2',
+                            header: {
+                                annotation: { content: 'CUSTOMER2' }, width: 50,
+                                style: { fill: "yellow", fontSize: 11 }
+                            },
+                            style: { fill: "lime" },
+                            height: 100,
+                        },
+
+                    ],
+                    phases: [
+                        {
+                            id: 'phase1', offset: 170,
+                            style: { strokeWidth: 1, strokeDashArray: '3,3', strokeColor: '#606060' },
+                            header: { annotation: { content: 'Phase' } }
+                        },
+
+                    ],
+                    phaseSize: 20,
+                },
+                offsetX: 420, offsetY: 270,
+                height: 100,
+                width: 550
+            }
+        ];
+        diagram = new Diagram({ width: 1000, height: 1000, nodes: nodes });
+        diagram.appendTo('#diagramSwimlaneEditHeader');
+    });
+    afterAll((): void => {
+        diagram.destroy();
+        ele.remove();
+    });
+    it('Edit Swimlane header text', (done: Function) => {
+        diagram.select([diagram.nodes[6]]);
+        diagram.startTextEdit();
+        (document.getElementById('diagramSwimlaneEditHeader_editBox') as any).value = "updateHeaderText";
+        diagram.endEdit();
+        expect(diagram.nodes[6].annotations[0].content == "updateHeaderText").toBe(true);
         done();
     });
 });

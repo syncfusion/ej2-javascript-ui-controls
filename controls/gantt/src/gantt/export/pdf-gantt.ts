@@ -133,7 +133,7 @@ export class PdfGantt extends PdfTreeGrid {
                 detail.startDate.setSeconds(detail.startDate.getSeconds() + 1);
                 detail.endDate = new Date(detail.startDate.getTime());
                 const eDays: number = Math.floor(pointToPixel(detail.endPoint - detail.startPoint)
-                      / (this.chartHeader.bottomTierCellWidth));
+                    / (this.chartHeader.bottomTierCellWidth));
                 detail.endDate.setMinutes(detail.endDate.getMinutes() + eDays * count);
                 break;
             }
@@ -200,9 +200,9 @@ export class PdfGantt extends PdfTreeGrid {
                     detail.startDate.setDate(detail.startDate.getDate() + startDays1 * count);
                 }
                 const endDays1: number = Math.round((detail.endPoint - detail.startPoint)
-                      / pixelToPoint(this.chartHeader.bottomTierCellWidth)) * 7 - 1;
+                    / pixelToPoint(this.chartHeader.bottomTierCellWidth)) * 7 - 1;
                 detail.endDate = new Date(detail.startDate.getTime());
-                if (!this.parent.timelineSettings.showWeekend) {
+                if (!this.parent.timelineSettings.showWeekend){
                     detail.endDate = this.calculateDaysWithoutNonworkingDays(detail.endDate, endDays1 * count);
                 }
                 else {
@@ -216,7 +216,7 @@ export class PdfGantt extends PdfTreeGrid {
                 const startDays2: number = (detail.startPoint / pixelToPoint(this.chartHeader.bottomTierCellWidth) * 31);
                 detail.startDate.setDate(detail.startDate.getDate() + startDays2 * count);
                 const endDays2: number = Math.round((detail.endPoint - detail.startPoint)
-                      / pixelToPoint(this.chartHeader.bottomTierCellWidth)) * 31 - 1;
+                    / pixelToPoint(this.chartHeader.bottomTierCellWidth)) * 31 - 1;
                 detail.endDate = new Date(detail.startDate.getTime());
                 detail.endDate.setDate(detail.startDate.getDate() + endDays2 * count);
                 break;
@@ -227,7 +227,7 @@ export class PdfGantt extends PdfTreeGrid {
                 const startDays3: number = (detail.startPoint / pixelToPoint(this.chartHeader.bottomTierCellWidth) * 365);
                 detail.startDate.setDate(detail.startDate.getDate() + startDays3 * count);
                 const endDays3: number = Math.round((detail.endPoint - detail.startPoint)
-                      / pixelToPoint(this.chartHeader.bottomTierCellWidth)) * 365 - 1;
+                    / pixelToPoint(this.chartHeader.bottomTierCellWidth)) * 365 - 1;
                 detail.endDate = new Date(detail.startDate.getTime());
                 detail.endDate.setDate(detail.startDate.getDate() + endDays3 * count);
                 break;
@@ -286,6 +286,7 @@ export class PdfGantt extends PdfTreeGrid {
         }
         return result;
     }
+
     private drawPageBorder(): void {
         const pages: PdfPage[] = this.result.page.section.getPages() as PdfPage[];
         for (let index: number = 0; index < pages.length; index++) {

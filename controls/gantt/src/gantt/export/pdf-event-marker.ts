@@ -107,7 +107,7 @@ export class EventMarker {
                         taskGraphics.drawString(
                             eventMarker.label, customizedFont, customizedFontBrush, fontColor,
                             (startPoint.x + pixelToPoint(left - cumulativeWidth) + 12 + diff) - (padding.left + padding.right),
-                            (cumulativeHeight + pixelToPoint(50) + pixelToPoint(strSize.height / 2)) - (padding.top + padding.bottom),
+                            (cumulativeHeight + pixelToPoint(51) + pixelToPoint(strSize.height / 2)) - (padding.top + padding.bottom),
                             strSize.width, strSize.height, textFormat);
                     }
                 }

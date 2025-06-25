@@ -1663,3 +1663,119 @@ describe('Gantt timeline tooltip module', () => {
         }
     });
 });
+describe('Gantt tooltip module', () => {
+        let ganttObj: Gantt;
+
+        beforeAll((done: Function) => {
+            ganttObj = createGantt({
+                dataSource: data,
+                allowSorting: true,
+                taskFields: {
+                    id: 'TaskId',
+                    name: 'TaskName',
+                    startDate: 'StartDate',
+                    endDate: 'EndDate',
+                    duration: 'Duration',
+                    progress: 'Progress',
+                    dependency: 'Predecessor',
+                    child: 'Children',
+                    cssClass: 'cusClass',
+                    baselineStartDate: 'BaselineStartDate',
+                    baselineEndDate: 'BaselineEndDate',
+                    resourceInfo: 'resourceInfo',
+                    indicators: 'Indicators'
+                },
+                enableHtmlSanitizer:true,
+                renderBaseline: true,
+                timelineSettings: {
+                    showTooltip: true,
+                    topTier: {
+                        unit: 'Week',
+                        format: 'dd/MM/yyyy'
+                    },
+                    bottomTier: {
+                        unit: 'Day',
+                    },
+                    timelineUnitSize: 40
+                },
+                editSettings: {
+                    allowEditing: true,
+                    allowAdding: true,
+                    allowTaskbarEditing: true
+                },
+                allowUnscheduledTasks: true,
+                highlightWeekends: true,
+                labelSettings: {
+                    taskLabel: 'Progress'
+                },
+                rowHeight: 30,
+                taskbarHeight: 20,
+                projectStartDate: new Date('10/15/2017'),
+                projectEndDate: new Date('12/30/2017'),
+                resourceIDMapping: 'resourceId',
+                resourceNameMapping: 'resourceName',
+                resources: resourceData,
+                holidays: [
+                    {
+                        from: '10/16/2017',
+                        cssClass: 'e-custom-holiday',
+                        label: 'Local Holiday'
+                    },
+                    {
+                        from: '10/19/2017',
+                        to: '10/20/2017',
+                        label: ' Public holiday',
+                        cssClass: 'e-custom-holiday'
+                    }
+                ],
+                eventMarkers: [
+                    {
+                        day: '10/18/2017',
+                        cssClass: 'e-custom-event-marker',
+                        label: 'Event Marker 1'
+                    }, {
+                        day: '10/23/2017',
+                        cssClass: 'e-custom-event-marker'
+                    }
+                ],
+            }, done);
+        });   
+        it('Predecessor Tooltip', () => {
+            const simulatedMouseMove = new PointerEvent("mousemove", {
+                pointerId: Math.floor(Math.random() * 1000),
+                pointerType: "mouse",
+                clientX: 400,
+                clientY: 400,
+                buttons: 0, // 0 usually means no buttons pressed
+                pressure: 0,
+                bubbles: true,
+                cancelable: true,
+                composed: true
+            });
+            ganttObj.tooltipModule['tooltipMouseEvent'] = simulatedMouseMove;
+            let taskbarElement: HTMLElement = ganttObj.element.querySelector('#' + ganttObj.element.id + 'GanttTaskTableBody > tr:nth-child(1) > td > div.e-taskbar-main-container > div.e-gantt-child-taskbar-inner-div.e-gantt-child-taskbar') as HTMLElement;
+            const args: any = {};
+            args.element = ganttObj.element.children[1];
+            args.type = 'mouseover';
+            args.target = taskbarElement;
+            args.cancel = false;
+            const simulatedMouse = new PointerEvent("mousemove", {
+                pointerId: Math.floor(Math.random() * 1000),
+                pointerType: "mouse",
+                clientX: 500,
+                clientY: 500,
+                buttons: 0, // 0 usually means no buttons pressed
+                pressure: 0,
+                bubbles: true,
+                cancelable: true,
+                composed: true
+            });
+            args.event = simulatedMouse;
+            ganttObj.tooltipModule['updateTooltipPosition'](args);
+        });
+        afterAll(function () {
+            if (ganttObj) {
+                destroyGantt(ganttObj);
+            }
+        });
+    });

@@ -398,6 +398,9 @@ export class TocProperties {
         this.isRtl = undefined;
         if (this.element) {
             this.element.innerHTML = '';
+            if (this.element.parentElement) {
+                this.element.parentElement.removeChild(this.element);
+            }
             this.element = undefined;
         }
     }

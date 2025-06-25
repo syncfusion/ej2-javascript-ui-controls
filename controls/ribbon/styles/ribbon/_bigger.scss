@@ -452,6 +452,10 @@
     font-size: $ribbon-bigger-ddb-popup-font-size;
     height: $ribbon-bigger-ddb-popup-height;
 
+    &.e-separator {
+      height: auto;
+    }
+
     .e-menu-icon {
       @include ribbon-font-props(20px, 20px);
       min-height: 20px;

@@ -105,6 +105,11 @@ require.config({
       name: '@syncfusion/ej2-office-chart',
       location: 'node_modules/@syncfusion/ej2-office-chart/dist',
       main: 'ej2-office-chart.umd.min.js'
+    },
+    {
+      name:'@syncfusion/ej2-ribbon',
+      location: 'node_modules/@syncfusion/ej2-ribbon/dist',
+      main: 'ej2-ribbon.umd.min.js'
     }    
     // Include dependent packages
   ],

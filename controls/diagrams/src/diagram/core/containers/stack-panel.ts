@@ -1,6 +1,6 @@
 /* eslint-disable @typescript-eslint/ban-types */
 import { DiagramElement as Element } from '../elements/diagram-element';
-import { Container } from './container';
+import { GroupableView } from './container';
 import { Orientation } from '../../enum/enum';
 import { Size } from '../../primitives/size';
 import { PointModel as Point } from '../../primitives/point-model';
@@ -10,7 +10,7 @@ import { Canvas } from './canvas';
 /**
  * StackPanel module is used to arrange its children in a line
  */
-export class StackPanel extends Container {
+export class StackPanel extends GroupableView {
     /**
      * Gets/Sets the orientation of the stack panel
      */

@@ -11,7 +11,9 @@ export enum FileType {
     /** The SVG file type. */
     Svg = 'Svg',
     /** The WebP file type. */
-    WebP = 'WebP'
+    WebP = 'WebP',
+    /** The BMP file type. */
+    Bmp = 'Bmp'
 }
 
 /**

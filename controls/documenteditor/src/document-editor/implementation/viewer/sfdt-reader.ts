@@ -18,7 +18,9 @@ import {
     ContentControlListItems, ContentControl, IWidget, CheckBoxState, XmlMapping, CustomXmlPart, Footnote, FootnoteElementBox, FillFormat,
     TablePosition,
     BreakElementBox,
-    FootnoteEndnoteMarkerElementBox
+    FootnoteEndnoteMarkerElementBox,
+    GroupShapeElementBox,
+    ShapeBase
 } from './page';
 import { HelperMethods } from '../editor/editor-helper';
 import { Dictionary } from '../../base/dictionary';
@@ -26,7 +28,7 @@ import { ChartComponent } from '@syncfusion/ej2-office-chart';
 import { Revision } from '../track-changes/track-changes';
 import { AutoShapeType, BaselineAlignment, BiDirectionalOverride, BreakClearType, CellVerticalAlignment, CheckBoxSizeType, CompatibilityMode, ContentControlType, FollowCharacterType, FontHintType, FootEndNoteNumberFormat, FootnoteRestartIndex, FootnoteType, HeightType, HighlightColor, HorizontalAlignment, HorizontalOrigin, LineDashing, LineFormatType, LineSpacingType, LineStyle, ListLevelPattern, OutlineLevel, ProtectionType, RevisionType, Strikethrough, StyleType, TabJustification, TabLeader, TableAlignment, TextAlignment, TextFormFieldType, TextureStyle, TextWrappingStyle, TextWrappingType, Underline, VerticalAlignment, VerticalOrigin, WidthType } from '../../base/types';
 import { Themes, FontSchemeStruct, MajorMinorFontScheme, ActionInfo } from '../index';
-import { sectionsProperty, hiddenProperty, imagesProperty, paraStyleNameProperty, fontSubstitutionTableProperty, characterFormatProperty, paragraphFormatProperty, listsProperty, abstractListsProperty, backgroundProperty, stylesProperty, commentsProperty, revisionsProperty, customXmlProperty, defaultTabWidthProperty, formattingProperty, trackChangesProperty, protectionTypeProperty, enforcementProperty, hashValueProperty, saltValueProperty, cryptProviderTypeProperty, cryptAlgorithmClassProperty, cryptAlgorithmTypeProperty, cryptAlgorithmSidProperty, cryptSpinCountProperty, doNotUseHTMLParagraphAutoSpacingProperty, alignTablesRowByRowProperty, formFieldShadingProperty, lastParagraphMarkCopiedProperty, footnotesProperty, endnotesProperty, compatibilityModeProperty, themeFontLanguagesProperty, themesProperty, nameProperty, basedOnProperty, nextProperty, linkProperty, localeIdProperty, localeIdFarEastProperty, localeIdBidiProperty, boldProperty, italicProperty, underlineProperty, fontHintTypeProperty, baselineAlignmentProperty, strikethroughProperty, highlightColorProperty, fontSizeProperty, fontColorProperty, fontFamilyProperty, styleNameProperty, bidiProperty, bdoProperty, fontSizeBidiProperty, fontFamilyBidiProperty, boldBidiProperty, italicBidiProperty, allCapsProperty, complexScriptProperty, fontFamilyAsciiProperty, fontFamilyFarEastProperty, fontFamilyNonFarEastProperty, revisionIdsProperty, listIdProperty, listLevelNumberProperty, leftIndentProperty, rightIndentProperty, firstLineIndentProperty, textAlignmentProperty, afterSpacingProperty, beforeSpacingProperty, spaceAfterAutoProperty, spaceBeforeAutoProperty, lineSpacingProperty, lineSpacingTypeProperty, listFormatProperty, keepWithNextProperty, widowControlProperty, keepLinesTogetherProperty, outlineLevelProperty, contextualSpacingProperty, bordersProperty, tabsProperty, headerDistanceProperty, footerDistanceProperty, differentFirstPageProperty, differentOddAndEvenPagesProperty, pageWidthProperty, pageHeightProperty, leftMarginProperty, rightMarginProperty, topMarginProperty, bottomMarginProperty, restartPageNumberingProperty, pageStartingNumberProperty, endnoteNumberFormatProperty, footNoteNumberFormatProperty, restartIndexForFootnotesProperty, restartIndexForEndnotesProperty, initialFootNoteNumberProperty, initialEndNoteNumberProperty, pageNumberStyleProperty, columnsProperty, numberOfColumnsProperty, equalWidthProperty, lineBetweenColumnsProperty, breakCodeProperty, cellWidthProperty, columnSpanProperty, rowSpanProperty, verticalAlignmentProperty, allowBreakAcrossPagesProperty, isHeaderProperty, heightTypeProperty, beforeWidthProperty, afterWidthProperty, gridBeforeProperty, gridBeforeWidthProperty, gridBeforeWidthTypeProperty, gridAfterProperty, gridAfterWidthProperty, gridAfterWidthTypeProperty, allowAutoFitProperty, cellSpacingProperty, shadingProperty, tableAlignmentProperty, preferredWidthProperty, preferredWidthTypeProperty, horizontalPositionAbsProperty, textureProperty, backgroundColorProperty, foregroundColorProperty, shadowProperty, hasNoneStyleProperty, verticalProperty, horizontalProperty, diagonalUpProperty, diagonalDownProperty, lineStyleProperty, lineWidthProperty, layoutProperty, dataFormatProperty, yValueProperty, chartDataProperty, categoryXNameProperty, lineProperty, foreColorProperty, patternProperty, layoutXProperty, layoutYProperty, directionProperty, endStyleProperty, numberValueProperty, markerStyleProperty, markerColorProperty, markerSizeProperty, forwardProperty, backwardProperty, interceptProperty, isDisplayRSquaredProperty, isDisplayEquationProperty, seriesNameProperty, dataLabelProperty, errorBarProperty, seriesFormatProperty, trendLinesProperty, dataPointsProperty, firstSliceAngleProperty, holeSizeProperty, isLegendKeyProperty, isBubbleSizeProperty, isCategoryNameProperty, isSeriesNameProperty, isValueProperty, isPercentageProperty, isLeaderLinesProperty, showSeriesKeysProperty, hasHorizontalBorderProperty, hasVerticalBorderProperty, hasBordersProperty, categoryTypeProperty, chartCategoryProperty, chartSeriesProperty, chartAreaProperty, chartTitleAreaProperty, plotAreaProperty, chartLegendProperty, chartPrimaryCategoryAxisProperty, chartPrimaryValueAxisProperty, chartTitleProperty, chartTypeProperty, gapWidthProperty, overlapProperty, chartDataTableProperty, textProperty, shapeIdProperty, alternativeTextProperty, visibleProperty, widthProperty, heightProperty, widthScaleProperty, heightScaleProperty, lineFormatProperty, fillFormatProperty, textWrappingStyleProperty, textWrappingTypeProperty, verticalRelativePercentProperty, horizontalRelativePercentProperty, heightRelativePercentProperty, widthRelativePercentProperty, zOrderPositionProperty, layoutInCellProperty, lockAnchorProperty, autoShapeTypeProperty, textFrameProperty, colorProperty, fillProperty, textVerticalAlignmentProperty, imageStringProperty, metaFileImageStringProperty, lengthProperty, isInlineImageProperty, isMetaFileProperty, topProperty, bottomProperty, rightProperty, leftProperty, getImageHeightProperty, getImageWidthProperty, hasFieldEndProperty, formFieldDataProperty, fieldTypeProperty, enabledProperty, helpTextProperty, statusTextProperty, textInputProperty, checkBoxProperty, dropDownListProperty, maxLengthProperty, defaultValueProperty, formatProperty, sizeTypeProperty, sizeProperty, checkedProperty, dropDownItemsProperty, selectedIndexProperty, commentIdProperty, commentCharacterTypeProperty, authorProperty, initialProperty, dateProperty, doneProperty, replyCommentsProperty, revisionTypeProperty, revisionIdProperty, itemIDProperty, xmlProperty, footnoteTypeProperty, symbolCodeProperty, symbolFontNameProperty, customMarkerProperty, inlinesProperty, contentControlPropertiesProperty, lockContentControlProperty, lockContentsProperty, tagProperty, titleProperty, hasPlaceHolderTextProperty, multiLineProperty, isTemporaryProperty, dateCalendarTypeProperty, dateStorageFormatProperty, dateDisplayLocaleProperty, dateDisplayFormatProperty, isCheckedProperty, uncheckedStateProperty, checkedStateProperty, contentControlListItemsProperty, xmlMappingProperty, fontProperty, valueProperty, displayTextProperty, isMappedProperty, isWordMlProperty, prefixMappingProperty, xPathProperty, storeItemIdProperty, customXmlPartProperty, idProperty, cellFormatProperty, rowFormatProperty, cellsProperty, rowsProperty, descriptionProperty, wrapTextAroundProperty, positioningProperty, tableFormatProperty, allowOverlapProperty, distanceTopProperty, distanceRightProperty, distanceLeftProperty, distanceBottomProperty, verticalOriginProperty, verticalPositionProperty, horizontalOriginProperty, horizontalAlignmentProperty, horizontalPositionProperty, blocksProperty, headerProperty, footerProperty, evenHeaderProperty, evenFooterProperty, firstPageHeaderProperty, firstPageFooterProperty, headersFootersProperty, sectionFormatProperty, listLevelPatternProperty, followCharacterProperty, startAtProperty, restartLevelProperty, levelNumberProperty, numberFormatProperty, abstractListIdProperty, levelsProperty, overrideListLevelProperty, levelOverridesProperty, separatorProperty, continuationSeparatorProperty, continuationNoticeProperty, bookmarkTypeProperty, propertiesProperty, tabJustificationProperty, positionProperty, deletePositionProperty, leaderProperty, tabLeaderProperty, editRangeIdProperty, columnFirstProperty, columnLastProperty, userProperty, groupProperty, editableRangeStartProperty, spaceProperty, fontSchemeProperty, fontSchemeNameProperty, majorFontSchemeProperty, minorFontSchemeProperty, fontSchemeListProperty, fontTypefaceProperty, typefaceProperty, panoseProperty, typeProperty, majorUnitProperty, maximumValueProperty, minimumValueProperty, hasMajorGridLinesProperty, hasMinorGridLinesProperty, majorTickMarkProperty, minorTickMarkProperty, tickLabelPositionProperty, rgbProperty, appearanceProperty, lineFormatTypeProperty, allowSpaceOfSameStyleInTableProperty, weightProperty, inlineFormatProperty, fontNameProperty, isCompressedProperty, columnIndexProperty, isAfterParagraphMarkProperty, isAfterRowMarkProperty, isAfterCellMarkProperty, isAfterTableMarkProperty, belowTextProperty, breakClearTypeProperty, characterSpacingProperty, scalingProperty, nsidProperty, incrementalOps, isLegalStyleNumberingProperty, horizontalRuleProperty, isCreatedUsingHtmlSpanTagProperty, isAutoMajorProperty, underlineColorProperty, editingPointsProperty } from '../../index';
+import { sectionsProperty, hiddenProperty, imagesProperty, paraStyleNameProperty, fontSubstitutionTableProperty, characterFormatProperty, paragraphFormatProperty, listsProperty, abstractListsProperty, backgroundProperty, stylesProperty, commentsProperty, revisionsProperty, customXmlProperty, defaultTabWidthProperty, formattingProperty, trackChangesProperty, protectionTypeProperty, enforcementProperty, hashValueProperty, saltValueProperty, cryptProviderTypeProperty, cryptAlgorithmClassProperty, cryptAlgorithmTypeProperty, cryptAlgorithmSidProperty, cryptSpinCountProperty, doNotUseHTMLParagraphAutoSpacingProperty, alignTablesRowByRowProperty, formFieldShadingProperty, lastParagraphMarkCopiedProperty, footnotesProperty, endnotesProperty, compatibilityModeProperty, themeFontLanguagesProperty, themesProperty, nameProperty, basedOnProperty, nextProperty, linkProperty, localeIdProperty, localeIdFarEastProperty, localeIdBidiProperty, boldProperty, italicProperty, underlineProperty, fontHintTypeProperty, baselineAlignmentProperty, strikethroughProperty, highlightColorProperty, fontSizeProperty, fontColorProperty, fontFamilyProperty, styleNameProperty, bidiProperty, bdoProperty, fontSizeBidiProperty, fontFamilyBidiProperty, boldBidiProperty, italicBidiProperty, allCapsProperty, complexScriptProperty, fontFamilyAsciiProperty, fontFamilyFarEastProperty, fontFamilyNonFarEastProperty, revisionIdsProperty, listIdProperty, listLevelNumberProperty, leftIndentProperty, rightIndentProperty, firstLineIndentProperty, textAlignmentProperty, afterSpacingProperty, beforeSpacingProperty, spaceAfterAutoProperty, spaceBeforeAutoProperty, lineSpacingProperty, lineSpacingTypeProperty, listFormatProperty, keepWithNextProperty, widowControlProperty, keepLinesTogetherProperty, outlineLevelProperty, contextualSpacingProperty, bordersProperty, tabsProperty, headerDistanceProperty, footerDistanceProperty, differentFirstPageProperty, differentOddAndEvenPagesProperty, pageWidthProperty, pageHeightProperty, leftMarginProperty, rightMarginProperty, topMarginProperty, bottomMarginProperty, restartPageNumberingProperty, pageStartingNumberProperty, endnoteNumberFormatProperty, footNoteNumberFormatProperty, restartIndexForFootnotesProperty, restartIndexForEndnotesProperty, initialFootNoteNumberProperty, initialEndNoteNumberProperty, pageNumberStyleProperty, columnsProperty, numberOfColumnsProperty, equalWidthProperty, lineBetweenColumnsProperty, breakCodeProperty, cellWidthProperty, columnSpanProperty, rowSpanProperty, verticalAlignmentProperty, allowBreakAcrossPagesProperty, isHeaderProperty, heightTypeProperty, beforeWidthProperty, afterWidthProperty, gridBeforeProperty, gridBeforeWidthProperty, gridBeforeWidthTypeProperty, gridAfterProperty, gridAfterWidthProperty, gridAfterWidthTypeProperty, allowAutoFitProperty, cellSpacingProperty, shadingProperty, tableAlignmentProperty, preferredWidthProperty, preferredWidthTypeProperty, horizontalPositionAbsProperty, textureProperty, backgroundColorProperty, foregroundColorProperty, shadowProperty, hasNoneStyleProperty, verticalProperty, horizontalProperty, diagonalUpProperty, diagonalDownProperty, lineStyleProperty, lineWidthProperty, layoutProperty, dataFormatProperty, yValueProperty, chartDataProperty, categoryXNameProperty, lineProperty, foreColorProperty, patternProperty, layoutXProperty, layoutYProperty, directionProperty, endStyleProperty, numberValueProperty, markerStyleProperty, markerColorProperty, markerSizeProperty, forwardProperty, backwardProperty, interceptProperty, isDisplayRSquaredProperty, isDisplayEquationProperty, seriesNameProperty, dataLabelProperty, errorBarProperty, seriesFormatProperty, trendLinesProperty, dataPointsProperty, firstSliceAngleProperty, holeSizeProperty, isLegendKeyProperty, isBubbleSizeProperty, isCategoryNameProperty, isSeriesNameProperty, isValueProperty, isPercentageProperty, isLeaderLinesProperty, showSeriesKeysProperty, hasHorizontalBorderProperty, hasVerticalBorderProperty, hasBordersProperty, categoryTypeProperty, chartCategoryProperty, chartSeriesProperty, chartAreaProperty, chartTitleAreaProperty, plotAreaProperty, chartLegendProperty, chartPrimaryCategoryAxisProperty, chartPrimaryValueAxisProperty, chartTitleProperty, chartTypeProperty, gapWidthProperty, overlapProperty, chartDataTableProperty, textProperty, shapeIdProperty, alternativeTextProperty, visibleProperty, widthProperty, heightProperty, widthScaleProperty, heightScaleProperty, lineFormatProperty, fillFormatProperty, textWrappingStyleProperty, textWrappingTypeProperty, verticalRelativePercentProperty, horizontalRelativePercentProperty, heightRelativePercentProperty, widthRelativePercentProperty, zOrderPositionProperty, layoutInCellProperty, lockAnchorProperty, autoShapeTypeProperty, textFrameProperty, colorProperty, fillProperty, textVerticalAlignmentProperty, imageStringProperty, metaFileImageStringProperty, lengthProperty, isInlineImageProperty, isMetaFileProperty, topProperty, bottomProperty, rightProperty, leftProperty, getImageHeightProperty, getImageWidthProperty, hasFieldEndProperty, formFieldDataProperty, fieldTypeProperty, enabledProperty, helpTextProperty, statusTextProperty, textInputProperty, checkBoxProperty, dropDownListProperty, maxLengthProperty, defaultValueProperty, formatProperty, sizeTypeProperty, sizeProperty, checkedProperty, dropDownItemsProperty, selectedIndexProperty, commentIdProperty, commentCharacterTypeProperty, authorProperty, initialProperty, dateProperty, doneProperty, replyCommentsProperty, revisionTypeProperty, revisionIdProperty, itemIDProperty, xmlProperty, footnoteTypeProperty, symbolCodeProperty, symbolFontNameProperty, customMarkerProperty, inlinesProperty, contentControlPropertiesProperty, lockContentControlProperty, lockContentsProperty, tagProperty, titleProperty, hasPlaceHolderTextProperty, multiLineProperty, isTemporaryProperty, dateCalendarTypeProperty, dateStorageFormatProperty, dateDisplayLocaleProperty, dateDisplayFormatProperty, isCheckedProperty, uncheckedStateProperty, checkedStateProperty, contentControlListItemsProperty, xmlMappingProperty, fontProperty, valueProperty, displayTextProperty, isMappedProperty, isWordMlProperty, prefixMappingProperty, xPathProperty, storeItemIdProperty, customXmlPartProperty, idProperty, cellFormatProperty, rowFormatProperty, cellsProperty, rowsProperty, descriptionProperty, wrapTextAroundProperty, positioningProperty, tableFormatProperty, allowOverlapProperty, distanceTopProperty, distanceRightProperty, distanceLeftProperty, distanceBottomProperty, verticalOriginProperty, verticalPositionProperty, horizontalOriginProperty, horizontalAlignmentProperty, horizontalPositionProperty, blocksProperty, headerProperty, footerProperty, evenHeaderProperty, evenFooterProperty, firstPageHeaderProperty, firstPageFooterProperty, headersFootersProperty, sectionFormatProperty, listLevelPatternProperty, followCharacterProperty, startAtProperty, restartLevelProperty, levelNumberProperty, numberFormatProperty, abstractListIdProperty, levelsProperty, overrideListLevelProperty, levelOverridesProperty, separatorProperty, continuationSeparatorProperty, continuationNoticeProperty, bookmarkTypeProperty, propertiesProperty, tabJustificationProperty, positionProperty, deletePositionProperty, leaderProperty, tabLeaderProperty, editRangeIdProperty, columnFirstProperty, columnLastProperty, userProperty, groupProperty, editableRangeStartProperty, spaceProperty, fontSchemeProperty, fontSchemeNameProperty, majorFontSchemeProperty, minorFontSchemeProperty, fontSchemeListProperty, fontTypefaceProperty, typefaceProperty, panoseProperty, typeProperty, majorUnitProperty, maximumValueProperty, minimumValueProperty, hasMajorGridLinesProperty, hasMinorGridLinesProperty, majorTickMarkProperty, minorTickMarkProperty, tickLabelPositionProperty, rgbProperty, appearanceProperty, lineFormatTypeProperty, allowSpaceOfSameStyleInTableProperty, weightProperty, inlineFormatProperty, fontNameProperty, isCompressedProperty, columnIndexProperty, isAfterParagraphMarkProperty, isAfterRowMarkProperty, isAfterCellMarkProperty, isAfterTableMarkProperty, belowTextProperty, breakClearTypeProperty, characterSpacingProperty, scalingProperty, nsidProperty, incrementalOps, isLegalStyleNumberingProperty, horizontalRuleProperty, isCreatedUsingHtmlSpanTagProperty, isAutoMajorProperty, underlineColorProperty, editingPointsProperty, childShapeProperty, offsetXValue, offsetYValue, extentXValue, extentYValue } from '../../index';
 import { ZipArchive, ZipArchiveItem } from '@syncfusion/ej2-compression';
 /**
  * @private
@@ -52,7 +54,6 @@ export class SfdtReader {
      */
     public revisionCollection: Dictionary<string, Revision> = undefined;
     private isPageBreakInsideTable: boolean = false;
-    private referedRevisions: any = [];
     private editableRanges: Dictionary<string, EditRangeStartElementBox>;
     private fontInfoCollection: Dictionary<string, boolean>;
     private isParseHeader: boolean = false;
@@ -77,7 +78,7 @@ export class SfdtReader {
      * @private
      */
     public isHtmlPaste: boolean = false;
-    private previousItemForRevision : any = undefined;
+    private revisionMap: Dictionary<ParagraphWidget | WCharacterFormat | WRowFormat , Dictionary<string, Revision>>;
     private get isPasting(): boolean {
         return this.viewer && this.viewer.owner.isPastingContent;
     }
@@ -94,7 +95,6 @@ export class SfdtReader {
         this.commentsCollection = new Dictionary<string, CommentElementBox>();
         this.revisionCollection = new Dictionary<string, Revision>();
         this.fontInfoCollection = new Dictionary<string, boolean>();
-        this.referedRevisions = [];
         this.keywordIndex = 0;
         this.footnotes = new Footnote();
         this.endnotes = new Footnote();
@@ -163,7 +163,7 @@ export class SfdtReader {
             this.parseComments(jsonObject, this.documentHelper.comments);
         }
         if (!isNullOrUndefined(jsonObject[revisionsProperty[this.keywordIndex]])) {
-            this.parseRevisions(jsonObject, this.viewer.owner.revisionsInternal.changes);
+            this.parseRevisions(jsonObject, []);
         }
         if (!isNullOrUndefined(jsonObject[imagesProperty[this.keywordIndex]])) {
             this.parseImages(jsonObject[imagesProperty[this.keywordIndex]]);
@@ -186,13 +186,20 @@ export class SfdtReader {
         if (!isNullOrUndefined(jsonObject[themesProperty[this.keywordIndex]])) {
             this.parseThemes(jsonObject[themesProperty[this.keywordIndex]],this.documentHelper.themes);
         }
-        this.generalizeRevisions();
         this.removeUnmappedBookmark();
         if (!isNullOrUndefined(jsonObject[incrementalOps[0]])) {
             incrementalOperations[incrementalOps[0]] = (jsonObject[incrementalOps[0]]);
         }
         if (this.documentHelper.fieldStacks && this.documentHelper.fieldStacks.length > 0) {
             this.documentHelper.fieldStacks = [];
+        }
+        if (this.revisionMap) {
+            this.revisionMap.clear();
+            this.revisionMap = undefined;
+        }
+        if (this.revisionCollection) {
+            this.revisionCollection.clear();
+            this.revisionMap = undefined;
         }
         return sections;
     }
@@ -219,20 +226,6 @@ export class SfdtReader {
             }
         }
         this.documentHelper.endBookmarksUpdated = [];
-    }
-    
-    private generalizeRevisions(): void {
-        let tempRevisionCollection: Dictionary<string, Revision> = new Dictionary<string, Revision>();
-        let tempRevisons: Revision[] = [];
-        this.referedRevisions.forEach((element: any) => {
-            let revision = this.documentHelper.revisionsInternal.get(element);
-            if (tempRevisons.indexOf(revision) === -1) {
-                tempRevisons.push(revision);
-                tempRevisionCollection.add(element, revision);
-            }
-        });
-        this.viewer.owner.revisionsInternal.changes = tempRevisons;
-        this.documentHelper.revisionsInternal = tempRevisionCollection;
     }
     private parseFootnotes(data: any, footnote: Footnote): void {
         if (!isNullOrUndefined(data[separatorProperty[this.keywordIndex]])) {
@@ -340,7 +333,6 @@ export class SfdtReader {
                 }
             }
         }
-        this.documentHelper.revisionsInternal = this.revisionCollection;
         if (this.documentHelper.owner.sfdtExportModule) {
             this.documentHelper.owner.sfdtExportModule.copyWithTrackChange = false;
         }
@@ -349,66 +341,107 @@ export class SfdtReader {
         if (!isNullOrUndefined(data)) {
             const revision: Revision = new Revision(this.viewer.owner, data[authorProperty[this.keywordIndex]], data[dateProperty[this.keywordIndex]]);
             revision.revisionID = data[revisionIdProperty[this.keywordIndex]];
-            revision.revisionType = this.getRevisionType(data[revisionTypeProperty[this.keywordIndex]]);
+        revision.revisionType = this.getRevisionType(data[revisionTypeProperty[this.keywordIndex]]);
             return revision;
         } else {
             return undefined;
         }
     }
-    private checkAndApplyRevision(keyIndex: number, inline: any, item: any): void {
-        if (!isNullOrUndefined(inline[revisionIdsProperty[keyIndex]]) && inline[revisionIdsProperty[keyIndex]].length > 0) {
-            for (let i: number = 0; i < inline[revisionIdsProperty[keyIndex]].length; i++) {
-                let id: string = inline[revisionIdsProperty[keyIndex]][i];
-                if (this.revisionCollection.containsKey(id)) {
-                    let revision: Revision = this.revisionCollection.get(id);
-                    var itemRevision = this.documentHelper.owner.editorModule.retrieveRevisionByType(item, revision.revisionType);
-                    // If different revisions are applied in same line we need to split the revision
-                    let canInsertNewRevision: boolean = false;
-                    if (item instanceof ElementBox && !isNullOrUndefined(item.previousElement)) {
-                        if (item.previousElement instanceof TextElementBox && item.previousElement.revisions.length === 0) {
-                            canInsertNewRevision = true;
+    private checkAndApplyRevision(keyIndex: number, inline: any, item: any, owner: ParagraphWidget | WRowFormat | WCharacterFormat): void {
+        const revisionIds = inline[revisionIdsProperty[keyIndex]];
+        if (!revisionIds || revisionIds.length === 0) {
+            return;
+        }
+        const isRemotePasteRow = this.isPaste && this.documentHelper.owner.editorModule.isRemoteAction && item instanceof WRowFormat;
+        if (!isNullOrUndefined(revisionIds) && revisionIds.length > 0) {
+            for (let i: number = 0; i < revisionIds.length; i++) {
+                const id: string = revisionIds[i];
+                let revision: Revision = this.revisionCollection.get(id);
+                if (revision) {
+                    // This logic is added for Compatibility issue (Revisions are not added more than once for the same item if the author and revision type are the same).
+                    if (item.revisionLength > 0 && item.getRevision(0).author == revision.author && item.getRevision(0).revisionType == revision.revisionType) {
+                        return;
+                    } else {
+                        const changes: Revision[] = this.viewer.owner.revisionsInternal.changes;
+                        if (changes.indexOf(revision) === -1) {
+                            changes.push(revision);
+                            this.documentHelper.revisionsInternal.add(id, revision);
                         }
-                        for (let i: number = 0; i < item.previousElement.revisions.length; i++) {
-                            var itemRevision: Revision = item.previousElement.revisions[i];
-                            if (itemRevision.revisionType !== revision.revisionType || itemRevision.author !== revision.author) {
-                                canInsertNewRevision = true;
-                            }
-                            else {
-                                canInsertNewRevision = false;
-                                break;
-                            }
+                        revision = this.checkAndCreateNewRevision(revision, owner, item);
+                        if (!isNullOrUndefined(revision)) {
+                            item.revisions.push(revision);
                         }
                     }
-                    // If previous item's revision & current item's revision type is matched, it will return the revision.
-                    let previousRevision: Revision = !isNullOrUndefined(this.previousItemForRevision) ? this.documentHelper.owner.editorModule.retrieveRevisionByType(this.previousItemForRevision, revision.revisionType) : undefined;
-                    // If the revision is already inserted & current revision differs from previous revision or if both types are same but the user is different we need to create new revision
-                    if (this.referedRevisions.indexOf(revision.revisionID) > -1 && (isNullOrUndefined(previousRevision) || (!isNullOrUndefined(previousRevision) && previousRevision.author !== revision.author) || canInsertNewRevision)) {
-                        //Create new revision id for next paragraph
-                        const revisionId = Math.random().toString(36).substring(2, 15) + Math.random().toString(36).substring(2, 15);
-                        //Clone the revision
-                        const clonedRevision = revision.cloneRevision();
-                        clonedRevision.revisionID = revisionId;
-                        const currentRevisionIndex = this.revisionCollection.values.indexOf(revision);
-                        this.revisionCollection.keys.splice(currentRevisionIndex + 1, 0, revisionId);
-                        this.revisionCollection.values.splice(currentRevisionIndex + 1, 0, clonedRevision);
-                        revision = clonedRevision;
-                        id = revisionId;
-                    } //else If the revision already inserted & new revision is created for the previousItem & the current item map's with older revision which is already added, we need to set current revision as previousItem's revision.
-                    else if (this.referedRevisions.indexOf(revision.revisionID) > -1 && !isNullOrUndefined(previousRevision) && previousRevision !== revision && !(item instanceof ShapeElementBox)) {
-                        revision = this.revisionCollection.get(previousRevision.revisionID);
-                    }
-                    this.referedRevisions.push(id);
-                    if (!(item instanceof WParagraphFormat)) {
-                        revision.range.push(item);
-                    }
-                    item.revisions.push(revision);
-                    if (this.isPaste && this.documentHelper.owner.editorModule.isRemoteAction && item instanceof WRowFormat) {
+                    if (isRemotePasteRow) {
                         this.documentHelper.owner.editorModule.remotePasteRevision.push(revision);
                     }
                 }
             }
-            this.previousItemForRevision = item;
         }
+    }
+    private checkAndCreateNewRevision(revision: Revision, owner: ParagraphWidget | WRowFormat | WCharacterFormat, item: any): Revision {
+        if (isNullOrUndefined(this.revisionMap)) {
+            this.revisionMap = new Dictionary();
+        }
+        const parentRevisionId: string = revision.revisionID;
+        const mapRevision: Dictionary<string, Revision> = this.revisionMap.get(owner);
+        const ownerMap: Dictionary<string, Revision> = mapRevision ? mapRevision : undefined;
+        const hasRevision: Revision = ownerMap ? ownerMap.get(parentRevisionId) : undefined;
+        //Start of first compatibility check logic 
+        //This logic is added for Compatibility issue (revisions are not splitted properly for different user/type).
+        let canAddNewRevision: boolean = false;
+        let previousElement: ElementBox;
+        if (item instanceof ElementBox && !isNullOrUndefined(item.previousElement) && !isNullOrUndefined(hasRevision)) {
+            previousElement = item.previousElement;
+            if (previousElement instanceof TextElementBox) {
+                if (previousElement.revisionLength === 0) {
+                    canAddNewRevision = true;
+                }
+                for (let i: number = 0; i < previousElement.revisionLength; i++) {
+                    var itemRevision: Revision = previousElement.getRevision(i);
+                    if (itemRevision.revisionType !== revision.revisionType || itemRevision.author !== revision.author) {
+                        canAddNewRevision = true;
+                    }
+                }
+            }
+        }
+        // End of first compatibility check logic
+        if (!isNullOrUndefined(revision.ownerNode) && revision.ownerNode !== owner || canAddNewRevision) {
+            if (!isNullOrUndefined(hasRevision) && !canAddNewRevision) {
+                revision = hasRevision;
+            } else {
+                //Create new revision id for next paragraph
+                const revisionId = Math.random().toString(36).substring(2, 15) + Math.random().toString(36).substring(2, 15);
+                //Clone the revision
+                revision = revision.cloneRevision();
+                revision.revisionID = revisionId;
+
+                const currentRevisionIndex = this.revisionCollection.values.indexOf(revision);
+                this.revisionCollection.keys.splice(currentRevisionIndex + 1, 0, revisionId);
+                this.revisionCollection.values.splice(currentRevisionIndex + 1, 0, revision);
+                let changes: Revision[] = this.viewer.owner.revisionsInternal.changes;
+                if (changes.indexOf(revision) === -1) {
+                    changes.push(revision);
+                    this.documentHelper.revisionsInternal.add(revision.revisionID, revision);
+                }
+            }
+        }
+        if (isNullOrUndefined(ownerMap) || (ownerMap && isNullOrUndefined(hasRevision))) {
+            const splittedRevison: Dictionary<string, Revision> = new Dictionary();
+            splittedRevison.add(parentRevisionId, revision);
+            this.revisionMap.add(owner, splittedRevison);
+        }
+        //Start of second compatibility check logic
+        //The revision already inserted & new revision is created for the previousItem & the current item map's with older revision which is already added, we need to set current revision as previousItem's revision.
+        if (!canAddNewRevision && previousElement && previousElement.revisionLength > 0) {
+            let previousRevision = this.documentHelper.owner.editorModule.retrieveRevisionByType(previousElement, revision.revisionType);
+            if (this.documentHelper.revisionsInternal.containsKey(revision.revisionID) && !isNullOrUndefined(previousRevision) && previousRevision !== revision) {
+                revision = this.revisionCollection.get(previousRevision.revisionID);
+            }
+        }
+        //End of second compatibility check logic
+        revision.ownerNode = owner;
+        return revision;
     }
     public parseComments(data: any, comments: CommentElementBox[]): void {
         let count: number = 0;
@@ -887,10 +920,9 @@ export class SfdtReader {
                     const paragraph: ParagraphWidget = new ParagraphWidget();
                     paragraph.characterFormat = new WCharacterFormat(paragraph);
                     paragraph.paragraphFormat = new WParagraphFormat(paragraph);
+                    let line: LineWidget = this.documentHelper.layout.addLineWidget(paragraph);
                     if (block[inlinesProperty[this.keywordIndex]].length > 0) {
-                        hasValidElmts = this.parseParagraph(block[inlinesProperty[this.keywordIndex]], paragraph, writeInlineFormat, undefined, isFootnoteEndnote && i === 0);
-                    } else if (this.documentHelper.layout && !this.documentHelper.owner.enableLayout) {
-                        this.documentHelper.layout.addLineWidget(paragraph)
+                        hasValidElmts = this.parseParagraph(block[inlinesProperty[this.keywordIndex]], paragraph, writeInlineFormat, line, isFootnoteEndnote && i === 0);
                     }
                     if (!(isSectionBreak && block === data[data.length - 1] && block[inlinesProperty[this.keywordIndex]].length === 0 && !hasValidElmts)) {
                         this.parseCharacterFormat(this.keywordIndex, block[characterFormatProperty[this.keywordIndex]], paragraph.characterFormat);
@@ -1078,6 +1110,7 @@ export class SfdtReader {
         table.isGridUpdated = false;
         table.updateRowSpan();
     }
+
     private parseTablePositioning(block: any, table: TableWidget): void {
         table.wrapTextAround = !isNullOrUndefined(block[wrapTextAroundProperty[this.keywordIndex]]) ? HelperMethods.parseBoolValue(block[wrapTextAroundProperty[this.keywordIndex]]) : false;
         if (table.wrapTextAround) {
@@ -1356,6 +1389,20 @@ export class SfdtReader {
                     }
                 }
                 textElement.line = lineWidget;
+                // handling in case the previous element is bookmark with isAfterParagraph true
+                const lineChildren: ElementBox[] = lineWidget.children;
+                let lastIndex: number = lineChildren.length - 1;
+                while (lineChildren.length > 0 
+                    && lineChildren[lastIndex] instanceof BookmarkElementBox
+                    && !isNullOrUndefined((lineChildren[lastIndex] as BookmarkElementBox).properties)
+                    && (lineChildren[lastIndex] as BookmarkElementBox).properties['isAfterParagraphMark'] === true) {
+                        lastIndex--;
+                }
+                if (lastIndex !== lineChildren.length - 1) {
+                    lineChildren.splice(lastIndex + 1, 0, textElement);
+                } else {
+                    lineChildren.push(textElement);
+                }
                 if (this.documentHelper.owner.parser.isPaste && !(this.isCutPerformed)) {
                     if (!isNullOrUndefined(inline[revisionIdsProperty[this.keywordIndex]])) {
                         for (let j: number = 0; j < inline[revisionIdsProperty[this.keywordIndex]].length; j++) {
@@ -1363,15 +1410,19 @@ export class SfdtReader {
                                 if (trackChange) {
                                     revision = this.revisionCollection.get(inline[revisionIdsProperty[this.keywordIndex]][j]);
                                 }
-                                if (!isNullOrUndefined(revision) && lineWidget.children.length > 0 && !isNullOrUndefined(lineWidget.children[i - 1].revisions[j]) && ((!trackChange) || (trackChange && (revision.revisionType === 'Deletion')))) {
+                                if (!isNullOrUndefined(revision) && lineWidget.children.length > 1 && !isNullOrUndefined(lineWidget.children[i - 1].getRevision(j)) && ((!trackChange) || (trackChange && (revision.revisionType === 'Deletion')))) {
                                     if (revision.revisionID === inline[revisionIdsProperty[this.keywordIndex]][j]) {
-                                        inline[revisionIdsProperty[this.keywordIndex]][j] = lineWidget.children[i - 1].revisions[j].revisionID;
-                                        this.checkAndApplyRevision(this.keywordIndex, inline, textElement);
+                                        inline[revisionIdsProperty[this.keywordIndex]][j] = lineWidget.children[i - 1].getRevision(j).revisionID;
+                                        this.checkAndApplyRevision(this.keywordIndex, inline, textElement, paragraph);
                                         continue;
                                     }
                                 }
                                 if (!trackChange) {
-                                    revision = this.documentHelper.revisionsInternal.get(inline[revisionIdsProperty[this.keywordIndex]][j]);
+                                    if (this.documentHelper.revisionsInternal.containsKey(inline[revisionIdsProperty[this.keywordIndex]][j])) {
+                                        revision = this.documentHelper.revisionsInternal.get(inline[revisionIdsProperty[this.keywordIndex]][j]);
+                                    } else {
+                                        revision = this.revisionCollection.get(inline[revisionIdsProperty[this.keywordIndex]][j]);
+                                    }
                                 }
                                 if(this.documentHelper.owner.editorModule.isRemoteAction) {
                                     this.documentHelper.owner.editorModule.insertRevision(textElement, revision.revisionType, revision.author, undefined, undefined, false, revision.revisionID);
@@ -1383,21 +1434,7 @@ export class SfdtReader {
                         }
                     }
                 } else {
-                    this.checkAndApplyRevision(this.keywordIndex, inline, textElement);
-                }
-                const lineChildren: ElementBox[] = lineWidget.children;
-                let lastIndex: number = lineChildren.length - 1;
- 				// handling in case the previous element is bookmark with isAfterParagraph true
-                while (lineChildren.length > 0 
-                    && lineChildren[lastIndex] instanceof BookmarkElementBox
-                    && !isNullOrUndefined((lineChildren[lastIndex] as BookmarkElementBox).properties)
-                    && (lineChildren[lastIndex] as BookmarkElementBox).properties['isAfterParagraphMark'] === true) {
-                        lastIndex--;
-                }
-                if (lastIndex !== lineChildren.length - 1) {
-                    lineChildren.splice(lastIndex + 1, 0, textElement);
-                } else {
-                    lineChildren.push(textElement);
+                    this.checkAndApplyRevision(this.keywordIndex, inline, textElement, paragraph);
                 }
                 if (textElement instanceof TextElementBox && textElement.text.length > 90) {
                     // Here, the text is split based on the maximum character length of 90.
@@ -1419,7 +1456,7 @@ export class SfdtReader {
                 footnoteElement.characterFormat = new WCharacterFormat(footnoteElement);
                 this.parseCharacterFormat(this.keywordIndex, inline[characterFormatProperty[this.keywordIndex]], footnoteElement.characterFormat, writeInlineFormat);
                 this.applyCharacterStyle(inline, footnoteElement);
-                this.checkAndApplyRevision(this.keywordIndex, inline, footnoteElement);
+                this.checkAndApplyRevision(this.keywordIndex, inline, footnoteElement, paragraph);
                 this.parseBody(inline[blocksProperty[this.keywordIndex]], footnoteElement.bodyWidget.childWidgets as BlockWidget[], footnoteElement.bodyWidget, false, undefined, undefined, undefined, true);
                 lineWidget.children.push(footnoteElement);
                 hasValidElmts = true;
@@ -1428,120 +1465,11 @@ export class SfdtReader {
                 if (this.documentHelper.owner.editorModule) {
                     this.documentHelper.owner.editorModule.chartType = true;
                 }
-                let chartElement: ChartElementBox = new ChartElementBox();
-                chartElement.title = inline[chartTitleProperty[this.keywordIndex]];
-                chartElement.type = inline[chartTypeProperty[this.keywordIndex]];
-                chartElement.chartGapWidth = inline[gapWidthProperty[this.keywordIndex]];
-                chartElement.chartOverlap = inline[overlapProperty[this.keywordIndex]];
-                this.parseChartTitleArea(inline[chartTitleAreaProperty[this.keywordIndex]], chartElement.chartTitleArea);
-                this.parseChartArea(inline[chartAreaProperty[this.keywordIndex]], chartElement.chartArea);
-                this.parseChartArea(inline[plotAreaProperty[this.keywordIndex]], chartElement.chartPlotArea);
-                this.parseChartLegend(inline[chartLegendProperty[this.keywordIndex]], chartElement.chartLegend);
-                this.parseChartData(inline, chartElement);
-                this.parseChartCategoryAxis(inline[chartPrimaryCategoryAxisProperty[this.keywordIndex]], chartElement.chartPrimaryCategoryAxis);
-                this.parseChartCategoryAxis(inline[chartPrimaryValueAxisProperty[this.keywordIndex]], chartElement.chartPrimaryValueAxis);
-                if (inline[chartDataTableProperty[this.keywordIndex]] != null) {
-                    this.parseChartDataTable(inline[chartDataTableProperty[this.keywordIndex]], chartElement.chartDataTable);
-                }
-                chartElement.line = lineWidget;
-                lineWidget.children.push(chartElement);
-                chartElement.height = HelperMethods.convertPointToPixel(inline[heightProperty[this.keywordIndex]]);
-                chartElement.width = HelperMethods.convertPointToPixel(inline[widthProperty[this.keywordIndex]]);
-
-                let officeChart: ChartComponent = new ChartComponent();
-                officeChart.chartRender(inline, this.keywordIndex);
-                chartElement.officeChart = officeChart;
-                officeChart.chart.appendTo(chartElement.targetElement);
+                this.parseChart(inline, lineWidget, false);
                 hasValidElmts = true;
             } else if (inline.hasOwnProperty(imageStringProperty[this.keywordIndex])) {
                 let image: ImageElementBox = new ImageElementBox(HelperMethods.parseBoolValue(inline[isInlineImageProperty[this.keywordIndex]]));
-                image.isMetaFile = HelperMethods.parseBoolValue(inline[isMetaFileProperty[this.keywordIndex]]);
-                image.isCompressed = inline[isCompressedProperty[this.keywordIndex]];
-                image.metaFileImageString = inline[metaFileImageStringProperty[this.keywordIndex]];
-                image.characterFormat = new WCharacterFormat(image);
-                image.line = lineWidget;
-                this.checkAndApplyRevision(this.keywordIndex, inline, image);
-                lineWidget.children.push(image);
-                let imageString: string = HelperMethods.formatClippedString(inline[imageStringProperty[this.keywordIndex]]).formatClippedString;
-                let isValidImage: boolean = this.validateImageUrl(imageString);
-                if (!isValidImage) {
-                    image.imageString = 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAOEAAADhCAMAAAAJbSJIAAAAgVBMVEX///8AAADgAADY2Njl5eVcXFxjY2NZWVl/f3+wsLCmpqb4+PiioqKpqam7u7vV1dX2uLj2wsLhFRXzpKT3vb30sbHhCwv74+P40dH+9vbkIyO2trbBwcHLy8tsbGycnJz529v4zMzrbGzlLS3qZmblNzfrdXXoRkbvi4vvgYHlHh7CZsBOAAADpUlEQVR4nO3da1faQBSF4ekAUQlUEFs14AXxVv7/D6yaQiZx5mSEYXF2ut+PNKzyyK5diYDmR9czx34AB49C/CjE759w3jvvWr15Tdgz3atXE54f++EcIArxoxA/CvGjED8K8aMQPwrxoxA/CvGLEeZ9jPJdhfk4GyCUjb3ECGE/Q6m/q3DwfudjP0ERZYN9hKdn2hvd3+0jHJz5/kBVuTk96bbQUEjhYR9ckiikUH8UUqg/CinUH4UU6o9CCvVHIYX6o5BC/VFIof4opFB/FFKoPwop1B+FFOqPQgrjyxfjVC38Lxk9tnAxGqZqdKtSOE4GHA5/fuNJpDCtcNHbv4VqYYqPLjgfUViPQgrjozA2CptRSGF8/59w+Wrt+rr1btNna1cPzg0wwuXavncxabnX7PfHYYXzlYARvlobQZyUR9mXm+1NMEK7SSLONgcVV9vb8IQXv4J3KSeKKlxXxNCzONkeYp8AV3p9UT1+P3FWHVAsq5thhGZSEb1DrSZq7dS5HUdoLiuBZ6jORG3tCwAkNJfCUJ2Jrqe1P0ESCkMNTdSACYNDDU7UoAkDQw1P1MAJvUMVJmrwhJ6hShM1gMIvQxUnahCFjaHKEzWQQneoxR95ogZTWBuqPFEDKnSHKk/UoArdoYoTNbDC5lBDEzW4QjMpYiZqgIXG/S76JhwHK5zVVipcnkIVuv/RW/HyFKhwYhuFr6NiCmdNoDBUSGFjovJQEYXuRN9ahwoorJ8uSZenPsMTNk+X2q6jwgm/ntHL11HhhL4zenmoYEL/Gb04VCxh6KKTNFQoYfiikzBUJKF00Sk8VCChfF00OFQcYdt10dBQYYRT5xn0n9G7Q0X8GfCzNNEyZ6iPgD/HlydaVg11DfhajJaJlm2HugIUrlomWrYZKuJKHz6vHhbSM/hROdRnxNe1meuXYvW0DB6+aflYrB7dlzDiCM3N1dVN6GDhMCDhjlHYjEIK46MwNgqbUUhhfJ/vA07wO8N1vw94ONo/3e/lTpVOYfc/UyG//ZmqW52fi/FuTNW3/lZ+eguF+qOQQv1RSKH+KKRQfxRSqD8KKdQfhRTqj0IK9UchhfqjkEL9UUih/iikUH8UUqg/CmXh6Hsv3jlK+wnvD/vgkrSHMMuyu1P9ZdmuwnycDQYn+svG3n9KEUKT9zHyf6+IEWJHIX4U4kchfhTiRyF+FOJHIX4U4kchfnVhijeZa6sunCf4ZdPamteEHY5C/CjEr/vCv0ec0g+AtS1QAAAAAElFTkSuQmCC';
-                } else {
-                    if(this.isPaste && !isNullOrUndefined(this.documentHelper.owner.editorModule.pasteImageIndex)) {
-                        image.imageString = this.documentHelper.owner.editorModule.pasteImageIndex.get(inline[imageStringProperty[this.keywordIndex]]);
-                        if (!isNullOrUndefined(inline[metaFileImageStringProperty[this.keywordIndex]])) {
-                            image.metaFileImageString = this.documentHelper.owner.editorModule.pasteImageIndex.get(inline[metaFileImageStringProperty[this.keywordIndex]]);
-                        }
-                    }
-                    else {
-                        image.imageString = inline[imageStringProperty[this.keywordIndex]];
-                    }
-                }
-                // Before 21.1 duplicate images are preserved as inline images with direct base64 string in the image string property. TO provide backward compatibility we are checking both the index based retrieval from images collections and inline image string.
-                let imgStrValue: number = parseInt(inline[imageStringProperty[this.keywordIndex]]);
-                if (imgStrValue.toString() === "NaN" ? true : false) {
-                    this.documentHelper.addBase64StringInCollection(image);
-                }
-                image.width = HelperMethods.convertPointToPixel(inline[widthProperty[this.keywordIndex]]);
-                image.height = HelperMethods.convertPointToPixel(inline[heightProperty[this.keywordIndex]]);
-                if(!this.isContextBasedPaste) {
-                    let imgStr: string = this.documentHelper.getImageString(image);
-                    if (!isNullOrUndefined(imgStr) && (HelperMethods.startsWith(imgStr, 'http://') || HelperMethods.startsWith(imgStr, 'https://'))) {
-                        // Generate fall back image for URL images.
-                        image.element.crossOrigin = 'Anonymous';
-                        this.viewer.documentHelper.getBase64(imgStr,image.width, image.height).then((imageUrlString: string) => {
-                            this.viewer.documentHelper.images.get(parseInt(image.imageString))[1] =imageUrlString;
-                            image.element.src = imageUrlString;
-                        });
-                    }
-                    image.element.src = imgStr;
-                }       
-                image.top = inline[topProperty[this.keywordIndex]];
-                image.left = inline[leftProperty[this.keywordIndex]];
-                image.bottom = inline[bottomProperty[this.keywordIndex]];
-                image.right = inline[rightProperty[this.keywordIndex]];
-                image.cropHeightScale = inline[getImageHeightProperty[this.keywordIndex]];
-                image.cropWidthScale = inline[getImageWidthProperty[this.keywordIndex]];
-                image.name = inline[nameProperty[this.keywordIndex]];
-                image.alternateText = inline[alternativeTextProperty[this.keywordIndex]];
-                image.title = inline[titleProperty[this.keywordIndex]];
-                image.visible = HelperMethods.parseBoolValue(inline[visibleProperty[this.keywordIndex]]);
-                image.widthScale = inline[widthScaleProperty[this.keywordIndex]];
-                image.heightScale = inline[heightScaleProperty[this.keywordIndex]];
-                image.verticalPosition = HelperMethods.convertPointToPixel(inline[verticalPositionProperty[this.keywordIndex]]);
-                image.verticalOrigin = this.getVerticalOrigin(inline[verticalOriginProperty[this.keywordIndex]]);
-                image.verticalAlignment = this.getShapeVerticalAlignment(inline[verticalAlignmentProperty[this.keywordIndex]]);
-                image.horizontalPosition = HelperMethods.convertPointToPixel(inline[horizontalPositionProperty[this.keywordIndex]]);
-                image.horizontalOrigin = this.getHorizontalOrigin(inline[horizontalOriginProperty[this.keywordIndex]]);
-                image.horizontalAlignment = this.getShapeHorizontalAlignment(inline[horizontalAlignmentProperty[this.keywordIndex]]);
-                image.allowOverlap = HelperMethods.parseBoolValue(inline[allowOverlapProperty[this.keywordIndex]]);
-                if(!isNullOrUndefined(inline[textWrappingStyleProperty[this.keywordIndex]])) {
-                    image.textWrappingStyle =  this.getTextWrappingStyle(inline[textWrappingStyleProperty[this.keywordIndex]]);
-                }
-                if(!isNullOrUndefined(inline[textWrappingTypeProperty[this.keywordIndex]])) {
-                    image.textWrappingType = this.getTextWrappingType(inline[textWrappingTypeProperty[this.keywordIndex]]);
-                }
-                image.isBelowText = HelperMethods.parseBoolValue(inline[belowTextProperty[this.keywordIndex]]);
-                if(!isNullOrUndefined(inline[distanceBottomProperty[this.keywordIndex]])) {
-                    image.distanceBottom = HelperMethods.convertPointToPixel(inline[distanceBottomProperty[this.keywordIndex]]);
-                }
-                if(!isNullOrUndefined(inline[distanceLeftProperty[this.keywordIndex]])) {
-                    image.distanceLeft = HelperMethods.convertPointToPixel(inline[distanceLeftProperty[this.keywordIndex]]);
-                }
-                if(!isNullOrUndefined(inline[distanceRightProperty[this.keywordIndex]])) {
-                    image.distanceRight = HelperMethods.convertPointToPixel(inline[distanceRightProperty[this.keywordIndex]]);                    
-                }
-                if(!isNullOrUndefined(inline[distanceTopProperty[this.keywordIndex]])) {
-                    image.distanceTop = HelperMethods.convertPointToPixel(inline[distanceTopProperty[this.keywordIndex]]);
-                }
-                image.zOrderPosition = inline[zOrderPositionProperty[this.keywordIndex]];
-                image.layoutInCell = HelperMethods.parseBoolValue(inline[layoutInCellProperty[this.keywordIndex]]);
-                if (!isNullOrUndefined(inline[topProperty[this.keywordIndex]]) && inline[topProperty[this.keywordIndex]] !== 0 ||
-                    !isNullOrUndefined(inline[bottomProperty[this.keywordIndex]]) && inline[bottomProperty[this.keywordIndex]] !== 0 ||
-                    !isNullOrUndefined(inline[leftProperty[this.keywordIndex]]) && inline[leftProperty[this.keywordIndex]] !== 0 ||
-                    !isNullOrUndefined(inline[rightProperty[this.keywordIndex]]) && inline[rightProperty[this.keywordIndex]] !== 0) {
-                    image.isCrop = true;
-                }
+                image = this.parseImage(inline, lineWidget, false,);                
                 if (this.getTextWrappingStyle(image.textWrappingStyle) !== 'Inline') {
                     paragraph.floatingElements.push(image);
                 }
@@ -1563,7 +1491,7 @@ export class SfdtReader {
                     }
                 }
                 this.documentHelper.fieldStacks.push(fieldBegin);
-                this.checkAndApplyRevision(this.keywordIndex, inline, fieldBegin);
+                this.checkAndApplyRevision(this.keywordIndex, inline, fieldBegin, paragraph);
                 fieldBegin.line = lineWidget;
                 if (!this.isContextBasedPaste) {
                     this.documentHelper.fields.push(fieldBegin);
@@ -1574,7 +1502,7 @@ export class SfdtReader {
                 if (inline[fieldTypeProperty[this.keywordIndex]] === 2 || (inline[fieldTypeProperty[this.keywordIndex]] === 1 && isCreateField)) {
                     field = new FieldElementBox(2);
                     this.parseCharacterFormat(this.keywordIndex, inline[characterFormatProperty[this.keywordIndex]], field.characterFormat, writeInlineFormat);
-                    this.checkAndApplyRevision(this.keywordIndex, inline, field);
+                    this.checkAndApplyRevision(this.keywordIndex, inline, field, paragraph);
                     this.fieldSeparator = field;
                     if (this.documentHelper.fieldStacks.length > 0) {
                         field.fieldBegin = this.documentHelper.fieldStacks[this.documentHelper.fieldStacks.length - 1];
@@ -1600,7 +1528,7 @@ export class SfdtReader {
                     field = new FieldElementBox(1);
                     this.parseCharacterFormat(this.keywordIndex, inline[characterFormatProperty[this.keywordIndex]], field.characterFormat, writeInlineFormat);
                     this.applyCharacterStyle(inline, field);
-                    this.checkAndApplyRevision(this.keywordIndex, inline, field);
+                    this.checkAndApplyRevision(this.keywordIndex, inline, field, paragraph);
                     //For Field End Updated begin and separator.                                      
                     if (this.documentHelper.fieldStacks.length > 0) {
                         field.fieldBegin = this.documentHelper.fieldStacks[this.documentHelper.fieldStacks.length - 1];
@@ -1647,7 +1575,7 @@ export class SfdtReader {
                         bookmark.properties['columnLast'] = inline[propertiesProperty[this.keywordIndex]][columnLastProperty[this.keywordIndex]];
                     }
                 }
-                this.checkAndApplyRevision(this.keywordIndex, inline, bookmark);
+                this.checkAndApplyRevision(this.keywordIndex, inline, bookmark, paragraph);
                 lineWidget.children.push(bookmark);
                 bookmark.line = lineWidget;
                 if (!this.isParseHeader || this.isPaste) {
@@ -1747,83 +1675,9 @@ export class SfdtReader {
                     }
                 }
             } else if (inline.hasOwnProperty([shapeIdProperty[this.keywordIndex]])) {
-                let shape: ShapeElementBox = new ShapeElementBox();
-                shape.shapeId = inline[shapeIdProperty[this.keywordIndex]];
-                shape.name = inline[nameProperty[this.keywordIndex]];
-                shape.alternateText = inline[alternativeTextProperty[this.keywordIndex]];
-                shape.title = inline[titleProperty[this.keywordIndex]];
-                shape.visible = HelperMethods.parseBoolValue(inline[visibleProperty[this.keywordIndex]]);
-                shape.width = HelperMethods.convertPointToPixel(inline[widthProperty[this.keywordIndex]]);
-                shape.height = HelperMethods.convertPointToPixel(inline[heightProperty[this.keywordIndex]]);
-                if (shape.height === 0) {
-                    shape.isZeroHeight = true;
-                }
-                shape.widthScale = inline[widthScaleProperty[this.keywordIndex]];
-                shape.heightScale = inline[heightScaleProperty[this.keywordIndex]];
-                shape.verticalPosition = HelperMethods.convertPointToPixel(inline[verticalPositionProperty[this.keywordIndex]]);
-                shape.verticalOrigin = this.getVerticalOrigin(inline[verticalOriginProperty[this.keywordIndex]]);
-                shape.verticalAlignment = this.getShapeVerticalAlignment(inline[verticalAlignmentProperty[this.keywordIndex]]);
-                shape.verticalRelativePercent = inline[verticalRelativePercentProperty[this.keywordIndex]];
-                shape.horizontalPosition = HelperMethods.convertPointToPixel(inline[horizontalPositionProperty[this.keywordIndex]]);
-                shape.horizontalOrigin = this.getHorizontalOrigin(inline[horizontalOriginProperty[this.keywordIndex]]);
-                shape.horizontalAlignment = this.getShapeHorizontalAlignment(inline[horizontalAlignmentProperty[this.keywordIndex]]);
-                shape.horizontalRelativePercent = inline[horizontalRelativePercentProperty[this.keywordIndex]];
-                shape.heightRelativePercent = inline[heightRelativePercentProperty[this.keywordIndex]];
-                shape.widthRelativePercent = inline[widthRelativePercentProperty[this.keywordIndex]];
-                shape.zOrderPosition = inline[zOrderPositionProperty[this.keywordIndex]];
-                shape.allowOverlap = HelperMethods.parseBoolValue(inline[allowOverlapProperty[this.keywordIndex]]);
-                shape.textWrappingStyle = this.getTextWrappingStyle(inline[textWrappingStyleProperty[this.keywordIndex]]);
-                shape.textWrappingType = this.getTextWrappingType(inline[textWrappingTypeProperty[this.keywordIndex]]);
-                shape.isBelowText = HelperMethods.parseBoolValue(inline[belowTextProperty[this.keywordIndex]]);
-                shape.isHorizontalRule = HelperMethods.parseBoolValue(inline[horizontalRuleProperty[this.keywordIndex]]);
-                if(!isNullOrUndefined(inline[distanceBottomProperty[this.keywordIndex]])) {
-                    shape.distanceBottom = HelperMethods.convertPointToPixel(inline[distanceBottomProperty[this.keywordIndex]]);
-                }
-                if(!isNullOrUndefined(inline[distanceLeftProperty[this.keywordIndex]])) {
-                    shape.distanceLeft = HelperMethods.convertPointToPixel(inline[distanceLeftProperty[this.keywordIndex]]);
-                }
-                if(!isNullOrUndefined(inline[distanceRightProperty[this.keywordIndex]])) {
-                    shape.distanceRight = HelperMethods.convertPointToPixel(inline[distanceRightProperty[this.keywordIndex]]);
-                }
-                if(!isNullOrUndefined(inline[distanceTopProperty[this.keywordIndex]])) {
-                    shape.distanceTop = HelperMethods.convertPointToPixel(inline[distanceTopProperty[this.keywordIndex]]);
-                }
-                shape.layoutInCell = HelperMethods.parseBoolValue(inline[layoutInCellProperty[this.keywordIndex]]);
-                shape.lockAnchor = HelperMethods.parseBoolValue(inline[lockAnchorProperty[this.keywordIndex]]);
-                shape.autoShapeType = this.getAutoShapeType(inline[autoShapeTypeProperty[this.keywordIndex]]);
-                shape.editingPoints = inline[editingPointsProperty[this.keywordIndex]];
-                if (inline.hasOwnProperty(lineFormatProperty[this.keywordIndex])) {
-                    let lineFormat: LineFormat = new LineFormat();
-                    lineFormat.line = HelperMethods.parseBoolValue(inline[lineFormatProperty[this.keywordIndex]][lineProperty[this.keywordIndex]]);
-                    lineFormat.lineFormatType = this.getLineFormatType(inline[lineFormatProperty[this.keywordIndex]][lineFormatTypeProperty[this.keywordIndex]]);
-                    lineFormat.color = inline[lineFormatProperty[this.keywordIndex]][colorProperty[this.keywordIndex]];
-                    lineFormat.weight = inline[lineFormatProperty[this.keywordIndex]][weightProperty[this.keywordIndex]];
-                    lineFormat.dashStyle = this.getLineDashStyle(inline[lineFormatProperty[this.keywordIndex]][lineStyleProperty[this.keywordIndex]]);
-                    shape.lineFormat = lineFormat;
-                }
-                if (inline.hasOwnProperty(fillFormatProperty[this.keywordIndex])) {
-                    let fillFormat: FillFormat = new FillFormat();
-                    fillFormat.color = inline[fillFormatProperty[this.keywordIndex]][colorProperty[this.keywordIndex]];
-                    fillFormat.fill = HelperMethods.parseBoolValue(inline[fillFormatProperty[this.keywordIndex]][fillProperty[this.keywordIndex]]);
-                    shape.fillFormat = fillFormat;
-                }
-                if (inline.hasOwnProperty(textFrameProperty[this.keywordIndex])) {
-                    let textFrame: TextFrame = new TextFrame();
-                    textFrame.textVerticalAlignment = this.getTextVerticalAlignment(inline[textFrameProperty[this.keywordIndex]][textVerticalAlignmentProperty[this.keywordIndex]]);
-                    textFrame.marginLeft = HelperMethods.convertPointToPixel(inline[textFrameProperty[this.keywordIndex]][leftMarginProperty[this.keywordIndex]]);
-                    textFrame.marginRight = HelperMethods.convertPointToPixel(inline[textFrameProperty[this.keywordIndex]][rightMarginProperty[this.keywordIndex]]);
-                    textFrame.marginTop = HelperMethods.convertPointToPixel(inline[textFrameProperty[this.keywordIndex]][topMarginProperty[this.keywordIndex]]);
-                    textFrame.marginBottom = HelperMethods.convertPointToPixel(inline[textFrameProperty[this.keywordIndex]][bottomMarginProperty[this.keywordIndex]]);
-                    if (inline[textFrameProperty[this.keywordIndex]][blocksProperty[this.keywordIndex]].length === 0 && shape.autoShapeType === "DownArrow") {
-                        let block: any = this.keywordIndex === 1 ? { i: [] } : { inlines: [] };
-                        inline[textFrameProperty[this.keywordIndex]][blocksProperty[this.keywordIndex]].push(block);
-                    }
-                    this.parseBody(inline[textFrameProperty[this.keywordIndex]][blocksProperty[this.keywordIndex]], textFrame.childWidgets as BlockWidget[], textFrame);
-                    shape.textFrame = textFrame;
-                    textFrame.containerShape = shape;
-                }
+                let shape:any = this.parseShape(inline,lineWidget);
                 shape.line = lineWidget;
-                this.checkAndApplyRevision(this.keywordIndex, inline, shape);
+                this.checkAndApplyRevision(this.keywordIndex, inline, shape, paragraph);
                 lineWidget.children.push(shape);
                 paragraph.floatingElements.push(shape);
             } else if (inline.hasOwnProperty(contentControlPropertiesProperty[this.keywordIndex])) {
@@ -1852,6 +1706,248 @@ export class SfdtReader {
             paragraph.childWidgets.push(lineWidget);
         }
         return hasValidElmts;
+    }
+    private parseShape(inline: any, lineWidget: LineWidget): ShapeBase {
+        let shape: ShapeBase;
+        if (inline.hasOwnProperty(imageStringProperty[this.keywordIndex])) {
+            let imageShape: ImageElementBox = this.parseImage(inline, lineWidget, true);
+            return imageShape;
+        }
+        else if (inline.hasOwnProperty(chartTypeProperty[this.keywordIndex])) {
+            let chartShape: ChartElementBox = this.parseChart(inline, lineWidget, true);
+            return chartShape;
+        } else {
+            if (inline[childShapeProperty[this.keywordIndex]]) {
+                shape = new GroupShapeElementBox();
+            } else {
+                shape = new ShapeElementBox();
+            }
+            shape = this.ParseChildShape(inline, shape);
+        }
+        if (shape instanceof GroupShapeElementBox) {
+            for (let i = 0; i < inline[childShapeProperty[this.keywordIndex]].length; i++) {
+                let childInline: any = inline[childShapeProperty[this.keywordIndex]][i];
+                let childShape: any = this.parseShape(childInline, lineWidget);
+                childShape.line = lineWidget;
+                childShape.containerShape = shape;
+                if (!(childShape instanceof GroupShapeElementBox)) {
+                    childShape.shapeX = HelperMethods.convertPointToPixel(childInline['x']);
+                    childShape.shapeY = HelperMethods.convertPointToPixel(childInline['y']);
+                    childShape.shapeWidth = HelperMethods.convertPointToPixel(childInline[widthProperty[this.keywordIndex]]);
+                    childShape.shapeHeight = HelperMethods.convertPointToPixel(childInline[heightProperty[this.keywordIndex]]);
+                }
+                this.checkAndApplyRevision(this.keywordIndex, childInline, childShape, lineWidget.paragraph);
+                shape.childWidgets.push(childShape);
+            }
+            shape.shapeX = HelperMethods.convertPointToPixel(inline['x']);
+            shape.shapeY = HelperMethods.convertPointToPixel(inline['y']);
+            shape.shapeWidth = HelperMethods.convertPointToPixel(inline[widthProperty[this.keywordIndex]]);
+            shape.shapeHeight = HelperMethods.convertPointToPixel(inline[heightProperty[this.keywordIndex]]);
+            shape.offsetXValue = HelperMethods.convertPointToPixel(inline[offsetXValue[this.keywordIndex]]);
+            shape.offsetYValue = HelperMethods.convertPointToPixel(inline[offsetYValue[this.keywordIndex]]);
+            shape.extentXValue = HelperMethods.convertPointToPixel(inline[extentXValue[this.keywordIndex]]);
+            shape.extentYValue = HelperMethods.convertPointToPixel(inline[extentYValue[this.keywordIndex]]);
+        }
+        return shape;
+    }
+    private ParseChildShape(inline : any, shape : any) : ShapeBase {
+        shape.shapeId = inline[shapeIdProperty[this.keywordIndex]];
+        shape.name = inline[nameProperty[this.keywordIndex]];
+        shape.alternateText = inline[alternativeTextProperty[this.keywordIndex]];
+        shape.title = inline[titleProperty[this.keywordIndex]];
+        shape.visible = HelperMethods.parseBoolValue(inline[visibleProperty[this.keywordIndex]]);
+        shape.width = HelperMethods.convertPointToPixel(inline[widthProperty[this.keywordIndex]]);
+        shape.height = HelperMethods.convertPointToPixel(inline[heightProperty[this.keywordIndex]]);
+        if (shape.height === 0) {
+            shape.isZeroHeight = true;
+        }
+        shape.widthScale = inline[widthScaleProperty[this.keywordIndex]];
+        shape.heightScale = inline[heightScaleProperty[this.keywordIndex]];
+        shape.verticalPosition = HelperMethods.convertPointToPixel(inline[verticalPositionProperty[this.keywordIndex]]);
+        shape.verticalOrigin = this.getVerticalOrigin(inline[verticalOriginProperty[this.keywordIndex]]);
+        shape.verticalAlignment = this.getShapeVerticalAlignment(inline[verticalAlignmentProperty[this.keywordIndex]]);
+        shape.verticalRelativePercent = inline[verticalRelativePercentProperty[this.keywordIndex]];
+        shape.horizontalPosition = HelperMethods.convertPointToPixel(inline[horizontalPositionProperty[this.keywordIndex]]);
+        shape.horizontalOrigin = this.getHorizontalOrigin(inline[horizontalOriginProperty[this.keywordIndex]]);
+        shape.horizontalAlignment = this.getShapeHorizontalAlignment(inline[horizontalAlignmentProperty[this.keywordIndex]]);
+        shape.horizontalRelativePercent = inline[horizontalRelativePercentProperty[this.keywordIndex]];
+        shape.heightRelativePercent = inline[heightRelativePercentProperty[this.keywordIndex]];
+        shape.widthRelativePercent = inline[widthRelativePercentProperty[this.keywordIndex]];
+        shape.zOrderPosition = inline[zOrderPositionProperty[this.keywordIndex]];
+        shape.allowOverlap = HelperMethods.parseBoolValue(inline[allowOverlapProperty[this.keywordIndex]]);
+        shape.textWrappingStyle = this.getTextWrappingStyle(inline[textWrappingStyleProperty[this.keywordIndex]]);
+        shape.textWrappingType = this.getTextWrappingType(inline[textWrappingTypeProperty[this.keywordIndex]]);
+        shape.isBelowText = HelperMethods.parseBoolValue(inline[belowTextProperty[this.keywordIndex]]);
+        shape.isHorizontalRule = HelperMethods.parseBoolValue(inline[horizontalRuleProperty[this.keywordIndex]]);
+        if (!isNullOrUndefined(inline[distanceBottomProperty[this.keywordIndex]])) {
+            shape.distanceBottom = HelperMethods.convertPointToPixel(inline[distanceBottomProperty[this.keywordIndex]]);
+        }
+        if (!isNullOrUndefined(inline[distanceLeftProperty[this.keywordIndex]])) {
+            shape.distanceLeft = HelperMethods.convertPointToPixel(inline[distanceLeftProperty[this.keywordIndex]]);
+        }
+        if (!isNullOrUndefined(inline[distanceRightProperty[this.keywordIndex]])) {
+            shape.distanceRight = HelperMethods.convertPointToPixel(inline[distanceRightProperty[this.keywordIndex]]);
+        }
+        if (!isNullOrUndefined(inline[distanceTopProperty[this.keywordIndex]])) {
+            shape.distanceTop = HelperMethods.convertPointToPixel(inline[distanceTopProperty[this.keywordIndex]]);
+        }
+        shape.layoutInCell = HelperMethods.parseBoolValue(inline[layoutInCellProperty[this.keywordIndex]]);
+        shape.lockAnchor = HelperMethods.parseBoolValue(inline[lockAnchorProperty[this.keywordIndex]]);
+        shape.autoShapeType = this.getAutoShapeType(inline[autoShapeTypeProperty[this.keywordIndex]]);
+        shape.editingPoints = inline[editingPointsProperty[this.keywordIndex]];
+        if (inline.hasOwnProperty(lineFormatProperty[this.keywordIndex])) {
+            let lineFormat: LineFormat = new LineFormat();
+            lineFormat.line = HelperMethods.parseBoolValue(inline[lineFormatProperty[this.keywordIndex]][lineProperty[this.keywordIndex]]);
+            lineFormat.lineFormatType = this.getLineFormatType(inline[lineFormatProperty[this.keywordIndex]][lineFormatTypeProperty[this.keywordIndex]]);
+            lineFormat.color = inline[lineFormatProperty[this.keywordIndex]][colorProperty[this.keywordIndex]];
+            lineFormat.weight = inline[lineFormatProperty[this.keywordIndex]][weightProperty[this.keywordIndex]];
+            lineFormat.dashStyle = this.getLineDashStyle(inline[lineFormatProperty[this.keywordIndex]][lineStyleProperty[this.keywordIndex]]);
+            shape.lineFormat = lineFormat;
+        }
+        if (inline.hasOwnProperty(fillFormatProperty[this.keywordIndex])) {
+            let fillFormat: FillFormat = new FillFormat();
+            fillFormat.color = inline[fillFormatProperty[this.keywordIndex]][colorProperty[this.keywordIndex]];
+            fillFormat.fill = HelperMethods.parseBoolValue(inline[fillFormatProperty[this.keywordIndex]][fillProperty[this.keywordIndex]]);
+            shape.fillFormat = fillFormat;
+        }
+        if (shape instanceof ShapeElementBox && inline.hasOwnProperty(textFrameProperty[this.keywordIndex])) {
+            let textFrame: TextFrame = new TextFrame();
+            textFrame.textVerticalAlignment = this.getTextVerticalAlignment(inline[textFrameProperty[this.keywordIndex]][textVerticalAlignmentProperty[this.keywordIndex]]);
+            textFrame.marginLeft = HelperMethods.convertPointToPixel(inline[textFrameProperty[this.keywordIndex]][leftMarginProperty[this.keywordIndex]]);
+            textFrame.marginRight = HelperMethods.convertPointToPixel(inline[textFrameProperty[this.keywordIndex]][rightMarginProperty[this.keywordIndex]]);
+            textFrame.marginTop = HelperMethods.convertPointToPixel(inline[textFrameProperty[this.keywordIndex]][topMarginProperty[this.keywordIndex]]);
+            textFrame.marginBottom = HelperMethods.convertPointToPixel(inline[textFrameProperty[this.keywordIndex]][bottomMarginProperty[this.keywordIndex]]);
+            if (inline[textFrameProperty[this.keywordIndex]][blocksProperty[this.keywordIndex]].length == 0) {
+                let block: any = { i: [] };
+                inline[textFrameProperty[this.keywordIndex]][blocksProperty[this.keywordIndex]].push(block);
+            }
+            this.parseBody(inline[textFrameProperty[this.keywordIndex]][blocksProperty[this.keywordIndex]], textFrame.childWidgets as BlockWidget[], textFrame);
+            shape.textFrame = textFrame;
+            textFrame.containerShape = shape;
+        }
+        return shape;
+    }
+    private parseImage(inline :any , lineWidget : LineWidget ,isGroupShape : Boolean) :ImageElementBox {
+        let image: ImageElementBox = new ImageElementBox(HelperMethods.parseBoolValue(inline[isInlineImageProperty[this.keywordIndex]]));
+        image.isMetaFile = HelperMethods.parseBoolValue(inline[isMetaFileProperty[this.keywordIndex]]);
+        image.isCompressed = inline[isCompressedProperty[this.keywordIndex]];
+        image.metaFileImageString = inline[metaFileImageStringProperty[this.keywordIndex]];
+        image.characterFormat = new WCharacterFormat(image);
+        image.line = lineWidget;
+        if(!(isGroupShape)){  
+            this.checkAndApplyRevision(this.keywordIndex, inline, image, lineWidget.paragraph);
+            lineWidget.children.push(image);
+        } 
+        let imageString: string = HelperMethods.formatClippedString(inline[imageStringProperty[this.keywordIndex]]).formatClippedString;
+        let isValidImage: boolean = this.validateImageUrl(imageString);
+        if (!isValidImage) {
+            image.imageString = 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAOEAAADhCAMAAAAJbSJIAAAAgVBMVEX///8AAADgAADY2Njl5eVcXFxjY2NZWVl/f3+wsLCmpqb4+PiioqKpqam7u7vV1dX2uLj2wsLhFRXzpKT3vb30sbHhCwv74+P40dH+9vbkIyO2trbBwcHLy8tsbGycnJz529v4zMzrbGzlLS3qZmblNzfrdXXoRkbvi4vvgYHlHh7CZsBOAAADpUlEQVR4nO3da1faQBSF4ekAUQlUEFs14AXxVv7/D6yaQiZx5mSEYXF2ut+PNKzyyK5diYDmR9czx34AB49C/CjE759w3jvvWr15Tdgz3atXE54f++EcIArxoxA/CvGjED8K8aMQPwrxoxA/CvGLEeZ9jPJdhfk4GyCUjb3ECGE/Q6m/q3DwfudjP0ERZYN9hKdn2hvd3+0jHJz5/kBVuTk96bbQUEjhYR9ckiikUH8UUqg/CinUH4UU6o9CCvVHIYX6o5BC/VFIof4opFB/FFKoPwop1B+FFOqPQgrjyxfjVC38Lxk9tnAxGqZqdKtSOE4GHA5/fuNJpDCtcNHbv4VqYYqPLjgfUViPQgrjozA2CptRSGF8/59w+Wrt+rr1btNna1cPzg0wwuXavncxabnX7PfHYYXzlYARvlobQZyUR9mXm+1NMEK7SSLONgcVV9vb8IQXv4J3KSeKKlxXxNCzONkeYp8AV3p9UT1+P3FWHVAsq5thhGZSEb1DrSZq7dS5HUdoLiuBZ6jORG3tCwAkNJfCUJ2Jrqe1P0ESCkMNTdSACYNDDU7UoAkDQw1P1MAJvUMVJmrwhJ6hShM1gMIvQxUnahCFjaHKEzWQQneoxR95ogZTWBuqPFEDKnSHKk/UoArdoYoTNbDC5lBDEzW4QjMpYiZqgIXG/S76JhwHK5zVVipcnkIVuv/RW/HyFKhwYhuFr6NiCmdNoDBUSGFjovJQEYXuRN9ahwoorJ8uSZenPsMTNk+X2q6jwgm/ntHL11HhhL4zenmoYEL/Gb04VCxh6KKTNFQoYfiikzBUJKF00Sk8VCChfF00OFQcYdt10dBQYYRT5xn0n9G7Q0X8GfCzNNEyZ6iPgD/HlydaVg11DfhajJaJlm2HugIUrlomWrYZKuJKHz6vHhbSM/hROdRnxNe1meuXYvW0DB6+aflYrB7dlzDiCM3N1dVN6GDhMCDhjlHYjEIK46MwNgqbUUhhfJ/vA07wO8N1vw94ONo/3e/lTpVOYfc/UyG//ZmqW52fi/FuTNW3/lZ+eguF+qOQQv1RSKH+KKRQfxRSqD8KKdQfhRTqj0IK9UchhfqjkEL9UUih/iikUH8UUqg/CmXh6Hsv3jlK+wnvD/vgkrSHMMuyu1P9ZdmuwnycDQYn+svG3n9KEUKT9zHyf6+IEWJHIX4U4kchfhTiRyF+FOJHIX4U4kchfnVhijeZa6sunCf4ZdPamteEHY5C/CjEr/vCv0ec0g+AtS1QAAAAAElFTkSuQmCC';
+        } else {
+            if(this.isPaste && !isNullOrUndefined(this.documentHelper.owner.editorModule.pasteImageIndex)) {
+                image.imageString = this.documentHelper.owner.editorModule.pasteImageIndex.get(inline[imageStringProperty[this.keywordIndex]]);
+                if (!isNullOrUndefined(inline[metaFileImageStringProperty[this.keywordIndex]])) {
+                    image.metaFileImageString = this.documentHelper.owner.editorModule.pasteImageIndex.get(inline[metaFileImageStringProperty[this.keywordIndex]]);
+                }
+            }
+            else {
+                image.imageString = inline[imageStringProperty[this.keywordIndex]];
+            }
+        }
+        // Before 21.1 duplicate images are preserved as inline images with direct base64 string in the image string property. TO provide backward compatibility we are checking both the index based retrieval from images collections and inline image string.
+        let imgStrValue: number = parseInt(inline[imageStringProperty[this.keywordIndex]]);
+        if (imgStrValue.toString() === "NaN" ? true : false) {
+            this.documentHelper.addBase64StringInCollection(image);
+        }
+        image.width = HelperMethods.convertPointToPixel(inline[widthProperty[this.keywordIndex]]);
+        image.height = HelperMethods.convertPointToPixel(inline[heightProperty[this.keywordIndex]]);
+        if(!this.isContextBasedPaste) {
+            let imgStr: string = this.documentHelper.getImageString(image);
+            if (!isNullOrUndefined(imgStr) && (HelperMethods.startsWith(imgStr, 'http://') || HelperMethods.startsWith(imgStr, 'https://'))) {
+                // Generate fall back image for URL images.
+                image.element.crossOrigin = 'Anonymous';
+                this.viewer.documentHelper.getBase64(imgStr,image.width, image.height).then((imageUrlString: string) => {
+                    this.viewer.documentHelper.images.get(parseInt(image.imageString))[1] =imageUrlString;
+                    image.element.src = imageUrlString;
+                });
+            }
+            image.element.src = imgStr;
+        }       
+        image.top = inline[topProperty[this.keywordIndex]];
+        image.left = inline[leftProperty[this.keywordIndex]];
+        image.bottom = inline[bottomProperty[this.keywordIndex]];
+        image.right = inline[rightProperty[this.keywordIndex]];
+        image.cropHeightScale = inline[getImageHeightProperty[this.keywordIndex]];
+        image.cropWidthScale = inline[getImageWidthProperty[this.keywordIndex]];
+        image.name = inline[nameProperty[this.keywordIndex]];
+        image.alternateText = inline[alternativeTextProperty[this.keywordIndex]];
+        image.title = inline[titleProperty[this.keywordIndex]];
+        image.visible = HelperMethods.parseBoolValue(inline[visibleProperty[this.keywordIndex]]);
+        image.widthScale = inline[widthScaleProperty[this.keywordIndex]];
+        image.heightScale = inline[heightScaleProperty[this.keywordIndex]];
+        image.verticalPosition = HelperMethods.convertPointToPixel(inline[verticalPositionProperty[this.keywordIndex]]);
+        image.verticalOrigin = this.getVerticalOrigin(inline[verticalOriginProperty[this.keywordIndex]]);
+        image.verticalAlignment = this.getShapeVerticalAlignment(inline[verticalAlignmentProperty[this.keywordIndex]]);
+        image.horizontalPosition = HelperMethods.convertPointToPixel(inline[horizontalPositionProperty[this.keywordIndex]]);
+        image.horizontalOrigin = this.getHorizontalOrigin(inline[horizontalOriginProperty[this.keywordIndex]]);
+        image.horizontalAlignment = this.getShapeHorizontalAlignment(inline[horizontalAlignmentProperty[this.keywordIndex]]);
+        image.allowOverlap = HelperMethods.parseBoolValue(inline[allowOverlapProperty[this.keywordIndex]]);
+        if(!isNullOrUndefined(inline[textWrappingStyleProperty[this.keywordIndex]])) {
+            image.textWrappingStyle =  this.getTextWrappingStyle(inline[textWrappingStyleProperty[this.keywordIndex]]);
+        }
+        if(!isNullOrUndefined(inline[textWrappingTypeProperty[this.keywordIndex]])) {
+            image.textWrappingType = this.getTextWrappingType(inline[textWrappingTypeProperty[this.keywordIndex]]);
+        }
+        image.isBelowText = HelperMethods.parseBoolValue(inline[belowTextProperty[this.keywordIndex]]);
+        if(!isNullOrUndefined(inline[distanceBottomProperty[this.keywordIndex]])) {
+            image.distanceBottom = HelperMethods.convertPointToPixel(inline[distanceBottomProperty[this.keywordIndex]]);
+        }
+        if(!isNullOrUndefined(inline[distanceLeftProperty[this.keywordIndex]])) {
+            image.distanceLeft = HelperMethods.convertPointToPixel(inline[distanceLeftProperty[this.keywordIndex]]);
+        }
+        if(!isNullOrUndefined(inline[distanceRightProperty[this.keywordIndex]])) {
+            image.distanceRight = HelperMethods.convertPointToPixel(inline[distanceRightProperty[this.keywordIndex]]);                    
+        }
+        if(!isNullOrUndefined(inline[distanceTopProperty[this.keywordIndex]])) {
+            image.distanceTop = HelperMethods.convertPointToPixel(inline[distanceTopProperty[this.keywordIndex]]);
+        }
+        image.zOrderPosition = inline[zOrderPositionProperty[this.keywordIndex]];
+        image.layoutInCell = HelperMethods.parseBoolValue(inline[layoutInCellProperty[this.keywordIndex]]);
+        if (!isNullOrUndefined(inline[topProperty[this.keywordIndex]]) && inline[topProperty[this.keywordIndex]] !== 0 ||
+            !isNullOrUndefined(inline[bottomProperty[this.keywordIndex]]) && inline[bottomProperty[this.keywordIndex]] !== 0 ||
+            !isNullOrUndefined(inline[leftProperty[this.keywordIndex]]) && inline[leftProperty[this.keywordIndex]] !== 0 ||
+            !isNullOrUndefined(inline[rightProperty[this.keywordIndex]]) && inline[rightProperty[this.keywordIndex]] !== 0) {
+            image.isCrop = true;
+        }
+        return image;
+    }
+    private parseChart(inline: any, linewidget: LineWidget, isGroupShape: Boolean) {
+        let chartElement: ChartElementBox = new ChartElementBox();
+        chartElement.line = linewidget;
+        if (!isGroupShape) {
+            this.checkAndApplyRevision(this.keywordIndex, inline, chartElement, linewidget.paragraph);
+            linewidget.children.push(chartElement);
+        }
+        chartElement.title = inline[chartTitleProperty[this.keywordIndex]];
+        chartElement.type = inline[chartTypeProperty[this.keywordIndex]];
+        chartElement.chartGapWidth = inline[gapWidthProperty[this.keywordIndex]];
+        chartElement.chartOverlap = inline[overlapProperty[this.keywordIndex]];
+        this.parseChartTitleArea(inline[chartTitleAreaProperty[this.keywordIndex]], chartElement.chartTitleArea);
+        this.parseChartArea(inline[chartAreaProperty[this.keywordIndex]], chartElement.chartArea);
+        this.parseChartArea(inline[plotAreaProperty[this.keywordIndex]], chartElement.chartPlotArea);
+        this.parseChartLegend(inline[chartLegendProperty[this.keywordIndex]], chartElement.chartLegend);
+        this.parseChartData(inline, chartElement);
+        this.parseChartCategoryAxis(inline[chartPrimaryCategoryAxisProperty[this.keywordIndex]], chartElement.chartPrimaryCategoryAxis);
+        this.parseChartCategoryAxis(inline[chartPrimaryValueAxisProperty[this.keywordIndex]], chartElement.chartPrimaryValueAxis);
+        if (inline[chartDataTableProperty[this.keywordIndex]] != null) {
+            this.parseChartDataTable(inline[chartDataTableProperty[this.keywordIndex]], chartElement.chartDataTable);
+        }
+        chartElement.height = HelperMethods.convertPointToPixel(inline[heightProperty[this.keywordIndex]]);
+        chartElement.width = HelperMethods.convertPointToPixel(inline[widthProperty[this.keywordIndex]]);
+        let officeChart: ChartComponent = new ChartComponent();
+        officeChart.chartRender(inline, this.keywordIndex);
+        chartElement.officeChart = officeChart;
+        officeChart.chart.appendTo(chartElement.targetElement);
+        return chartElement;
     }
     /**
      * @private
@@ -2240,7 +2336,7 @@ export class SfdtReader {
                 rowFormat.leftIndent = sourceFormat[leftIndentProperty[keyIndex]];
             }
             if (!isNullOrUndefined(sourceFormat[revisionIdsProperty[keyIndex]]) && sourceFormat[revisionIdsProperty[keyIndex]].length > 0) {
-                this.checkAndApplyRevision(keyIndex, sourceFormat, rowFormat);
+                this.checkAndApplyRevision(keyIndex, sourceFormat, rowFormat, rowFormat);
             }
             this.parseRowGridValues(sourceFormat, rowFormat, keyIndex);
             this.parseBorders(keyIndex, sourceFormat[bordersProperty[keyIndex]], rowFormat.borders);
@@ -2389,7 +2485,7 @@ export class SfdtReader {
                 characterFormat.italicBidi = HelperMethods.parseBoolValue(sourceFormat[italicBidiProperty[keyIndex]]);
             }
             if (!isNullOrUndefined(sourceFormat[revisionIdsProperty[keyIndex]]) && sourceFormat[revisionIdsProperty[keyIndex]].length > 0) {
-                this.checkAndApplyRevision(keyIndex, sourceFormat, characterFormat);
+                this.checkAndApplyRevision(keyIndex, sourceFormat, characterFormat, characterFormat);
             }
             if (!isNullOrUndefined(sourceFormat[allCapsProperty[keyIndex]])) {
                 characterFormat.allCaps = HelperMethods.parseBoolValue(sourceFormat[allCapsProperty[keyIndex]]);
@@ -4030,6 +4126,10 @@ export class SfdtReader {
         if (this.fontInfoCollection) {
             this.fontInfoCollection.destroy();
         }
+        if (this.revisionMap) {
+            this.revisionMap.destroy();
+        }
+        this.revisionMap = undefined;
         this.fontInfoCollection = undefined;
         this.documentHelper = undefined;
         this.keywordIndex = undefined;

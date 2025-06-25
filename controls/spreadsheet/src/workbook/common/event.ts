@@ -281,3 +281,5 @@ export const addListValidationDropdown: string = 'addListValidationDropdown';
 export const sheetRenameUpdate: string = 'sheetRenameUpdate';
 /** @hidden */
 export const updateSortCollection: string = 'updateSortCollection';
+/** @hidden */
+export const importModelUpdate: string = 'importModelUpdate';

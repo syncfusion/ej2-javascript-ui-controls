@@ -1,4 +1,3 @@
-
 import { ContextMenuClickEventArgs, IGanttData, ITaskData, ContextMenuOpenEventArgs} from './../../src/gantt/base/interface';
 import { GanttModel } from './../../src/gantt/base/gantt-model.d';
 import { Gantt, Edit, Selection, ContextMenu, Sort, Resize, RowDD, ContextMenuItem,  Toolbar, Filter, DayMarkers, Reorder, ColumnMenu, VirtualScroll, ExcelExport, PdfExport, UndoRedo} from '../../src/index';
@@ -4745,3 +4744,85 @@ describe('Content menu -', () => {
         }
     });
 });
+describe('Content menu - Child', () => {
+        let ganttObj: Gantt;
+        beforeAll((done: Function) => {
+            ganttObj = createGantt({
+                dataSource: projectData1,
+                allowSelection: true,
+                taskFields: {
+                    id: 'TaskID',
+                    name: 'TaskName',
+                    startDate: 'StartDate',
+                    endDate: 'EndDate',
+                    duration: 'Duration',
+                    progress: 'Progress',
+                    child: 'subtasks',
+                    dependency: 'Predecessor'
+                },
+                editSettings: {
+                    allowAdding: true
+                },
+                enableWBS: true,
+                enableAutoWbsUpdate: false,
+                enableContextMenu: true,
+                allowRowDragAndDrop: true,
+                }, done);
+        });
+        afterAll(() => {
+            if (ganttObj) {
+                destroyGantt(ganttObj);
+            }
+        });
+      
+         it('Drag and drop after adding record as child Position', () => {
+            let $tr: HTMLElement = ganttObj.element.querySelector('#treeGrid' + ganttObj.element.id + '_gridcontrol_content_table > tbody > tr:nth-child(3)') as HTMLElement;
+            triggerMouseEvent($tr, 'contextmenu', 0, 0, false, false, 2);
+            let e: ContextMenuClickEventArgs = {
+                item: { id: ganttObj.element.id + '_contextMenu_Child' },
+                element: null,
+            };
+            (ganttObj.contextMenuModule as any).contextMenuItemClick(e);
+        });
+    });
+
+    describe('Content menu - Below position', () => {
+        let ganttObj: Gantt;
+        beforeAll((done: Function) => {
+            ganttObj = createGantt({
+                dataSource: projectData1,
+                allowSelection: true,
+                taskFields: {
+                    id: 'TaskID',
+                    name: 'TaskName',
+                    startDate: 'StartDate',
+                    endDate: 'EndDate',
+                    duration: 'Duration',
+                    progress: 'Progress',
+                    child: 'subtasks',
+                    dependency: 'Predecessor'
+                },
+                editSettings: {
+                    allowAdding: true
+                },
+                enableWBS: true,
+                enableAutoWbsUpdate: false,
+                enableContextMenu: true,
+                allowRowDragAndDrop: true,
+                }, done);
+        });
+        afterAll(() => {
+            if (ganttObj) {
+                destroyGantt(ganttObj);
+            }
+        });
+        it('Drag and drop after adding record as below Position', () => {
+            let $tr: HTMLElement = ganttObj.element.querySelector('#treeGrid' + ganttObj.element.id + '_gridcontrol_content_table > tbody > tr:nth-child(3)') as HTMLElement;
+            triggerMouseEvent($tr, 'contextmenu', 0, 0, false, false, 2);
+            let e: ContextMenuClickEventArgs = {
+                item: { id: ganttObj.element.id + '_contextMenu_Below' },
+                element: null,
+            };
+            (ganttObj.contextMenuModule as any).contextMenuItemClick(e);
+        });
+    });

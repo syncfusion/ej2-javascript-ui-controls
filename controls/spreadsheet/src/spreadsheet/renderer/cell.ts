@@ -90,6 +90,21 @@ export class CellRenderer implements ICellRenderer {
         } else {
             args.row.appendChild(args.td);
         }
+        if (this.parent.enableRtl &&
+            (!args.cell.style || !args.cell.style.borderRight || args.cell.style.borderRight !== 'none')) {
+            const prevCellModel: CellModel = getCell(args.rowIdx, args.colIdx - 1, sheet);
+            if (prevCellModel && prevCellModel.style && prevCellModel.style.borderLeft) {
+                const prevEle: HTMLTableCellElement = this.parent.getCell(args.rowIdx, args.colIdx - 1) as HTMLTableCellElement;
+                const formatArgs: CellFormatArgs = Object.assign({}, <CellFormatArgs>args, {
+                    cell: prevCellModel,
+                    colIdx: args.colIdx - 1,
+                    td: prevEle,
+                    prevCell: args.td,
+                    style: { borderLeft: prevCellModel.style.borderLeft }
+                });
+                this.parent.notify(applyCellFormat, formatArgs);
+            }
+        }
         const evtArgs: CellRenderEventArgs = { cell: args.cell, element: args.td, address: args.address, rowIndex: args.rowIdx, colIndex:
             args.colIdx, needHeightCheck: false, row: args.row };
         this.parent.trigger('beforeCellRender', evtArgs);
@@ -209,19 +224,21 @@ export class CellRenderer implements ICellRenderer {
                         });
                 }
             }
-            if (args.cell.rowSpan > 1) {
-                const rowSpan: number = args.rowSpan || (args.cell.rowSpan -
-                    this.parent.hiddenCount(args.rowIdx, args.rowIdx + (args.cell.rowSpan - 1)));
-                if (rowSpan > 1) {
-                    args.td.rowSpan = rowSpan; this.mergeFreezeRow(sheet, args.rowIdx, args.colIdx, rowSpan, args.row);
+            if (this.parent.allowMerge) {
+                if (args.cell.rowSpan > 1) {
+                    const rowSpan: number = args.rowSpan || (args.cell.rowSpan -
+                        this.parent.hiddenCount(args.rowIdx, args.rowIdx + (args.cell.rowSpan - 1)));
+                    if (rowSpan > 1) {
+                        args.td.rowSpan = rowSpan; this.mergeFreezeRow(sheet, args.rowIdx, args.colIdx, rowSpan, args.row);
+                    }
                 }
-            }
-            if (args.cell.colSpan > 1) {
-                const colSpan: number = args.colSpan || (args.cell.colSpan -
-                    this.parent.hiddenCount(args.colIdx, args.colIdx + (args.cell.colSpan - 1), 'columns'));
-                if (colSpan > 1) {
-                    args.td.colSpan = colSpan;
-                    this.mergeFreezeCol(sheet, args.rowIdx, args.colIdx, colSpan);
+                if (args.cell.colSpan > 1) {
+                    const colSpan: number = args.colSpan || (args.cell.colSpan -
+                        this.parent.hiddenCount(args.colIdx, args.colIdx + (args.cell.colSpan - 1), 'columns'));
+                    if (colSpan > 1) {
+                        args.td.colSpan = colSpan;
+                        this.mergeFreezeCol(sheet, args.rowIdx, args.colIdx, colSpan);
+                    }
                 }
             }
             if (!isNullOrUndefined(args.cell.notes) && !args.fillType) {
@@ -350,7 +367,7 @@ export class CellRenderer implements ICellRenderer {
         }
     }
     private checkMerged(args: CellRenderArgs): boolean {
-        if (args.cell && (args.cell.colSpan < 0 || args.cell.rowSpan < 0)) {
+        if (this.parent.allowMerge && args.cell && (args.cell.colSpan < 0 || args.cell.rowSpan < 0)) {
             const sheet: SheetModel = this.parent.getActiveSheet();
             if (sheet.frozenRows || sheet.frozenColumns) {
                 const mergeArgs: MergeArgs = { range: [args.rowIdx, args.colIdx, args.rowIdx, args.colIdx] };

@@ -701,6 +701,20 @@ describe('Spreadsheet Sheet tab integration module ->', () => {
                     });
                 });
             });
+            it('EJ2-949377- Implement RTL mode support for spreadsheet sheet tabs', (done: Function) => {
+                helper.setModel('enableRtl', true);
+                expect(helper.hasClass('e-rtl', document.getElementById(helper.id))).toBe(true);
+                helper.invoke('selectRange', ['H1:H11']);
+                helper.click('#' + helper.id + '_aggregate');
+                const aggregateBtn = helper.getElement(`#${helper.id}_aggregate-popup`);
+                expect(aggregateBtn).not.toBeNull();
+                helper.click('#' + helper.id + '_aggregate');
+                helper.click('.e-sheets-list');
+                const popUpElem: HTMLElement = helper.getElement('.e-dropdown-popup.e-sheets-list')
+                expect(popUpElem).not.toBeNull();
+                helper.click('.e-sheets-list');
+                done();
+            });
         });
     });
 

@@ -1259,19 +1259,6 @@ export class HelperMethods {
         if(emptySpace != "") {
             const textBox: TextElementBox = new TextElementBox();
             textBox.characterFormat.copyFormat(element.characterFormat);
-            if(element.revisions.length > 0) {
-                for (let i: number = 0; i < element.revisions.length; i++) {
-                    const currentRevision: Revision = element.revisions[i];
-                    textBox.revisions.push(currentRevision);
-                    let rangeIndex: number = currentRevision.range.indexOf(element);
-                    if (rangeIndex < 0) {
-                        currentRevision.range.push(textBox);
-                    } else {
-                        currentRevision.range.splice(rangeIndex + 1, 0, textBox);
-                    }
-                }
-                textBox.isMarkedForRevision = element.isMarkedForRevision;
-            }
             textBox.line = element.line;
             const lineChildren = textBox.line.children;
             if(fromStart) {
@@ -1282,6 +1269,12 @@ export class HelperMethods {
                 textBox.text = emptySpace;
             }
             lineChildren.splice(lineChildren.indexOf(element)+1, 0, textBox);
+            if (element.revisionLength > 0) {
+                for (let i: number = 0; i < element.revisionLength; i++) {
+                    const currentRevision: Revision = element.getRevision(i);
+                    textBox.addRevision(currentRevision);
+                }
+            }
         }
     }
     /* eslint-disable */
@@ -1314,7 +1307,7 @@ export class HelperMethods {
         const maxLength: number = 90;
         let splittedText: string = '';
         const characterFormat: WCharacterFormat = textElementBox.characterFormat;
-        const revisions: Revision[] = textElementBox.revisions;
+        //const revisions: Revision[] = textElementBox.revisions;
         let spanIndex: number = lineWidget.children.indexOf(textElementBox);
         while (index < textLength) {
             let nextIndex: number = index + maxLength;
@@ -1334,27 +1327,16 @@ export class HelperMethods {
                 splittedElement.text = splittedText;
                 splittedElement.line = lineWidget;
                 splittedElement.characterFormat.copyFormat(characterFormat);
-                if (revisions.length > 0) {
-                    for (let i: number = 0; i < revisions.length; i++) {
-                        const revision: Revision = revisions[i];
-                        splittedElement.revisions.push(revision);
-                        const rangeIndex: number = revision.range.indexOf(textElementBox);
-                        if (isInitialParsing) {
-                            revision.range.push(splittedElement);
-                        } else {
-                            if (rangeIndex < 0) {
-                                revision.range.push(splittedElement);
-                            } else {
-                                revision.range.splice(rangeIndex + 1, 0, splittedElement);
-                            }
-                        }
-                    }
-                }
                 if (isInitialParsing) {
                     lineWidget.children.push(splittedElement);
                 } else {
                     lineWidget.children.splice(spanIndex + 1, 0, splittedElement);
                     spanIndex++;
+                }
+                if (textElementBox.revisionLength > 0) {
+                    for (let i: number = 0; i < textElementBox.revisionLength; i++) {
+                        splittedElement.addRevision(textElementBox.getRevision(i));
+                    }
                 }
             }
             index = spaceIndex;
@@ -2103,7 +2085,6 @@ export interface ExternalFontInfo {
      */
     src: string
 }
-
 /**
  * Represents information associated with a specific field element within the document.
  */
@@ -2113,4 +2094,22 @@ export interface FieldStartInfo {
      * @private
      */
     field: FieldElementBox;
+}
+/**
+ * Represents a scroll position with horizontal and vertical offsets
+ * @typedef {Object} ScrollPosition
+ * @property {number} scrollTop- Vertical scroll offset in pixels
+ * @property {number} scrollLeft- Horizontal scroll offset in pixels
+ */
+export interface ScrollPosition  {
+    /**
+     * Reserved for internal use only.
+     * @private
+     */
+    scrollTop: number;
+    /**
+     * Reserved for internal use only.
+     * @private
+     */
+    scrollLeft: number;
 }

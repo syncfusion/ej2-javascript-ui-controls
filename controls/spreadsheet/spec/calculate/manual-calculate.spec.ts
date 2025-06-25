@@ -632,6 +632,8 @@ describe('Manual calculation cases', () => {
             // Forward reverse (selection from left to right)
             helper.invoke('selectRange', ['C9:B10']);
             helper.click('#' + helper.id + '_merge');
+            helper.setAnimationToNone('.e-merge-alert-dlg.e-dialog');
+            helper.click('.e-merge-alert-dlg .e-primary');
             let cell: CellModel = helper.getInstance().sheets[0].rows[8].cells[1];
             expect(cell.rowSpan).toBe(2);
             expect(cell.colSpan).toBe(2);

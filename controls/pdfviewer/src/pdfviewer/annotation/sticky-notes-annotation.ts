@@ -127,7 +127,8 @@ export class StickyNotesAnnotation {
     constructor(pdfViewer: PdfViewer, pdfViewerBase: PdfViewerBase) {
         this.pdfViewer = pdfViewer;
         this.pdfViewerBase = pdfViewerBase;
-        this.opacity = this.pdfViewer.stickyNotesSettings.opacity ? this.pdfViewer.stickyNotesSettings.opacity : 1;
+        const opacity: number = this.pdfViewer.stickyNotesSettings.opacity;
+        this.opacity =  (!isNullOrUndefined(opacity) && opacity >= 0 && opacity <= 1)  ? opacity : 1;
     }
 
     /**
@@ -178,8 +179,10 @@ export class StickyNotesAnnotation {
                         if (annotation.IsLock || annotation.IsLocked) {
                             annotation.AnnotationSettings.isLock = annotation.IsLock ? annotation.IsLock : annotation.IsLocked;
                         }
+                        const annotOpacity: number = (!isNullOrUndefined(annotation.Opacity) && annotation.Opacity >= 0 &&
+                            annotation.Opacity <= 1) ? annotation.Opacity : 1;
                         annotationObject = {
-                            shapeAnnotationType: 'sticky', author: author, modifiedDate: annotation.ModifiedDate, subject: annotation.Subject, note: annotation.Note, opacity: annotation.Opacity, state: annotation.State, stateModel: annotation.StateModel,
+                            shapeAnnotationType: 'sticky', author: author, modifiedDate: annotation.ModifiedDate, subject: annotation.Subject, note: annotation.Note, opacity: annotOpacity, state: annotation.State, stateModel: annotation.StateModel,
                             pathData: '', comments: this.pdfViewer.annotationModule.getAnnotationComments(annotation.Comments, annotation, author), review: { state: annotation.State, stateModel: annotation.StateModel, modifiedDate: annotation.ModifiedDate, author: author }, pageNumber: pageNumber,
                             bounds: { left: annotation.Bounds.X, top: annotation.Bounds.Y, width: annotation.Bounds.Width,
                                 height: annotation.Bounds.Height, right: annotation.Bounds.Right, bottom: annotation.Bounds.Bottom },
@@ -193,7 +196,7 @@ export class StickyNotesAnnotation {
                             annotation.AnnotationSelectorSettings : this.pdfViewer.annotationSelectorSettings;
                         const annot: PdfAnnotationBaseModel = {
                             author: author, modifiedDate: annotationObject.modifiedDate, annotName: annotationObject.annotName, pageIndex: pageNumber, bounds: { x: position.Left, y: position.Top, width: position.Width, height: position.Height }, strokeColor: 'transparent', stampStrokeColor: '', data: this.setImageSource(), shapeAnnotationType: 'StickyNotes',
-                            subject: annotationObject.subject, notes: annotationObject.note, opacity: annotationObject.opacity,
+                            subject: annotationObject.subject, notes: annotationObject.note, opacity: annotOpacity,
                             id: annotationObject.annotName, fillColor: annotationObject.color,
                             annotationSelectorSettings: annotation.AnnotationSelectorSettings,
                             annotationSettings: annotationObject.annotationSettings,
@@ -266,11 +269,14 @@ export class StickyNotesAnnotation {
             const author: string = (this.pdfViewer.annotationSettings.author !== 'Guest') ? this.pdfViewer.annotationSettings.author : this.pdfViewer.stickyNotesSettings.author;
             const subject: string = (this.pdfViewer.annotationSettings.subject !== '' && !isNullOrUndefined(this.pdfViewer.annotationSettings.subject)) ? this.pdfViewer.annotationSettings.subject : this.pdfViewer.stickyNotesSettings.subject ? this.pdfViewer.stickyNotesSettings.subject : 'Sticky Note';
             const annotationSettings: any = this.pdfViewer.annotationModule.updateSettings(this.pdfViewer.stickyNotesSettings);
+            let annotOpacity: number;
             if (annotation) {
+                annotOpacity = (!isNullOrUndefined(annotation.opacity) && annotation.opacity >= 0 && annotation.opacity <= 1) ?
+                    annotation.opacity : 1;
                 annot = {
                     author: annotation.author, modifiedDate: annotation.modifiedDate, annotName: annotation.annotName, annotationSettings: annotation.annotationSettings && annotation.annotationSettings !== '' ? annotation.annotationSettings : annotationSettings,
                     data: image.src, bounds: { x: X, y: Y, width: width, height: height }, subject: annotation.subject,
-                    notes: annotation.notes, opacity: annotation.opacity, id: annotation.annotName, shapeAnnotationType: 'StickyNotes', strokeColor: 'transparent', stampStrokeColor: '', pageIndex: annotation.pageIndex, isPrint: annotation.isPrint
+                    notes: annotation.notes, opacity: annotOpacity, id: annotation.annotName, shapeAnnotationType: 'StickyNotes', strokeColor: 'transparent', stampStrokeColor: '', pageIndex: annotation.pageIndex, isPrint: annotation.isPrint
                 };
             } else {
                 annotationName = this.pdfViewer.annotation.createGUID();
@@ -281,17 +287,18 @@ export class StickyNotesAnnotation {
                 const annotationSelectorSettings: any = this.pdfViewer.stickyNotesSettings.annotationSelectorSettings ?
                     this.pdfViewer.stickyNotesSettings.annotationSelectorSettings : this.pdfViewer.annotationSelectorSettings;
                 const isPrint: boolean = this.pdfViewer.stickyNotesSettings.isPrint;
+                annotOpacity = (!isNullOrUndefined(this.opacity) && this.opacity >= 0 && this.opacity <= 1) ? this.opacity : 1;
                 annot = {
                     bounds: { x: X, y: Y, width: width, height: height }, pageIndex: pageIndex, data: image.src,
                     modifiedDate: this.getDateAndTime(), annotationSettings: annotationSettings,
-                    shapeAnnotationType: 'StickyNotes', strokeColor: 'transparent', stampStrokeColor: '', annotName: annotationName, id: annotationName, opacity: this.opacity, isPrint: isPrint
+                    shapeAnnotationType: 'StickyNotes', strokeColor: 'transparent', stampStrokeColor: '', annotName: annotationName, id: annotationName, opacity: annotOpacity, isPrint: isPrint
                 };
                 const isLock: boolean = this.pdfViewer.stickyNotesSettings.isLock ?
                     this.pdfViewer.stickyNotesSettings.isLock : this.pdfViewer.annotationSettings.isLock;
                 const allowedInteractions: any = this.pdfViewer.annotationModule.updateAnnotationAllowedInteractions(annotation);
                 annotationObject = {
                     author: author, allowedInteractions: allowedInteractions, modifiedDate: this.getDateAndTime(), subject: subject, shapeAnnotationType: 'sticky', pageNumber: pageIndex,
-                    note: '', opacity: this.opacity, pathData: '', state: '', stateModel: '', color: 'rgba(255,255,0)', comments: [], annotName: annotationName,
+                    note: '', opacity: annotOpacity, pathData: '', state: '', stateModel: '', color: 'rgba(255,255,0)', comments: [], annotName: annotationName,
                     bounds: { left: X, top: Y, width: width, height: height }, review: { state: '', stateModel: '', modifiedDate: '', author: author },
                     annotationSelectorSettings: annotationSelectorSettings,
                     customData: this.pdfViewer.annotationModule.getData('sticky'), annotationSettings: { isLock: isLock }, isPrint: isPrint, isCommentLock: false
@@ -557,6 +564,7 @@ export class StickyNotesAnnotation {
     private renderAnnotationCollections(pageAnnotations: any, pageNumber: any, isInitialRender: boolean): void {
         const pageCollections: any = [];
         const collection: any = pageAnnotations.annotationOrder;
+        const renderAnnot: boolean = !isInitialRender && !this.pdfViewerBase.clientSideRendering && pageCollections;
         if (!isNullOrUndefined(collection)) {
             for (let l: number = 0; l < collection.length; l++) {
                 const annotation: any = collection[parseInt(l.toString(), 10)];
@@ -631,7 +639,7 @@ export class StickyNotesAnnotation {
         if (this.pdfViewer.toolbarModule) {
             this.renderAnnotationComments(pageCollections, pageNumber);
         }
-        if (isInitialRender) {
+        if (isInitialRender || renderAnnot) {
             for (let i: number = 0; i < this.pdfViewerBase.renderedPagesList.length; i++) {
                 if (this.pdfViewerBase.renderedPagesList[parseInt(i.toString(), 10)] === pageNumber) {
                     this.pdfViewerBase.renderAnnotations(pageNumber, pageAnnotations, false);
@@ -1559,11 +1567,10 @@ export class StickyNotesAnnotation {
                     subType = this.pdfViewer.annotationModule.textMarkupAnnotationModule.
                         currentTextMarkupAnnotation.textMarkupAnnotationType;
                 }
-                else {
-                    subType = currentAnnotation.shapeAnnotationType;
-                }
-                subject = currentAnnotation.subject;
+            } else {
+                subType = currentAnnotation.shapeAnnotationType;
             }
+            subject = currentAnnotation.subject;
         }
         const author: string = (args.value !== args.prevValue) ? this.updatedAuthor(type, subType, subject) :
             titleElement.childNodes[0].textContent;
@@ -1727,6 +1734,8 @@ export class StickyNotesAnnotation {
                 commentSpan.className = 'e-pv-underline-icon e-pv-icon';
             } else if (annotationSubType === 'Strikethrough') {
                 commentSpan.className = 'e-pv-strikethrough-icon e-pv-icon';
+            } else if (annotationSubType === 'Squiggly') {
+                commentSpan.className = 'e-pv-squiggly-icon e-pv-icon';
             } else {
                 commentSpan.className = 'e-pv-annotation-icon e-pv-icon';
             }
@@ -1830,7 +1839,12 @@ export class StickyNotesAnnotation {
         }
     }
 
-    private commentMenuItemSelect(args: any): void {
+    /**
+     * @param {any} args - It describes the argument for this method
+     * @private
+     * @returns {void}
+     */
+    public commentMenuItemSelect(args: any): void {
         let contextActiveDiv: any;
         const contextDiv: any = document.querySelectorAll('.e-pv-more-options-button');
         if (contextDiv) {
@@ -2517,7 +2531,7 @@ export class StickyNotesAnnotation {
                         if (type === 'textMarkup') {
                             if (pageCollections[parseInt(i.toString(), 10)].rect || pageCollections[parseInt(i.toString(), 10)].bounds) {
                                 const scrollValue: number = this.pdfViewerBase.pageSize[pageNumber - 1].top *
-                                this.pdfViewerBase.getZoomFactor() + (this.pdfViewer.annotationModule.
+                                 this.pdfViewerBase.getZoomFactor() + (this.pdfViewer.annotationModule.
                                     getAnnotationTop(pageCollections[parseInt(i.toString(), 10)]) * this.pdfViewerBase.getZoomFactor());
                                 if (scrollValue) {
                                     const scroll: string = (scrollValue - 20).toString();
@@ -2537,6 +2551,7 @@ export class StickyNotesAnnotation {
                             }
                             const scrollValue: number = this.pdfViewerBase.pageSize[pageNumber - 1].top *
                              this.pdfViewerBase.getZoomFactor() + ((top) * this.pdfViewerBase.getZoomFactor());
+
                             const scroll: string = (scrollValue - 20).toString();
                             this.pdfViewerBase.viewerContainer.scrollTop = parseInt(scroll, 10);
                             this.pdfViewerBase.viewerContainer.scrollLeft = scrollLeft;
@@ -2710,7 +2725,7 @@ export class StickyNotesAnnotation {
         } else {
             currentAnnotation = this.pdfViewer.selectedItems.annotations[0];
         }
-        if (!currentAnnotation) {
+        if (!currentAnnotation || (!isNullOrUndefined(currentAnnotation) && currentAnnotation.annotName !== parentElement)) {
             const annotationKeys: string[] = Object.keys(this.pdfViewer.nameTable);
             for (let i: number = 0; i < annotationKeys.length; i++) {
                 const annotObject: any = (this.pdfViewer.nameTable as any)[annotationKeys[parseInt(i.toString(), 10)]];
@@ -2768,6 +2783,14 @@ export class StickyNotesAnnotation {
             } else if (currentAnnotation.annotName === parentElement) {
                 const newArray: ICommentsCollection = { annotName: annotName, parentId: parentElement, subject: currentAnnotation.subject, comments: [], author: author, note: text, shapeAnnotationType: '', state: '', stateModel: '', modifiedDate: this.getDateAndTime(), review: { state: '', stateModel: '', modifiedDate: this.getDateAndTime(), author: author }, isLock: false };
                 currentAnnotation.comments[currentAnnotation.comments.length] = newArray;
+                const annotationKeys: string[] = Object.keys(this.pdfViewer.nameTable);
+                for (let i: number = 0; i < annotationKeys.length; i++) {
+                    const annotObject: any = (this.pdfViewer.nameTable as any)[annotationKeys[parseInt(i.toString(), 10)]];
+                    if (!isNullOrUndefined(annotObject) && parentElement === annotObject.annotName){
+                        annotObject.comments[currentAnnotation.comments.length - 1] = newArray;
+                        break;
+                    }
+                }
                 if (!isNullOrUndefined(existingNote) && existingNote !== '') {
                     const targetProperty: string = currentAnnotation.note !== undefined ? 'note' : 'notes';
                     if (targetProperty === 'note' || targetProperty === 'notes') {
@@ -3601,8 +3624,10 @@ export class StickyNotesAnnotation {
         const isLock: boolean = this.pdfViewer.stickyNotesSettings.isLock ?
             this.pdfViewer.stickyNotesSettings.isLock : this.pdfViewer.annotationSettings.isLock;
         const allowedInteractions: any = this.pdfViewer.annotationModule.updateAnnotationAllowedInteractions(annotation);
+        const annotOpacity: number = (!isNullOrUndefined(annotation.Opacity) && annotation.Opacity >= 0 && annotation.Opacity <= 1)  ?
+            annotation.Opacity : 1;
         annotationObject = {
-            shapeAnnotationType: 'sticky', author: annotation.Author, allowedInteractions: allowedInteractions, modifiedDate: annotation.ModifiedDate, subject: annotation.Subject, note: annotation.Note, opacity: annotation.Opacity, state: annotation.State, stateModel: annotation.StateModel,
+            shapeAnnotationType: 'sticky', author: annotation.Author, allowedInteractions: allowedInteractions, modifiedDate: annotation.ModifiedDate, subject: annotation.Subject, note: annotation.Note, opacity: annotOpacity, state: annotation.State, stateModel: annotation.StateModel,
             pathData: '', comments: this.pdfViewer.annotationModule.getAnnotationComments(annotation.Comments, annotation, annotation.Author), review: { state: annotation.State, stateModel: annotation.StateModel, modifiedDate: annotation.ModifiedDate, author: annotation.Author }, pageNumber: pageNumber,
             bounds: { left: annotation.Bounds.X, top: annotation.Bounds.Y, width: annotation.Bounds.Width,
                 height: annotation.Bounds.Height, right: annotation.Bounds.Right, bottom: annotation.Bounds.Bottom },
@@ -3632,8 +3657,10 @@ export class StickyNotesAnnotation {
         if (annotation.IsLock) {
             isLock = annotation.isLock;
         }
+        const annotOpacity: number = (!isNullOrUndefined(annotation.Opacity) && annotation.Opacity >= 0 && annotation.Opacity <= 1)  ?
+            annotation.Opacity : 1;
         annotationObject = {
-            shapeAnnotationType: 'sticky', author: annotation.Author, allowedInteractions: allowedInteractions, modifiedDate: annotation.ModifiedDate, subject: annotation.Subject, note: annotation.Note, opacity: annotation.Opacity, state: annotation.State, stateModel: annotation.StateModel,
+            shapeAnnotationType: 'sticky', author: annotation.Author, allowedInteractions: allowedInteractions, modifiedDate: annotation.ModifiedDate, subject: annotation.Subject, note: annotation.Note, opacity: annotOpacity, state: annotation.State, stateModel: annotation.StateModel,
             pathData: '', comments: this.pdfViewer.annotationModule.getAnnotationComments(annotation.Comments, annotation, annotation.Author), review: { state: annotation.State, stateModel: annotation.StateModel, modifiedDate: annotation.ModifiedDate, author: annotation.Author },
             bounds: { left: annotation.Bounds.X, top: annotation.Bounds.Y, width: annotation.Bounds.Width,
                 height: annotation.Bounds.Height, right: annotation.Bounds.Right, bottom: annotation.Bounds.Bottom },
@@ -3649,6 +3676,9 @@ export class StickyNotesAnnotation {
      * @returns {void}
      */
     public clear(): void {
+        if (this.commentsContainer) {
+            this.commentsContainer.removeEventListener('mousedown', this.commentsAnnotationSelect.bind(this));
+        }
         this.commentsCount = 0;
         this.commentsreplyCount = 0;
         this.isAccordionContainer = true;
@@ -3669,6 +3699,24 @@ export class StickyNotesAnnotation {
         if (this.commentsRequestHandler) {
             this.commentsRequestHandler.clear();
         }
+        this.accordionContent = null;
+        this.accordionPageContainer = null;
+        this.accordionContentContainer = null;
+        this.commentsContainer = null;
+        this.commentMenuObj = null;
+        this.moreButtonId = null;
+        this.commentContextMenu = null;
+        this.isSetAnnotationType = null;
+        this.isNewcommentAdded = null;
+        this.commentsRequestHandler = null;
+        this.selectAnnotationObj = null;
+        this.isCommentsSelected = null;
+        this.isAddAnnotationProgramatically = null;
+        this.accordionContainer = null;
+        this.mainContainer = null;
+        this.opacity = null;
+        this.globalize = null;
+        this.textFromCommentPanel = null;
     }
 
     /**
@@ -3712,6 +3760,8 @@ export class StickyNotesAnnotation {
         annotationSettings.isLock = annotationObject.isLock ? annotationObject.isLock : annotationSettings.isLock;
         //Creating Annotation objects with it's proper properties
         const stickyNotesAnnotation: any = [];
+        const annotOpacity: number = (!isNullOrUndefined(annotationObject.opacity) && annotationObject.opacity >= 0 &&
+            annotationObject.opacity <= 1)  ? annotationObject.opacity : 1;
         const stickyNotes : any =
         {
             AllowedInteractions: annotationObject.allowedInteractions ? annotationObject.allowedInteractions : allowedInteractions,
@@ -3735,7 +3785,7 @@ export class StickyNotesAnnotation {
             IsPrint: !isNullOrUndefined(annotationObject.isPrint) ? annotationObject.isPrint : true,
             ModifiedDate: '',
             Note: '',
-            Opacity: annotationObject.opacity ? annotationObject.opacity : 1,
+            Opacity: annotOpacity,
             Reference: null,
             Size: {IsEmpty: true, Width: 0, Height: 0},
             State: '',

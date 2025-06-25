@@ -1,0 +1,9 @@
+@use 'sass:math';
+
+$grid-chart-border-color: $grey-dd !default;
+$grid-chart-list-hover-bg-color: $grey-white !default;
+$grid-chart-list-hover-content-font-color: $grey-light-font !default;
+$grid-chart-list-hover-icon-color: $grey-light-font !default;
+$grid-chart-list-selected-bg-color: $grey-white !default;
+$grid-chart-list-selected-content-font-color: $brand-primary !default;
+$grid-chart-list-selected-icon-color: $brand-primary !default;

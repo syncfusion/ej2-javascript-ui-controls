@@ -384,6 +384,9 @@ export class Print {
                                         };
                                         cellText = this.parent.workbookNumberFormatModule.getFormattedCell(numberFormatArgs);
                                         position = `${textAlign ? textAlign : numberFormatArgs.isRightAlign ? 'Right' : 'Left'}`;
+                                        if (numberFormatArgs.color) {
+                                            color = numberFormatArgs.color;
+                                        }
                                     } else if (cell.format) {
                                         const numberFormatArgs: NumberFormatArgs = {
                                             value: cell.value, format: cell.format,
@@ -392,6 +395,9 @@ export class Print {
                                         };
                                         cellText = this.parent.workbookNumberFormatModule.getFormattedCell(numberFormatArgs);
                                         position = `${textAlign ? textAlign : numberFormatArgs.isRightAlign ? 'Right' : 'Left'}`;
+                                        if (numberFormatArgs.color) {
+                                            color = numberFormatArgs.color;
+                                        }
                                     } else if (cell.formula) {
                                         if (this.parent.calculationMode === 'Automatic') {
                                             this.parent.notify(
@@ -837,43 +843,45 @@ export class Print {
             if (this.multipleCanvasDataURL.length > 0) {
                 const browserUserAgent: string = navigator.userAgent;
                 const printWindow: Window = window.open(' ', '_blank', 'height=' + window.outerHeight + ',width=' + window.outerWidth + ',tabbar=no');
-                printWindow.document.write('<html><head><title></title></head><body>');
-                const canvasWidth: number = 1000; // Adjust as needed
-                const canvasHeight: number = 1400; // Adjust as needed
-                if ((browserUserAgent.indexOf('Chrome') !== -1) || (browserUserAgent.indexOf('Safari') !== -1) ||
+                if (printWindow) {
+                    printWindow.document.write('<html><head><title></title></head><body>');
+                    const canvasWidth: number = 1000; // Adjust as needed
+                    const canvasHeight: number = 1400; // Adjust as needed
+                    if ((browserUserAgent.indexOf('Chrome') !== -1) || (browserUserAgent.indexOf('Safari') !== -1) ||
                         (browserUserAgent.indexOf('Firefox')) !== -1) {
-                    printWindow.document.write('<!DOCTYPE html>');
-                    printWindow.document.write('<html><head><style>html, body {  }'
+                        printWindow.document.write('<!DOCTYPE html>');
+                        printWindow.document.write('<html><head><style>html, body {  }'
                             + ' img { height: 100%; width: 100%; display: block; }@media print { body {  }'
                             + ' img { width:100%; width:100%; box-sizing: border-box; }br, button { display: none; }'
                             + ' div{ page-break-inside: avoid; }} @page{ size:' + canvasWidth.toString() + 'px ' + canvasHeight.toString() + 'px; }</style></head><body>');
+                    }
+                    else {
+                        printWindow.document.write('<!DOCTYPE html>');
+                        printWindow.document.write('<html><head>'
+                            + '<style>html, body {  } img { height: 100%; width: 100%; }@media print { body {  }'
+                            + 'img { width:100%; width:100%; box-sizing: border-box; }br, button { display: none; } '
+                            + 'div{ page-break-inside: avoid; }} @page{ size:' + canvasWidth.toString() + 'px ' + canvasHeight.toString() + 'px; }</style></head><body>');
+                    }
+                    this.multipleCanvasDataURL.forEach((dataURL: string, index: number) => {
+                        const canvas: HTMLCanvasElement = printWindow.document.createElement('canvas');
+                        canvas.width = canvasWidth;
+                        canvas.height = canvasHeight;
+                        const context: CanvasRenderingContext2D = canvas.getContext('2d');
+                        const image: HTMLImageElement = new Image();
+                        image.onload = () => {
+                            context.drawImage(image, 0, 0, canvasWidth, canvasHeight);
+                            if (index === this.multipleCanvasDataURL.length - 1) {
+                                spreadSheet.isPrintingProcessing = false;
+                                printWindow.print();
+                                printWindow.document.close();
+                                printWindow.close();
+                                spreadSheet.printModule.setToDefault();
+                            }
+                        };
+                        image.src = dataURL;
+                        printWindow.document.body.appendChild(canvas);
+                    });
                 }
-                else {
-                    printWindow.document.write('<!DOCTYPE html>');
-                    printWindow.document.write('<html><head>'
-                        + '<style>html, body {  } img { height: 100%; width: 100%; }@media print { body {  }'
-                        + 'img { width:100%; width:100%; box-sizing: border-box; }br, button { display: none; } '
-                        + 'div{ page-break-inside: avoid; }} @page{ size:' + canvasWidth.toString() + 'px ' + canvasHeight.toString() + 'px; }</style></head><body>');
-                }
-                this.multipleCanvasDataURL.forEach((dataURL: string, index: number) => {
-                    const canvas: HTMLCanvasElement = printWindow.document.createElement('canvas');
-                    canvas.width = canvasWidth;
-                    canvas.height = canvasHeight;
-                    const context: CanvasRenderingContext2D = canvas.getContext('2d');
-                    const image: HTMLImageElement = new Image();
-                    image.onload = () => {
-                        context.drawImage(image, 0, 0, canvasWidth, canvasHeight);
-                        if (index === this.multipleCanvasDataURL.length - 1) {
-                            spreadSheet.isPrintingProcessing = false;
-                            printWindow.print();
-                            printWindow.document.close();
-                            printWindow.close();
-                            spreadSheet.printModule.setToDefault();
-                        }
-                    };
-                    image.src = dataURL;
-                    printWindow.document.body.appendChild(canvas);
-                });
             }
         }
     }

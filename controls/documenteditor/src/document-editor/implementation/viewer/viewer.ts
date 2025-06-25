@@ -11,7 +11,8 @@ import { createElement, Browser, L10n, updateCSSText } from '@syncfusion/ej2-bas
 import {
     Page, Rect, Widget, ListTextElementBox, FieldElementBox, ParagraphWidget, HeaderFooterWidget, EditRangeStartElementBox,
     CommentElementBox, CommentCharacterElementBox, Padding, DropDownFormField, TextFormField, CheckBoxFormField, ShapeElementBox,
-    TextFrame, BlockContainer, ContentControl, Footnote, FootnoteElementBox, FootNoteWidget, IWidget, TextElementBox, ShapeBase, ImageElementBox
+    TextFrame, BlockContainer, ContentControl, Footnote, FootnoteElementBox, FootNoteWidget, IWidget, TextElementBox, ShapeBase, ImageElementBox,
+    GroupShapeElementBox
 } from './page';
 import { DocumentEditor } from '../../document-editor';
 import {
@@ -40,9 +41,9 @@ import { RestrictEditing } from '../restrict-editing/restrict-editing-pane';
 import { FormFieldPopUp } from '../dialogs/form-field-popup';
 import { ContentControlPopUp } from '../dialogs/content-control-popup';
 import { Revision } from '../track-changes/track-changes';
-import { TrackChangesPane } from '../track-changes/track-changes-pane';
+import { ChangesSingleView, TrackChangesPane } from '../track-changes/track-changes-pane';
 import { Themes } from '../themes/themes';
-import { beforeAutoResize, internalAutoResize } from '../../base/constants';
+import { beforeAutoResize, internalAutoResize, internalStyleCollectionChange } from '../../base/constants';
 import { incrementalOps } from '../../base/index';
 import { ColorPicker } from '@syncfusion/ej2-inputs';
 /**
@@ -152,10 +153,6 @@ export class DocumentHelper {
      * @private
      */
     public fieldStacks: FieldElementBox[] = [];
-    /**
-     * @private
-     */
-    public showRevision: boolean = false;
     /**
      * @private
      */
@@ -1305,7 +1302,6 @@ export class DocumentHelper {
     }
     public showRevisions(show: boolean): void {
         let isCommentTabVisible: boolean = false;
-        this.showRevision = show;
         if (this.owner && show) {
             const eventArgs: BeforePaneSwitchEventArgs = { type: 'comment' };
             this.owner.trigger(beforePaneSwitchEvent, eventArgs);
@@ -1314,14 +1310,15 @@ export class DocumentHelper {
             this.owner.commentReviewPane.reviewTab.hideTab(0, false);
             this.owner.commentReviewPane.showHidePane(true, 'Comments');
         } else {
+            this.owner.isUpdateTrackChanges = false;
             this.owner.commentReviewPane.showHidePane(show, 'Changes');
+            this.owner.isUpdateTrackChanges = true;
             if (!this.owner.enableComment) {
                 isCommentTabVisible = true;
             }
             // this.owner.commentReviewPane.reviewTab.hideTab(0, isCommentTabVisible);
-            this.showRevision = false;
         }
-        if (show) {
+        if (show && !this.owner.showRevisions) {
             this.owner.trackChangesPane.enableDisableButton(!this.owner.isReadOnly && !this.isDocumentProtected);
         }
     }
@@ -2011,9 +2008,10 @@ export class DocumentHelper {
                 this.restrictEditingPane.showHideRestrictPane(true);
             }
         }
-        if(!isNullOrUndefined(iOps) && this.owner.editorModule) {
+        if (!isNullOrUndefined(iOps) && this.owner.editorModule) {
             this.owner.editorModule.intializeDefaultStyles();
         }
+        this.owner.skipStyleUpdate = false;
         if (this.owner.enableCollaborativeEditing && this.owner.collaborativeEditingHandlerModule && this.owner.enableEditor) {
             this.owner.editorModule.isRemoteAction = true;
             this.owner.editorModule.isIncrementalSave = true;
@@ -2042,16 +2040,34 @@ export class DocumentHelper {
             this.owner.selectionModule.isViewPasteOptions = false;
             this.owner.selectionModule.showHidePasteOptions(undefined, undefined);
         }
-        this.owner.fireDocumentChange();
-        this.owner.showHideRulers();
-        setTimeout((): void => {
+        // setTimeout((): void => {
             if (!isNullOrUndefined(this.owner) && this.owner.showRevisions) {
                 this.showRevisions(true);
+            } else {
+                this.owner.trackChangesPane.changes = new Dictionary<Revision, ChangesSingleView>();
+                this.owner.revisions.groupedView = new Dictionary<ChangesSingleView, Revision[]>();
+                for (let i: number = 0; i < this.owner.revisions.changes.length; i++) {
+                    let revision: Revision = this.owner.revisions.changes[i];
+                    let previousRevision: Revision = this.owner.revisions.checkAndGetPreviousRevisionToCombine(revision);
+                    if (previousRevision) {
+                        let changeSingleView: ChangesSingleView = this.owner.trackChangesPane.changes.get(previousRevision);
+                        this.owner.revisions.groupedView.get(changeSingleView).push(revision);
+                        this.owner.trackChangesPane.changes.add(revision, changeSingleView);
+                    } else {
+                        let currentChangeView: ChangesSingleView = new ChangesSingleView(this.owner, this.owner.trackChangesPane);
+                        this.owner.revisions.groupedView.add(currentChangeView, [revision]);
+                        this.owner.revisions.revisions.push(revision);
+                        this.owner.trackChangesPane.changes.add(revision, currentChangeView);
+                    }
+                }
             }
-            if (!isNullOrUndefined(this.owner)) {
-                this.owner.isUpdateTrackChanges = true;
-            }
-        });
+        if (!isNullOrUndefined(this.owner)) {
+            this.owner.isUpdateTrackChanges = true;
+        }
+        this.owner.notify(internalStyleCollectionChange, {});
+        // });
+        this.owner.fireDocumentChange();
+        this.owner.showHideRulers();
         let picture_cc: HTMLElement = document.getElementById(this.owner.element.id + 'PICTURE_CONTENT_CONTROL');
         if (!isNullOrUndefined(picture_cc)) {
             this.owner.renderPictureContentControlElement(this.owner, false, false);
@@ -2943,10 +2959,35 @@ export class DocumentHelper {
                         width - (lineWidth * 2), height - ((lineWidth * 2) + floatElement.textFrame.marginTop + floatElement.textFrame.marginBottom), cursorPoint))) {
                         return true;
                     }
+                } else if (floatElement instanceof GroupShapeElementBox) {
+                    let widget: LineWidget = this.getWidgetFromGroup(floatElement, cursorPoint);
+                    if (isNullOrUndefined(widget)) {
+                        return true;
+                    }
                 }
             }
         }
         return false;
+    }
+    public getWidgetFromGroup(floatElement: GroupShapeElementBox, cursorPoint: Point): LineWidget {
+        let widget: LineWidget;
+        for (var j = 0; j < floatElement.childWidgets.length; j++) {
+            var childShapeElement = floatElement.childWidgets[j];
+            if (cursorPoint.x < childShapeElement.x + childShapeElement.margin.left + childShapeElement.width &&
+                cursorPoint.x > childShapeElement.x && cursorPoint.y < childShapeElement.y + childShapeElement.margin.top +
+                childShapeElement.height && cursorPoint.y > childShapeElement.y) {
+                if (childShapeElement instanceof ShapeElementBox) {
+                    widget = this.selection.getLineWidgetBodyWidget((childShapeElement as ShapeElementBox).textFrame, cursorPoint);
+                } else if (childShapeElement instanceof GroupShapeElementBox) {
+                    widget = this.getWidgetFromGroup(childShapeElement, cursorPoint);
+                }
+                if (!isNullOrUndefined(widget)) {
+                    return widget;
+                }
+                break;
+            }
+        }
+        return undefined;
     }
     /**
      * Check whether touch point is inside the rectangle or not.
@@ -3685,16 +3726,38 @@ export class DocumentHelper {
                 }
                 let shapeElementInfo: ShapeInfo = this.checkFloatingItems(childWidgets as BlockContainer, cursorPoint, isMouseDragged);
                 if (shapeElementInfo.isShapeSelected) {
+                    let isGroupChildShape: boolean = false;
                     if (shapeElementInfo.isInShapeBorder) {
                         return shapeElementInfo.element.line;
                     }
-                    return this.selection.getLineWidgetBodyWidget((shapeElementInfo.element as ShapeElementBox).textFrame, cursorPoint);
+                    if (shapeElementInfo.element instanceof ShapeElementBox) {
+                        widget = this.selection.getLineWidgetBodyWidget((shapeElementInfo.element as ShapeElementBox).textFrame, cursorPoint);
+                    } else if (shapeElementInfo.element instanceof GroupShapeElementBox) {
+                        widget = this.getWidgetFromGroup(shapeElementInfo.element, cursorPoint);
+                        if (!isNullOrUndefined(widget)) {
+                            isGroupChildShape = true;
+                        }
+                        if (!isGroupChildShape) {
+                            for (let i: number = 0; i < this.currentPage.bodyWidgets.length; i++) {
+                                if (i == this.currentPage.bodyWidgets.length - 1) {
+                                    widget = this.selection.getLineWidgetBodyWidget(bodyWidget, cursorPoint, true);
+                                    if (!isNullOrUndefined(widget) && widget.paragraph.y <= cursorPoint.y
+                                        && (widget.paragraph.y + widget.paragraph.height) >= cursorPoint.y) {
+                                        this.isFootnoteWidget = false;
+                                        break;
+                                    }
+                                }
+                            }
+                        }
+                    }
+                    return widget
                 } else {
                     return this.selection.getLineWidgetBodyWidget(childWidgets, cursorPoint);
                 }
             } else {
                 let shapeInfo: ShapeInfo = undefined;
                 let behindShapeInfo: ShapeInfo = undefined;
+                let isGroupChildShape: boolean = false;
                 for (var i = 0; i < this.currentPage.bodyWidgets.length; i++) {
                     var bodyWidget = this.currentPage.bodyWidgets[i];
                     shapeInfo = this.checkFloatingItems(bodyWidget, cursorPoint, isMouseDragged, false);
@@ -3709,6 +3772,23 @@ export class DocumentHelper {
                     }
                     if (shapeInfo.element instanceof ShapeElementBox) {
                         widget = this.selection.getLineWidgetBodyWidget((shapeInfo.element as ShapeElementBox).textFrame, cursorPoint);
+                    } else if (shapeInfo.element instanceof GroupShapeElementBox) {
+                        widget = this.getWidgetFromGroup(shapeInfo.element, cursorPoint);
+                        if (!isNullOrUndefined(widget)) {
+                            isGroupChildShape = true;
+                        }
+                        if (!isGroupChildShape) {
+                            for (let i: number = 0; i < this.currentPage.bodyWidgets.length; i++) {
+                                if (i == this.currentPage.bodyWidgets.length - 1) {
+                                    widget = this.selection.getLineWidgetBodyWidget(bodyWidget, cursorPoint, true);
+                                    if (!isNullOrUndefined(widget) && widget.paragraph.y <= cursorPoint.y
+                                        && (widget.paragraph.y + widget.paragraph.height) >= cursorPoint.y) {
+                                        this.isFootnoteWidget = false;
+                                        break;
+                                    }
+                                }
+                            }
+                        }
                     }
                 } else if (isMouseDragged && this.isFootnoteWidget) {
                     if (this.selection.start.paragraph.bodyWidget.footNoteReference !== undefined && this.selection.start.paragraph.bodyWidget.containerWidget instanceof FootNoteWidget && this.selection.start.paragraph.bodyWidget.containerWidget.footNoteType === 'Footnote') {
@@ -3782,6 +3862,8 @@ export class DocumentHelper {
                     }
                     if (inlineShapeInfo.element instanceof ShapeElementBox) {
                         widget = this.selection.getLineWidgetBodyWidget((inlineShapeInfo.element as ShapeElementBox).textFrame, cursorPoint);
+                    } else if (inlineShapeInfo.element instanceof GroupShapeElementBox) {
+                        widget = this.getWidgetFromGroup(inlineShapeInfo.element, cursorPoint);
                     }
                 } else if (!this.checkPointIsInLine(widget, cursorPoint) && behindShapeInfo.isShapeSelected) {
                     if (behindShapeInfo.isInShapeBorder) {
@@ -3811,7 +3893,7 @@ export class DocumentHelper {
                 }
             } else {
                 for (let i: number = 0; i < widget.children.length; i++) {
-                    if (!(widget.children[i] instanceof ShapeElementBox && (widget.children[i] as ShapeElementBox).textWrappingStyle === 'Inline')) {
+                    if (!((widget.children[i] instanceof ShapeElementBox || widget.children[i] instanceof GroupShapeElementBox) && (widget.children[i] as ShapeElementBox).textWrappingStyle === 'Inline')) {
                         continue;
                     }
                     floatingElement = widget.children[i] as ShapeElementBox;
@@ -4234,6 +4316,30 @@ export class DocumentHelper {
         let isEmpty: boolean = true;
         if (shape.element instanceof ImageElementBox) {
             return isEmpty;
+        }
+        if (shape.element instanceof GroupShapeElementBox) {
+            var childShape = undefined;
+            for (var j = 0; j < shape.element.childWidgets.length; j++) {
+                var childShapeElement = shape.element.childWidgets[j];
+                if ((shape.caretPosition.x < childShapeElement.x + childShapeElement.margin.left + childShapeElement.width &&
+                    shape.caretPosition.x > childShapeElement.x && shape.caretPosition.y < childShapeElement.y + childShapeElement.margin.top +
+                    childShapeElement.height && shape.caretPosition.y > childShapeElement.y)) {
+                    childShape = childShapeElement;
+                    break;
+                }
+            }
+            if (childShape instanceof GroupShapeElementBox) {
+                const nestedShapeInfo: ShapeInfo = { 'element': childShape, 'caretPosition': shape.caretPosition, 'isShapeSelected': shape.isShapeSelected, 'isInShapeBorder': shape.isInShapeBorder }
+                return this.isEmptyShape(nestedShapeInfo);
+            }
+            if (isNullOrUndefined(childShape)) {
+                return true;
+            }
+            if (shape.element.childWidgets.length === 0 || isNullOrUndefined(childShape.textFrame) || childShape.textFrame.childWidgets.length === 0) {
+                return isEmpty;
+            } else {
+                return false;
+            }
         }
         let textFrame: TextFrame = (shape.element as ShapeElementBox).textFrame;
         if (textFrame.childWidgets.length === 0) {
@@ -5122,7 +5228,6 @@ export class DocumentHelper {
         sections.push(temp);
         return bodyWidget;
     }
-
 }
 /**
  * @private
@@ -5323,7 +5428,7 @@ export abstract class LayoutViewer {
     }
 
     public updateClientAreaForTextBoxShape(textBox: ShapeElementBox, beforeLayout: boolean, shiftNextWidget?: boolean): void {
-        if (textBox.textWrappingStyle === 'Inline' && !shiftNextWidget) {
+        if (textBox.textWrappingStyle === 'Inline' && !shiftNextWidget && isNullOrUndefined(textBox.containerShape)) {
             textBox.y = this.clientActiveArea.y;
             textBox.x = this.clientActiveArea.x;
         }

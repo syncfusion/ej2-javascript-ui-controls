@@ -4,6 +4,7 @@ import { CellModel, DialogBeforeOpenEventArgs, Spreadsheet, getCell, SheetModel,
 import { getComponent, L10n } from '@syncfusion/ej2-base';
 import { DropDownList } from '@syncfusion/ej2-dropdowns';
 import { SpreadsheetModel } from '../../../src/spreadsheet/index';
+import { ExtendedSheet } from '../../../src/index';
 
 
 describe('Data validation ->', () => {
@@ -807,7 +808,7 @@ describe('Data validation ->', () => {
                 helper.setAnimationToNone('.e-editAlert-dlg.e-dialog');
                 helper.click('.e-editAlert-dlg .e-footer-content button:nth-child(1)');
                 done();
-            });         
+            }, 10);         
         });
     });
  
@@ -2608,7 +2609,7 @@ describe('Data validation ->', () => {
                     expect(popUpElem.firstElementChild.textContent).toBe('12345');
                     helper.click('.e-ddl.e-popup li:nth-child(4)');
                     done();
-                });
+                }, 10);
             });  
             it('EJ2-56561 - inaccurate "isHighlighted" property value In datavalidation->', (done: Function) => {
                 helper.invoke('selectRange', ['H2:H11']);
@@ -3716,7 +3717,15 @@ describe('Data validation ->', () => {
 
     describe('EJ2-914385 -> Checking custom data validations cases ->', () => {
         beforeAll((done: Function) => {
-            helper.initializeSpreadsheet({ sheets: [{ name: 'Check', ranges: [{ dataSource: defaultData }] }, { name: 'Checking', rows: [{ cells: [{ value: '10' }] }] }], activeSheetIndex: 0 }, done);
+            helper.initializeSpreadsheet({
+                sheets: [{ name: 'Check', ranges: [{ dataSource: defaultData }] }, { name: 'Checking', rows: [{ cells: [{ value: '10' }] }] }],
+                activeSheetIndex: 0,
+                created: (): void => {
+                    const spreadsheet: Spreadsheet = helper.getInstance();
+                    const sheet: SheetModel = spreadsheet.sheets[0];
+                    spreadsheet.setSheetPropertyOnMute(sheet, 'usedRange', { rowIndex: sheet.usedRange.rowIndex, colIndex: 30 });
+                }
+            }, done);
         });
         afterAll(() => {
             helper.invoke('destroy');
@@ -3889,6 +3898,72 @@ describe('Data validation ->', () => {
             td = helper.invoke('getCell', [1, 10]);
             expect(td.style.backgroundColor).toBe('rgb(255, 255, 255)');
             expect(td.style.color).toBe('rgb(0, 0, 0)');
+            done();
+        });
+        it('Checking sheet validation update to columns and cells during import action', (done: Function) => {
+            const spreadsheet: any = helper.getInstance();
+            const sheet: ExtendedSheet = spreadsheet.sheets[0];
+            const validations: (ValidationModel & { range?: string[] })[] = [{ type: 'List', value1: '1,2,3,4,5,6', ignoreBlank: true, range: ['J1'] },
+                { type: 'WholeNumber', operator: 'Between', value1: '10', value2: '50', range: ['H2'] },
+                { type: 'Date', operator: 'LessThanOrEqualTo', value1: '=TODAY()', range: ['I1:I2'] },
+                { type: 'Custom', operator: 'Between', value1: '=A2*B2', value2: '=C2*D3', range: ['J3:K4'] },
+                { type: 'Custom', value1: '=IF(SUM(F2:F10)=H3,G10, L4)', range: ['H5:I5'] }, { type: 'TextLength', operator: 'EqualTo', value1: '10.5' },
+                { type: 'TextLength', operator: 'EqualTo', value1: '10.5', range: [] },
+                { type: 'Decimal', operator: 'Between', value1: '10.5', value2: '=A10:B11', range: ['K5:K6'] }];
+            spreadsheet.setSheetPropertyOnMute(sheet, 'validations', validations);
+            spreadsheet.workbookDataValidationModule.updataSheetValidation();
+            expect(JSON.stringify(sheet.rows[0].cells[9].validation)).toBe('{"type":"List","value1":"1,2,3,4,5,6","ignoreBlank":true}');
+            expect(JSON.stringify(sheet.rows[1].cells[7].validation)).toBe('{"type":"WholeNumber","value1":"10","ignoreBlank":true,"isHighlighted":true,"operator":"Between","value2":"50"}');
+            expect(JSON.stringify(sheet.rows[0].cells[8].validation)).toBe('{"type":"Date","operator":"LessThanOrEqualTo","value1":"=TODAY()"}');
+            expect(JSON.stringify(sheet.rows[1].cells[8].validation)).toBe('{"type":"Date","operator":"LessThanOrEqualTo","value1":"=TODAY()"}');
+            expect(sheet.rows[0].cells[8].validation).not.toBe(sheet.rows[1].cells[8].validation);
+            expect(JSON.stringify(sheet.rows[2].cells[9].validation)).toBe('{"type":"Custom","operator":"Between","value1":"=A2*B2","value2":"=C2*D3"}');
+            expect(JSON.stringify(sheet.rows[3].cells[9].validation)).toBe('{"type":"Custom","operator":"Between","value1":"=A3*B3","value2":"=C3*D4"}');
+            expect(JSON.stringify(sheet.rows[2].cells[10].validation)).toBe('{"type":"Custom","value1":"=B2*C2","ignoreBlank":true,"isHighlighted":true,"operator":"Between","value2":"=D2*E3"}');
+            expect(JSON.stringify(sheet.rows[3].cells[10].validation)).toBe('{"type":"Custom","value1":"=B3*C3","ignoreBlank":true,"isHighlighted":true,"operator":"Between","value2":"=D3*E4"}');
+            expect(JSON.stringify(sheet.rows[4].cells[7].validation)).toBe('{"type":"Custom","value1":"=IF(SUM(F2:F10)=H3,G10, L4)","ignoreBlank":true,"isHighlighted":true}');
+            expect(JSON.stringify(sheet.rows[4].cells[8].validation)).toBe('{"type":"Custom","value1":"=IF(SUM(G2:G10)=I3,H10, M4)"}');
+            expect(JSON.stringify(sheet.rows[4].cells[10].validation)).toBe('{"type":"Decimal","value1":"10.5","ignoreBlank":true,"isHighlighted":true,"operator":"Between","value2":"=A10:B11"}');
+            expect(JSON.stringify(sheet.rows[5].cells[10].validation)).toBe('{"type":"Decimal","value1":"10.5","ignoreBlank":true,"isHighlighted":true,"operator":"Between","value2":"=A11:B12"}');
+            expect(sheet.validations).toBeUndefined();
+            spreadsheet.workbookDataValidationModule.updataSheetValidation();
+            expect(sheet.validations).toBeUndefined();
+            done();
+        });
+        it('Checking sheet validation update with multiple ranges and the ranges that Exceeds the Excel limit', (done: Function) => {
+            const spreadsheet: any = helper.getInstance();
+            const sheet: ExtendedSheet = spreadsheet.sheets[0];
+            const validations: (ValidationModel & { range?: string[] })[] = [{ type: 'List', value1: '1,2,3,4,5,6', range: ['M1', 'N1'] },
+                { type: 'WholeNumber', operator: 'Between', value1: '=XFD1', value2: '=XFD1048576', range: ['M3', 'N2'] },
+                { type: 'Custom', value1: '=XFB1048574', range: ['R1:R11', 'P1:P1048576', 'S5:T8'] },
+                { type: 'Custom', value1: '=A1048575', range: ['W3:W5', 'Z2:Z10', 'U5:V7'] }];
+            spreadsheet.setSheetPropertyOnMute(sheet, 'validations', validations);
+            spreadsheet.workbookDataValidationModule.updataSheetValidation();
+            expect(JSON.stringify(sheet.rows[0].cells[12].validation)).toBe('{"type":"List","value1":"1,2,3,4,5,6"}');
+            expect(JSON.stringify(sheet.rows[0].cells[13].validation)).toBe('{"type":"List","value1":"1,2,3,4,5,6"}');
+            expect(JSON.stringify(sheet.rows[2].cells[12].validation)).toBe('{"type":"WholeNumber","operator":"Between","value1":"=XFD2","value2":"=XFD1"}');
+            expect(JSON.stringify(sheet.rows[1].cells[13].validation)).toBe('{"type":"WholeNumber","operator":"Between","value1":"=A1","value2":"=A1048576"}');
+            expect(JSON.stringify(sheet.rows[0].cells[17].validation)).toBe('{"type":"Custom","value1":"=XFD1048574"}');
+            expect(JSON.stringify(sheet.rows[2].cells[17].validation)).toBe('{"type":"Custom","value1":"=XFD1048576"}');
+            expect(JSON.stringify(sheet.rows[3].cells[17].validation)).toBe('{"type":"Custom","value1":"=XFD1"}');
+            expect(JSON.stringify(sheet.rows[10].cells[17].validation)).toBe('{"type":"Custom","value1":"=XFD8"}');
+            expect(JSON.stringify(sheet.rows[4].cells[18].validation)).toBe('{"type":"Custom","value1":"=A2"}');
+            expect(JSON.stringify(sheet.rows[6].cells[18].validation)).toBe('{"type":"Custom","value1":"=A4"}');
+            expect(JSON.stringify(sheet.rows[5].cells[19].validation)).toBe('{"type":"Custom","value1":"=B3"}');
+            expect(JSON.stringify(sheet.rows[7].cells[19].validation)).toBe('{"type":"Custom","value1":"=B5"}');
+            expect(JSON.stringify(sheet.columns[15].validation)).toBe('{"type":"Custom","value1":"=XFB1048574"}');
+            expect(JSON.stringify(sheet.rows[4].cells[20].validation)).toBe('{"type":"Custom","value1":"=A2"}');
+            expect(JSON.stringify(sheet.rows[4].cells[21].validation)).toBe('{"type":"Custom","value1":"=B2"}');
+            expect(JSON.stringify(sheet.rows[5].cells[20].validation)).toBe('{"type":"Custom","value1":"=A3"}');
+            expect(JSON.stringify(sheet.rows[5].cells[21].validation)).toBe('{"type":"Custom","value1":"=B3"}');
+            expect(JSON.stringify(sheet.rows[2].cells[22].validation)).toBe('{"type":"Custom","value1":"=C1048576"}');
+            expect(JSON.stringify(sheet.rows[3].cells[22].validation)).toBe('{"type":"Custom","value1":"=C1"}');
+            expect(JSON.stringify(sheet.rows[4].cells[22].validation)).toBe('{"type":"Custom","value1":"=C2"}');
+            expect(JSON.stringify(sheet.rows[1].cells[25].validation)).toBe('{"type":"Custom","value1":"=F1048575"}');
+            expect(JSON.stringify(sheet.rows[2].cells[25].validation)).toBe('{"type":"Custom","value1":"=F1048576"}');
+            expect(JSON.stringify(sheet.rows[4].cells[25].validation)).toBe('{"type":"Custom","value1":"=F2"}');
+            expect(JSON.stringify(sheet.rows[9].cells[25].validation)).toBe('{"type":"Custom","value1":"=F7"}');
+            expect(sheet.validations).toBeUndefined();
             done();
         });
     });
@@ -4126,6 +4201,66 @@ describe('Data validation ->', () => {
             expect(JSON.stringify(spreadsheet.sheets[0].columns[3].validation)).toBe('{"type":"List","operator":"Between","value1":"10,30,40","ignoreBlank":true}');
             spreadsheet.removeDataValidation();
             expect(JSON.stringify(spreadsheet.sheets[0].columns[3].validation)).toBeUndefined();
+            done();
+        });
+    });
+    describe('EJ2-882816-issue with hyperlink text color format ->', () => {
+        beforeAll((done: Function) => {
+            helper.initializeSpreadsheet({ sheets: [{ ranges: [{ dataSource: defaultData }] }, { ranges: [{ dataSource: defaultData }] }] }, done);
+        });
+        afterAll(() => {
+            helper.invoke('destroy');
+        });
+        it('hyperlink text color format for the datavalidation cell not maintained in visited state after refresh', (done: Function) => {
+            helper.invoke('selectRange', ['H3']);
+            helper.invoke('addHyperlink', ['A3', 'H3']);
+            helper.invoke('addDataValidation', [{ type: 'TextLength', operator: 'EqualTo', value1: '10' }, 'H3:H3']);
+            helper.invoke('addInvalidHighlight', ['H3:H3']);
+            let td: HTMLElement = helper.invoke('getCell', [2, 7]);
+            expect(td.style.backgroundColor).toBe('rgb(255, 255, 0)');
+            expect(td.style.color).toBe('rgb(255, 0, 0)');
+            const link = td.querySelector('a') as HTMLAnchorElement;
+            if (link) {
+                link.click();
+            }
+            helper.invoke('selectRange', ['H3']);
+            expect(td.style.backgroundColor).toBe('rgb(255, 255, 0)');
+            expect(td.style.color).toBe('rgb(85, 26, 139)');
+            done();
+        });
+    });
+    describe('allowDataValidation: false ->', () => {
+        let spreadsheet: any;
+        beforeAll((done: Function) => {
+            helper.initializeSpreadsheet({
+                allowDataValidation: false, 
+                sheets: [{
+                    ranges: [{ dataSource: defaultData }],
+                    rows: [{index:1, cells: [{index:4 , validation: { ignoreBlank: true, inCellDropDown: true, operator: 'Between', type: 'List', value1: '10,20,30', value2: '' } }] }]
+                }]
+            }, done);
+        });
+        afterAll(() => {
+            helper.invoke('destroy');
+        });
+        it('Data validation button removed and validation not applied to cells', (done: Function) => {
+            helper.switchRibbonTab(4);
+            const element = helper.getElement('#' + helper.id + '_datavalidation')
+            expect(element.parentElement.classList.contains('e-overlay')).toBeTruthy();
+            spreadsheet = helper.getInstance().sheets[0];
+            expect(JSON.stringify(spreadsheet.rows[1].cells[4].validation)).toBe('{"ignoreBlank":true,"inCellDropDown":true,"operator":"Between","type":"List","value1":"10,20,30","value2":""}');
+            const cellD2: HTMLElement = helper.invoke('getCell', [1, 4]);
+            expect(cellD2.querySelector('.e-validation-list')).toBeNull();
+            done();
+        });
+        it('Should not apply data validation through public method', (done: Function) => {
+            helper.invoke('addDataValidation', [{ type: 'TextLength', operator: 'LessThanOrEqualTo', value1: '12' }, 'A2:A7']);
+            const sheet: SheetModel = helper.getInstance().sheets[0];
+            const cell: CellModel = sheet.rows[1].cells[0];
+            expect(cell.validation).toBeUndefined();
+            helper.invoke('addInvalidHighlight', ['A2:A7']);
+            let td: HTMLElement = helper.invoke('getCell', [1, 0]);
+            expect(td.style.backgroundColor).toBe('');
             done();
         });
     });

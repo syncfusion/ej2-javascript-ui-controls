@@ -7,7 +7,7 @@
 // describe('Formatting in collaborative editing', () => {
 //     let editor: DocumentEditor = undefined;
 //     beforeAll(() => {
-//         document.body.innerHTML = '';
+//         
 //         let ele: HTMLElement = createElement('div', { id: 'container' });
 //         document.body.appendChild(ele);
 //         editor = new DocumentEditor({ enableEditor: true, enableEditorHistory: true, enableSfdtExport: true, enableSelection: true, isReadOnly: false, enableCollaborativeEditing: true });
@@ -24,7 +24,7 @@
 //         editor.destroy();
 //         document.body.removeChild(document.getElementById('container'));
 //         editor = undefined;
-//         document.body.innerHTML = '';
+//         
 //         setTimeout(() => {
 //             done();
 //         }, 1000);

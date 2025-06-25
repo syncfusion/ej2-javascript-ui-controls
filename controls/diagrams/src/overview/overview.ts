@@ -199,7 +199,6 @@ export class Overview extends Component<HTMLElement> implements INotifyPropertyC
         this.setParent(this.sourceID);
         this.renderComplete();
     }
-
     // eslint-disable-next-line @typescript-eslint/ban-types
     private getSizeValue(real: string | number): String {
         let text: string;
@@ -302,6 +301,7 @@ export class Overview extends Component<HTMLElement> implements INotifyPropertyC
             EventHandler.add(container, 'scroll', this.scrolled, this);
         }
     }
+
     /**
      * initializeOverviewLayers method\
      * @returns {  void }   initializeOverviewLayers method .\
@@ -314,7 +314,6 @@ export class Overview extends Component<HTMLElement> implements INotifyPropertyC
         this.nativeLayer = getNativeLayer(this.element.id);
         this.context2d = this.diagramCanvas.getContext('2d');
     }
-
     /**
      * renderDocument method\
      *

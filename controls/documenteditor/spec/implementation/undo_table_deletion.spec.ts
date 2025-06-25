@@ -28,7 +28,7 @@ describe('907925-Resolve script error when undoing the delete revision content',
         document.body.removeChild(document.getElementById('container'));
         editor = undefined;
         setTimeout(function () {
-            document.body.innerHTML = '';
+            
             done();
         }, 1000);
     });

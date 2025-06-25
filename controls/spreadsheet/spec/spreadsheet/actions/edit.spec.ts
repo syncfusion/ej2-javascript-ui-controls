@@ -1409,8 +1409,8 @@ describe('Editing ->', () => {
                         expect(spreadsheet.sheets[0].rows[11].cells[5].value).toBe(4720);
                         expect(helper.invoke('getCell', [11, 5]).textContent).toBe('4720');
                         done();
-                    }, 20);
-                }, 20);
+                    }, 10);
+                }, 10);
             });
         });
     });
@@ -2390,6 +2390,19 @@ describe('Editing ->', () => {
                 done();
             });
         });
+        it('EJ2-892898 - Issue while entering the formula in merged cell', function (done) {
+            helper.invoke('merge', ['G10:G11']);
+            helper.invoke('selectRange', ['H11']);
+            helper.invoke('startEdit');
+            helper.getInstance().notify('editOperation', { action: 'refreshEditor', value: '=SUM(', refreshCurPos: true, refreshEditorElem: true });
+            const td: HTMLElement = helper.invoke('getCell', [9, 6]);
+            const coords = td.getBoundingClientRect();
+            helper.triggerMouseAction('mousedown', { x: coords.left + 1, y: coords.top + 1 }, null, td);
+            helper.triggerMouseAction('mouseup', { x: coords.left + 1, y: coords.top + 1 }, document, td);
+            helper.getInstance().notify('editOperation', { action: 'endEdit' });
+            expect(helper.getElement('.e-spreadsheet-edit').textContent).toBe('=SUM(G10');
+            done();
+        });
     });
     describe('EJ2-878040-Spreadsheet Allow Wrap Test', () => {
         beforeAll((done) => {
@@ -2408,6 +2421,175 @@ describe('Editing ->', () => {
             setTimeout(() => {
                 expect(helper.invoke('getCell', [0, 0]).classList).not.toContain('e-wraptext');
                 expect(spreadsheet.sheets[0].rows[0].cells[0].wrap).toBeUndefined();
+                done();
+            });
+        });
+    });
+    describe('allowEdit: false ->', () => {
+        beforeAll((done: Function) => {
+            helper.initializeSpreadsheet({
+                allowEditing: false,
+                sheets: [{ranges: [{ dataSource: defaultData }] }] }, done);
+        });
+        afterAll(() => {
+            helper.invoke('destroy');
+        });
+        it('Should not allow programmatic edit', (done: Function) => {
+            const spreadsheet: Spreadsheet = helper.getInstance();
+            helper.invoke('selectRange', ['A1']);
+            helper.triggerKeyNativeEvent(113);
+            helper.getInstance().notify('editOperation', { action: 'refreshEditor', value: '', refreshCurPos: false, refreshEditorElem: true, isAppend: false, trigEvent: false });
+            expect(helper.getElement('.e-spreadsheet-edit')).toBeNull();
+            helper.triggerKeyNativeEvent(13);
+            expect(helper.invoke('getCell', [0, 0]).textContent).toBe('Item Name');
+            expect(spreadsheet.sheets[0].rows[0].cells[0].value).toBe('Item Name');
+            done();
+        });
+    });
+    describe('Spreadsheet File Menu Events and QueryCellInfo Events', () => {
+        beforeAll((done: Function) => {
+            helper.initializeSpreadsheet({
+                sheets: [{ ranges: [{ dataSource: defaultData }] }]
+            }, done);
+        });
+        afterAll(() => {
+            helper.invoke('destroy');
+        });
+        it('Should trigger FileMenuBeforeOpen, FileMenuItemSelect and FileMenuBeforeClose events when file menu is opened', (done: Function) => {
+            const spreadsheet: Spreadsheet = helper.getInstance();
+            let fileMenuBeforeOpenTriggered: boolean = false;
+            let fileMenuItemSelectTriggered: boolean = false;
+            let fileMenuBeforeCloseTriggered: boolean = false;
+            let dialogBeforeOpenTriggered: boolean = false;
+            let fileMenuBeforeOpenargs: string = '';
+            let fileMenuBeforeCloseargs: string = '';
+            let fileMenuItemSelectargs: string = '';
+            let dialogBeforeOpenargs: string = '';
+            spreadsheet.fileMenuBeforeOpen = (args: any) => {
+                fileMenuBeforeOpenTriggered = true;
+                fileMenuBeforeOpenargs = args.name;
+            };
+            spreadsheet.fileMenuItemSelect = (args: any) => {
+                fileMenuItemSelectTriggered = true;
+                fileMenuItemSelectargs = args.name;
+            };
+            spreadsheet.fileMenuBeforeClose = (args: any) => {
+                fileMenuBeforeCloseTriggered = true;
+                fileMenuBeforeCloseargs = args.name;
+            };
+            spreadsheet.dialogBeforeOpen = (args: any) => {
+                dialogBeforeOpenTriggered = true;
+                dialogBeforeOpenargs = args.name;
+            };
+            helper.setAnimationToNone("#" + helper.id + "_ribbon_menu");
+            helper.click("#" + helper.id + "_File");
+            helper.click("#" + helper.id + "_New");
+            setTimeout(() => {
+                expect(fileMenuBeforeOpenTriggered).toBeTruthy();
+                expect(fileMenuBeforeOpenargs).toBe('fileMenuBeforeOpen');
+                expect(fileMenuItemSelectTriggered).toBeTruthy();
+                expect(fileMenuItemSelectargs).toBe('fileMenuItemSelect');
+                expect(fileMenuBeforeCloseTriggered).toBeTruthy();
+                expect(fileMenuBeforeCloseargs).toBe('fileMenuBeforeClose');
+                expect(dialogBeforeOpenTriggered).toBeTruthy();
+                expect(dialogBeforeOpenargs).toBe('dialogBeforeOpen');
+                helper.setAnimationToNone('.e-dialog')
+                const cancelBtn: HTMLElement = document.querySelector('.e-dialog .e-dlg-closeicon-btn');
+                cancelBtn.click();
+                spreadsheet.fileMenuBeforeOpen = undefined;
+                spreadsheet.fileMenuBeforeClose = undefined;
+                spreadsheet.fileMenuItemSelect = undefined;
+                spreadsheet.dialogBeforeOpen = undefined;
+                done();
+            });
+        });
+        it('QuerycellInfo event trigger', (done: Function) => {
+            const spreadsheet: Spreadsheet = helper.getInstance();
+            let queryCellInfoTriggered: boolean = false;
+            let queryCellInfoArgs: any;
+            spreadsheet.queryCellInfo = (args: any) => {
+                queryCellInfoTriggered = true;
+                queryCellInfoArgs = JSON.stringify(args);
+            };
+            helper.invoke('selectRange', ['A1']);
+            setTimeout(() => {
+                expect(queryCellInfoTriggered).toBeTruthy();
+                expect(queryCellInfoArgs).toBe('{"cell":{"value":"Item Name"},"address":"A1","rowIndex":0,"colIndex":0,"name":"queryCellInfo"}');
+                spreadsheet.queryCellInfo = undefined;
+                done();
+            });
+        });
+        it('EJ2-962546 - Undo enables on saving the empty cell', (done: Function) => {
+            helper.edit('I1', '');
+            expect(helper.getInstance().sheets[0].rows[0].cells[8].value).toBe('');
+            expect(helper.getInstance().undoredoModule.undoCollection.length).toBe(0);
+            expect(helper.getElement('#spreadsheet_undo').getAttribute('aria-disabled')).toBe('true');
+            done();
+        });
+    });
+    describe('Edit event interactions ->', () => {
+        beforeAll((done: Function) => {
+            helper.initializeSpreadsheet({ sheets: [{ ranges: [{ dataSource: defaultData }] }] }, done);
+        });
+        afterAll(() => {
+            helper.invoke('destroy');
+        });
+        it('Should handle multiple events in sequence for cell editing', (done: Function) => {
+            const spreadsheet: Spreadsheet = helper.getInstance();
+            const eventSequence: string[] = [];
+            let beforeSelectArgs: string = '';
+            let beforeCellUpdateArgs: string = '';
+            let beforeCellSaveArgs: string = '';
+            let cellSaveArgs: string = '';
+            spreadsheet.beforeSelect = (args): void => {
+                beforeSelectArgs = JSON.stringify(args);
+                eventSequence.push('beforeSelect');
+            };
+            spreadsheet.beforeCellUpdate = (args): void => {
+                beforeCellUpdateArgs = JSON.stringify(args);
+                eventSequence.push('beforeCellUpdate');
+            };
+            spreadsheet.beforeCellSave = (args): void => {
+                beforeCellSaveArgs = JSON.stringify(args);
+                eventSequence.push('beforeCellSave');
+            };
+            spreadsheet.cellSave = (args): void => {
+                cellSaveArgs = JSON.stringify(args);
+                eventSequence.push('cellSave');
+            };
+            helper.edit('I8', '123');
+            expect(beforeSelectArgs).toBe('{"range":"I8:I8","cancel":false,"name":"beforeSelect"}');
+            expect(beforeCellUpdateArgs).toBe('{"cell":{"value":"123"},"rowIndex":7,"colIndex":8,"cancel":false,"sheet":"Sheet1","name":"beforeCellUpdate"}');
+            expect(beforeCellSaveArgs).toBe('{"element":{},"value":"123","address":"Sheet1!I8","displayText":"","cancel":false,"name":"beforeCellSave"}');
+            expect(cellSaveArgs).toBe('{"element":{},"value":"123","address":"Sheet1!I8","displayText":"123","name":"cellSave"}');
+            expect(JSON.stringify(eventSequence)).toEqual('["beforeSelect","beforeCellUpdate","beforeCellSave","cellSave"]');
+            spreadsheet.beforeSelect = undefined;
+            spreadsheet.beforeCellUpdate = undefined;
+            spreadsheet.beforeCellSave = undefined;
+            spreadsheet.cellSave = undefined;
+            done();
+        });
+    });
+    describe('EJ2-962292-> Script error occurs when adding cross-sheet formula with showFormulaBar set to false', () => {
+        beforeAll((done: Function) => {
+            helper.initializeSpreadsheet({
+                showFormulaBar: false, showRibbon: false,
+                sheets: [{ name: 'sheet', ranges: [{ dataSource: defaultData }] }, { index: 1, name: 'new_sheet', ranges: [{ dataSource: defaultData }] }]
+            }, done);
+        });
+        afterAll(() => {
+            helper.invoke('destroy');
+        });
+        it('adding cross-sheet formula with showFormulaBar set to false', (done: Function) => {
+            let spreadsheet = helper.getInstance();
+            spreadsheet.goTo('new_sheet!A1');
+            expect(helper.getInstance().activeSheetIndex).toBe(1);
+            helper.invoke('startEdit');
+            helper.getInstance().notify('editOperation', { action: 'refreshEditor', value: '=SUM(', refreshCurPos: true, refreshEditorElem: true });
+            spreadsheet.goTo('sheet!E2');
+            setTimeout(() => {
+                expect(helper.getInstance().activeSheetIndex).toBe(0);
+                helper.invoke('endEdit');
                 done();
             });
         });

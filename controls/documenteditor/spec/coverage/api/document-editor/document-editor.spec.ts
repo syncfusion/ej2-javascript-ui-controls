@@ -18,7 +18,7 @@ describe('Show Dialog documenteditor properties_1 ', () => {
         documenteditor.destroy();
         document.body.removeChild(document.getElementById('container'));
         documenteditor = undefined;
-        document.body.innerHTML = '';
+        
         setTimeout(function () {
             done();
         }, 1000);
@@ -53,7 +53,7 @@ describe('Show Dialog documenteditor properties_1 ', () => {
         documenteditor.destroy();
         document.body.removeChild(document.getElementById('container'));
         documenteditor = undefined;
-        document.body.innerHTML = '';
+        
         setTimeout(function () {
             done();
         }, 1000);
@@ -92,7 +92,7 @@ describe('Show Dialog documenteditor properties_1 ', () => {
             documenteditor.destroy();
             document.body.removeChild(document.getElementById('container'));
             documenteditor = undefined;
-            document.body.innerHTML = '';
+            
             setTimeout(function () {
                 done();
             }, 1000);
@@ -128,7 +128,7 @@ describe('Show Dialog documenteditor properties_1 ', () => {
             documenteditor.destroy();
             document.body.removeChild(document.getElementById('container'));
             documenteditor = undefined;
-            document.body.innerHTML = '';
+            
             setTimeout(function () {
                 done();
             }, 1000);
@@ -180,7 +180,7 @@ describe('Show Dialog documenteditor properties_1 ', () => {
             documenteditor.destroy();
             document.body.removeChild(document.getElementById('container'));
             documenteditor = undefined;
-            document.body.innerHTML = '';
+            
             setTimeout(function () {
                 done();
             }, 1000);
@@ -215,7 +215,7 @@ describe('Form Field documenteditor properties ', () => {
         documenteditor.destroy();
         document.body.removeChild(document.getElementById('container'));
         documenteditor = undefined;
-        document.body.innerHTML = '';
+        
         setTimeout(function () {
             done();
         }, 1000);
@@ -281,7 +281,7 @@ describe('Save functionality documenteditor properties ', () => {
         documenteditor.destroy();
         document.body.removeChild(document.getElementById('container'));
         documenteditor = undefined;
-        document.body.innerHTML = '';
+        
         setTimeout(function () {
             done();
         }, 1000);
@@ -322,7 +322,7 @@ describe('Document Editor Color Picker Properties', () => {
         documenteditor.destroy();
         document.body.removeChild(document.getElementById('container'));
         documenteditor = undefined;
-        document.body.innerHTML = '';
+        
         setTimeout(function () {
             done();
         }, 1000);
@@ -363,7 +363,7 @@ describe('Document Editor enableOptimizedTextMeasuring', () => {
         documenteditor.destroy();
         document.body.removeChild(document.getElementById('container'));
         documenteditor = undefined;
-        document.body.innerHTML = '';
+        
         setTimeout(function () {
             done();
         }, 1000);

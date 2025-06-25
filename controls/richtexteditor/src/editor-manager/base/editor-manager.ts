@@ -19,7 +19,7 @@ import { InsertHtmlExec } from './../plugin/inserthtml-exec';
 import { ClearFormatExec } from './../plugin/clearformat-exec';
 import { UndoRedoManager } from './../plugin/undo';
 import { MsWordPaste } from '../plugin/ms-word-clean-up';
-import { NotifyArgs } from './../../rich-text-editor/base/interface';
+import { NotifyArgs } from '../../common/interface';
 import * as EVENTS from './../../common/constant';
 import { InsertTextExec } from '../plugin/insert-text';
 import { NodeCutter } from '../plugin/nodecutter';
@@ -28,6 +28,7 @@ import { EmojiPickerAction } from '../plugin/emoji-picker-action';
 import { TableSelection } from '../plugin/table-selection';
 import { DOMMethods } from '../plugin/dom-tree';
 import { CustomUserAgentData } from '../../common/user-agent';
+import { CodeBlockPlugin } from '../plugin/code-block';
 
 /**
  * EditorManager internal component
@@ -50,6 +51,7 @@ export class EditorManager {
     public audioObj: AudioCommand;
     public videoObj: VideoCommand;
     public tableObj: TableCommand;
+    public codeBlockObj: CodeBlockPlugin;
     public selectionObj: SelectionBasedExec;
     public inserthtmlObj: InsertHtmlExec;
     public insertTextObj: InsertTextExec;
@@ -63,6 +65,7 @@ export class EditorManager {
     public isDestroyed: boolean;
     private clickCount: number = 0;
     private lastClickTime: number = 0;
+    public domTree: DOMMethods;
     public userAgentData: CustomUserAgentData;
 
     /**
@@ -78,24 +81,18 @@ export class EditorManager {
         this.nodeSelection = new NodeSelection(this.editableElement as HTMLElement);
         this.nodeCutter = new NodeCutter();
         this.domNode = new DOMNode(this.editableElement, this.currentDocument);
+        this.domTree = new DOMMethods(this.editableElement as HTMLDivElement);
         this.observer = new Observer(this);
         this.listObj = new Lists(this);
         this.formatObj = new Formats(this);
         this.alignmentObj = new Alignments(this);
         this.indentsObj = new Indents(this);
-        this.linkObj = new LinkCommand(this);
-        this.imgObj = new ImageCommand(this);
-        this.audioObj = new AudioCommand(this);
-        this.videoObj = new VideoCommand(this);
         this.selectionObj = new SelectionBasedExec(this);
         this.inserthtmlObj = new InsertHtmlExec(this);
         this.insertTextObj = new InsertTextExec(this);
         this.clearObj = new ClearFormatExec(this);
-        this.tableObj = new TableCommand(this);
         this.undoRedoManager = new UndoRedoManager(this, options.options);
         this.msWordPaste = new MsWordPaste(this);
-        this.formatPainterEditor = new FormatPainterActions(this, options.formatPainterSettings);
-        this.emojiPickerObj = new EmojiPickerAction(this);
         this.tableCellSelection = new TableSelection(this.editableElement as HTMLElement, this.currentDocument);
         this.userAgentData = new CustomUserAgentData(Browser.userAgent, false);
         this.wireEvents();
@@ -158,6 +155,10 @@ export class EditorManager {
         switch (command.toLowerCase()) {
         case 'lists':
             this.observer.notify(EVENTS.LIST_TYPE, { subCommand: value, event: event, callBack: callBack,
+                selector: selector, item: exeValue, enterAction: enterAction });
+            break;
+        case 'codeblock':
+            this.observer.notify(EVENTS.CODE_BLOCK, { subCommand: value, event: event, callBack: callBack,
                 selector: selector, item: exeValue, enterAction: enterAction });
             break;
         case 'formats':
@@ -236,10 +237,9 @@ export class EditorManager {
                 this.observer.notify(CONSTANT.TABLE_VERTICAL_SPLIT, { item: exeValue, event: event, callBack: callBack });
                 break;
             case 'dashed':
-                this.observer.notify(CONSTANT.TABLE_DASHED, { item: exeValue, event: event, callBack: callBack });
-                break;
             case 'alternate':
-                this.observer.notify(CONSTANT.TABLE_ALTERNATE, { item: exeValue, event: event, callBack: callBack });
+            case 'custom':
+                this.observer.notify(CONSTANT.TABLE_STYLES, { item: exeValue, event: event, callBack: callBack });
                 break;
             case 'backgroundcolor':
                 this.observer.notify(CONSTANT.TABLE_BACKGROUND_COLOR,
@@ -359,10 +359,12 @@ export class EditorManager {
         if (this.insertTextObj) { this.insertTextObj = null; }
         if (this.clearObj) { this.clearObj = null; }
         if (this.tableObj) { this.tableObj = null; }
+        if (this.codeBlockObj) { this.codeBlockObj = null; }
         if (this.msWordPaste) { this.msWordPaste = null; }
         if (this.formatPainterEditor) { this.formatPainterEditor = null; }
         if (this.emojiPickerObj) { this.emojiPickerObj = null; }
         if (this.tableCellSelection) { this.tableCellSelection = null; }
+        if (this.domTree) { this.domTree = null; }
         this.userAgentData = null;
         this.isDestroyed = true;
     }
@@ -378,7 +380,7 @@ export class EditorManager {
         const slashRange: Range = this.nodeSelection.getRange(this.currentDocument);
         const slashNode: Node = this.nodeCutter.GetSpliceNode(slashRange, node as HTMLElement);
         const previouNode: Node = slashNode.previousSibling;
-        if (slashNode.parentElement && slashNode.parentElement.innerHTML.length === 1) {
+        if (slashNode.parentElement && (slashNode.parentElement.innerHTML.length === 1 || slashNode.parentNode.childNodes.length === 1)) {
             slashNode.parentElement.appendChild(document.createElement('br'));
         }
         slashNode.parentNode.removeChild(slashNode);

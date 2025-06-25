@@ -325,6 +325,8 @@ export class ColumnMenu implements IAction {
     }
 
     private columnMenuBeforeClose(args: ColumnMenuOpenEventArgs): void {
+        args.column = this.targetColumn;
+        this.parent.trigger(events.columnMenuClose, args);
         if (args.event && args.event.target instanceof Document && args.event.type === 'scroll') {
             if (!this.parent.enableStickyHeader) {
                 args.cancel = true;

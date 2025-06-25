@@ -28,10 +28,15 @@ export class TreeVirtualRowModelGenerator extends VirtualRowModelGenerator {
     }
     public generateRows(data: Object[], notifyArgs?: NotifyArgs): Row<Column>[] {
         const info: VirtualInfo = this.getDataInfo();
-        if (!isNullOrUndefined(notifyArgs.virtualInfo)) {
-            if ((!isRemoteData(this.parent.root) || isCountRequired(this.parent))
-                || notifyArgs.virtualInfo.blockIndexes.length === 1) {
-                notifyArgs.virtualInfo.blockIndexes = info.blockIndexes;
+        if (notifyArgs.requestType === 'refresh' && (notifyArgs as any).isExpandCollapse) {
+            notifyArgs.virtualInfo = this['prevInfo'];
+        }
+        if (!isNullOrUndefined(notifyArgs.virtualInfo) && this.parent.root.loadChildOnDemand) {
+            if (notifyArgs.virtualInfo.direction !== 'right' && notifyArgs.virtualInfo.direction !== 'left') {
+                if ((!isRemoteData(this.parent.root) || isCountRequired(this.parent))
+                    || notifyArgs.virtualInfo.blockIndexes.length === 1) {
+                    notifyArgs.virtualInfo.blockIndexes = info.blockIndexes;
+                }
             } else {
                 notifyArgs.virtualInfo.blockIndexes = this.getBlockIndexes(notifyArgs.virtualInfo.page);
             }
@@ -56,7 +61,7 @@ export class TreeVirtualRowModelGenerator extends VirtualRowModelGenerator {
         const clear: boolean = ['paging', 'refresh', 'sorting', 'filtering', 'searching', 'reorder',
             'save', 'delete'].some((value: string) => action === value);
         if ((this.parent.dataSource instanceof DataManager && (this.parent.dataSource as DataManager).dataSource.url !== undefined
-        && !(this.parent.dataSource as DataManager).dataSource.offline && (this.parent.dataSource as DataManager).dataSource.url !== '') || isCountRequired(this.parent)) {
+            && !(this.parent.dataSource as DataManager).dataSource.offline && (this.parent.dataSource as DataManager).dataSource.url !== '') || isCountRequired(this.parent)) {
             const model: string = 'model';
             const currentPage: number = this[`${model}`].currentPage;
             if (clear) {
@@ -66,9 +71,12 @@ export class TreeVirtualRowModelGenerator extends VirtualRowModelGenerator {
                 this.data = {};
                 this.groups = {};
             } else if (action === 'virtualscroll' && this.cache[parseInt(currentPage.toString(), 10)] &&
-                    this.cache[parseInt(currentPage.toString(), 10)].length >
-                     (((this.parent as Grid).contentModule) as VirtualContentRenderer).getBlockSize()) {
-                delete this.cache[parseInt(currentPage.toString(), 10)];
+                this.cache[parseInt(currentPage.toString(), 10)].length >
+                (((this.parent as Grid).contentModule) as VirtualContentRenderer).getBlockSize()) {
+                if (this.cache[parseInt(currentPage.toString(), 10)].length > (this.parent.contentModule).getBlockSize()) {
+                    this.cache[parseInt(currentPage.toString(), 10)] =
+                        this.cache[parseInt(currentPage.toString(), 10)].slice(0, (this.parent.contentModule).getBlockSize());
+                }
             }
         } else {
             if (clear || action === 'virtualscroll') {

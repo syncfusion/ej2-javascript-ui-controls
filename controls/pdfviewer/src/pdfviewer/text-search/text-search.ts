@@ -890,11 +890,16 @@ export class TextSearch {
     }
 
     private getSearchCountText(): void {
-        if (this.pdfViewer.enableRtl) {
-            this.searchCountEle.innerHTML = `${this.searchCount} ${this.pdfViewer.localeObj.getConstant('of')} ${this.currentOccurrence}`;
-        }
-        else {
-            this.searchCountEle.innerHTML = `${this.currentOccurrence} ${this.pdfViewer.localeObj.getConstant('of')} ${this.searchCount}`;
+        if (this.searchCount === 0) {
+            this.searchCountEle.innerHTML = `${0} ${this.pdfViewer.localeObj.getConstant('of')} ${0}`;
+        } else {
+            this.enableNextButton(true);
+            this.enablePrevButton(true);
+            if (this.pdfViewer.enableRtl) {
+                this.searchCountEle.innerHTML = `${this.searchCount} ${this.pdfViewer.localeObj.getConstant('of')} ${this.currentOccurrence}`;
+            } else {
+                this.searchCountEle.innerHTML = `${this.currentOccurrence} ${this.pdfViewer.localeObj.getConstant('of')} ${this.searchCount}`;
+            }
         }
     }
 
@@ -918,8 +923,13 @@ export class TextSearch {
     }
 
     private initiateTextSearch(inputString: string, isMobileSearch?: boolean): void {
-        this.enableNextButton(true);
-        this.enablePrevButton(true);
+        if (!isNullOrUndefined(this.documentTextCollection) && this.documentTextCollection.length !== this.pdfViewerBase.pageCount) {
+            this.enableNextButton(false);
+            this.enablePrevButton(false);
+        } else {
+            this.enableNextButton(true);
+            this.enablePrevButton(true);
+        }
         this.autompleteDataSource = [];
         if (this.pdfViewer.enableHtmlSanitizer && typeof inputString === 'string') {
             inputString = SanitizeHtmlHelper.sanitize(inputString);
@@ -995,6 +1005,8 @@ export class TextSearch {
                 this.calculateSearchCount((this.searchInput as HTMLInputElement).value, this.documentTextCollection);
                 this.getSearchTextDetails = {};
                 this.showLoadingIndicator(false);
+                this.enableNextButton(true);
+                this.enablePrevButton(true);
                 this.intervalId = null;
                 if (!this.isTextSearchHandled) {
                     this.handleSearchAfterTextCollectionReady(inputString, isMobileSearch);
@@ -1114,7 +1126,7 @@ export class TextSearch {
                         }
                     }
                 } else if (!this.searchMatches[this.searchPageIndex] && !this.isMessagePopupOpened) {
-                    if (this.pdfViewerBase.pageCount > 1) {
+                    if (this.pdfViewerBase.pageCount > 0) {
                         this.initSearch(this.searchPageIndex, false);
                     }
                 } else {
@@ -1889,10 +1901,10 @@ export class TextSearch {
                         width = (characterBounds[count - 1].X - left) + characterBounds[count - 1].Width;
                     }
                     else if ((characterBounds[parseInt(count.toString(), 10)].Text === '' ||
-                             characterBounds[parseInt(count.toString(), 10)].Text === ' ' ||
-                             characterBounds[parseInt(count.toString(), 10)].Text === '\r' ||
-                             characterBounds[parseInt(count.toString(), 10)].Text === '\n') &&
-                             ((characterBounds[parseInt(count.toString(), 10)].Width) === 0)) {
+                        characterBounds[parseInt(count.toString(), 10)].Text === ' ' ||
+                        characterBounds[parseInt(count.toString(), 10)].Text === '\r' ||
+                        characterBounds[parseInt(count.toString(), 10)].Text === '\n') &&
+                        ((characterBounds[parseInt(count.toString(), 10)].Width) === 0)) {
                         width = (characterBounds[count - 1].X - left) + characterBounds[count - 1].Width;
                     }
                     else {
@@ -1956,7 +1968,7 @@ export class TextSearch {
         if (!this.pdfViewerBase.getElement(idString)) {
             const textDiv: HTMLElement = createElement('div', { id: this.pdfViewer.element.id + idString });
             const pageDetails: any = this.pdfViewerBase.pageSize[parseInt(pageIndex.toString(), 10)];
-            this.calculateBounds(textDiv, height, width, top, left, pageDetails, charRotation);
+            this.calculateBounds(textDiv, height, width, top, left, pageDetails);
             textDiv.classList.add(className);
             if (className === 'e-pv-search-text-highlight') {
                 textDiv.style.backgroundColor = (this.pdfViewer.textSearchColorSettings.searchHighlightColor === '') ? '#fdd835' : this.pdfViewer.textSearchColorSettings.searchHighlightColor;

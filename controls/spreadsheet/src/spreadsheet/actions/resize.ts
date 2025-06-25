@@ -1,7 +1,7 @@
 import { getDPRValue, hideAutoFillElement, hideAutoFillOptions, positionAutoFillElement, Spreadsheet } from '../index';
 import { closest, detach, EventHandler, initializeCSPTemplate, isNullOrUndefined } from '@syncfusion/ej2-base';
 import { Tooltip } from '@syncfusion/ej2-popups';
-import { colWidthChanged, rowHeightChanged, contentLoaded, getFilterRange, getTextWidth, getExcludedColumnWidth, readonlyAlert } from '../common/index';
+import { colWidthChanged, rowHeightChanged, contentLoaded, getFilterRange, getTextWidth, getExcludedColumnWidth, readonlyAlert, IRenderer } from '../common/index';
 import { setResize, autoFit, HideShowEventArgs, completeAction, setAutoFit, refreshFilterCellsOnResize } from '../common/index';
 import { setRowHeight, isHiddenRow, SheetModel, getRowHeight, getColumnWidth, setColumn, isHiddenCol, getSheet, ColumnModel, RowModel, getRow } from '../../workbook/base/index';
 import { getColumn, setRow, getCell, CellModel } from '../../workbook/base/index';
@@ -502,6 +502,7 @@ export class Resize {
         const editor: HTMLElement = this.parent.createElement('div', { className: className });
         editor.classList.add('e-resize-handle');
         const sheet: HTMLElement = document.getElementById(this.parent.element.id + '_sheet');
+        const sheetModel: SheetModel = this.parent.getActiveSheet();
         if (trgt.classList.contains('e-colresize')) {
             editor.style.height = this.parent.getMainContent().parentElement.clientHeight + this.parent.getColumnHeaderContent().offsetHeight + 'px';
             editor.style.left = this.event.clientX - sheet.getBoundingClientRect().left + 'px';
@@ -511,14 +512,17 @@ export class Resize {
             editor.style.left = '0px';
             editor.style.top = this.event.clientY - sheet.getBoundingClientRect().top + 'px';
         }
+        if ((sheetModel.frozenRows || sheetModel.frozenColumns) && this.hasZIndex()) {
+            editor.style.zIndex = '3';
+        }
         sheet.appendChild(editor);
         this.resizeTooltip(trgt, false);
         this.updateCursor();
     }
 
     private resizeTooltip(trgt: HTMLElement, isResize?: boolean, e?: MouseEvent): void {
+        const isRtl: boolean = this.parent.enableRtl;
         if (isResize) {
-            const isRtl: boolean = this.parent.enableRtl;
             const HeaderTolltip: HTMLElement = document.querySelector('.e-header-tooltip');
             const colResizeHandler: HTMLElement = this.parent.element.getElementsByClassName('e-colresize-handler')[0] as HTMLElement;
             const rowResizeHandler: HTMLElement = this.parent.element.getElementsByClassName('e-rowresize-handler')[0] as HTMLElement;
@@ -551,7 +555,7 @@ export class Resize {
                     tooltip.content = initializeCSPTemplate((): string => {
                         return 'Height:(' + Math.round(trgt.getBoundingClientRect().height).toString() + ' pixels)';
                     });
-                    tooltip.offsetX = -((this.parent.getMainContent().parentElement.clientWidth / 2) -
+                    tooltip.offsetX = (isRtl ? 1 : -1) * ((this.parent.getMainContent().parentElement.clientWidth / 2) -
                         Math.round(trgt.getBoundingClientRect().width));
                 }
                 tooltip.appendTo('.' + className);
@@ -581,6 +585,16 @@ export class Resize {
             this.resizeStart(index, viewportIdx, `${width}px`, true, false, `${curWidth}px`);
             setColumn(sheet, index, { width: width, customWidth: true });
             this.parent.notify(colWidthChanged, { threshold, colIdx: index, checkWrapCell: true });
+            const frozenCol: number = this.parent.frozenColCount(sheet);
+            if (frozenCol && index >= frozenCol && this.hasZIndex()) {
+                const selectAllContent: HTMLElement = this.parent.getSelectAllContent();
+                const rowHeaderContent: HTMLElement = this.parent.getRowHeaderContent();
+                if ((selectAllContent || selectAllContent.querySelectorAll('col.e-empty')[viewportIdx as number]) &&
+                    (rowHeaderContent || rowHeaderContent.querySelectorAll('col.e-empty')[viewportIdx as number])) {
+                    this.parent.serviceLocator.getService<IRenderer>('sheet').setPanelWidth(
+                        sheet, rowHeaderContent);
+                }
+            }
         } else {
             if (this.isMouseMoved) {
                 this.parent.hideColumn(index);
@@ -593,6 +607,13 @@ export class Resize {
                 });
             }
         }
+    }
+
+    private hasZIndex(): boolean {
+        return ['e-row-header', 'e-selectall-container', 'e-column-header'].some((selector: string) => {
+            const closestEle: HTMLElement = this.parent.element.getElementsByClassName(selector)[0] as HTMLElement;
+            return closestEle && !!closestEle.style.zIndex;
+        });
     }
 
     private showHideCopyIndicator(): void{

@@ -1,4 +1,4 @@
-import { Component, ModuleDeclaration, EventHandler, Complex, Browser, EmitType, addClass, detach, updateCSSText } from '@syncfusion/ej2-base';import { Property, NotifyPropertyChanges, INotifyPropertyChanged, formatUnit, L10n, closest } from '@syncfusion/ej2-base';import { setStyleAttribute, Event, removeClass, print as printWindow, attributes } from '@syncfusion/ej2-base';import { isNullOrUndefined as isNOU, compile, append, extend, debounce } from '@syncfusion/ej2-base';import { Touch as EJ2Touch, TapEventArgs } from '@syncfusion/ej2-base';import { getScrollableParent, BeforeOpenEventArgs, BeforeCloseEventArgs } from '@syncfusion/ej2-popups';import * as events from '../base/constant';import * as classes from '../base/classes';import { Render } from '../renderer/render';import { ViewSource } from '../renderer/view-source';import { IRenderer, IFormatter, PrintEventArgs, ActionCompleteEventArgs, ActionBeginEventArgs, ImageDropEventArgs, IFormatPainterArgs, CleanupResizeElemArgs, IBaseQuickToolbar, SlashMenuItemSelectArgs, ImageSuccessEventArgs, ImageFailedEventArgs } from './interface';import { IExecutionGroup, executeGroup, CommandName, ResizeArgs, StatusArgs, ToolbarStatusEventArgs } from './interface';import { BeforeQuickToolbarOpenArgs, ChangeEventArgs, AfterImageDeleteEventArgs, AfterMediaDeleteEventArgs, PasteCleanupArgs } from './interface';import { ILinkCommandsArgs, IImageCommandsArgs, IAudioCommandsArgs, IVideoCommandsArgs, BeforeSanitizeHtmlArgs, ITableCommandsArgs, ExecuteCommandOption } from './interface';import { ServiceLocator } from '../services/service-locator';import { RendererFactory } from '../services/renderer-factory';import { RenderType, DialogType } from './enum';import { EditorMode, ShiftEnterKey, EnterKey } from './../../common/types';import { Toolbar } from '../actions/toolbar';import { ExecCommandCallBack } from '../actions/execute-command-callback';import { KeyboardEvents, KeyboardEventArgs } from '../actions/keyboard';import { FontFamilyModel, FontSizeModel, FontColorModel, FormatModel, BackgroundColorModel, NumberFormatListModel, BulletFormatListModel } from '../models/models';import { ToolbarSettingsModel, IFrameSettingsModel, ImageSettingsModel, AudioSettingsModel, VideoSettingsModel, TableSettingsModel } from '../models/models';import { QuickToolbarSettingsModel, InlineModeModel, PasteCleanupSettingsModel, FileManagerSettingsModel, FormatPainterSettingsModel, EmojiSettingsModel, ImportWordModel, ExportWordModel, ExportPdfModel } from '../models/models';import { ToolbarSettings, ImageSettings, AudioSettings, VideoSettings, QuickToolbarSettings, FontFamily, FontSize, Format, NumberFormatList, BulletFormatList, FormatPainterSettings, EmojiSettings, ImportWord, ExportWord, ExportPdf } from '../models/toolbar-settings';import { FileManagerSettings } from '../models/toolbar-settings';import { TableSettings, PasteCleanupSettings } from '../models/toolbar-settings';import { FontColor, BackgroundColor } from '../models/toolbar-settings';import { IFrameSettings } from '../models/iframe-settings';import { InlineMode } from '../models/inline-mode';import { Link } from '../renderer/link-module';import { Image } from '../renderer/image-module';import { Audio } from '../renderer/audio-module';import { Video } from '../renderer/video-module';import { Table } from '../renderer/table-module';import { Count } from '../actions/count';import { HtmlEditor } from '../actions/html-editor';import { MarkdownEditor } from '../actions/markdown-editor';import { defaultLocale } from '../models/default-locale';import { setAttributes } from '../actions/html-attributes';import { BaseToolbar } from '../actions/base-toolbar';import { QuickToolbar } from '../actions/quick-toolbar';import { FullScreen } from '../actions/full-screen';import { PasteCleanup } from '../actions/paste-clean-up';import { ImportExport } from '../actions/import-export';import { EnterKeyAction } from '../actions/enter-key';import * as CONSTANT from '../../common/constant';import { IHtmlKeyboardEvent, IHtmlUndoRedoData, BeforeInputEvent } from '../../editor-manager/base/interface';import { dispatchEvent, getEditValue, isIDevice, decode, isEditableValueEmpty, getDefaultValue } from '../base/util';import { scrollToCursor } from '../../common/util';import { DialogRenderer } from '../renderer/dialog-renderer';import { SelectedEventArgs, RemovingEventArgs, UploadingEventArgs, BeforeUploadEventArgs } from '@syncfusion/ej2-inputs';import { Resize } from '../actions/resize';import { FileManager } from '../actions/file-manager';import { FormatPainter } from '../actions/format-painter';import { EmojiPicker } from '../actions/emoji-picker';import { SlashMenuSettings } from '../models/slash-menu-settings';import { SlashMenuSettingsModel } from '../models/slash-menu-settings-model';import { SlashMenu} from '../renderer/slash-menu';import { mentionRestrictKeys } from '../../common/config';import { CustomUserAgentData } from '../../common/user-agent';import { cleanupInternalElements, removeSelectionClassStates, resetContentEditableElements } from '../base/util';import { NodeSelection } from '../../selection/index';import { MarkdownUndoRedoData } from '../../markdown-parser/base/interface';
+import { Component, ModuleDeclaration, EventHandler, Complex, Browser, EmitType, addClass, detach, updateCSSText, isNullOrUndefined } from '@syncfusion/ej2-base';import { Property, NotifyPropertyChanges, INotifyPropertyChanged, formatUnit, L10n, closest } from '@syncfusion/ej2-base';import { setStyleAttribute, Event, removeClass, print as printWindow, attributes } from '@syncfusion/ej2-base';import { isNullOrUndefined as isNOU, compile, append, extend, debounce } from '@syncfusion/ej2-base';import { Touch as EJ2Touch, TapEventArgs, KeyboardEventArgs } from '@syncfusion/ej2-base';import { getScrollableParent, BeforeOpenEventArgs, BeforeCloseEventArgs } from '@syncfusion/ej2-popups';import * as events from '../base/constant';import * as classes from '../base/classes';import { Render } from '../renderer/render';import { ViewSource } from '../renderer/view-source';import { IFormatter, IBaseQuickToolbar, SlashMenuItemSelectArgs, ImageFailedEventArgs, IRenderer } from './interface';import { executeGroup, ToolbarStatusEventArgs } from './interface';import { ChangeEventArgs, AfterImageDeleteEventArgs, AfterMediaDeleteEventArgs, PasteCleanupArgs } from './interface';import { ILinkCommandsArgs, ImageDropEventArgs, IImageCommandsArgs, IAudioCommandsArgs, IVideoCommandsArgs, BeforeSanitizeHtmlArgs, ITableCommandsArgs, ExecuteCommandOption, ICodeBlockCommandsArgs } from '../../common/interface';import { PrintEventArgs, ActionCompleteEventArgs, ActionBeginEventArgs, IFormatPainterArgs, CleanupResizeElemArgs, ImageSuccessEventArgs, IExecutionGroup, ResizeArgs, StatusArgs, BeforeQuickToolbarOpenArgs } from '../../common/interface';import { ServiceLocator } from '../services/service-locator';import { RendererFactory } from '../services/renderer-factory';import { RenderType } from './enum';import { EditorMode, ShiftEnterKey, EnterKey } from './../../common/types';import { Toolbar } from '../actions/toolbar';import { ExecCommandCallBack } from '../actions/execute-command-callback';import { KeyboardEvents } from '../actions/keyboard';import { FontFamilyModel, FontSizeModel, FontColorModel, FormatModel, BackgroundColorModel, NumberFormatListModel, BulletFormatListModel, CodeBlockSettingsModel } from '../../models/models';import { ToolbarSettingsModel, IFrameSettingsModel, ImageSettingsModel, AudioSettingsModel, VideoSettingsModel, TableSettingsModel, EmojiSettingsModel } from '../../models/models';import { QuickToolbarSettingsModel, InlineModeModel, PasteCleanupSettingsModel, FormatPainterSettingsModel, ImportWordModel, ExportWordModel, ExportPdfModel } from '../../models/models';import { ToolbarSettings, ImageSettings, AudioSettings, VideoSettings, QuickToolbarSettings, FontFamily, FontSize, Format, NumberFormatList, BulletFormatList, FormatPainterSettings, ImportWord, ExportWord, ExportPdf, CodeBlockSettings } from '../../models/toolbar-settings';import { FileManagerSettingsModel } from '../models/models';import { EmojiSettings } from '../../models/emoji-settings';import { FileManagerSettings } from '../models/fileManager-settings';import { TableSettings, PasteCleanupSettings } from '../../models/toolbar-settings';import { FontColor, BackgroundColor } from '../../models/toolbar-settings';import { IFrameSettings } from '../../models/iframe-settings';import { InlineMode } from '../../models/inline-mode';import { Link } from '../renderer/link-module';import { Image } from '../renderer/image-module';import { Audio } from '../renderer/audio-module';import { Video } from '../renderer/video-module';import { Table } from '../renderer/table-module';import { Count } from '../actions/count';import { HtmlEditor } from '../actions/html-editor';import { MarkdownEditor } from '../actions/markdown-editor';import { defaultLocale } from '../models/default-locale';import { setAttributes } from '../actions/html-attributes';import { BaseToolbar } from '../actions/base-toolbar';import { QuickToolbar } from '../actions/quick-toolbar';import { FullScreen } from '../actions/full-screen';import { PasteCleanup } from '../actions/paste-clean-up';import { ImportExport } from '../actions/import-export';import { EnterKeyAction } from '../actions/enter-key';import * as CONSTANT from '../../common/constant';import { IHtmlKeyboardEvent, IHtmlUndoRedoData, BeforeInputEvent } from '../../editor-manager/base/interface';import { dispatchEvent, getEditValue, decode, isEditableValueEmpty, getDefaultValue } from '../base/util';import { cleanHTMLString, scrollToCursor, getStructuredHtml, isIDevice } from '../../common/util';import { DialogRenderer } from '../renderer/dialog-renderer';import { SelectedEventArgs, RemovingEventArgs, UploadingEventArgs, BeforeUploadEventArgs } from '@syncfusion/ej2-inputs';import { Resize } from '../actions/resize';import { FileManager } from '../actions/file-manager';import { FormatPainter } from '../actions/format-painter';import { EmojiPicker } from '../actions/emoji-picker';import { SlashMenuSettings } from '../../models/slash-menu-settings';import { SlashMenuSettingsModel } from '../../models/slash-menu-settings-model';import { SlashMenu } from '../renderer/slash-menu';import { mentionRestrictKeys } from '../../common/config';import { CustomUserAgentData } from '../../common/user-agent';import { cleanupInternalElements, removeSelectionClassStates, resetContentEditableElements } from '../../common/util';import { NodeSelection } from '../../selection/index';import { MarkdownUndoRedoData } from '../../markdown-parser/base/interface';import { ICodeBlockItem } from '../../common/interface';import { CodeBlock } from '../actions/code-block';import { CommandName, DialogType } from '../../common/enum';
 import {ComponentModel} from '@syncfusion/ej2-base';
 
 /**
@@ -81,11 +81,12 @@ export interface RichTextEditorModel extends ComponentModel{
      * @default
      * {
      * enable: true,
-     * actionOnScroll: 'hide',
+     * actionOnScroll: 'none',
      * link: ['Open', 'Edit', 'UnLink'],
-     * image: ['Replace', 'Align', 'Caption', 'Remove', '-', 'InsertLink', 'Display', 'AltText', 'Dimension'],
-     * audio: ['AudioReplace', 'AudioRemove', 'AudioLayoutOption'],
-     * video: ['VideoReplace', 'VideoAlign', 'VideoRemove', 'VideoLayoutOption', 'VideoDimension'],
+     * table: ['Tableheader', 'TableRemove', '|', 'TableRows', 'TableColumns', '|' , 'Styles', 'BackgroundColor', 'Alignments', 'TableCellVerticalAlign'],
+     * image: ['AltText', 'Caption', '|', 'Align', 'Display', '|', 'InsertLink', 'OpenImageLink', 'EditImageLink', 'RemoveImageLink', '|', 'Dimension', 'Replace', 'Remove'],
+     * audio: ['AudioLayoutOption', 'AudioReplace', 'AudioRemove'],
+     * video: ['VideoLayoutOption', 'VideoAlign', '|', 'VideoDimension', 'VideoReplace', 'VideoRemove'],
      * }
      */
     quickToolbarSettings?: QuickToolbarSettingsModel;
@@ -181,6 +182,7 @@ export interface RichTextEditorModel extends ComponentModel{
      * - `height`: Defines the default height for an inserted image.
      * - `saveUrl`: Specifies the URL for the service that handles image upload and storage on the server.
      * - `path`: Determines the storage location for images and their display path.
+     * - `maxFileSize`: Sets the maximum file size allowed for image uploads.
      *
      * {% codeBlock src='rich-text-editor/insert-image-settings/index.md' %}{% endcodeBlock %}
      *
@@ -192,7 +194,8 @@ export interface RichTextEditorModel extends ComponentModel{
      *   height: 'auto',
      *   saveFormat: 'Blob',
      *   saveUrl: null,
-     *   path: null
+     *   path: null,
+     *   maxFileSize: 30000000
      * }
      */
     insertImageSettings?: ImageSettingsModel;
@@ -246,6 +249,7 @@ export interface RichTextEditorModel extends ComponentModel{
      *   > Choose 'Base64' for frequently inserted small audio files without the need for a specific storage location.
      * - `saveUrl`: Provides the service URL responsible for handling audio file uploads and storage on the server.
      * - `path`: Specifies the storage path for audio files and the reference for displaying them.
+     * - `maxFileSize`: Sets the maximum file size allowed for audio file uploads.
      *
      * @default
      * {
@@ -253,7 +257,8 @@ export interface RichTextEditorModel extends ComponentModel{
      *   layoutOption: 'Inline',
      *   saveFormat: 'Blob',
      *   saveUrl: null,
-     *   path: null
+     *   path: null,
+     *   maxFileSize: 30000000
      * }
      */
     insertAudioSettings?: AudioSettingsModel;
@@ -268,6 +273,7 @@ export interface RichTextEditorModel extends ComponentModel{
      * - `height`: Sets default height for inserted videos.
      * - `saveUrl`: URL of the service for handling video uploads and server storage.
      * - `path`: Identifies the path for storing and displaying videos.
+     * - `maxFileSize`: Maximum file size allowed for video uploads.
      *
      * @default
      * {
@@ -277,7 +283,8 @@ export interface RichTextEditorModel extends ComponentModel{
      *   height: 'auto',
      *   saveFormat: 'Blob',
      *   saveUrl: null,
-     *   path: null
+     *   path: null,
+     *   maxFileSize: 30000000
      * }
      */
     insertVideoSettings?: VideoSettingsModel;
@@ -601,6 +608,33 @@ export interface RichTextEditorModel extends ComponentModel{
      * }
      */
     format?: FormatModel;
+
+    /**
+     * Predefines advanced list types that populate the code block dropdown in the toolbar.
+     *
+     * @default
+     * {
+     * defaultLanguage: 'plaintext',
+     * languages: [
+     * { language: 'plaintext', label: 'Plain text' },
+     * { language: 'c', label: 'C' },
+     * { language: 'csharp', label: 'C#' },
+     * { language: 'cpp', label: 'C++' },
+     * { language: 'css', label: 'CSS' },
+     * { language: 'diff', label: 'Diff' },
+     * { language: 'html', label: 'HTML' },
+     * { language: 'java', label: 'Java' },
+     * { language: 'javascript', label: 'JavaScript' },
+     * { language: 'php', label: 'PHP' },
+     * { language: 'python', label: 'Python' },
+     * { language: 'ruby', label: 'Ruby' },
+     * { language: 'sql', label: 'SQL' },
+     * { language: 'typescript', label: 'TypeScript' },
+     * { language: 'xml', label: 'XML' }
+     * ]
+     * }
+     */
+    codeBlockSettings?: CodeBlockSettingsModel;
 
     /**
      * Predefines advanced list types that populate the numberFormatList dropdown in the toolbar.

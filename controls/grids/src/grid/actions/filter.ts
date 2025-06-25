@@ -746,6 +746,14 @@ export class Filter implements IAction {
                         filterElement.value = this.filterSettings.columns[parseInt(i.toString(), 10)].value as string;
                     }
                 }
+                const localeText: { [key: string]: string } = { isnull: 'IsNull', isnotnull: 'NotNull', isnotempty: 'IsNotEmpty', isempty: 'IsEmpty'};
+                const readOnlyOperators: string[] = ['isnull', 'isnotnull', 'isempty', 'isnotempty'];
+                if (filterElement && this.filterSettings.showFilterBarOperator
+                    && readOnlyOperators.indexOf(this.filterSettings.columns[parseInt(i.toString(), 10)].operator as string) > -1) {
+                    filterElement.value = this.l10n.getConstant(
+                        localeText[this.filterSettings.columns[parseInt(i.toString(), 10)].operator as string]
+                    );
+                }
             }
             if (this.filterSettings.columns.length === 0) {
                 const col: Column[] = this.parent.getColumns();

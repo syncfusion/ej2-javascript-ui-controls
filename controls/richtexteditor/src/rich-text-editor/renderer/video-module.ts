@@ -3,16 +3,19 @@ import { Button, RadioButton } from '@syncfusion/ej2-buttons';
 import { BeforeUploadEventArgs, FileInfo, InputEventArgs, MetaData, ProgressEventArgs, RemovingEventArgs, SelectedEventArgs, TextBox, Uploader, UploadingEventArgs } from '@syncfusion/ej2-inputs';
 import { ClickEventArgs } from '@syncfusion/ej2-navigations';
 import { Dialog, DialogModel } from '@syncfusion/ej2-popups';
-import { isIDevice } from '../../common/util';
+import { isIDevice, convertToBlob } from '../../common/util';
 import { NodeSelection } from '../../selection/selection';
 import * as classes from '../base/classes';
+import { CLS_VID_FOCUS } from '../../common/constant';
 import * as events from '../base/constant';
 import { RenderType } from '../base/enum';
-import { AfterMediaDeleteEventArgs, IDropDownItemModel, IImageNotifyArgs, IRenderer, IRichTextEditor, IShowPopupArgs, IToolbarItemModel, IVideoCommandsArgs, NotifyArgs, OffsetPosition, ResizeArgs, SlashMenuItemSelectArgs} from '../base/interface';
-import { convertToBlob, dispatchEvent, hasClass, parseHtml } from '../base/util';
+import { AfterMediaDeleteEventArgs, IImageNotifyArgs, IQuickToolbar, IRichTextEditor, SlashMenuItemSelectArgs, IRenderer} from '../base/interface';
+import { IDropDownItemModel, IShowPopupArgs, IToolbarItemModel, IVideoCommandsArgs, NotifyArgs, OffsetPosition, ResizeArgs } from '../../common/interface';
+import { dispatchEvent, hasClass, parseHtml } from '../base/util';
 import { RendererFactory } from '../services/renderer-factory';
 import { ServiceLocator } from '../services/service-locator';
 import { DialogRenderer } from './dialog-renderer';
+import { VideoCommand } from '../../editor-manager/plugin/video';
 
 export class Video {
     public element: HTMLElement;
@@ -26,7 +29,7 @@ export class Video {
     private uploadUrl: IVideoCommandsArgs;
     private contentModule: IRenderer;
     private rendererFactory: RendererFactory;
-    private quickToolObj: IRenderer;
+    private quickToolObj: IQuickToolbar;
     /**
      * @hidden
      */
@@ -88,6 +91,7 @@ export class Video {
         this.parent.on(events.insertCompleted, this.showVideoQuickToolbar, this);
         this.parent.on(events.clearDialogObj, this.clearDialogObj, this);
         this.parent.on(events.destroy, this.destroy, this);
+        this.parent.on(events.bindOnEnd, this.bindOnEnd, this);
     }
 
     protected removeEventListener(): void {
@@ -108,6 +112,7 @@ export class Video {
         this.parent.off(events.insertCompleted, this.showVideoQuickToolbar);
         this.parent.off(events.clearDialogObj, this.clearDialogObj);
         this.parent.off(events.destroy, this.destroy);
+        this.parent.off(events.bindOnEnd, this.bindOnEnd);
         if (!isNullOrUndefined(this.contentModule)) {
             EventHandler.remove(this.contentModule.getEditPanel(), Browser.touchEndEvent, this.videoClick);
             this.parent.formatter.editorManager.observer.off(events.checkUndo, this.undoStack);
@@ -118,6 +123,12 @@ export class Video {
                 EventHandler.remove(this.contentModule.getEditPanel(), 'cut', this.onCutHandler);
                 EventHandler.remove(this.contentModule.getDocument(), Browser.touchMoveEvent, this.resizing);
             }
+        }
+    }
+
+    private bindOnEnd(): void {
+        if (!this.parent.formatter.editorManager.videoObj) {
+            this.parent.formatter.editorManager.videoObj = new VideoCommand(this.parent.formatter.editorManager);
         }
     }
 
@@ -724,7 +735,7 @@ export class Video {
                 if (this.contentModule.getEditPanel().querySelector('.e-vid-resize')) {
                     this.removeResizeEle();
                 }
-                removeClass([selectParentEle[0] as HTMLElement], classes.CLS_VID_FOCUS);
+                removeClass([selectParentEle[0] as HTMLElement], CLS_VID_FOCUS);
                 if (this.quickToolObj && this.quickToolObj.videoQTBar) {
                     this.quickToolObj.videoQTBar.hidePopup();
                 }
@@ -811,8 +822,8 @@ export class Video {
 
     private handleSelectAll(): void {
         this.cancelResizeAction();
-        const videoFocusNodes : NodeList = this.parent.inputElement.querySelectorAll('.' + classes.CLS_VID_FOCUS);
-        removeClass(videoFocusNodes, classes.CLS_VID_FOCUS);
+        const videoFocusNodes : NodeList = this.parent.inputElement.querySelectorAll('.' + CLS_VID_FOCUS);
+        removeClass(videoFocusNodes, CLS_VID_FOCUS);
     }
 
     private openDialog(
@@ -860,14 +871,23 @@ export class Video {
         if (this.dialogObj) { this.dialogObj.hide({ returnValue: true } as Event); }
     }
 
+    private isVideoWrapElem(target: HTMLElement): boolean {
+        if (target && target.classList && target.classList.contains(classes.CLS_VIDEOWRAP)) {
+            return true;
+        }
+        return false;
+    }
+
     private checkVideoBack(range: Range): void {
         if (range.startContainer.nodeName === '#text' && range.startOffset === 0 &&
             !isNOU(range.startContainer.previousSibling) && (range.startContainer.previousSibling.nodeName === 'VIDEO' ||
-            this.isEmbedVidElem(range.startContainer.previousSibling as HTMLElement))) {
+            this.isEmbedVidElem(range.startContainer.previousSibling as HTMLElement) ||
+            this.isVideoWrapElem(range.startContainer.previousSibling as HTMLElement))) {
             this.deletedVid.push(range.startContainer.previousSibling);
         } else if (range.startContainer.nodeName !== '#text' && !isNOU(range.startContainer.childNodes[range.startOffset - 1]) &&
             (range.startContainer.childNodes[range.startOffset - 1].nodeName === 'VIDEO' ||
-            this.isEmbedVidElem(range.startContainer.childNodes[range.startOffset - 1] as HTMLElement))) {
+            this.isEmbedVidElem(range.startContainer.childNodes[range.startOffset - 1] as HTMLElement) ||
+            this.isVideoWrapElem(range.startContainer.childNodes[range.startOffset - 1] as HTMLElement))) {
             this.deletedVid.push(range.startContainer.childNodes[range.startOffset - 1]);
         }
     }
@@ -875,11 +895,13 @@ export class Video {
     private checkVideoDel(range: Range): void {
         if (range.startContainer.nodeName === '#text' && range.startOffset === range.startContainer.textContent.length &&
             !isNOU(range.startContainer.nextSibling) && (range.startContainer.nextSibling.nodeName === 'VIDEO' ||
-            this.isEmbedVidElem(range.startContainer.nextSibling as HTMLElement))) {
+            this.isEmbedVidElem(range.startContainer.nextSibling as HTMLElement) ||
+            this.isVideoWrapElem(range.startContainer.nextSibling as HTMLElement))) {
             this.deletedVid.push(range.startContainer.nextSibling);
         } else if (range.startContainer.nodeName !== '#text' && !isNOU(range.startContainer.childNodes[range.startOffset]) &&
             (range.startContainer.childNodes[range.startOffset].nodeName === 'VIDEO' ||
-            this.isEmbedVidElem(range.startContainer.childNodes[range.startOffset] as HTMLElement))) {
+            this.isEmbedVidElem(range.startContainer.childNodes[range.startOffset] as HTMLElement) ||
+            this.isVideoWrapElem(range.startContainer.childNodes[range.startOffset] as HTMLElement))) {
             this.deletedVid.push(range.startContainer.childNodes[range.startOffset]);
         }
     }
@@ -911,7 +933,7 @@ export class Video {
         }
         if (this.quickToolObj && document.body.contains(this.quickToolObj.videoQTBar.element)) {
             this.quickToolObj.videoQTBar.hidePopup();
-            removeClass([selectNodeEle[0] as HTMLElement], classes.CLS_VID_FOCUS);
+            removeClass([selectNodeEle[0] as HTMLElement], CLS_VID_FOCUS);
         }
         this.cancelResizeAction();
     }
@@ -1086,17 +1108,13 @@ export class Video {
             this.quickToolObj = this.parent.quickToolbarModule;
             const target: HTMLElement = args.target as HTMLElement;
             this.contentModule = this.rendererFactory.getRenderer(RenderType.Content);
-            const isPopupOpen: boolean = this.quickToolObj.videoQTBar.element.classList.contains('e-rte-pop');
             if ((target.nodeName === 'VIDEO' || this.isEmbedVidElem(target)) && this.parent.quickToolbarModule) {
-                if (isPopupOpen) {
-                    return;
-                }
                 this.parent.formatter.editorManager.nodeSelection.Clear(this.contentModule.getDocument());
                 this.parent.formatter.editorManager.nodeSelection.setSelectionContents(this.contentModule.getDocument(), target);
                 if (isIDevice()) {
                     this.parent.notify(events.selectionSave, e);
                 }
-                addClass([!this.isEmbedVidElem(target) ? target : target.querySelector('iframe')], classes.CLS_VID_FOCUS);
+                addClass([!this.isEmbedVidElem(target) ? target : target.querySelector('iframe')], CLS_VID_FOCUS);
                 this.showVideoQuickToolbar({ args: args, type: 'Videos', elements: [args.target as Element] } as IShowPopupArgs);
             } else {
                 this.hideVideoQuickToolbar();
@@ -1110,7 +1128,6 @@ export class Video {
             return;
         }
         this.quickToolObj = this.parent.quickToolbarModule;
-        const args: MouseEvent = e.args as MouseEvent;
         let target: HTMLElement = e.elements as HTMLElement;
         [].forEach.call(e.elements, (element: Element, index: number) => {
             if (index === 0) {
@@ -1118,31 +1135,27 @@ export class Video {
             }
         });
         if (target.tagName === 'VIDEO' || this.isEmbedVidElem(target)) {
-            addClass([(!this.isEmbedVidElem(target) || target.tagName === 'IFRAME') ? target : target.querySelector('iframe')], [classes.CLS_VID_FOCUS]);
+            addClass([(!this.isEmbedVidElem(target) || target.tagName === 'IFRAME') ? target : target.querySelector('iframe')], [CLS_VID_FOCUS]);
         }
-        const pageY: number = (this.parent.iframeSettings.enable) ? window.pageYOffset +
-                this.parent.element.getBoundingClientRect().top + args.clientY : args.pageY;
         if (this.parent.quickToolbarModule.videoQTBar) {
             if (e.isNotify) {
                 this.showPopupTime = setTimeout(() => {
                     this.parent.formatter.editorManager.nodeSelection.Clear(this.contentModule.getDocument());
                     this.parent.formatter.editorManager.nodeSelection.setSelectionContents(this.contentModule.getDocument(), target);
-                    this.quickToolObj.videoQTBar.showPopup(
-                        args.pageX - 50, pageY + (target.getBoundingClientRect().height / 2) - target.offsetTop, target as Element);
+                    this.quickToolObj.videoQTBar.showPopup(target as Element, e.args as MouseEvent);
                     if (this.parent.insertVideoSettings.resize === true) {
                         this.resizeStart(e.args as PointerEvent, target);
                     }
                 }, 400);
             } else {
-                this.quickToolObj.videoQTBar.showPopup(args.pageX - 50, pageY + (
-                    target.getBoundingClientRect().height / 2) - target.offsetTop, target as Element);
+                this.quickToolObj.videoQTBar.showPopup(target as Element, e.args as MouseEvent);
             }
         }
     }
 
     public hideVideoQuickToolbar(): void {
-        if (!isNullOrUndefined(this.contentModule.getEditPanel().querySelector('.' + classes.CLS_VID_FOCUS))) {
-            removeClass([this.contentModule.getEditPanel().querySelector('.' + classes.CLS_VID_FOCUS)], classes.CLS_VID_FOCUS);
+        if (!isNullOrUndefined(this.contentModule.getEditPanel().querySelector('.' + CLS_VID_FOCUS))) {
+            removeClass([this.contentModule.getEditPanel().querySelector('.' + CLS_VID_FOCUS)], CLS_VID_FOCUS);
             if (!isNOU(this.videoEle)) {
                 this.videoEle.style.outline = '';
             }
@@ -1156,7 +1169,7 @@ export class Video {
     }
 
     private isEmbedVidElem(target: HTMLElement): boolean {
-        if ((target && target.nodeType !== 3 && target.nodeName !== 'BR' && (target.classList && (target.classList.contains(classes.CLS_VIDEOWRAP) || target.classList.contains(classes.CLS_VID_CLICK_ELEM) ||
+        if ((target && target.nodeType !== 3 && target.nodeName !== 'BR' && (target.classList && (target.classList.contains(classes.CLS_VID_CLICK_ELEM) ||
         target.classList.contains('e-embed-video-wrap')))) || (target && target.nodeName === 'IFRAME')) {
             return true;
         } else {
@@ -1257,7 +1270,7 @@ export class Video {
             if (this.quickToolObj.videoQTBar && document.body.contains(this.quickToolObj.videoQTBar.element)) {
                 this.quickToolObj.videoQTBar.hidePopup();
                 if (!isNullOrUndefined(e.selectParent as Node[])) {
-                    removeClass([e.selectParent[0] as HTMLElement], classes.CLS_VID_FOCUS);
+                    removeClass([e.selectParent[0] as HTMLElement], CLS_VID_FOCUS);
                 }
             }
             if (this.quickToolObj.inlineQTBar && document.body.contains(this.quickToolObj.inlineQTBar.element)) {
@@ -1397,6 +1410,7 @@ export class Video {
             asyncSettings: { saveUrl: this.parent.insertVideoSettings.saveUrl, removeUrl: this.parent.insertVideoSettings.removeUrl },
             dropArea: span, multiple: false, enableRtl: this.parent.enableRtl,
             allowedExtensions: this.parent.insertVideoSettings.allowedTypes.toString(),
+            maxFileSize: this.parent.insertVideoSettings.maxFileSize,
             selected: (e: SelectedEventArgs) => {
                 proxy.isVideoUploaded = true;
                 selectArgs = e;

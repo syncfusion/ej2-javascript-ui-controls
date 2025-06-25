@@ -1090,7 +1090,7 @@ describe('Undo redo ->', () => {
                 expect(sheet.frozenRows).toBe(3);
                 expect(sheet.frozenColumns).toBe(4);
                 done();
-            });
+            }, 10);
         });
         it('Row undo action', (done: Function) => {
             helper.click('#' + helper.id + '_undo');
@@ -1512,6 +1512,71 @@ describe('Undo redo ->', () => {
                 expect(spreadsheet.sheets[0].rows[4].height).toBeGreaterThan(20);
                 done();
             });
+        });        
+        it('Wrap Applied Cell Row height is not proper on undo of long text added with Alt + Enter(891477)', function (done) {
+            const spreadsheet: Spreadsheet = helper.getInstance();
+            helper.invoke('selectRange', ['A4']);
+            setTimeout(() => {
+                expect(spreadsheet.sheets[0].selectedRange).toBe('A4:A4');
+                spreadsheet.sheets[0].rows[3].cells[0].wrap = true;
+                helper.triggerKeyNativeEvent(113);
+                const editElem: HTMLElement = helper.getElement('.e-spreadsheet-edit');
+                helper.triggerKeyEvent('keyup', 13, null, null, null, editElem, undefined, true);
+                helper.triggerKeyEvent('keyup', 13, null, null, null, editElem, undefined, true);
+                helper.triggerKeyEvent('keyup', 13, null, null, null, editElem, undefined, true);
+                helper.triggerKeyEvent('keyup', 13, null, null, null, editElem, undefined, true);
+                helper.triggerKeyEvent('keyup', 13, null, null, null, editElem, undefined, true);
+                expect(editElem.textContent.split('\n').length).toBe(6);
+                helper.triggerKeyNativeEvent(13);
+                setTimeout(() => {
+                    expect(spreadsheet.sheets[0].rows[3].cells[0].wrap).toBeTruthy();
+                    expect(spreadsheet.sheets[0].rows[3].cells[0].value).toBe('Formal Shoes\n\n\n\n\n ');
+                    expect(spreadsheet.sheets[0].rows[3].height).toBeGreaterThan(20);
+                    helper.click('#spreadsheet_undo');
+                    setTimeout(() => {
+                        expect(spreadsheet.sheets[0].rows[3].cells[0].wrap).toBeTruthy();
+                        expect(spreadsheet.sheets[0].rows[3].cells[0].value).toBe('Formal Shoes');
+                        expect(spreadsheet.sheets[0].rows[3].height).toBe(38);
+                        done();
+                    });
+                });
+            });
+        });
+        it('Wrap Applied Cell Row height is not proper on redo of long text added with Alt + Enter(891477)', function (done) {
+            var spreadsheet = helper.getInstance();
+            helper.click('#spreadsheet_redo');
+            setTimeout(function () {
+                expect(spreadsheet.sheets[0].rows[3].cells[0].wrap).toBeTruthy();
+                expect(spreadsheet.sheets[0].rows[3].cells[0].value).toBe('Formal Shoes\n\n\n\n\n ');
+                expect(spreadsheet.sheets[0].rows[3].height).toBeGreaterThan(20);
+                done();
+            });
+        });
+    });
+    describe('allowUndoRedo: false ->', () => {
+        let spreadsheet: any;
+        beforeAll((done: Function) => {
+            helper.initializeSpreadsheet({ allowUndoRedo: false, sheets: [{ ranges: [{ dataSource: defaultData }] }] }, done);
+        });
+        afterAll(() => {
+            helper.invoke('destroy');
+        });
+        it('Undo and Redo buttons should be disabled and not perform any action', (done: Function) => {
+            spreadsheet = helper.getInstance().sheets[0];
+            var undobtn = helper.getElement('#spreadsheet_undo');
+            var redobtn = helper.getElement('#spreadsheet_redo');
+            helper.edit('A1', 'Test');
+            const cellA1 = spreadsheet.rows[0].cells[0];
+            const tdA1 = helper.invoke('getCell', [0, 0]);
+            helper.invoke('undo');
+            expect(undobtn.parentElement.classList.contains('e-overlay')).toBe(true);
+            expect(cellA1.value).toBe('Test');
+            expect(tdA1.textContent).toBe('Test');
+            helper.invoke('redo');
+            expect(redobtn.parentElement.classList.contains('e-overlay')).toBe(true);
+            expect(cellA1.value).toBe('Test');
+            expect(tdA1.textContent).toBe('Test');
+            done();
         });
     });
 });

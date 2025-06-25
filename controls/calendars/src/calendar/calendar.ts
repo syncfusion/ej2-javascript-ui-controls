@@ -427,10 +427,10 @@ export class CalendarBase extends Component<HTMLElement> implements INotifyPrope
         this.calendarEleCopy = <HTMLElement>this.element.cloneNode(true);
         if (this.calendarMode === 'Islamic') {
             if (+(this.min.setSeconds(0)) === +new Date(1900, 0, 1, 0, 0, 0)) {
-                this.min = new Date(1944, 2, 18);
+                this.min = new Date(1941, 12, 18);
             }
             if (+this.max === +new Date(2099, 11, 31)) {
-                this.max = new Date(2069, 10, 16);
+                this.max = new Date(2068, 2, 4);
             }
         }
         this.globalize = new Internationalization(this.locale);
@@ -2234,10 +2234,10 @@ export class CalendarBase extends Component<HTMLElement> implements INotifyPrope
 
         } else {
             const islamicDate: IslamicObject = this.islamicModule.getIslamicDate(date);
-            return islamicDate.month >= (<IslamicObject>(this.islamicModule.getIslamicDate(new Date(1944, 1, 18)))).month
-                && islamicDate.year >= (<IslamicObject>(this.islamicModule.getIslamicDate(new Date(1944, 1, 18)))).year
-                && islamicDate.month <= (<IslamicObject>(this.islamicModule.getIslamicDate(new Date(2069, 1, 16)))).month
-                && islamicDate.year <= (<IslamicObject>(this.islamicModule.getIslamicDate(new Date(2069, 1, 16)))).year;
+            return (islamicDate.month >= (this.islamicModule.getIslamicDate(new Date(1941, 12, 18))).month)
+                && islamicDate.year >= (<IslamicObject>(this.islamicModule.getIslamicDate(new Date(1941, 12, 18)))).year
+                && islamicDate.month <= (<IslamicObject>(this.islamicModule.getIslamicDate(new Date(2068, 2, 4)))).month
+                && islamicDate.year <= (<IslamicObject>(this.islamicModule.getIslamicDate(new Date(2068, 2, 4)))).year;
         }
     }
 

@@ -6,3 +6,4 @@ export * from './editor-manager/index';
 export * from './selection/index';
 export * from './markdown-parser/index';
 export * from './common/index';
+export * from './models/models';

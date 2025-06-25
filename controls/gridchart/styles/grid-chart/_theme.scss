@@ -1,0 +1,62 @@
+@include export-module('grid-chart-theme') {
+
+  #{&}.e-grid-context-menu-dialog {
+
+    .e-grid-dialogchart-container {
+      border: 1px solid $grid-chart-border-color;
+    }
+
+    .e-grid-dialog-tab-container {
+      border-left: 1px solid $grid-chart-border-color;
+      .e-tab.e-focused {
+        box-shadow: none;
+      }
+    }
+
+    .e-tab {
+      .e-tab-header {
+        border-top: 0;
+        border-bottom: 1px solid $grid-chart-border-color;
+      }
+
+      .e-accordion {
+        border: 0;
+      }
+    }
+
+    @if $grid-skin =='fluent2' {
+      .e-accordion .e-acrdn-item.e-select {
+        border-bottom: 1px solid $grid-chart-border-color;
+      }
+    }
+
+    .e-grid-chart-props-header {
+      border-bottom: 1.75px solid $grid-chart-border-color;
+    }
+
+    .e-grid-chart-list:hover {
+      background-color: $grid-chart-list-hover-bg-color;
+      color: $grid-chart-list-hover-content-font-color;
+
+      .e-icons {
+        color: $grid-chart-list-hover-icon-color;
+      }
+    }
+
+    .e-grid-chart-list.e-grid-chart-list-selected {
+      background-color: $grid-chart-list-selected-bg-color;
+      color: $grid-chart-list-selected-content-font-color;
+
+      .e-icons {
+        color: $grid-chart-list-selected-icon-color;
+      }
+    }
+
+    &.e-rtl {
+      .e-grid-dialog-tab-container {
+        border-left: 0;
+        border-right: 1px solid $grid-chart-border-color;
+      }
+    }
+  }
+}

@@ -71,6 +71,7 @@ export class BlazorContextMenu implements IContextMenu {
     public destroy(): void {
         this.previousAction = '';
         this.contextMenuElement =  null;
+        this.currentTarget = null;
     }
 
     public OnItemSelected(selectedMenu: any): void {

@@ -396,6 +396,41 @@ export type CommandButtonType =
     'Cancel';
 
 /**
+ * Defines the supported chart types.
+ * ```props
+ * * Bar :- Rendering the Bar chart.
+ * * StackingBar :- Rendering the Stacking Bar chart.
+ * * StackingBar100 :- Rendering the 100% Stacking Bar chart.
+ * * Pie :- Rendering the Pie chart.
+ * * Column :- Rendering the Column chart.
+ * * StackingColumn :- Rendering the Stacking Column chart.
+ * * StackingColumn100 :- Rendering the 100% Stacking Column chart.
+ * * Line :- Rendering the Line chart.
+ * * StackingLine :- Rendering the Stacking Line chart.
+ * * StackingLine100 :- Rendering the 100% Stacking Line chart.
+ * * Area :- Rendering the Area chart.
+ * * StackingArea :- Rendering the Stacking Area chart.
+ * * StackingArea100 :- Rendering the 100% Stacking Area chart.
+ * * Scatter :- Rendering the Scatter chart.
+ * ```
+ */
+export type ChartType =
+    'Bar' |
+    'StackingBar' |
+    'StackingBar100' |
+    'Pie' |
+    'Column' |
+    'StackingColumn' |
+    'StackingColumn100' |
+    'Line' |
+    'StackingLine' |
+    'StackingLine100' |
+    'Area' |
+    'StackingArea' |
+    'StackingArea100' |
+    'Scatter';
+
+/**
  * Defines the default items of context menu.
  * ```props
  * * AutoFitAll :- Auto fit the size of all columns.
@@ -416,6 +451,7 @@ export type CommandButtonType =
  * * PrevPage :- Go to the previous page.
  * * LastPage :- Go to the last page.
  * * NextPage :- Go to the next page.
+ * * ChartType :- Rendering the selected chart type from the context menu.
  * ```
  */
 export type ContextMenuItem =
@@ -436,7 +472,8 @@ export type ContextMenuItem =
     'FirstPage' |
     'PrevPage' |
     'LastPage' |
-    'NextPage';
+    'NextPage' |
+    ChartType;
 
 /**
  * Defines the default items of Column menu.

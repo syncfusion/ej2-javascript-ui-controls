@@ -12,7 +12,7 @@ var text: string = '{"sfdt":"UEsDBBQAAAAIAI4tDlnAUxsykyIAAFbkAQAEAAAAc2ZkdOw9247
 describe('Document Opening cases - Chart document', () => {
     let container: DocumentEditor;
     beforeAll(() => {
-        document.body.innerHTML = '';
+        
         let ele: HTMLElement = createElement('div', { id: 'container' });
         document.body.appendChild(ele);
         container = new DocumentEditor({ isReadOnly: false, documentEditorSettings: { showHiddenMarks: true, showBookmarks: true } });
@@ -29,7 +29,7 @@ describe('Document Opening cases - Chart document', () => {
         container.destroy();
         document.body.removeChild(document.getElementById('container'));
         container = undefined;
-        document.body.innerHTML = '';
+        
         setTimeout(function () {
             done();
         }, 1000);

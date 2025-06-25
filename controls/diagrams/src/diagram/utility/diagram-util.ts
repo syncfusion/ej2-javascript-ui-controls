@@ -3,7 +3,7 @@ import { PointModel } from './../primitives/point-model';
 import { Rect } from './../primitives/rect';
 import { identityMatrix, rotateMatrix, transformPointByMatrix, Matrix, scaleMatrix } from './../primitives/matrix';
 import { DiagramElement, Corners } from './../core/elements/diagram-element';
-import { Container } from './../core/containers/container';
+import { GroupableView } from './../core/containers/container';
 import { StrokeStyle, LinearGradient, RadialGradient, Stop } from './../core/appearance';
 import { TextStyleModel, GradientModel, LinearGradientModel, RadialGradientModel } from './../core/appearance-model';
 import { Point } from './../primitives/point';
@@ -1279,7 +1279,7 @@ export function serialize(model: Diagram): string {
             processes.forEach((processId: string) => {
                 (clonedObject as Diagram).nodes.forEach((clonedNode: Node) => {
                     if (clonedNode.id === processId) {
-                        const nodeWrapper: Container = clonedNode.wrapper;
+                        const nodeWrapper: GroupableView = clonedNode.wrapper;
                         clonedNode.offsetX = nodeWrapper.offsetX;
                         clonedNode.offsetY = nodeWrapper.offsetY;
                     }
@@ -1593,7 +1593,7 @@ export function deserialize(model: string|Object, diagram: Diagram): Object {
                         dataObj.nodes[i].wrapper = {
                             actualSize: { width: dataObj.nodes[i].width, height: dataObj.nodes[i].height },
                             offsetX: dataObj.nodes[i].offsetX, offsetY: dataObj.nodes[i].offsetY
-                        } as Container;
+                        } as GroupableView;
                     }
                 }
                 pasteSwimLane(dataObj.nodes[i] as NodeModel, undefined, undefined, undefined, undefined, true);
@@ -1652,7 +1652,7 @@ export function deserialize(model: string|Object, diagram: Diagram): Object {
             processes.forEach((processId: string) => {
                 const child = diagram.nameTable[processId];
                 if (child && diagram.nameTable[child.processId]) {
-                    const targetWrapper: Container = diagram.nameTable[child.processId].wrapper;
+                    const targetWrapper: GroupableView = diagram.nameTable[child.processId].wrapper;
                     targetWrapper.children.push(child.wrapper);
                 }
             });
@@ -2103,7 +2103,12 @@ export function updateContent(newValues: Node, actualObject: Node, diagram: Diag
             (!isBlazor() && (newValues.shape as UmlActivityShapeModel).shape !== undefined)) {
             updateUmlActivityNode(actualObject, newValues);
         } else if ((newValues.shape as BasicShapeModel).cornerRadius !== undefined) {
-            (actualObject.wrapper.children[0] as BasicShapeModel).cornerRadius = (newValues.shape as BasicShapeModel).cornerRadius;
+            //958066: Corner radius is not applied for the basic shape when it is updated dynamically.
+            if (actualObject.children && actualObject.children.length > 0) {
+                actualObject.wrapper.cornerRadius = (newValues.shape as BasicShapeModel).cornerRadius;
+            } else {
+                (actualObject.wrapper.children[0] as BasicShapeModel).cornerRadius = (newValues.shape as BasicShapeModel).cornerRadius;
+            }
         } else if (actualObject.shape.type === 'Basic' && (oldObject && (oldObject.shape as BasicShape).shape === 'Rectangle')) {
             const basicshape: PathElement = new PathElement();
             const basicshapedata: string = getBasicShape((actualObject.shape as BasicShape).shape);
@@ -2576,7 +2581,7 @@ export function scaleElement(element: DiagramElement, sw: number, sh: number, re
         element.width *= sw;
         element.height *= sh;
     }
-    if (element instanceof Container) {
+    if (element instanceof GroupableView) {
         const matrix: Matrix = identityMatrix();
         const width: number = refObject.width || refObject.actualSize.width;
         const height: number = refObject.height || refObject.actualSize.height;
@@ -2631,7 +2636,7 @@ export function arrangeChild(obj: Node, x: number, y: number, nameTable: {}, dro
                     //let content: DiagramElement;
                     //let container: Container;
                     nameTable[node.id] = node;
-                    const container: Container = node.initContainer();
+                    const container: GroupableView = node.initContainer();
                     if (!container.children) {
                         container.children = [];
                     }
@@ -2643,6 +2648,62 @@ export function arrangeChild(obj: Node, x: number, y: number, nameTable: {}, dro
             }
         }
     }
+}
+/**
+ * Custom comparison function for sorting nodes based on visual priority.
+ * Nodes are sorted first by type (basic shapes/connectors, then Native, then HTML),
+ * and secondly by zIndex within each type group.
+ *
+ * @param {Node | Connector} obj1 - The first node or connector to compare.
+ * @param {Node | Connector} obj2 - The second node or connector to compare.
+ * @returns {number} A negative number if obj1 should come before obj2,
+ *          a positive number if obj1 should come after obj2,
+ *          or zero if they have the same priority.
+ * @private
+ */
+function nodeVisualComparator(obj1: Node | Connector, obj2: Node | Connector): number {
+    let orderA: number;
+    let orderB: number;
+
+    if ((obj1 instanceof Node && obj1.shape.type !== 'Native' && obj1.shape.type !== 'HTML') || obj1 instanceof Connector) {
+        //Basic, Flow, other shapes and connectors in diagram layer
+        orderA = 1;
+    } else if (obj1 instanceof Node && obj1.shape.type !== 'HTML') {
+        // Native Shape Nodes in native layer
+        orderA = 2;
+    } else {
+        // HTML Shape Nodes in html layer
+        orderA = 3;
+    }
+
+    if ((obj2 instanceof Node && obj2.shape.type !== 'Native' && obj2.shape.type !== 'HTML') || obj2 instanceof Connector) {
+        //Basic, Flow, other shapes and connectors in diagram layer
+        orderB = 1;
+    } else if (obj2 instanceof Node && obj2.shape.type !== 'HTML') {
+        // Native Shape Nodes in native layer
+        orderB = 2;
+    } else {
+        // HTML Shape Nodes in html layer
+        orderB = 3;
+    }
+
+    if (orderA !== orderB) {
+        return orderA - orderB;
+    }
+
+    return obj1.zIndex - obj2.zIndex;
+}
+
+/**
+ * Sorts a collection of nodes and connectors based on visual priority
+ * using the `nodeVisualComparator` function.
+ *
+ * @param {Node|Connector} collection - The array of nodes and connectors to sort.
+ * @returns {(Node|Connector)[]}A new array containing the sorted nodes and connectors.
+ * @private
+ */
+export function sortNodeCollection(collection: (Node | Connector)[]): (Node | Connector)[] {
+    return collection.sort(nodeVisualComparator);
 }
 
 /**
@@ -2697,33 +2758,33 @@ export function insertObject(obj: NodeModel | ConnectorModel, key: string, colle
  */
 export function getElement(element: DiagramHtmlElement | DiagramNativeElement): Object {
     const diagramElement: Object = document.getElementById(element.diagramId);
-    const instance: string = 'ej2_instances';
-    // eslint-disable-next-line
-    let node: {} = {};
-    let nodes: Object = diagramElement[`${instance}`][0].nodes;
+    const instances: any[] = diagramElement['ej2_instances'];
+    const instance: Diagram | any = instances ? instances[0] : null;
+    const elementId: string = element.nodeId;
+    let nodes: Object = instance.nodes;
     if (nodes === undefined) {
-        nodes = getPaletteSymbols(diagramElement[`${instance}`][0]);
+        nodes = getPaletteSymbols(instance);
     }
     const length: string = 'length';
     for (let i: number = 0; nodes && i < nodes[`${length}`]; i++) {
-        if (nodes[parseInt(i.toString(), 10)].id === element.nodeId) {
-            return getAnnotation(nodes[parseInt(i.toString(), 10)], element);
+        if (nodes[parseInt(i.toString(), 10)].id === elementId) {
+            return (element as DiagramHtmlElement).annotationId ? getAnnotation(nodes[parseInt(i.toString(), 10)], element)
+                : nodes[parseInt(i.toString(), 10)];
         }
     }
-    const connectors: Object = diagramElement[`${instance}`][0].connectors;
+    const connectors: Object = instance.connectors;
     for (let i: number = 0; connectors && i < connectors[`${length}`]; i++) {
-        if (connectors[parseInt(i.toString(), 10)].id === element.nodeId) {
-            return getAnnotation(connectors[parseInt(i.toString(), 10)], element);
+        if (connectors[parseInt(i.toString(), 10)].id === elementId) {
+            return (element as DiagramHtmlElement).annotationId ? getAnnotation(connectors[parseInt(i.toString(), 10)], element)
+                : connectors[parseInt(i.toString(), 10)];
         }
     }
-    // eslint-disable-next-line
-    const enterObject: {} = diagramElement[instance][0].enterObject;
-    if (enterObject && (enterObject['id'] === element.nodeId || enterObject['children'])) {
-        if (enterObject['children'] && groupHasType(enterObject as Node, 'HTML', diagramElement[`${instance}`][0].enterTable)) {
-            return diagramElement[`${instance}`][0].enterTable[element.nodeId];
-        } else {
-            return enterObject;
+    const enterObject: Object | any = instance.enterObject || {};
+    if (enterObject.id === elementId || enterObject.children) {
+        if (enterObject.children && groupHasType(enterObject as Node, 'HTML', instance.enterTable)) {
+            return instance.enterTable[`${elementId}`] || null;
         }
+        return enterObject;
     }
     return null;
 }
@@ -3005,7 +3066,7 @@ export let updatePortEdges: Function = (portContent: DiagramElement, flip: FlipD
 };
 
 /** @private */
-export let alignElement: Function = (element: Container, offsetX: number, offsetY: number, diagram: Diagram, flip: FlipDirection, isHorizontal: boolean, isVertical: boolean, isInitialRendering?: boolean): void => {
+export let alignElement: Function = (element: GroupableView, offsetX: number, offsetY: number, diagram: Diagram, flip: FlipDirection, isHorizontal: boolean, isVertical: boolean, isInitialRendering?: boolean): void => {
     if (element.hasChildren()) {
         // First process regular nodes in the group
         for (let child of element.children) {
@@ -3036,7 +3097,7 @@ export let alignElement: Function = (element: Container, offsetX: number, offset
                     }
                 }
             }
-            //706793 - Rotating and flipping of grouped elements are not working properly.
+	    //706793 - Rotating and flipping of grouped elements are not working properly.
             const angle : number = element.rotateAngle * (Math.PI / 180);
             const dx: number = child.offsetX - offsetX;
             const dy: number = child.offsetY - offsetY;
@@ -3069,7 +3130,7 @@ export let alignElement: Function = (element: Container, offsetX: number, offset
                 }
             }
             if (!isInitialRendering) {
-                if (child instanceof Canvas || child instanceof Container) {
+                if (child instanceof Canvas || child instanceof GroupableView) {
                     if (isHorizontal) {
                         child.flip ^= FlipDirection.Horizontal;
                     }
@@ -3360,7 +3421,6 @@ export function getConnectorArrowType(data: FlowChartData){
     }
     return { targetDecorator: 'Arrow', strokeWidth: 1 };
 }
-
 
 export function alignChildBasedOnaPoint(child: DiagramElement, x: number, y: number): PointModel {
     x += child.margin.left - child.margin.right;

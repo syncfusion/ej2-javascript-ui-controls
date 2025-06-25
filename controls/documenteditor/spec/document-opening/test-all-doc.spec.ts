@@ -11,7 +11,7 @@ var text: string = '{"sfdt":"UEsDBAoAAAAIAEJ7+FjD35qN+VgEACyVCAAEAAAAc2ZkdOy9aY/
 describe('Document Opening cases - test all document ', () => {
     let container: DocumentEditor;
     beforeAll(() => {
-        document.body.innerHTML = '';
+        
         let ele: HTMLElement = createElement('div', { id: 'container' });
         document.body.appendChild(ele);
         DocumentEditor.Inject(Selection, Editor, EditorHistory, SfdtExport, WordExport);
@@ -28,7 +28,7 @@ describe('Document Opening cases - test all document ', () => {
         container.destroy();
         document.body.removeChild(document.getElementById('container'));
         container = undefined;
-        document.body.innerHTML = '';
+        
         setTimeout(function () {
             done();
         }, 1000);

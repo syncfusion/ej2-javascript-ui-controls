@@ -1291,6 +1291,10 @@ export enum DiagramConstraints {
     LineRouting = 1 << 11,
     /** Enables/Disables the line overlapping resolution globally in the diagram */
     AvoidLineOverlapping = 1 << 12,
+    /** Restricts the drag and drop of objects beyond the top and left (negative) axes of the diagram.When enabled, users will not be able to move objects outside the positive coordinate space.*/
+    RestrictNegativeAxisDragDrop = 1 << 13,
+    /** Indicates that ports are created interactively. */
+    AutomaticPortCreation = 1 << 14,
     /** Enables/Disable all constraints */
     Default = 1 << 2 | 1 << 4 | 1 << 5 | 1 << 6 | 1 << 7 | 1 << 8
 }
@@ -1390,7 +1394,9 @@ export type Shapes =
     /** UMLClassifier - Sets the type of the node as UMLClassifier */
     'UmlClassifier' |
     /** SwimLane - Sets the type of the node as SwimLane */
-    'SwimLane';
+    'SwimLane' |
+    /** Container - Sets the type of the node as Container */
+    'Container';
 /**
  * None - Scale value will be set as None for the image
  * Meet - Scale value Meet will be set for the image

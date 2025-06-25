@@ -12,7 +12,7 @@ describe('Selection headerFooter format link to previous selection, editing and 
     let documentHelper: DocumentHelper;
     beforeAll(() => {
         let ele: HTMLElement = createElement('div', { id: 'container', styles: 'width:100%;height:500px' });
-        document.body.innerHTML = '';
+        
         document.body.appendChild(ele);
         DocumentEditor.Inject(Editor, EditorHistory, Selection);
         editor = new DocumentEditor({ enableEditor: true, isReadOnly: false, enableSelection: true, enableEditorHistory: true });
@@ -30,7 +30,7 @@ describe('Selection headerFooter format link to previous selection, editing and 
         document.body.removeChild(document.getElementById('container'));
         editor = undefined;
         documentHelper = undefined;
-        document.body.innerHTML = '';
+        
         setTimeout(() => {
             done();
         }, 1000);
@@ -198,14 +198,14 @@ describe('Selection headerFooter format link to previous selection, editing and 
         editor.selection.select('2;H;2;0;0;0;0;0','2;H;2;0;0;0;0;0');
         expect(editor.selection.sectionFormat.oddPageHeader.linkToPrevious).toBe(true);
     });
-    it('Document with table and paragraph in header',()=>{
+    it('Document with table and paragraph in header', () => {
         console.log('Document with table and paragraph in header');
         editor.open(sfdtContent);
         editor.selection.goToPage(1);
         editor.selection.goToHeader();
-        editor.selection.select('1;H;1;1;0','1;H;1;1;0');
+        editor.selection.select('1;H;1;1;0', '1;H;1;1;0');
         expect(editor.selection.sectionFormat.oddPageHeader.linkToPrevious).toBe(false);
-        editor.selection.select('2;H;2;1;0','2;H;2;1;0');
+        editor.selection.select('2;H;2;1;0', '2;H;2;1;0');
         expect(editor.selection.sectionFormat.oddPageHeader.linkToPrevious).toBe(true);
     });
     // it('Document with multiple section and Enabled different header footer types',()=>{

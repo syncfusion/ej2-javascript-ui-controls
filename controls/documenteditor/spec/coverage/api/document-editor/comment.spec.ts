@@ -8,7 +8,7 @@ import { MenuEventArgs } from '@syncfusion/ej2-navigations';
 describe('Comment initial validation', () => {
     let editor: DocumentEditor = undefined;
     beforeAll(() => {
-        document.body.innerHTML = '';
+        
         let ele: HTMLElement = createElement('div', { id: 'container' });
         document.body.appendChild(ele);
         editor = new DocumentEditor({ isReadOnly: false, enableComment: true });
@@ -24,7 +24,7 @@ describe('Comment initial validation', () => {
         editor.destroy();
         document.body.removeChild(document.getElementById('container'));
         editor = undefined;
-        document.body.innerHTML = '';
+        
         setTimeout(() => {
             done();
         }, 1000);

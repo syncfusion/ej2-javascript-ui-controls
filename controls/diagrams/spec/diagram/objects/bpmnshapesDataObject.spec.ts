@@ -6,7 +6,7 @@ import { ShadowModel, RadialGradientModel, StopModel } from '../../../src/diagra
 import { Canvas } from '../../../src/diagram/core/containers/canvas';
 import { BpmnDiagrams } from '../../../src/diagram/objects/bpmn';
 import  {profile , inMB, getMemoryProfile} from '../../../spec/common.spec';
-import { BpmnShape, ConnectorModel, Container } from '../../../src';
+import { BpmnShape, ConnectorModel, GroupableView } from '../../../src';
 Diagram.Inject(BpmnDiagrams);
 
 /**
@@ -238,22 +238,22 @@ describe('BPMN dataobject node visibility issue', () => {
        diagram.dataBind();
        diagram.nodes[0].visible = true;
        diagram.dataBind();
-        expect((diagram.nodes[0].wrapper.children[0] as Container).children[2].visible === false).toBe(true);
-        expect((diagram.nodes[0].wrapper.children[0] as Container).children[1].visible === false).toBe(true);
+        expect((diagram.nodes[0].wrapper.children[0] as GroupableView).children[2].visible === false).toBe(true);
+        expect((diagram.nodes[0].wrapper.children[0] as GroupableView).children[1].visible === false).toBe(true);
         (diagram.nodes[0].shape as BpmnShape).dataObject = { type : 'Input', collection : false};
         diagram.dataBind();
         diagram.nodes[0].visible = false;
         diagram.dataBind();
         diagram.nodes[0].visible = true;
         diagram.dataBind();
-        expect((diagram.nodes[0].wrapper.children[0] as Container).children[2].visible === false).toBe(true);
+        expect((diagram.nodes[0].wrapper.children[0] as GroupableView).children[2].visible === false).toBe(true);
         (diagram.nodes[0].shape as BpmnShape).dataObject = { type : 'None', collection : true};
         diagram.dataBind();
         diagram.nodes[0].visible = false;
         diagram.dataBind();
         diagram.nodes[0].visible = true;
         diagram.dataBind();
-        expect((diagram.nodes[0].wrapper.children[0] as Container).children[1].visible === false).toBe(true);
+        expect((diagram.nodes[0].wrapper.children[0] as GroupableView).children[1].visible === false).toBe(true);
         done();
     });
 

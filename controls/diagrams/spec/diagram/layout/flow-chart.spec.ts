@@ -5530,7 +5530,7 @@ const employeeData63 = [
       "color": "#034d6d"
     }
 ];
-
+  
 const employeeData64 = [
     {
       "empId": "1",
@@ -7797,6 +7797,8 @@ describe('Flowchart orientation and layout settings-Dynamic dataSource change', 
         done();
     });
 });
+
+
 describe('954960 Error while loading single node data', () => {
     let diagram: Diagram;
     let ele: HTMLElement;
@@ -7886,6 +7888,7 @@ describe('954960 Error while loading single node data', () => {
         M --> N{"End of day?"};
         N -->|Yes| O["Go home"];
         N -->|No| P["Finish remaining tasks"];
+
         O --> Q(["End"]);
         %% Additional elements
         subgraph "Optional Tasks";
@@ -7894,6 +7897,7 @@ describe('954960 Error while loading single node data', () => {
         end;
         M --> R;
         M --> T;
+
         %% Corrected shapes
         A1(("Circle")) --> A2(("Circle with text"));
         A2 --> A3>"Asymmetric shape"];
@@ -7918,16 +7922,22 @@ describe('954960 Error while loading single node data', () => {
         A20 --> A21[["Subroutine callout"]];
         A21 --> A22[("Cylinder callout")];
         A22 --> A23[("Database callout")];
+
         %% Line types
         A -->|"Solid line"| B;
+
         C ===|"Thick line"| D;
         D -.-|"Dotted line"| E;
+
         %% Arrow types
         G -->|"Arrow"| H;
         H --o|"Open arrow"| I;
         I --x|"Cross arrow"| J;
+
         K --x|"Cross dashed arrow"| L;
+
         %% Connector types
+
         O --- P;
         P -->|"Connector"| Q;
         Q ---|"Thick connector"| R;
@@ -7957,6 +7967,7 @@ describe('954960 Error while loading single node data', () => {
         N -->|Yes| O["Go home"];N -->|No| P["Finish remaining tasks"];
         P --> N;
         O --> Q(["End"]);
+
         subgraph "Optional Tasks";
         R["Check emails"] --> S["Respond to emails"];
         T["Review reports"] --> U["Update project status"];
@@ -8008,6 +8019,7 @@ describe('954960 Error while loading single node data', () => {
         end;
         M --> R;
         M --> T;
+
         %% Corrected shapes
         A1(("Circle")) --> A2(("Circle with text"));
         A2 --> A3>"Asymmetric shape"];
@@ -8032,17 +8044,20 @@ describe('954960 Error while loading single node data', () => {
         A20 --> A21[["Subroutine callout"]];
         A21 --> A22[("Cylinder callout")];
         A22 --> A23[("Database callout")];
+
         %% Line types
         A -->|"Solid line"| B;
         B -.->|"Dashed line"| C;
         C ===|"Thick line"| D;
         D -.-|"Dotted line"| E;
+
         %% Arrow types
         G -->|"Arrow"| H;
         H --o|"Open arrow"| I;
         I --x|"Cross arrow"| J;
         J --o|"Open dashed arrow"| K;
         K --x|"Cross dashed arrow"| L;
+
         %% Connector types
         N --> O;
         O --- P;
@@ -8098,13 +8113,16 @@ describe('954960 Error while loading single node data', () => {
         B -->|No| D["Leave umbrella at home (if dry)"];
         C --> E["Go to work"];
         D --> E;
+
         A1(("Circle")) --> A2(("Circle with text"));
         A2 --> A3>"Asymmetric shape"];
         A3 --> A4{"Rhombus"};
         A4 --> A5{{"Hexagon"}};
         A -->|"Solid line"| B(["check"]);
+
         C ===|"Thick line"| D;
         D -.-|"Dotted line"| E;
+
         N --> O;
         O --- P;
         P -->|"Connector"| Q;
@@ -8121,6 +8139,7 @@ describe('954960 Error while loading single node data', () => {
         B -->|Yes| C["Take an umbrella"];
         B -->|No| D["Leave umbrella at home (if dry)"];
         C --> E["Go to work"]; D --> E;
+
         A1(("Circle")) --> A2(("Circle with text"));
         A2 --> A3>"Asymmetric shape"];
         A3 --> A4{"Rhombus"};

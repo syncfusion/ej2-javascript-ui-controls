@@ -317,6 +317,32 @@ describe('Resize ->', () => {
             done();
         });
     });
+    describe('Column and Row width Set->', () => {
+        beforeEach((done: Function) => {
+            helper.initializeSpreadsheet({
+                allowScrolling: false,
+                sheets: [{ ranges: [{ dataSource: defaultData }] }]
+            }, done);
+        });
+        afterEach(() => {
+            helper.invoke('destroy');
+        });
+        it('Prevent Script error while set Column and  width', (done: Function) => {
+            const spreadsheet: Spreadsheet = helper.getInstance();
+            expect(spreadsheet.allowScrolling).toBe(false);
+            spreadsheet.setColWidth(200, 0);
+            spreadsheet.setRowHeight(100, 0);
+            const colHdrPanel: HTMLElement = helper.invoke('getColumnHeaderContent').parentElement;
+            const colHdr: HTMLElement = helper.invoke('getColHeaderTable').rows[0].cells[0];
+            const offset: DOMRect = colHdr.getBoundingClientRect() as DOMRect;
+            helper.triggerMouseAction('mousemove', { x: offset.left + 1, y: offset.top + 0.5, offsetX: 200 }, colHdrPanel, colHdr);
+            setTimeout(() => {
+                expect(spreadsheet.sheets[0].columns[0].width).toBe(200);
+                expect(spreadsheet.sheets[0].rows[0].height).toBe(100);
+                done();
+            });
+        });
+    });   
 
     describe('UI Interaction for resize with protected sheet', () => {
         beforeAll((done: Function) => {
@@ -1168,11 +1194,11 @@ describe('Resize ->', () => {
         });
     });
 
-    describe('EJ2-888389 ->', () => {
-        beforeEach((done: Function) => {
+    describe('EJ2-888389, EJ2-892905, EJ2-897189 ->', () => {
+        beforeAll((done: Function) => {
             helper.initializeSpreadsheet({ sheets: [{ ranges: [{ dataSource: defaultData }] }] }, done);
         });
-        afterEach(() => {
+        afterAll(() => {
             helper.invoke('destroy');
         });
         it('Script error while mouse hovering on the select all button', (done: Function) => {
@@ -1187,6 +1213,51 @@ describe('Resize ->', () => {
                 expect(colHdr.classList).toContain('e-colresize');
                 done();
             });
+        });
+
+        it('Issue in resize border on merged cell, when freeze pane is enabled', (done: Function) => {
+            const spreadsheet: Spreadsheet = helper.getInstance();
+            let colHdrPanel: HTMLElement = helper.invoke('getColumnHeaderContent').parentElement;
+            let colHdr: HTMLElement = helper.invoke('getColHeaderTable').rows[0].cells[7];
+            let offset: DOMRect = colHdr.getBoundingClientRect() as DOMRect;
+            helper.triggerMouseAction('mousemove', { x: offset.left - 1, y: offset.top - 0.5, offsetX: 3 }, colHdrPanel, colHdr);
+            helper.triggerMouseAction('mousedown', { x: offset.left, y: offset.top - 1, offsetX: 3 }, colHdrPanel, colHdr);
+            expect((document.getElementsByClassName(' e-resize-handle')[0] as HTMLElement).style.zIndex).toBe('');
+            helper.triggerMouseAction('mousemove', { x: offset.left + 30, y: offset.top - 1, offsetX: 7 }, spreadsheet.element, colHdr);
+            helper.triggerMouseAction('mouseup', { x: offset.left + 30, y: offset.top - 1, offsetX: 7 }, document, colHdr);
+            helper.invoke('freezePanes', [3, 3]);
+            setTimeout((): void => {
+                spreadsheet.merge('B3:E7')
+                colHdrPanel = helper.invoke('getColumnHeaderContent').parentElement;
+                colHdr = helper.invoke('getColHeaderTable').rows[0].cells[0];
+                offset = colHdr.getBoundingClientRect() as DOMRect;
+                helper.triggerMouseAction('mousemove', { x: offset.left - 1, y: offset.top - 0.5, offsetX: 3 }, colHdrPanel, colHdr);
+                helper.triggerMouseAction('mousedown', { x: offset.left, y: offset.top - 1, offsetX: 3 }, colHdrPanel, colHdr);
+                expect((document.getElementsByClassName(' e-resize-handle')[0] as HTMLElement).style.zIndex).toBe('3');
+                helper.triggerMouseAction('mousemove', { x: offset.left + 30, y: offset.top - 1, offsetX: 7 }, spreadsheet.element, colHdr);
+                helper.triggerMouseAction('mouseup', { x: offset.left + 30, y: offset.top - 1, offsetX: 7 }, document, colHdr);
+                done();
+            });
+        });
+        it('Column resize was not proper with the freeze pane and merge cells.', (done: Function) => {
+            const spreadsheet: Spreadsheet = helper.getInstance();
+            spreadsheet.merge('B12:F15');
+            let selectAllPanel: HTMLElement = helper.invoke('getSelectAllContent');
+            let rowHdrPanel: HTMLElement = helper.invoke('getRowHeaderContent');
+            expect(selectAllPanel.style.width).toBe('323px');
+            expect(rowHdrPanel.style.width).toBe('387px');
+            let colHdrPanel: HTMLElement = helper.invoke('getColumnHeaderContent').parentElement;
+            let colHdr: HTMLElement = helper.invoke('getColHeaderTable').rows[0].cells[2];
+            let offset: DOMRect = colHdr.getBoundingClientRect() as DOMRect;
+            helper.triggerMouseAction('mousemove', { x: offset.left - 1, y: offset.top - 0.5, offsetX: 3 }, colHdrPanel, colHdr);
+            helper.triggerMouseAction('mousedown', { x: offset.left, y: offset.top - 1, offsetX: 3 }, colHdrPanel, colHdr);
+            helper.triggerMouseAction('mousemove', { x: offset.left + 30, y: offset.top - 1, offsetX: 7 }, spreadsheet.element, colHdr);
+            helper.triggerMouseAction('mouseup', { x: offset.left + 30, y: offset.top - 1, offsetX: 7 }, document, colHdr);
+            selectAllPanel = helper.invoke('getSelectAllContent');
+            rowHdrPanel = helper.invoke('getRowHeaderContent');
+            expect(selectAllPanel.style.width).toBe('353px');
+            expect(rowHdrPanel.style.width).toBe('417px');
+            done();
         });
     });
 
@@ -1405,8 +1476,30 @@ describe('Resize ->', () => {
                 setTimeout(() => {
                     expect(spreadsheet.activeSheetIndex).toEqual(0);
                     done();
-                });
-            });
+                }, 10);
+            }, 10);
+        });
+    });
+    describe('allowResizing false ->', () => {
+        beforeAll((done: Function) => {
+            helper.initializeSpreadsheet({ allowResizing: false, sheets: [{ ranges: [{ dataSource: defaultData }] }] }, done);
+        });
+        afterAll(() => {
+            helper.invoke('destroy');
+        });
+        it('Should not show resize cursor when allowResizing is false', (done: Function) => {
+            const spreadsheet: Spreadsheet = helper.getInstance();
+            const colHdr: HTMLElement = helper.invoke('getColHeaderTable').rows[0].cells[0];
+            const hdrPanel: HTMLElement = spreadsheet.element.querySelector('.e-header-panel') as HTMLElement;
+            const colOffset: DOMRect = colHdr.getBoundingClientRect() as DOMRect;
+            helper.triggerMouseAction('mousemove', { x: colOffset.left + 0.5, y: colOffset.top + 1, offsetX: 3 }, hdrPanel, colHdr);
+            expect(colHdr.classList.contains('e-colresize')).toBeFalsy();
+            const rowHdr: HTMLElement = helper.invoke('getRowHeaderTable').rows[0].cells[0];
+            const rowHdrPanel: HTMLElement = helper.invoke('getRowHeaderContent');
+            const rowOffset: DOMRect = rowHdr.getBoundingClientRect() as DOMRect;
+            helper.triggerMouseAction('mousemove', { x: rowOffset.top + 0.5, y: rowOffset.left + 1, offsetY: 3 }, rowHdrPanel, rowHdr);
+            expect(rowHdr.classList.contains('e-rowresize')).toBeFalsy();
+            done();
         });
     });
 });

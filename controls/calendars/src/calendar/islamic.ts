@@ -27,7 +27,7 @@ const TODAY: string = 'e-today';
 const LINK: string = 'e-day';
 const CELL: string = 'e-cell';
 const dayMilliSeconds: number = 86400000;
-const minDecade: number = 2060;
+const minDecade: number = 2058;
 const maxDecade: number = 2069;
 export class Islamic {
     public constructor(instance: Calendar) {
@@ -316,9 +316,21 @@ export class Islamic {
         let startHdrYr: any = this.calendarInstance.globalize.formatDate(
             startYr, { type: 'dateTime', format: 'y', calendar: 'islamic' });
         let endHdrYr: any = this.calendarInstance.globalize.formatDate(endYr, { type: 'dateTime', format: 'y', calendar: 'islamic' });
+        if (islamicDate.year % 10 === 1) {
+            startHdrYr = islamicDate.year;
+            endHdrYr = islamicDate.year + 9;
+        }
+        else if (islamicDate.year % 10 > 1 ) {
+            startHdrYr = islamicDate.year - ((islamicDate.year % 10) - 1);
+            endHdrYr = startHdrYr + 9;
+        }
+        else if (islamicDate.year % 10 === 0) {
+            startHdrYr = islamicDate.year - 9;
+            endHdrYr = islamicDate.year;
+        }
         if (this.calendarInstance.locale === 'ar') {
-            startHdrYr = Number(startHdrYr.replace(/[٠١٢٣٤٥٦٧٨٩]/g, (d: any) => String.fromCharCode(d.charCodeAt(0) - 1632 + 48)));
-            endHdrYr = Number(endHdrYr.replace(/[٠١٢٣٤٥٦٧٨٩]/g, (d: any) => String.fromCharCode(d.charCodeAt(0) - 1632 + 48)));
+            startHdrYr = Number(startHdrYr.toString().replace(/[٠١٢٣٤٥٦٧٨٩]/g, (d: any) => String.fromCharCode(d.charCodeAt(0) - 1632 + 48)));
+            endHdrYr = Number(endHdrYr.toString().replace(/[٠١٢٣٤٥٦٧٨٩]/g, (d: any) => String.fromCharCode(d.charCodeAt(0) - 1632 + 48)));
         }
         const splityear: any = this.calendarInstance.headerElement.textContent.split('-');
         if ((!isNullOrUndefined(e) && (splityear[0] !== startHdrYr) && (e as KeyboardEventArgs).action === 'home') ||
@@ -419,6 +431,10 @@ export class Islamic {
                 if (islamicDate.year === parseInt(startHdrYr, 10) - 1 || (year < startFullYr) ||
                  (year > endFullYr) && islamicDate.year !== parseInt(endHdrYr, 10)) {
                     addClass([tdEle], OTHERMONTH);
+                    if (year <= new Date(this.islamicInValue(this.calendarInstance.min)).getFullYear()
+                    || year >= new Date(this.islamicInValue(this.calendarInstance.max)).getFullYear()) {
+                        addClass([tdEle], DISABLED);
+                    }
                 } else if (year < new Date(this.islamicInValue(this.calendarInstance.min)).getFullYear()
                 || year > new Date(this.islamicInValue(this.calendarInstance.max)).getFullYear()) {
                     addClass([tdEle], DISABLED);
@@ -427,7 +443,7 @@ export class Islamic {
                 (<any>(this.getIslamicDate(value))).year) {
                     addClass([tdEle], SELECTED);
                 } else {
-                    if (localDate.getFullYear() === this.calendarInstance.currentDate.getFullYear() &&
+                    if (this.getIslamicDate(localDate).year === this.getIslamicDate(this.calendarInstance.currentDate).year &&
                      !tdEle.classList.contains(DISABLED)) {
                         addClass([tdEle], FOCUSEDDATE);
                     }

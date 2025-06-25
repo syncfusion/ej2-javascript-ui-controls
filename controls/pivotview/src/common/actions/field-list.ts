@@ -15,8 +15,10 @@ export class FieldList implements IAction {
     /**
      * Module declarations
      */
-    private parent: PivotView;
-    private element: HTMLElement;
+    /** @hidden */
+    public parent: PivotView;
+    /** @hidden */
+    public element: HTMLElement;
     private timeOutObj: ReturnType<typeof setTimeout>;
 
     /**
@@ -26,6 +28,7 @@ export class FieldList implements IAction {
      */
     constructor(parent: PivotView) {
         this.parent = parent;
+        this.parent.fieldListModule = this;
         this.addEventListener();
     }
 
@@ -126,12 +129,16 @@ export class FieldList implements IAction {
 
     private update(): void {
         let currentWidth: number;
-        if (this.parent.currentView !== 'Table') {
-            currentWidth = this.parent.chart ? this.parent.pivotChartModule.getCalulatedWidth() : currentWidth;
-        } else {
-            currentWidth = this.parent.grid ? this.parent.grid.element.offsetWidth : currentWidth;
+        if (this.parent.currentView !== 'Table' && this.parent.chart) {
+            currentWidth = this.parent.pivotChartModule.getCalulatedWidth();
+        } else if (this.parent.grid) {
+            currentWidth = this.parent.grid.element.offsetWidth;
         }
-        if (currentWidth && (!isNullOrUndefined((this.element.querySelector('.' + cls.TOGGLE_FIELD_LIST_CLASS))))) {
+        const toggleElement: HTMLElement = this.element.querySelector('.' + cls.TOGGLE_FIELD_LIST_CLASS);
+        if (currentWidth && (!isNullOrUndefined(toggleElement))) {
+            if (!toggleElement) {
+                return;
+            }
             const actualWidth: number = currentWidth < 400 ? (this.parent.minWidth || 400) : currentWidth;
             setStyleAttribute(this.element.querySelector('.' + cls.TOGGLE_FIELD_LIST_CLASS) as HTMLElement, {
                 left: formatUnit(this.parent.enableRtl ?
@@ -181,7 +188,12 @@ export class FieldList implements IAction {
      * @hidden
      */
     public destroy(): void {
+        if (this.timeOutObj) {
+            clearTimeout(this.timeOutObj);
+            this.timeOutObj = null;
+        }
         this.removeEventListener();
+        this.element = null;
         if (this.parent.pivotFieldListModule && !this.parent.pivotFieldListModule.isDestroyed) {
             this.parent.pivotFieldListModule.destroy();
             this.parent.pivotFieldListModule = null;

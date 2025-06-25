@@ -2,7 +2,7 @@ import { createElement } from '@syncfusion/ej2-base';
 import { Diagram } from '../../../src/diagram/diagram';
 import { NodeModel } from '../../../src/diagram/objects/node-model';
 import { Node } from '../../../src/diagram/objects/node';
-import { Container } from '../../../src/diagram/core/containers/container';
+import { GroupableView } from '../../../src/diagram/core/containers/container';
 import { DiagramElement } from '../../../src/diagram/core/elements/diagram-element';
 import { DiagramConstraints, PortConstraints, PortVisibility } from '../../../src/diagram/enum/enum';
 import { MouseEvents } from '../interaction/mouseevents.spec';

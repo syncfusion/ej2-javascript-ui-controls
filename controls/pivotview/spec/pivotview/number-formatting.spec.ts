@@ -508,7 +508,7 @@ describe('Numberformatting', () => {
                 done();
             }, 1000);
         });
-         it('function call', (done: Function) => {
+            it('function call', (done: Function) => {
             pivotGridObj.copy(false);
             done();
         });
@@ -554,7 +554,7 @@ describe('Numberformatting', () => {
                 },
                 cssClass: 'pivot-format',
                 dataBound: dataBound,
-                 toolbar: ['Grid', 'Chart', 'FieldList'],
+                    toolbar: ['Grid', 'Chart', 'FieldList'],
                 showToolbar: true,
                 showFieldList: true
             });
@@ -570,7 +570,7 @@ describe('Numberformatting', () => {
                 done();
             }, 1000);
         });
-         it('function call', (done: Function) => {
+            it('function call', (done: Function) => {
             pivotGridObj.printChart();
             done();
         });
@@ -631,7 +631,7 @@ describe('Numberformatting', () => {
                 done();
             }, 1000);
         });
-         it('function call', (done: Function) => {
+            it('function call', (done: Function) => {
             pivotGridObj.getTooltipTemplate();
             done();
         });
@@ -692,8 +692,69 @@ describe('Numberformatting', () => {
                 done();
             }, 1000);
         });
-         it('function call', (done: Function) => {
+            it('function call', (done: Function) => {
             (pivotGridObj as any).getValueCellInfo({});
+            done();
+        });
+        it('memory leak', () => {
+            profile.sample();
+            let average: any = inMB(profile.averageChange);
+            //Check average change in memory samples to not be over 10MB
+            let memory: any = inMB(getMemoryProfile());
+            //Check the final memory usage against the first usage, there should be little change if everything was properly deallocated
+            expect(memory).toBeLessThan(profile.samples[0] + 0.25);
+        });
+    });
+
+    describe('Method call - 5', () => {
+        let pivotGridObj: PivotView;
+        let elem: HTMLElement = createElement('div', { id: 'PivotGrid', styles: 'height:500px; width:100%' });
+        afterAll(() => {
+            if (pivotGridObj) {
+                pivotGridObj.destroy();
+            }
+            remove(elem);
+        });
+        beforeAll((done: Function) => {
+            if (!document.getElementById(elem.id)) {
+                document.body.appendChild(elem);
+            }
+            let dataBound: EmitType<Object> = () => { done(); };
+            PivotView.Inject(FieldList, CalculatedField, Toolbar, NumberFormatting);
+            pivotGridObj = new PivotView({
+                dataSourceSettings: {
+                    dataSource: pivot_dataset as IDataSet[],
+                    expandAll: true,
+                    enableSorting: true,
+                    allowLabelFilter: true,
+                    allowValueFilter: true,
+                    rows: [{ name: 'product', caption: 'Items' }, { name: 'eyeColor' }],
+                    columns: [{ name: 'gender', caption: 'Population' }, { name: 'isActive' }],
+                    values: [{ name: 'balance' }, { name: 'quantity' }],
+                    filters: []
+                },
+                displayOption: {
+                    view: 'Both'
+                },
+                cssClass: 'pivot-format',
+                dataBound: dataBound,
+                toolbar: ['Grid', 'Chart', 'FieldList'],
+                showToolbar: true,
+                showFieldList: true
+            });
+            pivotGridObj.appendTo('#PivotGrid');
+        });
+        beforeEach((done: Function) => {
+            setTimeout(() => { done(); }, 1000);
+        });
+        it('render testing', (done: Function) => {
+            setTimeout(() => {
+                expect(document.querySelectorAll('.e-pivot-button').length).toBe(6);
+                done();
+            }, 1000);
+        });
+         it('function call', (done: Function) => {
+            pivotGridObj.exportAsPivot();
             done();
         });
         it('memory leak', () => {

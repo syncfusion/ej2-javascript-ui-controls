@@ -397,6 +397,14 @@ export interface DateRangePickerModel extends CalendarBaseModel{
     format?: string | RangeFormatObject;
 
     /**
+     * Specifies an array of acceptable date input formats for parsing user input.
+     *
+     * @default null
+     * @aspType string[]
+     */
+    inputFormats?: string[] | RangeFormatObject[];
+
+    /**
      * Specifies the component to be disabled which prevents the DateRangePicker from user interactions.
      *
      * @default true

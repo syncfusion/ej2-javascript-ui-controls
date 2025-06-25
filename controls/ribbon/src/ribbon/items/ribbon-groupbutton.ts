@@ -15,7 +15,7 @@ export class RibbonGroupButton {
     private parent: Ribbon;
     private count: number;
     private isSelected: boolean;
-    private grpBtnIndex: number;
+    private grpBtnIndex: number = 0;
 
     constructor(parent: Ribbon) {
         this.parent = parent;
@@ -85,6 +85,7 @@ export class RibbonGroupButton {
                             this.count++;
                         }
                     }
+                    this.grpBtnIndex = i;
                 }
                 if (groupBtnSettings.items[parseInt(i.toString(), 10)].ribbonTooltipSettings &&
                         isTooltipPresent(groupBtnSettings.items[parseInt(i.toString(), 10)].ribbonTooltipSettings)) {
@@ -156,7 +157,7 @@ export class RibbonGroupButton {
         const previousItems: RibbonGroupButtonItemModel[] = [];
         const selectingItems: RibbonGroupButtonItemModel[] = [];
         const selectedItems: RibbonGroupButtonItemModel[] = [];
-        let groupButtonEle: HTMLButtonElement;
+        const groupButtonEle: HTMLButtonElement = document.querySelector('#' + item.id);
         let dropdown: DropDownButton;
         for (let j: number = 0; j < grpBtnSettings.items.length; j++) {
             if (document.querySelector('#' + item.id + constants.RIBBON_GROUP_BUTTON_ID + j)) {
@@ -194,7 +195,6 @@ export class RibbonGroupButton {
                 (grpBtnSettings.items[parseInt(itemIndex.toString(), 10)] as RibbonGroupButtonItem).setProperties({ selected: true }, true);
                 if (document.querySelector('#' + item.id + constants.RIBBON_GROUP_BUTTON_ID + itemIndex).classList.contains('e-active') && this.parent.activeLayout === 'Simplified') {
                     this.grpBtnIndex = itemIndex;
-                    groupButtonEle = document.querySelector('#' + item.id);
                     dropdown = getComponent(groupButtonEle, DropDownButton);
                     dropdown.setProperties({
                         iconCss: grpBtnSettings.items[parseInt(itemIndex.toString(), 10)].iconCss
@@ -225,7 +225,6 @@ export class RibbonGroupButton {
                 if (this.parent.activeLayout === 'Simplified') {
                     let dropdownIcon: string = null;
                     let itemsCount: number = 0;
-                    groupButtonEle = document.querySelector('#' + item.id);
                     dropdown = getComponent(groupButtonEle, DropDownButton);
                     if (!this.isSelected) {
                         if (document.querySelector('#' + item.id + constants.RIBBON_GROUP_BUTTON_ID + itemIndex).classList.contains('e-active')) {
@@ -258,6 +257,10 @@ export class RibbonGroupButton {
             const eventArgs: ClickGroupButtonEventArgs = { previousItems: previousItems, selectedItems: selectedItems };
             if (grpBtnSettings.items[parseInt(itemIndex.toString(), 10)].click) {
                 grpBtnSettings.items[parseInt(itemIndex.toString(), 10)].click.call(this, eventArgs);
+            }
+            if (this.parent.activeLayout === 'Simplified' && groupButtonEle) {
+                dropdown = getComponent(groupButtonEle, DropDownButton);
+                dropdown.toggle();
             }
         }
     }
@@ -344,7 +347,6 @@ export class RibbonGroupButton {
             else {
                 (document.querySelector('#' + item.id + constants.RIBBON_GROUP_BUTTON_ID + 0) as HTMLElement).focus();
             }
-            this.grpBtnIndex = 0;
         }
     }
 
@@ -426,28 +428,37 @@ export class RibbonGroupButton {
         const groupBtnSettings: RibbonGroupButtonSettingsModel = item.groupButtonSettings;
         let isIconOnly: boolean = true;
         const groupButtonEle: HTMLElement = itemEle.querySelector('#' + item.id) as HTMLElement;
-        const dropdown: DropDownButton = getComponent(groupButtonEle, DropDownButton);
-        dropdown.setProperties({ cssClass: dropdown.cssClass + constants.SPACE + constants.RIBBON_GROUP_BUTTON_OVERFLOW_POPUP, content: groupBtnSettings.header ? groupBtnSettings.header : ''});
-        const targetEle: HTMLElement = dropdown.target as HTMLElement;
-        if (targetEle.children.length) {
-            for (let i: number = 0; i < targetEle.children.length; i++) {
-                if (groupBtnSettings.items[parseInt(i.toString(), 10)].content) {
-                    isIconOnly = false;
-                    break;
+        if (groupButtonEle) {
+            const dropdown: DropDownButton = getComponent(groupButtonEle, DropDownButton);
+            dropdown.setProperties({ cssClass: dropdown.cssClass + constants.SPACE + constants.RIBBON_GROUP_BUTTON_OVERFLOW_POPUP, content: groupBtnSettings.header ? groupBtnSettings.header : ''});
+            const targetEle: HTMLElement = dropdown.target as HTMLElement;
+            if (targetEle.children.length) {
+                for (let i: number = 0; i < targetEle.children.length; i++) {
+                    if (groupBtnSettings.items[parseInt(i.toString(), 10)].content) {
+                        isIconOnly = false;
+                        break;
+                    }
+                }
+                if (isIconOnly) {
+                    targetEle.classList.add('e-icon-btn');
                 }
             }
-            if (isIconOnly) {
-                targetEle.classList.add('e-icon-btn');
-            }
+            targetEle.onclick = () => {
+                if (this.parent.activeLayout === 'Simplified' && targetEle.closest('.e-ribbon-dropdown-group-button').classList.contains(constants.RIBBON_GROUP_BUTTON_OVERFLOW_POPUP)) {
+                    if (overflowButton.element.classList.contains('e-active')) {
+                        overflowButton.toggle();
+                    }
+                }
+            };
         }
-        targetEle.onclick = () => {
-            if (this.parent.activeLayout === 'Simplified' && targetEle.closest('.e-ribbon-dropdown-group-button').classList.contains(constants.RIBBON_GROUP_BUTTON_OVERFLOW_POPUP)) {
-                dropdown.toggle();
+        const overflowGroupButtonEle: HTMLElement = itemEle.querySelector('#' + item.id + '_grpbtn') as HTMLElement;
+        if (this.parent.activeLayout === 'Classic' && overflowGroupButtonEle) {
+            overflowGroupButtonEle.onclick = () => {
                 if (overflowButton.element.classList.contains('e-active')) {
                     overflowButton.toggle();
                 }
-            }
-        };
+            };
+        }
     }
 
     /**

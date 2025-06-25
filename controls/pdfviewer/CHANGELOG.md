@@ -2,14 +2,28 @@
 
 ## [Unreleased]
 
+## 30.1.37 (2025-06-25)
+
+### PDF Viewer
+
+#### New Features
+
+- `#I712601` - Added support to dynamically enable or disable text selection in the PDF Viewer.
+- PDF Viewer now supports squiggly annotations. This feature allows users to highlight important sections of the text with wavy underlines, enhancing document review and collaboration. Squiggly annotations can be added, edited, and customized directly within the viewer, providing a seamless and intuitive experience for annotating PDFs.
+- `#I687373` - Provided zooming support in the Page Organizer view of the PDF Viewer. This enhancement provides an interactive zoom experience to help users identify the pages they are organizing.
+
+#### Bug Fixes
+
+- `#I731429` - Resolved an issue where the rectangle annotation was not added correctly in the PDF Viewer when it was drawn quickly.
+
 ## 29.2.11 (2025-06-17)
 
 ### PDF Viewer
 
 #### Bug Fixes
 
-- `#I724481` - Fixed an issue where the current page number not reset properly when `unload` method called.
 - `#I723913` - Resolved an issue where text search and `findText` functionalities are not working with the provided document.
+- `#I724481` - Fixed an issue where the current page number not reset properly when `unload` method called.
 - `#I729976` - Fixed an issue where the form fields lagged when zooming in and out with a large number of fields.
 - `#I728939` - Fixed an issue where the date time format is not proper when using the `loadCldr` method.
 - `#I732950` - Resolved an issue where a memory leak occurred after destroying the PDF viewer.
@@ -21,8 +35,8 @@
 #### Bug Fixes
 
 - `#I728109` - Fixed an issue where the multiline input text gets combined into one line without `Formdesigner` module on Re-render.
-- `#I730602` - Resolved an issue where the current author name doesn't get updated when editing note in the comment panel.
 - `#I731710` - The script error no longer occurs when the `destroy` method is called without annotation module.
+- `#I730602` - Resolved an issue where the current author name doesn't get updated when editing note in the comment panel.
 
 ## 29.2.8 (2025-06-03)
 
@@ -65,10 +79,10 @@
 #### Bug Fixes
 
 - `#I717333` - Fixed an issue where the draw and type signatures were missing in the downloaded document for non-rendered pages when updating it using the `updateFormFieldsValue` method.
-- `#I717767` - Resolved an issue where tile rendered documents appeared blurry at minimum zoom levels in server rendering mode.
-- `#I643817` - Resolved an issue where calibration was not functioning correctly for measurement annotations.
 - `#I715531` - Resolved an issue where hyperlinks were not rendered when `enableTileRendering` was set to true.
 - `#I715989` - Resolved an issue where the rectangle annotation was not properly added when the cursor was quickly moved outside the page during drawing.
+- `#I717767` - Resolved an issue where tile rendered documents appeared blurry at minimum zoom levels in server rendering mode.
+- `#I643817` - Resolved an issue where calibration was not functioning correctly for measurement annotations.
 - `#I714312` , `#I712195` - Improved loading and interaction performance when opening documents containing a more number of form fields.
 
 ## 29.1.41 (2025-05-06)
@@ -112,7 +126,6 @@
 - `#I704004` - The `ajaxRequestSuccess` event is triggered properly after the download action is completed.
 - `#I701556` - The image signature in the signature/initial field is preserved correctly when printing the document.
 - `#I702570` - The form fields on non-rendered pages are now visible when printing the document.
-- `#I705546` - The form field position is updated correctly for non-rendered pages using the `updateFormField` method.
 
 ## 29.1.37 (2025-04-08)
 
@@ -133,17 +146,17 @@
 
 #### Bug Fixes
 
-- `#I685698` - `PDFium` resources can now be loaded without requiring the `ej2-pdfviewer-lib` folder.
 - `#I702575` - Double quotes will no longer be removed from the text box field when reloading a downloaded document.
+- `#I685698` - `PDFium` resources can now be loaded without requiring the `ej2-pdfviewer-lib` folder.
 - `#I689380` - The file size will not increase when saving the document without making any changes.
 - `#I698835` - Improved performance and reduced lag when zooming in on specific landscape PDF files.
+- `#I704811` - Now, the `formFieldAdd` event is triggered when adding form fields programmatically to non-rendered pages.
 - `#I695141` - The `documentLoadFailed` event now triggers as expected when attempting to load an invalid PDF URL.
-- `#I704811` - The `formFieldAdd` event is now triggered when adding form fields programmatically to non-rendered pages.
 - `#I683048` - Fixed an issue where the custom stamp image did not appear in the downloaded PDF when modified programmatically.
-- `#I699488` - Resolved an exception that occurred when importing and deleting annotations simultaneously within the `annotationAdd` event.
 - `#I697942` - The signature and initial form field values are now correctly included in the form field collections for non-rendered pages.
-- `#I707879` - The script error does not occur when the `documentId` is passed to the document path on the server side.
+- `#I699488` - Resolved an exception that occurred when importing and deleting annotations simultaneously within the `annotationAdd` event.
 - `#I699776` - Fixed an issue where `PdfViewer` threw a 'Cannot read properties of undefined' error under certain conditions when module injection was not used.
+- `#I707879` - The script error does not occur when the `documentId` is passed to the document path on the server side.
 
 ## 29.1.33 (2025-03-25)
 

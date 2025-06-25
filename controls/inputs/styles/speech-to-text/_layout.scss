@@ -7,6 +7,9 @@
     min-width: $stt-min-width;
     min-height: $stt-min-height;
     padding: $stt-padding;
+    @if ($skin-name == 'fluent2') {
+      line-height: 0;
+    }
     &.e-round {
       width: $stt-round-width;
       height: $stt-round-height;
@@ -14,21 +17,10 @@
     }
     .e-btn-icon {
       font-size: $stt-font-size;
-      @if ($skin-name == 'material' or $skin-name == 'material-dark' or $skin-name == 'material3') {
+      margin-top: $stt-margin-top;
+      @if ($skin-name == 'material' or $skin-name == 'material-dark' or $skin-name == 'Material3') {
         line-height: 2px;
         width: 2em;
-      }
-      @if ($skin-name == 'bootstrap5.3' or $skin-name == 'fabric') {
-        margin-top: 1px;
-      }
-      @if ($skin-name == 'bootstrap5') {
-        margin-top: 0;
-      }
-      @if ($skin-name == 'FluentUI' or $skin-name == 'fabric-dark') {
-        margin-top: -1px;
-      }
-      @if ($skin-name == 'fluent2') {
-        margin-top: 2px;
       }
     }
     &:disabled {
@@ -42,6 +34,12 @@
   .e-speech-to-text.e-round {
     .e-btn-icon {
       font-size: $stt-btn-font-size;
+      @if ($skin-name == 'FluentUI') {
+        margin-top: 0;
+      }
+      @if ($skin-name == 'fluent2' or $skin-name == 'material' or $skin-name == 'material-dark' or $skin-name == 'fabric-dark') {
+        margin-top: 1px;
+      }
     }
   }
 

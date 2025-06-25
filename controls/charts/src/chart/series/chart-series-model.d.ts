@@ -1,6 +1,74 @@
 import { Property, ChildProperty, Complex, Collection, DateFormatOptions, getValue, animationMode } from '@syncfusion/ej2-base';import { isNullOrUndefined, extend } from '@syncfusion/ej2-base';import { StackValues, RectOption, ControlPoints, PolarArc, appendChildElement, appendClipElement, getElement } from '../../common/utils/helper';import { firstToLowerCase, ChartLocation, CircleOption, IHistogramValues, getColorByValue} from '../../common/utils/helper';import { Rect, SvgRenderer, CanvasRenderer, Size } from '@syncfusion/ej2-svg-base';import { ChartSeriesType, ChartShape, SeriesValueType, SplineType, StepPosition } from '../utils/enum';import { ChartDrawType, DataLabelIntersectAction } from '../utils/enum';import { BorderModel, FontModel, MarginModel, AnimationModel, OffsetModel, DragSettingsModel, EmptyPointSettingsModel, ConnectorModel, CornerRadiusModel, AccessibilityModel, SeriesAccessibilityModel } from '../../common/model/base-model';import { ErrorBarType, ErrorBarDirection, ErrorBarMode, TrendlineTypes } from '../utils/enum';import { Border, Font, Margin, Animation, DragSettings, EmptyPointSettings, Connector, CornerRadius, Accessibility, SeriesAccessibility } from '../../common/model/base';import { DataManager, Query, DataUtil } from '@syncfusion/ej2-data';import { Chart } from '../chart';import { Axis, Column, Row } from '../axis/axis';import { Data } from '../../common/model/data';import { Offset } from '../../common/model/base';import { ISeriesRenderEventArgs } from '../../chart/model/chart-interface';import { seriesRender } from '../../common/model/constants';import { Alignment, EmptyPointMode, LabelPosition, LegendShape, SeriesCategories, ShapeType } from '../../common/utils/enum';import { BoxPlotMode, Segment } from '../utils/enum';import { getVisiblePoints, setRange, findClipRect } from '../../common/utils/helper';import { Browser } from '@syncfusion/ej2-base';import { StockSeries } from '../../stock-chart/index';import { CartesianAxisLayoutPanel } from '../axis/cartesian-panel';
 
 /**
+ * Interface for a class LastValueLabelSettings
+ */
+export interface LastValueLabelSettingsModel {
+
+    /**
+     * Enables or disables the display of the last value labels.
+     *
+     * @default false
+     */
+    enable?: boolean;
+
+    /**
+     * The font proerties of the last value labels.
+     */
+    font?: FontModel;
+
+    /**
+     * The background color for the label.
+     *
+     * @default 'null'
+     */
+    background?: string;
+
+    /**
+     * The border properties for the label.
+     */
+    border?: BorderModel;
+
+    /**
+     * The line color for grid lines behind the labels.
+     *
+     * @default ''
+     */
+    lineColor?: string;
+
+    /**
+     * The width of the grid lines behind the labels.
+     *
+     * @default 1
+     */
+    lineWidth?: number;
+
+    /**
+     * The dash array of the grid lines behind the labels.
+     *
+     * @default ''
+     */
+    dashArray?: string;
+
+    /**
+     * Specifies the X-axis rounded corner radius for the last value label.
+     > Note that `border` values must not be null for this feature to work.
+     *
+     * @default 5
+     */
+    rx?: number;
+
+    /**
+     * Specifies the Y-axis rounded corner radius for the last value label.
+     > Note that `border` values must not be null for this feature to work.
+     *
+     * @default 5
+     */
+    ry?: number;
+
+}
+
+/**
  * Interface for a class DataLabelSettings
  */
 export interface DataLabelSettingsModel {
@@ -990,6 +1058,11 @@ export interface SeriesModel extends SeriesBaseModel{
      */
 
     border?: BorderModel;
+
+    /**
+     * Options for customizing and displaying the last value in the series.
+     */
+    lastValueLabel?: LastValueLabelSettingsModel;
 
     /**
      * Sets the opacity of the series, with a value between 0 and 1 where 0 is fully transparent and 1 is fully opaque.

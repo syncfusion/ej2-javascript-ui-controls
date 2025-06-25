@@ -350,7 +350,7 @@ export class Selection extends BaseSelection {
         this.calculateSelectedElements(event.target as HTMLElement, event.type, true);
         if (this.chart.highlightModule && this.chart.highlightModule.highlightDataIndexes
             && this.chart.highlightModule.highlightDataIndexes.length > 0 && (<Element>event.target).id.indexOf('_chart_legend_') === -1
-            && (<Element>event.target).id.indexOf('_Series_') === -1 && this.chart.isTouch && Browser.isDevice) {
+            && this.chart.isTouch && Browser.isDevice) {
             this.removeLegendHighlightStyles();
         }
     }

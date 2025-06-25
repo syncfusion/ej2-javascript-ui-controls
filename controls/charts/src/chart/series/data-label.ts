@@ -333,7 +333,9 @@ export class DataLabel {
      */
     public renderStackLabels(): void {
         const stackLabelGroup: Element = this.chart.renderer.createGroup({ id: `${this.chart.element.id}_StackLabelGroup` });
-        this.chart.seriesElements.appendChild(stackLabelGroup);
+        if (!this.chart.enableCanvas && stackLabelGroup) {
+            this.chart.seriesElements.appendChild(stackLabelGroup);
+        }
         let positivePoints: { [xValue: string]: Points } = {};
         let negativePoints: { [xValue: string]: Points } = {};
         const groupingValues: string[] = [];
@@ -359,7 +361,7 @@ export class DataLabel {
                         .index;
                     for (let seriesIndex: number = count; seriesIndex >= 0; seriesIndex--) {
                         const series: Series = this.chart.visibleSeries[seriesIndex as number];
-                        if (series.animation.enable && this.chart.animateSeries) {
+                        if (!this.chart.enableCanvas && series.animation.enable && this.chart.animateSeries) {
                             stackLabelGroup.setAttribute('visibility', 'hidden');
                         }
                         if (series.visible && series.points && series.points.length > 0) {
@@ -383,7 +385,7 @@ export class DataLabel {
             else {
                 for (let seriesIndex: number = this.chart.visibleSeries.length - 1; seriesIndex >= 0; seriesIndex--) {
                     const series: Series = this.chart.visibleSeries[seriesIndex as number];
-                    if (series.animation.enable && this.chart.animateSeries) {
+                    if (!this.chart.enableCanvas && series.animation.enable && this.chart.animateSeries) {
                         stackLabelGroup.setAttribute('visibility', 'hidden');
                     }
                     if (series.visible && series.points && series.points.length > 0) {
@@ -474,10 +476,10 @@ export class DataLabel {
                                 -(padding + textSize.width / 2)))) : 0;
                         xOffset += this.chart.stackLabels.font.textAlignment === 'Far' ? alignmentValue :
                             (this.chart.stackLabels.font.textAlignment === 'Near' ? -alignmentValue : 0);
-                        const xPosition: number = Math.max(series.clipRect.x + textSize.width,
-                                                           Math.min(xOffset + series.clipRect.x + symbolLocation.x, series.clipRect.x
-                                             + series.clipRect.width - textSize.width));
-                        const yPosition: number = Math.max(
+                        let xPosition: number = Math.max(series.clipRect.x + textSize.width,
+                                                         Math.min(xOffset + series.clipRect.x + symbolLocation.x, series.clipRect.x
+                                + series.clipRect.width - textSize.width));
+                        let yPosition: number = Math.max(
                             series.clipRect.y + textSize.height,
                             Math.min(
                                 yOffset + series.clipRect.y + symbolLocation.y -
@@ -485,6 +487,10 @@ export class DataLabel {
                                 series.clipRect.y + series.clipRect.height - textSize.height
                             )
                         );
+                        if (this.chart.enableCanvas) {
+                            xPosition -= series.clipRect.x;
+                            yPosition -= series.clipRect.y;
+                        }
                         const rect: Rect = new Rect(
                             xPosition - textSize.width / 2 - this.chart.stackLabels.margin.left,
                             yPosition - textSize.height - this.chart.stackLabels.margin.top,
@@ -499,7 +505,7 @@ export class DataLabel {
                             ),
                             new Int32Array([symbolLocation.x, symbolLocation.y])) as HTMLElement;
                         shapeRect.setAttribute('transform', `rotate(${this.chart.stackLabels.angle}, ${xPosition}, ${yPosition})`);
-                        stackLabelGroup.appendChild(shapeRect);
+                        appendChildElement(this.chart.enableCanvas, stackLabelGroup, shapeRect, this.chart.redraw);
                         textElement(
                             this.chart.renderer,
                             new TextOption(

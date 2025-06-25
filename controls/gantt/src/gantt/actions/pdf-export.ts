@@ -71,18 +71,14 @@ export class PdfExport {
             cancel: false
         };
         this.parent.trigger('beforePdfExport', args);
+        if (!getValue('cancel', args)) {
+            this.parent['showLoadingIndicator']();
+        }
         if (getValue('cancel', args)) {
             /* eslint-disable-next-line */
             return new Promise((resolve: Function, reject: Function) => {
                 return resolve();
             });
-        }
-        else {
-            if (!isNullOrUndefined(this.parent.loadingIndicator) && this.parent.loadingIndicator.indicatorType === 'Shimmer') {
-                this.parent.showMaskRow();
-            } else {
-                this.parent.showSpinner();
-            }
         }
         /* eslint-disable-next-line */
         return new Promise((resolve: Function, reject: Function) => {
@@ -129,11 +125,7 @@ export class PdfExport {
         }
         this.processExport(data, pdfExportProperties, isMultipleExport).then(() => {
             this.parent.trigger('pdfExportComplete', this.isBlob ? { promise: this.blobPromise } : {});
-            if (!isNullOrUndefined(this.parent.loadingIndicator) && this.parent.loadingIndicator.indicatorType === 'Shimmer') {
-                this.parent.hideMaskRow();
-            } else {
-                this.parent.hideSpinner();
-            }
+            this.parent['hideLoadingIndicator']();
             resolve(this.pdfDocument);
         });
     }

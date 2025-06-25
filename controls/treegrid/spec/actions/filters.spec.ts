@@ -10,11 +10,13 @@ import { profile, inMB, getMemoryProfile } from '../common.spec';
 import { Query } from '@syncfusion/ej2-data';
 import { ITreeData } from '../../src/treegrid/base/interface';
 import { Aggregate } from '../../src/treegrid/actions/summary';
+import { Toolbar } from '../../src/treegrid/actions/toolbar';
+import { Sort } from '../../src/treegrid/actions/sort';
 
 /**
  * Grid base spec
  */
-TreeGrid.Inject(Filter, Edit, Aggregate);
+TreeGrid.Inject(Filter, Edit, Aggregate, Toolbar, Sort);
 describe('Filter module', () => {
     beforeAll(() => {
         const isDef = (o: any) => o !== undefined && o !== null;
@@ -1196,6 +1198,672 @@ describe('Code coverage improvement', () => {
     });
 });
 
+describe('TreeGrid Filter and CollapseAll Tests', () => {
+    let gridObj: TreeGrid;
+    let actionComplete: () => void;
+    beforeAll((done: Function) => {
+        gridObj = createGrid(
+            {
+                dataSource: sampleData,
+                allowFiltering: true,
+                childMapping: 'subtasks',
+                treeColumnIndex: 1,
+                columns: [
+                    { field: 'taskID', headerText: 'Task ID', isPrimaryKey: true },
+                    { field: 'taskName', headerText: 'Task Name' },
+                    { field: 'duration', headerText: 'Duration' },
+                    { field: 'progress', headerText: 'Progress' }
+
+                ]
+            },
+            done
+        );
+    });
+    it('Collapse All after applying filter with results', (done: Function) => {
+       actionComplete = (args?: any): void => {
+            if (args.requestType === 'filtering') {
+                gridObj.collapseAll();
+                 expect(isNullOrUndefined(gridObj.getRows()[0].getElementsByClassName('e-rowcell')[1].querySelector('div>.e-treegridexpand'))).toBe(true);         
+                done();
+            }
+        };
+        gridObj.actionComplete = actionComplete;
+        gridObj.filterByColumn('taskName', 'contains', 'plan');
+    });
+     afterAll(() => {
+        destroy(gridObj);
+    });
+});
+
+
+describe('Expand/Collapse with Filtering in TreeGrid', () => {
+    let treeGrid :TreeGrid;;
+
+       beforeAll((done: Function) => {
+        treeGrid = createGrid(
+            {
+                dataSource: sampleData,
+                allowFiltering: true,
+                childMapping: 'subtasks',
+                treeColumnIndex: 1,
+                allowPaging:true,
+                columns: [
+                    { field: 'taskID', headerText: 'Task ID', isPrimaryKey: true },
+                    { field: 'taskName', headerText: 'Task Name' },
+                    { field: 'duration', headerText: 'Duration' },
+                    { field: 'progress', headerText: 'Progress' }
+
+                ]
+            },
+            done
+        );
+    });
+    it('should preserve expanded state after filtering by task name', (done) => {
+        treeGrid.expandRow(treeGrid.getRows()[0] as HTMLTableRowElement);
+        treeGrid.filterByColumn('taskName', 'contains', 'Plan');
+        treeGrid.actionComplete = (args) => {
+            if (args.requestType === 'filtering') {
+                expect(treeGrid.getRows()[0].getAttribute('aria-expanded')).toBe('true');
+                done();
+            }
+        };
+    });
+
+    it('should preserve collapsed state after removing filters', (done) => {
+        treeGrid.collapseRow(treeGrid.getRows()[0] as HTMLTableRowElement);
+        treeGrid.clearFiltering();
+        treeGrid.actionComplete = (args) => {
+            if (args.requestType == 'refresh') {
+                expect(treeGrid.getRows()[0].getAttribute('aria-expanded')).toBe('false');
+                done();
+            }
+        };
+    });
+
+    it('should expand all and filter, validating structure', (done) => {
+        treeGrid.expandAll();
+        treeGrid.filterByColumn('taskName', 'contains', 'Design');
+        treeGrid.actionComplete = (args) => {
+            if (args.requestType === 'filtering') {
+                expect(treeGrid.getVisibleRecords().every(record => (record as any).taskName.includes('Design'))).toBe(true);
+                done();
+            }
+        };
+    });
+
+    it('should maintain expand/collapse toggle state after filter operation', (done) => {
+        treeGrid.filterByColumn('taskName', 'contains', 'plan');
+        treeGrid.actionComplete = (args) => {
+            if (args.requestType === 'filtering') {
+                expect(isNullOrUndefined(treeGrid.getRows()[0].getElementsByClassName('e-rowcell')[1].querySelector('div>.e-treegridexpand'))).toBe(false);
+                done();
+            }
+        };
+    });
+
+    it('should handle filter reset while preserving structural changes', (done) => {
+        treeGrid.clearFiltering();
+        treeGrid.expandAll();
+        treeGrid.actionComplete = (args) => {
+            if (args.requestType === 'refresh') {
+                expect(isNullOrUndefined(treeGrid.getRows()[0].getElementsByClassName('e-rowcell')[1].querySelector('div>.e-treegridexpand'))).toBe(false);
+                done();
+            }
+        };
+    });
+
+    it('should filter parent nodes and maintain child visibility states', (done) => {
+        treeGrid.filterByColumn('taskName', 'contains', 'plan');
+        treeGrid.actionComplete = (args) => {
+            if (args.requestType === 'filtering') {
+                expect((treeGrid.getVisibleRecords()[0]as any) .hasChildRecords).toBe(true);
+                done();
+            }
+        };
+    });
+
+    it('should keep expand state intact when paging with filters', (done) => {
+        treeGrid.expandRow(treeGrid.getRows()[0] as HTMLTableRowElement);
+        treeGrid.pageSettings.pageSize=2;
+        treeGrid.filterByColumn('taskName', 'contains', 'Plan');
+        treeGrid.goToPage(2);
+       
+        treeGrid.actionComplete = (args) => {
+            if (args.requestType === 'paging') {
+                expect((treeGrid.getVisibleRecords()[0] as any).taskID==1).toBe(true);
+                treeGrid.pageSettings.pageSize=12;
+                done();
+            }
+        };
+    });
+
+    it('should ensure correct structure with child filters', (done) => {
+        treeGrid.filterByColumn('taskName', 'contains', 'plan');
+        treeGrid.actionComplete = (args) => {
+            if (args.requestType === 'filtering') {
+                expect((treeGrid.getVisibleRecords()[0] as any).taskName =="Planning").toBe(true);
+                done();
+            }
+        };
+    });
+
+     afterAll(() => {
+        treeGrid.destroy();
+        
+    });
+});
+
+describe('Expand/Collapse with Filtering in TreeGrid', () => {
+    let treeGrid :TreeGrid;;
+
+       beforeAll((done: Function) => {
+        treeGrid = createGrid(
+            {
+                dataSource: sampleData,
+                allowFiltering: true,
+                childMapping: 'subtasks',
+                treeColumnIndex: 1,
+                allowPaging:true,
+                columns: [
+                    { field: 'taskID', headerText: 'Task ID', isPrimaryKey: true },
+                    { field: 'taskName', headerText: 'Task Name' },
+                    { field: 'duration', headerText: 'Duration' },
+                    { field: 'progress', headerText: 'Progress' }
+
+                ]
+            },
+            done
+        );
+    });
+
+      it('should collapse all and apply filter, verifying results', (done) => {
+        treeGrid.collapseAll();
+        treeGrid.filterByColumn('taskName', 'contains', 'plan');
+        treeGrid.actionComplete = (args) => {
+            if (args.requestType === 'filtering') {
+                
+                expect(treeGrid.getVisibleRecords().length).toBeGreaterThan(0);
+                done();
+            }
+        };
+    });
+    afterAll(() => {
+        treeGrid.destroy();
+        
+    });
+});
+
+
+describe('Expand/Collapse with Filtering using enableCollapseAll in TreeGrid', () => {
+     let treeGrid :TreeGrid;
+
+       beforeAll((done: Function) => {
+        treeGrid = createGrid(
+            {
+                dataSource: sampleData,
+                allowFiltering: true,
+                childMapping: 'subtasks',
+                treeColumnIndex: 1,
+                enableCollapseAll:true,
+                columns: [
+                    { field: 'taskID', headerText: 'Task ID', isPrimaryKey: true },
+                    { field: 'taskName', headerText: 'Task Name' },
+                    { field: 'duration', headerText: 'Duration' },
+                    { field: 'progress', headerText: 'Progress' }
+
+                ]
+            },
+            done
+        );
+    });
+
+    it('should apply filter with collapsed state and verify correct results', (done) => {
+       treeGrid.filterByColumn('taskName', 'contains', 'plan');
+       treeGrid.actionComplete = (args:any) => {
+            if (args.requestType === 'filtering') {
+                  expect((treeGrid.getVisibleRecords()[0] as any).taskName =="Planning").toBe(true);
+                done();
+            }
+        };
+    });
+
+    it('should maintain collapse state after filter reset', (done) => {
+        treeGrid.collapseAll();
+        treeGrid.clearFiltering();
+
+        treeGrid.actionComplete = (args:any) => {
+            if (args.requestType == 'refresh') {
+                expect(treeGrid.getVisibleRecords().length == 36).toBeFalsy();
+               done();
+            }
+        };
+    });
+    
+    it('should ensure all nodes are collapsed when filter result is empty', (done) => {
+        treeGrid.filterByColumn('taskName', 'contains', 'NonExistentTask');
+
+        treeGrid.actionComplete = (args:any) => {
+            if (args.requestType === 'filtering') {
+                expect(treeGrid.getVisibleRecords().length).toBe(0);
+               done();
+            }
+        };
+    });
+
+    afterAll(() => {
+        treeGrid.destroy();
+        
+    });
+});
+
+describe('TreeGrid Filtering Tests', () => {
+  let gridObj: TreeGrid;
+  let actionComplete: () => void;
+
+  beforeAll((done: Function) => {
+    gridObj = createGrid({
+      dataSource: sampleData,
+      childMapping: 'subtasks',
+      treeColumnIndex: 1,
+      allowFiltering: true,
+      pageSettings: { pageSize: 11 },
+      columns: [
+        { field: 'taskID', headerText: 'Task ID', width: 90, textAlign: 'Right' },
+        { field: 'taskName', headerText: 'Task Name', width: 180, textAlign: 'Left' },
+        { field: 'startDate', headerText: 'Start Date', width: 90, type: 'date', format: 'yMd' },
+        { field: 'duration', headerText: 'Duration', width: 80, textAlign: 'Right' }
+      ],
+    }, done);
+  });
+
+  it('should filter records based on Task Name', (done: Function) => {
+    actionComplete = (args?: Object): void => {
+      const rows = gridObj.getRows();
+      expect(isNullOrUndefined(rows[0].querySelector('.e-treegridexpand'))).toBe(false);
+      expect(rows[0].querySelector('.e-treecell').textContent).toBe('Planning');
+      expect(rows[1].querySelector('.e-treecell').textContent).toBe('Plan timeline');
+      done();
+    };
+    gridObj.grid.actionComplete = actionComplete;
+    gridObj.filterByColumn('taskName', 'startswith', 'Plan');
+  });
+
+  it('should clear filters and restore original record count', (done: Function) => {
+    actionComplete = (args?: Object): void => {
+      expect(gridObj.getRows().length).toBe(36);
+      done();
+    };
+    gridObj.grid.actionComplete = actionComplete;
+    gridObj.clearFiltering();
+  });
+
+  it('should filter using `endswith` and restore data upon clearing', (done: Function) => {
+    actionComplete = (args?: Object): void => {
+      expect(gridObj.getRows().length).toBe(2);
+      const rows = gridObj.getRows();
+      expect(rows[1].querySelector('.e-treecell').textContent).toContain('timeline');
+      done();
+    };
+    gridObj.grid.actionComplete = actionComplete;
+    gridObj.filterByColumn('taskName', 'endswith', 'timeline');
+  });
+
+  it('should filter with `contains` and verify UI structure', (done: Function) => {
+    actionComplete = (args?: Object): void => {
+      const rows = gridObj.getRows();
+      expect(rows.length).toBeGreaterThan(0);
+      expect(/Design/.test(rows[0].querySelector('.e-treecell').textContent)).toBe(true);
+      done();
+    };
+    gridObj.grid.actionComplete = actionComplete;
+    gridObj.filterByColumn('taskName', 'contains', 'Design');
+  });
+
+  afterAll(() => {
+    destroy(gridObj);
+  });
+
+});
+
+describe('Expand/Collapse Action after Filter', () => {
+    let gridObj: TreeGrid;
+    let actionComplete: (args: any) => void;
+    beforeAll((done: Function) => {
+        gridObj = createGrid(
+            {
+                dataSource: sampleData,
+                childMapping: 'subtasks',
+                treeColumnIndex: 1,
+                allowFiltering: true,
+                columns: ['taskID', 'taskName', 'startDate', 'endDate', 'duration', 'progress']
+            },
+            done
+        );
+    });
+
+    it('should expand/collapse nodes after filtering', (done: Function) => {
+         actionComplete = (args?: any): void => {
+            if (args.requestType === 'filtering') {
+                expect(gridObj.getRows().length).toBeGreaterThan(0);
+                expect(gridObj.getRows()[0].getElementsByClassName('e-rowcell')[1].querySelector('div>.e-treecell').innerHTML).toBe('Planning');
+                done();
+            }
+        };
+
+        gridObj.expandAll();
+        gridObj.collapseRow(<HTMLTableRowElement>gridObj.getRows()[0]);
+        gridObj.grid.actionComplete = actionComplete;
+        gridObj.filterByColumn('taskName', 'startswith', 'Plan');
+    });
+
+    afterAll(() => {
+        destroy(gridObj);
+        gridObj = null;
+    });
+});
+
+describe('Filter and Expand/Collapse Actions with Menu filter', () => {
+    let gridObj: TreeGrid;
+    let actionComplete: (args: Object) => void;
+
+    beforeAll((done: Function) => {
+        gridObj = createGrid(
+            {
+                dataSource: sampleData,
+                childMapping: 'subtasks',
+                treeColumnIndex: 1,
+                allowFiltering: true,
+                filterSettings: { type: 'Menu', hierarchyMode: 'Parent' },
+                columns: ['taskID', 'taskName', 'startDate', 'endDate', 'duration', 'progress']
+            },
+            done
+        );
+    });
+
+    it('should filter and then expand/collapse nodes', (done: Function) => {
+        actionComplete = (args?: any): void => {
+            if (args.requestType === 'filtering') {
+                expect(gridObj.getRows().length).toBeGreaterThan(0);
+                expect(gridObj.getRows()[0].getElementsByClassName('e-rowcell')[1].querySelector('div>.e-treecell').innerHTML).toBe('Planning');
+
+                gridObj.expandAll();
+                gridObj.collapseRow(<HTMLTableRowElement>gridObj.getRows()[0]);
+                done();
+            }
+        };
+
+        gridObj.grid.actionComplete = actionComplete;
+        gridObj.filterByColumn('taskName', 'startswith', 'Plan');
+    });
+
+    afterAll(() => {
+        destroy(gridObj);
+        gridObj = null;
+    });
+});
+
+describe('Filter Action after Expand/Collapse with Self Reference Data (projectData)', () => {
+    let gridObj: TreeGrid;
+    let actionComplete: (args: any) => void;
+
+    beforeAll((done: Function) => {
+        gridObj = createGrid(
+            {
+                dataSource: projectData,
+                idMapping: 'TaskID',
+                parentIdMapping: 'parentID',
+                treeColumnIndex: 1,
+                allowFiltering: true,
+                columns: [
+                    { field: 'TaskID', headerText: 'Task ID', width: 120, textAlign: 'Right' },
+                    { field: 'TaskName', headerText: 'Task Name', width: 220 },
+                    { field: 'StartDate', headerText: 'Start Date', width: 120 },
+                    { field: 'EndDate', headerText: 'End Date', width: 120 },
+                    { field: 'Progress', headerText: 'Progress', width: 120 }
+                ]
+            },
+            done
+        );
+    });
+
+    it('should filter rows correctly after expand/collapse action', (done: Function) => {
+        actionComplete = (args: any): void => {
+            if (args.requestType === 'filtering') {
+                expect(gridObj.getRows().length).toBeGreaterThan(0);
+                expect(gridObj.getRows()[0].getElementsByClassName('e-rowcell')[1].textContent).toBe('Parent Task 1');
+                done();
+            }
+        };
+        gridObj.expandAll();
+        gridObj.collapseRow(<HTMLTableRowElement>gridObj.getRows()[0]);
+        gridObj.grid.actionComplete = actionComplete;
+        gridObj.filterByColumn('TaskName', 'startswith', 'Parent');
+    });
+
+    afterAll(() => {
+        destroy(gridObj);
+        gridObj = null;
+    });
+});
+
+describe('Filter Action with Menu Filter after Expand/Collapse with Self Reference Data(projectData)', () => {
+    let gridObj: TreeGrid;
+    let actionComplete: (args: any) => void;
+
+    beforeAll((done: Function) => {
+        gridObj = createGrid(
+            {
+                dataSource: projectData,
+                idMapping: 'TaskID',
+                parentIdMapping: 'parentID',
+                treeColumnIndex: 1,
+                allowFiltering: true,
+                filterSettings: { type: 'Menu' },
+                columns: [
+                    { field: 'TaskID', headerText: 'Task ID', width: 120, textAlign: 'Right' },
+                    { field: 'TaskName', headerText: 'Task Name', width: 220 },
+                    { field: 'StartDate', headerText: 'Start Date', width: 120 },
+                    { field: 'EndDate', headerText: 'End Date', width: 120 },
+                    { field: 'Progress', headerText: 'Progress', width: 120 }
+                ]
+            },
+            done
+        );
+    });
+
+    it('should filter rows correctly with menu filter after expand/collapse action', (done: Function) => {
+        actionComplete = (args: any): void => {
+            if (args.requestType === 'filtering') {
+                expect(gridObj.getRows().length).toBeGreaterThan(0);
+                expect(gridObj.getRows()[0].getElementsByClassName('e-rowcell')[1].textContent).toBe('Parent Task 1');
+                done();
+            }
+        };
+        gridObj.expandAll();
+        gridObj.collapseRow(<HTMLTableRowElement>gridObj.getRows()[0]);
+        gridObj.grid.actionComplete = actionComplete;
+        gridObj.filterByColumn('TaskName', 'startswith', 'Parent');
+    });
+
+    afterAll(() => {
+        destroy(gridObj);
+        gridObj = null;
+    });
+});
+
+describe('Filter Action with Excel Filter after Expand/Collapse with Self Reference Data (projectData)', () => {
+    let gridObj: TreeGrid;
+    let actionComplete: (args: any) => void;
+
+    beforeAll((done: Function) => {
+        gridObj = createGrid(
+            {
+                dataSource: projectData,
+                idMapping: 'TaskID',
+                parentIdMapping: 'parentID',
+                treeColumnIndex: 1,
+                allowFiltering: true,
+                filterSettings: { type: 'Excel' },
+                columns: [
+                    { field: 'TaskID', headerText: 'Task ID', width: 120, textAlign: 'Right' },
+                    { field: 'TaskName', headerText: 'Task Name', width: 220 },
+                    { field: 'StartDate', headerText: 'Start Date', width: 120 },
+                    { field: 'EndDate', headerText: 'End Date', width: 120 },
+                    { field: 'Progress', headerText: 'Progress', width: 120 }
+                ]
+            },
+            done
+        );
+    });
+
+    it('should filter rows correctly with excel filter after expand/collapse action', (done: Function) => {
+        actionComplete = (args: any): void => {
+            if (args.requestType === 'filtering') {
+                expect(gridObj.getRows().length).toBeGreaterThan(0);
+                expect(gridObj.getRows()[0].getElementsByClassName('e-rowcell')[1].textContent).toBe('Parent Task 1');
+                done();
+            }
+        };
+        gridObj.expandAll();
+        gridObj.collapseRow(<HTMLTableRowElement>gridObj.getRows()[0]);
+        gridObj.grid.actionComplete = actionComplete;
+        gridObj.filterByColumn('TaskName', 'startswith', 'Parent');
+    });
+
+    afterAll(() => {
+        destroy(gridObj);
+        gridObj = null;
+    });
+});
+
+describe('Cancel Filtering Action with Self Reference Data (projectData)', () => {
+    let gridObj: TreeGrid;
+
+    beforeAll((done: Function) => {
+        gridObj = createGrid(
+            {
+                dataSource: projectData,
+                idMapping: 'TaskID',
+                parentIdMapping: 'parentID',
+                treeColumnIndex: 1,
+                allowFiltering: true,
+                columns: [
+                    { field: 'TaskID', headerText: 'Task ID', width: 120, textAlign: 'Right' },
+                    { field: 'TaskName', headerText: 'Task Name', width: 220 },
+                    { field: 'StartDate', headerText: 'Start Date', width: 120 },
+                    { field: 'EndDate', headerText: 'End Date', width: 120 },
+                    { field: 'Progress', headerText: 'Progress', width: 120 }
+                ]
+            },
+            done
+        );
+    });
+
+    it('should not filter rows when filtering is cancelled', (done: Function) => {
+        gridObj.grid.actionBegin = (args: any): void => {
+            if (args.requestType === 'filtering') {
+                args.cancel = true;
+            }
+        };
+        const initialRowCount = gridObj.getRows().length;
+        gridObj.filterByColumn('TaskName', 'startswith', 'Parent');
+        setTimeout(() => {
+            expect(gridObj.getRows().length).toBe(initialRowCount);
+            done();
+        }, 100); 
+    });
+
+    afterAll(() => {
+        destroy(gridObj);
+    });
+});
+
+describe('Cancel Filtering Action with Menu Filter and Self Reference Data (projectData)', () => {
+    let gridObj: TreeGrid;
+
+    beforeAll((done: Function) => {
+        gridObj = createGrid(
+            {
+                dataSource: projectData,
+                idMapping: 'TaskID',
+                parentIdMapping: 'parentID',
+                treeColumnIndex: 1,
+                allowFiltering: true,
+                filterSettings: { type: 'Menu' },
+                columns: [
+                    { field: 'TaskID', headerText: 'Task ID', width: 120, textAlign: 'Right' },
+                    { field: 'TaskName', headerText: 'Task Name', width: 220 },
+                    { field: 'StartDate', headerText: 'Start Date', width: 120 },
+                    { field: 'EndDate', headerText: 'End Date', width: 120 },
+                    { field: 'Progress', headerText: 'Progress', width: 120 }
+                ]
+            },
+            done
+        );
+    });
+
+    it('should not filter rows when filtering is cancelled with menu filter', (done: Function) => {
+        gridObj.grid.actionBegin = (args: any): void => {
+            if (args.requestType === 'filtering') {
+                args.cancel = true;
+            }
+        };
+        const initialRowCount = gridObj.getRows().length;
+        gridObj.filterByColumn('TaskName', 'startswith', 'Parent');
+        setTimeout(() => {
+            expect(gridObj.getRows().length).toBe(initialRowCount);
+            done();
+        }, 100);
+    });
+
+    afterAll(() => {
+        destroy(gridObj);
+        gridObj = null;
+    });
+});
+
+describe('Cancel Filtering Action with Hierarchy Data (sampleData)', () => {
+    let gridObj: TreeGrid;
+
+    beforeAll((done: Function) => {
+        gridObj = createGrid(
+            {
+                dataSource: sampleData,
+                childMapping: 'subtasks',
+                treeColumnIndex: 1,
+                allowFiltering: true,
+                columns: [
+                    { field: 'taskID', headerText: 'Task ID', width: 120, textAlign: 'Right' },
+                    { field: 'taskName', headerText: 'Task Name', width: 220 },
+                    { field: 'startDate', headerText: 'Start Date', width: 120 },
+                    { field: 'endDate', headerText: 'End Date', width: 120 },
+                    { field: 'duration', headerText: 'Duration', width: 120 },
+                    { field: 'progress', headerText: 'Progress', width: 120 }
+                ]
+            },
+            done
+        );
+    });
+
+    it('should not filter rows when filtering is cancelled', (done: Function) => {
+        gridObj.grid.actionBegin = (args: any): void => {
+            if (args.requestType === 'filtering') {
+                args.cancel = true;
+            }
+        };
+        const initialRowCount = gridObj.getRows().length;
+        gridObj.filterByColumn('taskName', 'startswith', 'Plan');
+        setTimeout(() => {
+            expect(gridObj.getRows().length).toBe(initialRowCount);
+            done();
+        }, 100);
+    });
+
+    afterAll(() => {
+        destroy(gridObj);
+    });
+});
+
 describe('959378: Filtering using query and Sorting', () => {
     let gridObj: TreeGrid;
     let actionComplete: () => void;
@@ -1217,8 +1885,8 @@ describe('959378: Filtering using query and Sorting', () => {
         actionComplete = (args?: any): void => {
             gridObj.sortByColumn('taskName','Ascending');
             if((args.requestType as any) === 'sorting'){
-            expect(gridObj.getRows().length === 2).toBe(true);
-            done();
+                expect(gridObj.getRows().length === 2).toBe(true);
+                done();
             }
         };
         gridObj.grid.actionComplete = actionComplete;

@@ -184,11 +184,13 @@ export function findToolToActivate(
 function checkResizeHandles(
     diagram: Diagram, element: DiagramElement, position: PointModel, matrix: Matrix, x: number, y: number): Actions {
     let action: Actions;
+    //955906: Resize not working properly for swimlane, phase, lane header annotations
+    const selectedItems: Selector = diagram.selectedItems as Selector;
     if ((diagram.selectedItems.nodes.length === 1 && diagram.selectedItems.connectors.length === 0)
-        && diagram.selectedItems.nodes[0].container) {
+        && diagram.selectedItems.nodes[0].container && !selectedItems.annotation) {
         action = checkResizeHandleForContainer(diagram, element, position, x, y);
     }
-    if (!action && (!diagram.selectedItems.nodes[0] || (!(diagram.selectedItems.nodes[0] as Node).isPhase &&
+    if (!action && (selectedItems.annotation || !diagram.selectedItems.nodes[0] || (!(diagram.selectedItems.nodes[0] as Node).isPhase &&
         !(diagram.selectedItems.nodes[0] as Node).isLane && diagram.selectedItems.nodes[0].shape.type !== 'SwimLane'))) {
         action = checkForResizeHandles(diagram, element, position, matrix, x, y);
     }
@@ -457,8 +459,17 @@ export function isSelected(diagram: Diagram, element: Object, firstLevel: boolea
             if (diagram.selectedItems.nodes.indexOf(element) !== -1 && (diagram.selectedItems as Selector).annotation === undefined) {
                 return true;
             }
+            else if (diagram.selectedItems.selectedObjects.indexOf(element) !== -1 &&
+                (diagram.selectedItems as Selector).annotation === undefined) {
+                return true;
+            }
             if (!firstLevel) {
+                const node: Node = element as Node;
                 element = diagram.nameTable[(element as Node).parentId];
+                if (node && diagram.nameTable[node.parentId] &&
+                    diagram.nameTable[node.parentId].shape.type === 'Container' ) {
+                    element = undefined;
+                }
             } else {
                 break;
             }

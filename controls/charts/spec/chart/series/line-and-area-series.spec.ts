@@ -24,8 +24,8 @@ import { EmitType } from '@syncfusion/ej2-base';
 import  {profile , inMB, getMemoryProfile} from '../../common.spec';
 import { ILoadedEventArgs, IAnimationCompleteEventArgs,
     IPointRenderEventArgs, ITextRenderEventArgs } from '../../../src/chart/model/chart-interface';
-
-Chart.Inject(LineSeries, ColumnSeries, AreaSeries, DateTime, Category, DataEditing, DataLabel, StepLineSeries, Legend);
+import { LastValueLabel } from '../../../src/chart/series/last-value-label';
+Chart.Inject(LineSeries, ColumnSeries, AreaSeries, DateTime, Category, DataEditing, DataLabel, StepLineSeries, Legend, LastValueLabel);
 
 export interface series1 {
     series: Series;
@@ -2386,6 +2386,7 @@ describe('Chart Control Series', () => {
                 { x: "Jan", y: 54.481, text: "54.48%" },
                 { x: "Feb", y: 54.481, text: "54.48%" },
             ];
+            chartObj.series[0].lastValueLabel.enable = true;
             chartObj.series[0].animation.enable = true;
             chartObj.series[0].animation.duration = 0;
             chartObj.refresh();
@@ -2494,6 +2495,8 @@ describe('Chart Control Series', () => {
             chartObj.crosshair.snapToData = false;
             chartObj.tooltip.enable = true;
             chartObj.tooltip.enableHighlight = true;
+            chartObj.series[0].lastValueLabel.enable = true;
+            chartObj.series[0].animation.enable = true;
             chartObj.refresh();
         });
     });

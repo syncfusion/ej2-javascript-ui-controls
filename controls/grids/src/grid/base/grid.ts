@@ -12,7 +12,7 @@ import { getRowHeight, setColumnIndex, Global, ispercentageWidth, getNumberForma
 import { setRowElements, resetRowIndex, compareChanges, getCellByColAndRowIndex, performComplexDataOperation } from './util';
 import * as events from '../base/constant';
 import { ReturnType, BatchChanges } from '../base/type';
-import { IDialogUI, ScrollPositionType, ActionArgs, ExportGroupCaptionEventArgs, FilterUI, LazyLoadArgs, LoadEventArgs, ContextMenuClickEventArgs, NotifyArgs, ExportHeaders, DetailTemplateDetachArgs } from './interface';
+import { IDialogUI, ScrollPositionType, ActionArgs, ExportGroupCaptionEventArgs, FilterUI, LazyLoadArgs, LoadEventArgs, ContextMenuClickEventArgs, ContextMenuOpenEventArgs, NotifyArgs, ExportHeaders, DetailTemplateDetachArgs, BeforeCustomFilterOpenEventArgs } from './interface';
 import {AggregateQueryCellInfoEventArgs, IGrid } from './interface';
 import { IRenderer, IValueFormatter, IFilterOperator, IIndex, RowDataBoundEventArgs, QueryCellInfoEventArgs } from './interface';
 import { CellDeselectEventArgs, CellSelectEventArgs, CellSelectingEventArgs, ParentDetails, ContextMenuItemModel } from './interface';
@@ -74,7 +74,7 @@ import { ExcelExport } from '../actions/excel-export';
 import { PdfExport } from '../actions/pdf-export';
 import { Clipboard } from '../actions/clipboard';
 import { ContextMenu } from '../actions/context-menu';
-import { BeforeOpenCloseMenuEventArgs, MenuEventArgs } from '@syncfusion/ej2-navigations';
+import { MenuEventArgs } from '@syncfusion/ej2-navigations';
 import { ColumnMenu } from '../actions/column-menu';
 import { CheckState } from './enum';
 import { Aggregate } from '../actions/aggregate';
@@ -943,6 +943,7 @@ export class Grid extends Component<HTMLElement> implements INotifyPropertyChang
     private footerContentMaskTable: Element;
     private maskRowContentScroll: boolean;
     private autoFitColumnsResize: boolean = false;
+    private isTreeGrid: boolean;
     /** @hidden */
     public invokedFromMedia: boolean;
     /** @hidden */
@@ -1048,6 +1049,8 @@ export class Grid extends Component<HTMLElement> implements INotifyPropertyChang
     public selectVirtualRowOnAdd: boolean = false;
     public isSelectedRowIndexUpdating: boolean;
     private defaultLocale: Object;
+    /** @hidden */
+    public defaultChartLocale: Object;
     private keyConfigs: { [key: string]: string };
     private keyPress: boolean;
     private toolTipObj: Tooltip;
@@ -2526,7 +2529,7 @@ export class Grid extends Component<HTMLElement> implements INotifyPropertyChang
      * @event contextMenuOpen
      */
     @Event()
-    public contextMenuOpen: EmitType<BeforeOpenCloseMenuEventArgs>;
+    public contextMenuOpen: EmitType<ContextMenuOpenEventArgs>;
 
     /**
      * Triggers when click on context menu.
@@ -2535,6 +2538,16 @@ export class Grid extends Component<HTMLElement> implements INotifyPropertyChang
      */
     @Event()
     public contextMenuClick: EmitType<ContextMenuClickEventArgs>;
+
+    /**
+     * Triggers before the context menu closes.
+     *
+     * This event allows you to perform custom actions or cancel the closing of the context menu.
+     *
+     * @event contextMenuClose
+     */
+    @Event()
+    public contextMenuClose: EmitType<ContextMenuOpenEventArgs>;
 
     /**
      * Triggers before column menu opens.
@@ -2551,6 +2564,16 @@ export class Grid extends Component<HTMLElement> implements INotifyPropertyChang
      */
     @Event()
     public columnMenuClick: EmitType<MenuEventArgs>;
+
+    /**
+     * Triggers before the column menu closes.
+     *
+     * This event allows you to perform custom actions or cancel the closing of the column menu.
+     *
+     * @event columnMenuClose
+     */
+    @Event()
+    public columnMenuClose: EmitType<ColumnMenuOpenEventArgs>;
 
     /**
      * Triggers when the check box state change in checkbox column.
@@ -2645,6 +2668,14 @@ export class Grid extends Component<HTMLElement> implements INotifyPropertyChang
      */
     @Event()
     public beforeDetailTemplateDetach: EmitType<DetailTemplateDetachArgs>;
+
+    /**
+     * Event triggered before the custom filter dialog is opened.
+     *
+     * @event beforeCustomFilterOpen
+     */
+    @Event()
+    public beforeCustomFilterOpen: EmitType<BeforeCustomFilterOpenEventArgs>;
 
     /**
      * Constructor for creating the component
@@ -2922,6 +2953,27 @@ export class Grid extends Component<HTMLElement> implements INotifyPropertyChang
             lessThan: 'lessthan', lessThanOrEqual: 'lessthanorequal', notEqual: 'notequal', startsWith: 'startswith', wildCard: 'wildcard',
             isNull: 'isnull', notNull: 'notnull', like: 'like'
         };
+        this.defaultChartLocale = {
+            Chart: 'Chart',
+            BarChart: 'Bar Chart',
+            Bar: 'Bar',
+            StackingBar: 'Stacked Bar',
+            StackingBar100: '100% Stacked Bar',
+            Pie: 'Pie Chart',
+            ColumnChart: 'Column Chart',
+            Column: 'Column',
+            StackingColumn: 'Stacked Column',
+            StackingColumn100: '100% Stacked Column',
+            LineChart: 'Line Chart',
+            Line: 'Line',
+            StackingLine: 'Stacked Line',
+            StackingLine100: '100% Stacked Line',
+            AreaChart: 'Area Chart',
+            Area: 'Area',
+            StackingArea: 'Stacked Area',
+            StackingArea100: '100% Stacked Area',
+            Scatter: 'Scatter Chart'
+        };
         this.defaultLocale = {
             EmptyRecord: 'No records to display',
             True: 'true',
@@ -3065,7 +3117,8 @@ export class Grid extends Component<HTMLElement> implements INotifyPropertyChang
             DescendingText: 'Descending',
             NoneText: 'None',
             Expanded: 'Expanded',
-            Collapsed: 'Collapsed'
+            Collapsed: 'Collapsed',
+            ...this.defaultChartLocale
         };
         this.keyConfigs = {
             downArrow: 'downarrow',
@@ -5042,7 +5095,12 @@ export class Grid extends Component<HTMLElement> implements INotifyPropertyChang
                 this.setFrozenRowData(fRowTr, rowData);
             }
             else{
+                const rowElement: Element = this.getRowElementByUID(selectedRow.uid);
+                const isLastRowCell: boolean = rowElement && rowElement.querySelector('.e-lastrowcell') ? true : false;
                 this.setFrozenRowData(selectedRow, rowData);
+                if (isLastRowCell) {
+                    this.scrollModule.setLastRowCell();
+                }
             }
             if (this.aggregates.length > 0) {
                 this.notify(events.refreshFooterRenderer, {});
@@ -6751,6 +6809,23 @@ export class Grid extends Component<HTMLElement> implements INotifyPropertyChang
     }
 
     /**
+     * Reorders a column in the Grid using column models.
+     *
+     * Moves the specified column (fromColumn) before the target column (toColumn),
+     * supporting both standard and stacked header columns.
+     *
+     * @param {Column} fromColumn - The column model to be moved.
+     * @param {Column} toColumn - The target column model before which the source column will be placed.
+     *
+     * @returns {void}
+     */
+    public reorderColumnByModel(fromColumn: Column, toColumn: Column): void {
+        if (this.reorderModule) {
+            this.reorderModule.reorderColumnByModel(fromColumn, toColumn);
+        }
+    }
+
+    /**
      * Changes the Grid column positions by field index. If you invoke reorderColumnByIndex multiple times,
      * then you won't get the same results every time.
      *
@@ -7684,7 +7759,9 @@ export class Grid extends Component<HTMLElement> implements INotifyPropertyChang
                 const focusModule: FocusStrategy = this.focusModule;
                 if (focusModule) {
                     if (!this.currentViewData.length) { return; }
-                    focusModule.focusContent();
+                    if (this.element.getBoundingClientRect().width !== 0) {
+                        focusModule.focusContent();
+                    }
                     focusModule.addOutline();
                 }
             }
@@ -8099,12 +8176,14 @@ export class Grid extends Component<HTMLElement> implements INotifyPropertyChang
      *
      * @param {string[]} propertyNames - Defines the collection of template name.
      * @param {any} index - specifies the index
+     * @param {Function} callback - Defines the callback function that is triggered after the template is cleared
      *
      * @returns {void}
      */
     // eslint-disable-next-line
-    public destroyTemplate(propertyNames?: string[], index?: any): void {
-        this.clearTemplate(propertyNames, index);
+    public destroyTemplate(propertyNames?: string[], index?: any, callback?: Function): void {
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        (this as any).clearTemplate(propertyNames, index, callback);
     }
 
     /**

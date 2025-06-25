@@ -2,24 +2,25 @@ import { createElement, detach, getUniqueID, extend, Browser } from '@syncfusion
 import { RichTextEditor } from './../../src/rich-text-editor/base/rich-text-editor';
 import { RichTextEditorModel } from './../../src/rich-text-editor/base/rich-text-editor-model';
 import { HtmlEditor, MarkdownEditor, Toolbar, QuickToolbar, SlashMenu } from "../../src/rich-text-editor/index";
-import { Link, Image, Audio, Video, Table, PasteCleanup, Count, Resize, FileManager, FormatPainter, EmojiPicker, ImportExport } from "../../src/rich-text-editor/index";
+import { Link, Image, Audio, Video, Table, PasteCleanup, Count, Resize, FileManager, FormatPainter, EmojiPicker, ImportExport, CodeBlock } from "../../src/rich-text-editor/index";
 import { CustomUserAgentData } from '../../src/common/user-agent';
 
-RichTextEditor.Inject(HtmlEditor, MarkdownEditor, FormatPainter, Toolbar, QuickToolbar, Link, Image, Audio, Video, Table, PasteCleanup, Count, Resize, FileManager, EmojiPicker, SlashMenu, ImportExport);
+RichTextEditor.Inject(HtmlEditor, MarkdownEditor, FormatPainter, Toolbar, QuickToolbar, Link, Image, Audio, Video, Table, PasteCleanup, Count, Resize, FileManager, EmojiPicker, SlashMenu, ImportExport, CodeBlock);
 
 export let currentBrowserUA: string = navigator.userAgent;
 export let ieUA: string = 'Mozilla/5.0 (Windows NT 6.3; Trident/7.0; rv:11.0) like Gecko';
 export let androidUA: string = 'Mozilla/5.0 (Linux; <Android Version>; <Build Tag etc.>) AppleWebKit/<WebKit Rev> (KHTML, like Gecko) Chrome/<Chrome Rev> Mobile Safari/<WebKit Rev>';
 export let iPhoneUA: string = 'Mozilla/5.0 (iPhone; CPU iPhone OS 7_0 like Mac OS X) AppleWebKit/537.51.1 (KHTML, like Gecko) Mobile/11A465 Twitter for iPhone';
-export const hostURL: string = 'https://services.syncfusion.com/js/production/';
+export const hostURL: string = 'https://ej2services.syncfusion.com/js/development/';
 
 export function renderRTE(options: RichTextEditorModel): RichTextEditor {
     let element: HTMLElement = createElement('div', { id: getUniqueID('rte-test') });
-    document.body.appendChild(element);
     element.dataset.rteUnitTesting = 'true';
+    document.body.appendChild(element);
     extend(options, options, { saveInterval: 0 })
     let rteObj: RichTextEditor = new RichTextEditor(options);
     rteObj.appendTo(element);
+    (rteObj as any).userAgentData = new CustomUserAgentData(Browser.userAgent, true);
     (rteObj.formatter.editorManager as any).userAgentData = new CustomUserAgentData(Browser.userAgent, true);
     if (rteObj.quickToolbarModule) {
         rteObj.quickToolbarModule.debounceTimeout = 0;
@@ -32,11 +33,20 @@ export function destroy(rteObj: RichTextEditor): void {
     detach(rteObj.element);
 }
 
-export function setCursorPoint(element: Element, point: number) {
+export function setCursorPoint(element: Element | HTMLElement | ChildNode, point: number) {
     let range: Range = document.createRange();
     let sel: Selection = document.defaultView.getSelection();
     range.setStart(element, point);
     range.collapse(true);
+    sel.removeAllRanges();
+    sel.addRange(range);
+}
+
+export function setSelection(element: Element | HTMLElement | ChildNode, start: number, end: number) {
+    let range: Range = document.createRange();
+    let sel: Selection = document.defaultView.getSelection();
+    range.setStart(element, start);
+    range.setEnd(element, end);
     sel.removeAllRanges();
     sel.addRange(range);
 }

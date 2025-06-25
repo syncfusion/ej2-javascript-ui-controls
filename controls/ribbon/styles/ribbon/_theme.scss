@@ -286,47 +286,54 @@
       }
     }
 
+    .e-ribbon-item:not(:has(.e-ribbon-template)),
+    .e-ribbon-group-overflow,
+    &.e-ribbon-overflow {
+      .e-btn:not(.e-ribbon-file-menu),
+      .e-btn-group .e-btn.e-ribbon-group-button,
+      .e-btn-group .e-btn.e-ribbon-group-button:not(:first-of-type):not(:last-of-type),
+      .e-ribbon-group-of-btn {
+        @include ribbon-colors($ribbon-items-background-color, $ribbon-text-color, transparent);
+        @include ribbon-button-icon-color($ribbon-items-icon-color);
+
+        &:hover {
+          @include ribbon-colors($ribbon-items-hover-background-color, $ribbon-items-text-hover-color, $ribbon-items-hover-border-color);
+          @include ribbon-button-icon-color($ribbon-items-hover-color);
+        }
+
+        &.e-active {
+          background: $ribbon-items-active-background-color;
+          color: $ribbon-items-text-active-color;
+          @include ribbon-button-icon-color($ribbon-items-active-color);
+        }
+
+        &:active {
+          background: $ribbon-items-pressed-background-color;
+          color: $ribbon-items-text-active-color;
+          @include ribbon-button-icon-color($ribbon-items-active-color);
+        }
+
+        &:focus-visible {
+          @include ribbon-colors($ribbon-items-focus-background-color, $ribbon-items-text-focus-color, $ribbon-items-focus-border-color);
+          @include ribbon-button-icon-color($ribbon-items-focus-color);
+          & {
+            box-shadow: $ribbon-items-focus-box-shadow;
+          }
+        }
+      }
+    }
+
     .e-ribbon-item,
     .e-ribbon-group-overflow,
     &.e-ribbon-overflow {
-      &:not(:has(.e-ribbon-template)) {
-        .e-btn:not(.e-ribbon-file-menu),
-        .e-btn-group .e-btn.e-ribbon-group-button,
-        .e-btn-group .e-btn.e-ribbon-group-button:not(:first-of-type):not(:last-of-type),
-        .e-ribbon-group-of-btn {
-          @include ribbon-colors($ribbon-items-background-color, $ribbon-text-color, transparent);
-          @include ribbon-button-icon-color($ribbon-items-icon-color);
-
-          &:hover {
-            @include ribbon-colors($ribbon-items-hover-background-color, $ribbon-items-text-hover-color, $ribbon-items-hover-border-color);
-            @include ribbon-button-icon-color($ribbon-items-hover-color);
-          }
-
-          &.e-active {
-            background: $ribbon-items-active-background-color;
-            color: $ribbon-items-text-active-color;
-            @include ribbon-button-icon-color($ribbon-items-active-color);
-          }
-
-          &:active {
-            background: $ribbon-items-pressed-background-color;
-            color: $ribbon-items-text-active-color;
-            @include ribbon-button-icon-color($ribbon-items-active-color);
-          }
-
-          &:focus-visible {
-            @include ribbon-colors($ribbon-items-focus-background-color, $ribbon-items-text-focus-color, $ribbon-items-focus-border-color);
-            @include ribbon-button-icon-color($ribbon-items-focus-color);
-            & {
-              box-shadow: $ribbon-items-focus-box-shadow;
-            }
-          }
-
-          &:disabled {
-            @include ribbon-button-icon-color($ribbon-items-disabled-color);
-            & {
-              color: $ribbon-items-disabled-color;
-            }
+      .e-btn:not(.e-ribbon-file-menu),
+      .e-btn-group .e-btn.e-ribbon-group-button,
+      .e-btn-group .e-btn.e-ribbon-group-button:not(:first-of-type):not(:last-of-type),
+      .e-ribbon-group-of-btn {
+        &:disabled {
+          @include ribbon-button-icon-color($ribbon-items-disabled-color);
+          & {
+            color: $ribbon-items-disabled-color;
           }
         }
       }

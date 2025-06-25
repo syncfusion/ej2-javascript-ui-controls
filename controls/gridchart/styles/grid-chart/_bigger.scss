@@ -1,0 +1,64 @@
+@include export-module('grid-chart-bigger') {
+
+  /*! Grid Chart bigger */
+  .e-bigger #{&}.e-grid-context-menu-dialog,
+  #{&}.e-grid-context-menu-dialog.e-bigger {
+    &.e-dialog .e-btn .e-btn-icon {
+      &.e-grid-chart-min-icon,
+      &.e-grid-chart-max-icon {
+        @if $grid-skin =='bootstrap5.3' or $grid-skin == 'bootstrap5' or $grid-skin =='tailwind3' {
+          font-size: 15px;
+        }
+
+        @if $grid-skin =='bootstrap5' {
+          margin-top: -1.5px;
+        }
+
+        @if $grid-skin =='tailwind3' {
+          margin-top: -24.5px;
+        }
+      }
+    }
+
+    .e-grid-dialog-chart-export-container {
+      padding: 15px;
+    }
+
+    .e-grid-dialogchart-bottom-spacer {
+      margin-bottom: 16px;
+    }
+
+    .e-grid-chart-props-header {
+      font-size: 15px;
+    }
+
+    .e-grid-chart-props-normal-header {
+      font-size: 15px;
+    }
+
+    @if $grid-skin =='material3' {
+      .e-grid-dialog-format-tab-container .e-accordion .e-acrdn-item .e-acrdn-header {
+        margin: 5px;
+        padding: 7px;
+      }
+    }
+
+    .e-grid-dialog-format-tab-container .e-accordion .e-acrdn-item .e-acrdn-panel {
+      .e-acrdn-content {
+        padding: 0;
+      }
+
+      .e-acrdn-content > div:first-child {
+        padding: 16px;
+      }
+    }
+
+    .e-grid-dialog-data-tab-container {
+      padding: 12px 11px;
+    }
+
+    .e-grid-chart-list {
+      padding: 8px 12px;
+    }
+  }
+}

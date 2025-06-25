@@ -104,6 +104,7 @@ export class WorkCellInteraction {
         const args: CellClickEventArgs =
             <CellClickEventArgs>extend(this.parent.activeCellsData, { cancel: false, event: e, name: 'cellDoubleClick' });
         this.parent.trigger(event.cellDoubleClick, args, (clickArgs: CellClickEventArgs) => {
+            if (!clickArgs.startTime) { return; }
             const date: Date = new Date(clickArgs.startTime.getTime());
             if (!this.parent.isMinMaxDate(new Date(date.setHours(0, 0, 0, 0)))) {
                 return;

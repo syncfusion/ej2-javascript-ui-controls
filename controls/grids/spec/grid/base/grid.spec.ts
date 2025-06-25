@@ -2768,6 +2768,13 @@ describe('Conetnt-renderer code coverage =>', () => {
             gridObj = createGrid(
                 {
                     dataSource: data.slice(0,4),
+                    load: function () {
+                        this.clearTemplate = (propertyNames?: string[], index?: any, callback?: Function): void => {
+                            if (callback) {
+                                callback();
+                            }
+                        }
+                    },
                     frozenRows: 1,
                     rowTemplate: '<tr><td>${OrderID}</td><td>${CustomerID}</td><td>${EmployeeID}</td></tr>',
                     columns: [
@@ -5314,6 +5321,51 @@ describe('946711: Row height issue in tree grid team', () => {
         expect(gridObj.getRowHeight()).toBe(Math.ceil(cellHeight));
         expect(gridObj.getRowHeight(true)).toBe(cellHeight);
         expect(gridObj.getRowHeight(false)).toBe(Math.ceil(cellHeight));
+        done();
+    });
+
+    afterAll(() => {
+        destroy(gridObj);
+        gridObj = null;
+    });
+});
+
+describe('963939: Last row border line is missing when we update record by using setRowData method.', () => {
+    let gridObj: Grid;
+    beforeAll((done: Function) => {
+        gridObj = createGrid(
+            {
+                dataSource: [
+                    { OrderID: 1, ShipCountry: 'USA' },
+                    { OrderID: 2, ShipCountry: 'USA' },
+                    { OrderID: 3, ShipCountry: 'USA' },
+                    { OrderID: 4, ShipCountry: 'USA' },
+                    { OrderID: 5, ShipCountry: 'USA' }
+                ],
+                height: 500,
+                editSettings: { allowAdding: true, allowDeleting: true, allowEditing: true },
+                columns: [
+                    { headerText: 'OrderID', field: 'OrderID', width: 10, isPrimaryKey: true },
+                    { headerText: 'ShipCountry', field: 'ShipCountry' },
+                ]
+            }, done);
+    });
+
+    it('Check table', (done: Function) => {
+        expect(gridObj.getContentTable()).toBeTruthy;
+        done();
+    });
+
+    it('setRowData', (done: Function) => {
+        const data = gridObj.currentViewData[4];
+        gridObj.setRowData(5, data);
+        setTimeout(() => {
+            done();
+        }, 100);
+    });
+
+    it('Check last row cell', (done: Function) => {
+        expect(gridObj.getContentTable().querySelectorAll('.e-lastrowcell').length).toBe(2);
         done();
     });
 

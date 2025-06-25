@@ -78,3 +78,8 @@ export const trackChanges: string = 'trackChanges';
 export const internalOptionPaneChange: string = 'internalOptionPaneChange';
 /** @hidden */
 export const documentLoadFailedEvent: string = 'documentLoadFailed';
+/**
+ * File menu item click event
+ * @hidden
+ */
+export const fileMenuItemClickEvent: string = 'fileMenuItemClick';

@@ -1,7 +1,7 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import {
     append, createElement, formatUnit, EventHandler, addClass, remove, extend, Browser, isNullOrUndefined as isNoU,
-    removeClass, closest, setStyleAttribute
+    removeClass, closest, setStyleAttribute, SanitizeHtmlHelper
 } from '@syncfusion/ej2-base';
 import { Kanban } from '../base/kanban';
 import { CardRenderedEventArgs, QueryCellInfoEventArgs, HeaderArgs, ScrollOffset } from '../base/interface';
@@ -342,6 +342,15 @@ export class LayoutRender extends MobileLayout {
                         columnWrapper.appendChild(borderElem);
                     }
                     columnWrapper.appendChild(cardWrapper);
+                    if (this.parent.enableHtmlSanitizer) {
+                        if (columnData.length > 0 &&
+                            this.parent.cardSettings &&
+                            this.parent.cardSettings.contentField &&
+                            typeof columnData[0][this.parent.cardSettings.contentField] === 'string') {
+                            columnData[0][this.parent.cardSettings.contentField] =
+                                SanitizeHtmlHelper.sanitize(columnData[0][this.parent.cardSettings.contentField]);
+                        }
+                    }
                     if (columnData.length > 0) {
                         for (const data of columnData as Record<string, string>[]) {
                             const cardText: string = data[this.parent.cardSettings.headerField] as string;

@@ -4459,15 +4459,15 @@ describe('ImageEditor', () => {
                imageEditor.rotate(90);
                expect(imageEditor.transform.degree).toEqual(90);
                expect(imageEditor.objColl[0].shape).toEqual('rectangle');
-               expect(imageEditor.objColl[0].activePoint.startX).toEqual(405.91999999999996);
-               expect(imageEditor.objColl[0].activePoint.startY).toEqual(217.49999999999994);
-               expect(imageEditor.objColl[0].activePoint.endX).toEqual(462.91999999999996);
-               expect(imageEditor.objColl[0].activePoint.endY).toEqual(293.49999999999994);
+               expect(imageEditor.objColl[0].activePoint.startX).toEqual(405.53999999999996);
+               expect(imageEditor.objColl[0].activePoint.startY).toEqual(216.99999999999994);
+               expect(imageEditor.objColl[0].activePoint.endX).toEqual(462.53999999999996);
+               expect(imageEditor.objColl[0].activePoint.endY).toEqual(292.99999999999994);
                expect(imageEditor.objColl[1].shape).toEqual('text');
-               expect(imageEditor.objColl[1].activePoint.startX).toEqual(303.32);
-               expect(imageEditor.objColl[1].activePoint.startY).toEqual(24.93203124999995);
-               expect(imageEditor.objColl[1].activePoint.endX).toEqual(348.91999999999996);
-               expect(imageEditor.objColl[1].activePoint.endY).toEqual(293.49999999999994);
+               expect(imageEditor.objColl[1].activePoint.startX).toEqual(294.73199999999997);
+               expect(imageEditor.objColl[1].activePoint.startY).toEqual(24.43203124999995);
+               expect(imageEditor.objColl[1].activePoint.endX).toEqual(348.53999999999996);
+               expect(imageEditor.objColl[1].activePoint.endY).toEqual(292.99999999999994);
                done();
            }, 100);
        });
@@ -4491,14 +4491,14 @@ describe('ImageEditor', () => {
                expect(imageEditor.transform.degree).toEqual(180);
                expect(imageEditor.objColl[0].shape).toEqual('rectangle');
                expect(imageEditor.objColl[0].activePoint.startX).toEqual(200.60526315789474);
-               expect(imageEditor.objColl[0].activePoint.startY).toEqual(183.99999999999994);
+               expect(imageEditor.objColl[0].activePoint.startY).toEqual(182.99999999999994);
                expect(imageEditor.objColl[0].activePoint.endX).toEqual(300.60526315789474);
-               expect(imageEditor.objColl[0].activePoint.endY).toEqual(258.99999999999994);
+               expect(imageEditor.objColl[0].activePoint.endY).toEqual(257.99999999999994);
                expect(imageEditor.objColl[1].shape).toEqual('text');
                expect(imageEditor.objColl[1].activePoint.startX).toEqual(200.60526315789474);
-               expect(imageEditor.objColl[1].activePoint.startY).toEqual(48.99999999999997);
+               expect(imageEditor.objColl[1].activePoint.startY).toEqual(37.199999999999946);
                expect(imageEditor.objColl[1].activePoint.endX).toEqual(553.9841694078948);
-               expect(imageEditor.objColl[1].activePoint.endY).toEqual(108.99999999999993);
+               expect(imageEditor.objColl[1].activePoint.endY).toEqual(107.99999999999993);
                done();
            }, 100);
        });
@@ -4522,15 +4522,15 @@ describe('ImageEditor', () => {
                imageEditor.rotate(90);
                expect(imageEditor.transform.degree).toEqual(270);
                expect(imageEditor.objColl[0].shape).toEqual('rectangle');
-               expect(imageEditor.objColl[0].activePoint.startX).toEqual(304.08000000000004);
-               expect(imageEditor.objColl[0].activePoint.startY).toEqual(15.5);
-               expect(imageEditor.objColl[0].activePoint.endX).toEqual(361.08000000000004);
-               expect(imageEditor.objColl[0].activePoint.endY).toEqual(91.5);
+               expect(imageEditor.objColl[0].activePoint.startX).toEqual(304.46000000000004);
+               expect(imageEditor.objColl[0].activePoint.startY).toEqual(15);
+               expect(imageEditor.objColl[0].activePoint.endX).toEqual(361.46000000000004);
+               expect(imageEditor.objColl[0].activePoint.endY).toEqual(91);
                expect(imageEditor.objColl[1].shape).toEqual('text');
-               expect(imageEditor.objColl[1].activePoint.startX).toEqual(418.080000000000043);
-               expect(imageEditor.objColl[1].activePoint.startY).toEqual(15.5);
-               expect(imageEditor.objColl[1].activePoint.endX).toEqual(463.68);
-               expect(imageEditor.objColl[1].activePoint.endY).toEqual(284.06796875000003);
+               expect(imageEditor.objColl[1].activePoint.startX).toEqual(418.46000000000004);
+               expect(imageEditor.objColl[1].activePoint.startY).toEqual(15);
+               expect(imageEditor.objColl[1].activePoint.endX).toEqual(472.26800000000003);
+               expect(imageEditor.objColl[1].activePoint.endY).toEqual(283.56796875000003);
                done();
            }, 100);
        });
@@ -4556,14 +4556,14 @@ describe('ImageEditor', () => {
                expect(imageEditor.transform.degree).toEqual(0);
                expect(imageEditor.objColl[0].shape).toEqual('rectangle');
                expect(imageEditor.objColl[0].activePoint.startX).toEqual(466.3947368421052);
-               expect(imageEditor.objColl[0].activePoint.startY).toEqual(50.000000000000036);
+               expect(imageEditor.objColl[0].activePoint.startY).toEqual(50.00000000000003);
                expect(imageEditor.objColl[0].activePoint.endX).toEqual(566.3947368421052);
                expect(imageEditor.objColl[0].activePoint.endY).toEqual(125.00000000000003);
                expect(imageEditor.objColl[1].shape).toEqual('text');
                expect(imageEditor.objColl[1].activePoint.startX).toEqual(213.0158305921052);
                expect(imageEditor.objColl[1].activePoint.startY).toEqual(200.00000000000003);
                expect(imageEditor.objColl[1].activePoint.endX).toEqual(566.3947368421052);
-               expect(imageEditor.objColl[1].activePoint.endY).toEqual(260);
+               expect(imageEditor.objColl[1].activePoint.endY).toEqual(270.80000000000007);
                done();
            }, 100);
        });
@@ -4590,7 +4590,7 @@ describe('ImageEditor', () => {
                imageEditor.rotate(90);
                expect(imageEditor.transform.degree).toEqual(90);
                expect(imageEditor.img.destLeft).toEqual(277.86);
-               expect(imageEditor.img.destTop).toEqual(15.5);
+               expect(imageEditor.img.destTop).toEqual(15);
                expect(imageEditor.img.destWidth).toEqual(211.28);
                expect(imageEditor.img.destHeight).toEqual(278);
                expect(imageEditor.objColl[0].shape).toEqual('rectangle');
@@ -4599,7 +4599,7 @@ describe('ImageEditor', () => {
                imageEditor.zoom(2);
                expect(imageEditor.transform.zoomFactor).toEqual(0.1);
                expect(imageEditor.img.destLeft).toEqual(267.296);
-               expect(imageEditor.img.destTop).toEqual(1.5999999999999943);
+               expect(imageEditor.img.destTop).toEqual(1.0999999999999943);
                expect(imageEditor.img.destWidth).toEqual(232.40800000000002);
                expect(imageEditor.img.destHeight).toEqual(305.8);
                expect(imageEditor.objColl[0].activePoint.width).toEqual(62.700000000000045);
@@ -4607,7 +4607,7 @@ describe('ImageEditor', () => {
                imageEditor.zoom(3);
                expect(imageEditor.transform.zoomFactor).toEqual(0.2);
                expect(imageEditor.img.destLeft).toEqual(256.73199999999997);
-               expect(imageEditor.img.destTop).toEqual(-12.300000000000011);
+               expect(imageEditor.img.destTop).toEqual(-12.800000000000011);
                expect(imageEditor.img.destWidth).toEqual(253.536);
                expect(imageEditor.img.destHeight).toEqual(333.6);
                expect(imageEditor.objColl[0].activePoint.width).toEqual(68.40000000000009);
@@ -4615,7 +4615,7 @@ describe('ImageEditor', () => {
                imageEditor.zoom(2);
                expect(imageEditor.transform.zoomFactor).toEqual(0.1);
                expect(imageEditor.img.destLeft).toEqual(267.296);
-               expect(imageEditor.img.destTop).toEqual(1.5999999999999943);
+               expect(imageEditor.img.destTop).toEqual(1.0999999999999943);
                expect(imageEditor.img.destWidth).toEqual(232.40800000000002);
                expect(imageEditor.img.destHeight).toEqual(305.8);
                expect(imageEditor.objColl[0].activePoint.width).toEqual(62.700000000000045);
@@ -4623,10 +4623,10 @@ describe('ImageEditor', () => {
                imageEditor.zoom(1);
                expect(imageEditor.transform.zoomFactor).toEqual(0);
                expect(imageEditor.img.destLeft).toEqual(277.86);
-               expect(imageEditor.img.destTop).toEqual(15.5);
+               expect(imageEditor.img.destTop).toEqual(15);
                expect(imageEditor.img.destWidth).toEqual(211.28);
                expect(imageEditor.img.destHeight).toEqual(278);
-               expect(imageEditor.objColl[0].activePoint.width).toEqual(57);
+               expect(imageEditor.objColl[0].activePoint.width).toEqual(57.00000000000006);
                expect(imageEditor.objColl[0].activePoint.height).toEqual(76);
                done();
            }, 100);
@@ -4646,7 +4646,7 @@ describe('ImageEditor', () => {
                imageEditor.rotate(90);
                expect(imageEditor.transform.degree).toEqual(180);
                expect(imageEditor.img.destLeft).toEqual(200.60526315789474);
-               expect(imageEditor.img.destTop).toEqual(15.5);
+               expect(imageEditor.img.destTop).toEqual(15);
                expect(imageEditor.img.destWidth).toEqual(365.7894736842105);
                expect(imageEditor.img.destHeight).toEqual(278);
                expect(imageEditor.objColl[0].shape).toEqual('rectangle');
@@ -4655,35 +4655,35 @@ describe('ImageEditor', () => {
                imageEditor.zoom(2);
                expect(imageEditor.transform.zoomFactor).toEqual(0.1);
                expect(imageEditor.img.destLeft).toEqual(182.31578947368422);
-               expect(imageEditor.img.destTop).toEqual(1.5999999999999943);
+               expect(imageEditor.img.destTop).toEqual(1.0999999999999943);
                expect(imageEditor.img.destWidth).toEqual(402.36842105263156);
                expect(imageEditor.img.destHeight).toEqual(305.8);
                expect(imageEditor.objColl[0].activePoint.width).toEqual(110);
-               expect(imageEditor.objColl[0].activePoint.height).toEqual(82.5);
+               expect(imageEditor.objColl[0].activePoint.height).toEqual(82.50000000000003);
                imageEditor.zoom(3);
                expect(imageEditor.transform.zoomFactor).toEqual(0.2);
                expect(imageEditor.img.destLeft).toEqual(164.0263157894737);
-               expect(imageEditor.img.destTop).toEqual(-12.300000000000011);
+               expect(imageEditor.img.destTop).toEqual(-12.800000000000011);
                expect(imageEditor.img.destWidth).toEqual(438.9473684210526);
                expect(imageEditor.img.destHeight).toEqual(333.6);
                expect(imageEditor.objColl[0].activePoint.width).toEqual(120);
-               expect(imageEditor.objColl[0].activePoint.height).toEqual(90);
+               expect(imageEditor.objColl[0].activePoint.height).toEqual(90.00000000000003);
                imageEditor.zoom(2);
                expect(imageEditor.transform.zoomFactor).toEqual(0.1);
                expect(imageEditor.img.destLeft).toEqual(182.31578947368422);
-               expect(imageEditor.img.destTop).toEqual(1.5999999999999943);
+               expect(imageEditor.img.destTop).toEqual(1.0999999999999943);
                expect(imageEditor.img.destWidth).toEqual(402.36842105263156);
                expect(imageEditor.img.destHeight).toEqual(305.8);
                expect(imageEditor.objColl[0].activePoint.width).toEqual(110);
-               expect(imageEditor.objColl[0].activePoint.height).toEqual(82.5);
+               expect(imageEditor.objColl[0].activePoint.height).toEqual(82.50000000000003);
                imageEditor.zoom(1);
                expect(imageEditor.transform.zoomFactor).toEqual(0);
                expect(imageEditor.img.destLeft).toEqual(200.60526315789474);
-               expect(imageEditor.img.destTop).toEqual(15.5);
+               expect(imageEditor.img.destTop).toEqual(15);
                expect(imageEditor.img.destWidth).toEqual(365.7894736842105);
                expect(imageEditor.img.destHeight).toEqual(278);
                expect(imageEditor.objColl[0].activePoint.width).toEqual(100);
-               expect(imageEditor.objColl[0].activePoint.height).toEqual(74.99999999999994);
+               expect(imageEditor.objColl[0].activePoint.height).toEqual(75);
                done();
            }, 100);
        });
@@ -4703,7 +4703,7 @@ describe('ImageEditor', () => {
                imageEditor.rotate(90);
                expect(imageEditor.transform.degree).toEqual(270);
                expect(imageEditor.img.destLeft).toEqual(277.86);
-               expect(imageEditor.img.destTop).toEqual(15.5);
+               expect(imageEditor.img.destTop).toEqual(15);
                expect(imageEditor.img.destWidth).toEqual(211.28);
                expect(imageEditor.img.destHeight).toEqual(278);
                expect(imageEditor.objColl[0].shape).toEqual('rectangle');
@@ -4712,7 +4712,7 @@ describe('ImageEditor', () => {
                imageEditor.zoom(2);
                expect(imageEditor.transform.zoomFactor).toEqual(0.1);
                expect(imageEditor.img.destLeft).toEqual(267.296);
-               expect(imageEditor.img.destTop).toEqual(1.5999999999999943);
+               expect(imageEditor.img.destTop).toEqual(1.0999999999999943);
                expect(imageEditor.img.destWidth).toEqual(232.40800000000002);
                expect(imageEditor.img.destHeight).toEqual(305.8);
                expect(imageEditor.objColl[0].activePoint.width).toEqual(62.69999999999999);
@@ -4720,7 +4720,7 @@ describe('ImageEditor', () => {
                imageEditor.zoom(3);
                expect(imageEditor.transform.zoomFactor).toEqual(0.2);
                expect(imageEditor.img.destLeft).toEqual(256.73199999999997);
-               expect(imageEditor.img.destTop).toEqual(-12.300000000000011);
+               expect(imageEditor.img.destTop).toEqual(-12.800000000000011);
                expect(imageEditor.img.destWidth).toEqual(253.536);
                expect(imageEditor.img.destHeight).toEqual(333.6);
                expect(imageEditor.objColl[0].activePoint.width).toEqual(68.39999999999998);
@@ -4728,7 +4728,7 @@ describe('ImageEditor', () => {
                imageEditor.zoom(2);
                expect(imageEditor.transform.zoomFactor).toEqual(0.1);
                expect(imageEditor.img.destLeft).toEqual(267.296);
-               expect(imageEditor.img.destTop).toEqual(1.5999999999999943);
+               expect(imageEditor.img.destTop).toEqual(1.0999999999999943);
                expect(imageEditor.img.destWidth).toEqual(232.40800000000002);
                expect(imageEditor.img.destHeight).toEqual(305.8);
                expect(imageEditor.objColl[0].activePoint.width).toEqual(62.69999999999999);
@@ -4736,7 +4736,7 @@ describe('ImageEditor', () => {
                imageEditor.zoom(1);
                expect(imageEditor.transform.zoomFactor).toEqual(0);
                expect(imageEditor.img.destLeft).toEqual(277.86);
-               expect(imageEditor.img.destTop).toEqual(15.5);
+               expect(imageEditor.img.destTop).toEqual(15);
                expect(imageEditor.img.destWidth).toEqual(211.28);
                expect(imageEditor.img.destHeight).toEqual(278);
                expect(imageEditor.objColl[0].activePoint.width).toEqual(57);
@@ -4761,7 +4761,7 @@ describe('ImageEditor', () => {
                imageEditor.rotate(90);
                expect(imageEditor.transform.degree).toEqual(0);
                expect(imageEditor.img.destLeft).toEqual(200.60526315789474);
-               expect(imageEditor.img.destTop).toEqual(15.5);
+               expect(imageEditor.img.destTop).toEqual(15);
                expect(imageEditor.img.destWidth).toEqual(365.7894736842105);
                expect(imageEditor.img.destHeight).toEqual(278);
                expect(imageEditor.objColl[0].shape).toEqual('rectangle');
@@ -4770,7 +4770,7 @@ describe('ImageEditor', () => {
                imageEditor.zoom(2);
                expect(imageEditor.transform.zoomFactor).toEqual(0.1);
                expect(imageEditor.img.destLeft).toEqual(182.31578947368422);
-               expect(imageEditor.img.destTop).toEqual(1.5999999999999943);
+               expect(imageEditor.img.destTop).toEqual(1.0999999999999943);
                expect(imageEditor.img.destWidth).toEqual(402.36842105263156);
                expect(imageEditor.img.destHeight).toEqual(305.8);
                expect(imageEditor.objColl[0].activePoint.width).toEqual(110);
@@ -4778,7 +4778,7 @@ describe('ImageEditor', () => {
                imageEditor.zoom(3);
                expect(imageEditor.transform.zoomFactor).toEqual(0.2);
                expect(imageEditor.img.destLeft).toEqual(164.0263157894737);
-               expect(imageEditor.img.destTop).toEqual(-12.300000000000011);
+               expect(imageEditor.img.destTop).toEqual(-12.800000000000011);
                expect(imageEditor.img.destWidth).toEqual(438.9473684210526);
                expect(imageEditor.img.destHeight).toEqual(333.6);
                expect(imageEditor.objColl[0].activePoint.width).toEqual(120);
@@ -4786,7 +4786,7 @@ describe('ImageEditor', () => {
                imageEditor.zoom(2);
                expect(imageEditor.transform.zoomFactor).toEqual(0.1);
                expect(imageEditor.img.destLeft).toEqual(182.31578947368422);
-               expect(imageEditor.img.destTop).toEqual(1.5999999999999943);
+               expect(imageEditor.img.destTop).toEqual(1.0999999999999943);
                expect(imageEditor.img.destWidth).toEqual(402.36842105263156);
                expect(imageEditor.img.destHeight).toEqual(305.8);
                expect(imageEditor.objColl[0].activePoint.width).toEqual(110);
@@ -4794,11 +4794,11 @@ describe('ImageEditor', () => {
                imageEditor.zoom(1);
                expect(imageEditor.transform.zoomFactor).toEqual(0);
                expect(imageEditor.img.destLeft).toEqual(200.60526315789474);
-               expect(imageEditor.img.destTop).toEqual(15.5);
+               expect(imageEditor.img.destTop).toEqual(15);
                expect(imageEditor.img.destWidth).toEqual(365.7894736842105);
                expect(imageEditor.img.destHeight).toEqual(278);
                expect(imageEditor.objColl[0].activePoint.width).toEqual(100);
-               expect(imageEditor.objColl[0].activePoint.height).toEqual(74.99999999999997);
+               expect(imageEditor.objColl[0].activePoint.height).toEqual(74.99999999999999);
                done();
            }, 100);
        });
@@ -4825,7 +4825,7 @@ describe('ImageEditor', () => {
                imageEditor.rotate(90);
                expect(imageEditor.transform.degree).toEqual(90);
                expect(imageEditor.img.destLeft).toEqual(277.86);
-               expect(imageEditor.img.destTop).toEqual(15.5);
+               expect(imageEditor.img.destTop).toEqual(15);
                expect(imageEditor.img.destWidth).toEqual(211.28);
                expect(imageEditor.img.destHeight).toEqual(278);
                expect(imageEditor.objColl[0].shape).toEqual('rectangle');
@@ -4834,14 +4834,14 @@ describe('ImageEditor', () => {
                imageEditor.select('square');
                expect(imageEditor.activeObj.shape).toEqual('crop-square');
                imageEditor.crop();
-               expect(imageEditor.img.destLeft).toEqual(244.50000000000003);
-               expect(imageEditor.img.destTop).toEqual(15.5);
-               expect(imageEditor.img.destWidth).toEqual(277.99999999999994);
+               expect(imageEditor.img.destLeft).toEqual(244.5);
+               expect(imageEditor.img.destTop).toEqual(15);
+               expect(imageEditor.img.destWidth).toEqual(278);
                expect(imageEditor.img.destHeight).toEqual(278);
-               expect(imageEditor.objColl[0].activePoint.startX).toEqual(415.2544324434481);
-               expect(imageEditor.objColl[0].activePoint.startY).toEqual(244.43784389647436);
-               expect(imageEditor.objColl[0].activePoint.endX).toEqual(495.98604035051966);
-               expect(imageEditor.objColl[0].activePoint.endY).toEqual(352.0799877725698);
+               expect(imageEditor.objColl[0].activePoint.startX).toEqual(414.7162217240676);
+               expect(imageEditor.objColl[0].activePoint.startY).toEqual(243.2296718972896);
+               expect(imageEditor.objColl[0].activePoint.endX).toEqual(495.4478296311392);
+               expect(imageEditor.objColl[0].activePoint.endY).toEqual(350.87181577338504);
                done();
            }, 100);
        });
@@ -4860,7 +4860,7 @@ describe('ImageEditor', () => {
                imageEditor.rotate(90);
                expect(imageEditor.transform.degree).toEqual(180);
                expect(imageEditor.img.destLeft).toEqual(200.60526315789474);
-               expect(imageEditor.img.destTop).toEqual(15.5);
+               expect(imageEditor.img.destTop).toEqual(15);
                expect(imageEditor.img.destWidth).toEqual(365.7894736842105);
                expect(imageEditor.img.destHeight).toEqual(278);
                expect(imageEditor.objColl[0].shape).toEqual('rectangle');
@@ -4869,14 +4869,14 @@ describe('ImageEditor', () => {
                imageEditor.select('square');
                expect(imageEditor.activeObj.shape).toEqual('crop-square');
                imageEditor.crop();
-               expect(imageEditor.img.destLeft).toEqual(244.50000000000014);
-               expect(imageEditor.img.destTop).toEqual(15.5);
-               expect(imageEditor.img.destWidth).toEqual(277.9999999999997);
+               expect(imageEditor.img.destLeft).toEqual(244.50000000000009);
+               expect(imageEditor.img.destTop).toEqual(15);
+               expect(imageEditor.img.destWidth).toEqual(277.99999999999983);
                expect(imageEditor.img.destHeight).toEqual(278);
-               expect(imageEditor.objColl[0].activePoint.startX).toEqual(190.17400440264169);
-               expect(imageEditor.objColl[0].activePoint.startY).toEqual(186.2110266159695);
+               expect(imageEditor.objColl[0].activePoint.startX).toEqual(190.17400440264157);
+               expect(imageEditor.objColl[0].activePoint.startY).toEqual(184.65399239543729);
                expect(Math.round(imageEditor.objColl[0].activePoint.endX)).toEqual(296);
-               expect(imageEditor.objColl[0].activePoint.endY).toEqual(265.48859315589345);
+               expect(imageEditor.objColl[0].activePoint.endY).toEqual(263.93155893536124);
                done();
            }, 100);
        });
@@ -4896,7 +4896,7 @@ describe('ImageEditor', () => {
                imageEditor.rotate(90);
                expect(imageEditor.transform.degree).toEqual(270);
                expect(imageEditor.img.destLeft).toEqual(277.86);
-               expect(imageEditor.img.destTop).toEqual(15.5);
+               expect(imageEditor.img.destTop).toEqual(15);
                expect(imageEditor.img.destWidth).toEqual(211.28);
                expect(imageEditor.img.destHeight).toEqual(278);
                expect(imageEditor.objColl[0].shape).toEqual('rectangle');
@@ -4905,14 +4905,14 @@ describe('ImageEditor', () => {
                imageEditor.select('square');
                expect(imageEditor.activeObj.shape).toEqual('crop-square');
                imageEditor.crop();
-               expect(imageEditor.img.destLeft).toEqual(244.50000000000009);
-               expect(imageEditor.img.destTop).toEqual(15.5);
-               expect(imageEditor.img.destWidth).toEqual(277.99999999999983);
+               expect(imageEditor.img.destLeft).toEqual(244.50000000000003);
+               expect(imageEditor.img.destTop).toEqual(15);
+               expect(imageEditor.img.destWidth).toEqual(277.99999999999994);
                expect(imageEditor.img.destHeight).toEqual(278);
-               expect(imageEditor.objColl[0].activePoint.startX).toEqual(271.01395964948034);
-               expect(imageEditor.objColl[0].activePoint.startY).toEqual(-41.66364377420027);
-               expect(imageEditor.objColl[0].activePoint.endX).toEqual(351.7455675565519);
-               expect(imageEditor.objColl[0].activePoint.endY).toEqual(65.9785001018951);
+               expect(imageEditor.objColl[0].activePoint.startX).toEqual(271.5521703688608);
+               expect(imageEditor.objColl[0].activePoint.startY).toEqual(-42.87181577338504);
+               expect(imageEditor.objColl[0].activePoint.endX).toEqual(352.2837782759324);
+               expect(imageEditor.objColl[0].activePoint.endY).toEqual(64.77032810271032);
                done();
            }, 100);
        });
@@ -4933,7 +4933,7 @@ describe('ImageEditor', () => {
                imageEditor.rotate(90);
                expect(imageEditor.transform.degree).toEqual(0);
                expect(imageEditor.img.destLeft).toEqual(200.60526315789474);
-               expect(imageEditor.img.destTop).toEqual(15.5);
+               expect(imageEditor.img.destTop).toEqual(15);
                expect(imageEditor.img.destWidth).toEqual(365.7894736842105);
                expect(imageEditor.img.destHeight).toEqual(278);
                expect(imageEditor.objColl[0].shape).toEqual('rectangle');
@@ -4943,13 +4943,13 @@ describe('ImageEditor', () => {
                expect(imageEditor.activeObj.shape).toEqual('crop-square');
                imageEditor.crop();
                expect(imageEditor.img.destLeft).toEqual(244.5);
-               expect(imageEditor.img.destTop).toEqual(15.5);
+               expect(imageEditor.img.destTop).toEqual(15);
                expect(imageEditor.img.destWidth).toEqual(278);
                expect(imageEditor.img.destHeight).toEqual(278);
                expect(imageEditor.objColl[0].activePoint.startX).toEqual(471.12257354412645);
-               expect(imageEditor.objColl[0].activePoint.startY).toEqual(44.56844106463881);
+               expect(imageEditor.objColl[0].activePoint.startY).toEqual(44.06844106463881);
                expect(imageEditor.objColl[0].activePoint.endX).toEqual(576.8259955973583);
-               expect(imageEditor.objColl[0].activePoint.endY).toEqual(123.84600760456277);
+               expect(imageEditor.objColl[0].activePoint.endY).toEqual(123.34600760456277);
                done();
            }, 100);
        });
@@ -4976,29 +4976,29 @@ describe('ImageEditor', () => {
                imageEditor.rotate(90);
                expect(imageEditor.transform.degree).toEqual(90);
                expect(imageEditor.img.destLeft).toEqual(277.86);
-               expect(imageEditor.img.destTop).toEqual(15.5);
+               expect(imageEditor.img.destTop).toEqual(15);
                expect(imageEditor.img.destWidth).toEqual(211.28);
                expect(imageEditor.img.destHeight).toEqual(278);
                expect(imageEditor.objColl[0].shape).toEqual('rectangle');
-               expect(imageEditor.objColl[0].activePoint.startX).toEqual(405.91999999999996);
-               expect(imageEditor.objColl[0].activePoint.startY).toEqual(217.49999999999994);
-               expect(imageEditor.objColl[0].activePoint.endX).toEqual(462.91999999999996);
-               expect(imageEditor.objColl[0].activePoint.endY).toEqual(293.49999999999994);
+               expect(imageEditor.objColl[0].activePoint.startX).toEqual(405.53999999999996);
+               expect(imageEditor.objColl[0].activePoint.startY).toEqual(216.99999999999994);
+               expect(imageEditor.objColl[0].activePoint.endX).toEqual(462.53999999999996);
+               expect(imageEditor.objColl[0].activePoint.endY).toEqual(292.99999999999994);
                imageEditor.flip('Horizontal');
                expect(imageEditor.rotateFlipColl[0]).toEqual(90);
                expect(imageEditor.rotateFlipColl[1]).toEqual('horizontal');
-               expect(imageEditor.objColl[0].activePoint.startX).toEqual(304.08000000000004);
-               expect(imageEditor.objColl[0].activePoint.startY).toEqual(217.49999999999994);
-               expect(imageEditor.objColl[0].activePoint.endX).toEqual(361.08000000000004);
-               expect(imageEditor.objColl[0].activePoint.endY).toEqual(293.49999999999994);
+               expect(imageEditor.objColl[0].activePoint.startX).toEqual(304.46000000000004);
+               expect(imageEditor.objColl[0].activePoint.startY).toEqual(216.99999999999994);
+               expect(imageEditor.objColl[0].activePoint.endX).toEqual(361.46000000000004);
+               expect(imageEditor.objColl[0].activePoint.endY).toEqual(292.99999999999994);
                imageEditor.flip('Vertical');
                expect(imageEditor.rotateFlipColl[0]).toEqual(90);
                expect(imageEditor.rotateFlipColl[1]).toEqual('horizontal');
                expect(imageEditor.rotateFlipColl[2]).toEqual('vertical');
-               expect(imageEditor.objColl[0].activePoint.startX).toEqual(304.08000000000004);
-               expect(imageEditor.objColl[0].activePoint.startY).toEqual(15.500000000000057);
-               expect(imageEditor.objColl[0].activePoint.endX).toEqual(361.08000000000004);
-               expect(imageEditor.objColl[0].activePoint.endY).toEqual(91.50000000000006);
+               expect(imageEditor.objColl[0].activePoint.startX).toEqual(304.46000000000004);
+               expect(imageEditor.objColl[0].activePoint.startY).toEqual(15.000000000000057);
+               expect(imageEditor.objColl[0].activePoint.endX).toEqual(361.46000000000004);
+               expect(imageEditor.objColl[0].activePoint.endY).toEqual(91.00000000000006);
                done();
            }, 100);
        });
@@ -5016,29 +5016,29 @@ describe('ImageEditor', () => {
                imageEditor.rotate(90);
                expect(imageEditor.transform.degree).toEqual(90);
                expect(imageEditor.img.destLeft).toEqual(277.86);
-               expect(imageEditor.img.destTop).toEqual(15.5);
+               expect(imageEditor.img.destTop).toEqual(15);
                expect(imageEditor.img.destWidth).toEqual(211.28);
                expect(imageEditor.img.destHeight).toEqual(278);
                expect(imageEditor.objColl[0].shape).toEqual('rectangle');
-               expect(imageEditor.objColl[0].activePoint.startX).toEqual(405.91999999999996);
-               expect(imageEditor.objColl[0].activePoint.startY).toEqual(217.49999999999994);
-               expect(imageEditor.objColl[0].activePoint.endX).toEqual(462.91999999999996);
-               expect(imageEditor.objColl[0].activePoint.endY).toEqual(293.49999999999994);
+               expect(imageEditor.objColl[0].activePoint.startX).toEqual(405.53999999999996);
+               expect(imageEditor.objColl[0].activePoint.startY).toEqual(216.99999999999994);
+               expect(imageEditor.objColl[0].activePoint.endX).toEqual(462.53999999999996);
+               expect(imageEditor.objColl[0].activePoint.endY).toEqual(292.99999999999994);
                imageEditor.flip('Vertical');
                expect(imageEditor.rotateFlipColl[0]).toEqual(90);
                expect(imageEditor.rotateFlipColl[1]).toEqual('vertical');
-               expect(imageEditor.objColl[0].activePoint.startX).toEqual(405.91999999999996);
-               expect(imageEditor.objColl[0].activePoint.startY).toEqual(15.500000000000057);
-               expect(imageEditor.objColl[0].activePoint.endX).toEqual(462.91999999999996);
-               expect(imageEditor.objColl[0].activePoint.endY).toEqual(91.50000000000006);
+               expect(imageEditor.objColl[0].activePoint.startX).toEqual(405.53999999999996);
+               expect(imageEditor.objColl[0].activePoint.startY).toEqual(15.000000000000057);
+               expect(imageEditor.objColl[0].activePoint.endX).toEqual(462.53999999999996);
+               expect(imageEditor.objColl[0].activePoint.endY).toEqual(91.00000000000006);
                imageEditor.flip('Horizontal');
                expect(imageEditor.rotateFlipColl[0]).toEqual(90);
                expect(imageEditor.rotateFlipColl[1]).toEqual('vertical');
                expect(imageEditor.rotateFlipColl[2]).toEqual('horizontal');
-               expect(imageEditor.objColl[0].activePoint.startX).toEqual(304.08000000000004);
-               expect(imageEditor.objColl[0].activePoint.startY).toEqual(15.500000000000057);
-               expect(imageEditor.objColl[0].activePoint.endX).toEqual(361.08000000000004);
-               expect(imageEditor.objColl[0].activePoint.endY).toEqual(91.50000000000006);
+               expect(imageEditor.objColl[0].activePoint.startX).toEqual(304.46000000000004);
+               expect(imageEditor.objColl[0].activePoint.startY).toEqual(15.000000000000057);
+               expect(imageEditor.objColl[0].activePoint.endX).toEqual(361.46000000000004);
+               expect(imageEditor.objColl[0].activePoint.endY).toEqual(91.00000000000006 );
                done();
            }, 100);
        });
@@ -5057,22 +5057,22 @@ describe('ImageEditor', () => {
                imageEditor.rotate(90);
                expect(imageEditor.transform.degree).toEqual(180);
                expect(imageEditor.img.destLeft).toEqual(200.60526315789474);
-               expect(imageEditor.img.destTop).toEqual(15.5);
+               expect(imageEditor.img.destTop).toEqual(15);
                expect(imageEditor.img.destWidth).toEqual(365.7894736842105);
                expect(imageEditor.img.destHeight).toEqual(278);
                expect(imageEditor.objColl[0].shape).toEqual('rectangle');
                expect(imageEditor.objColl[0].activePoint.startX).toEqual(200.60526315789474);
-               expect(imageEditor.objColl[0].activePoint.startY).toEqual(183.99999999999994);
+               expect(imageEditor.objColl[0].activePoint.startY).toEqual(182.99999999999994);
                expect(imageEditor.objColl[0].activePoint.endX).toEqual(300.60526315789474);
-               expect(imageEditor.objColl[0].activePoint.endY).toEqual(258.99999999999994);
+               expect(imageEditor.objColl[0].activePoint.endY).toEqual(257.99999999999994);
                imageEditor.flip('Horizontal');
                expect(imageEditor.rotateFlipColl[0]).toEqual(90);
                expect(imageEditor.rotateFlipColl[1]).toEqual(90);
                expect(imageEditor.rotateFlipColl[2]).toEqual('horizontal');
                expect(imageEditor.objColl[0].activePoint.startX).toEqual(466.3947368421052);
-               expect(imageEditor.objColl[0].activePoint.startY).toEqual(183.99999999999994);
+               expect(imageEditor.objColl[0].activePoint.startY).toEqual(182.99999999999994);
                expect(imageEditor.objColl[0].activePoint.endX).toEqual(566.3947368421052);
-               expect(imageEditor.objColl[0].activePoint.endY).toEqual(258.99999999999994);
+               expect(imageEditor.objColl[0].activePoint.endY).toEqual(257.99999999999994);
                imageEditor.flip('Vertical');
                expect(imageEditor.rotateFlipColl[0]).toEqual(90);
                expect(imageEditor.rotateFlipColl[1]).toEqual(90);
@@ -5100,14 +5100,14 @@ describe('ImageEditor', () => {
                imageEditor.rotate(90);
                expect(imageEditor.transform.degree).toEqual(180);
                expect(imageEditor.img.destLeft).toEqual(200.60526315789474);
-               expect(imageEditor.img.destTop).toEqual(15.5);
+               expect(imageEditor.img.destTop).toEqual(15);
                expect(imageEditor.img.destWidth).toEqual(365.7894736842105);
                expect(imageEditor.img.destHeight).toEqual(278);
                expect(imageEditor.objColl[0].shape).toEqual('rectangle');
                expect(imageEditor.objColl[0].activePoint.startX).toEqual(200.60526315789474);
-               expect(imageEditor.objColl[0].activePoint.startY).toEqual(183.99999999999994);
+               expect(imageEditor.objColl[0].activePoint.startY).toEqual(182.99999999999994);
                expect(imageEditor.objColl[0].activePoint.endX).toEqual(300.60526315789474);
-               expect(imageEditor.objColl[0].activePoint.endY).toEqual(258.99999999999994);
+               expect(imageEditor.objColl[0].activePoint.endY).toEqual(257.99999999999994);
                imageEditor.flip('Vertical');
                expect(imageEditor.rotateFlipColl[0]).toEqual(90);
                expect(imageEditor.rotateFlipColl[1]).toEqual(90);
@@ -5144,33 +5144,33 @@ describe('ImageEditor', () => {
                imageEditor.rotate(90);
                expect(imageEditor.transform.degree).toEqual(270);
                expect(imageEditor.img.destLeft).toEqual(277.86);
-               expect(imageEditor.img.destTop).toEqual(15.5);
+               expect(imageEditor.img.destTop).toEqual(15);
                expect(imageEditor.img.destWidth).toEqual(211.28);
                expect(imageEditor.img.destHeight).toEqual(278);
                expect(imageEditor.objColl[0].shape).toEqual('rectangle');
-               expect(imageEditor.objColl[0].activePoint.startX).toEqual(304.08000000000004);
-               expect(imageEditor.objColl[0].activePoint.startY).toEqual(15.5);
-               expect(imageEditor.objColl[0].activePoint.endX).toEqual(361.08000000000004);
-               expect(imageEditor.objColl[0].activePoint.endY).toEqual(91.5);
+               expect(imageEditor.objColl[0].activePoint.startX).toEqual(304.46000000000004);
+               expect(imageEditor.objColl[0].activePoint.startY).toEqual(15);
+               expect(imageEditor.objColl[0].activePoint.endX).toEqual(361.46000000000004);
+               expect(imageEditor.objColl[0].activePoint.endY).toEqual(91);
                imageEditor.flip('Horizontal');
                expect(imageEditor.rotateFlipColl[0]).toEqual(90);
                expect(imageEditor.rotateFlipColl[1]).toEqual(90);
                expect(imageEditor.rotateFlipColl[2]).toEqual(90);
                expect(imageEditor.rotateFlipColl[3]).toEqual('horizontal');
-               expect(imageEditor.objColl[0].activePoint.startX).toEqual(405.91999999999996);
-               expect(imageEditor.objColl[0].activePoint.startY).toEqual(15.5);
-               expect(imageEditor.objColl[0].activePoint.endX).toEqual(462.91999999999996);
-               expect(imageEditor.objColl[0].activePoint.endY).toEqual(91.5);
+               expect(imageEditor.objColl[0].activePoint.startX).toEqual(405.53999999999996);
+               expect(imageEditor.objColl[0].activePoint.startY).toEqual(15);
+               expect(imageEditor.objColl[0].activePoint.endX).toEqual(462.53999999999996);
+               expect(imageEditor.objColl[0].activePoint.endY).toEqual(91);
                imageEditor.flip('Vertical');
                expect(imageEditor.rotateFlipColl[0]).toEqual(90);
                expect(imageEditor.rotateFlipColl[1]).toEqual(90);
                expect(imageEditor.rotateFlipColl[2]).toEqual(90);
                expect(imageEditor.rotateFlipColl[3]).toEqual('horizontal');
                expect(imageEditor.rotateFlipColl[4]).toEqual('vertical');
-               expect(imageEditor.objColl[0].activePoint.startX).toEqual(405.91999999999996);
-               expect(imageEditor.objColl[0].activePoint.startY).toEqual(217.5);
-               expect(imageEditor.objColl[0].activePoint.endX).toEqual(462.91999999999996);
-               expect(imageEditor.objColl[0].activePoint.endY).toEqual(293.5);
+               expect(imageEditor.objColl[0].activePoint.startX).toEqual(405.53999999999996);
+               expect(imageEditor.objColl[0].activePoint.startY).toEqual(217);
+               expect(imageEditor.objColl[0].activePoint.endX).toEqual(462.53999999999996);
+               expect(imageEditor.objColl[0].activePoint.endY).toEqual(293);
                done();
            }, 100);
        });
@@ -5190,33 +5190,33 @@ describe('ImageEditor', () => {
                imageEditor.rotate(90);
                expect(imageEditor.transform.degree).toEqual(270);
                expect(imageEditor.img.destLeft).toEqual(277.86);
-               expect(imageEditor.img.destTop).toEqual(15.5);
+               expect(imageEditor.img.destTop).toEqual(15);
                expect(imageEditor.img.destWidth).toEqual(211.28);
                expect(imageEditor.img.destHeight).toEqual(278);
                expect(imageEditor.objColl[0].shape).toEqual('rectangle');
-               expect(imageEditor.objColl[0].activePoint.startX).toEqual(304.08000000000004);
-               expect(imageEditor.objColl[0].activePoint.startY).toEqual(15.5);
-               expect(imageEditor.objColl[0].activePoint.endX).toEqual(361.08000000000004);
-               expect(imageEditor.objColl[0].activePoint.endY).toEqual(91.5);
+               expect(imageEditor.objColl[0].activePoint.startX).toEqual(304.46000000000004);
+               expect(imageEditor.objColl[0].activePoint.startY).toEqual(15);
+               expect(imageEditor.objColl[0].activePoint.endX).toEqual(361.46000000000004);
+               expect(imageEditor.objColl[0].activePoint.endY).toEqual(91);
                imageEditor.flip('Vertical');
                expect(imageEditor.rotateFlipColl[0]).toEqual(90);
                expect(imageEditor.rotateFlipColl[1]).toEqual(90);
                expect(imageEditor.rotateFlipColl[2]).toEqual(90);
                expect(imageEditor.rotateFlipColl[3]).toEqual('vertical');
-               expect(imageEditor.objColl[0].activePoint.startX).toEqual(304.08000000000004);
-               expect(imageEditor.objColl[0].activePoint.startY).toEqual(217.5);
-               expect(imageEditor.objColl[0].activePoint.endX).toEqual(361.08000000000004);
-               expect(imageEditor.objColl[0].activePoint.endY).toEqual(293.5);
+               expect(imageEditor.objColl[0].activePoint.startX).toEqual(304.46000000000004);
+               expect(imageEditor.objColl[0].activePoint.startY).toEqual(217);
+               expect(imageEditor.objColl[0].activePoint.endX).toEqual(361.46000000000004);
+               expect(imageEditor.objColl[0].activePoint.endY).toEqual(293);
                imageEditor.flip('Horizontal');
                expect(imageEditor.rotateFlipColl[0]).toEqual(90);
                expect(imageEditor.rotateFlipColl[1]).toEqual(90);
                expect(imageEditor.rotateFlipColl[2]).toEqual(90);
                expect(imageEditor.rotateFlipColl[3]).toEqual('vertical');
                expect(imageEditor.rotateFlipColl[4]).toEqual('horizontal');
-               expect(imageEditor.objColl[0].activePoint.startX).toEqual(405.91999999999996);
-               expect(imageEditor.objColl[0].activePoint.startY).toEqual(217.5);
-               expect(imageEditor.objColl[0].activePoint.endX).toEqual(462.91999999999996);
-               expect(imageEditor.objColl[0].activePoint.endY).toEqual(293.5);
+               expect(imageEditor.objColl[0].activePoint.startX).toEqual(405.53999999999996);
+               expect(imageEditor.objColl[0].activePoint.startY).toEqual(217);
+               expect(imageEditor.objColl[0].activePoint.endX).toEqual(462.53999999999996);
+               expect(imageEditor.objColl[0].activePoint.endY).toEqual(293);
                done();
            }, 100);
        });
@@ -5237,27 +5237,27 @@ describe('ImageEditor', () => {
                imageEditor.rotate(90);
                expect(imageEditor.transform.degree).toEqual(0);
                expect(imageEditor.img.destLeft).toEqual(200.60526315789474);
-               expect(imageEditor.img.destTop).toEqual(15.5);
+               expect(imageEditor.img.destTop).toEqual(15);
                expect(imageEditor.img.destWidth).toEqual(365.7894736842105);
                expect(imageEditor.img.destHeight).toEqual(278);
                expect(imageEditor.objColl[0].shape).toEqual('rectangle');
                expect(imageEditor.objColl[0].activePoint.startX).toEqual(466.3947368421052);
-               expect(imageEditor.objColl[0].activePoint.startY).toEqual(50.000000000000036);
+               expect(imageEditor.objColl[0].activePoint.startY).toEqual(50.00000000000003);
                expect(imageEditor.objColl[0].activePoint.endX).toEqual(566.3947368421052);
                expect(imageEditor.objColl[0].activePoint.endY).toEqual(125.00000000000003);
                imageEditor.flip('Horizontal');
                expect(imageEditor.rotateFlipColl[0]).toEqual('horizontal');
                expect(imageEditor.objColl[0].activePoint.startX).toEqual(200.6052631578949);
-               expect(imageEditor.objColl[0].activePoint.startY).toEqual(50.000000000000036);
+               expect(imageEditor.objColl[0].activePoint.startY).toEqual(50.00000000000003);
                expect(imageEditor.objColl[0].activePoint.endX).toEqual(300.6052631578949);
                expect(imageEditor.objColl[0].activePoint.endY).toEqual(125.00000000000003);
                imageEditor.flip('Vertical');
                expect(imageEditor.rotateFlipColl[0]).toEqual('horizontal');
                expect(imageEditor.rotateFlipColl[1]).toEqual('vertical');
                expect(imageEditor.objColl[0].activePoint.startX).toEqual(200.6052631578949);
-               expect(imageEditor.objColl[0].activePoint.startY).toEqual(183.99999999999994);
+               expect(imageEditor.objColl[0].activePoint.startY).toEqual(183);
                expect(imageEditor.objColl[0].activePoint.endX).toEqual(300.6052631578949);
-               expect(imageEditor.objColl[0].activePoint.endY).toEqual(258.99999999999994);
+               expect(imageEditor.objColl[0].activePoint.endY).toEqual(258);
                done();
            }, 100);
        });
@@ -5278,27 +5278,27 @@ describe('ImageEditor', () => {
                imageEditor.rotate(90);
                expect(imageEditor.transform.degree).toEqual(0);
                expect(imageEditor.img.destLeft).toEqual(200.60526315789474);
-               expect(imageEditor.img.destTop).toEqual(15.5);
+               expect(imageEditor.img.destTop).toEqual(15);
                expect(imageEditor.img.destWidth).toEqual(365.7894736842105);
                expect(imageEditor.img.destHeight).toEqual(278);
                expect(imageEditor.objColl[0].shape).toEqual('rectangle');
                expect(imageEditor.objColl[0].activePoint.startX).toEqual(466.3947368421052);
-               expect(imageEditor.objColl[0].activePoint.startY).toEqual(50.000000000000036);
+               expect(imageEditor.objColl[0].activePoint.startY).toEqual(50.00000000000003);
                expect(imageEditor.objColl[0].activePoint.endX).toEqual(566.3947368421052);
                expect(imageEditor.objColl[0].activePoint.endY).toEqual(125.00000000000003);
                imageEditor.flip('Vertical');
                expect(imageEditor.rotateFlipColl[0]).toEqual('vertical');
                expect(imageEditor.objColl[0].activePoint.startX).toEqual(466.3947368421052);
-               expect(imageEditor.objColl[0].activePoint.startY).toEqual(181.99999999999994);
+               expect(imageEditor.objColl[0].activePoint.startY).toEqual(183);
                expect(imageEditor.objColl[0].activePoint.endX).toEqual(566.3947368421052);
-               expect(imageEditor.objColl[0].activePoint.endY).toEqual(256.99999999999994);
+               expect(imageEditor.objColl[0].activePoint.endY).toEqual(258);
                imageEditor.flip('Horizontal');
                expect(imageEditor.rotateFlipColl[0]).toEqual('vertical')
                expect(imageEditor.rotateFlipColl[1]).toEqual('horizontal');
                expect(imageEditor.objColl[0].activePoint.startX).toEqual(200.60526315789474);
-               expect(imageEditor.objColl[0].activePoint.startY).toEqual(181.99999999999994);
+               expect(imageEditor.objColl[0].activePoint.startY).toEqual(183);
                expect(imageEditor.objColl[0].activePoint.endX).toEqual(300.60526315789474);
-               expect(imageEditor.objColl[0].activePoint.endY).toEqual(256.99999999999994);
+               expect(imageEditor.objColl[0].activePoint.endY).toEqual(258);
                done();
            }, 100);
        });
@@ -5358,33 +5358,33 @@ describe('ImageEditor', () => {
                expect(imageEditor.rotateFlipColl[1]).toEqual('vertical');
                expect(imageEditor.objColl[0].shape).toEqual('rectangle');
                expect(Math.round(imageEditor.objColl[0].activePoint.startX)).toEqual(201);
-               expect(Math.round(imageEditor.objColl[0].activePoint.startY)).toEqual(184);
+               expect(Math.round(imageEditor.objColl[0].activePoint.startY)).toEqual(183);
                expect(Math.round(imageEditor.objColl[0].activePoint.endX)).toEqual(301);
-               expect(Math.round(imageEditor.objColl[0].activePoint.endY)).toEqual(259);
+               expect(Math.round(imageEditor.objColl[0].activePoint.endY)).toEqual(258);
                imageEditor.zoom(2);
                expect(imageEditor.transform.zoomFactor).toEqual(.1);
                expect(Math.round(imageEditor.objColl[0].activePoint.startX)).toEqual(182);
-               expect(Math.round(imageEditor.objColl[0].activePoint.startY)).toEqual(187);
+               expect(Math.round(imageEditor.objColl[0].activePoint.startY)).toEqual(186);
                expect(Math.round(imageEditor.objColl[0].activePoint.endX)).toEqual(292);
-               expect(Math.round(imageEditor.objColl[0].activePoint.endY)).toEqual(269);
+               expect(Math.round(imageEditor.objColl[0].activePoint.endY)).toEqual(268);
                imageEditor.zoom(3);
                expect(imageEditor.transform.zoomFactor).toEqual(.2);
                expect(Math.round(imageEditor.objColl[0].activePoint.startX)).toEqual(164);
-               expect(Math.round(imageEditor.objColl[0].activePoint.startY)).toEqual(190);
+               expect(Math.round(imageEditor.objColl[0].activePoint.startY)).toEqual(189);
                expect(Math.round(imageEditor.objColl[0].activePoint.endX)).toEqual(284);
-               expect(Math.round(imageEditor.objColl[0].activePoint.endY)).toEqual(280);
+               expect(Math.round(imageEditor.objColl[0].activePoint.endY)).toEqual(279);
                imageEditor.zoom(2);
                expect(imageEditor.transform.zoomFactor).toEqual(.1);
                expect(Math.round(imageEditor.objColl[0].activePoint.startX)).toEqual(182);
-               expect(Math.round(imageEditor.objColl[0].activePoint.startY)).toEqual(187);
+               expect(Math.round(imageEditor.objColl[0].activePoint.startY)).toEqual(186);
                expect(Math.round(imageEditor.objColl[0].activePoint.endX)).toEqual(292);
-               expect(Math.round(imageEditor.objColl[0].activePoint.endY)).toEqual(269);
+               expect(Math.round(imageEditor.objColl[0].activePoint.endY)).toEqual(268);
                imageEditor.zoom(1);
                expect(imageEditor.transform.zoomFactor).toEqual(0);
                expect(Math.round(imageEditor.objColl[0].activePoint.startX)).toEqual(201);
-               expect(Math.round(imageEditor.objColl[0].activePoint.startY)).toEqual(184);
+               expect(Math.round(imageEditor.objColl[0].activePoint.startY)).toEqual(183);
                expect(Math.round(imageEditor.objColl[0].activePoint.endX)).toEqual(301);
-               expect(Math.round(imageEditor.objColl[0].activePoint.endY)).toEqual(259);
+               expect(Math.round(imageEditor.objColl[0].activePoint.endY)).toEqual(258);
                done();
            }, 100);
        });
@@ -5403,33 +5403,33 @@ describe('ImageEditor', () => {
                expect(imageEditor.transform.currFlipState).toEqual('vertical');
                expect(imageEditor.objColl[0].shape).toEqual('rectangle');
                expect(imageEditor.objColl[0].activePoint.startX).toEqual(466.3947368421052);
-               expect(imageEditor.objColl[0].activePoint.startY).toEqual(182);
+               expect(imageEditor.objColl[0].activePoint.startY).toEqual(183);
                expect(imageEditor.objColl[0].activePoint.endX).toEqual(566.3947368421052);
-               expect(imageEditor.objColl[0].activePoint.endY).toEqual(257);
+               expect(imageEditor.objColl[0].activePoint.endY).toEqual(258);
                imageEditor.zoom(2);
                expect(imageEditor.transform.zoomFactor).toEqual(.1);
                expect(imageEditor.objColl[0].activePoint.startX).toEqual(474.6842105263157);
                expect(Math.round(imageEditor.objColl[0].activePoint.startY)).toEqual(186);
                expect(imageEditor.objColl[0].activePoint.endX).toEqual(584.6842105263157);
-               expect(imageEditor.objColl[0].activePoint.endY).toEqual(268.35);
+               expect(imageEditor.objColl[0].activePoint.endY).toEqual(268.4);
                imageEditor.zoom(3);
                expect(imageEditor.transform.zoomFactor).toEqual(.2);
                expect(imageEditor.objColl[0].activePoint.startX).toEqual(482.97368421052624);
-               expect(imageEditor.objColl[0].activePoint.startY).toEqual(188.70000000000002);
+               expect(imageEditor.objColl[0].activePoint.startY).toEqual(188.8);
                expect(imageEditor.objColl[0].activePoint.endX).toEqual(602.9736842105262);
-               expect(imageEditor.objColl[0].activePoint.endY).toEqual(278.7);
+               expect(imageEditor.objColl[0].activePoint.endY).toEqual(278.79999999999995);
                imageEditor.zoom(2);
                expect(imageEditor.transform.zoomFactor).toEqual(.1);
                expect(imageEditor.objColl[0].activePoint.startX).toEqual(474.6842105263157);
                expect(Math.round(imageEditor.objColl[0].activePoint.startY)).toEqual(186);
                expect(imageEditor.objColl[0].activePoint.endX).toEqual(584.6842105263157);
-               expect(imageEditor.objColl[0].activePoint.endY).toEqual(268.35);
+               expect(imageEditor.objColl[0].activePoint.endY).toEqual(268.4);
                imageEditor.zoom(1);
                expect(imageEditor.transform.zoomFactor).toEqual(0);
                expect(imageEditor.objColl[0].activePoint.startX).toEqual(466.3947368421052);
                expect(imageEditor.objColl[0].activePoint.startY).toEqual(183);
                expect(imageEditor.objColl[0].activePoint.endX).toEqual(566.3947368421052);
-               expect(imageEditor.objColl[0].activePoint.endY).toEqual(258);
+               expect(imageEditor.objColl[0].activePoint.endY).toEqual(257.99999999999994);
                imageEditor.flip('Horizontal');
                expect(imageEditor.rotateFlipColl[0]).toEqual('vertical');
                expect(imageEditor.rotateFlipColl[1]).toEqual('horizontal');
@@ -5437,13 +5437,13 @@ describe('ImageEditor', () => {
                expect(imageEditor.objColl[0].activePoint.startX).toEqual(200.60526315789474);
                expect(imageEditor.objColl[0].activePoint.startY).toEqual(183);
                expect(imageEditor.objColl[0].activePoint.endX).toEqual(300.60526315789474);
-               expect(imageEditor.objColl[0].activePoint.endY).toEqual(258);
+               expect(imageEditor.objColl[0].activePoint.endY).toEqual(257.99999999999994);
                imageEditor.zoom(2);
                expect(imageEditor.transform.zoomFactor).toEqual(.1);
                expect(Math.round(imageEditor.objColl[0].activePoint.startX)).toEqual(182);
                expect(Math.round(imageEditor.objColl[0].activePoint.startY)).toEqual(186);
                expect(Math.round(imageEditor.objColl[0].activePoint.endX)).toEqual(292);
-               expect(imageEditor.objColl[0].activePoint.endY).toEqual(268.35);
+               expect(imageEditor.objColl[0].activePoint.endY).toEqual(268.4);
                imageEditor.zoom(3);
                expect(imageEditor.transform.zoomFactor).toEqual(.2);
                expect(Math.round(imageEditor.objColl[0].activePoint.startX)).toEqual(164);
@@ -5455,7 +5455,7 @@ describe('ImageEditor', () => {
                expect(Math.round(imageEditor.objColl[0].activePoint.startX)).toEqual(182);
                expect(Math.round(imageEditor.objColl[0].activePoint.startY)).toEqual(186);
                expect(Math.round(imageEditor.objColl[0].activePoint.endX)).toEqual(292);
-               expect(imageEditor.objColl[0].activePoint.endY).toEqual(268.35);
+               expect(imageEditor.objColl[0].activePoint.endY).toEqual(268.4);
                imageEditor.zoom(1);
                expect(imageEditor.transform.zoomFactor).toEqual(0);
                expect(Math.round(imageEditor.objColl[0].activePoint.startX)).toEqual(201);
@@ -5496,13 +5496,13 @@ describe('ImageEditor', () => {
                expect(imageEditor.activeObj.shape).toEqual('crop-square');
                imageEditor.crop();
                expect(imageEditor.img.destLeft).toEqual(244.5);
-               expect(imageEditor.img.destTop).toEqual(15.5);
+               expect(imageEditor.img.destTop).toEqual(15);
                expect(imageEditor.img.destWidth).toEqual(278);
                expect(imageEditor.img.destHeight).toEqual(278);
                expect(imageEditor.objColl[0].activePoint.startX).toEqual(190.1740044026419);
-               expect(imageEditor.objColl[0].activePoint.startY).toEqual(44.56844106463878);
+               expect(imageEditor.objColl[0].activePoint.startY).toEqual(44.06844106463878);
                expect(Math.round(imageEditor.objColl[0].activePoint.endX)).toEqual(296);
-               expect(imageEditor.objColl[0].activePoint.endY).toEqual(123.84600760456274);
+               expect(imageEditor.objColl[0].activePoint.endY).toEqual(123.34600760456274);
                done();
            }, 100);
        });
@@ -5521,20 +5521,20 @@ describe('ImageEditor', () => {
                expect(imageEditor.transform.currFlipState).toEqual('vertical');
                expect(imageEditor.objColl[0].shape).toEqual('rectangle');
                expect(imageEditor.objColl[0].activePoint.startX).toEqual(466.3947368421052);
-               expect(imageEditor.objColl[0].activePoint.startY).toEqual(182);
+               expect(imageEditor.objColl[0].activePoint.startY).toEqual(183);
                expect(imageEditor.objColl[0].activePoint.endX).toEqual(566.3947368421052);
-               expect(imageEditor.objColl[0].activePoint.endY).toEqual(257);
+               expect(imageEditor.objColl[0].activePoint.endY).toEqual(258);
                imageEditor.select('square');
                expect(imageEditor.activeObj.shape).toEqual('crop-square');
                imageEditor.crop();
                expect(imageEditor.img.destLeft).toEqual(244.5);
-               expect(imageEditor.img.destTop).toEqual(15.5);
+               expect(imageEditor.img.destTop).toEqual(15);
                expect(imageEditor.img.destWidth).toEqual(278);
                expect(imageEditor.img.destHeight).toEqual(278);
                expect(imageEditor.objColl[0].activePoint.startX).toEqual(471.12257354412645);
-               expect(imageEditor.objColl[0].activePoint.startY).toEqual(184.09695817490496);
+               expect(imageEditor.objColl[0].activePoint.startY).toEqual(184.65399239543729);
                expect(imageEditor.objColl[0].activePoint.endX).toEqual(576.8259955973583);
-               expect(imageEditor.objColl[0].activePoint.endY).toEqual(263.3745247148289);
+               expect(imageEditor.objColl[0].activePoint.endY).toEqual(263.93155893536124);
                done();
            }, 100);
        });
@@ -5568,41 +5568,41 @@ describe('ImageEditor', () => {
                imageEditor.rotate(90);
                expect(imageEditor.transform.degree).toEqual(90);
                expect(imageEditor.img.destLeft).toEqual(277.86);
-               expect(imageEditor.img.destTop).toEqual(15.5);
+               expect(imageEditor.img.destTop).toEqual(15);
                expect(imageEditor.img.destWidth).toEqual(211.28);
                expect(imageEditor.img.destHeight).toEqual(278);
-               expect(imageEditor.objColl[0].activePoint.startX).toEqual(405.91999999999996);
-               expect(imageEditor.objColl[0].activePoint.startY).toEqual(15.500000000000087);
-               expect(imageEditor.objColl[0].activePoint.endX).toEqual(462.91999999999996);
-               expect(imageEditor.objColl[0].activePoint.endY).toEqual(91.50000000000009);
+               expect(imageEditor.objColl[0].activePoint.startX).toEqual(405.53999999999996);
+               expect(imageEditor.objColl[0].activePoint.startY).toEqual(15.000000000000087);
+               expect(imageEditor.objColl[0].activePoint.endX).toEqual(462.53999999999996);
+               expect(imageEditor.objColl[0].activePoint.endY).toEqual(91.00000000000009);
                imageEditor.rotate(90);
                expect(imageEditor.transform.degree).toEqual(180);
                expect(imageEditor.img.destLeft).toEqual(200.60526315789474);
-               expect(imageEditor.img.destTop).toEqual(15.5);
+               expect(imageEditor.img.destTop).toEqual(15);
                expect(imageEditor.img.destWidth).toEqual(365.7894736842105);
                expect(imageEditor.img.destHeight).toEqual(278);
                expect(imageEditor.objColl[0].activePoint.startX).toEqual(466.3947368421051);
-               expect(imageEditor.objColl[0].activePoint.startY).toEqual(183.99999999999994);
+               expect(imageEditor.objColl[0].activePoint.startY).toEqual(182.99999999999994);
                expect(imageEditor.objColl[0].activePoint.endX).toEqual(566.3947368421051);
-               expect(imageEditor.objColl[0].activePoint.endY).toEqual(258.99999999999994);
+               expect(imageEditor.objColl[0].activePoint.endY).toEqual(257.99999999999994);
                imageEditor.rotate(90);
                expect(imageEditor.transform.degree).toEqual(270);
                expect(imageEditor.img.destLeft).toEqual(277.86);
-               expect(imageEditor.img.destTop).toEqual(15.5);
+               expect(imageEditor.img.destTop).toEqual(15);
                expect(imageEditor.img.destWidth).toEqual(211.28);
                expect(imageEditor.img.destHeight).toEqual(278);
-               expect(imageEditor.objColl[0].activePoint.startX).toEqual(304.08000000000004);
-               expect(imageEditor.objColl[0].activePoint.startY).toEqual(217.49999999999986);
-               expect(imageEditor.objColl[0].activePoint.endX).toEqual(361.08000000000004);
-               expect(imageEditor.objColl[0].activePoint.endY).toEqual(293.4999999999999);
+               expect(imageEditor.objColl[0].activePoint.startX).toEqual(304.46000000000004);
+               expect(imageEditor.objColl[0].activePoint.startY).toEqual(216.99999999999986);
+               expect(imageEditor.objColl[0].activePoint.endX).toEqual(361.46000000000004);
+               expect(imageEditor.objColl[0].activePoint.endY).toEqual(292.9999999999999);
                imageEditor.rotate(90);
                expect(imageEditor.transform.degree).toEqual(0);
                expect(imageEditor.img.destLeft).toEqual(200.60526315789474);
-               expect(imageEditor.img.destTop).toEqual(15.5);
+               expect(imageEditor.img.destTop).toEqual(15);
                expect(imageEditor.img.destWidth).toEqual(365.7894736842105);
                expect(imageEditor.img.destHeight).toEqual(278);
                expect(imageEditor.objColl[0].activePoint.startX).toEqual(200.60526315789485);
-               expect(imageEditor.objColl[0].activePoint.startY).toEqual(50.000000000000036);
+               expect(imageEditor.objColl[0].activePoint.startY).toEqual(50.00000000000003);
                expect(imageEditor.objColl[0].activePoint.endX).toEqual(300.60526315789485);
                expect(imageEditor.objColl[0].activePoint.endY).toEqual(125.00000000000003);
                done();
@@ -5623,43 +5623,43 @@ describe('ImageEditor', () => {
                expect(imageEditor.transform.currFlipState).toEqual('vertical');
                expect(imageEditor.objColl[0].shape).toEqual('rectangle');
                expect(imageEditor.objColl[0].activePoint.startX).toEqual(466.3947368421052);
-               expect(imageEditor.objColl[0].activePoint.startY).toEqual(182);
+               expect(imageEditor.objColl[0].activePoint.startY).toEqual(183);
                expect(imageEditor.objColl[0].activePoint.endX).toEqual(566.3947368421052);
-               expect(imageEditor.objColl[0].activePoint.endY).toEqual(257);
+               expect(imageEditor.objColl[0].activePoint.endY).toEqual(258);
                imageEditor.rotate(90);
                expect(imageEditor.transform.degree).toEqual(90);
                expect(imageEditor.img.destLeft).toEqual(277.86);
-               expect(imageEditor.img.destTop).toEqual(15.5);
+               expect(imageEditor.img.destTop).toEqual(15);
                expect(imageEditor.img.destWidth).toEqual(211.28);
                expect(imageEditor.img.destHeight).toEqual(278);
-               expect(imageEditor.objColl[0].activePoint.startX).toEqual(304.84);
-               expect(imageEditor.objColl[0].activePoint.startY).toEqual(217.49999999999994);
-               expect(imageEditor.objColl[0].activePoint.endX).toEqual(361.84);
-               expect(imageEditor.objColl[0].activePoint.endY).toEqual(293.49999999999994);
+               expect(imageEditor.objColl[0].activePoint.startX).toEqual(304.46);
+               expect(imageEditor.objColl[0].activePoint.startY).toEqual(216.99999999999994);
+               expect(imageEditor.objColl[0].activePoint.endX).toEqual(361.46);
+               expect(imageEditor.objColl[0].activePoint.endY).toEqual(292.99999999999994);
                imageEditor.rotate(90);
                expect(imageEditor.transform.degree).toEqual(180);
                expect(imageEditor.img.destLeft).toEqual(200.60526315789474);
-               expect(imageEditor.img.destTop).toEqual(15.5);
+               expect(imageEditor.img.destTop).toEqual(15);
                expect(imageEditor.img.destWidth).toEqual(365.7894736842105);
                expect(imageEditor.img.destHeight).toEqual(278);
                expect(imageEditor.objColl[0].activePoint.startX).toEqual(200.60526315789474);
-               expect(imageEditor.objColl[0].activePoint.startY).toEqual(50.99999999999995);
+               expect(imageEditor.objColl[0].activePoint.startY).toEqual(49.99999999999995);
                expect(imageEditor.objColl[0].activePoint.endX).toEqual(300.60526315789474);
-               expect(imageEditor.objColl[0].activePoint.endY).toEqual(125.99999999999994);
+               expect(imageEditor.objColl[0].activePoint.endY).toEqual(124.99999999999994);
                imageEditor.rotate(90);
                expect(imageEditor.transform.degree).toEqual(270);
                expect(imageEditor.img.destLeft).toEqual(277.86);
-               expect(imageEditor.img.destTop).toEqual(15.5);
+               expect(imageEditor.img.destTop).toEqual(15);
                expect(imageEditor.img.destWidth).toEqual(211.28);
                expect(imageEditor.img.destHeight).toEqual(278);
-               expect(imageEditor.objColl[0].activePoint.startX).toEqual(405.16);
-               expect(imageEditor.objColl[0].activePoint.startY).toEqual(15.5);
-               expect(imageEditor.objColl[0].activePoint.endX).toEqual(462.16);
-               expect(imageEditor.objColl[0].activePoint.endY).toEqual(91.5);
+               expect(imageEditor.objColl[0].activePoint.startX).toEqual(405.54);
+               expect(imageEditor.objColl[0].activePoint.startY).toEqual(15);
+               expect(imageEditor.objColl[0].activePoint.endX).toEqual(462.54);
+               expect(imageEditor.objColl[0].activePoint.endY).toEqual(91);
                imageEditor.rotate(90);
                expect(imageEditor.transform.degree).toEqual(0);
                expect(imageEditor.img.destLeft).toEqual(200.60526315789474);
-               expect(imageEditor.img.destTop).toEqual(15.5);
+               expect(imageEditor.img.destTop).toEqual(15);
                expect(imageEditor.img.destWidth).toEqual(365.7894736842105);
                expect(imageEditor.img.destHeight).toEqual(278);
                expect(imageEditor.objColl[0].activePoint.startX).toEqual(466.3947368421052);
@@ -8617,35 +8617,35 @@ describe('ImageEditor', () => {
                 expect(imageEditor.activeObj.shape).toEqual('crop-2:3');
                 imageEditor.crop();
                 expect(imageEditor.img.destLeft).toEqual(257.5);
-                expect(imageEditor.img.destTop).toEqual(15.5);
+                expect(imageEditor.img.destTop).toEqual(15);
                 expect(imageEditor.img.destWidth).toEqual(252);
                 expect(imageEditor.img.destHeight).toEqual(378);
                 imageEditor.select('3:4', {x: 100, y: 100}, 500, 500);
                 expect(imageEditor.activeObj.shape).toEqual('crop-3:4');
                 imageEditor.crop();
                 expect(imageEditor.img.destLeft).toEqual(241.75);
-                expect(imageEditor.img.destTop).toEqual(15.5);
+                expect(imageEditor.img.destTop).toEqual(15);
                 expect(imageEditor.img.destWidth).toEqual(283.5);
                 expect(imageEditor.img.destHeight).toEqual(378);
                 imageEditor.select('4:5', {x: 100, y: 100}, 500, 500);
                 expect(imageEditor.activeObj.shape).toEqual('crop-4:5');
                 imageEditor.crop();
                 expect(imageEditor.img.destLeft).toEqual(232.30000000000004);
-                expect(imageEditor.img.destTop).toEqual(15.5);
+                expect(imageEditor.img.destTop).toEqual(15);
                 expect(imageEditor.img.destWidth).toEqual(302.3999999999999);
                 expect(imageEditor.img.destHeight).toEqual(378);
                 imageEditor.select('5:7', {x: 100, y: 100}, 500, 500);
                 expect(imageEditor.activeObj.shape).toEqual('crop-5:7');
                 imageEditor.crop();
                 expect(imageEditor.img.destLeft).toEqual(248.5);
-                expect(imageEditor.img.destTop).toEqual(15.5);
+                expect(imageEditor.img.destTop).toEqual(15);
                 expect(imageEditor.img.destWidth).toEqual(270);
                 expect(imageEditor.img.destHeight).toEqual(378);
                 imageEditor.select('9:16');
                 expect(imageEditor.activeObj.shape).toEqual('crop-9:16');
                 imageEditor.crop();
                 expect(imageEditor.img.destLeft).toEqual(277.1875);
-                expect(imageEditor.img.destTop).toEqual(15.5);
+                expect(imageEditor.img.destTop).toEqual(15);
                 expect(imageEditor.img.destWidth).toEqual(212.625);
                 expect(imageEditor.img.destHeight).toEqual(378);
                 done();
@@ -8724,28 +8724,28 @@ describe('ImageEditor', () => {
                     expect(imageEditor.activeObj.shape).toEqual('crop-5:1');
                     imageEditor.crop();
                     expect(imageEditor.img.destLeft).toEqual(83.49999999999994);
-                    expect(imageEditor.img.destTop).toEqual(144.5);
+                    expect(imageEditor.img.destTop).toEqual(144);
                     expect(imageEditor.img.destWidth).toEqual(600.0000000000001);
                     expect(imageEditor.img.destHeight).toEqual(119.99999999999997);
                     imageEditor.select('7:4');
                     expect(imageEditor.activeObj.shape).toEqual('crop-7:4');
                     imageEditor.crop();
                     expect(imageEditor.img.destLeft).toEqual(83.50000000000006);
-                    expect(imageEditor.img.destTop).toEqual(33.071428571428584);
+                    expect(imageEditor.img.destTop).toEqual(32.571428571428584);
                     expect(imageEditor.img.destWidth).toEqual(599.9999999999999);
                     expect(imageEditor.img.destHeight).toEqual(342.85714285714283);
                     imageEditor.select('2:8');
                     expect(imageEditor.activeObj.shape).toEqual('crop-2:8');
                     imageEditor.crop();
                     expect(imageEditor.img.destLeft).toEqual(336.25);
-                    expect(imageEditor.img.destTop).toEqual(15.5);
+                    expect(imageEditor.img.destTop).toEqual(15);
                     expect(imageEditor.img.destWidth).toEqual(94.5);
                     expect(imageEditor.img.destHeight).toEqual(378);
                     imageEditor.select('4:7');
                     expect(imageEditor.activeObj.shape).toEqual('crop-4:7');
                     imageEditor.crop();
                     expect(imageEditor.img.destLeft).toEqual(275.5);
-                    expect(imageEditor.img.destTop).toEqual(15.5);
+                    expect(imageEditor.img.destTop).toEqual(15);
                     expect(imageEditor.img.destWidth).toEqual(216);
                     expect(imageEditor.img.destHeight).toEqual(378);
                 done();
@@ -9736,6 +9736,21 @@ describe('ImageEditor', () => {
                 done();
             },100);
         });
+
+        it('Coverage improvement in export module', (done) => {
+            imageEditor = new ImageEditor({
+               height : '450px',
+            }, '#image-editor');
+            imageEditor.open('https://www.shutterstock.com/image-photo/linked-together-life-cropped-shot-600w-2149264221.jpg');
+            setTimeout(function () {
+                imageEditor.notify('draw', { prop: 'imageBackgroundColor', value: { color: '#ff0000' } });
+                imageEditor.notify('transform', { prop: 'calcMaxDimension', value: { obj: { width: 1000, height: 1000 } } });
+                imageEditor.notify('export', { prop: 'downScaleImgCanvas', value: { canvas: imageEditor.baseImgCanvas.getContext('2d'), width: 300, height: 200 }});
+                let ctx: CanvasRenderingContext2D = imageEditor.baseImgCanvas.getContext('2d');
+                expect(ctx.fillStyle).toBe('#ff0000');
+                done();
+            }, 150);
+        });
    });
 
    describe('Image File Restrict', () => {
@@ -9752,7 +9767,7 @@ describe('ImageEditor', () => {
             }, '#image-editor');
             imageEditor.open('https://fastly.picsum.photos/id/237/200/300.jpg?hmac=TmmQSbShHz9CdQm0NkEjx1Dyh_Y984R9LpNrpvH2D_U');
             setTimeout(() => {
-                expect(imageEditor.uploadSettings.allowedExtensions).toEqual('.jpg, .jpeg, .png, .svg, .webp');
+                expect(imageEditor.uploadSettings.allowedExtensions).toEqual('.jpg, .jpeg, .png, .svg, .webp, .bmp');
                 imageEditor.reset();
                 done();
             }, 100);
@@ -9778,6 +9793,19 @@ describe('ImageEditor', () => {
             imageEditor.open('https://www.shutterstock.com/image-photo/linked-together-life-cropped-shot-600w-2149264221.jpg');
             setTimeout(() => {
                 expect(imageEditor.uploadSettings.allowedExtensions).toEqual('.jpg');
+                imageEditor.reset();
+                done();
+            }, 100);
+        });
+
+         it('allowedExtensions Property - bmp', (done) => {
+            imageEditor = new ImageEditor({
+                height : '450px',
+                uploadSettings: { allowedExtensions: '.bmp'}
+            }, '#image-editor');
+            imageEditor.open('https://www.shutterstock.com/image-photo/linked-together-life-cropped-shot-600w-2149264221.jpg');
+            setTimeout(() => {
+                expect(imageEditor.uploadSettings.allowedExtensions).toEqual('.bmp');
                 imageEditor.reset();
                 done();
             }, 100);
@@ -9915,6 +9943,21 @@ describe('ImageEditor', () => {
             }, 100);
         });
 
+       it('Shape Changing event customized values', (done) => {
+            imageEditor = new ImageEditor({
+               height : '450px',
+               shapeChanging: (args: ShapeChangeEventArgs) => {
+                    args.currentShapeSettings.index = null;
+                }
+            }, '#image-editor');
+            imageEditor.open('https://www.shutterstock.com/image-photo/linked-together-life-cropped-shot-600w-2149264221.jpg');
+            setTimeout(() => {
+                imageEditor.drawRectangle(350, 200, 650, 400, 15, 'red', 'green');
+                expect(imageEditor.objColl[0].order).toEqual(1);
+                done();
+            }, 100);
+        });
+     
        it('Text area editing - outline color customizing', (done) => {
             imageEditor = new ImageEditor({
                height : '450px',
@@ -9927,6 +9970,289 @@ describe('ImageEditor', () => {
                 imageEditor.updateStrokeTextColor('yellow');
                 imageEditor.apply();
                 expect(imageEditor.objColl[0].strokeSettings.outlineColor).toEqual('yellow');
+                done();
+            }, 100);
+        });
+
+       it('Updating stroke width for shapes with odd values', (done) => {
+            imageEditor = new ImageEditor({
+               height : '450px',
+            }, '#image-editor');
+            imageEditor.open('https://www.shutterstock.com/image-photo/linked-together-life-cropped-shot-600w-2149264221.jpg');
+            setTimeout(() => {
+                imageEditor.drawRectangle();
+                const shapeSettings = imageEditor.getShapeSettings();
+                expect(shapeSettings[0].type).toEqual('Rectangle');
+                shapeSettings[0].strokeWidth = 5;
+                imageEditor.updateShape(shapeSettings[0]);
+                expect(imageEditor.objColl[0].strokeSettings.strokeWidth).toEqual(5);
+                done();
+            }, 100);
+        });
+    });
+
+    describe('Testing the Text Annotation Underline And Strikethrough Support', () => {
+        beforeEach((): void => {
+            document.body.appendChild(element);
+            document.body.appendChild(templateElem);
+        });
+        afterEach(() => {
+            imageEditor.destroy();
+            remove(imageEditor.element);
+            remove(templateElem);
+        });
+        it('Text Annotation Underline Support', (done) => {
+            imageEditor = new ImageEditor({
+               height : '450px'
+            }, '#image-editor');
+            imageEditor.open('https://www.shutterstock.com/image-photo/linked-together-life-cropped-shot-600w-2149264221.jpg');
+            setTimeout(() => {
+                let annotationBtn: any = document.querySelectorAll('#image-editor_annotationBtn')[0];
+                annotationBtn.click();
+                setTimeout(() => {});
+                let ul: any = document.querySelectorAll('#image-editor_annotationBtn-popup');
+                ul = document.querySelectorAll('#image-editor_annotationBtn-popup')[ul.length - 1];
+                ul.children[0].children[6].click();
+                imageEditor.drawText(null, null, 'Syncfusion', null, null, null, null, null, null, null, null, null, null, null, true);
+                imageEditor.selectShape(imageEditor.objColl[imageEditor.objColl.length - 1].currIndex);
+                expect(imageEditor.activeObj.shape).toEqual('text');
+                expect(imageEditor.activeObj.textSettings.underline).toEqual(true);
+                (document.querySelector('#image-editor_editText') as HTMLElement).click();
+                setTimeout(() => {});
+                (document.querySelector('#image-editor_textArea') as HTMLElement).style.textDecoration = 'underline';
+                let drpDownBtn: any = document.getElementById('image-editor_underline');
+                drpDownBtn.click();
+                const okBtn: any = document.querySelectorAll('#image-editor_ok')[0];
+                okBtn.click();
+                setTimeout(() => {});
+                annotationBtn = document.querySelectorAll('#image-editor_annotationBtn')[0];
+                annotationBtn.click();
+                setTimeout(() => {});
+                ul = document.querySelectorAll('#image-editor_annotationBtn-popup');
+                ul = document.querySelectorAll('#image-editor_annotationBtn-popup')[ul.length - 1];
+                ul.children[0].children[6].click();
+                imageEditor.drawText(null, null, 'Syncfusion', null, null, null, null, null, null, null, null, null, null, null, true);
+                imageEditor.selectShape(imageEditor.objColl[imageEditor.objColl.length - 1].currIndex);
+                expect(imageEditor.activeObj.shape).toEqual('text');
+                (document.querySelector('#image-editor_textArea') as HTMLElement).style.display = 'block';
+                (document.querySelector('#image-editor_textArea') as HTMLElement).style.textDecoration = 'underline';
+                (document.querySelectorAll('#image-editor_cancel')[0] as HTMLElement).click();
+                setTimeout(() => {});
+                imageEditor.reset();
+                imageEditor.drawText(null, null, 'Syncfusion', null, null, null, null, null, null, null, null, null, null, null, true);
+                expect(imageEditor.textArea.style.textDecoration).toEqual('underline');
+                const shapeSetting = imageEditor.getShapeSetting('shape_1');
+                shapeSetting.fontStyle = [];
+                imageEditor.updateShape(shapeSetting);
+                expect(imageEditor.textArea.style.textDecoration).toEqual('none');
+                done();
+            }, 100);
+        });
+        it('Text Annotation Strikethrough Support', (done) => {
+            imageEditor = new ImageEditor({
+               height : '450px'
+            }, '#image-editor');
+            imageEditor.open('https://www.shutterstock.com/image-photo/linked-together-life-cropped-shot-600w-2149264221.jpg');
+            setTimeout(() => {
+                let annotationBtn: any = document.querySelectorAll('#image-editor_annotationBtn')[0];
+                annotationBtn.click();
+                setTimeout(() => {});
+                let ul: any = document.querySelectorAll('#image-editor_annotationBtn-popup');
+                ul = document.querySelectorAll('#image-editor_annotationBtn-popup')[ul.length - 1];
+                ul.children[0].children[6].click();
+                imageEditor.drawText(null, null, 'Syncfusion', null, null, null, null, null, null, null, null, null, null, null, null, true);
+                imageEditor.selectShape(imageEditor.objColl[imageEditor.objColl.length - 1].currIndex);
+                expect(imageEditor.activeObj.shape).toEqual('text');
+                expect(imageEditor.activeObj.textSettings.strikethrough).toEqual(true);
+                (document.querySelector('#image-editor_editText') as HTMLElement).click();
+                setTimeout(() => {});
+                (document.querySelector('#image-editor_textArea') as HTMLElement).style.textDecoration = 'line-through';
+                let drpDownBtn: any = document.getElementById('image-editor_strikethrough');
+                drpDownBtn.click();
+                const okBtn: any = document.querySelectorAll('#image-editor_ok')[0];
+                okBtn.click();
+                setTimeout(() => {});
+                annotationBtn = document.querySelectorAll('#image-editor_annotationBtn')[0];
+                annotationBtn.click();
+                setTimeout(() => {});
+                ul = document.querySelectorAll('#image-editor_annotationBtn-popup');
+                ul = document.querySelectorAll('#image-editor_annotationBtn-popup')[ul.length - 1];
+                ul.children[0].children[6].click();
+                imageEditor.drawText(null, null, 'Syncfusion', null, null, null, null, null, null, null, null, null, null, null, null, true);
+                imageEditor.selectShape(imageEditor.objColl[imageEditor.objColl.length - 1].currIndex);
+                expect(imageEditor.activeObj.shape).toEqual('text');
+                (document.querySelector('#image-editor_textArea') as HTMLElement).style.display = 'block';
+                (document.querySelector('#image-editor_textArea') as HTMLElement).style.textDecoration = 'line-through';
+                (document.querySelectorAll('#image-editor_cancel')[0] as HTMLElement).click();
+                setTimeout(() => {});
+                imageEditor.reset();
+                imageEditor.drawText(null, null, 'Syncfusion', null, null, null, null, null, null, null, null, null, null, null, null, true);
+                expect(imageEditor.textArea.style.textDecoration).toEqual('line-through');
+                const shapeSetting = imageEditor.getShapeSetting('shape_1');
+                shapeSetting.fontStyle = [];
+                imageEditor.updateShape(shapeSetting);
+                expect(imageEditor.textArea.style.textDecoration).toEqual('none');
+                done();
+            }, 100);
+        });
+        it('Shape combination', (done) => {
+        imageEditor = new ImageEditor({
+            height: '350px'
+        }, '#image-editor');
+        imageEditor.open('https://www.shutterstock.com/image-photo/linked-together-life-cropped-shot-600w-2149264221.jpg');
+        setTimeout(() => {
+            let annotationBtn: any = document.querySelectorAll('#image-editor_annotationBtn')[0];
+            annotationBtn.click();
+            setTimeout(() => {});
+            let ul: any = document.querySelectorAll('#image-editor_annotationBtn-popup');
+            ul = document.querySelectorAll('#image-editor_annotationBtn-popup')[ul.length - 1];
+            ul.children[0].children[6].click();
+            imageEditor.drawText(null, null, 'Syncfusion', null, null, true, true, null, null, null, null, null, null, null, true);
+            imageEditor.selectShape(imageEditor.objColl[imageEditor.objColl.length - 1].currIndex);
+            expect(imageEditor.activeObj.shape).toEqual('text');
+            imageEditor.notify('shape', { prop: 'renderTextArea', value: {x: 100, y: 100, actObj: imageEditor.activeObj }});
+            imageEditor.notify('shape', { prop: 'applyFontStyle', value: {item: 'default' }});
+            imageEditor.notify('shape', { prop: 'applyFontStyle', value: {item: 'bold' }});
+            imageEditor.notify('shape', { prop: 'applyFontStyle', value: {item: 'italic' }});
+            imageEditor.notify('shape', { prop: 'applyFontStyle', value: {item: 'bolditalic' }});
+            imageEditor.notify('shape', { prop: 'applyFontStyle', value: {item: 'underline' }});
+            imageEditor.notify('shape', { prop: 'applyFontStyle', value: {item: 'boldunderline' }});
+            imageEditor.notify('shape', { prop: 'applyFontStyle', value: {item: 'italicunderline' }});
+            imageEditor.notify('shape', { prop: 'applyFontStyle', value: {item: 'bolditalicunderline' }});
+            imageEditor.notify('shape', { prop: 'applyFontStyle', value: {item: 'strikethrough' }});
+            imageEditor.notify('shape', { prop: 'applyFontStyle', value: {item: 'boldstrikethrough' }});
+            imageEditor.notify('shape', { prop: 'applyFontStyle', value: {item: 'italicstrikethrough' }});
+            imageEditor.notify('shape', { prop: 'applyFontStyle', value: {item: 'underlinestrikethrough' }});
+            imageEditor.notify('shape', { prop: 'applyFontStyle', value: {item: 'bolditalicstrikethrough' }});
+            imageEditor.notify('shape', { prop: 'applyFontStyle', value: {item: 'boldunderlinestrikethrough' }});
+            imageEditor.notify('shape', { prop: 'applyFontStyle', value: {item: 'italicunderlinestrikethrough' }});
+            imageEditor.notify('shape', { prop: 'applyFontStyle', value: {item: 'bolditalicunderlinestrikethrough' }});
+            done();
+            }, 100);
+        });
+    });
+  
+  describe('Opening images with specific width and height', () => {
+        beforeEach((): void => {
+            document.body.appendChild(element);
+        });
+        afterEach(() => {
+            imageEditor.destroy();
+            remove(imageEditor.element);
+        });
+        it('Opening images with specific width and height without maintaining aspect ratio - 1', (done) => {
+            imageEditor = new ImageEditor({
+               height : '450px',
+            }, '#image-editor');
+            imageEditor.open('https://www.shutterstock.com/image-photo/linked-together-life-cropped-shot-600w-2149264221.jpg', true, {backgroundColor: '', width: 300, height: 300});
+            setTimeout(() => {
+                let dimension: any = imageEditor.getImageDimension();
+                expect(Math.round(dimension.width)).toEqual(300);
+                expect(Math.round(dimension.height)).toEqual(300);
+                done();
+            }, 100);
+        });
+
+        it('Opening images with specific width and height without maintaining aspect ratio - 2', (done) => {
+            imageEditor = new ImageEditor({
+               height : '450px',
+            }, '#image-editor');
+            imageEditor.open('https://www.shutterstock.com/image-photo/linked-together-life-cropped-shot-600w-2149264221.jpg', true, {backgroundColor: '', width: 200, height: 300});
+            setTimeout(() => {
+                let dimension: any = imageEditor.getImageDimension();
+                expect(Math.round(dimension.width)).toEqual(200);
+                expect(Math.round(dimension.height)).toEqual(300);
+                done();
+            }, 100);
+        });
+
+        it('Opening images with specific width and height without maintaining aspect ratio - 3', (done) => {
+            imageEditor = new ImageEditor({
+               height : '450px',
+            }, '#image-editor');
+            imageEditor.open('https://www.shutterstock.com/image-photo/linked-together-life-cropped-shot-600w-2149264221.jpg', true, {backgroundColor: '', width: 900, height: 400});
+            setTimeout(() => {
+                let dimension: any = imageEditor.getImageDimension();
+                expect(Math.round(dimension.width)).toEqual(882);
+                expect(Math.round(dimension.height)).toEqual(392);
+                done();
+            }, 100);
+        });
+
+        it('Opening images with specific width and height without maintaining aspect ratio - 4', (done) => {
+            imageEditor = new ImageEditor({
+               height : '450px',
+            }, '#image-editor');
+            imageEditor.open('https://www.shutterstock.com/image-photo/linked-together-life-cropped-shot-600w-2149264221.jpg', true, {backgroundColor: '', width: 500, height: 500});
+            setTimeout(() => {
+                let dimension: any = imageEditor.getImageDimension();
+                expect(Math.round(dimension.width)).toEqual(500);
+                expect(Math.round(dimension.height)).toEqual(500);
+                done();
+            }, 100);
+        });
+
+        it('Opening images with specific width and height with maintaining aspect ratio - 1', (done) => {
+            imageEditor = new ImageEditor({
+               height : '450px',
+            }, '#image-editor');
+            imageEditor.open('https://www.shutterstock.com/image-photo/linked-together-life-cropped-shot-600w-2149264221.jpg', true, {backgroundColor: '', width: 900, height: 400, isAspectRatio: true});
+            setTimeout(() => {
+                let dimension: any = imageEditor.getImageDimension();
+                expect(Math.round(dimension.width)).toEqual(885);
+                expect(Math.round(dimension.height)).toEqual(673);
+                done();
+            }, 100);
+        });
+
+        it('Opening images with specific width and height with maintaining aspect ratio - 2', (done) => {
+            imageEditor = new ImageEditor({
+               height : '450px',
+            }, '#image-editor');
+            imageEditor.open('https://www.shutterstock.com/image-photo/linked-together-life-cropped-shot-600w-2149264221.jpg', true, {backgroundColor: '', width: 400, height: 900, isAspectRatio: true});
+            setTimeout(() => {
+                let dimension: any = imageEditor.getImageDimension();
+                expect(Math.round(dimension.width)).toEqual(1033);
+                expect(Math.round(dimension.height)).toEqual(785);
+                done();
+            }, 100);
+        });
+
+        it('Opening images with specific width and height with maintaining aspect ratio - 3', (done) => {
+            imageEditor = new ImageEditor({
+               height : '450px',
+            }, '#image-editor');
+            imageEditor.open('https://www.shutterstock.com/image-photo/linked-together-life-cropped-shot-600w-2149264221.jpg', true, {backgroundColor: '', width: 500, height: 500, isAspectRatio: true});
+            setTimeout(() => {
+                let dimension: any = imageEditor.getImageDimension();
+                expect(Math.round(dimension.width)).toEqual(658);
+                expect(Math.round(dimension.height)).toEqual(500);
+                done();
+            }, 100);
+        });
+
+        it('Opening images with specific width and height with maintaining aspect ratio - 4', (done) => {
+            imageEditor = new ImageEditor({
+               height : '450px',
+            }, '#image-editor');
+            imageEditor.open('https://www.shutterstock.com/image-photo/linked-together-life-cropped-shot-600w-2149264221.jpg', true, {backgroundColor: '', width: 300, height: null, isAspectRatio: true});
+            setTimeout(() => {
+                let dimension: any = imageEditor.getImageDimension();
+                expect(Math.round(dimension.width)).toEqual(300);
+                expect(Math.round(dimension.height)).toEqual(228);
+                done();
+            }, 100);
+        });
+
+        it('Opening images with specific width and height with maintaining aspect ratio - 5', (done) => {
+            imageEditor = new ImageEditor({
+               height : '450px',
+            }, '#image-editor');
+            imageEditor.open('https://www.shutterstock.com/image-photo/linked-together-life-cropped-shot-600w-2149264221.jpg', true, {backgroundColor: '', width: null, height: 300, isAspectRatio: true});
+            setTimeout(() => {
+                let dimension: any = imageEditor.getImageDimension();
+                expect(Math.round(dimension.width)).toEqual(395);
+                expect(Math.round(dimension.height)).toEqual(300);
                 done();
             }, 100);
         });

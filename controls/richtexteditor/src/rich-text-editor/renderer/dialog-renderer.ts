@@ -1,8 +1,7 @@
 import { Dialog, DialogModel, BeforeOpenEventArgs, BeforeCloseEventArgs } from '@syncfusion/ej2-popups';
-import { closest, isNullOrUndefined as isNOU } from '@syncfusion/ej2-base';
+import { closest, isNullOrUndefined as isNOU, KeyboardEventArgs } from '@syncfusion/ej2-base';
 import { IRichTextEditor } from '../base/interface';
 import * as events from '../base/constant';
-import { KeyboardEventArgs } from '../actions';
 /**
  * Dialog Renderer
  */
@@ -108,7 +107,7 @@ export class DialogRenderer {
             let parentElement: HTMLElement = this.parent.element;
             while (parentElement.nodeName !== 'BODY') {
                 const top: number = parentElement.getBoundingClientRect().top;
-                if (top > 0 ) {
+                if (top > 0) {
                     topHeight = top;
                 }
                 parentElement = parentElement.parentElement as HTMLElement;

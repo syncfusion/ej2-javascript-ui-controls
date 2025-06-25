@@ -32,4 +32,16 @@
   .e-assist-dislike-filled::before {
     content: '\e9eb';
   }
+  .e-assist-clear-icon::before {
+    content: '\e953';
+  }
+  .e-assist-attachment-icon::before {
+    content: '\e1af';
+  }
+  .e-assist-file-format-icon::before {
+    content: '\e1b1';
+  }
+  .e-assist-circle-close::before {
+    content: '\e973';
+  }
 }

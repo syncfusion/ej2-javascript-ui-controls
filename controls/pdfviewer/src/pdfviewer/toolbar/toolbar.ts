@@ -1089,7 +1089,7 @@ export class Toolbar {
                     'FormDesignerEditTool', 'PrintOption', 'DownloadOption'];
             }
             if (isNullOrUndefined(this.pdfViewer.toolbarSettings.annotationToolbarItems)) {
-                this.pdfViewer.toolbarSettings.annotationToolbarItems = ['HighlightTool', 'UnderlineTool', 'StrikethroughTool',
+                this.pdfViewer.toolbarSettings.annotationToolbarItems = ['HighlightTool', 'UnderlineTool', 'StrikethroughTool', 'SquigglyTool',
                     'ColorEditTool', 'OpacityEditTool', 'AnnotationDeleteTool', 'StampAnnotationTool', 'HandWrittenSignatureTool',
                     'InkAnnotationTool', 'ShapeTool', 'CalibrateTool', 'StrokeColorEditTool', 'ThicknessEditTool',
                     'FreeTextAnnotationTool', 'FontFamilyAnnotationTool', 'FontSizeAnnotationTool', 'FontStylesAnnotationTool',
@@ -1943,10 +1943,12 @@ export class Toolbar {
                     } else {
                         if (this.pdfViewerBase.clientSideRendering) {
                             this.uploadedFile = this.pdfViewer.uploadedFileByteArray;
+                            this.pdfViewerBase.skipOnReload = true;
                             this.pdfViewer.load(this.pdfViewer.uploadedFileByteArray, null);
                             this.pdfViewerBase.isSkipDocumentPath = true;
                             this.pdfViewer.documentPath = this.pdfViewer.uploadedFileByteArray as unknown as string;
                             this.pdfViewerBase.documentPathByteArray = this.pdfViewer.documentPath;
+                            this.pdfViewerBase.skipOnReload = false;
                         } else {
                             this.uploadedFile = uploadedFileUrl;
                             this.pdfViewer.load(uploadedFileUrl, null);
@@ -2071,7 +2073,11 @@ export class Toolbar {
         }
     }
 
-    private updateInteractionItems(): void {
+    /**
+     * @private
+     * @returns {void}
+     */
+    public updateInteractionItems(): void {
         if (this.pdfViewer.textSelectionModule) {
             if (this.pdfViewer.enableTextSelection) {
                 this.enableItems(this.textSelectItem.parentElement, true);
@@ -2087,6 +2093,7 @@ export class Toolbar {
             this.textSelectItem.setAttribute('tabindex', '-1');
             this.deSelectItem(this.panItem);
             this.panItem.setAttribute('tabindex', '0');
+            this.pdfViewerBase.initiateTextSelectMode();
         } else {
             this.selectItem(this.panItem);
             this.panItem.setAttribute('tabindex', '-1');

@@ -382,4 +382,54 @@ describe('Iframe Content renderer module', () => {
             destroy(editor);
         });
     });
+    describe('913845 - Rich Text Editor Accessibility Attributes in IFrame', () => {
+        let rteObj: RichTextEditor;
+        beforeAll(() => {
+            rteObj = renderRTE({
+                iframeSettings: {
+                    enable: true
+                },
+                enableRtl: false, 
+                locale: 'en'
+            });
+        });
+        it('should have correct accessibility attributes in iframe', () => {
+            const iframeDoc = (rteObj.contentModule.getPanel() as HTMLIFrameElement).contentDocument;
+            const contentBody = iframeDoc.querySelector('body');
+            expect(contentBody.getAttribute('aria-label')).toBe('Rich Text Editor');
+            expect(contentBody.getAttribute('role')).toBe('textbox');
+            expect(contentBody.getAttribute('lang')).toBe('en');
+            expect(contentBody.getAttribute('dir')).toBe('ltr');
+        });
+        it('should update lang and dir attributes dynamically in iframe', () => {
+            rteObj.locale = 'fr';
+            rteObj.enableRtl = true;
+            rteObj.dataBind();
+            const iframeDoc = (rteObj.contentModule.getPanel() as HTMLIFrameElement).contentDocument;
+            const contentBody = iframeDoc.querySelector('body');
+            expect(contentBody.getAttribute('lang')).toBe('fr');
+            expect(contentBody.getAttribute('dir')).toBe('rtl');
+        });
+    
+        afterAll(() => {
+            destroy(rteObj);
+        });
+    });
+
+    describe('960796: Text quick toolbar goes out of the Editor area when the editor content is scrolled.', ()=> {
+        let editor: RichTextEditor;
+        beforeAll(()=> {
+            editor = renderRTE({
+                iframeSettings: {
+                    enable: true
+                }
+            })
+        });
+        afterAll(()=> {
+            destroy(editor);
+        });
+        it ('Should have a wrapper element with class name.', ()=>{
+            expect(editor.contentModule.getPanel().parentElement.classList.contains('e-rte-iframe-content')).toBe(true);
+        });
+    });
 });

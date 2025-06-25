@@ -16,6 +16,18 @@ module.exports = function(config) {
         // list of files / patterns to load in the browser
         files: [
             "test-main.js",
+            "node_modules/@syncfusion/ej2-base/styles/material.css",
+            "node_modules/@syncfusion/ej2-icons/styles/material.css",
+            "node_modules/@syncfusion/ej2-popups/styles/material.css",
+            "node_modules/@syncfusion/ej2-inputs/styles/material.css",
+            "node_modules/@syncfusion/ej2-dropdowns/styles/material.css",
+            "node_modules/@syncfusion/ej2-buttons/styles/material.css",
+            "node_modules/@syncfusion/ej2-splitbuttons/styles/material.css",
+            "node_modules/@syncfusion/ej2-navigations/styles/material.css",
+            "node_modules/@syncfusion/ej2-dropdowns/styles/material.css",
+            "node_modules/@syncfusion/ej2-ribbon/styles/material.css",
+            "node_modules/@syncfusion/ej2-lists/styles/material.css",
+            "demos/toolbar/material.css",
             { pattern: "src/**/*.js", included: false },
             { pattern: "src/**/**/**/*.js", included: false },
             { pattern: "spec/**/*.spec.js", included: false },
@@ -37,7 +49,8 @@ module.exports = function(config) {
             { pattern: "node_modules/@syncfusion/ej2-svg-base/**/*.js", included: false },
             { pattern: "node_modules/@syncfusion/ej2-pdf-export/**/*.js", included: false },
             { pattern: "node_modules/@syncfusion/ej2-calendars/**/*.js", included: false },            
-            { pattern: "node_modules/@syncfusion/ej2-office-chart/**/*.js", included: false }
+            { pattern: "node_modules/@syncfusion/ej2-office-chart/**/*.js", included: false },
+            { pattern: "node_modules/@syncfusion/ej2-ribbon/**/*.js", included: false }
 
             // Add dependent package's script files here              
         ],

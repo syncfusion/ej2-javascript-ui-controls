@@ -604,18 +604,13 @@ export class CollaborativeEditing {
             }
         }
         for (let j: number = 0; j < revision.length; j++) {
-            if (isInsert) {
-                this.owner.revisionsInternal.changes.splice(insertIndex, 0, revision[j]);
-                insertIndex++;
-            } else {
-                this.owner.revisionsInternal.changes.push(revision[j]);
-            }
+            this.owner.editor.updateRevisionCollection(revision[j]);
         }
     }
     /* eslint-disable @typescript-eslint/no-explicit-any */
     private getRevisionTextPosition(revision: Revision): TextPosition {
-        if (revision.range.length > 0) {
-            let range: any = revision.range[0];
+        if (revision.getRange().length > 0) {
+            let range: any = revision.getRange()[0];
             if (range instanceof ElementBox) {
                 return this.selection.getElementPosition(range as ElementBox).startPosition;
             } else if (range instanceof WRowFormat) {
@@ -721,11 +716,11 @@ export class CollaborativeEditing {
             for (let i: number = 0; i < removedBlock.childWidgets.length; i++) {
                 if (removedBlock.childWidgets[i] instanceof TableRowWidget) {
                     let tableDelete: TableRowWidget = removedBlock.childWidgets[i] as TableRowWidget;
-                    this.owner.editorModule.removeDeletedCellRevision(tableDelete);
+                    this.owner.editorModule.removeRevisionsInRow(tableDelete, false);
                 }
             }
         } else {
-            this.owner.editorModule.removeRevisionForBlock(removedBlock as ParagraphWidget, undefined, false, false);
+            this.owner.editorModule.removeRevisionForBlock(removedBlock as ParagraphWidget, false, false);
         }
     }
 

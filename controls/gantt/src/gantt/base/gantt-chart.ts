@@ -169,7 +169,7 @@ export class GanttChart {
         if (this.parent.isLoad) {
             this.parent.notify('selectRowByIndex', {});
         }
-        if (this.parent.timelineModule.isZoomToFit) {
+        if (this.parent.timelineModule.isZoomedToFit) {
             this.parent.timelineModule.processZoomToFit();
         }
     }
@@ -719,11 +719,7 @@ export class GanttChart {
         this.parent.notify('chartMouseUp', e);
         if (this.parent.showActiveElement) {
             this.parent.showIndicator = true;
-            if (!isNullOrUndefined(this.parent.loadingIndicator) && this.parent.loadingIndicator.indicatorType === 'Shimmer'){
-                this.parent.hideMaskRow();
-            } else {
-                this.parent.hideSpinner();
-            }
+            this.parent['hideLoadingIndicator']();
             if (this.focusedElement && !(e.target as HTMLElement).classList.contains('e-split-bar')) {
                 this.focusedElement.tabIndex = this.focusedElement.tabIndex === 0 ? -1 : this.focusedElement.tabIndex;
                 removeClass([this.focusedElement], 'e-active-container');
@@ -1690,6 +1686,22 @@ export class GanttChart {
                             fmodule.currentInfo.elementToFocus = nextElement as HTMLElement;
                             /* eslint-disable-next-line @typescript-eslint/no-explicit-any */
                             fmodule.content.matrix.current = [(nextElement.parentElement as any).rowIndex, (nextElement as any).cellIndex];
+                            // Handle Tab key action to select the row when navigating to the next row - Task946137
+                            if (this.parent.selectionModule) {
+                                const rowIndex: number = this.parent.enableVirtualization
+                                    ? this.parent.currentViewData[(nextElement.parentElement as any).rowIndex].index
+                                    : (nextElement.parentElement as any).rowIndex;
+                                this.parent.selectionModule.selectRow(rowIndex);
+                                if (this.parent.selectionSettings.mode !== 'Cell') {
+                                    const selectedRows: Element[] = this.parent.selectionModule.getSelectedRows();
+                                    if (selectedRows.length > 0) {
+                                        const focusedCells: NodeListOf<Element> = selectedRows[0].querySelectorAll('.e-focus, .e-focused');
+                                        if (focusedCells.length > 0) {
+                                            removeClass([focusedCells[0] as HTMLElement], ['e-focus', 'e-focused']);
+                                        }
+                                    }
+                                }
+                            }
                         }
                         this.manageFocus(nextElement as HTMLElement, 'add', false);
                     } else {

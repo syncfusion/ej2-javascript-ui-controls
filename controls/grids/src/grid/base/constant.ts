@@ -311,9 +311,13 @@ export const freezeRefresh: string = 'freezerefresh';
 /** @hidden */
 export const contextMenuOpen: string = 'contextMenuOpen';
 /** @hidden */
+export const contextMenuClose: string = 'contextMenuClose';
+/** @hidden */
 export const columnMenuClick: string = 'columnMenuClick';
 /** @hidden */
 export const columnMenuOpen: string = 'columnMenuOpen';
+/** @hidden */
+export const columnMenuClose: string = 'columnMenuClose';
 /** @hidden */
 export const filterOpen: string = 'filterOpen';
 /** @hidden */
@@ -376,6 +380,8 @@ export const batchEditFormRendered: string = 'batcheditform-rendered';
 export const partialRefresh: string = 'partial-refresh';
 /** @hidden */
 export const beforeCustomFilterOpen: string = 'beforeCustomFilterOpen';
+/** @hidden */
+export const customFilterOpen: string = 'customFilterOpen';
 /** @hidden */
 export const selectVirtualRow: string = 'select-virtual-Row';
 /** @hidden */

@@ -34,7 +34,7 @@ describe('BookMark add validation', () => {
         editor.destroy();
         document.body.removeChild(document.getElementById('container'));
         editor = undefined;
-        document.body.innerHTML = '';
+        
         setTimeout(function () {
             done();
         }, 2000);
@@ -89,7 +89,7 @@ describe('Goto and Delete BookMark validation', () => {
         editor.destroy();
         document.body.removeChild(document.getElementById('container'));
         editor = undefined;
-        document.body.innerHTML = '';
+        
         setTimeout(function () {
             done();
         }, 2000);
@@ -155,7 +155,7 @@ describe('Edit validation in Bookmark', () => {
         document.body.removeChild(document.getElementById('container'));
         editor.destroy();
         editor = undefined;
-        document.body.innerHTML = '';
+        
         setTimeout(function () {
             done();
         }, 1000);
@@ -225,7 +225,7 @@ describe('DeleteSelected content on backspace ', () => {
         document.body.removeChild(document.getElementById('container'));
         editor.destroy();
         editor = undefined;
-        document.body.innerHTML = '';
+        
         setTimeout(function () {
             done();
         }, 1000);
@@ -305,7 +305,7 @@ describe('DeleteSelected content on backspace at bookmar end', () => {
         document.body.removeChild(document.getElementById('container'));
         editor.destroy();
         editor = undefined;
-        document.body.innerHTML = '';
+        
         setTimeout(function () {
             done();
         }, 1000);
@@ -390,7 +390,7 @@ describe('DeleteSelected content on delete at bookmark start', () => {
         document.body.removeChild(document.getElementById('container'));
         editor.destroy();
         editor = undefined;
-        document.body.innerHTML = '';
+        
         setTimeout(function () {
             done();
         }, 1000);
@@ -469,7 +469,7 @@ describe('DeleteSelected content on onDelete at bookmar end', () => {
         document.body.removeChild(document.getElementById('container'));
         editor.destroy();
         editor = undefined;
-        document.body.innerHTML = '';
+        
         setTimeout(function () {
             done();
         }, 1000);

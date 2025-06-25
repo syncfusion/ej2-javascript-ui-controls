@@ -336,6 +336,40 @@ describe('Toolbar - view html', () => {
             destroy(rteObj);
         });
     });
+    describe('957549: Improve the re-structuring of the editor input value for editor', () => {
+        let rteObj: RichTextEditor;
+        let innerHTML: string = ``;
+        let controlId: string;
+        beforeAll((done: Function) => {
+            rteObj = renderRTE({
+                value: innerHTML,
+                toolbarSettings: {
+                    items: ['SourceCode']
+                }
+            });
+            controlId = rteObj.element.id;
+            done();
+        });
+
+        it('Formatting while source code to preview rendering', (done) => {
+            let item: HTMLElement = rteObj.element.querySelector('#' + controlId + '_toolbar_SourceCode');
+            item.click();
+            setTimeout(() => {
+                let textarea: HTMLTextAreaElement = rteObj.element.querySelector(".e-rte-srctextarea");
+                textarea.value = `<div>hello <p>World</p></div>`;
+                let item = rteObj.element.querySelector('#' + controlId + '_toolbar_Preview') as HTMLElement;
+                item.click();
+                setTimeout(() => {
+                    expect((rteObj as any).inputElement.innerHTML === `<div><p>hello </p><p>World</p></div>`).toBe(true);
+                    done();
+                });
+            });
+        });
+
+        afterAll(() => {
+            destroy(rteObj);
+        });
+    });
     describe(' SourceCode item changes - ', () => {
         let rteObj: RichTextEditor;
         let controlId: string;
@@ -403,7 +437,7 @@ describe('Toolbar - view html', () => {
             expect((rteObj as any).value).toBe(null);
             expect((rteObj as any).placeholder).toBe("Type something");
             rteObj.showSourceCode();
-            expect((rteObj as any).element.querySelector("rte-placeholder")).toBe(null);
+            expect((rteObj as any).element.querySelector("e-rte-placeholder")).toBe(null);
         });
     });
 
@@ -441,14 +475,14 @@ describe('Toolbar - view html', () => {
             expect((<any>rteObj).element.querySelector('.e-rte-srctextarea')).not.toBe(null);
             rteObj.enableHtmlEncode = true;
             rteObj.dataBind();
-            expect((<any>rteObj).value === '&lt;table class="e-rte-table"&gt;&lt;tbody&gt;&lt;tr&gt;&lt;td&gt;&lt;p&gt;Provide the tool bar support, its also customizable.&lt;/p&gt;&lt;/td&gt;&lt;/tr&gt;&lt;/tbody&gt;&lt;/table&gt;').toBe(true);
-            expect((<any>rteObj).getHtml() === '&lt;table class="e-rte-table"&gt;&lt;tbody&gt;&lt;tr&gt;&lt;td&gt;&lt;p&gt;Provide the tool bar support, its also customizable.&lt;/p&gt;&lt;/td&gt;&lt;/tr&gt;&lt;/tbody&gt;&lt;/table&gt;').toBe(true);
+            expect((<any>rteObj).value === '&lt;table class="e-rte-table"&gt;&lt;tbody&gt;&lt;tr&gt;&lt;td&gt;Provide the tool bar support, its also customizable.&lt;/td&gt;&lt;/tr&gt;&lt;/tbody&gt;&lt;/table&gt;').toBe(true);
+            expect((<any>rteObj).getHtml() === '&lt;table class="e-rte-table"&gt;&lt;tbody&gt;&lt;tr&gt;&lt;td&gt;Provide the tool bar support, its also customizable.&lt;/td&gt;&lt;/tr&gt;&lt;/tbody&gt;&lt;/table&gt;').toBe(true);
             rteObj.enableHtmlEncode = false;
             rteObj.dataBind();
-            expect((<any>rteObj).getHtml() === '<table class="e-rte-table"><tbody><tr><td><p>Provide the tool bar support, its also customizable.</p></td></tr></tbody></table>').toBe(true);
+            expect((<any>rteObj).getHtml() === '<table class="e-rte-table"><tbody><tr><td>Provide the tool bar support, its also customizable.</td></tr></tbody></table>').toBe(true);
             trgEle = <HTMLElement>rteEle.querySelectorAll(".e-toolbar-item")[0];
             trgEle.click();
-            expect(rteObj.contentModule.getEditPanel().innerHTML === '<table class="e-rte-table"><tbody><tr><td><p>Provide the tool bar support, its also customizable.</p></td></tr></tbody></table>').toBe(true);
+            expect(rteObj.contentModule.getEditPanel().innerHTML === '<table class="e-rte-table"><tbody><tr><td>Provide the tool bar support, its also customizable.</td></tr></tbody></table>').toBe(true);
             rteObj.sourceCodeModule.mouseDownHandler();
         });
     });

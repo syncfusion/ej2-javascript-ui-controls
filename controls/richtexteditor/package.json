@@ -1,6 +1,6 @@
 {
 	"name": "@syncfusion/ej2-richtexteditor",
-	"version": "29.2.10",
+	"version": "29.1.33",
 	"description": "Essential JS 2 RichTextEditor component",
 	"author": "Syncfusion Inc.",
 	"license": "SEE LICENSE IN license",
@@ -25,6 +25,7 @@
 		"@types/jasmine-ajax": "^3.1.27",
 		"@types/node": "10.14.0",
 		"@types/requirejs": "^2.1.26",
+		"jenkins-api": "0.3.1",
 		"es6-promise": "^3.2.1",
 		"gulp": "^3.9.1",
 		"gulp-sass": "^3.1.0",

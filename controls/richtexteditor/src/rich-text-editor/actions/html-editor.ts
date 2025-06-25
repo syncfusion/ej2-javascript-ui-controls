@@ -2,19 +2,21 @@ import { addClass, attributes, Browser, closest, detach, isNullOrUndefined as is
 import { ClickEventArgs } from '@syncfusion/ej2-navigations';
 import { isIDevice, removeClassWithAttr, scrollToCursor } from '../../common/util';
 import { EditorManager } from '../../editor-manager';
-import { IHtmlKeyboardEvent } from '../../editor-manager/base/interface';
+import { CodeBlockPosition, IHtmlKeyboardEvent } from '../../editor-manager/base/interface';
 import { InsertHtml } from '../../editor-manager/plugin/inserthtml';
 import { NodeSelection } from '../../selection/selection';
 import { Toolbar } from '../actions/toolbar';
 import * as classes from '../base/classes';
+import { CLS_TABLE_MULTI_CELL, CLS_TABLE_SEL, CLS_TABLE_SEL_END } from '../../common/constant';
 import * as CONSTANT from '../base/constant';
 import * as events from '../base/constant';
 import { RenderType } from '../base/enum';
-import { ActionBeginEventArgs, IDropDownItemModel, IRenderer, IRichTextEditor, IToolbarItemModel, IToolbarOptions, NotifyArgs } from '../base/interface';
+import { IRichTextEditor, IToolbarOptions, IRenderer } from '../base/interface';
+import { ActionBeginEventArgs, IDropDownItemModel, NotifyArgs, IToolbarItemModel } from '../../common/interface';
 import { RichTextEditorModel } from '../base/rich-text-editor-model';
 import { getDefaultValue, getTextNodesUnder, sanitizeHelper } from '../base/util';
 import { HTMLFormatter } from '../formatter/html-formatter';
-import { FontSizeModel } from '../models/models';
+import { FontSizeModel } from '../../models/models';
 import { ContentRender } from '../renderer/content-renderer';
 import { IframeContentRender } from '../renderer/iframe-content-renderer';
 import { RendererFactory } from '../services/renderer-factory';
@@ -384,7 +386,13 @@ export class HtmlEditor {
             this.backSpaceCleanup(e, currentRange);
             this.deleteCleanup(e, currentRange);
         }
-        if (args.keyCode === 9 && this.parent.enableTabKey) {
+        let isCodeBlock: boolean = false;
+        if (!isNOU(this.parent.codeBlockModule)) {
+            currentRange = this.parent.getRange();
+            isCodeBlock = this.parent.formatter.editorManager.codeBlockObj.
+                isSelectionWithinCodeBlock(currentRange, currentRange.startContainer, currentRange.endContainer);
+        }
+        if (args.keyCode === 9 && this.parent.enableTabKey && !isCodeBlock) {
             this.parent.formatter.saveData(e);
             if (!isNOU(args.target) && isNullOrUndefined(closest(args.target as Element, '.e-rte-toolbar'))) {
                 const range: Range = this.nodeSelectionObj.getRange(this.contentRenderer.getDocument());
@@ -405,7 +413,7 @@ export class HtmlEditor {
                             save.restore();
                         }
                         else {
-                            InsertHtml.Insert(this.contentRenderer.getDocument(), '&nbsp;&nbsp;&nbsp;&nbsp;');
+                            InsertHtml.Insert(this.contentRenderer.getDocument(), '&nbsp;&nbsp;&nbsp;&nbsp;', this.parent.element);
                             this.rangeCollection.push(this.nodeSelectionObj.getRange(this.contentRenderer.getDocument()));
                         }
                     } else {
@@ -413,7 +421,7 @@ export class HtmlEditor {
                             this.marginTabAdd(args.shiftKey, alignmentNodes);
                         }
                         else {
-                            InsertHtml.Insert(this.contentRenderer.getDocument(), '&nbsp;&nbsp;&nbsp;&nbsp;');
+                            InsertHtml.Insert(this.contentRenderer.getDocument(), '&nbsp;&nbsp;&nbsp;&nbsp;', this.parent.element);
                             this.rangeCollection.push(this.nodeSelectionObj.getRange(this.contentRenderer.getDocument()));
                         }
                     }
@@ -619,6 +627,22 @@ export class HtmlEditor {
                 (!isNOU(currentRange.startContainer.previousSibling) && currentRange.startContainer.previousSibling.nodeName === 'BR')) {
                 return;
             }
+            if (!isNOU(this.parent.codeBlockModule)) {
+                const immediateBlockNode: Node = this.parent.formatter.editorManager.domNode.
+                    getImmediateBlockNode(currentRange.startContainer);
+                const blockNode: Node = immediateBlockNode !== this.parent.inputElement ? immediateBlockNode : currentRange.startContainer;
+                const firstPosition: { node: Node; position: number } =
+                    this.parent.formatter.editorManager.nodeSelection.findFirstContentNode(blockNode);
+                const cursorAtFirstPosition: boolean = firstPosition && firstPosition.node === (currentRange.startContainer.nodeName === 'CODE' ? currentRange.startContainer.firstChild : currentRange.startContainer) &&
+                    currentRange.startOffset === 0;
+                const isBlockPreviousElement: { currentNode: Node, previousSibling: Node } | null =
+                    this.parent.formatter.editorManager.codeBlockObj.findParentOrPreviousSiblingCodeBlock(currentRange);
+                const isCodeBlockElement: HTMLElement | null =
+                    this.parent.formatter.editorManager.codeBlockObj.isValidCodeBlockStructure(blockNode);
+                if ((!isNOU(isBlockPreviousElement) && cursorAtFirstPosition) || (!isNOU(isCodeBlockElement) && cursorAtFirstPosition)) {
+                    return;
+                }
+            }
             this.rangeElement = (this.getRootBlockNode(currentRange.startContainer) as HTMLElement);
             if (this.rangeElement.tagName === 'OL' || this.rangeElement.tagName === 'UL') {
                 const liElement: HTMLElement = (this.getRangeLiNode(currentRange.startContainer) as HTMLElement);
@@ -767,6 +791,13 @@ export class HtmlEditor {
         let isLiElement: boolean = false;
         let liElement: HTMLElement;
         let rootElement: HTMLElement;
+        if (!isNOU(this.parent.codeBlockModule)) {
+            const codePos: CodeBlockPosition = this.parent.formatter.editorManager.codeBlockObj.getCodeBlockPosition(currentRange);
+            if ((e.args as KeyboardEventArgs).code === 'Delete' && (!isNOU(this.parent.formatter.editorManager.codeBlockObj.isValidCodeBlockStructure(currentRange.startContainer)) ||
+                (!isNOU(codePos.nextSiblingCodeBlockElement) && codePos.cursorAtLastPosition))) {
+                return;
+            }
+        }
         if (((e as NotifyArgs).args as KeyboardEventArgs).code === 'Delete' && ((e as NotifyArgs).args as KeyboardEventArgs).keyCode === 46 &&
             this.parent.contentModule.getText().trim().replace(/(\r\n|\n|\r|\t)/gm, '').replace(/\u200B/g, '').length !== 0 && this.parent.getSelection().length === 0 && currentRange.startContainer.parentElement.tagName !== 'TD' &&
             currentRange.startContainer.parentElement.tagName !== 'TH') {
@@ -795,10 +826,15 @@ export class HtmlEditor {
                 isImgWithEmptyBlockNode = true;
             }
             if (this.getCaretIndex(currentRange, this.deleteRangeElement) === this.deleteRangeElement.textContent.length &&
-                !isImgWithEmptyBlockNode) {
+                !isImgWithEmptyBlockNode && this.deleteRangeElement.tagName !== 'HR') {
+                if (this.deleteRangeElement.lastElementChild && this.deleteRangeElement.lastElementChild.tagName === 'HR') {
+                    this.deleteRangeElement = null;
+                    return;
+                }
                 if (!isNullOrUndefined(liElement)) {
-                    if (isLiElement || !isNullOrUndefined(liElement.nextElementSibling)) {
-                        this.deleteOldRangeElement = this.getRangeElement(liElement.nextElementSibling);
+                    const nextHierarchySibling: HTMLElement = this.findNextHierarchySibling(liElement);
+                    if (nextHierarchySibling) {
+                        this.deleteOldRangeElement = this.getRangeElement(nextHierarchySibling);
                     } else {
                         this.deleteOldRangeElement = rootElement.nextElementSibling;
                     }
@@ -888,6 +924,36 @@ export class HtmlEditor {
             } else {
                 this.deleteRangeElement = null;
             }
+        }
+    }
+    private findNextHierarchySibling(element: HTMLElement): HTMLElement | null {
+        // Check if the element has a direct next sibling
+        if (element.nodeName === 'LI') {
+            // Case 1: Check for direct next sibling of the list item
+            if (element.nextElementSibling) {
+                return element.nextElementSibling as HTMLElement;
+            }
+            const parentElement: HTMLElement = element.parentElement;
+            // Case 2: No direct sibling, check if the parent's next sibling is a list item
+            if (parentElement.nextElementSibling && parentElement.nextElementSibling.nodeName === 'LI') {
+                return parentElement.nextElementSibling as HTMLElement;
+            }
+            // Case 3: For nested lists, traverse up the hierarchy through parent lists
+            if (parentElement.tagName === 'UL' || parentElement.tagName === 'OL') {
+                const parentLi: HTMLElement = parentElement.parentElement;
+                // Case 3.1: If parent list is inside another list item, check for its sibling
+                if (parentLi && parentLi.nextElementSibling) {
+                    return parentLi.nextElementSibling as HTMLElement;
+                } else if (parentLi && parentLi.nodeName === 'LI') {
+                    // Case 3.2: If parent list item exists but has no siblings, recursively check up the tree
+                    return this.findNextHierarchySibling(parentLi);
+                }
+            }
+            // No suitable next element found in the hierarchy
+            return null;
+        } else {
+            // For non-list item elements, simply return next sibling
+            return element.nextElementSibling as HTMLElement;
         }
     }
     private getCaretIndex(currentRange: Range, element: Element): number {
@@ -1043,7 +1109,8 @@ export class HtmlEditor {
         const target: HTMLElement = args.originalEvent.target as HTMLElement;
         this.parent.notify(events.closeTooltip, {target: target});
         if (item.command !== 'FormatPainter') {
-            if (closestElement && !closestElement.classList.contains('e-rte-inline-popup') && !closestElement.classList.contains('e-rte-text-popup')) {
+            const isTextQuickToolbar: boolean = !isNOU(closestElement) && closestElement.classList.contains('e-rte-quick-popup') && closestElement.querySelectorAll('.e-text-quicktoolbar').length === 1;
+            if (closestElement && !closestElement.classList.contains('e-rte-inline-popup') && !isTextQuickToolbar) {
                 if (!(item.subCommand === 'SourceCode' || item.subCommand === 'Preview' ||
                     item.subCommand === 'FontColor' || item.subCommand === 'BackgroundColor')) {
                     if (isIDevice() && item.command === 'Images') {
@@ -1153,6 +1220,9 @@ export class HtmlEditor {
                     break;
                 case 'ExportWord':
                     this.parent.notify(events.onExport, { member: 'ExportWord', args: args });
+                    break;
+                case 'CodeBlock':
+                    this.parent.notify(events.onCodeBlock, { member: 'codeBlock', args: args });
                     break;
                 case 'ExportPdf':
                     this.parent.notify(events.onExport, { member: 'ExportPdf', args: args });
@@ -1329,7 +1399,7 @@ export class HtmlEditor {
         for (let i: number = 0; i < tableCellSelectNodes.length; i++) {
             const currentCell: Element = tableCellSelectNodes[i as number];
             removeClassWithAttr([currentCell as HTMLElement],
-                                [classes.CLS_TABLE_SEL, classes.CLS_TABLE_MULTI_CELL, classes.CLS_TABLE_SEL_END]);
+                                [CLS_TABLE_SEL, CLS_TABLE_MULTI_CELL, CLS_TABLE_SEL_END]);
             if (i === 0) {
                 if (args.keyCode === 32) {
                     currentCell.innerHTML = '&#8203;<br>';

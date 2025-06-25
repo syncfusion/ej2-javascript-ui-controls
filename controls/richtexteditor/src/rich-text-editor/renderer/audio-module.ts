@@ -1,10 +1,11 @@
 import { addClass, detach, EventHandler, L10n, isNullOrUndefined, KeyboardEventArgs, Ajax, MouseEventArgs } from '@syncfusion/ej2-base';
 import { Browser, closest, removeClass, isNullOrUndefined as isNOU } from '@syncfusion/ej2-base';
-import {
-    IAudioCommandsArgs, IRenderer, IDropDownItemModel, IToolbarItemModel, AfterMediaDeleteEventArgs, SlashMenuItemSelectArgs } from '../base/interface';
-import { IRichTextEditor, IImageNotifyArgs, NotifyArgs, IShowPopupArgs } from '../base/interface';
+import { AfterMediaDeleteEventArgs, SlashMenuItemSelectArgs, IQuickToolbar, IRenderer} from '../base/interface';
+import { IRichTextEditor, IImageNotifyArgs } from '../base/interface';
+import { IDropDownItemModel, IToolbarItemModel, NotifyArgs, IShowPopupArgs, IAudioCommandsArgs } from '../../common/interface';
 import * as events from '../base/constant';
 import * as classes from '../base/classes';
+import { CLS_AUD_FOCUS } from '../../common/constant';
 import { ServiceLocator } from '../services/service-locator';
 import { NodeSelection } from '../../selection/selection';
 import { Uploader, SelectedEventArgs, MetaData, FileInfo, BeforeUploadEventArgs } from '@syncfusion/ej2-inputs';
@@ -14,10 +15,10 @@ import { Button } from '@syncfusion/ej2-buttons';
 import { RendererFactory } from '../services/renderer-factory';
 import { ClickEventArgs } from '@syncfusion/ej2-navigations';
 import { RenderType } from '../base/enum';
-import { dispatchEvent, hasClass, convertToBlob } from '../base/util';
+import { dispatchEvent, hasClass } from '../base/util';
 import { DialogRenderer } from './dialog-renderer';
-import { isIDevice } from '../../common/util';
-
+import { isIDevice, convertToBlob} from '../../common/util';
+import { AudioCommand } from '../../editor-manager/plugin/audio';
 /**
  * `Audio` module is used to handle audio actions.
  */
@@ -33,7 +34,7 @@ export class Audio {
     private uploadUrl: IAudioCommandsArgs;
     private contentModule: IRenderer;
     private rendererFactory: RendererFactory;
-    private quickToolObj: IRenderer;
+    private quickToolObj: IQuickToolbar;
     private audEle: HTMLAudioElement;
     private isAudioUploaded: boolean = false;
     private isAllowedTypes: boolean = true;
@@ -74,6 +75,7 @@ export class Audio {
         this.parent.on(events.insertCompleted, this.showAudioQuickToolbar, this);
         this.parent.on(events.destroy, this.destroy, this);
         this.parent.on(events.iframeMouseDown, this.closeDialog, this);
+        this.parent.on(events.bindOnEnd, this.bindOnEnd, this);
     }
 
     protected removeEventListener(): void {
@@ -84,6 +86,7 @@ export class Audio {
         this.parent.off(events.dynamicModule, this.afterRender);
         this.parent.off(events.showAudioDialog, this.showDialog);
         this.parent.off(events.closeAudioDialog, this.closeDialog);
+        this.parent.off(events.bindOnEnd, this.bindOnEnd);
         this.parent.off(events.audioToolbarAction, this.onToolbarAction);
         this.parent.off(events.dropDownSelect, this.alignmentSelect);
         this.parent.off(events.audioDelete, this.deleteAudio);
@@ -96,6 +99,12 @@ export class Audio {
             EventHandler.remove(this.contentModule.getEditPanel(), Browser.touchEndEvent, this.audioClick);
             (this.parent.element.ownerDocument as Document).removeEventListener('mousedown', this.docClick);
             this.docClick = null;
+        }
+    }
+
+    private bindOnEnd(): void {
+        if (!this.parent.formatter.editorManager.audioObj) {
+            this.parent.formatter.editorManager.audioObj = new AudioCommand(this.parent.formatter.editorManager);
         }
     }
 
@@ -214,7 +223,7 @@ export class Audio {
                 const prev: Node = ((selectParentEle[0] as HTMLElement).parentElement as HTMLElement).childNodes[0];
                 this.parent.formatter.editorManager.nodeSelection.setSelectionText(
                     this.contentModule.getDocument(), prev, prev, prev.textContent.length, prev.textContent.length);
-                removeClass([selectParentEle[0] as HTMLElement], classes.CLS_AUD_FOCUS);
+                removeClass([selectParentEle[0] as HTMLElement], CLS_AUD_FOCUS);
                 this.quickToolObj.audioQTBar.hidePopup();
             }
         }
@@ -288,8 +297,8 @@ export class Audio {
     }
 
     private handleSelectAll(): void {
-        const audioFocusNodes: NodeListOf<Element> = this.parent.inputElement.querySelectorAll('.' + classes.CLS_AUD_FOCUS);
-        removeClass(audioFocusNodes, classes.CLS_AUD_FOCUS);
+        const audioFocusNodes: NodeListOf<Element> = this.parent.inputElement.querySelectorAll('.' + CLS_AUD_FOCUS);
+        removeClass(audioFocusNodes, CLS_AUD_FOCUS);
     }
 
     private openDialog(
@@ -446,7 +455,7 @@ export class Audio {
             }
             /* eslint-enable */
         }
-        if (this.contentModule.getEditPanel().querySelector('.' + classes.CLS_AUD_FOCUS)) {
+        if (this.contentModule.getEditPanel().querySelector('.' + CLS_AUD_FOCUS)) {
             if (!this.isAudioElem(e.target as HTMLElement) && !isNOU(this.audEle)) {
                 this.audEle.style.outline = '';
             } else if (!isNOU(this.prevSelectedAudEle) && this.prevSelectedAudEle !== target) {
@@ -482,7 +491,7 @@ export class Audio {
         }
         if (this.quickToolObj && document.body.contains(this.quickToolObj.audioQTBar.element)) {
             this.quickToolObj.audioQTBar.hidePopup();
-            removeClass([(selectNodeEle[0] as HTMLElement)], classes.CLS_AUD_FOCUS);
+            removeClass([(selectNodeEle[0] as HTMLElement)], CLS_AUD_FOCUS);
         }
     }
 
@@ -525,11 +534,7 @@ export class Audio {
             this.quickToolObj = this.parent.quickToolbarModule;
             const target: HTMLElement = args.target as HTMLElement;
             this.contentModule = this.rendererFactory.getRenderer(RenderType.Content);
-            const isPopupOpen: boolean = this.quickToolObj.audioQTBar.element.classList.contains('e-rte-pop');
             if (this.isAudioElem(target) && this.parent.quickToolbarModule) {
-                if (isPopupOpen) {
-                    return;
-                }
                 this.parent.formatter.editorManager.nodeSelection.Clear(this.contentModule.getDocument());
                 this.parent.formatter.editorManager.nodeSelection.setSelectionContents(this.contentModule.getDocument(), target);
                 if (isIDevice()) {
@@ -560,7 +565,6 @@ export class Audio {
             return;
         }
         this.quickToolObj = this.parent.quickToolbarModule;
-        const args: MouseEvent = e.args as MouseEvent;
         let target: HTMLElement = e.elements as HTMLElement;
         [].forEach.call(e.elements, (element: Element, index: number) => {
             if (index === 0) {
@@ -569,7 +573,7 @@ export class Audio {
         });
         if (this.isAudioElem(target)) {
             const audioElem: HTMLElement = target.tagName === 'AUDIO' ? target : target.querySelector('audio');
-            addClass([audioElem], [classes.CLS_AUD_FOCUS]);
+            addClass([audioElem], [CLS_AUD_FOCUS]);
             audioElem.style.outline = '2px solid #4a90e2';
         }
         if (this.parent.quickToolbarModule.audioQTBar) {
@@ -577,17 +581,17 @@ export class Audio {
                 this.showPopupTime = setTimeout(() => {
                     this.parent.formatter.editorManager.nodeSelection.Clear(this.contentModule.getDocument());
                     this.parent.formatter.editorManager.nodeSelection.setSelectionContents(this.contentModule.getDocument(), target);
-                    this.quickToolObj.audioQTBar.showPopup(args.pageX - 50, target.getBoundingClientRect().top + 34, target as Element);
+                    this.quickToolObj.audioQTBar.showPopup(target as Element, e.args as MouseEvent);
                 }, 400);
             } else {
-                this.quickToolObj.audioQTBar.showPopup(args.pageX - 50, target.getBoundingClientRect().top + 34, target as Element);
+                this.quickToolObj.audioQTBar.showPopup(target as Element, e.args as MouseEvent);
             }
         }
     }
 
     public hideAudioQuickToolbar(): void {
-        if (!isNullOrUndefined(this.contentModule.getEditPanel().querySelector('.' + classes.CLS_AUD_FOCUS))) {
-            removeClass([this.contentModule.getEditPanel().querySelector('.' + classes.CLS_AUD_FOCUS)], classes.CLS_AUD_FOCUS);
+        if (!isNullOrUndefined(this.contentModule.getEditPanel().querySelector('.' + CLS_AUD_FOCUS))) {
+            removeClass([this.contentModule.getEditPanel().querySelector('.' + CLS_AUD_FOCUS)], CLS_AUD_FOCUS);
             if (!isNOU(this.audEle)) {
                 this.audEle.style.outline = '';
             }
@@ -786,10 +790,10 @@ export class Audio {
             asyncSettings: { saveUrl: this.parent.insertAudioSettings.saveUrl, removeUrl: this.parent.insertAudioSettings.removeUrl },
             dropArea: span, multiple: false, enableRtl: this.parent.enableRtl,
             allowedExtensions: this.parent.insertAudioSettings.allowedTypes.toString(),
+            maxFileSize: this.parent.insertAudioSettings.maxFileSize,
             selected: (e: SelectedEventArgs) => {
                 proxy.isAudioUploaded = true;
                 selectArgs = e;
-                // eslint-disable-next-line
                 filesData = e.filesData;
                 this.parent.trigger(events.fileSelected, selectArgs, (selectArgs: SelectedEventArgs) => {
                     if (!selectArgs.cancel) {

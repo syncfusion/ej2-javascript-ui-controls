@@ -287,6 +287,7 @@ export class KeyboardInteraction {
         }
         const queryStr: string = '.' + cls.WORK_CELLS_CLASS + ',.' + cls.ALLDAY_CELLS_CLASS + ',.' + cls.HEADER_CELLS_CLASS;
         let target: HTMLTableCellElement = closest((e.target as Element), queryStr) as HTMLTableCellElement;
+        if (!target) { return; }
         const selectedCells: Element[] = this.parent.getSelectedCells();
         if (selectedCells.length > 0 && selectedCells.indexOf(target) === -1) {
             target = selectedCells[selectedCells.length - 1] as HTMLTableCellElement;

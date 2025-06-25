@@ -3479,7 +3479,7 @@ describe('Schedule Timeline Month view', () => {
             expect(schObj.element.querySelectorAll('.e-block-appointment').length).toEqual(3);
             const blockEvent: HTMLElement = schObj.element.querySelector('[data-id="Appointment_2"]') as HTMLElement;
             expect(blockEvent.offsetTop).toEqual(0);
-            expect(blockEvent.offsetWidth).toEqual(70);
+            expect(blockEvent.offsetWidth).toEqual(69);
         });
 
         it('add event', (done: DoneFn) => {
@@ -3571,7 +3571,7 @@ describe('Schedule Timeline Month view', () => {
             const blockEventElement: Element[] = [].slice.call(schObj.element.querySelectorAll('.e-block-appointment'));
             expect(blockEventElement.length).toEqual(3);
             const cellHeight: number = (schObj.element.querySelector('.e-content-table tbody td') as HTMLElement).offsetHeight;
-            expect((blockEventElement[0] as HTMLElement).offsetHeight).toBe(cellHeight);
+            expect((blockEventElement[0] as HTMLElement).offsetHeight).toBe(cellHeight - 1);
         });
     });
 
@@ -3695,7 +3695,7 @@ describe('Schedule Timeline Month view', () => {
             expect(blockEventElement.length).toEqual(4);
             const cellHeight: number =
                 (schObj.element.querySelector('.e-content-table tbody tr:nth-child(2) td') as HTMLElement).offsetHeight;
-            expect((blockEventElement[0] as HTMLElement).offsetHeight).toBe(cellHeight);
+            expect((blockEventElement[0] as HTMLElement).offsetHeight).toBe(cellHeight - 1);
             const resorucCellHeight: number =
                 (schObj.element.querySelector('.e-resource-column-table tbody tr:nth-child(2) td') as HTMLElement).offsetHeight;
             expect(resorucCellHeight).toEqual(cellHeight);

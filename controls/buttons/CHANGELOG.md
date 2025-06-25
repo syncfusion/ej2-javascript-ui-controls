@@ -2,15 +2,7 @@
 
 ## [Unreleased]
 
-## 29.2.11 (2025-06-17)
-
-### Switch
-
-#### Bug Fixes
-
-- `#I959152` - Fixed the issue of the click event being triggered twice when placing a switch within a label tag. Additionally, resolved a script error that occurred when placing the switch within a dialog.
-
-## 29.1.33 (2025-03-25)
+## 30.1.37 (2025-06-25)
 
 ### Chip
 

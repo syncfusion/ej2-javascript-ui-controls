@@ -6,7 +6,7 @@ import { getUniversalTime, isCountRequired, isScheduledTask } from './utils';
 import { Gantt } from './gantt';
 import { DateProcessor } from './date-processor';
 import { TaskFieldsModel, ColumnModel, ResourceFieldsModel } from '../models/models';
-import { CObject, DurationUnit } from './enum';
+import { CObject, ConstraintType, DurationUnit } from './enum';
 import { WeekWorkingTimeModel } from '../models/week-working-time-model';
 
 /**
@@ -23,7 +23,6 @@ export class TaskProcessor extends DateProcessor {
     private customSegmentProperties: Object[] = [];
     private systemTimeZone: string;
     private isBaseline : boolean = false;
-    private isDurationValueUpdated: boolean = false;
     private uid: number = 0;
     private isTaskIDInteger: boolean = true;
 
@@ -302,6 +301,17 @@ export class TaskProcessor extends DateProcessor {
             if (this.parent.taskFields.hasChildMapping && tempData['parentUniqueID']) {
                 parentItem = this.parent.getTaskByUniqueID(tempData['parentUniqueID']);
             }
+            if (
+                !isNullOrUndefined(this.parent.taskFields.constraintDate) &&
+                !isNullOrUndefined(this.parent.taskFields.constraintType) &&
+                isNullOrUndefined(tempData[this.parent.taskFields.constraintDate]) &&
+                isNullOrUndefined(tempData[this.parent.taskFields.constraintType])
+            ) {
+                tempData[this.parent.taskFields.constraintType] = 0;
+                tempData[this.parent.taskFields.constraintDate] =
+                    !isNullOrUndefined(tempData[this.parent.taskFields.startDate]) ?
+                        tempData[this.parent.taskFields.startDate] : tempData[this.parent.taskFields.endDate];
+            }
             const ganttData: IGanttData = this.createRecord(tempData, level, parentItem, true);
             if (!this.parent.enableValidation || (!this.parent.autoCalculateDateScheduling || (this.parent.isLoad &&
                 this.parent.treeGrid.loadChildOnDemand && this.parent.taskFields.hasChildMapping))) {
@@ -480,6 +490,16 @@ export class TaskProcessor extends DateProcessor {
                 this.parent.setRecordValue('hasChildRecords', false, ganttData);
             }
         }
+        const constraintType: number = data[taskSettings.constraintType];
+        if (ganttData.hasChildRecords) {
+            if (constraintType && (constraintType !== 0 && constraintType !== 4 && constraintType !== 7)) {
+                data[taskSettings.constraintType] = 0;
+            }
+        } else if (constraintType && (constraintType < 0 || constraintType > 7)) {
+            data[taskSettings.constraintType] = 0;
+        }
+        this.parent.setRecordValue('constraintType', data[taskSettings.constraintType], ganttProperties, true);
+        this.parent.setRecordValue('constraintDate', data[taskSettings.constraintDate], ganttProperties, true);
         this.calculateScheduledValues(ganttData, data, isLoad);
         this.parent.setRecordValue('baselineStartDate', this.checkBaselineStartDate(baselineStartDate, ganttProperties), ganttProperties, true);
         // set default end time, if hour is 0
@@ -705,7 +725,7 @@ export class TaskProcessor extends DateProcessor {
                             totalOffsetDuration = (totalOffsetDuration < 1) ? 1 : totalOffsetDuration;
                         }
                         if (taskSettings.duration) {
-                            remainingDuration = data.ganttProperties.duration - sumOfDuration - totalOffsetDuration ;
+                            remainingDuration = data.ganttProperties.duration - sumOfDuration - totalOffsetDuration;
                             if (remainingDuration <= 0) {
                                 continue;
                             }
@@ -855,7 +875,8 @@ export class TaskProcessor extends DateProcessor {
      */
     public updateWorkWithDuration(ganttData: IGanttData): void {
         if (this.parent['triggeredColumnName'] === this.parent.taskFields.work && ganttData.ganttProperties.duration !== 0 &&
-            (isNullOrUndefined(ganttData.ganttProperties.resourceInfo) || ganttData.ganttProperties.resourceInfo.length !== 0)) {
+            (isNullOrUndefined(ganttData.ganttProperties.resourceInfo) || ganttData.ganttProperties.resourceInfo.length !== 0) &&
+            !ganttData.hasChildRecords) {
             return;
         }
         const resources: Object[] = this.fetchResources(ganttData);
@@ -1074,10 +1095,8 @@ export class TaskProcessor extends DateProcessor {
                 }
             } else if (startDate) {
                 this.calculateDateFromStartDate(startDate, endDate, duration, ganttData, isLoad);
-
             } else if (endDate) {
                 this.calculateDateFromEndDate(endDate, duration, ganttData);
-
             } else if (!isNullOrUndefined(duration) && duration !== '') {
                 this.updateDurationValue(duration, ganttProperties);
                 const startDate: Date = this.parent.allowUnscheduledTasks ? null : this.getProjectStartDate(ganttProperties, isLoad);
@@ -1087,6 +1106,19 @@ export class TaskProcessor extends DateProcessor {
                 } else {
                     this.calculateEndDate(ganttData);
                 }
+            }
+            if (
+                this.parent.taskFields.constraintDate &&
+                this.parent.taskFields.constraintType &&
+                !ganttData[this.parent.taskFields.dependency]
+            ) {
+                this.parent.setRecordValue('startDate', this.getDateByConstraint(ganttProperties, ganttProperties.startDate), ganttProperties, true);
+                this.calculateEndDate(ganttData);
+                const constraintType: ConstraintType = ganttProperties.constraintType;
+                const startDate: Date = ganttProperties.startDate;
+                const endDate: Date = ganttProperties.endDate;
+                const constraintDate: Date = this.parent.predecessorModule['getConstraintDate'](constraintType, startDate, endDate);
+                this.parent.setRecordValue('constraintDate', constraintDate, ganttProperties, true);
             }
         }
         if (!this.parent.autoCalculateDateScheduling || (this.parent.isLoad && this.parent.treeGrid.loadChildOnDemand &&
@@ -1116,29 +1148,31 @@ export class TaskProcessor extends DateProcessor {
                 this.parent.setRecordValue('endDate', ganttProperties.startDate, ganttProperties, true);
             } else {
                 this.parent.setRecordValue('work', work, ganttProperties, true);
-                switch (tType) {
-                case 'FixedDuration':
-                    // To validate the work column as well,when initial dataset have 0 duration
-                    if ((!isNullOrUndefined(ganttData[this.parent.taskFields.resourceInfo]) &&
-                                            !isNullOrUndefined(ganttData.ganttProperties.resourceInfo) &&
-                                                               ganttData.ganttProperties.resourceInfo.length !== 0) ||
-                                                                    ganttProperties.duration === 0) {
-                        this.updateWorkWithDuration(ganttData);
+                if (!this.parent.undoRedoModule || (this.parent.undoRedoModule && !this.parent.undoRedoModule['isUndoRedoPerformed'])) {
+                    switch (tType) {
+                    case 'FixedDuration':
+                        // To validate the work column as well,when initial dataset have 0 duration
+                        if ((!isNullOrUndefined(ganttData[this.parent.taskFields.resourceInfo]) &&
+                                                !isNullOrUndefined(ganttData.ganttProperties.resourceInfo) &&
+                                                                ganttData.ganttProperties.resourceInfo.length !== 0) ||
+                                                                        ganttProperties.duration === 0) {
+                            this.updateWorkWithDuration(ganttData);
+                        }
+                        break;
+                    case 'FixedWork':
+                        if ((!isNullOrUndefined(ganttData[this.parent.taskFields.resourceInfo]) &&
+                                                !isNullOrUndefined(ganttData.ganttProperties.resourceInfo) &&
+                                                                ganttData.ganttProperties.resourceInfo.length !== 0) ||
+                                                                        ganttProperties.work === 0) {
+                            this.updateDurationWithWork(ganttData);
+                        }
+                        break;
+                    case 'FixedUnit':
+                        if (!ganttData.hasChildRecords) {
+                            this.updateDurationWithWork(ganttData);
+                        }
+                        break;
                     }
-                    break;
-                case 'FixedWork':
-                    if ((!isNullOrUndefined(ganttData[this.parent.taskFields.resourceInfo]) &&
-                                            !isNullOrUndefined(ganttData.ganttProperties.resourceInfo) &&
-                                                               ganttData.ganttProperties.resourceInfo.length !== 0) ||
-                                                                    ganttProperties.work === 0) {
-                        this.updateDurationWithWork(ganttData);
-                    }
-                    break;
-                case 'FixedUnit':
-                    if (!ganttData.hasChildRecords) {
-                        this.updateDurationWithWork(ganttData);
-                    }
-                    break;
                 }
                 if (!isNullOrUndefined(taskSettings.type)) {
                     this.parent.dataOperation.updateMappingData(ganttData, 'type');
@@ -1230,9 +1264,6 @@ export class TaskProcessor extends DateProcessor {
                 this.parent.setRecordValue('duration', updatedDuration, ganttProperties, true);
             }
             this.parent.dataOperation.updateMappingData(ganttData, 'duration');
-            if (this.parent.editModule && this.parent.editModule.dialogModule && this.parent.editModule.dialogModule['isFromEditDialog']) {
-                this.isDurationValueUpdated = true;
-            }
         }
     }
     /**
@@ -1488,8 +1519,11 @@ export class TaskProcessor extends DateProcessor {
      */
     public calculateBaselineLeft(ganttProperties: ITaskData): number {
         const baselineStartDate: Date = this.getDateFromFormat(ganttProperties.baselineStartDate);
-        const baselineEndDate: Date = this.getDateFromFormat(ganttProperties.baselineEndDate);
+        let  baselineEndDate: Date = this.getDateFromFormat(ganttProperties.baselineEndDate);
         if (baselineStartDate && baselineEndDate) {
+            if (baselineStartDate.getTime() > baselineEndDate.getTime()) {
+                baselineEndDate = baselineStartDate;
+            }
             return (this.getTaskLeft(baselineStartDate, ganttProperties.isMilestone));
         } else {
             return 0;
@@ -1504,9 +1538,13 @@ export class TaskProcessor extends DateProcessor {
      */
     public calculateBaselineWidth(ganttProperties: ITaskData): number {
         const baselineStartDate: Date = this.getDateFromFormat(ganttProperties.baselineStartDate);
-        const baselineEndDate: Date = this.getDateFromFormat(ganttProperties.baselineEndDate);
+        let baselineEndDate: Date = this.getDateFromFormat(ganttProperties.baselineEndDate);
         if (baselineStartDate && baselineEndDate && (baselineStartDate.getTime() !== baselineEndDate.getTime())) {
             this.isBaseline = true;
+            if (baselineStartDate.getTime() > baselineEndDate.getTime()) {
+                ganttProperties.baselineEndDate = baselineStartDate;
+                baselineEndDate = baselineStartDate;
+            }
             return (this.getTaskWidth(baselineStartDate, baselineEndDate));
         } else {
             return 0;
@@ -2421,6 +2459,15 @@ export class TaskProcessor extends DateProcessor {
                 this.parent.setRecordValue('taskData.' + dataMapping.type, ganttProperties.taskType, ganttData);
                 this.parent.setRecordValue(dataMapping.type, ganttProperties.taskType, ganttData);
             }
+            if (dataMapping.constraintDate) {
+                this.setRecordDate(ganttData, ganttProperties.constraintDate, dataMapping.constraintDate);
+            }
+            if (dataMapping.constraintType) {
+                if (!this.parent.isLoad) {
+                    this.parent.setRecordValue('taskData.' + dataMapping.constraintType, ganttProperties.constraintType, ganttData);
+                }
+                this.parent.setRecordValue(dataMapping.constraintType, ganttProperties.constraintType, ganttData);
+            }
         }
     }
     /**
@@ -2586,7 +2633,9 @@ export class TaskProcessor extends DateProcessor {
         } else if ((unit === 'day') || (unit === 'days') || (unit === 'd')) {
             unit = 'day';
         } else {
-            unit = this.parent.durationUnit.toLocaleLowerCase();
+            if (!isNullOrUndefined(this.parent.durationUnit)) {
+                unit = this.parent.durationUnit.toLocaleLowerCase();
+            }
         }
         return unit;
     }

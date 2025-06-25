@@ -71,7 +71,7 @@ describe('Image Dialog', () => {
         setTimeout(function () {
             let quickPop: any = <HTMLElement>document.querySelectorAll('.e-rte-quick-popup')[0];
             let quickTBItem: any = quickPop.querySelectorAll('.e-toolbar-item');
-            quickTBItem.item(5).click();
+            quickTBItem.item(6).click();
             expect(beforeDialogOpenEvent).toBe(true);
             expect(dialogOpenEvent).toBe(true);
             (<HTMLElement>rteEle.querySelectorAll(".e-dlg-closeicon-btn")[0] as HTMLElement).click();
@@ -174,8 +174,8 @@ describe('Table Dialog QuickToolbar', () => {
             target: (rteObj as any).tableModule.popupObj.element.querySelectorAll('.e-rte-table-row')[1].querySelectorAll('.e-rte-tablecell')[3],
             preventDefault: function () { }
         };
-        (rteObj as any).tableModule.tableCellSelect(event);
-        (rteObj as any).tableModule.tableCellLeave(event);
+        (rteObj as any).tableModule.tableObj.tableCellSelect(event);
+        (rteObj as any).tableModule.tableObj.tableCellLeave(event);
         let clickEvent: any = document.createEvent("MouseEvents");
         clickEvent.initEvent("mouseup", false, true);
         event.target.dispatchEvent(clickEvent);

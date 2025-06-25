@@ -15,6 +15,7 @@ import { DataManager } from '@syncfusion/ej2-data';
 export class AxisFields {
     /** @hidden */
     public parent: PivotView;
+    private tempElements: Element[] = [];
 
     /** Constructor for render module
      *
@@ -33,6 +34,7 @@ export class AxisFields {
         if ((!this.parent.pivotButtonModule || (this.parent.pivotButtonModule && this.parent.pivotButtonModule.isDestroyed))) {
             new PivotButton(this.parent);
         }
+        this.parent.pivotButtonModule.cleanupButtonElements();
         this.createPivotButtons();
         let pivotButtons: HTMLElement[] = [];
         pivotButtons = pivotButtons.concat([].slice.call(this.parent.groupingBarModule.rowPanel.querySelectorAll('.' + cls.PIVOT_BUTTON_WRAPPER_CLASS)));
@@ -44,6 +46,7 @@ export class AxisFields {
                     className: 'e-indent-div',
                     styles: this.parent.isTabular ? 'auto' : 'width:' + j * indentWidth + 'px'
                 });
+                this.tempElements.push(indentDiv);
                 prepend([indentDiv], pivotButtons[j as number]);
             }
         }
@@ -94,5 +97,21 @@ export class AxisFields {
                 }
             }
         }
+    }
+
+    /**
+     * Destroy method to clean up resources
+     *
+     * @returns {void}
+     * @hidden
+     */
+    public destroy(): void {
+        for (let i: number = 0; i < this.tempElements.length; i++) {
+            const element: Element = this.tempElements[i as number];
+            if (element && element.parentNode) {
+                element.parentNode.removeChild(element);
+            }
+        }
+        this.tempElements = [];
     }
 }

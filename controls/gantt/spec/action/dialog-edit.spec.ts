@@ -320,7 +320,7 @@ describe('Dialog editing - resoruce selection', () => {
     it('Resources editing', () => {
         let cancelRecord: HTMLElement = document.querySelectorAll('#' + ganttObj.element.id + '_dialog > div.e-footer-content > button.e-control')[1] as HTMLElement;
         triggerMouseEvent(cancelRecord, 'click');
-        ganttObj.timelineModule.isZoomToFit = true;
+        ganttObj.timelineModule.isZoomedToFit = true;
         ganttObj.ganttChartModule['renderChartElements']();
         expect(ganttObj.currentZoomingLevel.level).toBe(9);
     });
@@ -3274,7 +3274,7 @@ describe('Edit custom column values in edit dialog', function () {
             durationInput.value = '-4 days';
             let element: HTMLElement = ganttObj.element.querySelector('#treeGrid' + ganttObj.element.id + '_gridcontrol_content_table > tbody > tr:nth-child(4) > td:nth-child(6)') as HTMLElement;
             triggerMouseEvent(element, 'click');
-            expect(ganttObj.flatData[2].ganttProperties.duration).toBe(0);
+            expect(ganttObj.flatData[2].ganttProperties.duration).toBe(null);
         });
     });
     describe('Cant able to convert the taskbar to milestone', () => {
@@ -14381,6 +14381,169 @@ describe('update work with 2 resource', () => {
             input.dataBind();
             let saveRecord: HTMLElement = document.querySelector('#' + ganttObj.element.id + '_dialog > div.e-footer-content > button') as HTMLElement;
             triggerMouseEvent(saveRecord, 'click');
+        }
+    });
+});
+describe('deleting split task with undo redo', function () {
+       let ganttObj: Gantt;
+       beforeAll(function (done) {
+           ganttObj = createGantt({
+               dataSource: splitTasksData,
+                enableUndoRedo: true,
+                toolbar: ['Add', 'Edit', 'Update', 'Delete', 'Cancel', 'ExpandAll', 'CollapseAll', 'Search', 'ZoomIn', 'ZoomOut', 'ZoomToFit', 
+                'PrevTimeSpan', 'NextTimeSpan', 'Indent', 'Outdent','Undo','Redo', 'ExcelExport', 'CsvExport', 'PdfExport'],
+                undoRedoActions:['Sorting','Add','ColumnReorder','ColumnResize','ColumnState','Delete','Edit','Filtering','Indent','Outdent','NextTimeSpan','PreviousTimeSpan','RowDragAndDrop','Search','TaskbarDragAndDrop','ZoomIn','ZoomOut','ZoomToFit'],
+               taskFields: {
+                   id: 'TaskID',
+                   name: 'TaskName',
+                   startDate: 'StartDate',
+                   endDate: 'EndDate',
+                   duration: 'Duration',
+                   progress: 'Progress',
+                   dependency: 'Predecessor',
+                   child: 'subtasks',
+                   durationUnit: 'DurationUnit',
+                   segments: 'Segments',
+               },
+               durationUnit: 'Hour',
+               editSettings: {
+                 allowAdding: true,
+                 allowEditing: true,
+                 allowDeleting: true,
+                 allowTaskbarEditing: true,
+                 showDeleteConfirmDialog: true,
+               },
+               enableContextMenu: true,
+               allowSelection: true,
+               height: '450px',
+               treeColumnIndex: 1,
+               highlightWeekends: true,
+               }, done);
+       });
+       afterAll(function () {
+           if (ganttObj) {
+               destroyGantt(ganttObj);
+           }
+       });
+       it('deleting split task with undo redo', () => {
+           ganttObj.openEditDialog(3);
+           let selectSegment: HTMLElement = document.querySelector('#' + ganttObj.element.id + '_Tab > div.e-tab-header.e-control.e-toolbar.e-lib.e-keyboard > div > div:nth-child(4)') as HTMLElement;
+           triggerMouseEvent(selectSegment, 'click');
+           let selectRow: HTMLElement = document.querySelector('#' + ganttObj.element.id + 'SegmentsTabContainer_content_table > tbody > tr:nth-child(1)') as HTMLElement;
+           triggerMouseEvent(selectRow, 'click');
+           let deleteSegment: HTMLElement = document.querySelector('#' + ganttObj.element.id + 'SegmentsTabContainer_delete > span.e-tbar-btn-text') as HTMLElement;
+           triggerMouseEvent(deleteSegment, 'click');
+           let saveRecord: HTMLElement = document.querySelector('#' + ganttObj.element.id + '_dialog > div.e-footer-content > button') as HTMLElement;
+           triggerMouseEvent(saveRecord, 'click');
+       });
+   });
+describe('additional params for notes dialog', () => {
+    let ganttObj: Gantt;
+    const data = [
+        {
+            TaskID: 1,
+            TaskName: 'Product Concept',
+            StartDate: new Date('04/02/2019'),
+            EndDate: new Date('04/21/2019'),
+            subtasks: [
+                { TaskID: 2, TaskName: 'Defining the product and its usage', BaselineStartDate: new Date('04/02/2019'), BaselineEndDate: new Date('04/06/2019'), StartDate: new Date('04/02/2019'), Duration: 3, Progress: 30 },
+                { TaskID: 3, TaskName: 'Defining target audience', StartDate: new Date('04/02/2019'), Duration: 3,
+                    Indicators: [
+                        {
+                            'date': '04/10/2019',
+                            'iconClass': 'e-btn-icon e-notes-info e-icons e-icon-left e-gantt e-notes-info::before',
+                            'name': 'Indicator title',
+                            'tooltip': 'tooltip'
+                        }
+                    ]
+                },
+                { TaskID: 4, TaskName: 'Prepare product sketch and notes', StartDate: new Date('04/02/2019'), Duration: 3, Predecessor: "2", Progress: 30 },
+            ]
+        }]
+    beforeAll((done: Function) => {
+        ganttObj = createGantt({
+            dataSource: data,
+            allowSorting: true,
+            allowReordering: true,
+            enableContextMenu: true,
+            taskFields: {
+                id: 'TaskID',
+                name: 'TaskName',
+                startDate: 'StartDate',
+                duration: 'Duration',
+                progress: 'Progress',
+                dependency:'Predecessor',
+                baselineStartDate: "BaselineStartDate",
+                baselineEndDate: "BaselineEndDate",
+                child: 'subtasks',
+                indicators: 'Indicators',
+                 notes: 'info'
+                },
+                renderBaseline: true,
+                baselineColor: 'red',
+                editSettings: {
+                    allowAdding: true,
+                    allowEditing: true,
+                    allowDeleting: true,
+                    allowTaskbarEditing: true,
+                    showDeleteConfirmDialog: true
+                },
+                columns: [
+                    { field: 'TaskID', headerText: 'Task ID' },
+                    { field: 'TaskName', headerText: 'Task Name', allowReordering: false  },
+                    { field: 'StartDate', headerText: 'Start Date', allowSorting: false },
+                    { field: 'Duration', headerText: 'Duration', allowEditing: false },
+                    { field: 'Progress', headerText: 'Progress', allowFiltering: false }, 
+                    { field: 'CustomColumn', headerText: 'CustomColumn' }
+                ],
+                toolbar: ['Add', 'Edit', 'Update', 'Delete', 'Cancel', 'ExpandAll', 'CollapseAll', 'Search', 'ZoomIn', 'ZoomOut', 'ZoomToFit', 
+                'PrevTimeSpan', 'NextTimeSpan','ExcelExport', 'CsvExport', 'PdfExport'],
+                editDialogFields: [
+                    { type: 'General' },
+                    { type: 'Dependency' },
+                    { type: 'Resources' },
+                    { type: 'Notes',additionalParams: { toolbarSettings: { items: ['Image', 'CreateTable', 'EmojiPicker', 'FileManager', 'FormatPainter'] } }},
+                    { type: 'Custom' }
+                ],
+                allowExcelExport: true,
+                allowPdfExport: true,
+                allowSelection: false,
+                enableVirtualization: false,
+                allowRowDragAndDrop: true,
+                splitterSettings: {
+                    position: "50%",
+                // columnIndex: 4
+                },
+                tooltipSettings: {
+                    showTooltip: true
+                },
+                timelineSettings: {
+                    showTooltip: true,
+                    topTier: {
+                        unit: 'Week',
+                        format: 'dd/MM/yyyy'
+                    },
+                    bottomTier: {
+                        unit: 'Day',
+                        count: 1
+                    }
+                },
+                height: '550px',
+                allowUnscheduledTasks: true,
+                projectStartDate: new Date('03/25/2019'),
+                projectEndDate: new Date('05/30/2019'),
+        }, done);
+    });
+    beforeEach((done) => {
+        setTimeout(done, 500);
+        ganttObj.openEditDialog(2);
+    });
+    it('check data', () => {
+        expect(ganttObj.currentViewData.length).toBe(4);
+    });
+    afterAll(() => {
+        if (ganttObj) {
+            destroyGantt(ganttObj);
         }
     });
 });

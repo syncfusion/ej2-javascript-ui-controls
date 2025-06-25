@@ -42,7 +42,26 @@ export const menuClass: CMenuClassList = {
     groupHeader: 'e-groupdroparea',
     touchPop: 'e-gridpopup',
     autofit: 'e-icon-autofit',
-    autofitall: 'e-icon-autofitall'
+    autofitall: 'e-icon-autofitall',
+    chart: 'e-grid-chart-icon',
+    barChart: 'e-grid-bar-chart-icon',
+    bar: 'e-grid-bar-icon',
+    stackingBar: 'e-grid-stacking-bar-icon',
+    stackingBar100: 'e-grid-stacking-bar-100-icon',
+    pie: 'e-grid-pie-icon',
+    columnChart: 'e-grid-column-chart-icon',
+    column: 'e-grid-column-icon',
+    stackingColumn: 'e-grid-stacking-column-icon',
+    stackingColumn100: 'e-grid-stacking-column-100-icon',
+    lineChart: 'e-grid-line-chart-icon',
+    line: 'e-grid-line-icon',
+    stackingLine: 'e-grid-stacking-line-icon',
+    stackingLine100: 'e-grid-stacking-line-100-icon',
+    areaChart: 'e-grid-area-chart-icon',
+    area: 'e-grid-area-icon',
+    stackingArea: 'e-grid-stacking-area-icon',
+    stackingArea100: 'e-grid-stacking-area-100-icon',
+    scatter: 'e-grid-scatter-icon'
 };
 
 export interface CMenuClassList {
@@ -71,6 +90,25 @@ export interface CMenuClassList {
     touchPop: string;
     autofit: string;
     autofitall: string;
+    chart: string;
+    barChart: string;
+    bar: string;
+    stackingBar: string;
+    stackingBar100: string;
+    pie: string;
+    columnChart: string;
+    column: string;
+    stackingColumn: string;
+    stackingColumn100: string;
+    lineChart: string;
+    line: string;
+    stackingLine: string;
+    stackingLine100: string;
+    areaChart: string;
+    area: string;
+    stackingArea: string;
+    stackingArea100: string;
+    scatter: string;
 }
 
 /**
@@ -84,6 +122,14 @@ export class ContextMenu implements IAction {
     private disableItems: string[] = [];
     private hiddenItems: string[] = [];
     private gridID: string;
+    private barChartList: string[] = ['Bar', 'StackingBar', 'StackingBar100'];
+    private pieChartList: string[] = ['Pie'];
+    private columnChartList: string[] = ['Column', 'StackingColumn', 'StackingColumn100'];
+    private lineChartList: string[] = ['Line', 'StackingLine', 'StackingLine100'];
+    private areaChartList: string[] = ['Area', 'StackingArea', 'StackingArea100'];
+    private scatterChartList: string[] = ['Scatter'];
+    public chartList: string[] = [...this.barChartList, ...this.pieChartList,
+        ...this.columnChartList, ...this.lineChartList, ...this.areaChartList, ...this.scatterChartList];
     // module declarations
     private parent: IGrid;
     private serviceLocator: ServiceLocator;
@@ -154,6 +200,7 @@ export class ContextMenu implements IAction {
             beforeOpen: this.contextMenuBeforeOpen.bind(this),
             onOpen: this.contextMenuOpen.bind(this),
             onClose: this.contextMenuOnClose.bind(this),
+            beforeClose: this.contextMenuBeforeClose.bind(this),
             cssClass: this.parent.cssClass ? 'e-grid-menu' + ' ' + this.parent.cssClass : 'e-grid-menu'
         });
         this.contextMenu.appendTo(this.element);
@@ -173,9 +220,28 @@ export class ContextMenu implements IAction {
     private getMenuItems(): ContextMenuItemModel[] {
         const menuItems: MenuItemModel[] = [];
         const exportItems: MenuItemModel[] = [];
+        const chartItems: MenuItemModel[] = [];
+        const barChartItems: MenuItemModel[] = [];
+        let pieChart: MenuItemModel;
+        const columnChartItems: MenuItemModel[] = [];
+        const lineChartItems: MenuItemModel[] = [];
+        const areaChartItems: MenuItemModel[] = [];
+        let scatterChart: MenuItemModel;
         for (const item of this.parent.contextMenuItems) {
             if (typeof item === 'string' && this.getDefaultItems().indexOf(item) !== -1) {
-                if (item.toLocaleLowerCase().indexOf('export') !== -1) {
+                if (this.barChartList.indexOf(item) !== -1) {
+                    barChartItems.push(this.buildDefaultItems(item));
+                } else if (this.pieChartList.indexOf(item) !== -1) {
+                    pieChart = this.buildDefaultItems(item);
+                } else if (this.columnChartList.indexOf(item) !== -1) {
+                    columnChartItems.push(this.buildDefaultItems(item));
+                } else if (this.lineChartList.indexOf(item) !== -1) {
+                    lineChartItems.push(this.buildDefaultItems(item));
+                } else if (this.areaChartList.indexOf(item) !== -1) {
+                    areaChartItems.push(this.buildDefaultItems(item));
+                } else if (this.scatterChartList.indexOf(item) !== -1) {
+                    scatterChart = this.buildDefaultItems(item);
+                } else if (item.toLocaleLowerCase().indexOf('export') !== -1) {
                     exportItems.push(this.buildDefaultItems(item));
                 } else {
                     menuItems.push(this.buildDefaultItems(item));
@@ -183,6 +249,37 @@ export class ContextMenu implements IAction {
             } else if (typeof item !== 'string') {
                 menuItems.push(item);
             }
+        }
+        if (lineChartItems.length > 0) {
+            const lineChartGroup: ContextMenuItemModel = this.buildDefaultItems('LineChart');
+            lineChartGroup.items = lineChartItems;
+            chartItems.push(lineChartGroup);
+        }
+        if (areaChartItems.length > 0) {
+            const areaChartGroup: ContextMenuItemModel = this.buildDefaultItems('AreaChart');
+            areaChartGroup.items = areaChartItems;
+            chartItems.push(areaChartGroup);
+        }
+        if (columnChartItems.length > 0) {
+            const columnChartGroup: ContextMenuItemModel = this.buildDefaultItems('ColumnChart');
+            columnChartGroup.items = columnChartItems;
+            chartItems.push(columnChartGroup);
+        }
+        if (barChartItems.length > 0) {
+            const barChartGroup: ContextMenuItemModel = this.buildDefaultItems('BarChart');
+            barChartGroup.items = barChartItems;
+            chartItems.push(barChartGroup);
+        }
+        if (scatterChart) {
+            chartItems.push(scatterChart);
+        }
+        if (pieChart) {
+            chartItems.push(pieChart);
+        }
+        if (chartItems.length > 0) {
+            const chartGroup: ContextMenuItemModel = this.buildDefaultItems('Chart');
+            chartGroup.items = chartItems;
+            menuItems.push(chartGroup);
         }
         if (exportItems.length > 0) {
             const exportGroup: ContextMenuItemModel = this.buildDefaultItems('export');
@@ -301,6 +398,24 @@ export class ContextMenu implements IAction {
         case 'NextPage':
             this.parent.goToPage(this.parent.pageSettings.currentPage + 1);
             break;
+        case 'Bar':
+        case 'StackingBar':
+        case 'StackingBar100':
+        case 'Pie':
+        case 'Column':
+        case 'StackingColumn':
+        case 'StackingColumn100':
+        case 'Line':
+        case 'StackingLine':
+        case 'StackingLine100':
+        case 'Area':
+        case 'StackingArea':
+        case 'StackingArea100':
+        case 'Scatter':
+            args.records = this.parent.getSelectedRecords();
+            args.gridInstance = this.parent;
+            args.chartType = item;
+            break;
         }
         args.column = this.targetColumn;
         args.rowInfo = this.targetRowdata;
@@ -399,6 +514,12 @@ export class ContextMenu implements IAction {
             }
         }
         applyBiggerTheme(this.parent.element, this.contextMenu.element.parentElement);
+    }
+
+    private contextMenuBeforeClose(args: ContextMenuOpenEventArgs): void {
+        args.column = this.targetColumn;
+        args.rowInfo = this.targetRowdata;
+        this.parent.trigger(events.contextMenuClose, args);
     }
 
     private ensureTarget(targetElement: HTMLElement, selector: string): boolean {
@@ -502,6 +623,9 @@ export class ContextMenu implements IAction {
                 status = true;
             }
             break;
+        case 'Chart':
+            status = !this.parent.getSelectedRecords().length;
+            break;
         }
         return status;
     }
@@ -544,11 +668,21 @@ export class ContextMenu implements IAction {
         return 'contextMenu';
     }
 
-    private generateID(item: string): string {
+    /**
+     * @param {string} item - Defines the Key
+     * @hidden
+     * @returns {string} - Returns the ID
+     */
+    public generateID(item: string): string {
         return this.gridID + '_cmenu_' + item;
     }
 
-    private getKeyFromId(id: string): string {
+    /**
+     * @param {string} id - Defines the ID
+     * @hidden
+     * @returns {string} - Returns the Key
+     */
+    public getKeyFromId(id: string): string {
         return id.replace(this.gridID + '_cmenu_', '');
     }
 
@@ -612,6 +746,63 @@ export class ContextMenu implements IAction {
         case 'NextPage':
             menuItem = { target: menuClass.pager, iconCss: menuClass.nPage };
             break;
+        case 'Chart':
+            menuItem = { target: menuClass.content, iconCss: menuClass.chart };
+            break;
+        case 'BarChart':
+            menuItem = { target: menuClass.content, iconCss: menuClass.barChart };
+            break;
+        case 'Bar':
+            menuItem = { target: menuClass.content, iconCss: menuClass.bar };
+            break;
+        case 'StackingBar':
+            menuItem = { target: menuClass.content, iconCss: menuClass.stackingBar };
+            break;
+        case 'StackingBar100':
+            menuItem = { target: menuClass.content, iconCss: menuClass.stackingBar100 };
+            break;
+        case 'Pie':
+            menuItem = { target: menuClass.content, iconCss: menuClass.pie };
+            break;
+        case 'ColumnChart':
+            menuItem = { target: menuClass.content, iconCss: menuClass.columnChart };
+            break;
+        case 'Column':
+            menuItem = { target: menuClass.content, iconCss: menuClass.column };
+            break;
+        case 'StackingColumn':
+            menuItem = { target: menuClass.content, iconCss: menuClass.stackingColumn };
+            break;
+        case 'StackingColumn100':
+            menuItem = { target: menuClass.content, iconCss: menuClass.stackingColumn100 };
+            break;
+        case 'LineChart':
+            menuItem = { target: menuClass.content, iconCss: menuClass.lineChart };
+            break;
+        case 'Line':
+            menuItem = { target: menuClass.content, iconCss: menuClass.line };
+            break;
+        case 'StackingLine':
+            menuItem = { target: menuClass.content, iconCss: menuClass.stackingLine };
+            break;
+        case 'StackingLine100':
+            menuItem = { target: menuClass.content, iconCss: menuClass.stackingLine100 };
+            break;
+        case 'AreaChart':
+            menuItem = { target: menuClass.content, iconCss: menuClass.areaChart };
+            break;
+        case 'Area':
+            menuItem = { target: menuClass.content, iconCss: menuClass.area };
+            break;
+        case 'StackingArea':
+            menuItem = { target: menuClass.content, iconCss: menuClass.stackingArea };
+            break;
+        case 'StackingArea100':
+            menuItem = { target: menuClass.content, iconCss: menuClass.stackingArea100 };
+            break;
+        case 'Scatter':
+            menuItem = { target: menuClass.content, iconCss: menuClass.scatter };
+            break;
         }
         this.defaultItems[`${item}`] = {
             text: this.getLocaleText(item), id: this.generateID(item),
@@ -624,7 +815,9 @@ export class ContextMenu implements IAction {
         return ['AutoFitAll', 'AutoFit',
             'Group', 'Ungroup', 'Edit', 'Delete', 'Save', 'Cancel', 'Copy', 'export',
             'PdfExport', 'ExcelExport', 'CsvExport', 'SortAscending', 'SortDescending',
-            'FirstPage', 'PrevPage', 'LastPage', 'NextPage'];
+            'FirstPage', 'PrevPage', 'LastPage', 'NextPage',
+            'Chart', 'BarChart', 'ColumnChart', 'LineChart', 'AreaChart',
+            ...this.chartList];
     }
     private setLocaleKey(): { [key: string]: string } {
         const localeKeys: { [key: string]: string } = {
@@ -646,7 +839,26 @@ export class ContextMenu implements IAction {
             'FirstPage': 'FirstPage',
             'LastPage': 'LastPage',
             'PrevPage': 'PreviousPage',
-            'NextPage': 'NextPage'
+            'NextPage': 'NextPage',
+            'Chart': 'Chart',
+            'BarChart': 'BarChart',
+            'Bar': 'Bar',
+            'StackingBar': 'StackingBar',
+            'StackingBar100': 'StackingBar100',
+            'Pie': 'Pie',
+            'ColumnChart': 'ColumnChart',
+            'Column': 'Column',
+            'StackingColumn': 'StackingColumn',
+            'StackingColumn100': 'StackingColumn100',
+            'LineChart': 'LineChart',
+            'Line': 'Line',
+            'StackingLine': 'StackingLine',
+            'StackingLine100': 'StackingLine100',
+            'AreaChart': 'AreaChart',
+            'Area': 'Area',
+            'StackingArea': 'StackingArea',
+            'StackingArea100': 'StackingArea100',
+            'Scatter': 'Scatter'
         };
         return localeKeys;
     }

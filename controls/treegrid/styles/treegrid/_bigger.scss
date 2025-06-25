@@ -47,11 +47,11 @@
           }
         }
 
-        .e-gridcontent .e-rowcell {
-          @if $skin-name =='fluent2' or $skin-name =='fluent2-dark' {
-            line-height: 19px;
-          }
-        }
+        // .e-gridcontent .e-rowcell {
+        //   @if $skin-name =='fluent2' or $skin-name =='fluent2-dark' {
+        //     line-height: 19px;
+        //   }
+        // }
 
         .e-gridheader {
           .e-headercell .e-css.e-hierarchycheckbox {

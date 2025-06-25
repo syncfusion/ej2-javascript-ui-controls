@@ -28,7 +28,7 @@ describe('Form-Field-text-checkbox', () => {
         expect(() => { editor.destroy(); }).not.toThrowError();
         element = undefined;
         editor = undefined;
-        document.body.innerHTML = '';
+        
     });
     it('Text-form-field - insertTextfield', () => {
         console.log('Text-form-field - insertTextfield');

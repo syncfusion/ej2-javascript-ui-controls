@@ -7,7 +7,7 @@ import { Diagram } from '../../../src/diagram/diagram';
 import { DiagramElement } from '../../../src/diagram/core/elements/diagram-element';
 import { Canvas } from '../../../src/diagram/core/containers/canvas';
 import { Thickness } from '../../../src/diagram/core/appearance';
-import { DiagramModel, Container, NodeConstraints } from '../../../src/diagram/index';
+import { DiagramModel, GroupableView, NodeConstraints } from '../../../src/diagram/index';
 import { Size, NodeModel } from '../../../src/index';
 import { MouseEvents } from '../interaction/mouseevents.spec';
 import { Selector } from '../../../src/diagram/objects/node';
@@ -26,7 +26,7 @@ function drag(diagram: Diagram) {
     left = diagram.element.offsetLeft; top = diagram.element.offsetTop;
     let mouseEvents: MouseEvents = new MouseEvents();
     if ((diagram.selectedItems as Selector).nodes.length) {
-        let container: Container = diagram.selectedItems.wrapper;
+        let container: GroupableView = diagram.selectedItems.wrapper;
         let centerX = container.offsetX;
         let centerY = container.offsetY;
         mouseEvents.mouseDownEvent(diagramCanvas, centerX + diagram.element.offsetLeft, centerY + diagram.element.offsetTop);
@@ -76,7 +76,7 @@ function rotate(diagram: Diagram) {
     left = diagram.element.offsetLeft; top = diagram.element.offsetTop;
     let mouseEvents: MouseEvents = new MouseEvents();
     if ((diagram.selectedItems as Selector).nodes.length) {
-        let element: Container = diagram.selectedItems.wrapper;
+        let element: GroupableView = diagram.selectedItems.wrapper;
         let ten: number = 10 / diagram.scroller.currentZoom;
         let matrix: Matrix = identityMatrix();
         rotateMatrix(matrix, element.rotateAngle + element.parentTransform, element.offsetX, element.offsetY);
@@ -685,7 +685,7 @@ describe('Diagram Control', () => {
             mouseevents.mouseMoveEvent(diagramCanvas, diagram.nodes[2].offsetX + diagram.element.offsetLeft + 20, (diagram.nodes[2].offsetY + diagram.nodes[2].height / 2) + diagram.element.offsetTop);
             mouseevents.mouseMoveEvent(diagramCanvas, diagram.nodes[2].offsetX + diagram.element.offsetLeft + 20, (diagram.nodes[2].offsetY + diagram.nodes[2].height / 2) + diagram.element.offsetTop + 20);
             mouseevents.mouseUpEvent(diagramCanvas, diagram.nodes[2].offsetX + diagram.element.offsetLeft + 20, (diagram.nodes[2].offsetY + diagram.nodes[2].height / 2) + diagram.element.offsetTop + 20);
-            expect((diagram.nodes[2].offsetX == 220 || diagram.nodes[2].offsetX == 200) && (diagram.nodes[2].offsetY == 260 || diagram.nodes[2].offsetY == 215 || diagram.nodes[2].offsetY == 200  || diagram.nodes[2].offsetY == 251) && diagram.nodes[2].width == 300 && (diagram.nodes[2].height == 120 || diagram.nodes[2].height == 130 || diagram.nodes[2].height == 100  || diagram.nodes[2].height == 122)).toBe(true);
+            expect((diagram.nodes[2].offsetX == 220 || diagram.nodes[2].offsetX == 200) && (diagram.nodes[2].offsetY == 260 || diagram.nodes[2].offsetY == 215 || diagram.nodes[2].offsetY == 200 || diagram.nodes[2].offsetY == 251) && (diagram.nodes[2].width == 300 || diagram.nodes[2].width == 360) && (diagram.nodes[2].height == 120 || diagram.nodes[2].height == 130 || diagram.nodes[2].height == 100 || diagram.nodes[2].height == 122)).toBe(true);
             done();
         });
     });

@@ -4,6 +4,19 @@ import { InterActiveChatBaseModel, ToolbarItemModel } from './interactive-chat-b
 import { TextArea } from '@syncfusion/ej2-inputs';
 import { ItemType, ItemAlign } from '@syncfusion/ej2-navigations';
 
+/* eslint-disable @typescript-eslint/no-misused-new, no-redeclare */
+interface ClipboardItem {
+    new (items: { [mimeType: string]: Blob }): ClipboardItem;
+}
+declare let ClipboardItem: any;
+/* eslint-enable @typescript-eslint/no-misused-new, no-redeclare */
+
+export interface TextState {
+    content: string;
+    selectionStart: number;
+    selectionEnd: number;
+}
+
 /**
  * Represents a toolbar item model in the component.
  */
@@ -198,6 +211,13 @@ export class InterActiveChatBase extends Component<HTMLElement> implements INoti
     protected suggestionsElement: HTMLElement;
     protected suggestionHeader: HTMLElement;
     protected content: HTMLElement;
+    protected footer: HTMLElement;
+    protected editableTextarea: HTMLDivElement;
+    protected sendIcon: HTMLElement;
+    protected clearIcon: HTMLElement;
+    protected undoStack: TextState[] = [];
+    protected redoStack: TextState[] = [];
+    protected undoDebounceTimer: ReturnType<typeof setTimeout> | null = null;
 
     /**
      * * Constructor for Base class
@@ -325,6 +345,26 @@ export class InterActiveChatBase extends Component<HTMLElement> implements INoti
         return this.createElement('div', { className: className });
     }
 
+    protected getClipBoardContent(value: string): void {
+        const tempElement: HTMLElement = document.createElement('div');
+        tempElement.innerHTML = value;
+        tempElement.style.top = '0';
+        tempElement.style.left = '0';
+        tempElement.style.position = 'fixed';
+        tempElement.style.opacity = '0';
+        document.body.appendChild(tempElement);
+        (navigator as any).clipboard.write([
+            new ClipboardItem({
+                'text/html': new Blob([tempElement.innerHTML], { type: 'text/html' }),
+                'text/plain': new Blob([tempElement.innerText], { type: 'text/plain' })
+            })
+        ]);
+        document.body.removeChild(tempElement);
+    }
+
+    protected getFooter(): void {
+        this.footer = this.getElement('footer');
+    }
     protected createSuggestionElement(suggestionHeader: string): {
         suggestionContainer: HTMLElement;
         suggestionHeaderElement: HTMLElement;
@@ -412,30 +452,37 @@ export class InterActiveChatBase extends Component<HTMLElement> implements INoti
         this.renderReactTemplates();
     }
 
-    protected renderFooterContent(footerTemplate: string | Function, footer: HTMLElement, prompt: string,
-                                  promptPlaceholder: string, showClearButton: boolean, className: string): TextArea {
+    protected renderFooterContent(footerTemplate: string | Function, prompt: string,
+                                  promptPlaceholder: string, showClearButton: boolean, className: string): void {
         if (footerTemplate) {
-            this.updateContent(footerTemplate, footer, {}, 'footerTemplate');
-            return null;
+            this.updateContent(footerTemplate, this.footer, {}, 'footerTemplate');
         } else {
-            const textareaEle: HTMLElement = this.createElement('textarea', { className: className });
-            footer.appendChild(textareaEle);
-            return this.renderFooter(textareaEle, prompt, promptPlaceholder, showClearButton);
+            this.renderFooter(className, prompt, promptPlaceholder, showClearButton);
         }
     }
 
-    private renderFooter(textareaElement: HTMLElement, prompt: string, promptPlaceholder: string,
-                         showClearButton: boolean = false): TextArea {
-        const textareaObj: TextArea = new TextArea({
-            rows: 1,
-            cols: 300,
-            placeholder: promptPlaceholder,
-            resizeMode: 'None',
-            value: prompt,
-            showClearButton: showClearButton
+    private renderFooter(className: string, prompt: string, promptPlaceholder: string,
+                         showClearButton: boolean = false): void {
+        this.editableTextarea = this.createElement('div', {
+            attrs: {
+                class: className,
+                contenteditable: 'true',
+                placeholder: promptPlaceholder,
+                role: 'textbox',
+                'aria-multiline': 'true'
+            },
+            innerHTML: prompt
         });
-        textareaObj.appendTo(textareaElement);
-        return textareaObj;
+        const hiddenTextarea: HTMLTextAreaElement = this.createElement('textarea', {
+            attrs: {
+                class: 'e-hidden-textarea',
+                name: 'userPrompt',
+                value: prompt
+            }
+        });
+        const textAreaIconsWrapper: HTMLElement = this.createElement('div', { className: 'e-textarea-icons-wrapper'});
+        this.appendChildren(textAreaIconsWrapper, this.editableTextarea, hiddenTextarea);
+        this.footer.appendChild(textAreaIconsWrapper);
     }
     protected updateTextAreaObject(textareaObj: TextArea): void {
         if (isNOU(textareaObj)) { return; }
@@ -443,9 +490,9 @@ export class InterActiveChatBase extends Component<HTMLElement> implements INoti
         textarea.style.height = 'auto';
         textarea.style.height = textarea.scrollHeight + 'px';
     }
-    protected renderSendIcon(sendIconClass: string, footer: HTMLElement): HTMLElement {
+    protected renderSendIcon(sendIconClass: string): HTMLElement {
         const sendIcon: HTMLElement = this.createElement('span', { attrs: { class: sendIconClass, role: 'button', 'aria-label': 'Submit', tabindex: '0' } }) as HTMLElement;
-        footer.appendChild(sendIcon);
+        this.footer.appendChild(sendIcon);
         return sendIcon;
     }
     protected appendChildren(target: HTMLElement, ...children: HTMLElement[]): void {
@@ -454,33 +501,215 @@ export class InterActiveChatBase extends Component<HTMLElement> implements INoti
     protected insertBeforeChildren(target: HTMLElement, ...children: HTMLElement[]): void {
         target.prepend(...children);
     }
-    protected wireFooterEvents(sendIcon: HTMLElement, footer: HTMLElement, footerTemplate: string | Function, textareaObj: TextArea): void {
-        if (sendIcon) {
-            // eslint-disable-next-line @typescript-eslint/no-explicit-any
-            EventHandler.add(sendIcon, 'click', (this as any).onSendIconClick, this);
+    protected renderFooterIcons(sendIconClass: string, showClearButton: boolean, clearIconClass: string): void {
+        const footerIconsWrapper: HTMLDivElement = this.createElement('div', { attrs: { class: 'e-footer-icons-wrapper'}});
+        this.sendIcon = this.createElement('span', { attrs: { class: sendIconClass, role: 'button', 'aria-label': 'Submit', tabindex: '0' } }) as HTMLElement;
+        footerIconsWrapper.appendChild(this.sendIcon);
+        if (showClearButton) {
+            this.renderClearIcon(footerIconsWrapper, clearIconClass);
         }
-        if (footer && !footerTemplate) {
-            // eslint-disable-next-line @typescript-eslint/no-explicit-any
-            EventHandler.add(footer, 'keydown', (this as any).footerKeyHandler, this);
+        this.footer.firstChild.appendChild(footerIconsWrapper);
+        this.footer.classList.add('focus-wave-effect');
+    }
+    protected renderClearIcon(footerIconsWrapper: HTMLDivElement, clearIconClass: string): void {
+        this.clearIcon = this.createElement('span', { attrs: { class: clearIconClass, role: 'button', 'aria-label': 'Close', tabindex: '-1' } }) as HTMLElement;
+        if (footerIconsWrapper) {
+            footerIconsWrapper.prepend(this.clearIcon);
         }
-        EventHandler.add(<HTMLElement & Window><unknown>window, 'resize', () => this.updateTextAreaObject(textareaObj), this);
+    }
+    protected updateHiddenTextarea(prompt: string): void {
+        const hiddenTextarea: HTMLTextAreaElement = this.footer.querySelector('.e-hidden-textarea') as HTMLTextAreaElement;
+        hiddenTextarea.value = prompt;
+    }
+    protected activateSendIcon(value: number): void {
+        this.sendIcon.classList.toggle('disabled', value === 0);
+        this.sendIcon.classList.toggle('enabled', value > 0);
+    }
+    protected updateFooterEleClass(): void {
+        if (isNOU(this.editableTextarea)) { return; }
+        const textarea: HTMLElement = this.editableTextarea;
+        textarea.style.height = 'auto';
+        this.footer.classList.remove('expanded');
+        this.footer.classList[textarea.scrollHeight > parseInt(getComputedStyle(textarea).minHeight, 10) ? 'add' : 'remove']('expanded');
+        if (!isNOU(this.clearIcon)) {
+            const isFocused: boolean = document.activeElement === this.editableTextarea;
+            const hasContent: boolean = this.editableTextarea.textContent.length > 0;
+            this.clearIcon.classList[isFocused && hasContent ? 'remove' : 'add']('e-assist-clear-icon-hide');
+        }
+    }
+    protected updatePlaceholder(placeholder: string): void {
+        if (this.editableTextarea) {
+            this.editableTextarea.setAttribute('placeholder', placeholder);
+        }
+    }
+    protected pushToUndoStack(value: string): void {
+        const { start, end } = this.getCursorPosition();
+        const state: TextState = {
+            content: value,
+            selectionStart: start,
+            selectionEnd: end
+        };
+        if (this.undoStack.length === 0 || this.undoStack[this.undoStack.length - 1].content !== value) {
+            this.undoStack.push(state);
+            if (this.undoStack.length > 100) {
+                this.undoStack.shift();
+            }
+        }
+    }
+    protected handleUndoRedo(event: KeyboardEvent): void {
+        const isUndo: boolean = (event.ctrlKey || event.metaKey) && event.key === 'z' && !event.shiftKey;
+        const isRedo: boolean = (event.ctrlKey || event.metaKey) && (event.key === 'y' || (event.key === 'z' && event.shiftKey));
+        if (isUndo) {
+            event.preventDefault();
+            this.undo(event);
+        }
+        else if (isRedo) {
+            event.preventDefault();
+            this.redo(event);
+        }
+    }
+    protected undo(event: KeyboardEvent): void {
+        if (this.undoStack.length <= 1) {
+            return;
+        }
+        const current: TextState = this.undoStack.pop();
+        const previous: TextState = this.undoStack[this.undoStack.length - 1];
+        this.redoStack.push(current);
+        (this as any).applyPromptChange(previous, current, event);
+    }
+    protected redo(event: KeyboardEvent): void {
+        if (this.redoStack.length === 0) {
+            return;
+        }
+        const current: TextState = {
+            content: this.editableTextarea.textContent,
+            selectionStart: this.getCursorPosition().start,
+            selectionEnd: this.getCursorPosition().end
+        };
+        const next: TextState = this.redoStack.pop();
+        this.undoStack.push(next);
+        (this as any).applyPromptChange(next, current, event);
+    }
+    protected setFocusAtEnd(textArea: HTMLElement): void {
+        const range: Range = document.createRange();
+        const selection: Selection = window.getSelection();
+        range.selectNodeContents(textArea);
+        range.collapse(false);
+        if (selection) {
+            selection.removeAllRanges();
+            selection.addRange(range);
+        }
+    }
+    protected getCursorPosition(): { start: number; end: number } {
+        const selection: Selection | null = window.getSelection();
+        const range: Range | null = selection.rangeCount > 0 ? selection.getRangeAt(0) : null;
+        if (range && this.editableTextarea.contains(range.commonAncestorContainer)) {
+            return {
+                start: range.startOffset,
+                end: range.endOffset
+            };
+        }
+        return { start: 0, end: 0 };
+    }
+    protected setCursorPosition(start: number, end: number): void {
+        const range: Range = document.createRange();
+        const selection: Selection | null = window.getSelection();
+        const textNode: ChildNode | null = this.editableTextarea.firstChild;
+
+        if (textNode) {
+            range.setStart(textNode, start);
+            range.setEnd(textNode, end);
+            selection.removeAllRanges();
+            selection.addRange(range);
+        }
+    }
+    protected clearBreakTags(element: HTMLDivElement): void {
+        element.innerHTML = element.innerHTML.replace(/<br>/g, '').trim();
+    }
+    protected handlePaste(event: Event): void {
+        event.preventDefault(); // Prevent default paste behavior
+        const pasteContent: string = (event as any).clipboardData.getData('text/plain') || '';
+        const selection: Selection | null = window.getSelection();
+        if (!selection || selection.rangeCount === 0) {
+            return;
+        }
+        const range: Range = selection.getRangeAt(0);
+        range.deleteContents(); // Delete any selected text
+        // Handle line breaks with proper typing
+        const lines: string[] = pasteContent.split(/\r?\n/);
+        const fragment: DocumentFragment = document.createDocumentFragment();
+        lines.forEach((line: string, index: number) => {
+            if (line) {  // Only add non-empty lines
+                fragment.appendChild(document.createTextNode(line));
+            }
+            if (index < lines.length - 1) {
+                fragment.appendChild(document.createElement('br'));
+            }
+        });
+        range.insertNode(fragment);
+        this.setFocusAtEnd(this.editableTextarea);
+        // Clear redo stack on new input
+        this.redoStack = [];
+        const inputEvent: Event = new CustomEvent('input', {
+            bubbles: true,
+            cancelable: true,
+            detail: {
+                inputType: 'insertFromPaste',
+                data: this.editableTextarea.innerText,
+                isComposing: false
+            }
+        });
+        this.editableTextarea.dispatchEvent(inputEvent);
+        this.pushToUndoStack(this.editableTextarea.innerText);
+        this.updateScroll(this.editableTextarea);
+    }
+    protected scheduleUndoPush(value: string): void {
+        if (this.undoDebounceTimer) {
+            clearTimeout(this.undoDebounceTimer);
+        }
+        this.undoDebounceTimer = setTimeout(() => {
+            this.pushToUndoStack(value);
+            this.undoDebounceTimer = null;
+        }, 400);
+    }
+    protected wireFooterEvents(
+        footerTemplate: string | Function
+    ): void {
+        if (this.sendIcon) {
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+            EventHandler.add(this.sendIcon, 'click', (this as any).onSendIconClick, this);
+        }
+        if (this.footer && !footerTemplate) {
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+            EventHandler.add(this.footer, 'keydown', (this as any).footerKeyHandler, this);
+        }
+        if (this.editableTextarea) {
+            EventHandler.add(this.editableTextarea, 'focus', (this as any).onFocusEditableTextarea, this);
+            EventHandler.add(this.editableTextarea, 'blur', (this as any).onBlurEditableTextarea, this);
+            EventHandler.add(this.editableTextarea, 'paste', this.handlePaste, this);
+            EventHandler.add(this.editableTextarea, 'input', (this as any).handleInput, this);
+            EventHandler.add(<HTMLElement & Window><unknown>window, 'resize', this.updateFooterEleClass, this);
+        }
     }
 
     protected unWireFooterEvents(
-        sendIcon: HTMLElement,
-        footer: HTMLElement,
-        footerTemplate: string | Function,
-        textareaObj: TextArea
+        footerTemplate: string | Function
     ): void {
-        if (sendIcon) {
+        if (this.sendIcon) {
             // eslint-disable-next-line @typescript-eslint/no-explicit-any
-            EventHandler.remove(sendIcon, 'click', (this as any).onSendIconClick);
+            EventHandler.remove(this.sendIcon, 'click', (this as any).onSendIconClick);
         }
-        if (footer && !footerTemplate) {
+        if (this.footer && !footerTemplate) {
             // eslint-disable-next-line @typescript-eslint/no-explicit-any
-            EventHandler.remove(footer, 'keydown', (this as any).footerKeyHandler);
+            EventHandler.remove(this.footer, 'keydown', (this as any).footerKeyHandler);
         }
-        EventHandler.remove(<HTMLElement & Window><unknown>window, 'resize', () => this.updateTextAreaObject(textareaObj));
+        if (this.editableTextarea) {
+            EventHandler.remove(this.editableTextarea, 'focus', (this as any).onFocusEditableTextarea);
+            EventHandler.remove(this.editableTextarea, 'blur', (this as any).onBlurEditableTextarea);
+            EventHandler.remove(this.editableTextarea, 'paste', this.handlePaste);
+            EventHandler.remove(this.editableTextarea, 'input', (this as any).handleInput);
+            EventHandler.remove(<HTMLElement & Window><unknown>window, 'resize', this.updateFooterEleClass);
+        }
     }
     protected removeAndNullify(element: HTMLElement): void {
         if (element) {

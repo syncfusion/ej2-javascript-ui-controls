@@ -504,18 +504,23 @@ export class Tooltip extends BaseTooltip {
                 location.x = tooltip.location.x !== null ? tooltip.location.x : location.x;
                 location.y = tooltip.location.y !== null ? tooltip.location.y : location.y;
                 location = (location.x === null && location.y === null) ? null : location;
-                this.createTooltip(
-                    chart, isFirst, location,
-                    this.currentPoints.length === 1 ? this.currentPoints[0].series.clipRect : null,
-                    dataCollection.length === 1 ? dataCollection[0].point : null,
-                    this.findShapes(), this.findMarkerHeight(<PointData>this.currentPoints[0]),
-                    new Rect(borderWidth, (chart.stockChart ? (toolbarHeight + titleHeight + borderWidth) : borderWidth),
-                             this.chart.availableSize.width - padding - borderWidth * 2,
-                             this.chart.availableSize.height - padding - borderWidth * 2),
-                    this.chart.crosshair.enable, extraPoints,
-                    this.template ? this.getTemplateText(dataCollection) : null,
-                    this.template ? argsData.template.join('') : ''
-                );
+                if (point.series.type.indexOf('Range') === -1 || withInBounds(location.x, location.y, chart.chartAxisLayoutPanel.seriesClipRect)) {
+                    this.createTooltip(
+                        chart, isFirst, location,
+                        this.currentPoints.length === 1 ? this.currentPoints[0].series.clipRect : null,
+                        dataCollection.length === 1 ? dataCollection[0].point : null,
+                        this.findShapes(), this.findMarkerHeight(<PointData>this.currentPoints[0]),
+                        new Rect(borderWidth, (chart.stockChart ? (toolbarHeight + titleHeight + borderWidth) : borderWidth),
+                                 this.chart.availableSize.width - padding - borderWidth * 2,
+                                 this.chart.availableSize.height - padding - borderWidth * 2),
+                        this.chart.crosshair.enable, extraPoints,
+                        this.template ? this.getTemplateText(dataCollection) : null,
+                        this.template ? argsData.template.join('') : ''
+                    );
+                } else {
+                    removeElement(this.element.id + '_tooltip');
+                    extraPoints.push(point);
+                }
                 point = null;
             } else {
                 removeElement(this.element.id + '_tooltip');

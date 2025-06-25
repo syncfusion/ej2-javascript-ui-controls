@@ -2158,11 +2158,49 @@ describe('EJ2-948433: grid.getSelectedRecords() Returns Empty Array for Selected
         done();
     })
 
-    it('Coverage for first cell focus on appenChild method', (done: Function) => {
+    it('Coverage c=for first cell focus on appenChild method', (done: Function) => {
         (gObj.contentModule as any).firstCellFocus = true;
         gObj.refreshColumns();
         done();
     })
+
+    afterAll(() => {
+        destroy(gObj);
+        gObj = null;
+    });
+});
+
+describe('EJ2-963165: Unexpected White Space Appears When Cancelling a New Row at the Bottom in Virtual Scrolling', () => {
+    let gObj: Grid;
+    beforeAll((done: Function) => {
+        gObj = createGrid(
+            {
+                dataSource: filterData,
+                height: 300,
+                enableVirtualization: true,
+                toolbar: ['Add', 'Edit', 'Delete', 'Update', 'Cancel'],
+                editSettings: { allowEditing: true, allowAdding: true, allowDeleting: true, newRowPosition: 'Bottom'},
+                columns: [    
+                    {field: 'OrderID', headerText:'OrderID', width:120, isPrimaryKey:true},
+                    {field: 'CustomerID', headerText:'CustomerID', width:120},      
+                    {field: 'Freight',textAlign: 'Right',width:110 ,format:'C2',headerText:"Freight"},
+                    {field: 'ShipCity', headerText:'ShipCity', width:130}    
+                ], 
+            }, done);
+    });
+
+    it('coverage for virtual scrolling with cancelling a new row', (done: Function) => {
+        let actionComplete = (args?: any): void => {
+            if (args.requestType === 'add') {
+                gObj.element.focus();
+                (<any>gObj.toolbarModule).toolbarClickHandler({ item: { id: gObj.element.id + '_cancel' } });
+                gObj.actionComplete = undefined;
+                done();
+            }
+        };
+        gObj.actionComplete = actionComplete;
+        (<any>gObj.toolbarModule).toolbarClickHandler({ item: { id: gObj.element.id + '_add' } });
+    });
 
     afterAll(() => {
         destroy(gObj);

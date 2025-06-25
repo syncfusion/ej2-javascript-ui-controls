@@ -18,7 +18,7 @@ describe('Show hide pane ', () => {
         documenteditor.destroy();
         document.body.removeChild(document.getElementById('container'));
         documenteditor = undefined;
-        document.body.innerHTML = '';
+        
         setTimeout(function () {
             done();
         }, 1000);
@@ -70,7 +70,7 @@ describe('Open document from URL',()=>{
         documenteditor.destroy();
         document.body.removeChild(document.getElementById('container'));
         documenteditor = undefined;
-        document.body.innerHTML = '';
+        
         setTimeout(function () {
             done();
         }, 1000);

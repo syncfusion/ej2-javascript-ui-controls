@@ -1116,7 +1116,11 @@ export class Drawing {
                                     maxLength: (node as any).maxLength, isRequired: (node as any).isRequired,
                                     isPrint: node.isPrint, rotation: (node as any).rotateAngle, tooltip: (node as any).tooltip,
                                     options: (node as any).options, isChecked: (node as any).isChecked,
-                                    isSelected: (node as any).isSelected, bounds: (node as any).bounds
+                                    isSelected: (node as any).isSelected, bounds: (node as any).bounds,
+                                    pageNumber: (node as any).pageIndex, insertSpaces: (node as any).insertSpaces,
+                                    formFieldAnnotationType: (node as any).formFieldAnnotationType,
+                                    customData : (node as any).customData, borderColor: (node as any).borderColor,
+                                    thickness: (node as any).thickness, isTransparent: (node as any).isTransparent
                                 };
                                 if (!this.pdfViewer.formDesignerModule.isFormFieldSizeUpdated) {
                                     this.pdfViewer.fireFormFieldSelectEvent('formFieldSelect', field as IFormField, node.pageIndex, this.pdfViewer.formDesignerModule.isProgrammaticSelection);
@@ -2901,15 +2905,11 @@ export class Drawing {
         if (actualObject && actualObject.shapeAnnotationType === 'FreeText' && this.pdfViewer.annotationModule.stickyNotesAnnotationModule.textFromCommentPanel) {
             actualObject.wrapper.width = undefined;
             actualObject.wrapper.height = undefined;
-            const pageHeight: number = this.pdfViewer.viewerBase.pageSize[actualObject.pageIndex].height;
-            actualObject.wrapper.measureFreeText(new Size(actualObject.wrapper.bounds.width, actualObject.wrapper.bounds.height),
-                                                 pageHeight);
+            actualObject.wrapper.measure(new Size(actualObject.bounds.width, actualObject.bounds.height));
             this.pdfViewer.annotationModule.stickyNotesAnnotationModule.textFromCommentPanel = false;
         }
         else {
-            const pageHeight: number = this.pdfViewer.viewerBase.pageSize[actualObject.pageIndex].height;
-            actualObject.wrapper.measureFreeText(new Size(actualObject.wrapper.bounds.width, actualObject.wrapper.bounds.height),
-                                                 pageHeight);
+            actualObject.wrapper.measure(new Size(actualObject.wrapper.bounds.width, actualObject.wrapper.bounds.height));
         }
         actualObject.wrapper.arrange(actualObject.wrapper.desiredSize);
         if (actualObject && actualObject.formFieldAnnotationType) {
@@ -2961,9 +2961,7 @@ export class Drawing {
                     children[parseInt(i.toString(), 10)].width = actualObject.bounds.width;
                 }
             }
-            const pageHeight: number = this.pdfViewer.viewerBase.pageSize[actualObject.pageIndex].height;
-            actualObject.wrapper.measureFreeText(new Size(actualObject.wrapper.bounds.width, actualObject.wrapper.bounds.height),
-                                                 pageHeight);
+            actualObject.wrapper.measure(new Size(actualObject.bounds.width, actualObject.bounds.height));
             actualObject.wrapper.arrange(actualObject.wrapper.desiredSize);
         }
         if (isNeedToRender || isNullOrUndefined(isNeedToRender)) {

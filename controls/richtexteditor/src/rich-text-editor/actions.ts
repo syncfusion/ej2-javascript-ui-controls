@@ -25,3 +25,4 @@ export * from './actions/xhtml-validation';
 export * from './actions/format-painter';
 export * from './actions/emoji-picker';
 export * from './actions/import-export';
+export * from './actions/code-block';

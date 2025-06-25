@@ -4,6 +4,10 @@ import { PivotView } from '../../src/pivotview/base/pivotview';
 import { createElement, remove, EmitType, getInstance, closest} from '@syncfusion/ej2-base';
 import { FieldList } from '../../src/common/actions/field-list';
 import { TreeView } from '@syncfusion/ej2-navigations';
+import { Toolbar } from '../../src/common/popups/toolbar';
+import { PDFExport } from '../../src/pivotview/actions/pdf-export';
+import { ExcelExport } from '../../src/pivotview/actions/excel-export';
+import { GroupingBar } from '../../src/common/grouping-bar/grouping-bar';
 
 describe('Server side pivot engine ', () => {
 
@@ -265,7 +269,7 @@ describe('Server side pivot engine ', () => {
     //         document.body.appendChild(elem);
     //         fieldListObj = new PivotFieldList({
     //             dataSourceSettings: {
-    //                 url: 'https://productionservices.azurewebsites.net/js/production/api/pivot/post',
+    //                 url: 'https://services.syncfusion.com/js/production/api/pivot/post',
     //                 mode: 'Server',
     //                 expandAll: true,
     //                 enableSorting: true,
@@ -423,6 +427,221 @@ describe('Server side pivot engine ', () => {
             }, 1000);
         });
     });
+
+    describe('Toolbar', () => {
+        let originalTimeout: number;
+        let pivotGridObj: PivotView;
+        let elem: HTMLElement = createElement('div', { id: 'PivotGrid', styles: 'height:400px;width:60%' });
+        let down: MouseEvent = new MouseEvent('mousedown', {
+            'view': window,
+            'bubbles': true,
+            'cancelable': true,
+        });
+        let up: MouseEvent = new MouseEvent('mouseup', {
+            'view': window,
+            'bubbles': true,
+            'cancelable': true,
+        });
+        afterAll(() => {
+            if (pivotGridObj) {
+                pivotGridObj.destroy();
+            }
+            remove(elem);
+        });
+        beforeAll((done: Function) => {
+            originalTimeout = jasmine.DEFAULT_TIMEOUT_INTERVAL;
+            if (document.getElementById(elem.id)) {
+                remove(document.getElementById(elem.id));
+            }
+            document.body.appendChild(elem);
+            let dataBound: EmitType<Object> = () => { done(); };
+            PivotView.Inject(FieldList);
+            pivotGridObj = new PivotView({
+                dataSourceSettings: {
+                    url: 'https://productionservices.azurewebsites.net/js/production/api/pivot/post',
+                    mode: 'Server',
+                    expandAll: true,
+                    enableSorting: true,
+                    columns: [{ name: 'Year', caption: 'Production Year' },
+                    ],
+                    values: [
+                        { name: 'Sold', caption: 'Units Sold' },
+                        { name: 'Price', caption: 'Sold Amount' }
+                    ],
+                    rows: [{ name: 'Country', caption: 'Countries' }],
+                    formatSettings: [{ name: 'Price', format: 'C0' }, { name: 'Sold', format: 'N0' }],
+                },
+                showFieldList: true,
+                toolbar: ['FieldList'],
+                showToolbar: true,
+                dataBound: dataBound
+            });
+            pivotGridObj.appendTo('#PivotGrid');
+        });
+        beforeEach((done: Function) => {
+            setTimeout(() => { done(); }, 1000);
+        });
+        it('Intial rendering - pivot table', (done: Function) => {
+            setTimeout(() => {
+                expect(pivotGridObj.pivotValues[0][1].formattedText).toBe('FY 2015');
+                done();
+            }, 3000);
+        });
+    });
+
+    // describe('Export', () => {
+    //     let originalTimeout: number;
+    //     let pivotGridObj: PivotView;
+    //     let elem: HTMLElement = createElement('div', { id: 'PivotGrid', styles: 'height:400px;width:60%' });
+    //     let down: MouseEvent = new MouseEvent('mousedown', {
+    //         'view': window,
+    //         'bubbles': true,
+    //         'cancelable': true,
+    //     });
+    //     let up: MouseEvent = new MouseEvent('mouseup', {
+    //         'view': window,
+    //         'bubbles': true,
+    //         'cancelable': true,
+    //     });
+    //     afterAll(() => {
+    //         if (pivotGridObj) {
+    //             pivotGridObj.destroy();
+    //         }
+    //         remove(elem);
+    //     });
+    //     beforeAll((done: Function) => {
+    //         originalTimeout = jasmine.DEFAULT_TIMEOUT_INTERVAL;
+    //         if (document.getElementById(elem.id)) {
+    //             remove(document.getElementById(elem.id));
+    //         }
+    //         document.body.appendChild(elem);
+    //         let dataBound: EmitType<Object> = () => { done(); };
+    //         PivotView.Inject(FieldList, Toolbar, PDFExport, ExcelExport);
+    //         pivotGridObj = new PivotView({
+    //             dataSourceSettings: {
+    //                 url: 'https://productionservices.azurewebsites.net/js/production/api/pivot/post',
+    //                 mode: 'Server',
+    //                 expandAll: true,
+    //                 enableSorting: true,
+    //                 columns: [{ name: 'Year', caption: 'Production Year' },
+    //                 ],
+    //                 values: [
+    //                     { name: 'Sold', caption: 'Units Sold' },
+    //                     { name: 'Price', caption: 'Sold Amount' }
+    //                 ],
+    //                 rows: [{ name: 'Country', caption: 'Countries' }],
+    //                 formatSettings: [{ name: 'Price', format: 'C0' }, { name: 'Sold', format: 'N0' }],
+    //             },
+    //             showFieldList: true,
+    //             allowDrillThrough: true,
+    //             showToolbar: true,
+    //             allowExcelExport: true,
+    //             toolbar: ['New', 'Save', 'SaveAs', 'Rename', 'Remove', 'Load',
+    //                 'Grid', 'Chart', 'MDX', 'Export', 'SubTotal', 'GrandTotal', 'ConditionalFormatting', 'FieldList'],
+    //             allowDataCompression: true,
+    //             dataBound: dataBound
+    //         });
+    //         pivotGridObj.appendTo('#PivotGrid');
+    //     });
+    //     beforeEach((done: Function) => {
+    //         setTimeout(() => { done(); }, 1000);
+    //     });
+    //     it('Intial rendering - pivot table', (done: Function) => {
+    //         setTimeout(() => {
+    //             expect(pivotGridObj.pivotValues[0][1].formattedText).toBe('FY 2015');
+    //             done();
+    //         }, 3000);
+    //     });
+    //     it('Export', () => {
+    //         let li: HTMLElement = document.getElementById('PivotGridexport_menu').children[0] as HTMLElement;
+    //         expect(li.classList.contains('e-menu-caret-icon')).toBeTruthy();
+    //         util.triggerEvent(li, 'mouseover');
+    //     });
+    //     it('Excel Export', () => {
+    //         (document.querySelectorAll('.e-menu-popup li')[1] as HTMLElement).click();
+    //     });
+    //     it('Check', (done: Function) => {
+    //         setTimeout(() => {
+    //             expect(pivotGridObj.pivotValues[0][1].formattedText).toBe('FY 2015');
+    //             done();
+    //         }, 2000);
+    //     });
+    //     it('Blob export', (done: Function) => {
+    //         pivotGridObj.excelExport({}, false, undefined, true);
+    //         done();
+    //     });
+    // });
+
+    // describe('Filtering', () => {
+    //     let originalTimeout: number;
+    //     let pivotGridObj: PivotView;
+    //     let elem: HTMLElement = createElement('div', { id: 'PivotGrid', styles: 'height:400px;width:60%' });
+    //     let down: MouseEvent = new MouseEvent('mousedown', {
+    //         'view': window,
+    //         'bubbles': true,
+    //         'cancelable': true,
+    //     });
+    //     let up: MouseEvent = new MouseEvent('mouseup', {
+    //         'view': window,
+    //         'bubbles': true,
+    //         'cancelable': true,
+    //     });
+    //     afterAll(() => {
+    //         if (pivotGridObj) {
+    //             pivotGridObj.destroy();
+    //         }
+    //         remove(elem);
+    //     });
+    //     beforeAll((done: Function) => {
+    //         originalTimeout = jasmine.DEFAULT_TIMEOUT_INTERVAL;
+    //         if (document.getElementById(elem.id)) {
+    //             remove(document.getElementById(elem.id));
+    //         }
+    //         document.body.appendChild(elem);
+    //         let dataBound: EmitType<Object> = () => { done(); };
+    //         PivotView.Inject(GroupingBar);
+    //         pivotGridObj = new PivotView({
+    //             dataSourceSettings: {
+    //                 url: 'https://productionservices.azurewebsites.net/js/production/api/pivot/post',
+    //                 mode: 'Server',
+    //                 expandAll: true,
+    //                 enableSorting: true,
+    //                 columns: [{ name: 'Year', caption: 'Production Year' },
+    //                 ],
+    //                 values: [
+    //                     { name: 'Sold', caption: 'Units Sold' },
+    //                     { name: 'Price', caption: 'Sold Amount' }
+    //                 ],
+    //                 rows: [{ name: 'Country', caption: 'Countries' }],
+    //                 formatSettings: [{ name: 'Price', format: 'C0' }, { name: 'Sold', format: 'N0' }],
+    //             },
+    //             showGroupingBar: true,
+    //             dataBound: dataBound
+    //         });
+    //         pivotGridObj.appendTo('#PivotGrid');
+    //     });
+    //     beforeEach((done: Function) => {
+    //         setTimeout(() => { done(); }, 1000);
+    //     });
+    //     it('Intial rendering - pivot table', (done: Function) => {
+    //         setTimeout(() => {
+    //             expect(pivotGridObj.pivotValues[0][1].formattedText).toBe('FY 2015');
+    //             done();
+    //         }, 3000);
+    //     });
+    //     it('Open field list', (done: Function) => {
+    //         setTimeout(() => {
+    //             (document.querySelectorAll('.e-btn-filter')[0] as HTMLElement).click();
+    //             done();
+    //         }, 2000);
+    //     });
+    //     it('Check', (done: Function) => {
+    //         setTimeout(() => {
+    //             expect(document.querySelectorAll('.e-member-editor-dialog').length).toBe(1);
+    //             done();
+    //         }, 4000);
+    //     });
+    // });
     
     it('memory leak', () => {
         profile.sample();

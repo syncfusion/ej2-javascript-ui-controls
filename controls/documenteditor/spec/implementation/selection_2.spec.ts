@@ -21,7 +21,7 @@ describe('Selection Module Unit Test script', () => {
     let documentHelper: DocumentHelper;
     beforeAll(() => {
         let ele: HTMLElement = createElement('div', { id: 'container', styles: 'width:100%;height:500px' });
-        document.body.innerHTML = '';
+        
         document.body.appendChild(ele);
         DocumentEditor.Inject(Editor, Selection);
         editor = new DocumentEditor({ enableEditor: true, enableSelection: true, isReadOnly: false });
@@ -41,7 +41,7 @@ describe('Selection Module Unit Test script', () => {
         editor.destroy();
         document.body.removeChild(document.getElementById('container'));
         editor = undefined;
-        document.body.innerHTML = '';
+        
         setTimeout(() => {
             done();
         }, 1000);
@@ -79,7 +79,7 @@ describe('Selection Public APi testing ', () => {
         editor.destroy();
         editor = undefined;
         document.body.removeChild(document.getElementById('container'));
-        document.body.innerHTML = '';
+        
         setTimeout(() => {
             done();
         }, 1000);
@@ -167,7 +167,7 @@ describe('Selection Public APi testing - 2', () => {
         editor.destroy();
         editor = undefined;
         document.body.removeChild(document.getElementById('container'));
-        document.body.innerHTML = '';
+        
         setTimeout(() => {
             done();
         }, 1000);
@@ -422,7 +422,7 @@ describe('Selection with out clearing multi selection', () => {
         editor.destroy();
         editor = undefined;
         document.body.removeChild(document.getElementById('container'));
-        document.body.innerHTML = '';
+        
         setTimeout(() => {
             done();
         }, 1000);
@@ -473,7 +473,7 @@ describe('Select Current Word', () => {
         editor.destroy();
         editor = undefined;
         document.body.removeChild(document.getElementById('container'));
-        document.body.innerHTML = '';
+        
         setTimeout(() => {
             done();
         }, 1000);
@@ -549,7 +549,7 @@ describe('Cut and Copy operation without SfdtExport', () => {
         editor.destroy();
         editor = undefined;
         document.body.removeChild(document.getElementById('container'));
-        document.body.innerHTML = '';
+        
         setTimeout(() => {
             done();
         }, 1000);
@@ -581,7 +581,7 @@ describe('Content control keyboard validation', () => {
         editor.destroy();
         editor = undefined;
         document.body.removeChild(document.getElementById('container'));
-        document.body.innerHTML = '';
+        
         setTimeout(() => {
             done();
         }, 1000);

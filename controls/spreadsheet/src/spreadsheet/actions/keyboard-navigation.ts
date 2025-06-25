@@ -128,7 +128,7 @@ export class KeyboardNavigation {
                     } else if (dlgInst.element.classList.contains('e-custom-format-dlg')) {
                         if (!e.shiftKey) {
                             if (document.activeElement.classList.contains('e-btn') &&
-                                document.activeElement.parentElement.classList.contains('e-custom-dialog')) {
+                                document.activeElement.parentElement.classList.contains('e-input-button')) {
                                 const listWrapper: HTMLElement = dlgInst.element.querySelector('.e-custom-listview');
                                 const listObj: { selectItem: Function } = getComponent(listWrapper, 'listview');
                                 if (listWrapper) {

@@ -5,6 +5,30 @@
   .e-chat-check::before {
     content: '\e97d';
   }
+  .e-chat-copy::before {
+    content: '\e33d';
+  }
+  .e-chat-close::before {
+    content: '\e7fc';
+  }
+  .e-chat-pin::before {
+    content: '\e178';
+  }
+  .e-chat-view::before {
+    content: '\e345';
+  }
+  .e-chat-unpin::before {
+    content: '\e179';
+  }
+  .e-chat-forward::before {
+    content: '\e177';
+  }
+  .e-chat-reply::before {
+    content: '\e176';
+  }
+  .e-chat-trash::before {
+    content: '\e201';
+  }
   .e-chat-error::before {
     content: '\e7e9';
   }
@@ -13,5 +37,14 @@
   }
   .e-chat-scroll-down::before {
     content: '\e304';
+  }
+  .e-user-online::before {
+    content: '\ea84';
+  }
+  .e-user-away::before {
+    content: '\e93e';
+  }
+  .e-user-offline::before {
+    content: '\e7e9';
   }
 }

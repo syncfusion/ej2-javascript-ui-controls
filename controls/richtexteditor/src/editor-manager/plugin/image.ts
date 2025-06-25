@@ -6,6 +6,7 @@ import { IHtmlItem } from './../base/interface';
 import { InsertHtml } from './inserthtml';
 import * as EVENTS from './../../common/constant';
 import { scrollToCursor } from '../../common/util';
+import { IEditorModel } from '../../common/interface';
 
 /**
  * Link internal component
@@ -14,15 +15,15 @@ import { scrollToCursor } from '../../common/util';
  * @deprecated
  */
 export class ImageCommand {
-    private parent: EditorManager;
+    private parent: IEditorModel;
     /**
      * Constructor for creating the Formats plugin
      *
-     * @param {EditorManager} parent - specifies the parent element
+     * @param {IEditorModel} parent - specifies the parent element
      * @hidden
      * @deprecated
      */
-    public constructor(parent: EditorManager) {
+    public constructor(parent: IEditorModel) {
         this.parent = parent;
         this.addEventListener();
     }

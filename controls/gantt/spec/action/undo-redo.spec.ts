@@ -417,9 +417,7 @@ describe('Gantt undoredo support', () => {
         });
         it('Undo action for zoomin', () => {
             ganttObj.undo();
-            setTimeout(() => {
-                expect(ganttObj.currentZoomingLevel.level).toBe(11);
-            }, 100);
+            expect(ganttObj.currentZoomingLevel.level).toBe(12);
         });
         it('Timespan action', () => {
             ganttObj.actionComplete = function (args: any): void {
@@ -1883,7 +1881,7 @@ describe('Gantt undoredo support', () => {
                     done()
                 }
             };
-            ganttObj.reorderRows([3],1,'child')
+            ganttObj.reorderRows([3],0,'child')
             let undo: HTMLElement = ganttObj.element.querySelector('#' + ganttObj.element.id + '_undo') as HTMLElement;
             triggerMouseEvent(undo, 'click');
         });
@@ -4021,7 +4019,7 @@ describe('Gantt undoredo support', () => {
                     done()
                 }
             }
-            ganttObj.reorderRows([0,2],5,'above')
+            ganttObj.reorderRows([0,2],4,'above')
         });
         afterAll(() => {
             if (ganttObj) {
@@ -4372,7 +4370,7 @@ describe('Gantt undo redo action for zooming', () => {
     });
     it('Undo action for zoom action', () => {
         ganttObj.fitToProject();
-        expect(ganttObj.getFormatedDate(ganttObj.timelineModule.timelineStartDate, 'M/d/yyyy')).toBe('2/26/2019');
+        expect(ganttObj.getFormatedDate(ganttObj.timelineModule.timelineStartDate, 'M/d/yyyy')).toBe('3/25/2019');
     });
 });
 describe('time span for year mode', () => {
@@ -6998,4 +6996,168 @@ describe('Gantt undo action after adding segment data', () => {
                 destroyGantt(ganttObj);
             }
         });
+});
+describe('Undo redo action after Outdent', () => {
+    Gantt.Inject(Sort,Selection, UndoRedo, Edit, Toolbar, RowDD,Filter, ContextMenu, ColumnMenu, Selection);
+    let ganttObj: Gantt;
+    beforeAll((done: Function) => {
+        ganttObj = createGantt(
+        {
+            dataSource: [
+                {
+                    TaskID: 6,
+                    TaskName: 'Market Research',
+                    StartDate: new Date('04/02/2019'),
+                    EndDate: new Date('04/21/2019'),
+                    subtasks: [
+                        {
+                            TaskID: 7,
+                            TaskName: 'Demand Analysis',
+                            StartDate: new Date('04/04/2019'),
+                            EndDate: new Date('04/21/2019'),
+                            subtasks: [
+                                { TaskID: 8, TaskName: 'Customer strength', BaselineStartDate: new Date('04/08/2019'), BaselineEndDate: new Date('04/12/2019'), StartDate: new Date('04/04/2019'), Duration: 4, Predecessor: "5", Progress: 30 },
+                                { TaskID: 9, TaskName: 'Market opportunity analysis', StartDate: new Date('04/04/2019'), Duration: 4, Predecessor: "5" }
+                            ]
+                        },
+                        { TaskID: 10, TaskName: 'Competitor Analysis', StartDate: new Date('04/04/2019'), Duration: 4, Predecessor: "7,8", Progress: 30 },
+                        { TaskID: 11, TaskName: 'Product strength analysis', StartDate: new Date('04/04/2019'), Duration: 4, Predecessor: "9" },
+                        { TaskID: 12, TaskName: 'Research complete', StartDate: new Date('04/04/2019'), Duration: 0, Predecessor: "10" }
+                    ]
+                }
+            ],
+            allowReordering: true,
+            enableContextMenu: true,
+            taskFields: {
+                id: 'TaskID',
+                name: 'TaskName',
+                startDate: 'StartDate',
+                endDate: 'EndDate',
+                duration: 'Duration',
+                progress: 'Progress',
+                dependency: 'Predecessor',
+                child: 'subtasks',
+                segments: 'Segments',
+            },
+            height: '450px',
+            treeColumnIndex: 1,
+            allowSelection: true,
+            highlightWeekends: true,
+            enableUndoRedo: true,
+            editSettings: {
+                allowAdding: true,
+                allowEditing: true,
+                allowDeleting: true,
+                allowTaskbarEditing: true
+            },
+            columns: [
+                { field: 'TaskID', width: 80 },
+                {
+                    field: 'TaskName',
+                    headerText: 'Job Name',
+                    width: '250',
+                    clipMode: 'EllipsisWithTooltip',
+                },
+                { field: 'StartDate' },
+                { field: 'EndDate' },
+                { field: 'Duration' },
+                { field: 'Progress' },
+                { field: 'Predecessor' },
+            ],
+            toolbar: [
+                'Add',
+                'Edit',
+                'Update',
+                'Delete',
+                'Cancel',
+                'ExpandAll',
+                'CollapseAll',
+                'Undo',
+                'Redo',
+            ],
+            selectedRowIndex: 1,
+            splitterSettings: {
+                position: '35%',
+            },
+            labelSettings: {
+                leftLabel: 'TaskName',
+                taskLabel: '${Progress}%',
+            },
+            undoRedoActions: [
+                'Sorting',
+                'Add',
+                'ColumnReorder',
+                'ColumnResize',
+                'ColumnState',
+                'Delete',
+                'Edit',
+                'Filtering',
+                'Indent',
+                'Outdent',
+                'NextTimeSpan',
+                'PreviousTimeSpan',
+                'RowDragAndDrop',
+                'Search',
+            ],
+                }, done);
+        });
+        beforeEach((done) => {
+            setTimeout(done, 300);
+        });
+        it('Outdent action', () => {
+            ganttObj.outdent();
+        });
+        it('undo action for Outdent action', () => {
+            ganttObj.undo();
+            expect(ganttObj.flatData[0].childRecords[0].ganttProperties.taskId.toString()).toBe("7");
+        });
+        afterAll(() => {
+            if (ganttObj) {
+                destroyGantt(ganttObj);
+            }
+        });
+});
+describe('Undo file code coverage-isInHierarchyOf', () => {
+    Gantt.Inject(Sort,UndoRedo,Edit,Toolbar, Selection );
+    let ganttObj: Gantt;
+    beforeAll((done: Function) => {
+        ganttObj = createGantt(
+            {
+                dataSource: projectData2,
+                editSettings:{
+                    allowAdding: true,
+                    allowEditing:true,
+                    allowDeleting: true
+                },
+                enableUndoRedo: true,
+                undoRedoActions:['Add','Edit','Delete'],
+                allowSorting: true,
+                taskFields: {
+                    id: 'TaskID',
+                    name: 'TaskName',
+                    startDate: 'StartDate',
+                    duration: 'Duration',
+                    progress: 'Progress',
+                    child: 'subtasks'
+                },
+                projectStartDate: new Date('03/25/2019'),
+                projectEndDate: new Date('05/30/2019'),
+                toolbar:['Undo','Redo'],
+            }, done);
+    });
+    afterAll(() => {
+        if (ganttObj) {
+            destroyGantt(ganttObj);
+        }
+    });
+    it('Check hierarchy child record exist by passing parent record', () => {
+        let isHierarchyChildRecord: boolean = ganttObj.undoRedoModule['isInHierarchyOf'](ganttObj.currentViewData[1],ganttObj.currentViewData[3]);
+        expect(isHierarchyChildRecord).toBe(false);
+        (ganttObj.undoRedoModule as any)['uniqueDeletedRecords'].push(ganttObj.currentViewData[0]);
+        (ganttObj.undoRedoModule as any)['uniqueDeletedRecords'][0]['data'] = ganttObj.currentViewData[1];
+        let recordObj: any = {};
+        recordObj['data'] = ganttObj.currentViewData[1];
+        let isPartOfExistHierarchy: boolean = ganttObj.undoRedoModule['isPartOfExistingHierarchy'](recordObj);
+        expect(isPartOfExistHierarchy).toBe(false);
+    });
 });

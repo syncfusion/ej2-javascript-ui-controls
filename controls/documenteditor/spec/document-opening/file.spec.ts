@@ -12,7 +12,7 @@ import { Search } from "../../src/document-editor/implementation/search/search";
 describe('Spellcheck enabled testcase', () => {
     let container: DocumentEditor;
     beforeAll(() => {
-        document.body.innerHTML = '';
+        
         let ele: HTMLElement = createElement('div', { id: 'container' });
         document.body.appendChild(ele);
         DocumentEditor.Inject(SpellChecker);
@@ -34,7 +34,7 @@ describe('Spellcheck enabled testcase', () => {
         container.destroy();
         document.body.removeChild(document.getElementById('container'));
         container = undefined;
-        document.body.innerHTML = '';
+        
         setTimeout(function () {
             done();
         }, 1000);
@@ -58,7 +58,7 @@ describe('Spellcheck enabled testcase', () => {
 describe('exportAspath API', () => {
     let container: DocumentEditor;
     beforeAll(() => {
-        document.body.innerHTML = '';
+        
         let ele: HTMLElement = createElement('div', { id: 'container' });
         document.body.appendChild(ele);
         DocumentEditor.Inject(Editor, Selection, EditorHistory, SfdtExport);
@@ -74,7 +74,7 @@ describe('exportAspath API', () => {
         container.destroy();
         document.body.removeChild(document.getElementById('container'));
         container = undefined;
-        document.body.innerHTML = '';
+        
         setTimeout(function () {
             done();
         }, 1000);
@@ -92,7 +92,7 @@ describe('exportAspath API', () => {
 describe('Find', () => {
     let container: DocumentEditor;
     beforeAll(() => {
-        document.body.innerHTML = '';
+        
         let ele: HTMLElement = createElement('div', { id: 'container' });
         document.body.appendChild(ele);
         container = new DocumentEditor({  isReadOnly: false });
@@ -108,7 +108,7 @@ describe('Find', () => {
         container.destroy();
         document.body.removeChild(document.getElementById('container'));
         container = undefined;
-        document.body.innerHTML = '';
+        
         setTimeout(function () {
             done();
         }, 1000);

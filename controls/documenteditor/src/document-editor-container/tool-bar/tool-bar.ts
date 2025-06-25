@@ -8,9 +8,10 @@ import { showSpinner, hideSpinner, DialogUtility } from '@syncfusion/ej2-popups'
 import { ToolbarItem, BeforeFileOpenArgs } from '../../document-editor/base';
 import { XmlHttpRequestHandler, beforePaneSwitchEvent, toolbarClickEvent, beforeFileOpenEvent } from '../../document-editor/base/index';
 import { CustomToolbarItemModel } from '../../document-editor/base/events-helper';
-import { beforeXmlHttpRequestSend, XmlHttpRequestEventArgs, ProtectionType, SectionBreakType, TextPosition } from './../../index';
+import { beforeXmlHttpRequestSend, XmlHttpRequestEventArgs, ProtectionType, SectionBreakType } from './../../index';
 import { ListView, SelectEventArgs as ListSelectEventArgs } from '@syncfusion/ej2-lists';
 import { HelperMethods } from './../../index';
+import { IToolbarHandler } from '../helper/toolbar-handler';
 
 const TOOLBAR_ID: string = '_toolbar';
 const NEW_ID: string = '_new';
@@ -63,7 +64,7 @@ const XMLMAPPING_ID: string = '_xmlmapping';
 /**
  * Toolbar Module
  */
-export class Toolbar {
+export class Toolbar implements IToolbarHandler {
     /**
      * @private
      */
@@ -1130,6 +1131,47 @@ export class Toolbar {
         } else {
             classList(this.propertiesPaneButton.element.firstChild as HTMLElement, ['e-pane-disabled'], ['e-pane-enabled']);
         }
+    }
+    /**
+     * @private
+     * @returns {void}
+     */
+    public onContentChange(): void {
+        this.enableDisableUndoRedo();
+    }
+
+    /**
+     * Handles document changes (like loading a new document)
+     * @returns {void}
+     * @private
+     */
+    public onDocumentChange(): void {
+        this.isCommentEditing = false;
+        this.enableDisableInsertComment(true);
+        this.enableDisableUndoRedo();
+    }
+    /**
+     * @param {boolean} isToggle - toggle track changes.
+     * @returns {void}
+     * @private
+     */
+    public initialize(isToggle?: boolean): void {
+        this.initToolBar(this.container.toolbarItems);
+        this.enableDisableInsertComment(this.container.enableComment);
+        if (isToggle) {
+            this.toggleTrackChanges(this.container.enableTrackChanges);
+            this.container.initializePane();
+            this.container.showHidePropertiesPane(this.container.showPropertiesPane);
+        }
+    }
+    /**
+     * @param {boolean} restrictEditing - restrict editing.
+     * @returns {void}
+     * @private
+     */
+    public restrictEditingToggleHelper(restrictEditing: boolean): void {
+        this.enableDisableToolBarItem(!restrictEditing, false);
+        this.toggleRestrictEditing(restrictEditing);
     }
 
     /**

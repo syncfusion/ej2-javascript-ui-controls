@@ -17,11 +17,12 @@ import { PointPortModel, PortModel } from '../objects/port-model';
 import { ShapeAnnotation, PathAnnotation } from '../objects/annotation';
 import { findAnnotation, findPort } from '../utility/diagram-util';
 import { PointPort } from './port';
-import { Size, GridPanel, addChildToContainer, updateZindex } from '../index';
+import { Size, GridPanel, addChildToContainer, updateZindex, BpmnShape } from '../index';
 import { swimLaneMeasureAndArrange, laneInterChanged, findLaneIndex, updateSwimLaneObject, pasteSwimLane } from '../utility/swim-lane-util';
 import { ICustomHistoryChangeArgs } from '../objects/interface/IElement';
 import { DiagramEvent, BlazorAction } from '../enum/enum';
 import { isBlazor } from '@syncfusion/ej2-base';
+import { addContainerChild, removeChild } from '../utility/container-util';
 
 
 /**
@@ -213,6 +214,7 @@ export class UndoRedo {
      * @private
      */
     public undo(diagram: Diagram): void {
+        diagram.checkUndoRedo = true;
         const entry: HistoryEntry = this.getUndoEntry(diagram);
         let endGroupActionCount: number = 0;
         if (entry) {
@@ -239,6 +241,7 @@ export class UndoRedo {
                 diagram.triggerEvent(DiagramEvent.historyStateChange, arg);
             }
         }
+        diagram.checkUndoRedo = false;
     }
 
     // Removed getHistoryChangeEvent method as it is not used anywhere
@@ -765,7 +768,16 @@ export class UndoRedo {
         if (!(obj as Node).processId && (node as Node).processId) {
             diagram.removeProcess(obj.id);
         }
-        if ((node as Node).processId) {
+        if ((obj as Node).parentId && diagram.nameTable[(obj as Node).parentId].shape.type === 'Container'
+            && !(node as Node).parentId) {
+            addContainerChild(obj, (obj as Node).parentId, diagram);
+        }
+        if (!(obj as Node).parentId && (node as Node).parentId
+            && diagram.nameTable[(node as Node).parentId].shape.type === 'Container') {
+            removeChild((node as Node), diagram);
+        }
+        if ((node as Node).processId || ((node as Node).parentId && diagram.nameTable[(node as Node).parentId]
+        && diagram.nameTable[(node as Node).parentId].shape.type === 'Container')) {
             const tx: number = (obj as NodeModel).margin.left - node.margin.left;
             const ty: number = (obj as NodeModel).margin.top - node.margin.top;
             diagram.drag(node, tx, ty);
@@ -824,6 +836,7 @@ export class UndoRedo {
                 this.connectionChanged(connector, diagram);
             }
         }
+        diagram.updateSelector();
     }
 
     private sizeChanged(obj: NodeModel | ConnectorModel, diagram: Diagram, entry?: HistoryEntry): void {
@@ -980,6 +993,11 @@ export class UndoRedo {
                 diagram.updatePortEdges(node, obj, false);
             }
             connector.sourceID = obj.sourceID;
+            //953614-Text annotation not moving along with the parent node after undo redo
+            if ((connector as BpmnTextAnnotationConnector).isBpmnAnnotationConnector) {
+                const textAnnotationNode: NodeModel = diagram.nameTable[connector.targetID];
+                (textAnnotationNode.shape as BpmnShape).textAnnotation.textAnnotationTarget = connector.sourceID;
+            }
             diagram.connectorPropertyChange(connector as Connector, {} as Connector, { sourceID: obj.sourceID } as Connector);
         }
         if (obj.targetID !== connector.targetID) {
@@ -1041,7 +1059,8 @@ export class UndoRedo {
                 }
             } else {
                 diagram.clearSelectorLayer();
-                if ((obj as Node | Connector).parentId) {
+                if ((obj as Node | Connector).parentId && (diagram.nameTable[(obj as Node).parentId]
+                    && diagram.nameTable[(obj as Node).parentId].shape.type !== 'Container')) {
                     const parentNode: NodeModel = diagram.nameTable[(obj as Node | Connector).parentId];
                     if (parentNode) {
                         diagram.addChild(parentNode, obj);
@@ -1065,6 +1084,10 @@ export class UndoRedo {
                 }
                 if ((obj as Node).processId && diagram.nameTable[(obj as Node).processId]) {
                     diagram.addProcess((obj as Node), (obj as Node).processId);
+                }
+                if ((obj as Node).parentId && diagram.nameTable[(obj as Node).parentId]
+                    && diagram.nameTable[(obj as Node).parentId].shape.type === 'Container') {
+                    addContainerChild((obj as Node), (obj as Node).parentId, diagram);
                 }
             }
 
@@ -1157,6 +1180,7 @@ export class UndoRedo {
      * @private
      */
     public redo(diagram: Diagram): void {
+        diagram.checkUndoRedo = true;
         this.checkRedo = true;
         const entry: HistoryEntry = this.getRedoEntry(diagram);
         let startGroupActionCount: number = 0;
@@ -1185,6 +1209,7 @@ export class UndoRedo {
             }
         }
         this.checkRedo = false;
+        diagram.checkUndoRedo = false;
     }
 
     private redoGroupAction(entry: HistoryEntry, diagram: Diagram, startGroupActionCount: number): void {
@@ -1389,4 +1414,8 @@ interface IUndoOffsets {
     id: string;
     offsetX: number;
     offsetY: number;
+}
+/** @private */
+export interface BpmnTextAnnotationConnector {
+    isBpmnAnnotationConnector: boolean;
 }

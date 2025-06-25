@@ -3,7 +3,8 @@ import { getScrollableParent } from '@syncfusion/ej2-popups';
 import * as events from '../base/constant';
 import * as classes from '../base/classes';
 import { addClass, removeClass } from '@syncfusion/ej2-base';
-import { IRichTextEditor, NotifyArgs } from '../base/interface';
+import { IRichTextEditor } from '../base/interface';
+import { NotifyArgs } from '../../common/interface';
 
 /**
  * `FullScreen` module is used to maximize and minimize screen

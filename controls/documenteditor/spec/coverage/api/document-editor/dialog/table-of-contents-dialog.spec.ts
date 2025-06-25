@@ -40,7 +40,7 @@ describe('TOC test case validation - 2', () => {
         document.body.removeChild(document.getElementById('container'));
         dialog = undefined;
         editor = undefined;
-        document.body.innerHTML = '';
+        
         setTimeout(function () {
             done();
         }, 1000);
@@ -89,7 +89,7 @@ describe('TOC test case validation - 3', () => {
         document.body.removeChild(document.getElementById('container'));
         dialog = undefined;
         editor = undefined;
-        document.body.innerHTML = '';
+        
         setTimeout(function () {
             done();
         }, 1000);

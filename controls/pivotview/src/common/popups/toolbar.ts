@@ -71,8 +71,13 @@ export class Toolbar {
             this.parent.element.insertBefore(
                 element, select('#' + this.parent.element.id + ' .' + 'e-pivot-grouping-bar', this.parent.element));
         } else {
-            this.parent.element.insertBefore(
-                element, select('#' + this.parent.element.id + '_grid', this.parent.element));
+            const chartElement: HTMLElement = select('#' + this.parent.element.id + '_chart', this.parent.element);
+            if (chartElement && (this.parent.displayOption.view === 'Chart' || this.parent.displayOption.primary === 'Chart')) {
+                this.parent.element.insertBefore(element, chartElement);
+            } else {
+                this.parent.element.insertBefore(
+                    element, select('#' + this.parent.element.id + '_grid', this.parent.element));
+            }
         }
         this.toolbar = new tool({
             created: this.create.bind(this),
@@ -237,8 +242,8 @@ export class Toolbar {
                     prefixIcon: cls.TOOLBAR_FIELDLIST + ' ' + cls.ICON, tooltipText: this.parent.localeObj.getConstant('fieldList'),
                     click: this.actionClick.bind(this), align: 'Right', id: this.parent.element.id + 'fieldlist'
                 });
-                if (this.parent.element.querySelector('.e-toggle-field-list')) {
-                    (this.parent.element.querySelector('.e-toggle-field-list') as HTMLElement).style.display = 'none';
+                if (this.parent.element.querySelector('.' + cls.TOGGLE_FIELD_LIST_CLASS)) {
+                    (this.parent.element.querySelector('.' + cls.TOGGLE_FIELD_LIST_CLASS) as HTMLElement).style.display = 'none';
                 }
                 break;
             default:
@@ -1600,14 +1605,7 @@ export class Toolbar {
         chartTypesDialog.isStringTemplate = true;
         chartTypesDialog.appendTo(chartDialog);
     }
-    private removeDialog(): void {
-        const chartTypesDialog: Dialog = select('#' + this.parent.element.id + '_ChartTypeDialog', this.parent.element) ?
-            getInstance(select('#' + this.parent.element.id + '_ChartTypeDialog', this.parent.element), Dialog) as Dialog : null;
-        if (chartTypesDialog && !chartTypesDialog.isDestroyed) { chartTypesDialog.destroy(); }
-        if (document.getElementById(this.parent.element.id + '_ChartTypeDialog')) {
-            remove(document.getElementById(this.parent.element.id + '_ChartTypeDialog'));
-        }
-    }
+
     private chartTypeDialogUpdate(): void {
         const chartType: ChartSeriesType = (getInstance(select('#' + this.parent.element.id + '_ChartTypeOption'), DropDownList) as DropDownList).value as ChartSeriesType;
         const checked: boolean = (getInstance(select('#' + this.parent.element.id + '_DialogMultipleAxis'), CheckBox) as CheckBox).checked;
@@ -1818,48 +1816,13 @@ export class Toolbar {
             mdxDialog.destroy();
             mdxDialog = null;
         }
-        element = select('#' + this.parent.element.id + 'chart_menu', document);
-        let chartMenu: Menu = element ? getInstance(element, Menu) as Menu : null;
-        if (chartMenu && !chartMenu.isDestroyed) {
-            chartMenu.destroy();
-            chartMenu = null;
-        }
         element = select('#' + this.parent.element.id + '_ChartTypeDialog', document);
-        let chartTypesDialog: Dialog = element ? getInstance(element, Dialog) as Dialog : null;
-        if (chartTypesDialog && !chartTypesDialog.isDestroyed) {
-            chartTypesDialog.destroy();
-            chartTypesDialog = null;
+        let chartTypeDialog: Dialog = element ? getInstance(element, Dialog) as Dialog : null;
+        if (chartTypeDialog && !chartTypeDialog.isDestroyed) {
+            chartTypeDialog.destroy();
+            chartTypeDialog = null;
         }
-        element = select('#' + this.parent.element.id + 'export_menu', document);
-        let exportMenu: Menu = element ? getInstance(element, Menu) as Menu : null;
-        if (exportMenu && !exportMenu.isDestroyed) {
-            exportMenu.destroy();
-            exportMenu = null;
-        }
-        element = select('#' + this.parent.element.id + 'subtotal_menu', document);
-        let subTotalMenu: Menu = element ? getInstance(element, Menu) as Menu : null;
-        if (subTotalMenu && !subTotalMenu.isDestroyed) {
-            subTotalMenu.destroy();
-            subTotalMenu = null;
-        }
-        element = select('#' + this.parent.element.id + 'grandtotal_menu', document);
-        let grandTotalMenu: Menu = element ? getInstance(element, Menu) as Menu : null;
-        if (grandTotalMenu && !grandTotalMenu.isDestroyed) {
-            grandTotalMenu.destroy();
-            grandTotalMenu = null;
-        }
-        element = select('#' + this.parent.element.id + 'formatting_menu', document);
-        let formattingMenu: Menu = element ? getInstance(element, Menu) as Menu : null;
-        if (formattingMenu && !formattingMenu.isDestroyed) {
-            formattingMenu.destroy();
-            formattingMenu = null;
-        }
-        element = select('#' + this.parent.element.id + '_reportlist', document);
-        let reportList: DropDownList = element ? getInstance(element, DropDownList) as DropDownList : null;
-        if (reportList && !reportList.isDestroyed) {
-            reportList.destroy();
-            reportList = null;
-        }
+        this.destroyToolbarComponents();
         if (this.toolbar && !this.toolbar.isDestroyed) {
             this.toolbar.destroy();
             this.toolbar = null;
@@ -1867,6 +1830,106 @@ export class Toolbar {
         element = select('#' + this.parent.element.id + 'pivot-toolbar', document);
         if (element) {
             remove(element);
+        }
+        this.dropArgs = null;
+        this.newArgs = null;
+        this.currentReport = null;
+    }
+
+    /**
+     * Destroys all toolbar component instances to prevent memory leaks
+     *
+     * @private
+     * @returns {void}
+     */
+    private destroyToolbarComponents(): void {
+        const menuSelectors: string[] = [
+            '#' + this.parent.element.id + 'chart_menu',
+            '#' + this.parent.element.id + 'export_menu',
+            '#' + this.parent.element.id + 'subtotal_menu',
+            '#' + this.parent.element.id + 'grandtotal_menu',
+            '#' + this.parent.element.id + 'formatting_menu'
+        ];
+        menuSelectors.forEach((selector: string) => {
+            const menuElement: HTMLElement = select(selector, document) as HTMLElement;
+            if (menuElement) {
+                const menuInstance: Menu = getInstance(menuElement, Menu) as Menu;
+                if (menuInstance && !menuInstance.isDestroyed) {
+                    menuInstance.destroy();
+                }
+            }
+        });
+        const reportListElement: HTMLElement = select('#' + this.parent.element.id + '_reportlist', document) as HTMLElement;
+        if (reportListElement) {
+            const reportList: DropDownList = getInstance(reportListElement, DropDownList) as DropDownList;
+            if (reportList && !reportList.isDestroyed) {
+                reportList.destroy();
+            }
+        }
+        const chartTypeOption: HTMLElement = select('#' + this.parent.element.id + '_ChartTypeOption', document) as HTMLElement;
+        if (chartTypeOption) {
+            const chartTypeDropdown: DropDownList = getInstance(chartTypeOption, DropDownList) as DropDownList;
+            if (chartTypeDropdown && !chartTypeDropdown.isDestroyed) {
+                chartTypeDropdown.destroy();
+            }
+        }
+        const axisModeOption: HTMLElement = select('#' + this.parent.element.id + '_AxisModeOption', document);
+        if (axisModeOption) {
+            const axisModeDropdown: DropDownList = getInstance(axisModeOption, DropDownList) as DropDownList;
+            if (axisModeDropdown && !axisModeDropdown.isDestroyed) {
+                axisModeDropdown.destroy();
+            }
+        }
+        const checkboxSelectors: string[] = [
+            '#' + this.parent.element.id + '_DialogMultipleAxis',
+            '#' + this.parent.element.id + '_DialogShowLabel',
+            '#' + this.parent.element.id + '_checkBox'
+        ];
+        checkboxSelectors.forEach((selector: string) => {
+            const checkboxElement: HTMLElement = select(selector, document);
+            if (checkboxElement) {
+                const checkboxInstance: CheckBox = getInstance(checkboxElement, CheckBox) as CheckBox;
+                if (checkboxInstance && !checkboxInstance.isDestroyed) {
+                    checkboxInstance.destroy();
+                }
+            }
+        });
+    }
+
+    /**
+     * Properly cleans up the chart type dialog
+     *
+     * @private
+     * @returns {void}
+     */
+    private removeDialog(): void {
+        const chartTypesDialog: Dialog = select('#' + this.parent.element.id + '_ChartTypeDialog', this.parent.element) ?
+            getInstance(select('#' + this.parent.element.id + '_ChartTypeDialog', this.parent.element), Dialog) as Dialog : null;
+        if (chartTypesDialog && !chartTypesDialog.isDestroyed) {
+            const chartTypeDropdown: DropDownList = select('#' + this.parent.element.id + '_ChartTypeOption', chartTypesDialog.element) ?
+                getInstance(select('#' + this.parent.element.id + '_ChartTypeOption', chartTypesDialog.element), DropDownList) as DropDownList : null;
+            if (chartTypeDropdown && !chartTypeDropdown.isDestroyed) {
+                chartTypeDropdown.destroy();
+            }
+            const axisModeDropdown: DropDownList = select('#' + this.parent.element.id + '_AxisModeOption', chartTypesDialog.element) ?
+                getInstance(select('#' + this.parent.element.id + '_AxisModeOption', chartTypesDialog.element), DropDownList) as DropDownList : null;
+            if (axisModeDropdown && !axisModeDropdown.isDestroyed) {
+                axisModeDropdown.destroy();
+            }
+            const multipleAxisCheckbox: CheckBox = select('#' + this.parent.element.id + '_DialogMultipleAxis', chartTypesDialog.element) ?
+                getInstance(select('#' + this.parent.element.id + '_DialogMultipleAxis', chartTypesDialog.element), CheckBox) as CheckBox : null;
+            if (multipleAxisCheckbox && !multipleAxisCheckbox.isDestroyed) {
+                multipleAxisCheckbox.destroy();
+            }
+            const showLabelCheckbox: CheckBox = select('#' + this.parent.element.id + '_DialogShowLabel', chartTypesDialog.element) ?
+                getInstance(select('#' + this.parent.element.id + '_DialogShowLabel', chartTypesDialog.element), CheckBox) as CheckBox : null;
+            if (showLabelCheckbox && !showLabelCheckbox.isDestroyed) {
+                showLabelCheckbox.destroy();
+            }
+            chartTypesDialog.destroy();
+        }
+        if (document.getElementById(this.parent.element.id + '_ChartTypeDialog')) {
+            remove(document.getElementById(this.parent.element.id + '_ChartTypeDialog'));
         }
     }
 

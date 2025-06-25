@@ -3675,8 +3675,8 @@ describe('Schedule Timeline Week view', () => {
         it('block event initial rendering testing', () => {
             expect(schObj.element.querySelectorAll('.e-block-appointment').length).toEqual(4);
             const blockEvent: HTMLElement = schObj.element.querySelector('[data-id="Appointment_1"]') as HTMLElement;
-            expect(blockEvent.offsetWidth).toEqual(150);
-            expect(blockEvent.offsetLeft).toEqual(3400);
+            expect(blockEvent.offsetWidth).toEqual(149);
+            expect(blockEvent.offsetLeft).toEqual(3401);
         });
 
         it('add event', (done: DoneFn) => {

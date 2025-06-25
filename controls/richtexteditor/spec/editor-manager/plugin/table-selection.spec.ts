@@ -3,6 +3,7 @@ import { TableSelection } from "../../../src/editor-manager/plugin/table-selecti
 import { RichTextEditor } from "../../../src/rich-text-editor/base/rich-text-editor";
 import { destroy, renderRTE } from "../../rich-text-editor/render.spec";
 import { BASIC_MOUSE_EVENT_INIT } from "../../constant.spec";
+import { EditorManager } from '../../../src/editor-manager/index';
 
 // Test case for the Table cell selection public methods
 // 1. getBlockNodes method - return the block nodes collection after the wraping of inline nodes.
@@ -322,6 +323,55 @@ describe('Table Cell Selection ', () => {
                     done();
                 }, 100);
             }, 100);
+        });
+    });
+
+    describe(' BlockQuote Formats testing', () => {
+        let editorObj: EditorManager;
+        const editableElement: HTMLElement = createElement('div', { id: 'editorRoot', className: 'e-richtexteditor' });
+
+        beforeAll(() => {
+            document.body.appendChild(editableElement);
+            editorObj = new EditorManager({ document: document, editableElement: document.getElementById("editorRoot") });
+        });
+
+        beforeEach(() => {
+            let tableContent = '<table class="e-rte-table" style="width: 100%; min-width: 0px;">';
+            for (let i = 0; i < 6; i++) {
+                tableContent += '<tr>';
+                for (let j = 0; j < 6; j++) {
+                    if (i === 5 && j === 5) {
+                        tableContent += `<td style="width: 16.6%;">Text ${i},${j} <hr> <p><br></p></td>`;
+                    } else {
+                        tableContent += `<td style="width: 16.6%;">Text ${i},${j}</td>`;
+                    }
+                }
+                tableContent += '</tr>';
+            }
+            tableContent += '</table>';
+
+            editableElement.innerHTML = tableContent;
+            editableElement.contentEditable = 'true';
+            document.body.appendChild(editableElement);
+        });
+
+        afterEach(() => {
+            detach(document.getElementById('editorRoot') as HTMLElement);
+        });
+
+        it('962747-Block Quote Formatting with Horizontal Line Causes Editor Unresponsive in Angular and Script Error in JS After Reverting', () => {
+            const tdCollection: NodeListOf<HTMLTableCellElement> = document.querySelector('.e-rte-table').querySelectorAll('td');
+            tdCollection.forEach(td => td.classList.add('e-cell-select'));
+            const editorManager = new EditorManager({ document: document, editableElement: editableElement });
+            editorManager.nodeSelection.setSelectionText(document,tdCollection[0].firstChild,tdCollection[35].firstChild,0,0);
+            editorManager.execCommand("Formats", 'blockquote', null);
+            const blockQuoteNodes = Array.from(editableElement.querySelectorAll('blockquote'));
+            expect(blockQuoteNodes.length).toBeGreaterThan(0);
+            blockQuoteNodes.forEach(node => {
+                expect(node.tagName.toLowerCase()).toBe('blockquote');
+            });
+
+            editorObj.nodeSelection.Clear(document);
         });
     });
 });

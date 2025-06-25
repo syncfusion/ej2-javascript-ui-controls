@@ -15,8 +15,8 @@ describe('Insert & Delete ->', () => {
         });
         it('Insert', (done: Function) => {
             helper.invoke('insertRow', [2, 3]);
-            expect(helper.getInstance().sheets[0].rows[2]).toEqual({});
-            expect(helper.getInstance().sheets[0].rows[3]).toEqual({});
+            expect(JSON.stringify(helper.getInstance().sheets[0].rows[2])).toEqual('{"cells":[null,{"format":"m/d/yyyy"},{"format":"h:mm:ss AM/PM"}]}');
+            expect(JSON.stringify(helper.getInstance().sheets[0].rows[3])).toEqual('{"cells":[null,{"format":"m/d/yyyy"},{"format":"h:mm:ss AM/PM"}]}');
             setTimeout(() => {
                 expect(helper.invoke('getCell', [2, 0]).textContent).toBe('');
                 expect(helper.invoke('getCell', [4, 0]).textContent).toBe('Sports Shoes');
@@ -24,7 +24,7 @@ describe('Insert & Delete ->', () => {
                 helper.invoke('insertColumn', [3, 4]);
                 setTimeout(() => {
                     expect(helper.getInstance().sheets[0].rows[0].cells[3]).toBeNull();
-                    expect(helper.getInstance().sheets[0].rows[1].cells[3]).toBeNull();
+                    expect(helper.getInstance().sheets[0].rows[1].cells[3]).toEqual({ format: 'h:mm:ss AM/PM' });
                     expect(helper.getInstance().sheets[0].rows[0].cells[5].value).toEqual('Quantity');
                     expect(helper.invoke('getCell', [0, 3]).textContent).toBe('');
                     expect(helper.invoke('getCell', [0, 5]).textContent).toBe('Quantity');
@@ -106,8 +106,8 @@ describe('Insert & Delete ->', () => {
         });
         it('Insert row and column before applying freeze pane', (done: Function) => {
             helper.invoke('insertRow', [2, 3]);
-            expect(helper.getInstance().sheets[0].rows[2]).toEqual({});
-            expect(helper.getInstance().sheets[0].rows[3]).toEqual({});
+            expect(JSON.stringify(helper.getInstance().sheets[0].rows[2])).toEqual('{"cells":[null,{"format":"m/d/yyyy"},{"format":"h:mm:ss AM/PM"}]}');
+            expect(JSON.stringify(helper.getInstance().sheets[0].rows[3])).toEqual('{"cells":[null,{"format":"m/d/yyyy"},{"format":"h:mm:ss AM/PM"}]}');
             setTimeout(() => {
                 expect(helper.invoke('getCell', [2, 0]).textContent).toBe('');
                 expect(helper.invoke('getCell', [4, 0]).textContent).toBe('Sports Shoes');
@@ -115,7 +115,7 @@ describe('Insert & Delete ->', () => {
                 helper.invoke('insertColumn', [3, 4]);
                 setTimeout(() => {
                     expect(helper.getInstance().sheets[0].rows[0].cells[3]).toBeNull();
-                    expect(helper.getInstance().sheets[0].rows[1].cells[3]).toBeNull();
+                    expect(helper.getInstance().sheets[0].rows[1].cells[3]).toEqual({ format: 'h:mm:ss AM/PM' });
                     expect(helper.getInstance().sheets[0].rows[0].cells[5].value).toEqual('Quantity');
                     expect(helper.invoke('getCell', [0, 3]).textContent).toBe('');
                     expect(helper.invoke('getCell', [0, 5]).textContent).toBe('Quantity');
@@ -178,7 +178,7 @@ describe('Insert & Delete ->', () => {
             helper.invoke('selectRange', ['A3']);
             helper.openAndClickCMenuItem(2, 0, [6, 2], true);
             setTimeout(() => {
-                expect(helper.getInstance().sheets[0].rows[3]).toEqual({});
+                expect(JSON.stringify(helper.getInstance().sheets[0].rows[3])).toEqual('{"cells":[null,{"format":"m/d/yyyy"},{"format":"h:mm:ss AM/PM"}]}');
                 expect(helper.invoke('getCell', [3, 0]).textContent).toBe('');
                 expect(helper.invoke('getCell', [4, 0]).textContent).toBe('Sports Shoes');
                 done();
@@ -203,7 +203,7 @@ describe('Insert & Delete ->', () => {
                 expect(helper.invoke('getCell', [0, 1]).textContent).toBe('');
                 expect(helper.invoke('getCell', [0, 2]).textContent).toBe('Date');
                 done();
-            });
+            }, 20);
         });
 
         it('Insert Column-After->', (done: Function) => {
@@ -2178,7 +2178,7 @@ describe('Insert & Delete ->', () => {
 
             it('EJ2-53476 - getRowData not working while inserting row using insertRow method->', (done: Function) => {
                 helper.invoke('insertRow', [11, 11]);
-                expect(helper.getInstance().sheets[0].rows[11]).toEqual({});
+                expect(JSON.stringify(helper.getInstance().sheets[0].rows[11])).toEqual('{"cells":[null,{"format":"m/d/yyyy"},{"format":"h:mm:ss AM/PM"}]}');
                 setTimeout(() => {
                     expect(helper.invoke('getRow', [11]).getRowData).toBeNull;
                     done();
@@ -2194,9 +2194,9 @@ describe('Insert & Delete ->', () => {
                     helper.invoke('selectRange', ['A3:A5']);
                     helper.openAndClickCMenuItem(3, 0, [6, 2], true);
                     setTimeout(() => {
-                        expect(helper.getInstance().sheets[0].rows[5]).toEqual({});
-                        expect(helper.getInstance().sheets[0].rows[6]).toEqual({});
-                        expect(helper.getInstance().sheets[0].rows[7]).toEqual({});
+                        expect(JSON.stringify(helper.getInstance().sheets[0].rows[5])).toEqual('{"cells":[null,{"format":"m/d/yyyy"},{"format":"h:mm:ss AM/PM"}]}');
+                        expect(JSON.stringify(helper.getInstance().sheets[0].rows[6])).toEqual('{"cells":[null,{"format":"m/d/yyyy"},{"format":"h:mm:ss AM/PM"}]}');
+                        expect(JSON.stringify(helper.getInstance().sheets[0].rows[7])).toEqual('{"cells":[null,{"format":"m/d/yyyy"},{"format":"h:mm:ss AM/PM"}]}');
                         helper.invoke('selectRange', ['A9']);
                         helper.triggerKeyNativeEvent(90, true);
                         helper.triggerKeyNativeEvent(90, true);
@@ -2388,6 +2388,23 @@ describe('Insert & Delete ->', () => {
                     done();
                 });
             });
+
+            it('EJ2-957395 -> Undoing after deleting a column messes up merged cells.', (done: Function) => {
+                const spreadsheet: Spreadsheet = helper.getInstance();
+                helper.invoke('merge', ['B2:E5']);
+                expect(spreadsheet.sheets[0].rows[1].cells[1].colSpan).toBe(4);
+                helper.invoke('selectRange', ['E1']);
+                helper.openAndClickCMenuItem(0, 5, [7], null, true);
+                expect(spreadsheet.sheets[0].rows[1].cells[1].colSpan).toBe(3);
+                helper.invoke('selectRange', ['D1']);
+                helper.openAndClickCMenuItem(0, 5, [7], null, true);
+                expect(spreadsheet.sheets[0].rows[1].cells[1].colSpan).toBe(2);
+                spreadsheet.undo();
+                expect(spreadsheet.sheets[0].rows[1].cells[1].colSpan).toBe(3);
+                spreadsheet.undo();
+                expect(spreadsheet.sheets[0].rows[1].cells[1].colSpan).toBe(4);
+                done();
+            });
         });
 
         describe('EJ2-54240->', () => {
@@ -2504,6 +2521,88 @@ describe('Insert & Delete ->', () => {
                         });
                     });
                 });
+            });
+        });
+    });
+    describe('allowDelete: false ->', () => {
+        beforeAll((done: Function) => {
+            helper.initializeSpreadsheet({
+                allowDelete: false,
+                sheets: [{ranges: [{ dataSource: defaultData }]}]
+            }, done);
+        });
+        afterAll(() => {
+            helper.invoke('destroy');
+        });
+        it('Should disable delete option in context menu for row/column headers', (done: Function) => {
+            helper.invoke('selectRange', ['A2']);
+            helper.setAnimationToNone('#' + helper.id + '_contextmenu');
+            let cell: HTMLElement = (helper.getElement('#' + helper.id + ' .e-rowhdr-table') as HTMLTableElement).rows[1].cells[0];
+            let coords: DOMRect = <DOMRect>cell.getBoundingClientRect();
+            helper.triggerMouseAction('contextmenu', { x: coords.x, y: coords.y }, null, cell);
+            expect(helper.getElement('#' + helper.id + '_contextmenu li:nth-child(7)').classList).toContain('e-disabled');
+            done();
+        });
+    });
+    describe('AllowInsert: false condition checks', () => {
+        let helper: SpreadsheetHelper;
+        beforeAll((done: Function) => {
+            helper = new SpreadsheetHelper('spreadsheet');
+            helper.initializeSpreadsheet({ allowInsert: false, sheets: [{ ranges: [{ dataSource: defaultData }] }] }, done);
+        });
+        afterAll(() => {
+            helper.invoke('destroy');
+        });
+        it('Check through public method and UI interaction', (done: Function) => {
+            const spreadsheet = helper.getInstance();
+            spreadsheet.insertSheet();
+            expect(spreadsheet.sheets.length).toBe(1);
+            const sheettab = helper.getElement('#spreadsheet_sheet_tab_panel');
+            expect(sheettab.children[0].classList).toContain('e-disabled');
+            done();
+        });
+        it('Check through contextmenu UI interaction', (done: Function) => {
+            helper.invoke('selectRange', ['A2']);
+            const cell = helper.getElement('#' + helper.id + ' .e-rowhdr-table').rows[1].cells[0];
+            const coords = cell.getBoundingClientRect();
+            helper.setAnimationToNone('#' + helper.id + '_contextmenu');
+            helper.triggerMouseAction('contextmenu', { x: coords.x, y: coords.y }, null, cell);
+            const element = helper.getElement('#spreadsheet_cmenu_insert_row');
+            expect(element.classList).toContain('e-disabled');
+            done();
+        });
+    });
+    describe('EJ2-957399-> New row doesnt auto-format as the applied format in the column', () => {
+        beforeAll((done: Function) => {
+            helper.initializeSpreadsheet({ sheets: [{ ranges: [{ dataSource: defaultData }] }] }, done);
+        });
+        afterAll(() => {
+            helper.invoke('destroy');
+        });
+        it('New row cell value should auto-format as the applied format in the column', (done: Function) => {
+            helper.invoke('numberFormat', ['$#,##0.00', 'G1:G12']);
+            expect(helper.invoke('getCell', [3, 6]).textContent).toContain('$');
+            helper.invoke('selectRange', ['A3']);
+            helper.setAnimationToNone('#' + helper.id + '_contextmenu');
+            helper.openAndClickCMenuItem(2, 0, [6, 1], true);
+            setTimeout((): void => {
+                expect(helper.invoke('getCell', [2, 6]).textContent).toBe('');
+                helper.invoke('updateCell', [{ value: '100' }, 'G3']);
+                expect(helper.invoke('getCell', [2, 6]).textContent).toContain('$');
+                done();
+            });
+        });
+        it('New Column cell value should auto-format as the applied format in the row', (done: Function) => {
+            helper.invoke('numberFormat', ['$#,##0.00', 'A9:J9']);
+            expect(helper.invoke('getCell', [8, 5]).textContent).toContain('$');
+            helper.invoke('selectRange', ['G1']);
+            helper.setAnimationToNone('#' + helper.id + '_contextmenu');
+            helper.openAndClickCMenuItem(0, 6, [6, 1], false, true);
+            setTimeout((): void => {
+                expect(helper.invoke('getCell', [8, 6]).textContent).toBe('');
+                helper.invoke('updateCell', [{ value: '100' }, 'G9']);
+                expect(helper.invoke('getCell', [8, 6]).textContent).toContain('$');
+                done();
             });
         });
     });

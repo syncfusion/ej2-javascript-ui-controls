@@ -1,7 +1,9 @@
-import { addClass, Browser, isNullOrUndefined as isNOU, KeyboardEventArgs, removeClass } from '@syncfusion/ej2-base';
-import { ActionBeginEventArgs, IExecutionGroup, IFormatPainter, IFormatPainterArgs, IRichTextEditor, IToolbarItemModel, NotifyArgs, ToolbarClickEventArgs } from '../base/interface';
+import { addClass, isNullOrUndefined as isNOU, KeyboardEventArgs, removeClass } from '@syncfusion/ej2-base';
+import {  IRichTextEditor } from '../base/interface';
+import { ActionBeginEventArgs, IExecutionGroup, IFormatPainter, IFormatPainterArgs, IToolbarItemModel, NotifyArgs, ToolbarClickEventArgs } from '../../common/interface';
 import * as events from '../base/constant';
 import { ClickEventArgs } from '@syncfusion/ej2-buttons';
+import { FormatPainterActions } from '../../editor-manager/plugin/format-painter-actions';
 
 export class FormatPainter implements IFormatPainter {
     private parent: IRichTextEditor;
@@ -21,6 +23,14 @@ export class FormatPainter implements IFormatPainter {
         this.parent.on(events.editAreaClick, this.editAreaClick, this);
         this.parent.on(events.keyDown, this.onKeyDown, this);
         this.parent.on(events.destroy, this.destroy, this);
+        this.parent.on(events.bindOnEnd, this.bindOnEnd, this);
+    }
+
+    private bindOnEnd(): void {
+        if (!this.parent.formatter.editorManager.formatPainterObj) {
+            this.parent.formatter.editorManager.formatPainterObj =
+            new FormatPainterActions(this.parent.formatter.editorManager, this.parent.formatPainterSettings);
+        }
     }
 
     private toolbarClick(clickargs: NotifyArgs): void {
@@ -151,6 +161,7 @@ export class FormatPainter implements IFormatPainter {
         this.parent.off(events.formatPainterDoubleClick, this.toolbarDoubleClick);
         this.parent.off(events.keyDown, this.onKeyDown);
         this.parent.off(events.destroy, this.destroy);
+        this.parent.off(events.bindOnEnd, this.bindOnEnd);
         this.parent = null;
         this.isSticky = null;
         this.isActive = null;

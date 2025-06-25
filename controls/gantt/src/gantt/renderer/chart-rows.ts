@@ -574,11 +574,7 @@ export class ChartRows extends DateProcessor {
         }
 
         this.parent.trigger('actionComplete', args);
-        if (!isNullOrUndefined(this.parent.loadingIndicator) && this.parent.loadingIndicator.indicatorType === 'Shimmer') {
-            this.parent.hideMaskRow();
-        } else {
-            this.parent.hideSpinner();
-        }
+        this.parent['hideLoadingIndicator']();
         setValue('isEdit', false, this.parent.contextMenuModule);
         setValue('isEdit', false, this.parent);
     }
@@ -1121,7 +1117,7 @@ export class ChartRows extends DateProcessor {
                 progressBarInnerDiv[0].appendChild(labelElement);
                 if ((progressBarInnerDiv[0] as Element).querySelectorAll('.e-task-label')[0].textContent !== '' &&
                    !this.isTemplate(parentLabel) &&
-                   (progressBarInnerDiv[0] as Element).querySelectorAll('.e-task-label')[0].children[0] && this.parent.disableHtmlEncode) {
+                   (progressBarInnerDiv[0] as Element).querySelectorAll('.e-task-label')[0].children[0] && this.parent.disableHtmlEncode ) {
                     (progressBarInnerDiv[0] as Element).querySelectorAll('.e-task-label')[0].children[0].remove();
                 }
                 if ((progressBarInnerDiv[0] as Element).querySelectorAll('.e-task-label')[0].textContent === '' &&

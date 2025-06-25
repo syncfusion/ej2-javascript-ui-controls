@@ -41,6 +41,11 @@ export const CLS_RTE_CONTAINER: string = 'e-rte-container';
  * @hidden
  * @deprecated
  */
+export const CLS_RTE_IFRAME_CONTENT: string = 'e-rte-iframe-content';
+/**
+ * @hidden
+ * @deprecated
+ */
 export const CLS_TOOLBAR: string = 'e-rte-toolbar';
 /**
  * @hidden
@@ -82,12 +87,36 @@ export const CLS_QUICK_TB: string = 'e-rte-quick-toolbar';
  * @hidden
  * @deprecated
  */
-export const CLS_TEXT_QUICK_TB: string = 'e-rte-text-quicktoolbar';
+export const CLS_TEXT_QUICK_TB: string = 'e-text-quicktoolbar';
+
 /**
  * @hidden
  * @deprecated
  */
-export const CLS_POP: string = 'e-rte-pop';
+export const CLS_IMG_QUICK_TB: string = 'e-image-quicktoolbar';
+
+/**
+ * @hidden
+ * @deprecated
+ */
+export const CLS_AUDIO_QUICK_TB: string = 'e-audio-quicktoolbar';
+/**
+ * @hidden
+ * @deprecated
+ */
+export const CLS_VIDEO_QUICK_TB: string = 'e-video-quicktoolbar';
+
+/**
+ * @hidden
+ * @deprecated
+ */
+export const CLS_TABLE_QUICK_TB: string = 'e-table-quicktoolbar';
+
+/**
+ * @hidden
+ * @deprecated
+ */
+export const CLS_LINK_QUICK_TB: string = 'e-link-quicktoolbar';
 
 /**
  * @hidden
@@ -103,22 +132,22 @@ export const CLS_QUICK_POP: string = 'e-rte-quick-popup';
  * @hidden
  * @deprecated
  */
+export const CLS_INLINE_POP: string = 'e-rte-inline-popup';
+/**
+ * @hidden
+ * @deprecated
+ */
+export const CLS_QUICK_TBAR_TIP_POINTER: string = 'e-rte-tip-pointer';
+/**
+ * @hidden
+ * @deprecated
+ */
 export const CLS_QUICK_DROPDOWN: string = 'e-quick-dropdown';
 /**
  * @hidden
  * @deprecated
  */
-export const CLS_IMAGE_POP: string = 'e-rte-image-popup';
-/**
- * @hidden
- * @deprecated
- */
-export const CLS_TEXT_POP: string = 'e-rte-text-popup';
-/**
- * @hidden
- * @deprecated
- */
-export const CLS_INLINE_POP: string = 'e-rte-inline-popup';
+export const CLS_INLINE_TOOLBAR: string = 'e-rte-inline-toolbar';
 /**
  * @hidden
  * @deprecated
@@ -338,6 +367,11 @@ export const CLS_TB_BTN: string = 'e-tbar-btn';
  * @hidden
  * @deprecated
  */
+export const CLS_DROPDOWN_MENU: string = 'e-rte-dropdown-menu';
+/**
+ * @hidden
+ * @deprecated
+ */
 export const CLS_HR_SEPARATOR: string = 'e-rte-horizontal-separator';
 /**
  * @hidden
@@ -364,6 +398,16 @@ export const CLS_BULLETFORMATLIST_TB_BTN: string = 'e-rte-bulletformatlist-dropd
  * @hidden
  * @deprecated
  */
+export const CLS_CODEBLOCK_TB_BTN: string = 'e-rte-codeblock-dropdown';
+/**
+ * @hidden
+ * @deprecated
+ */
+export const CLS_CODEBLOCK_TB_BTN_ICON: string = 'e-rte-code-block-icon e-preformat-code';
+/**
+ * @hidden
+ * @deprecated
+ */
 export const CLS_FORMATS_TB_BTN: string = 'e-formats-tbar-btn';
 /**
  * @hidden
@@ -384,27 +428,27 @@ export const CLS_ALIGN_TB_BTN: string = 'e-alignment-tbar-btn';
  * @hidden
  * @deprecated
  */
-export const CLS_FONT_COLOR_TARGET: string = 'e-rte-fontcolor-element';
+export const CLS_FONT_COLORPICKER: string = 'e-rte-font-colorpicker';
 /**
  * @hidden
  * @deprecated
  */
-export const CLS_BACKGROUND_COLOR_TARGET: string = 'e-rte-backgroundcolor-element';
+export const CLS_BACKGROUND_COLORPICKER: string = 'e-rte-background-colorpicker';
 /**
  * @hidden
  * @deprecated
  */
-export const CLS_COLOR_CONTENT: string = 'e-rte-color-content';
+export const CLS_NUMBERFORMATLIST_DROPDOWN: string = 'e-rte-numberformatlist-dropdown';
 /**
  * @hidden
  * @deprecated
  */
-export const CLS_FONT_COLOR_DROPDOWN: string = 'e-rte-fontcolor-dropdown';
+export const CLS_BULLETFORMATLIST_DROPDOWN: string = 'e-rte-bulletformatlist-dropdown';
 /**
  * @hidden
  * @deprecated
  */
-export const CLS_BACKGROUND_COLOR_DROPDOWN: string = 'e-rte-backgroundcolor-dropdown';
+export const CLS_DROPDOWN: string = 'e-rte-dropdown';
 /**
  * @hidden
  * @deprecated
@@ -414,57 +458,8 @@ export const CLS_COLOR_PALETTE: string = 'e-rte-square-palette';
  * @hidden
  * @deprecated
  */
-export const CLS_FONT_COLOR_PICKER: string = 'e-rte-fontcolor-colorpicker';
-/**
- * @hidden
- * @deprecated
- */
-export const CLS_BACKGROUND_COLOR_PICKER: string = 'e-rte-backgroundcolor-colorpicker';
-/**
- * @hidden
- * @deprecated
- */
 export const CLS_RTE_READONLY: string = 'e-rte-readonly';
-/**
- * @hidden
- * @deprecated
- */
-export const CLS_TABLE_SEL: string = 'e-cell-select';
-/**
- * @hidden
- * @deprecated
- */
-export const CLS_TABLE_SEL_END: string = 'e-cell-select-end';
-/**
- * @hidden
- * @deprecated
- */
-export const CLS_TABLE_MULTI_CELL: string = 'e-multi-cells-select';
-/**
- * @hidden
- * @deprecated
- */
-export const CLS_TB_DASH_BOR: string = 'e-dashed-border';
-/**
- * @hidden
- * @deprecated
- */
-export const CLS_TB_ALT_BOR: string = 'e-alternate-border';
-/**
- * @hidden
- * @deprecated
- */
-export const CLS_TB_COL_RES: string = 'e-column-resize';
-/**
- * @hidden
- * @deprecated
- */
-export const CLS_TB_ROW_RES: string = 'e-row-resize';
-/**
- * @hidden
- * @deprecated
- */
-export const CLS_TB_BOX_RES: string = 'e-table-box';
+
 /**
  * @hidden
  * @deprecated
@@ -519,37 +514,17 @@ export const CLS_RTE_IMAGE: string = 'e-rte-image';
  * @hidden
  * @deprecated
  */
-export const CLS_RESIZE: string = 'e-resize';
-/**
- * @hidden
- * @deprecated
- */
-export const CLS_IMG_FOCUS: string = 'e-img-focus';
-/**
- * @hidden
- * @deprecated
- */
-export const CLS_AUD_FOCUS: string = 'e-audio-focus';
-/**
- * @hidden
- * @deprecated
- */
-export const CLS_VID_FOCUS: string = 'e-video-focus';
-/**
- * @hidden
- * @deprecated
- */
-export const CLS_RTE_DRAG_IMAGE: string = 'e-rte-drag-image';
-/**
- * @hidden
- * @deprecated
- */
 export const CLS_RTE_UPLOAD_POPUP: string = 'e-rte-upload-popup';
 /**
  * @hidden
  * @deprecated
  */
 export const CLS_POPUP_OPEN: string = 'e-popup-open';
+/**
+ * @hidden
+ * @deprecated
+ */
+export const CLS_POPUP_CLOSE: string = 'e-popup-close';
 /**
  * @hidden
  * @deprecated
@@ -600,11 +575,7 @@ export const CLS_TABLE: string = 'e-rte-table';
  * @deprecated
  */
 export const CLS_TABLE_BORDER: string = 'e-rte-table-border';
-/**
- * @hidden
- * @deprecated
- */
-export const CLS_RTE_TABLE_RESIZE: string = 'e-rte-table-resize';
+
 /**
  * @hidden
  * @deprecated
@@ -625,8 +596,4 @@ export const CLS_RTE_RES_WEST: string = 'e-south-west';
  * @deprecated
  */
 export const CLS_RTE_SOURCE_CODE_TXTAREA: string = 'e-rte-srctextarea';
-/**
- * @hidden
- * @deprecated
- */
-export const ALLOWED_ACTIONKEYS: string[] = ['Enter', 'ArrowRight', 'ArrowLeft'];
+

@@ -2,7 +2,8 @@
  * Toolbar spec
  */
 import { selectAll, select, Browser, L10n, createElement, getUniqueID, detach, isNullOrUndefined, closest } from "@syncfusion/ej2-base";
-import { RichTextEditor, ToolbarType } from "../../../src/rich-text-editor/index";
+import { RichTextEditor } from "../../../src/rich-text-editor/index";
+import { ToolbarType } from "../../../src/common/enum";
 import { IToolbarStatus } from '../../../src/common/interface';
 import { renderRTE, destroy, dispatchEvent } from "./../render.spec";
 import { NodeSelection } from "../../../src/selection/index";
@@ -42,12 +43,13 @@ import { ARROWRIGHT_EVENT_INIT, TOOLBAR_FOCUS_SHORTCUT_EVENT_INIT } from "../../
             done();
         });
         it(' Checking the sampleLevel numberFormatList items ', (done) => {
-            let format: HTMLElement = rteObj.element.querySelector('#' + controlId + '_toolbar_NumberFormatList');
+            //Modified rendering from dropdown to split button
+            let format: HTMLElement = (rteObj.element.querySelector('#' + controlId + '_toolbar_NumberFormatList').nextElementSibling) as HTMLElement;
             dispatchEvent(format, 'mousedown');
             dispatchEvent(format, 'mouseup');
             format.click();
             setTimeout(() => {
-            let items: any = document.querySelectorAll('#' + controlId + '_toolbar_NumberFormatList-popup .e-item');
+            let items: any = document.querySelectorAll('#' + controlId + '_toolbar_NumberFormatList_dropdownbtn-popup .e-item');
             expect(items[0].textContent === 'None').toBe(true);
             expect(items[1].textContent === 'Number').toBe(true);
             expect(items[2].textContent === 'UpperAlpha').toBe(true);
@@ -58,12 +60,13 @@ import { ARROWRIGHT_EVENT_INIT, TOOLBAR_FOCUS_SHORTCUT_EVENT_INIT } from "../../
         }, 200)
         });
         it(' Checking the sampleLevel bulletFormatList items ', (done) => {
-            let format: HTMLElement = rteObj.element.querySelector('#' + controlId + '_toolbar_BulletFormatList');
+            //Modified rendering from dropdown to split button
+            let format: HTMLElement = (rteObj.element.querySelector('#' + controlId + '_toolbar_BulletFormatList').nextElementSibling) as HTMLElement;
             dispatchEvent(format, 'mousedown');
             dispatchEvent(format, 'mouseup');
             format.click();
             setTimeout(() => {
-            let items: any = document.querySelectorAll('#' + controlId + '_toolbar_BulletFormatList-popup .e-item');
+            let items: any = document.querySelectorAll('#' + controlId + '_toolbar_BulletFormatList_dropdownbtn-popup .e-item');
             expect(items[0].textContent === 'None').toBe(true);
             expect(items[1].textContent === 'Square').toBe(true);
             done();
@@ -109,21 +112,20 @@ import { ARROWRIGHT_EVENT_INIT, TOOLBAR_FOCUS_SHORTCUT_EVENT_INIT } from "../../
             done();
         });
         it(' css class dependency initial load and dynamic change ', (done) => {
-            let format: HTMLElement = rteObj.element.querySelector('#' + controlId + '_toolbar_NumberFormatList');
+            //Modified rendering from dropdown to split button
+            let format: HTMLElement = (rteObj.element.querySelector('#' + controlId + '_toolbar_NumberFormatList').nextElementSibling) as HTMLElement;
             dispatchEvent(format, 'mousedown');
             dispatchEvent(format, 'mouseup');
             format.click();
             setTimeout(() => {
-                expect(document.querySelectorAll('.e-dropdown-popup')[0].classList.contains('customClass')).toBe(true);
-                expect(document.querySelectorAll('.e-dropdown-popup')[1].classList.contains('customClass')).toBe(true);
-                expect(document.querySelector('.e-rte-numberformatlist-dropdown').classList.contains('customClass')).toBe(true);
-                expect(document.querySelector('.e-rte-bulletformatlist-dropdown').classList.contains('customClass')).toBe(true);
+                expect(document.querySelectorAll('.e-dropdown-popup')[2].classList.contains('customClass')).toBe(true);
+                expect(document.querySelectorAll('.e-dropdown-popup')[3].classList.contains('customClass')).toBe(true);
+                expect(document.querySelector('.e-rte-numberformatlist-dropdown.e-popup-open').classList.contains('customClass')).toBe(true);
                 rteObj.cssClass = 'changedClass';
                 rteObj.dataBind();
-                expect(document.querySelectorAll('.e-dropdown-popup')[0].classList.contains('changedClass')).toBe(true);
-                expect(document.querySelectorAll('.e-dropdown-popup')[1].classList.contains('changedClass')).toBe(true);
-                expect(document.querySelector('.e-rte-numberformatlist-dropdown').classList.contains('changedClass')).toBe(true);
-                expect(document.querySelector('.e-rte-bulletformatlist-dropdown').classList.contains('changedClass')).toBe(true);
+                expect(document.querySelectorAll('.e-dropdown-popup')[2].classList.contains('changedClass')).toBe(true);
+                expect(document.querySelectorAll('.e-dropdown-popup')[3].classList.contains('changedClass')).toBe(true);
+                expect(document.querySelector('.e-rte-numberformatlist-dropdown.e-popup-open').classList.contains('changedClass')).toBe(true);
                 done();
             }, 200)
         });
@@ -150,11 +152,12 @@ import { ARROWRIGHT_EVENT_INIT, TOOLBAR_FOCUS_SHORTCUT_EVENT_INIT } from "../../
     it(' Check the numberFormatList items 1', (done) => {
         let pEle: HTMLElement = rteObj.element.querySelector('#rte');
         rteObj.formatter.editorManager.nodeSelection.setSelectionText(document, rteObj.element.querySelector('#rte').childNodes[0], rteObj.element.querySelector('#rte').childNodes[0], 0, 14);
-        let numberFormatList: HTMLElement = rteObj.element.querySelector('#' + controlId + '_toolbar_NumberFormatList');
+        //Modified rendering from dropdown to split button
+        let numberFormatList: HTMLElement = (rteObj.element.querySelector('#' + controlId + '_toolbar_NumberFormatList').nextElementSibling) as HTMLElement;
         dispatchEvent(numberFormatList, 'mousedown');
         dispatchEvent(numberFormatList, 'mouseup');
         numberFormatList.click();
-        let items: any = document.querySelectorAll('#' + controlId + '_toolbar_NumberFormatList-popup .e-item');
+        let items: any = document.querySelectorAll('#' + controlId + '_toolbar_NumberFormatList_dropdownbtn-popup .e-item');
         items[1].click();
         expect(pEle.style.listStyleType === 'decimal').toBe(true);
         expect(rteObj.element.querySelector('#rte').tagName === 'OL').toBe(true);
@@ -163,11 +166,12 @@ import { ARROWRIGHT_EVENT_INIT, TOOLBAR_FOCUS_SHORTCUT_EVENT_INIT } from "../../
     it(' Check the numberFormatList items 2', (done) => {
         let pEle: HTMLElement = rteObj.element.querySelector('#rte');
         rteObj.formatter.editorManager.nodeSelection.setSelectionText(document, rteObj.element.querySelector('#rte').childNodes[0], rteObj.element.querySelector('#rte').childNodes[0], 0, 14);
-        let numberFormatList: HTMLElement = rteObj.element.querySelector('#' + controlId + '_toolbar_NumberFormatList');
+        //Modified rendering from dropdown to split button
+        let numberFormatList: HTMLElement = (rteObj.element.querySelector('#' + controlId + '_toolbar_NumberFormatList').nextElementSibling) as HTMLElement;
         dispatchEvent(numberFormatList, 'mousedown');
         dispatchEvent(numberFormatList, 'mouseup');
         numberFormatList.click();
-        let items: any = document.querySelectorAll('#' + controlId + '_toolbar_NumberFormatList-popup .e-item');
+        let items: any = document.querySelectorAll('#' + controlId + '_toolbar_NumberFormatList_dropdownbtn-popup .e-item');
         items[2].click();
         expect(pEle.style.listStyleType === 'lower-greek').toBe(true);
         expect(rteObj.element.querySelector('#rte').tagName === 'OL').toBe(true);
@@ -176,11 +180,12 @@ import { ARROWRIGHT_EVENT_INIT, TOOLBAR_FOCUS_SHORTCUT_EVENT_INIT } from "../../
     it(' Check the numberFormatList items 3', (done) => {
         let pEle: HTMLElement = rteObj.element.querySelector('#rte');
         rteObj.formatter.editorManager.nodeSelection.setSelectionText(document, rteObj.element.querySelector('#rte').childNodes[0], rteObj.element.querySelector('#rte').childNodes[0], 0, 14);
-        let numberFormatList: HTMLElement = rteObj.element.querySelector('#' + controlId + '_toolbar_NumberFormatList');
+        //Modified rendering from dropdown to split button
+        let numberFormatList: HTMLElement = (rteObj.element.querySelector('#' + controlId + '_toolbar_NumberFormatList').nextElementSibling) as HTMLElement;
         dispatchEvent(numberFormatList, 'mousedown');
         dispatchEvent(numberFormatList, 'mouseup');
         numberFormatList.click();
-        let items: any = document.querySelectorAll('#' + controlId + '_toolbar_NumberFormatList-popup .e-item');
+        let items: any = document.querySelectorAll('#' + controlId + '_toolbar_NumberFormatList_dropdownbtn-popup .e-item');
         items[3].click();
         expect(pEle.style.listStyleType === 'lower-roman').toBe(true);
         expect(rteObj.element.querySelector('#rte').tagName === 'OL').toBe(true);
@@ -189,11 +194,12 @@ import { ARROWRIGHT_EVENT_INIT, TOOLBAR_FOCUS_SHORTCUT_EVENT_INIT } from "../../
     it(' Check the numberFormatList items 4', (done) => {
         let pEle: HTMLElement = rteObj.element.querySelector('#rte');
         rteObj.formatter.editorManager.nodeSelection.setSelectionText(document, rteObj.element.querySelector('#rte').childNodes[0], rteObj.element.querySelector('#rte').childNodes[0], 0, 14);
-        let numberFormatList: HTMLElement = rteObj.element.querySelector('#' + controlId + '_toolbar_NumberFormatList');
+        //Modified rendering from dropdown to split button
+        let numberFormatList: HTMLElement = (rteObj.element.querySelector('#' + controlId + '_toolbar_NumberFormatList').nextElementSibling) as HTMLElement;
         dispatchEvent(numberFormatList, 'mousedown');
         dispatchEvent(numberFormatList, 'mouseup');
         numberFormatList.click();
-        let items: any = document.querySelectorAll('#' + controlId + '_toolbar_NumberFormatList-popup .e-item');
+        let items: any = document.querySelectorAll('#' + controlId + '_toolbar_NumberFormatList_dropdownbtn-popup .e-item');
         items[4].click();
         expect(pEle.style.listStyleType === 'upper-alpha').toBe(true);
         expect(rteObj.element.querySelector('#rte').tagName === 'OL').toBe(true);
@@ -202,11 +208,12 @@ import { ARROWRIGHT_EVENT_INIT, TOOLBAR_FOCUS_SHORTCUT_EVENT_INIT } from "../../
     it(' Check the numberFormatList items 5', (done) => {
         let pEle: HTMLElement = rteObj.element.querySelector('#rte');
         rteObj.formatter.editorManager.nodeSelection.setSelectionText(document, rteObj.element.querySelector('#rte').childNodes[0], rteObj.element.querySelector('#rte').childNodes[0], 0, 14);
-        let numberFormatList: HTMLElement = rteObj.element.querySelector('#' + controlId + '_toolbar_NumberFormatList');
+        //Modified rendering from dropdown to split button
+        let numberFormatList: HTMLElement = (rteObj.element.querySelector('#' + controlId + '_toolbar_NumberFormatList').nextElementSibling) as HTMLElement;
         dispatchEvent(numberFormatList, 'mousedown');
         dispatchEvent(numberFormatList, 'mouseup');
         numberFormatList.click();
-        let items: any = document.querySelectorAll('#' + controlId + '_toolbar_NumberFormatList-popup .e-item');
+        let items: any = document.querySelectorAll('#' + controlId + '_toolbar_NumberFormatList_dropdownbtn-popup .e-item');
         items[5].click();
         expect(pEle.style.listStyleType === 'lower-alpha').toBe(true);
         expect(rteObj.element.querySelector('#rte').tagName === 'OL').toBe(true);
@@ -215,11 +222,12 @@ import { ARROWRIGHT_EVENT_INIT, TOOLBAR_FOCUS_SHORTCUT_EVENT_INIT } from "../../
     it(' Check the numberFormatList items 6', (done) => {
         let pEle: HTMLElement = rteObj.element.querySelector('#rte');
         rteObj.formatter.editorManager.nodeSelection.setSelectionText(document, rteObj.element.querySelector('#rte').childNodes[0], rteObj.element.querySelector('#rte').childNodes[0], 0, 14);
-        let numberFormatList: HTMLElement = rteObj.element.querySelector('#' + controlId + '_toolbar_NumberFormatList');
+        //Modified rendering from dropdown to split button
+        let numberFormatList: HTMLElement = (rteObj.element.querySelector('#' + controlId + '_toolbar_NumberFormatList').nextElementSibling) as HTMLElement;
         dispatchEvent(numberFormatList, 'mousedown');
         dispatchEvent(numberFormatList, 'mouseup');
         numberFormatList.click();
-        let items: any = document.querySelectorAll('#' + controlId + '_toolbar_NumberFormatList-popup .e-item');
+        let items: any = document.querySelectorAll('#' + controlId + '_toolbar_NumberFormatList_dropdownbtn-popup .e-item');
         items[0].click();
         expect(pEle.style.listStyleType === 'none').toBe(true);
         expect(rteObj.element.querySelector('#rte').tagName === 'OL').toBe(true);
@@ -228,11 +236,12 @@ import { ARROWRIGHT_EVENT_INIT, TOOLBAR_FOCUS_SHORTCUT_EVENT_INIT } from "../../
     it(' Check the numberFormatList items 7', (done) => {
         let pEle: HTMLElement = rteObj.element.querySelector('#rte');
         rteObj.formatter.editorManager.nodeSelection.setSelectionText(document, rteObj.element.querySelector('#rte').childNodes[0], rteObj.element.querySelector('#rte').childNodes[0], 0, 14);
-        let numberFormatList: HTMLElement = rteObj.element.querySelector('#' + controlId + '_toolbar_NumberFormatList');
+        //Modified rendering from dropdown to split button
+        let numberFormatList: HTMLElement = (rteObj.element.querySelector('#' + controlId + '_toolbar_NumberFormatList').nextElementSibling) as HTMLElement;
         dispatchEvent(numberFormatList, 'mousedown');
         dispatchEvent(numberFormatList, 'mouseup');
         numberFormatList.click();
-        let items: any = document.querySelectorAll('#' + controlId + '_toolbar_NumberFormatList-popup .e-item');
+        let items: any = document.querySelectorAll('#' + controlId + '_toolbar_NumberFormatList_dropdownbtn-popup .e-item');
         items[1].click();
         expect(pEle.style.listStyleType === 'decimal').toBe(true);
         expect(rteObj.element.querySelector('#rte').tagName === 'OL').toBe(true);
@@ -262,11 +271,12 @@ import { ARROWRIGHT_EVENT_INIT, TOOLBAR_FOCUS_SHORTCUT_EVENT_INIT } from "../../
     it(' Check the bulletFormatList items 1', (done) => {
         let pEle: HTMLElement = rteObj.element.querySelector('#rte');
         rteObj.formatter.editorManager.nodeSelection.setSelectionText(document, rteObj.element.querySelector('#rte').childNodes[0], rteObj.element.querySelector('#rte').childNodes[0], 0, 14);
-        let bulletFormatList: HTMLElement = rteObj.element.querySelector('#' + controlId + '_toolbar_BulletFormatList');
+        //Modified rendering from dropdown to split button
+        let bulletFormatList: HTMLElement = (rteObj.element.querySelector('#' + controlId + '_toolbar_BulletFormatList').nextElementSibling) as HTMLElement;
         dispatchEvent(bulletFormatList, 'mousedown');
         dispatchEvent(bulletFormatList, 'mouseup');
         bulletFormatList.click();
-        let items: any = document.querySelectorAll('#' + controlId + '_toolbar_BulletFormatList-popup .e-item');
+        let items: any = document.querySelectorAll('#' + controlId + '_toolbar_BulletFormatList_dropdownbtn-popup .e-item');
         items[1].click();
         expect(pEle.style.listStyleType === 'disc').toBe(true);
         expect(rteObj.element.querySelector('#rte').tagName === 'UL').toBe(true);
@@ -275,11 +285,12 @@ import { ARROWRIGHT_EVENT_INIT, TOOLBAR_FOCUS_SHORTCUT_EVENT_INIT } from "../../
     it(' Check the bulletFormatList items 2', (done) => {
         let pEle: HTMLElement = rteObj.element.querySelector('#rte');
         rteObj.formatter.editorManager.nodeSelection.setSelectionText(document, rteObj.element.querySelector('#rte').childNodes[0], rteObj.element.querySelector('#rte').childNodes[0], 0, 14);
-        let bulletFormatList: HTMLElement = rteObj.element.querySelector('#' + controlId + '_toolbar_BulletFormatList');
+        //Modified rendering from dropdown to split button
+        let bulletFormatList: HTMLElement = (rteObj.element.querySelector('#' + controlId + '_toolbar_BulletFormatList').nextElementSibling) as HTMLElement;
         dispatchEvent(bulletFormatList, 'mousedown');
         dispatchEvent(bulletFormatList, 'mouseup');
         bulletFormatList.click();
-        let items: any = document.querySelectorAll('#' + controlId + '_toolbar_BulletFormatList-popup .e-item');
+        let items: any = document.querySelectorAll('#' + controlId + '_toolbar_BulletFormatList_dropdownbtn-popup .e-item');
         items[2].click();
         expect(pEle.style.listStyleType === 'circle').toBe(true);
         expect(rteObj.element.querySelector('#rte').tagName === 'UL').toBe(true);
@@ -288,11 +299,12 @@ import { ARROWRIGHT_EVENT_INIT, TOOLBAR_FOCUS_SHORTCUT_EVENT_INIT } from "../../
     it(' Check the bulletFormatList items 3', (done) => {
         let pEle: HTMLElement = rteObj.element.querySelector('#rte');
         rteObj.formatter.editorManager.nodeSelection.setSelectionText(document, rteObj.element.querySelector('#rte').childNodes[0], rteObj.element.querySelector('#rte').childNodes[0], 0, 14);
-        let bulletFormatList: HTMLElement = rteObj.element.querySelector('#' + controlId + '_toolbar_BulletFormatList');
+        //Modified rendering from dropdown to split button
+        let bulletFormatList: HTMLElement = (rteObj.element.querySelector('#' + controlId + '_toolbar_BulletFormatList').nextElementSibling) as HTMLElement;
         dispatchEvent(bulletFormatList, 'mousedown');
         dispatchEvent(bulletFormatList, 'mouseup');
         bulletFormatList.click();
-        let items: any = document.querySelectorAll('#' + controlId + '_toolbar_BulletFormatList-popup .e-item');
+        let items: any = document.querySelectorAll('#' + controlId + '_toolbar_BulletFormatList_dropdownbtn-popup .e-item');
         items[3].click();
         expect(pEle.style.listStyleType === 'square').toBe(true);
         expect(rteObj.element.querySelector('#rte').tagName === 'UL').toBe(true);
@@ -301,11 +313,12 @@ import { ARROWRIGHT_EVENT_INIT, TOOLBAR_FOCUS_SHORTCUT_EVENT_INIT } from "../../
     it(' Check the bulletFormatList items 4', (done) => {
         let pEle: HTMLElement = rteObj.element.querySelector('#rte');
         rteObj.formatter.editorManager.nodeSelection.setSelectionText(document, rteObj.element.querySelector('#rte').childNodes[0], rteObj.element.querySelector('#rte').childNodes[0], 0, 14);
-        let bulletFormatList: HTMLElement = rteObj.element.querySelector('#' + controlId + '_toolbar_BulletFormatList');
+        //Modified rendering from dropdown to split button
+        let bulletFormatList: HTMLElement = (rteObj.element.querySelector('#' + controlId + '_toolbar_BulletFormatList').nextElementSibling) as HTMLElement;
         dispatchEvent(bulletFormatList, 'mousedown');
         dispatchEvent(bulletFormatList, 'mouseup');
         bulletFormatList.click();
-        let items: any = document.querySelectorAll('#' + controlId + '_toolbar_BulletFormatList-popup .e-item');
+        let items: any = document.querySelectorAll('#' + controlId + '_toolbar_BulletFormatList_dropdownbtn-popup .e-item');
         items[0].click();
         expect(pEle.style.listStyleType === 'none').toBe(true);
         expect(rteObj.element.querySelector('#rte').tagName === 'UL').toBe(true);
@@ -340,11 +353,12 @@ import { ARROWRIGHT_EVENT_INIT, TOOLBAR_FOCUS_SHORTCUT_EVENT_INIT } from "../../
             let pEle: HTMLElement = rteObj.element.querySelector('#rte');
             expect(pEle.tagName === 'LI').toBe(true);
             expect(pEle.parentElement.tagName === 'OL').toBe(true);
-            let numberFormatList: HTMLElement = rteObj.element.querySelector('#' + controlId + '_toolbar_NumberFormatList');
+            //Modified rendering from dropdown to split button
+            let numberFormatList: HTMLElement = (rteObj.element.querySelector('#' + controlId + '_toolbar_NumberFormatList').nextElementSibling) as HTMLElement;
             dispatchEvent(numberFormatList, 'mousedown');
             dispatchEvent(numberFormatList, 'mouseup');
             numberFormatList.click();
-            let items: any = document.querySelectorAll('#' + controlId + '_toolbar_NumberFormatList-popup .e-item');
+            let items: any = document.querySelectorAll('#' + controlId + '_toolbar_NumberFormatList_dropdownbtn-popup .e-item');
             items[3].click();
             let Elem: HTMLElement = rteObj.element.querySelector('#rte');
             expect(Elem.tagName === 'LI').toBe(true);
@@ -361,11 +375,12 @@ import { ARROWRIGHT_EVENT_INIT, TOOLBAR_FOCUS_SHORTCUT_EVENT_INIT } from "../../
             let pEle: HTMLElement = rteObj.element.querySelector('#rte');
             expect(pEle.tagName === 'LI').toBe(true);
             expect(pEle.parentElement.tagName === 'UL').toBe(true);
-            let bulletFormatList: HTMLElement = rteObj.element.querySelector('#' + controlId + '_toolbar_BulletFormatList');
+            //Modified rendering from dropdown to split button
+            let bulletFormatList: HTMLElement = (rteObj.element.querySelector('#' + controlId + '_toolbar_BulletFormatList').nextElementSibling) as HTMLElement;
             dispatchEvent(bulletFormatList, 'mousedown');
             dispatchEvent(bulletFormatList, 'mouseup');
             bulletFormatList.click();
-            let items: any = document.querySelectorAll('#' + controlId + '_toolbar_BulletFormatList-popup .e-item');
+            let items: any = document.querySelectorAll('#' + controlId + '_toolbar_BulletFormatList_dropdownbtn-popup .e-item');
             items[3].click();
             let Elem: HTMLElement = rteObj.element.querySelector('#rte');
             expect(Elem.tagName === 'LI').toBe(true);
@@ -416,19 +431,20 @@ import { ARROWRIGHT_EVENT_INIT, TOOLBAR_FOCUS_SHORTCUT_EVENT_INIT } from "../../
             let pEle: HTMLElement = rteObj.element.querySelector('#rte');
             expect(pEle.tagName !== 'LI').toBe(true);
             rteObj.formatter.editorManager.nodeSelection.setSelectionText(document, rteObj.element.querySelector('#rte').childNodes[0], rteObj.element.querySelector('#rte').childNodes[0], 0, 14);
-            let numberFormatList: HTMLElement = rteObj.element.querySelector('#' + controlId + '_toolbar_NumberFormatList');
+            //Modified rendering from dropdown to split button
+            let numberFormatList: HTMLElement = (rteObj.element.querySelector('#' + controlId + '_toolbar_NumberFormatList').nextElementSibling) as HTMLElement;
             dispatchEvent(numberFormatList, 'mousedown');
             dispatchEvent(numberFormatList, 'mouseup');
             numberFormatList.click();
-            let items: any = document.querySelectorAll('#' + controlId + '_toolbar_NumberFormatList-popup .e-item');
+            let items: any = document.querySelectorAll('#' + controlId + '_toolbar_NumberFormatList_dropdownbtn-popup .e-item');
             items[6].click();
             expect(pEle.style.listStyleImage === 'url("https://mdn.mozillademos.org/files/11981/starsolid.gif")').toBe(true);
             expect(rteObj.element.querySelector('#rte').tagName === 'OL').toBe(true);
-            let numberFormatList1: HTMLElement = rteObj.element.querySelector('#' + controlId + '_toolbar_NumberFormatList');
+            let numberFormatList1: HTMLElement = (rteObj.element.querySelector('#' + controlId + '_toolbar_NumberFormatList').nextElementSibling) as HTMLElement;
             dispatchEvent(numberFormatList1, 'mousedown');
             dispatchEvent(numberFormatList1, 'mouseup');
             numberFormatList1.click();
-            let item: any = document.querySelectorAll('#' + controlId + '_toolbar_NumberFormatList-popup .e-item');
+            let item: any = document.querySelectorAll('#' + controlId + '_toolbar_NumberFormatList_dropdownbtn-popup .e-item');
             item[3].click();
             let Elem: HTMLElement = rteObj.element.querySelector('#rte');
             expect((Elem.childNodes[0] as HTMLElement).tagName === 'LI').toBe(true);
@@ -441,19 +457,20 @@ import { ARROWRIGHT_EVENT_INIT, TOOLBAR_FOCUS_SHORTCUT_EVENT_INIT } from "../../
             let pEle: HTMLElement = rteObj.element.querySelector('#rte');
             expect(pEle.tagName !== 'LI').toBe(true);
             rteObj.formatter.editorManager.nodeSelection.setSelectionText(document, rteObj.element.querySelector('#rte').childNodes[0], rteObj.element.querySelector('#rte').childNodes[0], 0, 14);
-            let bulletFormatList: HTMLElement = rteObj.element.querySelector('#' + controlId + '_toolbar_BulletFormatList');
+            //Modified rendering from dropdown to split button
+            let bulletFormatList: HTMLElement = (rteObj.element.querySelector('#' + controlId + '_toolbar_BulletFormatList').nextElementSibling) as HTMLElement;
             dispatchEvent(bulletFormatList, 'mousedown');
             dispatchEvent(bulletFormatList, 'mouseup');
             bulletFormatList.click();
-            let items: any = document.querySelectorAll('#' + controlId + '_toolbar_BulletFormatList-popup .e-item');
+            let items: any = document.querySelectorAll('#' + controlId + '_toolbar_BulletFormatList_dropdownbtn-popup .e-item');
             items[2].click();
             expect(pEle.style.listStyleImage === 'linear-gradient(to left bottom, red, blue)').toBe(true);
             expect(rteObj.element.querySelector('#rte').tagName === 'UL').toBe(true);
-            let bulletFormatList1: HTMLElement = rteObj.element.querySelector('#' + controlId + '_toolbar_BulletFormatList');
+            let bulletFormatList1: HTMLElement = (rteObj.element.querySelector('#' + controlId + '_toolbar_BulletFormatList').nextElementSibling) as HTMLElement;
             dispatchEvent(bulletFormatList1, 'mousedown');
             dispatchEvent(bulletFormatList1, 'mouseup');
             bulletFormatList1.click();
-            let item: any = document.querySelectorAll('#' + controlId + '_toolbar_BulletFormatList-popup .e-item');
+            let item: any = document.querySelectorAll('#' + controlId + '_toolbar_BulletFormatList_dropdownbtn-popup .e-item');
             item[1].click();
             let Elem: HTMLElement = rteObj.element.querySelector('#rte');
             expect((Elem.childNodes[0] as HTMLElement).tagName === 'LI').toBe(true);
@@ -487,11 +504,12 @@ import { ARROWRIGHT_EVENT_INIT, TOOLBAR_FOCUS_SHORTCUT_EVENT_INIT } from "../../
             let pEle: HTMLElement = rteObj.element.querySelector('#rte');
             let node = pEle.parentElement as HTMLElement;
             rteObj.formatter.editorManager.nodeSelection.setSelectionText(document, rteObj.element.querySelector('#rte').childNodes[0], rteObj.element.querySelector('#rte').childNodes[0], 0, 14);
-            let numberFormatList: HTMLElement = rteObj.element.querySelector('#' + controlId + '_toolbar_NumberFormatList');
+            //Modified rendering from dropdown to split button
+            let numberFormatList: HTMLElement = (rteObj.element.querySelector('#' + controlId + '_toolbar_NumberFormatList').nextElementSibling) as HTMLElement;
             dispatchEvent(numberFormatList, 'mousedown');
             dispatchEvent(numberFormatList, 'mouseup');
             numberFormatList.click();
-            let items: any = document.querySelectorAll('#' + controlId + '_toolbar_NumberFormatList-popup .e-item');
+            let items: any = document.querySelectorAll('#' + controlId + '_toolbar_NumberFormatList_dropdownbtn-popup .e-item');
             items[3].click();
             expect((rteObj.element.querySelector('#rte').childNodes[0] as HTMLElement).tagName === 'LI').toBe(true);
             expect(rteObj.element.querySelector('#rte').tagName === 'OL').toBe(true);
@@ -501,11 +519,12 @@ import { ARROWRIGHT_EVENT_INIT, TOOLBAR_FOCUS_SHORTCUT_EVENT_INIT } from "../../
         it(' Check the bulletFormatList with LI tag', (done) => {
             let pEle: HTMLElement = rteObj.element.querySelector('#rte');
             rteObj.formatter.editorManager.nodeSelection.setSelectionText(document, rteObj.element.querySelector('#rte').childNodes[0], rteObj.element.querySelector('#rte').childNodes[0], 0, 14);
-            let bulletFormatList: HTMLElement = rteObj.element.querySelector('#' + controlId + '_toolbar_BulletFormatList');
+            //Modified rendering from dropdown to split button
+            let bulletFormatList: HTMLElement = (rteObj.element.querySelector('#' + controlId + '_toolbar_BulletFormatList').nextElementSibling) as HTMLElement;
             dispatchEvent(bulletFormatList, 'mousedown');
             dispatchEvent(bulletFormatList, 'mouseup');
             bulletFormatList.click();
-            let items: any = document.querySelectorAll('#' + controlId + '_toolbar_BulletFormatList-popup .e-item');
+            let items: any = document.querySelectorAll('#' + controlId + '_toolbar_BulletFormatList_dropdownbtn-popup .e-item');
             items[2].click();
             expect((rteObj.element.querySelector('#rte').childNodes[0] as HTMLElement).tagName === 'LI').toBe(true);
             expect(rteObj.element.querySelector('#rte').tagName === 'UL').toBe(true);
@@ -555,11 +574,12 @@ import { ARROWRIGHT_EVENT_INIT, TOOLBAR_FOCUS_SHORTCUT_EVENT_INIT } from "../../
             let pEle: HTMLElement = rteObj.element.querySelector('#rte');
             let node = pEle.parentElement as HTMLElement;
             rteObj.formatter.editorManager.nodeSelection.setSelectionText(document, rteObj.element.querySelector('#rte').childNodes[0], rteObj.element.querySelector('#rte').childNodes[0], 0, 14);
-            let numberFormatList: HTMLElement = rteObj.element.querySelector('#' + controlId + '_toolbar_NumberFormatList');
+            //Modified rendering from dropdown to split button
+            let numberFormatList: HTMLElement = (rteObj.element.querySelector('#' + controlId + '_toolbar_NumberFormatList').nextElementSibling) as HTMLElement;
             dispatchEvent(numberFormatList, 'mousedown');
             dispatchEvent(numberFormatList, 'mouseup');
             numberFormatList.click();
-            let items: any = document.querySelectorAll('#' + controlId + '_toolbar_NumberFormatList-popup .e-item');
+            let items: any = document.querySelectorAll('#' + controlId + '_toolbar_NumberFormatList_dropdownbtn-popup .e-item');
             items[6].click();
             expect(pEle.style.listStyleImage === 'url("https://mdn.mozillademos.org/files/11981/starsolid.gif")').toBe(true);
             expect(rteObj.element.querySelector('#rte').tagName === 'OL').toBe(true);
@@ -568,11 +588,12 @@ import { ARROWRIGHT_EVENT_INIT, TOOLBAR_FOCUS_SHORTCUT_EVENT_INIT } from "../../
         it('  Check the bulletFormatList list style image', (done) => {
             let pEle: HTMLElement = rteObj.element.querySelector('#rte');
             rteObj.formatter.editorManager.nodeSelection.setSelectionText(document, rteObj.element.querySelector('#rte').childNodes[0], rteObj.element.querySelector('#rte').childNodes[0], 0, 14);
-            let bulletFormatList: HTMLElement = rteObj.element.querySelector('#' + controlId + '_toolbar_BulletFormatList');
+            //Modified rendering from dropdown to split button
+            let bulletFormatList: HTMLElement = (rteObj.element.querySelector('#' + controlId + '_toolbar_BulletFormatList').nextElementSibling) as HTMLElement;
             dispatchEvent(bulletFormatList, 'mousedown');
             dispatchEvent(bulletFormatList, 'mouseup');
             bulletFormatList.click();
-            let items: any = document.querySelectorAll('#' + controlId + '_toolbar_BulletFormatList-popup .e-item');
+            let items: any = document.querySelectorAll('#' + controlId + '_toolbar_BulletFormatList_dropdownbtn-popup .e-item');
             items[2].click();
             expect(pEle.style.listStyleImage === 'linear-gradient(to left bottom, red, blue)').toBe(true);
             expect(rteObj.element.querySelector('#rte').tagName === 'UL').toBe(true);
@@ -581,47 +602,49 @@ import { ARROWRIGHT_EVENT_INIT, TOOLBAR_FOCUS_SHORTCUT_EVENT_INIT } from "../../
         it(' Checking the numberFormatList tag to BulletFormatList', (done) => {
             let pEle: HTMLElement = rteObj.element.querySelector('#rte');
             rteObj.formatter.editorManager.nodeSelection.setSelectionText(document, rteObj.element.querySelector('#rte').childNodes[0], rteObj.element.querySelector('#rte').childNodes[0], 0, 14);
-            let numberFormatList: HTMLElement = rteObj.element.querySelector('#' + controlId + '_toolbar_NumberFormatList');
+            //Modified rendering from dropdown to split button
+            let numberFormatList: HTMLElement = (rteObj.element.querySelector('#' + controlId + '_toolbar_NumberFormatList').nextElementSibling) as HTMLElement;
             dispatchEvent(numberFormatList, 'mousedown');
             dispatchEvent(numberFormatList, 'mouseup');
             numberFormatList.click();
-            let items: any = document.querySelectorAll('#' + controlId + '_toolbar_NumberFormatList-popup .e-item');
+            let items: any = document.querySelectorAll('#' + controlId + '_toolbar_NumberFormatList_dropdownbtn-popup .e-item');
             items[6].click();
             expect(pEle.style.listStyleImage === 'url("https://mdn.mozillademos.org/files/11981/starsolid.gif")').toBe(true);
             expect(rteObj.element.querySelector('#rte').tagName === 'OL').toBe(true);
             done();
-            let bulletFormatList: HTMLElement = rteObj.element.querySelector('#' + controlId + '_toolbar_BulletFormatList');
+            let bulletFormatList: HTMLElement = (rteObj.element.querySelector('#' + controlId + '_toolbar_BulletFormatList').nextElementSibling) as HTMLElement;
             dispatchEvent(bulletFormatList, 'mousedown');
             dispatchEvent(bulletFormatList, 'mouseup');
             bulletFormatList.click();
-            let item: any = document.querySelectorAll('#' + controlId + '_toolbar_BulletFormatList-popup .e-item');
+            let item: any = document.querySelectorAll('#' + controlId + '_toolbar_BulletFormatList_dropdownbtn-popup .e-item');
             item[2].click();
-            pEle = rteObj.element.querySelector('#rte');
+            pEle = rteObj.element.querySelector('UL');
             expect(pEle.style.listStyleImage === 'linear-gradient(to left bottom, red, blue)').toBe(true);
-            expect(rteObj.element.querySelector('#rte').tagName === 'UL').toBe(true);
+            expect(rteObj.element.querySelector('UL').tagName === 'UL').toBe(true);
             done();
             });
         it(' Checking the bulletFormatList tag to NumberFormatList', (done) => {
             let pEle: HTMLElement = rteObj.element.querySelector('#rte');
             rteObj.formatter.editorManager.nodeSelection.setSelectionText(document, rteObj.element.querySelector('#rte').childNodes[0], rteObj.element.querySelector('#rte').childNodes[0], 0, 14);
-            let bulletFormatList: HTMLElement = rteObj.element.querySelector('#' + controlId + '_toolbar_BulletFormatList');
+            //Modified rendering from dropdown to split button
+            let bulletFormatList: HTMLElement = (rteObj.element.querySelector('#' + controlId + '_toolbar_BulletFormatList').nextElementSibling) as HTMLElement;
             dispatchEvent(bulletFormatList, 'mousedown');
             dispatchEvent(bulletFormatList, 'mouseup');
             bulletFormatList.click();
-            let items: any = document.querySelectorAll('#' + controlId + '_toolbar_BulletFormatList-popup .e-item');
+            let items: any = document.querySelectorAll('#' + controlId + '_toolbar_BulletFormatList_dropdownbtn-popup .e-item');
             items[2].click();
             expect(pEle.style.listStyleImage === 'linear-gradient(to left bottom, red, blue)').toBe(true);
             expect(rteObj.element.querySelector('#rte').tagName === 'UL').toBe(true);
             done();
-            let numberFormatList: HTMLElement = rteObj.element.querySelector('#' + controlId + '_toolbar_NumberFormatList');
+            let numberFormatList: HTMLElement = (rteObj.element.querySelector('#' + controlId + '_toolbar_NumberFormatList').nextElementSibling) as HTMLElement;
             dispatchEvent(numberFormatList, 'mousedown');
             dispatchEvent(numberFormatList, 'mouseup');
             numberFormatList.click();
-            let item: any = document.querySelectorAll('#' + controlId + '_toolbar_NumberFormatList-popup .e-item');
+            let item: any = document.querySelectorAll('#' + controlId + '_toolbar_NumberFormatList_dropdownbtn-popup .e-item');
             item[6].click();
-            pEle = rteObj.element.querySelector('#rte');
+            pEle = rteObj.element.querySelector('OL');
             expect(pEle.style.listStyleImage === 'url("https://mdn.mozillademos.org/files/11981/starsolid.gif")').toBe(true);
-            expect(rteObj.element.querySelector('#rte').tagName === 'OL').toBe(true);
+            expect(rteObj.element.querySelector('OL').tagName === 'OL').toBe(true);
             done();
             });
         afterEach((done: DoneFn) => {
@@ -1898,9 +1921,6 @@ describe("Toolbar - Actions Module", () => {
                         },
                         italic: {
                             icon: 'e-bold'
-                        },
-                        fontColor: {
-                            icon: 'e-underline'
                         }
                     }
                 }
@@ -1913,7 +1933,6 @@ describe("Toolbar - Actions Module", () => {
         });
 
         it(" Change the default icons of toolbar items", () => {
-            expect(!isNullOrUndefined(rteEle.querySelector("#"+controlId+"_toolbar_FontColor").querySelector(".e-underline"))).toBe(true);
             expect(!isNullOrUndefined(rteEle.querySelector("#"+controlId+"_toolbar_Italic").querySelector(".e-bold"))).toBe(true);
             expect(!isNullOrUndefined(rteEle.querySelector("#"+controlId+"_toolbar_Bold").querySelector(".e-italic"))).toBe(true);
         });
@@ -2509,7 +2528,8 @@ describe('821312: Bullet list does not reverted after click on the bullet list i
     it('Checking the bullet list revert after list type changed', (done: Function) => {
         let toolbarItem = document.querySelectorAll('.e-rte-toolbar .e-toolbar-item')[1];
         let dropdownBtn = toolbarItem.firstChild.childNodes[1];
-        let bulletListFristChild = toolbarItem.firstChild.firstChild.firstChild;
+        //Modified rendering from dropdown to split button
+        let bulletListFristChild = toolbarItem.firstChild.firstChild;
         var mouseDownEvent = new MouseEvent('mousedown', {
             bubbles: true,
             cancelable: true,
@@ -2551,14 +2571,85 @@ describe("Bold and Italic actions for Nested List types", () => {
         selection.removeAllRanges();
         // Select paragraphconst 
         range = document.createRange();
-          range.selectNodeContents(start);  
-          selection.addRange(range);
-          let bold = document.getElementById(rteObj.getID() + '_toolbar_Bold');
-          bold.click();
-          expect(rteObj.inputElement.innerHTML).toBe('<ol><li id="list1" style="font-weight: bold;"><strong>Syncfusion</strong><ol><li style="font-weight: bold;"><strong>RTE</strong><ol><li id="list2" style="font-weight: bold;"><strong>Bold Action</strong></li></ol></li></ol></li></ol>');
-          let italic = document.getElementById(rteObj.getID() + '_toolbar_Italic');
-          italic.click();
-          expect(rteObj.inputElement.innerHTML).toBe('<ol><li id="list1" style="font-weight: bold; font-style: italic;"><strong><em>Syncfusion</em></strong><ol><li style="font-weight: bold; font-style: italic;"><strong><em>RTE</em></strong><ol><li id="list2" style="font-weight: bold; font-style: italic;"><strong><em>Bold Action</em></strong></li></ol></li></ol></li></ol>');
+        range.selectNodeContents(start);  
+        selection.addRange(range);
+        let bold = document.getElementById(rteObj.getID() + '_toolbar_Bold');
+        bold.click();
+        expect(rteObj.inputElement.innerHTML).toBe('<ol><li id="list1" style="font-weight: bold;"><strong>Syncfusion</strong><ol><li><strong>RTE</strong><ol><li id="list2" style="font-weight: bold;"><strong>Bold Action</strong></li></ol></li></ol></li></ol>');        let italic = document.getElementById(rteObj.getID() + '_toolbar_Italic');
+        italic.click();
+        expect(rteObj.inputElement.innerHTML).toBe('<ol><li id="list1" style="font-weight: bold; font-style: italic;"><strong><em>Syncfusion</em></strong><ol><li><strong><em>RTE</em></strong><ol><li id="list2" style="font-weight: bold; font-style: italic;"><strong><em>Bold Action</em></strong></li></ol></li></ol></li></ol>');    });
+});
+
+describe("962380 - Applying Bold to Main Bullet Also Affects Sub-Bullets in Rich Text Editor", () => {
+    let rteObj: RichTextEditor;
+    beforeAll(() => {
+        rteObj = renderRTE({
+            toolbarSettings: {
+                items: ["Bold", "Italic"]
+            },
+            value: "<ol><li id=\"list1\">Syncfusion<ol><li>RTE<ol><li id=\"list2\">Bold Action</li></ol></li></ol></li></ol>"
+        });
+    });
+    afterAll(() => {
+        destroy(rteObj);
+    });
+    it("Bold and Italic", () => {
+        let range = new Range();
+        let start = rteObj.inputElement.querySelector('li');
+        const selection = window.getSelection();  
+        selection.removeAllRanges();
+        // Select paragraphconst 
+        range = document.createRange();
+        range.selectNodeContents(start.firstChild);  
+        selection.addRange(range);
+        let bold = document.getElementById(rteObj.getID() + '_toolbar_Bold');
+        bold.click();
+        expect(rteObj.inputElement.innerHTML).toBe('<ol><li id="list1"><strong>Syncfusion</strong><ol><li>RTE<ol><li id="list2">Bold Action</li></ol></li></ol></li></ol>');
+        let italic = document.getElementById(rteObj.getID() + '_toolbar_Italic');
+        italic.click();
+        expect(rteObj.inputElement.innerHTML).toBe('<ol><li id="list1"><strong><em>Syncfusion</em></strong><ol><li>RTE<ol><li id="list2">Bold Action</li></ol></li></ol></li></ol>');
+    });
+});
+
+describe("963397 - Applying Format to Main Bullet Also Affects Sub-Bullets in Rich Text Editor", () => {
+    let rteObj: RichTextEditor;
+    beforeAll(() => {
+        rteObj = renderRTE({
+            toolbarSettings: {
+                items: ["Formats"]
+            },
+            value: "<ol><li id=\"list1\">Syncfusion<ol><li>RTE<ol><li id=\"list2\">Bold Action</li></ol></li></ol></li></ol>"
+        });
+    });
+    afterAll(() => {
+        destroy(rteObj);
+    });
+    it("Check whether the selected text changed to the selected format", () => {
+        let range = new Range();
+        let start = rteObj.inputElement.querySelector('li');
+        let selection = window.getSelection();  
+        selection.removeAllRanges();
+        // Select paragraphconst 
+        range = document.createRange();
+        range.selectNodeContents(start.firstChild);  
+        selection.addRange(range);
+        let format: HTMLElement = rteObj.element.querySelector('#' + rteObj.getID() + '_toolbar_Formats');
+        dispatchEvent(format, 'mousedown');
+        dispatchEvent(format, 'mouseup');
+        format.click();
+        let items: any = document.querySelectorAll('#' + rteObj.getID() + '_toolbar_Formats-popup .e-item');
+        items[1].click();
+        expect(rteObj.inputElement.innerHTML === '<ol><li id="list1"><h1>Syncfusion</h1><ol><li>RTE<ol><li id="list2">Bold Action</li></ol></li></ol></li></ol>').toBe(true);
+        selection = window.getSelection();  
+        selection.removeAllRanges();
+        // Select paragraphconst 
+        range = document.createRange();
+        range.selectNodeContents(start.lastChild);  
+        selection.addRange(range);
+        format.click();
+        items = document.querySelectorAll('#' + rteObj.getID() + '_toolbar_Formats-popup .e-item');
+        items[2].click();
+        expect(rteObj.inputElement.innerHTML === '<ol><li id="list1"><h1>Syncfusion</h1><ol><li><h2>RTE</h2><ol><li id="list2"><h2 id="list2">Bold Action</h2></li></ol></li></ol></li></ol>').toBe(true);
     });
 });
 
@@ -2687,5 +2778,81 @@ describe('941202 - None Option Incorrectly Selected in List Dropdown for Normal 
             expect(activeElem).toBe(null);
             done();
         }, 100);
+    });
+});
+
+describe('955929 - Opening the Number and Bullet Format List Button popup while pressing enter key ', () => {
+    let rteObj: RichTextEditor;
+    let keyBoardEvent: any = { preventDefault: () => { }, type: 'keydown', stopPropagation: () => { }, ctrlKey: false, shiftKey: false, action: '', which: 8 };
+    beforeAll(() => {
+        rteObj = renderRTE({
+            toolbarSettings: {
+                items: ["NumberFormatList", "BulletFormatList"]
+            },
+        });
+    });
+    it('The Number Format List dropdown is open when you click the enter key.', () => {
+        rteObj.focusIn();
+        (rteObj.element.querySelectorAll(".e-toolbar-item")[0] as any).focus();
+        keyBoardEvent.ctrlKey = false;
+        keyBoardEvent.shiftKey = false;
+        keyBoardEvent.action = 'enter';
+        keyBoardEvent.target = rteObj.element.querySelector(".e-toolbar-item .e-rte-numberformatlist-dropdown");
+        (rteObj.toolbarModule as any).toolBarKeyDown(keyBoardEvent);
+        rteObj.dataBind();
+        expect(document.querySelector(".e-popup-open") != null).toBe(true);
+    });
+    it('The Bullet Format List dropdown is open when you click the enter key.', () => {
+        rteObj.focusIn();
+        (rteObj.element.querySelectorAll(".e-toolbar-item")[1] as any).focus();
+        keyBoardEvent.ctrlKey = false;
+        keyBoardEvent.shiftKey = false;
+        keyBoardEvent.action = 'enter';
+        keyBoardEvent.target = rteObj.element.querySelector(".e-toolbar-item .e-rte-bulletformatlist-dropdown");
+        (rteObj.toolbarModule as any).toolBarKeyDown(keyBoardEvent);
+        rteObj.dataBind();
+        expect(document.querySelector(".e-popup-open") != null).toBe(true);
+    });
+    afterAll(() => {
+        destroy(rteObj);
+    });
+});
+
+describe('962827: Fails to change bullet list to numbered list in Rich Text Editor', () => {
+    let rteObj: RichTextEditor;
+    let rteEle: HTMLElement;
+    let controlId: string;
+    beforeEach((done: Function) => {
+        rteObj = renderRTE({
+            toolbarSettings: {
+                items: ['NumberFormatList', 'BulletFormatList']
+            },
+            value: `<p id="rte">RichTextEditor</p>`
+        });
+        rteEle = rteObj.element;
+        controlId = rteEle.id;
+        done();
+    });
+    it(' Check the NumberFormatList icon button clicking', (done) => {
+        rteObj.formatter.editorManager.nodeSelection.setSelectionText(document, rteObj.element.querySelector('#rte').childNodes[0], rteObj.element.querySelector('#rte').childNodes[0], 0, 14);
+        let bulletFormatList: HTMLElement = (rteObj.element.querySelector('#' + controlId + '_toolbar_NumberFormatList').childNodes[0]) as HTMLElement;
+        dispatchEvent(bulletFormatList, 'mousedown');
+        dispatchEvent(bulletFormatList, 'mouseup');
+        bulletFormatList.click();
+        expect(rteObj.element.querySelector('#rte').parentElement.tagName === 'OL').toBe(true);
+        done();
+    });
+    it(' Check the bulletFormatList icon button clicking', (done) => {
+        rteObj.formatter.editorManager.nodeSelection.setSelectionText(document, rteObj.element.querySelector('#rte').childNodes[0], rteObj.element.querySelector('#rte').childNodes[0], 0, 14);
+        let bulletFormatList: HTMLElement = (rteObj.element.querySelector('#' + controlId + '_toolbar_BulletFormatList').childNodes[0]) as HTMLElement;
+        dispatchEvent(bulletFormatList, 'mousedown');
+        dispatchEvent(bulletFormatList, 'mouseup');
+        bulletFormatList.click();
+        expect(rteObj.element.querySelector('#rte').parentElement.tagName === 'UL').toBe(true);
+        done();
+    });
+    afterEach((done: DoneFn) => {
+        destroy(rteObj);
+        done();
     });
 });

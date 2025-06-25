@@ -101,6 +101,8 @@ class HierarchicalLayoutUtil {
      */
     private vertices: Vertex[];
 
+    private verticesMap: Map<string, Vertex> = new Map();
+
     private crossReduction: CrossReduction = new CrossReduction();
     /**
      * The preferred vertical offset between edges exiting a vertex Default is 2.
@@ -230,12 +232,8 @@ class HierarchicalLayoutUtil {
         if (source) {
             terminalCache = this.nameTable[edge.sourceID];
         }
-        for (let i: number = 0; i < this.vertices.length; i++) {
-            if (this.vertices[parseInt(i.toString(), 10)].name === terminalCache.id) {
-                return this.vertices[parseInt(i.toString(), 10)];
-            }
-        }
-        return null;
+        //Removed loop and used Map
+        return this.verticesMap.get(terminalCache.id) || null;
     }
 
 
@@ -369,6 +367,7 @@ class HierarchicalLayoutUtil {
                                                        nodes[parseInt(i.toString(), 10)].actualSize.width,
                                                        nodes[parseInt(i.toString(), 10)].actualSize.height);
                 this.vertices.push(node);
+                this.verticesMap.set(node.name, node);
                 this.vertexTable[node1.id] = node;
                 if ((nodes[parseInt(i.toString(), 10)] as INode).inEdges.length > 0
                     || (nodes[parseInt(i.toString(), 10)] as INode).outEdges.length > 0) {
@@ -3624,7 +3623,7 @@ class MatrixModel {
                             pts.push(pt[parseInt(temp.toString(), 10)]);
                         }
                     }
-
+                    //951916 - connector overlaps on nodes of varying size.
                     let isVariableSizeNode = false;
                     if (pts.length === 4 && (count > 1 && !intermediatePoint || !intermediatePoint)) {
                         const distance = isHorizontal ? pts[3].x - pts[0].x : pts[3].y - pts[0].y;

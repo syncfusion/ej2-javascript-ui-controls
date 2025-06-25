@@ -354,6 +354,15 @@
     }
   }
 
+  .e-chart-menu.e-rtl .e-ul .e-menu-item,
+  .e-chart-type-menu.e-rtl .e-ul .e-menu-item {
+
+    .e-bar {
+      left: 0;
+      right: -6px;
+    }
+  }
+
   .e-addchart-menu .e-ul .e-menu-item .e-menu-icon {
     font-size: $spreadsheet-chart-icon-font-size;
   }

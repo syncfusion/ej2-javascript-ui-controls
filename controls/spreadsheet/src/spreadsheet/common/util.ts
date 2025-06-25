@@ -1,7 +1,7 @@
 import { Browser, setStyleAttribute as setBaseStyleAttribute, getComponent, detach, isNullOrUndefined, removeClass, extend, isUndefined } from '@syncfusion/ej2-base';
 import { StyleType, CollaborativeEditArgs, CellSaveEventArgs, ICellRenderer, IAriaOptions, completeAction } from './index';
 import { HideShowEventArgs, invalidData, refreshFilterCellsOnResize } from './../common/index';
-import { Cell, CellUpdateArgs, ColumnModel, duplicateSheet, getSheetIndex, getSheetIndexFromAddress, getSheetIndexFromId, getSheetNameFromAddress, hideShow, MergeArgs, moveSheet, protectsheetHandler, refreshChartSize, refreshRibbonIcons, replace, replaceAll, setLinkModel, setLockCells, updateSheetFromDataSource } from '../../workbook/index';
+import { activeCellMergedRange, Cell, CellUpdateArgs, ColumnModel, duplicateSheet, ExtendedChartModel, getSheetIndex, getSheetIndexFromAddress, getSheetIndexFromId, getSheetNameFromAddress, hideShow, MergeArgs, moveSheet, protectsheetHandler, refreshChartSize, refreshRibbonIcons, replace, replaceAll, setLinkModel, setLockCells, updateSheetFromDataSource } from '../../workbook/index';
 import { IOffset, clearViewer, deleteImage, createImageElement, refreshImgCellObj, removeDataValidation } from './index';
 import { Spreadsheet, removeSheetTab, rowHeightChanged, initiateFilterUI, deleteChart, IRenderer } from '../index';
 import { SheetModel, getColumnsWidth, getSwapRange, CellModel, CellStyleModel, CFArgs, RowModel, isImported } from '../../workbook/index';
@@ -14,8 +14,6 @@ import { workbookFormulaOperation, DefineNameModel, getAddressInfo, getSheet, se
 import { checkUniqueRange, applyCF, ActionEventArgs, skipHiddenIdx, isFilterHidden, ConditionalFormat } from '../../workbook/index';
 import { applyProtect, chartDesignTab, copy, cut, getColIdxFromClientX, getRowIdxFromClientY, goToSheet, hideSheet, paste, performUndoRedo, refreshChartCellObj, removeHyperlink, removeWorkbookProtection, setProtectWorkbook, sheetNameUpdate, showSheet } from './event';
 import { keyCodes } from './constant';
-
-const rafIds: number[] = []; // Array to store multiple rafIds on intial rendering
 
 /**
  * The function used to update Dom using requestAnimationFrame.
@@ -881,10 +879,21 @@ export function setResize(idx: number, index: number, value: string, isCol: bool
     let nxtEleC: HTMLElement;
     const sheet: SheetModel = parent.getActiveSheet();
     const frozenRow: number = parent.frozenRowCount(sheet); const frozenCol: number = parent.frozenColCount(sheet);
+    let emptySelectAllEle: HTMLElement; let emptyRowHeaderEle: HTMLElement;
     if (isCol) {
-        const header: Element = idx < frozenCol ? parent.getSelectAllContent() : parent.getColumnHeaderContent();
+        const selectAllContent: HTMLElement = parent.getSelectAllContent();
+        const rowHeaderContent: HTMLElement = parent.getRowHeaderContent();
+        if (frozenCol && idx >= frozenCol) {
+            if (selectAllContent.style.zIndex) {
+                emptySelectAllEle = [].slice.call(selectAllContent.querySelectorAll('col.e-empty'))[index as number];
+            }
+            if (rowHeaderContent.style.zIndex) {
+                emptyRowHeaderEle = [].slice.call(rowHeaderContent.querySelectorAll('col.e-empty'))[index as number];
+            }
+        }
+        const header: Element = idx < frozenCol ? selectAllContent : parent.getColumnHeaderContent();
         curEle = header.getElementsByTagName('th')[index as number]; curEleH = header.getElementsByTagName('col')[index as number];
-        curEleC = (idx < frozenCol ? parent.getRowHeaderContent() : parent.getMainContent()).getElementsByTagName('col')[index as number];
+        curEleC = (idx < frozenCol ? rowHeaderContent : parent.getMainContent()).getElementsByTagName('col')[index as number];
     } else {
         curEle = curEleH = frozenRow || frozenCol ? parent.getRow(idx, null, frozenCol - 1) :
             parent.getRow(idx, parent.getRowHeaderTable());
@@ -906,16 +915,23 @@ export function setResize(idx: number, index: number, value: string, isCol: bool
         let eleMaxHeight: number = 0;
         const rIdx: number = idx;
         for (let idx: number = 0; idx < contentRow[index as number].getElementsByTagName('td').length; idx++) {
-            const td: HTMLElement = contentRow[index as number].getElementsByTagName('td')[idx as number] as HTMLElement;
+            let td: HTMLElement = contentRow[index as number].getElementsByTagName('td')[idx as number] as HTMLElement;
             contentClone[idx as number] = td.cloneNode(true) as HTMLElement;
-            const cell: CellModel = getCell(rIdx as number, idx as number, sheet, false, true);
+            const colIndx: number = parseInt(td.getAttribute('aria-colindex'), 10) - 1;
+            let cell: CellModel = getCell(rIdx, colIndx, sheet, false, true); let mergeArgs: { range: number[] };
+            if (cell.rowSpan < 1) {
+                mergeArgs = { range: [rIdx, colIndx, rIdx, colIndx] };
+                parent.notify(activeCellMergedRange, mergeArgs);
+                cell = getCell(mergeArgs.range[0], mergeArgs.range[1], sheet, false, true);
+                td = parent.getCell(mergeArgs.range[0], mergeArgs.range[1]);
+            }
             eleTextHeight = cell.value ? getTextHeight(parent, cell.style) : eleTextHeight;
             eleMaxHeight = eleMaxHeight < eleTextHeight ? eleTextHeight : eleMaxHeight;
             if (td.getElementsByClassName('e-cf-databar')[0]) {
                 const rHeight: number = Number((curEleC.style.height).split('px')[0]);
                 parent.notify(
-                    applyCF, <ApplyCFArgs>{ indexes: [rIdx as number, idx as number], cell: cell, ele: td, isRender: true,
-                        resizedRowHeight: rHeight });
+                    applyCF, <ApplyCFArgs>{ indexes: [rIdx as number, colIndx as number], cell: cell, ele: td, isRender: true,
+                        resizedRowHeight: rHeight, mergeArgs: mergeArgs });
             }
         }
         const cntFntSize: number = eleMaxHeight + 1;
@@ -1103,6 +1119,12 @@ export function setResize(idx: number, index: number, value: string, isCol: bool
         if (isCol) {
             curEleH.style.width = DPRValue;
             curEleC.style.width = DPRValue;
+            if (emptySelectAllEle) {
+                emptySelectAllEle.style.width = DPRValue;
+            }
+            if (emptyRowHeaderEle) {
+                emptyRowHeaderEle.style.width = DPRValue;
+            }
         } else {
             curEleH.style.height = DPRValue;
             curEleC.style.height = DPRValue;
@@ -1690,11 +1712,11 @@ export function updateAction(
         if (isRedo === false) {
             spreadsheet.notify(deleteChart, { id: eventArgs.id, range: eventArgs.posRange || eventArgs.range, isUndoRedo: true });
         } else {
-            const chartOptions: ChartModel[] = [{
-                type: eventArgs.type, theme: eventArgs.theme,
-                markerSettings: eventArgs.markerSettings, isSeriesInRows: eventArgs.isSeriesInRows,
-                range: eventArgs.range, id: eventArgs.id, height: eventArgs.height, width: eventArgs.width, top: eventArgs.top,
-                left: eventArgs.left
+            const chartOptions: ExtendedChartModel[] = [{
+                type: eventArgs.type, theme: eventArgs.theme, markerSettings: eventArgs.markerSettings,
+                isSeriesInRows: eventArgs.isSeriesInRows, range: eventArgs.range, id: eventArgs.id,
+                height: eventArgs.height, width: eventArgs.width, top: eventArgs.top,
+                left: eventArgs.left, enableCanvas: eventArgs.enableCanvas
             }];
             spreadsheet.notify(setChart, {
                 chart: chartOptions, isUndoRedo: false, range: eventArgs.posRange || eventArgs.range, isInitCell: true, isRedo: true
@@ -1703,13 +1725,14 @@ export function updateAction(
         break;
     case 'deleteChart':
         if (isRedo === false) {
-            const chartOpts: ChartModel[] = [{
+            const chartOpts: ExtendedChartModel[] = [{
                 type: eventArgs.type, theme: eventArgs.theme, markerSettings: eventArgs.markerSettings,
                 dataLabelSettings: eventArgs.dataLabelSettings, title: eventArgs.title,
                 legendSettings: eventArgs.legendSettings, primaryXAxis: eventArgs.primaryXAxis,
                 primaryYAxis: eventArgs.primaryYAxis, isSeriesInRows: eventArgs.isSeriesInRows,
                 range: eventArgs.range, id: eventArgs.id, height: eventArgs.height,
-                width: eventArgs.width, top: eventArgs.top, left: eventArgs.left
+                width: eventArgs.width, top: eventArgs.top, left: eventArgs.left,
+                enableCanvas: eventArgs.enableCanvas
             }];
             spreadsheet.notify(
                 setChart, { chart: chartOpts, isUndoRedo: false, range: eventArgs.posRange, isInitCell: true, isUndo: true });
@@ -2459,3 +2482,14 @@ export function removeElements(elements: HTMLElement[]): void {
     });
 }
 
+/**
+ * Checks whether a given string is a valid URL.
+ *
+ * @param {string} url - The URL string to validate.
+ * @returns {boolean} - Returns `true` if the string is a valid URL, otherwise `false`.
+ * @hidden
+ */
+export function isValidUrl(url: string): boolean {
+    // eslint-disable-next-line no-useless-escape, security/detect-unsafe-regex
+    return /(ftp|http|https):\/\/(\w+:{0,1}\w*@)?(\S+)(:[0-9]+)?(\/|\/([\w#!:.?+=&%@!\-\/]))?/.test(url);
+}

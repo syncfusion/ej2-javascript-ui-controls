@@ -1103,7 +1103,7 @@ describe('Spreadsheet base module ->', () => {
                 expect(spreadsheet.sheets[0].rows[2].cells[3].value.toString()).toBe('5');
                 done();
             });
-            it('Clipboard - copy', (done: Function) => {
+            it('Clipboard - copy 1', (done: Function) => {
                 action = 'clipboard';
                 id = '#' + helper.id;
                 helper.getElement(`${id}_copy`).click();
@@ -1113,18 +1113,23 @@ describe('Spreadsheet base module ->', () => {
                     helper.getElement(`${id}_paste_dropdownbtn-popup .e-item`).click();
                     setTimeout((): void => {
                         expect(spreadsheet.sheets[0].rows[3].cells[4].value.toString()).toBe('20');
-                        helper.invoke('selectRange', ['C5']);
-                        helper.getElement(`${id}_copy`).click();
-                        helper.invoke('selectRange', ['D5']);
+                        done();
+                    });
+                });
+            });
+            it('Clipboard - copy 2', (done: Function) => {
+                helper.invoke('selectRange', ['C5']);
+                setTimeout((): void => {
+                    helper.getElement(`${id}_copy`).click();
+                    helper.invoke('selectRange', ['D5']);
+                    setTimeout((): void => {
+                        helper.getElement(`${id}_paste_dropdownbtn`).click();
+                        helper.getElement(`${id}_paste_dropdownbtn-popup ul`).lastElementChild.click();
                         setTimeout((): void => {
-                            helper.getElement(`${id}_paste_dropdownbtn`).click();
-                            helper.getElement(`${id}_paste_dropdownbtn-popup ul`).lastElementChild.click();
-                            setTimeout((): void => {
-                                expect(spreadsheet.sheets[0].rows[4].cells[3].value.toString()).toBe('15');
-                                expect(spreadsheet.sheets[0].rows[4].cells[3].format).toBe('h:mm:ss AM/PM');
-                                helper.invoke('selectRange', ['D1']);
-                                done();
-                            });
+                            expect(spreadsheet.sheets[0].rows[4].cells[3].value.toString()).toBe('15');
+                            expect(spreadsheet.sheets[0].rows[4].cells[3].format).toBe('h:mm:ss AM/PM');
+                            helper.invoke('selectRange', ['D1']);
+                            done();
                         });
                     });
                 });
@@ -1227,6 +1232,22 @@ describe('Spreadsheet base module ->', () => {
                 }, 20);
             });           
         });
+        it('autoFill is set true Runtime, Selected Cell show autoFill Header Immediately (960430) ', (done: Function) => {
+            const spreadsheet: any = helper.getInstance();
+            helper.invoke('selectRange', ['C5']);
+            setTimeout(() => {
+                expect(helper.getElementFromSpreadsheet('.e-autofill')).toBeTruthy();
+                spreadsheet.allowAutoFill = false;
+                spreadsheet.dataBind();                
+                let autoFill: HTMLElement = helper.getElementFromSpreadsheet('.e-autofill');
+                expect(autoFill).toBeNull();
+                spreadsheet.allowAutoFill = true;
+                spreadsheet.dataBind();
+                let autoFill1: HTMLElement = helper.getElementFromSpreadsheet('.e-autofill');
+                expect(autoFill1).toBeTruthy();
+                done();
+            });
+        });        
     });
 
     describe('Scrolling with Enable Virtualization as False->', () => {
@@ -1255,6 +1276,35 @@ describe('Spreadsheet base module ->', () => {
         });          
     });
 
+    describe('should check if allowScrolling is false ->', function () {
+        beforeAll(function (done) {
+            helper.initializeSpreadsheet(
+                {
+                    sheets: [
+                        { ranges: [{ dataSource: defaultData }] }
+                    ],
+                    allowScrolling: false
+                },
+                done
+            );
+        });
+        afterAll(function () {
+            helper.invoke('destroy');
+        });
+        it('should check if allowScrolling is false and prevent scrolling', function (done) {
+            var spreadsheet = helper.getInstance();
+            spreadsheet.goTo('A200');
+            expect(spreadsheet.allowScrolling).toBe(false);
+            setTimeout(function () {
+                    const sheet = spreadsheet.sheets[spreadsheet.activeSheetIndex];
+                    expect(sheet.topLeftCell).toBe('A1');
+                    expect(sheet.paneTopLeftCell).toBe('A1');
+                    expect(spreadsheet.getActiveSheet().activeCell).toBe('A200');
+                    done();
+            }, 20);
+        });
+    });
+       
     describe('Protect Sheet Method, GoTo method, cut method Testing with more than 1 Sheet ->', () => {
         beforeAll((done: Function) => {
             helper.initializeSpreadsheet({ sheets: [{ ranges: [{ dataSource: defaultData }] }, { }, { }, { }, { }] }, done);
@@ -4180,6 +4230,35 @@ describe('Spreadsheet base module ->', () => {
                     expect(spreadsheet.sheets[spreadsheet.activeSheetIndex].name).toBe('FEH_00200524_230807145615-U (3)');
                     done();
                 });
+            });
+        });
+    });
+    describe('EJ2-958728 -> Defined names not removed when creating new workbook', () => {
+        beforeAll((done: Function) => {
+            helper.initializeSpreadsheet({ sheets: [{ ranges: [{ dataSource: defaultData }] }] }, done);
+        });
+        afterAll(() => {
+            helper.invoke('destroy');
+        });
+        it('Defined names should be removed when creating new workbook', (done: Function) => {
+            expect(helper.getInstance().definedNames.length).toBe(0);
+            let result: boolean = helper.invoke('addDefinedName', [{ name: 'TestName', refersTo: 'Sheet1!A1:A10' }]);
+            expect(result).toBeTruthy();
+            expect(helper.getInstance().definedNames.length).toBe(1);
+            expect(helper.getInstance().definedNames[0].name).toBe('TestName');
+            helper.setAnimationToNone("#" + helper.id + "_ribbon_menu");
+            helper.click("#" + helper.id + "_File");
+            helper.click("#" + helper.id + "_New");
+            setTimeout(() => {
+                helper.setAnimationToNone('.e-dialog')
+                const okBtn: HTMLElement = document.querySelector('.e-footer-content');
+                if (okBtn) {
+                    (okBtn.childNodes[0] as HTMLElement).click();
+                    setTimeout(() => {
+                        expect(helper.getInstance().definedNames.length).toBe(0);
+                        done();
+                    });
+                }
             });
         });
     });

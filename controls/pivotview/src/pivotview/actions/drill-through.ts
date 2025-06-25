@@ -39,20 +39,29 @@ export class DrillThrough {
     }
 
     private addInternalEvents(): void {
-        this.parent.on(contentReady, this.wireEvents, this);
+        if (this.parent) {
+            this.parent.on(contentReady, this.wireEvents, this);
+        }
     }
 
     private wireEvents(): void {
         this.unWireEvents();
-        EventHandler.add(this.parent.element, 'dblclick', this.mouseClickHandler, this);
+        if (this.parent && this.parent.element) {
+            EventHandler.add(this.parent.element, 'dblclick', this.mouseClickHandler, this);
+        }
     }
 
     private unWireEvents(): void {
         if (this.parent.isDestroyed) { return; }
-        EventHandler.remove(this.parent.element, 'dblclick', this.mouseClickHandler);
+        if (this.parent && this.parent.element && !this.parent.isDestroyed) {
+            EventHandler.remove(this.parent.element, 'dblclick', this.mouseClickHandler);
+        }
     }
 
     private mouseClickHandler(e: MouseEvent): void {
+        if (!this.parent) {
+            return;
+        }
         const target: Element = (e.target as Element);
         let ele: Element = null;
         if (target.classList.contains('e-stackedheadercelldiv') || target.classList.contains('e-headercelldiv') ||
@@ -172,6 +181,9 @@ export class DrillThrough {
     /** @hidden */
 
     public triggerDialog(valueCaption: string, aggType: string, rawData: IDataSet[], pivotValue: IAxisSet, element: Element): void {
+        if (!this.parent) {
+            return;
+        }
         let valuetText: string = aggType === 'CalculatedField' ? valueCaption.toString() : aggType !== '' ?
             (this.parent.localeObj.getConstant(aggType) + ' ' + this.parent.localeObj.getConstant('of') + ' ' + valueCaption) :
             valueCaption;
@@ -194,7 +206,7 @@ export class DrillThrough {
         const drillThrough: DrillThrough = this as DrillThrough;
         this.parent.trigger(events.drillThrough, eventArgs, (observedArgs: DrillThroughEventArgs) => {
             if (!eventArgs.cancel) {
-                drillThrough.drillThroughDialog.showDrillThroughDialog(observedArgs);
+                drillThrough.drillThroughDialog.showDrillThroughDialog(observedArgs, valuetText);
             }
         });
     }
@@ -210,9 +222,6 @@ export class DrillThrough {
         if (this.drillThroughDialog) {
             this.drillThroughDialog.destroy();
             this.drillThroughDialog = null;
-        }
-        else {
-            return;
         }
     }
 }

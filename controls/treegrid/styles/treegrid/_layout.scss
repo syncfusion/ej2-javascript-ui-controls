@@ -31,6 +31,13 @@
 }
 @include export-module('tree-layout') {
 
+  @media print {
+    .e-treecell-child {
+      width: 10px;
+      display: inline-block;
+    }
+  }
+
   .e-treegrid {
     .e-icons.e-none::before {
       content: '';
@@ -72,6 +79,28 @@
       }
     }
 
+    .e-treecolumn-container{
+      .e-treecell-icon {
+        width: 4px;
+        display: inline-block;
+      }
+
+      .e-treecell-child{
+        width: 10px;
+        display: inline-block;
+      }
+    }
+
+    .e-expand-iconstyle{
+      width: 16px;
+    }
+    
+    .e-print-layout{
+      position: absolute;
+      top: -9999px;
+      left: -9999px;
+    }
+    
     tr.e-childrow-hidden{
       display: none;
     }
@@ -258,6 +287,7 @@
     }
 
     .e-detailheadercell,
+    .e-detailcell-visible,
     .e-headercontent .e-table .e-detail-intent,
     .e-gridcontent .e-table .e-detail-intent,
     .e-table .e-detailrow .e-detailindentcell,
@@ -265,6 +295,15 @@
     .e-table .e-detailrowcollapse,
     tr.e-detailrow.e-childrow-hidden {
       display: none;
+    }
+
+    .e-table-cell::before {
+      content: none;
+      display: none;
+    }
+
+    .e-table-cell {
+      display: table-cell;
     }
 
     .e-icons.e-errorelem {

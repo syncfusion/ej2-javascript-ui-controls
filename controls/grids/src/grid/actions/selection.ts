@@ -3048,8 +3048,8 @@ export class Selection implements IAction {
             }
         }
         if (((this.parent.getDataModule().isRemote() || (!isNullOrUndefined(this.parent.dataSource)
-         && (<{result: object[]}>this.parent.dataSource).result)) && this.rmtHdrChkbxClicked)
-         || (this.isPartialSelection && this.parent.isPersistSelection && this.isHdrSelectAllClicked)) {
+            && (<{ result: object[] }>this.parent.dataSource).result)) && this.rmtHdrChkbxClicked)
+            || (this.isPartialSelection && this.parent.isPersistSelection && this.isHdrSelectAllClicked)) {
             if (this.parent.checkAllRows === 'Intermediate') {
                 this.setRowSelection(true);
             }
@@ -3867,8 +3867,10 @@ export class Selection implements IAction {
                 const firstIndex: number = this.parent.getColumnIndexByUid(innerColumn[0].uid);
                 index = this.prevColIndex >= lastIndex ? firstIndex : lastIndex;
             } else {
-                index = this.parent.getColumnIndexByUid((e.element as HTMLTableCellElement)
-                    .querySelector('.e-headercelldiv').getAttribute('e-mappinguid'));
+                if (!isNullOrUndefined(e.element.querySelector('.e-headercelldiv'))) {
+                    index = this.parent.getColumnIndexByUid((e.element as HTMLTableCellElement)
+                        .querySelector('.e-headercelldiv').getAttribute('e-mappinguid'));
+                }
             }
         }
         return index;

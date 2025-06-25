@@ -23,7 +23,7 @@ describe('Null or Undefined values check for Document Editor properties', () => 
         editor.destroy();
         document.body.removeChild(document.getElementById('container'));
         editor = undefined;
-        document.body.innerHTML = '';
+        
         setTimeout(function () {
             done();
         }, 1000);
@@ -20807,7 +20807,7 @@ describe('Save the empty comment Doocument', () => {
         documenteditor.destroy();
         document.body.removeChild(document.getElementById('container'));
         documenteditor = undefined;
-        document.body.innerHTML = '';
+        
         setTimeout(function () {
             done();
         }, 1000);

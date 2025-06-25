@@ -49,8 +49,8 @@ describe('Base Editor Manager', () => {
             editor.focusIn();
             const liElement: HTMLElement = editor.inputElement.querySelector('ol li');
             const range: Range = new Range();
-            range.setStart(liElement.firstChild, 0);
-            range.setEnd(liElement.firstChild, 2);
+            range.setStart(liElement.firstChild.nextSibling.firstChild, 0);
+            range.setEnd(liElement.firstChild.nextSibling.firstChild, 2);
             const selection = window.getSelection();
             selection.removeAllRanges();
             selection.addRange(range);
@@ -65,7 +65,7 @@ describe('Base Editor Manager', () => {
             liElement.dispatchEvent(mouseDownEvent);
             expect(window.getSelection().getRangeAt(0).startContainer.nodeType === 3).toBe(true);
             expect(window.getSelection().getRangeAt(0).endContainer.nodeType).not.toBe(1);
-            expect(window.getSelection().getRangeAt(0).endOffset).toBe(2);
+            expect(window.getSelection().getRangeAt(0).endOffset).toBe(131);
             expect(window.getSelection().getRangeAt(0).startOffset).toBe(0);
         });
         it('Triple click selection testing Case 3:', () => {
@@ -144,8 +144,8 @@ describe('Triple click selection testing', () => {
         editor.focusIn();
         const liElement: HTMLElement = editor.inputElement.querySelector('ol li');
         const range: Range = new Range();
-        range.setStart(liElement.firstChild, 0);
-        range.setEnd(liElement.firstChild, 2);
+        range.setStart(liElement.firstChild.nextSibling.firstChild, 0);
+        range.setEnd(liElement.firstChild.nextSibling.firstChild, 2);
         const selection = window.getSelection();
         selection.removeAllRanges();
         selection.addRange(range);
@@ -160,7 +160,7 @@ describe('Triple click selection testing', () => {
         liElement.dispatchEvent(mouseDownEvent);
         expect(window.getSelection().getRangeAt(0).startContainer.nodeType === 3).toBe(true);
         expect(window.getSelection().getRangeAt(0).endContainer.nodeType).not.toBe(1);
-        expect(window.getSelection().getRangeAt(0).endOffset).toBe(2);
+        expect(window.getSelection().getRangeAt(0).endOffset).toBe(131);
         expect(window.getSelection().getRangeAt(0).startOffset).toBe(0);
     });
     it('Triple click selection testing Case 3:', () => {

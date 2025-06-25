@@ -1,7 +1,7 @@
 import { addClass, removeClass, Touch, remove, EventHandler, TapEventArgs, Browser } from '@syncfusion/ej2-base';
 import { closest, isNullOrUndefined, ScrollEventArgs, SwipeEventArgs } from '@syncfusion/ej2-base';
 import { Schedule } from '../base/schedule';
-import { ActionEventArgs, NavigatingEventArgs, LayoutData } from '../base/interface';
+import { ActionEventArgs, NavigatingEventArgs, LayoutData, TdData } from '../base/interface';
 import * as events from '../base/constant';
 import * as cls from '../base/css-constant';
 import * as util from '../base/util';
@@ -225,10 +225,37 @@ export class ScheduleTouch {
         this.parent.activeView.setPanel(this.currentPanel.element);
         this.parent.setProperties({ selectedDate: this.currentPanel.selectedDate }, true);
         this.parent.activeView.renderDates = this.currentPanel.renderDates;
+        if (this.parent.activeViewOptions.group.resources.length > 0 && this.parent.resourceBase.lastResourceLevel.length > 0) {
+            const workDaysField: string = this.parent.resourceBase.resourceCollection[0].workDaysField;
+            this.parent.resourceBase.lastResourceLevel.forEach((resource: TdData) => {
+                if (workDaysField) {
+                    const resourceWorkDays: number[] = resource[workDaysField as keyof TdData] as number[];
+                    const hasCustomWorkDays: boolean = Array.isArray(resourceWorkDays) &&
+                        (!this.parent.showWeekend || this.parent.currentView === 'WorkWeek');
+
+                    resource.renderDates = hasCustomWorkDays
+                        ? this.calculateResourceSpecificDates(resource, workDaysField)
+                        : this.currentPanel.renderDates;
+                } else {
+                    resource.renderDates = this.currentPanel.renderDates;
+                }
+            });
+        }
         this.parent.activeView.colLevels = this.currentPanel.colLevels;
         addClass([this.element], cls.TRANSLATE_CLASS);
         const prevWidth: number = this.previousPanel ? this.previousPanel.element.offsetWidth : 0;
         this.element.style.transform = 'translatex(' + (this.parent.enableRtl ? prevWidth : -this.currentPanel.element.offsetLeft) + 'px)';
+    }
+
+    private calculateResourceSpecificDates(resource: TdData, workDaysField: string): Date[] {
+        const resourceDates: Date[] = [];
+        const resourceWorkDays: number[] = resource[workDaysField as keyof TdData] as number[];
+        this.currentPanel.renderDates.forEach((date: Date) => {
+            if (Array.isArray(resourceWorkDays) && resourceWorkDays.indexOf(date.getDay()) !== -1) {
+                resourceDates.push(date);
+            }
+        });
+        return resourceDates;
     }
 
     private onTransitionEnd(): void {

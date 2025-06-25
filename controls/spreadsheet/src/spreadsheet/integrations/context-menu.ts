@@ -1,7 +1,7 @@
 import { Spreadsheet } from '../base/index';
 import { ContextMenu as ContextMenuComponent, BeforeOpenCloseMenuEventArgs, MenuItemModel } from '@syncfusion/ej2-navigations';
 import { MenuEventArgs } from '@syncfusion/ej2-navigations';
-import { closest, extend, detach, L10n, isNullOrUndefined } from '@syncfusion/ej2-base';
+import { closest, extend, detach, L10n, isNullOrUndefined, EventHandler } from '@syncfusion/ej2-base';
 import { MenuSelectEventArgs, removeSheetTab, cMenuBeforeOpen, renameSheetTab, cut, copy, paste, focus, getUpdateUsingRaf, readonlyAlert, getRowIdxFromClientY, getColIdxFromClientX } from '../common/index';
 import { addContextMenuItems, removeContextMenuItems, enableContextMenuItems, initiateCustomSort, hideSheet } from '../common/index';
 import { openHyperlink, initiateHyperlink, editHyperlink, HideShowEventArgs, addNote, editNote, deleteNote } from '../common/index';
@@ -46,6 +46,9 @@ export class ContextMenu {
                 beforeClose: this.beforeCloseHandler.bind(this),
                 beforeItemRender: (args: MenuEventArgs): void => {
                     args.element.setAttribute('aria-label', args.item.text);
+                },
+                created: (): void => {
+                    EventHandler.add(ul, 'keyup', this.preventKeyNavigation, this);
                 }
             },
             ul);
@@ -62,6 +65,13 @@ export class ContextMenu {
         this.parent.trigger('contextMenuBeforeClose', args);
         if (this.parent.enableKeyboardShortcut && args.event && (args.event as KeyboardEvent).keyCode === 27) { // Esc key
             getUpdateUsingRaf((): void => focus(this.parent.element));
+        }
+    }
+
+    private preventKeyNavigation(e: KeyboardEvent): void {
+        if (!this.parent.enableKeyboardNavigation && [37, 38, 39, 40].indexOf(e.keyCode) > -1) {
+            e.preventDefault();
+            e.stopPropagation();
         }
     }
 
@@ -706,7 +716,10 @@ export class ContextMenu {
         this.removeEventListener();
         this.contextMenuInstance.destroy();
         const ele: HTMLElement = document.getElementById(this.parent.element.id + '_contextmenu');
-        if (ele) { detach(ele); }
+        if (ele) {
+            EventHandler.remove(ele, 'keyup', this.preventKeyNavigation);
+            detach(ele);
+        }
         this.contextMenuInstance = null;
         this.parent = null;
     }

@@ -61,8 +61,8 @@ export class Toolbar {
             }
             row = (!isNullOrUndefined(selectedrow) && selectedrow.rowIndex !== row.rowIndex) ? selectedrow : row;
             if (indentEle !== null && outdentEle !== null) {
-                indentElement = toolbarElement.querySelector('#' + indentID).parentElement;
-                outdentElement  = toolbarElement.querySelector('#' + outdentID).parentElement;
+                indentElement = indentEle.parentElement;
+                outdentElement = outdentEle.parentElement;
                 if (row.rowIndex === 0 || tObj.getSelectedRowIndexes().length > 1) {
                     indentElement.classList.add('e-hidden');
                     outdentElement.classList.add('e-hidden');

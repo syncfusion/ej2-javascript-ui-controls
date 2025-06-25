@@ -262,6 +262,15 @@ export class DataManipulation {
                             if (parentRec) {
                                 records[parseInt(rec.toString(), 10)].level = parentRec.level + 1;
                             }
+                            else {
+                                const parentRec: any = (args.actual as any).flatData.find((record: any) => record[`${this.parent.idMapping}`] === parentID);
+                                if (isNullOrUndefined(parentRec[`${this.parent.parentIdMapping}`])) {
+                                    records[parseInt(rec.toString(), 10)].level = 1;
+                                }
+                                else {
+                                    records[parseInt(rec.toString(), 10)].level = parentRec.level + 1;
+                                }
+                            }
                         }
                         else {
                             records[parseInt(rec.toString(), 10)].level = 0;
@@ -363,33 +372,33 @@ export class DataManipulation {
         parentRow: HTMLTableRowElement }): void {
         const args: RowExpandedEventArgs = {row: rowDetails.parentRow, data: rowDetails.record};
         const dm: DataManager = <DataManager>this.parent.dataSource;
-        const qry: Query = this.parent.grid.getDataModule().generateQuery();
-        const clonequries: QueryOptions[] = qry.queries.filter((e: QueryOptions) => e.fn !== 'onPage' && e.fn !== 'onWhere');
-        qry.queries = clonequries;
-        qry.isCountRequired = true;
+        const query: Query = this.parent.grid.getDataModule().generateQuery();
+        const clonequries: QueryOptions[] = query.queries.filter((e: QueryOptions) => e.fn !== 'onPage' && e.fn !== 'onWhere');
+        query.queries = clonequries;
+        query.isCountRequired = true;
         let idMappingValue: number | string = parseInt(rowDetails.record[this.parent.idMapping], 10);
         if (isNaN(idMappingValue)) {
             idMappingValue = rowDetails.record[this.parent.idMapping].toString();
         }
         if (this.parent.enableVirtualization && rowDetails.action === 'remoteExpand') {
-            qry.take(this.parent.pageSettings.pageSize);
+            query.take(this.parent.grid.pageSettings.pageSize);
             const expandDetail: Object[] = [];
             expandDetail.push('ExpandingAction', idMappingValue.toString());
-            qry.expand(expandDetail);
+            query.expand(expandDetail);
         }
         else if (this.parent.enableVirtualization && rowDetails.action === 'collapse') {
-            qry.take(this.parent.grid.pageSettings.pageSize);
+            query.take(this.parent.grid.pageSettings.pageSize);
             const expandDetail: Object[] = [];
             expandDetail.push('CollapsingAction', idMappingValue.toString());
-            qry.expand(expandDetail);
+            query.expand(expandDetail);
         }
-        qry.where(this.parent.parentIdMapping, 'equal', rowDetails.record[this.parent.idMapping]);
+        query.where(this.parent.parentIdMapping, 'equal', rowDetails.record[this.parent.idMapping]);
         if (rowDetails.action === 'remoteExpand' && this.parent.grid.filterSettings && this.parent.grid.filterSettings.columns.length) {
             const filterqry: QueryOptions[] = this.parent.grid.getDataModule().generateQuery().queries.filter((e: QueryOptions) => e.fn !== 'onPage' && typeof e.e.predicates !== 'undefined');
-            qry.queries.push(filterqry[0]);
+            query.queries.push(filterqry[0]);
         }
         showSpinner(this.parent.element);
-        dm.executeQuery(qry).then((e: ReturnOption) => {
+        dm.executeQuery(query).then((e: ReturnOption) => {
             const remoteExpandedData: string = 'remoteExpandedData';
             const remoteCollapsedData: string = 'remoteCollapsedData';
             const level: string = 'level';
@@ -562,8 +571,15 @@ export class DataManipulation {
                         record.expanded = false;
                     }
                 }
-                datas.splice(inx + r + 1, 0, record);
+                const exists: boolean = datas.some((data: any) => data[`${this.parent.idMapping}`] === record[this.parent.idMapping]);
+                if (!exists) {
+                    datas.splice(inx + r + 1, 0, record);
+                }
             }
+            const localIdMapping: string = this.parent.idMapping;
+            datas.sort(function (firstRecord: any, secondRecord: any): number {
+                return firstRecord[`${localIdMapping}`] - secondRecord[`${localIdMapping}`];
+            });
             setValue('result', datas, e); setValue('action', 'beforecontentrender', e);
             this.parent.trigger(events.actionComplete, e);
             hideSpinner(this.parent.element);
@@ -605,7 +621,8 @@ export class DataManipulation {
         const contentModule: VirtualContentRenderer = getValue('grid.contentModule', this.parent);
         const currentInfo: VirtualInfo = getValue('currentInfo', contentModule);
         const prevInfo: VirtualInfo = getValue('prevInfo', contentModule);
-        if (currentInfo.loadNext && this.parent.grid.pageSettings.currentPage === currentInfo.nextInfo.page) {
+        if (currentInfo.loadNext && this.parent.grid.pageSettings.currentPage === currentInfo.nextInfo.page
+            && !this.parent.loadChildOnDemand) {
             this.parent.grid.pageSettings.currentPage = prevInfo.page;
         }
     }

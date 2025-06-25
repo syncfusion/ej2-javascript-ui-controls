@@ -52,7 +52,7 @@ describe('Style dialog validation', () => {
         document.body.removeChild(document.getElementById('container'));
         editor = undefined;
         styleDialog = undefined;
-        document.body.innerHTML = '';
+        
         setTimeout(function () {
             done();
         }, 2000);
@@ -181,7 +181,7 @@ describe('Style dialog validation create', () => {
         document.body.removeChild(document.getElementById('container'));
         editor = undefined;
         styleDialog = undefined;
-        document.body.innerHTML = '';
+        
         setTimeout(function () {
             done();
         }, 2000);
@@ -269,7 +269,7 @@ describe('Style dialog validation create - Next Different', () => {
         document.body.removeChild(document.getElementById('container'));
         editor = undefined;
         styleDialog = undefined;
-        document.body.innerHTML = '';
+        
         setTimeout(function () {
             done();
         }, 2000);
@@ -331,7 +331,7 @@ describe('Style dialog validation create', () => {
         document.body.removeChild(document.getElementById('container'));
         editor = undefined;
         styleDialog = undefined;
-        document.body.innerHTML = '';
+        
         setTimeout(function () {
             done();
         }, 2000);
@@ -389,7 +389,7 @@ describe('Style dialog validation create', () => {
 //         document.body.removeChild(document.getElementById('container'));
 //         editor = undefined;
 //         styleDialog = undefined;
-//         document.body.innerHTML = '';
+//         
 //         setTimeout(function () {
 //             done();
 //         }, 2000);

@@ -5,6 +5,7 @@ import { TreeGrid } from '../base/treegrid';
 import * as events from '../base/constant';
 import { isNullOrUndefined, Browser } from '@syncfusion/ej2-base';
 import { BeforeCopyEventArgs, Clipboard as GridClipboard, ServiceLocator } from '@syncfusion/ej2-grids';
+import { Column } from '../models';
 /**
  * The `Clipboard` module is used to handle clipboard copy action.
  *
@@ -37,12 +38,13 @@ export class TreeClipboard extends GridClipboard {
                     if (i > 0) {
                         this.treeCopyContent += '\n';
                     }
-                    if (!rows[selectedIndexes[parseInt(i.toString(), 10)] as number].classList.contains('e-summaryrow')) {
-                        const cells: HTMLElement[] = [].slice.call(rows[selectedIndexes[parseInt(i.toString(), 10)] as number].querySelectorAll('.e-rowcell'));
+                    const selectedRowIndex: number = selectedIndexes[parseInt(i.toString(), 10)];
+                    if (!rows[selectedRowIndex as number].classList.contains('e-summaryrow')) {
+                        const cells: HTMLElement[] = [].slice.call(rows[selectedRowIndex as number].querySelectorAll('.e-rowcell'));
                         const uniqueid: string = this.treeGridParent.getSelectedRecords()[parseInt(i.toString(), 10) as number][`${uniqueID}`];
                         if (this.copiedUniqueIdCollection.indexOf(uniqueid) === -1) {
                             if (this.treeGridParent.copyHierarchyMode === 'Parent' || this.treeGridParent.copyHierarchyMode === 'Both') {
-                                this.parentContentData(currentRecords, selectedIndexes[parseInt(i.toString(), 10)], rows, withHeader, i);
+                                this.parentContentData(currentRecords, selectedRowIndex, rows, withHeader, i);
                             }
                             this[`${getCopyData}`](cells, false, '\t', withHeader);
                             this.treeCopyContent += this[`${copyContent}`];
@@ -55,11 +57,7 @@ export class TreeClipboard extends GridClipboard {
                     }
                 }
                 if (withHeader) {
-                    const headerTextArray: string[] = [];
-                    for (let i: number = 0; i < this.treeGridParent.getVisibleColumns().length; i++) {
-                        headerTextArray[parseInt(i.toString(), 10)] =
-                         this.treeGridParent.getVisibleColumns()[parseInt(i.toString(), 10)].headerText;
-                    }
+                    const headerTextArray : string[] = this.treeGridParent.getVisibleColumns().map((col: Column) => col.headerText);
                     this[`${getCopyData}`](headerTextArray, false, '\t', withHeader);
                     this.treeCopyContent = this[`${copyContent}`] + '\n' + this.treeCopyContent;
                 }

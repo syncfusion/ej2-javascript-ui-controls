@@ -159,3 +159,13 @@ $e-de-bzr-button-hover-font-color: $content-text-color-selected !default;
 $e-de-bzr-button-active-bg-color:  $secondary-bg-color-hover !default;
 $e-de-bzr-button-active-border-color: $border !default;
 $de-hover-bg: $content-bg-color-alt2 !default;
+$de-ribbon-property-label: $text-xs;
+
+// Subtract the ribbon & statusbar height
+$de-ribbon-simplified-ctnr-editor-height: calc(100% - 42px) !default;
+$de-ribbon-simplified-ctnr-editor-height-big: calc(100% - 46px) !default;
+
+$de-ribbon-classic-editor-height: calc(100% - 42px) !default;
+$de-ribbon-classic-editor-height-big: calc(100% - 46px) !default;
+$de-ctnr-layout-margin-bottom: 2px;
+$de-ctnr-picture-margin-bottom: 0;

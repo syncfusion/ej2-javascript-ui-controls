@@ -3,7 +3,8 @@
  * SanitizeHtmlHelper for sanitize the value.
  */
 import { detach } from '@syncfusion/ej2-base';
-import { BeforeSanitizeHtmlArgs, SanitizeRemoveAttrs, IRichTextEditor } from '../base/interface';
+import { IRichTextEditor } from '../base/interface';
+import { BeforeSanitizeHtmlArgs, SanitizeRemoveAttrs } from '../../common/interface';
 
 const removeTags: string[] = [
     'script',

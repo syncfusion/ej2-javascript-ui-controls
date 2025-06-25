@@ -151,6 +151,16 @@
     .e-checkboxfilter {
       & .e-dlg-content {
         padding-left: $grid-bigger-checkbox-content-padding-left;
+        @if $grid-xlfl-skin == 'fluent2' {
+          padding-right: 24px;
+        }
+      }
+
+      & .e-footer-content {
+        @if $grid-xlfl-skin == 'fluent2' {
+          padding-right: 24px;
+          padding-left: 24px;
+        }
       }
 
       & .e-ftrchk,
@@ -438,11 +448,21 @@
       }
 
       &.e-device .e-gridheader .e-rightalign .e-sortnumber {
-        margin: 0 4px 0 -10px;
+        @if $grid-skin == 'tailwind3' {
+          margin: 1px 4px 0 0;
+        }
+        @else {
+          margin: 0 4px 0 -10px;
+        }
       }
 
       &.e-device .e-gridheader .e-rightalign .e-sortfilterdiv {
-        margin: -22px 4px -16px -13px;
+        @if $grid-skin == 'tailwind3' {
+          margin: -16px 4px -16px -17px;
+        }
+        @else {
+          margin: -22px 4px -16px -13px;
+        }
       }
 
       &.e-device .e-gridheader .e-fltr-icon .e-sortnumber {
@@ -889,6 +909,15 @@
           left: 3px;
         }
       }
+
+      .e-filterbardropdown {
+        @if $grid-skin == 'fluent2' {
+          margin-left: 37px;
+        }
+        @if $grid-skin == 'highcontrast' {
+          margin-left: 38px;
+        }
+      }
     }
 
     .e-rowcell,
@@ -966,7 +995,7 @@
 
     .e-dropitemscount {
       font-size: 14px;
-      @if $grid-skin == 'tailwind' {
+      @if $grid-skin == 'tailwind' or  $grid-skin =='highcontrast' {
         margin-left: 1px;
       }
       @if $grid-skin == 'tailwind3' {
@@ -1462,6 +1491,7 @@
     }
 
     &.sf-grid {
+      
       .e-bigger #{&}.e-grid.sf-grid,
       #{&}.e-grid.sf-grid.e-bigger {
         .e-gridheader table th:not([rowspan = '1']),
@@ -1650,9 +1680,33 @@
       }
     }
   }
-  .e-ccdlg.e-cc .e-dlg-header-content {
-    @if $grid-skin == 'fluent' {
-      padding: 14px 28px 17px;
+  .e-ccdlg.e-cc {
+    .e-dlg-header-content {
+      @if $grid-skin == 'fluent' {
+        padding: 14px 28px 17px;
+      }
+      @if $grid-skin == 'fluent2' {
+        padding-left: 24px;
+      }
+    }
+    .e-footer-content {
+      @if $grid-skin == 'fluent2' {
+        padding-right: 24px;
+        padding-left: 24px;
+      }
+    }
+  }
+  .e-ccdlg {
+    .e-dlg-header-content {
+      @if $grid-skin == 'fluent2' {
+        padding-left: 24px;
+      }
+    }
+    .e-footer-content {
+      @if $grid-skin == 'fluent2' {
+        padding-right: 24px;
+        padding-left: 24px;
+      }
     }
   }
   .e-filter-popup.e-excelfilter .e-dlg-content {

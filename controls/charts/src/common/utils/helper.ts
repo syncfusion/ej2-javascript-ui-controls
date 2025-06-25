@@ -1173,13 +1173,13 @@ export function markerAnimate(
             if (args.timeStamp > args.delay) {
                 args.element.style.visibility = 'visible';
             }
-            if (isAccumulation ? args.element.id.indexOf('_datalabel_Series_') > -1 : (args.element.parentElement.parentElement.id.indexOf('DataLabel') > -1
+            if (isAccumulation ? args.element.id.indexOf('_datalabel_Series_') > -1 : ((args.element.parentElement.parentElement.id.indexOf('DataLabel') > -1 || element.id.indexOf('StackLabel') > -1)
                 && !((series as Series).chart.stackLabels.visible && element.getAttribute('data-collide')))) {
                 args.element.style.visibility = 'visible';
                 const dataLabelOpacity: number = isAccumulation ? (series as AccumulationSeries).opacity
                     : (series as Series).marker.dataLabel.opacity;
                 const calculatedOpacity: number = (args.timeStamp / 500) * (dataLabelOpacity);
-                if (isAccumulation) {
+                if (isAccumulation || element.id.indexOf('StackLabel') > -1) {
                     element.setAttribute('opacity', Math.min(calculatedOpacity, dataLabelOpacity).toString());
                 } else {
                     (series as Series).textElement.setAttribute('opacity', Math.min(calculatedOpacity, dataLabelOpacity).toString());
@@ -1188,12 +1188,15 @@ export function markerAnimate(
             }
         },
         end: () => {
+            if ((series.type === 'Scatter' || series.type === 'Bubble') && (series as Series).lastValueLabelElement) {
+                (series as Series).lastValueLabelElement.setAttribute('visibility', 'visible');
+            }
             const annotations: HTMLElement = <HTMLElement>document.getElementById((series as Series).chart.element.id + '_Annotation_Collections');
             if (annotations && series.type !== 'Line') {
                 annotations.style.visibility = 'visible';
             }
-            if (element.parentElement.parentElement.id.indexOf('DataLabel') > -1 || element.id.indexOf('_datalabel_Series_') > -1) {
-                if (isAccumulation) {
+            if (element.parentElement.parentElement.id.indexOf('DataLabel') > -1 || element.id.indexOf('_datalabel_Series_') > -1 || element.id.indexOf('StackLabel') > -1) {
+                if (isAccumulation || element.id.indexOf('StackLabel') > -1) {
                     element.setAttribute('opacity', ((series as AccumulationSeries).opacity).toString());
                 } else {
                     (series as Series).textElement.setAttribute('opacity', ((series as Series).marker.dataLabel.opacity).toString());
@@ -1374,10 +1377,10 @@ export function animateAddPoints(
                     }
                 }
 
-                if (startCoords.length !== endCoords.length) {
+                if (interpolatedCoords.length > 0 && startCoords.length !== endCoords.length) {
                     currentDirection += 'L';
                 }
-                else {
+                else if (interpolatedCoords.length > 0) {
                     currentDirection += startCoords[0];
                 }
                 currentDirection += ' ' + interpolatedCoords.join(' ');

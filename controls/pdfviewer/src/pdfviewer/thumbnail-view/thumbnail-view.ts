@@ -258,6 +258,10 @@ export class ThumbnailView {
             if (this.pdfViewerBase.jsonDocumentId) {
                 (jsonObject as any).documentId = this.pdfViewerBase.jsonDocumentId;
             }
+            if (!isNullOrUndefined(this.pdfViewer.pageOrganizer)) {
+                const imageSize: number = this.pdfViewer.pageOrganizer.getImageZoomValue(true);
+                (jsonObject as any).imageSize = imageSize;
+            }
             this.thumbnailRequestHandler = new AjaxHandler(this.pdfViewer);
             this.thumbnailRequestHandler.url = proxy.pdfViewer.serviceUrl + '/' + proxy.pdfViewer.serverActionSettings.renderThumbnail;
             this.thumbnailRequestHandler.responseType = 'json';
@@ -290,6 +294,8 @@ export class ThumbnailView {
                 const isTextNeed: boolean = proxy.pdfViewer.textSearch ? true : false;
                 const isSkipCharacterBounds: boolean = (this.pdfViewer.extractTextOption === ExtractTextOption.None ||
                     this.pdfViewer.extractTextOption === ExtractTextOption.TextOnly) ? true : false;
+                const imageSize: number = proxy.pdfViewer.pageOrganizer ?
+                    proxy.pdfViewer.pageOrganizer.getImageZoomValue(true) : 1;
                 if ((currentPageImage && currentPageImage.src === '') || (isNullOrUndefined(currentPageImage) && !isNullOrUndefined(this.pdfViewer.pageOrganizer))) {
                     this.pdfViewerBase.pdfViewerRunner.addTask({
                         pageIndex: count,
@@ -298,7 +304,8 @@ export class ThumbnailView {
                         jsonObject: jsonObject,
                         isRenderText: isTextNeed,
                         requestType: isTextNeed ? 'pdfTextSearchRequest' : '',
-                        isSkipCharacterBounds: isSkipCharacterBounds
+                        isSkipCharacterBounds: isSkipCharacterBounds,
+                        imageSize: imageSize
                     }, TaskPriorityLevel.Low);
                 }
             }
@@ -314,7 +321,7 @@ export class ThumbnailView {
     public thumbnailOnMessage(event: any): void {
         if (event.data.message === 'renderThumbnail') {
             const canvas: HTMLCanvasElement = document.createElement('canvas');
-            const { value, width, height, pageIndex } = event.data;
+            const { value, width, height, pageIndex, imageSize } = event.data;
             canvas.width = width;
             canvas.height = height;
             const canvasContext: CanvasRenderingContext2D = canvas.getContext('2d');
@@ -332,7 +339,8 @@ export class ThumbnailView {
                 startPage: this.startIndex,
                 endPage: this.thumbnailLimit,
                 uniqueId: this.pdfViewerBase.documentId,
-                pageIndex: pageIndex
+                pageIndex: pageIndex,
+                imageSize: imageSize
             });
             if (!Browser.isDevice || this.pdfViewer.enableDesktopMode) {
                 this.updateThumbnailCollection(data);

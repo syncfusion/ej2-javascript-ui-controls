@@ -56,14 +56,7 @@ export class Aggregate {
     public calculateSummaryValue(summaryQuery: QueryOptions[], filteredData: Object[], isSort: boolean): Object[] {
         this.summaryQuery = summaryQuery;
         let parentRecord: ITreeData;
-        const parentDataLength: number = Object.keys(filteredData).length;
-        const parentData: Object[] = [];
-        for (let p: number = 0, len: number = parentDataLength; p < len; p++) {
-            const summaryRow: boolean = getObject('isSummaryRow', filteredData[parseInt(p.toString(), 10)]);
-            if (!summaryRow) {
-                parentData.push(filteredData[parseInt(p.toString(), 10)]);
-            }
-        }
+        const parentData: Object[] = filteredData.filter((data: Object) => !getObject('isSummaryRow', data));
         const parentRecords: Object = findParentRecords(parentData);
         const flatRecords: Object[] = (<Object[]>parentData).slice();
         const summaryLength: number = Object.keys(this.parent.aggregates).length;
@@ -203,13 +196,7 @@ export class Aggregate {
             appendChildren(cellElement, tempObj.fn(single[summaryColumn.columnName], this.parent, tempObj.property));
         }
         const value: string = single[`${summaryColumn.columnName}`][`${summaryKey}`];
-        let summaryValue: string;
-        if (cellElement.innerHTML.indexOf(value) === -1) {
-            summaryValue = cellElement.innerHTML + value;
-            return summaryValue;
-        } else {
-            return cellElement.innerHTML;
-        }
+        return cellElement.innerHTML.indexOf(value) === -1 ? cellElement.innerHTML + value : cellElement.innerHTML;
     }
 
     private getFormatFromType(summaryformat: string| NumberFormatOptions, type: string):

@@ -1,9 +1,10 @@
 import { extend, isNullOrUndefined as isNOU, KeyboardEventArgs, Browser, closest } from '@syncfusion/ej2-base';
 import * as CONSTANT from '../base/constant';
-import { updateUndoRedoStatus, isIDevice } from '../base/util';
-import { ActionBeginEventArgs, IDropDownItemModel, IShowPopupArgs, IVideoCommandsArgs } from './../base/interface';
-import { IRichTextEditor, IEditorModel, IItemCollectionArgs } from './../base/interface';
-import { IHtmlFormatterCallBack, IMarkdownFormatterCallBack, IUndoCallBack } from './../../common/interface';
+import { updateUndoRedoStatus } from '../base/util';
+import { isIDevice } from '../../common/util';
+import { ActionBeginEventArgs, IDropDownItemModel, IShowPopupArgs, IVideoCommandsArgs } from './../../common/interface';
+import { IRichTextEditor } from './../base/interface';
+import { IHtmlFormatterCallBack, IMarkdownFormatterCallBack, IUndoCallBack, IEditorModel, IItemCollectionArgs } from './../../common/interface';
 import { KEY_DOWN, KEY_UP } from './../../common/constant';
 import { MarkdownUndoRedoData } from '../../markdown-parser/base/interface';
 import { IHtmlUndoRedoData } from '../../editor-manager/base/interface';
@@ -60,6 +61,7 @@ export class Formatter {
             && args.item.command !== 'Audios'
             && args.item.command !== 'Videos'
             && args.item.command !== 'EmojiPicker'
+            && args.item.command !== 'CodeBlock'
             && range
             && !(self.contentModule.getEditPanel().contains(this.getAncestorNode(range.commonAncestorContainer))
                 || self.contentModule.getEditPanel() === range.commonAncestorContainer
@@ -97,17 +99,20 @@ export class Formatter {
                         'colText': self.localeObj.getConstant('TableColText')
                     };
                 }
-                self.trigger(CONSTANT.actionBegin, args, (actionBeginArgs: ActionBeginEventArgs) => {
-                    if (actionBeginArgs.cancel) {
-                        if (action === 'paste' || action === 'cut' || action === 'copy') {
-                            event.preventDefault();
+                const rangeContainer: Node = range ? range.commonAncestorContainer : null;
+                if (action !== 'backspace' && action !== 'delete' || (rangeContainer && rangeContainer.nodeType === Node.ELEMENT_NODE && (rangeContainer as HTMLElement).querySelectorAll('img, audio, video').length > 0)) {
+                    self.trigger(CONSTANT.actionBegin, args, (actionBeginArgs: ActionBeginEventArgs) => {
+                        if (actionBeginArgs.cancel) {
+                            if (action === 'paste' || action === 'cut' || action === 'copy') {
+                                event.preventDefault();
+                            }
                         }
-                    }
-                });
+                    });
+                }
             }
             if (!args.cancel) {
                 const isTableModule: boolean = isNOU(self.tableModule) ? true : self.tableModule ?
-                    self.tableModule.ensureInsideTableList : false;
+                    self.tableModule.tableObj && self.tableModule.tableObj.ensureInsideTableList : false;
                 if ((event.which === 9 && isTableModule) || event.which !== 9) {
                     if (event.which === 13 && self.editorMode === 'HTML') {
                         value = <{}>{
@@ -127,7 +132,7 @@ export class Formatter {
             && args.item.command !== 'Font' && args.item.command !== 'Export')
             || ((args.item.subCommand === 'FontName' || args.item.subCommand === 'FontSize') && args.name === 'dropDownSelect')
             || ((args.item.subCommand === 'BackgroundColor' || args.item.subCommand === 'FontColor')
-                && (args.name === 'colorPickerChanged' ||  args.name === 'tableColorPickerChanged')) || args.item.subCommand === 'FormatPainter' || args.item.subCommand === 'EmojiPicker')) {
+                && (args.name === 'colorPickerChanged' ||  args.name === 'tableColorPickerChanged')) || args.item.subCommand === 'FormatPainter' || args.item.subCommand === 'EmojiPicker' || args.item.subCommand === 'CodeBlock')) {
             extend(args, args, { requestType: args.item.subCommand, cancel: false, itemCollection: value, selectType: args.name }, true);
             self.trigger(CONSTANT.actionBegin, args, (actionBeginArgs: ActionBeginEventArgs) => {
                 if (!actionBeginArgs.cancel) {
@@ -217,25 +222,35 @@ export class Formatter {
                 self.notify(CONSTANT.execCommandCallBack, events);
             }
         }
-        self.trigger(CONSTANT.actionComplete, events, (callbackArgs: IMarkdownFormatterCallBack | IHtmlFormatterCallBack) => {
-            self.setPlaceHolder();
-            if ((callbackArgs.requestType === 'Images' || callbackArgs.requestType === 'Replace' || callbackArgs.requestType === 'Links' || callbackArgs.requestType === 'Audios' || callbackArgs.requestType === 'Videos') && self.editorMode === 'HTML') {
-                const args: IHtmlFormatterCallBack = callbackArgs as IHtmlFormatterCallBack;
-                if (callbackArgs.requestType === 'Links' && callbackArgs.event &&
-                    (callbackArgs.event as KeyboardEvent).type === 'keydown' &&
-                    (callbackArgs.event as KeyboardEvent).keyCode === 32) {
-                    return;
-                }
-                self.notify(CONSTANT.insertCompleted, {
-                    args: args.event, type: callbackArgs.requestType, isNotify: true,
-                    elements: args.elements
-                } as IShowPopupArgs);
+        const selection: Selection = self.contentModule.getDocument().getSelection();
+        const range: Range = (selection.rangeCount > 0) ? selection.getRangeAt(selection.rangeCount - 1) : null;
+        const rangeContainer: Node = range ? range.commonAncestorContainer : null;
+        if (events.requestType !== 'delete' || (range && rangeContainer.nodeType === Node.ELEMENT_NODE && (rangeContainer as HTMLElement).querySelectorAll('img, audio, video').length > 0)) {
+            self.trigger(CONSTANT.actionComplete, events, (callbackArgs: IMarkdownFormatterCallBack | IHtmlFormatterCallBack) => {
+                this.actionCompleteCallBack(self, callbackArgs);
+            });
+        } else {
+            this.actionCompleteCallBack(self, events);
+        }
+    }
+    private actionCompleteCallBack(self: IRichTextEditor, callbackArgs: IMarkdownFormatterCallBack | IHtmlFormatterCallBack): void {
+        self.setPlaceHolder();
+        if ((callbackArgs.requestType === 'Images' || callbackArgs.requestType === 'Replace' || callbackArgs.requestType === 'Links' || callbackArgs.requestType === 'Audios' || callbackArgs.requestType === 'Videos') && self.editorMode === 'HTML') {
+            const args: IHtmlFormatterCallBack = callbackArgs as IHtmlFormatterCallBack;
+            if (callbackArgs.requestType === 'Links' && callbackArgs.event &&
+                (callbackArgs.event as KeyboardEvent).type === 'keydown' &&
+                (callbackArgs.event as KeyboardEvent).keyCode === 32) {
+                return;
             }
-            if (callbackArgs.requestType === 'VideosPlayPause') {
-                self.notify('editAreaClick', { args: event });
-            }
-            self.autoResize();
-        });
+            self.notify(CONSTANT.insertCompleted, {
+                args: args.event, type: callbackArgs.requestType, isNotify: true,
+                elements: args.elements
+            } as IShowPopupArgs);
+        }
+        if (callbackArgs.requestType === 'VideosPlayPause') {
+            self.notify('editAreaClick', { args: event });
+        }
+        self.autoResize();
     }
     /**
      * Save the data for undo and redo action.
@@ -298,5 +313,16 @@ export class Formatter {
     }
     public getCurrentStackIndex(): undefined | number {
         return this.editorManager.undoRedoManager.getCurrentStackIndex();
+    }
+
+    /**
+     * clearUndoRedoStack method
+     *
+     * @returns {void}
+     * @hidden
+     * @deprecated
+     */
+    public clearUndoRedoStack(): void {
+        this.editorManager.undoRedoManager.clear();
     }
 }

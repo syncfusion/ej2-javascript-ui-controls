@@ -5,7 +5,7 @@
 import { createElement } from '@syncfusion/ej2-base';
 import { Diagram } from '../../../src/diagram/diagram';
 import { DiagramElement } from '../../../src/diagram/core/elements/diagram-element';
-import { Container } from '../../../src/diagram/core/containers/container';
+import { GroupableView } from '../../../src/diagram/core/containers/container';
 import { DiagramModel, NodeModel, NodeConstraints } from '../../../src/diagram/index';
 import { MouseEvents } from '../../../spec/diagram/interaction/mouseevents.spec'
 import { profile, inMB, getMemoryProfile } from '../../../spec/common.spec';

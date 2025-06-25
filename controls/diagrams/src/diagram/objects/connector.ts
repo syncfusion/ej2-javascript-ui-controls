@@ -30,7 +30,7 @@ import { PathAnnotation } from './annotation';
 import { Canvas } from '../core/containers/canvas';
 import { getDecoratorShape, getPortShape } from './dictionary/common';
 import { IElement } from './interface/IElement';
-import { Container } from '../core/containers/container';
+import { GroupableView } from '../core/containers/container';
 import { DiagramElement } from '../core/elements/diagram-element';
 import { HorizontalAlignment, VerticalAlignment, AssociationFlow, ClassifierShape, Multiplicity, DiagramAction } from '../enum/enum';
 import { ConnectionShapes, UmlActivityFlows, BpmnFlows, BpmnMessageFlows, BpmnSequenceFlows, BpmnAssociationFlows } from '../enum/enum';
@@ -1408,7 +1408,7 @@ export class Connector extends NodeBase implements IElement {
      * @deprecated
      */
     @Property(null)
-    public wrapper: Container;
+    public wrapper: GroupableView;
     /** @private */
     public bridges: Bridge[] = [];
     /** @private */
@@ -1574,7 +1574,7 @@ export class Connector extends NodeBase implements IElement {
     }
 
     /** @private */
-    public initPorts(accessibilityContent: Function | string, container: Container, bounds: Rect): void {
+    public initPorts(accessibilityContent: Function | string, container: GroupableView, bounds: Rect): void {
         for (let i: number = 0; this.ports !== undefined, i < this.ports.length; i++) {
             container.children.push(this.initPort(this.ports[parseInt(i.toString(), 10)] as Port,
                                                   this.intermediatePoints, bounds, accessibilityContent));

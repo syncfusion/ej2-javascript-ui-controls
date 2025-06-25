@@ -82,14 +82,21 @@ export class SpreadsheetImage {
     /* eslint-disable */
     private insertImage(args: { file: File, isAction?: boolean }, range?: string): void {
         this.binaryStringVal(args).then(
-            src => this.createImageElement({ options: { src: src as string }, range: range, isPublic: true, isAction: args.isAction })
-        );
+            src => {
+                const imageData = (typeof src === "string" || src instanceof ArrayBuffer) ? { dataUrl: src as string } : src;
+                this.createImageElement({ options: { src: imageData.dataUrl, height: imageData.height, width: imageData.width }, range: range, isPublic: true, isAction: args.isAction });
+            });
     }
-    private binaryStringVal(args: any): Promise<string | ArrayBuffer> {
+    private binaryStringVal(args: any): Promise<string | ArrayBuffer | { dataUrl: string, width?: number, height?: number }> {
         return new Promise((resolve, reject) => {
             let reader: FileReader = new FileReader();
             reader.readAsDataURL(args.file);
-            reader.onload = () => resolve(reader.result);
+            reader.onload = () => {
+                const img = new Image();
+                img.onload = () => resolve({ dataUrl: reader.result as string, width: img.width, height: img.height });
+                img.onerror = reject;
+                img.src = reader.result as string;
+            };
             reader.onerror = error => reject(error);
         });
     }

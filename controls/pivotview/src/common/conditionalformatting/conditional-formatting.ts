@@ -685,6 +685,7 @@ export class ConditionalFormatting {
         const dialog: Dialog = element ? getInstance(element, Dialog) as Dialog : null;
         if (dialog && !dialog.isDestroyed) {
             this.destroyColorPickers();
+            this.removeEventListeners();
             dialog.destroy();
         }
         if (element) {
@@ -694,6 +695,14 @@ export class ConditionalFormatting {
         this.backgroundColor = [];
         this.newFormat = [];
     }
+    private removeEventListeners(): void {
+        for (let i: number = 0; i < (this.newFormat ? this.newFormat.length : 0); i++) {
+            const removeButton: HTMLElement = select('#' + this.parentID + 'removeButton' + i, document) as HTMLElement;
+            if (removeButton) {
+                removeButton.onclick = null;
+            }
+        }
+    }
     private destroyColorPickers(): void {
         for (let i: number = 0; i < (this.newFormat ? this.newFormat.length : 0); i++) {
             if (this.fontColor && this.fontColor[i as number] && !this.fontColor[i as number].isDestroyed) {
@@ -702,9 +711,80 @@ export class ConditionalFormatting {
             if (this.backgroundColor && this.backgroundColor[i as number] && !this.backgroundColor[i as number].isDestroyed) {
                 this.backgroundColor[i as number].destroy();
             }
+            this.destroyDropDowns(i);
+            this.destroyOtherComponents(i);
         }
     }
 
+    private destroyDropDowns(i: number): void {
+        const dialogElement: HTMLElement = select('#' + this.parentID + 'conditionalformatting', document) as HTMLElement;
+        if (!dialogElement) {
+            return;
+        }
+        const measureDropdown: HTMLElement = select('#' + this.parentID + 'measureinput' + i, dialogElement) as HTMLElement;
+        if (measureDropdown) {
+            const measureInstance: DropDownList = getInstance(measureDropdown, DropDownList) as DropDownList;
+            if (measureInstance && !measureInstance.isDestroyed) {
+                measureInstance.destroy();
+            }
+        }
+        const conditionDropdown: HTMLElement = select('#' + this.parentID + 'conditioninput' + i, dialogElement) as HTMLElement;
+        if (conditionDropdown) {
+            const conditionInstance: DropDownList = getInstance(conditionDropdown, DropDownList) as DropDownList;
+            if (conditionInstance && !conditionInstance.isDestroyed) {
+                conditionInstance.destroy();
+            }
+        }
+        const fontNameDropdown: HTMLElement = select('#' + this.parentID + 'fontnameinput' + i, dialogElement) as HTMLElement;
+        if (fontNameDropdown) {
+            const fontNameInstance: DropDownList = getInstance(fontNameDropdown, DropDownList) as DropDownList;
+            if (fontNameInstance && !fontNameInstance.isDestroyed) {
+                fontNameInstance.destroy();
+            }
+        }
+        const fontSizeDropdown: HTMLElement = select('#' + this.parentID + 'fontsizeinput' + i, dialogElement) as HTMLElement;
+        if (fontSizeDropdown) {
+            const fontSizeInstance: DropDownList = getInstance(fontSizeDropdown, DropDownList) as DropDownList;
+            if (fontSizeInstance && !fontSizeInstance.isDestroyed) {
+                fontSizeInstance.destroy();
+            }
+        }
+    }
+
+    private destroyOtherComponents(i: number): void {
+        const dialogElement: HTMLElement = select('#' + this.parentID + 'conditionalformatting', document);
+        if (!dialogElement) {
+            return;
+        }
+        const conditionValue1: HTMLElement = select('#' + this.parentID + 'conditionvalue1' + i, dialogElement) as HTMLElement;
+        if (conditionValue1) {
+            const value1Instance: TextBox = getInstance(conditionValue1, TextBox) as TextBox;
+            if (value1Instance && !value1Instance.isDestroyed) {
+                value1Instance.destroy();
+            }
+        }
+        const conditionValue2: HTMLElement = select('#' + this.parentID + 'conditionvalue2' + i, dialogElement) as HTMLElement;
+        if (conditionValue2) {
+            const value2Instance: TextBox = getInstance(conditionValue2, TextBox) as TextBox;
+            if (value2Instance && !value2Instance.isDestroyed) {
+                value2Instance.destroy();
+            }
+        }
+        const grandTotalCheckbox: HTMLElement = select('#' + this.parentID + 'grandtotalcheckbox' + i, dialogElement) as HTMLElement;
+        if (grandTotalCheckbox) {
+            const checkboxInstance: CheckBox = getInstance(grandTotalCheckbox, CheckBox) as CheckBox;
+            if (checkboxInstance && !checkboxInstance.isDestroyed) {
+                checkboxInstance.destroy();
+            }
+        }
+        const removeButton: HTMLElement = select('#' + this.parentID + 'removeButton' + i, dialogElement) as HTMLElement;
+        if (removeButton) {
+            const buttonInstance: Button = getInstance(removeButton, Button) as Button;
+            if (buttonInstance && !buttonInstance.isDestroyed) {
+                buttonInstance.destroy();
+            }
+        }
+    }
     /**
      * To create Conditional Formatting dialog.
      *

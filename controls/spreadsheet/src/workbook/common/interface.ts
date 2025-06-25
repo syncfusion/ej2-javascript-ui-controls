@@ -1,7 +1,7 @@
-import { CellStyleModel, ConditionalFormatModel, DefineNameModel, HyperlinkModel, ImageModel, SortCollectionModel } from './class-model';
+import { AxisModel, CellStyleModel, ChartModel, ConditionalFormatModel, DefineNameModel, HyperlinkModel, ImageModel, SortCollectionModel } from './class-model';
 import { SaveType, SortOrder, FormatType, BorderType, ModelType, MergeType, ClearType, DataBar, ColorScale, IconSet } from './index';
 import { Sheet, RangeModel, CellModel, SheetModel, ColumnModel, RowModel, UsedRangeModel, TopBottom, HighlightCell } from '../index';
-import { CFColor, Workbook, PdfPageOrientation } from '../index';
+import { CFColor, Workbook, PdfPageOrientation, ValidationModel } from '../index';
 import { DataManager, Predicate } from '@syncfusion/ej2-data';
 import { Internationalization } from '@syncfusion/ej2-base';
 import { PrintType } from '../../spreadsheet';
@@ -347,6 +347,7 @@ export interface CellFormatArgs {
     isFromAutoFillOption?: boolean;
     rowHeight?: number;
     mergeBorderRows?: number[];
+    prevCell?: HTMLElement;
 }
 
 /** @hidden */
@@ -403,6 +404,7 @@ export interface ExtendedSheet extends Sheet {
     isLocalData?: boolean;
     lastReqIdx?: number[];
     isImportProtected?: boolean;
+    validations?: ValidationModel[];
 }
 
 /**
@@ -1047,6 +1049,7 @@ export interface ApplyCFArgs {
     refreshAll?: boolean;
     isEdit?: boolean;
     resizedRowHeight?: number;
+    mergeArgs?: { range: number[] };
 }
 /** @hidden */
 export interface CFArgs {
@@ -1165,6 +1168,56 @@ export interface SerializationOptions {
      * Specifies whether to exclude notes when loading or saving JSON data.
      */
     ignoreNote?: boolean;
+}
+
+/**
+ * Provides options to control how an Excel file is parsed and loaded into the Spreadsheet during open operations.
+ * These settings help improve performance and customize the import behavior.
+ */
+export interface WorkbookParseOptions {
+    /**
+     * Indicates whether to ignore cell styles (fonts, colors, borders, etc.) during file open.
+     * Improves performance by skipping style parsing.
+     */
+    ignoreStyle?: boolean;
+
+    /**
+     * Indicates whether to ignore number and date/time formats.
+     * If true, raw values are loaded without applying display formatting.
+     */
+    ignoreFormat?: boolean;
+}
+
+/** @hidden */
+export interface ExtendedChartModel extends ChartModel {
+    enableCanvas?: boolean;
+}
+
+/** @hidden */
+interface MajorTickLinesModel {
+    /**
+     * Specifies the width of the major tick lines, in pixels.
+     *
+     * @default 1
+     */
+    width?: number;
+}
+
+/** @hidden */
+interface LabelStyleModel {
+    /**
+     * Specifies the font size of the axis labels.
+     *
+     * @default '16px'
+     */
+    size?: string;
+}
+
+
+/** @hidden */
+export interface ExtendedAxisModel extends AxisModel {
+    majorTickLines?: MajorTickLinesModel;
+    labelStyle?: LabelStyleModel;
 }
 
 /** @hidden */

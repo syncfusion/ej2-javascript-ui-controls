@@ -167,6 +167,7 @@ export class Edit implements IAction {
      */
     public startEdit(tr?: HTMLTableRowElement): void {
         const gObj: IGrid = this.parent;
+        const isTreeGrid: string = 'isTreeGrid';
         if (!gObj.editSettings.allowEditing || (gObj.isEdit && (!gObj.editSettings.showAddNewRow ||
             (gObj.editSettings.showAddNewRow && !isNullOrUndefined(gObj.element.querySelector('.' + literals.editedRow)))))
             || gObj.editSettings.mode === 'Batch') {
@@ -180,7 +181,13 @@ export class Edit implements IAction {
                 return;
             }
         } else if (!tr) {
-            tr = gObj.getSelectedRows()[0] as HTMLTableRowElement;
+            if (this.parent[`${isTreeGrid}`] && this.parent.allowPaging && gObj.selectionModule.selectedRowIndexes.length) {
+                const selectedIndex: any = gObj.selectionModule.selectedRowIndexes[0];
+                tr = gObj.getRowByIndex(selectedIndex) as HTMLTableRowElement;
+            }
+            else {
+                tr = gObj.getSelectedRows()[0] as HTMLTableRowElement;
+            }
         }
         if (this.parent.enableVirtualization && this.parent.editSettings.mode === 'Normal') {
             const idx: number = parseInt(tr.getAttribute('aria-rowindex'), 10) - 1;

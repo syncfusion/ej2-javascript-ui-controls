@@ -2,8 +2,9 @@
  * enableRtl spec
  */
 import { detach, } from '@syncfusion/ej2-base';
-import { RichTextEditor, IRenderer, QuickToolbar } from './../../../../src/index';
+import { RichTextEditor, IQuickToolbar, QuickToolbar } from './../../../../src/index';
 import { renderRTE, destroy, dispatchEvent, setCursorPoint } from './../../render.spec';
+import { BASIC_MOUSE_EVENT_INIT } from '../../../constant.spec';
 
 function getQTBarModule(rteObj: RichTextEditor): QuickToolbar {
     return rteObj.quickToolbarModule;
@@ -91,20 +92,20 @@ describe('RTE BASIC PROPERTIES - enableRtl - ', () => {
 
             it(' Test the e-rtl class to font color of colorpicker component ', (done) => {
                 let item: HTMLElement = document.querySelector('#' + controlId + '_quick_FontColor');
-                expect(item.classList.contains('e-rtl')).toBe(true);
-                item.click();
-                let dropDown: HTMLElement = document.getElementById(controlId + "_quick_FontColor-popup");
-                expect(dropDown.querySelector('.e-rte-fontcolor-colorpicker').classList.contains('e-rtl')).toBe(true);
+                expect(item.nextElementSibling.classList.contains('e-rtl')).toBe(true);
+                (item.nextElementSibling.querySelector('.e-dropdown-btn') as HTMLElement).click();
+                let dropDown: HTMLElement = document.querySelector('.e-colorpicker-popup');
+                expect(dropDown.classList.contains('e-rtl')).toBe(true);
                 item.click();
                 done();
             });
 
             it(' Test the e-rtl class to background color of colorpicker component ', (done) => {
                 let item: HTMLElement = document.querySelector('#' + controlId + '_quick_BackgroundColor');
-                expect(item.classList.contains('e-rtl')).toBe(true);
-                item.click();
-                let dropDown: HTMLElement = document.getElementById(controlId + "_quick_BackgroundColor-popup");
-                expect(dropDown.querySelector('.e-rte-backgroundcolor-colorpicker').classList.contains('e-rtl')).toBe(true);
+                expect(item.nextElementSibling.classList.contains('e-rtl')).toBe(true);
+                (item.nextElementSibling.querySelector('.e-dropdown-btn') as HTMLElement).click();
+                let dropDown: HTMLElement = document.querySelector('.e-colorpicker-popup');
+                expect(dropDown.classList.contains('e-rtl')).toBe(true);
                 item.click();
                 done();
             });
@@ -202,13 +203,13 @@ describe('RTE BASIC PROPERTIES - enableRtl - ', () => {
             });
 
             it(' Test the e-rtl class to font color of colorpicker component ', () => {
-                let dropDown: HTMLElement = document.getElementById(controlId + "_toolbar_FontColor-popup");
-                expect(dropDown.querySelector('.e-rte-fontcolor-colorpicker').classList.contains('e-rtl')).toBe(true);
+                let dropDown: HTMLElement = document.querySelector('.e-colorpicker-popup');
+                expect(dropDown.classList.contains('e-rtl')).toBe(true);
             });
 
             it(' Test the e-rtl class to background color of colorpicker component ', () => {
-                let dropDown: HTMLElement = document.getElementById(controlId + "_toolbar_BackgroundColor-popup");
-                expect(dropDown.querySelector('.e-rte-backgroundcolor-colorpicker').classList.contains('e-rtl')).toBe(true);
+                let dropDown: HTMLElement = document.querySelector('.e-colorpicker-popup');
+                expect(dropDown.classList.contains('e-rtl')).toBe(true);
             });
 
             it(' Test the e-rtl class to formats of dropdown component ', () => {
@@ -319,10 +320,10 @@ describe('RTE BASIC PROPERTIES - enableRtl - ', () => {
                 setTimeout(() => {
                     expect(document.querySelector(".e-rte-quick-toolbar").classList.contains('e-rtl')).toBe(true);
                     let item: HTMLElement = document.querySelector('#' + controlId + '_quick_FontColor');
-                    expect(item.classList.contains('e-rtl')).toBe(true);
-                    item.click();
-                    let dropDown: HTMLElement = document.getElementById(controlId + "_quick_FontColor-popup");
-                    expect(dropDown.querySelector('.e-rte-fontcolor-colorpicker').classList.contains('e-rtl')).toBe(true);
+                    expect(item.nextElementSibling.classList.contains('e-rtl')).toBe(true);
+                    (item.nextElementSibling.querySelector('.e-dropdown-btn') as HTMLElement).click();
+                    let dropDown: HTMLElement = document.querySelector('.e-colorpicker-popup');
+                    expect(dropDown.classList.contains('e-rtl')).toBe(true);
                     item.click();
                     done();
                 }, 500);
@@ -335,10 +336,10 @@ describe('RTE BASIC PROPERTIES - enableRtl - ', () => {
                 setTimeout(() => {
                     expect(document.querySelector(".e-rte-quick-toolbar").classList.contains('e-rtl')).toBe(true);
                     let item: HTMLElement = document.querySelector('#' + controlId + '_quick_BackgroundColor');
-                    expect(item.classList.contains('e-rtl')).toBe(true);
-                    item.click();
-                    let dropDown: HTMLElement = document.getElementById(controlId + "_quick_BackgroundColor-popup");
-                    expect(dropDown.querySelector('.e-rte-backgroundcolor-colorpicker').classList.contains('e-rtl')).toBe(true);
+                    expect(item.nextElementSibling.classList.contains('e-rtl')).toBe(true);
+                    (item.nextElementSibling.querySelector('.e-dropdown-btn') as HTMLElement).click();
+                    let dropDown: HTMLElement = document.querySelector('.e-colorpicker-popup');
+                    expect(dropDown.classList.contains('e-rtl')).toBe(true);
                     done();
                 }, 500);
             });
@@ -411,28 +412,23 @@ describe('RTE BASIC PROPERTIES - enableRtl - ', () => {
     });
     describe(' Quick toolbar item with RTL testing', () => {
         let rteObj: RichTextEditor;
-        let trg: HTMLElement;
-        let QTBarModule: IRenderer;
-        beforeAll((done: Function) => {
+        beforeAll(() => {
             rteObj = renderRTE({
                 value: `<p><img id="imageTarget" alt="Logo" src="https://ej2.syncfusion.com/demos/src/rich-text-editor/images/RTEImage-Feather.png" style="width: 300px; height: 100px;"></p>`
             });
-            trg = <HTMLElement>rteObj.element.querySelectorAll(".e-content")[0];
-            let clickEvent: MouseEvent = document.createEvent("MouseEvents");
-            clickEvent.initEvent("mousedown", true, true);
-            trg.dispatchEvent(clickEvent);
-            QTBarModule = getQTBarModule(rteObj);
-            done();
         });
 
-        afterAll((done: Function) => {
+        afterAll(() => {
             destroy(rteObj);
-            done();
         });
 
         it(' Test the e-rtl class to image quick toolbar item ', (done) => {
-            let imgTrg: Element = document.querySelector('#imageTarget');
-            QTBarModule.imageQTBar.showPopup(200, 1, imgTrg);
+            const INIT_MOUSEDOWN_EVENT: MouseEvent = new MouseEvent('mousedown', BASIC_MOUSE_EVENT_INIT);
+            const MOUSEUP_EVENT: MouseEvent = new MouseEvent('mouseup', BASIC_MOUSE_EVENT_INIT);
+            rteObj.inputElement.dispatchEvent(INIT_MOUSEDOWN_EVENT);
+            const target: HTMLElement = rteObj.inputElement.querySelector('#imageTarget');
+            setCursorPoint(target, 0);
+            target.dispatchEvent(MOUSEUP_EVENT);
             setTimeout(() => {
                 rteObj.enableRtl = true;
                 rteObj.dataBind();

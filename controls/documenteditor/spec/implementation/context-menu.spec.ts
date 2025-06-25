@@ -44,7 +44,7 @@ describe('Context Menu Testing - 1', () => {
         imageResizer = undefined;
         document.body.removeChild(document.getElementById('container'));
         setTimeout(() => {
-            document.body.innerHTML = '';
+            
             done();
         }, 1000);
     });
@@ -118,7 +118,7 @@ describe('Context Menu Testing - 2', () => {
         paraDialog = undefined;
         document.body.removeChild(document.getElementById('container'));
         setTimeout(() => {
-            document.body.innerHTML = '';
+            
             done();
         }, 1000);
     });
@@ -214,7 +214,7 @@ describe('Context Menu Testing - 3 ', () => {
         menu = undefined;
         document.body.removeChild(document.getElementById('container'));
         setTimeout(() => {
-            document.body.innerHTML = '';
+            
             done();
         }, 1000);
     });
@@ -283,7 +283,7 @@ describe('handle Context menu item validation-1 for editing', () => {
         menu = undefined;
         document.body.removeChild(document.getElementById('container'));
         setTimeout(() => {
-            document.body.innerHTML = '';
+            
             done();
         }, 1000);
     });
@@ -370,7 +370,7 @@ describe('handle Context menu item validation-2 for editing', () => {
         menu = undefined;
         document.body.removeChild(document.getElementById('container'));
         setTimeout(() => {
-            document.body.innerHTML = '';
+            
             done();
         }, 1000);
     });
@@ -418,7 +418,7 @@ describe('Apply table auto fit types', () => {
         editor = undefined;
         document.body.removeChild(document.getElementById('container'));
         setTimeout(() => {
-            document.body.innerHTML = '';
+            
             done();
         }, 1000);
     });
@@ -463,7 +463,7 @@ describe('Context Menu element show validation', () => {
         editor = undefined;
         document.body.removeChild(document.getElementById('container'));
         setTimeout(() => {
-            document.body.innerHTML = '';
+            
             done();
         }, 1000);
     });
@@ -499,7 +499,7 @@ describe('Context menu notes options', () => {
         menu = undefined;
         document.body.removeChild(document.getElementById('container'));
         setTimeout(() => {
-            document.body.innerHTML = '';
+            
             done();
         }, 1000);
     });
@@ -530,7 +530,7 @@ describe('Rtl context menu validation', () => {
         editor = undefined;
         document.body.removeChild(document.getElementById('container'));
         setTimeout(() => {
-            document.body.innerHTML = '';
+            
             done();
         }, 1000);
     });
@@ -564,7 +564,7 @@ describe('Adding custom context menu', () => {
         menu = undefined;
         document.body.removeChild(document.getElementById('container'));
         setTimeout(() => {
-            document.body.innerHTML = '';
+            
             done();
         }, 1000);
     });

@@ -8,7 +8,7 @@
       font-size: $format-label-bigger-font-size;
     }
 
-    .e-format-font-color-picker {
+    .e-colorpicker-wrapper.e-format-font-color-picker {
       margin-right: 20px;
       margin-left: 0;
     }
@@ -16,6 +16,12 @@
     .e-split-preview {
       @if ($skin-name =='tailwind3') {
         width: 120%;
+      }
+
+      @if ($skin-name =='highcontrast') or ($skin-name =='highcontrast-light') {
+        /* stylelint-disable */
+        left: -6px !important;
+        /* stylelint-enable */
       }
     }
 
@@ -47,7 +53,7 @@
     }
 
     &.e-rtl {
-      .e-format-font-color-picker {
+      .e-colorpicker-wrapper.e-format-font-color-picker {
         margin-left: 20px;
         margin-right: 0;
       }

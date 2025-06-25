@@ -24,6 +24,7 @@ export type AnnotationToolbarItem =
     'HighlightTool' |
     'UnderlineTool' |
     'StrikethroughTool' |
+    'SquigglyTool' |
     'ShapeTool' |
     'CalibrateTool' |
     'ColorEditTool' |
@@ -71,7 +72,7 @@ export type SignatureItem = 'Signature' | 'Initial';
 /**
  * Enum AnnotationType for specifying Annotations
  */
-export type AnnotationType = 'None' | 'Highlight' | 'Underline' | 'Strikethrough' | 'Line' | 'Arrow' | 'Rectangle' | 'Circle' | 'Polygon' | 'Distance' | 'Perimeter' | 'Area' | 'Radius' | 'Volume' | 'FreeText' | 'HandWrittenSignature' | 'Initial' | 'Ink' | 'Stamp' | 'Image' | 'StickyNotes';
+export type AnnotationType = 'None' | 'Highlight' | 'Underline' | 'Strikethrough' | 'Squiggly' | 'Line' | 'Arrow' | 'Rectangle' | 'Circle' | 'Polygon' | 'Distance' | 'Perimeter' | 'Area' | 'Radius' | 'Volume' | 'FreeText' | 'HandWrittenSignature' | 'Initial' | 'Ink' | 'Stamp' | 'Image' | 'StickyNotes';
 
 /**
  * Enum LineHeadStyle for line and arrow annotation
@@ -129,6 +130,7 @@ export enum ContextMenuItem {
     Strikethrough = 64,
     Properties = 128,
     Comment = 256,
+    Squiggly = 512,
 }
 
 /**

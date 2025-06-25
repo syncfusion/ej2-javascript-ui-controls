@@ -12,6 +12,15 @@ import * as util from './common/util.spec';
 
 Kanban.Inject();
 
+// eslint-disable-next-line @typescript-eslint/tslint/config
+const localKanbanData = [
+    { Id: 'Task 1', Status: 'Open', Summary: '<script>alert("Hacked!");</script>', Assignee: 'John' },
+    { Id: 'Task 2', Status: 'InProgress', Summary: 'Develop login page', Assignee: 'Alice' },
+    { Id: 'Task 3', Status: 'Review', Summary: 'Code review for task 2', Assignee: 'Bob' },
+    { Id: 'Task 4', Status: 'Close', Summary: 'Finalize documentation', Assignee: 'John' },
+    { Id: 'Task 5', Status: 'Open', Summary: '<script>alert("Hacked!");</script>', Assignee: 'Alice' }
+];
+
 describe('Kanban base module', () => {
     beforeAll(() => {
         const isDef: (o: any) => boolean = (o: any) => o !== undefined && o !== null;
@@ -2391,7 +2400,22 @@ describe('Kanban base module', () => {
             expect(kanbanObj.element.querySelector('.e-card').getAttribute('aria-roledescription')).toEqual('Card');
         });
     });
-    
+
+    describe('960619- Need to resolve HTML sanitize related issues in kanban in ej2', () => {
+        let kanbanObj: Kanban;
+        beforeAll((done: DoneFn) => {
+            kanbanObj = util.createKanban({ dataSource: localKanbanData , swimlaneSettings: {
+                keyField: 'Assignee'
+            }, enableHtmlSanitizer: true }, localKanbanData, done);
+        });
+        afterAll(() => {
+            util.destroy(kanbanObj);
+        });
+        it('Should have proper role attribute for the kanban element', () => {
+            expect((kanbanObj.element.querySelector('.e-content-table').children[2].children[1].children[0].querySelector('.e-card-content').textContent === '')).toBe(true);
+        });
+    });
+
     it('memory leak', () => {
         profile.sample();
         const average: number = inMB(profile.averageChange);

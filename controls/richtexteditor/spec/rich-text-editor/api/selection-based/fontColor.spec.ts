@@ -64,7 +64,7 @@ describe('RTE SELECTION BASED - fontColor - ', () => {
             let pEle: HTMLElement = rteObj.element.querySelector('#rte');
             rteObj.formatter.editorManager.nodeSelection.setSelectionText(document, rteObj.element.querySelector('#rte').childNodes[0], rteObj.element.querySelector('#rte').childNodes[0], 0, 3);
             let item: HTMLElement = rteObj.element.querySelector('#' + controlId + '_toolbar_FontColor');
-            item = (item.querySelector('.e-rte-color-content') as HTMLElement);
+            item = (item.nextElementSibling.querySelector('.e-split-btn') as HTMLElement);
             dispatchEvent(item, 'mousedown');
             item.click();
             dispatchEvent(item, 'mousedown');
@@ -78,7 +78,7 @@ describe('RTE SELECTION BASED - fontColor - ', () => {
         describe(' change the fontColor.colorCode - ', () => {
             let rteObj: RichTextEditor;
             let controlId: string;
-            beforeAll((done: Function) => {
+            beforeEach((done: Function) => {
                 rteObj = renderRTE({
                     value: '<p id="rte">RTE</p>',
                     toolbarSettings: {
@@ -94,14 +94,14 @@ describe('RTE SELECTION BASED - fontColor - ', () => {
                 controlId = rteObj.element.id;
                 done();
             });
-            afterAll((done: Function) => {
+            afterEach((done: Function) => {
                 destroy(rteObj);
                 done();
             })
             it(' Test the FontColor change dynamically ', (done) => {
                 (document.querySelector('.e-control.e-colorpicker') as any).ej2_instances[0].inline = true;
                 (document.querySelector('.e-control.e-colorpicker') as any).ej2_instances[0].dataBind();
-                let popup: HTMLElement = document.querySelector('#' + controlId + '_toolbar_FontColor-popup');
+                let popup: HTMLElement = document.querySelector('.e-color-palette');
                 let palette = popup.querySelectorAll(".e-rte-square-palette");
                 expect(palette.length === 4).toBe(true);
                 done();
@@ -114,7 +114,7 @@ describe('RTE SELECTION BASED - fontColor - ', () => {
                 let pEle: HTMLElement = rteObj.element.querySelector('#rte');
                 rteObj.formatter.editorManager.nodeSelection.setSelectionText(document, pEle.childNodes[0], pEle.childNodes[0], 0, 3);
                 let item: HTMLElement = rteObj.element.querySelector('#' + controlId + '_toolbar_FontColor');
-                item = (item.querySelector('.e-rte-color-content') as HTMLElement);
+                item = (item.nextElementSibling.querySelector('.e-split-btn') as HTMLElement);
                 dispatchEvent(item, 'mousedown');
                 item.click();
                 let span: HTMLSpanElement = pEle.querySelector('span');
@@ -148,7 +148,7 @@ describe('RTE SELECTION BASED - fontColor - ', () => {
                 rteObj.dataBind();
                 (document.querySelector('.e-control.e-colorpicker') as any).ej2_instances[0].inline = true;
                 (document.querySelector('.e-control.e-colorpicker') as any).ej2_instances[0].dataBind();
-                let popup: HTMLElement = document.querySelector('#' + controlId + '_toolbar_FontColor-popup');
+                let popup: HTMLElement = document.querySelector('.e-color-palette');
                 let switchEle: HTMLElement = popup.querySelector(".e-mode-switch-btn");
                 expect(!isNullOrUndefined(switchEle)).toBe(true);
             });
@@ -179,8 +179,8 @@ describe('RTE SELECTION BASED - fontColor - ', () => {
                 rteObj.dataBind();
                 (document.querySelector('.e-control.e-colorpicker') as any).ej2_instances[0].inline = true;
                 (document.querySelector('.e-control.e-colorpicker') as any).ej2_instances[0].dataBind();
-                let popup: HTMLElement = document.querySelector('#' + controlId + '_toolbar_FontColor-popup');
-                let container: HTMLElement = popup.querySelector(".e-hsv-container");
+                let popup: HTMLElement = document.querySelector('#' + controlId + '_toolbar_FontColor');
+                let container: HTMLElement = popup.nextElementSibling.querySelector(".e-hsv-container");
                 expect(!isNullOrUndefined(container)).toBe(true);
             });
         });
@@ -208,14 +208,14 @@ describe('RTE SELECTION BASED - fontColor - ', () => {
                 };
                 rteObj.dataBind();
                 let item: HTMLElement = rteObj.element.querySelector('#' + controlId + '_toolbar_FontColor');
-                item = (item.querySelector('.e-icon-right') as HTMLElement);
+                item = (item.nextElementSibling.querySelector('.e-dropdown-btn') as HTMLElement);
                 dispatchEvent(item, 'mousedown');
                 item.click();
                 dispatchEvent(item, 'mousedown');
-                let popup: HTMLElement = document.querySelector('#' + controlId + '_toolbar_FontColor-popup');
+                let popup: HTMLElement = document.querySelector('.e-color-palette');
                 let columns: any = popup.querySelector(".e-palette .e-row");
                 expect(columns.querySelectorAll('.e-rte-square-palette').length === 12).toBe(true);
-                expect((popup.querySelector('.e-container.e-color-palette') as HTMLElement).style.width !== '0px').toBe(true)
+                expect((popup.querySelector('.e-custom-palette') as HTMLElement).style.width !== '0px').toBe(true)
             });
         });
         describe(' change the fontColor.default - ', () => {
@@ -242,8 +242,8 @@ describe('RTE SELECTION BASED - fontColor - ', () => {
 
             it(" Test the default value", () => {
                 let item: HTMLElement = document.querySelector('#' + controlId + '_toolbar_FontColor');
-                item = (item.querySelector('.e-rte-color-content .e-rte-font-color') as HTMLElement);
-                expect(item.style.borderBottomColor === 'rgb(191, 143, 0)').toBe(true);
+                item = (item.nextElementSibling.querySelector('.e-split-btn .e-split-preview') as HTMLElement);
+                expect(item.style.backgroundColor === 'rgb(191, 143, 0)').toBe(true);
             });
         });
     });
@@ -275,7 +275,7 @@ describe('RTE SELECTION BASED - fontColor - ', () => {
                 let pEle: HTMLElement = rteObj.element.querySelector('#rte');
                 rteObj.formatter.editorManager.nodeSelection.setSelectionText(document, pEle.childNodes[0], pEle.childNodes[0], 0, 3);
                 let item: HTMLElement = rteObj.element.querySelector('#' + controlId + '_toolbar_FontColor');
-                item = (item.querySelector('.e-rte-color-content') as HTMLElement);
+                item = (item.nextElementSibling.querySelector('.e-split-btn') as HTMLElement);
                 dispatchEvent(item, 'mousedown');
                 item.click();
                 dispatchEvent(document.body, 'mousedown');
@@ -317,7 +317,7 @@ describe('RTE SELECTION BASED - fontColor - ', () => {
                 let pEle: HTMLElement = rteObj.element.querySelector('#rte');
                 rteObj.formatter.editorManager.nodeSelection.setSelectionText(document, pEle.childNodes[0], pEle.childNodes[0], 0, 3);
                 let item: HTMLElement = rteObj.element.querySelector('#' + controlId + '_toolbar_FontColor');
-                item = (item.querySelector('.e-rte-color-content') as HTMLElement);
+                item = (item.nextElementSibling.querySelector('.e-split-btn') as HTMLElement);
                 dispatchEvent(item, 'mousedown');
                 item.click();
                 rteObj.showSourceCode();
@@ -386,10 +386,10 @@ describe('RTE SELECTION BASED - fontColor - ', () => {
                 let pEle: HTMLElement = rteObj.element.querySelector('#rte');
                 rteObj.formatter.editorManager.nodeSelection.setSelectionText(document, pEle.childNodes[0], pEle.childNodes[0], 0, 3);
                 let item: HTMLElement = rteObj.element.querySelector('#' + controlId + '_toolbar_FontColor');
-                item = (item.querySelector('.e-rte-color-content') as HTMLElement);
+                item = (item.nextElementSibling.querySelector('.e-dropdown-btn') as HTMLElement);
                 dispatchEvent(item, 'mousedown');
                 item.click();
-                let popupEle: HTMLElement = document.getElementById(controlId + '_toolbar_FontColor-popup')
+                let popupEle: HTMLElement = document.querySelector('.e-color-palette')
                 expect(!isNullOrUndefined(popupEle)).toBe(true);
                 done();
             });
@@ -439,7 +439,7 @@ describe('RTE SELECTION BASED - fontColor - ', () => {
                 let pEle: HTMLElement = rteObj.element.querySelector('#rte');
                 rteObj.formatter.editorManager.nodeSelection.setSelectionText(document, pEle.childNodes[0], pEle.childNodes[0], 0, 3);
                 let item: HTMLElement = rteObj.element.querySelector('#' + controlId + '_toolbar_FontColor');
-                item = (item.querySelector('.e-rte-color-content') as HTMLElement);
+                item = (item.nextElementSibling.querySelector('.e-split-btn') as HTMLElement);
                 dispatchEvent(item, 'mousedown');
                 item.click();
                 document.body.click();
@@ -481,7 +481,7 @@ describe('RTE SELECTION BASED - fontColor - ', () => {
             let pEle: HTMLElement = rteObj.element.querySelector('td');
             rteObj.formatter.editorManager.nodeSelection.setSelectionText(document, pEle.childNodes[0], pEle.childNodes[0], 0, 3);
             let item: HTMLElement = rteObj.element.querySelector('#' + controlId + '_toolbar_FontColor');
-            item = (item.querySelector('.e-rte-color-content') as HTMLElement);
+            item = (item.nextElementSibling.querySelector('.e-split-btn') as HTMLElement);
             dispatchEvent(item, 'mousedown');
             item.click();
             dispatchEvent(item, 'mousedown');
@@ -525,27 +525,105 @@ describe('RTE SELECTION BASED - fontColor - ', () => {
         })
         it(' Test the FontColor ', (done) => {
             let item: HTMLElement = rteObj.element.querySelector('#' + controlId + '_toolbar_FontColor');
-            (item.querySelector('.e-btn-icon.e-caret') as HTMLElement).click();
-            let fontColorPopup: Element = document.querySelector('#' + controlId + '_toolbar_FontColor-popup');
-            expect(fontColorPopup.classList.contains('e-popup-open')).toBe(true);
-            expect(fontColorPopup.querySelector('.e-custom-palette .e-row > .e-selected').getAttribute('aria-label')).toBe('');
-            expect(fontColorPopup.querySelector('.e-custom-palette .e-row > .e-selected').classList.contains('e-nocolor-item')).toBe(true);
+            (item.nextElementSibling.querySelector('.e-dropdown-btn') as HTMLElement).click();
+            let fontColorPopup: Element = document.querySelector('.e-color-palette');
+            expect(fontColorPopup.querySelector('.e-custom-palette .e-row').querySelector('.e-nocolor-item')).not.toBe(null);
             (fontColorPopup.querySelector('.e-mode-switch-btn') as HTMLElement).click();
             expect(fontColorPopup.querySelectorAll('.e-custom-palette').length > 0).toBe(false);
-            expect(fontColorPopup.querySelectorAll('.e-color-picker').length > 0).toBe(true);
+            expect(document.querySelectorAll('.e-color-picker').length > 0).toBe(true);
             done();
         });
         it(' Test the BackgroundColor ', (done) => {
             let item: HTMLElement = rteObj.element.querySelector('#' + controlId + '_toolbar_BackgroundColor');
-            (item.querySelector('.e-btn-icon.e-caret') as HTMLElement).click();
-            let bgColorPopup: Element = document.querySelector('#' + controlId +'_toolbar_BackgroundColor-popup');
-            expect(bgColorPopup.classList.contains('e-popup-open')).toBe(true);
-            expect(bgColorPopup.querySelector('.e-custom-palette .e-row > .e-selected').getAttribute('aria-label')).toBe('');
-            expect(bgColorPopup.querySelector('.e-custom-palette .e-row > .e-selected').classList.contains('e-nocolor-item')).toBe(true);
+            (item.nextElementSibling.querySelector('.e-dropdown-btn') as HTMLElement).click();
+            let bgColorPopup: Element = document.querySelector('.e-color-palette');
+            expect(bgColorPopup.querySelector('.e-custom-palette .e-row').querySelector('.e-nocolor-item')).not.toBe(null);
             (bgColorPopup.querySelector('.e-mode-switch-btn') as HTMLElement).click();
             expect(bgColorPopup.querySelectorAll('.e-custom-palette').length > 0).toBe(false);
-            expect(bgColorPopup.querySelectorAll('.e-color-picker').length > 0).toBe(true);
+            expect(document.querySelectorAll('.e-color-picker').length > 0).toBe(true);
             done();
+        });
+    });
+
+    describe('960423 - Provide showRecentColor API Support for FontColor and BackgroundColor in Rich Text Editor - EJ2 & Blazor', () =>{
+        let rteObj: RichTextEditor;
+        let controlId: string;
+        beforeAll((done: Function) => {
+            rteObj = renderRTE({
+                value: '<p id="rte">RTE</p>',
+                toolbarSettings: {
+                    items: ['FontColor']
+                },
+            });
+            controlId = rteObj.element.id;
+            done();
+        });
+        afterAll((done: Function) => {
+            destroy(rteObj);
+            done();
+        });
+
+        it(" Test the dropdwon that recent color section is visibleor not", () => {
+            expect(rteObj.fontColor.showRecentColors === true).toBe(true);
+            rteObj.fontColor = {
+                columns: 12
+            };
+            rteObj.dataBind();
+            let item: HTMLElement = rteObj.element.querySelector('#' + controlId + '_toolbar_FontColor');
+            item = (item.nextElementSibling.querySelector('.e-dropdown-btn') as HTMLElement);
+            dispatchEvent(item, 'mousedown');
+            item.click();
+            dispatchEvent(item, 'mousedown');
+            let fontColorPopup: Element = document.querySelector('.e-color-palette');
+            expect(fontColorPopup.querySelector('.e-custom-palette .e-row').querySelector('.e-nocolor-item')).not.toBe(null);
+            (fontColorPopup.querySelector('.e-custom-palette .e-row').querySelector('.e-nocolor-item') as HTMLElement ).click();
+            dispatchEvent(item, 'mousedown');
+            item.click();
+            dispatchEvent(item, 'mousedown');
+            let showRecentColorSection: any = fontColorPopup.querySelector(".e-clr-pal-rec-wpr");
+            expect(showRecentColorSection != null).toBe(true);
+        });
+    });
+    describe('960423 - Provide showRecentColor API Support for FontColor and BackgroundColor in Rich Text Editor - EJ2 & Blazor', () =>{
+        let rteObj: RichTextEditor;
+        let controlId: string;
+        beforeAll((done: Function) => {
+            rteObj = renderRTE({
+                value: '<p id="rte">RTE</p>',
+                toolbarSettings: {
+                    items: ['FontColor']
+                },
+                fontColor:{
+                    showRecentColors: false
+                }
+            });
+            controlId = rteObj.element.id;
+            done();
+        });
+        afterAll((done: Function) => {
+            destroy(rteObj);
+            done();
+        });
+
+        it('Check the showrecentcolors value dynamically ', () => {
+            expect(rteObj.fontColor.showRecentColors === false).toBe(true);
+            rteObj.fontColor = {
+                columns: 12
+            };
+            rteObj.dataBind();
+            let item: HTMLElement = rteObj.element.querySelector('#' + controlId + '_toolbar_FontColor');
+            item = (item.nextElementSibling.querySelector('.e-dropdown-btn') as HTMLElement);
+            dispatchEvent(item, 'mousedown');
+            item.click();
+            dispatchEvent(item, 'mousedown');
+            let fontColorPopup: Element = document.querySelector('.e-color-palette');
+            expect(fontColorPopup.querySelector('.e-custom-palette .e-row').querySelector('.e-nocolor-item')).not.toBe(null);
+            (fontColorPopup.querySelector('.e-custom-palette .e-row').querySelector('.e-nocolor-item') as HTMLElement ).click();
+            dispatchEvent(item, 'mousedown');
+            item.click();
+            dispatchEvent(item, 'mousedown');
+            let showRecentColorSection: any = fontColorPopup.querySelector(".e-clr-pal-rec-wpr");
+            expect(showRecentColorSection === null).toBe(true);
         });
     });
 });

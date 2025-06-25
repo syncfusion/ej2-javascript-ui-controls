@@ -2706,3 +2706,199 @@ describe('Coverage for validatetype method', () => {
         destroyGantt(ganttObj);
     });
 });
+describe(' Hierarchical Task Movement in Gantt Chart with FS Dependencies', () => {
+    let ganttObj: Gantt;
+    const data = [
+        {
+            TaskID: 5,
+            TaskName: 'new task 5',
+            StartDate: new Date('04/02/2019'),
+            EndDate: new Date('04/21/2019'),
+            subtasks: [
+                { TaskID: 4, TaskName: 'new task 4', StartDate: new Date('04/02/2019'), Duration: 1, Progress: 30 },
+            ]
+        },
+        {
+            TaskID: 3,
+            TaskName: 'new task 3',
+            StartDate: new Date('04/02/2019'),
+            EndDate: new Date('04/21/2019'),
+            subtasks: [
+                { TaskID: 2, TaskName: 'new task 2', StartDate: new Date('04/02/2019'), Duration: 1, Progress: 30,
+                    subtasks: [
+                        { TaskID: 1, TaskName: 'new task 1', StartDate: new Date('04/02/2019'), Duration: 1, Progress: 30 },
+                    ]
+                },
+            ]
+        },
+    ];
+    beforeAll((done: Function) => {
+        ganttObj = createGantt({
+            dataSource: data,
+            allowReordering: true,
+            enableContextMenu: true,
+            taskFields: {
+                id: 'TaskID',
+                name: 'TaskName',
+                startDate: 'StartDate',
+                duration: 'Duration',
+                progress: 'Progress',
+                dependency: 'Predecessor',
+                baselineStartDate: "BaselineStartDate",
+                baselineEndDate: "BaselineEndDate",
+                child: 'subtasks',
+                indicators: 'Indicators'
+            },
+            renderBaseline: true,
+            baselineColor: 'red',
+            editSettings: {
+                allowAdding: true,
+                allowEditing: true,
+                allowDeleting: true,
+                allowTaskbarEditing: true,
+                showDeleteConfirmDialog: true
+            },
+            columns: [
+                { field: 'TaskID', headerText: 'Task ID' },
+                { field: 'TaskName', headerText: 'Task Name', allowReordering: false },
+                { field: 'StartDate', headerText: 'Start Date', allowSorting: false },
+                { field: 'Duration', headerText: 'Duration', allowEditing: false },
+                { field: 'Progress', headerText: 'Progress', allowFiltering: false },
+                { field: 'CustomColumn', headerText: 'CustomColumn' }
+            ],
+            allowExcelExport: true,
+            allowPdfExport: true,
+            allowSelection: true,
+            allowRowDragAndDrop: true,
+            selectedRowIndex: 1,
+            allowFiltering: true,
+            gridLines: "Both",
+            showColumnMenu: true,
+            highlightWeekends: true,
+            timelineSettings: {
+                showTooltip: true,
+                topTier: {
+                    unit: 'Week',
+                    format: 'dd/MM/yyyy'
+                },
+                bottomTier: {
+                    unit: 'Day',
+                    count: 1
+                }
+            },
+            eventMarkers: [
+                {
+                    day: '04/10/2019',
+                    cssClass: 'e-custom-event-marker',
+                    label: 'Project approval and kick-off'
+                }
+            ],
+            holidays: [{
+                    from: "04/04/2019",
+                    to: "04/05/2019",
+                    label: " Public holidays",
+                    cssClass: "e-custom-holiday"
+                },
+                {
+                    from: "04/12/2019",
+                    to: "04/12/2019",
+                    label: " Public holiday",
+                    cssClass: "e-custom-holiday"
+                }],
+            allowResizing: true,
+            readOnly: false,
+            taskbarHeight: 20,
+            rowHeight: 40,
+            height: '550px',
+            allowUnscheduledTasks: true,
+            projectStartDate: new Date('03/25/2019'),
+            projectEndDate: new Date('05/30/2019'),
+        }, done);
+    });
+    it('Hierarchical Task Movement in Gantt Chart with FS Dependencies', () => {
+        ganttObj.addPredecessor(2, "5FS");
+        expect(ganttObj.getFormatedDate(ganttObj.currentViewData[4].ganttProperties.startDate, 'MM/dd/yyyy')).toBe('04/03/2019');
+    });
+    afterAll(() => {
+        destroyGantt(ganttObj);
+    });
+});
+describe('Manual parent connector line render', () => {
+    let ganttObj: Gantt;
+    const data = [
+        {
+            "TaskID": 1,
+            "TaskName": "Parent Task 1",
+            "StartDate": new Date("02/27/2024"),
+            "EndDate": new Date("03/03/2024"),
+            "Progress": "40",
+            "isManual": true,
+            "Children": [
+                { "TaskID": 2, "TaskName": "Child Task 1", "StartDate": new Date("02/27/2024"), "EndDate": new Date("03/03/2024"), "Progress": "40" }
+            ]
+        },
+        {
+            "TaskID": 5,
+            "TaskName": "Parent Task 2",
+            "StartDate": new Date("03/05/2024"),
+            "EndDate": new Date("03/09/2024"),
+            "Progress": "40",
+            "isManual": true,
+            "Predecessor": '1SS',
+            "Children": [
+                { "TaskID": 6, "TaskName": "Child Task 1", "StartDate": new Date("03/06/2024"), "EndDate": new Date("03/09/2024"), "Progress": "40" }
+            ]
+        }
+    ];
+    beforeAll((done: Function) => {
+        ganttObj = createGantt({
+            dataSource: data,
+            allowSorting: true,
+            enableContextMenu: true,
+            height: '450px',
+            allowSelection: true,
+            highlightWeekends: true,
+            taskFields: {
+                id: 'TaskID',
+                name: 'TaskName',
+                startDate: 'StartDate',
+                duration: 'Duration',
+                progress: 'Progress',
+                endDate: 'EndDate',
+                dependency: 'Predecessor',
+                child: 'Children',
+                manual: 'isManual',
+            },
+            taskMode: 'Custom',
+            toolbar: ['Add', 'Edit', 'Update', 'Delete', 'Cancel', 'ExpandAll', 'CollapseAll', 'Search'],
+            columns: [
+                { field: 'TaskID', visible: false },
+                { field: 'TaskName' },
+                { field: 'isManual' }
+            ],
+            collapseAllParentTasks: true,
+            validateManualTasksOnLinking: true,
+            treeColumnIndex: 1,
+            editSettings: {
+                allowEditing: true,
+                allowDeleting: true,
+                allowTaskbarEditing: true,
+                showDeleteConfirmDialog: true
+            },
+            labelSettings: {
+                leftLabel: 'TaskName'
+            },
+            splitterSettings: {
+                position: "35%"
+            },
+            projectStartDate: new Date("02/20/2024"),
+            projectEndDate: new Date('03/30/2024'),
+        }, done);
+    });
+    it('checking d value of connector line', () => {
+        expect(ganttObj.chartPane.querySelector('.e-connector-line').getAttribute('d')).toBe('M 232 8 L 221 8 L 221 43 L 386 43');
+    });
+    afterAll(() => {
+        destroyGantt(ganttObj);
+    });
+});

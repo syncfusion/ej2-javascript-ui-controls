@@ -8,6 +8,7 @@ import { ColorPicker, ColorPickerEventArgs } from '@syncfusion/ej2-inputs';
 import { Query } from '@syncfusion/ej2-data';
 import { DocumentEditorContainer } from '../document-editor-container';
 import { SanitizeHtmlHelper } from '@syncfusion/ej2-base';
+import { FontHelper } from '../helper/font-helper';
 /**
  * Text Properties
  *
@@ -130,7 +131,7 @@ export class Text {
         this.highlightColorInputElement = this.highlightColor.element.firstChild as HTMLElement;
         this.clearFormat = this.createButtonTemplate(element + '_clearFormat', 'e-de-ctnr-clearall e-icons', leftDiv2, 'e-de-prop-font-last-button', '40.5', 'Clear all formatting');
         const rightDiv2: HTMLElement = createElement('div', {
-            id: element + '_rightDiv2', className: divClassName.replace('e-btn-group',''), styles: 'display:inline-flex;'
+            id: element + '_rightDiv2', className: divClassName.replace('e-btn-group', ''), styles: 'display:inline-flex;'
         });
         if (isRtl) {
             classList(rightDiv2, ['e-rtl'], []);
@@ -140,18 +141,7 @@ export class Text {
         this.createChangecase(rightDiv2);
     }
     private createChangecase = (container: HTMLElement): void => {
-        const items: ItemModel[] = [
-            {
-                text: this.localObj.getConstant('SentenceCase'), id: 'sentencecase'
-            }, {
-                text: this.localObj.getConstant('UPPERCASE'), id: 'uppercase'
-            }, {
-                text: this.localObj.getConstant('Lowercase'), id: 'lowercase'
-            }, {
-                text: this.localObj.getConstant('CapitalizeEachWord'), id: 'capitalizeEachWord'
-            }, {
-                text: this.localObj.getConstant('ToggleCase'), id: 'togglecase'
-            }];
+        const items: ItemModel[] = FontHelper.getChangeCaseItems(this.localObj, container.id);
         this.changeCaseDropdown = new DropDownButton({
             items: items,
             iconCss: 'e-icons e-de-ctnr-change-case',
@@ -168,41 +158,7 @@ export class Text {
         container.appendChild(changeCaseContainer);
         this.changeCaseDropdown.appendTo(buttonElement);
     }
-    private changeCase = (args: MenuEventArgs): void => {
-        if (this.isRetrieving) {
-            return;
-        }
-        const text: string = args.item.id;
-        switch (text) {
-            case 'sentencecase':
-                if (!this.documentEditor.isReadOnly && this.documentEditor.editorModule) {
-                    this.documentEditor.editorModule.changeCase('SentenceCase');
-                }
-                break;
-            case 'uppercase':
-                if (!this.documentEditor.isReadOnly && this.documentEditor.editorModule) {
-                    this.documentEditor.editorModule.changeCase('Uppercase');
-                }
-                break;
-            case 'lowercase':
-                if (!this.documentEditor.isReadOnly && this.documentEditor.editorModule) {
-                    this.documentEditor.editorModule.changeCase('Lowercase');
-                }
-                break;
-            case 'capitalizeEachWord':
-                if (!this.documentEditor.isReadOnly && this.documentEditor.editorModule) {
-                    this.documentEditor.editorModule.changeCase('CapitalizeEachWord');
-                }
-                break;
-            case 'togglecase':
-                if (!this.documentEditor.isReadOnly && this.documentEditor.editorModule) {
-                    this.documentEditor.editorModule.changeCase('ToggleCase');
-                }
-                break;
-            default:
-                break;
-        }
-    }
+
     private createHighlightColorSplitButton(id: string, width: number, divElement: HTMLElement, toolTipText: string): SplitButton {
         const buttonElement: HTMLButtonElement = createElement('button', { id: id, attrs: { type: 'button' } }) as HTMLButtonElement;
         // buttonElement.style.width = width + 'px';
@@ -339,50 +295,11 @@ export class Text {
         this.highlightColorElement.querySelector('#gray25Div').classList.remove('e-color-selected');
         this.highlightColorElement.querySelector('#blackDiv').classList.remove('e-color-selected');
     }
-    private applyHighlightColor (color: string): void {
-        this.appliedHighlightColor = color;
-        const hgltColor: HighlightColor = this.getHighLightColor(color);
-        if (hgltColor === 'NoColor') {
-            this.documentEditor.selectionModule.characterFormat.highlightColor = null;
-        }
-        this.documentEditor.selectionModule.characterFormat.highlightColor = hgltColor as HighlightColor;
-        this.documentEditor.focusIn();
+    private applyHighlightColor(color: string): void {
+        this.appliedHighlightColor = FontHelper.applyHighlightColor(this.documentEditor, color);
     }
     private getHighLightColor(color: string): HighlightColor {
-        switch (color) {
-        case 'rgb(255, 255, 0)':
-            return 'Yellow';
-        case 'rgb(0, 255, 0)':
-            return 'BrightGreen';
-        case 'rgb(0, 255, 255)':
-            return 'Turquoise';
-        case 'rgb(255, 0, 255)':
-            return 'Pink';
-        case 'rgb(0, 0, 255)':
-            return 'Blue';
-        case 'rgb(255, 0, 0)':
-            return 'Red';
-        case 'rgb(0, 0, 128)':
-            return 'DarkBlue';
-        case 'rgb(0, 128, 128)':
-            return 'Teal';
-        case 'rgb(0, 128, 0)':
-            return 'Green';
-        case 'rgb(128, 0, 128)':
-            return 'Violet';
-        case 'rgb(128, 0, 0)':
-            return 'DarkRed';
-        case 'rgb(128, 128, 0)':
-            return 'DarkYellow';
-        case 'rgb(128, 128, 128)':
-            return 'Gray50';
-        case 'rgb(192, 192, 192)':
-            return 'Gray25';
-        case 'rgb(0, 0, 0)':
-            return 'Black';
-        default:
-            return 'NoColor';
-        }
+        return FontHelper.getHighlightColor(color);
     }
     private createDiv(id: string, parentDiv: HTMLElement, style?: string): HTMLElement {
         let div: HTMLElement;
@@ -429,16 +346,16 @@ export class Text {
                 break;
             default:
                 this.clearFormatBtn = btn;
-            }
+        }
         return button;
     }
     private createFontColorPicker(id: string, width: number, divElement: HTMLElement, toolTipText: string): HTMLInputElement {
-        const {columns , createPopupOnClick , cssClass , disabled , enablePersistence , inline , mode , modeSwitcher , noColor , presetColors , showButtons } = this.documentEditor.documentEditorSettings.colorPickerSettings;
+        const { columns, createPopupOnClick, cssClass, disabled, enablePersistence, inline, mode, modeSwitcher, noColor, presetColors, showButtons } = this.documentEditor.documentEditorSettings.colorPickerSettings;
         const inputElement: HTMLInputElement = createElement('input', { id: id, attrs: { 'type': 'color' } }) as HTMLInputElement;
         inputElement.style.width = width + 'px';
         divElement.appendChild(inputElement);
-        
-        this.fontColorInputElement = new ColorPicker({ value: '#000000', enableRtl: this.isRtl, locale: this.container.locale, enableOpacity: false , mode:mode , modeSwitcher:modeSwitcher , showButtons: showButtons , columns:columns , createPopupOnClick : createPopupOnClick , cssClass : cssClass , disabled : disabled , enablePersistence : enablePersistence , inline : inline , noColor : noColor , presetColors : presetColors}, inputElement);
+
+        this.fontColorInputElement = new ColorPicker({ value: '#000000', enableRtl: this.isRtl, locale: this.container.locale, enableOpacity: false, mode: mode, modeSwitcher: modeSwitcher, showButtons: showButtons, columns: columns, createPopupOnClick: createPopupOnClick, cssClass: cssClass, disabled: disabled, enablePersistence: enablePersistence, inline: inline, noColor: noColor, presetColors: presetColors }, inputElement);
         this.fontColorInputElement.element.parentElement.setAttribute('title', toolTipText);
         this.fontColorInputElement.element.parentElement.setAttribute('aria-label', toolTipText);
         this.documentEditor.documentHelper.fontColorInputElement = this.fontColorInputElement;
@@ -446,9 +363,8 @@ export class Text {
     }
 
     private createDropDownListForSize(fontSelectElement: HTMLElement): void {
-        const fontSize: string[] = ['8', '9', '10', '11', '12', '14', '16', '18', '20', '22', '24', '26', '28', '36', '48', '72', '96'];
         this.fontSize = new ComboBox({
-            dataSource: fontSize, popupHeight: '180px',
+            dataSource: FontHelper.getFontSizeItems(), popupHeight: '180px',
             popupWidth: '80px',
             cssClass: 'e-de-prop-dropdown',
             allowCustom: true,
@@ -554,97 +470,100 @@ export class Text {
         if (this.isRetrieving) {
             return;
         }
-        if (!this.documentEditor.isReadOnly && this.documentEditor.editorModule) {
-            this.documentEditor.editorModule.toggleBold();
-            this.documentEditor.focusIn();
-        }
+        FontHelper.applyFontFormatting(this.documentEditor, 'bold');
     }
+
+    // Replace italicAction method with:
     private italicAction(): void {
         if (this.isRetrieving) {
             return;
         }
-        if (!this.documentEditor.isReadOnly && this.documentEditor.editorModule) {
-            this.documentEditor.editorModule.toggleItalic();
-            this.documentEditor.focusIn();
-        }
+        FontHelper.applyFontFormatting(this.documentEditor, 'italic');
     }
+
+    // Replace underlineAction method with:
     private underlineAction(): void {
         if (this.isRetrieving) {
             return;
         }
-        if (!this.documentEditor.isReadOnly && this.documentEditor.editorModule) {
-            this.documentEditor.editorModule.toggleUnderline('Single');
-            this.documentEditor.focusIn();
-        }
+        FontHelper.applyFontFormatting(this.documentEditor, 'underline');
     }
+
+    // Replace strikethroughAction method with:
     private strikethroughAction(): void {
         if (this.isRetrieving) {
             return;
         }
-        if (!this.documentEditor.isReadOnly && this.documentEditor.editorModule) {
-            this.documentEditor.editorModule.toggleStrikethrough();
-            this.documentEditor.focusIn();
-        }
+        FontHelper.applyFontFormatting(this.documentEditor, 'strikethrough');
     }
-    private clearFormatAction(): void {
-        if (this.isRetrieving) {
-            return;
-        }
-        if (!this.documentEditor.isReadOnly && this.documentEditor.editorModule) {
-            this.documentEditor.editorModule.clearFormatting();
-        }
-    }
-    private subscriptAction(): void {
-        if (this.isRetrieving) {
-            return;
-        }
-        if (!this.documentEditor.isReadOnly && this.documentEditor.editorModule) {
-            this.documentEditor.editorModule.toggleSubscript();
-            this.documentEditor.focusIn();
-        }
-    }
+
+    // Replace superscriptAction method with:
     private superscriptAction(): void {
         if (this.isRetrieving) {
             return;
         }
-        if (!this.documentEditor.isReadOnly && this.documentEditor.editorModule) {
-            this.documentEditor.editorModule.toggleSuperscript();
-            this.documentEditor.focusIn();
-        }
+        FontHelper.applyFontFormatting(this.documentEditor, 'superscript');
     }
-    private changeFontColor(arg: ColorPickerEventArgs): void {
+
+    // Replace subscriptAction method with:
+    private subscriptAction(): void {
         if (this.isRetrieving) {
             return;
         }
-        if (!this.documentEditor.isReadOnly && this.documentEditor.selectionModule) {
-            this.documentEditor.selectionModule.characterFormat.fontColor = arg.currentValue.hex;
-            setTimeout((): void => {
-                this.documentEditor.focusIn();
-            }, 30);
-        }
+        FontHelper.applyFontFormatting(this.documentEditor, 'subscript');
     }
+
+    // Replace clearFormatAction method with:
+    private clearFormatAction(): void {
+        if (this.isRetrieving) {
+            return;
+        }
+        FontHelper.applyFontFormatting(this.documentEditor, 'clearFormat');
+    }
+
+    // Replace changeCase method with:
+    private changeCase(args: MenuEventArgs): void {
+        if (this.isRetrieving) {
+            return;
+        }
+        FontHelper.applyChangeCase(this.documentEditor, this.localObj, args.item.text);
+    }
+
+    // Replace changeFontFamily method with:
     private changeFontFamily(): void {
         if (this.isRetrieving) {
             return;
         }
-        if (!this.documentEditor.isReadOnly && this.documentEditor.selectionModule && this.fontFamily.value !== '') {
+        if (this.fontFamily.value !== '') {
             setTimeout((): void => {
-                this.documentEditor.selectionModule.characterFormat.fontFamily =
-                SanitizeHtmlHelper.sanitize(this.fontFamily.value as string);
+                FontHelper.changeFontFamily(this.documentEditor, SanitizeHtmlHelper.sanitize(this.fontFamily.value as string));
             }, 10);
             this.documentEditor.focusIn();
         }
     }
+
+    // Replace changeFontSize method with:
     private changeFontSize(): void {
         if (this.isRetrieving) {
             return;
         }
-        if (!this.documentEditor.isReadOnly && this.documentEditor.selectionModule && this.fontSize.value !== '') {
+        if (this.fontSize.value !== '') {
             setTimeout((): void => {
-                this.documentEditor.selectionModule.characterFormat.fontSize = this.fontSize.value as number;
+                FontHelper.changeFontSize(this.documentEditor, this.fontSize.value as number);
             }, 10);
             this.documentEditor.focusIn();
         }
+    }
+
+    // Replace changeFontColor method with:
+    private changeFontColor(arg: ColorPickerEventArgs): void {
+        if (this.isRetrieving) {
+            return;
+        }
+        FontHelper.changeFontColor(this.documentEditor, arg.currentValue.hex);
+        setTimeout((): void => {
+            this.documentEditor.focusIn();
+        }, 30);
     }
     public onSelectionChange(): void {
         this.isRetrieving = true;
@@ -653,7 +572,7 @@ export class Text {
             if (this.documentEditor.selectionModule.characterFormat.fontFamily) {
                 let fontFamily: string;
                 if (!isNullOrUndefined(this.documentEditor.selectionModule.characterFormat.renderedFontFamily)
-                    && !isNullOrUndefined(this.documentEditor.selectionModule.characterFormat.fontFamily)){
+                    && !isNullOrUndefined(this.documentEditor.selectionModule.characterFormat.fontFamily)) {
                     fontFamily = this.documentEditor.selectionModule.characterFormat.renderedFontFamily;
                 } else {
                     fontFamily = this.documentEditor.selectionModule.characterFormat.fontFamily;

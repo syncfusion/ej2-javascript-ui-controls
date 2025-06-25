@@ -1680,19 +1680,13 @@ export class RowDD {
                 if (deletedRow.hasChildRecords && deletedRow.childRecords.length > 0) {
                     this.removeChildItem(deletedRow);
                 }
-                let idx: number; let idz: number;
                 const treeGridData: ITreeData[] = dataSource as ITreeData[];
-                for (let i: number = 0; i < treeGridData.length; i++) {
-                    if (treeGridData[parseInt(i.toString(), 10)][this.parent.idMapping] === deletedRow.taskData[this.parent.idMapping]) {
-                        idx = i;
-                    }
-                }
-                for (let i: number = 0; i < this.treeGridData.length; i++) {
-                    if (this.treeGridData[parseInt(i.toString(), 10)][this.parent.idMapping]
-                        === deletedRow.taskData[this.parent.idMapping]) {
-                        idz = i;
-                    }
-                }
+                const idx: number = treeGridData.findIndex((data: ITreeData) => {
+                    return data[this.parent.idMapping] === deletedRow.taskData[this.parent.idMapping];
+                });
+                const idz: number = this.treeGridData.findIndex((data: ITreeData) => {
+                    return data[this.parent.idMapping] === deletedRow.taskData[this.parent.idMapping];
+                });
                 if (idx !== -1 && !isNullOrUndefined(idx)) {
                     (dataSource as ITreeData[]).splice(idx, 1);
                 }

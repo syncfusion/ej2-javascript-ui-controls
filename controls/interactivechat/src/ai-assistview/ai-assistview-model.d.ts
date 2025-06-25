@@ -1,4 +1,4 @@
-import { EventHandler, INotifyPropertyChanged, Property, NotifyPropertyChanges, Collection, EmitType, Event, remove, L10n } from '@syncfusion/ej2-base';import { ChildProperty, getUniqueID, isNullOrUndefined as isNOU, BaseEventArgs, Complex, removeClass, addClass } from '@syncfusion/ej2-base';import { InputEventArgs, TextArea } from '@syncfusion/ej2-inputs';import { ItemModel, Toolbar, ClickEventArgs } from '@syncfusion/ej2-navigations';import { InterActiveChatBase, ToolbarSettings, ToolbarItem, ToolbarItemClickedEventArgs } from '../interactive-chat-base/interactive-chat-base';import { ToolbarItemModel, ToolbarSettingsModel } from '../interactive-chat-base/interactive-chat-base-model';
+import { EventHandler, INotifyPropertyChanged, Property, NotifyPropertyChanges, Collection, EmitType, Event, remove, L10n } from '@syncfusion/ej2-base';import { ChildProperty, getUniqueID, isNullOrUndefined as isNOU, BaseEventArgs, Complex, removeClass, addClass } from '@syncfusion/ej2-base';import { ItemModel, Toolbar, ClickEventArgs } from '@syncfusion/ej2-navigations';import { InterActiveChatBase, ToolbarSettings, ToolbarItem, ToolbarItemClickedEventArgs, TextState } from '../interactive-chat-base/interactive-chat-base';import { ToolbarItemModel, ToolbarSettingsModel } from '../interactive-chat-base/interactive-chat-base-model';import { ActionCompleteEventArgs, FileInfo, Uploader, BeforeUploadEventArgs, UploadingEventArgs } from '@syncfusion/ej2-inputs';
 import {AssistViewType,PromptRequestEventArgs,PromptChangedEventArgs,StopRespondingEventArgs} from "./ai-assistview";
 import {InterActiveChatBaseModel} from "../interactive-chat-base/interactive-chat-base-model";
 
@@ -33,6 +33,16 @@ export interface PromptModel {
      * @default null
      */
     isResponseHelpful?: boolean;
+
+    /**
+     * Specifies the list of files attached within the AI assist view.
+     * This property accepts an array of `FileInfo` objects that represent the files to be attached.
+     * By providing these files, they will be rendered during the initial rendering of the component.
+     *
+     * @type {FileInfo}
+     * @default null
+     */
+    attachedFiles?: FileInfo[];
 
 }
 
@@ -79,6 +89,45 @@ export interface AssistViewModel {
      * @aspType string
      */
     viewTemplate?: string | Function;
+
+}
+
+/**
+ * Interface for a class AttachmentSettings
+ */
+export interface AttachmentSettingsModel {
+
+    /**
+     * Specifies the URL to save the uploaded files.
+     *
+     * @type {string}
+     * @default ''
+     */
+    saveUrl?: string;
+
+    /**
+     * Specifies the URL to remove the files from the server.
+     *
+     * @type {string}
+     * @default ''
+     */
+    removeUrl?: string;
+
+    /**
+     * Specifies the allowed file types for attachments.
+     *
+     * @type {string}
+     * @default ''
+     */
+    allowedFileTypes?: string;
+
+    /**
+     * Specifies the maximum file size allowed for attachments in bytes.
+     *
+     * @type {number}
+     * @default 2000000
+     */
+    maxFileSize?: number;
 
 }
 
@@ -300,6 +349,23 @@ export interface AIAssistViewModel extends InterActiveChatBaseModel{
     responseToolbarSettings?: ResponseToolbarSettingsModel;
 
     /**
+     * Specifies whether the attachments is enabled in the AIAssistView component.
+     *
+     * @type {boolean}
+     * @default false
+     */
+    enableAttachments?: boolean;
+
+    /**
+     * Specifies the settings for the attachments in the AIAssistView component.
+     * Represents the configuration for the uploader associated with footer.
+     *
+     *
+     * @default null
+     */
+    attachmentSettings?: AttachmentSettingsModel;
+
+    /**
      * Specifies whether the clear button of text area is displayed in the AIAssistView component.
      * Determines if a button for clearing the prompt text area is shown or hidden.
      *
@@ -403,5 +469,37 @@ export interface AIAssistViewModel extends InterActiveChatBaseModel{
      * @event stopRespondingClick
      */
     stopRespondingClick?: EmitType<StopRespondingEventArgs>;
+
+    /**
+     * Event triggered before an attachment upload is initiated.
+     * Provides details about the file to be uploaded.
+     *
+     * @event beforeAttachmentUpload
+     */
+    beforeAttachmentUpload?: EmitType<BeforeUploadEventArgs>;
+
+    /**
+     * Event triggered on successful attachment upload.
+     * Provides details about the uploaded file.
+     *
+     * @event attachmentUploadSuccess
+     */
+    attachmentUploadSuccess?: EmitType<object>;
+
+    /**
+     * Event triggered on attachment upload failure.
+     * Provides details about the failed file and error message.
+     *
+     * @event attachmentUploadFailure
+     */
+    attachmentUploadFailure?: EmitType<object>;
+
+    /**
+     * Event triggered when an attachment is removed.
+     * Provides details about the removed file.
+     *
+     * @event attachmentRemoved
+     */
+    attachmentRemoved?: EmitType<object>;
 
 }

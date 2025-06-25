@@ -7,6 +7,7 @@ import { TaskFieldsModel, EditDialogFieldSettingsModel, ResourceFieldsModel } fr
 import { TreeGrid, Edit } from '@syncfusion/ej2-treegrid';
 import { Deferred } from '@syncfusion/ej2-data';
 import { Tab } from '@syncfusion/ej2-navigations';
+import { ConstraintType } from '../base/enum';
 /**
  * To handle cell edit action on default columns and custom columns
  */
@@ -56,6 +57,35 @@ export class CellEdit {
             args.cancel = true;
             return;
         }
+        if (
+            args.columnObject &&
+            args.columnObject.field === this.parent.taskFields.constraintType &&
+            args.columnObject.edit &&
+            args.columnObject.edit.params &&
+            Array.isArray(args.columnObject.edit.params['dataSource'])
+        ) {
+            const constraintTypeDataSource: {
+                text: string;
+                value: ConstraintType;
+            }[] = Object.keys(ConstraintType)
+                .filter((key: string) => !isNaN(Number(ConstraintType[key as any])))
+                .map((key: string) => ({
+                    text: this.parent.treeGridModule['getLocalizedConstraintTypeText'](key),
+                    value: ConstraintType[key as keyof typeof ConstraintType]
+                }));
+            if (args.rowData && args.rowData.hasChildRecords) {
+                const asSoonAsPossibleText: string = this.parent.treeGridModule['getLocalizedConstraintTypeText']('AsSoonAsPossible');
+                const startNoEarlierThanText: string = this.parent.treeGridModule['getLocalizedConstraintTypeText']('StartNoEarlierThan');
+                const finishNoLaterThanText: string = this.parent.treeGridModule['getLocalizedConstraintTypeText']('FinishNoLaterThan');
+                args.columnObject.edit.params['dataSource'] = constraintTypeDataSource.filter(function (item: { text: string }): boolean {
+                    return item.text === asSoonAsPossibleText ||
+                        item.text === startNoEarlierThanText ||
+                        item.text === finishNoLaterThanText;
+                });
+            } else {
+                args.columnObject.edit.params['dataSource'] = constraintTypeDataSource;
+            }
+        }
         if (data.hasChildRecords && !this.parent.allowParentDependency && ((field === taskSettings.endDate &&
             ((!isNullOrUndefined(data[taskSettings.manual]) && data[taskSettings.manual] === false) ||
             this.parent.taskMode === 'Auto')) || field === taskSettings.duration || field === taskSettings.dependency ||
@@ -71,12 +101,18 @@ export class CellEdit {
                 if (arg.columnName === parentReference.taskFields.progress && arg.rowData.hasChildRecords) {
                     arg.cancel = true;
                 }
+                if (!args.rowData.ganttProperties.isAutoSchedule) {
+                    const { constraintDate, constraintType } = this.parent.taskFields;
+                    if ([constraintDate, constraintType].indexOf(args.columnObject.field) !== -1) {
+                        arg.cancel = true;
+                    }
+                }
                 if (data.level === 0 && this.parent.viewType === 'ResourceView') {
                     arg.cancel = true;
                 }
                 callBackPromise.resolve(arg);
                 if (!arg.cancel) {
-                    if (arg.columnName === this.parent.taskFields.notes) {
+                    if (arg.columnName === this.parent.taskFields.notes || arg.columnName === 'WBSPredecessor') {
                         this.openNotesEditor(arg);
                     } else {
                         this.isCellEdit = true;
@@ -99,11 +135,11 @@ export class CellEdit {
         const taskSettings: TaskFieldsModel = this.parent.taskFields;
         const data: IGanttData = args.rowData;
         const field: string = args.columnName;
-        if ((field === taskSettings.notes && !this.parent.showInlineNotes)) {
+        if ((field === taskSettings.notes && !this.parent.showInlineNotes) || field === 'WBSPredecessor') {
             args.cancel = true;
             const columnTypes: string[] =
                 this.parent.editModule.dialogModule.updatedEditFields.map((x: EditDialogFieldSettingsModel) => { return x.type; });
-            const index: number = columnTypes.indexOf('Notes');
+            const index: number = field === 'WBSPredecessor' ? columnTypes.indexOf('Dependency') : columnTypes.indexOf('Notes');
             if (index !== -1) {
                 this.parent.editModule.dialogModule.openEditDialog(data.ganttProperties.rowUniqueID);
                 const tabObj: Tab = (<EJ2Intance>document.getElementById(this.parent.element.id + '_Tab')).ej2_instances[0];
@@ -192,6 +228,8 @@ export class CellEdit {
                 this.taskNameEdited(editedArgs);
             } else if (column.field === this.parent.taskFields.startDate) {
                 this.startDateEdited(editedArgs);
+            } else if (column.field === this.parent.taskFields.constraintDate || column.field === this.parent.taskFields.constraintType) {
+                this.constraintEdited(editedArgs);
             } else if (column.field === this.parent.taskFields.endDate) {
                 this.endDateEdited(editedArgs, args['previousData']);
             } else if (column.field === this.parent.taskFields.duration) {
@@ -265,6 +303,29 @@ export class CellEdit {
         this.parent.editModule.updateTaskScheduleModes(args.data);
         this.updateEditedRecord(args);
     }
+    private updateGanttDataProperties(args: ITaskbarEditedEventArgs, currentValue: Date): void {
+        const ganttData: IGanttData = args.data;
+        const taskProperties: ITaskData = ganttData.ganttProperties;
+        if (isNOU(currentValue)) {
+            if (!ganttData.hasChildRecords) {
+                this.parent.setRecordValue('startDate', null, taskProperties, true);
+                if (!(taskProperties.startDate === null && taskProperties.endDate === null && taskProperties.duration !== null)) {
+                    this.parent.setRecordValue('duration', null, taskProperties, true);
+                }
+                this.parent.setRecordValue('isMilestone', false, taskProperties, true);
+            }
+        } else if (taskProperties.endDate || !isNOU(taskProperties.duration)) {
+            this.parent.setRecordValue('startDate', new Date(currentValue.getTime()), taskProperties, true);
+            this.parent.dateValidationModule.calculateEndDate(ganttData);
+        } else if (isNOU(taskProperties.endDate) && isNOU(taskProperties.duration)) {
+            this.parent.setRecordValue('startDate', new Date(currentValue.getTime()), taskProperties, true);
+        }
+        this.parent.setRecordValue('isMilestone', taskProperties.duration === 0 ? true : false, taskProperties, true);
+        this.parent.dataOperation.updateWidthLeft(args.data);
+        this.parent.dataOperation.updateMappingData(ganttData, 'startDate');
+        this.parent.dataOperation.updateMappingData(ganttData, 'endDate');
+        this.parent.dataOperation.updateMappingData(ganttData, 'duration');
+    }
     /**
      * To update task start date cell with new value
      *
@@ -278,28 +339,60 @@ export class CellEdit {
         currentValue = currentValue ? new Date(currentValue.getTime()) : null;
         currentValue = this.parent.dateValidationModule.checkStartDate(
             currentValue, ganttData.ganttProperties, ganttData.ganttProperties.isMilestone);
-        if (isNOU(currentValue)) {
-            if (!ganttData.hasChildRecords) {
-                this.parent.setRecordValue('startDate', null, ganttProb, true);
-                if (!(ganttProb.startDate === null && ganttProb.endDate === null && ganttProb.duration !== null)) {
-                    this.parent.setRecordValue('duration', null, ganttProb, true);
-                }
-                this.parent.setRecordValue('isMilestone', false, ganttProb, true);
-                // if (this.parent.allowUnscheduledTasks && isNOU(this.parent.taskFields.endDate)) {
-                //     this.parent.setRecordValue('endDate', null, ganttProb, true);
-                // }
-            }
-        } else if (ganttProb.endDate || !isNOU(ganttProb.duration)) {
-            this.parent.setRecordValue('startDate', new Date(currentValue.getTime()), ganttProb, true);
-            this.parent.dateValidationModule.calculateEndDate(ganttData);
-        } else if (isNOU(ganttProb.endDate) && isNOU(ganttProb.duration)) {
-            this.parent.setRecordValue('startDate', new Date(currentValue.getTime()), ganttProb, true);
+        if (args.data.ganttProperties.constraintDate) {
+            args.data.ganttProperties.constraintDate = currentValue;
         }
-        this.parent.setRecordValue('isMilestone', ganttProb.duration === 0 ? true : false, ganttProb, true);
-        this.parent.dataOperation.updateWidthLeft(args.data);
-        this.parent.dataOperation.updateMappingData(ganttData, 'startDate');
-        this.parent.dataOperation.updateMappingData(ganttData, 'endDate');
-        this.parent.dataOperation.updateMappingData(ganttData, 'duration');
+        this.updateGanttDataProperties(args, currentValue);
+        this.updateEditedRecord(args);
+    }
+    private constraintEdited(args: ITaskbarEditedEventArgs): void {
+        const ganttData: IGanttData = args.data;
+        const ganttProb: ITaskData = args.data.ganttProperties;
+        let currentValue: Date = args.data[this.parent.taskFields.startDate];
+        let constraintDate: Date = args.data[this.parent.taskFields.constraintDate];
+        const constraintType: ConstraintType = args.data[this.parent.taskFields.constraintType];
+        currentValue = currentValue ? new Date(currentValue.getTime()) : null;
+        if (!isNullOrUndefined(constraintDate)) {
+            this.parent.setRecordValue('constraintDate', new Date(constraintDate.getTime()), ganttProb, true);
+        } else {
+            const startDate: Date = ganttData[this.parent.taskFields.startDate];
+            const endDate: Date = ganttData[this.parent.taskFields.endDate];
+            switch (constraintType) {
+            case ConstraintType.MustStartOn:
+            case ConstraintType.StartNoEarlierThan:
+            case ConstraintType.StartNoLaterThan:
+                if (!isNullOrUndefined(startDate)) {
+                    this.parent.setRecordValue('constraintDate', new Date(startDate.getTime()), ganttProb, true);
+                    constraintDate = ganttProb.constraintDate;
+                }
+                break;
+            case ConstraintType.MustFinishOn:
+            case ConstraintType.FinishNoEarlierThan:
+            case ConstraintType.FinishNoLaterThan:
+                if (!isNullOrUndefined(endDate)) {
+                    this.parent.setRecordValue('constraintDate', new Date(endDate.getTime()), ganttProb, true);
+                    constraintDate = ganttProb.constraintDate;
+                }
+                break;
+            }
+        }
+        this.parent.setRecordValue('constraintType', constraintType, ganttProb, true);
+        if (ganttProb.predecessor && ganttProb.constraintType === ConstraintType.AsSoonAsPossible) {
+            const predecessorDate: Date = this.parent.predecessorModule.getPredecessorDate(args.data, ganttProb.predecessor);
+            if (predecessorDate) {
+                currentValue = predecessorDate;
+            }
+        } else if (ganttProb.constraintType === ConstraintType.StartNoEarlierThan ||
+            ganttProb.constraintType === ConstraintType.MustStartOn ||
+            ganttProb.constraintType === ConstraintType.MustFinishOn
+        ) {
+            currentValue = this.parent.dateValidationModule.getDateByConstraint(ganttData, constraintDate);
+        }
+        else {
+            currentValue = this.parent.dateValidationModule.getDateByConstraint(ganttData, currentValue);
+        }
+        this.updateGanttDataProperties(args, currentValue);
+        this.parent.dataOperation.updateMappingData(ganttData, 'constraintDate');
         this.updateEditedRecord(args);
     }
 
@@ -410,10 +503,10 @@ export class CellEdit {
             const err: string = `The provided value for the ${this.parent.taskFields.duration} field is invalid. Please ensure the ${this.parent.taskFields.duration} field contains only valid numeric values.`;
             this.parent.trigger('actionFailure', { error: err });
         }
-        if (parseInt(args.data[this.parent.taskFields.duration], 10) < 0) {
-            args.data[this.parent.taskFields.duration] = 0;
-        }
         const ganttProb: ITaskData = args.data.ganttProperties;
+        if (parseInt(args.data[this.parent.taskFields.duration], 10) < 0) {
+            args.data[this.parent.taskFields.duration] = ganttProb.duration;
+        }
         const durationString: string = args.data[this.parent.taskFields.duration];
         this.parent.dataOperation.updateDurationValue(durationString, ganttProb);
         this.updateDates(args);

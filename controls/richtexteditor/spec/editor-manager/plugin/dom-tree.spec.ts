@@ -40,7 +40,7 @@ describe('DOM Tree testing', ()=>{
         });
         it ('Should not have nested li in the output of the method.', ()=>{
             editor.focusIn();
-            expect(editor.inputElement.firstElementChild.childNodes.length === 4);
+            expect(editor.inputElement.firstElementChild.childNodes.length === 2);
             const range: Range = new Range();
             range.setStart(editor.inputElement.querySelectorAll('li')[0].firstChild, 2);
             range.setEnd(editor.inputElement.querySelectorAll('li')[3].firstChild, 2);
@@ -48,7 +48,7 @@ describe('DOM Tree testing', ()=>{
             editor.inputElement.ownerDocument.getSelection().addRange(range);
             const domTreeMethods: DOMMethods = new DOMMethods(editor.inputElement as HTMLDivElement);
             const blockNode: Node[] = domTreeMethods.getBlockNode();
-            expect(blockNode.length).toBe(2);
+            expect(blockNode.length).toBe(4);
             expect(blockNode[0].nodeName).toBe('LI');
             expect(blockNode[1].nodeName).toBe('LI');
         });
@@ -79,6 +79,47 @@ describe('DOM Tree testing', ()=>{
             expect(blockNode[1].nodeName).toBe('LI');
             expect(blockNode[0]).toBe(editor.inputElement.querySelectorAll('li')[1]);
             expect(blockNode[1]).toBe(editor.inputElement.querySelectorAll('li')[2]);
+        });
+    });
+
+    describe('963853 - Fails to paste copied link to selected the nested list text', function () {
+        let editorObj: RichTextEditor;
+        let copiedNode: HTMLElement;
+        const clipboardData: string = `<html>
+                                          <body>
+                                              <a href="https://example.com">List Item Link</a>
+                                          </body>
+                                       </html>`;
+        beforeAll(() => {
+            editorObj = renderRTE({
+                toolbarSettings: {
+                    items: ['Bold', 'Italic', 'Underline', 'CreateLink']
+                },
+                value: `<ol>
+                                <li>List 1
+                                    <ol>
+                                        <li id="nested-list-item">Nested Syncfusion</li>
+                                    </ol>
+                                </li>
+                            </ol>`
+            });
+        });
+
+        afterAll(() => {
+            destroy(editorObj);
+        });
+
+        it('Copies and pastes a hyperlink onto a nested list item', (done) => {
+            copiedNode = document.getElementById('nested-list-item') as HTMLElement;
+            editorObj.formatter.editorManager.nodeSelection.setSelectionText(
+                document, copiedNode.childNodes[0], copiedNode.childNodes[0], 0, copiedNode.textContent!.length
+            );
+            const dataTransfer = new DataTransfer();
+            dataTransfer.setData('text/html', clipboardData);
+            const pasteEvent: ClipboardEvent = new ClipboardEvent('paste', { clipboardData: dataTransfer } as ClipboardEventInit);
+            editorObj.onPaste(pasteEvent);
+            expect(editorObj.inputElement.innerHTML).toContain('<ol> <li>List 1 <ol> <li id="nested-list-item"><a class="e-rte-anchor" href="https://example.com/" title="https://example.com/" target="" aria-label="">Nested Syncfusion</a></li> </ol> </li> </ol>');
+            done();
         });
     });
 });

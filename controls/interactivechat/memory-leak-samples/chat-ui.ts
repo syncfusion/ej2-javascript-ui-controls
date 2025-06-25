@@ -1,4 +1,4 @@
-import { ChatUI, MessageModel, MessageSendEventArgs, UserModel, TypingEventArgs } from '../src/chat-ui/index';
+import { ChatUI, MessageModel, MessageSendEventArgs, UserModel, TypingEventArgs,MessageToolbarItemClickedEventArgs } from '../src/chat-ui/index';
 import { ToolbarItemClickedEventArgs, ToolbarSettingsModel } from '../src/interactive-chat-base/index';
 let chatUI: ChatUI;
 let Default: UserModel = {
@@ -277,7 +277,23 @@ function renderchatUI(): void {
         headerToolbar: chatToolbarSettings,
         messages: message,
         showTimeBreak: true,
-        timeStampFormat: 'dd/MM/yyyy hh:mm a'
+        timeStampFormat: 'dd/MM/yyyy hh:mm a',
+        messageToolbarSettings: {
+            items: [
+                { type: 'Button', iconCss: 'e-icons e-chat-forward', tooltip: 'Forward' },
+                { type: 'Button', iconCss: 'e-icons e-chat-copy', tooltip: 'Copy' },
+                { type: 'Button', iconCss: 'e-icons e-chat-reply', tooltip: 'Reply' },
+                { type: 'Button', iconCss: 'e-icons e-chat-pin', tooltip: 'Pin' },
+                { type: 'Button', iconCss: 'e-icons e-chat-trash', tooltip: 'Delete' }
+            ],
+            itemClicked: function (args: MessageToolbarItemClickedEventArgs) {
+                if (args.item.prefixIcon === 'e-icons e-chat-forward') {
+                    const newMessageObj:MessageModel = args.message;
+                    newMessageObj.isForwarded = true;
+                    chatUI.addMessage(newMessageObj);
+                }
+            }
+        }
     });
     chatUI.appendTo('#chat1');
 }

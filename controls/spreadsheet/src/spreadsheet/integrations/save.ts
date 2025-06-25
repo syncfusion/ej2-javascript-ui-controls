@@ -96,6 +96,7 @@ export class Save {
             const dlg: DialogModel = {
                 isModal: true, showCloseIcon: true, cssClass: 'e-open-dlg',
                 header: l10n.getConstant('SaveAs'),
+                enableRtl: this.parent.enableRtl,
                 beforeOpen: (args: BeforeOpenEventArgs): void => {
                     const dlgArgs: DialogBeforeOpenEventArgs = {
                         dialogName: l10n.getConstant('SaveAs'),

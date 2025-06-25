@@ -144,7 +144,7 @@ describe('Bug 915914: When applying bold empty space is being removed', () => {
 
     beforeAll(() => {
         document.body.appendChild(divElement);
-        editorObj = new EditorManager({ document: document, editableElement: document.getElementById("content-edit") });
+        editorObj = new EditorManager({ document: document, editableElement: document.getElementById("divElement") });
     });
     afterAll(() => {
         detach(divElement);
@@ -194,7 +194,7 @@ describe('922012: Bold formatting application leads to unexpected cursor movemen
 
     beforeAll(() => {
         document.body.appendChild(divElement);
-        editorObj = new EditorManager({ document: document, editableElement: document.getElementById("content-edit") });
+        editorObj = new EditorManager({ document: document, editableElement: document.getElementById("divElement") });
     });
     afterAll(() => {
         detach(divElement);

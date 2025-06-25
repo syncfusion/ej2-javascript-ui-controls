@@ -1,8 +1,10 @@
 /**
  * RTE - Emoji picker action spec
  */
-import { addClass, createElement, detach } from "@syncfusion/ej2-base";
-import { dispatchEvent, RichTextEditor, ToolbarType, ActionBeginEventArgs } from "../../../src/rich-text-editor/index";
+import { createElement, detach } from "@syncfusion/ej2-base";
+import { dispatchEvent, RichTextEditor } from "../../../src/rich-text-editor/index";
+import { ToolbarType } from "../../../src/common/enum";
+import { ActionBeginEventArgs  } from "../../../src/common/interface";
 import { destroy, renderRTE, setCursorPoint } from "./../render.spec";
 import { EditorManager } from "../../../src";
 import { BASIC_MOUSE_EVENT_INIT } from "../../constant.spec";
@@ -329,7 +331,7 @@ describe('Emoji picker module', () => {
             (<any>rteObj).keyDown(keyboardEventArgs);
             expect(rteObj.element.querySelector('.e-rte-emojipicker-popup')).toBe(null);
         });
-        it('When click on the document popup will close   ', () => {
+        it('When click on the document popup will close   ', (done) => {
             const element: HTMLElement = rteObj.element.querySelector('#' + controlId + '_toolbar_EmojiPicker');
             element.click();
             const ele: HTMLElement = rteObj.element.querySelector('.e-rte-content');
@@ -337,7 +339,10 @@ describe('Emoji picker module', () => {
                 args: { target: ele, srcElement: ele },
             };
             rteObj.notify('docClick', evnArg);
-            expect(rteObj.element.querySelector('.e-rte-emojipicker-popup')).toBe(null);
+            setTimeout(() => {
+                expect(rteObj.element.querySelector('.e-rte-emojipicker-popup')).toBe(null);
+                 done();
+            }, 100);
         });
         it('In scroll the emoji correspondingly the tollbar set has in hover state  ', () => {
             const element: HTMLElement = rteObj.element.querySelector('#' + controlId + '_toolbar_EmojiPicker');
@@ -571,6 +576,57 @@ describe('Emoji picker module', () => {
                     expect(firstP.innerHTML).toBe('Emoji picker : : : : : : 😀');
                     done();
                 }, 100);
+        });
+    });
+    describe('Bug 963296: Empty Bullet List Retains in Editor After Selecting All Content and Inserting Emoji ', () => {
+        let rteObj: RichTextEditor;
+        let rteEle: HTMLElement;
+        let controlId: string;
+        let defaultRTE: HTMLElement = createElement('div', { id: 'defaultRTE' });
+        let innerHTML: string = `<p id="rte-1p">Emoji picker : : : : : : :  </p><p id="rte-2p">Hello</p>`;
+        beforeEach((done: DoneFn) => {
+            document.body.appendChild(defaultRTE);
+            rteObj = new RichTextEditor({
+                toolbarSettings: {
+                    items: ['EmojiPicker']
+                },
+                value: innerHTML
+            });
+            rteObj.appendTo('#defaultRTE');
+            rteEle = rteObj.element;
+            controlId = rteEle.id;
+            done();
+        });
+        afterEach((done: DoneFn) => {
+            destroy(rteObj);
+            done();
+        });
+        it('selecting all element in editor and inserting emoji but does not remove empty node from dom', (done: Function) => {
+            const firstP: Element = (rteObj as any).inputElement.querySelector('#rte-1p');
+            const textNode = firstP.childNodes[0];
+            textNode.textContent = "";
+            const secondP: Element = (rteObj as any).inputElement.querySelector('#rte-2p');
+            var range = document.createRange();
+            range.setStart(textNode, textNode.textContent.length);
+            range.setEnd(secondP.firstChild, textNode.textContent.length);
+            var selection = window.getSelection();
+            selection.removeAllRanges();
+            selection.addRange(range);
+            keyboardEventArgs.keyCode = 186;
+            keyboardEventArgs.shiftKey = true;
+            (<any>rteObj).keyDown(keyboardEventArgs);
+            textNode.textContent = ":";
+            range.setStart(textNode, 0);
+            range.setEnd(secondP.firstChild, secondP.firstChild.textContent.length);
+            selection.removeAllRanges();
+            selection.addRange(range);
+            const btnGroup: NodeListOf<HTMLElement> = rteObj.element.querySelectorAll('.e-rte-emojipickerbtn-group button');
+            btnGroup[0].click();
+            setTimeout(function () {
+                expect(rteObj.element.querySelector('.e-rte-emojipicker-popup')).toBe(null);
+                expect(rteObj.inputElement.innerHTML).toBe('<p>😀</p>');
+                done();
+            }, 100);
         });
     });
     describe('In rich editor content - intial we type colon render the popup ' , () => {
@@ -1901,12 +1957,12 @@ describe('Emoji picker module', () => {
         it('Check nested list element removed when apply the emoji', () => {
             const startContainer: HTMLElement = document.querySelector('.startContainer');
             const endContainer: HTMLElement = document.querySelector('.endContainer');
-            rteObj.formatter.editorManager.nodeSelection.setSelectionText(document,startContainer.firstChild,endContainer.firstChild,4,4);
+            rteObj.formatter.editorManager.nodeSelection.setSelectionText(document, startContainer.firstChild, endContainer.firstChild, 4, 4);
             const emojiEle: HTMLElement = document.querySelectorAll('.e-toolbar-item')[0] as HTMLElement;
             emojiEle.click();
             (document.querySelector('.e-rte-emojipickerbtn-group [title="Grinning face"]') as HTMLElement).click();
-            let innerHtml = '<ol><li>fristli<ol><li class="startContainer">seco😀<ol><li style="list-style-type: none;"><ol><li style="list-style-type: none;"><ol><li class="endContainer">nth</li><li>eidth<ol><li>ninth</li></ol></li></ol></li></ol></li></ol></li></ol></li><li>secondli</li><li>third</li><li>fourth<ol><li>first</li><li>second</li><li>third<ol><li>fourth</li></ol></li></ol></li></ol>'
-            expect(rteObj.inputElement.innerHTML == innerHtml).toBe(true); 
+            let innerHtml = '<ol><li>fristli<ol><li class="startContainer">seco😀<ol><li style="list-style-type: none;"><ol><li style="list-style-type: none;"><ol><li class="endContainer">nth</li><li>eidth<ol><li>ninth</li></ol></li></ol></li></ol></li></ol></li></ol></li><li>secondli</li><li>third</li><li>fourth<ol><li>first</li><li>second</li><li>third<ol><li>fourth</li></ol></li></ol></li></ol>';
+            expect(rteObj.inputElement.innerHTML == innerHtml).toBe(true);
         });
     });
 
@@ -1998,7 +2054,7 @@ describe('Emoji picker module', () => {
             }, 500); 
         });
     });
-});
+
 describe('Emoji Picker in IFrame - Close on outside click', () => {
     let rteObj: RichTextEditor;
     let rteEle: HTMLElement;
@@ -2248,5 +2304,237 @@ describe('935436 - "Added Test case for emoji picker ToolbarClick method coverag
                 done();
             }, 100);
         }, 100);
+    });
+});
+
+describe('Emoji Picker with bottom toolbar positioning', () => {
+    let rteObj: RichTextEditor;
+    let rteEle: HTMLElement;
+    let controlId: string;
+    let defaultRTE: HTMLElement = createElement('div', { id: 'positionRTE' });
+    let initialHTML: string = `<p>Emoji Picker Test</p>`;
+    beforeAll(() => {
+        document.body.appendChild(defaultRTE);
+        rteObj = new RichTextEditor({
+            toolbarSettings: {
+                position: 'Bottom',
+                items: ['EmojiPicker']
+            },
+            value: initialHTML
+        });
+        rteObj.appendTo('#positionRTE');
+        rteEle = rteObj.element;
+        controlId = rteEle.id;
+    });
+    afterAll(() => {
+        destroy(rteObj);
+    });
+    it('should position emoji picker above toolbar when no space below', (done) => {
+        // Position the RTE at the bottom of the viewport to force upward positioning
+        const viewportHeight = window.innerHeight;
+        rteEle.style.position = 'absolute';
+        rteEle.style.bottom = '10px';
+        // Focus the editor first
+        rteObj.focusIn();
+        const editor = rteObj.contentModule.getDocument();
+        const paragraph = editor.querySelector('p');
+        // Get actual text content length and use it for selection
+        const textLength = paragraph.textContent.length;
+        // Select text - make sure we don't exceed the actual length
+        rteObj.formatter.editorManager.nodeSelection.setSelectionText(
+            document, 
+            paragraph.firstChild, // Select the text node specifically
+            paragraph.firstChild, 
+            0, 
+            textLength > 0 ? textLength : 0
+        );
+        // Click emoji button
+        const emojiButton: HTMLElement = rteObj.element.querySelector('#' + controlId + '_toolbar_EmojiPicker');
+        emojiButton.click();
+        setTimeout(() => {
+            // Get popup element
+            const emojiPopup = document.querySelector('.e-rte-emojipicker-popup') as HTMLElement;
+            expect(emojiPopup).not.toBeNull();
+            // Verify popup is positioned above when space is limited
+            if (emojiPopup.style.position === 'fixed' && emojiPopup.style.bottom !== '') {
+                // Correct upward positioning
+                expect(emojiPopup.style.top).toBe('auto');
+                expect(emojiPopup.style.bottom).not.toBe('');
+            }
+            done();
+        }, 100);
+    });
+});
+  
+  describe('946142 - Empty list not removing properly when selecting multiple list and inserting emoji', () => {
+    let rteObj: RichTextEditor;
+    let rteEle: HTMLElement;
+    let controlId: string;
+    let defaultRTE: HTMLElement = createElement('div', { id: 'defaultRTE' });
+    let initialHTML: string = `<ul><li style="list-style-type: none;"><ul><li>Basic features include headings, block quotes, numbered lists, bullet lists, and support to insert images, tables, audio, and video.</li><li>Inline styles include <b>bold</b>, <em>italic</em>, <span style="text-decoration: underline">underline</span>, <span style="text-decoration: line-through">strikethrough</span>, <a class="e-rte-anchor" href="https://ej2.syncfusion.com/demos/#/material/rich-text-editor/tools.html" title="https://ej2.syncfusion.com/demos/#/material/rich-text-editor/tools.html" aria-label="Open in new window">hyperlinks</a>, 😀 and more.</li></ul></li><li>The toolbar has multi-row, expandable, and scrollable modes. The Editor supports an inline toolbar, a floating toolbar, and custom toolbar items.</li><li>Integration with Syncfusion Mention control lets users tag other users. To learn more, check out the <a class="e-rte-anchor" href="https://ej2.syncfusion.com/documentation/rich-text-editor/mention-integration" title="Mention Documentation" aria-label="Open in new window">documentation</a> and <a class="e-rte-anchor" href="https://ej2.syncfusion.com/demos/#/material/rich-text-editor/mention-integration.html" title="Mention Demos" aria-label="Open in new window">demos</a>.</li><li><b>Paste from MS Word</b> - helps to reduce the effort while converting the Microsoft Word content to HTML format with format and styles. To learn more, check out the documentation <a class="e-rte-anchor" href="https://ej2.syncfusion.com/documentation/rich-text-editor/paste-cleanup" title="Paste from MS Word Documentation" aria-label="Open in new window">here</a>.</li><li>Other features: placeholder text, character count, form validation, enter key configuration, resizable editor, IFrame rendering, tooltip, source code view, RTL mode, persistence, HTML Sanitizer, autosave, and <a class="e-rte-anchor" href="https://ej2.syncfusion.com/documentation/api/rich-text-editor/" title="Rich Text Editor API" aria-label="Open in new window">more</a>.</li></ul>`;
+    beforeAll(() => {
+        document.body.appendChild(defaultRTE);
+        rteObj = new RichTextEditor({
+            toolbarSettings: {
+                items: ['EmojiPicker']
+            },
+            value: initialHTML
+        });
+        rteObj.appendTo('#defaultRTE');
+        rteEle = rteObj.element;
+        controlId = rteEle.id;
+    });
+    afterAll(() => {
+        destroy(rteObj);
+    });
+    it('should insert emoji into first two nested list items', (done) => {
+        const editor = rteObj.contentModule.getDocument();
+        const firstNestedListItem = editor.querySelector('ul > li > ul > li');
+        const secondNestedListItem = firstNestedListItem.nextElementSibling;
+        rteObj.formatter.editorManager.nodeSelection.setSelectionText(document, firstNestedListItem, secondNestedListItem, 0, 11);
+        const emojiButton: HTMLElement = rteObj.element.querySelector('#' + controlId + '_toolbar_EmojiPicker');
+        emojiButton.click();
+        setTimeout(() => {
+            const firstEmojiButton: HTMLElement = document.querySelector('.e-rte-emojipickerbtn-group button');
+            firstEmojiButton.click();
+            const expectedHTML = `<ul><li style="list-style-type: none;"><ul><li>😀</li></ul></li><li>The toolbar has multi-row, expandable, and scrollable modes. The Editor supports an inline toolbar, a floating toolbar, and custom toolbar items.</li><li>Integration with Syncfusion Mention control lets users tag other users. To learn more, check out the <a class="e-rte-anchor" href="https://ej2.syncfusion.com/documentation/rich-text-editor/mention-integration" title="Mention Documentation" aria-label="Open in new window">documentation</a> and <a class="e-rte-anchor" href="https://ej2.syncfusion.com/demos/#/material/rich-text-editor/mention-integration.html" title="Mention Demos" aria-label="Open in new window">demos</a>.</li><li><b>Paste from MS Word</b> - helps to reduce the effort while converting the Microsoft Word content to HTML format with format and styles. To learn more, check out the documentation <a class="e-rte-anchor" href="https://ej2.syncfusion.com/documentation/rich-text-editor/paste-cleanup" title="Paste from MS Word Documentation" aria-label="Open in new window">here</a>.</li><li>Other features: placeholder text, character count, form validation, enter key configuration, resizable editor, IFrame rendering, tooltip, source code view, RTL mode, persistence, HTML Sanitizer, autosave, and <a class="e-rte-anchor" href="https://ej2.syncfusion.com/documentation/api/rich-text-editor/" title="Rich Text Editor API" aria-label="Open in new window">more</a>.</li></ul>`;
+            expect(rteObj.inputElement.innerHTML).toBe(expectedHTML);
+            done();
+        }, 100);
+    });
+});
+
+    describe('Emoji Picker popup is not closing when we open repeatedly in the inline mode ',() => {
+        let rteObj: RichTextEditor;
+        let rteEle: HTMLElement;
+        let controlId: string;
+        let defaultRTE: HTMLElement = createElement('div', { id: 'defaultRTE' });
+        let initialHTML: string = `<p>Emoji Picker Inline Test</p>`;
+        beforeAll(() => {
+            document.body.appendChild(defaultRTE);
+            rteObj = new RichTextEditor({
+                inlineMode: { enable: true, onSelection: true },
+                toolbarSettings: {
+                    items: ['EmojiPicker']
+                },
+                value: initialHTML
+            });
+            rteObj.appendTo('#defaultRTE');
+            rteEle = rteObj.element;
+            controlId = rteEle.id;
+        });
+        afterAll(() => {
+            destroy(rteObj);
+        });
+        it('should open and close the emoji picker popup repeatedly in inline mode', (done: Function) => {
+            // Click on the Emoji Picker button
+            const editor = rteObj.contentModule.getDocument();
+            const paragraph = editor.querySelector('p');
+            // Focus the editor first
+            rteObj.focusIn();
+            // Position cursor to start of the node
+            rteObj.formatter.editorManager.nodeSelection.setSelectionText(document, paragraph.firstChild, paragraph.firstChild, 0, 0);
+            // Show the inline toolbar
+            rteObj.showInlineToolbar();
+            const emojiButton: HTMLElement = document.querySelector('.e-emoji');
+            emojiButton.click();
+            setTimeout(() => {
+                const mouseDownEvent: MouseEvent = new MouseEvent('mousedown', BASIC_MOUSE_EVENT_INIT);
+                rteObj.inputElement.dispatchEvent(mouseDownEvent);
+                setTimeout(() => {
+                    // Assert that the popup is closed
+                    expect(rteObj.element.querySelector('.e-rte-emojipicker-popup')).toBe(null);
+                    rteObj.formatter.editorManager.nodeSelection.setSelectionText(document, paragraph.firstChild, paragraph.firstChild, 0, 0);
+                    // Show the inline toolbar
+                    rteObj.showInlineToolbar();
+                    // Emoji picker should open again when clicked
+                    const emojiButton: HTMLElement = document.querySelector('.e-emoji');
+                    emojiButton.click();
+                    setTimeout(() => {
+                        expect(rteObj.element.querySelector('.e-rte-emojipicker-popup')).not.toBe(null);
+                        done(); // Indicate the test is complete
+                    }, 100);
+                }, 100);
+            }, 100);
+        });
+    });
+
+    describe('Emoji Picker positioning when it is the last item in a large toolbar', () => {
+    let rteObj: RichTextEditor;
+    let rteEle: HTMLElement;
+    let controlId: string;
+    let defaultRTE: HTMLElement = createElement('div', { id: 'largeToolbarRTE' });
+    let innerHTML: string = `<p id="rte-p">Emoji picker test with large toolbar</p>`;
+    beforeAll(() => {
+        document.body.appendChild(defaultRTE);
+        rteObj = new RichTextEditor({
+            toolbarSettings: {
+                items: [
+                    'Bold', 'Italic', 'Underline', 'StrikeThrough',
+                    'FontName', 'FontSize', 'FontColor', 'BackgroundColor',
+                    'LowerCase', 'UpperCase', '|',
+                    'Formats', 'Alignments', 'OrderedList', 'UnorderedList',
+                    'Outdent', 'Indent', '|',
+                    'CreateLink', 'Image', '|', 'ClearFormat', 'Print',
+                    'SourceCode', 'FullScreen', '|', 'Undo', 'Redo', 'EmojiPicker'
+                ]
+            },
+            value: innerHTML
+        });
+        rteObj.appendTo('#largeToolbarRTE');
+        rteEle = rteObj.element;
+        controlId = rteEle.id;
+    });
+    afterAll(() => {
+        destroy(rteObj);
+        detach(defaultRTE);
+    });
+    it('962262 - should position emoji picker popup correctly ', (done) => {
+        const toolbarItems = rteObj.element.querySelectorAll('.e-toolbar-item');
+        expect(toolbarItems.length).toBeGreaterThan(10);
+        const emojiButton: HTMLElement = rteObj.element.querySelector('#' + controlId + '_toolbar_EmojiPicker');
+        emojiButton.click();
+        setTimeout(() => {
+            const emojiPopup = document.querySelector('.e-rte-emojipicker-popup') as HTMLElement;
+            expect(emojiPopup).not.toBeNull();
+            expect(emojiPopup.style.left).not.toBe('24px');
+            done();
+        }, 100);
+    });
+});
+
+    describe('When toolbar is in extended the emoji picker popup z-index has greater than toolbar' , () => {
+        let rteObj: RichTextEditor;
+        let rteEle: HTMLElement;
+        let controlId: string;
+        let defaultRTE: HTMLElement = createElement('div', { id: 'defaultRTE' });
+        let innerHTML: string = `<p id="rte-p"></p>`;
+        beforeEach( () => {
+            document.body.appendChild(defaultRTE);
+            rteObj = new RichTextEditor({
+                toolbarSettings: {
+                    type: ToolbarType.Popup,
+                    items: ['EmojiPicker','Bold', 'Italic', 'Underline', 'StrikeThrough',
+                    'FontName', 'FontSize', 'FontColor', 'BackgroundColor',
+                    'LowerCase', 'UpperCase', '|',
+                    'Formats', 'Alignments', 'OrderedList', 'UnorderedList',
+                    'Outdent', 'Indent', '|',
+                    'CreateLink', 'Image', '|', 'ClearFormat', 'Print',
+                    'SourceCode', 'FullScreen', '|', 'Undo', 'Redo']
+                },
+                value : innerHTML
+            });
+            rteObj.appendTo('#defaultRTE');
+            rteEle = rteObj.element;
+            controlId = rteEle.id;
+        });
+        afterEach( () => {
+            destroy(rteObj);
+        });
+        it('emoji picker popup z-index greater than toolbar', () => {
+            const element: HTMLElement = rteObj.element.querySelector('#' + controlId + '_toolbar_EmojiPicker');
+            element.click();
+            expect(rteObj.emojiPickerModule.popupObj.zIndex).toBe(10002);
+        });
     });
 });

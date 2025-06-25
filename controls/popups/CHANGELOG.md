@@ -2,30 +2,6 @@
 
 ## [Unreleased]
 
-## 29.2.8 (2025-06-03)
-
-### Dialog
-
-#### Bug Fixes
-
-- `#I722514` - Resolved an issue where the Dialog component was misaligned when setting the target to body and enabling isModal within the open event.
-
-## 29.1.37 (2025-04-08)
-
-### Tooltip
-
-#### Bug Fixes
-
-- `#I701814`, `#I687776` - Resolved an issue where the Tooltip remained visible when the cursor quickly left the target element.
-
-## 29.1.35 (2025-04-01)
-
-### Dialog
-
-#### Bug Fixes
-
-- `#I697134` - The issue with improper padding for the dialog component in the fluent2-highcontrast theme has been resolved.
-
 ## 21.1.35 (2023-03-23)
 
 ### Tooltip

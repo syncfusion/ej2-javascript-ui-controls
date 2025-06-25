@@ -213,6 +213,24 @@ export class AjaxHandler {
     }
 
     /**
+     * @private
+     * @returns {void}
+     */
+    public destroy(): void {
+        this.url = null;
+        this.type = null;
+        this.responseType = null;
+        this.mode = null;
+        this.contentType = null;
+        this.httpRequest = null;
+        this.retryStatusCodes = null;
+        this.retryTimeout = null;
+        this.onSuccess = null;
+        this.onFailure = null;
+        this.onError = null;
+    }
+
+    /**
      * Specifies callback function to be triggered after XmlHttpRequest is succeeded.
      * The callback will contain server response as the parameter.
      *

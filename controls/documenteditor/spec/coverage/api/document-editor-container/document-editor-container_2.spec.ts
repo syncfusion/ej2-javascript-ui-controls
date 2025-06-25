@@ -20,7 +20,7 @@ describe('Document Editor container properties_3', () => {
         expect(element.childNodes.length).toBe(0);
         document.body.removeChild(element);
         expect(() => { container.destroy(); }).not.toThrowError();
-        document.body.innerHTML = '';
+        
         element = undefined;
         container = undefined;
         setTimeout(() => {
@@ -72,7 +72,7 @@ describe('Document Editor container properties_4', () => {
         expect(element.childNodes.length).toBe(0);
         document.body.removeChild(element);
         expect(() => { container.destroy(); }).not.toThrowError();
-        document.body.innerHTML = '';
+        
         element = undefined;
         container = undefined;
         setTimeout(() => {

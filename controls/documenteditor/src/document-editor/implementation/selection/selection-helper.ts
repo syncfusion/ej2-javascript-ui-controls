@@ -427,10 +427,10 @@ export class TextPosition {
     /**
      * @private
      */
-    public setPositionParagraph(line: LineWidget, offsetInLine: number, isRetrieveBookmark?: boolean): void {
+    public setPositionParagraph(line: LineWidget, offsetInLine: number, updatePhysicalPosition: boolean = true): void {
         this.currentWidget = line;
         this.offset = offsetInLine;
-        if (!isRetrieveBookmark) {
+        if(updatePhysicalPosition) {
             this.updatePhysicalPosition(true);
         }
     }
@@ -943,6 +943,8 @@ export class TextPosition {
         if (start === end) {
             return true;
         }
+        start = start.replace(/G;/g, '');
+        end = end.replace(/G;/g, '');
         start = start.replace(/S;/g, '');
         end = end.replace(/S;/g, '');
         start = start.replace(/C;/g, '');

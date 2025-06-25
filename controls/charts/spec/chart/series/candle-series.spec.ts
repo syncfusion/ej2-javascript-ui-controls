@@ -25,7 +25,8 @@ import  {profile , inMB, getMemoryProfile} from '../../common.spec';
 import { Export} from '../../../src/chart/print-export/export';
 import { ILoadedEventArgs, IAnimationCompleteEventArgs, 
     ILegendRenderEventArgs, IPointRenderEventArgs } from '../../../src/chart/model/chart-interface';
-Chart.Inject(ColumnSeries, CandleSeries, DataLabel, Category, DateTime, Legend, Tooltip, Crosshair, Logarithmic, Selection, Export);
+import { LastValueLabel } from '../../../src/chart/series/last-value-label';
+Chart.Inject(ColumnSeries, CandleSeries, DataLabel, Category, DateTime, Legend, Tooltip, Crosshair, Logarithmic, Selection, Export, LastValueLabel);
 let prevent: Function = (): void => {
     //Prevent Function
 };
@@ -1463,6 +1464,34 @@ describe('Candle Series ', () => {
                 chartObj.loaded = loaded;
                 chartObj.series[0].removePoint(0);
                 chartObj.refresh(); unbindResizeEvents(chartObj);
+            });
+            it('Candle series - checking lastValueLabel', (done: Function) => {
+                loaded = (args: Object): void => {
+                    const lastValueLabelGroup: Element = document.getElementById('container_LastValueLabel_Group_0');
+                    const lastValueLabelBackground: Element = document.getElementById('container_LastValueLabel_Background_0');
+                    const lastValueLabel: Element = document.getElementById('container_LastValueLabel_0');
+                    const lastValueLabelLine: Element = document.getElementById('container_LastValueLine_0');
+                    expect(lastValueLabelGroup.getAttribute('transform') === 'translate(57.5,130.8125)' || lastValueLabelGroup.getAttribute('transform') === 'translate(58.5,130.8125)').toBe(true);
+                    expect(lastValueLabelBackground.getAttribute('x')).toBe('-28');
+                    expect(lastValueLabelBackground.getAttribute('y') === '-13.5' || lastValueLabelBackground.getAttribute('y') === '-13').toBe(true);
+                    expect(lastValueLabel.getAttribute('x')).toBe('-16');
+                    expect(lastValueLabel.getAttribute('y') === '5.25' || lastValueLabel.getAttribute('y') === '4.8999999999999995').toBe(true);
+                    expect(lastValueLabelLine.getAttribute('d') === 'M 701.5 0 L -4 0' || lastValueLabelLine.getAttribute('d') === 'M 1195.5 0 L -4 0').toBe(true);
+                    chartObj.lastValueLabelModule.render(chartObj.series[0] as Series, chartObj, chartObj.series[0].lastValueLabel, true);
+                    done();
+                };
+                chartObj.loaded = loaded;
+                chartObj.series[0].dataSource = [
+                    { x: 3, high: 60, low: 20, open: 35, close: 50 },
+                ];
+                chartObj.series[0].high = 'high';
+                chartObj.series[0].low = 'low';
+                chartObj.series[0].open = 'open';
+                chartObj.series[0].close = 'close';
+                chartObj.series[0].xName = 'x';
+                chartObj.series[0].animation.enable = true;
+                chartObj.series[0].lastValueLabel.enable = true;
+                chartObj.refresh();
             });
         });
     });

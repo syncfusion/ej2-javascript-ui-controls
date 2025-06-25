@@ -32,7 +32,7 @@ describe('PageSetup Dialog Test Case Validation - 1', function () {
         editor = undefined;
         dialog = undefined;
         document.body.removeChild(document.getElementById('container'));
-        document.body.innerHTML = '';
+        
         setTimeout(function () {
             done();
         }, 2000);
@@ -76,7 +76,7 @@ describe('PageSetup Dialog Test Case Validation - 2', function () {
         dialog = undefined;
         selectionSectionFormat = undefined;
         document.body.removeChild(document.getElementById('container'));
-        document.body.innerHTML = '';
+        
         setTimeout(function () {
             done();
         }, 2000);
@@ -258,7 +258,7 @@ describe('PageSetup Dialog Test Case Validation - 3', function () {
         dialog = undefined;
         selectionSectionFormat = undefined;
         document.body.removeChild(document.getElementById('container'));
-        document.body.innerHTML = '';
+        
         setTimeout(function () {
             done();
         }, 2000);
@@ -366,7 +366,7 @@ describe('PageSetup Dialog Test Case Validation - 4', function () {
         dialog = undefined;
         selectionSectionFormat = undefined;
         document.body.removeChild(document.getElementById('container'));
-        document.body.innerHTML = '';
+        
         setTimeout(function () {
             done();
         }, 2000);
@@ -408,7 +408,7 @@ describe('PageSetup Dialog Test Case Validation - 5', function () {
         dialog = undefined;
         selectionSectionFormat = undefined;
         document.body.removeChild(document.getElementById('container'));
-        document.body.innerHTML = '';
+        
         setTimeout(function () {
             done();
         }, 2000);
@@ -543,7 +543,7 @@ describe('PageSetup Dialog Test Case Validation - 6', function () {
         dialog = undefined;
         selectionSectionFormat = undefined;
         document.body.removeChild(document.getElementById('container'));
-        document.body.innerHTML = '';
+        
         setTimeout(function () {
             done();
         }, 2000);
@@ -685,7 +685,7 @@ describe('PageSetup Dialog Test Case Validation - 7', function () {
         dialog = undefined;
         selectionSectionFormat = undefined;
         document.body.removeChild(document.getElementById('container'));
-        document.body.innerHTML = '';
+        
         setTimeout(function () {
             done();
         }, 2000);
@@ -729,7 +729,7 @@ describe('PageSetup Dialog Test Case Validation - 8', function () {
         dialog = undefined;
         selectionSectionFormat = undefined;
         document.body.removeChild(document.getElementById('container'));
-        document.body.innerHTML = '';
+        
         setTimeout(function () {
             done();
         }, 2000);
@@ -775,7 +775,7 @@ describe('PageSetup Dialog Test Case Validation - 10', function () {
         dialog = undefined;
         selectionSectionFormat = undefined;
         document.body.removeChild(document.getElementById('container'));
-        document.body.innerHTML = '';
+        
         setTimeout(function () {
             done();
         }, 2000);

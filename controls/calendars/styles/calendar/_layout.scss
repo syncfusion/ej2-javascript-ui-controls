@@ -252,6 +252,12 @@
     }
   }
 
+  .e-calendar .e-date-icon-prev {
+    @if $skin-name =='tailwind3' {
+      transform: scale(1.1);
+    }
+  }
+
   //normal style
   #{&}.e-calendar {
     @if ($skin-name != 'Material3' and $skin-name != 'fluent2') {

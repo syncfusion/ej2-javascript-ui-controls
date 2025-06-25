@@ -1,6 +1,6 @@
 import { Formatter } from './formatter';
 import { MarkdownParser } from './../../markdown-parser/base/markdown-parser';
-import { IEditorModel, IMarkdownFormatterModel } from './../base/interface';
+import { IEditorModel, IMarkdownFormatterModel } from './../../common/interface';
 import { extend } from '@syncfusion/ej2-base';
 import { markdownKeyConfig, markdownListsTags, markdownFormatTags, markdownSelectionTags } from './../../common/config';
 /**

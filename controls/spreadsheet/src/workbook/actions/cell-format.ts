@@ -106,11 +106,18 @@ export class WorkbookCellFormat {
         }
         if (eventArgs.style.borderLeft !== undefined) {
             for (let i: number = indexes[0]; i <= indexes[2]; i++) {
-                j = indexes[1];
+                let adjacentJ: number;
+                if (this.parent.enableRtl) {
+                    j = indexes[3];
+                    adjacentJ = j + 1;
+                } else {
+                    j = indexes[1];
+                    adjacentJ = j - 1;
+                }
                 if (!triggerBeforeEvent({ borderLeft: eventArgs.style.borderLeft })) {
                     if (!args.isUndoRedo) {
-                        this.checkAdjacentBorder(sheet, 'borderRight', i, j - 1);
-                        this.checkFullBorder(sheet, 'borderRight', i, j - 1);
+                        this.checkAdjacentBorder(sheet, 'borderRight', i, adjacentJ);
+                        this.checkFullBorder(sheet, 'borderRight', i, adjacentJ);
                     }
                     this.checkFullBorder(sheet, 'borderLeft', i, j);
                     this.setCellBorder(sheet, props.cell.style, i, j, args.onActionUpdate, null, null, null, args.isUndoRedo);
@@ -120,14 +127,21 @@ export class WorkbookCellFormat {
         }
         if (eventArgs.style.borderRight !== undefined) {
             for (let i: number = indexes[0]; i <= indexes[2]; i++) {
-                j = indexes[3];
+                let adjacentJ: number;
+                if (this.parent.enableRtl) {
+                    j = indexes[1];
+                    adjacentJ = j - 1;
+                } else {
+                    j = indexes[3];
+                    adjacentJ = j + 1;
+                }
                 const mergeArgs: { range: number[] } = { range: [i, j, i, j] };
                 this.parent.notify(activeCellMergedRange, mergeArgs);
                 j = mergeArgs.range[1];
                 if (!triggerBeforeEvent({ borderRight: eventArgs.style.borderRight })) {
                     if (!args.isUndoRedo) {
-                        this.checkAdjacentBorder(sheet, 'borderLeft', i, j + 1);
-                        this.checkFullBorder(sheet, 'borderLeft', i, j + 1);
+                        this.checkAdjacentBorder(sheet, 'borderLeft', i, adjacentJ);
+                        this.checkFullBorder(sheet, 'borderLeft', i, adjacentJ);
                     }
                     this.checkFullBorder(sheet, 'borderRight', i, j);
                     this.setCellBorder(sheet, props.cell.style, i, j, args.onActionUpdate, null, null, null, args.isUndoRedo);
@@ -369,12 +383,21 @@ export class WorkbookCellFormat {
                 this.setBottomBorderPriority(sheet, range[2], colIdx);
             }
             for (let rowIdx: number = range[0]; rowIdx <= range[2]; rowIdx++) {
-                this.checkAdjacentBorder(sheet, 'borderRight', rowIdx, range[1] - 1);
-                this.checkFullBorder(sheet, 'borderRight', rowIdx, range[1] - 1);
-                this.setCellBorder(sheet, { borderLeft: border }, rowIdx, range[1], actionUpdate);
-                this.checkAdjacentBorder(sheet, 'borderLeft', rowIdx, range[3] + 1);
-                this.checkFullBorder(sheet, 'borderLeft', rowIdx, range[3] + 1);
-                this.setCellBorder(sheet, { borderRight: border }, rowIdx, range[3], actionUpdate, null, type);
+                if (this.parent.enableRtl) {
+                    this.checkAdjacentBorder(sheet, 'borderLeft', rowIdx, range[1] + 1);
+                    this.checkFullBorder(sheet, 'borderLeft', rowIdx, range[1] + 1);
+                    this.setCellBorder(sheet, { borderRight: border }, rowIdx, range[1], actionUpdate);
+                    this.checkAdjacentBorder(sheet, 'borderRight', rowIdx, range[3] - 1);
+                    this.checkFullBorder(sheet, 'borderRight', rowIdx, range[3] - 1);
+                    this.setCellBorder(sheet, { borderLeft: border }, rowIdx, range[3], actionUpdate, null, type);
+                } else {
+                    this.checkAdjacentBorder(sheet, 'borderRight', rowIdx, range[1] - 1);
+                    this.checkFullBorder(sheet, 'borderRight', rowIdx, range[1] - 1);
+                    this.setCellBorder(sheet, { borderLeft: border }, rowIdx, range[1], actionUpdate);
+                    this.checkAdjacentBorder(sheet, 'borderLeft', rowIdx, range[3] + 1);
+                    this.checkFullBorder(sheet, 'borderLeft', rowIdx, range[3] + 1);
+                    this.setCellBorder(sheet, { borderRight: border }, rowIdx, range[3], actionUpdate, null, type);
+                }
             }
         } else if (type === 'Inner') {
             const mergeArgs: MergeArgs = { range: [range[0], range[1], range[0], range[1]] };

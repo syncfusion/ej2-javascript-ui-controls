@@ -1152,7 +1152,7 @@ export class Ribbon extends Component<HTMLElement> implements INotifyPropertyCha
         if (dropDownPopup) {
             dropDownPopup.setProperties({ position: { X: isLeft ? 'left' : 'right', Y: isMenu ? 'top' : 'bottom' } }, true);
             if (isMenu) {
-                dropdown.beforeOpen = (): void => {
+                dropdown.beforeOpen = (e: BeforeOpenCloseMenuEventArgs): void => {
                     if (isLeft) {
                         if (item.type === RibbonItemType.Gallery && this.ribbonGalleryModule) {
                             this.ribbonGalleryModule.checkCollision(dropDownPopup, dropDownPopup.element);
@@ -1163,6 +1163,8 @@ export class Ribbon extends Component<HTMLElement> implements INotifyPropertyCha
                         dropDownPopup.element.style.removeProperty('display');
                         dropDownPopup.element.style.removeProperty('visibility');
                     }
+                    if (item.splitButtonSettings.beforeOpen) { item.splitButtonSettings.beforeOpen.call(this, e); }
+                    if (item.dropDownSettings.beforeOpen) { item.dropDownSettings.beforeOpen.call(this, e); }
                 };
             } else {
                 dropDownPopup.setProperties({ offsetX: 0 }, true);
@@ -1452,10 +1454,8 @@ export class Ribbon extends Component<HTMLElement> implements INotifyPropertyCha
             }
             break;
         case 'GroupButton':
-            if (this.activeLayout === 'Simplified') {
-                this.ribbonGroupButtonModule.addOverFlowEvents(item, itemEle, overflowButton);
-                break;
-            }
+            this.ribbonGroupButtonModule.addOverFlowEvents(item, itemEle, overflowButton);
+            break;
         }
     }
 
@@ -2234,9 +2234,10 @@ export class Ribbon extends Component<HTMLElement> implements INotifyPropertyCha
             className: constants.RIBBON_OVERFLOW_TARGET,
             attrs: { 'tabindex': '0' }
         });
+        const overFlowCss: string = this.cssClass ? constants.SPACE + this.cssClass : '';
         const overflowDDB: DropDownButton = new DropDownButton({
             iconCss: constants.OVERFLOW_ICON,
-            cssClass: constants.DROPDOWNBUTTON_HIDE + constants.SPACE + constants.RIBBON_GROUP_OVERFLOW_DDB,
+            cssClass: constants.DROPDOWNBUTTON_HIDE + constants.SPACE + constants.RIBBON_GROUP_OVERFLOW_DDB + overFlowCss,
             target: overflowTarget,
             locale: this.locale,
             enableRtl: this.enableRtl,
@@ -4590,7 +4591,7 @@ export class Ribbon extends Component<HTMLElement> implements INotifyPropertyCha
                     this.createOverflowPopup(itemProp.item, itemProp.tabIndex, itemProp.group.enableGroupOverflow, itemProp.group.id,
                                              itemProp.group.header, itemContainer, groupContainer);
                 }
-                if (this.activeLayout === 'Simplified' && itemProp.group.enableGroupOverflow) {
+                if (this.activeLayout === 'Simplified' && itemProp.group.enableGroupOverflow && dropdown) {
                     if ((dropdown.target as HTMLElement).childElementCount === 0 ||
                     ((dropdown.target as HTMLElement).childElementCount === 1 &&
                     this.isHeaderVisible(dropdown.target as HTMLElement, itemProp.group.id))) {

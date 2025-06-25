@@ -3,7 +3,7 @@
  * Export default locale
  */
 
-import { SlashMenuItems } from "../base/enum";
+import { SlashMenuItems } from "../../common/enum";
 
 
 export let defaultLocale: { [key: string]: string } = {
@@ -19,6 +19,7 @@ export let defaultLocale: { [key: string]: string } = {
     'importWord': 'Import from Word',
     'exportWord': 'Export to Word',
     'exportPdf': 'Export to PDF',
+    'horizontalLine': 'Horizontal Line',
     'bold': 'Bold',
     'italic': 'Italic',
     'underline': 'Underline',
@@ -140,10 +141,10 @@ export let defaultLocale: { [key: string]: string } = {
     'tableEditHeader': 'Edit Table',
     'TableHeadingText': 'Heading',
     'TableColText': 'Col',
-    'imageInsertLinkHeader':'Insert Link',
-    'editImageHeader':'Edit Image',
-    'editAudioHeader':'Edit Audio',
-    'editVideoHeader':'Edit Video',
+    'imageInsertLinkHeader': 'Insert Link',
+    'editImageHeader': 'Edit Image',
+    'editAudioHeader': 'Edit Audio',
+    'editVideoHeader': 'Edit Video',
     "alignmentsDropDownLeft": 'Align Left',
     "alignmentsDropDownCenter": 'Align Center',
     "alignmentsDropDownRight": 'Align Right',
@@ -198,7 +199,7 @@ export let defaultLocale: { [key: string]: string } = {
     'bulletFormatListCircle': 'Circle',
     'bulletFormatListSquare': 'Square',
     'numberFormatListNone': 'None',
-    'bulletFormatListNone':'None',
+    'bulletFormatListNone': 'None',
     'formatPainter': 'Format Painter',
     'emojiPicker': 'Emoji Picker',
     'embeddedCode': 'Embedded code',
@@ -242,7 +243,8 @@ export let defaultLocale: { [key: string]: string } = {
     'slashMenuItemVideoText': 'Video',
     'slashMenuItemVideoDescription': 'Insert a video.',
     'slashMenuItemEmojiText': 'Emojipicker',
-    'slashMenuItemEmojiDescription': 'Use emojis to express ideas and emoticons.'
+    'slashMenuItemEmojiDescription': 'Use emojis to express ideas and emoticons.',
+    'codeBlock': 'Insert Code Block'
 };
 
 export let toolsLocale: { [key: string]: string } = {
@@ -258,6 +260,7 @@ export let toolsLocale: { [key: string]: string } = {
     'importword': 'importWord',
     'exportword': 'exportWord',
     'exportpdf': 'exportPdf',
+    'horizontalline': 'horizontalLine',
     'bold': 'bold',
     'italic': 'italic',
     'underline': 'underline',
@@ -343,20 +346,21 @@ export let toolsLocale: { [key: string]: string } = {
     'emojiPickerTypeToFind': 'Type to find',
     'emojiPickerNoResultFound': 'No results found',
     'emojiPickerTrySomethingElse': 'Try something else',
-    'inlinecode': 'inlinecode'
+    'inlinecode': 'inlinecode',
+    'codeblock': 'codeBlock'
 };
 
-export let fontNameLocale : { [ket: string]: string }[] = [
-    { locale: 'fontNameSegoeUI', value: 'Segoe UI'},
-    { locale: 'fontNameArial', value: 'Arial,Helvetica,sans-serif'},
-    { locale: 'fontNameGeorgia', value: 'Georgia,serif'},
-    { locale: 'fontNameImpact', value: 'Impact,Charcoal,sans-serif'},
-    { locale: 'fontNameTahoma', value: 'Tahoma,Geneva,sans-serif'},
-    { locale: 'fontNameTimesNewRoman', value: 'Times New Roman,Times,serif'},
-    { locale: 'fontNameVerdana', value: 'Verdana,Geneva,sans-serif'}
+export let fontNameLocale: { [ket: string]: string }[] = [
+    { locale: 'fontNameSegoeUI', value: 'Segoe UI' },
+    { locale: 'fontNameArial', value: 'Arial,Helvetica,sans-serif' },
+    { locale: 'fontNameGeorgia', value: 'Georgia,serif' },
+    { locale: 'fontNameImpact', value: 'Impact,Charcoal,sans-serif' },
+    { locale: 'fontNameTahoma', value: 'Tahoma,Geneva,sans-serif' },
+    { locale: 'fontNameTimesNewRoman', value: 'Times New Roman,Times,serif' },
+    { locale: 'fontNameVerdana', value: 'Verdana,Geneva,sans-serif' }
 ];
 
-export let formatsLocale : { [ket: string]: string }[] = [
+export let formatsLocale: { [ket: string]: string }[] = [
     { locale: 'formatsDropDownParagraph', value: 'P' },
     { locale: 'formatsDropDownCode', value: 'Pre' },
     { locale: 'formatsDropDownHeading1', value: 'H1' },
@@ -380,9 +384,9 @@ export let bulletFormatListLocale: { [ket: string]: string }[] = [
     { locale: 'bulletFormatListDisc', value: 'disc' },
     { locale: 'bulletFormatListCircle', value: 'circle' },
     { locale: 'bulletFormatListSquare', value: 'square' },
-]; 
+];
 
-export const slashMenuCommandsKey = new Map<SlashMenuItems, {text: string, description: string}>([
+export const slashMenuCommandsKey = new Map<SlashMenuItems, { text: string, description: string }>([
     ['Heading 1', { text: 'slashMenuItemHeadingOneText', description: 'slashMenuItemHeadingOneDescription' }],
     ['Heading 2', { text: 'slashMenuItemHeadingTwoText', description: 'slashMenuItemHeadingTwoDescription' }],
     ['Heading 3', { text: 'slashMenuItemHeadingThreeText', description: 'slashMenuItemHeadingThreeDescription' }],

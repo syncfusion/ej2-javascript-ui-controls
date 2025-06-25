@@ -1372,6 +1372,45 @@ describe('Action module', () => {
         });
     });
 
+    describe('960619 - Need to resolve HTML sanitize related issues in kanban in ej2', () => {
+        let kanbanObj: Kanban;
+        beforeAll((done: DoneFn) => {
+            const model: KanbanModel = {
+                dataSource: kanbanData,
+                keyField: 'Status',
+                enableHtmlSanitizer: true,
+                columns: [
+                    { headerText: 'Backlog', keyField: 'Open' },
+                    { headerText: 'In Progress', keyField: 'InProgress' },
+                    { headerText: 'Review', keyField: 'Review' },
+                    { headerText: 'Testing', keyField: 'Testing' },
+                    { headerText: 'Done', keyField: 'Close' }
+                ],
+                cardSettings: {
+                    contentField: 'Summary',
+                    headerField: 'Id'
+                },
+                swimlaneSettings: {
+                    allowDragAndDrop: true,
+                    keyField: 'Assignee'
+                }
+            };
+            kanbanObj = util.createKanban(model, kanbanData, done);
+        });
+
+        afterAll(() => {
+            util.destroy(kanbanObj);
+        });
+
+        it('- EJ2-53597 - Item count when there is no data ', () => {
+            const curData: Record<string, any> = {
+                Id: 111, Status: 'Open', Priority: 'Low', Assignee: 'NewName', Estimate: 0, Tags: 'review', Summary: '<script>alert("Hacked!");</script>'
+            };
+            kanbanObj.addCard(curData);
+            expect(kanbanObj.element.querySelector('.e-swimlane-row[data-key="NewName"]').nextElementSibling.querySelector('.e-card-content').textContent === '').toBe(true);
+        });
+    });
+
     it('memory leak', () => {
         profile.sample();
         const average: number = inMB(profile.averageChange);

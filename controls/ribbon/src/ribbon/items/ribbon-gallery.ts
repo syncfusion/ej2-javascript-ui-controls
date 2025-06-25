@@ -147,8 +147,6 @@ export class RibbonGallery {
                 }
                 if (gallerySettings.groups[parseInt(i.toString(), 10)].itemHeight && gallerySettings.groups[parseInt(i.toString(), 10)].itemHeight !== 'auto') {
                     galleryEle.style.height = gallerySettings.groups[parseInt(i.toString(), 10)].itemHeight + 'px';
-                    galleryEle.style.paddingTop = '0px';
-                    galleryEle.style.paddingBottom = '0px';
                     if (this.parent.activeLayout !== 'Simplified' && !isPopup) {
                         galleryContainerEle.style.flexFlow = 'wrap';
                     }
@@ -260,6 +258,14 @@ export class RibbonGallery {
             galleryWrapper.style.width = itemsWidth + 'px'; }
     }
 
+    private setWrapperStyle(popup: Popup, popupContainerItems: NodeListOf<Element>): void {
+        if (popup.width !== 'auto') {
+            popupContainerItems.forEach((ele: HTMLElement) => {
+                ele.style.flexFlow = 'wrap';
+            });
+        }
+    }
+
     /**
      * Checks the gallery items height.
      *
@@ -351,11 +357,7 @@ export class RibbonGallery {
                     screenWidth = screenWidth - paddingWidth; }
             }
             const popupContainerItems: NodeListOf<Element> = popupEle.querySelectorAll('.e-ribbon-gallery-container');
-            if (popup.width !== 'auto') {
-                popupContainerItems.forEach((ele: HTMLElement) => {
-                    ele.style.flexFlow = 'wrap';
-                });
-            }
+            this.setWrapperStyle(popup, popupContainerItems);
             let isCollideOccurs: boolean = false;
             for (let i: number = 0; i < popupContainerItems.length; i++) {
                 let itemsWidth: number = 0;
@@ -524,6 +526,8 @@ export class RibbonGallery {
                 cssClass: 'e-ribbon-gallery-dropdown',
                 disabled: item.disabled,
                 open: () => {
+                    const popupContainerItems: NodeListOf<Element> = popupContainerEle.querySelectorAll('.e-ribbon-gallery-container');
+                    this.setWrapperStyle(popup, popupContainerItems);
                     this.setFoucsToFirstItem(popupContainerEle, true, item.id);
                 },
                 beforeClose: (args: BeforeOpenCloseMenuEventArgs) => {

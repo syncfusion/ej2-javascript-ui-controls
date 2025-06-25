@@ -117,4 +117,20 @@ export class ImageStructureBase {
         return content;
     }
 
+    /**
+     * @private
+     * @returns {void}
+     */
+    public destroy(): void {
+        this.mImageDictionary = null;
+        this.mIsImageStreamParsed = null;
+        this.mIsImageInterpolated = null;
+        this.mImageFilter = null;
+        this.isDualFilter = null;
+        this.mColorspace = null;
+        this.numberOfComponents = null;
+        this.internalColorSpace = null;
+        this.mImageStream = null;
+    }
+
 }

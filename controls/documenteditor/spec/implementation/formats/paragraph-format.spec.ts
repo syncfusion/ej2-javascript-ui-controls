@@ -101,7 +101,7 @@ describe('Default Paragraph Format API Validation', () => {
         editor.destroy();
         document.body.removeChild(document.getElementById('container'));
         editor = undefined;
-        document.body.innerHTML = '';
+        
     });
 
     it('Check Text Alignment is center', () => {
@@ -128,7 +128,7 @@ describe('Checking AutoSpacing value is appending or not', () => {
         editor.destroy();
         document.body.removeChild(document.getElementById('container'));
         editor = undefined;
-        document.body.innerHTML = '';
+        
         setTimeout(function () {
             done();
         }, 500);
@@ -167,7 +167,7 @@ describe('Checking AutoSpacing value is appending or not', () => {
 describe('Assign the paragraph formatting', () => {
     let container: DocumentEditor;
     beforeAll(() => {
-        document.body.innerHTML = '';
+        
         let ele: HTMLElement = createElement('div', { id: 'container' });
         document.body.appendChild(ele);
         DocumentEditor.Inject(Editor, Selection, EditorHistory, SfdtExport);
@@ -182,7 +182,7 @@ describe('Assign the paragraph formatting', () => {
         container.destroy();
         document.body.removeChild(document.getElementById('container'));
         container = undefined;
-        document.body.innerHTML = '';
+        
         setTimeout(function () {
             done();
         }, 1000);

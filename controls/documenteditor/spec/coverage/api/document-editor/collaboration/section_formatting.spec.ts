@@ -9,7 +9,7 @@ describe('Validate the operation for section format', () => {
     let editor2: DocumentEditor = undefined;
     let version: number = 0;
     beforeAll(() => {
-        document.body.innerHTML = '';
+        
         let ele1: HTMLElement = createElement('div', { id: 'container1' });
         document.body.appendChild(ele1);
         editor1 = new DocumentEditor({ enableEditor: true, enableEditorHistory: true, enableSfdtExport: true, enableSelection: true, isReadOnly: false, enableCollaborativeEditing: true });
@@ -37,7 +37,7 @@ describe('Validate the operation for section format', () => {
         editor2.destroy();
         document.body.removeChild(document.getElementById('container2'));
         editor2 = undefined;
-        document.body.innerHTML = '';
+        
         setTimeout(() => {
             done();
         }, 1000);

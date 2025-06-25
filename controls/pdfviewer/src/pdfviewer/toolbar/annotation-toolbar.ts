@@ -36,6 +36,7 @@ export class AnnotationToolbar {
     private highlightItem: HTMLElement;
     private underlineItem: HTMLElement;
     private strikethroughItem: HTMLElement;
+    private squigglyItem: HTMLElement;
     private fontStyleStrikethroughItem: HTMLElement;
     private fontStyleUnderlineItem: HTMLElement;
     private deleteItem: HTMLElement;
@@ -79,6 +80,7 @@ export class AnnotationToolbar {
     private HighlightElement: any;
     private UnderlineElement: any;
     private StrikethroughElement: any;
+    private SquigglyElement: any;
     private InkAnnotationElement: any;
     private FreeTextElement: any;
     /**
@@ -119,10 +121,13 @@ export class AnnotationToolbar {
     private isMobileUnderlineEnabled: boolean = false;
     private isStrikethroughEnabled: boolean = false;
     private isMobileStrikethroughEnabled: boolean = false;
+    private isSquigglyEnabled: boolean = false;
+    private isMobileSquigglyEnabled: boolean = false;
     private isHighlightBtnVisible: boolean = true;
     private isCommentBtnVisible: boolean = true;
     private isUnderlineBtnVisible: boolean = true;
     private isStrikethroughBtnVisible: boolean = true;
+    private isSquigglyBtnVisible: boolean = true;
     private isColorToolVisible: boolean = true;
     private isOpacityToolVisible: boolean = true;
     private isDeleteAnnotationToolVisible: boolean = true;
@@ -398,13 +403,13 @@ export class AnnotationToolbar {
                         } else if (this.pdfViewer.selectedItems.annotations[0].shapeAnnotationType === 'Ink' || this.pdfViewer.selectedItems.annotations[0].shapeAnnotationType === 'Path') {
                             id = this.pdfViewer.element.id + '_annotation_inkIcon';
                         }
-                        else if (shapeType === 'Highlight' || shapeType === 'Underline' || shapeType === 'Strikethrough') {
+                        else if (shapeType === 'Highlight' || shapeType === 'Underline' || shapeType === 'Strikethrough' || shapeType === 'Squiggly') {
                             id = this.pdfViewer.element.id + '_highlightIcon';
                         } else {
                             id = this.pdfViewer.element.id + '_annotation_shapesIcon';
                         }
                     }
-                    else if (shapeType === 'Highlight' || shapeType === 'Underline' || shapeType === 'Strikethrough') {
+                    else if (shapeType === 'Highlight' || shapeType === 'Underline' || shapeType === 'Strikethrough' || shapeType === 'Squiggly') {
                         id = this.pdfViewer.element.id + '_highlightIcon';
                     } else {
                         id = this.pdfViewer.element.id + '_annotation_shapesIcon';
@@ -817,7 +822,7 @@ export class AnnotationToolbar {
             } else {
                 this.showAnnotationDeleteTool(false, 5, 5);
             }
-            if (annotationToolbarItems.includes('HighlightTool') || annotationToolbarItems.includes('UnderlineTool') || annotationToolbarItems.includes('StrikethroughTool')) {
+            if (annotationToolbarItems.includes('HighlightTool') || annotationToolbarItems.includes('UnderlineTool') || annotationToolbarItems.includes('StrikethroughTool') || annotationToolbarItems.includes('SquigglyTool')) {
                 this.applyHideToToolbar(true, 0, 0);
             }
             else {
@@ -917,6 +922,7 @@ export class AnnotationToolbar {
                 { prefixIcon: 'e-pv-highlight-icon e-pv-icon', className: 'e-pv-highlight-container', id: this.pdfViewer.element.id + '_highlight' },
                 { prefixIcon: 'e-pv-underline-icon e-pv-icon', className: 'e-pv-underline-container', id: this.pdfViewer.element.id + '_underline' },
                 { prefixIcon: 'e-pv-strikethrough-icon e-pv-icon', className: 'e-pv-strikethrough-container', id: this.pdfViewer.element.id + '_strikethrough' },
+                { prefixIcon: 'e-pv-squiggly-icon e-pv-icon', className: 'e-pv-squiggly-container', id: this.pdfViewer.element.id + '_squiggly' },
                 { type: 'Separator', align: 'Left' },
                 { prefixIcon: 'e-pv-annotation-shape-icon e-pv-icon', className: 'e-pv-annotation-shapes-container', id: this.pdfViewer.element.id + '_annotation_shapes' },
                 { type: 'Separator', align: 'Left' },
@@ -955,6 +961,7 @@ export class AnnotationToolbar {
                     this.primaryToolbar.selectItem(this.highlightItem);
                     this.primaryToolbar.deSelectItem(this.underlineItem);
                     this.primaryToolbar.deSelectItem(this.strikethroughItem);
+                    this.primaryToolbar.deSelectItem(this.squigglyItem);
                     this.primaryToolbar.deSelectItem(this.freeTextEditItem);
                     this.primaryToolbar.deSelectItem(this.inkAnnotationItem);
                 }
@@ -962,6 +969,7 @@ export class AnnotationToolbar {
                     this.primaryToolbar.selectItem(this.underlineItem);
                     this.primaryToolbar.deSelectItem(this.highlightItem);
                     this.primaryToolbar.deSelectItem(this.strikethroughItem);
+                    this.primaryToolbar.deSelectItem(this.squigglyItem);
                     this.primaryToolbar.deSelectItem(this.freeTextEditItem);
                     this.primaryToolbar.deSelectItem(this.inkAnnotationItem);
                 }
@@ -969,6 +977,15 @@ export class AnnotationToolbar {
                     this.primaryToolbar.selectItem(this.strikethroughItem);
                     this.primaryToolbar.deSelectItem(this.highlightItem);
                     this.primaryToolbar.deSelectItem(this.underlineItem);
+                    this.primaryToolbar.deSelectItem(this.squigglyItem);
+                    this.primaryToolbar.deSelectItem(this.freeTextEditItem);
+                    this.primaryToolbar.deSelectItem(this.inkAnnotationItem);
+                }
+                else if (this.isMobileSquigglyEnabled) {
+                    this.primaryToolbar.selectItem(this.squigglyItem);
+                    this.primaryToolbar.deSelectItem(this.highlightItem);
+                    this.primaryToolbar.deSelectItem(this.underlineItem);
+                    this.primaryToolbar.deSelectItem(this.strikethroughItem);
                     this.primaryToolbar.deSelectItem(this.freeTextEditItem);
                     this.primaryToolbar.deSelectItem(this.inkAnnotationItem);
                 }
@@ -1086,6 +1103,7 @@ export class AnnotationToolbar {
         items.push({ prefixIcon: 'e-pv-highlight-icon e-pv-icon', className: 'e-pv-highlight-container', id: this.pdfViewer.element.id + '_highlight', align: 'Left' });
         items.push({ prefixIcon: 'e-pv-underline-icon e-pv-icon', className: 'e-pv-underline-container', id: this.pdfViewer.element.id + '_underline', align: 'Left' });
         items.push({ prefixIcon: 'e-pv-strikethrough-icon e-pv-icon', className: 'e-pv-strikethrough-container', id: this.pdfViewer.element.id + '_strikethrough', align: 'Left' });
+        items.push({ prefixIcon: 'e-pv-squiggly-icon e-pv-icon', className: 'e-pv-squiggly-container', id: this.pdfViewer.element.id + '_squiggly', align: 'Left' });
         items.push({ type: 'Separator', align: 'Left', cssClass: 'e-pv-hightlight-separator-container' });
         items.push({ template: shapesTemplate, align: 'Left', cssClass: 'e-pv-shape-template-container' });
         items.push({ type: 'Separator', align: 'Left', cssClass: 'e-pv-shape-separator-container' });
@@ -1880,9 +1898,11 @@ export class AnnotationToolbar {
             id = this.pdfViewer.element.id + '_underlineIcon';
         } else if (id === this.pdfViewer.element.id + '_strikethrough') {
             id = this.pdfViewer.element.id + '_strikethroughIcon';
+        } else if (id === this.pdfViewer.element.id + '_squiggly') {
+            id = this.pdfViewer.element.id + '_squigglyIcon';
         }
         if (id === this.pdfViewer.element.id + '_annotation_shapesIcon' || id === this.pdfViewer.element.id + '_annotation_calibrateIcon' || id === this.pdfViewer.element.id + '_annotation_freeTextEdit' ||
-            id === this.pdfViewer.element.id + '_highlightIcon' || id === this.pdfViewer.element.id + '_underlineIcon' || id === this.pdfViewer.element.id + '_strikethroughIcon' || id === this.pdfViewer.element.id + '_annotation_inkIcon' || id === this.pdfViewer.element.id + '_annotation_handwrittenSign') {
+            id === this.pdfViewer.element.id + '_highlightIcon' || id === this.pdfViewer.element.id + '_underlineIcon' || id === this.pdfViewer.element.id + '_strikethroughIcon' ||  id === this.pdfViewer.element.id + '_squigglyIcon' || id === this.pdfViewer.element.id + '_annotation_inkIcon' || id === this.pdfViewer.element.id + '_annotation_handwrittenSign') {
             if (id !== this.pdfViewer.element.id + '_annotation_handwrittenSign' && id !== this.pdfViewer.element.id + '_annotation_inkIcon') {
                 this.colorDropDownElement = this.pdfViewerBase.getElement('_annotation_color');
                 this.colorPalette = this.createColorPicker(this.colorDropDownElement.id);
@@ -1990,6 +2010,9 @@ export class AnnotationToolbar {
                     break;
                 case 'Strikethrough':
                     this.setColorInPicker(this.colorPalette, this.pdfViewer.annotationModule.textMarkupAnnotationModule.strikethroughColor);
+                    break;
+                case 'Squiggly':
+                    this.setColorInPicker(this.colorPalette, this.pdfViewer.annotationModule.textMarkupAnnotationModule.squigglyColor);
                     break;
                 }
             }
@@ -2276,9 +2299,7 @@ export class AnnotationToolbar {
         if (this.pdfViewer.annotationModule.textMarkupAnnotationModule) {
             if (this.pdfViewer.annotationModule.textMarkupAnnotationModule.currentTextMarkupAnnotation) {
                 if (!isBlazor()) {
-                    if (this.isCurrentAnnotationOpacitySet && args.name === 'changed') {
-                        this.isCurrentAnnotationOpacitySet = false;
-                    } else {
+                    if (args.name === 'changed' && args.previousValue !== args.value) {
                         this.pdfViewer.annotationModule.textMarkupAnnotationModule.modifyOpacityProperty(args);
                     }
                 } else {
@@ -2294,6 +2315,9 @@ export class AnnotationToolbar {
                     break;
                 case 'Strikethrough':
                     this.pdfViewer.annotationModule.textMarkupAnnotationModule.strikethroughOpacity = opacityValue / 100;
+                    break;
+                case 'Squiggly':
+                    this.pdfViewer.annotationModule.textMarkupAnnotationModule.squigglyOpacity = opacityValue / 100;
                     break;
                 }
             }
@@ -2371,6 +2395,9 @@ export class AnnotationToolbar {
                     break;
                 case 'Strikethrough':
                     this.opacitySlider.value = this.pdfViewer.annotationModule.textMarkupAnnotationModule.strikethroughOpacity * 100;
+                    break;
+                case 'Squiggly':
+                    this.opacitySlider.value = this.pdfViewer.annotationModule.textMarkupAnnotationModule.squigglyOpacity * 100;
                     break;
                 }
             }
@@ -2637,7 +2664,7 @@ export class AnnotationToolbar {
             }
             items.push({ template: strokeTemplate });
             items.push({ template: thicknessTemplate });
-        } else if (shapeType === 'Underline' || shapeType === 'Highlight' || shapeType === 'Strikethrough') {
+        } else if (shapeType === 'Underline' || shapeType === 'Highlight' || shapeType === 'Strikethrough' || shapeType === 'Squiggly') {
             if (shapeType === 'Highlight') {
                 items.push({ prefixIcon: 'e-pv-highlight-icon e-pv-icon' });
                 items.push({ type: 'Separator', align: 'Left' });
@@ -2646,6 +2673,9 @@ export class AnnotationToolbar {
                 items.push({ type: 'Separator', align: 'Left' });
             } else if (shapeType === 'Strikethrough') {
                 items.push({ prefixIcon: 'e-pv-strikethrough-icon e-pv-icon' });
+                items.push({ type: 'Separator', align: 'Left' });
+            } else if (shapeType === 'Squiggly') {
+                items.push({ prefixIcon: 'e-pv-squiggly-icon e-pv-icon' });
                 items.push({ type: 'Separator', align: 'Left' });
             }
             items.push({ template: colorTemplate });
@@ -3050,6 +3080,7 @@ export class AnnotationToolbar {
         this.highlightItem = this.primaryToolbar.addClassToolbarItem('_highlight', 'e-pv-highlight', this.pdfViewer.localeObj.getConstant('Highlight'));
         this.underlineItem = this.primaryToolbar.addClassToolbarItem('_underline', 'e-pv-underline', this.pdfViewer.localeObj.getConstant('Underline'));
         this.strikethroughItem = this.primaryToolbar.addClassToolbarItem('_strikethrough', 'e-pv-strikethrough', this.pdfViewer.localeObj.getConstant('Strikethrough'));
+        this.squigglyItem = this.primaryToolbar.addClassToolbarItem('_squiggly', 'e-pv-squiggly', this.pdfViewer.localeObj.getConstant('Squiggly'));
         this.shapesItem = this.primaryToolbar.addClassToolbarItem('_annotation_shapes', 'e-pv-annotation-shapes', this.pdfViewer.localeObj.getConstant('Add Shapes'));
         this.calibrateItem = this.primaryToolbar.addClassToolbarItem('_annotation_calibrate', 'e-pv-annotation-calibrate', this.pdfViewer.localeObj.getConstant('Calibrate'));
         this.freeTextEditItem = this.primaryToolbar.addClassToolbarItem('_annotation_freeTextEdit', 'e-pv-annotation-freeTextEdit', this.pdfViewer.localeObj.getConstant('Free Text'));
@@ -3100,6 +3131,9 @@ export class AnnotationToolbar {
                     break;
                 case 'Strikethrough':
                     this.pdfViewer.annotationModule.textMarkupAnnotationModule.strikethroughColor = currentColor;
+                    break;
+                case 'Squiggly':
+                    this.pdfViewer.annotationModule.textMarkupAnnotationModule.squigglyColor = currentColor;
                     break;
                 }
             }
@@ -3366,6 +3400,7 @@ export class AnnotationToolbar {
         this.highlightItem = this.primaryToolbar.addClassToolbarItem('_highlight', 'e-pv-highlight', this.pdfViewer.localeObj.getConstant('Highlight'));
         this.underlineItem = this.primaryToolbar.addClassToolbarItem('_underline', 'e-pv-underline', this.pdfViewer.localeObj.getConstant('Underline'));
         this.strikethroughItem = this.primaryToolbar.addClassToolbarItem('_strikethrough', 'e-pv-strikethrough', this.pdfViewer.localeObj.getConstant('Strikethrough'));
+        this.squigglyItem = this.primaryToolbar.addClassToolbarItem('_squiggly', 'e-pv-squiggly', this.pdfViewer.localeObj.getConstant('Squiggly'));
         this.deleteItem = this.primaryToolbar.addClassToolbarItem('_annotation_delete', 'e-pv-annotation-delete', this.pdfViewer.localeObj.getConstant('Delete') + (' (delete)'));
         this.freeTextEditItem = this.primaryToolbar.addClassToolbarItem('_annotation_freeTextEdit', 'e-pv-annotation-freeTextEdit', this.pdfViewer.localeObj.getConstant('Free Text'));
         this.inkAnnotationItem = this.primaryToolbar.addClassToolbarItem('_annotation_ink', 'e-pv-annotation-ink', this.pdfViewer.localeObj.getConstant('Draw Ink'));
@@ -3401,12 +3436,14 @@ export class AnnotationToolbar {
                     this.primaryToolbar.selectItem(this.highlightItem);
                     this.primaryToolbar.deSelectItem(this.underlineItem);
                     this.primaryToolbar.deSelectItem(this.strikethroughItem);
+                    this.primaryToolbar.deSelectItem(this.squigglyItem);
                     this.primaryToolbar.deSelectItem(this.freeTextEditItem);
                     this.primaryToolbar.deSelectItem(this.inkAnnotationItem);
                     this.textMarkupForMobile(args);
                     this.isMobileHighlightEnabled = true;
                     this.isMobileUnderlineEnabled = false;
                     this.isMobileStrikethroughEnabled = false;
+                    this.isMobileSquigglyEnabled = false;
                 }
                 else {
                     this.deselectAllItemsForMobile();
@@ -3429,12 +3466,14 @@ export class AnnotationToolbar {
                     this.primaryToolbar.selectItem(this.underlineItem);
                     this.primaryToolbar.deSelectItem(this.highlightItem);
                     this.primaryToolbar.deSelectItem(this.strikethroughItem);
+                    this.primaryToolbar.deSelectItem(this.squigglyItem);
                     this.primaryToolbar.deSelectItem(this.freeTextEditItem);
                     this.primaryToolbar.deSelectItem(this.inkAnnotationItem);
                     this.textMarkupForMobile(args);
                     this.isMobileUnderlineEnabled = true;
                     this.isMobileHighlightEnabled = false;
                     this.isMobileStrikethroughEnabled = false;
+                    this.isMobileSquigglyEnabled = false;
                 }
                 else {
                     this.deselectAllItemsForMobile();
@@ -3457,12 +3496,43 @@ export class AnnotationToolbar {
                     this.primaryToolbar.selectItem(this.strikethroughItem);
                     this.primaryToolbar.deSelectItem(this.highlightItem);
                     this.primaryToolbar.deSelectItem(this.underlineItem);
+                    this.primaryToolbar.deSelectItem(this.squigglyItem);
                     this.primaryToolbar.deSelectItem(this.freeTextEditItem);
                     this.primaryToolbar.deSelectItem(this.inkAnnotationItem);
                     this.textMarkupForMobile(args);
                     this.isMobileStrikethroughEnabled = true;
                     this.isMobileUnderlineEnabled = false;
                     this.isMobileHighlightEnabled = false;
+                    this.isMobileSquigglyEnabled = false;
+                }
+                else {
+                    this.deselectAllItemsForMobile();
+                    this.pdfViewer.annotationModule.setAnnotationMode('None');
+                }
+            }
+            this.pdfViewer.annotation.triggerAnnotationUnselectEvent();
+            this.pdfViewer.annotation.triggerSignatureUnselectEvent();
+            break;
+        case this.pdfViewer.element.id + '_squiggly':
+        case this.pdfViewer.element.id + '_squigglyIcon':
+            this.pdfViewer.tool = '';
+            if (!Browser.isDevice) {
+                this.pdfViewer.tool = '';
+                this.resetFreeTextAnnot();
+                this.handleSquiggly();
+            } else {
+                if (!this.isMobileSquigglyEnabled) {
+                    this.pdfViewer.annotationModule.setAnnotationMode('Squiggly');
+                    this.primaryToolbar.selectItem(this.squigglyItem);
+                    this.primaryToolbar.deSelectItem(this.highlightItem);
+                    this.primaryToolbar.deSelectItem(this.strikethroughItem);
+                    this.primaryToolbar.deSelectItem(this.underlineItem);
+                    this.primaryToolbar.deSelectItem(this.freeTextEditItem);
+                    this.primaryToolbar.deSelectItem(this.inkAnnotationItem);
+                    this.textMarkupForMobile(args);
+                    this.isMobileUnderlineEnabled = false;
+                    this.isMobileHighlightEnabled = false;
+                    this.isMobileStrikethroughEnabled = false;
                 }
                 else {
                     this.deselectAllItemsForMobile();
@@ -3677,6 +3747,7 @@ export class AnnotationToolbar {
         this.isStrikethroughEnabled = false;
         this.isHighlightEnabled = false;
         this.isUnderlineEnabled = false;
+        this.isSquigglyEnabled = false;
         const freeTextAnnotationModule: FreeTextAnnotation = this.pdfViewer.annotation.freeTextAnnotationModule;
         freeTextAnnotationModule.setAnnotationType('FreeText');
         freeTextAnnotationModule.isNewFreeTextAnnot = true;
@@ -3685,6 +3756,7 @@ export class AnnotationToolbar {
         this.primaryToolbar.deSelectItem(this.highlightItem);
         this.primaryToolbar.deSelectItem(this.underlineItem);
         this.primaryToolbar.deSelectItem(this.strikethroughItem);
+        this.primaryToolbar.deSelectItem(this.squigglyItem);
         this.primaryToolbar.selectItem(this.freeTextEditItem);
         this.updateColorInIcon(this.colorDropDownElement, this.pdfViewer.annotationModule.freeTextAnnotationModule.fillColor);
         this.updateColorInIcon(this.strokeDropDownElement, this.pdfViewer.annotationModule.freeTextAnnotationModule.borderColor);
@@ -3836,85 +3908,90 @@ export class AnnotationToolbar {
             } else {
                 this.showStrikethroughTool(false, 2, 2);
             }
-            if (annotationToolbarItems.indexOf('ShapeTool') !== -1) {
-                this.showShapeAnnotationTool(true, 4, 4);
+            if (annotationToolbarItems.indexOf('SquigglyTool') !== -1) {
+                this.showSquigglyTool(true, 3, 3);
             } else {
-                this.showShapeAnnotationTool(false, 4, 4);
+                this.showSquigglyTool(false, 3, 3);
+            }
+            if (annotationToolbarItems.indexOf('ShapeTool') !== -1) {
+                this.showShapeAnnotationTool(true, 5, 5);
+            } else {
+                this.showShapeAnnotationTool(false, 5, 5);
             }
             if (annotationToolbarItems.indexOf('CalibrateTool') !== -1) {
-                this.showCalibrateAnnotationTool(true, 6, 6);
+                this.showCalibrateAnnotationTool(true, 7, 7);
             } else {
-                this.showCalibrateAnnotationTool(false, 6, 6);
+                this.showCalibrateAnnotationTool(false, 7, 7);
             }
             if (annotationToolbarItems.indexOf('ColorEditTool') !== -1) {
-                this.showColorEditTool(true, 22, 22);
+                this.showColorEditTool(true, 23, 23);
             } else {
-                this.showColorEditTool(false, 22, 22);
+                this.showColorEditTool(false, 23, 23);
             }
             if (annotationToolbarItems.indexOf('StrokeColorEditTool') !== -1) {
-                this.showStrokeColorEditTool(true, 23, 23);
+                this.showStrokeColorEditTool(true, 24, 24);
             } else {
-                this.showStrokeColorEditTool(false, 23, 23);
+                this.showStrokeColorEditTool(false, 24, 24);
             }
             if (annotationToolbarItems.indexOf('ThicknessEditTool') !== -1) {
-                this.showThicknessEditTool(true, 24, 24);
+                this.showThicknessEditTool(true, 25, 25);
             } else {
-                this.showThicknessEditTool(false, 24, 24);
+                this.showThicknessEditTool(false, 25, 25);
             }
             if (annotationToolbarItems.indexOf('OpacityEditTool') !== -1) {
-                this.showOpacityEditTool(true, 25, 25);
+                this.showOpacityEditTool(true, 26, 26);
             } else {
-                this.showOpacityEditTool(false, 25, 25);
+                this.showOpacityEditTool(false, 26, 26);
             }
             if (annotationToolbarItems.indexOf('AnnotationDeleteTool') !== -1) {
-                this.showAnnotationDeleteTool(true, 27, 27);
+                this.showAnnotationDeleteTool(true, 28, 28);
             } else {
-                this.showAnnotationDeleteTool(false, 27, 27);
+                this.showAnnotationDeleteTool(false, 28, 28);
             }
             if (annotationToolbarItems.indexOf('StampAnnotationTool') !== -1) {
-                this.showStampAnnotationTool(true, 10, 10);
+                this.showStampAnnotationTool(true, 11, 11);
             } else {
-                this.showStampAnnotationTool(false, 10, 10);
+                this.showStampAnnotationTool(false, 11, 11);
             }
             if (annotationToolbarItems.indexOf('HandWrittenSignatureTool') !== -1) {
-                this.showSignatureTool(true, 12, 12);
+                this.showSignatureTool(true, 13, 13);
             } else {
-                this.showSignatureTool(false, 12, 12);
+                this.showSignatureTool(false, 13, 13);
             }
             if (annotationToolbarItems.indexOf('FreeTextAnnotationTool') !== -1) {
-                this.showFreeTextAnnotationTool(true, 8, 8);
+                this.showFreeTextAnnotationTool(true, 9, 9);
             } else {
-                this.showFreeTextAnnotationTool(false, 8, 8);
+                this.showFreeTextAnnotationTool(false, 9, 9);
             }
             if (annotationToolbarItems.indexOf('FontFamilyAnnotationTool') !== -1) {
-                this.showFontFamilyAnnotationTool(true, 16, 16);
+                this.showFontFamilyAnnotationTool(true, 17, 17);
             } else {
-                this.showFontFamilyAnnotationTool(false, 16, 16);
+                this.showFontFamilyAnnotationTool(false, 17, 17);
             }
             if (annotationToolbarItems.indexOf('FontSizeAnnotationTool') !== -1) {
-                this.showFontSizeAnnotationTool(true, 17, 17);
+                this.showFontSizeAnnotationTool(true, 18, 18);
             } else {
-                this.showFontSizeAnnotationTool(false, 17, 17);
+                this.showFontSizeAnnotationTool(false, 18, 18);
             }
             if (annotationToolbarItems.indexOf('FontStylesAnnotationTool') !== -1) {
-                this.showFontStylesAnnotationTool(true, 20, 20);
+                this.showFontStylesAnnotationTool(true, 21, 21);
             } else {
-                this.showFontStylesAnnotationTool(false, 20, 20);
+                this.showFontStylesAnnotationTool(false, 21, 21);
             }
             if (annotationToolbarItems.indexOf('FontAlignAnnotationTool') !== -1) {
-                this.showFontAlignAnnotationTool(true, 19, 19);
+                this.showFontAlignAnnotationTool(true, 20, 20);
             } else {
-                this.showFontAlignAnnotationTool(false, 19, 19);
+                this.showFontAlignAnnotationTool(false, 20, 20);
             }
             if (annotationToolbarItems.indexOf('FontColorAnnotationTool') !== -1) {
-                this.showFontColorAnnotationTool(true, 18, 18);
+                this.showFontColorAnnotationTool(true, 19, 19);
             } else {
-                this.showFontColorAnnotationTool(false, 18, 18);
+                this.showFontColorAnnotationTool(false, 19, 19);
             }
             if (annotationToolbarItems.indexOf('CommentPanelTool') !== -1) {
-                this.showCommentPanelTool(true, 28, 28);
+                this.showCommentPanelTool(true, 29, 29);
             } else {
-                this.showCommentPanelTool(false, 28, 28);
+                this.showCommentPanelTool(false, 29, 29);
             }
             this.showInkAnnotationTool();
             this.showSeparator();
@@ -3943,15 +4020,20 @@ export class AnnotationToolbar {
             } else {
                 this.showStrikethroughTool(false, 4, 4);
             }
-            if (annotationToolbarItems.indexOf('ShapeTool') !== -1) {
-                this.showShapeAnnotationTool(true, 6, 6);
+            if (annotationToolbarItems.indexOf('SquigglyTool') !== -1) {
+                this.showSquigglyTool(true, 5, 5);
             } else {
-                this.showShapeAnnotationTool(false, 6, 6);
+                this.showSquigglyTool(false, 5, 5);
+            }
+            if (annotationToolbarItems.indexOf('ShapeTool') !== -1) {
+                this.showShapeAnnotationTool(true, 7, 7);
+            } else {
+                this.showShapeAnnotationTool(false, 7, 7);
             }
             if (annotationToolbarItems.indexOf('CalibrateTool') !== -1) {
-                this.showCalibrateAnnotationTool(true, 8, 8);
+                this.showCalibrateAnnotationTool(true, 9, 9);
             } else {
-                this.showCalibrateAnnotationTool(false, 8, 8);
+                this.showCalibrateAnnotationTool(false, 9, 9);
             }
             const toolbarItems: any = this.pdfViewer.toolbarSettings.toolbarItems;
             if (toolbarItems && toolbarItems.indexOf('CommentTool') !== -1) {
@@ -3960,29 +4042,29 @@ export class AnnotationToolbar {
                 this.showStickyNoteToolInMobile(false);
             }
             if (annotationToolbarItems.indexOf('StampAnnotationTool') !== -1) {
-                this.showStampAnnotationTool(true, 12, 12);
+                this.showStampAnnotationTool(true, 13, 13);
             } else {
-                this.showStampAnnotationTool(false, 12, 12);
+                this.showStampAnnotationTool(false, 13, 13);
             }
             if (annotationToolbarItems.indexOf('HandWrittenSignatureTool') !== -1) {
-                this.showSignatureTool(true, 14, 14);
+                this.showSignatureTool(true, 15, 15);
             } else {
-                this.showSignatureTool(false, 14, 14);
+                this.showSignatureTool(false, 15, 15);
             }
             if (annotationToolbarItems.indexOf('FreeTextAnnotationTool') !== -1) {
-                this.showFreeTextAnnotationTool(true, 10, 10);
+                this.showFreeTextAnnotationTool(true, 11, 11);
             } else {
-                this.showFreeTextAnnotationTool(false, 10, 10);
+                this.showFreeTextAnnotationTool(false, 11, 11);
             }
             if (annotationToolbarItems.indexOf('CommentPanelTool') !== -1) {
-                this.showCommentPanelTool(true, 18, 18);
+                this.showCommentPanelTool(true, 19, 19);
             } else {
-                this.showCommentPanelTool(false, 18, 18);
+                this.showCommentPanelTool(false, 19, 19);
             }
             if (annotationToolbarItems.indexOf('InkAnnotationTool') !== -1) {
-                this.showInkTool(true, 16, 16);
+                this.showInkTool(true, 17, 17);
             } else {
-                this.showInkTool(false, 16, 16);
+                this.showInkTool(false, 17, 17);
             }
             this.showSeparatorInMobile();
         }
@@ -3997,26 +4079,26 @@ export class AnnotationToolbar {
         if (!this.isCommentBtnVisible) {
             this.applyHideToToolbar(false, 1, 1);
         }
-        if ((!this.isHighlightBtnVisible && !this.isUnderlineBtnVisible && !this.isStrikethroughBtnVisible)) {
-            this.applyHideToToolbar(false, 5, 5);
+        if ((!this.isHighlightBtnVisible && !this.isUnderlineBtnVisible && !this.isStrikethroughBtnVisible && !this.isSquigglyBtnVisible)) {
+            this.applyHideToToolbar(false, 6, 6);
         }
         if (!this.isShapeBtnVisible) {
-            this.applyHideToToolbar(false, 7, 7);
+            this.applyHideToToolbar(false, 8, 8);
         }
         if (!this.isCalibrateBtnVisible) {
-            this.applyHideToToolbar(false, 9, 9);
+            this.applyHideToToolbar(false, 10, 10);
         }
         if (!this.isFreeTextBtnVisible) {
-            this.applyHideToToolbar(false, 11, 11);
+            this.applyHideToToolbar(false, 12, 12);
         }
         if (!this.isStampBtnVisible) {
-            this.applyHideToToolbar(false, 13, 13);
+            this.applyHideToToolbar(false, 14, 14);
         }
         if (!this.isSignatureBtnVisible) {
-            this.applyHideToToolbar(false, 15, 15);
+            this.applyHideToToolbar(false, 16, 16);
         }
         if (!this.isInkBtnVisible) {
-            this.applyHideToToolbar(false, 17, 17);
+            this.applyHideToToolbar(false, 18, 18);
         }
     }
 
@@ -4029,34 +4111,34 @@ export class AnnotationToolbar {
     }
 
     private showSeparator(): void {
-        if ((!this.isHighlightBtnVisible && !this.isUnderlineBtnVisible && !this.isStrikethroughBtnVisible)) {
-            this.applyHideToToolbar(false, 3, 3);
+        if ((!this.isHighlightBtnVisible && !this.isUnderlineBtnVisible && !this.isStrikethroughBtnVisible && !this.isSquigglyBtnVisible)) {
+            this.applyHideToToolbar(false, 4, 4);
         }
         if (!this.isShapeBtnVisible) {
-            this.applyHideToToolbar(false, 5, 5);
+            this.applyHideToToolbar(false, 6, 6);
         }
         if (!this.isCalibrateBtnVisible) {
-            this.applyHideToToolbar(false, 7, 7);
+            this.applyHideToToolbar(false, 8, 8);
         }
         if (!this.isFreeTextBtnVisible) {
-            this.applyHideToToolbar(false, 9, 9);
+            this.applyHideToToolbar(false, 10, 10);
         }
         if (!this.isStampBtnVisible) {
-            this.applyHideToToolbar(false, 11, 11);
+            this.applyHideToToolbar(false, 12, 12);
         }
         if (!this.isSignatureBtnVisible) {
-            this.applyHideToToolbar(false, 13, 13);
+            this.applyHideToToolbar(false, 14, 14);
         }
         if (!this.isInkBtnVisible) {
-            this.applyHideToToolbar(false, 15, 15);
+            this.applyHideToToolbar(false, 16, 16);
         }
         if (!this.isFontFamilyToolVisible && !this.isFontSizeToolVisible && !this.isFontColorToolVisible &&
              !this.isFontAlignToolVisible && !this.isFontStylesToolVisible) {
-            this.applyHideToToolbar(false, 21, 21);
+            this.applyHideToToolbar(false, 22, 22);
         }
         if ((!this.isColorToolVisible && !this.isStrokeColorToolVisible && !this.isThicknessToolVisible &&
             !this.isOpacityToolVisible) || !this.isDeleteAnnotationToolVisible) {
-            this.applyHideToToolbar(false, 26, 26);
+            this.applyHideToToolbar(false, 27, 27);
         }
     }
 
@@ -4072,6 +4154,11 @@ export class AnnotationToolbar {
 
     private showStrikethroughTool(isShow: boolean, startIndex: number, endIndex: number): void {
         this.isStrikethroughBtnVisible = isShow;
+        this.applyHideToToolbar(isShow, startIndex, endIndex);
+    }
+
+    private showSquigglyTool(isShow: boolean, startIndex: number, endIndex: number): void {
+        this.isSquigglyBtnVisible = isShow;
         this.applyHideToToolbar(isShow, startIndex, endIndex);
     }
 
@@ -4329,6 +4416,7 @@ export class AnnotationToolbar {
             this.primaryToolbar.selectItem(this.highlightItem);
             this.primaryToolbar.deSelectItem(this.underlineItem);
             this.primaryToolbar.deSelectItem(this.strikethroughItem);
+            this.primaryToolbar.deSelectItem(this.squigglyItem);
             this.primaryToolbar.deSelectItem(this.freeTextEditItem);
             this.primaryToolbar.deSelectItem(this.inkAnnotationItem);
             this.enableTextMarkupAnnotationPropertiesTools(true);
@@ -4338,6 +4426,7 @@ export class AnnotationToolbar {
             this.isHighlightEnabled = true;
             this.isUnderlineEnabled = false;
             this.isStrikethroughEnabled = false;
+            this.isSquigglyEnabled = false;
         } else {
             this.deselectAllItems();
         }
@@ -4352,6 +4441,7 @@ export class AnnotationToolbar {
             this.primaryToolbar.selectItem(this.underlineItem);
             this.primaryToolbar.deSelectItem(this.highlightItem);
             this.primaryToolbar.deSelectItem(this.strikethroughItem);
+            this.primaryToolbar.deSelectItem(this.squigglyItem);
             this.primaryToolbar.deSelectItem(this.freeTextEditItem);
             this.primaryToolbar.deSelectItem(this.inkAnnotationItem);
             this.enableTextMarkupAnnotationPropertiesTools(true);
@@ -4361,6 +4451,7 @@ export class AnnotationToolbar {
             this.isUnderlineEnabled = true;
             this.isHighlightEnabled = false;
             this.isStrikethroughEnabled = false;
+            this.isSquigglyEnabled = false;
         } else {
             this.deselectAllItems();
         }
@@ -4375,6 +4466,7 @@ export class AnnotationToolbar {
             this.primaryToolbar.selectItem(this.strikethroughItem);
             this.primaryToolbar.deSelectItem(this.highlightItem);
             this.primaryToolbar.deSelectItem(this.underlineItem);
+            this.primaryToolbar.deSelectItem(this.squigglyItem);
             this.primaryToolbar.deSelectItem(this.freeTextEditItem);
             this.primaryToolbar.deSelectItem(this.inkAnnotationItem);
             this.enableTextMarkupAnnotationPropertiesTools(true);
@@ -4385,6 +4477,32 @@ export class AnnotationToolbar {
             this.isStrikethroughEnabled = true;
             this.isHighlightEnabled = false;
             this.isUnderlineEnabled = false;
+            this.isSquigglyEnabled = false;
+        } else {
+            this.deselectAllItems();
+        }
+    }
+
+    private handleSquiggly(): void {
+        if (!this.isSquigglyEnabled) {
+            this.updateInteractionTools();
+            this.clearShapeMode();
+            this.clearMeasureMode();
+            this.pdfViewer.annotationModule.textMarkupAnnotationModule.drawTextMarkupAnnotations('Squiggly');
+            this.primaryToolbar.selectItem(this.squigglyItem);
+            this.primaryToolbar.deSelectItem(this.highlightItem);
+            this.primaryToolbar.deSelectItem(this.underlineItem);
+            this.primaryToolbar.deSelectItem(this.strikethroughItem);
+            this.primaryToolbar.deSelectItem(this.freeTextEditItem);
+            this.primaryToolbar.deSelectItem(this.inkAnnotationItem);
+            this.enableTextMarkupAnnotationPropertiesTools(true);
+            this.pdfViewer.annotationModule.textMarkupAnnotationModule.squigglyColor = null;
+            this.setCurrentColorInPicker();
+            this.updateColorInIcon(this.colorDropDownElement, this.pdfViewer.annotationModule.textMarkupAnnotationModule.squigglyColor);
+            this.isSquigglyEnabled = true;
+            this.isUnderlineEnabled = false;
+            this.isHighlightEnabled = false;
+            this.isStrikethroughEnabled = false;
         } else {
             this.deselectAllItems();
         }
@@ -4435,6 +4553,7 @@ export class AnnotationToolbar {
             this.isMobileHighlightEnabled = false;
             this.isMobileUnderlineEnabled = false;
             this.isMobileStrikethroughEnabled = false;
+            this.isMobileSquigglyEnabled = false;
             if (this.pdfViewerBase.isTextMarkupAnnotationModule()) {
                 this.pdfViewer.annotationModule.textMarkupAnnotationModule.isTextMarkupAnnotationMode = false;
                 this.pdfViewer.annotationModule.textMarkupAnnotationModule.showHideDropletDiv(true);
@@ -4443,6 +4562,7 @@ export class AnnotationToolbar {
                 this.primaryToolbar.deSelectItem(this.highlightItem);
                 this.primaryToolbar.deSelectItem(this.underlineItem);
                 this.primaryToolbar.deSelectItem(this.strikethroughItem);
+                this.primaryToolbar.deSelectItem(this.squigglyItem);
                 this.primaryToolbar.deSelectItem(this.freeTextEditItem);
                 this.primaryToolbar.deSelectItem(this.inkAnnotationItem);
             }
@@ -4450,6 +4570,7 @@ export class AnnotationToolbar {
                 this.primaryToolbar.deSelectItem(this.highlightItem);
                 this.primaryToolbar.deSelectItem(this.underlineItem);
                 this.primaryToolbar.deSelectItem(this.strikethroughItem);
+                this.primaryToolbar.deSelectItem(this.squigglyItem);
                 this.primaryToolbar.deSelectItem(this.freeTextEditItem);
                 this.primaryToolbar.deSelectItem(this.inkAnnotationItem);
             }
@@ -4474,6 +4595,7 @@ export class AnnotationToolbar {
         this.isHighlightEnabled = false;
         this.isUnderlineEnabled = false;
         this.isStrikethroughEnabled = false;
+        this.isSquigglyEnabled = false;
         if (this.pdfViewerBase.isTextMarkupAnnotationModule()) {
             this.pdfViewer.annotationModule.textMarkupAnnotationModule.isTextMarkupAnnotationMode = false;
             this.pdfViewer.annotationModule.textMarkupAnnotationModule.showHideDropletDiv(true);
@@ -4485,12 +4607,14 @@ export class AnnotationToolbar {
                 this.primaryToolbar.deSelectItem(this.HighlightElement);
                 this.primaryToolbar.deSelectItem(this.UnderlineElement);
                 this.primaryToolbar.deSelectItem(this.StrikethroughElement);
+                this.primaryToolbar.deSelectItem(this.SquigglyElement);
                 this.primaryToolbar.deSelectItem(this.FreeTextElement);
                 this.primaryToolbar.deSelectItem(this.InkAnnotationElement);
             } else {
                 this.primaryToolbar.deSelectItem(this.highlightItem);
                 this.primaryToolbar.deSelectItem(this.underlineItem);
                 this.primaryToolbar.deSelectItem(this.strikethroughItem);
+                this.primaryToolbar.deSelectItem(this.squigglyItem);
                 this.primaryToolbar.deSelectItem(this.freeTextEditItem);
                 this.primaryToolbar.deSelectItem(this.inkAnnotationItem);
             }
@@ -4750,6 +4874,7 @@ export class AnnotationToolbar {
                 this.enableItems(this.highlightItem.parentElement, isEnable);
                 this.enableItems(this.underlineItem.parentElement, isEnable);
                 this.enableItems(this.strikethroughItem.parentElement, isEnable);
+                this.enableItems(this.squigglyItem.parentElement, isEnable);
             }
             if (this.pdfViewer.enableShapeAnnotation) {
                 this.enableItems(this.shapeElement.parentElement, isEnable);
@@ -4781,7 +4906,7 @@ export class AnnotationToolbar {
      */
     public isAnnotationButtonsEnabled(): boolean {
         let isButtonsEnabled: boolean = false;
-        if (this.isHighlightEnabled || this.isUnderlineEnabled || this.isStrikethroughEnabled) {
+        if (this.isHighlightEnabled || this.isUnderlineEnabled || this.isStrikethroughEnabled || this.isSquigglyEnabled) {
             isButtonsEnabled = true;
         }
         return isButtonsEnabled;
@@ -4817,6 +4942,7 @@ export class AnnotationToolbar {
         this.enableItems(this.highlightItem.parentElement, isEnable);
         this.enableItems(this.underlineItem.parentElement, isEnable);
         this.enableItems(this.strikethroughItem.parentElement, isEnable);
+        this.enableItems(this.squigglyItem.parentElement, isEnable);
     }
 
     /**
@@ -4984,7 +5110,7 @@ export class AnnotationToolbar {
 
     private destroyComponent(): void {
         const componentElement: HTMLElement[] = [this.highlightItem, this.underlineItem, this.strikethroughItem,
-            this.lineElement, this.arrowElement,
+            this.squigglyItem, this.lineElement, this.arrowElement,
             this.rectangleElement, this.circleElement, this.polygonElement, this.calibrateDistance, this.calibrateArea,
             this.calibrateRadius,
             this.calibrateVolume, this.calibratePerimeter, this.freeTextEditItem, this.stampElement,

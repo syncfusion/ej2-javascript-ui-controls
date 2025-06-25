@@ -65,7 +65,7 @@ describe('Close Options pane support testing', () => {
 describe('Perfomance improvement while opening options pane.', () => {
     let editor: DocumentEditor = undefined;
     beforeAll(() => {
-        document.body.innerHTML = '';
+        
         let ele: HTMLElement = createElement('div', { id: 'container' });
         document.body.appendChild(ele);
         editor = new DocumentEditor({ enableEditor: true, enableEditorHistory: true, enableSfdtExport: true, enableSelection: true, isReadOnly: false, enableCollaborativeEditing: true, enableOptionsPane: true, enableSearch: true });
@@ -80,7 +80,7 @@ describe('Perfomance improvement while opening options pane.', () => {
         editor.destroy();
         document.body.removeChild(document.getElementById('container'));
         editor = undefined;
-        document.body.innerHTML = '';
+        
         setTimeout(() => {
             done();
         }, 1000);

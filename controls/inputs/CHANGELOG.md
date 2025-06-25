@@ -2,67 +2,7 @@
 
 ## [Unreleased]
 
-## 29.2.11 (2025-06-17)
-
-### NumericTextBox
-
-#### Bug Fixes
-
-- `#FD66791` - Fixed an issue where the `validatehidden` attribute not allowed on input element.
-
-## 29.2.4 (2025-05-14)
-
-### ColorPicker
-
-#### Bug Fixes
-
-- `#I715125` - Resolved an issue where the `dropdown` could not be reopened using the `Enter` key after it was closed with the `Escape` key.
-
-## 29.1.39 (2025-04-22)
-
-### TextBox
-
-#### Bug Fixes
-
-- `#I701764` - Resolved an issue where the error color was removed from the placeholder text when focusing on the TextBox component.
-
-- `#I707682` - Resolved an issue where the prepend icon was not showing in the Tailwind 3 theme on the TextBox component.
-
-### NumericTextBox
-
-#### Bug Fixes
-
-- `#I704942` - Fixed an issue where the numeric textbox was not functioning correctly when setting `v-model` binding.
-
-## 29.1.38 (2025-04-15)
-
-### TextArea
-
-#### Bug Fixes
-
-`#I698848` - Fixed an issue where the width property was not functioning correctly in the textarea component.
-
-## 29.1.33 (2025-03-25)
-
-### SpeechToText
-
-The SpeechToText control provides seamless voice-to-text conversion in web applications. It features real-time transcription with interim results, multilingual recognition, customizable buttons and tooltips, and error handling, ensuring intuitive and accessible speech recognition.
-
-Explore the demo [here](https://ej2.syncfusion.com/demos/#/fluent2/speech-to-text/default.html)
-
-**Key features**
-
-- **Real-time transcription**: Instantly captures spoken input and converts it into text, ensuring smooth speech recognition.
-- **Interim results**: Provides partial transcriptions as the user speaks, offering dynamic real-time experience before finalizing the text.
-- **Multilingual recognition**: Supports multiple languages allowing users to transcribe speech in their preferred language.
-- **Tooltips**: Tooltips display information about start and stop actions, guiding users throughout the speech recognition process.
-- **Appearance**: Supports predefined styles and allows customization of content and icons to meet the application's design and user preferences.
-
-### Slider
-
-#### Bug Fixes
-
-- `#I695740` - An issue with large tick values in the Range Slider component when setting decimal values for `largeStep` has been resolved.
+## 30.1.37 (2025-06-25)
 
 ### ColorPicker
 

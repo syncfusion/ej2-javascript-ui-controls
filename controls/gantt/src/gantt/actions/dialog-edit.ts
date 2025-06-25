@@ -21,11 +21,9 @@ import {
     EmojiPicker,
     FileManager,
     FormatPainter,
-    MarkdownEditor,
-    IToolbarItems
-} from '@syncfusion/ej2-richtexteditor';
+    MarkdownEditor} from '@syncfusion/ej2-richtexteditor';
 import { AddDialogFieldSettingsModel, EditDialogFieldSettingsModel, TaskFieldsModel, ResourceFieldsModel, AddDialogFieldSettings } from '../models/models';
-import { CObject, DialogFieldType} from '../base/enum';
+import { CObject, ConstraintType, DialogFieldType } from '../base/enum';
 import { ColumnModel as GanttColumnModel } from '../models/column';
 import { TextBox, NumericTextBox, NumericTextBoxModel, MaskedTextBox, TextBoxModel, FormValidatorModel, FormValidator } from '@syncfusion/ej2-inputs';
 import {
@@ -42,6 +40,7 @@ import {
     RowDD  as TreeGridRowDD, ToolbarItem as TreeGridToolbarItem
 } from '@syncfusion/ej2-treegrid';
 import { getUid } from '../base/utils';
+import { IToolbarItems } from '@syncfusion/ej2-richtexteditor/src/common/interface';
 interface EJ2Instance extends HTMLElement {
     // eslint-disable-next-line
     ej2_instances: Object[];
@@ -93,6 +92,7 @@ export class DialogEdit {
     private rowData: IGanttData;
     private beforeOpenArgs: CObject;
     private inputs: Object;
+    private dialogConstraintValue: number;
     private idCollection: IDependencyEditData[];
     private disableUndo: boolean;
     private currentResources: Object[];
@@ -185,6 +185,9 @@ export class DialogEdit {
             if (fieldItem.type === 'General' && (isNullOrUndefined(fieldItem.fields) || fieldItem.fields.length === 0)) {
                 fieldItem.fields = this.getGeneralColumnFields();
             }
+            if (fieldItem.type === 'Advanced' && (isNullOrUndefined(fieldItem.fields) || fieldItem.fields.length === 0)) {
+                fieldItem.fields = this.getAdvancedColumnFields(); // Assuming this method exists
+            }
             if (fieldItem.type === 'Dependency' && isNullOrUndefined(this.parent.taskFields.dependency)
                 || fieldItem.type === 'Resources' && isNullOrUndefined(this.parent.taskFields.resourceInfo)
                 || fieldItem.type === 'Notes' && isNullOrUndefined(this.parent.taskFields.notes)) {
@@ -213,6 +216,16 @@ export class DialogEdit {
                 continue;
             }
             fields.push(this.parent.columnMapping[key as string]);
+        }
+        return fields;
+    }
+    private getAdvancedColumnFields(): string[] {
+        const fields: string[] = [];
+        if (this.parent.columnMapping.constraintType) {
+            fields.push(this.parent.columnMapping.constraintType);
+        }
+        if (this.parent.columnMapping.constraintDate) {
+            fields.push(this.parent.columnMapping.constraintDate);
         }
         return fields;
     }
@@ -256,6 +269,11 @@ export class DialogEdit {
             if (this.parent.columnByField[columnMapping.resourceInfo.valueOf()].visible !== false) {
                 fieldItem.type = 'Resources';
             }
+            dialogFields.push(fieldItem);
+        }
+        if (!isNullOrUndefined(getValue('constraintType', columnMapping)) && !isNullOrUndefined(getValue('constraintDate', columnMapping))) {
+            fieldItem = {};
+            fieldItem.type = 'Advanced';
             dialogFields.push(fieldItem);
         }
         if (!isNullOrUndefined(getValue('notes', columnMapping))) {
@@ -370,7 +388,7 @@ export class DialogEdit {
     public openToolbarEditDialog(): void {
         const gObj: Gantt = this.parent;
         if (gObj.editModule && gObj.editSettings.allowEditing) {
-            if (this.parent.ganttChartModule.focusedRowIndex > -1 && gObj.selectionModule) {
+            if (gObj.selectionModule && this.parent.ganttChartModule.focusedRowIndex > -1) {
                 gObj.selectionModule.selectRow(this.parent.ganttChartModule.focusedRowIndex, false, false);
             }
             const selectedRowId: number | string = gObj.selectionModule ?
@@ -594,7 +612,6 @@ export class DialogEdit {
         this.dialogEditValidationFlag = false;
         this.isFromAddDialog = false;
         this.isFromEditDialog = false;
-        this.parent.dataOperation['isDurationValueUpdated'] = false;
         if (this.dialog && !this.dialogObj.isDestroyed) {
             this.destroyDialogInnerElements();
             this.dialogObj.destroy();
@@ -743,6 +760,12 @@ export class DialogEdit {
                     }
                     tabItem.content = 'Notes';
                     this.beforeOpenArgs[tabItem.content] = this.getNotesModel(dialogField.fields);
+                } else if (dialogField.type === 'Advanced') {
+                    if (isNullOrUndefined(dialogField.headerText)) {
+                        dialogField.headerText = this.localeObj.getConstant('advancedTab');
+                    }
+                    tabItem.content = 'Advanced';
+                    this.beforeOpenArgs[tabItem.content] = this.getAdvancedModel(dialogField.fields);
                 } else {
                     if (isNullOrUndefined(dialogField.fields) || dialogField.fields.length === 0) {
                         continue;
@@ -761,11 +784,7 @@ export class DialogEdit {
         this.beforeOpenArgs.requestType = this.isEdit ? 'beforeOpenEditDialog' : 'beforeOpenAddDialog';
         this.parent.trigger('actionBegin', this.beforeOpenArgs, (arg: ActionBeginArgs | CObject) => {
             if (!arg.cancel) {
-                if (!isNullOrUndefined(this.parent.loadingIndicator) && this.parent.loadingIndicator.indicatorType === 'Shimmer') {
-                    this.parent.showMaskRow();
-                } else {
-                    this.parent.showSpinner();
-                }
+                this.parent['showLoadingIndicator']();
                 this.renderTabItems();
                 tabModel.selected = this.tabSelectedEvent.bind(this);
                 tabModel.height = this.parent.isAdaptive ? '100%' : 'auto';
@@ -798,11 +817,7 @@ export class DialogEdit {
                     this.changeFormObj(actionCompleteArgs.element);
                 }
                 this.parent.trigger('actionComplete', actionCompleteArgs, (actionCompleteArg: CObject) => {
-                    if (!isNullOrUndefined(this.parent.loadingIndicator) && this.parent.loadingIndicator.indicatorType === 'Shimmer') {
-                        this.parent.hideMaskRow();
-                    } else {
-                        this.parent.hideSpinner();
-                    }
+                    this.parent['hideLoadingIndicator']();
                     if (actionCompleteArg.cancel) {
                         this.resetValues();
                     }
@@ -810,12 +825,7 @@ export class DialogEdit {
             }
             else {
                 arg.cancel = false;
-                if (!isNullOrUndefined(this.parent.loadingIndicator) && this.parent.loadingIndicator.indicatorType === 'Shimmer') {
-                    this.parent.hideMaskRow();
-                }
-                else {
-                    this.parent.hideSpinner();
-                }
+                this.parent['hideLoadingIndicator']();
             }
         });
     }
@@ -1031,7 +1041,7 @@ export class DialogEdit {
             (document.querySelector('#' + ganttObj.element.id + '' + 'Resources' +
                 'TabContainer_gridcontrol') as any).ej2_instances[0].saveCell();
         }
-        else if (dialogModule.storeDependencyTab && hasEditedOrAddedRow) {
+        else if (hasEditedOrAddedRow && dialogModule.storeDependencyTab) {
             (document.querySelector('#' + ganttObj.element.id + '' + 'Dependency' +
                 'TabContainer') as any).ej2_instances[0].editModule.batchSave();
         }
@@ -1098,7 +1108,9 @@ export class DialogEdit {
         for (let i: number = 0; i < fields.length; i++) {
             if (fields[i as number] === this.parent.taskFields.dependency ||
                 fields[i as number] === this.parent.taskFields.resourceInfo ||
-                fields[i as number] === this.parent.taskFields.notes) {
+                fields[i as number] === this.parent.taskFields.notes ||
+                fields[i as number] === this.parent.taskFields.constraintDate ||
+                fields[i as number] === this.parent.taskFields.constraintType) {
                 continue;
             }
             if (!isNullOrUndefined(columnByField[fields[i as number]])) {
@@ -1107,6 +1119,28 @@ export class DialogEdit {
             }
         }
         return fieldsModel;
+    }
+    private getAdvancedModel(fields: string[]): Record<string, unknown> {
+        const fieldsModel: Record<string, unknown> = {};
+        const columnByField: Object = this.parent.columnByField;
+        for (let i: number = 0; i < fields.length; i++) {
+            const fieldName: string = fields[i as number];
+            if (
+                !isNullOrUndefined(columnByField[fieldName as string]) &&
+                (fieldName === this.parent.taskFields.constraintDate ||
+                 fieldName === this.parent.taskFields.constraintType)
+            ) {
+                this.createInputModel(columnByField[fieldName as string], fieldsModel);
+            }
+        }
+        return fieldsModel;
+    }
+    private processAndValidateScheduleDates(ganttObj: Gantt, taskSettings: TaskFieldsModel): void {
+        const constraintDate: Element = ganttObj.editModule.dialogModule.dialog.querySelector('#' + ganttObj.element.id + taskSettings.constraintDate);
+        const constraintType: Element = ganttObj.editModule.dialogModule.dialog.querySelector('#' + ganttObj.element.id + taskSettings.constraintType);
+        const startDateElement: Element = this.dialog.querySelector('#' + ganttObj.element.id + taskSettings.startDate);
+        const endDateElement: Element = this.dialog.querySelector('#' + ganttObj.element.id + taskSettings.endDate);
+        this.alignDateWithConstraint(constraintDate, constraintType, startDateElement, endDateElement);
     }
     private createInputModel(column: GanttColumnModel, fieldsModel: object): object {
         const ganttObj: Gantt = this.parent;
@@ -1199,10 +1233,15 @@ export class DialogEdit {
                 datePickerObj.strictMode = true;
                 datePickerObj.firstDayOfWeek = ganttObj.timelineModule.customTimelineSettings.weekStartDay;
                 if (column.field === ganttObj.columnMapping.startDate ||
-                    column.field === ganttObj.columnMapping.endDate) {
+                    column.field === ganttObj.columnMapping.endDate ||
+                    column.field === ganttObj.columnMapping.constraintDate) {
                     datePickerObj.renderDayCell = this.parent.renderWorkingDayCell.bind(this.parent);
                     datePickerObj.change = (args: CObject): void => {
-                        this.validateScheduleFields(args, column, ganttObj);
+                        if (column.field !== taskSettings.constraintDate) {
+                            this.validateScheduleFields(args, column, ganttObj);
+                        } else {
+                            this.processAndValidateScheduleDates(ganttObj, taskSettings);
+                        }
                     };
                 }
                 fieldsModel[column.field] = datePickerObj;
@@ -1219,14 +1258,19 @@ export class DialogEdit {
                     column.field === ganttObj.columnMapping.endDate) {
                     dateTimePickerObj.renderDayCell = this.parent.renderWorkingDayCell.bind(this.parent);
                     dateTimePickerObj.change = (args: CObject): void => {
-                        this.validateScheduleFields(args, column, ganttObj);
+                        if (column.field !== taskSettings.constraintDate) {
+                            this.validateScheduleFields(args, column, ganttObj);
+                        } else {
+                            this.processAndValidateScheduleDates(ganttObj, taskSettings);
+                        }
                     };
                 }
                 fieldsModel[column.field] = dateTimePickerObj;
                 break;
             }
             case 'dropdownedit':
-                if (column.field === ganttObj.columnMapping.type || column.field === ganttObj.columnMapping.manual) {
+                if (column.field === ganttObj.columnMapping.type || column.field === ganttObj.columnMapping.manual ||
+                    column.field === ganttObj.columnMapping.constraintType) {
                     const dataKey: string = 'dataSource';
                     const fieldsKey: string = 'fields';
                     const types: Record<string, unknown>[] = [
@@ -1239,7 +1283,12 @@ export class DialogEdit {
                         if (column.field === taskSettings.manual) {
                             this.editedRecord.ganttProperties.isAutoSchedule = !args.value;
                         }
-                        this.validateScheduleFields(args as CObject, column, ganttObj);
+                        if (column.field !== taskSettings.constraintType) {
+                            this.validateScheduleFields(args as CObject, column, ganttObj);
+                        } else {
+                            this.dialogConstraintValue = Number(args.value);
+                            this.processAndValidateScheduleDates(ganttObj, taskSettings);
+                        }
                     };
                 }
                 fieldsModel[column.field] = common;
@@ -1253,6 +1302,218 @@ export class DialogEdit {
             extend(fieldsModel[column.field], column.edit.params);
         }
         return fieldsModel;
+    }
+    private setConstraintDateBasedOnType(
+        currentDate: Date | undefined,
+        constraintType: number,
+        constraintDateElement: HTMLElement | null,
+        startDate: Date,
+        endDate: Date
+    ): void {
+        if (!currentDate && constraintDateElement) {
+            switch (constraintType) {
+            case ConstraintType.StartNoEarlierThan:
+            case ConstraintType.StartNoLaterThan:
+            case ConstraintType.MustStartOn:
+                constraintDateElement['value'] = new Date(startDate);
+                break;
+            case ConstraintType.FinishNoEarlierThan:
+            case ConstraintType.FinishNoLaterThan:
+            case ConstraintType.MustFinishOn:
+                constraintDateElement['value'] = new Date(endDate);
+                break;
+            }
+        }
+    }
+    private alignDateWithConstraint(
+        constraintDate: Element | null,
+        constraintType: Element | null,
+        startDateElement: Element | null,
+        endDateElement: Element | null
+    ): void {
+        let dateValue: Date = constraintDate
+            ? (constraintDate as HTMLInputElement)['ej2_instances'][0].value
+            : this.editedRecord.ganttProperties.constraintDate;
+
+        const typeValue: number = constraintType
+            ? (constraintType as HTMLInputElement)['ej2_instances'][0].value
+            : this.editedRecord.ganttProperties.constraintType;
+
+        const startDateValue: Date = startDateElement
+            ? (startDateElement as HTMLInputElement)['ej2_instances'][0].value
+            : this.editedRecord.ganttProperties.startDate;
+
+        const endDateValue: Date = endDateElement
+            ? (endDateElement as HTMLInputElement)['ej2_instances'][0].value
+            : this.editedRecord.ganttProperties.endDate;
+        if (
+            !dateValue &&
+            typeValue !== ConstraintType.AsSoonAsPossible &&
+            typeValue !== ConstraintType.AsLateAsPossible &&
+            (constraintDate as HTMLInputElement)
+        ) {
+            this.setConstraintDateBasedOnType(dateValue, typeValue, (constraintDate as HTMLInputElement)['ej2_instances'][0], startDateValue, endDateValue);
+        }
+        // Convert to Date objects for comparison
+        const start: Date = new Date(startDateValue);
+        const end: Date = new Date(endDateValue);
+        let constraint: Date = this.parent['assignTimeToDate'](dateValue, this.parent['getCurrentDayStartTime'](dateValue));
+        const isValidPredecessor: IPredecessor[] = this.parent.predecessorModule['filterPredecessorsByTarget'](
+            this.editedRecord.ganttProperties.predecessor,
+            this.editedRecord,
+            this.parent.viewType
+        );
+        // Handle different constraint types
+        switch (typeValue) {
+        case ConstraintType.MustStartOn: // 2
+            constraint = dateValue = this.parent.dateValidationModule.checkStartDate(new Date(constraint));
+            if (start.getTime() !== constraint.getTime()) {
+                if (startDateElement) {
+                    (startDateElement as HTMLInputElement)['ej2_instances'][0].value = dateValue;
+                }
+            }
+            break;
+        case ConstraintType.MustFinishOn:
+            constraint.setDate(constraint.getDate() + 1);
+            constraint = dateValue = this.parent.dateValidationModule.checkEndDate(new Date(constraint));
+            if (end.getTime() !== constraint.getTime()) {
+                dateValue = this.parent.dateValidationModule.getStartDate(
+                    dateValue,
+                    this.editedRecord.ganttProperties.duration,
+                    this.editedRecord.ganttProperties.durationUnit,
+                    this.editedRecord.ganttProperties
+                );
+                if (startDateElement) {
+                    (startDateElement as HTMLInputElement)['ej2_instances'][0].value = dateValue;
+                }
+            }
+            break;
+        case ConstraintType.StartNoEarlierThan:
+            constraint = dateValue = this.parent.dateValidationModule.checkStartDate(new Date(constraint));
+            if (startDateElement) {
+                (startDateElement as HTMLInputElement)['ej2_instances'][0].value = dateValue;
+            }
+            break;
+        case ConstraintType.StartNoLaterThan: // 5
+            if (
+                this.editedRecord.ganttProperties.predecessor &&
+                this.editedRecord.ganttProperties.predecessor.length > 0 &&
+                isValidPredecessor.length !== 0
+            ) {
+                const dependencyValidationResult: {
+                    isValid: boolean;
+                    maxDate?: Date;
+                } = this.parent.editModule.taskbarEditModule['isValidDependency'](this.editedRecord);
+                if (startDateElement) {
+                    (startDateElement as HTMLInputElement)['ej2_instances'][0].value = dependencyValidationResult.maxDate;
+                }
+            } else if (this.editedRecord.parentItem) {
+                if (startDateElement) {
+                    (startDateElement as HTMLInputElement)['ej2_instances'][0].value = this.parent.getRecordByID(this.editedRecord.parentItem.taskId).ganttProperties.startDate;
+                }
+            } else {
+                if (startDateElement) {
+                    (startDateElement as HTMLInputElement)['ej2_instances'][0].value = this.parent.dateValidationModule.checkStartDate(new Date(this.parent.projectStartDate));
+                }
+            }
+            break;
+        case ConstraintType.FinishNoEarlierThan: // 6
+            constraint.setDate(constraint.getDate() + 1);
+            constraint = dateValue = this.parent.dateValidationModule.checkEndDate(new Date(constraint));
+            if (end.getTime() !== constraint.getTime()) {
+                dateValue = this.parent.dateValidationModule.getStartDate(
+                    dateValue,
+                    this.editedRecord.ganttProperties.duration,
+                    this.editedRecord.ganttProperties.durationUnit,
+                    this.editedRecord.ganttProperties
+                );
+                if (startDateElement) {
+                    (startDateElement as HTMLInputElement)['ej2_instances'][0].value = dateValue;
+                }
+            }
+            break;
+        case ConstraintType.FinishNoLaterThan: // 7
+            if (
+                this.editedRecord.ganttProperties.predecessor &&
+                this.editedRecord.ganttProperties.predecessor.length > 0 &&
+                isValidPredecessor.length !== 0
+            ) {
+                const dependencyValidationResult: {
+                    isValid: boolean;
+                    maxDate?: Date;
+                } = this.parent.editModule.taskbarEditModule['isValidDependency'](this.editedRecord);
+                if (startDateElement) {
+                    (startDateElement as HTMLInputElement)['ej2_instances'][0].value = dependencyValidationResult.maxDate;
+                }
+            } else if (this.editedRecord.parentItem) {
+                if (startDateElement) {
+                    (startDateElement as HTMLInputElement)['ej2_instances'][0].value = this.parent.getRecordByID(this.editedRecord.parentItem.taskId).ganttProperties.startDate;
+                }
+            } else {
+                if (startDateElement) {
+                    (startDateElement as HTMLInputElement)['ej2_instances'][0].value = this.parent.dateValidationModule.checkStartDate(new Date(this.parent.projectStartDate));
+                }
+            }
+            break;
+        case ConstraintType.AsSoonAsPossible: // 0
+            if (
+                this.editedRecord.ganttProperties.predecessor &&
+                this.editedRecord.ganttProperties.predecessor.length > 0 &&
+                isValidPredecessor.length !== 0
+            ) {
+                const dependencyValidationResult: {
+                    isValid: boolean;
+                    maxDate?: Date;
+                } = this.parent.editModule.taskbarEditModule['isValidDependency'](this.editedRecord);
+                if (dependencyValidationResult.maxDate && startDateElement) {
+                    (startDateElement as HTMLInputElement)['ej2_instances'][0].value = dependencyValidationResult.maxDate;
+                }
+            } else if (this.editedRecord.parentItem) {
+                if (startDateElement) {
+                    (startDateElement as HTMLInputElement)['ej2_instances'][0].value = this.parent.getRecordByID(this.editedRecord.parentItem.taskId).ganttProperties.startDate;
+                }
+            } else {
+                if (startDateElement) {
+                    (startDateElement as HTMLInputElement)['ej2_instances'][0].value = this.parent.dateValidationModule.checkStartDate(new Date(this.parent.projectStartDate));
+                }
+            }
+            if ((constraintDate as HTMLInputElement)) {
+                (constraintDate as HTMLInputElement)['ej2_instances'][0].value = null;
+            }
+            break;
+        case ConstraintType.AsLateAsPossible: // 1
+            if ((this.editedRecord as IGanttData)['parentItem']) {
+                const checkedEnd: Date = this.parent.dateValidationModule.checkEndDate(
+                    this.parent.getRecordByID(
+                        (this.editedRecord as IGanttData).parentItem.taskId
+                    ).ganttProperties.endDate
+                );
+                const start: Date = this.parent.dateValidationModule.getStartDate(
+                    checkedEnd,
+                    this.editedRecord.ganttProperties.duration,
+                    this.editedRecord.ganttProperties.durationUnit,
+                    this.editedRecord.ganttProperties
+                );
+                if ((startDateElement as HTMLInputElement)) {
+                    (startDateElement as HTMLInputElement)['ej2_instances'][0].value = start;
+                }
+            } else {
+                const checkedEnd: Date = this.parent.dateValidationModule.checkEndDate(new Date(this.parent.projectEndDate));
+                const start: Date = this.parent.dateValidationModule.getStartDate(
+                    checkedEnd,
+                    this.editedRecord.ganttProperties.duration,
+                    this.editedRecord.ganttProperties.durationUnit,
+                    this.editedRecord.ganttProperties
+                );
+                if ((startDateElement as HTMLInputElement)) {
+                    (startDateElement as HTMLInputElement)['ej2_instances'][0].value = start;
+                }
+            }
+            if ((constraintDate as HTMLInputElement)) {
+                (constraintDate as HTMLInputElement)['ej2_instances'][0].value = null;
+            }
+            break;
+        }
     }
 
     private validateScheduleFields(args: CObject, column: GanttColumnModel, ganttObj: Gantt): boolean {
@@ -1284,7 +1545,12 @@ export class DialogEdit {
             cellValue = args.value as string;
             colName = column.field;
         } else {
-            cellValue = inputElement.value;
+            if (column.editType === 'datetimepickeredit'){
+                cellValue = args.value as string;
+            }
+            else {
+                cellValue = inputElement.value;
+            }
             colName = targetId.replace(ganttObj.element.id, '');
             if (this.parent.columnByField[this.parent.taskFields.id].editType === 'stringedit') {
                 const customFn: (args: { [key: string]: string }) => boolean = (args: { [key: string]: string }) => {
@@ -1321,6 +1587,9 @@ export class DialogEdit {
             }
             if (!isNullOrUndefined(tasks.endDate) && tasks.endDate !== colName) {
                 this.updateScheduleFields(dialog, ganttProp, 'endDate');
+                if (this.parent.taskFields.constraintType) {
+                    this.updateScheduleFields(dialog, ganttProp, 'constraintDate');
+                }
             }
             if (!isNullOrUndefined(tasks.duration) && tasks.duration !== colName || ganttProp.duration >= 0) {
                 this.updateScheduleFields(dialog, ganttProp, 'duration');
@@ -1332,6 +1601,16 @@ export class DialogEdit {
             this.isTriggered = false;
             return true;
         }
+    }
+    private getConstraintDateElement(ganttId: string, columnName: string, taskField: TaskFieldsModel): Element | null {
+        if (columnName === taskField.constraintDate) {
+            for (const item of this.beforeOpenArgs.tabModel['items']) {
+                if (item.header.text === 'Advanced') {
+                    return item.content.querySelector('#' + ganttId + columnName);
+                }
+            }
+        }
+        return null;
     }
 
     private updateScheduleFields(dialog: HTMLElement, ganttProp: ITaskData, ganttField: string): void {
@@ -1360,7 +1639,10 @@ export class DialogEdit {
                 }
             }
         } else if (col.editType === 'datepickeredit' || col.editType === 'datetimepickeredit') {
-            const element: Element = dialog.querySelector('#' + ganttId + columnName);
+            let element: Element = dialog.querySelector('#' + ganttId + columnName);
+            if (!element) {
+                element = this.getConstraintDateElement(ganttId, columnName, taskField);
+            }
             if (element) {
                 const picker: DatePicker = col.editType === 'datepickeredit' ?
                     (<DatePicker>(<EJ2Instance>element).ej2_instances[0]) :
@@ -1472,6 +1754,21 @@ export class DialogEdit {
             this.dialogEditValidationFlag = true;
         }
     }
+    private updateConstraintDate(ganttProp: ITaskData, currentData: IGanttData): void {
+        const constraintType: ConstraintType = ganttProp.constraintType;
+        if (
+            constraintType === ConstraintType.StartNoEarlierThan ||
+            constraintType === ConstraintType.StartNoLaterThan
+        ) {
+            this.parent.setRecordValue('constraintDate', ganttProp.startDate, ganttProp, true);
+        } else if (
+            constraintType === ConstraintType.FinishNoEarlierThan ||
+            constraintType === ConstraintType.FinishNoLaterThan
+        ) {
+            this.parent.setRecordValue('constraintDate', ganttProp.endDate, ganttProp, true);
+        }
+        this.parent.dataOperation.updateMappingData(currentData, 'constraintDate');
+    }
     /**
      *
      * @param {string} columnName .
@@ -1529,6 +1826,9 @@ export class DialogEdit {
                 startDate = this.parent.dateValidationModule.checkStartDate(startDate, ganttProp);
                 this.parent.setRecordValue('startDate', startDate, ganttProp, true);
                 this.validateStartDate(currentData);
+                if (this.parent.taskFields.constraintType) {
+                    this.updateConstraintDate(ganttProp, currentData);
+                }
             } else {
                 if (ganttObj.allowUnscheduledTasks && !(currentData.hasChildRecords)) {
                     this.parent.setRecordValue('startDate', null, ganttProp, true);
@@ -1955,6 +2255,8 @@ export class DialogEdit {
                 continue;
             } else if (item.content === 'General') {
                 item.content = this.renderGeneralTab(item.content);
+            } else if (item.content === 'Advanced') {
+                item.content = this.renderAdvancedTab(item.content); // Assuming this method exists
             } else if (item.content === 'Dependency') {
                 if (this.editedRecord.hasChildRecords && !this.parent.allowParentDependency) {
                     item.disabled = true;
@@ -2233,7 +2535,7 @@ export class DialogEdit {
         }
         const getId: string = divElement.id;
         for (const key of Object.keys(itemModel)) {
-            if (this.parent.columnByField[key as string].visible === false) {
+            if (this.parent.columnByField[key as string].visible === false || key === 'WBSCode' || key === 'WBSPredecessor') {
                 continue;
             }
             const column: GanttColumnModel = this.parent.columnByField[key as string];
@@ -2241,7 +2543,7 @@ export class DialogEdit {
             let inputElements: HTMLElement;
             if (column['editTemplate']) {
                 const childElement: HTMLElement = this.createDivElement('e-edit-form-column');
-                inputModel.forEach((el : HTMLElement)  => childElement.appendChild(el));
+                inputModel.forEach((el : any)  => childElement.appendChild(el));
                 inputElements = childElement;
             }
             else {
@@ -2270,6 +2572,81 @@ export class DialogEdit {
         }
         else if (this.isEdit && !isNullOrUndefined(this.parent.editDialogFields[tabIndex as number]) &&
         !isNullOrUndefined(this.parent.editDialogFields[tabIndex as number].fields)) {
+            fields = this.parent.editDialogFields[tabIndex as number].fields;
+        }
+        if (!isNullOrUndefined(fields)) {
+            const templateFields: string[] = fields.filter((item: string) => !addFields.includes(item));
+            if (!isNullOrUndefined(templateFields)) {
+                const template: string[] = templateFields;
+                for (let i: number = 0; i <= template.length - 1; i++) {
+                    const scriptElement: HTMLScriptElement | null = document.getElementById(template[i as number]) as HTMLScriptElement;
+                    if (!isNullOrUndefined(scriptElement)) {
+                        const templateContent: string = scriptElement.innerHTML;
+                        const div: Element = createElement('div');
+                        div.innerHTML = templateContent;
+                        divElement.appendChild(div.children[0]);
+                    }
+                }
+            }
+        }
+        return divElement;
+    }
+    private renderAdvancedTab(itemName: string, isCustomTab?: boolean): HTMLElement {
+        const ganttObj: Gantt = this.parent;
+        const addFields: any = [];
+        let divElement: HTMLElement;
+        const itemModel: Object = this.beforeOpenArgs[itemName as string];
+        if (isCustomTab) {
+            divElement = this.createDivElement('e-edit-form-row', ganttObj.element.id
+                + '' + itemName + 'TabContainer');
+        } else {
+            divElement = this.createFormElement('e-edit-form-row', ganttObj.element.id
+                + '' + itemName + 'TabContainer');
+        }
+        let table: HTMLElement;
+        let tbody: HTMLElement;
+        if (this.parent.enableAdaptiveUI) {
+            divElement.style.height = '100%';
+            table = createElement('table', { className: 'e-table' });
+            table.style.width = '100%';
+            tbody = createElement('tbody');
+        }
+        const getId: string = divElement.id;
+        for (const key of Object.keys(itemModel)) {
+            if (this.parent.columnByField[key as string].visible === false) {
+                continue;
+            }
+            const column: GanttColumnModel = this.parent.columnByField[key as string];
+            const inputModel: any = itemModel[key as string];
+            let inputElements: HTMLElement;
+            if (column['editTemplate']) {
+                const childElement: HTMLElement = this.createDivElement('e-edit-form-column');
+                inputModel.forEach((el: any) => childElement.appendChild(el));
+                inputElements = childElement;
+            } else {
+                inputElements = this.renderInputElements(inputModel, column);
+            }
+            if (this.parent.enableAdaptiveUI) {
+                tbody.appendChild(inputElements);
+            } else {
+                divElement.appendChild(inputElements);
+            }
+            addFields.push(key);
+        }
+        if (this.parent.enableAdaptiveUI) {
+            table.appendChild(tbody);
+            divElement.appendChild(table);
+        }
+        if (getId !== divElement.id) {
+            divElement.id = getId;
+        }
+        const tabIndex: number = this.getDialogTabIndex('Advanced');
+        let fields: string[] = [];
+        if (!this.isEdit && !isNullOrUndefined(this.parent.addDialogFields[tabIndex as number]) &&
+            !isNullOrUndefined(this.parent.addDialogFields[tabIndex as number].fields)) {
+            fields = this.parent.addDialogFields[tabIndex as number].fields;
+        } else if (this.isEdit && !isNullOrUndefined(this.parent.editDialogFields[tabIndex as number]) &&
+            !isNullOrUndefined(this.parent.editDialogFields[tabIndex as number].fields)) {
             fields = this.parent.editDialogFields[tabIndex as number].fields;
         }
         if (!isNullOrUndefined(fields)) {
@@ -2331,6 +2708,12 @@ export class DialogEdit {
                 }
             }
         }
+        if (!this.editedRecord.ganttProperties.isAutoSchedule) {
+            const { constraintDate, constraintType } = this.parent.taskFields;
+            if ([constraintDate, constraintType].indexOf(column.field) !== -1) {
+                disabled = true;
+            }
+        }
         return disabled;
     }
 
@@ -2378,6 +2761,8 @@ export class DialogEdit {
         gridModel.actionComplete = this.gridActionComplete.bind(this);
         gridModel.dataSource = preData;
         gridModel.enableAdaptiveUI = this.parent.enableAdaptiveUI;
+        gridModel.enableRtl = this.parent.enableRtl;
+        gridModel.locale = this.parent.locale;
         gridModel.actionBegin = this.gridActionBegin.bind(this);
         const columns: GridColumnModel[] = <GridColumnModel[]>gridModel.columns;
         columns[1].edit = {
@@ -2531,6 +2916,8 @@ export class DialogEdit {
         const rowResource: Object[] = ganttData.ganttProperties.resourceInfo;
         let inputModel: TreeGridModel = this.beforeOpenArgs[itemName as string];
         inputModel.enableAdaptiveUI = this.parent.enableAdaptiveUI;
+        inputModel.enableRtl = this.parent.enableRtl;
+        inputModel.locale = this.parent.locale;
         const resourceTreeGridId: string = ganttObj.element.id + '' + itemName + 'TabContainer';
         let resourceData: Object[] = [];
         resourceData = extend([], [], ganttObj.resources, true) as Object[];
@@ -2829,6 +3216,16 @@ export class DialogEdit {
             divElement.appendChild(inputElement);
         }
         inputModel.enabled = !isNullOrUndefined(inputModel.enabled) ? inputModel.enabled : !this.isCheckIsDisabled(column);
+        if (column.field === this.parent.taskFields.constraintType && ganttData.hasChildRecords) {
+            const asSoonAsPossibleText: string = this.parent.treeGridModule['getLocalizedConstraintTypeText']('AsSoonAsPossible');
+            const startNoEarlierThanText: string = this.parent.treeGridModule['getLocalizedConstraintTypeText']('StartNoEarlierThan');
+            const finishNoLaterThanText: string = this.parent.treeGridModule['getLocalizedConstraintTypeText']('FinishNoLaterThan');
+            inputModel.dataSource = (inputModel.dataSource as any[]).filter(({ text }: { text: string }) =>
+                text === asSoonAsPossibleText ||
+                text === startNoEarlierThanText ||
+                text === finishNoLaterThanText
+            );
+        }
         if (column.field === this.parent.taskFields.duration) {
             if (!isNullOrUndefined(column.valueAccessor)) {
                 if (typeof column.valueAccessor === 'string') {
@@ -3116,6 +3513,8 @@ export class DialogEdit {
                 id = id.replace('TabContainer', '');
                 if (id === 'General') {
                     this.updateGeneralTab(element, false);
+                } else if (id === 'Advanced') {
+                    this.updateAdvancedTab(element);
                 } else if (id === 'Dependency') {
                     this.isFromDialogPredecessor = true;
                     this.updatePredecessorTab(element);
@@ -3311,6 +3710,55 @@ export class DialogEdit {
             if (!isCustom) {
                 this.updateScheduleProperties(this.editedRecord, this.rowData);
             }
+            ganttObj.editModule.validateUpdateValues(tasksData, this.rowData, true);
+        }
+    }
+    private updateAdvancedTab(advancedForm: HTMLElement): void {
+        const ganttObj: Gantt = this.parent;
+        const childNodes: NodeList = advancedForm.childNodes;
+        const tasksData: Record<string, unknown> = this.isEdit
+            ? this.rowData as Record<string, unknown>
+            : this.addedRecord as Record<string, unknown>;
+        for (let i: number = 0; i < childNodes.length; i++) {
+            const div: HTMLElement = childNodes[i as number] as HTMLElement;
+            // Get input or textarea element
+            let inputElement: HTMLInputElement | HTMLTextAreaElement =
+                div.querySelector(`input[id^="${ganttObj.element.id}"]`);
+
+            // Check if RichTextEditor is present
+            const editorChild: HTMLInputElement | HTMLTextAreaElement = Array.from(div.children).find((child: Element) =>
+                child.classList.contains('e-richtexteditor')
+            ) as HTMLInputElement | HTMLTextAreaElement | undefined;
+
+            if (editorChild) {
+                inputElement = editorChild;
+            }
+
+            if (inputElement) {
+                const fieldName: string = inputElement.id.replace(ganttObj.element.id, '');
+                const controlObj: CObject = (<EJ2Instance>(
+                    div.querySelector(`#${ganttObj.element.id}${fieldName}`)
+                )).ej2_instances[0] as CObject;
+                const column: GanttColumnModel = ganttObj.columnByField[fieldName as string];
+
+                // Disable undo if value has changed
+                if (
+                    (this.rowData[fieldName as string] !== controlObj.value)
+                ) {
+                    this.disableUndo = true;
+                }
+                if (column && column.edit && !column.edit.params) {
+                    let read: Function = column.edit.read as Function;
+                    if (typeof read === 'string') {
+                        read = getObject(read, window);
+                    }
+                    tasksData[fieldName as string] = read(inputElement, controlObj.value);
+                } else {
+                    tasksData[fieldName as string] = (inputElement as HTMLInputElement)['ej2_instances'][0].value;
+                }
+            }
+        }
+        if (this.isEdit) {
             ganttObj.editModule.validateUpdateValues(tasksData, this.rowData, true);
         }
     }

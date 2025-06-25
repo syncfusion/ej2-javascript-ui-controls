@@ -4,9 +4,9 @@ import { isBlazor, BlazorDragEventArgs } from '@syncfusion/ej2-base';
 import { Browser, EventHandler, Draggable, INotifyPropertyChanged, Collection, ModuleDeclaration } from '@syncfusion/ej2-base';
 import { remove, EmitType } from '@syncfusion/ej2-base';
 import { Accordion, AccordionItemModel, ExpandMode, ExpandEventArgs } from '@syncfusion/ej2-navigations';
-import { NodeModel, ConnectorModel, Node, Connector, Shape, Size, TextDecoration, ConnectorConstraints, NodeConstraints, DiagramTooltipModel, UmlClassifierShapeModel, RelationShipModel } from '../diagram/index';
+import { NodeModel, ConnectorModel, Node, Connector, Shape, Size, TextDecoration, ConnectorConstraints, NodeConstraints, DiagramTooltipModel, UmlClassifierShapeModel, RelationShipModel, Container } from '../diagram/index';
 import { Transform, SwimLane, PathModel, IPaletteExpandArgs } from '../diagram/index';
-import { DiagramRenderer, Container, StackPanel, Margin, BpmnDiagrams, ShapeStyleModel, TextStyleModel } from '../diagram/index';
+import { DiagramRenderer, GroupableView, StackPanel, Margin, BpmnDiagrams, ShapeStyleModel, TextStyleModel } from '../diagram/index';
 import { DiagramElement, TextElement, MarginModel, Canvas, PointModel, IElement } from '../diagram/index';
 import { SymbolPaletteModel, SymbolPreviewModel, PaletteModel, SymbolDragSizeModel } from './symbol-palette-model';
 import { TextWrap, TextOverflow, IPaletteSelectionChangeArgs, HeaderModel, SwimLaneModel } from '../diagram/index';
@@ -885,6 +885,35 @@ export class SymbolPalette extends Component<HTMLElement> implements INotifyProp
                     }
                 }
             }
+            if (symbol.shape.type === 'Container') {
+                const containerObj: NodeModel = (symbol as Node);
+                const containerShape: Container = (symbol.shape as Container);
+                if ((containerShape as Container).hasHeader) {
+                    const header: HeaderModel = (containerShape as Container).header;
+                    const containerStyle: ShapeStyleModel = containerObj.style;
+                    const headerStyle: TextStyleModel = header.style;
+                    const headerObj: NodeModel = {
+                        id: 'header' + randomId(), shape: { type: 'Basic', shape: 'Rectangle' },
+                        width: (containerObj as Node).width,
+                        height: (containerObj as Node).height / 2,
+                        style: headerStyle,
+                        annotations: [{ content: header.annotation.content }]
+                    };
+                    headerObj.offsetX = headerObj.width / 2;
+                    headerObj.offsetY = headerObj.height / 2;
+                    this.addPaletteItem(symbolGroup.id, headerObj);
+                    const containerBody: NodeModel = {
+                        id: 'container' + randomId(), shape: { type: 'Basic', shape: 'Rectangle' },
+                        width:  (containerObj as Node).width,
+                        height: (containerObj as Node).height,
+                        style: containerStyle
+                    };
+                    containerBody.offsetX = (containerObj as Node).width / 2;
+                    containerBody.offsetY = (containerObj as Node).height / 2;
+                    this.addPaletteItem(symbolGroup.id, containerBody);
+                    containerObj.children = [containerBody.id, headerObj.id ];
+                }
+            }
             //Rendering the UML node as an HTML group node ensures that it is visually represented exactly as intended in the diagram
             if (symbol.shape.type === 'UmlClassifier' && !(symbol.shape as RelationShipModel).relationship) {
                 const umlObj: NodeModel = symbol as NodeModel;
@@ -1106,7 +1135,7 @@ export class SymbolPalette extends Component<HTMLElement> implements INotifyProp
         const stackPanel: StackPanel = new StackPanel();
         const obj: NodeModel = symbol as NodeModel;
         let content: DiagramElement; const symbolContainer: Canvas = new Canvas();
-        const container: Container = (symbol instanceof Node) ? (symbol as Node).initContainer() : null;
+        const container: GroupableView = (symbol instanceof Node) ? (symbol as Node).initContainer() : null;
         if (container && !container.children) { container.children = []; }
         //preparing objects
 
@@ -1225,7 +1254,7 @@ export class SymbolPalette extends Component<HTMLElement> implements INotifyProp
     //     }
     //     return symbolInfo;
     // }
-    private getContainer(obj: Node, container: Container): Container {
+    private getContainer(obj: Node, container: GroupableView): GroupableView {
         container.measureChildren = false;
         let bounds: Rect;
         const child: string[] = obj.children;
@@ -1250,7 +1279,7 @@ export class SymbolPalette extends Component<HTMLElement> implements INotifyProp
      * Feature [EJ2- 50705] - Support to add margin between the text and symbols
      */
 
-    private getSymbolDescription(symbolInfo: SymbolInfo, width: number, parent: StackPanel | Container,
+    private getSymbolDescription(symbolInfo: SymbolInfo, width: number, parent: StackPanel | GroupableView,
                                  symbol: NodeModel | ConnectorModel): void {
         if (symbolInfo && symbolInfo.description && symbolInfo.description.text) {
             const textElement: TextElement = new TextElement();
@@ -1308,7 +1337,7 @@ export class SymbolPalette extends Component<HTMLElement> implements INotifyProp
         let sw: number; let sh: number;
         let symbolPreviewWidth: number = symbol.wrapper.children[0].desiredSize.width + symbol.style.strokeWidth;
         let symbolPreviewHeight: number = symbol.wrapper.children[0].desiredSize.height + symbol.style.strokeWidth;
-        const content: DiagramElement = (symbol.wrapper.children[0] as Container).children[0];
+        const content: DiagramElement = (symbol.wrapper.children[0] as GroupableView).children[0];
         const symbolPreview: SymbolSizeModel = (symbol as Node).previewSize;
         if ((symbol && (symbolPreview.width || symbolPreview.height)) ||
             this.symbolPreview.width !== undefined || this.symbolPreview.height !== undefined) {
@@ -1333,7 +1362,7 @@ export class SymbolPalette extends Component<HTMLElement> implements INotifyProp
             symbol.wrapper.children[0].height = symbolPreviewHeight;
             this.measureAndArrangeSymbol(content, symbol instanceof Node);
             this.scaleSymbol(
-                symbol, symbol.wrapper.children[0] as Container, sw, sh, symbolWidth, symbolHeight, true);
+                symbol, symbol.wrapper.children[0] as GroupableView, sw, sh, symbolWidth, symbolHeight, true);
             symbolPreviewWidth = symbolWidth;
             symbolPreviewHeight = symbolHeight;
         }
@@ -1412,18 +1441,18 @@ export class SymbolPalette extends Component<HTMLElement> implements INotifyProp
     }
 
     private measureAndArrangeSymbol(content: DiagramElement, isNode: boolean): void {
-        if ((content as Container).children && !isNode) {
-            (content as Container).children[0].transform = Transform.Self;
+        if ((content as GroupableView).children && !isNode) {
+            (content as GroupableView).children[0].transform = Transform.Self;
         }
         content.measure(new Size());
         content.arrange(content.desiredSize);
-        if ((content as Container).children && (content as Container).children.length > 0) {
-            (content as Container).children[0].transform = Transform.Parent;
+        if ((content as GroupableView).children && (content as GroupableView).children.length > 0) {
+            (content as GroupableView).children[0].transform = Transform.Parent;
         }
     }
 
     private updateSymbolSize(symbol: NodeModel | ConnectorModel, width?: number, height?: number): void {
-        const element: DiagramElement = (symbol.wrapper.children[0] as Container).children[0];
+        const element: DiagramElement = (symbol.wrapper.children[0] as GroupableView).children[0];
         const strokeWidth: number = symbol.style.strokeWidth;
         element.width = (width || element.width) - (strokeWidth + 1);
         element.height = (height || element.height) - (strokeWidth + 1);
@@ -1552,7 +1581,7 @@ export class SymbolPalette extends Component<HTMLElement> implements INotifyProp
             (isPreview ? (item.id + '_preview') : item.id), Math.ceil(width) + 1, Math.ceil(height) + 1);
         div.appendChild(canvas);
         container.appendChild(div);
-        this.diagramRenderer.renderElement((item.wrapper.children[0] as Container).children[0], canvas, htmlLayer);
+        this.diagramRenderer.renderElement((item.wrapper.children[0] as GroupableView).children[0], canvas, htmlLayer);
         return div;
     }
 
@@ -1605,16 +1634,16 @@ export class SymbolPalette extends Component<HTMLElement> implements INotifyProp
             //When dragging the UML node from the palette, set the preview specifically for that UML node
             if (symbol.shape.type === 'UmlClassifier') {
                 if ((symbol.shape as UmlClassifierShapeModel).classifier === 'Class') {
-                    (((symbol.wrapper.children[0] as Container).children[0] as Container).children[0] as DiagramHtmlElement).content = '<div id="parentDiv" style="width:100%; height:50%; border:1px solid #000; background:#6BA5D7; display: flex; align-items: center; justify-content: center;"><div id="textDiv" style="font-size:1vw;">class</div></div>';
+                    (((symbol.wrapper.children[0] as GroupableView).children[0] as GroupableView).children[0] as DiagramHtmlElement).content = '<div id="parentDiv" style="width:100%; height:50%; border:1px solid #000; background:#6BA5D7; display: flex; align-items: center; justify-content: center;"><div id="textDiv" style="font-size:1vw;">class</div></div>';
                 }
                 else if ((symbol.shape as UmlClassifierShapeModel).classifier === 'Enumeration') {
-                    (((symbol.wrapper.children[0] as Container).children[0] as Container).children[0] as DiagramHtmlElement).content = '<div id="parentDiv2" style="width:100%; height:50%; border:1px solid #000; background:#6BA5D7; display: flex; align-items: center; justify-content: center;"><div id="textDiv2" style="font-size:0.8vw;">Enumeration</div></div>';
+                    (((symbol.wrapper.children[0] as GroupableView).children[0] as GroupableView).children[0] as DiagramHtmlElement).content = '<div id="parentDiv2" style="width:100%; height:50%; border:1px solid #000; background:#6BA5D7; display: flex; align-items: center; justify-content: center;"><div id="textDiv2" style="font-size:0.8vw;">Enumeration</div></div>';
                 }
                 else if ((symbol.shape as UmlClassifierShapeModel).classifier === 'Interface') {
-                    (((symbol.wrapper.children[0] as Container).children[0] as Container).children[0] as DiagramHtmlElement).content = '<div id="parentDiv3" style="width:100%; height:50%; border:1px solid #000; background:#6BA5D7; display: flex; align-items: center; justify-content: center;"><div id="textDiv3" style="font-size:0.9vw;">Interface</div></div>';
+                    (((symbol.wrapper.children[0] as GroupableView).children[0] as GroupableView).children[0] as DiagramHtmlElement).content = '<div id="parentDiv3" style="width:100%; height:50%; border:1px solid #000; background:#6BA5D7; display: flex; align-items: center; justify-content: center;"><div id="textDiv3" style="font-size:0.9vw;">Interface</div></div>';
                 }
             }
-            this.diagramRenderer.renderElement((symbol.wrapper.children[0] as Container).children[0], canvas, htmlLayer);
+            this.diagramRenderer.renderElement((symbol.wrapper.children[0] as GroupableView).children[0], canvas, htmlLayer);
         }
         else {
             this.diagramRenderer.renderElement(symbol.wrapper, canvas, htmlLayer);
@@ -2005,22 +2034,22 @@ export class SymbolPalette extends Component<HTMLElement> implements INotifyProp
     //region - helper methods
 
     private scaleSymbol(
-        symbol: NodeModel | ConnectorModel, symbolContainer: Container, sw: number, sh: number,
+        symbol: NodeModel | ConnectorModel, symbolContainer: GroupableView, sw: number, sh: number,
         width: number, height: number, preview?: boolean): void {
         if (symbol instanceof Connector) {
-            const wrapper: Container = symbol.wrapper;
-            symbol.wrapper = symbolContainer.children[0] as Container;
+            const wrapper: GroupableView = symbol.wrapper;
+            symbol.wrapper = symbolContainer.children[0] as GroupableView;
             const point: PointModel = symbol.scale(sw, sh, width, height, symbolContainer.children[0]);
-            const difX: number = width / 2 - (symbolContainer.children[0] as Container).children[0].offsetX + point.x / 2;
-            const difY: number = height / 2 - (symbolContainer.children[0] as Container).children[0].offsetY + point.y / 2;
-            for (const child of (symbolContainer.children[0] as Container).children) {
+            const difX: number = width / 2 - (symbolContainer.children[0] as GroupableView).children[0].offsetX + point.x / 2;
+            const difY: number = height / 2 - (symbolContainer.children[0] as GroupableView).children[0].offsetY + point.y / 2;
+            for (const child of (symbolContainer.children[0] as GroupableView).children) {
                 child.offsetX += difX;
                 child.offsetY += difY;
                 child.staticSize = false;
             }
             symbol.wrapper = wrapper;
         } else if (symbol.shape.type === 'Bpmn' && this.bpmnModule) {
-            const wrapper: Container = symbol.wrapper;
+            const wrapper: GroupableView = symbol.wrapper;
             symbol.wrapper = symbolContainer;
             symbolContainer.children[0].width = width;
             symbolContainer.children[0].height = height;
@@ -2036,16 +2065,16 @@ export class SymbolPalette extends Component<HTMLElement> implements INotifyProp
                     let node: Node;
                     let container: DiagramElement;
                     for (let i: number = 0; i < parentNode.length; i++) {
-                        container = (symbolContainer.children[0] as Container).children[parseInt(i.toString(), 10)];
+                        container = (symbolContainer.children[0] as GroupableView).children[parseInt(i.toString(), 10)];
                         if (container) {
-                            if (((container as Container).children[0] as Container).children) {
+                            if (((container as GroupableView).children[0] as GroupableView).children) {
                                 this.measureChild(container);
                             }
                             node = this.symbolTable[container.id];
                             container.width = node.width;
                             container.height = node.height;
                             container.measure(new Size());
-                            container.arrange((container as Container).children[0].desiredSize);
+                            container.arrange((container as GroupableView).children[0].desiredSize);
                         }
                     }
                 }
@@ -2056,9 +2085,9 @@ export class SymbolPalette extends Component<HTMLElement> implements INotifyProp
                 if (!preview) {
                     let children: DiagramElement;
                     for (let i: number = 0; i < parentNode.length; i++) {
-                        children = (symbolContainer.children[0] as Container).children[parseInt(i.toString(), 10)];
+                        children = (symbolContainer.children[0] as GroupableView).children[parseInt(i.toString(), 10)];
                         if (children) {
-                            if (((children as Container).children[0] as Container).children) {
+                            if (((children as GroupableView).children[0] as GroupableView).children) {
                                 this.scaleChildren(children, w, h, symbol);
                             }
                             this.scaleGroup(children, w, h, symbol);
@@ -2075,9 +2104,9 @@ export class SymbolPalette extends Component<HTMLElement> implements INotifyProp
                         //const node: Node = this.symbolTable[parentNode[i]];
                         scaleWidth = width / symbol.wrapper.children[0].desiredSize.width;
                         scaleHeight = height / symbol.wrapper.children[0].desiredSize.height;
-                        children = (symbolContainer.children[0] as Container).children[parseInt(i.toString(), 10)];
+                        children = (symbolContainer.children[0] as GroupableView).children[parseInt(i.toString(), 10)];
                         if (children) {
-                            if (((children as Container).children[0] as Container).children) {
+                            if (((children as GroupableView).children[0] as GroupableView).children) {
                                 this.scaleChildren(children, scaleWidth, scaleHeight, symbol, true);
                             }
                             this.scaleGroup(children, scaleWidth, scaleHeight, symbol, true);
@@ -2094,9 +2123,9 @@ export class SymbolPalette extends Component<HTMLElement> implements INotifyProp
 
     private scaleChildren(container: DiagramElement, w: number, h: number, symbol: NodeModel | ConnectorModel, preview?: boolean): void {
         let child: DiagramElement;
-        for (let i: number = 0; i < (container as Container).children.length; i++) {
-            child = (container as Container).children[parseInt(i.toString(), 10)];
-            if (!((child as Container).children[0] as Container).children) {
+        for (let i: number = 0; i < (container as GroupableView).children.length; i++) {
+            child = (container as GroupableView).children[parseInt(i.toString(), 10)];
+            if (!((child as GroupableView).children[0] as GroupableView).children) {
                 this.scaleGroup(child, w, h, symbol, preview);
             } else {
                 this.scaleChildren(child, w, h, symbol, preview);
@@ -2107,14 +2136,14 @@ export class SymbolPalette extends Component<HTMLElement> implements INotifyProp
     private measureChild(container: DiagramElement): void {
         let childContainer: DiagramElement;
         let node: NodeModel;
-        for (let i: number = 0; i < (container as Container).children.length; i++) {
-            childContainer = (container as Container).children[parseInt(i.toString(), 10)];
-            if (!((childContainer as Container).children[0] as Container).children) {
+        for (let i: number = 0; i < (container as GroupableView).children.length; i++) {
+            childContainer = (container as GroupableView).children[parseInt(i.toString(), 10)];
+            if (!((childContainer as GroupableView).children[0] as GroupableView).children) {
                 node = this.symbolTable[childContainer.id];
                 childContainer.width = node.width;
                 childContainer.height = node.height;
                 childContainer.measure(new Size());
-                childContainer.arrange((childContainer as Container).children[0].desiredSize);
+                childContainer.arrange((childContainer as GroupableView).children[0].desiredSize);
             } else {
                 this.measureChild(childContainer);
             }
@@ -2127,7 +2156,7 @@ export class SymbolPalette extends Component<HTMLElement> implements INotifyProp
         child.offsetX = preview ? (child.offsetX * w) - symbol.style.strokeWidth : (child.offsetX * w) + symbol.style.strokeWidth / 2;
         child.offsetY = preview ? (child.offsetY * h) - symbol.style.strokeWidth : (child.offsetY * h) + symbol.style.strokeWidth / 2;
         child.measure(new Size());
-        child.arrange((child as Container).children[0].desiredSize);
+        child.arrange((child as GroupableView).children[0].desiredSize);
     }
 
     private refreshPalettes(): void {

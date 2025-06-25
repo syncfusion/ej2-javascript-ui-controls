@@ -4,18 +4,18 @@ import { NodeSelection } from '../../selection/selection';
 import * as EVENTS from '../../common/constant';
 import { SelectionCommands } from '../plugin';
 import { EditorManager } from '../base';
-import { IFormatPainterContext } from '../base/enum';
+import { IEditorModel } from '../../common/interface';
 
 export class FormatPainterActions implements IFormatPainterEditor{
     private INVALID_TAGS: string[] = ['A', 'AUDIO', 'IMG', 'VIDEO', 'IFRAME'];
-    private parent: EditorManager;
+    private parent: IEditorModel;
     private copyCollection: FormatPainterCollection[];
     private deniedFormatsCollection: DeniedFormatsCollection[];
     private newElem: HTMLElement;
     private newElemLastChild: HTMLElement;
     private settings: IFormatPainterSettings;
 
-    public constructor (parent?: EditorManager, options?: IFormatPainterSettings) {
+    public constructor (parent?: IEditorModel, options?: IFormatPainterSettings) {
         this.parent = parent;
         this.settings = options;
         this.addEventListener();
@@ -66,7 +66,6 @@ export class FormatPainterActions implements IFormatPainterEditor{
     }
 
     private actionHandler(args: IHtmlItem): void {
-        this.settings.allowedContext = ['Text', 'List', 'Table'];
         if (!isNOU(args) && !isNOU(args.item) &&  !isNOU(args.item.formatPainterAction)) {
             switch (args.item.formatPainterAction) {
             case 'format-copy':
@@ -216,7 +215,7 @@ export class FormatPainterActions implements IFormatPainterEditor{
         if (currentContext === null) {
             currentContext = context;
         }
-        if (!isNOU(currentContext) && this.settings.allowedContext.indexOf(currentContext as IFormatPainterContext) > -1){
+        if (!isNOU(currentContext)) {
             if (range.startContainer.nodeName === '#text') {
                 parentElem = range.startContainer.parentElement;
             }

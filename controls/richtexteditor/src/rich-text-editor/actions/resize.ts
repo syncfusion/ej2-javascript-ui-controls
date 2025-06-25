@@ -1,7 +1,9 @@
 import { EventHandler, Browser, isNullOrUndefined, detach } from '@syncfusion/ej2-base';
 import * as events from '../base/constant';
 import * as classes from '../base/classes';
-import { IRichTextEditor, ResizeArgs } from '../base/interface';
+import { IRichTextEditor } from '../base/interface';
+import { ResizeArgs } from '../../common/interface';
+
 /**
  * `Resize` module is used to resize the editor
  */
@@ -101,9 +103,16 @@ export class Resize {
                 if (!isNullOrUndefined(toolBarEle) && !isNullOrUndefined(toolBarEle.parentElement)) {
                     if (toolBarEle.parentElement.classList.contains(classes.CLS_TB_FLOAT) && this.parent.toolbarSettings.enableFloating &&
                     this.parent.getToolbar() && !this.parent.inlineMode.enable) {
-                        const contentPanel: HTMLElement = this.parent.contentModule.getPanel() as HTMLElement;
-                        const contentPanelWidth : number = contentPanel.getBoundingClientRect().width;
-                        toolBarEle.style.width = contentPanelWidth + 'px';
+                        const sourceViewPanel: HTMLElement = this.parent.element.querySelector('#' + this.parent.getID() + '_source-view') as HTMLElement;
+                        const defaultContentPanel: HTMLElement = this.parent.contentModule.getPanel() as HTMLElement;
+                        let isCodeViewEnabled: boolean = false;
+                        if (sourceViewPanel && this.parent.element.querySelector('.e-source-code-enabled')) {
+                            isCodeViewEnabled =  true;
+                        }
+                        const targetPanelWidth: number = isCodeViewEnabled
+                            ? sourceViewPanel.getBoundingClientRect().width
+                            : defaultContentPanel.getBoundingClientRect().width;
+                        toolBarEle.style.width = targetPanelWidth + 'px';
                     }
                 }
             }

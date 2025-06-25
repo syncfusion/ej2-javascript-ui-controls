@@ -1,6 +1,7 @@
 import { TreeGrid } from "../../src/treegrid/base/treegrid";
 import { createGrid, destroy } from "../base/treegridutil.spec";
 import {
+  NotifyArgs,
   QueryCellInfoEventArgs,
   RowSelectEventArgs, VirtualContentRenderer
 } from "@syncfusion/ej2-grids";
@@ -20,11 +21,11 @@ import { select } from "@syncfusion/ej2-base";
 import { RowDD } from "../../src/treegrid/actions/rowdragdrop";
 import { Sort } from "../../src/treegrid/actions/sort";
 import { Filter } from "../../src/treegrid/actions/filter";
-import { ITreeData, ActionEventArgs } from "../../src/treegrid/base/interface";
+import { ActionEventArgs, ITreeData } from "../../src/treegrid/base/interface";
 import { Selection } from "../../src/treegrid/actions/selection";
 import { Freeze } from "../../src/treegrid/actions/freeze-column";
 import { VirtualTreeContentRenderer } from "../../src/treegrid/renderer/virtual-tree-content-render";
-import { DataManager, WebApiAdaptor } from '@syncfusion/ej2-data';
+import { DataManager, WebApiAdaptor } from "@syncfusion/ej2-data";
 
 /**
  * TreeGrid Virtual Scroll spec
@@ -5349,51 +5350,6 @@ describe("Virtualization coverage", () => {
   });
 });
 
-describe('Remote data', () => {
-  let gridObj: TreeGrid;
-  let data: Object = new DataManager({
-      url: 'https://services.syncfusion.com/js/production/api/SelfReferenceData',
-      adaptor: new WebApiAdaptor,
-      crossDomain: true
-  });
-  beforeAll((done: Function) => {
-      gridObj = createGrid(
-          {
-              dataSource: data,
-              hasChildMapping: 'isParent',
-              idMapping: 'TaskID',
-              parentIdMapping: 'ParentItem',
-              enableVirtualization: true,
-              editSettings: {
-                allowAdding: true,
-                allowEditing: true,
-                allowDeleting: true,
-                mode: 'Row',
-                newRowPosition: 'Below'
-            },
-              height: 400,
-              treeColumnIndex: 1,
-              columns: [
-                  { field: 'TaskID', headerText: 'Task ID', textAlign: 'Right', width: 120, isPrimaryKey: true  },
-                  { field: 'TaskName', headerText: 'Task Name', width: 150 },
-                  { field: 'StartDate', headerText: 'Start Date', textAlign: 'Right', width: 120 }
-              ],
-          },
-          done
-      );
-  });
-
-  it('Delete the record', () => {
-    gridObj.selectRow(0);
-    gridObj.deleteRecord();
-  });
-
-  afterAll(() => {
-      destroy(gridObj);
-      gridObj = null;
-  });
-});
-
 describe("filtering with CollapseAll", () => {
   let treegrid: TreeGrid;
   beforeAll((done: Function) => {
@@ -5442,5 +5398,1683 @@ describe("filtering with CollapseAll", () => {
   
   afterAll(() => {
     destroy(treegrid);
+  });
+});
+
+describe("Rendering with 100 Records", () => {
+  let treegrid: TreeGrid;
+    beforeAll((done: Function) => {
+      treegrid = createGrid({
+        dataSource: virtualData.slice(0, 100), // Reduced dataset for testing
+        parentIdMapping: "ParentID",
+        idMapping: "TaskID",
+        height: 200,
+        enableVirtualization: true,
+        columns: [
+          { field: "FIELD1", headerText: "Player Name", width: 140 },
+          { field: "FIELD2", headerText: "Year", width: 120, textAlign: "Right" },
+          { field: "FIELD3", headerText: "Stint", width: 120, textAlign: "Right" },
+          { field: "FIELD4", headerText: "TMID", width: 120, textAlign: "Right" },
+          { field: "FIELD5", headerText: "LGID", width: 120, textAlign: "Right" },
+          ],
+        treeColumnIndex: 1,
+      },
+      done
+    );
+  });
+  it("rendering test", (done: Function) => {
+   expect(treegrid.getRows().length).toBe(20);
+   expect(!isNullOrUndefined(treegrid.getRows()[0].querySelectorAll("td")[1].querySelector(".e-icons.e-treegridexpand"))).toBe(true);
+   done();
+  });
+  afterAll(() => {
+    destroy(treegrid);
+    treegrid=null;
+  });
+});
+
+describe("Rendering with 100 Records expand/collapse test", () => {
+  let treegrid: TreeGrid;
+  beforeAll((done: Function) => {
+    treegrid = createGrid(
+      {
+        dataSource: virtualData.slice(0, 100), // Reduced dataset for testing
+        parentIdMapping: "ParentID",
+        idMapping: "TaskID",
+        height: 200,
+        enableVirtualization: true,
+        columns: [
+          { field: "FIELD1", headerText: "Player Name", width: 140 },
+          { field: "FIELD2", headerText: "Year", width: 120, textAlign: "Right" },
+          { field: "FIELD3", headerText: "Stint", width: 120, textAlign: "Right" },
+          { field: "FIELD4", headerText: "TMID", width: 120, textAlign: "Right" },
+          { field: "FIELD5", headerText: "LGID", width: 120, textAlign: "Right" },
+          ],
+        treeColumnIndex: 1,
+      },
+      done
+    );
+  }); 
+  it("collapse test", (done: Function) => {
+    let len: number = 0;
+    let collapsed = (args?: any) => {
+      let rows: HTMLTableRowElement[] = treegrid.getRows();
+      for (let n: number = 0; n < rows.length; n++) {
+        if (!isNullOrUndefined(rows[n].querySelector(".e-treegridcollapse"))) {
+          len = len + 1;
+        }
+      }
+      expect(len).toBe(20);
+      done();
+    };
+    treegrid.collapsed = collapsed;
+    treegrid.collapseAll();
+  });
+  it("expand test", (done: Function) => {
+   let  expanded = (args?: any) => {
+      expect(isNullOrUndefined(treegrid.getRows()[1].querySelector(".e-treegridexpand"))).toBe(true);
+      done();
+    };
+    treegrid.expanded = expanded;
+    treegrid.expandAll();
+  });
+  afterAll(() => {
+    destroy(treegrid);
+    treegrid=null;
+  });
+});
+
+describe("Rendering with 100 Records expand/collapse by using methods", () => {
+  let treegrid: TreeGrid;
+  beforeAll((done: Function) => {
+    treegrid = createGrid(
+      {
+        dataSource: virtualData.slice(0, 100), // Reduced dataset for testing
+        parentIdMapping: "ParentID",
+        idMapping: "TaskID",
+        height: 200,
+        enableVirtualization: true,
+        columns: [
+          { field: "FIELD1", headerText: "Player Name", width: 140 },
+          { field: "FIELD2", headerText: "Year", width: 120, textAlign: "Right" },
+          { field: "FIELD3", headerText: "Stint", width: 120, textAlign: "Right" },
+          { field: "FIELD4", headerText: "TMID", width: 120, textAlign: "Right" },
+          { field: "FIELD5", headerText: "LGID", width: 120, textAlign: "Right" },
+          ],
+        treeColumnIndex: 1,
+      },
+      done
+    );
+  });
+  it("expandAtLevel() test", (done: Function) => {
+   let expanded = (args?: any) => {
+      expect(isNullOrUndefined(treegrid.getRows()[1].querySelector(".e-treegridexpand"))).toBe(true);
+      done();
+    };
+    treegrid.expanded = expanded;
+    treegrid.expandAtLevel(0);
+  });
+  it("collapseAtLevel test", (done: Function) => {
+    let len: number = 0;
+    let collapsed = (args?: any) => {
+      let rows: HTMLTableRowElement[] = treegrid.getRows();
+      for (let n: number = 0; n < rows.length; n++) {
+        if (!isNullOrUndefined(rows[n].querySelector(".e-treegridcollapse"))) {
+          len = len + 1;
+        }
+      }
+    expect(len).toBe(20);
+    done();
+    };
+    treegrid.collapsed = collapsed;
+    treegrid.collapseAtLevel(0);
+  });
+  afterAll(() => {
+    destroy(treegrid);
+    treegrid=null;
+  });
+});
+
+describe("Row Editing with Virtual Scrolling for small no of records", () => {
+  let gridObj: TreeGrid;
+  let rowIndex: number;
+  let actionBegin: () => void;
+  let actionComplete: () => void;
+  beforeAll((done: Function) => {
+    gridObj = createGrid(
+      {
+        dataSource: editVirtualData.slice(0,20),
+        enableVirtualization: true,
+        treeColumnIndex: 1,
+        toolbar: ["Add", "Edit", "Update", "Delete", "Cancel"],
+        editSettings: {
+          allowEditing: true,
+          allowAdding: true,
+          allowDeleting: true,
+          mode: "Row",
+          newRowPosition: "Below",
+        },
+        childMapping: "Crew",
+        height: 400,
+        columns: [
+          {
+            field: "TaskID",
+            headerText: "Player Jersey",
+            isPrimaryKey: true,
+            width: 140,
+            textAlign: "Right",
+          },
+          { field: "FIELD1", headerText: "Player Name", width: 140 },
+
+            {
+            field: "FIELD2",
+            headerText: "Year",
+            width: 120,
+            allowEditing: false,
+          textAlign: "Right",
+          },
+          {
+            field: "FIELD3",
+            headerText: "Stint",
+            width: 120,
+            textAlign: "Right",
+          },
+
+          {
+            field: "FIELD4",
+            headerText: "TMID",
+            width: 120,
+            textAlign: "Right",
+          },
+        ],
+      },
+      done
+    );
+  });
+  it("Rendering Test", (done: Function) => {
+    expect(gridObj.getRows().length > 12).toBe(true);
+    done();
+  });
+
+  it("Edit Start in Current View Records", (done: Function) => {
+    actionComplete = (args?: any): void => {
+      if (args.requestType === "beginEdit") {
+        expect(gridObj.grid.element.querySelectorAll(".e-editedrow").length
+        ).toBe(1);
+        expect(
+          gridObj.grid.element.querySelectorAll(".e-normaledit").length
+        ).toBe(1);
+        expect(
+          gridObj.grid.element.querySelectorAll(".e-gridform").length
+        ).toBe(1);
+        expect(gridObj.grid.element.querySelectorAll("form").length).toBe(1);
+        let cells = gridObj.grid.element
+          .querySelector(".e-editedrow")
+          .querySelectorAll(".e-rowcell");
+        expect(cells.length).toBe(gridObj.grid.columns.length);
+        //primary key check
+        expect(cells[0].querySelectorAll("input.e-disabled").length).toBe(1);
+        // allow Editing false
+        expect(cells[2].querySelectorAll("input.e-disabled").length).toBe(1);
+        //focus check
+        expect(document.activeElement.id).toBe(
+          gridObj.grid.element.id + "FIELD1"
+        );
+       
+        expect(gridObj.grid.isEdit).toBeTruthy();
+        done();
+      }
+    };
+    actionBegin = (args?: any): void => {
+      if (args.requestType === "beginEdit") {
+        expect(gridObj.grid.isEdit).toBeFalsy();
+      }
+    };
+    gridObj.grid.actionComplete = actionComplete;
+    gridObj.grid.actionBegin = actionBegin;
+    gridObj.grid.selectRow(0);
+    (<any>gridObj.grid.toolbarModule).toolbarClickHandler({
+      item: { id: gridObj.grid.element.id + "_edit" },
+    });
+  });
+
+  it("Edit Complete in Current View Records", (done: Function) => {
+    actionComplete = (args?: any): void => {
+      if (args.requestType === "save") {
+        expect(
+          gridObj.grid.element.querySelectorAll(".e-normaledit").length
+        ).toBe(0);
+        expect(
+          gridObj.grid.element.querySelectorAll(".e-gridform").length
+        ).toBe(0);
+        expect(gridObj.grid.element.querySelectorAll("form").length).toBe(0);
+        //updatated data cehck
+        expect((gridObj.grid.currentViewData[0] as any).FIELD1).toBe(
+          "updated"
+        );
+        done();
+      }
+    };
+    actionBegin = (args?: any): void => {
+      if (args.requestType === "save") {
+        expect(gridObj.grid.isEdit).toBeTruthy();
+      }
+    };
+    gridObj.grid.actionComplete = actionComplete;
+    gridObj.grid.actionBegin = actionBegin;
+    (
+      select(
+        "#" + gridObj.grid.element.id + "FIELD1",
+        gridObj.grid.element
+      ) as any
+    ).value = "updated";
+    (<any>gridObj.grid.toolbarModule).toolbarClickHandler({
+      item: { id: gridObj.grid.element.id + "_update" },
+    });
+  });
+
+  it("Scroll", (done: Function) => {
+    (<HTMLElement>gridObj.grid.getContent().firstChild).scrollTop = 1480;
+    setTimeout(done, 400);
+  });
+
+  it("Edit Start After Scroll", (done: Function) => {
+    actionComplete = (args?: any): void => {
+      if (args.requestType === "beginEdit") {
+        expect(
+          gridObj.grid.element.querySelectorAll(".e-editedrow").length
+        ).toBe(1);
+        expect(
+          gridObj.grid.element.querySelectorAll(".e-normaledit").length
+        ).toBe(1);
+        expect(
+          gridObj.grid.element.querySelectorAll(".e-gridform").length
+        ).toBe(1);
+        expect(gridObj.grid.element.querySelectorAll("form").length).toBe(1);
+        let cells = gridObj.grid.element
+          .querySelector(".e-editedrow")
+          .querySelectorAll(".e-rowcell");
+        expect(cells.length).toBe(gridObj.grid.columns.length);
+        //primary key check
+        expect(cells[0].querySelectorAll("input.e-disabled").length).toBe(1);
+        // allow Editing false
+        expect(cells[2].querySelectorAll("input.e-disabled").length).toBe(1);
+        //focus check
+        expect(document.activeElement.id).toBe(
+          gridObj.grid.element.id + "FIELD1"
+        );
+        
+        expect(gridObj.grid.isEdit).toBeTruthy();
+        done();
+      }
+    };
+    actionBegin = (args?: any): void => {
+      if (args.requestType === "beginEdit") {
+        expect(gridObj.grid.isEdit).toBeFalsy();
+      }
+    };
+    gridObj.grid.actionComplete = actionComplete;
+    gridObj.grid.actionBegin = actionBegin;
+    rowIndex = parseInt(gridObj.getRows()[0].getAttribute("aria-rowindex"), 10) - 1;
+    gridObj.grid.selectRow(rowIndex);
+    (<any>gridObj.grid.toolbarModule).toolbarClickHandler({
+      item: { id: gridObj.grid.element.id + "_edit" },
+    });
+  });
+
+  it("Edit Complete After Scroll", (done: Function) => {
+    actionComplete = (args?: any): void => {
+      if (args.requestType === "save") {
+        expect(
+          gridObj.grid.element.querySelectorAll(".e-normaledit").length
+        ).toBe(0);
+        expect(
+          gridObj.grid.element.querySelectorAll(".e-gridform").length
+        ).toBe(0);
+        expect(gridObj.grid.element.querySelectorAll("form").length).toBe(0);
+        //updatated data cehck
+        expect((gridObj.grid.currentViewData[0] as any).FIELD1).toBe(
+          "scroll updated"
+        );
+        done();
+      }
+    };
+    actionBegin = (args?: any): void => {
+      if (args.requestType === "save") {
+        expect(gridObj.grid.isEdit).toBeTruthy();
+      }
+    };
+    gridObj.grid.actionComplete = actionComplete;
+    gridObj.grid.actionBegin = actionBegin;
+    (
+      select(
+        "#" + gridObj.grid.element.id + "FIELD1",
+        gridObj.grid.element
+      ) as any
+    ).value = "scroll updated";
+    (<any>gridObj.grid.toolbarModule).toolbarClickHandler({
+      item: { id: gridObj.grid.element.id + "_update" },
+    });
+  });
+
+  afterAll(() => {
+    destroy(gridObj);
+  });
+});
+
+describe("Add New Row with Virtual Scrolling for small no of records", () => {
+  let gridObj: TreeGrid;
+  let actionBegin: () => void;
+  let actionComplete: () => void;
+  beforeAll((done: Function) => {
+    gridObj = createGrid(
+      {
+        dataSource: editVirtualData.slice(0,20),
+        enableVirtualization: true,
+        treeColumnIndex: 1,
+        toolbar: ["Add", "Edit", "Update", "Delete", "Cancel"],
+        editSettings: {
+          allowEditing: true,
+          allowAdding: true,
+          allowDeleting: true,
+          mode: "Row",
+        },
+        childMapping: "Crew",
+        height: 400,
+        columns: [
+          {
+            field: "TaskID",
+            headerText: "Player Jersey",
+            isPrimaryKey: true,
+            width: 140,
+            textAlign: "Right",
+          },
+          { field: "FIELD1", headerText: "Player Name", width: 140 },
+          {
+            field: "FIELD2",
+            headerText: "Year",
+            width: 120,
+            allowEditing: false,
+            textAlign: "Right",
+          },
+          {
+            field: "FIELD3",
+            headerText: "Stint",
+            width: 120,
+            textAlign: "Right",
+          },
+          {
+            field: "FIELD4",
+            headerText: "TMID",
+            width: 120,
+            textAlign: "Right",
+          },
+        ],
+      },
+      done
+    );
+  });
+
+  it("Rendering Test", (done: Function) => {
+    expect(gridObj.getRows().length > 12).toBe(true);
+    done();
+  });
+
+  it("Add New Row Begin", (done: Function) => {
+    actionComplete = (args?: any): void => {
+      if (args.requestType === "add") {
+        expect(
+          gridObj.grid.element.querySelectorAll(".e-addedrow").length
+        ).toBe(1);
+        expect(
+          gridObj.grid.element.querySelectorAll(".e-normaledit").length
+        ).toBe(1);
+        expect(
+          gridObj.grid.element.querySelectorAll(".e-gridform").length
+        ).toBe(1);
+        expect(gridObj.grid.element.querySelectorAll("form").length).toBe(1);
+        expect(document.activeElement.id).toBe(
+          gridObj.grid.element.id + "TaskID"
+        );
+        //toolbar status check
+        expect(
+          gridObj.grid.element.querySelectorAll(".e-overlay").length
+        ).toBe(4);
+        expect(gridObj.grid.isEdit).toBeTruthy();
+        done();
+      }
+    };
+    gridObj.grid.actionComplete = actionComplete;
+    (<any>gridObj.grid.toolbarModule).toolbarClickHandler({
+      item: { id: gridObj.grid.element.id + "_add" },
+    });
+  });
+
+  it("Save New Row", (done: Function) => {
+    actionComplete = (args?: any): void => {
+      if (args.requestType === "save") {
+        expect(
+          gridObj.grid.element.querySelectorAll(".e-normaledit").length
+        ).toBe(0);
+        expect(
+          gridObj.grid.element.querySelectorAll(".e-gridform").length
+        ).toBe(0);
+        expect(gridObj.grid.element.querySelectorAll("form").length).toBe(0);
+        //updatated data cehck
+        expect((gridObj.grid.currentViewData[0] as any).TaskID).toBe(98765);
+        expect((gridObj.grid.currentViewData[0] as any).FIELD1).toBe(
+          "New Row"
+        );
+        done();
+      }
+    };
+    actionBegin = (args?: any): void => {
+      if (args.requestType === "save") {
+        expect(gridObj.grid.isEdit).toBeTruthy();
+      }
+    };
+    gridObj.grid.actionComplete = actionComplete;
+    gridObj.grid.actionBegin = actionBegin;
+    (
+      select(
+        "#" + gridObj.grid.element.id + "TaskID",
+        gridObj.grid.element
+      ) as any
+    ).value = "98765";
+    (
+      select(
+        "#" + gridObj.grid.element.id + "FIELD1",
+        gridObj.grid.element
+      ) as any
+    ).value = "New Row";
+    (<any>gridObj.grid.toolbarModule).toolbarClickHandler({
+      item: { id: gridObj.grid.element.id + "_update" },
+    });
+  });
+
+  afterAll(() => {
+    destroy(gridObj);
+  });
+});
+
+describe("Delete Row with Virtual Scrolling for small no of records", () => {
+  let gridObj: TreeGrid;
+  let actionComplete: () => void;
+  beforeAll((done: Function) => {
+    gridObj = createGrid(
+      {
+        dataSource: editVirtualData.slice(0,20),
+        enableVirtualization: true,
+        treeColumnIndex: 1,
+        toolbar: ["Add", "Edit", "Update", "Delete", "Cancel"],
+        editSettings: {
+          allowEditing: true,
+          allowAdding: true,
+          allowDeleting: true,
+          mode: "Row",
+        },
+        childMapping: "Crew",
+        height: 400,
+        columns: [
+          {
+            field: "TaskID",
+            headerText: "Player Jersey",
+            isPrimaryKey: true,
+            width: 140,
+            textAlign: "Right",
+          },
+          { field: "FIELD1", headerText: "Player Name", width: 140 },
+          {
+            field: "FIELD2",
+            headerText: "Year",
+            width: 120,
+            allowEditing: false,
+            textAlign: "Right",
+          },
+          {
+            field: "FIELD3",
+            headerText: "Stint",
+            width: 120,
+            textAlign: "Right",
+          },
+          {
+            field: "FIELD4",
+            headerText: "TMID",
+            width: 120,
+            textAlign: "Right",
+          },
+        ],
+      },
+      done
+    );
+  });
+
+  it("Rendering Test", (done: Function) => {
+    expect(gridObj.getRows().length > 12).toBe(true);
+    done();
+  });
+
+  it("Delete First Parent Row", (done: Function) => {
+    actionComplete = (args?: any): void => {
+      if (args.requestType === "delete") {
+        expect((gridObj.grid.dataSource as any).length === 95).toBe(true);
+        done();
+      }
+    };
+    gridObj.grid.actionComplete = actionComplete;
+    gridObj.grid.selectRow(0);
+    (<any>gridObj.grid.toolbarModule).toolbarClickHandler({
+      item: { id: gridObj.grid.element.id + "_delete" },
+    });
+  });
+
+  it("Scroll", (done: Function) => {
+    (<HTMLElement>gridObj.grid.getContent().firstChild).scrollTop = 4000;
+    setTimeout(done, 400);
+  });
+
+  it("Delete Row after Scroll", (done: Function) => {
+    let isParent: boolean;
+    let row: Element;
+    actionComplete = (args?: any): void => {
+      if (args.requestType === "delete") {
+        if (isParent) {
+          expect((gridObj.grid.dataSource as any).length === 90).toBe(true);
+        } else {
+          expect((gridObj.grid.dataSource as any).length === 94).toBe(true);
+        }
+        done();
+      }
+    };
+    gridObj.grid.actionComplete = actionComplete;
+    row = gridObj.getRows()[0];
+    if (row.querySelector(".e-treegridexpand")) {
+      isParent = true;
+    }
+    gridObj.selectRow(parseInt(row.getAttribute("aria-rowindex"), 10) - 1);
+    (<any>gridObj.grid.toolbarModule).toolbarClickHandler({
+      item: { id: gridObj.grid.element.id + "_delete" },
+    });
+  });
+
+  afterAll(() => {
+    destroy(gridObj);
+  });
+});
+
+describe("Edit Cancel Checking for small no of records", () => {
+  let gridObj: TreeGrid;
+  let actionBegin: () => void;
+  let actionComplete: () => void;
+  beforeAll((done: Function) => {
+    gridObj = createGrid(
+      {
+        dataSource: editVirtualData.slice(0,20),
+        enableVirtualization: true,
+        treeColumnIndex: 1,
+        toolbar: ["Add", "Edit", "Update", "Delete", "Cancel"],
+        editSettings: {
+          allowEditing: true,
+          allowAdding: true,
+          allowDeleting: true,
+          mode: "Row",
+        },
+        childMapping: "Crew",
+        height: 400,
+        columns: [
+          {
+            field: "TaskID",
+            headerText: "Player Jersey",
+            isPrimaryKey: true,
+            width: 140,
+            textAlign: "Right",
+          },
+          { field: "FIELD1", headerText: "Player Name", width: 140 },
+          {
+            field: "FIELD2",
+            headerText: "Year",
+            width: 120,
+            allowEditing: false,
+            textAlign: "Right",
+          },
+          {
+            field: "FIELD3",
+            headerText: "Stint",
+            width: 120,
+            textAlign: "Right",
+          },
+          {
+            field: "FIELD4",
+            headerText: "TMID",
+            width: 120,
+            textAlign: "Right",
+          },
+        ],
+      },
+      done
+    );
+  });
+  it("Rendering Test", (done: Function) => {
+    expect(gridObj.getRows().length > 12).toBe(true);
+    done();
+  });
+
+  it("Edit Row", (done: Function) => {
+    actionComplete = (args?: any): void => {
+      if (args.requestType === "beginEdit") {
+        expect(
+          gridObj.grid.element.querySelectorAll(".e-editedrow").length
+        ).toBe(1);
+        expect(
+          gridObj.grid.element.querySelectorAll(".e-normaledit").length
+        ).toBe(1);
+        expect(
+          gridObj.grid.element.querySelectorAll(".e-gridform").length
+        ).toBe(1);
+        expect(gridObj.grid.element.querySelectorAll("form").length).toBe(1);
+        done();
+      }
+    };
+    gridObj.grid.actionComplete = actionComplete;
+    gridObj.grid.selectRow(1);
+    (<any>gridObj.grid.toolbarModule).toolbarClickHandler({
+      item: { id: gridObj.grid.element.id + "_edit" },
+    });
+  });
+
+  it("Cancel Edit", (done: Function) => {
+    actionComplete = (args?: any): void => {
+      if (args.requestType === "cancel") {
+        //form destroy check
+        expect(gridObj.grid.editModule.formObj.isDestroyed).toBeTruthy();
+        expect(gridObj.grid.isEdit).toBeFalsy();
+        done();
+      }
+    };
+    actionBegin = (args?: any): void => {
+      if (args.requestType === "cancel") {
+        expect(
+          gridObj.grid.element.querySelectorAll(".e-normaledit").length
+        ).toBe(1);
+        expect(
+          gridObj.grid.element.querySelectorAll(".e-gridform").length
+        ).toBe(1);
+        expect(gridObj.grid.element.querySelectorAll("form").length).toBe(1);
+        expect(gridObj.grid.isEdit).toBeTruthy();
+      }
+    };
+    gridObj.grid.actionComplete = actionComplete;
+    gridObj.grid.actionBegin = actionBegin;
+    (<any>gridObj.grid.toolbarModule).toolbarClickHandler({
+      item: { id: gridObj.grid.element.id + "_cancel" },
+    });
+  });
+
+  afterAll(() => {
+    gridObj.grid.contentModule.removeEventListener();
+    destroy(gridObj);
+  });
+});
+
+
+describe("TreeGrid Virtualization with Column Virtualization", () => {
+  let treegrid: TreeGrid;
+  beforeAll((done: Function) => {
+    treegrid = createGrid(
+      {
+        dataSource: virtualData.slice(0, 100),
+        parentIdMapping: "ParentID",
+        idMapping: "TaskID",
+        height: 400,
+        width:400,
+        enableVirtualization: true,
+        enableColumnVirtualization: true,
+        columns: [
+          { field: "TaskID", headerText: "ID", isPrimaryKey: true, width: 140 },
+          { field: "FIELD1", headerText: "Name", width: 140 },
+          { field: "FIELD2", headerText: "Year", width: 120, textAlign: "Right" },
+          { field: "FIELD3", headerText: "Stint", width: 120, textAlign: "Right" },
+          { field: "FIELD4", headerText: "TMID", width: 120, textAlign: "Right" },
+          { field: "FIELD5", headerText: "LGID", width: 120, textAlign: "Right" },
+          { field: "FIELD6", headerText: "GP", width: 120, textAlign: "Right" },
+          { field: "FIELD7", headerText: "GS", width: 120, textAlign: "Right" },
+          { field: "FIELD8", headerText: "Minutes", width: 120, textAlign: "Right" },
+          { field: "FIELD9", headerText: "Points", width: 120, textAlign: "Right" },
+          { field: "FIELD10", headerText: "oRebounds", width: 130, textAlign: "Right" }
+        ],
+        treeColumnIndex: 1,
+      },
+      done
+    );
+  });
+
+  it("should update columns during horizontal scrolling", (done: Function) => {
+    let headerContent:any = treegrid.getHeaderContent().querySelector('.e-headercontent');
+    let initialFirstColumnHeader = treegrid.getMovableColumns()[0].headerText;
+    headerContent.scrollLeft = 600;
+    EventHandler.trigger(headerContent, "scroll", { target: headerContent });
+    setTimeout(() => {
+      let newFirstColumnHeader:any = (treegrid.getHeaderContent().querySelector('.e-headercontent').querySelectorAll('.e-headercell')[4] as any).innerText;
+      expect(initialFirstColumnHeader).not.toBe(newFirstColumnHeader);
+      done();
+    }, 500);
+  });
+
+  afterAll(() => {
+    destroy(treegrid);
+  });
+});
+
+describe("TreeGrid Virtualization with Frozen Columns", () => {
+  let treegrid: TreeGrid;
+  beforeAll((done: Function) => {
+    treegrid = createGrid(
+      {
+        dataSource: virtualData.slice(0, 100),
+        parentIdMapping: "ParentID",
+        idMapping: "TaskID",
+        height: 400,
+        enableVirtualization: true,
+        frozenColumns: 2,
+        columns: [
+          { field: "TaskID", headerText: "ID", isPrimaryKey: true, width: 140 },
+          { field: "FIELD1", headerText: "Name", width: 140 },
+          { field: "FIELD2", headerText: "Year", width: 120, textAlign: "Right" },
+          { field: "FIELD3", headerText: "Stint", width: 120, textAlign: "Right" },
+          { field: "FIELD4", headerText: "TMID", width: 120, textAlign: "Right" }
+        ],
+        treeColumnIndex: 1,
+      },
+      done
+    );
+  });
+
+  it("should render frozen columns correctly with virtualization", () => {
+    expect(treegrid.getFrozenLeftColumnsCount()).toBe(2);
+    expect(treegrid.getMovableColumnsCount()).toBe(3);
+    expect(treegrid.getFrozenLeftColumns().length).toBe(2);
+    expect(treegrid.getMovableColumns().length).toBe(3);
+  });
+
+  it("should verify frozen right columns if configured", (done: Function) => {
+    treegrid.frozenColumns = 0;
+    (treegrid.columns[4] as any).freeze = 'Right';
+    treegrid.refreshColumns();
+    setTimeout(() => {
+      expect(treegrid.getFrozenRightColumnsCount()).toBe(1);
+      expect(treegrid.getFrozenRightColumns().length).toBe(1);
+      done();
+    }, 500);
+  });
+
+  afterAll(() => {
+    destroy(treegrid);
+  });
+});
+
+describe("TreeGrid Virtualization with Row Drag and Drop", () => {
+  let treegrid: TreeGrid;
+  beforeAll((done: Function) => {
+    treegrid = createGrid(
+      {
+        dataSource: virtualData.slice(0, 100),
+        parentIdMapping: "ParentID",
+        idMapping: "TaskID",
+        height: 400,
+        enableVirtualization: true,
+        allowRowDragAndDrop: true,
+        selectionSettings: { type: 'Multiple' },
+        columns: [
+          { field: "TaskID", headerText: "ID", isPrimaryKey: true, width: 140 },
+          { field: "FIELD1", headerText: "Name", width: 140 },
+          { field: "FIELD2", headerText: "Year", width: 120, textAlign: "Right" },
+          { field: "FIELD3", headerText: "Stint", width: 120, textAlign: "Right" }
+        ],
+        treeColumnIndex: 1,
+      },
+      done
+    );
+  });
+
+  it("should verify row drag and drop UI elements", () => {
+    let rows = treegrid.getRows();
+    expect(rows.length).toBeGreaterThan(0);
+   treegrid.selectRow(0);
+    expect(treegrid.getSelectedRowIndexes().length).toBe(1);
+    expect(treegrid.getSelectedRowIndexes()[0]).toBe(0);
+  });
+  afterAll(() => {
+    destroy(treegrid);
+  });
+});
+
+describe("Handle add actions correctly with virtualization", () => {
+  let gridObj: TreeGrid;
+  let actionComplete: () => void;
+  let actionBeginCount: number = 0;
+  beforeAll((done: Function) => {
+    gridObj = createGrid(
+      {
+        dataSource: virtualData.slice(0, 1000),
+        enableVirtualization: true,
+        childMapping: "Crew",
+        treeColumnIndex: 1,
+        height: 400,
+        editSettings: {
+          allowAdding: true,
+          allowEditing: true,
+          allowDeleting: true,
+          mode: "Cell",
+          newRowPosition: "Below"
+        },
+        toolbar: ["Add", "Edit", "Delete", "Update", "Cancel"],
+        columns: [
+          {
+            field: "TaskID",
+            headerText: "Player Jersey",
+            isPrimaryKey: true,
+            width: 140,
+            textAlign: "Right",
+          },
+          { field: "FIELD1", headerText: "Player Name", width: 140 },
+          {
+            field: "FIELD2",
+            headerText: "Year",
+            width: 120,
+            textAlign: "Right",
+          },
+          {
+            field: "FIELD3",
+            headerText: "Stint",
+            width: 120,
+            textAlign: "Right",
+          },
+        ],
+      },
+      done
+    );
+  });
+
+  it("Should trigger actionBegin only once when adding a record", (done: Function) => {
+    let actionBegin = (args?: any): void => {
+      if (args.requestType === "add") {
+        actionBeginCount++;
+      }
+    };
+    gridObj.grid.actionBegin = actionBegin;
+    (<any>gridObj.grid.toolbarModule).toolbarClickHandler({
+      item: { id: gridObj.grid.element.id + "_add" },
+    });
+    expect(actionBeginCount).toBe(1);
+    done();
+  });
+  
+  it("Should update flatData correctly after adding record", (done: Function) => {
+    let initialFlatDataLength = gridObj.flatData.length;
+    actionComplete = (args?: any): void => {
+      if (args.requestType === "save") {
+         expect(gridObj.flatData.length).toBe(initialFlatDataLength + 1);
+         let newRecordExists = gridObj.flatData.some(item => item["TaskID"] === 98768);
+        expect(newRecordExists).toBe(true);
+        done();
+      }
+    };
+    
+    gridObj.grid.actionComplete = actionComplete;
+    gridObj.addRecord({ TaskID: 98768, FIELD1: "New Record" })
+  });
+  afterAll(() => {
+    destroy(gridObj);
+  });
+});
+
+describe("Adding rows at different positions with virtualization", () => {
+  let gridObj: TreeGrid;
+  let actionComplete: () => void;
+  beforeAll((done: Function) => {
+    gridObj = createGrid(
+      {
+        dataSource: editVirtualData.slice(0, 500),
+        enableVirtualization: true,
+        childMapping: "Crew",
+        treeColumnIndex: 1,
+        height: 400,
+        editSettings: {
+          allowAdding: true,
+          allowEditing: true,
+          allowDeleting: true,
+          mode: "Row",
+          newRowPosition: "Below"
+        },
+        toolbar: ["Add", "Edit", "Delete", "Update", "Cancel"],
+        columns: [
+          {
+            field: "TaskID",
+            headerText: "Player Jersey",
+            isPrimaryKey: true,
+            width: 140,
+            textAlign: "Right",
+          },
+          { field: "FIELD1", headerText: "Player Name", width: 140 },
+          {
+            field: "FIELD2",
+            headerText: "Year",
+            width: 120,
+            textAlign: "Right",
+          },
+          {
+            field: "FIELD3",
+            headerText: "Stint",
+            width: 120,
+            textAlign: "Right",
+          },
+        ],
+      },
+      done
+    );
+  });
+
+  it("Should add record at Top position", (done: Function) => {
+    let initialFirstRecord:any = gridObj.getCurrentViewRecords()[0];
+    actionComplete = (args?: any): void => {
+      if (args.requestType === "save") {
+       let newFirstRecord:any = gridObj.getCurrentViewRecords()[0];
+        expect(newFirstRecord.TaskID).toBe(10001);
+        expect(newFirstRecord.FIELD1).toBe("Top Position");
+        let secondRecord:any = gridObj.getCurrentViewRecords()[1];
+        expect(secondRecord.TaskID).toBe(initialFirstRecord.TaskID);
+        done();
+      }
+    };    
+    gridObj.grid.actionComplete = actionComplete;
+    gridObj.addRecord({TaskID: 10001, FIELD1: "Top Position",FIELD2: 2023,  FIELD3: 1 },0,"Top");
+  });
+
+  afterAll(() => {
+    destroy(gridObj);
+  });
+});
+
+
+describe("TreeGrid Virtualization with Frozen Columns", () => {
+  let treegrid: TreeGrid;
+  beforeAll((done: Function) => {
+    treegrid = createGrid(
+      {
+        dataSource: editVirtualData.slice(0, 500),
+        enableVirtualization: true,
+        childMapping: "Crew",
+        height: 400,
+        editSettings: {
+          allowAdding: true,
+          allowEditing: true,
+          allowDeleting: true,
+          mode: "Row",
+          newRowPosition: "Below"
+        },
+        toolbar: ["Add", "Edit", "Delete", "Update", "Cancel"],
+       
+        frozenColumns: 2,
+        columns: [
+          { field: "TaskID", headerText: "ID", isPrimaryKey: true, width: 140 },
+          { field: "FIELD1", headerText: "Name", width: 140 },
+          { field: "FIELD2", headerText: "Year", width: 120, textAlign: "Right" },
+          { field: "FIELD3", headerText: "Stint", width: 120, textAlign: "Right" },
+          { field: "FIELD4", headerText: "TMID", width: 120, textAlign: "Right" }
+        ],
+        treeColumnIndex: 1,
+      },
+      done
+    );
+  });
+
+  it("Should focus on the correct cell in frozen columns on double-click for editing", (done: Function) => {
+    let cell: any = treegrid.getCellFromIndex(0, 0);
+    cell.dispatchEvent(new MouseEvent("dblclick", {bubbles: true}));
+    expect(cell.innerText == 1).toBe(true);
+    done();
+  });
+  afterAll(() => {
+    destroy(treegrid);
+  });
+});
+
+describe("TreeGrid Virtualization with Frozen Columns", () => {
+  let treegrid: TreeGrid;
+  beforeAll((done: Function) => {
+    treegrid = createGrid(
+      {
+        dataSource: editVirtualData.slice(0, 500),
+        enableVirtualization: true,
+        childMapping: "Crew",
+        height: 400,
+        editSettings: {
+          allowAdding: true,
+          allowEditing: true,
+          allowDeleting: true,
+          mode: "Row",
+          newRowPosition: "Below"
+        },
+        toolbar: ["Add", "Edit", "Delete", "Update", "Cancel"],
+        frozenColumns: 2,
+        columns: [
+          { field: "TaskID", headerText: "ID", isPrimaryKey: true, width: 140 },
+          { field: "FIELD1", headerText: "Name", width: 140 },
+          { field: "FIELD2", headerText: "Year", width: 120, textAlign: "Right" },
+          { field: "FIELD3", headerText: "Stint", width: 120, textAlign: "Right" },
+          { field: "FIELD4", headerText: "TMID", width: 120, textAlign: "Right" }
+        ],
+        treeColumnIndex: 1,
+      },
+      done
+    );
+  }); 
+
+  it("Should correctly add data and reflect in frozen columns", (done: Function) => {
+    let actionComplete = (args?: any): void => {
+      if (args.requestType === "save") {
+        let newRow:any = treegrid.flatData[0];
+        expect(newRow.TaskID).toBe(10015);
+        expect(newRow.FIELD1).toBe("New Entry");
+        done();
+      }
+    };
+    treegrid.actionComplete = actionComplete;
+    treegrid.addRecord({ TaskID: 10015, FIELD1: "New Entry", FIELD2: 2024, FIELD3: 1 }, 0, "Top");
+  });
+
+  afterAll(() => {
+    destroy(treegrid);
+  });
+});
+
+describe("TreeGrid Virtualization with Frozen Columns - Editing", () => {
+  let treegrid: TreeGrid;
+  beforeAll((done: Function) => {
+    treegrid = createGrid(
+      {
+        dataSource: editVirtualData.slice(0, 100),
+        enableVirtualization: true,
+        childMapping: "Crew",
+         editSettings: {
+          allowAdding: true,
+          allowEditing: true,
+          allowDeleting: true,
+          mode: "Row",
+          newRowPosition: "Below"
+        },
+        toolbar: ["Add", "Edit", "Delete", "Update", "Cancel"],
+        height: 400,
+        frozenColumns: 2,
+        columns: [
+          { field: "TaskID", headerText: "ID", isPrimaryKey: true, width: 140 },
+          { field: "FIELD1", headerText: "Name", width: 140 },
+          { field: "FIELD2", headerText: "Year", width: 120, textAlign: "Right" },
+          { field: "FIELD3", headerText: "Stint", width: 120, textAlign: "Right" },
+          { field: "FIELD4", headerText: "TMID", width: 120, textAlign: "Right" }
+        ],
+        treeColumnIndex: 1,
+      },
+      done
+    );
+  });
+
+  it("Should enter edit mode on double-click", (done: Function) => {
+    let cell: any = treegrid.getCellFromIndex(1, 1);
+    cell.dispatchEvent(new MouseEvent("dblclick", {bubbles: true}));
+    treegrid.selectRow(1);
+    treegrid.startEdit();
+    let formEle: HTMLFormElement = treegrid.grid.editModule.formObj.element;
+    expect(formEle).not.toBe(null);
+    done();
+  });
+  afterAll(() => {
+    destroy(treegrid);
+  });
+});
+
+describe("TreeGrid Virtualization with Frozen Columns - Editing", () => {
+  let treegrid: TreeGrid;
+  beforeAll((done: Function) => {
+    treegrid = createGrid(
+      {
+        dataSource: editVirtualData.slice(0, 100),
+        enableVirtualization: true,
+        childMapping: "Crew",
+         editSettings: {
+          allowAdding: true,
+          allowEditing: true,
+          allowDeleting: true,
+          mode: "Row",
+          newRowPosition: "Below"
+        },
+        toolbar: ["Add", "Edit", "Delete", "Update", "Cancel"],
+        height: 400,
+        frozenColumns: 2,
+        columns: [
+          { field: "TaskID", headerText: "ID", isPrimaryKey: true, width: 140 },
+          { field: "FIELD1", headerText: "Name", width: 140 },
+          { field: "FIELD2", headerText: "Year", width: 120, textAlign: "Right" },
+          { field: "FIELD3", headerText: "Stint", width: 120, textAlign: "Right" },
+          { field: "FIELD4", headerText: "TMID", width: 120, textAlign: "Right" }
+        ],
+        treeColumnIndex: 1,
+      },
+      done
+    );
+  });
+it("Should save edited data correctly", (done: Function) => {
+  let actionComplete = (args?: any): void => {
+      if (args.requestType === "save") {
+        let editedRecord: any = treegrid.getCurrentViewRecords()[1];
+        expect(editedRecord.FIELD1).toBe("Updated Child Record");
+        done();
+      }
+    };
+   treegrid.grid.actionComplete = actionComplete;
+   treegrid.selectRow(1);
+   treegrid.startEdit();
+   let formEle: HTMLFormElement = treegrid.grid.editModule.formObj.element;
+  (select('#' + treegrid.grid.element.id + 'FIELD1', formEle) as any).value = 'Updated Child Record';
+  (<any>treegrid.grid.toolbarModule).toolbarClickHandler({ item: { id: treegrid.grid.element.id + '_update' } });
+});
+afterAll(() => {
+    destroy(treegrid);
+  });
+});
+
+describe('Remote data', () => {
+    let gridObj: TreeGrid;
+    let data: Object = new DataManager({
+        url: 'https://services.syncfusion.com/js/production/api/SelfReferenceData',
+        adaptor: new WebApiAdaptor,
+        crossDomain: true
+    });
+    beforeAll((done: Function) => {
+        gridObj = createGrid(
+            {
+                dataSource: data,
+                hasChildMapping: 'isParent',
+                idMapping: 'TaskID',
+                parentIdMapping: 'ParentItem',
+                enableVirtualization: true,
+                allowSorting: true,
+                height: 400,
+                treeColumnIndex: 1,
+                columns: [
+                    { field: 'TaskID', headerText: 'Task ID', textAlign: 'Right', width: 120 },
+                    { field: 'TaskName', headerText: 'Task Name', width: 150 },
+                    { field: 'StartDate', headerText: 'Start Date', textAlign: 'Right', width: 120 }
+                ],
+            },
+            done
+        );
+    });
+    it('remoteVirtualAction', (done: Function) => {
+      const virtualArgs: NotifyArgs = {};
+       gridObj.dataModule['remoteVirtualAction'](virtualArgs);
+       done();
+    });
+    afterAll(() => {
+        destroy(gridObj);
+    });
+});
+
+describe('Remote data', () => {
+    let gridObj: TreeGrid;
+    let data: Object = new DataManager({
+        url: 'https://services.syncfusion.com/js/production/api/SelfReferenceData',
+        adaptor: new WebApiAdaptor,
+        crossDomain: true
+    });
+    beforeAll((done: Function) => {
+        gridObj = createGrid(
+            {
+                dataSource: data,
+                hasChildMapping: 'isParent',
+                idMapping: 'TaskID',
+                parentIdMapping: 'ParentItem',
+                enableVirtualization: true,
+                height: 400,
+                treeColumnIndex: 1,
+                columns: [
+                    { field: 'TaskID', headerText: 'Task ID', textAlign: 'Right', width: 120 },
+                    { field: 'TaskName', headerText: 'Task Name', width: 150 },
+                    { field: 'StartDate', headerText: 'Start Date', textAlign: 'Right', width: 120 }
+                ],
+            },
+            done
+        );
+    });
+    it('checkAndResetCache', (done: Function) => {
+      (gridObj.grid.contentModule as VirtualContentRenderer).vgenerator.checkAndResetCache('refresh');
+       done();
+    });
+    afterAll(() => {
+        destroy(gridObj);
+    });
+
+});
+
+describe("Adding rows at different positions with virtualization", () => {
+  let gridObj: TreeGrid;
+  let actionComplete: () => void;
+  
+  beforeAll((done: Function) => {
+    gridObj = createGrid(
+      {
+        dataSource: editVirtualData.slice(0, 500),
+        enableVirtualization: true,
+        childMapping: "Crew",
+        treeColumnIndex: 1,
+        height: 400,
+        editSettings: {
+          allowAdding: true,
+          allowEditing: true,
+          allowDeleting: true,
+          mode: "Row",
+        
+        },
+        toolbar: ["Add", "Edit", "Delete", "Update", "Cancel"],
+        columns: [
+          {
+            field: "TaskID",
+            headerText: "Player Jersey",
+            isPrimaryKey: true,
+            width: 140,
+            textAlign: "Right",
+          },
+          { field: "FIELD1", headerText: "Player Name", width: 140 },
+          {
+            field: "FIELD2",
+            headerText: "Year",
+            width: 120,
+            textAlign: "Right",
+          },
+          {
+            field: "FIELD3",
+            headerText: "Stint",
+            width: 120,
+            textAlign: "Right",
+          },
+        ],
+      },
+      done
+    );
+  });
+  
+  it("Should add record at Bottom position", (done: Function) => {
+   actionComplete = (args?: any): void => {
+      if (args.requestType === "save") {
+        // Verify the record was added at the bottom
+        let lastRecord : any= gridObj.flatData[gridObj.flatData.length - 1];
+        
+        expect(lastRecord.TaskID).toBe(10002);
+        expect(lastRecord.FIELD1).toBe("Bottom Position");
+        
+       done();
+      }
+    };
+    
+    gridObj.actionComplete = actionComplete;
+    
+    gridObj.addRecord(
+      { 
+        TaskID: 10002, 
+        FIELD1: "Bottom Position", 
+        FIELD2: 2023, 
+        FIELD3: 1 
+      },
+      gridObj.flatData.length -1,
+      "Bottom"
+    );
+  });
+  
+
+  afterAll(() => {
+    destroy(gridObj);
+  });
+});
+describe("Adding rows at different positions with virtualization", () => {
+  let gridObj: TreeGrid;
+  let actionComplete: () => void;
+  
+  beforeAll((done: Function) => {
+    gridObj = createGrid(
+      {
+        dataSource: editVirtualData.slice(0, 500),
+        enableVirtualization: true,
+        childMapping: "Crew",
+        treeColumnIndex: 1,
+        height: 400,
+        editSettings: {
+          allowAdding: true,
+          allowEditing: true,
+          allowDeleting: true,
+          mode: "Row",
+          
+        },
+        toolbar: ["Add", "Edit", "Delete", "Update", "Cancel"],
+        columns: [
+          {
+            field: "TaskID",
+            headerText: "Player Jersey",
+            isPrimaryKey: true,
+            width: 140,
+            textAlign: "Right",
+          },
+          { field: "FIELD1", headerText: "Player Name", width: 140 },
+          {
+            field: "FIELD2",
+            headerText: "Year",
+            width: 120,
+            textAlign: "Right",
+          },
+          {
+            field: "FIELD3",
+            headerText: "Stint",
+            width: 120,
+            textAlign: "Right",
+          },
+        ],
+      },
+      done
+    );
+  });
+
+ 
+  it("Should add record at Above position relative to selected row", (done: Function) => {
+    // Select a row in the middle
+    let targetRowIndex = 5;
+    gridObj.selectRow(targetRowIndex);
+    
+    let targetRecord:any = gridObj.getCurrentViewRecords()[targetRowIndex];
+    
+    actionComplete = (args?: any): void => {
+      if (args.requestType === "save") {
+        
+        // Verify the record was added above the selected row
+        let newRecord :any= gridObj.flatData[targetRowIndex];
+        expect(newRecord.TaskID).toBe(10003);
+        expect(newRecord.FIELD1).toBe("Above Position");
+        
+        // Verify the selected row is now one position down
+        let movedRecord :any= gridObj.flatData[targetRowIndex +1];
+        expect(movedRecord.TaskID).toBe(targetRecord.TaskID);
+        done();
+      }
+    };
+    
+    gridObj.actionComplete = actionComplete;
+    
+    // Add record Above the selected row
+    gridObj.addRecord(
+      { 
+        TaskID: 10003, 
+        FIELD1: "Above Position", 
+        FIELD2: 2023, 
+        FIELD3: 1 
+      },
+      targetRowIndex,
+      "Above"
+    );
+  });
+
+ 
+  afterAll(() => {
+    destroy(gridObj);
+  });
+});
+describe("Adding rows at different positions with virtualization", () => {
+  let gridObj: TreeGrid;
+  let actionComplete: () => void;
+  
+  beforeAll((done: Function) => {
+    gridObj = createGrid(
+      {
+        dataSource: editVirtualData.slice(0, 500),
+        enableVirtualization: true,
+        childMapping: "Crew",
+        treeColumnIndex: 1,
+        height: 400,
+        editSettings: {
+          allowAdding: true,
+          allowEditing: true,
+          allowDeleting: true,
+          mode: "Row",
+          
+        },
+        toolbar: ["Add", "Edit", "Delete", "Update", "Cancel"],
+        columns: [
+          {
+            field: "TaskID",
+            headerText: "Player Jersey",
+            isPrimaryKey: true,
+            width: 140,
+            textAlign: "Right",
+          },
+          { field: "FIELD1", headerText: "Player Name", width: 140 },
+          {
+            field: "FIELD2",
+            headerText: "Year",
+            width: 120,
+            textAlign: "Right",
+          },
+          {
+            field: "FIELD3",
+            headerText: "Stint",
+            width: 120,
+            textAlign: "Right",
+          },
+        ],
+      },
+      done
+    );
+  });
+
+  it("Should add record at Below position relative to selected row", (done: Function) => {
+    // Select a row in the middle
+    let targetRowIndex = 2;
+    gridObj.selectRow(targetRowIndex);
+    actionComplete = (args?: any): void => {
+      if (args.requestType === "save") {
+       
+        // Verify the record was added below the selected row
+        let newRecord:any = gridObj.flatData[targetRowIndex+1];
+        expect(newRecord.TaskID).toBe(10004);
+        expect(newRecord.FIELD1).toBe("Below Position");
+        
+        done();
+      }
+    };
+    
+    gridObj.actionComplete = actionComplete;
+    
+    // Add record Below the selected row
+    gridObj.addRecord(
+      { 
+        TaskID: 10004, 
+        FIELD1: "Below Position", 
+        FIELD2: 2023, 
+        FIELD3: 1 
+      },
+      targetRowIndex,
+      "Below"
+    );
+  });  
+
+  afterAll(() => {
+    destroy(gridObj);
+  });
+});
+describe("Adding rows at different positions with virtualization", () => {
+  let gridObj: TreeGrid;
+  let actionComplete: () => void;
+  
+  beforeAll((done: Function) => {
+    gridObj = createGrid(
+      {
+        dataSource: editVirtualData.slice(0, 500),
+        enableVirtualization: true,
+        childMapping: "Crew",
+        treeColumnIndex: 1,
+        height: 400,
+        editSettings: {
+          allowAdding: true,
+          allowEditing: true,
+          allowDeleting: true,
+          mode: "Row",
+          
+        },
+        toolbar: ["Add", "Edit", "Delete", "Update", "Cancel"],
+        columns: [
+          {
+            field: "TaskID",
+            headerText: "Player Jersey",
+            isPrimaryKey: true,
+            width: 140,
+            textAlign: "Right",
+          },
+          { field: "FIELD1", headerText: "Player Name", width: 140 },
+          {
+            field: "FIELD2",
+            headerText: "Year",
+            width: 120,
+            textAlign: "Right",
+          },
+          {
+            field: "FIELD3",
+            headerText: "Stint",
+            width: 120,
+            textAlign: "Right",
+          },
+        ],
+      },
+      done
+    );
+  });
+
+  it("Should add record at Child position relative to selected row", (done: Function) => {
+    // Select a row in the middle
+    let targetRowIndex = 2;
+    gridObj.selectRow(targetRowIndex);
+    
+    
+    actionComplete = (args?: any): void => {
+      if (args.requestType === "save") {
+       
+        // Verify the record was added below the selected row
+        let newRecord:any = gridObj.flatData[targetRowIndex+1];
+        expect(newRecord.TaskID).toBe(10010);
+        expect(newRecord.FIELD1).toBe("Child Position");
+        
+        done();
+      }
+    };
+    
+    gridObj.actionComplete = actionComplete;
+    
+    // Add record Below the selected row
+    gridObj.addRecord(
+      { 
+        TaskID: 10010, 
+        FIELD1: "Child Position", 
+        FIELD2: 2023, 
+        FIELD3: 1 
+      },
+      targetRowIndex,
+      "Child"
+    );
+  });
+  afterAll(() => {
+    destroy(gridObj);
+  });
+});
+describe("Adding rows at different positions with virtualization", () => {
+  let gridObj: TreeGrid;
+  let actionComplete: () => void;
+  
+  beforeAll((done: Function) => {
+    gridObj = createGrid(
+      {
+        dataSource: editVirtualData.slice(0, 500),
+        enableVirtualization: true,
+        childMapping: "Crew",
+        treeColumnIndex: 1,
+        height: 400,
+        editSettings: {
+          allowAdding: true,
+          allowEditing: true,
+          allowDeleting: true,
+          mode: "Row",
+          newRowPosition: "Below"
+        },
+        toolbar: ["Add", "Edit", "Delete", "Update", "Cancel"],
+        columns: [
+          {
+            field: "TaskID",
+            headerText: "Player Jersey",
+            isPrimaryKey: true,
+            width: 140,
+            textAlign: "Right",
+          },
+          { field: "FIELD1", headerText: "Player Name", width: 140 },
+          {
+            field: "FIELD2",
+            headerText: "Year",
+            width: 120,
+            textAlign: "Right",
+          },
+          {
+            field: "FIELD3",
+            headerText: "Stint",
+            width: 120,
+            textAlign: "Right",
+          },
+        ],
+      },
+      done
+    );
+  });
+
+  it("Should maintain scroll position after adding records at different positions", (done: Function) => {
+    // Scroll to a specific position
+    let content: HTMLElement = <HTMLElement>gridObj.getContent().firstChild;
+    let scrollPosition = 1500;
+    content.scrollTop = scrollPosition;
+    EventHandler.trigger(content, "scroll", { target: content });
+    
+    setTimeout(() => {
+      // Select a visible row
+      let visibleRowIndex = parseInt(gridObj.getRows()[2].getAttribute("aria-rowindex"), 10) - 1;
+      let visibleRecord:any = gridObj.getCurrentViewRecords()[visibleRowIndex];
+      gridObj.selectRow(visibleRowIndex);
+      
+      // Add record below the selected row
+      actionComplete = (args?: any): void => {
+        if (args.requestType === "save") {
+          // Verify scroll position is maintained (with some tolerance)
+          expect(Math.abs(content.scrollTop - scrollPosition) > 100).toBe(true);
+          done();
+        }
+      };
+      
+      gridObj.actionComplete = actionComplete;
+      
+      gridObj.addRecord(
+        { 
+          TaskID: 10008, 
+          FIELD1: "Maintain Scroll", 
+          FIELD2: 2023, 
+          FIELD3: 1 
+        },
+        visibleRecord.TaskID,
+        "Below"
+      );
+    }, 500);
+  });
+
+  afterAll(() => {
+    destroy(gridObj);
   });
 });

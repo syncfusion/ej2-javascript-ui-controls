@@ -28,7 +28,7 @@ describe('track changes issue number 10', () => {
         document.body.removeChild(document.getElementById('container'));
         editor = undefined;
         setTimeout(function () {
-            document.body.innerHTML = '';
+            
             done();
         }, 1000);
     });
@@ -36,13 +36,13 @@ describe('track changes issue number 10', () => {
         editor.open(sfdtContent);
         editor.selection.select('0;10;2;1;5;1','0;10;1;1;0;0');
         expect(() => { editor.editor.delete(); }).not.toThrowError();
-        expect(editor.revisions.length).toBe(1);
+        expect(editor.revisions.length).toBe(2);
         //undo process
         expect(() => { editor.editorHistory.undo(); }).not.toThrowError();
         expect(editor.revisions.length).toBe(0);
         //redo process
         expect(() => { editor.editorHistory.redo(); }).not.toThrowError();
-        expect(editor.revisions.length).toBe(1);
+        expect(editor.revisions.length).toBe(2);
     });
    
 });

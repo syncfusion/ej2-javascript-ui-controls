@@ -2845,5 +2845,60 @@ describe('Spreadsheet Number Format Module ->', (): void => {
             expect(helper.invoke('getCell', [4, 8]).style.color).toBe('red');
             done();
         });
+        it('EJ2-960683 - Number Formatting Suggestions Glitch for Multi-Line Cells (Alt+Enter)', (done: Function) => {
+            helper.edit('H11', '55\n123');
+            expect(helper.getInstance().sheets[0].rows[10].cells[7].value).toBe('55\n123');
+            helper.click('_number_format .e-btn-icon');
+            expect(helper.getElement('.e-numformat-preview-text').textContent).toEqual('55123');
+            done();
+        });
+        it('EJ2-924874 - Data not correctly loaded in imported file', (done: Function) => {
+            helper.edit('A12', '-2/3');
+            helper.edit('A13', ' -12-05');
+            expect(helper.getInstance().sheets[0].rows[11].cells[0].value).toBe('-2/3');
+            expect(helper.getInstance().sheets[0].rows[12].cells[0].value).toBe(' -12-05');
+            done();
+        });
+    });
+    describe('Number format - allowNumberFormatting: false ->', () => {
+        beforeAll((done: Function) => {
+            helper.initializeSpreadsheet({
+                allowNumberFormatting: false,
+                sheets: [{ranges: [{ dataSource: defaultData }], rows: [{ index: 1,cells: [{index: 3, format: 'Currency', style: {border: '1px solid black', fontWeight: 'normal', textAlign: 'left'}}]}]}]
+            }, done);
+        });
+        afterAll(() => {
+            helper.invoke('destroy');
+        });
+        it('Should render plain text and disable formatting controls', (done: Function) => {
+            const cellD2 = helper.getInstance().sheets[0].rows[1].cells[3];
+            expect(JSON.stringify(cellD2.style)).toBe('{"border":"1px solid black","fontWeight":"normal","textAlign":"left"}');
+            const tdA1 = helper.invoke('getCell', [1, 3]);
+            expect(tdA1.style.borderBottom).toBe('1px solid black');
+            expect(tdA1.style.borderRight).toBe('1px solid black');
+            expect(tdA1.style.fontWeight).toBe('normal');
+            expect(tdA1.style.textAlign).toBe('left');
+            expect(tdA1.format).toBeUndefined();
+            expect(tdA1.textContent).toBe('10');
+            expect(cellD2.format).toBe('Currency');
+            expect(cellD2.value).toBe(10);
+            const btn = helper.getElement('#' + helper.id + '_number_format');
+            expect(btn.getAttribute('aria-disabled')).toBe("true");
+            done();
+        });
+        it('Should prevent number formatting through various interactions', (done: Function) => {
+            const sheet = helper.getInstance().sheets[0];
+            helper.invoke('numberFormat', ['0.00', 'E2:E11']);
+            expect(JSON.stringify(sheet.rows[1].cells[4])).toBe('{"value":20}');
+            expect(helper.invoke('getCell', [1, 4]).textContent).toBe('20');
+            helper.invoke('selectRange', ['F3']);
+            helper.edit('F3', '$10.22'); 
+            expect(JSON.stringify(sheet.rows[2].cells[5])).toBe('{"value":"$10.22"}');           
+            expect(helper.invoke('getCell',[2,5]).textContent).toBe('$10.22');
+            helper.invoke('updateCell', [{ value: '43891', format: '$ #,##0.00'}, 'G3']);
+            expect(JSON.stringify(sheet.rows[2].cells[6])).toBe('{"value":43891,"format":"$ #,##0.00"}');           
+            expect(helper.invoke('getCell',[2,6]).textContent).toBe('43891');
+            done();
+        });
     });
 });

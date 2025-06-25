@@ -314,7 +314,7 @@ export class PivotButton implements IAction {
                                     break;
                                 }
                                 const rowIndex: number = Number(rKey);
-                                if (pivotValues[rowIndex as number][0] && (pivotValues[rowIndex as number][0] as IAxisSet).axis === 'row' &&
+                                if (pivotValues[rowIndex as number] && pivotValues[rowIndex as number][0] && (pivotValues[rowIndex as number][0] as IAxisSet).axis === 'row' &&
                                     (this.parent.dataSourceSettings.rows.length === 0 ? true : (pivotValues[rowIndex as number][0] as IAxisSet).type !== 'grand sum')) {
                                     const firstRowCell: IAxisSet = pivotValues[rowIndex as number][0] as IAxisSet;
                                     const tupInfo: ITupInfo = this.parent.dataType === 'olap' ?
@@ -1531,29 +1531,83 @@ export class PivotButton implements IAction {
      */
 
     public destroy(): void {
+        this.removeEventListener();
+        this.cleanupButtonElements();
         if (this.menuOption) {
             this.menuOption.destroy();
             this.menuOption = null;
         }
-        let element: HTMLElement = select('.' + cls.GROUP_CHART_VALUE_DROPDOWN_DIV, this.parentElement);
-        const valueFiedDropDownList: DropDownList = element ? getInstance(element, DropDownList) as DropDownList : null;
-        if (valueFiedDropDownList && !valueFiedDropDownList.isDestroyed) {
-            valueFiedDropDownList.destroy();
-        }
-        element = select('.' + cls.GROUP_CHART_COLUMN_DROPDOWN_DIV, this.parentElement);
-        let columnFieldDropDownList: DropDownList = element ? getInstance(element, DropDownList) as DropDownList : null;
-        if (columnFieldDropDownList && !columnFieldDropDownList.isDestroyed) {
-            columnFieldDropDownList.destroy();
-            columnFieldDropDownList = null;
-        }
+        this.cleanupDropdowns();
         if (this.draggable && !this.draggable.isDestroyed) {
             this.draggable.destroy();
             this.draggable = null;
         }
+        const dragClone: HTMLElement = document.getElementById(this.parent.element.id + '_DragClone');
+        if (dragClone) {
+            remove(dragClone);
+        }
         if (this.axisField) {
             this.axisField = null;
         }
-        this.removeEventListener();
+        this.handlers = null;
         this.isDestroyed = true;
+    }
+
+    /**
+     * Clean up all button elements and their event handlers
+     *
+     * @returns {void}
+     * @hidden
+     */
+    public cleanupButtonElements(): void {
+        this.parentElement = this.parent.getModuleName() === 'pivotview' ? this.parent.element :
+            document.getElementById(this.parent.element.id + '_Container');
+        if (!this.parentElement) {
+            return;
+        }
+        const pivotButtons: NodeListOf<Element> = this.parentElement.querySelectorAll('.' + cls.PIVOT_BUTTON_WRAPPER_CLASS);
+        if (pivotButtons && pivotButtons.length > 0) {
+            for (let i: number = 0; i < pivotButtons.length; i++) {
+                const element: Element = pivotButtons[i as number];
+                EventHandler.remove(element, 'mouseover', this.updateDropIndicator);
+                let pivotButton: Element = element.querySelector('.' + cls.PIVOT_BUTTON_CLASS);
+                if (pivotButton) {
+                    EventHandler.remove(pivotButton, 'click', this.updateSorting);
+                    let buttonInstance: Button = getInstance(pivotButton as HTMLElement, Button) as Button;
+                    if (buttonInstance && !buttonInstance.isDestroyed) {
+                        buttonInstance.destroy();
+                        buttonInstance = null;
+                    }
+                    pivotButton.remove();
+                    pivotButton = null;
+                }
+            }
+        }
+    }
+
+    /**
+     * Clean up dropdown components
+     *
+     * @returns {void}
+     * @hidden
+     */
+    private cleanupDropdowns(): void {
+        if (!this.parentElement) {
+            return;
+        }
+        const valueDropdownElement: HTMLElement = select('.' + cls.GROUP_CHART_VALUE_DROPDOWN_DIV, this.parentElement) as HTMLElement;
+        if (valueDropdownElement) {
+            const valueDropdown: DropDownList = getInstance(valueDropdownElement as HTMLElement, DropDownList) as DropDownList;
+            if (valueDropdown && !valueDropdown.isDestroyed) {
+                valueDropdown.destroy();
+            }
+        }
+        const columnDropdownElement: HTMLElement = select('.' + cls.GROUP_CHART_COLUMN_DROPDOWN_DIV, this.parentElement) as HTMLElement;
+        if (columnDropdownElement) {
+            const columnDropdown: DropDownList = getInstance(columnDropdownElement as HTMLElement, DropDownList) as DropDownList;
+            if (columnDropdown && !columnDropdown.isDestroyed) {
+                columnDropdown.destroy();
+            }
+        }
     }
 }

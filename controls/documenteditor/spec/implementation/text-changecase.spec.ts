@@ -30,7 +30,7 @@ describe('Change case testing', () => {
         editor.destroy();
         editor = undefined;
         document.body.removeChild(document.getElementById('container'));
-        document.body.innerHTML = '';
+        
         setTimeout(() => {
             done();
         }, 1000);
@@ -251,7 +251,7 @@ describe('Allcaps property testing', () => {
         document.body.removeChild(document.getElementById('container'));
         editor = undefined;
         setTimeout(function () {
-            document.body.innerHTML = '';
+            
             done();
         }, 1000);
     });

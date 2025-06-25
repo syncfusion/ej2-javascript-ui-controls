@@ -9,6 +9,27 @@
     }
   }
 
+  .e-bigger .e-pv-redaction-property-panel-text,
+  .e-bigger .e-pv-redaction-page-mark-dialog {
+    font-size: 16px;
+    @if $skin-name == 'Material3' {
+      font-size: 14px;
+    }
+  }
+
+  .e-bigger .e-pv-overlaytext {
+    margin-left: 20px;
+  }
+  .e-bigger .e-dialog.e-pv-redaction-properties-dialog {
+    width: 430px !important;/* stylelint-disable-line declaration-no-important */
+  }
+  .e-bigger .e-pv-redaction-font-family {
+    width: 200px;
+  }
+
+  .e-bigger .e-pv-blazor-redaction-font-size {
+    width: 92px;
+  }
   .e-bigger .e-pv-annotation-color-container.e-dropdown-btn.e-btn .e-btn-icon:not(.e-caret),
   .e-bigger .e-pv-annotation-opacity-container.e-dropdown-btn.e-btn .e-btn-icon:not(.e-caret),
   .e-bigger .e-pv-annotation-stroke-container.e-dropdown-btn.e-btn .e-btn-icon:not(.e-caret),
@@ -59,6 +80,9 @@
     height: $pv-toolbar-height-big;
   }
 
+  .e-bigger .e-pv-page-range-row {
+    height: 48px;
+  }
   .e-bigger .e-pv-toolbar.e-toolbar:not(.e-pv-mobile-toolbar) .e-toolbar-items .e-toolbar-item:not(.e-separator) {
     @if $skin-name =='bootstrap4' {
       padding-bottom: $pv-toolbar-items-padding-bottom-big;
@@ -79,6 +103,10 @@
     @else {
       padding-bottom: 0;
     }
+  }
+
+  .e-bigger .e-pv-redaction-toolbar.e-toolbar .e-toolbar-items .e-toolbar-item .e-tbar-btn.e-btn .e-icons.e-btn-icon {
+    padding: 0;
   }
 
   .e-bigger .e-pv-sidebar-title-container {
@@ -431,6 +459,56 @@
     }
   }
 
+  .e-bigger .e-pv-redaction-radio-option {
+    margin-bottom: 16px;
+  }
+
+  .e-bigger .e-pv-blazor-redaction-text-align {
+    .e-pv-left-align-icon-div,
+    .e-pv-center-align-icon-div,
+    .e-pv-right-align-icon-div {
+      height: 100%;
+      width: 100%;
+    }
+  }
+
+  .e-bigger .e-pv-redaction-page-mark-content {
+    @if $skin-name=='Material3' {
+      margin-top: 10px;
+    }
+  }
+
+  .e-bigger .e-pv-redaction-page-mark-dialog .e-footer-content button,
+  .e-bigger .e-pv-redaction-properties-dialog .e-footer-content button {
+    @if ($skin-name == 'tailwind3') {
+      height: 38px;
+    }
+    @else {
+      height: 40px;
+    }
+    @if ($skin-name != 'bootstrap5.3' and $skin-name != 'bootstrap5' and $skin-name != 'highcontrast') {
+      padding-top: 6px;
+    }
+  }
+
+  .e-bigger .e-pv-redaction-page-mark-dialog .e-dlg-header-content button,
+  .e-bigger .e-pv-redaction-properties-dialog .e-dlg-header-content button {
+    @if ($skin-name == 'highcontrast') {
+      padding: 0;
+    }
+  }
+
+  .e-bigger .e-toolbar.e-pv-redaction-toolbar .e-toolbar-item .e-tbar-btn.e-btn {
+    @if $skin-name == 'FluentUI' {
+      min-width: 40px;
+      min-height: 40px;
+    }
+  }
+
+  .e-bigger .e-pv-redaction-toolbar .e-pv-icon {
+    font-size: 18px !important;/* stylelint-disable-line declaration-no-important */
+  }
+
   .e-bigger .e-pv-toolbar.e-toolbar .e-toolbar-items .e-toolbar-item .e-tbar-btn.e-btn,
   .e-bigger .e-pv-annotation-toolbar.e-toolbar .e-toolbar-items .e-toolbar-item .e-pv-tbar-btn.e-btn {
     height: $pv-toolbar-btn-height-big;
@@ -443,6 +521,17 @@
       }
     }
     width: $pv-toolbar-btn-width-big;
+  }
+
+  .e-bigger .e-toolbar.e-pv-redaction-toolbar .e-toolbar-item .e-tbar-btn {
+    @if ($skin-name == 'highcontrast') {
+      min-height: 48px;
+      min-width: 48px;
+    }
+  }
+
+  .e-bigger .e-pv-toolbar.e-toolbar .e-toolbar-items .e-toolbar-item.e-pv-submit .e-tbar-btn.e-btn {
+    width: auto;
   }
 
   .e-bigger .e-pv-current-page-box.e-input-group.e-control-wrapper input.e-input {
@@ -774,6 +863,28 @@
     }
   }
 
+  .e-bigger .e-pv-blazor-redaction-text-align {
+    .e-pv-left-align-icon-div,
+    .e-pv-center-align-icon-div,
+    .e-pv-right-align-icon-div {
+      @if $skin-name == 'tailwind3' {
+        padding: 8px 10px;
+      }
+      @else if $skin-name == 'bootstrap5.3' or $skin-name == 'bootstrap5'{
+        padding: 8px 9px;
+      }
+      @else if ( $skin-name == 'FluentUI') {
+        padding: 7px 8px;
+      }
+      @else if $skin-name == 'highcontrast' {
+        padding: 6px 11px;
+      }
+      @else if $skin-name =='Material3' {
+        padding: 9px 10px 7px 9px !important;/* stylelint-disable-line declaration-no-important */
+      }
+    }
+  }
+
   .e-bigger .e-pv-properties-fill-color-style-prop,
   .e-bigger .e-pv-properties-stroke-color-style-prop,
   .e-bigger .e-pv-properties-stroke-thickness-style-prop {
@@ -832,20 +943,18 @@
   }
 
   .e-bigger .e-dialog:has(.e-pv-default-tab.e-pv-properties-tab-style-prop) {
-    @if ($skin-name =='fluent2' or $skin-name =='FluentUI' or $skin-name=='tailwind3' or $skin-name == 'tailwind' or $skin-name == 'tailwind-dark' or $skin-name == 'Material3') {
-      height: 570px !important;/* stylelint-disable-line declaration-no-important */
-      max-height: 600px !important;/* stylelint-disable-line declaration-no-important */
-      @if ($skin-name !='tailwind3') {
-        width: 470px !important;/* stylelint-disable-line declaration-no-important */
-      }
-      @else {
-        width: 435px !important;/* stylelint-disable-line declaration-no-important */
-      }
+    height: 570px !important;/* stylelint-disable-line declaration-no-important */
+    max-height: 600px !important;/* stylelint-disable-line declaration-no-important */
+    @if ($skin-name !='tailwind3') {
+      width: 470px !important;/* stylelint-disable-line declaration-no-important */
     }
     @else {
-      height: 550px !important;/* stylelint-disable-line declaration-no-important */
-      width: 450px !important;/* stylelint-disable-line declaration-no-important */
+      width: 435px !important;/* stylelint-disable-line declaration-no-important */
     }
+  }
+
+  .e-bigger .e-pv-default-tab .e-pv-properties-formfield-textarea {
+    height: 138px;
   }
 
   .e-bigger .e-pv-default-tab .e-pv-properties-color-container-style-prop .e-btn-icon.e-pv-annotation-color-icon.e-pv-icon,
@@ -853,11 +962,12 @@
     @if ($skin-name != 'highcontrast') {
       padding-top: 0;
       @if ($skin-name !='fluent2' and $skin-name !='FluentUI') {
-        @if ($skin-name =='bootstrap5.3') {
+        height: 30px;
+        @if ($skin-name =='bootstrap5.3' or $skin-name =='tailwind' or $skin-name == 'tailwind3') {
           height: 25px;
         }
-        @else {
-          height: 30px;
+        @else if ($skin-name == 'Material3') {
+          height: 20px;
         }
       }
     }
@@ -929,7 +1039,7 @@
       padding-top: 12px;
     }
   }
-
+  
   .e-bigger .e-pv-default-tab .e-pv-properties-color-container-style-prop .e-btn-icon.e-pv-annotation-thickness-icon.e-pv-icon {
     padding-top: 0;
   }
@@ -956,7 +1066,6 @@
     @if ($skin-name =='bootstrap5' or $skin-name =='Material3') {
       border-radius: 4px;
     }
-
     @else {
       border-radius: 2px;
     }
@@ -991,12 +1100,60 @@
     }
   }
 
+  .e-bigger .e-pv-redaction-properties-dialog .e-pv-properties-form-field-font-align {
+    @if ($skin-name == 'Material3') {
+      padding-top: 0;
+    }
+  }
+
   .e-bigger .e-pv-default-tab .e-pv-properties-form-field-font-align {
     height: 38px;
     width: auto;
+    @if ($skin-name =='bootstrap5.3') {
+      border-radius: 6px;
+    }
   }
 
-  .e-bigger .e-pv-form-designer-property-panel .e-pv-form-designer-panel-title-container .e-pv-save-button {
+  .e-bigger .e-pv-default-tab .e-pv-properties-form-field-font-align .e-pv-right-align-icon-div.e-pv-li-select {
+    @if ($skin-name =='bootstrap5.3') {
+      border-top-right-radius: 6px;
+      border-bottom-right-radius: 6px;
+    }
+  }
+  
+  .e-bigger .e-pv-default-tab .e-pv-properties-form-field-font-align .e-pv-right-align-icon-div:hover,
+  .e-bigger .e-pv-default-tab .e-pv-properties-form-field-font-align .e-pv-right-align-icon-div:focus,
+  .e-bigger .e-pv-default-tab .e-pv-properties-form-field-font-align .e-pv-right-align-icon-div:active {
+    @if ($skin-name =='bootstrap5.3') {
+      border-top-right-radius: 6px;
+      border-bottom-right-radius: 6px;
+    }
+  }
+  
+  .e-bigger .e-pv-default-tab .e-pv-properties-form-field-font-align .e-pv-left-align-icon-div.e-pv-li-select {
+    @if ($skin-name =='bootstrap5.3') {
+      border-top-left-radius: 6px;
+      border-bottom-left-radius: 6px;
+    }
+  }
+  
+  .e-bigger .e-pv-default-tab .e-pv-properties-form-field-font-align .e-pv-left-align-icon-div:hover,
+  .e-bigger .e-pv-default-tab .e-pv-properties-form-field-font-align .e-pv-left-align-icon-div:focus,
+  .e-bigger .e-pv-default-tab .e-pv-properties-form-field-font-align .e-pv-left-align-icon-div:active {
+    @if ($skin-name =='bootstrap5.3') {
+      border-top-left-radius: 6px;
+      border-bottom-left-radius: 6px;
+    }
+  }
+
+  .e-bigger .e-pv-blazor-redaction-text-align.e-pv-properties-form-field-font-align {
+    @if ($skin-name =='tailwind3' or $skin-name == 'highcontrast') {
+      height: 40px;
+    }
+  }
+
+  .e-bigger .e-pv-form-designer-property-panel .e-pv-form-designer-panel-title-container .e-pv-save-button,
+  .e-bigger .e-pv-redaction-property-panel .e-pv-redaction-panel-title-container .e-pv-save-button {
     @if ($skin-name =='Material3') {
       padding-top: 5px;
     }
@@ -1028,8 +1185,19 @@
     @if ($skin-name =='bootstrap5.3') {
       width: 72px;
     }
-    @else if ($skin-name =='FluentUI' or $skin-name == 'tailwind' or $skin-name == 'tailwind-dark') {
-      width: 75px;
+    @else if ($skin-name == 'tailwind' or $skin-name == 'tailwind-dark') {
+      width: 76px;
+      height: 40px;
+    }
+    @else if ($skin-name =='FluentUI') {
+      width: 82px;
+    }
+    @else if ($skin-name =='fluent2') {
+      width: 70px;
+    }
+    @else if ($skin-name == 'Material3') {
+      width: 90px;
+      height: 40px;
     }
     @else {
       width: 68px;
@@ -1039,6 +1207,15 @@
     }
     @if ($skin-name == 'highcontrast') {
       padding: 0;
+    }
+  }
+
+  .e-bigger .e-pv-default-tab .e-pv-formfield-textcolor-icon,
+  .e-bigger .e-pv-default-tab .e-pv-formfield-strokecolor-icon,
+  .e-bigger .e-pv-default-tab .e-pv-formfield-fontcolor-icon,
+  .e-bigger .e-pv-default-tab .e-pv-formfield-strokethickness-icon {
+    @if ($skin-name == 'highcontrast') {
+      height: 40px;
     }
   }
 
@@ -1148,6 +1325,17 @@
     @if $skin-name =='fluent2' {
       margin-left: -2% !important;/* stylelint-disable-line declaration-no-important */
       margin-top: -4% !important;/* stylelint-disable-line declaration-no-important */
+    }
+  }
+
+  .e-bigger .e-control.e-blazor.e-smart-pdfviewer {
+    .e-pv-smart-assistanceview + .e-dlg-container .e-popup.e-control.e-popup-open {
+      @if ($skin-name =='FluentUI') {
+        height: 250px;
+      }
+      @else if ($skin-name == 'highcontrast') {
+        height: 220px;
+      }
     }
   }
 }

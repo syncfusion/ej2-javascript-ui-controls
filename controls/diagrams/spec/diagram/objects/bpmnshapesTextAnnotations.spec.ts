@@ -8,7 +8,7 @@ import { BpmnDiagrams } from '../../../src/diagram/objects/bpmn';
 import { BpmnShape, IElement, PathElement, PointModel, UndoRedo } from '../../../src/diagram/index';
 import { MouseEvents } from './../interaction/mouseevents.spec';
 import { NodeConstraints } from '../../../src/diagram/enum/enum';
-import { Container } from '../../../src/diagram/core/containers/container';
+import { GroupableView } from '../../../src/diagram/core/containers/container';
 import  {profile , inMB, getMemoryProfile} from '../../../spec/common.spec';
 import {
     SymbolPalette, SymbolInfo
@@ -1239,5 +1239,77 @@ describe('Diagram Control', () => {
             done();
         });
 
+    });
+    describe('BPMN Text Annotations Interactions with subprocess-drag', () => {
+        let diagram: Diagram;
+        let ele: HTMLElement;
+
+        beforeAll((): void => {
+            const isDef = (o: any) => o !== undefined && o !== null;
+                if (!isDef(window.performance)) {
+                    console.log("Unsupported environment, window.performance.memory is unavailable");
+                    this.skip(); //Skips test (in Chai)
+                    return;
+                }
+            ele = createElement('div', { id: 'diagramtext1' });
+            document.body.appendChild(ele);
+            let nodes: NodeModel[] = [
+                {
+                    id: 'sub', maxHeight: 600, maxWidth: 600, minWidth: 300, minHeight: 300,
+                    constraints: NodeConstraints.Default | NodeConstraints.AllowDrop,
+                    offsetX: 1000, offsetY: 200,
+                    shape: {
+                        type: 'Bpmn', shape: 'Activity', activity: {
+                            activity: 'SubProcess',
+                            subProcess: {
+                                collapsed: false, type: 'Transaction',
+                            }
+                        },
+                    },
+                },
+                {
+                    id: 'event1', style: { strokeWidth: 2 },
+                    height:70,width:70,offsetX:300,offsetY:200,
+                    shape: { type: 'Bpmn', shape: 'Event',
+                        event: { event: 'Start', trigger: 'None' },
+                     },
+                },
+                {
+                    id: 'textNode1', width: 70, height: 70,
+                    offsetX:400,offsetY:200,
+                    annotations:[{content:'textNode1'}],
+                        shape: {
+                            type: 'Bpmn', shape: 'TextAnnotation',
+                            textAnnotation:{ textAnnotationDirection:'Auto',textAnnotationTarget:'event1'}
+                            // annotation:{}
+                        }
+                },
+            ];
+            diagram = new Diagram({
+                width: 1500, height: 1000, nodes: nodes
+            });
+            diagram.appendTo('#diagramtext1');
+        });
+
+        afterAll((): void => {
+            diagram.destroy();
+            ele.remove();
+        });
+        it('Checking drag of text annotation and drop into subprocess -drag',(done: Function)=>{
+            let diagramCanvas: HTMLElement = document.getElementById(diagram.element.id + 'content');
+            let node = diagram.nameTable['textNode1'];
+            let oldOffset = node.offsetX;
+            mouseEvents.mouseDownEvent(diagramCanvas, 296, 219);
+            mouseEvents.mouseMoveEvent(diagramCanvas, 1000, 200);
+            mouseEvents.mouseUpEvent(diagramCanvas, 1000, 200);
+
+            mouseEvents.mouseDownEvent(diagramCanvas, 1009, 207);
+            mouseEvents.mouseMoveEvent(diagramCanvas, 1012, 225);
+            mouseEvents.mouseUpEvent(diagramCanvas, 1012, 225);
+
+            let newOffset = node.offsetX;
+            expect(oldOffset !== newOffset && oldOffset === 400).toBe(true);
+            done();
+        });
     });
 });

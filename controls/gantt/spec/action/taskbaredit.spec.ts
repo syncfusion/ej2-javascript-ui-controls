@@ -5183,7 +5183,7 @@ describe('Split task left resize', () => {
         it('duration calculation',() => {
             ganttObj.fitToProject();
             ganttObj.taskbarEdited = (args: ITaskbarEditedEventArgs) => {
-                expect(args.data.ganttProperties.duration).toBe(5);
+                expect(args.data.ganttProperties.duration).toBe(6);
             };
             let dragElement: HTMLElement = ganttObj.element.querySelector('#' + ganttObj.element.id + 'GanttTaskTableBody > tr:nth-child(2) > td > div.e-taskbar-main-container > div.e-gantt-child-taskbar-inner-div.e-segment-last.e-gantt-child-taskbar.e-segmented-taskbar > div.e-taskbar-left-resizer.e-icon') as HTMLElement;
             triggerMouseEvent(dragElement, 'mousedown', dragElement.offsetLeft, dragElement.offsetTop);
@@ -9627,6 +9627,7 @@ describe('Content menu split task  -', () => {
         }
     });
 });
+
 describe('Dragging task after connecting predecessor', () => {
     let ganttObj: Gantt;
     beforeAll((done: Function) => {

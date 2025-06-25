@@ -389,7 +389,7 @@ describe('Keyboard module', () => {
             kanbanObj.closeDialog();
             expect(popup.classList.contains('e-popup-open')).toBe(false);
         });
-
+        
         it('enter key in add card button', () => {
             let contentEle: HTMLElement = kanbanObj.element.querySelectorAll('.e-content-cells.e-drag').item(0) as HTMLElement;
             util.triggerMouseEvent(contentEle, 'click'); contentEle.focus();

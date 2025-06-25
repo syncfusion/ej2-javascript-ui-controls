@@ -2394,4 +2394,82 @@ describe('PDF Export', () => {
             expect(memory).toBeLessThan(profile.samples[0] + 0.25);
         });
     });
+    describe('PDF Export - Table and chart', () => {
+        let pivotGridObj: PivotView;
+        let elem: HTMLElement = createElement('div', { id: 'PivotGrid' });
+        if (document.getElementById(elem.id)) {
+            remove(document.getElementById(elem.id));
+        }
+        document.body.appendChild(elem);
+        afterAll(() => {
+            if (pivotGridObj) {
+                pivotGridObj.destroy();
+            }
+            remove(elem);
+        });
+        beforeAll(() => {
+            const isDef = (o: any) => o !== undefined && o !== null;
+            if (!isDef(window.performance)) {
+                console.log("Unsupported environment, window.performance.memory is unavailable");
+                pending(); //Skips test (in Chai)
+                return;
+            }
+            if (document.getElementById(elem.id)) {
+                remove(document.getElementById(elem.id));
+            }
+            document.body.appendChild(elem);
+            PivotView.Inject(Toolbar, PDFExport, ExcelExport, FieldList, VirtualScroll, Pager);
+            pivotGridObj = new PivotView({
+                dataSourceSettings: {
+                    dataSource: [
+                        { row: 'row1', column1: 'column1', column2: 'column1', value: 1 },
+                        { row: 'row2', column1: 'column2', column2: 'column2', value: 2 },
+                        { row: 'row3', column1: 'column3', column2: 'column3', value: 3 },
+                        { row: 'row4', column1: 'column4', column2: 'column4', value: 4 },
+                    ],
+                    columns: [{ name: 'column1' }, { name: 'column2' }],
+                    rows: [{ name: 'row' },],
+                    values: [{ name: 'value' }],
+                },
+                allowPdfExport: true,
+                displayOption: { view: 'Both', primary: 'Table'},
+                beforeExport: (args: BeforeExportEventArgs) => {
+                    args.width = 100;
+                    args.height = 100;
+                }
+            });
+            pivotGridObj.appendTo('#PivotGrid');
+        });
+        it('PDF export - primary table 1', (done: Function) => {
+            setTimeout(() => {
+                pivotGridObj.pdfExport(undefined, false, undefined, false, true);
+                expect(1).toBe(1);
+                done();
+            }, 1000);
+        });
+        it('PDF export - primary chart 2', (done: Function) => {
+            pivotGridObj.displayOption.primary = 'Chart'
+            setTimeout(() => {
+                pivotGridObj.pdfExport(undefined, false, undefined, false, true);
+                expect(1).toBe(1);
+                done();
+            }, 1000);
+        });
+        it('PDF export - primary chart 3', (done: Function) => {
+            pivotGridObj.displayOption.primary = 'Chart'
+            setTimeout(() => {
+                pivotGridObj.chartExport('PDF', { fileName: 'result' }, undefined, null, undefined);
+                expect(1).toBe(1);
+                done();
+            }, 1000);
+        });
+        it('memory leak', () => {
+            profile.sample();
+            let average: any = inMB(profile.averageChange);
+            //Check average change in memory samples to not be over 10MB
+            let memory: any = inMB(getMemoryProfile());
+            //Check the final memory usage against the first usage, there should be little change if everything was properly deallocated
+            expect(memory).toBeLessThan(profile.samples[0] + 0.25);
+        });
+    });
 });

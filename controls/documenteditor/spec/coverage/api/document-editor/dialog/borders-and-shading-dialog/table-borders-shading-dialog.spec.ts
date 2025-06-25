@@ -32,7 +32,7 @@ describe('borders dialog setting check box validation', () => {
         document.body.removeChild(document.getElementById('container'));
         editor = undefined;
         dialog = undefined;
-        document.body.innerHTML = '';
+        
         setTimeout(function () {
             done();
         }, 750);
@@ -87,7 +87,7 @@ describe('Borders dialog setting checkbox validation', () => {
         editor = undefined;
         dialog.destroy();
         dialog = undefined;
-        document.body.innerHTML = '';
+        
         setTimeout(() => {
             done();
         }, 750);
@@ -142,7 +142,7 @@ describe('Borders dialog preview checkbox validation', () => {
         editor = undefined;
         dialog.destroy();
         dialog = undefined;
-        document.body.innerHTML = '';
+        
         setTimeout(function () {
             done();
         }, 750);
@@ -210,7 +210,7 @@ describe('Borders dialog preview divs checkbox validation', () => {
         editor = undefined;
         dialog.destroy();
         dialog = undefined;
-        document.body.innerHTML = '';
+        
         setTimeout(function () {
             done();
         }, 750);
@@ -281,7 +281,7 @@ describe('Borders dialog preview div checkbox validation', () => {
         editor = undefined;
         dialog.destroy();
         dialog = undefined;
-        document.body.innerHTML = '';
+        
         setTimeout(function () {
             done();
         }, 750);
@@ -346,7 +346,7 @@ describe('Change table cell drop down preview div checkbox validation', () => {
         editor = undefined;
         dialog.destroy();
         dialog = undefined;
-        document.body.innerHTML = '';
+        
         setTimeout(() => {
             done();
         }, 750);
@@ -398,7 +398,7 @@ describe('Apply borders&shadings checkbox values testing', () => {
         dialog.destroy();
         dialog = undefined;
         tablePropertiesDialog = undefined;
-        document.body.innerHTML = '';
+        
         setTimeout(function () {
             done();
         }, 750);
@@ -452,7 +452,7 @@ describe('Apply borders&shadings checkbox values testing - 1', () => {
         dialog.destroy();
         dialog = undefined;
         tablePropertiesDialog = undefined;
-        document.body.innerHTML = '';
+        
         setTimeout(function () {
             done();
         }, 750);
@@ -507,7 +507,7 @@ describe('Border and shading dialog applying testing to table testing with histo
         dialog.destroy();
         dialog = undefined;
         tablePropertiesDialog = undefined;
-        document.body.innerHTML = '';
+        
         setTimeout(function () {
             done();
         }, 750);
@@ -560,7 +560,7 @@ describe('Border and shading dialog applying testing to table testing with histo
         dialog.destroy();
         dialog = undefined;
         tablePropertiesDialog = undefined;
-        document.body.innerHTML = '';
+        
         setTimeout(function () {
             done();
         }, 750);
@@ -615,7 +615,7 @@ describe('Apply borders&shadings checkbox values testing to paragraph', () => {
         dialog.destroy();
         dialog = undefined;
         tablePropertiesDialog = undefined;
-        document.body.innerHTML = '';
+        
         setTimeout(function () {
             done();
         }, 750);
@@ -675,7 +675,7 @@ describe('Border applying testing with none and box validation in paragraph', ()
         dialog.destroy();
         dialog = undefined;
         tablePropertiesDialog = undefined;
-        document.body.innerHTML = '';
+        
         setTimeout(function () {
             done();
         }, 750);

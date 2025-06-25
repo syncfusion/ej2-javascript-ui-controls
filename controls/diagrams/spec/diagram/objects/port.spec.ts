@@ -4,7 +4,7 @@ import { NodeModel, PathModel } from '../../../src/diagram/objects/node-model';
 import { Node } from '../../../src/diagram/objects/node';
 import { ConnectorModel, DecoratorModel} from '../../../src/diagram/objects/connector-model';
 import { PointPortModel } from '../../../src/diagram/objects/port-model';
-import { Container } from '../../../src/diagram/core/containers/container';
+import { GroupableView } from '../../../src/diagram/core/containers/container';
 import { PathElement } from '../../../src/diagram/core/elements/path-element';
 import  {profile , inMB, getMemoryProfile} from '../../../spec/common.spec';
 import { PortVisibility, PortConstraints, NodeConstraints, ConnectorConstraints, SelectorConstraints, FlipDirection } from '../../../src/diagram/enum/enum';
@@ -74,14 +74,14 @@ describe('Diagram Control', () => {
         });
 
         it('Checking default port', (done: Function) => {
-            let container1: Container = (diagram.nodes[0] as Node).wrapper;
+            let container1: GroupableView = (diagram.nodes[0] as Node).wrapper;
             expect((container1.children[2] as PathElement).absolutePath === 'M 0 0 L 12 0 L 12 12 L 0 12 Z' &&
                 container1.children[2].offsetX === 300 && container1.children[2].offsetY === 300 &&
                 container1.children[2].actualSize.width === 12 && container1.children[2].actualSize.height === 12).toBe(true);
             done();
         });
         it('Checking square port at center', (done: Function) => {
-            let container1: Container = (diagram.nodes[0] as Node).wrapper;
+            let container1: GroupableView = (diagram.nodes[0] as Node).wrapper;
             expect((container1.children[1] as PathElement).absolutePath === 'M 0 0 L 12 0 L 12 12 L 0 12 Z' &&
                 container1.children[1].offsetX === 300 && container1.children[1].offsetY === 300 &&
                 container1.children[1].actualSize.width === 12 && container1.children[1].actualSize.height === 12).toBe(true);
@@ -89,7 +89,7 @@ describe('Diagram Control', () => {
         });
 
         it('Checking circle port at center', (done: Function) => {
-            let container1: Container = (diagram.nodes[1] as Node).wrapper;
+            let container1: GroupableView = (diagram.nodes[1] as Node).wrapper;
             expect((container1.children[1] as PathElement).absolutePath === 'M 0 6 A 6 6 0 1 1 12 6 A 6 6 0 1 1 0 6 Z' &&
                 container1.children[1].offsetX === 500 && container1.children[1].offsetY === 300 &&
                 container1.children[1].actualSize.width === 12 && container1.children[1].actualSize.height === 12).toBe(true);
@@ -97,7 +97,7 @@ describe('Diagram Control', () => {
         });
 
         it('Checking X port at center', (done: Function) => {
-            let container1: Container = (diagram.nodes[2] as Node).wrapper;
+            let container1: GroupableView = (diagram.nodes[2] as Node).wrapper;
             expect((container1.children[1] as PathElement).absolutePath === 'M 0 0 L 12 12 M 12 0 L 0 12' &&
                 container1.children[1].offsetX === 700 && container1.children[1].offsetY === 300 &&
                 container1.children[1].actualSize.width === 12 && container1.children[1].actualSize.height === 12).toBe(true);
@@ -107,7 +107,7 @@ describe('Diagram Control', () => {
             (diagram.nodes[0] as Node).ports[0].offset.x = 0;
             (diagram.nodes[0] as Node).ports[0].offset.y = 0;
             diagram.dataBind();
-            let container1: Container = (diagram.nodes[0] as Node).wrapper;
+            let container1: GroupableView = (diagram.nodes[0] as Node).wrapper;
             expect(container1.children[1].offsetX === 250 && container1.children[1].offsetY === 250 &&
                 container1.children[1].actualSize.width === 12 && container1.children[1].actualSize.height === 12).toBe(true);
             done();
@@ -117,7 +117,7 @@ describe('Diagram Control', () => {
             (diagram.nodes[1] as Node).ports[0].offset.x = 0;
             (diagram.nodes[1] as Node).ports[0].offset.y = 0.5;
             diagram.dataBind();
-            let container1: Container = (diagram.nodes[1] as Node).wrapper;
+            let container1: GroupableView = (diagram.nodes[1] as Node).wrapper;
             expect(container1.children[1].offsetX === 450 && container1.children[1].offsetY === 300 &&
                 container1.children[1].actualSize.width === 12 && container1.children[1].actualSize.height === 12).toBe(true);
             done();
@@ -127,7 +127,7 @@ describe('Diagram Control', () => {
             (diagram.nodes[2] as Node).ports[0].offset.x = 0;
             (diagram.nodes[2] as Node).ports[0].offset.y = 1;
             diagram.dataBind();
-            let container1: Container = (diagram.nodes[2] as Node).wrapper;
+            let container1: GroupableView = (diagram.nodes[2] as Node).wrapper;
             expect(container1.children[1].offsetX === 650 && container1.children[1].offsetY === 350 &&
                 container1.children[1].actualSize.width === 12 && container1.children[1].actualSize.height === 12).toBe(true);
             done();
@@ -136,7 +136,7 @@ describe('Diagram Control', () => {
             (diagram.nodes[0] as Node).ports[0].offset.x = 1;
             (diagram.nodes[0] as Node).ports[0].offset.y = 0;
             diagram.dataBind();
-            let container1: Container = (diagram.nodes[0] as Node).wrapper;
+            let container1: GroupableView = (diagram.nodes[0] as Node).wrapper;
             expect(container1.children[1].offsetX === 350 && container1.children[1].offsetY === 250 &&
                 container1.children[1].actualSize.width === 12 && container1.children[1].actualSize.height === 12).toBe(true);
             done();
@@ -146,7 +146,7 @@ describe('Diagram Control', () => {
             (diagram.nodes[1] as Node).ports[0].offset.x = 1;
             (diagram.nodes[1] as Node).ports[0].offset.y = 0.5;
             diagram.dataBind();
-            let container1: Container = (diagram.nodes[1] as Node).wrapper;
+            let container1: GroupableView = (diagram.nodes[1] as Node).wrapper;
             expect(container1.children[1].offsetX === 550 && container1.children[1].offsetY === 300 &&
                 container1.children[1].actualSize.width === 12 && container1.children[1].actualSize.height === 12).toBe(true);
             done();
@@ -156,7 +156,7 @@ describe('Diagram Control', () => {
             (diagram.nodes[2] as Node).ports[0].offset.x = 1;
             (diagram.nodes[2] as Node).ports[0].offset.y = 1;
             diagram.dataBind();
-            let container1: Container = (diagram.nodes[2] as Node).wrapper;
+            let container1: GroupableView = (diagram.nodes[2] as Node).wrapper;
             expect(container1.children[1].offsetX === 750 && container1.children[1].offsetY === 350 &&
                 container1.children[1].actualSize.width === 12 && container1.children[1].actualSize.height === 12).toBe(true);
             done();
@@ -165,7 +165,7 @@ describe('Diagram Control', () => {
             (diagram.nodes[1] as Node).ports[0].offset.x = 0.5;
             (diagram.nodes[1] as Node).ports[0].offset.y = 0;
             diagram.dataBind();
-            let container1: Container = (diagram.nodes[0] as Node).wrapper;
+            let container1: GroupableView = (diagram.nodes[0] as Node).wrapper;
             expect(container1.children[1].offsetX === 350 && container1.children[1].offsetY === 250 &&
                 container1.children[1].actualSize.width === 12 && container1.children[1].actualSize.height === 12).toBe(true);
             done();
@@ -175,7 +175,7 @@ describe('Diagram Control', () => {
             (diagram.nodes[1] as Node).ports[0].offset.x = 0.5;
             (diagram.nodes[1] as Node).ports[0].offset.y = 0.5;
             diagram.dataBind();
-            let container1: Container = (diagram.nodes[1] as Node).wrapper;
+            let container1: GroupableView = (diagram.nodes[1] as Node).wrapper;
             expect(container1.children[1].offsetX === 500 && container1.children[1].offsetY === 300 &&
                 container1.children[1].actualSize.width === 12 && container1.children[1].actualSize.height === 12).toBe(true);
             done();
@@ -185,7 +185,7 @@ describe('Diagram Control', () => {
             (diagram.nodes[2] as Node).ports[0].offset.x = 0.5;
             (diagram.nodes[2] as Node).ports[0].offset.y = 1;
             diagram.dataBind();
-            let container1: Container = (diagram.nodes[2] as Node).wrapper;
+            let container1: GroupableView = (diagram.nodes[2] as Node).wrapper;
             expect(container1.children[1].offsetX === 700 && container1.children[1].offsetY === 350 &&
                 container1.children[1].actualSize.width === 12 && container1.children[1].actualSize.height === 12).toBe(true);
             done();

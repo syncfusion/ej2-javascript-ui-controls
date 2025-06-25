@@ -494,6 +494,35 @@ describe('DateRangePicker', () => {
                         expect(element.getAttribute('tabindex') === null).toBe(true);
                         daterangepicker = null;
                     });
+                    it('inputFormats testing', () => {
+                        debugger;
+                        daterangepicker = new DateRangePicker({ startDate: new Date('5/5/2017'), endDate: new Date('6/6/2018'), format: 'M/d/yyyy', inputFormats: ["MM/dd/yyyy", "yyyy-MM-dd", "dd-MM-yy"], });
+                        daterangepicker.appendTo('#date');
+                        daterangepicker.inputElement.value = '2025-11-23 - 2026-01-27';
+                        daterangepicker.inputBlurHandler();
+                        expect(daterangepicker.startDate.valueOf()).toBe(new Date('11/23/2025').valueOf());
+                        expect(daterangepicker.endDate.valueOf()).toBe(new Date('01/27/2026').valueOf());
+                        expect(daterangepicker.inputElement.value).toBe('11/23/2025 - 1/27/2026');
+                        daterangepicker = null;
+                    });
+                    it('inputFormats testing with dynamicupdate', () => {
+                        debugger;
+                        daterangepicker = new DateRangePicker({ startDate: new Date('5/5/2017'), endDate: new Date('6/6/2018'), format: 'M/d/yyyy', inputFormats: ["MM/dd/yyyy", "yyyy-MM-dd", "dd-MM-yy"], });
+                        daterangepicker.appendTo('#date');
+                        daterangepicker.inputElement.value = '2025-11-23  - 2026-01-27';
+                        daterangepicker.inputBlurHandler();
+                        expect(daterangepicker.startDate.valueOf()).toBe(new Date('11/23/2025').valueOf());
+                        expect(daterangepicker.endDate.valueOf()).toBe(new Date('01/27/2026').valueOf());
+                        expect(daterangepicker.inputElement.value).toBe('11/23/2025 - 1/27/2026');
+                        daterangepicker.inputFormats = ["MM-dd-yyyy", "yyyy/MM/dd", "dd/MM/yy"];
+                        daterangepicker.dataBind();
+                        daterangepicker.inputElement.value = '2025/11/23 - 2026/11/26';
+                        daterangepicker.inputBlurHandler();
+                        expect(daterangepicker.startDate.valueOf()).toBe(new Date('11/23/2025').valueOf());
+                        expect(daterangepicker.endDate.valueOf()).toBe(new Date('11/26/2026').valueOf());
+                        expect(daterangepicker.inputElement.value).toBe('11/23/2025 - 11/26/2026');
+                        daterangepicker = null;
+                    });
                 });
             });
         });

@@ -429,6 +429,125 @@ describe('Touch functionalities', () => {
         });
     });
 
+    describe('Update renderDates for all resources during cancel swipe', () => {
+        let schObj: Schedule;
+        let newEvent = {
+            Id: 3,
+            Subject: 'Meeting',
+            StartTime: new Date(2018, 3, 2, 9, 0),
+            EndTime: new Date(2018, 3, 2, 10, 0),
+            IsAllDay: false,
+            RoomId: 1,
+            OwnerId: 1
+        };
+        beforeAll((done: DoneFn) => {
+            const schOptions: ScheduleModel = {
+                selectedDate: new Date(2018, 3, 1),
+                height: '800px',
+                group: { resources: ['Rooms', 'Owners'] },
+                resources: [{
+                    field: 'RoomId', title: 'Room', name: 'Rooms', allowMultiple: true,
+                    dataSource: [
+                        { RoomText: 'ROOM 1', Id: 1, RoomColor: '#cb6bb2' },
+                        { RoomText: 'ROOM 2', Id: 2, RoomColor: '#56ca85' }
+                    ],
+                    textField: 'RoomText', idField: 'Id', colorField: 'RoomColor'
+                }, {
+                    field: 'OwnerId', title: 'Owner', name: 'Owners', allowMultiple: true,
+                    dataSource: [
+                        { OwnerText: 'Nancy', Id: 1, OwnerGroupId: 1, OwnerColor: '#ffaa00' },
+                        { OwnerText: 'Steven', Id: 2, OwnerGroupId: 2, OwnerColor: '#f8a398' },
+                        { OwnerText: 'Michael', Id: 3, OwnerGroupId: 1, OwnerColor: '#7499e1' }
+                    ],
+                    textField: 'OwnerText', idField: 'Id', groupIDField: 'OwnerGroupId', colorField: 'OwnerColor'
+                }]
+            };
+            schObj = createSchedule(schOptions, [], done);
+        });
+        afterAll(() => {
+            destroy(schObj);
+        });
+        it('should update renderDates for all resources when cancel swipe occurs', (done: DoneFn) => {
+            node = schObj.element.querySelector('.e-table-container');
+            touchTestObj = ((node as EJ2Instance).ej2_instances[0] as any);
+            const target: Element = schObj.element.querySelector('.e-work-cells');
+            const moveStart: CommonArgs = <CommonArgs>extend({}, startMouseEventArs, { clientX: 200, clientY: 300, target: target });
+            const moveArgs1: CommonArgs = <CommonArgs>extend({}, moveMouseEventArs, {
+                type: 'touchmove', clientX: 210, clientY: 300, target: target
+            });
+            const moveArgs2: CommonArgs = <CommonArgs>extend({}, moveMouseEventArs, {
+                type: 'touchmove', clientX: 200, clientY: 150, target: target
+            });
+            const movedEnd: CommonArgs = <CommonArgs>extend({}, endMouseEventArs, { clientX: 200, clientY: 100, target: target });
+            touchTestObj.startEvent(moveStart);
+            touchTestObj.moveEvent(moveArgs1);
+            touchTestObj.moveEvent(moveArgs2);
+            touchTestObj.endEvent(movedEnd);
+            const allResourcesUpdated = schObj.resourceBase.lastResourceLevel.every(
+                (resource: any) => resource.renderDates === schObj.activeView.renderDates
+            );
+            expect(allResourcesUpdated).toBe(true);
+            expect(schObj.resourceBase.lastResourceLevel.length).toBeGreaterThan(1);
+            schObj.dataBound = function () {
+                expect(schObj.eventsProcessed.length).toBeGreaterThanOrEqual(1);
+                done();
+            };
+            schObj.addEvent(newEvent);
+        });
+    });
+
+    describe('Update renderDates for all resources during cancel swipe', () => {
+        let schObj: Schedule;
+        let newEvent = {
+            Id: 3,
+            Subject: 'Meeting',
+            StartTime: new Date(2018, 3, 2, 9, 0),
+            EndTime: new Date(2018, 3, 2, 10, 0),
+            IsAllDay: false,
+            RoomId: 1,
+            OwnerId: 1
+        };
+        beforeAll((done: DoneFn) => {
+            const schOptions: ScheduleModel = {
+                selectedDate: new Date(2018, 3, 1),
+                height: '800px',
+                currentView: 'WorkWeek',
+                group: { resources: ['Owners'] , enableCompactView: false},
+                resources: [ {
+                        field: 'OwnerId', title: 'Owner', name: 'Owners', allowMultiple: true,
+                        dataSource: [
+                            { OwnerText: 'Nancy', Id: 1, OwnerColor: '#ffaa00', workDays: [1, 2, 3, 4, 5] },
+                            { OwnerText: 'Steven', Id: 2,  OwnerColor: '#f8a398', workDays: [1, 3, 5] },
+                        ],
+                        textField: 'OwnerText', idField: 'Id',  colorField: 'OwnerColor', workDaysField: 'workDays'
+                    }]
+            };
+            schObj = createSchedule(schOptions, [], done);
+        });
+        afterAll(() => {
+            destroy(schObj);
+        });
+        it('should correctly update renderDates for all resources considering workDays upon cancel swipe', (done: DoneFn) => {
+            node = schObj.element.querySelector('.e-table-container');
+            touchTestObj = ((node as EJ2Instance).ej2_instances[0] as any);
+            const target: Element = schObj.element.querySelector('.e-work-cells');
+            const moveStart: CommonArgs = <CommonArgs>extend({}, startMouseEventArs, { clientX: 200, clientY: 300, target: target });
+            const moveArgs1: CommonArgs = <CommonArgs>extend({}, moveMouseEventArs, { type: 'touchmove', clientX: 210, clientY: 300, target: target });
+            const moveArgs2: CommonArgs = <CommonArgs>extend({}, moveMouseEventArs, { type: 'touchmove', clientX: 200, clientY: 150, target: target });
+            const movedEnd: CommonArgs = <CommonArgs>extend({}, endMouseEventArs, { clientX: 200, clientY: 100, target: target });
+            touchTestObj.startEvent(moveStart);
+            touchTestObj.moveEvent(moveArgs1);
+            touchTestObj.moveEvent(moveArgs2);
+            touchTestObj.endEvent(movedEnd);
+            expect(schObj.resourceBase.lastResourceLevel.length).toBeGreaterThan(1);
+            schObj.dataBound = function () {
+                expect(schObj.eventsProcessed.length).toBeGreaterThanOrEqual(1);
+                done();
+            };
+            schObj.addEvent(newEvent);
+        });
+    });
+
     it('memory leak', () => {
         profile.sample();
         const average: number = inMB(profile.averageChange);

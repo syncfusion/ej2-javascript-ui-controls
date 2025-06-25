@@ -424,7 +424,19 @@ export class ColorPicker extends Component<HTMLInputElement> implements INotifyP
         const popupEle: HTMLElement = this.getPopupEle();
         addClass([popupEle], 'e-colorpicker-popup');
         if (this.cssClass) {
-            addClass([popupEle], this.cssClass.replace(/\s+/g, ' ').trim().split(' '));
+            const classes: string[] = this.cssClass.replace(/\s+/g, ' ').trim().split(' ');
+            if (popupEle) {
+                addClass([popupEle], classes);
+            }
+            if (this.splitBtn && this.splitBtn.activeElem && this.splitBtn.activeElem[0]) {
+                addClass([this.splitBtn.activeElem[0]], classes);
+            }
+            if (this.splitBtn && this.splitBtn.activeElem && this.splitBtn.activeElem[1]) {
+                addClass([this.splitBtn.activeElem[1]], classes);
+            }
+            if (this.splitBtn && this.splitBtn.element && this.splitBtn.element.parentElement) {
+                addClass([this.splitBtn.element.parentElement], classes);
+            }
         }
         if (Browser.isDevice && !this.createPopupOnClick) {
             const popupInst: Popup = this.getPopupInst();
@@ -1966,9 +1978,22 @@ export class ColorPicker extends Component<HTMLInputElement> implements INotifyP
         const popupWrapper: HTMLElement = this.getPopupEle();
         if (oldProp) {
             removeClass([wrapper, popupWrapper], oldProp.split(' '));
+            if (this.splitBtn && this.splitBtn.activeElem && this.splitBtn.activeElem[0] && this.splitBtn.activeElem[1]) {
+                removeClass([this.splitBtn.activeElem[0], this.splitBtn.activeElem[1]], oldProp.split(' '));
+            }
+            if (this.splitBtn && this.splitBtn.element && this.splitBtn.element.parentElement) {
+                removeClass([this.splitBtn.element.parentElement], oldProp.split(' '));
+            }
+
         }
         if (newProp) {
             addClass([wrapper, popupWrapper], newProp.replace(/\s+/g, ' ').trim().split(' '));
+            if (this.splitBtn && this.splitBtn.activeElem && this.splitBtn.activeElem[0] && this.splitBtn.activeElem[1]) {
+                addClass([this.splitBtn.activeElem[0], this.splitBtn.activeElem[1]], newProp.replace(/\s+/g, ' ').trim().split(' '));
+            }
+            if (this.splitBtn && this.splitBtn.element && this.splitBtn.element.parentElement) {
+                addClass([this.splitBtn.element.parentElement], newProp.replace(/\s+/g, ' ').trim().split(' '));
+            }
         }
     }
 

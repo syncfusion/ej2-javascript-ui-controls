@@ -10,6 +10,7 @@ interface EJ2Instance extends HTMLElement {
 }
 import { Gantt } from './gantt';
 import { WeekWorkingTimeModel } from '../models/week-working-time-model';
+import { ConstraintType } from './enum';
 
 /**
  *  Date processor is used to handle date of task data.
@@ -119,6 +120,147 @@ export class DateProcessor {
             return new Date(cloneStartDate.getTime());
         } else {
             return new Date(cloneStartDate.getTime());
+        }
+    }
+    public getDateByConstraint(ganttData: ITaskData , date: Date, restrictConstraint?: boolean, validPredecessor?: boolean): Date {
+        const ganttProp: any = ganttData['ganttProperties'] ? ganttData['ganttProperties'] : ganttData;
+        let constraintDate: Date = new Date(ganttProp.constraintDate);
+        const isLoad: boolean = this.parent.isLoad;
+        if (isNullOrUndefined(validPredecessor)) {
+            validPredecessor = true;
+        }
+        if ((!constraintDate || !date) && validPredecessor) {
+            return null;
+        }
+        constraintDate = this.parent['assignTimeToDate'](constraintDate, this.parent['getCurrentDayStartTime'](constraintDate));
+        switch (ganttProp.constraintType) {
+        case ConstraintType.AsSoonAsPossible:
+            if (isLoad) {
+                return date;
+            } else {
+                ganttProp.constraintDate = null;
+                const parentRecord: IParent = this.parent.getRecordByID(ganttProp.taskId).parentItem;
+                if (ganttProp.predecessor && ganttProp.predecessor.length > 0) {
+                    return this.parent['assignTimeToDate'](date, this.parent['getCurrentDayStartTime'](date));
+                } else if (parentRecord) {
+                    return this.parent.getRecordByID(parentRecord.taskId).ganttProperties.startDate;
+                } else {
+                    return this.parent.dateValidationModule.checkStartDate(new Date(this.parent.projectStartDate));
+                }
+            }
+        case ConstraintType.AsLateAsPossible:
+            if (isLoad) {
+                return date;
+            } else {
+                const parentRecord: IParent = this.parent.getRecordByID(ganttProp.taskId).parentItem;
+                if (parentRecord) {
+                    const checkedEnd: Date = this.parent.dateValidationModule.checkEndDate(
+                        this.parent.getRecordByID(parentRecord.taskId).ganttProperties.endDate
+                    );
+                    const start: Date = this.parent.dateValidationModule.getStartDate(
+                        checkedEnd,
+                        ganttProp.duration,
+                        ganttProp.durationUnit,
+                        ganttProp
+                    );
+                    return start;
+                } else {
+                    const checkedEnd: Date = this.parent.dateValidationModule.checkEndDate(new Date(this.parent.projectEndDate));
+                    const start: Date = this.parent.dateValidationModule.getStartDate(
+                        checkedEnd,
+                        ganttProp.duration,
+                        ganttProp.durationUnit,
+                        ganttProp
+                    );
+                    return start;
+                }
+            }
+        case ConstraintType.MustStartOn: {
+            const isViolation: boolean = constraintDate.getTime() !== ganttProp.startDate.getTime();
+            let constraintValue: number;
+            if (this.parent.editModule && this.parent.editModule.dialogModule) {
+                constraintValue = this.parent.editModule.dialogModule['dialogConstraintValue'];
+            }
+            const isConstraintTypeRestricted: boolean =
+                isNullOrUndefined(constraintValue) ||
+                constraintValue === 2 ||
+                constraintValue === 3;
+            if (isViolation && !isLoad && isConstraintTypeRestricted) {
+                this.parent.constraintViolationType = 'MustStartOn';
+            }
+            constraintValue = null;
+            if (isLoad) {
+                return this.parent.dateValidationModule.checkStartDate(new Date(constraintDate));
+            } else {
+                return this.parent['assignTimeToDate'](date, this.parent['getCurrentDayStartTime'](date));
+            }
+        }
+        case ConstraintType.MustFinishOn: {
+            const isViolation: boolean = constraintDate.getTime() !== ganttProp.endDate.getTime();
+            const endDate: Date = new Date(constraintDate);
+            endDate.setDate(endDate.getDate() + 1);
+            const checkedEnd: Date = this.parent.dateValidationModule.checkEndDate(endDate);
+            const start: Date = this.parent.dateValidationModule.getStartDate(
+                checkedEnd,
+                ganttProp.duration,
+                ganttProp.durationUnit,
+                ganttProp
+            );
+            if (isViolation && !isLoad) {
+                this.parent.constraintViolationType = 'MustFinishOn';
+            }
+            if (restrictConstraint) {
+                return date;
+            }
+            return start;
+        }
+        case ConstraintType.StartNoEarlierThan: {
+            if (constraintDate.getTime() < date.getTime() || !isLoad) {
+                return this.parent['assignTimeToDate'](date, this.parent['getCurrentDayStartTime'](date));
+            }
+            return this.parent.dateValidationModule.checkStartDate(new Date(constraintDate));
+        }
+        case ConstraintType.StartNoLaterThan: {
+            const isViolation: boolean = constraintDate.getTime() !== ganttProp.startDate.getTime();
+            if (isViolation && !isLoad) {
+                this.parent.constraintViolationType = 'StartNoLaterThan';
+            }
+            if (!isLoad) {
+                return this.parent['assignTimeToDate'](date, this.parent['getCurrentDayStartTime'](date));
+            }
+            return (ganttProp.predecessor && ganttProp.predecessor.length > 0)
+                ? date
+                : this.parent.dateValidationModule.checkStartDate(new Date(this.parent.projectStartDate));
+        }
+        case ConstraintType.FinishNoEarlierThan: {
+            if (constraintDate.getTime() < date.getTime()) {
+                return this.parent['assignTimeToDate'](date, this.parent['getCurrentDayEndTime'](date));
+            } else {
+                const adjustedDate: Date = new Date(constraintDate);
+                adjustedDate.setDate(adjustedDate.getDate() + 1);
+                const checkedEnd: Date = this.parent.dateValidationModule.checkEndDate(adjustedDate);
+                return this.parent.dateValidationModule.getStartDate(
+                    checkedEnd,
+                    ganttProp.duration,
+                    ganttProp.durationUnit,
+                    ganttProp
+                );
+            }
+        }
+        case ConstraintType.FinishNoLaterThan: {
+            const isViolation: boolean = constraintDate.getTime() !== ganttProp.endDate.getTime();
+            if (isViolation && !isLoad) {
+                this.parent.constraintViolationType = 'FinishNoLaterThan';
+            }
+            if (!isLoad) {
+                return this.parent['assignTimeToDate'](date, this.parent['getCurrentDayEndTime'](date));
+            }
+            return (ganttProp.predecessor && ganttProp.predecessor.length > 0)
+                ? date
+                : this.parent.dateValidationModule.checkStartDate(new Date(this.parent.projectStartDate));
+        }
+        default:
+            return date;
         }
     }
     /**
@@ -511,34 +653,60 @@ export class DateProcessor {
      */
     public getDuration(
         startDate: Date, endDate: Date, durationUnit: string, isAutoSchedule: boolean,
-        isMilestone: boolean, isCheckTimeZone?: boolean): number {
-        if (isNullOrUndefined(startDate) || isNullOrUndefined(endDate)) {
+        isMilestone: boolean, isCheckTimeZone: boolean = true): number {
+        if (!startDate || !endDate) {
             return null;
         }
-        isCheckTimeZone = isNullOrUndefined(isCheckTimeZone) ? true : isCheckTimeZone;
         let durationValue: number = 0;
-        const timeDiff: number = this.getTimeDifference(startDate, endDate, isCheckTimeZone) / 1000;
-        const nonWorkHours: number = this.getNonworkingTime(startDate, endDate, isAutoSchedule, isCheckTimeZone);
-        const durationHours: number = timeDiff - nonWorkHours;
+        const isSameDay: boolean = this.parent.getFormatedDate(startDate) === this.parent.getFormatedDate(endDate);
         let totSeconds: number;
         if (this.parent.weekWorkingTime.length > 0) {
+            const tempStartDate: Date = new Date(startDate);
             totSeconds = this.nonWorkingSeconds(startDate, endDate, isAutoSchedule, undefined, true);
-        }
-        else {
-            totSeconds = this.parent.secondsPerDay;
-        }
-        if (isMilestone && this.parent.getFormatedDate(startDate) === this.parent.getFormatedDate(endDate)) {
-            durationValue = 0;
+            let totalDurationInDays: number = 0;
+            while (tempStartDate <= endDate) {
+                const currentDateString: string = this.parent.getFormatedDate(tempStartDate);
+                const dayWorkingSeconds: number = this.parent['getSecondsPerDay'](tempStartDate);
+                const currentStartDate: Date = new Date(tempStartDate);
+                const currentEndDate: Date = new Date(tempStartDate);
+                currentStartDate.setHours(0, 0, 0, 0);
+                currentEndDate.setHours(0, 0, 0, 0);
+                currentStartDate.setSeconds(this.parent['getCurrentDayStartTime'](tempStartDate));
+                currentEndDate.setSeconds(this.parent['getCurrentDayEndTime'](tempStartDate));
+                if (currentDateString === this.parent.getFormatedDate(startDate)) {
+                    currentStartDate.setTime(startDate.getTime());
+                }
+                if (currentDateString === this.parent.getFormatedDate(endDate)) {
+                    currentEndDate.setTime(endDate.getTime());
+                }
+                const timeDiffSeconds: number = this.getTimeDifference(currentStartDate, currentEndDate, isCheckTimeZone) / 1000;
+                const nonWorkSeconds: number = this.getNonworkingTime(currentStartDate, currentEndDate, isAutoSchedule, isCheckTimeZone);
+                totalDurationInDays += Math.max(0, timeDiffSeconds - nonWorkSeconds) / dayWorkingSeconds;
+                tempStartDate.setDate(tempStartDate.getDate() + 1);
+            }
+            if (!(isMilestone && isSameDay)) {
+                durationValue = this.calculateDurationValue(durationUnit, totalDurationInDays, totSeconds);
+            }
         } else {
-            if (!durationUnit || durationUnit === 'day') {
-                durationValue = (totSeconds === 0) ? 0 : durationHours / totSeconds;
-            } else if (durationUnit === 'minute') {
-                durationValue = durationHours / 60;
-            } else {
-                durationValue = durationHours / 3600;
+            totSeconds = this.parent.secondsPerDay;
+            const timeDiff: number = this.getTimeDifference(startDate, endDate, isCheckTimeZone) / 1000;
+            const nonWorkHours: number = this.getNonworkingTime(startDate, endDate, isAutoSchedule, isCheckTimeZone);
+            const durationHours: number = timeDiff - nonWorkHours;
+            if (!(isMilestone && isSameDay)) {
+                durationValue = this.calculateDurationValue(durationUnit, durationHours / totSeconds, totSeconds);
             }
         }
         return parseFloat(durationValue.toString());
+    }
+
+    private calculateDurationValue(durationUnit: string, duration: number, totSeconds: number): number {
+        if (!durationUnit || durationUnit === 'day') {
+            return duration;
+        } else if (durationUnit === 'minute') {
+            return duration * (totSeconds / 60);
+        } else {
+            return duration * (totSeconds / 3600);
+        }
     }
     /**
      *
@@ -1022,12 +1190,11 @@ export class DateProcessor {
     /**
      *
      * @param {string} value .
-     * @param {boolean} isFromDialog .
      * @returns {object} .
      * @private
      */
     // eslint-disable-next-line
-    public getDurationValue(value: string | number, isFromDialog?: boolean): Object {
+    public getDurationValue(value: string | number): Object {
         let durationUnit: string = null;
         let duration: number = null;
 

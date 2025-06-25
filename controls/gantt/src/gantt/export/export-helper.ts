@@ -6,7 +6,7 @@ import { PdfVerticalAlignment, PdfTextAlignment, PdfFont, PdfStandardFont, PdfTr
 import { PdfFontStyle, PdfColor, PdfPen, PdfBrush, PdfSolidBrush, PdfDocument, SizeF, PdfBitmap  } from '@syncfusion/ej2-pdf-export';
 import { PdfTreeGridColumn, PdfTreeGridRow, PdfTreeGridCell, PdfBorders, PdfPaddings } from './pdf-base/index';
 import { ColumnModel } from './../models/column';
-import { PdfPageNumberType, PdfDashStyle } from '../base/enum';
+import { PdfPageNumberType, PdfDashStyle, ConstraintType } from '../base/enum';
 import { PdfGantt } from './pdf-gantt';
 import {
     IGanttData, PdfExportProperties, PdfQueryCellInfoEventArgs,
@@ -77,7 +77,9 @@ export class ExportHelper {
             this.parent.cloneProjectStartDate = new Date(this.parent.allowUnscheduledTasks ?
                 this.parent.zoomingProjectStartDate : this.parent.cloneProjectStartDate);
         }
-        this.parent.dataOperation.calculateProjectDates();
+        if (isNullOrUndefined(this.parent.projectStartDate) && isNullOrUndefined(this.parent.projectEndDate)) {
+            this.parent.dataOperation.calculateProjectDates();
+        }
         const timeDifference: number = (this.parent.cloneProjectEndDate.getTime() - this.parent.cloneProjectStartDate.getTime());
         const totalDays: number = (timeDifference / (1000 * 3600 * 24));
         let chartsideWidth: number;
@@ -128,8 +130,12 @@ export class ExportHelper {
             }
         }
         const newTimeline: ZoomTimelineSettings = extend({}, {}, zoomingLevel, true);
-        this.parent.timelineModule['roundOffDateToZoom'](this.parent.cloneProjectStartDate, true, perDayWidth, newTimeline.bottomTier.unit, zoomingLevel);
-        this.parent.timelineModule['roundOffDateToZoom'](this.parent.cloneProjectEndDate, false, perDayWidth, newTimeline.bottomTier.unit, zoomingLevel);
+        if (isNullOrUndefined(this.parent.projectStartDate)) {
+            this.parent.timelineModule['roundOffDateToZoom'](this.parent.cloneProjectStartDate, true, perDayWidth, newTimeline.bottomTier.unit, zoomingLevel);
+        }
+        if (isNullOrUndefined(this.parent.projectEndDate)) {
+            this.parent.timelineModule['roundOffDateToZoom'](this.parent.cloneProjectEndDate, false, perDayWidth, newTimeline.bottomTier.unit, zoomingLevel);
+        }
         const numberOfCells: number = this.parent.timelineModule['calculateNumberOfTimelineCells'](newTimeline);
         const scrollHeight: number = this.parent.pdfExportModule['pdfPageDimensions'].height; //17 is horizontal scrollbar width
         const emptySpace: number = scrollHeight <= 0 ? 0 : 17;
@@ -357,11 +363,11 @@ export class ExportHelper {
         } else if (column.field === taskFields.work) {
             cell.value = this.parent.getWorkString(ganttProps.work, ganttProps.workUnit);
         } else {
-            cell.value = !isNullOrUndefined(data[column.field]) ? data[column.field].toString() : '';
+            cell.value = !isNullOrUndefined(data[column.field]) ? (column.type === 'number' ?  data[column.field] : data[column.field].toString()) : '';
         }
-        const cellValueString: string = !isNullOrUndefined(cell.value) ? cell.value.toString() : '';
-        const cellValue: string = cellValueString;
-        const value: string = !isNullOrUndefined(cellValue) ? cellValue : '';
+        const cellValueString: string | number = !isNullOrUndefined(cell.value) ? (column.type === 'number'  ? (cell.value as number) : cell.value.toString()) : '';
+        const cellValue: string | number = cellValueString;
+        const value: string | number = !isNullOrUndefined(cellValue) ? cellValue : '';
         cell.isHeaderCell = false;
         cell.style.padding = new PdfPaddings();
         this.copyStyles(this.ganttStyle.cell, cell, row.isParentRow);
@@ -377,7 +383,7 @@ export class ExportHelper {
             style: cell.style,
             cell: cell
         };
-        args.value = this.exportValueFormatter.formatCellValue(args);
+        args.value = this.exportValueFormatter.formatCellValue(args, this.parent);
         if (this.parent.pdfQueryCellInfo) {
             this.parent.trigger('pdfQueryCellInfo', args);
             if (args.style.backgroundColor) {
@@ -1195,7 +1201,7 @@ export class ExportValueFormatter {
      * @private
      */
     /* eslint-disable-next-line  */
-    public formatCellValue(args: any): string {
+    public formatCellValue(args: any, ganttObj?: Gantt): string {
         if (args.isForeignKey) {
             args.value = getValue(args.column.foreignKeyValue, getForeignData(args.column, {}, args.value)[0]);
         }
@@ -1203,7 +1209,7 @@ export class ExportValueFormatter {
             return args.value ? this.internationalization.getNumberFormat({ format: args.column.format })(args.value) : '';
         } else if (args.column.type === 'boolean') {
             return args.value ? 'true' : 'false';
-        } else if ((args.column.type === 'date' || args.column.type === 'datetime' || args.column.type === 'time') && args.column.format !== undefined) {
+        } else if ((args.column.type === 'date' || args.column.type === 'datetime' || args.column.type === 'time') && args.column.format !== undefined && args.value !== '') {
             if (typeof args.value === 'string') {
                 args.value = new Date(args.value);
             }
@@ -1235,6 +1241,11 @@ export class ExportValueFormatter {
             }
         } else {
             if ((!isNullOrUndefined(args.column.type) && !isNullOrUndefined(args.value)) || !isNullOrUndefined(args.value)) {
+                if (args.column.field === ganttObj.taskFields.constraintType) {
+                    const constraintKey: string = ConstraintType[args.value as number] as keyof typeof ConstraintType;
+                    const localizedText: string = ganttObj.treeGridModule['getLocalizedConstraintTypeText'](constraintKey);
+                    args.value = localizedText;
+                }
                 return (args.value).toString();
             } else {
                 return '';

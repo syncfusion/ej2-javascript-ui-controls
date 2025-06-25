@@ -273,6 +273,7 @@ export class Ribbon {
                 { id: id + '_Manual', text: l10n.getConstant('Manual'), iconCss: this.parent.calculationMode === 'Manual' ? 'e-icons e-selected-icon' : '' }
             ],
             createPopupOnClick: true,
+            enableRtl: this.parent.enableRtl,
             iconCss: 'e-calculation e-icons',
             cssClass: 'e-flat e-calc-types'
         });
@@ -322,6 +323,7 @@ export class Ribbon {
                     { text: l10n.getConstant('Values'), id: 'Values' },
                     { text: l10n.getConstant('Formats'), id: 'Formats' }],
                 createPopupOnClick: true,
+                enableRtl: this.parent.enableRtl,
                 select: (args: MenuEventArgs) => {
                     this.pasteSplitBtn.element.setAttribute('aria-label', l10n.getConstant('Paste') + ' ' + args.item.text);
                     this.parent.notify(paste, { type: args.item.id, isAction: true, isInternal: true });
@@ -489,9 +491,13 @@ export class Ribbon {
     }
 
     private createRibbon(refEle?: Element): void {
-        const ribbonElement: HTMLElement = this.parent.createElement('div', { id: `${this.parent.element.id}_ribbon` });
+        const ribbonElement: HTMLElement = this.parent.createElement('div', {
+            id: `${this.parent.element.id}_ribbon`,
+            className: this.parent.enableRtl ? 'e-rtl' : ''
+        });
         this.ribbon = new RibbonComponent({
             selectedTab: 0,
+            enableRtl: this.parent.enableRtl,
             menuItems: this.getRibbonMenuItems(),
             items: this.getRibbonItems(),
             fileMenuItemSelect: this.fileMenuItemSelect.bind(this),
@@ -581,6 +587,7 @@ export class Ribbon {
             items: this.getChartThemeDdbItems(theme),
             content: l10n.getConstant(theme),
             createPopupOnClick: true,
+            enableRtl: this.parent.enableRtl,
             select: (args: MenuEventArgs): void => {
                 this.parent.notify(selectionComplete, <MouseEvent>{ type: 'mousedown' });
                 if (!args.element || !args.element.querySelector('.e-selected-icon')) {
@@ -614,6 +621,7 @@ export class Ribbon {
         this.numFormatDDB = new DropDownButton({
             items: this.getNumFormatDdbItems(id),
             createPopupOnClick: true,
+            enableRtl: this.parent.enableRtl,
             select: (args: MenuEventArgs): void => {
                 const l10n: L10n = this.parent.serviceLocator.getService(locale);
                 if (args.item.text === l10n.getConstant('Custom')) {
@@ -650,6 +658,7 @@ export class Ribbon {
             cssClass: 'e-font-size-ddb',
             content: '11',
             createPopupOnClick: true,
+            enableRtl: this.parent.enableRtl,
             items: [{ text: '8' }, { text: '9' }, { text: '10' }, { text: '11' }, { text: '12' }, { text: '14' }, { text: '16' },
                 { text: '18' }, { text: '20' }, { text: '22' }, { text: '24' }, { text: '26' }, { text: '28' }, { text: '36' },
                 { text: '48' }, { text: '72' }],
@@ -710,6 +719,7 @@ export class Ribbon {
             cssClass: isChart ? 'e-chart-ddb' : 'e-chart-type-ddb',
             target: ul,
             createPopupOnClick: true,
+            enableRtl: this.parent.enableRtl,
             beforeOpen: (args: BeforeOpenCloseMenuEventArgs): void => {
                 chartMenu = this.createChartMenu(ul, menuClass, l10n, chartDdb);
                 this.tBarDdbBeforeOpen(
@@ -733,6 +743,7 @@ export class Ribbon {
     private createChartMenu(ul: HTMLElement, cssClass: string, l10n: L10n, chartDdb: DropDownButton): Menu {
         const chartMenu: Menu = new Menu({
             cssClass: cssClass,
+            enableRtl: this.parent.enableRtl,
             items: [
                 {
                     iconCss: 'e-icons e-column', text: l10n.getConstant('Column'),
@@ -979,6 +990,7 @@ export class Ribbon {
             cssClass: 'e-addchart-ddb',
             target: ul,
             createPopupOnClick: true,
+            enableRtl: this.parent.enableRtl,
             close: (): void => focus(this.parent.element),
             beforeOpen: (args: BeforeOpenCloseMenuEventArgs): void => {
                 addChartMenu = this.createAddChartMenu(ul, l10n);
@@ -1104,6 +1116,7 @@ export class Ribbon {
         const addChartMenu: Menu = new Menu({
             cssClass: 'e-addchart-menu', title: l10n.getConstant('AddChartElement'),
             orientation: 'Vertical',
+            enableRtl: this.parent.enableRtl,
             select: this.addChartEleSelected.bind(this),
             items: items,
             beforeOpen: (args: BeforeOpenCloseMenuEventArgs): void => {
@@ -1148,6 +1161,7 @@ export class Ribbon {
             cssClass: 'e-cf-ddb',
             target: ul,
             createPopupOnClick: true,
+            enableRtl: this.parent.enableRtl,
             close: (): void => focus(this.parent.element),
             beforeOpen: (args: BeforeOpenCloseMenuEventArgs): void => {
                 cfMenu = this.createCFMenu(ul);
@@ -1184,6 +1198,7 @@ export class Ribbon {
 
     private createCFMenu(ul: HTMLElement): Menu {
         const l10n: L10n = this.parent.serviceLocator.getService(locale);
+        const isRTL: boolean = this.parent.enableRtl;
         const addIcons: Function = (icons: string[], category: string, appendTo: Element): void => {
             let content: string;
             icons.forEach((icon: string): void => {
@@ -1198,6 +1213,7 @@ export class Ribbon {
         };
         const cfMenu: Menu = new Menu({
             cssClass: 'e-cf-menu',
+            enableRtl: isRTL,
             items: [{
                 iconCss: 'e-icons e-hlcellrules', text: l10n.getConstant('HighlightCellsRules'),
                 items: [{ iconCss: 'e-icons e-greaterthan', id: 'cf_greaterthan_dlg', text: l10n.getConstant('GreaterThan') + '...' },
@@ -1406,6 +1422,7 @@ export class Ribbon {
             cssClass: 'e-border-colorpicker',
             mode: 'Palette',
             inline: true,
+            enableRtl: this.parent.enableRtl,
             beforeTileRender: (args: PaletteTileEventArgs): void => {
                 args.element.tabIndex = -1;
             },
@@ -1422,6 +1439,7 @@ export class Ribbon {
             cssClass: 'e-borders-ddb',
             target: ul,
             createPopupOnClick: true,
+            enableRtl: this.parent.enableRtl,
             beforeOpen: (args: BeforeOpenCloseMenuEventArgs): void => {
                 bordersMenu = this.createBorderMenu(ul);
                 this.tBarDdbBeforeOpen(
@@ -1447,8 +1465,24 @@ export class Ribbon {
     private createBorderMenu(ul: HTMLElement): Menu {
         const l10n: L10n = this.parent.serviceLocator.getService(locale);
         const id: string = this.parent.element.id;
+        const keydownOnBorderColor: Function = (e: KeyboardEvent): void => {
+            const target: HTMLElement = e.target as HTMLElement;
+            if (e.keyCode === 27 || (e.keyCode === 13 && (target.classList.contains('e-apply') || target.classList.contains('e-cancel')))) {
+                const borderColor: HTMLElement = document.getElementById(`${id}_border_bordercolor`);
+                if (borderColor) {
+                    borderColor.classList.remove('e-selected');
+                    if (e.keyCode === 27) {
+                        const cancelBtn: HTMLElement = document.querySelector('.e-border-color.e-popup-open .e-cancel');
+                        if (cancelBtn) {
+                            cancelBtn.click();
+                        }
+                    }
+                }
+            }
+        };
         const bordersMenu: Menu = new Menu({
             cssClass: 'e-borders-menu',
+            enableRtl: this.parent.enableRtl,
             items: [{ iconCss: 'e-icons e-top-borders', text: l10n.getConstant('TopBorders'), id: `${id}_border_topborders` }, {
                 iconCss: 'e-icons e-left-borders',
                 text: l10n.getConstant('LeftBorders'), id: `${id}_border_leftborders`
@@ -1481,6 +1515,7 @@ export class Ribbon {
                     cPickerWrapper.style.display = 'inline-block';
                     args.element.parentElement.classList.add('e-border-color');
                     args.element.firstElementChild.removeAttribute('tabindex');
+                    EventHandler.add(cPickerWrapper, 'keydown', keydownOnBorderColor, this);
                 } else {
                     args.element.classList.add('e-border-style');
                 }
@@ -1494,6 +1529,7 @@ export class Ribbon {
                         const cPickerWrapper: HTMLElement = this.colorPicker.element.parentElement;
                         cPickerWrapper.style.display = '';
                         this.parent.element.appendChild(cPickerWrapper);
+                        EventHandler.remove(cPickerWrapper, 'keydown', keydownOnBorderColor);
                     } else {
                         args.cancel = true;
                     }
@@ -1518,7 +1554,6 @@ export class Ribbon {
         ul.classList.add('e-ul');
         return bordersMenu;
     }
-
     private chartSelected(args: MenuEventArgs, chartDdb: DropDownButton): void {
         const isChart: boolean = !isNullOrUndefined(closest(args.element, '.e-chart-menu'));
         const eleId: string = args.element.id;
@@ -1632,6 +1667,7 @@ export class Ribbon {
             cssClass: 'e-font-family',
             items: this.getFontFamilyItems(),
             createPopupOnClick: true,
+            enableRtl: this.parent.enableRtl,
             select: (args: MenuEventArgs): void => {
                 const eventArgs: SetCellFormatArgs = { style: { fontFamily: args.item.text as FontFamily }, onActionUpdate: true };
                 this.parent.notify(setCellFormat, eventArgs);
@@ -1649,7 +1685,10 @@ export class Ribbon {
     }
 
     private getBtn(id: string, name: string, text: string, bindEvent: boolean = true): Element {
-        const btnObj: Button = new Button({ iconCss: `e-icons e-${name}-icon`, cssClass: 'e-flat', isToggle: true });
+        const btnObj: Button = new Button({
+            iconCss: `e-icons e-${name}-icon`, cssClass: 'e-flat',
+            isToggle: true, enableRtl: this.parent.enableRtl
+        });
         btnObj.createElement = this.parent.createElement;
         btnObj.appendTo(this.parent.createElement('button', { id: `${id}_${name}`, attrs: { 'aria-label': text, 'type': 'button' } }));
         if (bindEvent) {
@@ -1664,6 +1703,7 @@ export class Ribbon {
             cssClass: 'e-datavalidation-ddb',
             iconCss: 'e-datavalidation-icon e-icons',
             content: l10n.getConstant('DataValidation'),
+            enableRtl: this.parent.enableRtl,
             items: [
                 { text: l10n.getConstant('DataValidation') },
                 { text: l10n.getConstant('HighlightInvalidData') },
@@ -1710,6 +1750,7 @@ export class Ribbon {
             items: [{ iconCss: 'e-icons e-left-icon' }, { iconCss: 'e-icons e-center-icon' }, { iconCss: 'e-icons e-right-icon' }],
             beforeItemRender: this.alignItemRender.bind(this),
             createPopupOnClick: true,
+            enableRtl: this.parent.enableRtl,
             beforeOpen: (args: BeforeOpenCloseMenuEventArgs): void => {
                 this.refreshSelected(this.textAlignDdb, args.element, 'iconCss');
                 args.element.setAttribute('aria-label', l10n.getConstant('HorizontalAlignment'));
@@ -1740,6 +1781,7 @@ export class Ribbon {
             items: [{ iconCss: 'e-icons e-top-icon' }, { iconCss: 'e-icons e-middle-icon' }, { iconCss: 'e-icons e-bottom-icon' }],
             beforeItemRender: this.alignItemRender.bind(this),
             createPopupOnClick: true,
+            enableRtl: this.parent.enableRtl,
             beforeOpen: (args: BeforeOpenCloseMenuEventArgs): void => {
                 this.refreshSelected(this.verticalAlignDdb, args.element, 'iconCss');
                 args.element.setAttribute('aria-label', l10n.getConstant('VerticalAlignment'));
@@ -1769,6 +1811,7 @@ export class Ribbon {
             cssClass: 'e-merge-ddb',
             iconCss: 'e-icons e-merge-icon',
             createPopupOnClick: true,
+            enableRtl: this.parent.enableRtl,
             items: [{ text: l10n.getConstant('MergeAll'), id: `${id}_merge_all` }, { text: l10n.getConstant('MergeHorizontally'), id:
                 `${id}_merge_horizontally` }, { text: l10n.getConstant('MergeVertically'), id: `${id}_merge_vertically` },
             { separator: true, id: `${id}_merge_separator` }, { text: l10n.getConstant('Unmerge'), id: `${id}_unmerge` }],
@@ -1837,7 +1880,8 @@ export class Ribbon {
 
     private merge(itemId: string): void {
         const sheet: SheetModel = this.parent.getActiveSheet();
-        const indexes: number[] = getRangeIndexes(sheet.selectedRange); let cell: CellModel;
+        const indexes: number[] = getSwapRange(getRangeIndexes(sheet.selectedRange));
+        let cell: CellModel;
         if (isReadOnlyCells(this.parent, getSwapRange(indexes))) {
             this.parent.notify(readonlyAlert, null);
             return;
@@ -1862,7 +1906,8 @@ export class Ribbon {
         }
         const dialogInst: Dialog = this.parent.serviceLocator.getService(dialog) as Dialog;
         dialogInst.show({
-            height: 200, width: 400, isModal: true, showCloseIcon: true, cssClass: 'e-merge-alert-dlg',
+            height: 200, width: 400, isModal: true, showCloseIcon: true,
+            cssClass: 'e-merge-alert-dlg', enableRtl: this.parent.enableRtl,
             content: (this.parent.serviceLocator.getService(locale) as L10n).getConstant('MergeCellsAlert'),
             beforeOpen: (args: BeforeOpenEventArgs): void => {
                 const dlgArgs: DialogBeforeOpenEventArgs = {
@@ -1911,6 +1956,7 @@ export class Ribbon {
 
     private getSortFilterDDB(id: string): Element {
         const l10n: L10n = this.parent.serviceLocator.getService(locale);
+        const isRTL: boolean = this.parent.enableRtl;
         let direction: SortOrder;
         this.sortingDdb = new DropDownButton({
             cssClass: 'e-sort-filter-ddb',
@@ -1924,6 +1970,7 @@ export class Ribbon {
                 { text: l10n.getConstant('ClearAllFilter'), iconCss: 'e-icons e-filter-clear', id: id + '_clearfilter' },
                 { text: l10n.getConstant('ReapplyFilter'), iconCss: 'e-icons e-filter-reapply', id: id + '_reapplyfilter' }],
             createPopupOnClick: true,
+            enableRtl: isRTL,
             beforeItemRender: (args: MenuEventArgs): void => {
                 const eventArgs: { [key: string]: boolean } = { isFiltered: false, isClearAll: true };
                 this.parent.notify(getFilteredColumn, eventArgs);
@@ -2000,7 +2047,10 @@ export class Ribbon {
             'button', { id: id + '_findbtn', attrs:
             { 'type': 'button', 'aria-label':
             (this.parent.serviceLocator.getService(locale) as L10n).getConstant('FindReplaceTooltip') } }) as HTMLElement;
-        this.findDdb = new Button({ cssClass: 'e-spreadsheet-find-ddb e-flat', iconCss: 'e-icons e-search-icon' });
+        this.findDdb = new Button({
+            cssClass: 'e-spreadsheet-find-ddb e-flat', iconCss: 'e-icons e-search-icon',
+            enableRtl: this.parent.enableRtl
+        });
         this.findDdb.createElement = this.parent.createElement;
         this.findDdb.appendTo(findToolbtn);
         findToolbtn.onclick = (e: MouseEvent): void => {
@@ -2019,6 +2069,7 @@ export class Ribbon {
                 { text: l10n.getConstant('ClearContents'), id: id + '_Clear Contents' },
                 { text: l10n.getConstant('ClearHyperlinks'), id: id + '_Clear Hyperlinks' }],
             createPopupOnClick: true,
+            enableRtl: this.parent.enableRtl,
             beforeOpen: (args: MenuEventArgs): void => {
                 args.element.setAttribute('aria-label', (this.parent.serviceLocator.getService(locale) as L10n).getConstant('Clear'));
             },
@@ -2186,7 +2237,7 @@ export class Ribbon {
     private renderCustomFormatDialog(defaultFormats: string[], localizedFormats: string[]): void {
         const l10n: L10n = this.parent.serviceLocator.getService(locale);
         const dummyDiv: HTMLElement = this.parent.createElement('div');
-        const dialogCont: HTMLElement = this.parent.createElement('div', {className: 'e-custom-dialog'});
+        const dialogCont: HTMLElement = this.parent.createElement('div', { className: 'e-custom-dialog' });
         const dialogBtn: HTMLElement = this.parent.createElement('button', { className: 'e-btn', attrs: { 'type': 'button' } });
         dialogBtn.innerText = l10n.getConstant('Apply');
         const sampleDiv: HTMLElement = this.parent.createElement('div', { className: 'e-custom-sample' });
@@ -2199,6 +2250,7 @@ export class Ribbon {
         const customFormatDialog: Dialog = this.parent.serviceLocator.getService(dialog) as Dialog;
         const listview: ListView = new ListView({
             dataSource: localizedFormats,
+            enableRtl: this.parent.enableRtl,
             select: (args: SelectEventArgs) => {
                 // Listview trim the front and end spaces, so we are taking the textContent from selected element instead of using text.
                 inputElem.value = args.item.textContent;
@@ -2259,6 +2311,7 @@ export class Ribbon {
             showCloseIcon: true,
             content: dialogCont,
             footerTemplate: dummyDiv,
+            enableRtl: this.parent.enableRtl,
             beforeOpen: (beforeOpenArgs: BeforeOpenEventArgs): void => {
                 const dlgArgs: DialogBeforeOpenEventArgs = {
                     dialogName: 'CustomNumberFormatDlg',
@@ -2302,6 +2355,10 @@ export class Ribbon {
         this.numPopupWidth = 0;
         const elemList: NodeListOf<Element> = args.element.querySelectorAll('span.e-numformat-preview-text');
         for (let i: number = 0, len: number = elemList.length; i < len; i++) {
+            const eleTextContent: string = elemList[i as number].textContent;
+            if (eleTextContent.endsWith(' ')) {
+                elemList[i as number].textContent = eleTextContent.trim();
+            }
             if (this.numPopupWidth < (elemList[i as number] as HTMLElement).offsetWidth) {
                 this.numPopupWidth = (elemList[i as number] as HTMLElement).offsetWidth;
             }
@@ -2326,7 +2383,7 @@ export class Ribbon {
                 cell: { value: cell.value, format: format }, skipFormatCheck: isImported(this.parent) };
             this.parent.notify(getFormattedCellObject, eventArgs);
             const previewElem: HTMLElement = this.parent.createElement(
-                'span', { className: 'e-numformat-preview-text', styles: 'float:right;' });
+                'span', { className: 'e-numformat-preview-text', styles: `float:${this.parent.enableRtl ? 'left' : 'right'};` });
             previewElem.innerText = eventArgs.formattedText;
             numElem.appendChild(previewElem);
         }
@@ -2431,14 +2488,21 @@ export class Ribbon {
             }
         }
         this.refreshToggleBtn(indexes);
-        if (!sheet.isProtected && (cell.rowSpan > 1 || cell.colSpan > 1)) {
+        if (this.parent.allowMerge) {
+            this.updateMergeBtnState(sheet, l10n, cell);
+        }
+    }
+
+    private updateMergeBtnState(sheet: SheetModel, l10n: L10n, cell: CellModel): void {
+        if (cell.rowSpan > 1 || cell.colSpan > 1) {
             this.enableToolbarItems([{ tab: l10n.getConstant('Home'), items: [`${this.parent.element.id}_merge_cells`],
-                enable: true }]);
+                enable: !sheet.isProtected }]);
             this.toggleActiveState(true);
         } else {
             const indexes: number[] = getRangeIndexes(sheet.selectedRange);
             this.enableToolbarItems([{ tab: l10n.getConstant('Home'), items: [`${this.parent.element.id}_merge_cells`],
-                enable: indexes[0] !== indexes[2] || indexes[1] !== indexes[3] }]);
+                enable: (indexes[0] !== indexes[2] || indexes[1] !== indexes[3]) && !sheet.isProtected
+            }]);
             this.toggleActiveState(false);
         }
     }
@@ -2463,17 +2527,15 @@ export class Ribbon {
 
     private toggleActiveState(active: boolean): void {
         const l10n: L10n = this.parent.serviceLocator.getService(locale);
-        if (!this.parent.getActiveSheet().isProtected) {
-            if (active) {
-                if (!this.mergeSplitBtn.element.classList.contains('e-active')) {
-                    this.mergeSplitBtn.element.classList.add('e-active');
-                    (this.mergeSplitBtn.element as HTMLButtonElement).title = l10n.getConstant('UnmergeCells');
-                }
-            } else {
-                if (this.mergeSplitBtn.element.classList.contains('e-active')) {
-                    this.mergeSplitBtn.element.classList.remove('e-active');
-                    (this.mergeSplitBtn.element as HTMLButtonElement).title = l10n.getConstant('MergeCells');
-                }
+        if (active) {
+            if (!this.mergeSplitBtn.element.classList.contains('e-active')) {
+                this.mergeSplitBtn.element.classList.add('e-active');
+                (this.mergeSplitBtn.element as HTMLButtonElement).title = l10n.getConstant('UnmergeCells');
+            }
+        } else {
+            if (this.mergeSplitBtn.element.classList.contains('e-active')) {
+                this.mergeSplitBtn.element.classList.remove('e-active');
+                (this.mergeSplitBtn.element as HTMLButtonElement).title = l10n.getConstant('MergeCells');
             }
         }
     }
@@ -2574,6 +2636,7 @@ export class Ribbon {
                 dialogInst = (this.parent.serviceLocator.getService(dialog) as Dialog);
                 dialogInst.show({
                     height: 200, width: 400, isModal: true, showCloseIcon: true,
+                    enableRtl: this.parent.enableRtl,
                     content: (this.parent.serviceLocator.getService(locale) as L10n).getConstant('DestroyAlert'),
                     beforeOpen: (args: BeforeOpenEventArgs): void => {
                         const dlgArgs: DialogBeforeOpenEventArgs = {
@@ -2944,6 +3007,7 @@ export class Ribbon {
                 { prefixIcon: 'e-tick-icon', align: 'Left', id: parentId + 'focused_tick', cssClass: 'e-focused-tick' },
                 { template: menu, align: 'Right', id: parentId + 'file_menu' }
             ],
+            enableRtl: this.parent.enableRtl,
             clicked: (args: ClickEventArgs): void => {
                 switch (args.item.id) {
                 case parentId + 'focused_tick':
@@ -2956,7 +3020,7 @@ export class Ribbon {
                 const menuObj: Menu = new Menu(
                     {
                         cssClass: 'e-mobile e-file-menu',
-                        enableRtl: true,
+                        enableRtl: this.parent.enableRtl,
                         showItemOnClick: true,
                         items: this.getRibbonMenuItems(),
                         select: this.fileMenuItemSelect.bind(this),
@@ -2992,6 +3056,7 @@ export class Ribbon {
                 { text: this.ribbon.items[3].header.text as string }
             ],
             createPopupOnClick: true,
+            enableRtl: this.parent.enableRtl,
             select: (args: MenuEventArgs): void => {
                 if (args.item.text !== ddbObj.content) {
                     toolbarObj.element.style.display = 'none';
@@ -3087,6 +3152,8 @@ export class Ribbon {
                 this.enableToolbarItems([{ tab: l10n.getConstant('Home'), items: args.enableHomeBtnId, enable: true }]);
                 if (sheet.isProtected && sheet.protectSettings.formatCells) {
                     this.enableToolbarItems([{ tab: l10n.getConstant('Home'), items: args.enableHomeBtnId.slice(15, 16), enable: false }]);
+                    this.enableToolbarItems(
+                        [{ tab: l10n.getConstant('Home'), items: [this.parent.element.id + '_merge_cells'], enable: false }]);
                 }
             } else {
                 this.enableToolbarItems([{ tab: l10n.getConstant('Home'), items: args.enableHomeBtnId.slice(3, 14), enable: false }]);
@@ -3166,7 +3233,7 @@ export class Ribbon {
                     this.toggleActiveState(false);
                 } else {
                     this.enableToolbarItems([{ tab: (this.parent.serviceLocator.getService(locale) as L10n).getConstant('Home'),
-                        items: [`${this.parent.element.id}_merge_cells`], enable: true }]);
+                        items: [`${this.parent.element.id}_merge_cells`], enable: this.parent.allowMerge }]);
                     indexes = getSwapRange(indexes);
                     const cell: CellModel = getCell(indexes[0], indexes[1], sheet, false, true);
                     if (cell.rowSpan > 1 || cell.colSpan > 1) {
@@ -3209,15 +3276,25 @@ export class Ribbon {
             break;
         case 'allowWrap':
         case 'allowCellFormatting':
+        case 'allowMerge':
             this.refreshToggleBtn(getCellIndexes(sheet.activeCell));
             if (!sheet.isProtected || sheet.protectSettings.formatCells) {
                 if (prop === 'allowWrap') {
                     this.ribbon.enableItems(l10.getConstant('Home'), [`${id}_wrap`], this.parent.allowWrap);
-                } else {
+                } else if (prop === 'allowCellFormatting') {
                     const formatIds: string[] = [`${id}_font_name`, `${id}_font_size`, `${id}_bold`, `${id}_italic`, `${id}_line-through`,
-                        `${id}_underline`, `${id}_font_color_picker`, `${id}_fill_color_picker`, `${id}_borders`, `${id}_merge_cells`,
+                        `${id}_underline`, `${id}_font_color_picker`, `${id}_fill_color_picker`, `${id}_borders`,
                         `${id}_text_align`, `${id}_vertical_align`];
                     this.enableToolbarItems([{ tab: l10.getConstant('Home'), items: formatIds, enable: this.parent.allowCellFormatting }]);
+                } else {
+                    if (this.parent.allowMerge) {
+                        const actCell: number[] = getCellIndexes(sheet.activeCell);
+                        const cell: CellModel = getCell(actCell[0], actCell[1], sheet, false, true);
+                        this.updateMergeBtnState(sheet, l10, cell);
+                    } else {
+                        this.enableToolbarItems([{ tab: l10.getConstant('Home'), items: [`${this.parent.element.id}_merge_cells`],
+                            enable: false }]);
+                    }
                 }
             }
             break;

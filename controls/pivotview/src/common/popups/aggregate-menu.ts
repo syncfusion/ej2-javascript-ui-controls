@@ -510,12 +510,113 @@ export class AggregateMenu {
      * @hidden
      */
     public destroy(): void {
-        if (this.parent.isDestroyed) { return; }
-        if (this.menuInfo) {
-            if (this.menuInfo[1] !== undefined && !this.menuInfo[1].isDestroyed) { this.menuInfo[1].destroy(); }
-            if (this.menuInfo[0] !== undefined && !this.menuInfo[0].isDestroyed) { this.menuInfo[0].destroy(); }
-        } else {
+        if (this.parent && this.parent.isDestroyed) {
             return;
+        }
+        this.cleanupMenuInstances();
+        this.cleanupDialogs();
+        this.cleanupDOMElements();
+        this.currentMenu = null;
+        this.buttonElement = null;
+    }
+
+    /**
+     * Cleans up all menu instances
+     *
+     * @private
+     * @returns {void}
+     */
+    private cleanupMenuInstances(): void {
+        if (this.menuInfo) {
+            for (let i: number = 0; i < this.menuInfo.length; i++) {
+                if (this.menuInfo[i as number] && !this.menuInfo[i as number].isDestroyed) {
+                    this.menuInfo[i as number].destroy();
+                }
+            }
+            this.menuInfo = [];
+        }
+        const menuElements: HTMLElement[] = [
+            document.getElementById(this.parent.element.id + 'valueFieldContextMenu'),
+            document.getElementById(this.parent.element.id + 'valueFieldStringContextMenu')
+        ];
+        for (const element of menuElements) {
+            if (element) {
+                remove(element);
+            }
+        }
+    }
+
+    /**
+     * Cleans up any open dialogs
+     *
+     * @private
+     * @returns {void}
+     */
+    private cleanupDialogs(): void {
+        if (!this.parentElement) {
+            return;
+        }
+        const valueDialogElement: HTMLElement = select('#' + this.parentElement.id + '_ValueDialog', document) as HTMLElement;
+        if (valueDialogElement) {
+            const valueDialog: Dialog = getInstance(valueDialogElement, Dialog) as Dialog;
+            if (valueDialog && !valueDialog.isDestroyed) {
+                this.cleanupDialogComponents(valueDialogElement);
+                valueDialog.destroy();
+            }
+            remove(valueDialogElement);
+        }
+    }
+
+    /**
+     * Cleans up components inside a dialog
+     *
+     * @private
+     * @param {HTMLElement} dialogElement - The dialog element
+     * @returns {void}
+     */
+    private cleanupDialogComponents(dialogElement: HTMLElement): void {
+        if (!dialogElement || !this.parentElement) {
+            return;
+        }
+        const captionInput: HTMLElement = select('#' + this.parentElement.id + 'type_input_option', dialogElement) as HTMLElement;
+        if (captionInput) {
+            const maskedTextBox: MaskedTextBox = getInstance(captionInput, MaskedTextBox) as MaskedTextBox;
+            if (maskedTextBox && !maskedTextBox.isDestroyed) {
+                maskedTextBox.destroy();
+            }
+        }
+        const dropdownSelectors: string[] = [
+            '#' + this.parentElement.id + '_type_option',
+            '#' + this.parentElement.id + '_base_field_option',
+            '#' + this.parentElement.id + '_base_item_option'
+        ];
+        for (const selector of dropdownSelectors) {
+            const dropdownElement: HTMLElement = select(selector, dialogElement) as HTMLElement;
+            if (dropdownElement) {
+                const dropdown: DropDownList = getInstance(dropdownElement, DropDownList) as DropDownList;
+                if (dropdown && !dropdown.isDestroyed) {
+                    dropdown.destroy();
+                }
+            }
+        }
+    }
+
+    /**
+     * Cleans up DOM elements created by this class
+     *
+     * @private
+     * @returns {void}
+     */
+    private cleanupDOMElements(): void {
+        const elementIds: string[] = [
+            this.parent.element.id + 'valueFieldContextMenu',
+            this.parent.element.id + 'valueFieldStringContextMenu'
+        ];
+        for (const id of elementIds) {
+            const element: HTMLElement = document.getElementById(id);
+            if (element) {
+                remove(element);
+            }
         }
     }
 }

@@ -125,7 +125,7 @@
         }
       }
 
-      @if ($skin-name =='FluentUI' or $skin-name =='bootstrap5' or $skin-name =='tailwind' or $skin-name =='Material3' or $skin-name =='tailwind3') {
+      @if ($skin-name =='FluentUI' or $skin-name =='bootstrap5' or $skin-name =='tailwind' or $skin-name =='Material3' or $skin-name =='tailwind3' or $skin-name =='fluent2' or $skin-name =='bootstrap5.3') {
 
         .e-left-resize-gripper::before,
         .e-right-resize-gripper::before {

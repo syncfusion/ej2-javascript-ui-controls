@@ -1599,5 +1599,3 @@ describe('filter menu module =>', () => {
         });
     });
 });
-
-

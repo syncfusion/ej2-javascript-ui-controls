@@ -139,6 +139,11 @@ describe('Template render module', () => {
                             expect(this.isReact).toBe(false);
                             expect(this.requireTemplateRef).toBe(true);
                             this.isReact = true;
+                            this.clearTemplate = (propertyNames?: string[], index?: any, callback?: Function): void => {
+                                if (callback) {
+                                    callback();
+                                }
+                            }
                         },
                         headerCellInfo: function(args: HeaderCellInfoEventArgs) {
                             if (args.cell.isTemplate) {

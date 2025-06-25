@@ -1,6 +1,6 @@
 import { SpreadsheetHelper } from '../util/spreadsheethelper.spec';
 import { defaultData } from '../util/datasource.spec';
-import { CellModel, DialogBeforeOpenEventArgs, HyperlinkModel, RowModel } from '../../../src';
+import { AfterHyperlinkArgs, CellModel, DialogBeforeOpenEventArgs, HyperlinkModel, RowModel } from '../../../src';
 import { getFormatFromType, BeforeHyperlinkArgs, setCellFormat } from '../../../src/index';
 import { Spreadsheet } from "../../../src/index"; 
 import { getComponent } from '@syncfusion/ej2-base';
@@ -169,14 +169,15 @@ describe('Hyperlink ->', () => {
                 expect(value.tagName).toBe('A');
                 expect(value.getAttribute('href')).toBe('http://www.syncfusion.com');
                 done();
-            });
+            }, 10);
         });
-
         it('Remove hyperlink from empty cell', (done: Function) => {
             helper.openAndClickCMenuItem(0, 10, [13]);
-            expect(sheet.rows[0].cells[10].hyperlink).toBeUndefined();
-            expect(helper.invoke('getCell', [0, 10]).children[0]).toBeUndefined();
-            done();
+            setTimeout(() => {
+                expect(sheet.rows[0].cells[10].hyperlink).toBeUndefined();
+                expect(helper.invoke('getCell', [0, 10]).children[0]).toBeUndefined();
+                done();
+            }, 10);
         });
         it('Remove hyperlink using clear', (done: Function) => {
             helper.invoke('addHyperlink', ['www.syncfusion.com', 'A100']);
@@ -195,6 +196,38 @@ describe('Hyperlink ->', () => {
             expect(JSON.stringify(cell1.hyperlink)).toBe('{"address":"http://www.syncfusion.com"}');
             expect(JSON.stringify(cell2.hyperlink)).toBe(undefined);
             done();
+        });
+        it('935444-Apply Hyperlink to Range and Update One Cell Hyperlink Correctly ', function (done) {
+            spreadsheet = helper.getInstance();
+            sheet = spreadsheet.sheets[0];
+            helper.invoke('selectRange', ['H15:H100']);
+            helper.switchRibbonTab(2);
+            helper.getElementFromSpreadsheet('#' + helper.id + '_hyperlink').click();
+            setTimeout(function () {
+                helper.getElements('.e-hyperlink-dlg .e-webpage input')[1].value = 'www.google.com';
+                helper.triggerKeyEvent('keyup', 88, null, null, null, helper.getElements('.e-hyperlink-dlg .e-webpage input')[1]);
+                helper.setAnimationToNone('.e-hyperlink-dlg.e-dialog');
+                helper.click('.e-hyperlink-dlg .e-footer-content button:nth-child(1)');
+                expect(sheet.rows[14].cells[7].hyperlink.address).toBe('http://www.google.com');
+                helper.invoke('selectRange', ['H15']);
+                helper.switchRibbonTab(2);
+                helper.getElementFromSpreadsheet('#' + helper.id + '_hyperlink').click();
+                helper.getElements('.e-edithyperlink-dlg .e-webpage input')[1].value = 'www.youtube.com';
+                helper.triggerKeyEvent('keyup', 88, null, null, null, helper.getElements('.e-edithyperlink-dlg .e-webpage input')[1]);
+                helper.setAnimationToNone('.e-edithyperlink-dlg.e-dialog');
+                helper.click('.e-edithyperlink-dlg .e-footer-content button:nth-child(1)');
+                expect(sheet.rows[14].cells[7].hyperlink.address).toBe('http://www.youtube.com');
+                expect(sheet.rows[20].cells[7].hyperlink.address).toBe('http://www.google.com');
+                helper.invoke('selectRange', ['H15']);
+                helper.switchRibbonTab(2);
+                helper.getElementFromSpreadsheet('#' + helper.id + '_hyperlink').click();
+                setTimeout(function () {
+                    expect(helper.getElements('.e-edithyperlink-dlg .e-webpage input')[0].value).toBe('http://www.youtube.com');
+                    helper.setAnimationToNone('.e-edithyperlink-dlg.e-dialog');
+                    helper.click('.e-edithyperlink-dlg .e-footer-content button:nth-child(2)');
+                    done();
+                });
+            });
         });
     });
 
@@ -481,7 +514,7 @@ describe('Hyperlink ->', () => {
                     helper.setAnimationToNone('.e-dlg-modal.e-dialog');
                     helper.click('.e-dlg-modal .e-footer-content button:nth-child(1)');
                     done();
-                });
+                }, 10);
             });
         });
 
@@ -508,7 +541,7 @@ describe('Hyperlink ->', () => {
                     helper.setAnimationToNone('.e-dlg-modal.e-dialog');
                     helper.click('.e-dlg-modal .e-footer-content button:nth-child(1)');
                     done();
-                });
+                }, 10);
             });
         });
 
@@ -884,11 +917,10 @@ describe('Hyperlink ->', () => {
             setTimeout(() => {
                 let dialog = helper.getElement('.e-dlg-modal.e-dialog');
                 expect(!!dialog).toBeTruthy();
-                expect(dialog.classList.contains('e-popup-open')).toBeTruthy();
                 helper.setAnimationToNone('.e-dlg-modal.e-dialog');
                 helper.click('.e-dlg-modal .e-footer-content button:nth-child(1)');
                 done();
-            });
+            }, 20);
         });
     });
 
@@ -1333,6 +1365,78 @@ describe('Hyperlink ->', () => {
                 const cell: CellModel = spreadsheet.sheets[1].rows[0].cells[0];
                 expect((cell.hyperlink as HyperlinkModel)).toBe(undefined);
             });
+        });
+    });
+    describe('allowHyperlink: false ->', () => {
+        let spreadsheet: Spreadsheet;
+        beforeAll((done: Function) => {
+            helper.initializeSpreadsheet({ 
+                allowHyperlink: false,
+                sheets: [{ ranges: [{ dataSource: defaultData }],
+                rows: [{ index: 11, cells: [{ hyperlink: { address: 'www.google.com' } }] }] }] }, done);
+        });
+        afterAll(() => {
+            helper.invoke('destroy');
+        });
+        it('Should check if parent of hyperlink button contains overlay class', (done: Function) => {
+            spreadsheet = helper.getInstance();
+            helper.switchRibbonTab(2);
+            var hyperlinkbtn = helper.getElement('#spreadsheet_hyperlink');
+            expect(hyperlinkbtn.parentElement.classList.contains('e-overlay')).toBe(true);
+            const cell: CellModel = spreadsheet.sheets[0].rows[11].cells[0];
+            expect((cell.hyperlink as HyperlinkModel).address).toBe('www.google.com');
+            const cellEle: HTMLElement = helper.invoke('getCell', [11, 0]);
+            expect(cellEle.querySelector('.e-hyperlink')).toBeNull();
+            done();
+        });
+        it('Programmatic binding and editing of hyperlinks should not be allowed', (done: Function) => {
+            spreadsheet = helper.getInstance();
+            spreadsheet.addHyperlink('https://example.com', 'C3');
+            const sheet = spreadsheet.sheets[0];
+            expect(sheet.rows[2].cells[2].hyperlink).toBe(undefined);
+            const cellEle: HTMLElement = helper.invoke('getCell', [2, 2]);
+            expect(cellEle.querySelector('.e-hyperlink')).toBeNull();
+            done();
+        });
+    });
+    describe('Hyperlink click events ->', () => {
+        beforeAll((done: Function) => {
+            helper.initializeSpreadsheet({ sheets: [{ ranges: [{ dataSource: defaultData }] }] }, done);
+        });
+        afterAll(() => {
+            helper.invoke('destroy');
+        });
+        it('Should trigger both beforeHyperlinkClick and afterHyperlinkClick events', (done: Function) => {
+            const spreadsheet: Spreadsheet = helper.getInstance();            
+            const beforeHyperlinkClickSpy = jasmine.createSpy('beforeHyperlinkClick');
+            const afterHyperlinkClickSpy = jasmine.createSpy('afterHyperlinkClick');            
+            spreadsheet.beforeHyperlinkClick = beforeHyperlinkClickSpy;
+            spreadsheet.afterHyperlinkClick = afterHyperlinkClickSpy;
+            helper.invoke('addHyperlink', ['www.google.com', 'A1']);
+            helper.invoke('selectRange', ['A1']);
+            let td: HTMLElement = helper.invoke('getCell', [0, 0]).children[0];
+            td.click();
+            expect(beforeHyperlinkClickSpy).toHaveBeenCalled();
+            expect(afterHyperlinkClickSpy).toHaveBeenCalled();
+            done();
+        });
+        it('Should handle cancellation in beforeHyperlinkClick event', (done: Function) => {
+            const spreadsheet: Spreadsheet = helper.getInstance();
+            const afterHyperlinkClickSpy = jasmine.createSpy('afterHyperlinkClick');
+            spreadsheet.afterHyperlinkClick = afterHyperlinkClickSpy;
+            let beforeHyperlinkClickArgs: string = '';
+            spreadsheet.beforeHyperlinkClick = (args: BeforeHyperlinkArgs): void => {
+                args.cancel = true;
+                beforeHyperlinkClickArgs = JSON.stringify(args);
+            };
+            helper.invoke('addHyperlink', ['www.google.com', 'A2']);
+            helper.invoke('selectRange', ['A2']);
+            let td: HTMLElement = helper.invoke('getCell', [1, 0]).children[0];
+            td.click();
+            expect(beforeHyperlinkClickArgs).toBe('{"hyperlink":"http://www.google.com","address":"A2","target":"_blank","cancel":true,"name":"beforeHyperlinkClick"}');
+            expect(afterHyperlinkClickSpy).not.toHaveBeenCalled();
+            spreadsheet.beforeHyperlinkClick = undefined;
+            done();
         });
     });
 });

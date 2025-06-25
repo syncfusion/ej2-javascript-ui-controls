@@ -2945,4 +2945,40 @@ describe('Filter ->', () => {
             });
         });
     });
+
+    describe('AllowFiltering: false condition checks', () => {
+        beforeAll((done: Function) => {
+            helper.initializeSpreadsheet({
+                sheets: [{
+                    ranges: [{ dataSource: defaultData }]
+                }], allowFiltering: false
+            }, done);
+        });
+        afterAll(() => {
+            helper.invoke('destroy');
+        });
+        it('Check through public method call and UI interaction', (done: Function) => {
+            helper.invoke('applyFilter', [[{ field: 'E', predicate: 'or', operator: 'equal', value: '10' }], 'A1:H1']);
+            const cell = helper.invoke('getCell', [0, 4]);
+            const hasFilteredIcon = cell.children[0]
+            expect(hasFilteredIcon).toBeUndefined();
+            helper.setAnimationToNone('#' + helper.id + '_sorting');
+            helper.click('#' + helper.id + '_sorting');
+            const applyFilterBtn = document.getElementById('spreadsheet_applyfilter') as HTMLElement;
+            expect(applyFilterBtn).not.toBeNull();
+            const isDisabled = applyFilterBtn.classList.contains('e-disabled');
+            expect(isDisabled).toBe(true);
+            done();
+        });
+        it('Check through contextmenu UI interaction', (done: Function) => {
+            helper.invoke('selectRange', ['A2']);
+            const td: HTMLTableCellElement = helper.invoke('getCell', [1, 0]);
+            const coords: DOMRect = <DOMRect>td.getBoundingClientRect();
+            helper.setAnimationToNone('#' + helper.id + '_contextmenu');
+            helper.triggerMouseAction('contextmenu', { x: coords.x, y: coords.y }, null, td);
+            const filterMenuElement = document.getElementById('spreadsheet_cmenu_filter');
+            expect(filterMenuElement).toBeNull();
+            done();
+        });
+    });
 });

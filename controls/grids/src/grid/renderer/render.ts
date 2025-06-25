@@ -148,8 +148,9 @@ export class Render {
             if ((this.parent as Grid).groupModule && args.preventFocusOnGroup) {
                 (this.parent as Grid).groupModule.preventFocusOnGroup = args.preventFocusOnGroup;
             }
-            if (gObj.allowSelection && (args.action === 'clearFilter' || args.action === 'clear-filter' ||
-                (args.requestType === 'searching' && args.searchString === '') || args.action === 'add')) {
+            const actions: string[] = ['filter', 'clearFilter', 'clear-filter', 'add'];
+            const requestTypes: string[] = ['searching', 'sorting', 'grouping', 'ungrouping', 'delete'];
+            if (gObj.allowSelection && (actions.indexOf(args.action) !== -1 || requestTypes.indexOf(args.requestType) !== -1)) {
                 gObj.selectionModule['rmtHdrChkbxClicked'] = false;
                 if (gObj.selectionModule.isPartialSelection) {
                     gObj.selectionModule['isHdrSelectAllClicked'] = false;
@@ -530,114 +531,135 @@ export class Render {
                 gObj.hideSpinner();
                 return;
             }
-            if (this.isInfiniteEnd(args) && !len) {
-                this.parent.notify(events.infiniteEditHandler, { e: args, result: e.result, count: e.count, agg: e.aggregates });
-                return;
-            }
-            this.parent.isEdit = false;
-            this.parent.notify(events.editReset, {});
-            this.parent.notify(events.tooltipDestroy, {});
-            if (args && !((args.requestType === 'infiniteScroll' || args.requestType === 'delete' || args.action === 'add') &&
-                gObj.enableInfiniteScrolling)) {
-                this.parent.notify(events.commandColumnDestroy, { type : 'refreshCommandColumn' } );
-            }
-            this.contentRenderer.prevCurrentView = !isNullOrUndefined(this.parent.currentViewData) && this.parent.currentViewData.slice();
-            gObj.currentViewData = <Object[]>dataArgs.result;
-            gObj.notify(events.refreshInfiniteCurrentViewData, { args: args, data: dataArgs.result });
-            if (dataArgs.count && !gObj.allowPaging && (gObj.enableVirtualization || gObj.enableInfiniteScrolling)) {
-                gObj.totalDataRecordsCount = dataArgs.count;
-            }
-            if (!len && dataArgs.count && gObj.allowPaging && args && args.requestType !== 'delete' as Action) {
-                if (this.parent.groupSettings.enableLazyLoading
-                    && (args.requestType === 'grouping' || args.requestType === 'ungrouping')) {
-                    this.parent.notify(events.groupComplete, args);
+            if (this.parent.isReact && !isNullOrUndefined(args) && !(args.requestType === 'infiniteScroll' && !this.parent.infiniteScrollSettings.enableCache) && !args.isFrozen) {
+                let templates: string[] = [
+                    'columnTemplate', 'rowTemplate', 'detailTemplate',
+                    'captionTemplate', 'commandsTemplate', 'groupFooterTemplate', 'groupCaptionTemplate'
+                ];
+                if (args.requestType === 'infiniteScroll' && this.parent.infiniteScrollSettings.enableCache) {
+                    templates = [
+                        'columnTemplate', 'commandsTemplate'
+                    ];
                 }
-                gObj.prevPageMoving = true;
-                gObj.pageSettings.totalRecordsCount = dataArgs.count;
-                if (args.requestType !== 'paging' as Action) {
-                    gObj.pageSettings.currentPage = Math.ceil(dataArgs.count / gObj.pageSettings.pageSize);
-                }
-                gObj.dataBind();
-                return;
-            }
-            if ((!gObj.getColumns().length && len || !this.isLayoutRendered) && !isGroupAdaptive(gObj)) {
-                gObj.removeMaskRow();
-                this.updatesOnInitialRender(dataArgs);
-            }
-            if (!this.isColTypeDef && gObj.getCurrentViewRecords()) {
-                if (this.data.dataManager.dataSource.offline && gObj.dataSource && (gObj.dataSource as object[]).length) {
-                    this.updateColumnType(gObj.dataSource[0]);
-                } else { this.updateColumnType(gObj.getCurrentViewRecords()[0]); }
-            }
-            if (!this.parent.isInitialLoad && this.parent.groupSettings.disablePageWiseAggregates &&
-                !this.parent.groupSettings.columns.length) {
-                dataArgs.result = this.parent.dataSource instanceof Array ? this.parent.dataSource : this.parent.currentViewData;
-            }
-            if ((this.parent.isReact || this.parent.isVue) && !isNullOrUndefined(args) && args.requestType !== 'infiniteScroll' && !args.isFrozen) {
-                clearReactVueTemplates(this.parent, ['footerTemplate']);
-            }
-            if (this.parent.isAngular && this.parent.allowGrouping && this.parent.groupSettings.captionTemplate
-                && !(!isNullOrUndefined(args) && args.requestType === 'infiniteScroll')) {
-                this.parent.destroyTemplate(['groupSettings_captionTemplate']);
-            }
-            this.parent.notify(
-                events.dataReady,
-                extend({ count: dataArgs.count, result: dataArgs.result, aggregates: dataArgs.aggregates, loadSummaryOnEmpty: false },
-                       args));
-            if ((gObj.groupSettings.columns.length || (args && args.requestType === 'ungrouping'))
-                && (args && args.requestType !== 'filtering')) {
-                this.headerRenderer.refreshUI();
-            }
-            if (len) {
-                if (isGroupAdaptive(gObj)) {
-                    const content: string = 'content';
-                    args.scrollTop = { top: this.contentRenderer[`${content}`].scrollTop };
-                }
-                if (!isInfiniteDelete) {
-                    if (this.parent.enableImmutableMode) {
-                        this.contentRenderer.immutableModeRendering(args);
-                    } else {
-                        this.contentRenderer.refreshContentRows(args);
-                    }
-                } else {
-                    this.parent.notify(events.infiniteEditHandler, { e: args, result: e.result, count: e.count, agg: e.aggregates });
-                }
+                clearReactVueTemplates(this.parent, templates, () => {
+                    this.extendDataManagerSuccess(e, args, len, dataArgs, isInfiniteDelete);
+                });
             } else {
-                if (args && (<{ isCaptionCollapse?: boolean }>args).isCaptionCollapse) { return; }
-                if (!gObj.getColumns().length) {
-                    gObj.element.innerHTML = '';
-                    alert(this.l10n.getConstant('EmptyDataSourceError')); //ToDO: change this alert as dialog
-                    return;
-                }
-                this.contentRenderer.setRowElements([]);
-                this.contentRenderer.setRowObjects([]);
-                this.ariaService.setBusy(<HTMLElement>this.parent.getContent().querySelector('.' + literals.content), false);
-                gObj.removeMaskRow();
-                this.renderEmptyRow();
-                if (gObj.enableColumnVirtualization && !len) {
-                    this.parent.notify(events.contentReady, { rows: gObj.getRowsObject(), args: {} });
-                }
-                if (args) {
-                    const action: string = (args.requestType || '').toLowerCase() + '-complete';
-                    this.parent.notify(action, args);
-                    if (args.requestType === 'batchsave') {
-                        args.cancel = false;
-                        args.rows = [];
-                        args.isFrozen = !args.isFrozen;
-                        this.parent.trigger(events.actionComplete, args);
-                    }
-                }
-                if (this.parent.autoFit) {
-                    this.parent.preventAdjustColumns();
-                }
-                this.parent.hideSpinner();
-            }
-            this.parent.notify(events.toolbarRefresh, {});
-            this.setRowCount(this.parent.getCurrentViewRecords().length);
-            if ('query' in e) {
-                this.parent.getDataModule().isQueryInvokedFromData = false;
+                this.extendDataManagerSuccess(e, args, len, dataArgs, isInfiniteDelete);
             }
         });
+    }
+
+    private extendDataManagerSuccess(e: ReturnType, args?: NotifyArgs, len?: number, dataArgs?: ReturnType,
+                                     isInfiniteDelete?: boolean): void {
+        const gObj: IGrid = this.parent;
+        if (this.isInfiniteEnd(args) && !len) {
+            this.parent.notify(events.infiniteEditHandler, { e: args, result: e.result, count: e.count, agg: e.aggregates });
+            return;
+        }
+        this.parent.isEdit = false;
+        this.parent.notify(events.editReset, {});
+        this.parent.notify(events.tooltipDestroy, {});
+        if (args && !((args.requestType === 'infiniteScroll' || args.requestType === 'delete' || args.action === 'add') &&
+            gObj.enableInfiniteScrolling)) {
+            this.parent.notify(events.commandColumnDestroy, { type : 'refreshCommandColumn' } );
+        }
+        this.contentRenderer.prevCurrentView = !isNullOrUndefined(this.parent.currentViewData) && this.parent.currentViewData.slice();
+        gObj.currentViewData = <Object[]>dataArgs.result;
+        gObj.notify(events.refreshInfiniteCurrentViewData, { args: args, data: dataArgs.result });
+        if (dataArgs.count && !gObj.allowPaging && (gObj.enableVirtualization || gObj.enableInfiniteScrolling)) {
+            gObj.totalDataRecordsCount = dataArgs.count;
+        }
+        if (!len && dataArgs.count && gObj.allowPaging && args && args.requestType !== 'delete' as Action) {
+            if (this.parent.groupSettings.enableLazyLoading
+                && (args.requestType === 'grouping' || args.requestType === 'ungrouping')) {
+                this.parent.notify(events.groupComplete, args);
+            }
+            gObj.prevPageMoving = true;
+            gObj.pageSettings.totalRecordsCount = dataArgs.count;
+            if (args.requestType !== 'paging' as Action) {
+                gObj.pageSettings.currentPage = Math.ceil(dataArgs.count / gObj.pageSettings.pageSize);
+            }
+            gObj.dataBind();
+            return;
+        }
+        if ((!gObj.getColumns().length && len || !this.isLayoutRendered) && !isGroupAdaptive(gObj)) {
+            gObj.removeMaskRow();
+            this.updatesOnInitialRender(dataArgs);
+        }
+        if (!this.isColTypeDef && gObj.getCurrentViewRecords()) {
+            if (this.data.dataManager.dataSource.offline && gObj.dataSource && (gObj.dataSource as object[]).length) {
+                this.updateColumnType(gObj.dataSource[0]);
+            } else { this.updateColumnType(gObj.getCurrentViewRecords()[0]); }
+        }
+        if (!this.parent.isInitialLoad && this.parent.groupSettings.disablePageWiseAggregates &&
+            !this.parent.groupSettings.columns.length) {
+            dataArgs.result = this.parent.dataSource instanceof Array ? this.parent.dataSource : this.parent.currentViewData;
+        }
+        if ((this.parent.isReact || this.parent.isVue) && !isNullOrUndefined(args) && args.requestType !== 'infiniteScroll' && !args.isFrozen) {
+            clearReactVueTemplates(this.parent, ['footerTemplate']);
+        }
+        if (this.parent.isAngular && this.parent.allowGrouping && this.parent.groupSettings.captionTemplate
+            && !(!isNullOrUndefined(args) && args.requestType === 'infiniteScroll')) {
+            this.parent.destroyTemplate(['groupSettings_captionTemplate']);
+        }
+        this.parent.notify(
+            events.dataReady,
+            extend({ count: dataArgs.count, result: dataArgs.result, aggregates: dataArgs.aggregates, loadSummaryOnEmpty: false },
+                   args));
+        if ((gObj.groupSettings.columns.length || (args && args.requestType === 'ungrouping'))
+            && (args && args.requestType !== 'filtering')) {
+            this.headerRenderer.refreshUI();
+        }
+        if (len) {
+            if (isGroupAdaptive(gObj)) {
+                const content: string = 'content';
+                args.scrollTop = { top: this.contentRenderer[`${content}`].scrollTop };
+            }
+            if (!isInfiniteDelete) {
+                if (this.parent.enableImmutableMode) {
+                    this.contentRenderer.immutableModeRendering(args);
+                } else {
+                    this.contentRenderer.refreshContentRows(args);
+                }
+            } else {
+                this.parent.notify(events.infiniteEditHandler, { e: args, result: e.result, count: e.count, agg: e.aggregates });
+            }
+        } else {
+            if (args && (<{ isCaptionCollapse?: boolean }>args).isCaptionCollapse) { return; }
+            if (!gObj.getColumns().length) {
+                gObj.element.innerHTML = '';
+                alert(this.l10n.getConstant('EmptyDataSourceError')); //ToDO: change this alert as dialog
+                return;
+            }
+            this.contentRenderer.setRowElements([]);
+            this.contentRenderer.setRowObjects([]);
+            this.ariaService.setBusy(<HTMLElement>this.parent.getContent().querySelector('.' + literals.content), false);
+            gObj.removeMaskRow();
+            this.renderEmptyRow();
+            if (gObj.enableColumnVirtualization && !len) {
+                this.parent.notify(events.contentReady, { rows: gObj.getRowsObject(), args: {} });
+            }
+            if (args) {
+                const action: string = (args.requestType || '').toLowerCase() + '-complete';
+                this.parent.notify(action, args);
+                if (args.requestType === 'batchsave') {
+                    args.cancel = false;
+                    args.rows = [];
+                    args.isFrozen = !args.isFrozen;
+                    this.parent.trigger(events.actionComplete, args);
+                }
+            }
+            if (this.parent.autoFit) {
+                this.parent.preventAdjustColumns();
+            }
+            this.parent.hideSpinner();
+        }
+        this.parent.notify(events.toolbarRefresh, {});
+        this.setRowCount(this.parent.getCurrentViewRecords().length);
+        if ('query' in e) {
+            this.parent.getDataModule().isQueryInvokedFromData = false;
+        }
     }
 
     /**

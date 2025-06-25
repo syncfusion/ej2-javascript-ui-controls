@@ -2,8 +2,9 @@
  * Undo Redo spec
  */
 import { selectAll, removeClass } from '@syncfusion/ej2-base';
-import { RichTextEditor, NodeSelection, IToolbarStatus, ToolbarStatusEventArgs } from './../../../src/index';
-import { renderRTE, destroy } from "./../../rich-text-editor/render.spec";
+import { RichTextEditor, NodeSelection, ToolbarStatusEventArgs } from './../../../src/index';
+import { IToolbarStatus } from './../../../src/common/interface';
+import { renderRTE, destroy, setCursorPoint } from "./../../rich-text-editor/render.spec";
 
 let keyboardEventArgs = {
     preventDefault: function () { },
@@ -390,6 +391,60 @@ describe('Undo and Redo module', () => {
             expect(eventArgs.undo).toEqual(true);
             expect(eventArgs.redo).toEqual(false);
             expect(status.bold).toEqual(true);
+        });
+        afterAll(() => {
+            destroy(rteObj);
+        });
+    });
+
+    describe('Additional test for Undo button with clearUndoRedo', () => {
+        let rteObj: RichTextEditor;
+        beforeAll(() => {
+            rteObj = renderRTE({
+                toolbarSettings: {
+                    items: ['Undo', 'Redo']
+                },
+                undoRedoSteps: 5
+            });
+        });
+        it('should check e-overlay class is managed correctly for undo button', () => {
+            const undoButton = document.querySelector('[title="Undo (Ctrl+Z)"]') as HTMLElement;
+            rteObj.value = ' updated';
+            rteObj.dataBind();
+            rteObj.formatter.saveData();
+            rteObj.formatter.enableUndo(rteObj);
+            expect(undoButton.classList.contains('e-overlay')).toBe(true);
+            rteObj.value = 'Markdown content updated';
+            rteObj.dataBind();
+            rteObj.formatter.saveData();
+            rteObj.formatter.enableUndo(rteObj);
+            expect(undoButton.classList.contains('e-overlay')).toBe(false);
+            rteObj.clearUndoRedo();
+            rteObj.formatter.enableUndo(rteObj);
+            expect(undoButton.classList.contains('e-overlay')).toBe(true);
+        });
+        afterAll(() => {
+            destroy(rteObj);
+        });
+    });
+    describe('964457 - Not able to resize the video', () => {
+        let rteObj: RichTextEditor;
+        beforeAll(() => {
+            rteObj = renderRTE({
+                toolbarSettings: {
+                    items: ['Undo', 'Redo']
+                },
+                value: `<p><img src="https://ej2.syncfusion.com/demos/src/rich-text-editor/images/RTEImage-Feather.png" style="width: 300px; height: 200px; outline: rgb(74, 144, 226) solid 2px;" class="e-rte-image e-imginline e-resize e-img-focus"></p>
+                        <span class="e-img-resize" id="insertMediaRTE_imgResize"><span class="e-rte-imageboxmark e-rte-topLeft" style="cursor: nwse-resize; left: 15px; top: 10px;"></span><span class="e-rte-imageboxmark e-rte-topRight" style="cursor: nesw-resize; left: 317px; top: 10px;"></span><span class="e-rte-imageboxmark e-rte-botLeft" style="cursor: nesw-resize; left: 15px; top: 210px;"></span><span class="e-rte-imageboxmark e-rte-botRight" style="cursor: nwse-resize; left: 317px; top: 210px;"></span></span>`
+            });
+        });
+        it('Should not store the resizable element in the stack', () => {
+            let img: HTMLElement = rteObj.element.querySelector('img');
+            img.click();
+            setCursorPoint(img, 0);
+            (rteObj as any).mouseUp({ target: img });
+            expect((rteObj.formatter.editorManager.undoRedoManager.undoRedoStack[0].text as DocumentFragment).querySelectorAll('.e-img-resize').length === 0).toBe(true);
+            expect((rteObj.formatter.editorManager.undoRedoManager.undoRedoStack[0].text as DocumentFragment).querySelectorAll('.e-img-focus').length === 0).toBe(true);
         });
         afterAll(() => {
             destroy(rteObj);

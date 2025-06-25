@@ -1,10 +1,12 @@
-import { PdfViewer, PdfViewerBase, AjaxHandler, ISize } from '../index';
+import { PdfViewer, PdfViewerBase, AjaxHandler, ISize, PageOrganizerSettingsModel } from '../index';
 import { createElement, Browser, initializeCSPTemplate, isNullOrUndefined, getComponent, Draggable, DragEventArgs, Droppable, DropEventArgs } from '@syncfusion/ej2-base';
 import { Tooltip, TooltipEventArgs, Dialog } from '@syncfusion/ej2-popups';
 import { CheckBox } from '@syncfusion/ej2-buttons';
+import { DropDownButton, OpenCloseMenuEventArgs } from '@syncfusion/ej2-splitbuttons';
 import { Toolbar, ClickEventArgs, ContextMenu, MenuItemModel, BeforeOpenCloseMenuEventArgs, ItemModel, EventArgs } from '@syncfusion/ej2-navigations';
 import { createSpinner, showSpinner, hideSpinner } from '../base/spinner';
 import { TaskPriorityLevel } from '../base/pdfviewer-utlis';
+import { ChangeEventArgs, Slider } from '@syncfusion/ej2-inputs';
 
 interface IActionOrganizeElements {
     action: string;
@@ -32,9 +34,20 @@ export class PageOrganizer {
     private insertLeftButton: HTMLButtonElement;
     private deleteButton: HTMLButtonElement;
     private copyButton: HTMLButtonElement;
+    private pageZoomElement: HTMLElement;
+    private pageZoomDropDown: DropDownButton;
+    private pageZoomSlider: Slider;
+    private pageZoomDecreaseButton: HTMLButtonElement;
+    private pageZoomIncreaseButton: HTMLButtonElement;
+    private pageZoomContainer: HTMLElement;
     private toolbar: Toolbar;
     private importDocInputElement: HTMLElement;
     private importedDocumentName: string;
+    private previewLimit: number = 5;
+    private lastRequestedPageIndex: number = 0;
+    private pageZoomSliderStep: number = 0.25;
+    private currentPageZoomSliderValue: number;
+    private previouslyRequestedImageZoom: number;
     /**
      * @private
      */
@@ -81,6 +94,8 @@ export class PageOrganizer {
     private autoScrollInterval: number = null;
     private isRightInsertion: boolean;
     private gapBetweenDivs: number = 48;
+    private previousImageZoom: number = 1;
+    private currentImageZoom: number;
     /**
      * @private
      */
@@ -103,13 +118,22 @@ export class PageOrganizer {
     private shiftKey: boolean;
     private isClickedOnCheckBox: boolean;
     private isTouchEvent: boolean = false;
+    private isPageZoomChanged: boolean = false;
+    private isInitialLoading: boolean = true;
     private boundOnTileAreaMouseDown: (event: MouseEvent) => void;
     private boundOnTileAreaKeyDown: (event: KeyboardEvent) => void;
     private boundOnTileAreaKeyUp: (event: KeyboardEvent) => void;
+    private boundPageOrganizerOnScroll: (event: WheelEvent) => void;
+    private boundPageZoomDropDownOpen: () => void;
+    private boundPageZoomDropDownClose: () => void;
+    private boundPageZoomChange: (event: ChangeEventArgs) => void;
+    private boundIncreasePageZoom: () => void;
+    private boundDecreasePageZoom: () => void;
     /**
      * @private
      */
     public isOrganizeWindowOpen: boolean = false;
+    public isPageZoomPopupOpen: boolean = false;
 
     /**
      * @param {PdfViewer} pdfViewer - It describes about the pdfviewer
@@ -119,6 +143,10 @@ export class PageOrganizer {
     constructor(pdfViewer: PdfViewer, pdfViewerBase: PdfViewerBase) {
         this.pdfViewer = pdfViewer;
         this.pdfViewerBase = pdfViewerBase;
+        this.setPageOrganizerSettings(this.pdfViewer.pageOrganizerSettings);
+        this.currentImageZoom = this.pdfViewer.pageOrganizerSettings.imageZoom;
+        this.currentPageZoomSliderValue = this.pdfViewer.pageOrganizerSettings.imageZoom;
+        this.previouslyRequestedImageZoom = Math.round(this.pdfViewer.pageOrganizerSettings.imageZoom);
     }
     /**
      * @param {boolean} isReConstruct - It describes about the isReConstruct
@@ -167,6 +195,11 @@ export class PageOrganizer {
                 else {
                     this.isSkipRevert = false;
                 }
+            },
+            created: (args: any) => {
+                if (this.pdfViewer.pageOrganizerSettings.showImageZoomingSlider) {
+                    this.createPageZoomDropDown();
+                }
             }
         });
         if (!Browser.isDevice || this.pdfViewer.enableDesktopMode) {
@@ -200,13 +233,15 @@ export class PageOrganizer {
     }
 
     /**
+     * @param {boolean} isReConstruct - Defines whether organizer window is reconstructed when closing
      * @private
      * @returns {void}
      */
-    public createOrganizeWindowForMobile(): void {
+    public createOrganizeWindowForMobile(isReConstruct?: boolean): void {
         const elementID: string = this.pdfViewer.element.id;
         if (!isNullOrUndefined(document.getElementById(elementID + '_organize_window')) && !isNullOrUndefined(this.organizeDialog)) {
             this.organizeDialog.show(true);
+            this.isOrganizeWindowOpen = true;
             return;
         }
         this.dialogDivElement = createElement('div', { id: elementID + '_organize_window', className: 'e-pv-organize-window' });
@@ -221,6 +256,18 @@ export class PageOrganizer {
             target: this.pdfViewerBase.mainContainer,
             content: contentRegion,
             visible: false,
+            animationSettings: { effect: 'None' },
+            created: () => {
+                if (this.pdfViewer.pageOrganizerSettings.showImageZoomingSlider) {
+                    this.createPageZoomDropDown();
+                }
+            },
+            open: () => {
+                this.toolbar.refreshOverflow();
+                if (this.pdfViewer.pageOrganizerSettings.showImageZoomingSlider) {
+                    this.handlePageZoomPopupMobile();
+                }
+            },
             close: () => {
                 if (!this.isSkipRevert) {
                     this.tempOrganizePagesCollection = JSON.parse(JSON.stringify(this.organizePagesCollection));
@@ -236,8 +283,7 @@ export class PageOrganizer {
                     this.isOrganizeWindowOpen = false;
                     this.totalCheckedCount = 0;
                     this.destroyDialogWindow();
-                    this.createOrganizeWindow(true);
-
+                    this.createOrganizeWindowForMobile(true);
                 }
                 else {
                     this.isSkipRevert = false;
@@ -264,7 +310,10 @@ export class PageOrganizer {
         createSpinner({ target: this.waitingPopup, cssClass: 'e-spin-center' });
         this.pdfViewerBase.setLoaderProperties(this.waitingPopup);
         this.organizeDialog.appendTo(dialogDiv);
-        this.organizeDialog.show(true);
+        if (!isReConstruct) {
+            this.organizeDialog.show(true);
+            this.isOrganizeWindowOpen = true;
+        }
         this.createMobileContextMenu();
         this.disableTileDeleteButton();
         this.enableDisableToolbarItems();
@@ -272,22 +321,110 @@ export class PageOrganizer {
         this.initEventListeners();
     }
 
+    /**
+     * @private
+     * @param {PageOrganizerSettingsModel} pageOrganizerSettings new page organizer settings object
+     * @returns {void}
+     */
+    public setPageOrganizerSettings(pageOrganizerSettings: PageOrganizerSettingsModel): void {
+        if (!isNullOrUndefined(pageOrganizerSettings)) {
+            if (isNullOrUndefined(pageOrganizerSettings.canDelete)){
+                this.pdfViewer.pageOrganizerSettings.canDelete = true;
+            }
+            if (isNullOrUndefined(pageOrganizerSettings.canRotate)){
+                this.pdfViewer.pageOrganizerSettings.canRotate = true;
+            }
+            if (isNullOrUndefined(pageOrganizerSettings.canInsert)){
+                this.pdfViewer.pageOrganizerSettings.canInsert = true;
+            }
+            if (isNullOrUndefined(pageOrganizerSettings.canCopy)){
+                this.pdfViewer.pageOrganizerSettings.canCopy = true;
+            }
+            if (isNullOrUndefined(pageOrganizerSettings.canRearrange)){
+                this.pdfViewer.pageOrganizerSettings.canRearrange = true;
+            }
+            if (isNullOrUndefined(pageOrganizerSettings.canImport)){
+                this.pdfViewer.pageOrganizerSettings.canImport = true;
+            }
+            if (isNullOrUndefined(pageOrganizerSettings.showImageZoomingSlider)) {
+                this.pdfViewer.pageOrganizerSettings.showImageZoomingSlider = false;
+            }
+            if (isNullOrUndefined(pageOrganizerSettings.imageZoomMin)) {
+                this.pdfViewer.pageOrganizerSettings.imageZoomMin = 1;
+            }
+            if (isNullOrUndefined(pageOrganizerSettings.imageZoomMax)) {
+                this.pdfViewer.pageOrganizerSettings.imageZoomMax = 5;
+            }
+            if (this.pdfViewer.pageOrganizerSettings.imageZoomMin >= this.pdfViewer.pageOrganizerSettings.imageZoomMax) {
+                this.pdfViewer.pageOrganizerSettings.imageZoomMin = 1;
+                this.pdfViewer.pageOrganizerSettings.imageZoomMax = 5;
+            }
+            if (this.pdfViewer.pageOrganizerSettings.imageZoomMin < 1 || this.pdfViewer.pageOrganizerSettings.imageZoomMin >= 5) {
+                this.pdfViewer.pageOrganizerSettings.imageZoomMin = 1;
+            }
+            if (this.pdfViewer.pageOrganizerSettings.imageZoomMax > 5 || this.pdfViewer.pageOrganizerSettings.imageZoomMax <= 1) {
+                this.pdfViewer.pageOrganizerSettings.imageZoomMax = 5;
+            }
+            const range: number = this.pdfViewer.pageOrganizerSettings.imageZoomMax - this.pdfViewer.pageOrganizerSettings.imageZoomMin;
+            this.pageZoomSliderStep = range / 100;
+            if (isNullOrUndefined(pageOrganizerSettings.imageZoom)) {
+                this.pdfViewer.pageOrganizerSettings.imageZoom = this.pdfViewer.pageOrganizerSettings.imageZoomMin;
+            }
+            if (this.pdfViewer.pageOrganizerSettings.imageZoom > this.pdfViewer.pageOrganizerSettings.imageZoomMax) {
+                this.pdfViewer.pageOrganizerSettings.imageZoom = this.pdfViewer.pageOrganizerSettings.imageZoomMax;
+            }
+            else if (this.pdfViewer.pageOrganizerSettings.imageZoom < this.pdfViewer.pageOrganizerSettings.imageZoomMin) {
+                this.pdfViewer.pageOrganizerSettings.imageZoom = this.pdfViewer.pageOrganizerSettings.imageZoomMin;
+            }
+        }
+    }
+
     private initEventListeners(): void {
         this.boundOnTileAreaMouseDown = this.onTileAreaMouseDown.bind(this);
         this.boundOnTileAreaKeyDown = this.onTileAreaKeyDown.bind(this);
         this.boundOnTileAreaKeyUp = this.onTileAreaKeyUp.bind(this);
+        this.boundPageOrganizerOnScroll = this.pageOrganizerOnScroll.bind(this);
 
+        this.dialogDivElement.addEventListener('wheel', this.boundPageOrganizerOnScroll);
         this.tileAreaDiv.addEventListener('mousedown', this.boundOnTileAreaMouseDown);
         document.addEventListener('keydown', this.boundOnTileAreaKeyDown);
         document.addEventListener('keyup', this.boundOnTileAreaKeyUp);
     }
 
     private removeEventListeners(): void {
+        if (!isNullOrUndefined(this.dialogDivElement)) {
+            this.dialogDivElement.removeEventListener('wheel', this.boundPageOrganizerOnScroll);
+        }
         if (!isNullOrUndefined(this.tileAreaDiv)) {
             this.tileAreaDiv.removeEventListener('mousedown', this.boundOnTileAreaMouseDown);
         }
         document.removeEventListener('keydown', this.boundOnTileAreaKeyDown);
         document.removeEventListener('keyup', this.boundOnTileAreaKeyUp);
+    }
+
+    private pageOrganizerOnScroll(event: WheelEvent): void {
+        if (this.ctrlKey) {
+            event.preventDefault();
+            const imageZoom: number = this.getImageZoomValue();
+            const imageZoomMin: number = this.getImageZoomMin();
+            const imageZoomMax: number = this.getImageZoomMax();
+            if (event.deltaY < 0 && (imageZoom < imageZoomMax)) {
+                if (imageZoom + this.pageZoomSliderStep < imageZoomMax) {
+                    this.handlePageZoomChange(imageZoom + this.pageZoomSliderStep, imageZoom);
+                }
+                else if (imageZoom + this.pageZoomSliderStep > imageZoomMax && imageZoom !== imageZoomMax) {
+                    this.handlePageZoomChange(imageZoomMax, imageZoom);
+                }
+            }
+            else if (event.deltaY > 0 && (imageZoom > imageZoomMin)) {
+                if (imageZoom - this.pageZoomSliderStep > imageZoomMin) {
+                    this.handlePageZoomChange(imageZoom - this.pageZoomSliderStep, imageZoom);
+                }
+                else if (imageZoom - this.pageZoomSliderStep < imageZoomMin && imageZoom !== imageZoomMin) {
+                    this.handlePageZoomChange(imageZoomMin, imageZoom);
+                }
+            }
+        }
     }
 
     private onTileAreaMouseDown(event: MouseEvent): void {
@@ -479,6 +616,9 @@ export class PageOrganizer {
                 }
             }
         ];
+        if (this.pdfViewer.pageOrganizerSettings.showImageZoomingSlider) {
+            this.addPageZoomDropDown(true, toolbarItemsForDesktop);
+        }
         const toolbarItemsForMobile: ItemModel[] = [
             { type: 'Input', template: this.selectAllCheckBox, id: 'selectAllCheckbox', align: 'Left' },
             { type: 'Separator', align: 'Left' },
@@ -513,6 +653,9 @@ export class PageOrganizer {
                 click: this.openContextMenu.bind(this)
             }
         ];
+        if (this.pdfViewer.pageOrganizerSettings.showImageZoomingSlider) {
+            this.addPageZoomDropDown(true, toolbarItemsForMobile);
+        }
         if (Browser.isDevice && !this.pdfViewer.enableDesktopMode) {
             toolbarItems.push(...toolbarItemsForMobile);
         }
@@ -525,6 +668,9 @@ export class PageOrganizer {
         this.toolbar.cssClass = 'e-pv-organize-toolbar';
         this.toolbar.height = '48px';
         this.toolbar.width = 'auto';
+        if (Browser.isDevice && !this.pdfViewer.enableDesktopMode) {
+            this.toolbar.overflowMode = 'Popup';
+        }
         this.toolbar.appendTo(toolbarDiv);
         contentDiv.appendChild(toolbarDiv);
         this.renderThumbnailImage();
@@ -557,6 +703,249 @@ export class PageOrganizer {
             this.createTooltip(redoToolbarButton, this.pdfViewer.localeObj.getConstant('Redo'));
         }
         return contentDiv;
+    }
+
+    private updatePageZoomPopup(): void {
+        if (this.isPageZoomPopupOpen && (this.pageZoomSlider.value !== this.currentPageZoomSliderValue)) {
+            this.pageZoomSlider.value = this.currentPageZoomSliderValue;
+            this.pageZoomSlider.reposition();
+        }
+        this.handlePageZoomButtonsVisibility(this.currentPageZoomSliderValue);
+    }
+
+    public getImageZoomMin(): number {
+        let currentMinSize: number = this.pdfViewer.pageOrganizerSettings.imageZoomMin;
+        if (isNullOrUndefined(currentMinSize)) {
+            this.pdfViewer.pageOrganizerSettings.imageZoomMin = 1;
+            currentMinSize = 1;
+        }
+        const possibleMinSize: number = 1;
+        if (!Number.isInteger(currentMinSize)) {
+            currentMinSize = Math.floor(currentMinSize);
+            this.pdfViewer.pageOrganizerSettings.imageZoomMin = currentMinSize;
+        }
+        if (currentMinSize < possibleMinSize) {
+            this.pdfViewer.pageOrganizerSettings.imageZoomMin = possibleMinSize;
+        }
+        return this.pdfViewer.pageOrganizerSettings.imageZoomMin;
+    }
+
+    public getImageZoomMax(): number {
+        let currentMaxSize: number = this.pdfViewer.pageOrganizerSettings.imageZoomMax;
+        if (isNullOrUndefined(currentMaxSize)) {
+            this.pdfViewer.pageOrganizerSettings.imageZoomMax = 5;
+            currentMaxSize = 5;
+        }
+        const possibleMaxSize: number = 5;
+        if (!Number.isInteger(currentMaxSize)) {
+            currentMaxSize = Math.floor(currentMaxSize);
+            this.pdfViewer.pageOrganizerSettings.imageZoomMax = currentMaxSize;
+        }
+        if (currentMaxSize > possibleMaxSize) {
+            this.pdfViewer.pageOrganizerSettings.imageZoomMax = possibleMaxSize;
+        }
+        return this.pdfViewer.pageOrganizerSettings.imageZoomMax;
+    }
+
+    private isOrganizeDialogRendered(): boolean {
+        if (!isNullOrUndefined(document.getElementById(this.pdfViewer.element.id + '_organize_window')) && !isNullOrUndefined(this.organizeDialog)) {
+            return true;
+        }
+        return false;
+    }
+
+    private modifyThumbnailContainer(): void {
+        /* eslint-disable security/detect-object-injection */
+        const organizeNodes: HTMLCollection = this.tileAreaDiv.children;
+        const imageSizeFactor: number = this.getImageZoomFactor(organizeNodes[0].cloneNode(true) as HTMLDivElement);
+        for (let index: number = 0; index < organizeNodes.length; index++) {
+            const imageContainer: HTMLDivElement = organizeNodes[index] as HTMLDivElement;
+            imageContainer.style.width = 140 * imageSizeFactor + 'px';
+            imageContainer.style.height = 140 * imageSizeFactor + 'px';
+            this.blurImageContainer(true, imageContainer);
+        }
+        /* eslint-enable security/detect-object-injection */
+    }
+
+    private setThumbnailImage(): void {
+        /* eslint-disable security/detect-object-injection */
+        const organizeNodes: HTMLCollection = this.tileAreaDiv.children;
+        for (let index: number = 0; index < organizeNodes.length; index++) {
+            const imageContainer: HTMLDivElement = organizeNodes[index] as HTMLDivElement;
+            const imageElement: HTMLImageElement = imageContainer.querySelector('.e-pv-organize-image');
+            imageElement.src = this.dataDetails[parseInt(index.toString(), 10)].image;
+            this.blurImageContainer(false, imageContainer);
+        }
+        /* eslint-enable security/detect-object-injection */
+    }
+
+    private handlePageZoomPopupMobile(): void {
+        const pageZoomButton: HTMLElement = this.pdfViewerBase.getElement('_page_zoom');
+        if (pageZoomButton && pageZoomButton.parentElement.classList.contains('e-toolbar-popup')) {
+            (pageZoomButton.children[0] as HTMLElement).style.padding = '0 5px';
+            (pageZoomButton.children[0] as HTMLElement).style.minWidth = '0';
+        }
+    }
+
+    private addPageZoomDropDown(isInitialCreation: boolean, toolbarItems?: ItemModel[]): void {
+        if (isInitialCreation) {
+            if (Browser.isDevice && !this.pdfViewer.enableDesktopMode) {
+                const insertIndex: number = toolbarItems.findIndex((item: ItemModel) => item.id === this.pdfViewer.element.id + '_organize_more_button');
+                toolbarItems.splice(insertIndex - 1, 0,
+                // eslint-disable-next-line @typescript-eslint/indent
+                    { visible: true, cssClass: 'e-pv-page-zoom', id: this.pdfViewer.element.id + '_page_zoom', align: 'Right' });
+            }
+            else {
+                const insertIndex: number = toolbarItems.findIndex((item: ItemModel) => item.cssClass === 'e-pv-import-pages');
+                toolbarItems.splice(insertIndex, 0, { type: 'Separator', align: 'Center' },
+                // eslint-disable-next-line @typescript-eslint/indent
+                    { visible: true, cssClass: 'e-pv-page-zoom', id: this.pdfViewer.element.id + '_page_zoom', align: 'Center' });
+            }
+        }
+        else {
+            if (Browser.isDevice && !this.pdfViewer.enableDesktopMode) {
+                const insertIndex: number = this.toolbar.items.findIndex((item: ItemModel) => item.id === this.pdfViewer.element.id + '_page_zoom');
+                if (insertIndex !== -1) {
+                    this.toolbar.hideItem(this.pdfViewerBase.getElement('_page_zoom').parentElement, false);
+                }
+            }
+            else {
+                const insertIndex: number = this.toolbar.items.findIndex((item: ItemModel) => item.cssClass === 'e-pv-import-pages');
+                if (this.toolbar.items[insertIndex - 1].type !== 'Separator') {
+                    this.toolbar.addItems([{ type: 'Separator', align: 'Center' },
+                        { visible: true, cssClass: 'e-pv-page-zoom', id: this.pdfViewer.element.id + '_page_zoom', align: 'Center' }], insertIndex);
+                }
+                else {
+                    this.toolbar
+                        .addItems([{ visible: true, cssClass: 'e-pv-page-zoom', id: this.pdfViewer.element.id + '_page_zoom', align: 'Center' }], insertIndex);
+                }
+            }
+            // Removes the margin left or margin right property of center group in page organizer toolbar
+            this.toolbar.element.children[0].children[1].removeAttribute('style');
+        }
+    }
+
+    private createPageZoomDropDown(): void {
+        this.pageZoomElement = this.pdfViewerBase.getElement('_page_zoom');
+        this.pageZoomContainer = this.createPageZoomSlider(this.pageZoomElement.id);
+        const dropDownButton: DropDownButton = new DropDownButton({ iconCss: 'e-pv-page-zoom-icon' + ' e-pv-icon e-icons', target: this.pageZoomContainer });
+        if (this.pdfViewer.enableRtl) {
+            dropDownButton.enableRtl = true;
+        }
+        dropDownButton.appendTo(this.pageZoomElement);
+        this.createTooltip(this.pageZoomElement, this.pdfViewer.localeObj.getConstant('Change Page Zoom'));
+        this.pageZoomElement.setAttribute('aria-label', this.pdfViewer.localeObj.getConstant('Change Page Zoom'));
+        this.pageZoomDropDown = dropDownButton;
+        this.pageZoomWireEvents();
+        this.pageZoomSliderWireEvents();
+    }
+
+    private shrinkElement(element: HTMLElement): void {
+        const pdfViewerRect: DOMRect = this.pdfViewer.element.getBoundingClientRect() as DOMRect;
+        const actualWidth: number = element.clientWidth;
+        const decreasePercent: number = (actualWidth - pdfViewerRect.width) / actualWidth;
+        const newHeight: number = element.clientHeight * (1 - decreasePercent);
+        const newWidth: number = actualWidth * (1 - decreasePercent);
+        element.style.width = newWidth + 'px';
+        element.style.height = newHeight + 'px';
+    }
+
+    private pageZoomDropDownOpen(args: OpenCloseMenuEventArgs): void {
+        if (Browser.isDevice && !this.pdfViewer.enableDesktopMode) {
+            const pageZoomButton: HTMLElement = this.pdfViewerBase.getElement('_page_zoom');
+            args.element.parentElement.style.left = '0px';
+            if (args.element.parentElement.clientWidth > this.pdfViewer.element.getBoundingClientRect().width) {
+                this.shrinkElement(args.element.parentElement as HTMLElement);
+            }
+            const pageZoomContainerRect: DOMRect = args.element.parentElement.getBoundingClientRect() as  DOMRect;
+            if (pageZoomButton && pageZoomButton.parentElement.classList.contains('e-toolbar-popup')) {
+                args.element.parentElement.style.left = (this.pdfViewer.element.getBoundingClientRect().left +
+                // eslint-disable-next-line @typescript-eslint/indent
+                    Math.max(((this.pdfViewer.element.getBoundingClientRect().width - pageZoomContainerRect.width) / 2), 0)) + 'px';
+            }
+            else {
+                const pageZoomButtonRect: DOMRect = pageZoomButton.getBoundingClientRect() as DOMRect;
+                args.element.parentElement.style.left = Math.max((pageZoomButtonRect.right - pageZoomContainerRect.width),
+                // eslint-disable-next-line @typescript-eslint/indent
+                    this.pdfViewer.element.getBoundingClientRect().left) + 'px';
+            }
+            args.element.parentElement.style.top = this.pdfViewerBase.getElement('_toolbar_appearance').getBoundingClientRect().bottom + 'px';
+        }
+        else {
+            if (args.element && args.element.parentElement) {
+                const leftValue: number = parseFloat(args.element.parentElement.style.left);
+                const width: number = args.element.parentElement.offsetWidth;
+                if ((leftValue + width) > (this.pdfViewer.element.getBoundingClientRect().left +
+                    this.pdfViewer.element.offsetWidth + 10)) {
+                    args.element.parentElement.style.left = (leftValue - width) + 'px';
+                }
+            }
+        }
+        this.isPageZoomPopupOpen = true;
+        this.updatePageZoomPopup();
+        requestAnimationFrame(() => {
+            if (this.pageZoomDecreaseButton.disabled) {
+                (this.pageZoomSlider.element.querySelector('.e-handle') as HTMLElement).focus();
+            }
+            else {
+                this.pageZoomDecreaseButton.focus();
+            }
+        });
+    }
+
+    private pageZoomDropDownClose(): void {
+        requestAnimationFrame(() => {
+            this.pageZoomDropDown.focusIn();
+        });
+        this.isPageZoomPopupOpen = false;
+    }
+
+    private pageZoomChange(args: ChangeEventArgs): void {
+        if (args.isInteracted && args.previousValue !== args.value) {
+            this.pageZoomSlider.element.querySelector('.e-handle').classList.remove('e-large-thumb-size');
+            this.handlePageZoomChange(args.value, args.previousValue);
+        }
+    }
+
+    private blurImageContainer(canBlur: boolean, container: HTMLElement): void {
+        if (!isNullOrUndefined(container)) {
+            container.style.filter = canBlur ? 'blur(5px)' : '';
+        }
+    }
+
+    private createPageZoomSlider(idString: string): HTMLElement {
+        const outerContainer: HTMLElement = createElement('div', { className: 'e-pv-page-zoom-popup-container' });
+        document.body.appendChild(outerContainer);
+        this.pageZoomDecreaseButton = createElement('button', { id: idString + '_decrease', attrs:
+            { 'aria-label': this.pdfViewer.localeObj.getConstant('Decrease Page Zoom'), 'tabindex': '0' } }) as HTMLButtonElement;
+        this.pageZoomDecreaseButton.className = 'e-btn e-pv-page-zoom-decrease e-flat';
+        this.pageZoomDecreaseButton.setAttribute('type', 'button');
+        const pageZoomDecreaseButtonSpan: HTMLSpanElement = createElement('span', { id: idString + '_decrease_icon',
+            className: 'e-pv-page-zoom-decrease-icon e-btn-icon e-icons e-pv-icon' }) as HTMLSpanElement;
+        this.pageZoomDecreaseButton.appendChild(pageZoomDecreaseButtonSpan);
+        this.pageZoomIncreaseButton = createElement('button', { id: idString + '_increase', attrs:
+            { 'aria-label': this.pdfViewer.localeObj.getConstant('Increase Page Zoom'), 'tabindex': '0' } }) as HTMLButtonElement;
+        this.pageZoomIncreaseButton.className = 'e-btn e-pv-page-zoom-increase e-flat';
+        this.pageZoomIncreaseButton.setAttribute('type', 'button');
+        const pageZoomIncreaseButtonSpan: HTMLSpanElement = createElement('span', { id: idString + '_decrease_icon',
+            className: 'e-pv-page-zoom-increase-icon e-btn-icon e-icons e-pv-icon' }) as HTMLSpanElement;
+        this.pageZoomIncreaseButton.appendChild(pageZoomIncreaseButtonSpan);
+        const sliderElement: HTMLElement = createElement('div', { id: idString + '_slider' });
+        this.pageZoomSlider = new Slider({ type: 'MinRange', cssClass: 'e-pv-page-zoom-slider', max: this.getImageZoomMax(), min: this.getImageZoomMin(), step: this.pageZoomSliderStep });
+        if (!this.pdfViewer.enableRtl) {
+            outerContainer.appendChild(this.pageZoomDecreaseButton);
+            outerContainer.appendChild(sliderElement);
+            this.pageZoomSlider.appendTo(sliderElement);
+            outerContainer.appendChild(this.pageZoomIncreaseButton);
+        } else {
+            outerContainer.appendChild(this.pageZoomIncreaseButton);
+            outerContainer.appendChild(sliderElement);
+            this.pageZoomSlider.enableRtl = true;
+            this.pageZoomSlider.appendTo(sliderElement);
+            outerContainer.appendChild(this.pageZoomDecreaseButton);
+        }
+        this.pageZoomSlider.element.parentElement.classList.add('e-pv-page-zoom-slider-container');
+        return outerContainer;
     }
 
     private createMobileContextMenu(): void {
@@ -673,10 +1062,11 @@ export class PageOrganizer {
 
     private requestPreviewCreation(proxy: PageOrganizer): void {
         // Removed the condition to skip multiple request for thumbnail image.
-        const startIndex: number = 0;
-        const previewLimit: number = proxy.pdfViewer.pageCount;
+        const startIndex: number = this.lastRequestedPageIndex;
+        const endIndex: number = (startIndex + this.previewLimit) >= this.pdfViewer.pageCount ?
+            this.pdfViewer.pageCount : (startIndex + this.previewLimit);
         let digitalSignaturePresent: boolean = false;
-        for (let i: number = startIndex; i < previewLimit; i++) {
+        for (let i: number = startIndex; i < endIndex; i++) {
             if (proxy.pdfViewerBase.digitalSignaturePresent(i)) {
                 digitalSignaturePresent = true;
             }
@@ -685,15 +1075,18 @@ export class PageOrganizer {
         if (digitalSignaturePresent) {
             digitalSignatureList = proxy.pdfViewerBase.digitalSignaturePages.toString();
         }
-        const jsonObject: object = { startPage: startIndex.toString(), endPage: previewLimit.toString(), sizeX: '99.7', sizeY: '141', hashId: proxy.pdfViewerBase.hashId, action: 'RenderThumbnailImages', elementId: proxy.pdfViewer.element.id, uniqueId: proxy.pdfViewerBase.documentId, digitalSignaturePresent: digitalSignaturePresent, digitalSignaturePageList: digitalSignatureList };
+        const jsonObject: object = { startPage: startIndex.toString(), endPage: endIndex.toString(), sizeX: '99.7', sizeY: '141', hashId: proxy.pdfViewerBase.hashId, action: 'RenderThumbnailImages', elementId: proxy.pdfViewer.element.id, uniqueId: proxy.pdfViewerBase.documentId, digitalSignaturePresent: digitalSignaturePresent, digitalSignaturePageList: digitalSignatureList };
         if (this.pdfViewerBase.jsonDocumentId) {
             (jsonObject as any).documentId = this.pdfViewerBase.jsonDocumentId;
         }
         if (!this.pdfViewerBase.clientSideRendering) {
+            const imageSize: number = this.previouslyRequestedImageZoom;
+            (jsonObject as any).imageSize = imageSize;
+            (jsonObject as any).initialLoad = this.isInitialLoading;
             this.previewRequestHandler = new AjaxHandler(this.pdfViewer);
             this.previewRequestHandler.url = proxy.pdfViewer.serviceUrl + '/' + proxy.pdfViewer.serverActionSettings.renderThumbnail;
             this.previewRequestHandler.responseType = 'json';
-            if (previewLimit > 0 && !isNullOrUndefined(proxy.pdfViewerBase.hashId)) {
+            if (endIndex > 0 && !isNullOrUndefined(proxy.pdfViewerBase.hashId) && !this.isAllImagesReceived) {
                 this.previewRequestHandler.send(jsonObject);
             }
             this.previewRequestHandler.onSuccess = function (result: any): void {
@@ -713,20 +1106,32 @@ export class PageOrganizer {
                                                       proxy.pdfViewer.serverActionSettings.renderThumbnail);
             };
         } else {
+            const start: number = 0;
+            const limit: number = this.pdfViewer.pageCount;
             const jsonObject: object = { documentId: proxy.pdfViewerBase.getDocumentId(), hashId: proxy.pdfViewerBase.hashId,
                 elementId: proxy.pdfViewer.element.id, uniqueId: proxy.pdfViewerBase.documentId };
             const isTextNeed: boolean = proxy.pdfViewer.textSearch ? true : false;
-            for (let pageIndex: number = startIndex; pageIndex < previewLimit; pageIndex++) {
+            const initialLoad: boolean = this.isInitialLoading;
+            const imageSize: number = proxy.getImageZoomValue(true);
+            for (let pageIndex: number = start; pageIndex < limit; pageIndex++) {
+                /* eslint-disable security/detect-object-injection */
+                if (!isNullOrUndefined(this.dataDetails[pageIndex] &&
+                    this.dataDetails[pageIndex].imageSize === imageSize)) {
+                    continue;
+                }
+                /* eslint-enable security/detect-object-injection */
                 this.pdfViewerBase.pdfViewerRunner.addTask({
-                    startIndex: startIndex,
-                    endIndex: previewLimit,
+                    startIndex: start,
+                    endIndex: limit,
                     pageIndex: pageIndex,
                     message: 'renderPreviewTileImage',
                     isTextNeed: isTextNeed,
                     jsonObject: jsonObject,
                     isRenderText: isTextNeed,
-                    requestType: isTextNeed ? 'pdfTextSearchRequest' : ''
-                }, TaskPriorityLevel.Low);
+                    requestType: isTextNeed ? 'pdfTextSearchRequest' : '',
+                    imageSize: imageSize,
+                    initialLoad: initialLoad
+                }, TaskPriorityLevel.Medium);
             }
         }
     }
@@ -763,7 +1168,7 @@ export class PageOrganizer {
     public previewOnMessage(event: any): void {
         if (event.data.message === 'renderPreviewTileImage') {
             const canvas: HTMLCanvasElement = document.createElement('canvas');
-            const { value, width, height, pageIndex, startIndex, endIndex } = event.data;
+            const { value, width, height, pageIndex, startIndex, endIndex, imageSize } = event.data;
             canvas.width = width;
             canvas.height = height;
             const canvasContext: CanvasRenderingContext2D = canvas.getContext('2d');
@@ -777,7 +1182,8 @@ export class PageOrganizer {
                 startPage: startIndex,
                 endPage: endIndex,
                 uniqueId: this.pdfViewerBase.documentId,
-                pageIndex: pageIndex
+                pageIndex: pageIndex,
+                imageSize: imageSize
             });
             this.updatePreviewCollection(data);
         }
@@ -794,8 +1200,14 @@ export class PageOrganizer {
         if (!this.dataDetails) {
             this.dataDetails = [];
         }
+        if (data.imageSize !== this.previouslyRequestedImageZoom) {
+            return;
+        }
+        if (this.dataDetails.length === this.pdfViewer.pageCount) {
+            return;
+        }
         if (isClientRender) {
-            this.dataDetails.push({ pageId: data.pageIndex, image: data.thumbnailImage });
+            this.dataDetails.push({ pageId: data.pageIndex, image: data.thumbnailImage, imageSize: data.imageSize });
         }
         else {
             const startPage: number = data.startPage;
@@ -803,10 +1215,10 @@ export class PageOrganizer {
             for (let i: number = startPage; i < endPage; i++) {
                 const thumbnailImage: any = data.thumbnailImage[parseInt(i.toString(), 10)];
                 const pageId: number = i;
-                this.dataDetails.push({ pageId: pageId, image: thumbnailImage });
+                this.dataDetails.push({ pageId: pageId, image: thumbnailImage, imageSize: data.imageSize });
             }
-            this.dataDetails.sort((a: { pageId: number }, b: { pageId: number }) => a.pageId - b.pageId);
         }
+        this.dataDetails.sort((a: { pageId: number }, b: { pageId: number }) => a.pageId - b.pageId);
         if (this.dataDetails.length === this.pdfViewer.pageCount) {
             if (!isNullOrUndefined(this.pdfViewerBase.navigationPane)) {
                 this.pdfViewerBase.navigationPane.enableOrganizeButton(true);
@@ -814,7 +1226,7 @@ export class PageOrganizer {
             if (!isNullOrUndefined(this.pdfViewer.toolbar)) {
                 this.pdfViewer.toolbar.enableToolbarItem(['OrganizePagesTool'], true);
             }
-            if (this.pdfViewer.isPageOrganizerOpen) {
+            if (this.isInitialLoading && this.pdfViewer.isPageOrganizerOpen) {
                 if (!Browser.isDevice || this.pdfViewer.enableDesktopMode) {
                     this.createOrganizeWindow();
                 }
@@ -822,7 +1234,37 @@ export class PageOrganizer {
                     this.createOrganizeWindowForMobile();
                 }
             }
+            if (this.isPageZoomChanged) {
+                if (this.isOrganizeWindowOpen || this.isOrganizeDialogRendered()) {
+                    this.restorePagesBeforeZoom();
+                    this.setThumbnailImage();
+                    this.restorePagesAfterZoom();
+                }
+                if (this.isOrganizeWindowOpen) {
+                    this.showOrganizeLoadingIndicator(false);
+                }
+                this.isPageZoomChanged = false;
+                this.currentImageZoom = this.getImageZoomValue();
+                if (this.previousImageZoom !== this.currentImageZoom) {
+                    this.pdfViewer.firePageOrganizerZoomChanged(this.previousImageZoom, this.currentImageZoom);
+                }
+            }
             this.isAllImagesReceived = true;
+            this.isInitialLoading = false;
+            this.lastRequestedPageIndex = 0;
+        }
+        else {
+            if (!this.pdfViewerBase.clientSideRendering) {
+                if (!this.isInitialLoading || (Browser.isDevice && !this.pdfViewer.enableDesktopMode)) {
+                    this.lastRequestedPageIndex = parseInt(data.endPage, 10);
+                    const isIE: boolean = !!(document as any).documentMode;
+                    if (!isIE) {
+                        Promise.all([this.createRequestForPreview()]);
+                    } else {
+                        this.createRequestForPreview();
+                    }
+                }
+            }
         }
     }
 
@@ -1054,6 +1496,7 @@ export class PageOrganizer {
                            documentName?: string): void {
         const base64Image: string = 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAAAXNSR0IArs4c6QAAAERlWElmTU0AKgAAAAgAAYdpAAQAAAABAAAAGgAAAAAAA6ABAAMAAAABAAEAAKACAAQAAAABAAAAAaADAAQAAAABAAAAAQAAAAD5Ip3+AAAAC0lEQVQIHWP4DwQACfsD/Qy7W+cAAAAASUVORK5CYII=';
         this.pageLink = createElement('div', { id: 'anchor_page_' + pageIndex, className: 'e-pv-organize-anchor-node' }) as HTMLElement;
+        const imageZoomFactor: number = this.getImageZoomFactor(this.pageLink.cloneNode(true) as HTMLDivElement);
         if (isNewPage) {
             this.pageLink.id = this.pageLink.id + '_' + subIndex;
             this.pageLink.setAttribute('data-page-order', pageOrder.toString());
@@ -1061,6 +1504,8 @@ export class PageOrganizer {
         else {
             this.pageLink.setAttribute('data-page-order', pageIndex.toString());
         }
+        this.pageLink.style.width = 140 * imageZoomFactor + 'px';
+        this.pageLink.style.height = 140 * imageZoomFactor + 'px';
         this.thumbnail = createElement('div', { id: this.pdfViewer.element.id + '_organize_page_' + pageIndex, className: 'e-pv-organize-tile e-pv-thumbnail-column' });
         if (isNewPage) {
             this.thumbnail.id = this.thumbnail.id + '_' + subIndex;
@@ -1492,6 +1937,11 @@ export class PageOrganizer {
             (this.tileAreaDiv.getBoundingClientRect().bottom - edgeSize);
         edgeTop = parseFloat(Math.max(edgeTop, toolbarBottom).toFixed(2));
         edgeBottom = Math.min(edgeBottom, footerTop);
+        if (this.virtualEle.getBoundingClientRect().height >= this.tileAreaDiv.getBoundingClientRect().height) {
+            clearTimeout(this.autoScrollInterval);
+            proxy.autoScrollInterval = null;
+            return;
+        }
         const isInTopEdge: boolean = (parseFloat(this.virtualEle.getBoundingClientRect().top.toFixed(2)) <= edgeTop);
         const isInBottomEdge: boolean = (this.virtualEle.getBoundingClientRect().bottom >= edgeBottom);
         // If the mouse is not in the viewport edge, there's no need to calculate anything else.
@@ -1627,6 +2077,10 @@ export class PageOrganizer {
                                 } else {
                                     (childelement as HTMLElement).style.display = 'flex';
                                 }
+                                const targetClassList: DOMTokenList = childelement.classList;
+                                if (targetClassList.contains('e-pv-insert-left-button') || targetClassList.contains('e-pv-insert-right-button')) {
+                                    (childelement as HTMLElement).style.top = '-' + (parseFloat(this.pageLink.style.height.replace('px', '')) / 2) + 'px';
+                                }
                             }
                         }
                     }
@@ -1701,6 +2155,41 @@ export class PageOrganizer {
                 this.enableToolbarItem(item.id, (this.redoOrganizeCollection.length > 0));
             }
         });
+    }
+
+    private handlePageZoomButtonsVisibility(currentZoomValue: number): void {
+        if (currentZoomValue === this.getImageZoomMin()) {
+            this.enablePageZoomButtons(false, false);
+            this.enablePageZoomButtons(true, true);
+        }
+        else if (currentZoomValue === this.getImageZoomMax()) {
+            this.enablePageZoomButtons(false, true);
+            this.enablePageZoomButtons(true, false);
+        }
+        else {
+            this.enablePageZoomButtons(true, true);
+            this.enablePageZoomButtons(true, false);
+        }
+    }
+
+    private enablePageZoomButtons(isEnable: boolean, isIncrease: boolean): void {
+        let buttonToModify: HTMLButtonElement;
+        if (isIncrease) {
+            buttonToModify = this.pageZoomIncreaseButton;
+        }
+        else {
+            buttonToModify = this.pageZoomDecreaseButton;
+        }
+        if (!isNullOrUndefined(buttonToModify)) {
+            if (isEnable) {
+                buttonToModify.removeAttribute('disabled');
+                buttonToModify.firstElementChild.classList.remove('e-disabled');
+            }
+            else {
+                buttonToModify.setAttribute('disabled', 'disabled');
+                buttonToModify.firstElementChild.classList.add('e-disabled');
+            }
+        }
     }
 
     private enableDisableToolbarItems(): void {
@@ -2342,12 +2831,31 @@ export class PageOrganizer {
         return maxSubIndex + 1;
     }
 
-    /**
-     * @private
-     * @returns {void}
-     */
-    public undo = (): void => {
-        const undoActionObject: IActionOrganizeElements = this.undoOrganizeCollection.pop();
+    private restorePagesBeforeZoom = (): void => {
+        const undoCollectionLength: number = this.undoOrganizeCollection.length;
+        if (undoCollectionLength > 0) {
+            /* eslint-disable security/detect-object-injection */
+            for (let index: number = undoCollectionLength - 1; index >= 0; index--) {
+                const undoActionObject: IActionOrganizeElements = this.undoOrganizeCollection[index];
+                this.undoActionHandler(undoActionObject);
+            }
+            /* eslint-enable security/detect-object-injection */
+        }
+    }
+
+    private restorePagesAfterZoom = (): void => {
+        const undoCollectionLength: number = this.undoOrganizeCollection.length;
+        if (undoCollectionLength > 0) {
+            /* eslint-disable security/detect-object-injection */
+            for (let index: number = 0; index < undoCollectionLength; index++) {
+                const redoActionObject: IActionOrganizeElements = this.undoOrganizeCollection[index];
+                this.redoActionHandler(redoActionObject);
+            }
+            /* eslint-enable security/detect-object-injection */
+        }
+    }
+
+    private undoActionHandler = (undoActionObject: IActionOrganizeElements): void => {
         if (undoActionObject) {
             const actionObject: IActionOrganizeElements = JSON.parse(JSON.stringify(undoActionObject));
             switch (actionObject.action) {
@@ -2542,17 +3050,9 @@ export class PageOrganizer {
                 break;
             }
         }
-        this.redoOrganizeCollection.push(undoActionObject);
-        this.enableDisableToolbarItems();
-        this.updateUndoRedoButtons();
     }
 
-    /**
-     * @private
-     * @returns {void}
-     */
-    public redo = (): void => {
-        const redoActionObject: IActionOrganizeElements = this.redoOrganizeCollection.pop();
+    private redoActionHandler = (redoActionObject: IActionOrganizeElements): void => {
         if (redoActionObject) {
             const actionObject: IActionOrganizeElements = JSON.parse(JSON.stringify(redoActionObject));
             switch (actionObject.action) {
@@ -2602,6 +3102,7 @@ export class PageOrganizer {
                                          actionObject.UndoRedoTileActions[0].currentPageIndex, mainTileElement,
                                          true, true, false, true, actionObject.UndoRedoTileActions[0].documentName);
                     this.disableTileCopyRotateButton();
+                    this.updatePageDetail();
                 }
                 break;
             case 'Delete':
@@ -2650,6 +3151,27 @@ export class PageOrganizer {
                 break;
             }
         }
+    }
+
+    /**
+     * @private
+     * @returns {void}
+     */
+    public undo = (): void => {
+        const undoActionObject: IActionOrganizeElements = this.undoOrganizeCollection.pop();
+        this.undoActionHandler(undoActionObject);
+        this.redoOrganizeCollection.push(undoActionObject);
+        this.enableDisableToolbarItems();
+        this.updateUndoRedoButtons();
+    }
+
+    /**
+     * @private
+     * @returns {void}
+     */
+    public redo = (): void => {
+        const redoActionObject: IActionOrganizeElements = this.redoOrganizeCollection.pop();
+        this.redoActionHandler(redoActionObject);
         this.undoOrganizeCollection.push(redoActionObject);
         this.enableDisableToolbarItems();
         this.updateUndoRedoButtons();
@@ -3556,6 +4078,46 @@ export class PageOrganizer {
     }
 
     /**
+     * @private
+     * @param {number} newSize The size to which image zoom is to be updated
+     * @param {number} oldSize The present value of image zoom
+     * @returns {void}
+     */
+    public updateOrganizePageImageSize(newSize: number, oldSize?: number): void {
+        if (!isNullOrUndefined(oldSize)) {
+            if (oldSize === newSize) {
+                return;
+            }
+        }
+        if (this.pdfViewerBase.clientSideRendering) {
+            this.pdfViewerBase.pdfViewerRunner.removePreviewImageTasks(newSize);
+        }
+        this.lastRequestedPageIndex = 0;
+        this.dataDetails = [];
+        this.isPageZoomChanged = true;
+        if (!this.isOrganizeWindowOpen) {
+            if (!isNullOrUndefined(this.pdfViewerBase.navigationPane)) {
+                this.pdfViewerBase.navigationPane.enableOrganizeButton(false);
+            }
+            if (!isNullOrUndefined(this.toolbar)) {
+                this.pdfViewer.toolbar.enableToolbarItem(['OrganizePagesTool'], false);
+            }
+            if (this.isOrganizeDialogRendered()) {
+                this.modifyThumbnailContainer();
+            }
+        }
+        else {
+            this.showOrganizeLoadingIndicator(true);
+            this.modifyThumbnailContainer();
+            if (this.isPageZoomPopupOpen) {
+                this.updatePageZoomPopup();
+            }
+        }
+        this.isAllImagesReceived = false;
+        this.createRequestForPreview();
+    }
+
+    /**
      * Rotates the specified pages clockwise by 90 degrees.
      *
      * @param {number} pageNumbers - Array of page numbers to rotate.
@@ -3662,6 +4224,79 @@ export class PageOrganizer {
 
     /**
      * @private
+     * @param {PageOrganizerSettingsModel} newProp The new pageOrganizerSettings Property of PdfViewer from onPropertyChanged
+     * @returns {void}
+     */
+    public handleImageSizeBoundsChange(newProp: PageOrganizerSettingsModel): void {
+        if (!isNullOrUndefined(newProp.imageZoomMin)) {
+            this.pdfViewer.pageOrganizerSettings.imageZoomMin = newProp.imageZoomMin;
+        }
+        if (!isNullOrUndefined(newProp.imageZoomMax)) {
+            this.pdfViewer.pageOrganizerSettings.imageZoomMax = newProp.imageZoomMax;
+        }
+        if (!isNullOrUndefined(this.pageZoomSlider)) {
+            this.pageZoomSlider.min = this.getImageZoomMin();
+            this.pageZoomSlider.max = this.getImageZoomMax();
+        }
+    }
+
+    /**
+     * @private
+     * @param {boolean} showImageZoomingSlider The new showImageZoomingSlider property of PdfViewer.PageOrganizerSettings from onPropertyChanged
+     * @returns {void}
+     */
+    public handleImageResizerVisibility(showImageZoomingSlider: boolean): void {
+        if (!this.isOrganizeDialogRendered()) {
+            return;
+        }
+        if (isNullOrUndefined(showImageZoomingSlider) || !showImageZoomingSlider) {
+            const resizerIndex: number = this.toolbar.items.findIndex(
+                (item: ItemModel) => item.id === this.pdfViewer.element.id + '_page_zoom');
+            if (resizerIndex !== -1) {
+                if (Browser.isDevice && !this.pdfViewer.enableDesktopMode) {
+                    this.toolbar.hideItem(this.pdfViewerBase.getElement('_page_zoom').parentElement, true);
+                }
+                else {
+                    this.toolbar.removeItems(this.pdfViewerBase.getElement('_page_zoom').parentElement);
+                }
+                if (!isNullOrUndefined(this.pageZoomSlider)) {
+                    this.pageZoomSliderUnwireEvents();
+                    this.pageZoomSlider.destroy();
+                    this.pageZoomSlider = null;
+                }
+                if (!isNullOrUndefined(this.pageZoomDropDown)) {
+                    this.pageZoomUnWireEvents();
+                    this.pageZoomDropDown.destroy();
+                    this.pageZoomDropDown = null;
+                }
+                if (!isNullOrUndefined(this.pageZoomIncreaseButton)) {
+                    this.pageZoomIncreaseButton = null;
+                }
+                if (!isNullOrUndefined(this.pageZoomDecreaseButton)) {
+                    this.pageZoomDecreaseButton = null;
+                }
+                // Removes the margin left or margin right property of center group in page organizer toolbar
+                this.toolbar.element.children[0].children[1].removeAttribute('style');
+            }
+        }
+        else {
+            const pageZoomIndex: number = this.toolbar.items.findIndex(
+                (item: ItemModel) => item.id === this.pdfViewer.element.id + '_page_zoom');
+            if (pageZoomIndex === -1 || (Browser.isDevice && !this.pdfViewer.enableDesktopMode)) {
+                this.addPageZoomDropDown(false);
+                this.createPageZoomDropDown();
+            }
+        }
+        if (this.isOrganizeWindowOpen) {
+            if ((Browser.isDevice && !this.pdfViewer.enableDesktopMode) && showImageZoomingSlider) {
+                this.toolbar.refreshOverflow();
+                this.handlePageZoomPopupMobile();
+            }
+        }
+    }
+
+    /**
+     * @private
      * @returns {void}
      */
     public switchPageOrganizer(): void {
@@ -3682,9 +4317,92 @@ export class PageOrganizer {
         return 'PageOrganizer';
     }
 
+    /**
+     * @param {HTMLDivElement} imageContainer Div element whose margin is to be calculated
+     * @private
+     * @returns {number} imageZoom factor according to screen size
+     */
+    private getImageZoomFactor(imageContainer: HTMLDivElement): number {
+        const minValue: number = this.getImageZoomMin();
+        if (!this.pdfViewer.enablePageOrganizer || isNullOrUndefined(this.pdfViewer.pageOrganizerSettings)) {
+            return minValue;
+        }
+        const size: number = this.getImageZoomValue();
+        if (isNullOrUndefined(size)) {
+            return minValue;
+        }
+        const maxValue: number = this.getImageZoomMax();
+        if (!Browser.isDevice || this.pdfViewer.enableDesktopMode) {
+            return this.getImageZoomValue();
+        }
+        else {
+            const viewportWidth: number = this.pdfViewer.element.clientWidth;
+            const imageContainerWidth: number = 140;
+            imageContainer.style.position = 'absolute';
+            document.body.appendChild(imageContainer);
+            const computedStyle: CSSStyleDeclaration = window.getComputedStyle(imageContainer);
+            const margin: number = parseFloat(computedStyle.marginLeft) + parseFloat(computedStyle.marginRight);
+            document.body.removeChild(imageContainer);
+            if ((imageContainerWidth * maxValue) <= (viewportWidth - margin)) {
+                return this.getImageZoomValue();
+            }
+            else {
+                const maxFactor: number = (viewportWidth - margin) / imageContainerWidth;
+                const factor: number = (maxFactor - minValue) / (maxValue - minValue);
+                if (size < minValue) {
+                    return minValue;
+                }
+                if (size > maxValue) {
+                    return (minValue + ((maxValue - minValue) * factor));
+                }
+                return (minValue + ((size - minValue) * factor));
+            }
+        }
+    }
+
+    /**
+     * @private
+     * @param {boolean} isImageRequest defines if the function is called for image request
+     * @param {number} size optional size can be sent to check valid page zoom value
+     * @returns {number} imageZoom value
+     */
+    public getImageZoomValue(isImageRequest?: boolean, size?: number): number {
+        const minValue: number = this.getImageZoomMin();
+        if (!this.pdfViewer.enablePageOrganizer || isNullOrUndefined(this.pdfViewer.pageOrganizerSettings)) {
+            return minValue;
+        }
+        if (isNullOrUndefined(size)) {
+            size = this.pdfViewer.pageOrganizerSettings.imageZoom;
+            if (isNullOrUndefined(size)) {
+                return minValue;
+            }
+        }
+        const maxValue: number = this.getImageZoomMax();
+        if (size < minValue) {
+            return minValue;
+        }
+        if (size > maxValue) {
+            return maxValue;
+        }
+        if (isImageRequest) {
+            return Math.round(size);
+        }
+        return size;
+    }
+
     private destroyDialogWindow(): void {
         this.removeEventListeners();
         this.isOrganizeWindowOpen = false;
+        if (!isNullOrUndefined(this.pageZoomSlider)) {
+            this.pageZoomSliderUnwireEvents();
+            this.pageZoomSlider.destroy();
+            this.pageZoomSlider = null;
+        }
+        if (!isNullOrUndefined(this.pageZoomDropDown)) {
+            this.pageZoomUnWireEvents();
+            this.pageZoomDropDown.destroy();
+            this.pageZoomDropDown = null;
+        }
         if (!isNullOrUndefined(this.organizeDialog)) {
             this.organizeUnWireEvent();
             this.organizeDialog.destroy();
@@ -3693,6 +4411,110 @@ export class PageOrganizer {
         const dialogElement: HTMLElement = this.pdfViewerBase.getElement('_organize_window');
         if (!isNullOrUndefined(dialogElement)) {
             dialogElement.parentElement.removeChild(dialogElement);
+        }
+        const pageZoomPopup: HTMLElement = this.pdfViewerBase.getElement('_page_zoom-popup');
+        if (!isNullOrUndefined(pageZoomPopup)) {
+            pageZoomPopup.parentElement.removeChild(pageZoomPopup);
+        }
+    }
+
+    private pageZoomWireEvents(): void {
+        if (!isNullOrUndefined(this.pageZoomDropDown)) {
+            this.boundPageZoomDropDownOpen = this.pageZoomDropDownOpen.bind(this);
+            this.boundPageZoomDropDownClose = this.pageZoomDropDownClose.bind(this);
+
+            this.pageZoomDropDown.open = this.boundPageZoomDropDownOpen;
+            this.pageZoomDropDown.close = this.boundPageZoomDropDownClose;
+        }
+        if (!isNullOrUndefined(this.pageZoomDecreaseButton)) {
+            this.boundDecreasePageZoom = this.decreasePageZoom.bind(this);
+            this.pageZoomDecreaseButton.addEventListener('click', this.boundDecreasePageZoom);
+        }
+        if (!isNullOrUndefined(this.pageZoomIncreaseButton)) {
+            this.boundIncreasePageZoom = this.increasePageZoom.bind(this);
+            this.pageZoomIncreaseButton.addEventListener('click', this.boundIncreasePageZoom);
+        }
+    }
+
+    private increasePageZoom(): void {
+        if (this.pageZoomSlider.value as number + this.pageZoomSliderStep <= this.getImageZoomMax()) {
+            this.handlePageZoomChange(
+                this.pageZoomSlider.value as number + this.pageZoomSliderStep, this.pageZoomSlider.value as number);
+        }
+        else {
+            if (this.pageZoomSlider.value as number !== this.getImageZoomMax()) {
+                this.handlePageZoomChange(this.getImageZoomMax(), this.pageZoomSlider.value as number);
+            }
+        }
+    }
+
+    private decreasePageZoom(): void {
+        if (this.pageZoomSlider.value as number - this.pageZoomSliderStep >= this.getImageZoomMin()) {
+            this.handlePageZoomChange(
+                this.pageZoomSlider.value as number - this.pageZoomSliderStep, this.pageZoomSlider.value as number);
+        }
+        else {
+            if (this.pageZoomSlider.value as number !== this.getImageZoomMin()) {
+                this.handlePageZoomChange(this.getImageZoomMin(), this.pageZoomSlider.value as number);
+            }
+        }
+    }
+
+    public handlePageZoomChange(currentValue: number, previousValue: number): void {
+        this.currentPageZoomSliderValue = currentValue;
+        this.pdfViewer.pageOrganizerSettings.imageZoom = currentValue;
+        this.updatePageZoomPopup();
+        if (this.previouslyRequestedImageZoom < Math.round(currentValue)) {
+            this.previouslyRequestedImageZoom = Math.round(currentValue);
+            this.updateOrganizePageImageSize(Math.round(currentValue));
+            this.previousImageZoom = previousValue;
+        }
+        else {
+            const organizeNodes: HTMLCollection = this.tileAreaDiv.children;
+            const imageSizeFactor: number = this.getImageZoomFactor(organizeNodes[0].cloneNode(true) as HTMLDivElement);
+            /* eslint-disable security/detect-object-injection */
+            for (let index: number = 0; index < organizeNodes.length; index++) {
+                const imageContainer: HTMLDivElement = organizeNodes[index] as HTMLDivElement;
+                imageContainer.style.width = 140 * imageSizeFactor + 'px';
+                imageContainer.style.height = 140 * imageSizeFactor + 'px';
+            }
+            /* eslint-enable security/detect-object-injection */
+            if (this.pdfViewerBase.getElement('_organizeLoadingIndicator').style.display !== 'block') {
+                this.currentImageZoom = currentValue;
+                this.previousImageZoom = previousValue;
+                if (this.currentImageZoom !== this.previousImageZoom) {
+                    this.pdfViewer.firePageOrganizerZoomChanged(this.previousImageZoom, this.currentImageZoom);
+                }
+            }
+        }
+        this.handlePageZoomButtonsVisibility(currentValue);
+    }
+
+    private pageZoomUnWireEvents(): void {
+        if (!isNullOrUndefined(this.pageZoomDropDown)) {
+            this.pageZoomDropDown.removeEventListener('open', this.boundPageZoomDropDownOpen);
+            this.pageZoomDropDown.removeEventListener('close', this.boundPageZoomDropDownClose);
+        }
+        if (!isNullOrUndefined(this.pageZoomDecreaseButton)) {
+            this.pageZoomDecreaseButton.removeEventListener('click', this.boundDecreasePageZoom);
+        }
+        if (!isNullOrUndefined(this.pageZoomIncreaseButton)) {
+            this.pageZoomIncreaseButton.removeEventListener('click', this.boundIncreasePageZoom);
+        }
+    }
+
+    private pageZoomSliderWireEvents(): void {
+        if (!isNullOrUndefined(this.pageZoomSlider)) {
+            this.boundPageZoomChange = this.pageZoomChange.bind(this);
+            this.pageZoomSlider.change = this.boundPageZoomChange;
+            this.pageZoomSlider.changed = this.boundPageZoomChange;
+        }
+    }
+
+    private pageZoomSliderUnwireEvents(): void {
+        if (!isNullOrUndefined(this.pageZoomSlider)) {
+            this.pageZoomSlider.removeEventListener('change', this.boundPageZoomChange);
+            this.pageZoomSlider.removeEventListener('changed', this.boundPageZoomChange);
         }
     }
 
@@ -3716,6 +4538,10 @@ export class PageOrganizer {
         this.pdfViewerBase.isImportDoc = false;
         this.mobileContextMenu = [];
         this.dataDetails = [];
+        this.isInitialLoading = true;
+        this.isPageZoomPopupOpen = false;
+        this.lastRequestedPageIndex = 0;
+        this.previouslyRequestedImageZoom = Math.round(this.currentPageZoomSliderValue);
     }
 
     /**

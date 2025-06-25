@@ -4088,6 +4088,15 @@
     }
   }
 
+  .e-float-text-content,
+  .e-float-text-content.e-icon {
+    @if $input-skin-name == 'material' or $input-skin-name == 'Material3' {
+      font-size: $outline-float-label-font-size;
+      color: $input-header-font-color;
+      background: $input-bg-color;
+    }
+  }
+
   .e-outline.e-float-input textarea:not(:focus):valid ~ label.e-float-text.e-label-bottom,
   .e-outline.e-float-input.e-control-wrapper textarea:not(:focus):valid ~ label.e-float-text.e-label-bottom,
   .e-outline label.e-float-text,

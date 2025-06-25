@@ -365,6 +365,22 @@ describe('Hide & Show ->', () => {
                 });
             });
         });
+        it('EJ2-960657 -> Checking hiding a row using a shortcut, performing undo, and then hiding a column using a shortcut->', (done: Function) => {
+            helper.invoke('selectRange', ['C1:C100']);
+            helper.triggerKeyNativeEvent(57, true);
+            setTimeout(() => {
+                expect(helper.getInstance().sheets[0].rows[2].hidden).toBeTruthy();
+                helper.click('#spreadsheet_undo');
+                setTimeout(() => {
+                    expect(helper.getInstance().sheets[0].rows[2].hidden).toBeFalsy();
+                    helper.triggerKeyNativeEvent(48, true);
+                    setTimeout(() => {
+                        expect(helper.getInstance().sheets[0].columns[2].hidden).toBeTruthy();
+                        done();
+                    }, 20);
+                });
+            });
+        });
     });
 
     describe('CR-Issues->', () => {

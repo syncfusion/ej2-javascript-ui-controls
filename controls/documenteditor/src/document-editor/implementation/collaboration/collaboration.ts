@@ -1,5 +1,5 @@
 /* eslint-disable */
-import { DocumentEditor, Selection, TextPosition, Point, Page, CaretHeightInfo, ParagraphInfo, HelperMethods, Operation, ParagraphWidget, BlockWidget, TableWidget, TableRowWidget, TableCellWidget, ImageInfo, AbsolutePositionInfo, AbsoluteParagraphInfo, CONTROL_CHARACTERS, SectionBreakType, ElementBox, BookmarkElementBox, LineWidget, ListTextElementBox, ShapeElementBox, FootnoteElementBox, EditRangeStartElementBox, CommentElementBox, CommentCharacterElementBox, CommentView, MarkerInfo, FieldElementBox, FormField, FormFieldType, WCharacterFormat, ElementInfo, ImageElementBox, WParagraphFormat, WParagraphStyle, WCharacterStyle, WTableFormat, WRowFormat, WCellFormat, AutoFitType, WSectionFormat, HeaderFooterWidget, HeaderFooterType, Revision, WList, WAbstractList, listIdProperty, WStyle, WStyles, abstractListsProperty, listsProperty, abstractListIdProperty, nsidProperty, ProtectionType, ContentControlProperties, ContentControlWidgetType, ContentControl, ServiceFailureArgs } from '../../index'
+import { DocumentEditor, Selection, TextPosition, Point, Page, CaretHeightInfo, ParagraphInfo, HelperMethods, Operation, ParagraphWidget, BlockWidget, TableWidget, TableRowWidget, TableCellWidget, ImageInfo, AbsolutePositionInfo, AbsoluteParagraphInfo, CONTROL_CHARACTERS, SectionBreakType, ElementBox, BookmarkElementBox, LineWidget, ListTextElementBox, ShapeElementBox, FootnoteElementBox, EditRangeStartElementBox, CommentElementBox, CommentCharacterElementBox, CommentView, MarkerInfo, FieldElementBox, FormField, FormFieldType, WCharacterFormat, ElementInfo, ImageElementBox, WParagraphFormat, WParagraphStyle, WCharacterStyle, WTableFormat, WRowFormat, WCellFormat, AutoFitType, WSectionFormat, HeaderFooterWidget, HeaderFooterType, Revision, WList, WAbstractList, listIdProperty, WStyle, WStyles, abstractListsProperty, listsProperty, abstractListIdProperty, nsidProperty, ProtectionType, ContentControlProperties, ContentControlWidgetType, ContentControl, GroupShapeElementBox, ServiceFailureArgs } from '../../index'
 import { isNullOrUndefined } from '@syncfusion/ej2-base';
 import { createElement } from '@syncfusion/ej2-base'
 
@@ -284,13 +284,10 @@ export class CollaborativeEditingHandler {
         for (let i: number = 0; i < revisions.length; i++) {
             let revision: Revision = revisions[i];
             if (revision.author === operation.markerData.author && revision.revisionType === operation.markerData.revisionType) {
-                const currentRevision: Revision = this.documentEditor.editorModule.getRevision(revision.revisionID);
-                if (currentRevision) {
-                    if (operation.markerData.isAcceptOrReject === 'Accept') {
-                        revision.accept();
-                    } else if (operation.markerData.isAcceptOrReject === 'Reject') {
-                        revision.reject();
-                    }
+                if (operation.markerData.isAcceptOrReject === 'Accept') {
+                    revision.handleAcceptReject(true);
+                } else if (operation.markerData.isAcceptOrReject === 'Reject') {
+                    revision.handleAcceptReject(false);
                 }
             }
         }
@@ -353,56 +350,32 @@ export class CollaborativeEditingHandler {
             }
             if (op2.action === 'Insert' && (op2.text !== CONTROL_CHARACTERS.Row && op2.text !== CONTROL_CHARACTERS.Cell) && (isNullOrUndefined(op2.markerData) || isNullOrUndefined(op2.markerData.isAcceptOrReject))) {
                 this.documentEditor.selectionModule.select(startOffset, endOffset);
-            } else if (op2.action === 'Delete' && op2.text !== CONTROL_CHARACTERS.Cell && (isNullOrUndefined(op2.markerData) || isNullOrUndefined(op2.markerData.isAcceptOrReject))) {
+            } else if (op2.action === 'Delete' && op2.text !== CONTROL_CHARACTERS.Cell) {
                 this.documentEditor.selectionModule.select(startOffset, endOffset);
             } else if (op2.action === 'Format' && (isNullOrUndefined(op2.markerData) || isNullOrUndefined(op2.markerData.isAcceptOrReject))) {
                 this.documentEditor.selectionModule.select(startOffset, endOffset);
             }
             if (!isNullOrUndefined(op2.markerData)) {
-                if (!isNullOrUndefined(op2.markerData.revisionForFootnoteEndnoteContent) || !isNullOrUndefined(op2.markerData.revisionId)) {
+                if (!isNullOrUndefined(op2.markerData.revisionType)) {
                     this.documentEditor.editorModule.revisionData = [];
-                }
-                if (!isNullOrUndefined(op2.markerData.revisionForFootnoteEndnoteContent)) {
-                    this.documentEditor.editorModule.revisionData.push(op2.markerData.revisionForFootnoteEndnoteContent);
-                }
-                if (!isNullOrUndefined(op2.markerData.revisionId)) {
                     this.documentEditor.editorModule.revisionData.push(op2.markerData);
                 }
-                if (!isNullOrUndefined(op2.markerData.splittedRevisions) && op2.markerData.splittedRevisions.length > 0) {
-                    this.documentEditor.editorModule.revisionData = [...this.documentEditor.editorModule.revisionData, ...op2.markerData.splittedRevisions];
-                }
             }
-            if (!isNullOrUndefined(op2.markerData) && !isNullOrUndefined(op2.markerData.isAcceptOrReject) && op2.markerData.isAcceptOrReject !== '') {
-                let revision: Revision = this.documentEditor.editorModule.getRevision(op2.markerData.revisionId);
-                if (revision) {
-                    if (op2.markerData.isAcceptOrReject === 'Accept') {
-                        revision.accept();
-                    } else if (op2.markerData.isAcceptOrReject === 'Reject') {
-                        revision.reject();
+            if (op2.action === 'Format' && !isNullOrUndefined(op2.markerData) && !isNullOrUndefined(op2.markerData.isAcceptOrReject) && op2.markerData.isAcceptOrReject !== '') {
+                if (op2.text === CONTROL_CHARACTERS.Row) {
+                    let data: AbsoluteParagraphInfo = this.getRelativePositionFromAbsolutePosition(op2.offset, false, true, false);
+                    if (data && data.rowWidget) {
+
+                        this.handleAcceptReject(data.rowWidget.rowFormat.getAllRevision(), op2);
                     }
+                    continue;
                 } else {
-                    if (op2.text === CONTROL_CHARACTERS.Row) {
-                        let data: AbsoluteParagraphInfo = this.getRelativePositionFromAbsolutePosition(op2.offset, false, true, false);
-                        if (data && data.rowWidget) {
-                            this.handleAcceptReject(data.rowWidget.rowFormat.revisions, op2);
-                        }
-                    } else {
-                        this.documentEditor.selectionModule.select(startOffset, endOffset);
-                        let item: WCharacterFormat | ElementBox;
-                        if (this.documentEditor.selection.start.isAtParagraphEnd) {
-                            item = this.documentEditor.selection.start.currentWidget.paragraph.characterFormat;
-                        } else {
-                            const elementInfo: ElementInfo = this.documentEditor.selectionModule.start.currentWidget.getInline(this.documentEditor.selectionModule.start.offset + 1, 0);
-                            item = elementInfo.element;
-                        }
-                        if (!isNullOrUndefined(item)) {
-                            this.handleAcceptReject(item.revisions, op2);
-                        }
-                    }
+                    this.documentEditor.selectionModule.select(startOffset, endOffset);
+                    const revisions: Revision[] = this.documentEditor.selection.getselectedRevisionElements();
+                    this.handleAcceptReject(revisions, op2);
                 }
-                continue;
-            }
-            if (op2.action === 'Insert') {
+                // }
+            } else if (op2.action === 'Insert') {
                 if (op2.type === 'Paste') {
                     this.documentEditor.editorModule.isPasteListUpdated = false;
                     this.documentEditor.editorModule.pasteContents(HelperMethods.getSfdtDocument(op2.pasteContent));
@@ -615,7 +588,13 @@ export class CollaborativeEditingHandler {
                 } else if (op2.text === CONTROL_CHARACTERS.Cell) {
                     this.buildDeleteCells(op2);
                 } else {
+                    if (!isNullOrUndefined(op2.markerData) && !isNullOrUndefined(op2.markerData.isAcceptOrReject) && op2.markerData.isAcceptOrReject !== '') {
+                        if (op2.markerData.isAcceptOrReject === 'Accept' || op2.markerData.isAcceptOrReject === 'Reject') {
+                            this.documentEditor.editorModule.collabTrackAction = true;
+                        }
+                    }
                     this.documentEditor.editorModule.onBackSpace();
+                    this.documentEditor.editorModule.collabTrackAction = false;
                 }
                 //}
             } else if (op2.action === 'Format') {
@@ -631,21 +610,17 @@ export class CollaborativeEditingHandler {
                     if (contentcontrol && contentcontrol.contentControlProperties.type === 'CheckBox') {
                         this.documentEditor.editorModule.toggleContentControlCheckBox(contentcontrol, markerData.checkBoxValue);
                     }
-                } else if (!isNullOrUndefined(op2.markerData) && !isNullOrUndefined(op2.markerData.revisionId)) {
-                    if (!isNullOrUndefined(op2.markerData.revisionType)) {
-                        if (op2.markerData.revisionType === 'Deletion') {
-                            if (op2.text === CONTROL_CHARACTERS.Row) {
-                                let data: AbsoluteParagraphInfo = this.getRelativePositionFromAbsolutePosition(op2.offset, false, true, false);
-                                if (!isNullOrUndefined(data.rowWidget)) {
-                                    let row: TableRowWidget = data.rowWidget;
-                                    this.documentEditor.editorModule.trackRowDeletion(row);
-                                    this.documentEditor.trackChangesPane.updateTrackChanges();
-                                    continue;
-                                }
-                            }
-                            this.documentEditor.editorModule.onBackSpace();
+                } else if (!isNullOrUndefined(op2.markerData) && !isNullOrUndefined(op2.markerData.revisionType) && (op2.markerData.revisionType === 'Deletion')) {
+                    if (op2.text === CONTROL_CHARACTERS.Row) {
+                        let data: AbsoluteParagraphInfo = this.getRelativePositionFromAbsolutePosition(op2.offset, false, true, false);
+                        if (!isNullOrUndefined(data.rowWidget)) {
+                            let row: TableRowWidget = data.rowWidget;
+                            this.documentEditor.editorModule.trackRowDeletion(row);
+                            this.documentEditor.trackChangesPane.updateTrackChanges();
+                            continue;
                         }
                     }
+                    this.documentEditor.editorModule.onBackSpace();
                 } else if (op2.text === CONTROL_CHARACTERS.Row) {
                     let data: AbsoluteParagraphInfo = this.getRelativePositionFromAbsolutePosition(op2.offset, false, true, false);
                     if (!isNullOrUndefined(data.rowWidget)) {
@@ -1194,16 +1169,38 @@ export class CollaborativeEditingHandler {
                         continue;
                     }
                     if ((element instanceof ShapeElementBox && !isNullOrUndefined(element.textFrame) && element.textFrame.childWidgets.length > 0)
-                        || element instanceof FootnoteElementBox) {
+                        || element instanceof FootnoteElementBox || element instanceof GroupShapeElementBox) {
                         let absoluteData: AbsoluteParagraphInfo;
                         if (element instanceof ShapeElementBox) {
                             let currentLengthValue: number = currentLength + childBlockLength + length + paragraphStartLength;
-                            for (let i: number = 0; i < element.textFrame.childWidgets.length; i++) {
-                                absoluteData = this.getBlockPosition(offset, currentLengthValue, element.textFrame.childWidgets[i] as BlockWidget, completed, isTableInserted, isRowInserted, isCellInserted);
+                            for (let k: number = 0; k < element.textFrame.childWidgets.length; k++) {
+                                absoluteData = this.getBlockPosition(offset, currentLengthValue, element.textFrame.childWidgets[k] as BlockWidget, completed, isTableInserted, isRowInserted, isCellInserted);
+                                if (absoluteData.offset === offset - 1) {
+                                    return absoluteData;
+                                }
                                 currentLengthValue = absoluteData.currentLength;
                                 offset = absoluteData.offset;
                             }
+                        } else if (element instanceof GroupShapeElementBox) {
+                            let currentLengthValue: number = currentLength + childBlockLength + length + paragraphStartLength;
+                            for (let k: number = 0; k < element.childWidgets.length; k++) {
+                                if (element.childWidgets[k] instanceof ShapeElementBox) {
+                                    for (let l: number = 0; l < element.childWidgets[k].textFrame.childWidgets.length; l++) {
+                                        absoluteData = this.getBlockPosition(offset, currentLengthValue, element.childWidgets[k].textFrame.childWidgets[l] as BlockWidget, completed, isTableInserted, isRowInserted, isCellInserted);
+                                        if (absoluteData.offset === offset - 1) {
+                                            return absoluteData;
+                                        }
+                                        currentLengthValue = absoluteData.currentLength;
+                                        offset = absoluteData.offset;
+                                    }
+                                }
+                            }
                         } else {
+                            //When accepting the footnote revision. it should select only the footnote leement revision. if not then selection will move inlise the footnote paragraph.
+                            if (currentLength + childBlockLength + length + element.length + paragraphStartLength >= offset) {
+                                completed.done = true;
+                                return { 'offset': offset - 1, 'currentLength': currentLength + childBlockLength, 'paragraph': block };
+                            }
                             let currentLengthValue: number = currentLength + childBlockLength + length + paragraphStartLength;
                             for (let m: number = 0; m < element.bodyWidget.childWidgets.length && !completed.done; m++) {
                                 absoluteData = this.getBlockPosition(offset, currentLengthValue, element.bodyWidget.childWidgets[m] as BlockWidget, completed, isTableInserted, isRowInserted, isCellInserted);
@@ -1366,8 +1363,8 @@ export class CollaborativeEditingHandler {
         if (!isNullOrUndefined(operations[0].markerData)) {
             if (isNullOrUndefined(operations[0].format)) {
                 let row: TableRowWidget = data.rowWidget as TableRowWidget;
-                if (row.rowFormat.revisions.length > 0) {
-                    let revision: Revision = row.rowFormat.revisions[0];
+                if (row.rowFormat.revisionLength > 0) {
+                    let revision: Revision = row.rowFormat.getRevision(0);
                     revision.accept();
                     return;
                 }

@@ -341,7 +341,7 @@ describe('RTE SELECTION BASED - fontSize - ', () => {
             });
             rteEle = rteObj.element;
         });
-        it('Keyboard shortcuts of "decrease-fontsize": "ctrl+shift+<", "increase-fontsize": "ctrl+shift+>", are not working properly', () => {
+        it('Keyboard shortcuts of "decrease-fontsize": "ctrl+shift+<", "increase-fontsize": "ctrl+shift+>", are not working properly', (done) => {
             rteObj.focusIn();
             let node: HTMLElement = (rteObj as any).inputElement.querySelector("p");
                 setCursorPoint(node, 0);
@@ -368,28 +368,33 @@ describe('RTE SELECTION BASED - fontSize - ', () => {
                     keyCode: 188,
                     which: 188
                 } as EventInit);
-                rteObj.contentModule.getEditPanel().dispatchEvent(fontSizeIncreasekeyEvent);
-                expect((node.childNodes[0] as HTMLElement).style.fontSize === "8pt").toBe(true);
-                rteObj.contentModule.getEditPanel().dispatchEvent(fontSizeDecreasekeyEvent);
-                expect((node.childNodes[0] as HTMLElement).style.fontSize === "").toBe(true);
-                rteObj.contentModule.getEditPanel().dispatchEvent(fontSizeDecreasekeyEvent);
-                expect((node.childNodes[0] as HTMLElement).style.fontSize === "").toBe(true);
-                rteObj.contentModule.getEditPanel().dispatchEvent(fontSizeDecreasekeyEvent);
-                expect((node.childNodes[0] as HTMLElement).style.fontSize === "").toBe(true);
-                rteObj.contentModule.getEditPanel().dispatchEvent(fontSizeIncreasekeyEvent);
-                rteObj.contentModule.getEditPanel().dispatchEvent(fontSizeIncreasekeyEvent);
-                rteObj.contentModule.getEditPanel().dispatchEvent(fontSizeIncreasekeyEvent);
-                rteObj.contentModule.getEditPanel().dispatchEvent(fontSizeIncreasekeyEvent);
-                rteObj.contentModule.getEditPanel().dispatchEvent(fontSizeIncreasekeyEvent);
-                rteObj.contentModule.getEditPanel().dispatchEvent(fontSizeIncreasekeyEvent);
-                expect((node.childNodes[0] as HTMLElement).style.fontSize === "24pt").toBe(true);
-                rteObj.contentModule.getEditPanel().dispatchEvent(fontSizeIncreasekeyEvent);
-                expect((node.childNodes[0] as HTMLElement).style.fontSize === "36pt").toBe(true);
-                rteObj.contentModule.getEditPanel().dispatchEvent(fontSizeIncreasekeyEvent);
-                expect((node.childNodes[0] as HTMLElement).style.fontSize === "40pt").toBe(true);
-                rteObj.contentModule.getEditPanel().dispatchEvent(fontSizeDecreasekeyEvent);
-                rteObj.contentModule.getEditPanel().dispatchEvent(fontSizeDecreasekeyEvent);
-                expect((node.childNodes[0] as HTMLElement).style.fontSize === "24pt").toBe(true);
+                function sendKeyAndAssert(event:KeyboardEvent, expectedFontSize : string, next : any) {
+                    rteObj.contentModule.getEditPanel().dispatchEvent(event);
+                    setTimeout(function () {
+                        expect((node.childNodes[0]as HTMLElement).style .fontSize).toBe(expectedFontSize);
+                        next && next();
+                    }, 150); // 150ms to ensure debounce + processing
+                }
+                // Sequence test steps according to your test logic
+                sendKeyAndAssert(fontSizeIncreasekeyEvent, "8pt", function () {
+                sendKeyAndAssert(fontSizeDecreasekeyEvent, "", function () {
+                sendKeyAndAssert(fontSizeDecreasekeyEvent, "", function () {
+                sendKeyAndAssert(fontSizeDecreasekeyEvent, "", function () {
+                // Now several increases
+                sendKeyAndAssert(fontSizeIncreasekeyEvent, "8pt", function () {
+                sendKeyAndAssert(fontSizeIncreasekeyEvent, "10pt", function () {
+                sendKeyAndAssert(fontSizeIncreasekeyEvent, "12pt", function () {
+                sendKeyAndAssert(fontSizeIncreasekeyEvent, "14pt", function () {
+                sendKeyAndAssert(fontSizeIncreasekeyEvent, "18pt", function () {
+                sendKeyAndAssert(fontSizeIncreasekeyEvent, "24pt", function () {
+                sendKeyAndAssert(fontSizeIncreasekeyEvent, "36pt", function () {
+                sendKeyAndAssert(fontSizeIncreasekeyEvent, "40pt", function () {
+                // Now decrease twice
+                sendKeyAndAssert(fontSizeDecreasekeyEvent, "36pt", function () {
+                sendKeyAndAssert(fontSizeDecreasekeyEvent, "24pt", function () {
+                    done();
+                });
+                }); }); }); }); }); }); }); }); }); }); }); }); });
         });
         afterAll(() => {
             destroy(rteObj);

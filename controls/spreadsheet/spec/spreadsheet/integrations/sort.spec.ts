@@ -1,7 +1,7 @@
 import { SpreadsheetModel, Spreadsheet, locale } from '../../../src/spreadsheet/index';
 import { SpreadsheetHelper } from '../util/spreadsheethelper.spec';
 import { defaultData, virtualData, dataSource } from '../util/datasource.spec';
-import { CellModel, SortEventArgs, SortDescriptor, getCell, DialogBeforeOpenEventArgs, SheetModel, setCell, BeforeSortEventArgs } from '../../../src/index';
+import { CellModel, SortEventArgs, SortDescriptor, getCell, DialogBeforeOpenEventArgs, SheetModel, setCell, BeforeSortEventArgs, HyperlinkModel } from '../../../src/index';
 import { L10n } from '@syncfusion/ej2-base';
 
 /**
@@ -1205,6 +1205,44 @@ describe('Spreadsheet sorting module ->', () => {
             }, 20);
         });
     });
+
+    describe('EJ2-874111 Bug ->', () => {
+        beforeAll((done: Function) => {
+            helper.initializeSpreadsheet({
+                sheets: [{
+                    ranges: [{ dataSource: defaultData }]
+                }]
+            }, done);
+        });
+        afterAll(() => {
+            helper.invoke('destroy');
+        });
+        it('Sorting not working properly for hyperlinks inserted cells', (done: Function) => {
+            const spreadsheet: Spreadsheet = helper.getInstance();
+            helper.invoke('selectRange', ['I1:I1']);
+            helper.invoke('addHyperlink', [{ address: 'www.google.com' }, 'I1']);
+            helper.invoke('selectRange', ['I2:I2']);
+            helper.invoke('addHyperlink', [{ address: 'www.amazon.com' }, 'I2']);
+            helper.invoke('selectRange', ['I3:I3']);
+            helper.invoke('addHyperlink', [{ address: 'www.ebay.com' }, 'I3']);
+            helper.invoke('selectRange', ['I4:I4']);
+            helper.invoke('addHyperlink', [{ address: 'www.flipkart.com' }, 'I4']);
+            helper.invoke('selectRange', ['I5:I5']);
+            helper.invoke('addHyperlink', [{ address: 'www.hotmail.com' }, 'I5']);
+            helper.getInstance().dataBind();
+            helper.invoke('selectRange', ['I1:I200']);
+            helper.click('#' + helper.id + '_sorting');
+            helper.click('.e-sort-filter-ddb ul li:nth-child(1)');
+            setTimeout(() => {
+                expect((spreadsheet.sheets[0].rows[0].cells[8].hyperlink as HyperlinkModel).address).toEqual('http://www.amazon.com');
+                expect((spreadsheet.sheets[0].rows[1].cells[8].hyperlink as HyperlinkModel).address).toEqual('http://www.ebay.com');
+                expect((spreadsheet.sheets[0].rows[2].cells[8].hyperlink as HyperlinkModel).address).toEqual('http://www.flipkart.com');
+                expect((spreadsheet.sheets[0].rows[3].cells[8].hyperlink as HyperlinkModel).address).toEqual('http://www.google.com');
+                expect((spreadsheet.sheets[0].rows[4].cells[8].hyperlink as HyperlinkModel).address).toEqual('http://www.hotmail.com');
+                done();
+            }, 5);
+        });
+    });    
     
     describe('Filtering - Date formate', () => {
         const datasource: Function = (count: number) => {
@@ -1606,7 +1644,7 @@ describe('Spreadsheet sorting module ->', () => {
 
     describe('EJ2-931228 -> Header row without style treated as content during sort action', () => {
         beforeAll((done: Function) => {
-            helper.initializeSpreadsheet({ sheets: [{ ranges: [{ dataSource: defaultData }] }] }, done);
+            helper.initializeSpreadsheet({ sheets: [{ ranges: [{ dataSource: defaultData }] }, { ranges: [{ dataSource: defaultData }] }] }, done);
         });
         afterAll(() => {
             helper.invoke('destroy');
@@ -1643,6 +1681,32 @@ describe('Spreadsheet sorting module ->', () => {
                 });
             });
         });
+
+        it('EJ2-905388 - Sheet-referenced cell values not maintained properly after sorting', (done: Function) => {
+            const spreadsheet: any = helper.getInstance();
+            helper.invoke('unprotectSheet', ['Sheet1']);
+            helper.edit('F12', '=SUM(\'Sheet1\'!G2:G11)');
+            helper.edit('F13', '=SUM(G2:G11)');
+            helper.edit('F14', '=SUM(\'Sheet2\'!G2:G11)');
+            expect(spreadsheet.sheets[0].rows[11].cells[5].value).toBe(77);
+            expect(spreadsheet.sheets[0].rows[12].cells[5].value).toBe(77);
+            expect(spreadsheet.sheets[0].rows[13].cells[5].value).toBe(0);
+            expect(spreadsheet.sheets[0].rows[11].cells[5].formula).toBe('=SUM(\'Sheet1\'!G2:G11)');
+            expect(spreadsheet.sheets[0].rows[12].cells[5].formula).toBe('=SUM(G2:G11)');
+            expect(spreadsheet.sheets[0].rows[13].cells[5].formula).toBe('=SUM(\'Sheet2\'!G2:G11)');
+            helper.invoke('sort', [{ sortDescriptors: { order: 'Ascending' } }]).then((args: SortEventArgs) => {
+                expect(spreadsheet.sheets[0].rows[11].cells[5].value).toBe(600);
+                expect(spreadsheet.sheets[0].rows[12].cells[5].value).toBe(800);
+                expect(spreadsheet.sheets[0].rows[13].cells[5].value).toBe(1210)
+                expect(spreadsheet.sheets[0].rows[1].cells[5].formula).toBe('=SUM(\'Sheet2\'!G2:G11)');
+                expect(spreadsheet.sheets[0].rows[2].cells[5].formula).toBe('=SUM(\'Sheet1\'!G2:G11)');
+                expect(spreadsheet.sheets[0].rows[3].cells[5].formula).toBe('=SUM(G2:G2)');
+                expect(spreadsheet.sheets[0].rows[1].cells[5].value).toBe(77);
+                expect(spreadsheet.sheets[0].rows[2].cells[5].value).toBe(47);
+                expect(spreadsheet.sheets[0].rows[3].cells[5].value).toBe(0);
+                done();
+            });
+        });
     });
 
     describe('EJ2-936817->', () => {
@@ -1671,6 +1735,42 @@ describe('Spreadsheet sorting module ->', () => {
                 expect(spreadsheet.sheets[spreadsheet.activeSheetIndex].rows[4].cells[0].value.toString()).toBe('0.0001');
                 done();
             });
+        });
+    });
+
+    describe('AllowSorting: false condition checks', () => {
+        beforeAll((done: Function) => {
+            helper.initializeSpreadsheet({
+                sheets: [
+                    {
+                        ranges: [{ dataSource: defaultData }]
+                    }
+                ], allowSorting: false
+            }, done);
+        });
+        afterAll(() => {
+            helper.invoke('destroy');
+        });
+        it('Check through Ribbon UI interaction', (done: Function) => {
+            helper.setAnimationToNone('#' + helper.id + '_sorting');
+            helper.click('#' + helper.id + '_sorting');
+            const ascSort = document.querySelector('.e-sort-filter-ddb ul li:nth-child(1)') as HTMLElement;
+            expect(ascSort.classList.contains('e-disabled')).toBe(true);
+            const descSort = document.querySelector('.e-sort-filter-ddb ul li:nth-child(2)') as HTMLElement;
+            expect(descSort.classList.contains('e-disabled')).toBe(true);
+            const customSort = document.querySelector('.e-sort-filter-ddb ul li:nth-child(3)') as HTMLElement;
+            expect(customSort.classList.contains('e-disabled')).toBe(true);
+            done();
+        });
+        it('Check through contextMenu UI interaction', (done: Function) => {
+            helper.invoke('selectRange', ['A2']);
+            const td: HTMLTableCellElement = helper.invoke('getCell', [1, 0]);
+            const coords: DOMRect = <DOMRect>td.getBoundingClientRect();
+            helper.setAnimationToNone('#' + helper.id + '_contextmenu');
+            helper.triggerMouseAction('contextmenu', { x: coords.x, y: coords.y }, null, td);
+            const sortMenuElement = document.getElementById('spreadsheet_cmenu_sort');
+            expect(sortMenuElement).toBeNull();
+            done();
         });
     });
 });

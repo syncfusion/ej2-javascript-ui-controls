@@ -1551,3 +1551,16 @@ export interface PageOrganizerSaveAsEventArgs extends BaseEventArgs {
      */
     cancel: boolean;
 }
+/**
+ * This event arguments provide the necessary information about page organizer zoom change as event.
+ */
+export interface PageOrganizerZoomChangedEventArgs extends BaseEventArgs {
+    /**
+     * Defines the image zoom value of page organizer before image zoom value is changed
+     */
+    previousZoom: number
+    /**
+     * Defines the image zoom value of page organizer after image zoom value is changed
+     */
+    currentZoom: number
+}

@@ -64,6 +64,11 @@ function renderAssistView(): void {
                 var response = "For real-time prompt processing, connect the AIAssistView component to your preferred AI service, such as OpenAI or Azure Cognitive Services. Ensure you obtain the necessary API credentials to authenticate and enable seamless integration.";
                 aiAssistViewInst.addPromptResponse(response);
             }, 1000);
+        },
+        enableAttachments: true,
+        attachmentSettings: {
+            saveUrl: 'https://services.syncfusion.com/js/production/api/FileUploader/Save',
+            removeUrl: 'https://services.syncfusion.com/js/production/api/FileUploader/Remove'
         }
     });
     aiAssistViewInst.appendTo('#defaultAIAssistView');

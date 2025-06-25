@@ -1,4 +1,4 @@
-import { Cell, CellType, Column, ICell, NotifyArgs, Row, SentinelType } from '@syncfusion/ej2-grids';
+import { Cell, CellType, Column, getVisiblePage, ICell, NotifyArgs, Row, SentinelInfo, SentinelType } from '@syncfusion/ej2-grids';
 import { Offsets, VirtualInfo, ServiceLocator, IGrid, IModelGenerator } from '@syncfusion/ej2-grids';
 import { VirtualContentRenderer } from '@syncfusion/ej2-grids';
 import { RowPosition } from '../enum';
@@ -7,8 +7,8 @@ import { InterSectionObserver, RowSelectEventArgs  } from '@syncfusion/ej2-grids
 import { TreeVirtualRowModelGenerator } from '../renderer/virtual-row-model-generator';
 import * as events from '../base/constant';
 import { isNullOrUndefined, EventHandler, getValue, setValue, Browser, KeyboardEventArgs, debounce } from '@syncfusion/ej2-base';
-import { DataManager } from '@syncfusion/ej2-data';
-import { isCountRequired } from '../utils';
+import { DataManager, Query } from '@syncfusion/ej2-data';
+import { isCountRequired, isRemoteData } from '../utils';
 
 /**
  * VirtualTreeContentRenderer
@@ -220,6 +220,7 @@ export class VirtualTreeContentRenderer extends VirtualContentRenderer {
             this.parent[`${action}`]('refresh-virtual-editform-cells', this.refreshCell, this);
             this.parent[`${action}`]('virtaul-cell-focus', this.cellFocus, this);
             this.parent[`${action}`]('virtual-scroll-edit', this.restoreEditState, this);
+            this.parent[`${action}`]('set-virtual-page-query', this.SetVirtualPageQury, this);
         } else {
             super.eventListener('on');
         }
@@ -486,6 +487,19 @@ export class VirtualTreeContentRenderer extends VirtualContentRenderer {
         super[`${restoreEdit}`]();
     }
 
+    private SetVirtualPageQury(args: { query: Query, skipPage: boolean }): void {
+        let visiblePage: number[] = [];
+        if (this.prevInfo && this.prevInfo.blockIndexes) {
+            visiblePage = getVisiblePage(this.prevInfo.blockIndexes);
+        }
+        if ((this.requestType === 'refresh') && visiblePage.length) {
+            args.query.skip(this.parent.pageSettings.pageSize * (visiblePage[0] - 1));
+            args.query.take(this.parent.pageSettings.pageSize * visiblePage.length);
+            args.skipPage = true;
+            return;
+        }
+    }
+
     /**
      * Resets the edit state if certain conditions are met.
      *
@@ -633,6 +647,19 @@ export class VirtualTreeContentRenderer extends VirtualContentRenderer {
                 const xAxis: boolean = current.axis === 'X';
                 let x: number = this.getColumnOffset(xAxis ? this.vgenerator.getColumnIndexes()[0] - 1 : this.prevInfo.columnIndexes[0]
                                 - 1);
+                if (this.parent.isFrozenGrid() && this.parent.enableColumnVirtualization && this.currentInfo &&
+                    this.currentInfo.columnIndexes) {
+                    const cBlock: number = this.currentInfo.columnIndexes[0] - 1;
+                    let frzLeftWidth: number = 0;
+                    this.parent.getColumns().filter((col: Column) => {
+                        if (col.visible && col.freeze === 'Left') {
+                            frzLeftWidth += parseInt(col.width.toString(), 10);
+                        }
+                    });
+                    if (cBlock > this.parent.getVisibleFrozenLeftCount()) {
+                        x = x - frzLeftWidth;
+                    }
+                }
                 if (xAxis) {
                     const idx: number = Object.keys(this.vgenerator.cOffsets).length - this.prevInfo.columnIndexes.length;
                     const maxLeft: number = this.vgenerator.cOffsets[idx - 1];
@@ -649,6 +676,9 @@ export class VirtualTreeContentRenderer extends VirtualContentRenderer {
                     }
                     if (this.parent.enableColumnVirtualization) {
                         this.header.virtualEle.adjustTable(x, 0);
+                        if (this.parent.isFrozenGrid()) {
+                            this.parent.contentModule['resetStickyLeftPos'](x);
+                        }
                     }
                 }
             }
@@ -792,11 +822,11 @@ export class VirtualTreeContentRenderer extends VirtualContentRenderer {
         if (((downScroll && scrollArgs.direction !== 'up' && (scrollArgs.offset.top < (rowHeight * this.totalRecords)))
             || (upScroll)) || (scrollArgs.direction === 'right' || scrollArgs.direction === 'left') ||
             ((this.parent.dataSource instanceof DataManager && (this.parent.dataSource as DataManager).dataSource.url !== undefined
-        && !(this.parent.dataSource as DataManager).dataSource.offline && (this.parent.dataSource as DataManager).dataSource.url !== '') && (downScroll || upScroll) || isCountRequired(this.parent))
+        && !(this.parent.dataSource as DataManager).dataSource.offline && (this.parent.dataSource as DataManager).dataSource.url !== ''))
         ) {
             const viewInfo: VirtualInfo = this.currentInfo = getValue('getInfoFromView', this).apply(this, [scrollArgs.direction, info, scrollArgs.offset]);
             this.previousInfo = viewInfo;
-            if (this.prevInfo && viewInfo.event !==  'refresh-virtual-block' && ((info.axis === 'Y' && this.prevInfo.blockIndexes.toString() === viewInfo.blockIndexes.toString())
+            if (this.prevInfo && ((info.axis === 'Y' && this.prevInfo.blockIndexes.toString() === viewInfo.blockIndexes.toString())
                 || ((info.axis === 'X' && this.prevInfo.columnIndexes.toString() === viewInfo.columnIndexes.toString())
                     || (this.parent.isFrozenGrid() && this.parent.getVisibleFrozenLeftCount() >= viewInfo.columnIndexes[0]
                         && this.prevInfo.columnIndexes.toString().includes(viewInfo.columnIndexes.toString()))))) {
@@ -818,7 +848,7 @@ export class VirtualTreeContentRenderer extends VirtualContentRenderer {
                 viewInfo.loadNext = false;
             }
             this.requestType = 'virtualscroll';
-            if (scrollArgs.direction !== 'right' && scrollArgs.direction !== 'left') {
+            if (scrollArgs.direction !== 'right' && scrollArgs.direction !== 'left' && !isRemoteData(this.parent.root)) {
                 viewInfo.event = viewInfo.event === 'refresh-virtual-block' ? 'model-changed' : viewInfo.event;
             }
             if (this.parent.enableVirtualMaskRow) {
@@ -875,7 +905,7 @@ export class VirtualTreeContentRenderer extends VirtualContentRenderer {
           getValue('currentInfo', this).page && getValue('currentInfo', this).page !== e.virtualInfo.page ?
                 getValue('currentInfo', this) : e.virtualInfo;
             const cBlock: number = (info.columnIndexes[0]) - 1;
-            const cOffset: number = this.getColumnOffset(cBlock); let width: string;
+            let cOffset: number = this.getColumnOffset(cBlock); let width: string;
             if (this.parent.enableColumnVirtualization) {
                 this.header.virtualEle.adjustTable(cOffset, 0);
                 const cIndex: number[] = info.columnIndexes;
@@ -890,9 +920,33 @@ export class VirtualTreeContentRenderer extends VirtualContentRenderer {
             if (e.requestType === 'virtualscroll' && e.virtualInfo.sentinelInfo.axis === 'Y') {
                 this.isExpandCollapse = false;
             }
+            let reduceWidth: number = 0;
+            if (this.parent.enableColumnVirtualization && this.parent.isFrozenGrid()) {
+                let frzLeftWidth: number = 0;
+                this.parent.getColumns().filter((col: Column) => {
+                    if (col.visible) {
+                        reduceWidth += parseInt(col.width.toString(), 10);
+                        if (col.freeze === 'Left') {
+                            frzLeftWidth += parseInt(col.width.toString(), 10);
+                        }
+                    }
+                });
+                const cIndex: number[] = info.columnIndexes;
+                width = this.getColumnOffset(cIndex[cIndex.length - 1]) - this.getColumnOffset(cIndex[0] - 1) + '';
+                if (cBlock > this.parent.getVisibleFrozenLeftCount()) {
+                    cOffset = cOffset - frzLeftWidth;
+                }
+                this.resetStickyLeftPos(cOffset, newChild);
+            }
             if (!this.isExpandCollapse || this.translateY === 0) {
                 this.translateY = this.translateY < 0 ? 0 : this.translateY;
                 getValue('virtualEle', this).adjustTable(cOffset, this.translateY);
+                if (this.parent.enableColumnVirtualization) {
+                    this.header.virtualEle.adjustTable(cOffset, 0);
+                    if (this.parent.isFrozenGrid()) {
+                        this.resetStickyLeftPos(cOffset);
+                    }
+                }
             } else {
                 this.isExpandCollapse = false;
             }
@@ -1002,7 +1056,12 @@ export class TreeInterSectionObserver extends InterSectionObserver {
         this[`${options}`].prevTop = this[`${options}`].prevLeft = 0;
         const isScrollByFocus: string = 'isScrollByFocus';
         return (e: Event) => {
-            if (instance.isEdit && instance.root.editModule[`${isScrollByFocus}`]) {
+            const keyPress: string = 'keyPress';
+            let keyaction: any;
+            if (instance && instance.root && instance.root.editModule && instance.root.editModule[`${keyPress}`]) {
+                keyaction = instance.root.editModule[`${keyPress}`];
+            }
+            if ((instance.isEdit && instance.root.editModule[`${isScrollByFocus}`]) || (instance.isEdit && (keyaction === 'tab' || keyaction === 'shiftTab'))) {
                 instance.root.editModule[`${isScrollByFocus}`] = false;
                 return;
             }

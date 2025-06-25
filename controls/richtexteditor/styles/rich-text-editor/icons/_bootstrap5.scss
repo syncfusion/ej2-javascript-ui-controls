@@ -8,6 +8,10 @@
   .e-rte-toolbar,
   .e-rte-dropdown-popup {
 
+    .e-horizontal-line::before {
+      content: '\e920';
+    }
+
     .e-blockquote::before {
       content: '\e8f5';
     }
@@ -35,11 +39,11 @@
       content: '\e76f';
     }
 
-    .e-rte-font-color::before {
+    .e-rte-font-colorpicker .e-split-colorpicker.e-rte-font-color::before {
       content: '\e79f';
     }
 
-    .e-background-color::before {
+    .e-rte-background-colorpicker .e-split-colorpicker.e-background-color::before {
       content: '\e783';
     }
 
@@ -209,10 +213,6 @@
       content: '\e75d';
     }
 
-    .e-formats::before {
-      content: '\e844';
-    }
-
     .e-source-code::before {
       content: '\e80e';
     }
@@ -332,6 +332,7 @@
   .e-rtl {
     .e-rte-toolbar,
     .e-rte-dropdown-popup {
+
       .e-unorder-list::before {
         content: '\e8c4';
       }

@@ -651,7 +651,7 @@ describe('Diagram Control', () => {
             expect(diagram.selectedItems.nodes[0].id === (diagram.layers[0] as Layer).zIndexTable[2]).toBe(true);
             done();
             diagram.sendBackward();
-            expect(diagram.selectedItems.nodes[0].id === (diagram.layers[0] as Layer).zIndexTable[0]).toBe(true);
+            expect(diagram.selectedItems.nodes[0].id === (diagram.layers[0] as Layer).zIndexTable[2]).toBe(true);
             done();
             diagram.moveForward();
             expect(diagram.selectedItems.nodes[0].id === (diagram.layers[0] as Layer).zIndexTable[2]).toBe(true);
@@ -895,7 +895,7 @@ describe('SendToBack and BringToFront of native nodes', () => {
         diagram.select([diagram.nodes[0]]);
         diagram.bringToFront();
         diagram.sendBackward();
-        expect(diagram.nodes[0].zIndex === 10).toBe(true);
+        expect(diagram.nodes[0].zIndex === 0).toBe(true);
         done();
     });
 });

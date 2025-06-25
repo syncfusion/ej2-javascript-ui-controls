@@ -12,7 +12,7 @@ import { Selector } from '../../../src/diagram/objects/node';
 import { DiagramElement } from '../../../src/diagram/core/elements/diagram-element';
 import { PointModel } from '../../../src/diagram/primitives/point-model';
 import { identityMatrix, rotateMatrix, transformPointByMatrix, Matrix } from '../../../src/diagram/primitives/matrix';
-import { Container } from '../../../src/diagram/core/containers/container';
+import { GroupableView } from '../../../src/diagram/core/containers/container';
 import { UndoRedo } from '../../../src/diagram/objects/undo-redo';
 import { profile, inMB, getMemoryProfile } from '../../../spec/common.spec';
 import { Snapping } from '../../../src/diagram/objects/snapping';
@@ -122,31 +122,31 @@ describe('Diagram Control', () => {
             it('Drag', (done: Function) => {
                 drag(diagram);
                 drag(diagram);
-                let label = (((diagram.selectedItems as Selector).wrapper) as Container).children[0];
+                let label = (((diagram.selectedItems as Selector).wrapper) as GroupableView).children[0];
                 expect(label.offsetX == 290 && label.offsetY == 240 && label.width == 100 && label.height == 100).toBe(true);
                 done();
             });
             it('Resize North', (done: Function) => {
                 resize(diagram, 'resizeNorth');
-                let label = (((diagram.selectedItems as Selector).wrapper) as Container).children[0];
+                let label = (((diagram.selectedItems as Selector).wrapper) as GroupableView).children[0];
                 expect(label.offsetX == 290 && label.offsetY == 250 && label.width == 100 && label.height == 80 && label.rotateAngle == 0).toBe(true);
                 done();
             });
             it('Resize South', (done: Function) => {
                 resize(diagram, 'resizeSouth');
-                let label = (((diagram.selectedItems as Selector).wrapper) as Container).children[0];
+                let label = (((diagram.selectedItems as Selector).wrapper) as GroupableView).children[0];
                 expect(label.offsetX == 290 && label.offsetY == 260 && label.width == 100 && label.height == 100 && label.rotateAngle == 0).toBe(true);
                 done();
             });
             it('Resize East', (done: Function) => {
                 resize(diagram, 'resizeEast');
-                let label = (((diagram.selectedItems as Selector).wrapper) as Container).children[0];
+                let label = (((diagram.selectedItems as Selector).wrapper) as GroupableView).children[0];
                 expect(label.offsetX == 300 && label.offsetY == 260 && label.width == 120 && label.height == 100 && label.rotateAngle == 0).toBe(true);
                 done();
             });
             it('Resize West', (done: Function) => {
                 resize(diagram, 'resizeWest');
-                let label = (((diagram.selectedItems as Selector).wrapper) as Container).children[0];
+                let label = (((diagram.selectedItems as Selector).wrapper) as GroupableView).children[0];
                 expect(label.offsetX == 309.99999999999994 && label.offsetY == 260 && label.width == 100 && label.height == 100 && label.rotateAngle == 0).toBe(true);
                 done();
             });
@@ -162,7 +162,7 @@ describe('Diagram Control', () => {
                 mouseEvents.mouseMoveEvent(diagramCanvas, x + diagram.element.offsetLeft + 20, y + diagram.element.offsetTop);
                 mouseEvents.mouseMoveEvent(diagramCanvas, x + diagram.element.offsetLeft + 20, y + diagram.element.offsetTop + 20);
                 mouseEvents.mouseUpEvent(diagramCanvas, x + diagram.element.offsetLeft + 20, y + diagram.element.offsetTop + 20);
-                let label = (((diagram.selectedItems as Selector).wrapper) as Container).children[0];
+                let label = (((diagram.selectedItems as Selector).wrapper) as GroupableView).children[0];
                 expect( label.offsetX ==319.5 && label.offsetY == 270 && label.width == 119 && label.height == 80 && label.rotateAngle == 0).toBe(true);
                 done();
             });
@@ -178,55 +178,55 @@ describe('Diagram Control', () => {
                 mouseEvents.mouseMoveEvent(diagramCanvas, x + diagram.element.offsetLeft + 20, y + diagram.element.offsetTop);
                 mouseEvents.mouseMoveEvent(diagramCanvas, x + diagram.element.offsetLeft + 20, y + diagram.element.offsetTop + 20);
                 mouseEvents.mouseUpEvent(diagramCanvas, x + diagram.element.offsetLeft + 20, y + diagram.element.offsetTop + 20);
-                let label = (((diagram.selectedItems as Selector).wrapper) as Container).children[0];
+                let label = (((diagram.selectedItems as Selector).wrapper) as GroupableView).children[0];
                 expect(label.offsetX == 329 && label.offsetY == 280 && label.width == 100 && label.height == 60 && label.rotateAngle == 0).toBe(true);
                 done();
             });
             it('Resize SouthEast', (done: Function) => {
                 resize(diagram, 'resizeSouthEast');
-                let label = (((diagram.selectedItems as Selector).wrapper) as Container).children[0];
+                let label = (((diagram.selectedItems as Selector).wrapper) as GroupableView).children[0];
                 expect(label.offsetX == 339 && label.offsetY == 290 && label.width == 120 && label.height == 80 && label.rotateAngle == 0).toBe(true);
                 done();
             });
             it('Resize SouthWest', (done: Function) => {
                 resize(diagram, 'resizeSouthWest');
-                let label = (((diagram.selectedItems as Selector).wrapper) as Container).children[0];
+                let label = (((diagram.selectedItems as Selector).wrapper) as GroupableView).children[0];
                 expect(label.offsetX == 349 && label.offsetY == 300 && label.width == 100 && label.height == 100 && label.rotateAngle == 0).toBe(true);
                 done();
             });
             it('Rotate', (done: Function) => {
                 rotate(diagram, 15, undefined);
-                let label = (((diagram.selectedItems as Selector).wrapper) as Container).children[0];
+                let label = (((diagram.selectedItems as Selector).wrapper) as GroupableView).children[0];
                 expect(label.offsetX == 349 && label.offsetY == 300 && label.width == 100 && label.height == 100 && (label.rotateAngle == 20 || label.rotateAngle == 15)).toBe(true);
                 done();
             });
             it('Resize North after annotation rotation', (done: Function) => {
                 resize(diagram, 'resizeNorth');
-                let label = (((diagram.selectedItems as Selector).wrapper) as Container).children[0];
+                let label = (((diagram.selectedItems as Selector).wrapper) as GroupableView).children[0];
                 expect(label.offsetX == 369 && label.offsetY == 320 && label.width == 100 && label.height == 100 && label.rotateAngle == 20).toBe(true);
                 done();
             });
             it('Resize South after annotation rotation', (done: Function) => {
                 resize(diagram, 'resizeSouth');
-                let label = (((diagram.selectedItems as Selector).wrapper) as Container).children[0];
+                let label = (((diagram.selectedItems as Selector).wrapper) as GroupableView).children[0];
                 expect(label.offsetX == 389 && label.offsetY == 340 && label.width == 100 && label.height == 100 && label.rotateAngle == 20).toBe(true);
                 done();
             });
             it('Resize East after annotation rotation', (done: Function) => {
                 resize(diagram, 'resizeEast');
-                let label = (((diagram.selectedItems as Selector).wrapper) as Container).children[0];
+                let label = (((diagram.selectedItems as Selector).wrapper) as GroupableView).children[0];
                 expect(label.offsetX == 409 && label.offsetY == 360 && label.width == 100 && label.height == 100 && label.rotateAngle == 20).toBe(true);
                 done();
             });
             it('Resize West after annotation rotation', (done: Function) => {
                 resize(diagram, 'resizeWest');
-                let label = (((diagram.selectedItems as Selector).wrapper) as Container).children[0];
+                let label = (((diagram.selectedItems as Selector).wrapper) as GroupableView).children[0];
                 expect(label.offsetX == 429 && label.offsetY == 380 && label.width == 100 && label.height == 100 && label.rotateAngle == 20).toBe(true);
                 done();
             });
             it('Resize NorthEast after annotation rotation', (done: Function) => {
                 resize(diagram, 'resizeNorthEast');
-                let label = (((diagram.selectedItems as Selector).wrapper) as Container).children[0];
+                let label = (((diagram.selectedItems as Selector).wrapper) as GroupableView).children[0];
                 expect(label.offsetX == 449 && label.offsetY == 400 && label.width == 100 && label.height == 100 && label.rotateAngle == 20).toBe(true);
                 done();
             });
@@ -242,7 +242,7 @@ describe('Diagram Control', () => {
                 mouseEvents.mouseMoveEvent(diagramCanvas, x + diagram.element.offsetLeft + 20, y + diagram.element.offsetTop);
                 mouseEvents.mouseMoveEvent(diagramCanvas, x + diagram.element.offsetLeft + 20, y + diagram.element.offsetTop + 20);
                 mouseEvents.mouseUpEvent(diagramCanvas, x + diagram.element.offsetLeft + 20, y + diagram.element.offsetTop + 20);
-                let label = (((diagram.selectedItems as Selector).wrapper) as Container).children[0];
+                let label = (((diagram.selectedItems as Selector).wrapper) as GroupableView).children[0];
                 expect(label.offsetX == 458 && label.offsetY == 409 && label.width == 76.93 && label.height == 89.24 && label.rotateAngle == 20).toBe(true);
                 done();
             });
@@ -258,7 +258,7 @@ describe('Diagram Control', () => {
                 mouseEvents.mouseMoveEvent(diagramCanvas, x + diagram.element.offsetLeft + 20, y + diagram.element.offsetTop);
                 mouseEvents.mouseMoveEvent(diagramCanvas, x + diagram.element.offsetLeft + 20, y + diagram.element.offsetTop + 20);
                 mouseEvents.mouseUpEvent(diagramCanvas, x + diagram.element.offsetLeft + 20, y + diagram.element.offsetTop + 20);
-                let label = (((diagram.selectedItems as Selector).wrapper) as Container).children[0];
+                let label = (((diagram.selectedItems as Selector).wrapper) as GroupableView).children[0];
                 expect(label.offsetX == 467 && label.offsetY == 418 && label.width == 99.99999999999999 && label.height == 100.00000000000001 && label.rotateAngle == 20).toBe(true);
                 done();
             });
@@ -274,7 +274,7 @@ describe('Diagram Control', () => {
                 mouseEvents.mouseMoveEvent(diagramCanvas, x + diagram.element.offsetLeft + 20, y + diagram.element.offsetTop);
                 mouseEvents.mouseMoveEvent(diagramCanvas, x + diagram.element.offsetLeft + 20, y + diagram.element.offsetTop + 20);
                 mouseEvents.mouseUpEvent(diagramCanvas, x + diagram.element.offsetLeft + 20, y + diagram.element.offsetTop + 20);
-                let label = (((diagram.selectedItems as Selector).wrapper) as Container).children[0];
+                let label = (((diagram.selectedItems as Selector).wrapper) as GroupableView).children[0];
                 expect(label.offsetX == 476 && label.offsetY == 427 && label.width == 76.92999999999998 && label.height == 110.76 && label.rotateAngle == 20).toBe(true);
                 done();
             });
@@ -285,7 +285,7 @@ describe('Diagram Control', () => {
                 mouseEvents.clickEvent(diagramCanvas, annotation.offsetX + left, annotation.offsetY + top);
                 expect((diagram.selectedItems as Selector).annotation !== undefined).toBe(true);
                 drag(diagram);
-                let label = (((diagram.selectedItems as Selector).wrapper) as Container).children[0];
+                let label = (((diagram.selectedItems as Selector).wrapper) as GroupableView).children[0];
                 expect(label.offsetX == 496 && label.offsetY == 447 && label.width == 76.92999999999998 && label.height == 110.76 && label.rotateAngle == 20).toBe(true);
                 done();
             });
@@ -300,13 +300,13 @@ describe('Diagram Control', () => {
                 mouseEvents.clickEvent(diagramCanvas, annotation.offsetX + left, annotation.offsetY + top);
                 expect((diagram.selectedItems as Selector).annotation !== undefined).toBe(true);
                 drag(diagram);
-                let label = (((diagram.selectedItems as Selector).wrapper) as Container).children[0];
+                let label = (((diagram.selectedItems as Selector).wrapper) as GroupableView).children[0];
                 expect(label.offsetX == 169.24 && label.offsetY == 128.69 && label.width == 76.92999999999998 && label.height == 110.76 && label.rotateAngle == 10).toBe(true);
                 done();
             });
             it('Rotation after change node rotation', (done: Function) => {
                 rotate(diagram, 15, undefined);
-                let label = (((diagram.selectedItems as Selector).wrapper) as Container).children[0];
+                let label = (((diagram.selectedItems as Selector).wrapper) as GroupableView).children[0];
                 expect(label.offsetX == 169.24 && label.offsetY == 128.69 && label.width == 76.92999999999998 && label.height == 110.76 && label.rotateAngle == 30).toBe(true);
                 done();
             });
@@ -322,7 +322,7 @@ describe('Diagram Control', () => {
                 mouseEvents.mouseMoveEvent(diagramCanvas, x + diagram.element.offsetLeft + 20, y + diagram.element.offsetTop);
                 mouseEvents.mouseMoveEvent(diagramCanvas, x + diagram.element.offsetLeft + 20, y + diagram.element.offsetTop + 20);
                 mouseEvents.mouseUpEvent(diagramCanvas, x + diagram.element.offsetLeft + 20, y + diagram.element.offsetTop + 20);
-                let label = (((diagram.selectedItems as Selector).wrapper) as Container).children[0];
+                let label = (((diagram.selectedItems as Selector).wrapper) as GroupableView).children[0];
                 expect(label.offsetX == 178.24 && label.offsetY == 137.69 && label.width == 102.28999999999998 && label.height == 112.98 && label.rotateAngle == 30).toBe(true);
                 done();
             });
@@ -367,7 +367,7 @@ describe('Diagram Control', () => {
             });
             it('Drag', (done: Function) => {
                 drag(diagram);
-                let label = (((diagram.selectedItems as Selector).wrapper) as Container).children[0];
+                let label = (((diagram.selectedItems as Selector).wrapper) as GroupableView).children[0];
                 expect(label.offsetX == 270 && label.offsetY == 120 && label.width == 100 && label.height == undefined && label.rotateAngle == 0).toBe(true);
                 done();
             });
@@ -383,19 +383,19 @@ describe('Diagram Control', () => {
                 mouseEvents.mouseMoveEvent(diagramCanvas, x + diagram.element.offsetLeft + 20, y + diagram.element.offsetTop);
                 mouseEvents.mouseMoveEvent(diagramCanvas, x + diagram.element.offsetLeft + 20, y + diagram.element.offsetTop + 20);
                 mouseEvents.mouseUpEvent(diagramCanvas, x + diagram.element.offsetLeft + 20, y + diagram.element.offsetTop + 20);
-                let label = (((diagram.selectedItems as Selector).wrapper) as Container).children[0];
+                let label = (((diagram.selectedItems as Selector).wrapper) as GroupableView).children[0];
                 expect(label.offsetX == 270 && label.offsetY == 129.5 && (Math.floor(label.width) == 92 || Math.ceil(label.width) == 93 || (Math.floor(label.width) >= 95 || Math.floor(label.width) <= 97)) && label.height == 24.199999999999996 && label.rotateAngle == 0).toBe(true);
                 done();
             });
             it('Resize South', (done: Function) => {
                 resize(diagram, 'resizeSouth');
-                let label = (((diagram.selectedItems as Selector).wrapper) as Container).children[0];
+                let label = (((diagram.selectedItems as Selector).wrapper) as GroupableView).children[0];
                 expect(label.offsetX == 290 && label.offsetY == 149.5 && (Math.floor(label.width) == 92 || Math.ceil(label.width) == 93 || (Math.floor(label.width) >= 95 || Math.floor(label.width) <= 97)) && label.height == 24.199999999999996 && label.rotateAngle == 0).toBe(true);
                 done();
             });
             it('Resize East', (done: Function) => {
                 resize(diagram, 'resizeEast');
-                let label = (((diagram.selectedItems as Selector).wrapper) as Container).children[0];
+                let label = (((diagram.selectedItems as Selector).wrapper) as GroupableView).children[0];
                 expect(label.offsetX == 310 && label.offsetY == 169.5 && (Math.floor(label.width) == 112 || Math.ceil(label.width) == 113 || (Math.floor(label.width) >= 114 || Math.floor(label.width) <= 117)) && label.height == 24.199999999999996 && label.rotateAngle == 0).toBe(true);
                 done();
             });
@@ -411,37 +411,37 @@ describe('Diagram Control', () => {
                 mouseEvents.mouseMoveEvent(diagramCanvas, x + diagram.element.offsetLeft + 20, y + diagram.element.offsetTop);
                 mouseEvents.mouseMoveEvent(diagramCanvas, x + diagram.element.offsetLeft + 20, y + diagram.element.offsetTop + 20);
                 mouseEvents.mouseUpEvent(diagramCanvas, x + diagram.element.offsetLeft + 20, y + diagram.element.offsetTop + 20);
-                let label = (((diagram.selectedItems as Selector).wrapper) as Container).children[0];
+                let label = (((diagram.selectedItems as Selector).wrapper) as GroupableView).children[0];
                 expect(label.offsetX == 319.5 && label.offsetY == 169.5 && (Math.floor(label.width) == 92 || Math.ceil(label.width) == 93 || (Math.floor(label.width) >= 95 || Math.floor(label.width) <= 97)) && label.height == 24.199999999999996 && label.rotateAngle == 0).toBe(true);
                 done();
             });
             it('Rotate', (done: Function) => {
                 rotate(diagram, 15, undefined);
-                let label = (((diagram.selectedItems as Selector).wrapper) as Container).children[0];
+                let label = (((diagram.selectedItems as Selector).wrapper) as GroupableView).children[0];
                 expect(label.offsetX == 319.5 && label.offsetY == 169.5 && (Math.floor(label.width) == 92 || Math.ceil(label.width) == 93 || (Math.floor(label.width) >= 95 || Math.floor(label.width) <= 97)) && label.height == 24.199999999999996 && label.rotateAngle == 40).toBe(true);
                 done();
             });
             it('Resize North after annotation rotation', (done: Function) => {
                 resize(diagram, 'resizeNorth');
-                let label = (((diagram.selectedItems as Selector).wrapper) as Container).children[0];
+                let label = (((diagram.selectedItems as Selector).wrapper) as GroupableView).children[0];
                 expect(label.offsetX == 339.5 && label.offsetY == 189.5 && (Math.floor(label.width) == 92 || Math.ceil(label.width) == 93 || (Math.floor(label.width) >= 95 || Math.floor(label.width) <= 97)) && label.height == 24.199999999999996 && label.rotateAngle == 40).toBe(true);
                 done();
             });
             it('Resize South after annotation rotation', (done: Function) => {
                 resize(diagram, 'resizeSouth');
-                let label = (((diagram.selectedItems as Selector).wrapper) as Container).children[0];
+                let label = (((diagram.selectedItems as Selector).wrapper) as GroupableView).children[0];
                 expect(label.offsetX == 359.5 && label.offsetY == 209.5 && (Math.floor(label.width) == 92 || Math.ceil(label.width) == 93 || (Math.floor(label.width) >= 95 || Math.floor(label.width) <= 97) || label.width == 77.03125) && label.height == 24.199999999999996 && label.rotateAngle == 40).toBe(true);
                 done();
             });
             it('Resize East after annotation rotation', (done: Function) => {
                 resize(diagram, 'resizeEast');
-                let label = (((diagram.selectedItems as Selector).wrapper) as Container).children[0];
+                let label = (((diagram.selectedItems as Selector).wrapper) as GroupableView).children[0];
                 expect(label.offsetX == 379.5 && label.offsetY == 229.5 && (Math.floor(label.width) == 120 || Math.ceil(label.width) == 121 || (Math.floor(label.width) >= 122 || Math.floor(label.width) <= 124)) && label.height == 24.199999999999996 && label.rotateAngle == 40).toBe(true);
                 done();
             });
             it('Resize West after annotation rotation', (done: Function) => {
                 resize(diagram, 'resizeWest');
-                let label = (((diagram.selectedItems as Selector).wrapper) as Container).children[0];
+                let label = (((diagram.selectedItems as Selector).wrapper) as GroupableView).children[0];
                 expect(label.offsetX == 399.5 && label.offsetY == 249.5 && (Math.floor(label.width) == 92 || Math.ceil(label.width) == 93 || (Math.floor(label.width) >= 95 || Math.floor(label.width) <= 97)) && label.height == 24.199999999999996 && label.rotateAngle == 40).toBe(true);
                 done();
             });
@@ -452,7 +452,7 @@ describe('Diagram Control', () => {
                 mouseEvents.clickEvent(diagramCanvas, annotation.offsetX + left, annotation.offsetY + top);
                 expect((diagram.selectedItems as Selector).annotation !== undefined).toBe(true);
                 drag(diagram);
-                let label = (((diagram.selectedItems as Selector).wrapper) as Container).children[0];
+                let label = (((diagram.selectedItems as Selector).wrapper) as GroupableView).children[0];
                 expect(label.offsetX == 419.5 && label.offsetY == 269.5 && (Math.floor(label.width) == 92 || Math.ceil(label.width) == 93 || (Math.floor(label.width) >= 95 || Math.floor(label.width) <= 97)) && label.height == 24.199999999999996 && label.rotateAngle == 40).toBe(true);
                 done();
             });
@@ -465,14 +465,14 @@ describe('Diagram Control', () => {
                 mouseEvents.clickEvent(diagramCanvas, annotation.offsetX + left, annotation.offsetY + top);
                 expect((diagram.selectedItems as Selector).annotation !== undefined).toBe(true);
                 drag(diagram);
-                let label = (((diagram.selectedItems as Selector).wrapper) as Container).children[0];
+                let label = (((diagram.selectedItems as Selector).wrapper) as GroupableView).children[0];
                 expect(label.offsetX == 182.96 && label.offsetY == 394.84 && (Math.floor(label.width) == 92 || Math.ceil(label.width) == 93 || (Math.floor(label.width) >= 95 || Math.floor(label.width) <= 97)) && label.height == 24.199999999999996 && label.rotateAngle == 40).toBe(true);
                 done();
             });
             it('Rotation after change node rotation', (done: Function) => {
 
                 rotate(diagram, 20, undefined);
-                let label = (((diagram.selectedItems as Selector).wrapper) as Container).children[0];
+                let label = (((diagram.selectedItems as Selector).wrapper) as GroupableView).children[0];
                 expect(label.offsetX == 182.96 && label.offsetY == 394.84 && (Math.floor(label.width) == 92 || Math.ceil(label.width) == 93 || (Math.floor(label.width) >= 95 || Math.floor(label.width) <= 97)) && label.height == 24.199999999999996 && label.rotateAngle == 55).toBe(true);
                 done();
             });
@@ -488,7 +488,7 @@ describe('Diagram Control', () => {
                 mouseEvents.mouseMoveEvent(diagramCanvas, x + diagram.element.offsetLeft + 20, y + diagram.element.offsetTop);
                 mouseEvents.mouseMoveEvent(diagramCanvas, x + diagram.element.offsetLeft + 20, y + diagram.element.offsetTop + 20);
                 mouseEvents.mouseUpEvent(diagramCanvas, x + diagram.element.offsetLeft + 20, y + diagram.element.offsetTop + 20);
-                let label = (((diagram.selectedItems as Selector).wrapper) as Container).children[0];
+                let label = (((diagram.selectedItems as Selector).wrapper) as GroupableView).children[0];
                 expect((label.offsetX == 190.57 || label.offsetX == 227.76) && (label.offsetY == 398.39 || label.offsetY == 276.95) && (Math.floor(label.width) == 92 || Math.ceil(label.width) == 93 || (Math.floor(label.width) >= 95 || Math.floor(label.width) <= 97)) && (label.height == 7.399999999999996|| label.height == 17.569999999999997) && label.rotateAngle == 55).toBe(true);
                 done();
             });
@@ -557,7 +557,7 @@ describe('Diagram Control', () => {
                 mouseEvents.mouseMoveEvent(diagramCanvas, x + diagram.element.offsetLeft + 20, y + diagram.element.offsetTop);
                 mouseEvents.mouseMoveEvent(diagramCanvas, x + diagram.element.offsetLeft + 20, y + diagram.element.offsetTop + 20);
                 mouseEvents.mouseUpEvent(diagramCanvas, x + diagram.element.offsetLeft + 20, y + diagram.element.offsetTop + 20);
-                let label = (((diagram.selectedItems as Selector).wrapper) as Container).children[0];
+                let label = (((diagram.selectedItems as Selector).wrapper) as GroupableView).children[0];
                 expect(label.width == 100 && label.height == 150).toBe(true);
                 diagram.nodes[0].annotations[0].constraints = AnnotationConstraints.Select | AnnotationConstraints.Resize;
                 expect(label.offsetX == 290 && label.offsetY == 140 && label.width == 100 && label.height == 150 && label.rotateAngle == 0).toBe(true);
@@ -756,7 +756,7 @@ describe('Diagram Control', () => {
             });
             it('Drag', (done: Function) => {
                 drag(diagram);
-                let label = (((diagram.selectedItems as Selector).wrapper) as Container).children[0];
+                let label = (((diagram.selectedItems as Selector).wrapper) as GroupableView).children[0];
                 expect(label.offsetX == 370 && label.offsetY == 170 && label.width == undefined && label.height == undefined && label.rotateAngle == 0).toBe(true);
                 done();
             });
@@ -772,19 +772,19 @@ describe('Diagram Control', () => {
                 mouseEvents.mouseMoveEvent(diagramCanvas, x + diagram.element.offsetLeft + 20, y + diagram.element.offsetTop);
                 mouseEvents.mouseMoveEvent(diagramCanvas, x + diagram.element.offsetLeft + 20, y + diagram.element.offsetTop + 20);
                 mouseEvents.mouseUpEvent(diagramCanvas, x + diagram.element.offsetLeft + 20, y + diagram.element.offsetTop + 20);
-                let label = (((diagram.selectedItems as Selector).wrapper) as Container).children[0];
+                let label = (((diagram.selectedItems as Selector).wrapper) as GroupableView).children[0];
                 expect(label.offsetX == 370 && label.offsetY == 179.5 && label.width == 63.65625 && label.height == 24.199999999999996 && label.rotateAngle == 0).toBe(true);
                 done();
             });
             it('Resize South', (done: Function) => {
                 resize(diagram, 'resizeSouth');
-                let label = (((diagram.selectedItems as Selector).wrapper) as Container).children[0];
+                let label = (((diagram.selectedItems as Selector).wrapper) as GroupableView).children[0];
                 expect(label.offsetX == 390 && label.offsetY == 199.50000000000003 && label.rotateAngle == 0).toBe(true);
                 done();
             });
             it('Resize East', (done: Function) => {
                 resize(diagram, 'resizeEast');
-                let label = (((diagram.selectedItems as Selector).wrapper) as Container).children[0];
+                let label = (((diagram.selectedItems as Selector).wrapper) as GroupableView).children[0];
                 expect(label.offsetX == 410 && label.offsetY == 219.50000000000009 && label.rotateAngle == 0).toBe(true);
                 done();
             });
@@ -800,13 +800,13 @@ describe('Diagram Control', () => {
                 mouseEvents.mouseMoveEvent(diagramCanvas, x + diagram.element.offsetLeft + 20, y + diagram.element.offsetTop);
                 mouseEvents.mouseMoveEvent(diagramCanvas, x + diagram.element.offsetLeft + 20, y + diagram.element.offsetTop + 20);
                 mouseEvents.mouseUpEvent(diagramCanvas, x + diagram.element.offsetLeft + 20, y + diagram.element.offsetTop + 20);
-                let label = (((diagram.selectedItems as Selector).wrapper) as Container).children[0];
+                let label = (((diagram.selectedItems as Selector).wrapper) as GroupableView).children[0];
                 expect(label.offsetX == 419.5 && label.offsetY == 219.50000000000003 && label.width == 44.65625 && label.height == 24.199999999999996 && label.rotateAngle == 0).toBe(true);
                 done();
             });
             it('Rotate', (done: Function) => {
                 rotate(diagram, 15, undefined);
-                let label = (((diagram.selectedItems as Selector).wrapper) as Container).children[0];
+                let label = (((diagram.selectedItems as Selector).wrapper) as GroupableView).children[0];
                 expect(label.offsetX == 419.5 && label.offsetY == 219.5 && label.width == 44.65625 && label.height == 24.199999999999996 && label.rotateAngle == 40).toBe(true);
                 done();
             });
@@ -821,25 +821,25 @@ describe('Diagram Control', () => {
             });
             it('Drag after annotation rotation', (done: Function) => {
                 drag(diagram);
-                let label = (((diagram.selectedItems as Selector).wrapper) as Container).children[0];
+                let label = (((diagram.selectedItems as Selector).wrapper) as GroupableView).children[0];
                 expect(label.offsetX == 439.5 && label.offsetY == 239.5 && label.width == 44.65625 && label.height == 60 && label.rotateAngle == 40).toBe(true);
                 done();
             });
             it('Resize East after annotation rotation', (done: Function) => {
                 resize(diagram, 'resizeEast');
-                let label = (((diagram.selectedItems as Selector).wrapper) as Container).children[0];
+                let label = (((diagram.selectedItems as Selector).wrapper) as GroupableView).children[0];
                 expect(label.offsetX == 459.5 && label.offsetY == 259.5 && label.width == 44.65625 && label.height == 60 && label.rotateAngle == 40).toBe(true);
                 done();
             });
             it('Resize West after annotation rotation', (done: Function) => {
                 resize(diagram, 'resizeWest');
-                let label = (((diagram.selectedItems as Selector).wrapper) as Container).children[0];
+                let label = (((diagram.selectedItems as Selector).wrapper) as GroupableView).children[0];
                 expect(label.offsetX == 479.5 && label.offsetY == 279.5 && label.width == 44.65625 && label.height == 60 && label.rotateAngle == 40).toBe(true);
                 done();
             });
             it('Rotate', (done: Function) => {
                 rotate(diagram, 15, undefined);
-                let label = (((diagram.selectedItems as Selector).wrapper) as Container).children[0];
+                let label = (((diagram.selectedItems as Selector).wrapper) as GroupableView).children[0];
                 expect(label.offsetX == 479.5 && label.offsetY == 279.5 && label.width == 44.65625 && label.height == 60 && label.rotateAngle == 65).toBe(true);
                 done();
             });
@@ -930,37 +930,37 @@ describe('Diagram Control', () => {
             });
             it('Drag', (done: Function) => {
                 drag(diagram);
-                let label = (((diagram.selectedItems as Selector).wrapper) as Container).children[0];
+                let label = (((diagram.selectedItems as Selector).wrapper) as GroupableView).children[0];
                 expect(label.offsetX == 200 && label.offsetY == 140 && label.width == 50 && label.height == 50 && label.rotateAngle == 0).toBe(true);
                 done();
             });
             it('Resize North', (done: Function) => {
                 resize(diagram, 'resizeNorth');
-                let label = (((diagram.selectedItems as Selector).wrapper) as Container).children[0];
+                let label = (((diagram.selectedItems as Selector).wrapper) as GroupableView).children[0];
                 expect(label.offsetX == 200 && label.offsetY == 150 && label.width == 50 && label.height == 30 && label.rotateAngle == 0).toBe(true);
                 done();
             });
             it('Resize South', (done: Function) => {
                 resize(diagram, 'resizeSouth');
-                let label = (((diagram.selectedItems as Selector).wrapper) as Container).children[0];
+                let label = (((diagram.selectedItems as Selector).wrapper) as GroupableView).children[0];
                 expect(label.offsetX == 200 && label.offsetY == 160 && label.width == 50 && label.height == 50 && label.rotateAngle == 0).toBe(true);
                 done();
             });
             it('Resize East', (done: Function) => {
                 resize(diagram, 'resizeEast');
-                let label = (((diagram.selectedItems as Selector).wrapper) as Container).children[0];
+                let label = (((diagram.selectedItems as Selector).wrapper) as GroupableView).children[0];
                 expect(label.offsetX == 210 && label.offsetY == 160 && label.width == 70 && label.height == 50 && label.rotateAngle == 0).toBe(true);
                 done();
             });
             it('Resize West', (done: Function) => {
                 resize(diagram, 'resizeWest');
-                let label = (((diagram.selectedItems as Selector).wrapper) as Container).children[0];
+                let label = (((diagram.selectedItems as Selector).wrapper) as GroupableView).children[0];
                 expect(label.offsetX == 220 && label.offsetY == 160 && label.width == 50 && label.height == 50 && label.rotateAngle == 0).toBe(true);
                 done();
             });
             it('Rotate', (done: Function) => {
                 rotate(diagram, 15, undefined);
-                let label = (((diagram.selectedItems as Selector).wrapper) as Container).children[0];
+                let label = (((diagram.selectedItems as Selector).wrapper) as GroupableView).children[0];
                 expect(label.offsetX == 220 && label.offsetY == 160 && label.width == 50 && label.height == 50 && label.rotateAngle == 30).toBe(true);
                 done();
             });
@@ -975,25 +975,25 @@ describe('Diagram Control', () => {
             });
             it('Drag after annotation rotation', (done: Function) => {
                 drag(diagram);
-                let label = (((diagram.selectedItems as Selector).wrapper) as Container).children[0];
+                let label = (((diagram.selectedItems as Selector).wrapper) as GroupableView).children[0];
                 expect(label.offsetX == 240 && label.offsetY == 180 && label.width == 50 && label.height == 60 && label.rotateAngle == 30).toBe(true);
                 done();
             });
             it('Resize East after annotation rotation', (done: Function) => {
                 resize(diagram, 'resizeEast');
-                let label = (((diagram.selectedItems as Selector).wrapper) as Container).children[0];
+                let label = (((diagram.selectedItems as Selector).wrapper) as GroupableView).children[0];
                 expect(label.offsetX == 260 && label.offsetY == 180 && label.width == 50 && label.height == 60 && label.rotateAngle == 30).toBe(true);
                 done();
             });
             it('Resize West after annotation rotation', (done: Function) => {
                 resize(diagram, 'resizeWest');
-                let label = (((diagram.selectedItems as Selector).wrapper) as Container).children[0];
+                let label = (((diagram.selectedItems as Selector).wrapper) as GroupableView).children[0];
                 expect(label.offsetX == 280 && label.offsetY == 180 && label.width == 50 && label.height == 60 && label.rotateAngle == 30).toBe(true);
                 done();
             });
             it('Rotate', (done: Function) => {
                 rotate(diagram, 15, undefined);
-                let label = (((diagram.selectedItems as Selector).wrapper) as Container).children[0];
+                let label = (((diagram.selectedItems as Selector).wrapper) as GroupableView).children[0];
                 expect(label.offsetX == 280 && label.offsetY == 180 && label.width == 50 && label.height == 60 && label.rotateAngle == 55).toBe(true);
                 done();
             });
@@ -1061,37 +1061,37 @@ describe('Diagram Control', () => {
             });
             it('Drag - alignment(Center)', (done: Function) => {
                 drag(diagram);
-                let label = (((diagram.selectedItems as Selector).wrapper) as Container).children[0];
+                let label = (((diagram.selectedItems as Selector).wrapper) as GroupableView).children[0];
                 expect(label.offsetX == 200 && label.offsetY == 140 && label.width == 50 && label.height == 50 && label.rotateAngle == 0).toBe(true);
                 done();
             });
             it('Resize North - alignment(Center)', (done: Function) => {
                 resize(diagram, 'resizeNorth');
-                let label = (((diagram.selectedItems as Selector).wrapper) as Container).children[0];
+                let label = (((diagram.selectedItems as Selector).wrapper) as GroupableView).children[0];
                 expect(label.offsetX == 200 && label.offsetY == 150 && label.width == 50 && label.height == 30 && label.rotateAngle == 0).toBe(true);
                 done();
             });
             it('Resize South - alignment(Center)', (done: Function) => {
                 resize(diagram, 'resizeSouth');
-                let label = (((diagram.selectedItems as Selector).wrapper) as Container).children[0];
+                let label = (((diagram.selectedItems as Selector).wrapper) as GroupableView).children[0];
                 expect(label.offsetX == 200 && label.offsetY == 160 && label.width == 50 && label.height == 50 && label.rotateAngle == 0).toBe(true);
                 done();
             });
             it('Resize East - alignment(Center)', (done: Function) => {
                 resize(diagram, 'resizeEast');
-                let label = (((diagram.selectedItems as Selector).wrapper) as Container).children[0];
+                let label = (((diagram.selectedItems as Selector).wrapper) as GroupableView).children[0];
                 expect(label.offsetX == 210 && label.offsetY == 160 && label.width == 70 && label.height == 50 && label.rotateAngle == 0).toBe(true);
                 done();
             });
             it('Resize West - alignment(Center)', (done: Function) => {
                 resize(diagram, 'resizeWest');
-                let label = (((diagram.selectedItems as Selector).wrapper) as Container).children[0];
+                let label = (((diagram.selectedItems as Selector).wrapper) as GroupableView).children[0];
                 expect(label.offsetX == 220 && label.offsetY == 160 && label.width == 50 && label.height == 50 && label.rotateAngle == 0).toBe(true);
                 done();
             });
             it('Rotate - alignment(Center)', (done: Function) => {
                 rotate(diagram, 15, undefined);
-                let label = (((diagram.selectedItems as Selector).wrapper) as Container).children[0];
+                let label = (((diagram.selectedItems as Selector).wrapper) as GroupableView).children[0];
                 expect(label.offsetX == 220 && label.offsetY == 160 && label.width == 50 && label.height == 50 && label.rotateAngle == 30).toBe(true);
                 done();
             });
@@ -1106,25 +1106,25 @@ describe('Diagram Control', () => {
             });
             it('Drag after annotation rotation - alignment(Center)', (done: Function) => {
                 drag(diagram);
-                let label = (((diagram.selectedItems as Selector).wrapper) as Container).children[0];
+                let label = (((diagram.selectedItems as Selector).wrapper) as GroupableView).children[0];
                 expect(label.offsetX == 240 && label.offsetY == 180 && label.width == 50 && label.height == 60 && label.rotateAngle == 30).toBe(true);
                 done();
             });
             it('Resize East after annotation rotation - alignment(Center)', (done: Function) => {
                 resize(diagram, 'resizeEast');
-                let label = (((diagram.selectedItems as Selector).wrapper) as Container).children[0];
+                let label = (((diagram.selectedItems as Selector).wrapper) as GroupableView).children[0];
                 expect(label.offsetX == 260 && label.offsetY == 180 && label.width == 50 && label.height == 60 && label.rotateAngle == 30).toBe(true);
                 done();
             });
             it('Resize West after annotation rotation - alignment(Center)', (done: Function) => {
                 resize(diagram, 'resizeWest');
-                let label = (((diagram.selectedItems as Selector).wrapper) as Container).children[0];
+                let label = (((diagram.selectedItems as Selector).wrapper) as GroupableView).children[0];
                 expect(label.offsetX == 280 && label.offsetY == 180 && label.width == 50 && label.height == 60 && label.rotateAngle == 30).toBe(true);
                 done();
             });
             it('Rotate - alignment(Center)', (done: Function) => {
                 rotate(diagram, 15, undefined);
-                let label = (((diagram.selectedItems as Selector).wrapper) as Container).children[0];
+                let label = (((diagram.selectedItems as Selector).wrapper) as GroupableView).children[0];
                 expect(label.offsetX == 280 && label.offsetY == 180 && label.width == 50 && label.height == 60 && label.rotateAngle == 55).toBe(true);
                 done();
             });
@@ -1138,37 +1138,37 @@ describe('Diagram Control', () => {
             });
             it('Drag - alignment(Before)', (done: Function) => {
                 drag(diagram);
-                let label = (((diagram.selectedItems as Selector).wrapper) as Container).children[0];
+                let label = (((diagram.selectedItems as Selector).wrapper) as GroupableView).children[0];
                 expect(label.offsetX == 400 && label.offsetY == 115 && label.width == 50 && label.height == 50 && label.rotateAngle == 0).toBe(true);
                 done();
             });
             it('Resize North - alignment(Before)', (done: Function) => {
                 resize(diagram, 'resizeNorth');
-                let label = (((diagram.selectedItems as Selector).wrapper) as Container).children[0];
+                let label = (((diagram.selectedItems as Selector).wrapper) as GroupableView).children[0];
                 expect(label.offsetX == 400 && label.offsetY == 125 && label.width == 50 && label.height == 30 && label.rotateAngle == 0).toBe(true);
                 done();
             });
             it('Resize South - alignment(Before)', (done: Function) => {
                 resize(diagram, 'resizeSouth');
-                let label = (((diagram.selectedItems as Selector).wrapper) as Container).children[0];
+                let label = (((diagram.selectedItems as Selector).wrapper) as GroupableView).children[0];
                 expect(label.offsetX == 400 && label.offsetY == 135 && label.width == 50 && label.height == 50 && label.rotateAngle == 0).toBe(true);
                 done();
             });
             it('Resize East - alignment(Before)', (done: Function) => {
                 resize(diagram, 'resizeEast');
-                let label = (((diagram.selectedItems as Selector).wrapper) as Container).children[0];
+                let label = (((diagram.selectedItems as Selector).wrapper) as GroupableView).children[0];
                 expect(label.offsetX == 410 && label.offsetY == 135 && label.width == 70 && label.height == 50 && label.rotateAngle == 0).toBe(true);
                 done();
             });
             it('Resize West - alignment(Before)', (done: Function) => {
                 resize(diagram, 'resizeWest');
-                let label = (((diagram.selectedItems as Selector).wrapper) as Container).children[0];
+                let label = (((diagram.selectedItems as Selector).wrapper) as GroupableView).children[0];
                 expect(label.offsetX == 420 && label.offsetY == 135 && label.width == 50 && label.height == 50 && label.rotateAngle == 0).toBe(true);
                 done();
             });
             it('Rotate - alignment(Before)', (done: Function) => {
                 rotate(diagram, 15, undefined);
-                let label = (((diagram.selectedItems as Selector).wrapper) as Container).children[0];
+                let label = (((diagram.selectedItems as Selector).wrapper) as GroupableView).children[0];
                 expect(label.offsetX == 420 && label.offsetY == 135 && label.width == 50 && label.height == 50 && label.rotateAngle == 30).toBe(true);
                 done();
             });
@@ -1183,25 +1183,25 @@ describe('Diagram Control', () => {
             });
             it('Drag after annotation rotation - alignment(Before)', (done: Function) => {
                 drag(diagram);
-                let label = (((diagram.selectedItems as Selector).wrapper) as Container).children[0];
+                let label = (((diagram.selectedItems as Selector).wrapper) as GroupableView).children[0];
                 expect(label.offsetX == 440 && label.offsetY == 155 && label.width == 50 && label.height == 60 && label.rotateAngle == 30).toBe(true);
                 done();
             });
             it('Resize East after annotation rotation - alignment(Before)', (done: Function) => {
                 resize(diagram, 'resizeEast');
-                let label = (((diagram.selectedItems as Selector).wrapper) as Container).children[0];
+                let label = (((diagram.selectedItems as Selector).wrapper) as GroupableView).children[0];
                 expect(label.offsetX == 460 && label.offsetY == 175 && label.width == 50 && label.height == 60 && label.rotateAngle == 30).toBe(true);
                 done();
             });
             it('Resize West after annotation rotation - alignment(Before)', (done: Function) => {
                 resize(diagram, 'resizeWest');
-                let label = (((diagram.selectedItems as Selector).wrapper) as Container).children[0];
+                let label = (((diagram.selectedItems as Selector).wrapper) as GroupableView).children[0];
                 expect(label.offsetX == 480 && label.offsetY == 195 && label.width == 50 && label.height == 60 && label.rotateAngle == 30).toBe(true);
                 done();
             });
             it('Rotate - alignment(Before)', (done: Function) => {
                 rotate(diagram, 15, undefined);
-                let label = (((diagram.selectedItems as Selector).wrapper) as Container).children[0];
+                let label = (((diagram.selectedItems as Selector).wrapper) as GroupableView).children[0];
                 expect(label.offsetX == 480 && label.offsetY == 195 && label.width == 50 && label.height == 60 && label.rotateAngle == 55).toBe(true);
                 done();
             });
@@ -1215,37 +1215,37 @@ describe('Diagram Control', () => {
             });
             it('Drag - alignment(After)', (done: Function) => {
                 drag(diagram);
-                let label = (((diagram.selectedItems as Selector).wrapper) as Container).children[0];
+                let label = (((diagram.selectedItems as Selector).wrapper) as GroupableView).children[0];
                 expect(label.offsetX == 600 && label.offsetY == 165 && label.width == 50 && label.height == 50 && label.rotateAngle == 0).toBe(true);
                 done();
             });
             it('Resize North - alignment(After)', (done: Function) => {
                 resize(diagram, 'resizeNorth');
-                let label = (((diagram.selectedItems as Selector).wrapper) as Container).children[0];
+                let label = (((diagram.selectedItems as Selector).wrapper) as GroupableView).children[0];
                 expect(label.offsetX == 600 && label.offsetY == 175 && label.width == 50 && label.height == 30 && label.rotateAngle == 0).toBe(true);
                 done();
             });
             it('Resize South - alignment(After)', (done: Function) => {
                 resize(diagram, 'resizeSouth');
-                let label = (((diagram.selectedItems as Selector).wrapper) as Container).children[0];
+                let label = (((diagram.selectedItems as Selector).wrapper) as GroupableView).children[0];
                 expect(label.offsetX == 600 && label.offsetY == 185 && label.width == 50 && label.height == 50 && label.rotateAngle == 0).toBe(true);
                 done();
             });
             it('Resize East - alignment(After)', (done: Function) => {
                 resize(diagram, 'resizeEast');
-                let label = (((diagram.selectedItems as Selector).wrapper) as Container).children[0];
+                let label = (((diagram.selectedItems as Selector).wrapper) as GroupableView).children[0];
                 expect(label.offsetX == 610 && label.offsetY == 185 && label.width == 70 && label.height == 50 && label.rotateAngle == 0).toBe(true);
                 done();
             });
             it('Resize West - alignment(After)', (done: Function) => {
                 resize(diagram, 'resizeWest');
-                let label = (((diagram.selectedItems as Selector).wrapper) as Container).children[0];
+                let label = (((diagram.selectedItems as Selector).wrapper) as GroupableView).children[0];
                 expect(label.offsetX == 620 && label.offsetY == 185 && label.width == 50 && label.height == 50 && label.rotateAngle == 0).toBe(true);
                 done();
             });
             it('Rotate - alignment(After)', (done: Function) => {
                 rotate(diagram, 15, undefined);
-                let label = (((diagram.selectedItems as Selector).wrapper) as Container).children[0];
+                let label = (((diagram.selectedItems as Selector).wrapper) as GroupableView).children[0];
                 expect(label.offsetX == 620 && label.offsetY == 185 && label.width == 50 && label.height == 50 && label.rotateAngle == 30).toBe(true);
                 done();
             });
@@ -1260,25 +1260,25 @@ describe('Diagram Control', () => {
             });
             it('Drag after annotation rotation - alignment(After)', (done: Function) => {
                 drag(diagram);
-                let label = (((diagram.selectedItems as Selector).wrapper) as Container).children[0];
+                let label = (((diagram.selectedItems as Selector).wrapper) as GroupableView).children[0];
                 expect(label.offsetX == 640 && label.offsetY == 205 && label.width == 50 && label.height == 60 && label.rotateAngle == 30).toBe(true);
                 done();
             });
             it('Resize East after annotation rotation - alignment(After)', (done: Function) => {
                 resize(diagram, 'resizeEast');
-                let label = (((diagram.selectedItems as Selector).wrapper) as Container).children[0];
+                let label = (((diagram.selectedItems as Selector).wrapper) as GroupableView).children[0];
                 expect(label.offsetX == 660 && label.offsetY == 225 && label.width == 50 && label.height == 60 && label.rotateAngle == 30).toBe(true);
                 done();
             });
             it('Resize West after annotation rotation - alignment(After)', (done: Function) => {
                 resize(diagram, 'resizeWest');
-                let label = (((diagram.selectedItems as Selector).wrapper) as Container).children[0];
+                let label = (((diagram.selectedItems as Selector).wrapper) as GroupableView).children[0];
                 expect(label.offsetX == 680 && label.offsetY == 245 && label.width == 50 && label.height == 60 && label.rotateAngle == 30).toBe(true);
                 done();
             });
             it('Rotate - alignment(After)', (done: Function) => {
                 rotate(diagram, 15, undefined);
-                let label = (((diagram.selectedItems as Selector).wrapper) as Container).children[0];
+                let label = (((diagram.selectedItems as Selector).wrapper) as GroupableView).children[0];
                 expect(label.offsetX == 680 && label.offsetY == 245 && label.width == 50 && label.height == 60 && label.rotateAngle == 55).toBe(true);
                 done();
             });
@@ -1606,31 +1606,31 @@ describe('Diagram Control', () => {
         it('Drag', (done: Function) => {
             drag(diagram);
             drag(diagram);
-            let label = (((diagram.selectedItems as Selector).wrapper) as Container).children[0];
+            let label = (((diagram.selectedItems as Selector).wrapper) as GroupableView).children[0];
             expect(label.offsetX == 290 && label.offsetY == 240 && label.width == 100 && label.height == 100).toBe(true);
             done();
         });
         it('Resize North', (done: Function) => {
             resize(diagram, 'resizeNorth');
-            let label = (((diagram.selectedItems as Selector).wrapper) as Container).children[0];
+            let label = (((diagram.selectedItems as Selector).wrapper) as GroupableView).children[0];
             expect(label.offsetX == 290 && label.offsetY == 255.00000000000003 && label.width == 100 && label.height == 70 && label.rotateAngle == 0).toBe(true);
             done();
         });
         it('Resize South', (done: Function) => {
             resize(diagram, 'resizeSouth');
-            let label = (((diagram.selectedItems as Selector).wrapper) as Container).children[0];
+            let label = (((diagram.selectedItems as Selector).wrapper) as GroupableView).children[0];
             expect(label.offsetX == 290 && label.offsetY == 270 && label.width == 100 && label.height == 100 && label.rotateAngle == 0).toBe(true);
             done();
         });
         it('Resize East', (done: Function) => {
             resize(diagram, 'resizeEast');
-            let label = (((diagram.selectedItems as Selector).wrapper) as Container).children[0];
+            let label = (((diagram.selectedItems as Selector).wrapper) as GroupableView).children[0];
             expect(label.offsetX == 300 && label.offsetY == 270 && label.width == 120 && label.height == 100 && label.rotateAngle == 0).toBe(true);
             done();
         });
         it('Resize West', (done: Function) => {
             resize(diagram, 'resizeWest');
-            let label = (((diagram.selectedItems as Selector).wrapper) as Container).children[0];
+            let label = (((diagram.selectedItems as Selector).wrapper) as GroupableView).children[0];
             expect(label.offsetX == 309.99999999999994 && label.offsetY == 270 && label.width == 100 && label.height == 100 && label.rotateAngle == 0).toBe(true);
             done();
         });
@@ -1646,31 +1646,31 @@ describe('Diagram Control', () => {
             mouseEvents.mouseMoveEvent(diagramCanvas, x + diagram.element.offsetLeft + 20, y + diagram.element.offsetTop);
             mouseEvents.mouseMoveEvent(diagramCanvas, x + diagram.element.offsetLeft + 20, y + diagram.element.offsetTop + 20);
             mouseEvents.mouseUpEvent(diagramCanvas, x + diagram.element.offsetLeft + 20, y + diagram.element.offsetTop + 20);
-            let label = (((diagram.selectedItems as Selector).wrapper) as Container).children[0];
+            let label = (((diagram.selectedItems as Selector).wrapper) as GroupableView).children[0];
             expect(label.offsetX == 320 && label.offsetY == 280 && label.width == 120.00000000000006 && label.height == 80 && label.rotateAngle == 0).toBe(true);
             done();
         });
         it('Resize NorthWest', (done: Function) => {
             resize(diagram, 'resizeNorthWest');
-            let label = (((diagram.selectedItems as Selector).wrapper) as Container).children[0];
+            let label = (((diagram.selectedItems as Selector).wrapper) as GroupableView).children[0];
             expect(label.offsetX == 330 && label.offsetY == 290 && label.width == 100.00000000000006 && label.height == 60 && label.rotateAngle == 0).toBe(true);
             done();
         });
         it('Resize SouthEast', (done: Function) => {
             resize(diagram, 'resizeSouthEast');
-            let label = (((diagram.selectedItems as Selector).wrapper) as Container).children[0];
+            let label = (((diagram.selectedItems as Selector).wrapper) as GroupableView).children[0];
             expect(label.offsetX == 340 && label.offsetY == 300 && label.width == 120.00000000000006 && label.height == 80 && label.rotateAngle == 0).toBe(true);
             done();
         });
         it('Resize SouthWest', (done: Function) => {
             resize(diagram, 'resizeSouthWest');
-            let label = (((diagram.selectedItems as Selector).wrapper) as Container).children[0];
+            let label = (((diagram.selectedItems as Selector).wrapper) as GroupableView).children[0];
             expect(label.offsetX == 350 && label.offsetY == 309.99999999999994 && label.width == 100.00000000000006 && label.height == 100 && label.rotateAngle == 0).toBe(true);
             done();
         });
         it('Rotate', (done: Function) => {
             rotate(diagram, 15, undefined);
-            let label = (((diagram.selectedItems as Selector).wrapper) as Container).children[0];
+            let label = (((diagram.selectedItems as Selector).wrapper) as GroupableView).children[0];
             expect(label.offsetX == 350 && label.offsetY == 310 && label.width == 100.00000000000006 && label.height == 100 && label.rotateAngle == 20).toBe(true);
             done();
         });
@@ -1896,20 +1896,22 @@ describe('Check Connector annotation Alignment value ', () => {
         mouseEvents.clickEvent(diagramCanvas,annotation.offsetX + left,annotation.offsetY + top);
         expect((diagram.selectedItems as Selector).connectors.length == 1 &&
             (diagram.selectedItems as Selector).annotation !== undefined).toBe(true);
+        let label = (((diagram.selectedItems as Selector).wrapper) as GroupableView).children[0];
+        console.log('Drag',Math.round(label.offsetX),Math.round(label.offsetY), Math.round(label.width), Math.round(label.height));
         done();
     });
     it('Drag', (done: Function) => {
         drag(diagram);
-        let label = (((diagram.selectedItems as Selector).wrapper) as Container).children[0];
-        console.log('Drag',Math.round(label.offsetX),Math.round(label.offsetY));
+        let label = (((diagram.selectedItems as Selector).wrapper) as GroupableView).children[0];
+        console.log('Drag',Math.round(label.offsetX),Math.round(label.offsetY), Math.round(label.width), Math.round(label.height));
         expect(Math.round(label.offsetX) == 173 && Math.round(label.offsetY) == 103 ).toBe(true);
         done();
     });
     it('Resize North', (done: Function) => {
         resize(diagram, 'resizeNorth');
-        let label = (((diagram.selectedItems as Selector).wrapper) as Container).children[0];
-        console.log('Resize North',Math.round(label.offsetX),Math.round(label.offsetY),Math.round(label.width));
-        expect(Math.round(label.offsetX )== 193 && Math.round(label.offsetY) == 123 && Math.round(label.width) == 54 && label.height== 34.4).toBe(true);
+        let label = (((diagram.selectedItems as Selector).wrapper) as GroupableView).children[0];
+        console.log('Resize North',Math.round(label.offsetX),Math.round(label.offsetY),Math.round(label.width),Math.round(label.height));
+        expect(Math.round(label.offsetX )== 173 && Math.round(label.offsetY) == 113 && Math.round(label.width) == 54 && Math.round(label.height)== 14).toBe(true);
         done();
     });
     it('Resize South', (done: Function) => {
@@ -1924,16 +1926,16 @@ describe('Check Connector annotation Alignment value ', () => {
         mouseEvents.mouseMoveEvent(diagramCanvas, x + diagram.element.offsetLeft + 20, y + diagram.element.offsetTop);
         mouseEvents.mouseMoveEvent(diagramCanvas, x + diagram.element.offsetLeft + 20, y + diagram.element.offsetTop + 20);
         mouseEvents.mouseUpEvent(diagramCanvas, x + diagram.element.offsetLeft + 20, y + diagram.element.offsetTop + 20);
-        let label = (((diagram.selectedItems as Selector).wrapper) as Container).children[0];
-        console.log('Resize South',Math.round(label.offsetX),Math.round(label.offsetY),Math.round(label.width));
-        expect(Math.round(label.offsetX) == 193 && Math.round(label.offsetY)== 133 && Math.round(label.width) == 54 && label.height == 54.4).toBe(true);
+        let label = (((diagram.selectedItems as Selector).wrapper) as GroupableView).children[0];
+        console.log('Resize South',Math.round(label.offsetX),Math.round(label.offsetY),Math.round(label.width),Math.round(label.height));
+        expect(Math.round(label.offsetX) == 173 && Math.round(label.offsetY)== 123 && Math.round(label.width) == 54 && Math.round(label.height) == 34).toBe(true);
         done();
     });
     it('Resize East', (done: Function) => {
         resize(diagram, 'resizeEast');
-        let label = (((diagram.selectedItems as Selector).wrapper) as Container).children[0];
-        console.log('Resize East',Math.ceil(label.offsetX),Math.round(label.offsetY),Math.round(label.width));
-        expect((Math.ceil(label.offsetX) == 203 || Math.ceil(label.offsetX) == 213) && (Math.round(label.offsetY) == 133 || Math.round(label.offsetY) == 153) && (Math.round(label.width) == 75 || Math.round(label.width) == 54) && label.height == 54.4).toBe(true);
+        let label = (((diagram.selectedItems as Selector).wrapper) as GroupableView).children[0];
+        console.log('Resize East',Math.ceil(label.offsetX),Math.round(label.offsetY),Math.round(label.width),Math.round(label.height));
+        expect((Math.ceil(label.offsetX) == 183 || Math.ceil(label.offsetX) == 213) && (Math.round(label.offsetY) == 123 || Math.round(label.offsetY) == 153) && (Math.round(label.width) == 74 || Math.round(label.width) == 54) && Math.round(label.height) == 34).toBe(true);
         done();
     });
     it('Resize West', (done: Function) => {
@@ -1948,16 +1950,16 @@ describe('Check Connector annotation Alignment value ', () => {
         mouseEvents.mouseMoveEvent(diagramCanvas, x + diagram.element.offsetLeft + 20, y + diagram.element.offsetTop);
         mouseEvents.mouseMoveEvent(diagramCanvas, x + diagram.element.offsetLeft + 20, y + diagram.element.offsetTop + 20);
         mouseEvents.mouseUpEvent(diagramCanvas, x + diagram.element.offsetLeft + 20, y + diagram.element.offsetTop + 20);
-        let label = (((diagram.selectedItems as Selector).wrapper) as Container).children[0];
-        console.log('Resize West',Math.round(label.offsetX),Math.round(label.offsetY),Math.round(label.width));
-        expect((Math.round(label.offsetX) == 212 || Math.round(label.offsetX) == 222 ) && Math.round(label.offsetY)== 153 && Math.round(label.width) == 35 && label.height == 54.4).toBe(true);
+        let label = (((diagram.selectedItems as Selector).wrapper) as GroupableView).children[0];
+        console.log('Resize West',Math.round(label.offsetX),Math.round(label.offsetY),Math.round(label.width),Math.round(label.height));
+        expect((Math.round(label.offsetX) == 193 || Math.round(label.offsetX) == 222 ) && Math.round(label.offsetY)== 123 && Math.round(label.width) == 55 && Math.round(label.height) == 34).toBe(true);
         done();
     });
     it('Rotate', (done: Function) => {
         rotate(diagram, 15, undefined);
-        let label = (((diagram.selectedItems as Selector).wrapper) as Container).children[0];
-        console.log('Rotate',Math.round(label.offsetX),Math.round(label.offsetY),Math.round(label.width));
-        expect((Math.round(label.offsetX)== 212 || Math.round(label.offsetX) == 222) && Math.round(label.offsetY) == 133 || (Math.round(label.offsetY) == 153)  && Math.round(label.width) == 35 && label.height == 54.4 && label.rotateAngle == 35).toBe(true);
+        let label = (((diagram.selectedItems as Selector).wrapper) as GroupableView).children[0];
+        console.log('Rotate',Math.round(label.offsetX),Math.round(label.offsetY),Math.round(label.width),Math.round(label.height),label.rotateAngle);
+        expect((Math.round(label.offsetX) == 193 || Math.round(label.offsetX) == 222) && Math.round(label.offsetY) == 123 || (Math.round(label.offsetY) == 153) && Math.round(label.width) == 55 && Math.round(label.height) == 34 && label.rotateAngle == 45).toBe(true);
         done();
     });
     it('Select after annotation rotation', (done: Function) => {
@@ -1971,30 +1973,30 @@ describe('Check Connector annotation Alignment value ', () => {
     });
     it('Drag after annotation rotation', (done: Function) => {
         drag(diagram);
-        let label = (((diagram.selectedItems as Selector).wrapper) as Container).children[0];
-        console.log('Drag after annotation rotation',Math.round(label.offsetX),Math.round(label.offsetY),Math.round(label.width));
-        expect((Math.round(label.offsetX) == 232 || Math.round(label.offsetX) == 242 )&& ( label.offsetY == 150 || Math.round(label.offsetY) === 170) && (Math.round(label.width) == 56 || Math.round(label.width) == 35) && label.height == 60 && label.rotateAngle == 35).toBe(true);
+        let label = (((diagram.selectedItems as Selector).wrapper) as GroupableView).children[0];
+        console.log('Drag after annotation rotation',Math.round(label.offsetX),Math.round(label.offsetY),Math.round(label.width),Math.round(label.height),label.rotateAngle);
+        expect((Math.round(label.offsetX) == 213 || Math.round(label.offsetX) == 242 )&& ( label.offsetY == 130 || Math.round(label.offsetY) === 170) && (Math.round(label.width) == 55 || Math.round(label.width) == 35) && label.height == 60 && label.rotateAngle == 45).toBe(true);
         done();
     });
     it('Resize East after annotation rotation', (done: Function) => {
         resize(diagram, 'resizeEast');
-        let label = (((diagram.selectedItems as Selector).wrapper) as Container).children[0];
-        console.log('Resize East after annotation rotation',Math.round(label.offsetX),Math.round(label.offsetY),Math.round(label.width));
-        expect((Math.round(label.offsetX) == 252 || Math.round(label.offsetX) == 262) && (label.offsetY == 170 || Math.round(label.offsetY) == 190) && (Math.round(label.width) == 56 || Math.round(label.width) == 35) && label.height == 60 && label.rotateAngle == 35).toBe(true);
+        let label = (((diagram.selectedItems as Selector).wrapper) as GroupableView).children[0];
+        console.log('Resize East after annotation rotation',Math.round(label.offsetX),Math.round(label.offsetY),Math.round(label.width),Math.round(label.height),label.rotateAngle);
+        expect((Math.round(label.offsetX) == 233 || Math.round(label.offsetX) == 262) && (label.offsetY == 150 || Math.round(label.offsetY) == 190) && (Math.round(label.width) == 55 || Math.round(label.width) == 35) && label.height == 60 && label.rotateAngle == 45).toBe(true);
         done();
     });
     it('Resize West after annotation rotation', (done: Function) => {
         resize(diagram, 'resizeWest');
-        let label = (((diagram.selectedItems as Selector).wrapper) as Container).children[0];
-        console.log('Resize West after annotation rotation',Math.round(label.offsetX),Math.round(label.offsetY),Math.round(label.width));
-        expect((Math.round(label.offsetX) == 252 || Math.round(label.offsetX) == 262)&& (label.offsetY == 190 || Math.round(label.offsetY) === 210) && (Math.round(label.width) == 56 || Math.round(label.width) === 35) && label.height == 60 && label.rotateAngle == 35).toBe(true);
+        let label = (((diagram.selectedItems as Selector).wrapper) as GroupableView).children[0];
+        console.log('Resize West after annotation rotation',Math.round(label.offsetX),Math.round(label.offsetY),Math.round(label.width),Math.round(label.height),label.rotateAngle);
+        expect((Math.round(label.offsetX) == 253 || Math.round(label.offsetX) == 262)&& (label.offsetY == 170 || Math.round(label.offsetY) === 210) && (Math.round(label.width) == 55 || Math.round(label.width) === 35) && label.height == 60 && label.rotateAngle == 45).toBe(true);
         done();
     });
     it('Rotate', (done: Function) => {
         rotate(diagram, 15, undefined);
-        let label = (((diagram.selectedItems as Selector).wrapper) as Container).children[0];
-        console.log('Rotate',Math.round(label.offsetX),Math.round(label.offsetY),Math.round(label.width));
-        expect((Math.round(label.offsetX) == 252 || Math.round(label.offsetX) == 262)&& (label.offsetY== 190 || Math.round(label.offsetY) === 210) && (Math.round(label.width) == 56 || Math.round(label.width) === 35) && label.height == 60 && label.rotateAngle == 70).toBe(true);
+        let label = (((diagram.selectedItems as Selector).wrapper) as GroupableView).children[0];
+        console.log('Rotate',Math.round(label.offsetX),Math.round(label.offsetY),Math.round(label.width),Math.round(label.height),label.rotateAngle);
+        expect((Math.round(label.offsetX) == 253 || Math.round(label.offsetX) == 262)&& (label.offsetY== 170 || Math.round(label.offsetY) === 210) && (Math.round(label.width) == 55 || Math.round(label.width) === 35) && label.height == 60 && label.rotateAngle == 75).toBe(true);
         done();
     });
     it('Drag the annotation with alignment bottom left', (done: Function) => {
@@ -2036,7 +2038,7 @@ describe('Check Connector annotation Alignment value ', () => {
         var annotation = connector.wrapper.children[3];
         mouseEvents.clickEvent(diagramCanvas, annotation.offsetX, annotation.offsetY);
         drag(diagram);
-        expect(Math.round(connector.wrapper.children[3].offsetX) == 692).toBe(true);
+        expect(Math.round(connector.wrapper.children[3].offsetX) == 691).toBe(true);
         done();
     });
     it('Drag the annotation with alignment Top Right', (done: Function) => {
@@ -2177,7 +2179,7 @@ describe('Check Node annotation Alignment value ', () => {
     });
     it('Without and with resize constraints', (done: Function) => {
         resize(diagram, 'resizeNorth');
-        let label = (((diagram.selectedItems as Selector).wrapper) as Container).children[0];
+        let label = (((diagram.selectedItems as Selector).wrapper) as GroupableView).children[0];
         diagram.nodes[0].annotations[0].constraints =  AnnotationConstraints.Interaction  | AnnotationConstraints.Resize;
         resize(diagram, 'resizeNorth');
         expect(label.offsetX == 170 && label.offsetY == 140  && label.rotateAngle == 0).toBe(true);
@@ -2401,7 +2403,7 @@ describe('Double click on node annotation will open the edit of invisible annota
         it('Drag', (done: Function) => {
             drag(diagram);
             drag(diagram);
-            let label = (((diagram.selectedItems as Selector).wrapper) as Container).children[0];
+            let label = (((diagram.selectedItems as Selector).wrapper) as GroupableView).children[0];
             expect(label.offsetX == 290 && label.offsetY == 240 && label.width == 100 && label.height == 100).toBe(true);
             done();
         });

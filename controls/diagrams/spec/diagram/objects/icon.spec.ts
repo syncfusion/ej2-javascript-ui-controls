@@ -4,7 +4,7 @@ import { NodeModel } from '../../../src/diagram/objects/node-model';
 import { Node, Path } from '../../../src/diagram/objects/node';
 import { Connector } from '../../../src/diagram/objects/connector';
 import { MouseEvents } from '../interaction/mouseevents.spec';
-import { Container } from '../../../src/diagram/core/containers/container';
+import { GroupableView } from '../../../src/diagram/core/containers/container';
 import { DiagramElement } from '../../../src/diagram/core/elements/diagram-element';
 import { getDiagramElement } from '../../../src/diagram/utility/dom-util';
 import { DiagramNativeElement } from '../../../src/diagram/core/elements/native-element';

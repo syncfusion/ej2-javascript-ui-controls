@@ -2,7 +2,23 @@
 
 ## [Unreleased]
 
-## 29.2.11 (2025-06-17)
+## 30.1.37 (2025-06-25)
+
+### Image Editor
+
+#### Features
+
+- `Opening images with custom width and height` - Users can now open images with specified width and height values using the imageSettings parameter in the `Open` method. This enhancement introduces three additional properties: `width,` `height,` and `isAspectRatio.` Image dimensions can be precisely controlled while preserving the aspect ratio, if needed. This provides more control over rendering images, especially when dealing with high-resolution images or fixed canvas requirements.
+
+- `Underline and strikethrough support for text annotation` - `Underline` and `Strikethrough` formatting options have been added to text annotations. This feature is useful for creating instructional materials, documentation screenshots, and professional image presentations.
+
+- `Loading BMP images` - Users can load BMP (Bitmap) image files, expanding its file format compatibility. Users can upload BMP files via the file uploader UI or programmatically using the `Open` method. This addresses the needs of design professionals and users working with high-resolution images.
+
+#### Bug Fixes
+
+- `#I733422` - The issue with "Annotations were not returned in image data when calling the 'getImageData' method inside the 'editComplete' event" has been resolved.
+
+## 29.2.5 (2025-05-21)
 
 ### Image Editor
 

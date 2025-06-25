@@ -1,4 +1,5 @@
-import { IRichTextEditor, NotifyArgs } from '../base/interface';
+import { IRichTextEditor } from '../base/interface';
+import { NotifyArgs } from '../../common/interface';
 import { RenderType } from '../base/enum';
 import * as events from '../base/constant';
 import { ServiceLocator } from '../services/service-locator';
@@ -100,8 +101,11 @@ export class Render {
                     } else {
                         node.innerHTML = '<p><br/></p>';
                     }
+                    const cursorFocusElement: Element = (this.parent.enterKey === 'BR')
+                        ? (node.childNodes[0] as Element).parentElement
+                        : (node.childNodes[0] as Element);
                     this.parent.formatter.editorManager.nodeSelection.setCursorPoint(
-                        this.parent.contentModule.getDocument(), node.childNodes[0] as Element, 0);
+                        this.parent.contentModule.getDocument(), cursorFocusElement, 0);
                 }
                 break;
             }

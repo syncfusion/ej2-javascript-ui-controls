@@ -50,6 +50,9 @@
       @if $skin-name == 'Material3' {
         padding: $zero-value;
       }
+      @if $skin-name == 'highcontrast' {
+        padding: 3px 11px;
+      }
     }
 
     .e-btn .e-btn-icon.e-icon-dlg-close {

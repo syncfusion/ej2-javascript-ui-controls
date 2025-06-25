@@ -413,26 +413,26 @@
     font-family: 'e-icons';
   }
 
-  .e-de-e-paragraph-mark::before{
+  .e-de-e-paragraph-mark::before {
     content: '\e720';
     font-family: 'e-icons';
   }
 
-  .e-de-e-paragraph-style-mark::before{
+  .e-de-e-paragraph-style-mark::before {
     content: '\e720';
     font-family: 'e-icons';
   }
 
-  .e-de-e-character-style-mark::before{
+  .e-de-e-character-style-mark::before {
     content: '\e97b';
     font-family: 'e-icons';
   }
 
-  .e-de-e-linked-style-mark::before{
+  .e-de-e-linked-style-mark::before {
     content: '\e97c';
     font-family: 'e-icons';
   }
-  
+
   .e-de-ctnr-columns::before {
     content: '\e955';
     font-family: 'e-icons';
@@ -457,7 +457,7 @@
     content: '\e971';
     font-family: 'e-icons';
   }
-  
+
   .e-de-ctnr-section-break-even-page::before {
     content: '\e96e';
     font-family: 'e-icons';
@@ -496,5 +496,209 @@
     content: '\e974';
     font-family: 'e-icons';
     font-size: $de-column-presets-font-size;
+  }
+
+  .e-de-ctnr-add-bookmark::before {
+    content: '\e9e1';
+  }
+
+  .e-de-ctnr-all-bookmarks::before {
+    content: '\e9e2';
+  }
+
+  .e-de-ctnr-page-orientation::before {
+    content: '\e9e4';
+  }
+
+  .e-de-ctnr-margin::before {
+    content: '\e9e5';
+  }
+
+  .e-de-ctnr-previous-comment::before {
+    content: '\e9e6';
+  }
+
+  .e-de-ctnr-next-comment::before {
+    content: '\e9e7';
+  }
+
+  .e-de-ctnr-close-comment::before {
+    content: '\e9e8';
+  }
+
+  .e-de-ctnr-increase-fontsize::before {
+    content: '\e9e9';
+  }
+
+  .e-de-ctnr-decrease-fontsize::before {
+    content: '\e9ea';
+  }
+
+  .e-de-ctnr-delete-all-comments::before {
+    content: '\e9eb';
+  }
+
+  .e-de-ctnr-reading-view::before {
+    content: '\e9ec';
+  }
+
+  .e-de-ctnr-multiple-page::before {
+    content: '\e9ed';
+  }
+
+  .e-de-ctnr-fit-100::before {
+    content: '\e9ee';
+  }
+
+  .e-de-ctnr-margin-narrow::before {
+    content: '\e9ef';
+  }
+
+  .e-de-ctnr-margin-normal::before {
+    content: '\e9f0';
+  }
+
+  .e-de-ctnr-margin-moderate::before {
+    content: '\e9f1';
+  }
+
+  .e-de-ctnr-margin-wide::before {
+    content: '\e9f2';
+  }
+
+  .e-de-ctnr-margin-default::before {
+    content: '\e9f3';
+  }
+
+  .e-de-ctnr-margin-custom::before {
+    content: '\e9f4';
+  }
+
+  .e-de-ctnr-size-letter::before {
+    content: '\e9f5';
+  }
+
+  .e-de-ctnr-size-legal::before {
+    content: '\e9f6';
+  }
+
+  .e-de-ctnr-size-executive::before {
+    content: '\e9f7';
+  }
+
+  .e-de-ctnr-size-a4::before {
+    content: '\e9f8';
+  }
+
+  .e-de-ctnr-size-a5::before {
+    content: '\e9f9';
+  }
+
+  .e-de-ctnr-size-custom::before {
+    content: '\e9fa';
+  }
+
+  .e-de-ctnr-more-column::before {
+    content: '\e9fb';
+  }
+
+  .e-de-ctnr-zoom-in::before {
+    content: '\e795';
+  }
+
+  .e-de-ctnr-zoom-out::before {
+    content: '\e825';
+  }
+
+  .e-de-ctnr-table-update::before {
+    content: '\e828';
+  }
+
+  .e-de-ctnr-text-alternative::before {
+    content: '\e769';
+  }
+
+  .e-de-ctnr-export::before {
+    content: '\e72e';
+  }
+
+  .e-de-ctnr-replace::before {
+    content: '\e710';
+  }
+
+  .e-de-ctnr-cut::before {
+    content: '\e7fb';
+  }
+
+  .e-de-ctnr-copy::before {
+    content: '\e77c';
+  }
+
+  .e-de-ctnr-changes-accept::before {
+    content: '\e7a8';
+  }
+
+  .e-de-ctnr-changes-reject::before {
+    content: '\e815';
+  }
+
+  .e-de-ctnr-border-none::before {
+    content: '\e827';
+  }
+
+  .e-de-ctnr-paint-bucket::before {
+    content: '\e783';
+  }
+
+  .e-de-ctnr-mouse-pointer::before {
+    content: '\e74e';
+  }
+
+  .e-de-ctnr-table-2::before {
+    content: '\e83f';
+  }
+
+  .e-de-ctnr-freeze-row::before {
+    content: '\e77f';
+  }
+
+  .e-de-ctnr-freeze-column::before {
+    content: '\e841';
+  }
+
+  .e-de-ctnr-table-cell::before {
+    content: '\e7c2';
+  }
+
+  .e-de-ctnr-table-delete::before {
+    content: '\e811';
+  }
+
+  .e-de-ctnr-page-column-right::before {
+    content: '\e8b7';
+  }
+
+  .e-de-ctnr-page-column-left::before {
+    content: '\e8b8';
+  }
+
+  .e-de-ctnr-page-column-one::before {
+    content: '\e8b9';
+  }
+
+  .e-de-ctnr-page-column-two::before {
+    content: '\e8ba';
+  }
+
+  .e-de-ctnr-page-column-three::before {
+    content: '\e8bb';
+  }
+
+  .e-de-ctnr-page-width::before {
+    content: '\e9d0';
+  }
+
+  .e-de-ctnr-page-portrait::before {
+    content: '\e9ad';
   }
 }

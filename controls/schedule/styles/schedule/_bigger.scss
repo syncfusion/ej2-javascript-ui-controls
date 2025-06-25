@@ -346,8 +346,14 @@
         padding-right: 0;
       }
 
-      .e-event-popup .e-date-time-icon {
-        padding-right: $schedule-bgr-rtl-event-popup-date-time-icon-padding-right;
+      .e-event-popup {
+        .e-date-time-icon,
+        .e-location-icon,
+        .e-time-zone-icon,
+        .e-description-icon,
+        .e-resource-icon {
+          padding-right: $schedule-bgr-rtl-event-popup-date-time-icon-padding-right;
+        }
       }
     }
 

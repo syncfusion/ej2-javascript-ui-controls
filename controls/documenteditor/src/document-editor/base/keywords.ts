@@ -387,4 +387,8 @@ export const isAfterTableMarkProperty: string[] = ['isAfterTableMark', 'atm'];
 export const incrementalOps: string[] = ['iOps'];
 export const hiddenProperty: string[] = ['hidden', 'hdn'];
 export const editingPointsProperty: string[] = ['editingpoints', 'ep'];
-
+export const childShapeProperty: string[] = ['childShapes', 'csh'];
+export const offsetXValue: string[] = ['offsetXValue', 'oxv'];
+export const offsetYValue: string[] = ['offsetYValue', 'oyv'];
+export const extentXValue: string[] = ['extentXValue', 'exv'];
+export const extentYValue: string[] = ['extentYValue', 'eyv'];

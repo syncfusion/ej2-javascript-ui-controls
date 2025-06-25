@@ -586,6 +586,54 @@ export interface ValueSortSettingsModel {
     sortOrder?: Sorting;
 
     /**
+     * Defines the header text of the row field for which value-based sorting is applied (Relational).
+     *
+     * This should represent the exact row member path, separated using the specified `headerDelimiter`.
+     *
+     * > Note: Applicable only for relational data sources.
+     *
+     * @default ''
+     */
+    rowHeaderText?: string;
+
+    /**
+     * Sets the sorting order for the specified row header field (Relational).
+     *
+     * Available options:
+     * - `Ascending` - Sorts field members in ascending order based on aggregated value.
+     * - `Descending` - Sorts field members in descending order based on aggregated value.
+     *
+     * > Note: Applicable only for relational data sources.
+     *
+     * @default 'Ascending'
+     */
+    rowSortOrder?: Sorting;
+
+    /**
+     * Defines the header text of the column field for which value-based sorting is applied (Relational).
+     *
+     * This should represent the exact column member path, separated using the specified `headerDelimiter`.
+     *
+     * > Note: Applicable only for relational data sources.
+     *
+     * @default ''
+     */
+    columnHeaderText?: string;
+
+    /**
+     * Sets the sorting order for the specified column header field (Relational).
+     *
+     * Available options:
+     * - `Ascending` - Sorts field members in ascending order based on aggregated value.
+     * - `Descending` - Sorts field members in descending order based on aggregated value.
+     *
+     * > Note: Applicable only for relational data sources.
+     *
+     * @default 'Ascending'
+     */
+    columnSortOrder?: Sorting;
+
+    /**
      * It allows to set the measure name to achieve value sorting based on this.
      * > It is applicable only for OLAP data source.
      */

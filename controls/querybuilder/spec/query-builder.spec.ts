@@ -1361,8 +1361,9 @@ describe('QueryBuilder', () => {
                 enableSeparateConnector: true,
                 rule: eRules
             }, '#querybuilder');
-            (document.getElementsByClassName('e-btngroup-or-lbl')[0] as HTMLElement).click();
+            (document.getElementsByClassName('e-btngroup-or-lbl')[1] as HTMLElement).click();
             expect(queryBuilder.rule.condition).toEqual('and');
+            (document.getElementsByClassName('e-btngroup-and-lbl')[1] as HTMLElement).click();
         });
     });
 
@@ -4236,7 +4237,7 @@ describe('QueryBuilder', () => {
                 queryBuilder.locale = 'de';
                 queryBuilder.dataBind();
             });
-            const template: Element = createElement('script', { id: 'template' });
+	    const template: Element = createElement('script', { id: 'template' });
             template.setAttribute('type', 'text/x-template');
             template.innerHTML = '<div class="e-rule e-rule-template"><div class="e-rule-filter"><input id = ${ruleID}_filterkey class="e-filter-input"></div><div class="e-rule-operator e-operator"><input id = ${ruleID}_operatorkey class="e-operator-input"></div><div class="e-value e-rule-value e-slider-value"><div id = ${ruleID}_valuekey0 class="ticks_slider"></div></div><div class="e-rule-btn"><button class="e-removerule e-rule-delete e-css e-btn e-small e-round"><span class="e-btn-icon e-icons e-delete-icon"/></button></div></div>';
             document.body.appendChild(template);
@@ -4329,7 +4330,7 @@ describe('QueryBuilder', () => {
             }, '#querybuilder');
             expect(queryBuilder.getSqlFromRules()).toEqual('FirstName BETWEEN a AND b');
         });
-        it('954398 - Exception occurs when we clear the value on custom dropdown field in QueryBuilder component', () => {
+	it('954398 - Exception occurs when we clear the value on custom dropdown field in QueryBuilder component', () => {
             const customFieldData: ColumnsModel[] = [
                 { field: 'EmployeeID', label: 'Employee ID', type: 'number', ruleTemplate: '#template' },
                 { field: 'FirstName', label: 'First Name', type: 'string' },

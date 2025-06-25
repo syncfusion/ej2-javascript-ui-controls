@@ -978,7 +978,7 @@ export class CartesianAxisLayoutPanel {
             label = axis.visibleLabels[i as number];
             isAxisBreakLabel = isBreakLabel(axis.visibleLabels[i as number].originalText);
             elementSize =  isAxisBreakLabel ? axis.visibleLabels[i as number].breakLabelSize : axis.visibleLabels[i as number].size;
-            pointY = (valueToCoefficient(axis.visibleLabels[i as number].value, axis) * rect.height) + (chart.stockChart ? 7 : 0);
+            pointY = (valueToCoefficient(axis.visibleLabels[i as number].value, axis) * rect.height) + (chart.stockChart && axis.labelPosition !== 'Outside' ? 7 : 0);
             pointY = Math.floor((pointY * -1) + (rect.y + rect.height));
             textHeight = ((elementSize.height / 8) * axis.visibleLabels[i as number].text.length / 2);
             textPadding = (chart.requireInvertedAxis && axis.labelPosition === 'Inside') ? 0 : ((elementSize.height / 4) * 3) + 3;

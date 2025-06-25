@@ -2784,6 +2784,67 @@ export class Signature {
         }
         if (this.signatureDialog)
         {this.signatureDialog.destroy(); }
+        this.mouseDetection = null;
+        this.mouseMoving = null;
+        this.canvasTouched = null;
+        this.signatureImageWidth = null;
+        this.signatureImageHeight = null;
+        this.oldX = null;
+        this.mouseX = null;
+        this.oldY = null;
+        this.mouseY = null;
+        this.imageSignatureDataUrl = null;
+        this.drawSignatureDataUrl = null;
+        this.newObject = null;
+        this.outputString = null;
+        this.drawOutputString = null;
+        this.imageOutputString = null;
+        this.signatureDialog = null;
+        this.signaturecollection = null;
+        this.outputcollection = null;
+        this.signAnnotationIndex = null;
+        this.fontName = null;
+        this.fontsign = null;
+        this.signfontStyle = null;
+        this.signtypevalue = null;
+        this.signfont = null;
+        this.signHeight = null;
+        this.signWidth = null;
+        this.signaturetype = null;
+        this.tabObj = null;
+        this.isSaveSignature = null;
+        this.isSaveInitial = null;
+        this.isInitialFiledSaveSignature = null;
+        this.isSignatureFieldsSaveSignature = null;
+        this.issaveTypeSignature = null;
+        this.issaveImageSignature = null;
+        this.issaveTypeInitial = null;
+        this.issaveImageInitial = null;
+        this.saveSignatureTypeString = null;
+        this.saveInitialTypeString = null;
+        this.saveTypeString = null;
+        this.signatureTypeString = null;
+        this.initialTypeString = null;
+        this.saveUploadString = null;
+        this.saveSignatureUploadString = null;
+        this.saveInitialUploadString = null;
+        this.signatureUploadString = null;
+        this.initialUploadString = null;
+        this.clearUploadString = null;
+        this.textValue = null;
+        this.signatureDrawString = null;
+        this.initialDrawString = null;
+        this.signatureTextContentTop = null;
+        this.signatureTextContentLeft = null;
+        this.saveSignatureString = null;
+        this.saveInitialString = null;
+        this.saveImageString = null;
+        this.currentTarget = null;
+        this.signatureFieldCollection = null;
+        this.signatureImageString = null;
+        this.initialImageString = null;
+        this.maxSaveLimit = null;
+        this.isAddAnnotationProgramatically = null;
     }
 
     /**

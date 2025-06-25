@@ -114,7 +114,11 @@ export function findObjectUnderMouse(
             if ((((bounds.x - offsetForSelector) * pdfBase.getZoomFactor()) < offsetX) &&
              (((bounds.x + bounds.width + offsetForSelector) * pdfBase.getZoomFactor()) > offsetX) &&
                 (((bounds.y - offsetForSelector - rotationValue) * pdfBase.getZoomFactor()) < offsetY) &&
-                 (((bounds.y + bounds.height + offsetForSelector) * pdfBase.getZoomFactor()) > offsetY)) {
+                 (((bounds.y + bounds.height + offsetForSelector) * pdfBase.getZoomFactor()) > offsetY) ||
+                ((((bounds.x - offsetForSelector) * pdfBase.getZoomFactor()) < pdfBase.currentPosition.x) &&
+                    (((bounds.x + bounds.width + offsetForSelector) * pdfBase.getZoomFactor()) > pdfBase.currentPosition.x) &&
+                    (((bounds.y - offsetForSelector - rotationValue) * pdfBase.getZoomFactor()) < pdfBase.currentPosition.y) &&
+                    (((bounds.y + bounds.height + offsetForSelector) * pdfBase.getZoomFactor()) > pdfBase.currentPosition.y))) {
                 if (pdfBase.tool instanceof NodeDrawingTool || pdfBase.tool instanceof StampTool) {
                     actualTarget = objects[parseInt(i.toString(), 10)];
                 } else {

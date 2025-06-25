@@ -33,7 +33,7 @@ import { SelectorModel } from '../objects/node-model';
 import { MouseEventArgs } from './event-handlers';
 import { TextElement } from '../core/elements/text-element';
 import { PathElement } from '../core/elements/path-element';
-import { Container } from '../core/containers/container';
+import { GroupableView } from '../core/containers/container';
 import { contains, Actions } from './actions';
 import { ShapeAnnotation, PathAnnotation } from '../objects/annotation';
 import { Selector } from '../objects/node';
@@ -116,6 +116,8 @@ export class ToolBase {
     private checkProperty: boolean = true;
 
     protected undoParentElement: SelectorModel = { nodes: [], connectors: [] };
+
+    protected undoContainerElement: SelectorModel = { nodes: [], connectors: [] };
 
     protected mouseDownElement: (NodeModel | ConnectorModel);
 
@@ -830,7 +832,7 @@ export class MoveTool extends ToolBase {
             }
             this.undoElement = cloneObject(selectedObject);
             //909582-History change event args old value is undefined upon node drag
-            const wrapper: Container = args.source.wrapper;
+            const wrapper: GroupableView = args.source.wrapper;
             this.undoElement.offsetX = wrapper.offsetX;
             this.undoElement.offsetY = wrapper.offsetY;
         } else {
@@ -849,8 +851,8 @@ export class MoveTool extends ToolBase {
                 }
             }
         }
-
         this.undoParentElement = this.commandHandler.getSubProcess(args.source);
+        this.undoContainerElement = this.commandHandler.getContainer(args.source);
         if (this.objectType === 'Port') {
             this.portId = args.sourceWrapper.id;
         }
@@ -890,7 +892,7 @@ export class MoveTool extends ToolBase {
                 } else {
                     redoObject.connectors.push(cloneObject(args.source) as Connector);
                 }
-                obj = cloneObject(redoObject); const wrapper: Container = args.source.wrapper;
+                obj = cloneObject(redoObject); const wrapper: GroupableView = args.source.wrapper;
                 obj.offsetX = wrapper.offsetX; obj.offsetY = wrapper.offsetY;
             } else {
                 obj = cloneObject(args.source);
@@ -992,6 +994,14 @@ export class MoveTool extends ToolBase {
                             const entry: HistoryEntry = {
                                 type: 'SizeChanged', category: 'Internal',
                                 undoObject: this.undoParentElement, redoObject: this.commandHandler.getSubProcess(args.source)
+                            };
+                            this.commandHandler.addHistoryEntry(entry);
+                        }
+                        if ((obj.nodes[0] as Node) && (obj.nodes[0] as Node).parentId
+                            && this.commandHandler.diagram.nameTable[(obj.nodes[0] as Node).parentId].shape.type === 'Container') {
+                            const entry: HistoryEntry = {
+                                type: 'SizeChanged', category: 'Internal',
+                                undoObject: this.undoContainerElement, redoObject: this.commandHandler.getContainer(args.source)
                             };
                             this.commandHandler.addHistoryEntry(entry);
                         }
@@ -1363,7 +1373,7 @@ export class MoveTool extends ToolBase {
             this.commandHandler.renderStackHighlighter(args);
             if (this.currentTarget && (args.source !== this.currentTarget) &&
                 this.commandHandler.isDroppable(args.source, this.currentTarget) && (args.source as Node).id !== 'helper') {
-                const object: NodeModel = (args.source instanceof Selector) ? args.source.nodes[0] : args.source;
+                let object: NodeModel = (args.source instanceof Selector) ? args.source.nodes[0] : args.source;
                 if ((!this.commandHandler.isParentAsContainer(object, true))
                     && (object.shape.type !== 'SwimLane' && !(object.shape as SwimLaneModel).isPhase)) {
                     if ((this.currentTarget as Node).isLane) {
@@ -1627,6 +1637,7 @@ export class ResizeTool extends ToolBase {
         let oldValues: SelectorModel;
         this.undoElement = cloneObject(args.source);
         this.undoParentElement = this.commandHandler.getSubProcess(args.source);
+        this.undoContainerElement = this.commandHandler.getContainer(args.source);
         super.mouseDown(args);
         if (this.undoElement.nodes[0] && this.undoElement.nodes[0].children) {
             const elements: (NodeModel | ConnectorModel)[] = [];
@@ -1681,7 +1692,6 @@ export class ResizeTool extends ToolBase {
             this.resizeStart = false;
             if (!isPreventHistory) {
                 this.commandHandler.startGroupAction();
-                this.commandHandler.addHistoryEntry(entry);
                 if ((obj.nodes[0] as Node) && (obj.nodes[0] as Node).processId) {
                     const entry: HistoryEntry = {
                         type: 'SizeChanged', redoObject: this.commandHandler.getSubProcess(args.source),
@@ -1689,6 +1699,16 @@ export class ResizeTool extends ToolBase {
                     };
                     this.commandHandler.addHistoryEntry(entry);
                 }
+                if ((obj.nodes[0] as Node) && (obj.nodes[0] as Node).parentId
+                && this.commandHandler.diagram.nameTable[(obj.nodes[0] as Node).parentId].shape.type === 'Container') {
+                    const entry: HistoryEntry = {
+                        type: 'SizeChanged', redoObject: this.commandHandler.getContainer(args.source),
+                        undoObject: this.undoContainerElement, category: 'Internal'
+                    };
+                    this.commandHandler.addHistoryEntry(entry);
+                }
+                //EJ2-934129 : Position of the subprocess changed during undo and redo operations
+                this.commandHandler.addHistoryEntry(entry);
                 this.commandHandler.endGroupAction();
             }
         }
@@ -1823,7 +1843,8 @@ export class ResizeTool extends ToolBase {
         deltaWidth: number, deltaHeight: number, corner: string, startPoint: PointModel, endPoint: PointModel,
         source?: SelectorModel | NodeModel)
         : boolean {
-        if (source instanceof Selector && source.nodes.length === 1 && source.nodes[0].constraints & NodeConstraints.AspectRatio) {
+        const selectedItem = this.commandHandler.diagram.selectedItems;
+        if ((source instanceof Selector && source.nodes.length === 1 && source.nodes[0].constraints & NodeConstraints.AspectRatio) || (source instanceof Node && source.id === 'helper' && selectedItem.nodes.length === 1 && selectedItem.nodes[0].constraints & NodeConstraints.AspectRatio)) {
             if (corner === 'ResizeWest' || corner === 'ResizeEast' || corner === 'ResizeNorth' || corner === 'ResizeSouth') {
                 if (!(deltaHeight === 1 && deltaWidth === 1)) {
                     deltaHeight = deltaWidth = Math.max(deltaHeight === 1 ? 0 : deltaHeight, deltaWidth === 1 ? 0 : deltaWidth);

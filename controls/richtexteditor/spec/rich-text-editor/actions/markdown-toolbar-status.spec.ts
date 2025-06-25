@@ -1,7 +1,7 @@
 /**
  * Markdown toolbar status spec
  */
-import { IToolbarStatus } from "../../../src";
+import { IToolbarStatus } from "../../../src/common/interface";
 import { RichTextEditor, MarkdownFormatter, dispatchEvent, ToolbarStatusEventArgs } from "../../../src/rich-text-editor/index";
 import { renderRTE, destroy, setCursorPoint } from "./../render.spec";
 import { MarkdownToolbarStatus } from '../../../src/rich-text-editor/actions/markdown-toolbar-status';

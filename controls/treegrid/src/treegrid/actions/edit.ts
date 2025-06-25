@@ -36,6 +36,7 @@ export class Edit {
     private isAddedRowByContextMenu: boolean = false;
     private editedRowIndex: number;
     private isScrollByFocus : boolean;
+    private isIndexUndefined : boolean = false;
     /**
      * Constructor for Edit module
      *
@@ -297,7 +298,7 @@ export class Edit {
     }
 
     private keyPressed(args: KeyboardEventArgs): void {
-        if (this.isOnBatch) {
+        if (this.isOnBatch  || args.action === 'tab' || args.action === 'shiftTab') {
             this.keyPress = args.action;
         }
         if (args.action === 'f2') {
@@ -820,9 +821,10 @@ export class Edit {
             this.addRowRecord = this.parent.flatData[args.index];
             this.addRowIndex = args.index;
         }
-        if (this.parent.editSettings.newRowPosition === 'Child' &&
+        if (this.parent.editSettings.newRowPosition === 'Child' && this.isIndexUndefined &&
             !isNullOrUndefined(this.parent.getSelectedRecords()[0])) {
             this.addRowRecord = this.parent.getSelectedRecords()[0];
+            this.isIndexUndefined = false;
         }
         if (isNullOrUndefined(this.addRowRecord) && this.parent.getCurrentViewRecords().length > this.addRowIndex &&
             args.requestType === 'save' && this.parent.getSelectedRecords().length !== 0)
@@ -878,7 +880,7 @@ export class Edit {
             const lastAriaIndex: number = rows.length ? +rows[rows.length - 1].getAttribute('aria-rowindex') - 1 : 0;
             const withinRange: boolean = this.parent.enableVirtualization && args.index !== 0 ? true :
                 this.selectedIndex >= firstAriaIndex && this.selectedIndex <= lastAriaIndex;
-            if (currentData.length) {
+            if (currentData.length && !isNullOrUndefined(index)) {
                 idMapping = currentData[this.addRowIndex][this.parent.idMapping];
                 parentIdMapping = currentData[this.addRowIndex][this.parent.parentIdMapping];
                 if (currentData[this.addRowIndex].parentItem) {
@@ -886,7 +888,7 @@ export class Edit {
                 }
                 parentItem = currentData[this.addRowIndex].parentItem;
             }
-            if (this.parent.editSettings.newRowPosition !== 'Top' && currentData.length) {
+            if (this.parent.editSettings.newRowPosition !== 'Top' && currentData.length && !isNullOrUndefined(index)) {
                 level = currentData[this.addRowIndex].level;
                 if (this.parent.editSettings.newRowPosition === 'Above') {
                     position = 'before'; index = currentData[this.addRowIndex].index;
@@ -955,12 +957,17 @@ export class Edit {
         }
         if (args.requestType === 'delete') {
             const deletedValues: ITreeData[] = args.data as Object[];
-            for (let i: number = 0; i < deletedValues.length; i++) {
-                if (deletedValues[parseInt(i.toString(), 10)].parentItem) {
-                    const parentItem: ITreeData = getParentData(this.parent, deletedValues[parseInt(i.toString(), 10)].parentItem.uniqueID);
-                    if (!isNullOrUndefined(parentItem) && parentItem.hasChildRecords) {
-                        const childIndex: number = parentItem.childRecords.indexOf(deletedValues[parseInt(i.toString(), 10)]);
-                        parentItem.childRecords.splice(childIndex, 1);
+            const primaryKeyField: string[] = this.parent.getPrimaryKeyFieldNames();
+            if (!isNullOrUndefined(primaryKeyField) && primaryKeyField.length > 0) {
+                for (let i: number = 0; i < deletedValues.length; i++) {
+                    const deletevalue: any = deletedValues[parseInt(i.toString(), 10)].parentItem;
+                    if (deletevalue) {
+                        const parentItem: ITreeData = getParentData(this.parent, deletevalue.uniqueID);
+                        if (!isNullOrUndefined(parentItem) && parentItem.hasChildRecords) {
+                            const childIndex: number = parentItem.childRecords.findIndex((child: any) =>
+                                (deletedValues[parseInt(i.toString(), 10)] as any)[primaryKeyField[0]] === child[primaryKeyField[0]]);
+                            parentItem.childRecords.splice(childIndex, 1);
+                        }
                     }
                 }
             }
@@ -978,6 +985,9 @@ export class Edit {
     public addRecord(data?: Object, index?: number, position?: RowPosition): void {
         if (this.parent.editSettings.newRowPosition === this.previousNewRowPosition || this.previousNewRowPosition === null) {
             this.previousNewRowPosition = this.parent.editSettings.newRowPosition;
+        }
+        if (isNullOrUndefined(index)) {
+            this.isIndexUndefined = true;
         }
         if (!this.isSelfReference && !isNullOrUndefined(data) && Object.hasOwnProperty.call(data, this.parent.childMapping)) {
             const addRecords: ITreeData[] = [];

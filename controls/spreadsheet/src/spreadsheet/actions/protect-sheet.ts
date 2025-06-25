@@ -8,7 +8,7 @@ import { L10n, EventHandler, closest, isNullOrUndefined, getInstance } from '@sy
 import { locale, updateToggleItem, dialog } from '../common/index';
 import { CheckBox } from '@syncfusion/ej2-buttons';
 import { ExtendedSheet, SheetModel } from '../../workbook';
-import { CellModel, getSheet, protectsheetHandler, getRangeIndexes } from '../../workbook/index';
+import { CellModel, getSheet, protectsheetHandler, getRangeIndexes, importModelUpdate } from '../../workbook/index';
 import { BeforeOpenEventArgs } from '@syncfusion/ej2-popups';
 import { OpenOptions } from '../common/interface';
 import { Dialog as DialogComponent } from '@syncfusion/ej2-popups';
@@ -48,6 +48,7 @@ export class ProtectSheet {
     private addEventListener(): void {
         this.parent.on(applyProtect, this.protect, this);
         this.parent.on(protectSheet, this.protectSheetHandler, this);
+        this.parent.on(importModelUpdate, this.protectSheetHandler, this);
         this.parent.on(editAlert, this.editProtectedAlert, this);
         this.parent.on(protectWorkbook, this.protectWorkbook, this);
         this.parent.on(keyUp, this.KeyUpHandler, this);
@@ -62,6 +63,7 @@ export class ProtectSheet {
         if (!this.parent.isDestroyed) {
             this.parent.off(applyProtect, this.protect);
             this.parent.off(protectSheet, this.protectSheetHandler);
+            this.parent.off(importModelUpdate, this.protectSheetHandler);
             this.parent.off(editAlert, this.editProtectedAlert);
             this.parent.off(protectWorkbook, this.protectWorkbook);
             this.parent.off(keyUp, this.KeyUpHandler);
@@ -102,6 +104,7 @@ export class ProtectSheet {
         this.optionList = new ListView({
             dataSource: listData,
             showCheckBox: true,
+            enableRtl: this.parent.enableRtl,
             select: this.dialogOpen.bind(this)
         });
 
@@ -117,7 +120,10 @@ export class ProtectSheet {
         const protectHeaderCntent: HTMLElement = this.parent.createElement('div', { className: 'e-protect-content' });
         protectHeaderCntent.innerText = l10n.getConstant('ProtectAllowUser');
         this.parent.setSheetPropertyOnMute(this.parent.getActiveSheet(), 'isProtected', false);
-        const checkbox: CheckBox = new CheckBox({ checked: true, label: l10n.getConstant('ProtectContent'), cssClass: 'e-protect-checkbox' });
+        const checkbox: CheckBox = new CheckBox({
+            checked: true, label: l10n.getConstant('ProtectContent'),
+            cssClass: 'e-protect-checkbox', enableRtl: this.parent.enableRtl
+        });
         const listViewElement: HTMLElement = this.parent.createElement('div', {
             className: 'e-protect-option-list',
             id: this.parent.element.id + '_option_list'
@@ -139,6 +145,7 @@ export class ProtectSheet {
             content: dialogElem.outerHTML + checkBoxElement.outerHTML + protectHeaderCntent.outerHTML + listViewElement.outerHTML,
             showCloseIcon: true, isModal: true,
             cssClass: 'e-protect-dlg',
+            enableRtl: this.parent.enableRtl,
             beforeOpen: (args: BeforeOpenEventArgs): void => {
                 const dlgArgs: DialogBeforeOpenEventArgs = {
                     dialogName: 'ProtectSheetDialog',
@@ -239,6 +246,12 @@ export class ProtectSheet {
             id + '_bold', id + '_italic', id + '_line-through', id + '_underline', id + '_font_color_picker', id + '_fill_color_picker',
             id + '_borders', id + '_text_align', id + '_vertical_align', id + '_wrap', id + '_sorting',
             id + '_clear', id + '_conditionalformatting'];
+        if (this.parent.allowMerge) {
+            const selectedRange: number[] = getRangeIndexes(sheet.selectedRange);
+            if (selectedRange[0] !== selectedRange[2] || selectedRange[1] !== selectedRange[3]) {
+                enableHomeBtnId.push(id + '_merge_cells');
+            }
+        }
         const enableFrmlaBtnId: string[] = [id + '_insert_function'];
         const enableInsertBtnId: string[] = [id + '_hyperlink', id + '_', id + '_chart'];
         const imageBtnId: string[] = [id + '_image'];
@@ -287,6 +300,7 @@ export class ProtectSheet {
             showCloseIcon: true,
             width: '400px',
             cssClass: 'e-editAlert-dlg',
+            enableRtl: this.parent.enableRtl,
             beforeOpen: (args: BeforeOpenEventArgs): void => {
                 const dlgArgs: DialogBeforeOpenEventArgs = {
                     dialogName: 'EditAlertDialog',
@@ -309,7 +323,8 @@ export class ProtectSheet {
         const l10n: L10n = this.parent.serviceLocator.getService(locale);
         const dialogInst: Dialog = (this.parent.serviceLocator.getService(dialog) as Dialog);
         dialogInst.show({
-            width: 323, isModal: true, showCloseIcon: true, cssClass: 'e-protectworkbook-dlg',
+            width: 323, isModal: true, showCloseIcon: true,
+            cssClass: 'e-protectworkbook-dlg', enableRtl: this.parent.enableRtl,
             header: l10n.getConstant('ProtectWorkbook'),
             beforeOpen: (args: BeforeOpenEventArgs): void => {
                 const dlgArgs: DialogBeforeOpenEventArgs = {
@@ -495,7 +510,8 @@ export class ProtectSheet {
         const l10n: L10n = this.parent.serviceLocator.getService(locale);
         const dialogInst: Dialog = (this.parent.serviceLocator.getService(dialog) as Dialog);
         dialogInst.show({
-            width: 323, isModal: true, showCloseIcon: true, cssClass: 'e-unprotectworkbook-dlg',
+            width: 323, isModal: true, showCloseIcon: true,
+            cssClass: 'e-unprotectworkbook-dlg', enableRtl: this.parent.enableRtl,
             header: l10n.getConstant('UnprotectWorkbook'),
             beforeOpen: (args: BeforeOpenEventArgs): void => {
                 const dlgArgs: DialogBeforeOpenEventArgs = {
@@ -526,7 +542,8 @@ export class ProtectSheet {
         const l10n: L10n = this.parent.serviceLocator.getService(locale);
         const dialogInst: Dialog = (this.parent.serviceLocator.getService(dialog) as Dialog);
         dialogInst.show({
-            width: 323, isModal: true, showCloseIcon: true, cssClass: 'e-unprotectworksheet-dlg',
+            width: 323, isModal: true, showCloseIcon: true,
+            cssClass: 'e-unprotectworksheet-dlg', enableRtl: this.parent.enableRtl,
             header: l10n.getConstant('UnprotectWorksheet'),
             beforeOpen: (args: BeforeOpenEventArgs): void => {
                 const dlgArgs: DialogBeforeOpenEventArgs = {
@@ -560,7 +577,8 @@ export class ProtectSheet {
         const protectSheetDlgInst: DialogComponent = dialogInst.dialogInstance;
         let dlgCancel: boolean; let pwdApplied: boolean;
         dialogInst.show({
-            width: 323, isModal: true, showCloseIcon: true, cssClass: 'e-reenterpwd-dlg',
+            width: 323, isModal: true, showCloseIcon: true,
+            cssClass: 'e-reenterpwd-dlg', enableRtl: this.parent.enableRtl,
             header: l10n.getConstant('ConfirmPassword'),
             beforeOpen: (args: BeforeOpenEventArgs): void => {
                 const dlgArgs: DialogBeforeOpenEventArgs = {
@@ -717,7 +735,8 @@ export class ProtectSheet {
         const l10n: L10n = this.parent.serviceLocator.getService(locale);
         const dialogInst: Dialog = (this.parent.serviceLocator.getService(dialog) as Dialog);
         dialogInst.show({
-            width: 323, isModal: true, showCloseIcon: true, cssClass: 'e-importprotectworkbook-dlg',
+            width: 323, isModal: true, showCloseIcon: true,
+            cssClass: 'e-importprotectworkbook-dlg', enableRtl: this.parent.enableRtl,
             header: l10n.getConstant('UnprotectWorkbook'),
             beforeOpen: (args: BeforeOpenEventArgs): void => {
                 const dlgArgs: DialogBeforeOpenEventArgs = {

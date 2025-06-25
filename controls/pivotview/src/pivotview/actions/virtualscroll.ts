@@ -22,6 +22,9 @@ export class VirtualScroll {
     public direction: string;
     private keyboardEvents: KeyboardEvents;
     private isScrolling: boolean = false;
+    private verticalScrollTimeoutObj: ReturnType<typeof setTimeout>;
+    private horizontalScrollTimeoutObj: ReturnType<typeof setTimeout>;
+    private boundElements: HTMLElement[] = [];
     private scrollingDirection: string = 'Up';
 
     /**
@@ -55,14 +58,12 @@ export class VirtualScroll {
     private wireEvents(): void {
         this.engineModule = this.parent.dataType === 'pivot' ? this.parent.engineModule : this.parent.olapEngineModule;
         if (this.parent.displayOption.view !== 'Chart') {
+            this.clearAllEventHandlers();
             const mCont: HTMLElement = this.parent.element.querySelector('.' + cls.CONTENT_VIRTUALTABLE_DIV) as HTMLElement;
             const gridContent: HTMLElement = this.parent.element.querySelector('.' + cls.GRID_CONTENT) as HTMLElement;
             const mHdr: HTMLElement = this.parent.element.querySelector('.' + cls.MOVABLEHEADER_DIV) as HTMLElement;
             const mScrollBar: HTMLElement = gridContent.querySelector('.' + cls.VIRTUALTABLE_DIV);
-            EventHandler.clearEvents(mCont);
-            if (this.isFireFox) {
-                EventHandler.clearEvents(mHdr);
-            }
+            this.boundElements = [mCont, gridContent, mHdr, mScrollBar];
             if (this.engineModule) {
                 const ele: HTMLElement = this.parent.isAdaptive ? mCont : gridContent.querySelector('.' + cls.VIRTUALTABLE_DIV);
                 EventHandler.add(ele, 'scroll touchmove pointermove', this.onHorizondalScroll(mHdr, mCont), this);
@@ -100,6 +101,28 @@ export class VirtualScroll {
             this.parent.grid.isPreventScrollEvent = true;
         }
     }
+
+    private clearAllEventHandlers(): void {
+        if (this.verticalScrollTimeoutObj) {
+            clearTimeout(this.verticalScrollTimeoutObj);
+            this.verticalScrollTimeoutObj = null;
+        }
+        if (this.horizontalScrollTimeoutObj) {
+            clearTimeout(this.horizontalScrollTimeoutObj);
+            this.horizontalScrollTimeoutObj = null;
+        }
+        this.boundElements.forEach((element: HTMLElement) => {
+            if (element) {
+                EventHandler.clearEvents(element);
+            }
+        });
+        this.boundElements = [];
+        if (this.parent && this.parent.grid) {
+            this.parent.grid.off('check-scroll-reset');
+            this.parent.grid.off('prevent-frozen-scroll-refresh');
+        }
+    }
+
     private onWheelScroll(mCont: HTMLElement): Function {
         const element: HTMLElement = mCont;
         return (e: WheelEvent) => {
@@ -336,7 +359,6 @@ export class VirtualScroll {
      * @hidden
      */
     public onHorizondalScroll(mHdr: HTMLElement, mCont: HTMLElement): Function {
-        let timeOutObj: ReturnType<typeof setTimeout>;
         const ele: HTMLElement = this.parent.isAdaptive ? mCont : closest(mCont, '.' + cls.GRID_CONTENT).querySelector('.' + cls.VIRTUALTABLE_DIV);
         let eleScrollLeft: number = Math.abs(ele.scrollLeft);
         let left: number = eleScrollLeft * this.parent.horizontalScrollScale;
@@ -349,8 +371,10 @@ export class VirtualScroll {
             eleScrollLeft = Math.abs(ele.scrollLeft);
             left = eleScrollLeft * this.parent.horizontalScrollScale;
             if (e.type === 'wheel' || e.type === 'touchmove' || this.eventType === 'wheel' || this.eventType === 'touchmove') {
-                clearTimeout(timeOutObj);
-                timeOutObj = setTimeout(() => {
+                if (this.horizontalScrollTimeoutObj) {
+                    clearTimeout(this.horizontalScrollTimeoutObj);
+                }
+                this.horizontalScrollTimeoutObj = setTimeout(() => {
                     left = e.type === 'touchmove' ? eleScrollLeft : left;
                     this.update(mCont.parentElement.scrollTop * this.parent.verticalScrollScale, left, e, ele, mHdr, mCont);
                 }, 300);
@@ -483,7 +507,6 @@ export class VirtualScroll {
     }
 
     private onVerticalScroll(mCont: HTMLElement, fCont: HTMLElement): Function {
-        let timeOutObj: ReturnType<typeof setTimeout>;
         const virtualTableElement: HTMLElement = mCont.querySelector('.' + cls.CONTENT_VIRTUALTABLE_DIV) ?
             mCont.querySelector('.' + cls.CONTENT_VIRTUALTABLE_DIV) : mCont;
         return (e: Event | KeyboardEventArgs) => {
@@ -493,8 +516,10 @@ export class VirtualScroll {
                 if (e.type === 'wheel' || e.type === 'touchmove' || e.type === 'scroll'
                     || this.eventType === 'wheel' || this.eventType === 'touchmove' || e.type === 'keyup' || e.type === 'keydown') {
                     const ele: HTMLElement = this.parent.isAdaptive ? mCont : closest(mCont, '.' + cls.GRID_CONTENT).querySelector('.' + cls.VIRTUALTABLE_DIV);
-                    clearTimeout(timeOutObj);
-                    timeOutObj = setTimeout(() => {
+                    if (this.verticalScrollTimeoutObj) {
+                        clearTimeout(this.verticalScrollTimeoutObj);
+                    }
+                    this.verticalScrollTimeoutObj = setTimeout(() => {
                         let scrollLeft: number = 0;
                         if (this.parent.isAdaptive) {
                             const contentTable: HTMLElement = ele.querySelector('.' + cls.CONTENT_VIRTUALTABLE_DIV);
@@ -593,6 +618,7 @@ export class VirtualScroll {
             return;
         }
         this.parent.off(contentReady, this.wireEvents);
+        this.clearAllEventHandlers();
     }
 
     /**
@@ -603,6 +629,8 @@ export class VirtualScroll {
      */
     public destroy(): void {
         this.removeInternalEvents();
+        this.engineModule = null;
+        this.keyboardEvents = null;
     }
 
     private setFrozenColumnPosition(horiOffset: number, rowsHeaderElement: HTMLElement, i: number, j: NodeListOf<Element>,

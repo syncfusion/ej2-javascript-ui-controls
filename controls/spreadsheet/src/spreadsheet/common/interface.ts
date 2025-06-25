@@ -4,7 +4,7 @@ import { Spreadsheet, RefreshType } from '../index';
 import { MenuEventArgs } from '@syncfusion/ej2-navigations';
 import { BaseEventArgs, KeyboardEventArgs } from '@syncfusion/ej2-base';
 import { CellInfoEventArgs, CFColor, ChartTheme, RowModel, CellStyleModel, WorkbookOpen } from './../../workbook/index';
-import { SortCollectionModel, ValidationModel } from './../../workbook/index';
+import { SortCollectionModel, ValidationModel, WorkbookParseOptions } from './../../workbook/index';
 import { PredicateModel } from '@syncfusion/ej2-grids';
 
 
@@ -209,6 +209,8 @@ export interface BeforeOpenEventArgs {
     requestData: object;
     /** Defines the password. */
     password?: string;
+    /** Defines the parsing options that control how the Excel file is loaded. */
+    parseOptions?: WorkbookParseOptions;
 }
 
 export interface DialogBeforeOpenEventArgs {
@@ -611,6 +613,7 @@ export interface BeforeChartEventArgs {
     posRange?: string;
     isInitCell?: boolean;
     cancel: boolean;
+    enableCanvas?: boolean;
 }
 
 /** @hidden */

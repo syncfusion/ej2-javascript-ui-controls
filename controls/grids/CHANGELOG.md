@@ -2,127 +2,22 @@
 
 ## [Unreleased]
 
-## 29.2.11 (2025-06-17)
+## 30.1.37 (2025-06-25)
 
 ### Grid
 
 #### Bug Fixes
 
-- `#I730086` - Fixed issue where `getSelectedRecords()` did not return previously selected records after using `selectAll` with filtering.
-- `#I730853` - Fixed a script error that occurred when dynamically hiding columns in a grid with `lazyLoadGrouping` and `virtualization` enabled.
+- `#I715508` - Introduced the `columnMenuClose` and `contextMenuClose` events, which are triggered upon closing their respective menus. These events offer enhanced control over menu dismissal actions.
+- `#I709217` - Introduced the `reorderColumnByModel` method to support programmatic reordering of individual columns as well as stacked header columns.
 
-## 29.2.10 (2025-06-10)
+#### Features
 
-### Grid
+- Added support to visualize selected Grid records as charts using context menu options. This functionality is powered by the new `@syncfusion/ej2-grid-chart` package, which displays a `popup` chart based on the selected data. Users can choose from various chart options and customize settings dynamically to suit their data visualization needs.
 
-#### Bug Fixes
+#### Breaking Changes
 
-- `#I685339` - Resolved misalignment issue between frozen and movable columns during rapid column resizing in Grid.
-
-## 29.2.8 (2025-06-03)
-
-### Grid
-
-#### Bug Fixes
-
-- `#FB67561` - Resolved an issue where the Grid's page was not restored when using the browser's back button after navigation, with `pageSettings.enableQueryString` enabled.
-- `#FB67517` - Fixed an issue where `args.isInteracted` was incorrectly set to false in the `rowSelected` event when selecting a row via cell click with `checkboxMode` set to `ResetOnRowClick`.
-
-### Grid
-
-#### Bug Fixes
-
-- `#I723930` - The issue where the browser scroll to the grid when it loads with initial grouping and empty data has been resolved.
-- `#I724420` - The issue where the Excel Filter Dialog operator sub-menu opened on the right side instead of the left in `RTL` mode, causing UI misalignment, has been resolved.
-
-## 29.2.5 (2025-05-21)
-
-### Grid
-
-#### Bug Fixes
-
-- `#I719879` - Fixed an issue where inserting multiple new rows in batch editing and pressing the Update button caused focus to incorrectly return to a cell input with validation errors.
-- `#I720056` - In `ResetOnRowClick` mode, fixed an issue where using `SHIFT + click` on checkbox selected only a single row instead of a range of rows.
-- `#I726231` – Resolved a script error that occurred when changing the operator in `the filter menu popup` for a date time column.
-
-## 29.2.4 (2025-05-14)
-
-### Grid
-
-#### Bug Fixes
-
-- `#I715931` - The issue with filtering a hidden column while using `column virtualization` through the `filterByColumn` method has been fixed.
-- `#I713440` – The issue where an incorrect group query was added while filtering a `ForeignKey` column in the Grid using the `ODataV4Adaptor` has been resolved.
-- `#I707868` - Resolved an issue where persistence was not retained correctly when using `setCulture`.
-- `#I710510` - Provided support for row expand and collapse functionality, and resolved the alignment issue of group caption aggregates in server side Excel export.
-
-## 29.1.41 (2025-05-06)
-
-### Grid
-
-#### Bug Fixes
-
-- `#I710348` - The issue where programmatically updating a row on the last page caused incorrect row indexing when scrolling back to the first page in `VirtualScrolling` has been resolved.
-- `#I715728` – Fixed an issue in adaptive view where the toolbar overflow arrow icons were not hidden during search operations.
-
-## 29.1.40 (2025-04-29)
-
-### Grid
-
-#### Bug Fixes
-
-- `#I712313` - The issue with the checkbox filter in the Grid when using infinite scrolling has been resolved.
-- `#F196492` - Resolved an issue where data was not restored after edit and cancel a record in the Grid when `InfiniteScrolling` and `Grouping` were enabled.
-
-## 29.1.39 (2025-04-22)
-
-### Grid
-
-#### Bug Fixes
-
-- `#I707297` - Resolved an issue where the month format in the group caption was incorrect during server side `Excel Export`.
-- `#I699927` - The issue with partial selection with pagination has been resolved.
-
-## 29.1.38 (2025-04-15)
-
-### Grid
-
-#### Bug Fixes
-
-- `#I705939` - Resolved the issue where the Grid column header text overlapped with the column menu in `Bootstrap 5.3` and `Tailwind 3` themes.
-
-## 29.1.37 (2025-04-08)
-
-### Grid
-
-#### Bug Fixes
-
-- `#FB66257` - Fixed an issue where the expand and collapse icon was hidden when resizing a column with its width set as a percentage.
-- `#I701100` - Support has been provided for adding custom font in server side `PDF Export`.
-- `#F196312` - Resolved an issue where focus incorrectly moved to a disabled toolbar button on the first tab attempt.
-- `#I705050` - Resolved an issue where the selection was not applied to a newly added row when using a customized index higher than the page size.
-
-## 29.1.35 (2025-04-01)
-
-### Grid
-
-#### Bug Fixes
-
-- `#I698681` - Resolved an issue where the record was getting selected when calling `closeEdit()` with `checkboxOnly` set to true.
-- `#I701758` - Fixed the issue where the filter dialog appeared under the `column-menu` in the Grid.
-- `#FB66390` - Resolved an issue where `getSelectedRecords()` returned an empty array instead of the selected records when `virtualization` was enabled, a column was grouped, and the dataSource had fewer records than the viewport.
-- `#I691456` - Fixed the issue where the `excelAggregateQueryCellInfo` event was triggered only for aggregate cells and not for other cells in the row.
-- `#I690601` - The issue where the `ToolbarTemplate` in the `childGrid` was not rendering properly has been resolved.
-- `#I694635` - Fixed the issue where pressing `Alt + PageUp/PageDown` in a paginated Grid caused unexpected page navigation.
-- `#I699725` - Resolved an issue where the `groupCaptionTemplate` occupied a single cell, causing an additional cell to be inserted in the exported file.
-- `#F196283` - Resolved an issue where searching for decimal values starting with zero caused the leading zero to be unexpectedly removed.
-- `#I659606` - Resolved an issue with inconsistent typing of `FailureEventArgs` in the Grid's `actionFailure` event.
-- `#I698371` - Resolved an issue where, during `infiniteScrolling` with `lazyLoadGrouping` enabled, the content unexpectedly scrolled back to the top instead of maintaining its position.
-- `#I703410` - Resolved an issue with `server-side` Excel export where the boolean column incorrectly exported the `true` value.
-- `#F196296` - Resolved the issue where unsaved batch changes were lost upon filtering in the Grid.
-- `#I696030` - Fixed the issue where the `filter-popup` did not move with the Grid when the parent had a fixed height and scroll overflow.
-
-## 29.1.33 (2025-03-25)
+- The `beforeCustomFilterOpen` event, which was previously an internal-only API, is now publicly accessible. This allows users to customize the filter UI before it is rendered.
 
 ### Grid
 

@@ -11,7 +11,7 @@ import { SfdtExport } from '../../src/document-editor/implementation/writer/sfdt
 describe('Field insertion in LTR and RTL document', () => {
     let container: DocumentEditor;
     beforeAll(() => {
-        document.body.innerHTML = '';
+        
         let ele: HTMLElement = createElement('div', { id: 'container' });
         document.body.appendChild(ele);
         DocumentEditor.Inject(Editor, Selection, EditorHistory);
@@ -26,7 +26,7 @@ describe('Field insertion in LTR and RTL document', () => {
         container.destroy();
         document.body.removeChild(document.getElementById('container'));
         container = undefined;
-        document.body.innerHTML = '';
+        
         setTimeout(function () {
             done();
         }, 1000);

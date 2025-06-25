@@ -48,6 +48,10 @@
 
       .e-pivot-chart-view {
         height: inherit;
+        
+        .e-multi-axis-scroll-div {
+          overflow: auto;
+        }
 
         &.e-chart-table-view {
           order: 2;

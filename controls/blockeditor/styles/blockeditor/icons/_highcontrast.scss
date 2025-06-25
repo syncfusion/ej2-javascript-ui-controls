@@ -1,0 +1,74 @@
+@include export-module('blockeditor-highcontrast-icons') {
+
+  .e-block-add-icon::before {
+    content: '\e823';
+  }
+  .e-block-drag-icon::before {
+    content: '\e330';
+  }
+  .e-checkmark-checked::after {
+    content: '\e7ff';
+  }
+
+  /* ======== Inline Toolbar styles ======== */
+  .e-blockeditor-inline-toolbar-popup {
+    .e-inline-color-icon::before {
+      content: '\e34c'; /* A-style icon */
+    }
+
+    .e-inline-bgColor-icon::before {
+      content: '\e35c'; /* Paint bucket icon */
+    }
+  }
+
+  /* ======== Slash Command styles ======== */
+  .e-blockeditor-command-menu.e-popup {
+    .e-be-paragraph::before {
+      content: '\e35b';
+    }
+
+    .e-be-divider::before {
+      content: '\e9f3';
+    }
+
+    .e-be-callout::before {
+      content: '\e1b4';
+    }
+
+    .e-be-h1::before {
+      content: '\e1b5';
+    }
+
+    .e-be-h2::before {
+      content: '\e1b6';
+    }
+
+    .e-be-h3::before {
+      content: '\e1b7';
+    }
+
+    .e-be-h4::before {
+      content: '\e1b8';
+    }
+
+    .e-be-toggle-h1::before {
+      content: '\e1b9';
+    }
+
+    .e-be-toggle-h2::before {
+      content: '\e1ba';
+    }
+
+    .e-be-toggle-h3::before {
+      content: '\e1bb';
+    }
+
+    .e-be-toggle-h4::before {
+      content: '\e1bc';
+    }
+
+    .e-be-toggle-paragraph::before {
+      content: '\e353';
+    }
+  }
+}

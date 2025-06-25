@@ -5,6 +5,30 @@
   .e-chat-check::before {
     content: '\e8b1';
   }
+  .e-chat-copy::before {
+    content: '\e77c';
+  }
+  .e-chat-close::before {
+    content: '\e7e7';
+  }
+  .e-chat-pin::before {
+    content: '\e923';
+  }
+  .e-chat-view::before {
+    content: '\e7de';
+  }
+  .e-chat-unpin::before {
+    content: '\e924';
+  }
+  .e-chat-forward::before {
+    content: '\e922';
+  }
+  .e-chat-reply::before {
+    content: '\e921';
+  }
+  .e-chat-trash::before {
+    content: '\e820';
+  }
   .e-chat-error::before {
     content: '\e878';
   }
@@ -13,5 +37,14 @@
   }
   .e-chat-scroll-down::before {
     content: '\e7fe';
+  }
+  .e-user-online::before {
+    content: '\e72b';
+  }
+  .e-user-away::before {
+    content: '\e705';
+  }
+  .e-user-offline::before {
+    content: '\e878';
   }
 }

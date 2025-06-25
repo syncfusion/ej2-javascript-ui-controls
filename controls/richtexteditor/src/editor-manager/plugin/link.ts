@@ -1,7 +1,7 @@
 import { EditorManager } from './../base/editor-manager';
 import * as CONSTANT from './../base/constant';
 import { IHtmlItem } from './../base/interface';
-import { ImageDropEventArgs } from '../../rich-text-editor/base/interface';
+import { ImageDropEventArgs } from '../../common/interface';
 import { NodeSelection } from '../../selection/selection';
 import { NodeCutter } from './nodecutter';
 import { InsertHtml } from './inserthtml';
@@ -10,6 +10,7 @@ import * as EVENTS from './../../common/constant';
 import { DOMMethods } from './dom-tree';
 import { InsertMethods } from './insert-methods';
 import { IsFormatted } from './isformatted';
+import { IEditorModel } from '../../common/interface';
 
 /**
  * Link internal component
@@ -18,7 +19,7 @@ import { IsFormatted } from './isformatted';
  * @deprecated
  */
 export class LinkCommand {
-    private parent: EditorManager;
+    private parent: IEditorModel;
     private drop: EventListenerOrEventListenerObject;
     private enter: EventListenerOrEventListenerObject;
     private start: EventListenerOrEventListenerObject;
@@ -27,11 +28,11 @@ export class LinkCommand {
     /**
      * Constructor for creating the Formats plugin
      *
-     * @param {EditorManager} parent - specifies the editor manager
+     * @param {IEditorModel} parent - specifies the editor manager
      * @hidden
      * @deprecated
      */
-    public constructor(parent: EditorManager) {
+    public constructor(parent: IEditorModel) {
         this.parent = parent;
         this.drop = this.dragDrop.bind(this);
         this.enter = this.dragEnter.bind(this);
@@ -87,7 +88,7 @@ export class LinkCommand {
             if (startContainer.nodeType === Node.ELEMENT_NODE) {
                 startAnchor = (startContainer as Element).closest('a');
             } else {
-                const parentElement: Element | null  = (startContainer as Element).parentElement;
+                const parentElement: Element | null = (startContainer as Element).parentElement;
                 if (parentElement) {
                     startAnchor = parentElement.closest('a');
                 }
@@ -178,8 +179,8 @@ export class LinkCommand {
         if (!this.dragSelectionRange) {
             return;
         }
-        const commonAncestor: Node  = this.dragSelectionRange.commonAncestorContainer;
-        let parentElement: HTMLElement  = commonAncestor.nodeType === Node.TEXT_NODE
+        const commonAncestor: Node = this.dragSelectionRange.commonAncestorContainer;
+        let parentElement: HTMLElement = commonAncestor.nodeType === Node.TEXT_NODE
             ? commonAncestor.parentElement
             : commonAncestor as HTMLElement;
         if (parentElement && CONSTANT.BLOCK_TAGS.indexOf(parentElement.nodeName.toLocaleLowerCase()) === -1) {
@@ -215,9 +216,9 @@ export class LinkCommand {
             if (!isNOU(e.item.text) && e.item.text !== '') {
                 linkText = anchorEle.innerText;
                 const walker: TreeWalker = document.createTreeWalker(anchorEle, NodeFilter.SHOW_TEXT, null);
-                const textnode: Node = walker.nextNode();
-                if (textnode) {
-                    textnode.textContent = e.item.text;
+                const anchorTextnode: Node = walker.nextNode();
+                if (anchorTextnode) {
+                    anchorTextnode.textContent = e.item.text;
                 }
             }
             if (!isNOU(e.item.target)) {
@@ -242,20 +243,20 @@ export class LinkCommand {
             const domSelection: NodeSelection = new NodeSelection(this.parent.editableElement as HTMLElement);
             let range: Range = domSelection.getRange(this.parent.currentDocument);
             if (range.endContainer.nodeName === '#text' && range.startContainer.textContent.length === (range.endOffset + 1) &&
-            range.endContainer.textContent.charAt(range.endOffset) === ' ' && (!isNOU(range.endContainer.nextSibling) && range.endContainer.nextSibling.nodeName === 'A')) {
+                range.endContainer.textContent.charAt(range.endOffset) === ' ' && (!isNOU(range.endContainer.nextSibling) && range.endContainer.nextSibling.nodeName === 'A')) {
                 domSelection.setSelectionText(this.parent.currentDocument, range.startContainer, range.endContainer,
                                               range.startOffset, range.endOffset + 1);
                 range = domSelection.getRange(this.parent.currentDocument);
             }
-            const  text : boolean = isNOU(e.item.text) ? true : e.item.text.replace(/ /g, '').localeCompare(range.toString()
+            const text: boolean = isNOU(e.item.text) ? true : e.item.text.replace(/ /g, '').localeCompare(range.toString()
                 .replace(/\n/g, ' ').replace(/ /g, '')) < 0;
             if (e.event && (e.event as KeyboardEvent).type === 'keydown' && ((e.event as KeyboardEvent).keyCode === 32
                 || (e.event as KeyboardEvent).keyCode === 13) || e.item.action === 'Paste' || range.collapsed || text) {
                 const anchor: HTMLElement = this.createAchorNode(e);
                 anchor.innerText = e.item.text === '' ? e.item.url : e.item.text;
-                const text : string = anchor.innerText;
+                const text: string = anchor.innerText;
                 // Replace spaces with non-breaking spaces
-                const modifiedText : string  = text.replace(/  +/g, function(match: string): string {
+                const modifiedText: string = text.replace(/  +/g, function (match: string): string {
                     return '\u00A0'.repeat(match.length);
                 });
                 anchor.innerText = modifiedText;
@@ -268,7 +269,7 @@ export class LinkCommand {
                 }
                 const regex: RegExp = /[^\w\s\\/\\.\\:]/g;
                 if (e.event && (e.event as KeyboardEvent).type === 'keydown' && ((e.event as KeyboardEvent).keyCode === 32
-                    || (e.event as KeyboardEvent).keyCode === 13  || regex.test((e.event as KeyboardEvent).key))) {
+                    || (e.event as KeyboardEvent).keyCode === 13 || regex.test((e.event as KeyboardEvent).key))) {
                     const startContainer: Node = e.item.selection.range.startContainer;
                     startContainer.textContent = this.removeText(startContainer.textContent, e.item.text);
                 } else {
@@ -350,7 +351,7 @@ export class LinkCommand {
             e.item.selection = this.parent.domNode.saveMarker(e.item.selection);
         } else {
             for (let i: number = 0; i < blockNodes.length; i++) {
-                const linkNode : NodeListOf<HTMLAnchorElement> = (blockNodes[i as number] as HTMLElement).querySelectorAll('a');
+                const linkNode: NodeListOf<HTMLAnchorElement> = (blockNodes[i as number] as HTMLElement).querySelectorAll('a');
                 for (let j: number = 0; j < linkNode.length; j++) {
                     if (this.parent.currentDocument.getSelection().containsNode(linkNode[j as number], true)) {
                         linkNode[j as number].outerHTML = linkNode[j as number].innerHTML;
@@ -532,7 +533,7 @@ export class LinkCommand {
         const domMethods: DOMMethods = new DOMMethods(this.parent.editableElement as HTMLDivElement);
         const processedNodes: Node[] = [];
         for (let j: number = 0; j < complexFormatNodes.length; j++) {
-            const currentText: Text  = complexFormatNodes[j as number] as Text;
+            const currentText: Text = complexFormatNodes[j as number] as Text;
             processedNodes.push(domMethods.getTopMostNode(currentText));
         }
         complexFormatNodes.length = 0;
@@ -543,7 +544,7 @@ export class LinkCommand {
         for (let i: number = 0; i < processedNodes.length; i++) {
             const node: Node = processedNodes[i as number];
             if (enterAction === 'BR') {
-                if (i === 0){
+                if (i === 0) {
                     anchor.appendChild(node);
                 } else {
                     if (isNOU(previousBRAnchor)) {

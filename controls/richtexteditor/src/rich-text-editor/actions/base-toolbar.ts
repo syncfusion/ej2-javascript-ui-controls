@@ -3,10 +3,11 @@ import { RenderType } from '../base/enum';
 import { CLS_HR_SEPARATOR } from '../base/classes';
 import * as events from '../base/constant';
 import { getTooltipText, toObjectLowerCase } from '../base/util';
-import { ToolbarItems } from '../base/enum';
+import { ToolbarItems } from '../../common/enum';
 import { tools, templateItems, windowKeys } from '../models/items';
-import { IRichTextEditor, IRenderer, IToolbarRenderOptions, IToolbarItems, IToolsItems, ICssClassArgs } from '../base/interface';
-import { IToolbarOptions, IToolbarItemModel } from '../base/interface';
+import { IRichTextEditor, IToolbarRenderOptions, ICssClassArgs } from '../base/interface';
+import { IToolbarOptions, IRenderer } from '../base/interface';
+import { IToolbarItems, IToolsItems, IToolbarItemModel } from '../../common/interface';
 import { ServiceLocator } from '../services/service-locator';
 import { RendererFactory } from '../services/renderer-factory';
 import { isNullOrUndefined, extend, EmitType } from '@syncfusion/ej2-base';
@@ -95,8 +96,6 @@ export class BaseToolbar {
         switch (itemStr) {
         case 'fontcolor':
         case 'backgroundcolor':
-        case 'numberformatlist':
-        case 'bulletformatlist':
             tagName = 'span';
             break;
         default:
@@ -159,9 +158,15 @@ export class BaseToolbar {
         const items: ItemModel[] = [];
         for (const item of tbItems) {
             switch (typeof item) {
-            case 'string':
-                items.push(this.getObject(item as string, container));
+            case 'string': {
+                const object: IToolbarItemModel = this.getObject(item as string, container);
+                const isImageLinkItem: boolean = item.toLowerCase().indexOf('imagelink') > -1;
+                if (isImageLinkItem) {
+                    object.cssClass = 'e-link-groups';
+                }
+                items.push(object);
                 break;
+            }
             default:
                 if (!isNullOrUndefined((item as IToolbarItems).click)) {
                     const proxy: IToolbarItems = item as IToolbarItems;
@@ -171,7 +176,7 @@ export class BaseToolbar {
                             this.parent.formatter.saveData();
                         }
                         callback.call(this);
-                        if (this.parent.formatter.getUndoRedoStack().length > 0 ){
+                        if (this.parent.formatter.getUndoRedoStack().length > 0) {
                             const currentContentElem: HTMLElement = this.parent.createElement('div');
                             const stackItem: IHtmlUndoRedoData = this.parent.formatter.
                                 getUndoRedoStack()[this.parent.formatter.getUndoRedoStack().length - 1];
@@ -190,9 +195,9 @@ export class BaseToolbar {
             }
         }
         if (this.parent.showTooltip) {
-            for (let num : number = 0; num < items.length; num++) {
-                const tooltipText : string = items[num as number].tooltipText;
-                let shortCutKey : string;
+            for (let num: number = 0; num < items.length; num++) {
+                const tooltipText: string = items[num as number].tooltipText;
+                let shortCutKey: string;
                 const isMacDev: boolean = this.parent.userAgentData.getPlatform() === 'macOS';
                 if (windowKeys[`${(items[num as number] as IToolbarItems).subCommand}`] && (!isNullOrUndefined(items[num as number].id) || !isNullOrUndefined(items[num as number].cssClass))) {
                     const shortcuts: string[] = windowKeys[`${(items[num as number] as IToolbarItems).subCommand}`].split(','); // Handle multiple shortcuts
@@ -202,7 +207,7 @@ export class BaseToolbar {
                             : shortcut
                     ).join(', ');
                 }
-                else{
+                else {
                     shortCutKey = tooltipText;
                 }
                 if (shortCutKey) {

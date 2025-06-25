@@ -745,5 +745,74 @@ describe('Ribbon', () => {
             expect(ribbon.element.querySelector('.e-ribbon-tab').classList.contains('e-rtl')).toBe(false);
             expect(ribbon.element.querySelector('.e-ribbon-file-menu').classList.contains('e-rtl')).toBe(false);
         });
+        it('file menu popup close on item click', () => {
+            let commonMenuItems: MenuItemModel[] = [
+                {
+                    text: 'File',
+                    id: 'itemMenu',
+                    items: [
+                        { text: 'Open' },
+                        { text: 'Save' },
+                        { text: 'Exit' }
+                    ]
+                },
+                {
+                    text: 'Edit',
+                    id: 'itemMenu2',
+                }
+            ];
+            let isClose: boolean = false;
+            let files: FileMenuSettingsModel = ({
+                text: 'Files',
+                visible: true,
+                menuItems: commonMenuItems,
+                showItemOnClick: true,
+                close: () => {
+                    isClose = true;
+                }
+            });
+            ribbon = new Ribbon({
+                fileMenu: files,
+                tabs: [{
+                    id: "tab1",
+                    header: "tab1",
+                    groups: [{
+                        id: "group1",
+                        header: "group1Header",
+                        orientation: ItemOrientation.Row,
+                        collections: [{
+                            id: "collection1",
+                            items: [{
+                                id: "item1",
+                                type: RibbonItemType.Button,
+                                allowedSizes: RibbonItemSize.Large,
+                                buttonSettings: {
+                                    content: 'button1',
+                                    iconCss: 'e-icons e-cut',
+                                }
+                            }]
+                        }, {
+                            id: "collection2",
+                            items: [{
+                                type: RibbonItemType.DropDown,
+                                allowedSizes: RibbonItemSize.Medium,
+                                dropDownSettings: {
+                                    content: 'Edit',
+                                    iconCss: 'e-icons e-edit',
+                                    items: dropDownButtonItems
+                                }
+                            }]
+                        }]
+                    }]
+                },],
+
+            }, ribbonEle);
+            (ribbon.element.querySelector('.e-ribbon-file-menu') as HTMLButtonElement).click();
+            expect(isClose).toBe(false);
+            (document.querySelector('#itemMenu') as HTMLElement).click(); //click to show submenu item, the popup should not be closed.
+            expect(isClose).toBe(false);
+            (document.querySelector('#itemMenu2') as HTMLElement).click(); //The popup should be closed
+            expect(isClose).toBe(true);            
+        });
     });
 });

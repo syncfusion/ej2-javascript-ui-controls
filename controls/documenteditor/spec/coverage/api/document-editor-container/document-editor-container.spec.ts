@@ -51,7 +51,7 @@ describe('Document Editor container setDefaultCharacterFormat', () => {
         expect(element.childNodes.length).toBe(0);
         document.body.removeChild(element);
         expect(() => { container.destroy(); }).not.toThrowError();
-        document.body.innerHTML = '';
+        
         element = undefined;
         container = undefined;
         setTimeout(() => {
@@ -86,7 +86,7 @@ describe('Document Editor container properties', () => {
         expect(element.childNodes.length).toBe(0);
         document.body.removeChild(element);
         expect(() => { container.destroy(); }).not.toThrowError();
-        document.body.innerHTML = '';
+        
         element = undefined;
         container = undefined;
         setTimeout(() => {
@@ -119,7 +119,7 @@ describe('Document Editor container properties', () => {
         expect(element.childNodes.length).toBe(0);
         document.body.removeChild(element);
         expect(() => { container.destroy(); }).not.toThrowError();
-        document.body.innerHTML = '';
+        
         element = undefined;
         container = undefined;
         setTimeout(() => {

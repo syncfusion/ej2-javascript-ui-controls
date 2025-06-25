@@ -14,6 +14,7 @@ const maxCols: number = 16384;
 
 /**
  * Represents the calculate library.
+ *
  * @hidden
  */
 @NotifyPropertyChanges
@@ -2757,9 +2758,10 @@ export class Calculate extends Base<HTMLElement> implements INotifyPropertyChang
      * @param {boolean} isUnique - It specifies unique formula or not.
      * @param {boolean} isIfError - It specifies `IFERROR` formula or not.
      * @param {boolean} isSubtotal - It specifies subtotal formula.
+     * @param {boolean} isIFFormula - It specifies IF formula or not.
      * @returns {string} - To get the exact value from argument.
      */
-    public getValueFromArg(val: string, isUnique?: boolean, isIfError?: boolean, isSubtotal?: boolean): string {
+    public getValueFromArg(val: string, isUnique?: boolean, isIfError?: boolean, isSubtotal?: boolean, isIFFormula?: boolean): string {
         val = val.trim();
         if (!val || this.getErrorStrings().indexOf(val) > -1) {
             return val;
@@ -2767,7 +2769,7 @@ export class Calculate extends Base<HTMLElement> implements INotifyPropertyChang
         const firstChar: string = val[0];
         if (firstChar === this.tic || firstChar === this.singleTic) {
             let parsedVal: string = val.split(this.tic).join('');
-            if (this.isNaN(this.parseFloat(parsedVal))) {
+            if (this.isNaN(this.parseFloat(parsedVal)) && !(isIFFormula && firstChar === this.tic && val.endsWith(this.tic))) {
                 const dateTime: Date = this.isDate(parsedVal);
                 if (dateTime && !this.isNaN(dateTime.getDate())) {
                     return this.toOADate(dateTime, true).toString();

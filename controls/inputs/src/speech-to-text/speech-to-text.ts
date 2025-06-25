@@ -90,7 +90,7 @@ export class ButtonSettings extends ChildProperty<ButtonSettings> {
 
 
 /**
- * Configuration settings for tooltips in the SpeechToText component.
+ * Configuration settings for tooltip in the SpeechToText component.
  * This allows customization of the tooltip content and its positioning.
  */
 export class TooltipSettings extends ChildProperty<TooltipSettings> {
@@ -355,7 +355,7 @@ export class SpeechToText extends Component<HTMLElement> implements INotifyPrope
 
     /**
      * Defines tooltip content and positioning for guiding user interactions.
-     * Tooltips provide helpful instructions or descriptions for button actions, improving user experience.
+     * Tooltip provides helpful instructions or descriptions for button actions, improving user experience.
      *
      * @default null
      * @type {TooltipSettingsModel}

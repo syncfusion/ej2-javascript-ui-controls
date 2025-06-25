@@ -18,7 +18,7 @@ import { getAdornerLayerSvg } from '../utility/dom-util';
 import { DiagramElement } from '../core/elements/diagram-element';
 import { StackEntryObject } from '../objects/interface/IElement';
 import { Actions } from './actions';
-import { Container } from '../core/containers/container';
+import { GroupableView } from '../core/containers/container';
 import { LaneModel } from '../objects/node-model';
 import { swimLaneMeasureAndArrange, checkLaneSize, checkPhaseOffset, canLaneInterchange } from '../utility/swim-lane-util';
 import { updatePhaseMaxWidth, updateHeaderMaxWidth, updateConnectorsProperties } from '../utility/swim-lane-util';
@@ -300,7 +300,7 @@ export function checkChildNodeInContainer(diagram: Diagram, obj: NodeModel): voi
             }
         }
     }
-    if (parentNode.container.type === 'Canvas') {
+    if (parentNode && parentNode.container.type === 'Canvas') {
         obj.margin.left = (obj.offsetX - parentNode.wrapper.bounds.x - (obj.width / 2));
         obj.margin.top = (obj.offsetY - parentNode.wrapper.bounds.y - (obj.height / 2));
     }
@@ -314,11 +314,11 @@ export function checkChildNodeInContainer(diagram: Diagram, obj: NodeModel): voi
         }, rotateAngle: obj.rotateAngle
     } as Node);
     //EJ2-913789 - Lane size gets varied upon undo redo the node drop
-    if (diagram.undoRedoModule && (parentNode as Node).isLane && diagram.undoRedoModule.checkRedo &&
+    if (diagram.undoRedoModule && parentNode && (parentNode as Node).isLane && diagram.undoRedoModule.checkRedo &&
         (obj.margin.left < 0 || obj.margin.top < 0)) {
         removeChildrenInLane(diagram, obj);
     }
-    if (!(parentNode as Node).isLane) {
+    if (parentNode && !(parentNode as Node).isLane) {
         parentNode.wrapper.measure(new Size());
         parentNode.wrapper.arrange(parentNode.wrapper.desiredSize);
     }
@@ -545,6 +545,7 @@ export function updateLaneBoundsAfterAddChild(
                 grid.updateRowHeight(container.rowIndex, containerBounds.height + size, true, padding);
             }
         }
+        diagram.isRowHeightUpdate = isUpdateRow;
         if (!(diagram.diagramActions & DiagramAction.UndoRedo)) {
             if (isBoundsUpdate) {
                 diagram.startGroupAction();

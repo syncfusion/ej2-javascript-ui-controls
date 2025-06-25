@@ -69,6 +69,7 @@ export function PdfiumRunner(): void {
         (FPDF as any).Bitmap_Destroy = PDFiumModule.cwrap('FPDFBitmap_Destroy', '', ['number']);
         (FPDF as any).LoadPage = PDFiumModule.cwrap('FPDF_LoadPage', 'number', ['number', 'number']);
         (FPDF as any).ClosePage = PDFiumModule.cwrap('FPDF_ClosePage', '', ['number']);
+        (FPDF as any).LoadCustomDocument = PDFiumModule.cwrap('FPDF_LoadCustomDocument', 'number', ['number', 'string']);
         (FPDF as any).LoadMemDocument = PDFiumModule.cwrap('FPDF_LoadMemDocument', 'number', ['number', 'number', 'string']);
         (FPDF as any).GetPageSizeByIndex = PDFiumModule.cwrap('FPDF_GetPageSizeByIndex', 'number', ['number', 'number', 'number', 'number']);
         (FPDF as any).GetLastError = PDFiumModule.cwrap('FPDF_GetLastError', 'number');
@@ -103,9 +104,15 @@ export function PdfiumRunner(): void {
             case Float64Array: E = PDFiumModule.HEAPF64; break;
             }
             const Z: number = J.BYTES_PER_ELEMENT;
-            const m: number = PDFiumModule.asm.malloc(s * Z);
+            const mallocFunction: any = PDFiumModule.asm && PDFiumModule.asm.malloc
+                ? PDFiumModule.asm.malloc
+                : PDFiumModule._malloc;
+            const m: number = mallocFunction(s * Z);
             const a: any[] = Array(1 + s);
-            a[0] = ({ s, J, Z, E, m, free: () => PDFiumModule.asm.free(m) });
+            const freeFunction: any = PDFiumModule.asm && PDFiumModule.asm.free
+                ? PDFiumModule.asm.free
+                : PDFiumModule._free;
+            a[0] = ({ s, J, Z, E, m, free: () => freeFunction(m) });
             for (let i: number = 0; i < s; i++) { a[i + 1] = ({ p: m + (i * Z), get v(): any { return E[m / Z + i]; } }); }
             return a;
         };
@@ -156,10 +163,18 @@ export function PdfiumRunner(): void {
                 checkIfEverythingWasLoaded();
                 if (event.data.fonts && Object.keys(event.data.fonts).length > 0) {
                     const filePath: string = '/usr/share/fonts/';
-                    PDFiumModule.FS.createPath('/', filePath, true, true);
+                    if (PDFiumModule.FS && PDFiumModule.FS.createPath) {
+                        PDFiumModule.FS.createPath('/', filePath, true, true);
+                    } else {
+                        PDFiumModule.FS_createPath('/', filePath, true, true);
+                    }
                     for (const key in event.data.fonts) {
                         if (event.data.fonts[`${key}`] && key.indexOf('fallbackfonts') === -1) {
-                            PDFiumModule.FS.createDataFile(filePath + key, null, event.data.fonts[`${key}`], true, true, true);
+                            if (PDFiumModule.FS && PDFiumModule.FS.createDataFile) {
+                                PDFiumModule.FS.createDataFile(filePath + key, null, event.data.fonts[`${key}`], true, true, true);
+                            } else {
+                                PDFiumModule.FS_createDataFile(filePath + key, null, event.data.fonts[`${key}`], true, true, true);
+                            }
                         }
                     }
                 }
@@ -167,25 +182,71 @@ export function PdfiumRunner(): void {
             (this as any)['PDFiumModule'](PDFiumModule);
         }
         else if (event.data.message === 'LoadPageCollection') {
+            if (documentDetails && event.data.skipOnReload) {
+                const freeFunction: any = PDFiumModule.asm && PDFiumModule.asm.free
+                    ? PDFiumModule.asm.free
+                    : PDFiumModule._free;
+                freeFunction(documentDetails.processor.wasmData.wasmBuffer);
+                FPDF.CloseDocument(documentDetails.processor.wasmData.wasm);
+                FPDF.DestroyLibrary();
+                documentDetails = null;
+            }
             pdfiumWindow.fileByteArray = event.data.uploadedFile;
             const fileSize: number = pdfiumWindow.fileByteArray.length;
             FPDF.Init();
-            const wasmBuffer: number = PDFiumModule.asm.malloc(fileSize);
-            PDFiumModule.HEAPU8.set(pdfiumWindow.fileByteArray, wasmBuffer);
-            pdfiumWindow.fileByteArray = null;
-            documentDetails = new DocumentInfo({
-                wasm: FPDF.LoadMemDocument(wasmBuffer, fileSize, event.data.password),
-                wasmBuffer: wasmBuffer
-            });
+            if (PDFiumModule.asm && PDFiumModule.asm.malloc) {
+                const wasmBuffer: number = PDFiumModule.asm.malloc(fileSize);
+                PDFiumModule.HEAPU8.set(pdfiumWindow.fileByteArray, wasmBuffer);
+                pdfiumWindow.fileByteArray = null;
+                documentDetails = new DocumentInfo({
+                    wasm: FPDF.LoadMemDocument(wasmBuffer, fileSize, event.data.password),
+                    wasmBuffer: wasmBuffer
+                });
+            } else {
+                const mallocFunction: any = PDFiumModule.asm && PDFiumModule.asm.malloc
+                    ? PDFiumModule.asm.malloc
+                    : PDFiumModule._malloc;
+                const wasmBuffer: number = mallocFunction(fileSize);
+                // create a custom loader for progressive loading
+                const loader: any = createPDFCustomLoader(event.data.uploadedFile);
+
+                // register the readBlock function in the wasm table
+                const readBlockPtr: any = PDFiumModule.addFunction((param: any, position: any, pBuf: any, size: any) => {
+                    return loader.readBlock(position, pBuf, size);
+                }, 'iiiii');
+
+                const structSize: number = 12;
+                const ptr: any = mallocFunction(structSize);
+                const FPDF_FILEACCESS: any = {
+                    mFileLen: loader.getFileSize(),
+                    mGetBlock: readBlockPtr,
+                    mParam: null
+                };
+                PDFiumModule.setValue(ptr, FPDF_FILEACCESS.mFileLen, 'i32');
+                PDFiumModule.setValue(ptr + 4, FPDF_FILEACCESS.mGetBlock, '*');
+                PDFiumModule.setValue(ptr + 8, FPDF_FILEACCESS.mParam ? FPDF_FILEACCESS.mParam : 0, '*');
+
+                // console.log('Loading PDF document using custom loader...');
+
+                // load the document using the custom loader
+                const docHandle: any = FPDF.LoadCustomDocument(ptr, null);
+                documentDetails = new DocumentInfo({
+                    wasm: docHandle,
+                    wasmBuffer: wasmBuffer
+                });
+            }
             const pages: number = FPDF.GetPageCount(documentDetails.processor.wasmData.wasm);
             documentDetails.setPages(pages);
             documentDetails.createAllPages();
-            ctx.postMessage({ message: 'PageLoaded', pageIndex: event.data.pageIndex, isZoomMode: event.data.isZoomMode });
+            ctx.postMessage({ message: 'PageLoaded', pageIndex: event.data.pageIndex, isZoomMode: event.data.isZoomMode, pageCount : pages, pageSizes: documentDetails.pageSizes, pageRotation: documentDetails.pageRotation });
         }
         else if (event.data.message === 'LoadPageStampCollection') {
             const fileSize: number = event.data.uploadedFile.length;
             FPDF.Init();
-            const wasmBuffer: number = PDFiumModule.asm.malloc(fileSize);
+            const mallocFunction: any = PDFiumModule.asm && PDFiumModule.asm.malloc
+                ? PDFiumModule.asm.malloc
+                : PDFiumModule._malloc;
+            const wasmBuffer: number = mallocFunction(fileSize);
             PDFiumModule.HEAPU8.set(event.data.uploadedFile, wasmBuffer);
             const documentDetailsNew: DocumentInfo = new DocumentInfo({
                 wasm: FPDF.LoadMemDocument(wasmBuffer, fileSize, event.data.password),
@@ -254,7 +315,10 @@ export function PdfiumRunner(): void {
                     buffer[parseInt(i.toString(), 10)] = searchTerm.charCodeAt(i);
                 }
                 buffer[searchTerm.length] = 0;
-                const pointer: any = PDFiumModule.asm.malloc(buffer.length * buffer.BYTES_PER_ELEMENT);
+                const mallocFunction: any = PDFiumModule.asm && PDFiumModule.asm.malloc
+                    ? PDFiumModule.asm.malloc
+                    : PDFiumModule._malloc;
+                const pointer: any = mallocFunction(buffer.length * buffer.BYTES_PER_ELEMENT);
                 PDFiumModule.HEAPU16.set(buffer, pointer / Uint16Array.BYTES_PER_ELEMENT);
                 let occurrencesCount: number = 0;
                 const isMatchCase: number = (event.data.matchCase === true) ? 1 : 0;
@@ -334,7 +398,10 @@ export function PdfiumRunner(): void {
                 };
                 ctx.postMessage(result);
                 pageSearchCounts = {};
-                PDFiumModule.asm.free(pointer);
+                const freeFunction: any = PDFiumModule.asm && PDFiumModule.asm.free
+                    ? PDFiumModule.asm.free
+                    : PDFiumModule._free;
+                freeFunction(pointer);
             }
             else if (event.data.message === 'renderThumbnail') {
                 // eslint-disable-next-line
@@ -342,7 +409,7 @@ export function PdfiumRunner(): void {
                     try {
                         const firstPage: Page = documentDetails.getPage(event.data.pageIndex);
                         if (firstPage.processor !== null && firstPage.processor !== undefined) {
-                            const data: object = firstPage.render('thumbnail', null, event.data.isTextNeed, null, null, null, null, null, null, null, event.data.isSkipCharacterBounds);
+                            const data: object = firstPage.render('thumbnail', null, event.data.isTextNeed, null, null, null, null, null, null, null, event.data.isSkipCharacterBounds, event.data.imageSize);
                             (data as any).isRenderText = event.data.isRenderText;
                             (data as any).jsonObject = event.data.jsonObject;
                             (data as any).requestType = event.data.requestType;
@@ -359,13 +426,15 @@ export function PdfiumRunner(): void {
             }
             else if (event.data.message === 'renderPreviewTileImage') {
                 const firstPage: Page = documentDetails.getPage(event.data.pageIndex);
-                const data: object = firstPage.render('thumbnail', null, event.data.isTextNeed, null, null, null, null, null, null, null, event.data.isSkipCharacterBounds);
+                const data: object = firstPage.render('thumbnail', null, event.data.isTextNeed, null, null, null, null, null, null, null, event.data.isSkipCharacterBounds, event.data.imageSize);
                 (data as any).message = 'renderPreviewTileImage';
                 (data as any).isRenderText = event.data.isRenderText;
                 (data as any).jsonObject = event.data.jsonObject;
                 (data as any).requestType = event.data.requestType;
                 (data as any).startIndex = event.data.startIndex;
                 (data as any).endIndex = event.data.endIndex;
+                (data as any).imageSize = event.data.imageSize;
+                (data as any).initialLoad = event.data.initialLoad;
                 ctx.postMessage(data);
             }
             else if (event.data.message === 'printImage') {
@@ -405,7 +474,10 @@ export function PdfiumRunner(): void {
             }
             else if (event.data.message === 'unloadFPDF') {
                 if (documentDetails) {
-                    PDFiumModule.asm.free(documentDetails.processor.wasmData.wasmBuffer);
+                    const freeFunction: any = PDFiumModule.asm && PDFiumModule.asm.free
+                        ? PDFiumModule.asm.free
+                        : PDFiumModule._free;
+                    freeFunction(documentDetails.processor.wasmData.wasmBuffer);
                     FPDF.CloseDocument(documentDetails.processor.wasmData.wasm);
                     FPDF.DestroyLibrary();
                     documentDetails = null;
@@ -416,6 +488,28 @@ export function PdfiumRunner(): void {
             ctx.postMessage({ message: '' });
         }
     };
+
+    /**
+     * @param {any} data - jsonObject
+     * @returns {any} - any
+     */
+    function createPDFCustomLoader(data: any): any{
+        return {
+            getFileSize: () => data.length,
+            readBlock: (offset: number, buffer: number, length: number) => {
+                if (offset + length > data.length) {
+                    console.error('Requested chunk is out of bounds');
+                    return 0; // Return zero for error if out of bounds
+                }
+
+                for (let i: number = 0; i < length; i++) {
+                    PDFiumModule.HEAPU8[buffer + i] = data[offset + i];
+                }
+
+                return 1;
+            }
+        };
+    }
 
     class Page {
         public index: number;
@@ -428,10 +522,11 @@ export function PdfiumRunner(): void {
         }
         public render(message: any, zoomFactor?: number, isTextNeed?: boolean, printScaleFactor?: any,
                       printDevicePixelRatio?: number, textDetailsId?: any, isTransparent?: boolean,
-                      cropBoxRect?: Rect, mediaBoxRect?: Rect, size?: Size, isSkipCharacterBounds?: boolean): object {
+                      cropBoxRect?: Rect, mediaBoxRect?: Rect, size?: Size, isSkipCharacterBounds?: boolean,
+                      imageSize?: number): object {
             return this.processor.render(this.index, message, zoomFactor, isTextNeed, printScaleFactor,
                                          printDevicePixelRatio, textDetailsId, isTransparent, cropBoxRect, mediaBoxRect, size,
-                                         isSkipCharacterBounds);
+                                         isSkipCharacterBounds, imageSize);
         }
         public renderTileImage(x: any, y: any, tileX: any, tileY: any, zoomFactor?: number, isTextNeed?: boolean,
                                textDetailsId?: any, cropBoxRect?: Rect, mediaBoxRect?: Rect): object {
@@ -489,7 +584,10 @@ export function PdfiumRunner(): void {
         public getRender(i: number = 0, w: any, h: any, isTextNeed: boolean, isTransparent?: boolean,
                          cropBoxRect?: Rect, mediaBoxRect?: Rect, isSkipCharacterBounds?: boolean): any {
             const flag: any = (FPDF as any).REVERSE_BYTE_ORDER;
-            const heap: any = PDFiumModule.asm.malloc(w * h * 4);
+            const mallocFunction: any = PDFiumModule.asm && PDFiumModule.asm.malloc
+                ? PDFiumModule.asm.malloc
+                : PDFiumModule._malloc;
+            const heap: any = mallocFunction(w * h * 4);
             PDFiumModule.HEAPU8.fill(0, heap, heap + (w * h * 4));
             const bmap: any = (FPDF as any).Bitmap_CreateEx(w, h, (FPDF as any).Bitmap_BGRA, heap, w * 4);
             const page: any = (FPDF as any).LoadPage(this.wasmData.wasm, i);
@@ -509,7 +607,7 @@ export function PdfiumRunner(): void {
                 if (mediaBoxRect && cropBoxRect && mediaBoxRect.y && cropBoxRect.y && mediaBoxRect.y !== cropBoxRect.y) {
                     pageHeight = pageHeight + this.pointerToPixelConverter(mediaBoxRect && mediaBoxRect.y ? mediaBoxRect.y : 0);
                 }
-                const textPage: any = (FPDF as any).LoadTextPage(pagePointer, pageIndex);
+                const textPage: any = (FPDF as any).LoadTextPage(pagePointer);
                 const pageRotation: any = (FPDF as any).GetPageRotation(pagePointer);
                 const totalCharacterCount: any = (FPDF as any).TextCountChars(textPage);
                 this.TextBounds = [];
@@ -1229,13 +1327,17 @@ export function PdfiumRunner(): void {
             const pageRenderPtr: any = this.getRender(n, w, h, isTextNeed, isTransparent, cropBoxRect, mediaBoxRect, isSkipCharacterBounds);
             let pageRenderData: any[] = [];
             pageRenderData = PDFiumModule.HEAPU8.slice(pageRenderPtr, pageRenderPtr + (w * h * 4));
-            PDFiumModule.asm.free(pageRenderPtr);
+            const freeFunction: any = PDFiumModule.asm && PDFiumModule.asm.free
+                ? PDFiumModule.asm.free
+                : PDFiumModule._free;
+            freeFunction(pageRenderPtr);
             return pageRenderData;
         }
 
         public render(n: number = 0, message: any, zoomFactor: number, isTextNeed: boolean, printScaleFactor: any,
                       printDevicePixelRatio: number, textDetailsId: any, isTransparent?: boolean,
-                      cropBoxRect?: Rect, mediaBoxRect?: Rect, size?: Size, isSkipCharacterBounds?: boolean): object {
+                      cropBoxRect?: Rect, mediaBoxRect?: Rect, size?: Size, isSkipCharacterBounds?: boolean,
+                      imageSize?: number): object {
             let [w, h] = this.getPageSize(n);
             if (isNaN(w) && isNaN(h)) {
                 const page: any = FPDF.LoadPage(this.wasmData.wasm, n);
@@ -1246,10 +1348,10 @@ export function PdfiumRunner(): void {
             const thumbnailWidth: number = 99.7;
             const thumbnailHeight: number = 141;
             if (message === 'thumbnail') {
-                const newWidth: number = Math.round(thumbnailWidth * scaleFactor);
-                const newHeight: number = Math.round(thumbnailHeight * scaleFactor);
+                const newWidth: number = Math.round(thumbnailWidth * scaleFactor * (imageSize ? imageSize : 1));
+                const newHeight: number = Math.round(thumbnailHeight * scaleFactor * (imageSize ? imageSize : 1));
                 const data: any = this.getPageRender(n, newWidth, newHeight, isTextNeed, null, null, null, isSkipCharacterBounds);
-                return { value: data, width: newWidth, height: newHeight, pageIndex: n, message: 'renderThumbnail', textBounds: this.TextBounds, textContent: this.TextContent, rotation: this.Rotation, pageText: this.PageText, characterBounds: this.CharacterBounds, zoomFactor: zoomFactor, isTextNeed: isTextNeed, textDetailsId: textDetailsId };
+                return { value: data, width: newWidth, height: newHeight, pageIndex: n, message: 'renderThumbnail', textBounds: this.TextBounds, textContent: this.TextContent, rotation: this.Rotation, pageText: this.PageText, characterBounds: this.CharacterBounds, zoomFactor: zoomFactor, isTextNeed: isTextNeed, textDetailsId: textDetailsId, imageSize: imageSize };
             }
             else if (message === 'print') {
                 //An A0 piece of paper measures 33.1 × 46.8 inches, with 46.8 inches being the greater dimension. The pixel value of 46.8 inches is 4493px. If the document size is too large, we may not be able to display the image. Therefore, we should consider the maximum size of A0 paper if the page size is greater than 4493 pixels.
@@ -1305,7 +1407,10 @@ export function PdfiumRunner(): void {
             const w1: number = Math.round(newWidth / xCount);
             const h1: number = Math.round(newHeight / yCount);
             const flag: any = FPDF.REVERSE_BYTE_ORDER;
-            const heap: any = PDFiumModule.asm.malloc(w1 * h1 * 4);
+            const mallocFunction: any = PDFiumModule.asm && PDFiumModule.asm.malloc
+                ? PDFiumModule.asm.malloc
+                : PDFiumModule._malloc;
+            const heap: any = mallocFunction(w1 * h1 * 4);
             PDFiumModule.HEAPU8.fill(0, heap, heap + (w1 * h1 * 4));
             const bmap: any = FPDF.Bitmap_CreateEx(w1, h1, 4, heap, w1 * 4);
             const page: any = FPDF.LoadPage(this.wasmData.wasm, n);
@@ -1317,7 +1422,10 @@ export function PdfiumRunner(): void {
             const pageRenderPtr: any = heap;
             let data: any[] = [];
             data = PDFiumModule.HEAPU8.slice(pageRenderPtr, pageRenderPtr + (w1 * h1 * 4));
-            PDFiumModule.asm.free(pageRenderPtr);
+            const freeFunction: any = PDFiumModule.asm && PDFiumModule.asm.free
+                ? PDFiumModule.asm.free
+                : PDFiumModule._free;
+            freeFunction(pageRenderPtr);
             if (tileX === 0 && tileY === 0) {
                 return {
                     value: data,
@@ -1379,9 +1487,25 @@ export function PdfiumRunner(): void {
         }
     }
 
+    /**
+     * @hidden
+     */
+    class SizeF {
+        public Width: number;
+        public Height: number;
+        public IsEmpty: boolean;
+        constructor(Width: number, Height: number) {
+            this.Width = Width;
+            this.Height = Height;
+            this.IsEmpty = Width === 0 ? (Height === 0 ? true : false) : false;
+        }
+    }
+
     class DocumentInfo {
         public processor: Processor;
         public pages: any[] = [];
+        public pageSizes: any = {};
+        public pageRotation: any = [];
         constructor(wasmData: any) {
             this.processor = new Processor(wasmData);
         }
@@ -1393,6 +1517,12 @@ export function PdfiumRunner(): void {
         public createAllPages(): void {
             for (let i: number = 0; i < this.pages.length; i++) {
                 this.pages[parseInt(i.toString(), 10)] = new Page(parseInt(i.toString(), 10), this.processor);
+                this.pages[parseInt(i.toString(), 10)] = new Page(i, this.processor);
+                const currentPageSize : any = this.processor.getPageSize(i);
+                this.pageSizes[parseInt(i.toString(), 10)] = new SizeF(currentPageSize[0], currentPageSize[1]);
+                const page: any = (FPDF as any).LoadPage(documentDetails.processor.wasmData.wasm, i);
+                const rotation: any = (FPDF as any).GetPageRotation(page);
+                this.pageRotation.push(rotation);
             }
         }
 

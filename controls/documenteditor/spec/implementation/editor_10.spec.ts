@@ -11,7 +11,7 @@ import { BorderSettings } from '../../src/document-editor/implementation/editor/
 describe('Rtl text editing validation', () => {
     let editor: DocumentEditor = undefined;
     beforeAll(() => {
-        document.body.innerHTML = '';
+        
         let ele: HTMLElement = createElement('div', { id: 'container' });
         document.body.appendChild(ele);
         editor = new DocumentEditor({ enableEditor: true, isReadOnly: false });
@@ -26,7 +26,7 @@ describe('Rtl text editing validation', () => {
         editor.destroy();
         document.body.removeChild(document.getElementById('container'));
         editor = undefined;
-        document.body.innerHTML = '';
+        
         setTimeout(() => {
             done();
         }, 1000);
@@ -68,7 +68,7 @@ describe('Rtl text editing validation', () => {
 describe('Rtl text editing validation- combination of hebrew and arabic text', () => {
     let editor: DocumentEditor = undefined;
     beforeAll(() => {
-        document.body.innerHTML = '';
+        
         let ele: HTMLElement = createElement('div', { id: 'container' });
         document.body.appendChild(ele);
         editor = new DocumentEditor({ enableEditor: true, isReadOnly: false });
@@ -83,7 +83,7 @@ describe('Rtl text editing validation- combination of hebrew and arabic text', (
         editor.destroy();
         document.body.removeChild(document.getElementById('container'));
         editor = undefined;
-        document.body.innerHTML = '';
+        
         setTimeout(() => {
             done();
         }, 1000);

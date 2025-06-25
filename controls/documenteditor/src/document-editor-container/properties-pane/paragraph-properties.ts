@@ -1,11 +1,15 @@
 import { createElement, isNullOrUndefined, classList, L10n, initializeCSPTemplate } from '@syncfusion/ej2-base';
-import { DocumentEditor, ParagraphWidget, WAbstractList, WList, WListLevel, WStyle } from '../../document-editor/index';
-import { ComboBox} from '@syncfusion/ej2-dropdowns';
+import { DocumentEditor, ListLevelPattern, ParagraphWidget, WAbstractList, WList, WListLevel, WStyle } from '../../document-editor/index';
+import { ComboBox } from '@syncfusion/ej2-dropdowns';
 import { Button } from '@syncfusion/ej2-buttons';
 import { ItemModel, DropDownButton, SplitButton, SplitButtonModel, MenuEventArgs } from '@syncfusion/ej2-splitbuttons';
 import { Query } from '@syncfusion/ej2-data';
 import { DocumentEditorContainer } from '../document-editor-container';
 import { SanitizeHtmlHelper } from '@syncfusion/ej2-base';
+import { BulletListHelper } from '../helper/bullet-list-helper';
+import { LineSpacingHelper } from '../helper/line-spacing-helper';
+import { StylesHelper } from '../helper/styles-helper';
+import { ElementsMap } from '../helper/ribbon-interfaces';
 /**
  * Paragraph Properties
  *
@@ -237,31 +241,14 @@ export class Paragraph {
         return buttonElement;
     }
     private createLineSpacingDropdown(button: HTMLElement): DropDownButton {
-        const items: ItemModel[] = [{
-            text: this.localObj.getConstant('Single')
-        }, {
-            text: '1.15'
-        }, {
-            text: '1.5'
-        }, {
-            text: this.localObj.getConstant('Double')
-        }];
         const dropdown: DropDownButton = new DropDownButton({
-            items: items,
+            items: LineSpacingHelper.getLineSpacingItems(this.localObj),
             iconCss: 'e-de-ctnr-linespacing e-icons',
             enableRtl: this.isRtl,
             select: this.lineSpacingAction.bind(this),
             cssClass: this.splitButtonClass,
             beforeItemRender: (args: MenuEventArgs) => {
-                args.element.innerHTML = '<span></span>' + args.item.text;
-                const span: HTMLElement = args.element.children[0] as HTMLElement;
-                if (args.item.text === this.appliedLineSpacing) {
-                    span.style.marginRight = '10px';
-                    span.setAttribute('class', 'e-de-selected-item e-icons e-de-linespacing');
-                } else {
-                    (args.element.children[0] as HTMLElement).style.marginRight = '25px';
-                    (args.element.children[0] as HTMLElement).classList.remove('e-de-selected-item');
-                }
+                LineSpacingHelper.customizeLineSpacingItem(args, this.appliedLineSpacing);
             }
         });
         dropdown.appendTo(button);
@@ -329,69 +316,47 @@ export class Paragraph {
         this.updateSelectedNumberedListType(levelPattern);
     }
     private updateSelectedBulletListType(listText: string): void {
-        switch (listText) {
-        case String.fromCharCode(61623):
-            this.dotBullet.classList.add('de-list-item-selected');
-            break;
-        case String.fromCharCode(61551) + String.fromCharCode(32):
-            this.circleBullet.classList.add('de-list-item-selected');
-            break;
-        case String.fromCharCode(61607):
-            this.squareBullet.classList.add('de-list-item-selected');
-            break;
-        case String.fromCharCode(61558):
-            this.flowerBullet.classList.add('de-list-item-selected');
-            break;
-        case String.fromCharCode(61656):
-            this.arrowBullet.classList.add('de-list-item-selected');
-            break;
-        case String.fromCharCode(61692):
-            this.tickBullet.classList.add('de-list-item-selected');
-            break;
-        default:
-            this.noneBulletTag.classList.add('de-list-item-selected');
-            break;
-        }
+        // Create a map of bullet elements
+        const bulletElements: ElementsMap = {
+            'none': this.noneBulletTag,
+            'dot': this.dotBullet,
+            'circle': this.circleBullet,
+            'square': this.squareBullet,
+            'flower': this.flowerBullet,
+            'arrow': this.arrowBullet,
+            'tick': this.tickBullet
+        };
+        BulletListHelper.updateSelectedBulletListType(listText, bulletElements);
     }
     private updateSelectedNumberedListType(listText: string): void {
-        switch (listText) {
-        case 'Arabic':
-            this.numberList.classList.add('de-list-item-selected');
-            break;
-        case 'UpRoman':
-            this.upRoman.classList.add('de-list-item-selected');
-            break;
-        case 'UpLetter':
-            this.upLetter.classList.add('de-list-item-selected');
-            break;
-        case 'LowLetter':
-            this.lowLetter.classList.add('de-list-item-selected');
-            break;
-        case 'LowRoman':
-            this.lowRoman.classList.add('de-list-item-selected');
-            break;
-        default:
-            this.noneNumberTag.classList.add('de-list-item-selected');
-            break;
-        }
+        // Create a map of number elements
+        const numberElements: ElementsMap = {
+            'none': this.noneNumberTag,
+            'number': this.numberList,
+            'lowletter': this.lowLetter,
+            'upletter': this.upLetter,
+            'lowroman': this.lowRoman,
+            'uproman': this.upRoman
+        };
+        BulletListHelper.updateSelectedNumberedListType(listText, numberElements);
     }
     private removeSelectedList(): void {
-        const className: string = 'de-list-item-selected';
-        this.noneNumberTag.classList.remove(className);
-        this.numberList.classList.remove(className);
-        this.lowLetter.classList.remove(className);
-        this.upLetter.classList.remove(className);
-        this.lowRoman.classList.remove(className);
-        this.upRoman.classList.remove(className);
-        this.noneBulletTag.classList.remove(className);
-
-        this.dotBullet.classList.remove(className);
-        this.circleBullet.classList.remove(className);
-        this.squareBullet.classList.remove(className);
-        this.flowerBullet.classList.remove(className);
-        this.arrowBullet.classList.remove(className);
-        this.tickBullet.classList.remove(className);
-
+        const elements: ElementsMap = {
+            'noneNumber': this.noneNumberTag,
+            'number': this.numberList,
+            'lowletter': this.lowLetter,
+            'upletter': this.upLetter,
+            'lowroman': this.lowRoman,
+            'uproman': this.upRoman,
+            'noneBullet': this.noneBulletTag,
+            'dot': this.dotBullet,
+            'circle': this.circleBullet,
+            'square': this.squareBullet,
+            'flower': this.flowerBullet,
+            'arrow': this.arrowBullet,
+            'tick': this.tickBullet
+        };
+        BulletListHelper.removeSelectedList(elements);
     }
     /**
      * @private
@@ -407,14 +372,7 @@ export class Paragraph {
         }
     }
     private applyLastAppliedBullet(): void {
-        switch (this.appliedBulletStyle) {
-        case 'dot': this.bulletDotClick(); break;
-        case 'circle': this.bulletCircleClick(); break;
-        case 'square': this.bulletSquareClick(); break;
-        case 'arrow': this.bulletArrowClick(); break;
-        case 'tick': this.bulletTickClick(); break;
-        case 'flower': this.bulletFlowerClick(); break;
-        }
+        this.applyBullet(this.appliedBulletStyle);
     }
     private createBulletListDropButton(iconcss: string, button: HTMLElement): void {
         const div: HTMLElement = createElement('div', { id: 'bullet_list', styles: 'width: 196px;height: auto;display:none' });
@@ -466,51 +424,13 @@ export class Paragraph {
         button.parentElement.setAttribute('aria-label', this.localObj.getConstant('Bullets'));
     }
     private createNumberListTag(ulTag: HTMLElement, text1: string, text2: string, text3: string): HTMLElement {
-        const liTag: HTMLElement = createElement('li', {
-            styles: 'display:block',
-            className: 'e-de-floating-menuitem e-de-floating-menuitem-md e-de-list-items  e-de-list-item-size'
-        });
-        ulTag.appendChild(liTag);
-        let innerHTML: string = '<div>' + text1 + '<span class="e-de-list-line"></span></div><div>' + text2 + '<span class="e-de-list-line">';
-        innerHTML += '</span></div><div>' + text3 + '<span class="e-de-list-line"> </span></div >';
-        const liInnerDiv: HTMLElement = createElement('div', {
-            className: 'e-de-list-header-presetmenu',
-            innerHTML: innerHTML
-        });
-        liTag.appendChild(liInnerDiv);
-        return liTag;
+        return BulletListHelper.createNumberListTag(ulTag, text1, text2, text3);
     }
     private createNumberNoneListTag(ulTag: HTMLElement): HTMLElement {
-        const liTag: HTMLElement = createElement('li', {
-            styles: 'display:block;',
-            className: 'e-de-floating-menuitem e-de-floating-menuitem-md e-de-list-items  e-de-list-item-size'
-        });
-        ulTag.appendChild(liTag);
-        const innerHTML: string = '<div><span class="e-de-bullets">' + this.localObj.getConstant('None') + '</span></div>';
-        const liInnerDiv: HTMLElement = createElement('div', {
-            className: 'e-de-list-header-presetmenu', styles: 'position:relative;left:11px;top:13px',
-            innerHTML: innerHTML
-        });
-        liTag.appendChild(liInnerDiv);
-        return liTag;
+        return BulletListHelper.createNumberNoneListTag(ulTag, this.localObj);
     }
     private createBulletListTag(ulTag: HTMLElement, iconCss: string, isNone: boolean): HTMLElement {
-        const liTag: HTMLElement = createElement('li', {
-            styles: 'display:block;',
-            className: 'e-de-floating-menuitem e-de-floating-bullet-menuitem-md e-de-list-items  e-de-list-item-size'
-        });
-        ulTag.appendChild(liTag);
-        const liInnerDiv: HTMLElement = createElement('div', { className: 'e-de-bullet-list-header-presetmenu' });
-        const spanDiv: HTMLElement = createElement('div', { styles: isNone ? 'font-size:8px;text-align: center;top: 8px;line-height:normal' : '' });
-        liInnerDiv.appendChild(spanDiv);
-        const span: HTMLSpanElement = createElement('span', { className: !isNone ? iconCss : '' });
-        spanDiv.appendChild(span);
-        if (isNone) {
-            liInnerDiv.style.display = 'inline-table';
-            span.textContent = this.localObj.getConstant('None');
-        }
-        liTag.appendChild(liInnerDiv);
-        return liTag;
+        return BulletListHelper.createBulletListTag(ulTag, iconCss, isNone, this.localObj);
     }
     private createStyleDropDownList(selectElement: HTMLElement): void {
         this.style = new ComboBox({
@@ -563,21 +483,7 @@ export class Paragraph {
     }
     /* eslint-disable */
     public updateStyleNames(): void {
-        this.styleName = !isNullOrUndefined((this.style as any).itemData) ? (this.style as any).itemData.StyleName : undefined;
-        const stylesMap: any = this.documentEditor.documentHelper.stylesMap;
-        let paraStyles: any[] = stylesMap.get("Paragraph") ? stylesMap.get("Paragraph") : [];
-        let linkedStyles: any[] = stylesMap.get("Linked") ? stylesMap.get("Linked") : [];
-        let charStyles: any[] = stylesMap.get("Character") ? stylesMap.get("Character") : [];
-        for (const linkedStyle of linkedStyles) {
-            for (let i = 0; i < charStyles.length; i++) {
-                const charStyle = charStyles[i];
-                if (linkedStyle["StyleName"] + " Char" === charStyle["StyleName"]) {
-                    charStyles.splice(i, 1);
-                    break;
-                }
-            }
-        }
-        this.style.dataSource = paraStyles.concat(linkedStyles, charStyles);
+        this.styleName = StylesHelper.updateStyleNames(this.documentEditor, this.style, this.localObj);
         this.onSelectionChange();
     }
     private createStyle(): void {
@@ -585,71 +491,6 @@ export class Paragraph {
         if (!this.documentEditor.isReadOnly) {
             this.documentEditor.showDialog('Styles');
         }
-    }
-    private constructStyleDropItems(styles: unknown[]): any {
-        const collection: any = [];
-        const paraIcon: string = 'e-list-icon e-de-listview-icon e-de-e-paragraph-style-mark e-icons';
-        const charIcon: string = 'e-list-icon e-de-listview-icon e-de-e-character-style-mark e-icons';
-        const linkedIcon: string = 'e-list-icon e-de-listview-icon e-de-e-linked-style-mark e-icons';
-        for (const styleObj of styles) {
-            const obj: any = {};
-            const styleName: string = this.localObj.getConstant((styleObj as any).name);
-            obj.StyleName = styleName === '' ? (styleObj as any).name : styleName;
-            obj.Style = this.parseStyle((styleObj as any).style as string);
-            if (((styleObj as any).type as string) == "Paragraph") {
-                obj.IconClass = paraIcon;
-            } else if (((styleObj as any).type as string) == "Character") {
-                obj.IconClass = charIcon;
-            } else {
-                obj.IconClass = linkedIcon;
-            }
-            collection.push(obj);
-        }
-        return collection;
-    }
-    private parseStyle(style: string): string {
-        let domStyle: string = '';
-        const styleObj: any = JSON.parse(style);
-        let textDecoration: string = '';
-        if (!isNullOrUndefined(styleObj.characterFormat.baselineAlignment) && styleObj.characterFormat.baselineAlignment !== 'Normal') {
-            let vAlign: string = '';
-            switch (styleObj.characterFormat.baselineAlignment) {
-                case 'Superscript':
-                    vAlign = 'super';
-                    break;
-                case 'Subscript':
-                    vAlign = 'sub';
-                    break;
-            }
-            if (vAlign.length > 1) {
-                domStyle += 'vertical-align:' + vAlign + ';';
-            }
-        }
-        if (!isNullOrUndefined(styleObj.characterFormat.underline) && styleObj.characterFormat.underline !== 'None') {
-            textDecoration += 'underline ';
-        }
-        if (!isNullOrUndefined(styleObj.characterFormat.strikethrough) && styleObj.characterFormat.strikethrough !== 'None') {
-            textDecoration += 'line-through ';
-        }
-        if (!isNullOrUndefined(styleObj.characterFormat.fontSize)) {
-            domStyle += 'font-size:' + styleObj.characterFormat.fontSize + 'px;';
-        }
-        if (!isNullOrUndefined(styleObj.characterFormat.fontFamily)) {
-            domStyle += 'font-family:' + styleObj.characterFormat.fontFamily + ';';
-        }
-        if (!isNullOrUndefined(styleObj.characterFormat.bold) && styleObj.characterFormat.bold) {
-            domStyle += 'font-weight:bold;';
-        }
-        if (!isNullOrUndefined(styleObj.characterFormat.italic) && styleObj.characterFormat.italic) {
-            domStyle += 'font-style:italic;';
-        }
-        // if (!isNullOrUndefined(styleObj.characterFormat.fontColor)) {
-        //     domStyle += 'color: ' + styleObj.characterFormat.fontColor + ';';
-        // }
-        if (textDecoration.length > 1) {
-            domStyle += 'text-decoration:' + textDecoration + ';';
-        }
-        return domStyle;
     }
     private onrightAlignmentClick(): void {
         this.leftAlignmentAction();
@@ -682,7 +523,7 @@ export class Paragraph {
             this.lineSpacingAction(args);
         });
         this.borders.addEventListener('click', (): void => {
-             this.documentEditor.showBordersAndShadingDialog();
+            this.documentEditor.showBordersAndShadingDialog();
         });
     }
     public unwireEvents(): void {
@@ -699,7 +540,7 @@ export class Paragraph {
      * @private
      */
     public toggleHiddenMarks(): void {
-        if(this.container.documentEditorSettings.showHiddenMarks) {
+        if (this.container.documentEditorSettings.showHiddenMarks) {
             classList(this.showHiddenMarks, ['e-btn-toggle'], []);
             this.showHiddenMarks.setAttribute('aria-pressed', 'true');
         } else {
@@ -720,38 +561,12 @@ export class Paragraph {
         if (this.isRetrieving) {
             return;
         }
-        const text: string = args.item.text;
-        switch (text) {
-            case this.localObj.getConstant('Single'):
-                this.documentEditor.selectionModule.paragraphFormat.lineSpacing = 1;
-                break;
-            case '1.15':
-                this.documentEditor.selectionModule.paragraphFormat.lineSpacing = 1.15;
-                break;
-            case '1.5':
-                this.documentEditor.selectionModule.paragraphFormat.lineSpacing = 1.5;
-                break;
-            case this.localObj.getConstant('Double'):
-                this.documentEditor.selectionModule.paragraphFormat.lineSpacing = 2;
-                break;
-        }
-        setTimeout((): void => {
-            this.documentEditor.focusIn();
-        }, 30);
+        const appliedSpacing = { value: this.appliedLineSpacing };
+        LineSpacingHelper.applyLineSpacing(this.documentEditor, args.item.text, appliedSpacing, this.localObj);
+        this.appliedLineSpacing = appliedSpacing.value;
     }
     private setLineSpacing(): void {
-        const lineSpacing: number = this.documentEditor.selectionModule.paragraphFormat.lineSpacing;
-        if (lineSpacing === 1) {
-            this.appliedLineSpacing = this.localObj.getConstant('Single');
-        } else if (lineSpacing === 1.15) {
-            this.appliedLineSpacing = '1.15';
-        } else if (lineSpacing === 1.5) {
-            this.appliedLineSpacing = '1.5';
-        } else if (lineSpacing === 2) {
-            this.appliedLineSpacing = this.localObj.getConstant('Double');
-        } else {
-            this.appliedLineSpacing = '';
-        }
+        this.appliedLineSpacing = LineSpacingHelper.getCurrentLineSpacing(this.documentEditor, this.localObj);
     }
     private selectStyleValue(args: any): void {
         if (this.container) {
@@ -765,16 +580,7 @@ export class Paragraph {
     }
     private applyStyleValue(args: any): void {
         if (!this.documentEditor.isReadOnly && this.documentEditor.editorModule) {
-            let styleName: string = this.documentEditor.stylesDialogModule.getStyleName(SanitizeHtmlHelper.sanitize(args.itemData.StyleName));
-            if (!isNullOrUndefined(this.documentEditor.documentHelper.styles.findByName(styleName))) {
-                this.documentEditor.editorModule.applyStyle(styleName, true);
-                let treeViewResult: HTMLElement = document.getElementById(this.documentEditor.containerId + '_treeDiv');
-                if (!isNullOrUndefined(treeViewResult) && !isNullOrUndefined(this.documentEditor.optionsPaneModule) && this.documentEditor.optionsPaneModule.isOptionsPaneShow && this.documentEditor.optionsPaneModule.isHeadingTab) {
-                    treeViewResult.innerHTML = '';
-                    this.documentEditor.optionsPaneModule.data = this.documentEditor.optionsPaneModule.dataForTreeview();
-                    this.documentEditor.optionsPaneModule.initHeadingTab();
-                }
-            }
+            StylesHelper.applyStyleValue(this.documentEditor, args);
         }
     }
     /* eslint-enable @typescript-eslint/no-explicit-any */
@@ -835,142 +641,66 @@ export class Paragraph {
             }, 30);
         }
     }
-    private numberedNumberDotClick(): void {
+    private applyNumbering(pattern: ListLevelPattern, style: string): void {
         if (this.isRetrieving) {
             return;
         }
         if (this.documentEditor.editorModule) {
-            this.appliedNumberingStyle = 'arabic';
-            this.documentEditor.editorModule.applyNumbering(this.getLevelFormatNumber(), 'Arabic');
+            this.appliedNumberingStyle = style;
+            this.documentEditor.editorModule.applyNumbering(
+                BulletListHelper.getLevelFormatNumber(this.documentEditor),
+                pattern
+            );
             setTimeout((): void => {
                 this.documentEditor.focusIn();
             }, 30);
         }
+    }
+    private numberedNumberDotClick(): void {
+        this.applyNumbering('Arabic', 'arabic');
+
     }
     private numberedUpRomanClick(): void {
-        if (this.isRetrieving) {
-            return;
-        }
-        if (this.documentEditor.editorModule) {
-            this.appliedNumberingStyle = 'uproman';
-            this.documentEditor.editorModule.applyNumbering(this.getLevelFormatNumber(), 'UpRoman');
-            setTimeout((): void => {
-                this.documentEditor.focusIn();
-            }, 30);
-        }
+        this.applyNumbering('UpRoman', 'uproman');
     }
     private numberedUpLetterClick(): void {
-        if (this.isRetrieving) {
-            return;
-        }
-        if (this.documentEditor.editorModule) {
-            this.appliedNumberingStyle = 'upletter';
-            this.documentEditor.editorModule.applyNumbering(this.getLevelFormatNumber(), 'UpLetter');
-            setTimeout((): void => {
-                this.documentEditor.focusIn();
-            }, 30);
-        }
+        this.applyNumbering('UpRoman', 'uproman');
     }
     private numberedLowLetterClick(): void {
-        if (this.isRetrieving) {
-            return;
-        }
-        if (this.documentEditor.editorModule) {
-            this.appliedNumberingStyle = 'lowletter';
-            this.documentEditor.editorModule.applyNumbering(this.getLevelFormatNumber(), 'LowLetter');
-            setTimeout((): void => {
-                this.documentEditor.focusIn();
-            }, 30);
-        }
+        this.applyNumbering('LowLetter', 'lowletter');
     }
     private numberedLowRomanClick(): void {
+        this.applyNumbering('LowRoman', 'lowroman');
+    }
+    private applyBullet(style: string): void {
         if (this.isRetrieving) {
             return;
         }
-        if (this.documentEditor.editorModule) {
-            this.appliedNumberingStyle = 'lowroman';
-            this.documentEditor.editorModule.applyNumbering(this.getLevelFormatNumber(), 'LowRoman');
-            setTimeout((): void => {
-                this.documentEditor.focusIn();
-            }, 30);
-        }
-    }
-    private getLevelFormatNumber(): string {
-        let numberFormat: string = '%';
-        numberFormat = numberFormat + (((this.documentEditor.selectionModule.paragraphFormat.listLevelNumber <= 0) ? 0 : this.documentEditor.selectionModule.paragraphFormat.listLevelNumber) + 1) + '.';
-        return numberFormat;
+        const appliedStyle = { value: this.appliedBulletStyle };
+        BulletListHelper.applyBulletStyle(this.documentEditor, style, appliedStyle);
+        this.appliedBulletStyle = appliedStyle.value;
     }
     private bulletDotClick(): void {
-        if (this.isRetrieving) {
-            return;
-        }
-        if (this.documentEditor.editorModule) {
-            this.appliedBulletStyle = 'dot';
-            this.documentEditor.editorModule.applyBullet(String.fromCharCode(61623), 'Symbol');
-            setTimeout((): void => {
-                this.documentEditor.focusIn();
-            }, 30);
-        }
+        this.applyBullet('dot');
     }
     private bulletCircleClick(): void {
-        if (this.isRetrieving) {
-            return;
-        }
-        if (this.documentEditor.editorModule) {
-            this.appliedBulletStyle = 'circle';
-            this.documentEditor.editorModule.applyBullet(String.fromCharCode(61551) + String.fromCharCode(32), 'Symbol');
-            setTimeout((): void => {
-                this.documentEditor.focusIn();
-            }, 30);
-        }
+        this.applyBullet('circle');
     }
     private bulletSquareClick(): void {
-        if (this.isRetrieving) {
-            return;
-        }
-        if (this.documentEditor.editorModule) {
-            this.appliedBulletStyle = 'square';
-            this.documentEditor.editorModule.applyBullet(String.fromCharCode(61607), 'Wingdings');
-            setTimeout((): void => {
-                this.documentEditor.focusIn();
-            }, 30);
-        }
+        this.applyBullet('square');
     }
     private bulletFlowerClick(): void {
-        if (this.isRetrieving) {
-            return;
-        }
-        if (this.documentEditor.editorModule) {
-            this.appliedBulletStyle = 'flower';
-            this.documentEditor.editorModule.applyBullet(String.fromCharCode(61558), 'Wingdings');
-            setTimeout((): void => {
-                this.documentEditor.focusIn();
-            }, 30);
-        }
+        this.applyBullet('flower');
+
+
     }
     private bulletArrowClick(): void {
-        if (this.isRetrieving) {
-            return;
-        }
-        if (this.documentEditor.editorModule) {
-            this.appliedBulletStyle = 'arrow';
-            this.documentEditor.editorModule.applyBullet(String.fromCharCode(61656), 'Wingdings');
-            setTimeout((): void => {
-                this.documentEditor.focusIn();
-            }, 30);
-        }
+        this.applyBullet('arrow');
+
     }
     private bulletTickClick(): void {
-        if (this.isRetrieving) {
-            return;
-        }
-        if (this.documentEditor.editorModule) {
-            this.appliedBulletStyle = 'tick';
-            this.documentEditor.editorModule.applyBullet(String.fromCharCode(61692), 'Wingdings');
-            setTimeout((): void => {
-                this.documentEditor.focusIn();
-            }, 30);
-        }
+        this.applyBullet('tick');
+
     }
     public onSelectionChange(): void {
         this.isRetrieving = true;

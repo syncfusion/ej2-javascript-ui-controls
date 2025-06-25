@@ -20,7 +20,7 @@ describe('Document Editor container ParaMark toggling ', () => {
         expect(element.childNodes.length).toBe(0);
         document.body.removeChild(element);
         expect(() => { container.destroy(); }).not.toThrowError();
-        document.body.innerHTML = '';
+        
         element = undefined;
         container = undefined;
         setTimeout(function () {

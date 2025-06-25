@@ -9,7 +9,7 @@ import { findPoint, getIntersection, getOppositeDirection, getPortDirection } fr
 import { Direction } from '../enum/enum';
 import { DiagramElement } from '../core/elements/diagram-element';
 import { canEnableRouting } from '../utility/constraints-util';
-import { Container } from '../core/containers/container';
+import { GroupableView } from '../core/containers/container';
 
 
 /**
@@ -35,6 +35,8 @@ export class LineRouting {
     private sourceGridCollection: VirtualBoundaries[] = [];
     private considerWalkable: VirtualBoundaries[] = [];
     public skipObstacleCheck: boolean = false;
+    // collection of non-walkable grids
+    private nonWalkableGrids: VirtualBoundaries[] = [];
 
     /**
      * lineRouting method \
@@ -106,6 +108,10 @@ export class LineRouting {
                 x = this.diagramStartX < 0 ? this.diagramStartX : 0;
                 y += size;
             }
+            // Clear the non-walkable grid collection
+            if (this.nonWalkableGrids.length !== 0) {
+                this.nonWalkableGrids.length = 0;
+            }
         }
         const nodes: NodeModel[] = this.findNodes(diagram.nodes);
         this.updateNodesInVirtualRegion(nodes);
@@ -124,33 +130,70 @@ export class LineRouting {
 
     private updateNodesInVirtualRegion(diagramNodes: NodeModel[]): void {
         const size: number = this.size;
-        let x: number = this.diagramStartX < 0 ? this.diagramStartX : 0;
-        let y: number = this.diagramStartY < 0 ? this.diagramStartY : 0;
-        for (let i: number = 0; i < this.noOfCols; i++) {
-            for (let j: number = 0; j < this.noOfRows; j++) {
-                const grid: VirtualBoundaries = this.gridCollection[parseInt(j.toString(), 10)][parseInt(i.toString(), 10)];
-                const rectangle: Rect = new Rect(x, y, this.size, this.size);
-                let isContains: boolean; let k: number;
-                grid.walkable = true;
-                grid.tested = undefined;
-                grid.nodeId = [];
-                for (k = 0; k < diagramNodes.length; k++) {
-                    if (diagramNodes[parseInt(k.toString(), 10)].wrapper.bounds) {
-                        isContains = this.intersectRect(rectangle, diagramNodes[parseInt(k.toString(), 10)].wrapper.bounds);
-                    }
+        // Make non-walkable grids again walkable
+        for (const grid of this.nonWalkableGrids) {
+            grid.walkable = true;
+            grid.tested = undefined;
+            grid.nodeId = [];
+            grid.parentNodeId = '';
+        }
+        // Clear the non-walkable grid collection
+        if (this.nonWalkableGrids.length !== 0) {
+            this.nonWalkableGrids.length = 0;
+        }
+        // Mark the grids that are occupied by nodes as non-walkable
+        for (let i: number = 0; i < diagramNodes.length; i++) {
+            const node: Node = diagramNodes[parseInt(i.toString(), 10)] as Node;
+            const bounds: Rect = node.wrapper.bounds;
+            if (bounds) {
+                // Get grid that intersects with node bounds
+                const grids: VirtualBoundaries[] = this.getGridsIntersectBounds(bounds);
+                for (const grid of grids) {
+                    const rectangle: Rect = new Rect(grid.x, grid.y, size, size);
+                    // check whether node bounds intersects with grid bounds
+                    const isContains: boolean = this.intersectRect(rectangle, bounds);
                     if (isContains) {
-                        grid.nodeId.push(diagramNodes[parseInt(k.toString(), 10)].id);
+                        grid.nodeId.push(node.id);
                         grid.walkable = false;
-                        if ((diagramNodes[parseInt(k.toString(), 10)] as Node).parentId !== '') {
-                            grid.parentNodeId = (diagramNodes[parseInt(k.toString(), 10)] as Node).parentId;
+                        this.nonWalkableGrids.push(grid);
+                        if (node.parentId !== '') {
+                            grid.parentNodeId = node.parentId;
                         }
                     }
                 }
-                x += size;
             }
-            x = this.diagramStartX < 0 ? this.diagramStartX : 0;
-            y += size;
         }
+    }
+
+    /**
+     * Gets the grids that intersect with the node bounds.
+     * @param {Rect} bounds - The starting point of the line segment.
+     * @returns {VirtualBoundaries[]} An array of VirtualBoundaries that intersect with the line segment.
+     * @private
+     */
+    public getGridsIntersectBounds(bounds: Rect): VirtualBoundaries[] {
+        const grids: VirtualBoundaries[] = [];
+        const minX: number = bounds.topLeft.x;
+        const maxX: number = bounds.bottomRight.x;
+        const minY: number = bounds.topLeft.y;
+        const maxY: number = bounds.bottomRight.y;
+        const gridSize: number = this.size;
+        const minGridX: number = Math.floor((minX - this.diagramStartX) / gridSize);
+        const minGridY: number = Math.floor((minY - this.diagramStartY) / gridSize);
+        const maxGridX: number = Math.floor((maxX - this.diagramStartX) / gridSize);
+        const maxGridY: number = Math.floor((maxY - this.diagramStartY) / gridSize);
+        for (let x: number = minGridX; x <= maxGridX; x++) {
+            for (let y: number = minGridY; y <= maxGridY; y++) {
+                const gridRow: VirtualBoundaries[] = this.gridCollection[parseInt(x.toString(), 10)];
+                if (gridRow) {
+                    const grid: VirtualBoundaries = gridRow[parseInt(y.toString(), 10)];
+                    if (grid && grids.indexOf(grid) === -1) {
+                        grids.push(grid);
+                    }
+                }
+            }
+        }
+        return grids;
     }
 
     private intersectRect(r1: Rect, r2: Rect): boolean {
@@ -525,8 +568,8 @@ export class LineRouting {
                         break;
                     }
                 }
-                let targetNodewrapper: Container;
-                let overLapNode: Container;
+                let targetNodewrapper: GroupableView;
+                let overLapNode: GroupableView;
                 let contains: boolean;
                 if (diagram.nameTable[this.targetNode.id]) {
                     targetNodewrapper = diagram.nameTable[this.targetNode.id].wrapper;
@@ -959,19 +1002,7 @@ export class LineRouting {
 
     // sorting the array based on total distance between source and target node
     private sorting(array: VirtualBoundaries[]): VirtualBoundaries[] {
-        let done: boolean = false;
-        while (!done) {
-            done = true;
-            for (let i: number = 1; i < array.length; i += 1) {
-                if (array[i - 1].totalDistance < array[parseInt(i.toString(), 10)].totalDistance) {
-                    done = false;
-                    const tmp: VirtualBoundaries = array[i - 1];
-                    array[i - 1] = array[parseInt(i.toString(), 10)];
-                    array[parseInt(i.toString(), 10)] = tmp;
-                }
-            }
-        }
-        return array;
+        return array.sort((a: VirtualBoundaries, b: VirtualBoundaries) => b.totalDistance - a.totalDistance);
     }
 
     private octile(t: number, e: number): number {

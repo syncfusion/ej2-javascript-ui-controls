@@ -9,7 +9,7 @@ import { OverviewModel } from '../../src/overview/overview-model';
 import { profile, inMB, getMemoryProfile } from '../common.spec';
 import { DataManager, Query } from '@syncfusion/ej2-data';
 import {
-    RadialTree, DataBinding,HierarchicalTree, DiagramTools, StackPanel, Container, TextElement, ZoomOptions, TreeInfo, ILoadEventArgs
+    RadialTree, DataBinding,HierarchicalTree, DiagramTools, StackPanel, GroupableView, TextElement, ZoomOptions, TreeInfo, ILoadEventArgs
 } from '../../src/diagram/index';
 import { createSpinner, showSpinner, hideSpinner } from '@syncfusion/ej2-popups';
 Diagram.Inject(RadialTree, DataBinding,HierarchicalTree);
@@ -1649,7 +1649,7 @@ describe('Overview', () => {
                     return connector;
                 },
 
-                setNodeTemplate: (obj: Node, diagram: Diagram): Container => {
+                setNodeTemplate: (obj: Node, diagram: Diagram): GroupableView => {
                     let content: StackPanel = new StackPanel();
                     content.id = (obj as NodeModel).id + '_outerstack';
                     content.style.strokeColor = 'darkgreen';

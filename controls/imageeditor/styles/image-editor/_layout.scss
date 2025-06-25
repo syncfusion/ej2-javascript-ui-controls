@@ -172,6 +172,14 @@
               }
             }
           }
+          & .e-dropdown-btn {
+            &.e-btn.e-icon-btn {
+              @if $skin-name == 'fluent2' {
+                padding-top: 7.5px;
+                padding-bottom: 7.5px;
+              }
+            }
+          }
         }
 
         & .e-upload {
@@ -377,6 +385,16 @@
         height: 16px !important; /* stylelint-disable-line declaration-no-important */
         top: calc(50% - 10px) !important; /* stylelint-disable-line declaration-no-important */
         width: 16px !important; /* stylelint-disable-line declaration-no-important */
+      }
+    }
+
+    & .e-ie-save-dialog .e-dialog .e-dlg-content .e-ie-dlg-right-content .e-dropdown-btn,
+    & .e-blr-ie-save-dialog .e-dialog .e-dlg-content .e-ie-dlg-right-content .e-dropdown-btn {
+      @if $skin-name == 'Material3' {
+        padding: 8px 13px;
+      }
+      @if $skin-name == 'highcontrast' {
+        padding: 2px 17px;
       }
     }
 
@@ -823,5 +841,23 @@
    
   .e-image-editor.e-control.e-readonly {
     opacity: 1 !important; /* stylelint-disable-line declaration-no-important */
+  }
+
+  .e-device.e-image-editor .e-ie-quality-slider.e-control-wrapper.e-slider-container.e-horizontal .e-slider {
+    @if $skin-name == 'fluent2' or $skin-name == 'highcontrast' or $skin-name == 'highcontrast-light' or $skin-name == 'fabric' or $skin-name == 'fabric-dark' or $skin-name == 'FluentUI'  {
+      top: calc(50% - 18px) !important; /* stylelint-disable-line declaration-no-important */
+    }
+    @else {
+      top: calc(50% - 16px) !important; /* stylelint-disable-line declaration-no-important */
+    }
+  }
+
+  .e-device.e-image-editor {
+    .e-ie-save-dialog .e-slider-container .e-slider .e-handle,
+    .e-blr-ie-save-dialog .e-slider-container .e-slider .e-handle {
+      @if $skin-name == 'Material3' {
+        top: calc(50% - 9px) !important; /* stylelint-disable-line declaration-no-important */
+      }
+    }
   }
 }

@@ -109,12 +109,13 @@ export class VirtualRowModelGenerator implements IModelGenerator<Column> {
                     this.parent.notify(events.refreshVirtualMaxPage, {});
                 }
                 let median: number;
+                const isTreeGrid: string = 'isTreeGrid';
                 if (isGroupAdaptive(this.parent)) {
                     this.getGroupVirtualRecordsByIndex(rows);
                 } else {
                     if (isManualRefresh) {
                         this.setBlockForManualRefresh(this.cache, indexes, rows);
-                    } else if ((e.requestType === 'sorting' || e.requestType === 'delete') && checkIsVirtual(this.parent)) {
+                    } else if (((e.requestType === 'sorting' || e.requestType === 'delete') || (this.parent[`${isTreeGrid}`] && this.parent.getDataModule().isRemote() && e.requestType === 'refresh')) && checkIsVirtual(this.parent)) {
                         const visiblePage: number[] = getVisiblePage(info.blockIndexes);
                         let prevEndIndex: number = 0;
                         for (let i: number = 0; i < visiblePage.length; i++) {

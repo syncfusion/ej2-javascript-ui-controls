@@ -222,6 +222,10 @@ export class CommonKeyboardInteraction {
      * @private
      */
     public destroy(): void {
+        if (this.timeOutObj) {
+            clearTimeout(this.timeOutObj);
+            this.timeOutObj = null;
+        }
         if (this.keyboardModule) {
             this.keyboardModule.destroy();
             this.keyboardModule = null;

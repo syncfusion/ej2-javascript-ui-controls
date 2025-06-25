@@ -19,7 +19,8 @@ import {
     TableWidget, TextElementBox, Widget, CheckBoxFormField, DropDownFormField, FormField, ShapeElementBox, TextFrame, ContentControl,
     FootnoteElementBox, FootNoteWidget, ShapeBase, TablePosition, CommentCharacterElementBox,
     FootnoteEndnoteMarkerElementBox,
-    WTableHolder
+    WTableHolder,
+    GroupShapeElementBox
 } from './page';
 import { TextSizeInfo } from './text-helper';
 import { DocumentHelper, LayoutViewer, PageLayoutViewer, WebLayoutViewer } from './viewer';
@@ -1266,16 +1267,10 @@ export class Layout {
     }
 
     private updateRevisionRange(revision: Revision, page: Page): any {
-        for (let i: number = 0; i < revision.range.length; i++) {
-            const inline: object = revision.range[i];
-            if (inline instanceof TextElementBox) {
-                if (isNullOrUndefined(inline.line.paragraph.bodyWidget.page)) {
-                    inline.line.paragraph.bodyWidget.page = page;
-                }
-            } else if (inline instanceof WCharacterFormat) {
-                if (isNullOrUndefined((inline.ownerBase as ParagraphWidget).bodyWidget.page)) {
-                    (inline.ownerBase as ParagraphWidget).bodyWidget.page = page;
-                }
+        for (let i: number = 0; i < revision.getRange().length; i++) {
+            const inline: TextElementBox = (revision.getRange()[i] as TextElementBox);
+            if (!inline.line.paragraph.bodyWidget.page) {
+                inline.line.paragraph.bodyWidget.page = page;
             }
         }
     }
@@ -1649,6 +1644,7 @@ export class Layout {
             paragraph.x = left;
         }
     }
+
     /**
      * @private
      */
@@ -2060,6 +2056,7 @@ export class Layout {
         if (element.textWrappingStyle !== 'Inline') {
             const position: Point = this.getFloatingItemPoints(element);
             element.x = position.x;
+
             element.y = position.y;
             if(!element.paragraph.isInsideTable && element.paragraph.indexInOwner !== 0 && element.verticalPosition >= 0 && Math.round(element.paragraph.y) >= Math.round(element.y) && this.viewer.clientArea.bottom <= element.y + element.height && (element.verticalOrigin == "Line" || element.verticalOrigin == "Paragraph") && element.textWrappingStyle !== "InFrontOfText" && element.textWrappingStyle !== "Behind") {
                 this.moveToNextPage(this.viewer, element.line);
@@ -2094,9 +2091,76 @@ export class Layout {
                 this.layoutBlock(block, 0);
                 this.viewer.updateClientAreaForBlock(block, false);
             }
+        } else if (element instanceof GroupShapeElementBox) {
+            this.layoutGroupShape(element);
         }
         this.viewer.clientActiveArea = clientActiveArea;
         this.viewer.clientArea = clientArea;
+    }
+    public layoutGroupShape(groupShape: GroupShapeElementBox): void {
+        const clientArea: Rect = this.viewer.clientArea;
+        const clientActiveArea: Rect = this.viewer.clientActiveArea;
+        if (groupShape.textWrappingStyle === 'Inline') {
+            groupShape.y = this.viewer.clientActiveArea.y;
+            groupShape.x = this.viewer.clientActiveArea.x;
+        }
+        const shapes: any = groupShape.childWidgets;
+        for (let i: number = 0; i < shapes.length; i++) {
+            this.updateChildShapePosition(groupShape, shapes[i]);
+            if (shapes[i] instanceof GroupShapeElementBox) {
+                this.updateNestedShapePosition(shapes[i]);
+            }
+        }
+        this.updateShapeTextPosition(groupShape);
+        this.viewer.clientActiveArea = clientActiveArea;
+        this.viewer.clientArea = clientArea;
+    }
+    private updateShapeTextPosition(shapes: GroupShapeElementBox): void {
+        for (let i: number = 0; i < shapes.childWidgets.length; i++) {
+            const shape: any = shapes.childWidgets[i];
+            if (shape instanceof ShapeElementBox) {
+                this.viewer.updateClientAreaForTextBoxShape(shape, true);
+                const blocks: BlockWidget[] = shape.textFrame.childWidgets as BlockWidget[];
+                for (let j: number = 0; j < blocks.length; j++) {
+                    const block: BlockWidget = blocks[j];
+                    this.viewer.updateClientAreaForBlock(block, true);
+                    if (block instanceof TableWidget) {
+                        this.clearTableWidget(block, true, true);
+                    }
+                    this.layoutBlock(block, 0);
+                    this.viewer.updateClientAreaForBlock(block, false);
+                }
+            } else if (shape instanceof GroupShapeElementBox) {
+                this.updateShapeTextPosition(shape);
+            }
+
+        }
+    }
+    private updateChildShapePosition(parent: GroupShapeElementBox, shape: any): void {
+        let xPosition: number = shape.shapeX - parent.shapeX;
+        let YPosition: number = shape.shapeY - parent.shapeY;
+        let heightFact: number = parent.height / parent.extentYValue;
+        let widthFact: number = parent.width / parent.extentXValue;
+        shape.x = parent.x + (xPosition * widthFact); 
+        shape.y = parent.y + (YPosition * heightFact);
+        shape.height = shape.shapeHeight * heightFact;
+        shape.width = shape.shapeWidth * widthFact;
+        if (shape instanceof GroupShapeElementBox) {
+            shape.x += (shape.offsetXValue * widthFact);
+            shape.y += (shape.offsetYValue * heightFact);
+        }
+    }
+    private updateNestedShapePosition(parent: GroupShapeElementBox): void {
+        for (let i = 0; i < parent.childWidgets.length; i++) {
+            if (parent.childWidgets[i] instanceof GroupShapeElementBox) {
+                this.updateChildShapePosition(parent, parent.childWidgets[i]);
+                this.updateNestedShapePosition(parent.childWidgets[i] as GroupShapeElementBox);
+            } else {
+                for (let j = 0; j < parent.childWidgets.length; j++) {
+                    this.updateChildShapePosition(parent, parent.childWidgets[j]);
+                }
+            }
+        }
     }
     private moveElementFromNextLine(line: LineWidget): void {
         let nextLine: LineWidget = line.nextLine;
@@ -2153,7 +2217,7 @@ export class Layout {
             if (element instanceof TextElementBox) {
                 const textElement: TextElementBox = element as TextElementBox;
                 if (!isNullOrUndefined(textElement.errorCollection) && textElement.errorCollection.length > 0) {
-                    textElement.ischangeDetected = true;
+                    textElement.isChangeDetected = true;
                 }
             }
             if (!this.isRTLLayout) {
@@ -2187,16 +2251,10 @@ export class Layout {
                                 textElement.line = element.line;
                                 textElement.characterFormat.copyFormat(element.characterFormat);
                                 // Copy revisions
-                                if (element.revisions.length > 0) {
-                                    for (let m: number = 0; m < element.revisions.length; m++) {
-                                        const revision: Revision = element.revisions[m];
-                                        textElement.revisions.push(revision);
-                                        const rangeIndex: number = revision.range.indexOf(element);
-                                        if (rangeIndex < 0) {
-                                            revision.range.push(textElement);
-                                        } else {
-                                            revision.range.splice(rangeIndex, 0, textElement);
-                                        }
+                                if (element.revisionLength > 0) {
+                                    for (let m: number = 0; m < element.revisionLength; m++) {
+                                        const revision: Revision = element.getRevision(m);
+                                        textElement.addRevision(revision);
                                     }
                                 }
                                 element.line.children.splice(elementIndex, 0 , textElement);
@@ -2408,7 +2466,7 @@ export class Layout {
                 }
             }
             if (element instanceof ShapeBase && element.textWrappingStyle !== 'Inline' && paragraph.floatingElements.indexOf(element) == -1) {
-                if (element instanceof ShapeElementBox) {
+                if (element instanceof ShapeElementBox || element instanceof GroupShapeElementBox) {
                     if (paragraph.floatingElements.indexOf(element) === -1) {
                         paragraph.floatingElements.push(element);
                     }
@@ -2539,7 +2597,7 @@ export class Layout {
             }
         }
         if (!isNullOrUndefined(paragraph.containerWidget) && paragraph.bodyWidget.floatingElements.length > 0 &&
-            !(element instanceof ShapeElementBox && element.textWrappingStyle == 'Inline') && !(paragraph.containerWidget instanceof TextFrame) && !(element instanceof CommentCharacterElementBox) &&
+            !((element instanceof ShapeElementBox || element instanceof GroupShapeElementBox) && element.textWrappingStyle == 'Inline') && !(paragraph.containerWidget instanceof TextFrame) && !(element instanceof CommentCharacterElementBox) &&
             !(paragraph.containerWidget instanceof TableCellWidget && paragraph.containerWidget.ownerTable.containerWidget instanceof TextFrame)) {
             this.adjustPosition(element, element.line.paragraph.bodyWidget);
             if (paragraph.textWrapWidth) {
@@ -2549,7 +2607,7 @@ export class Layout {
         }
         let beforeSpacing: number = line.isFirstLine() && element.indexInOwner === 0 ? this.getBeforeSpacing(paragraph) : 0;
         if (this.viewer instanceof PageLayoutViewer &&
-            ((element instanceof ShapeElementBox && element.textWrappingStyle === 'Inline') || !(element instanceof ShapeElementBox))
+            (((element instanceof ShapeElementBox || element instanceof GroupShapeElementBox) && element.textWrappingStyle === 'Inline') || !(element instanceof ShapeElementBox || element instanceof GroupShapeElementBox))
             && this.viewer.clientActiveArea.height < beforeSpacing + element.height && this.viewer.clientActiveArea.y !== this.viewer.clientArea.y) {
             if ((element instanceof TextElementBox && (element.text !== '\f' && element.text !== String.fromCharCode(14) || (element.text === '\f' && paragraph.isPageBreak() && this.documentHelper.compatibilityMode === 'Word2013'))) || !(element instanceof TextElementBox)) {
                 //let bodyIndex: number = line.paragraph.containerWidget.indexInOwner;
@@ -2562,12 +2620,12 @@ export class Layout {
                 this.updateFieldText(element);
             }
             if (element.previousElement &&
-                ((element.previousElement instanceof ShapeElementBox && element.previousElement.textWrappingStyle === 'Inline') ||
-                    !(element.previousElement instanceof ShapeElementBox))) {
+                (((element.previousElement instanceof ShapeElementBox || element.previousElement instanceof GroupShapeElementBox) && element.previousElement.textWrappingStyle === 'Inline') ||
+                    !(element.previousElement instanceof ShapeElementBox || element.previousElement instanceof GroupShapeElementBox))) {
                 this.cutClientWidth(element.previousElement, undefined, (element instanceof TextElementBox && element.text === '\f') ? true : false);
             }
         }
-        if (element instanceof ShapeElementBox && element.textWrappingStyle === 'Inline') {
+        if ((element instanceof ShapeElementBox || element instanceof GroupShapeElementBox) && element.textWrappingStyle === 'Inline') {
             if (paragraph.floatingElements.indexOf(element) === -1) {
                 paragraph.floatingElements.push(element);
             }
@@ -2587,8 +2645,8 @@ export class Layout {
             if (this.isfootMove) {
                 this.moveToNextPage(this.viewer, element.line);
                 if (element.previousElement &&
-                    ((element.previousElement instanceof ShapeElementBox && element.previousElement.textWrappingStyle === 'Inline') ||
-                        !(element.previousElement instanceof ShapeElementBox))) {
+                    (((element.previousElement instanceof ShapeElementBox || element.previousElement instanceof GroupShapeElementBox) && element.previousElement.textWrappingStyle === 'Inline') ||
+                        !(element.previousElement instanceof ShapeElementBox || element.previousElement instanceof GroupShapeElementBox))) {
                     this.cutClientWidth(element.previousElement);
                 }
                 this.isfootMove = false;
@@ -3788,7 +3846,7 @@ export class Layout {
         let width: number = 0;
         for (let i: number = 0; i < line.children.length; i++) {
             const element: ElementBox = line.children[i];
-            if (isNeedToLayoutShape && element instanceof ShapeElementBox && element.textWrappingStyle === 'Inline') {
+            if (isNeedToLayoutShape && (element instanceof ShapeElementBox || element instanceof GroupShapeElementBox) && element.textWrappingStyle === 'Inline') {
                 this.layoutShape(element);
             }
             if (!this.isRelayoutOverlap && element instanceof TabElementBox && element.text === '\t') {
@@ -3976,7 +4034,7 @@ export class Layout {
             && this.viewer.clientActiveArea.height < beforeSpacing + maxHeight
             && this.viewer.clientActiveArea.y !== this.viewer.clientArea.y
             && (!(lineWidget.isFirstLine() && isNullOrUndefined(lineWidget.paragraph.previousWidget))
-                || lineWidget.isEndnoteLineWidget()) && !paragraph.isSectionBreak) {
+                || lineWidget.isEndnoteLineWidget()) && !paragraph.isSectionBreak && !(paragraph.bodyWidget instanceof HeaderFooterWidget)) {
             this.moveToNextPage(this.viewer, lineWidget);
         }
         //Gets line spacing.
@@ -4403,9 +4461,8 @@ export class Layout {
             } else {
                 elementBox.trimEndWidth = elementBox.width;
             }
-            if (elementBox.revisions.length > 0) {
+            if (elementBox.revisionLength > 0) {
                 this.updateRevisionForSplittedElement(elementBox, splittedElementBox, true);
-                splittedElementBox.isMarkedForRevision = elementBox.isMarkedForRevision;
             }
             splittedElementBox.height = elementBox.height;
             splittedElementBox.baselineOffset = elementBox.baselineOffset;
@@ -4433,9 +4490,8 @@ export class Layout {
         elementBox.baselineOffset = textElement.baselineOffset;
         elementBox.width = this.documentHelper.textHelper.getWidth(elementBox.text, format, elementBox.scriptType);
         lineWidget.children.splice(indexOf + 1, 0, elementBox);
-        if (textElement.revisions.length > 0) {
+        if (textElement.revisionLength > 0) {
             this.updateRevisionForSplittedElement(textElement, elementBox, index > 0, true);
-            elementBox.isMarkedForRevision = textElement.isMarkedForRevision;
         }
         return elementBox;
     }
@@ -4511,9 +4567,8 @@ export class Layout {
             splittedElement.height = textElement.height;
             splittedElement.baselineOffset = textElement.baselineOffset;
             lineWidget.children.splice(textElement.indexInOwner + 1, 0, splittedElement);
-            if (textElement.revisions.length > 0) {
+            if (textElement.revisionLength > 0) {
                 this.updateRevisionForSplittedElement(textElement, splittedElement, index > 0);
-                splittedElement.isMarkedForRevision = textElement.isMarkedForRevision;
             }
             this.addElementToLine(paragraph, textElement);
             this.addSplittedLineWidget(lineWidget, indexOf);
@@ -4527,27 +4582,10 @@ export class Layout {
         }
     }
     private updateRevisionForSplittedElement(item: TextElementBox, splittedElement: TextElementBox, isSplitted: boolean, isJustify?: boolean): void {
-        if (item.revisions.length > 0) {
-            for (let i: number = 0; i < item.revisions.length; i++) {
-                const currentRevision: Revision = item.revisions[i];
-                if (isSplitted) {
-                    splittedElement.revisions.push(currentRevision);
-                    let rangeIndex: number = currentRevision.range.indexOf(item);
-                    if (rangeIndex < 0) {
-                        currentRevision.range.push(splittedElement);
-                    } else {
-                        if (isJustify) {
-                            currentRevision.range.splice(rangeIndex, 0, splittedElement);
-                        } else {
-                            currentRevision.range.splice(rangeIndex + 1, 0, splittedElement);
-                        }
-                    }
-                } else {
-                    let rangeIndex: number = currentRevision.range.indexOf(item);
-                    currentRevision.range.splice(rangeIndex, 1);
-                    currentRevision.range.splice(rangeIndex, 0, splittedElement);
-                    splittedElement.revisions.push(currentRevision);
-                }
+        if (item.revisionLength > 0) {
+            for (let i: number = 0; i < item.revisionLength; i++) {
+                const currentRevision: Revision = item.getRevision(i);
+                splittedElement.addRevision(currentRevision);
             }
         }
     }
@@ -4587,9 +4625,8 @@ export class Layout {
                     splittedElement.characterRange = textElement.characterRange;
                     splittedElement.scriptType = textElement.scriptType;
                     lineWidget.children.splice(indexOf, 0, splittedElement);
-                    if (textElement.revisions.length > 0) {
+                    if (textElement.revisionLength > 0) {
                         this.updateRevisionForSplittedElement(textElement, splittedElement, index > 0, true);
-                        splittedElement.isMarkedForRevision = textElement.isMarkedForRevision;
                     }
                     if (splittedElement.text !== ' ' && HelperMethods.endsWith(splittedElement.text) && format.bidi && splittedElement.characterRange === CharacterRangeType.RightToLeft) {
                         const elementBox: TextElementBox = this.spitTextElementByWhitespace(splittedElement, format);
@@ -5437,8 +5474,9 @@ export class Layout {
                 let position: Point = this.getFloatingItemPoints(shape);
                 shape.y = position.y;
                 shape.x = position.x;
-                if (shape instanceof ShapeElementBox)
-                    this.updateChildLocationForCellOrShape(shape.y, shape as ShapeElementBox);
+                if (shape instanceof ShapeElementBox || shape instanceof GroupShapeElementBox) {
+                    this.updateChildLocationForCellOrShape(shape.y, shape);
+                }
             }
         }
     }
@@ -5903,9 +5941,8 @@ export class Layout {
                     splittedElement.text = text.substr(index);
                     splittedElement.characterFormat.copyFormat(textElement.characterFormat);
                     splittedElement.characterRange = textElement.characterRange;
-                    if (textElement.revisions.length > 0) {
+                    if (textElement.revisionLength > 0) {
                         this.updateRevisionForSplittedElement(textElement, splittedElement, index > 0);
-                        splittedElement.isMarkedForRevision = textElement.isMarkedForRevision;
                     }
                     textElement.text = text.substr(0, index);
                     this.documentHelper.textHelper.getTextSize(splittedElement, textElement.characterFormat);
@@ -7377,7 +7414,8 @@ export class Layout {
                 let prevIndex: number = tableCollection.indexOf(tableWidget);
                 if (prevIndex + 1 >= tableCollection.length) {
                     //Creates new table widget for splitted rows.
-                    this.addTableWidget(viewer.clientActiveArea, tableCollection, true);
+                    let tableWidgetIn: TableWidget = this.addTableWidget(viewer.clientActiveArea, tableCollection, true);
+                    tableWidgetIn.containerWidget = tableWidget.containerWidget;
                 }
                 tableWidget = tableCollection[prevIndex + 1] as TableWidget;
                 index = tableWidget.childWidgets.length;
@@ -7388,18 +7426,20 @@ export class Layout {
         }
         this.updateRowHeightBySpannedCell(tableWidget, row, index);
         this.updateRowHeightByCellSpacing(tableCollection, row, viewer);
-        //Remove widget from previous container after splitteing
-        if (row.containerWidget && row.containerWidget !== tableWidget &&
-            row.containerWidget.childWidgets.indexOf(row) !== -1) {
-            row.containerWidget.childWidgets.splice(row.containerWidget.childWidgets.indexOf(row), 1);
-        }
-        if (tableWidget.childWidgets.indexOf(row) === -1) {
-            tableWidget.childWidgets.splice(index, 0, row);
-            if (isRepeatRowHeader) {
-                tableWidget.bodyWidget.page.repeatHeaderRowTableWidget = true;
+        if (rowWidgetIndex !== 0) {
+            //Remove widget from previous container after splitteing
+            if (row.containerWidget && row.containerWidget !== tableWidget &&
+                row.containerWidget.childWidgets.indexOf(row) !== -1) {
+                row.containerWidget.childWidgets.splice(row.containerWidget.childWidgets.indexOf(row), 1);
             }
+            if (tableWidget.childWidgets.indexOf(row) === -1) {
+                tableWidget.childWidgets.splice(index, 0, row);
+                if (isRepeatRowHeader) {
+                    tableWidget.bodyWidget.page.repeatHeaderRowTableWidget = true;
+                }
+            }
+            row.containerWidget = tableWidget;
         }
-        row.containerWidget = tableWidget;
         if (!row.ownerTable.isInsideTable) {
             if (footnotes.length > 0) {
                 if (!isNullOrUndefined(footnotes)) {
@@ -7869,7 +7909,7 @@ export class Layout {
             if (this.isRowSpanEnd(row, viewer) && row.rowFormat.heightType === 'Exactly' && this.documentHelper.splittedCellWidgets.length === 1) {
                 this.documentHelper.splittedCellWidgets = [];
             }
-            if (!isMultiColumnSplit && (row.ownerTable.isInsideTable || (this.documentHelper.splittedCellWidgets.length === 0 && tableRowWidget.y + tableRowWidget.height + cellSpacing + this.footHeight <= viewer.clientArea.bottom))) {
+            if (!isMultiColumnSplit && (row.ownerTable.isInsideTable || row.bodyWidget instanceof HeaderFooterWidget  || (this.documentHelper.splittedCellWidgets.length === 0 && tableRowWidget.y + tableRowWidget.height + cellSpacing + this.footHeight <= viewer.clientArea.bottom))) {
                 if (this.isVerticalMergedCellContinue(row) && (tableRowWidget.y === viewer.clientArea.y
                     || tableRowWidget.y === this.viewer.clientArea.y + tableRowWidget.ownerTable.headerHeight)) {
                     this.insertSplittedCellWidgets(viewer, tableWidgets, tableRowWidget, tableRowWidget.index - 1);
@@ -8172,8 +8212,8 @@ export class Layout {
                             let position: Point = this.getFloatingItemPoints(floatingItem);
                             floatingItem.y = position.y;
                             floatingItem.x = position.x;
-                            if (floatingItem instanceof ShapeElementBox) {
-                                this.updateChildLocationForCellOrShape(floatingItem.y, floatingItem as ShapeElementBox);
+                            if (floatingItem instanceof ShapeElementBox || floatingItem instanceof GroupShapeElementBox) {
+                                this.updateChildLocationForCellOrShape(floatingItem.y, floatingItem);
                             }
                         }
                         this.shiftedFloatingItemsFromTable = [];
@@ -9139,96 +9179,105 @@ export class Layout {
         table.width = widget.width;
     }
 
-    public updateChildLocationForTable(top: number, tableWidget: TableWidget, bodyWidget?: BodyWidget, updatePosition?: boolean): void {
+    public updateChildLocationForTable(top: number, tableWidget: TableWidget, bodyWidget?: BodyWidget, updatePosition?: boolean, updateXPosition?: boolean): void {
         for (let i: number = 0; i < tableWidget.childWidgets.length; i++) {
             const rowWidget: TableRowWidget = tableWidget.childWidgets[i] as TableRowWidget;
-            //rowWidget.x = rowWidget.x;
+            rowWidget.x = updateXPosition ? tableWidget.x : rowWidget.x;
             rowWidget.y = top;
-            this.updateChildLocationForRow(top, rowWidget, bodyWidget, updatePosition);
+            this.updateChildLocationForRow(top, rowWidget, bodyWidget, updatePosition, updateXPosition);
             top += rowWidget.height;
         }
     }
 
-    public updateChildLocationForRow(top: number, rowWidget: TableRowWidget, bodyWidget?: BodyWidget, updatePosition?: boolean): void {
+    public updateChildLocationForRow(top: number, rowWidget: TableRowWidget, bodyWidget?: BodyWidget, updatePosition?: boolean, updateXPosition?: boolean): void {
         let spacing: number = 0;
         if (rowWidget.ownerTable.tableFormat.cellSpacing > 0) {
             spacing = HelperMethods.convertPointToPixel(rowWidget.ownerTable.tableFormat.cellSpacing);
         }
+        let xPosition: number = rowWidget.x;
         for (let i: number = 0; i < rowWidget.childWidgets.length; i++) {
             const cellWidget: TableCellWidget = rowWidget.childWidgets[i] as TableCellWidget;
-            //cellWidget.x = cellWidget.x;
+            cellWidget.x = updateXPosition ? xPosition : cellWidget.x;
             cellWidget.index = cellWidget.cellIndex;
             cellWidget.y = top + cellWidget.margin.top + spacing;
-            this.updateChildLocationForCellOrShape(cellWidget.y, cellWidget, bodyWidget, updatePosition);
+            this.updateChildLocationForCellOrShape(cellWidget.y, cellWidget, bodyWidget, updatePosition, updateXPosition);
+            xPosition = xPosition + cellWidget.width + cellWidget.margin.right + + spacing + cellWidget.margin.left;
         }
     }
 
-    private updateChildLocationForCellOrShape(top: number, widget: TableCellWidget | ShapeElementBox, bodyWidget?:BodyWidget, updatePosition?: boolean, updateShapeYPosition?: boolean): void {
-        let container: Widget = widget as Widget;
-        if (widget instanceof ShapeElementBox) {
-            container = widget.textFrame;
-        }
-        for (let i: number = 0; i < container.childWidgets.length; i++) {
-            let skipHeight: boolean = false;
-            if (container.childWidgets[i] instanceof TableWidget && (container.childWidgets[i] as TableWidget).wrapTextAround
-                && !isNullOrUndefined(container.childWidgets[i + 1]) && (container.childWidgets[i + 1] as Widget).y > (container.childWidgets[i] as Widget).y
-                && (container.childWidgets[i + 1] as Widget).y < ((container.childWidgets[i] as Widget).y + (container.childWidgets[i] as Widget).height)) {
-                skipHeight = true;
+    private updateChildLocationForCellOrShape(top: number, widget: TableCellWidget | ShapeElementBox | GroupShapeElementBox, bodyWidget?: BodyWidget, updatePosition?: boolean, updateShapeYPosition?: boolean): void {
+        if (widget instanceof GroupShapeElementBox) {
+            this.layoutGroupShape(widget);
+        } else {
+            let container: Widget = widget as Widget;
+            if (widget instanceof ShapeElementBox) {
+                container = widget.textFrame;
             }
-            if (!isNullOrUndefined((container.childWidgets[i] as ParagraphWidget).floatingElements) && (container.childWidgets[i] as ParagraphWidget).floatingElements.length > 0 && updatePosition) {
-                this.viewer.clientActiveArea.height = this.viewer.clientActiveArea.bottom - top;
-                this.viewer.clientActiveArea.y = top;
-            }
-            (container.childWidgets[i] as Widget).x = (container.childWidgets[i] as Widget).x;
-            (container.childWidgets[i] as Widget).y = top;
-            if (widget instanceof ShapeElementBox && widget.textWrappingStyle == "Inline" && updateShapeYPosition) {
-                this.updateShapeYPosition(widget as ShapeElementBox);
-            }
-            if (!isNullOrUndefined(bodyWidget) && widget instanceof TableCellWidget && container.childWidgets[i] instanceof ParagraphWidget) {
-                let paragraph: ParagraphWidget = container.childWidgets[i] as ParagraphWidget;
-                let prevBodyWidgetFloatingElements: (TableWidget | ShapeBase)[] = widget.ownerTable.bodyWidget.floatingElements;
-                let isRowMovedToNextTable: boolean = false;
-                if (widget.ownerTable.bodyWidget === bodyWidget && !isNullOrUndefined(widget.ownerTable.previousSplitWidget)) {
-                    prevBodyWidgetFloatingElements = (widget.ownerTable.previousSplitWidget as TableWidget).bodyWidget.floatingElements;
-                    isRowMovedToNextTable = true;
+            for (let i: number = 0; i < container.childWidgets.length; i++) {
+                let skipHeight: boolean = false;
+                if (container.childWidgets[i] instanceof TableWidget && (container.childWidgets[i] as TableWidget).wrapTextAround
+                    && !isNullOrUndefined(container.childWidgets[i + 1]) && (container.childWidgets[i + 1] as Widget).y > (container.childWidgets[i] as Widget).y
+                    && (container.childWidgets[i + 1] as Widget).y < ((container.childWidgets[i] as Widget).y + (container.childWidgets[i] as Widget).height)) {
+                    skipHeight = true;
                 }
-                if (paragraph.floatingElements.length > 0) {
-                    for (let j = 0; j < paragraph.floatingElements.length; j++) {
-                        let element: ShapeBase = paragraph.floatingElements[j];
-                        const prevClientActiveAreaX: number = this.viewer.clientActiveArea.x;
-                        this.viewer.clientActiveArea.x = element.x;
-                        this.layoutShape(element);
-                        this.viewer.clientActiveArea.x = prevClientActiveAreaX;
-                        if (!isNullOrUndefined(paragraph.firstChild)) {
-                            let firstLine: LineWidget = paragraph.childWidgets[0] as LineWidget;
-                            for (let k = 0; k < firstLine.children.length; k++) {
-                                let elementBox: ElementBox = firstLine.children[k];
-                                if (elementBox instanceof ShapeBase && elementBox.textWrappingStyle == 'Inline') {
-                                    this.adjustPosition(elementBox, widget.ownerTable.bodyWidget);
-                                    top = paragraph.y;
+                if (!isNullOrUndefined((container.childWidgets[i] as ParagraphWidget).floatingElements) && (container.childWidgets[i] as ParagraphWidget).floatingElements.length > 0 && updatePosition) {
+                    this.viewer.clientActiveArea.height = this.viewer.clientActiveArea.bottom - top;
+                    this.viewer.clientActiveArea.y = top;
+                }
+                (container.childWidgets[i] as Widget).x = (container.childWidgets[i] as Widget).x;
+                (container.childWidgets[i] as Widget).y = top;
+                if (widget instanceof ShapeElementBox && widget.textWrappingStyle == "Inline" && updateShapeYPosition) {
+                    this.updateShapeYPosition(widget as ShapeElementBox);
+                }
+                if (widget instanceof GroupShapeElementBox && widget.textWrappingStyle == "Inline" && updateShapeYPosition) {
+                    this.layoutGroupShape(widget);
+                }
+                if (!isNullOrUndefined(bodyWidget) && widget instanceof TableCellWidget && container.childWidgets[i] instanceof ParagraphWidget) {
+                    let paragraph: ParagraphWidget = container.childWidgets[i] as ParagraphWidget;
+                    let prevBodyWidgetFloatingElements: (TableWidget | ShapeBase)[] = widget.ownerTable.bodyWidget.floatingElements;
+                    let isRowMovedToNextTable: boolean = false;
+                    if (widget.ownerTable.bodyWidget === bodyWidget && !isNullOrUndefined(widget.ownerTable.previousSplitWidget)) {
+                        prevBodyWidgetFloatingElements = (widget.ownerTable.previousSplitWidget as TableWidget).bodyWidget.floatingElements;
+                        isRowMovedToNextTable = true;
+                    }
+                    if (paragraph.floatingElements.length > 0) {
+                        for (let j = 0; j < paragraph.floatingElements.length; j++) {
+                            let element: ShapeBase = paragraph.floatingElements[j];
+                            const prevClientActiveAreaX: number = this.viewer.clientActiveArea.x;
+                            this.viewer.clientActiveArea.x = element.x;
+                            this.layoutShape(element);
+                            this.viewer.clientActiveArea.x = prevClientActiveAreaX;
+                            if (!isNullOrUndefined(paragraph.firstChild)) {
+                                let firstLine: LineWidget = paragraph.childWidgets[0] as LineWidget;
+                                for (let k = 0; k < firstLine.children.length; k++) {
+                                    let elementBox: ElementBox = firstLine.children[k];
+                                    if (elementBox instanceof ShapeBase && elementBox.textWrappingStyle == 'Inline') {
+                                        this.adjustPosition(elementBox, widget.ownerTable.bodyWidget);
+                                        top = paragraph.y;
+                                    }
                                 }
                             }
-                        }
-                        if (prevBodyWidgetFloatingElements.indexOf(element) > -1 && element.textWrappingStyle !== 'Inline') {
-                            if (!isRowMovedToNextTable) {
-                                bodyWidget.floatingElements.push(element);
-                                let previousBodyWidget: BodyWidget = bodyWidget.previousSplitWidget as BodyWidget;
-                                if (!isNullOrUndefined(previousBodyWidget) && (previousBodyWidget as BodyWidget).floatingElements.indexOf(element) !== -1) {
-                                    previousBodyWidget.floatingElements.splice(previousBodyWidget.floatingElements.indexOf(element), 1);
+                            if (prevBodyWidgetFloatingElements.indexOf(element) > -1 && element.textWrappingStyle !== 'Inline') {
+                                if (!isRowMovedToNextTable) {
+                                    bodyWidget.floatingElements.push(element);
+                                    let previousBodyWidget: BodyWidget = bodyWidget.previousSplitWidget as BodyWidget;
+                                    if (!isNullOrUndefined(previousBodyWidget) && (previousBodyWidget as BodyWidget).floatingElements.indexOf(element) !== -1) {
+                                        previousBodyWidget.floatingElements.splice(previousBodyWidget.floatingElements.indexOf(element), 1);
+                                    }
                                 }
-                            }
-                            if (prevBodyWidgetFloatingElements.indexOf(element) !== -1) {
-                                prevBodyWidgetFloatingElements.splice(prevBodyWidgetFloatingElements.indexOf(element), 1)
+                                if (prevBodyWidgetFloatingElements.indexOf(element) !== -1) {
+                                    prevBodyWidgetFloatingElements.splice(prevBodyWidgetFloatingElements.indexOf(element), 1)
+                                }
                             }
                         }
                     }
                 }
-            }
-            if (container.childWidgets[i] instanceof TableWidget) {
-                this.updateChildLocationForTable(top, (container.childWidgets[i] as TableWidget), bodyWidget, updatePosition);
-            }
-            if (!skipHeight) {
-                top += (container.childWidgets[i] as Widget).height;
+                if (container.childWidgets[i] instanceof TableWidget) {
+                    this.updateChildLocationForTable(top, (container.childWidgets[i] as TableWidget), bodyWidget, updatePosition);
+                }
+                if (!skipHeight) {
+                    top += (container.childWidgets[i] as Widget).height;
+                }
             }
         }
     }
@@ -9262,7 +9311,7 @@ export class Layout {
         for (let i: number = 0; i < paragraph.floatingElements.length; i++) {
             const floatElement: ShapeBase = paragraph.floatingElements[i];
             floatElement.y += displacement;
-            if (floatElement instanceof ShapeElementBox) {
+            if (floatElement instanceof ShapeElementBox || floatElement instanceof GroupShapeElementBox) {
                 this.updateChildLocationForCellOrShape(floatElement.y, floatElement);
             }
         }
@@ -9606,7 +9655,7 @@ export class Layout {
         }
         this.isRelayout = true;
         if (paragraphWidget.containerWidget instanceof TextFrame
-            && (paragraphWidget.containerWidget.containerShape as ShapeElementBox).textWrappingStyle === 'Inline') {
+            && (paragraphWidget.containerWidget.containerShape as ShapeElementBox).textWrappingStyle === 'Inline' && isNullOrUndefined((paragraphWidget.containerWidget.containerShape as ShapeElementBox).containerShape)) {
             lineIndex = paragraphWidget.containerWidget.containerShape.line.indexInOwner;
             paragraphWidget = paragraphWidget.containerWidget.containerShape.paragraph;
         }
@@ -11347,8 +11396,8 @@ export class Layout {
                     shape.y = position.y;
                     shape.x = position.x;
                 }
-                if (shape instanceof ShapeElementBox) {
-                    this.updateChildLocationForCellOrShape(shape.y + topMargin, shape as ShapeElementBox, undefined, false, true);
+                if (shape instanceof ShapeElementBox || shape instanceof GroupShapeElementBox) {
+                    this.updateChildLocationForCellOrShape(shape.y + topMargin, shape, undefined, false, true);
                 }
             }
         }
@@ -11699,8 +11748,8 @@ export class Layout {
                     shape.y = position.y;
                     shape.x = position.x;
                 }
-                if (shape instanceof ShapeElementBox) {
-                    this.updateChildLocationForCellOrShape(shape.y + topMargin, shape as ShapeElementBox);
+                if (shape instanceof ShapeElementBox || shape instanceof GroupShapeElementBox) {
+                    this.updateChildLocationForCellOrShape(shape.y + topMargin, shape);
                 }
             }
         }
@@ -12196,7 +12245,7 @@ export class Layout {
     }
     private shiftFloatingElements(lineWidget: LineWidget, newParagraphWidget: ParagraphWidget): void {
         for (let i = 0; i < lineWidget.children.length; i++) {
-            if (lineWidget.children[i] instanceof ShapeElementBox && (lineWidget.children[i] as ShapeElementBox).textWrappingStyle === 'Inline') {
+            if ((lineWidget.children[i] instanceof ShapeElementBox || lineWidget.children[i] instanceof GroupShapeElementBox) && ((lineWidget.children[i] as ShapeElementBox).textWrappingStyle === 'Inline') || ((lineWidget.children[i] as GroupShapeElementBox).textWrappingStyle === 'Inline')) {
                 let index: number = lineWidget.paragraph.floatingElements.indexOf(lineWidget.children[i] as ShapeBase);
                 if (index >= 0) {
                     lineWidget.paragraph.floatingElements.splice(index, 1);
@@ -12297,7 +12346,7 @@ export class Layout {
                 let columnIndex: number = block.bodyWidget.columnIndex;
                 let columnWidth: number = block.bodyWidget.x + block.bodyWidget.sectionFormat.columns[columnIndex].width + block.bodyWidget.sectionFormat.columns[columnIndex].space;
                 for (let j: number = 0; j < block.bodyWidget.floatingElements.length; j++) {
-                    if (block.bodyWidget.floatingElements[j] instanceof ShapeElementBox && columnWidth < block.bodyWidget.floatingElements[j].x + block.bodyWidget.floatingElements[j].width) {
+                    if ((block.bodyWidget.floatingElements[j] instanceof ShapeElementBox || block.bodyWidget.floatingElements[j] instanceof GroupShapeElementBox) && columnWidth < block.bodyWidget.floatingElements[j].x + block.bodyWidget.floatingElements[j].width) {
                         nextBody.floatingElements.push(block.bodyWidget.floatingElements[j]);
                     }
                 }
@@ -13218,7 +13267,7 @@ export class Layout {
             let heightPercent: number = floatElement.heightRelativePercent;
             let widthPercent:number = floatElement.widthRelativePercent;
             let autoShape: any;
-            if (floatElement instanceof ShapeElementBox) {
+            if (floatElement instanceof ShapeElementBox || floatElement instanceof GroupShapeElementBox) {
                 autoShape = floatElement.autoShapeType;
             }
             //Word 2013 Layout picture in table cell even layoutInCell property was False.
@@ -13305,7 +13354,7 @@ export class Layout {
                                         }
                                         break;
                                     case 'None':
-                                        if (Math.abs(verticalPercent) <= 1000) {
+                                        if (verticalPercent > 0 && Math.abs(verticalPercent) <= 1000) {
                                             indentY = pageHeight * (verticalPercent / 100);
                                         } else {
                                             indentY = vertPosition;
@@ -13518,7 +13567,7 @@ export class Layout {
                                     case 'None':
                                         if (isLayoutInCell) {
                                             indentX = paragraph.associatedCell.x + horzPosition;
-                                        } else if (floatElement instanceof ShapeElementBox) {
+                                        } else if (floatElement instanceof ShapeElementBox || floatElement instanceof GroupShapeElementBox) {
                                             indentX = horzPosition;
                                             // Shape pItemShape = paraItem as Shape;
                                             // float horRelPercent = pItemShape !== null ? pItemShape.TextFrame.HorizontalRelativePercent

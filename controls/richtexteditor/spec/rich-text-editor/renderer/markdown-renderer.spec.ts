@@ -35,4 +35,32 @@ describe('Markdown renderer module', () => {
             destroy(rteObj);
         });
     });
+    describe('913845 - Rich Text Editor Accessibility Attributes in Markdown Mode', () => {
+        let rteObj: RichTextEditor;
+        beforeAll(() => {
+            rteObj = renderRTE({
+                editorMode: 'Markdown',
+                enableRtl: false,
+                locale: 'en'
+            });
+        });
+        it('should have correct accessibility attributes in Markdown editor', () => {
+            const textarea = rteObj.contentModule.getPanel().querySelector('.e-content');
+            expect(textarea.getAttribute('aria-label')).toBe('Markdown Editor');
+            expect(textarea.getAttribute('role')).toBe('textbox');
+            expect(textarea.getAttribute('lang')).toBe('en');
+            expect(textarea.getAttribute('dir')).toBe('ltr');
+        });
+        it('should update lang and dir attributes dynamically in Markdown editor', () => {
+            rteObj.locale = 'fr';
+            rteObj.enableRtl = true;
+            rteObj.dataBind();
+            const textarea = rteObj.contentModule.getPanel().querySelector('.e-content');
+            expect(textarea.getAttribute('lang')).toBe('fr');
+            expect(textarea.getAttribute('dir')).toBe('rtl');
+        });
+        afterAll(() => {
+            destroy(rteObj);
+        });
+    });
 });

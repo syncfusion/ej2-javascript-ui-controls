@@ -10,10 +10,11 @@
     .e-message-header {
       font-size: $message-header-bigger-size;
     }
-    .e-message-icon {
+    .e-message-icon,
+    .e-message-icon img {
+      font-size: 16px;
       height: 40px;
       width: 40px;
-      font-size: 16px;
     }
     .e-user-icon {
       height: 32px;
@@ -51,25 +52,20 @@
       font-size: $chat-status-icon-bigger-size;
     }
     .e-footer {
-      &:not(.e-footer-template) .e-chat-send {
-        font-size: $chat-send-icon-size-bigger;
-        bottom: $chat-send-icon-bigger-bottom;
-      }
-      .e-clear-icon:not(.e-clear-icon-hide) {
-        padding-bottom: $chat-clear-icon-bigger-bottom;
-      }
-      .e-input-group.e-control-wrapper.e-multi-line-input {
-        .e-textarea {
-          min-height: 38px;
-          @if $theme-name == 'Material3' or $theme-name == 'material' or $theme-name == 'Material3-dark' or $theme-name == 'material-dark' {
-            padding: 10px 12px 0 16px;
-          }
+      &:not(.e-footer-template){
+        .e-chat-send {
+          font-size: $chat-send-icon-size-bigger;
         }
-        &.e-rtl .e-textarea {
-          @if $theme-name == 'Material3' or $theme-name == 'material' or $theme-name == 'Material3-dark' or $theme-name == 'material-dark' {
-            padding: 10px 16px 0 12px;
-          }
-        }
+      }
+      .e-footer-icons-wrapper {
+        gap: $chat-footer-icons-gap-bigger;
+        padding: $chat-footer-icons-padding-bigger;
+      }
+      .e-chat-textarea {
+        min-height: $chat-textarea-min-height-bigger;
+        line-height: $chat-textarea-line-height-bigger;
+        padding: $chat-textarea-padding-bigger;
+        font-size: 16px;
       }
     }
     .e-timestamp {
@@ -97,6 +93,38 @@
       .e-user-icon {
         margin-left: -18px;
         margin-right: unset;
+      }
+      .e-footer {
+        .e-footer-icons-wrapper {
+          padding: $chat-footer-icons-rtl-padding-bigger;
+          padding-right: unset;
+        }
+      }
+    }
+    .e-user-status-icon{
+      height: $user-status-icon-bigger-font-size;
+      width: $user-status-icon-bigger-font-size;
+      font-size: $user-status-icon-bigger-font-size;
+      border-radius: $user-status-icon-border-radius;
+      border: 1px solid;
+      border-color: $user-status-icon-border-color;
+    }
+
+    .e-message-item .e-chat-message-toolbar {
+      height: 40px !important; /* stylelint-disable-line declaration-no-important */
+      min-height: 40px;
+      .e-toolbar-items .e-toolbar-item {
+        &:first-child {
+          margin-left: 2px;
+        }
+        &:last-child {
+          margin-right: 2px;
+        }
+        min-height: 32px;
+        .e-tbar-btn {
+          min-height: 32px;
+          padding: 4px 2px;
+        }
       }
     }
   }

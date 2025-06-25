@@ -1,0 +1,286 @@
+@include export-module('blockeditor-theme') {
+
+  /* ======== Main Editor ======== */
+  .e-blockeditor {
+    background: $be-bg-color;
+    color: $be-color;
+    a {
+      color: $be-link-anchor-color;
+    }
+
+    /* ======== Drag and Drop Styles ======== */
+    .drop-indicator {
+      background: $be-drop-indicator-bg-color;
+      &::before {
+        background: $be-drop-indicator-bg-color;
+      }
+    }
+    .dragging-clone {
+      background: $be-dragging-clone-bg-color;
+    }
+
+    /* DividerBlock */
+    .e-divider-block {
+      &.e-divider-selected {
+        .e-be-hr-wrapper {
+          background: $be-divider-selected-bg-color;
+        }
+      }
+      .e-be-hr {
+        border: 2px solid $be-divider-border-color;
+      }
+    }
+
+    /* ======== Blocks Level styles ======== */
+    .e-block {
+
+      [contenteditable = 'true']:empty::before {
+        color: $be-block-placeholder-color;
+      }
+
+      /* List Block Styles */
+      &.e-list-block {
+
+        /* Checklist Block */
+        &[data-block-type = 'CheckList'] {
+          .e-checkmark {
+            border-color: $be-checklist-marker-border-color;
+
+            /* Ripple element */
+            &::before {
+              background: $be-checklist-marker-checked-bg-color;
+            }
+          }
+
+          &:has(.e-checked) {
+            .e-checkmark {
+              background: $be-checklist-marker-checked-bg-color;
+              border-color: $be-checklist-marker-checked-border-color;
+              color: $be-checklist-marker-checked-color;
+            }
+
+            li {
+              color: $be-checked-block-strikethrough-color;
+            }
+          }
+        }
+      }
+
+      /* Quote Block */
+      &.e-quote-block blockquote {
+        border-left-color: $be-blockquote-border-color;
+      }
+
+      /* Callout Block */
+      &.e-callout-block {
+        .e-callout-wrapper {
+          background: $be-callout-bg-color;
+        }
+      }
+    }
+
+    /* ======== Blocks Content Level styles ======== */
+    .e-block-content {
+      &::selection {
+        background: $be-text-selection-bg-color;
+      }
+
+      /* Inline code */
+      .e-be-inline-code {
+        background: $be-inline-code-bg-color;
+        color: $be-inline-code-text-color;
+      }
+    }
+
+    /* ======== Code Block Styles ======== */
+    .e-code-block-container {
+      background: $be-code-block-container-bg-color;
+      border: $be-code-block-container-border-width solid $be-code-block-container-border-color;
+    }
+    .e-code-block {
+      background-color: $be-code-block-container-bg-color;
+      color: $be-color;
+    }
+    .e-code-block-toolbar {
+      background: $be-code-block-container-bg-color;
+      .e-input-group.e-ddl,
+      .e-input-group.e-ddl .e-ddl-icon {
+        background: $be-code-block-container-bg-color;
+      }
+    }
+
+    .e-code-block-languages {
+      border: $be-code-block-lang-border-width solid $be-code-block-lang-border-color;
+      background: $be-code-block-lang-bg-color;
+      box-shadow: unset;
+    }
+
+    .e-code-block-copy-button {
+      background: $be-code-copy-btn-bg-color;
+      @if ($skin-name == 'Material3' or $skin-name == 'tailwind3' or $skin-name == 'material' or $skin-name == 'material-dark') {
+        box-shadow: none;
+      }
+      .e-icons {
+        color: $be-code-copy-btn-color;
+      }
+    }
+
+    .e-code-block-copy-button:hover,
+    .e-code-block-copy-button:active {
+      background: $be-code-copy-btn-bg-color-hover;
+      .e-icons {
+        color: $be-code-copy-btn-color-hover;
+      }
+    }
+
+    /* ======== Table Block Styles ======== */
+    .e-table-block {
+      th,
+      td {
+        border: 1px solid $be-table-border-color;
+      }
+      thead tr {
+        background: $be-table-header-row-bg-color;
+        color: $be-table-header-color;
+      }
+      tbody tr {
+        background: $be-table-body-row-bg-color;
+        color: $be-table-body-color;
+      }
+      tr:hover {
+        background: $be-table-row-hover-bg-color;
+        color: $be-table-row-hover-color;
+      }
+      tr:has(.e-cell-focus) {
+        background: $be-table-row-focus-bg-color;
+        color: $be-table-row-focus-color;
+      }
+      .e-cell-focus {
+        outline: 2px solid $be-table-cell-focus-color;
+        box-shadow: $be-table-cell-focus-shadow;
+      }
+    }
+    .e-row-add-indicator,
+    .e-col-add-indicator {
+      background: $be-table-add-indicator-bg-color;
+      color: $be-table-add-indicator-color;
+    }
+    .e-row-hover-line,
+    .e-col-hover-line {
+      background: $be-table-hover-line-bg-color;
+    }
+
+    /* ======== Image Block Styles ======== */
+    .e-image-block {
+      &.e-image-focus,
+      &:hover {
+        outline: 2px solid $be-table-cell-focus-color;
+      }
+    }
+  }
+
+  /* ======== Floating Icons Styles ======== */
+  .e-floating-icon {
+    border: $be-floating-icon-border-width solid $be-floating-icon-border-color;
+    color: $be-floating-icon-color;
+    background: transparent;
+    &:hover {
+      background: $be-floating-icon-hover-bg-color;
+      color: $be-floating-icon-color-hover;
+    }
+  }
+
+  /* ======== Inline Toolbar styles ======== */
+  .e-blockeditor-inline-toolbar-popup {
+    border: $be-inline-toolbar-border-width solid $be-inline-toolbar-popup-border-color;
+    background: $be-inline-toolbar-popup-bg-color;
+    box-shadow: $be-inline-toolbar-popup-shadow;
+
+    .e-toolbar-item {
+      &.e-active {
+        .e-btn {
+          background: $be-inline-toolbar-item-active-bg-color;
+        }
+        .e-tbar-btn .e-icons,
+        .e-tbar-btn:focus .e-icons {
+          color: $be-inline-toolbar-item-active-color;
+        }
+      }
+    }
+  }
+
+  /* User and label mention styles */
+  .e-mention.e-blockeditor-mention-menu.e-popup {
+    .e-list-item:not(.e-active) {
+      .em-avatar {
+        color: $be-mention-menu-avatar-text-color;
+      }
+      .em-content {
+        .em-text {
+          color: $be-ctmenu-text-color;
+        }
+        .e-icons {
+          color: $be-ctmenu-icon-color;
+        }
+      }
+    }
+  }
+
+  /* ======== Block Action styles ======== */
+  .e-blockeditor-blockaction-popup {
+    .e-menu-item:not(.e-disabled) {
+      .e-blockaction-item-template {
+        .e-action-icon {
+          color: $be-ctmenu-icon-color;
+        }
+        .e-action-item-label {
+          color: $be-ctmenu-text-color;
+        }
+        .e-action-item-shortcut {
+          color: $be-ctmenu-shortcut-color;
+        }
+      }
+    }
+  }
+
+  /* ======== Slash Command styles ======== */
+  .e-blockeditor-command-menu.e-popup {
+    .e-list-item:not(.e-disabled):not(.e-active) {
+      .e-command-mention-item-template {
+        .e-command-icon {
+          color: $be-ctmenu-icon-color;
+        }
+        .e-command-title {
+          color: $be-ctmenu-text-color;
+        }
+        .e-command-shortcut {
+          color: $be-ctmenu-shortcut-color;
+        }
+      }
+    }
+  }
+
+  /* Context menu styles */
+  .e-blockeditor-contextmenu {
+    .e-menu-item:not(.e-disabled) {
+      .e-ctmenu-icon {
+        color: $be-ctmenu-icon-color;
+      }
+      .e-ctmenu-text {
+        color: $be-ctmenu-text-color;
+      }
+      .e-ctmenu-shortcut {
+        color: $be-ctmenu-shortcut-color;
+      }
+    }
+  }
+
+  /* ======== common styles for mention and popup menu ======== */
+  .e-blockeditor-mention-menu.e-popup,
+  .e-blockeditor-blockaction-popup,
+  .e-blockeditor-contextmenu {
+    border: $be-mention-popup-border-width solid $be-mention-popup-border-color;
+    background: $be-mention-popup-bg-color;
+    box-shadow: $be-mention-popup-shadow;
+  }
+}

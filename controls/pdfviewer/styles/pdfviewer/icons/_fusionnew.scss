@@ -279,7 +279,22 @@
     content: '\e911';
     font-family: 'e-icons';
   }
+
+  .e-pv-page-zoom-icon::before{
+    content: '\e838';
+    font-family: 'e-icons';
+  }
   
+  .e-pv-page-zoom-increase-icon::before{
+    content: '\e768';
+    font-family: 'e-icons';
+  }
+
+  .e-pv-page-zoom-decrease-icon::before{
+    content: '\e81b';
+    font-family: 'e-icons';
+  }
+
   .e-pv-cut-icon::before {
     content: '\e7fb';
     font-family: 'e-icons';
@@ -524,6 +539,26 @@
 
   .e-pv-drag-and-drop-icon::before {
     content: '\e726';
+    font-family: 'e-icons';
+  }
+  .e-pv-redaction-icon::before {
+    content: '\e740';
+    font-family: 'e-icons';
+  }
+  .e-pv-mark-for-redaction-icon::before {
+    content: '\E80b';
+    font-family: 'e-icons';
+  }
+  .e-pv-redact-pages-icon::before {
+    content: '\e893';
+    font-family: 'e-icons';
+  }
+  .e-pv-redaction-panel-icon::before {
+    content: '\e821';
+    font-family: 'e-icons';
+  }
+  .e-pv-redact::before {
+    content: '\e912';
     font-family: 'e-icons';
   }
 }

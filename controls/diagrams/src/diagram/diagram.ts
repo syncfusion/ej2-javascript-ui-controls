@@ -43,11 +43,11 @@ import { IBlazorCustomHistoryChangeArgs, IImageLoadEventArgs } from './objects/i
 import { StackEntryObject, IExpandStateChangeEventArgs } from './objects/interface/IElement';
 import { ZoomOptions, IPrintOptions, IExportOptions, IFitOptions, ActiveLabel, IEditSegmentOptions, HierarchyData, NodeData, SpaceLevel, IGraph, ConnectorStyle, MermaidStyle } from './objects/interface/interfaces';
 import { View, IDataSource, IFields } from './objects/interface/interfaces';
-import { Container } from './core/containers/container';
-import { Node, BpmnShape, BpmnAnnotation, SwimLane, Path, DiagramShape, UmlActivityShape, FlowShape, BasicShape, UmlClassMethod, MethodArguments, UmlEnumerationMember, UmlClassAttribute, Lane, Shape } from './objects/node';
+import { GroupableView } from './core/containers/container';
+import { Node, BpmnShape, BpmnAnnotation, SwimLane, Path, DiagramShape, UmlActivityShape, FlowShape, BasicShape, UmlClassMethod, MethodArguments, UmlEnumerationMember, UmlClassAttribute, Lane, Shape, Container } from './objects/node';
 import { cloneBlazorObject, cloneSelectedObjects, findObjectIndex, getConnectorArrowType, selectionHasConnector, isLabelFlipped } from './utility/diagram-util';
 import { checkBrowserInfo } from './utility/diagram-util';
-import { updateDefaultValues, getCollectionChangeEventArguements } from './utility/diagram-util';
+import { updateDefaultValues, getCollectionChangeEventArguements, getPoint } from './utility/diagram-util';
 import { flipConnector, updatePortEdges, alignElement, setConnectorDefaults, getPreviewSize } from './utility/diagram-util';
 import { Segment } from './interaction/scroller';
 import { Connector, BezierSegment, StraightSegment } from './objects/connector';
@@ -61,7 +61,7 @@ import { SnapSettingsModel } from './diagram/grid-lines-model';
 import { NodeModel, TextModel, BpmnShapeModel, BpmnAnnotationModel, HeaderModel, HtmlModel, UmlClassMethodModel, UmlClassAttributeModel, UmlEnumerationMemberModel, UmlClassModel, UmlClassifierShapeModel, BasicShapeModel, FlowShapeModel, PathModel } from './objects/node-model';
 import { UmlActivityShapeModel, SwimLaneModel, LaneModel, PhaseModel } from './objects/node-model';
 import { Size } from './primitives/size';
-import { Keys, KeyModifiers, DiagramTools, AlignmentMode, AnnotationConstraints, NodeConstraints, ScrollActions, TextWrap, UmlClassChildType, TextAnnotationDirection, ConnectorConstraints, DecoratorShapes, FlipMode } from './enum/enum';
+import { Keys, KeyModifiers, DiagramTools, AlignmentMode, AnnotationConstraints, NodeConstraints, ScrollActions, TextWrap, UmlClassChildType, TextAnnotationDirection, ConnectorConstraints, DecoratorShapes, FlipMode, Direction } from './enum/enum';
 import { RendererAction, State } from './enum/enum';
 import { BlazorAction } from './enum/enum';
 import { DiagramConstraints, BridgeDirection, AlignmentOptions, SelectorConstraints, PortVisibility, DiagramEvent } from './enum/enum';
@@ -101,7 +101,7 @@ import { UndoRedo } from './objects/undo-redo';
 import { ConnectorEditing } from './interaction/connector-editing';
 import { Ruler } from '../ruler/index';
 import { BeforeOpenCloseMenuEventArgs, MenuEventArgs } from '@syncfusion/ej2-navigations';
-import { setAttributeSvg, setAttributeHtml, measureHtmlText, removeElement, createMeasureElements, getDomIndex } from './utility/dom-util';
+import { setAttributeSvg, setAttributeHtml, measureHtmlText, removeElement, createMeasureElements, getDomIndex, clearDecoratorPathCache } from './utility/dom-util';
 import { getDiagramElement, getScrollerWidth, getHTMLLayer, createUserHandleTemplates } from './utility/dom-util';
 import { getBackgroundLayer, createHtmlElement, createSvgElement, getNativeLayerSvg, getUserHandleLayer } from './utility/dom-util';
 import { getPortLayerSvg, getDiagramLayerSvg, applyStyleAgainstCsp } from './utility/dom-util';
@@ -169,6 +169,11 @@ import { LabelProperties } from './load-utility/labelProperties';
 import { getClassAttributesChild, getClassMembersChild, getClassNodesChild } from './utility/uml-util';
 import { getIntersectionPoints, getPortDirection } from './utility/connector';
 import { FlowchartLayout } from './layout/flowChart/flow-chart-layout';
+import { dragContainerChild, updateContainerDocks, setSizeForContainer, removeChildFromContainer, updateChildWrapper, addContainerChild, removeChild } from './utility/container-util';
+import { Overview } from '../overview';
+import { identityMatrix, rotateMatrix, transformPointByMatrix, scaleMatrix, Matrix } from './primitives/matrix';
+import { UmlSequenceDiagram } from './diagram/sequence-diagram';
+import { UmlSequenceDiagramModel } from './diagram/sequence-diagram-model';
 /**
  * Represents the Diagram control
  * ```html
@@ -1110,6 +1115,62 @@ export class Diagram extends Component<HTMLElement> implements INotifyPropertyCh
     public layout: LayoutModel;
 
     /**
+     * Defines the model for the diagram.
+     *
+     * ```html
+     * <div id='diagram'></div>
+     * ```
+     *
+     * ```typescript
+     * const model: UmlSequenceDiagramModel = {
+     *     participants: [
+     *         {
+     *             id: 'User', content: 'User', width: 100, height: 50,
+     *             showDestructionMarker: true,
+     *             isActor: true,
+     *             activationBoxes: [
+     *                 { id: 'act1', startMessageID: 'MSG1', endMessageID: 'MSG3' }
+     *             ]
+     *         },
+     *         {
+     *             id: 'Server', content: 'Server', width: 100, height: 50,
+     *             showDestructionMarker: true,
+     *             isActor: false,
+     *             activationBoxes: [
+     *                 { id: 'act2', startMessageID: 'MSG1', endMessageID: 'MSG3' }
+     *             ]
+     *         }
+     *     ],
+     *     messages: [
+     *         { id: 'MSG1', content: 'User sends request', fromParticipantID: 'User', toParticipantID: 'Server' },
+     *         { id: 'MSG2', content: 'Processing', fromParticipantID: 'Server', toParticipantID: 'Server' },
+     *         { id: 'MSG3', content: 'Server sends response', fromParticipantID: 'Server', toParticipantID: 'User' }
+     *     ],
+     *     fragments: [
+     *         {
+     *             id: 'frag1', type: 'Optional',
+     *             conditions: [
+     *                 { content: 'Interactions', messageIds: ['MSG1', 'MSG2', 'MSG3'] }
+     *             ]
+     *         }
+     *     ]
+     * };
+     *
+     * const diagram: Diagram = new Diagram({
+     *     // Other properties
+     *     model: model
+     * });
+     *
+     * diagram.appendTo('#diagram');
+     * ```
+     *
+     * @aspDefaultValueIgnore
+     * @default undefined
+     */
+    @Complex<UmlSequenceDiagramModel>(undefined, UmlSequenceDiagram)
+    public model: UmlSequenceDiagramModel;
+
+    /**
      * Defines a set of custom commands and binds them with a set of desired key gestures
      *
      * @default {}
@@ -1632,6 +1693,8 @@ export class Diagram extends Component<HTMLElement> implements INotifyPropertyCh
     /** @private */
     public callBlazorModel: Boolean = true;
     /** @private */
+    public isRowHeightUpdate: Boolean = false;
+    /** @private */
     public selectionConnectorsList: ConnectorModel[] = [];
     /** @private */
     public deleteVirtualObject: boolean = false;
@@ -1672,6 +1735,13 @@ export class Diagram extends Component<HTMLElement> implements INotifyPropertyCh
     private isUndo: boolean = false;
     /**@private */
     public groupBounds: Rect;
+    // Indicates whether the current action is part of an undo or redo operation
+    /** @private */
+    public checkUndoRedo: boolean = false;
+    /** @private */
+    public activeLayerObjectsSet: Set<string> = new Set();
+    /** @private */
+    public restrictedDeltaValue: PointModel;
     /**
      * Constructor for creating the widget
      */
@@ -1695,7 +1765,7 @@ export class Diagram extends Component<HTMLElement> implements INotifyPropertyCh
             if (child.shape && child.shape.type === 'UmlActivity') {
                 setUMLActivityDefaults(child, node);
             }
-            if (child.shape && child.shape.type === 'SwimLane') {
+            if (child.shape && (child.shape.type === 'SwimLane' || child.shape.type === 'Container')) {
                 setSwimLaneDefaults(child, node);
             }
             // Removed isBlazor code
@@ -2033,10 +2103,21 @@ export class Diagram extends Component<HTMLElement> implements INotifyPropertyCh
                     const nodeObjects: string[] = [];
                     const connObjects: string[] = [];
                     let nodeIndex: number;
+                    let laneIndex: number;
                     if (newProp.nodes && Object.keys(newProp.nodes).length > 0) {
                         for (const key of Object.keys(newProp.nodes)) {
                             nodeIndex = parseInt(key, 10);
                             nodeObjects.push(this.nodes[parseInt(nodeIndex.toString(), 10)].id);
+                            //962315 - Exception when editing lane header annotation at runtime
+                            if (newProp.nodes[parseInt(nodeIndex.toString(), 10)]
+                                && newProp.nodes[parseInt(nodeIndex.toString(), 10)].shape
+                                && (newProp.nodes[parseInt(nodeIndex.toString(), 10)].shape as SwimLaneModel).lanes) {
+                                /* eslint-disable */
+                                for (const key2 of Object.keys((newProp.nodes[parseInt(nodeIndex.toString(), 10)].shape as SwimLaneModel).lanes)) {
+                                    laneIndex = parseInt(key2, 10);
+                                }
+                                /* eslint-enable */
+                            }
                         }
                     }
                     if (newProp.connectors && Object.keys(newProp.connectors).length > 0) {
@@ -2066,9 +2147,17 @@ export class Diagram extends Component<HTMLElement> implements INotifyPropertyCh
                         }
                         else {
                             const entry: HistoryEntry = { type: 'PropertyChanged', undoObject: oldProp, redoObject: newProp, category: 'Internal' };
-                            if (this.historyManager) {
+                            if (this.historyManager && !this.isRowHeightUpdate) {
                                 this.addHistoryEntry(entry, propertyObjects);
+                                if ((newProp.nodes && newProp.nodes[nodeIndex] && newProp.nodes[nodeIndex].shape
+                                    && (newProp.nodes[nodeIndex].shape as SwimLane).lanes
+                                    && (newProp.nodes[nodeIndex].shape as SwimLane).lanes[laneIndex]
+                                    && (newProp.nodes[nodeIndex].shape as SwimLane).lanes[laneIndex].children)
+                                    && !(this.diagramActions & DiagramAction.UndoRedo)) {
+                                    this.endGroupAction();
+                                }
                             }
+                            this.isRowHeightUpdate = false;
                         }
                     }
                 }
@@ -2275,6 +2364,9 @@ export class Diagram extends Component<HTMLElement> implements INotifyPropertyCh
             this.swimlaneChildTable = {};
             this.swimlaneZIndexTable = {};
         }
+        if (!this.activeLayerObjectsSet) {
+            this.activeLayerObjectsSet = new Set();
+        }
         this.nameTable = {};
         this.pathTable = {};
         this.groupTable = {};
@@ -2351,6 +2443,7 @@ export class Diagram extends Component<HTMLElement> implements INotifyPropertyCh
         if (this.canLayout) {
             this.doLayout();
         }
+        this.updateFromModel();
         if (isLayout) { this.commandHandler.getBlazorOldValues(); }
         if (this.lineRoutingModule) {
             const previousConnectorObject: Object[] = [];
@@ -2653,6 +2746,8 @@ export class Diagram extends Component<HTMLElement> implements INotifyPropertyCh
                     window[`${measureWindowElement}`] = null;
                 }
             }
+            // clear the cache
+            clearDecoratorPathCache();
         }
         const domTable: string = 'domTable';
         window[`${domTable}`] = {};
@@ -3007,6 +3102,13 @@ export class Diagram extends Component<HTMLElement> implements INotifyPropertyCh
     public setActiveLayer(layerName: string): void {
         const layer: LayerModel = this.commandHandler.getLayer(layerName);
         this.activeLayer = layer;
+        const objects: string[] = layer.objects;
+        // Clear the set
+        this.activeLayerObjectsSet.clear();
+        // Add new objects
+        for (const obj of objects) {
+            this.activeLayerObjectsSet.add(obj);
+        }
     }
 
     /**
@@ -3218,6 +3320,7 @@ export class Diagram extends Component<HTMLElement> implements INotifyPropertyCh
             tx *= 5;
             ty *= 5;
         }
+        this.restrictedDeltaValue = { x: 0, y: 0 };
         const obj: SelectorModel = this.selectedItems;
         const annotation: DiagramElement = this.selectedItems.wrapper.children[0];
         if (annotation instanceof TextElement) {
@@ -3251,10 +3354,52 @@ export class Diagram extends Component<HTMLElement> implements INotifyPropertyCh
     public drag(obj: NodeModel | ConnectorModel | SelectorModel, tx: number, ty: number): void {
         this.insertBlazorDiagramObjects(obj);
         //Removed isBlazor code
-        if (this.bpmnModule && (obj instanceof Node)) {
+        if (this.bpmnModule && (obj instanceof Node) && !(this.nameTable[obj.parentId]
+        && this.nameTable[obj.parentId].shape.type === 'Container')) {
             const updated: boolean = this.bpmnModule.updateAnnotationDrag(obj as Node, this, tx, ty);
             if (updated) {
                 return;
+            }
+        } else if ((obj instanceof Node) && this.nameTable[obj.parentId]
+        && this.nameTable[obj.parentId].shape.type === 'Container') {
+            dragContainerChild(obj, this, tx, ty);
+            return;
+        }
+        if (((obj instanceof Selector && obj.wrapper) || (obj && (obj as Node).id === 'helper' && obj.wrapper))
+            && this.constraints & DiagramConstraints.RestrictNegativeAxisDragDrop) {
+            const bounds: Rect = obj.wrapper.bounds;
+            if (bounds) {
+                if (this.restrictedDeltaValue.x > 0) {
+                    this.restrictedDeltaValue.x -= tx;
+                    if (this.restrictedDeltaValue.x > 0) {
+                        tx = 0;
+                    }
+                    else {
+                        tx = this.restrictedDeltaValue.x * -1;
+                        this.restrictedDeltaValue.x = 0;
+                    }
+                }
+                if (this.restrictedDeltaValue.y > 0) {
+                    this.restrictedDeltaValue.y -= ty;
+                    if (this.restrictedDeltaValue.y > 0) {
+                        ty = 0;
+                    }
+                    else {
+                        ty = this.restrictedDeltaValue.y * -1;
+                        this.restrictedDeltaValue.y = 0;
+                    }
+                }
+                if (bounds.x + tx < 0) {
+                    const deltaXToZero: number = -(bounds.x + tx);
+                    this.restrictedDeltaValue.x += deltaXToZero;
+                    tx += deltaXToZero;
+                }
+
+                if (bounds.y + ty < 0) {
+                    const deltaYToZero: number = -(bounds.y + ty);
+                    this.restrictedDeltaValue.y += deltaYToZero;
+                    ty += deltaYToZero;
+                }
             }
         }
         if (obj instanceof Selector) {
@@ -3315,13 +3460,13 @@ export class Diagram extends Component<HTMLElement> implements INotifyPropertyCh
             this.commandHandler.getBlazorOldValues();
         }
     }
-    private disableStackContainerPadding(wrapper: Container, disable: boolean): void {
+    private disableStackContainerPadding(wrapper: GroupableView, disable: boolean): void {
         if (wrapper instanceof StackPanel) {
             wrapper.considerPadding = disable;
         }
         if (wrapper.children) {
             for (const child of wrapper.children) {
-                this.disableStackContainerPadding(child as Container, false);
+                this.disableStackContainerPadding(child as GroupableView, false);
             }
         }
 
@@ -3363,12 +3508,57 @@ export class Diagram extends Component<HTMLElement> implements INotifyPropertyCh
      * @param {PointModel} pivot - The reference point with respect to which the objects will be resized.
      */
     public scale(obj: NodeModel | ConnectorModel | SelectorModel, sx: number, sy: number, pivot: PointModel): boolean {
-        this.disableStackContainerPadding(obj.wrapper as Container, false);
+        this.disableStackContainerPadding(obj.wrapper as GroupableView, false);
         this.insertBlazorDiagramObjects(obj);
         let checkBoundaryConstraints: boolean = true;
         if ((obj as NodeModel | ConnectorModel).id) {
             obj = this.nameTable[(obj as NodeModel | ConnectorModel).id] || obj;
         }
+        if (((obj instanceof Selector && obj.wrapper) || (obj && (obj as Node).id === 'helper' && obj.wrapper))
+            && this.constraints & DiagramConstraints.RestrictNegativeAxisDragDrop) {
+            const bounds: Rect = obj.wrapper.bounds;
+            if (bounds) {
+                const selectorWrapper: DiagramElement = obj.wrapper;
+                const x: number = selectorWrapper.offsetX - selectorWrapper.actualSize.width * selectorWrapper.pivot.x;
+                const y: number = selectorWrapper.offsetY - selectorWrapper.actualSize.height * selectorWrapper.pivot.y;
+                const refPoint: PointModel = getPoint(
+                    x, y, selectorWrapper.actualSize.width, selectorWrapper.actualSize.height,
+                    selectorWrapper.rotateAngle, selectorWrapper.offsetX, selectorWrapper.offsetY, pivot);
+
+                const matrix: Matrix = identityMatrix();
+                rotateMatrix(matrix, -(obj as Node | Selector).rotateAngle, refPoint.x, refPoint.y);
+                scaleMatrix(matrix, sx, sy, refPoint.x, refPoint.y);
+                rotateMatrix(matrix, (obj as Node | Selector).rotateAngle, refPoint.x, refPoint.y);
+                const midPoint: PointModel = { x: bounds.x + bounds.width * 0.5, y: bounds.y + bounds.height * 0.5 };
+                const newMidPoint: PointModel = transformPointByMatrix(matrix, midPoint);
+                if ((obj as Node | Selector).rotateAngle % 360 === 0) {
+                    const newX: number = newMidPoint.x - (bounds.width * sx * 0.5);
+                    if (newX < 0) {
+                        sx = Math.round((bounds.width * sx) + newX) / bounds.width;
+                    }
+                    const newY: number = newMidPoint.y - (bounds.height * sy * 0.5);
+                    if (newY < 0) {
+                        sy = Math.round((bounds.height * sy) + newY) / bounds.height;
+                    }
+                }
+                else {
+                    const corners: PointModel[] = [
+                        { x: bounds.x, y: bounds.y },
+                        { x: bounds.x + bounds.width, y: bounds.y },
+                        { x: bounds.x, y: bounds.y + bounds.height },
+                        { x: bounds.x + bounds.width, y: bounds.y + bounds.height }
+                    ];
+                    const transformed: PointModel[] = corners.map((pt: PointModel) => transformPointByMatrix(matrix, pt));
+                    const minX: number = Math.min(...transformed.map((pt: PointModel) => pt.x));
+                    const minY: number = Math.min(...transformed.map((pt: PointModel) => pt.y));
+                    if (minX < 0 || minY < 0) {
+                        sx = 1;
+                        sy = 1;
+                    }
+                }
+            }
+        }
+
         if (obj instanceof Selector) {
             if (obj.nodes && obj.nodes.length) {
                 this.callBlazorModel = false;
@@ -3409,7 +3599,7 @@ export class Diagram extends Component<HTMLElement> implements INotifyPropertyCh
             (!(this.blazorActions & BlazorAction.GroupClipboardInProcess))) {
             this.commandHandler.getBlazorOldValues();
         }
-        this.disableStackContainerPadding(obj.wrapper as Container, true);
+        this.disableStackContainerPadding(obj.wrapper as GroupableView, true);
         return checkBoundaryConstraints;
     }
     /**
@@ -4167,13 +4357,15 @@ export class Diagram extends Component<HTMLElement> implements INotifyPropertyCh
                                 (swimlaneNode.wrapper.bounds.y - this.nameTable[`${laneHeaderId}`].wrapper.bounds.height +
                                     node.margin.top + (node.wrapper.bounds.height / 2));
                         }
-                        if ((laneId === swimLane + lane + ((swimlaneNode.shape as SwimLane).phases.length - 1)) ||
+                        //906796: Child nodes not Positioned correctly to the lane when margin values are applied
+                        const currentPhase: PhaseModel = (swimlaneNode.shape as SwimLane).phases[parseInt(i.toString(), 10)];
+                        if (node.margin.left <= currentPhase.offset) {
+                            this.addChildToPhase(node as Node, swimlaneNode, laneId);
+                            break;
+                        }
+                        else if ((laneId === swimLane + lane + ((swimlaneNode.shape as SwimLane).phases.length - 1)) ||
                             laneNode.containsPoint(focusPoint)) {
-                            //Bug 913801: Adding an existing node into a lane as child won't be interactive.
-                            //Added below method call to update the zIndex of newly added child node.
-                            this.commandHandler.updateLaneChildrenZindex((node as Node), this.nameTable[`${laneId}`]);
-                            addChildToContainer(this, this.nameTable[`${laneId}`], node, undefined, true);
-                            updateLaneBoundsAfterAddChild(this.nameTable[`${laneId}`], swimlaneNode, node, this);
+                            this.addChildToPhase(node as Node, swimlaneNode, laneId);
                             break;
                         }
                     }
@@ -4186,6 +4378,14 @@ export class Diagram extends Component<HTMLElement> implements INotifyPropertyCh
         }
         this.updateDiagramElementQuad();
     }
+
+    //906796: Child nodes not Positioned correctly to the lane when margin values are applied
+    private addChildToPhase(node: Node, swimlaneNode: NodeModel, laneId: string): void {
+        this.commandHandler.updateLaneChildrenZindex((node as Node), this.nameTable[`${laneId}`]);
+        addChildToContainer(this, this.nameTable[`${laneId}`], node, undefined, true);
+        updateLaneBoundsAfterAddChild(this.nameTable[`${laneId}`], swimlaneNode, node, this);
+    }
+
     /**
      * Displays a tooltip for the specified diagram object.
      *
@@ -4242,6 +4442,7 @@ export class Diagram extends Component<HTMLElement> implements INotifyPropertyCh
      * @blazorArgsType obj|DiagramNode
      */
     public addChildToGroup(group: NodeModel, child: string | NodeModel | ConnectorModel): void {
+        const isContainer: boolean = (group && group.shape && group.shape.type === 'Container');
         const severDataBind: boolean = this.allowServerDataBinding;
         this.enableServerDataBinding(false);
         const propChange: boolean = this.isProtectedOnChange; this.protectPropertyChange(true);
@@ -4249,10 +4450,30 @@ export class Diagram extends Component<HTMLElement> implements INotifyPropertyCh
         //Removed isBlazor code
         const isHistoryAdded: boolean = (!(this.diagramActions & DiagramAction.UndoRedo) && !(this.diagramActions & DiagramAction.Group) &&
             !(this.diagramActions & DiagramAction.PreventHistory));
+        if (isContainer && !(child as Node).id) {
+            const existingChild: NodeModel = this.getObject(child as string);
+            if (existingChild) {
+                child = existingChild;
+            } else {
+                (child as Node).id = randomId();
+            }
+        }
         if (isHistoryAdded) {
             this.startGroupAction();
         }
-        const id: string = this.addChild(group, child);
+        let id: string = (child as Node).id;
+        if (isContainer) {
+            addContainerChild((child as Node), group.id, this);
+        } else {
+            id = this.addChild(group, child);
+            //880811- Adding child to group node using addChildToGroup method is not working properly.
+            const element: Node | Connector = this.nameTable[child as string] ? this.nameTable[child as string] : child;
+            const childElementToMove: HTMLElement = document.getElementById(element.id + '_groupElement');
+            const targetGroupElement: HTMLElement = document.getElementById(group.id + '_groupElement');
+            if (targetGroupElement && childElementToMove) {
+                targetGroupElement.appendChild(childElementToMove);
+            }
+        }
         if (isHistoryAdded) {
             const childTable: object = {};
             childTable[`${id}`] = cloneObject(this.getObject(id));
@@ -4262,13 +4483,6 @@ export class Diagram extends Component<HTMLElement> implements INotifyPropertyCh
             };
             this.addHistoryEntry(entry);
             this.endGroupAction();
-        }
-        //880811- Adding child to group node using addChildToGroup method is not working properly.
-        const element: Node | Connector = this.nameTable[child as string] ? this.nameTable[child as string] : child;
-        const childElementToMove: HTMLElement = document.getElementById(element.id + '_groupElement');
-        const targetGroupElement: HTMLElement = document.getElementById(group.id + '_groupElement');
-        if (targetGroupElement && childElementToMove) {
-            targetGroupElement.appendChild(childElementToMove);
         }
         this.protectPropertyChange(propChange);
         this.enableServerDataBinding(severDataBind);
@@ -4284,6 +4498,7 @@ export class Diagram extends Component<HTMLElement> implements INotifyPropertyCh
      * @param {string | NodeModel | ConnectorModel} child - The diagram object to be removed from the group.
      */
     public removeChildFromGroup(group: NodeModel, child: string | NodeModel | ConnectorModel): void {
+        const isContainer: boolean = (group && group.shape && group.shape.type === 'Container');
         const severDataBind: boolean = this.allowServerDataBinding;
         this.enableServerDataBinding(false);
         const propChange: boolean = this.isProtectedOnChange; this.protectPropertyChange(true);
@@ -4291,41 +4506,63 @@ export class Diagram extends Component<HTMLElement> implements INotifyPropertyCh
         const undoGroup: NodeModel = cloneObject(group);
         const isHistoryAdded: boolean = (!(this.diagramActions & DiagramAction.UndoRedo) && !(this.diagramActions & DiagramAction.Group) &&
             !(this.diagramActions & DiagramAction.PreventHistory));
+
+        const id: string = (child as Node).id || (this.nameTable[child as string] ? this.nameTable[child as string].id : child);
         if (isHistoryAdded) {
             this.startGroupAction();
         }
-        const id: string = this.removeChild(group, child);
-        if (isHistoryAdded) {
-            const childTable: object = {};
-            childTable[`${id}`] = cloneObject(this.getObject(id));
-            const entry: HistoryEntry = {
-                type: 'RemoveChildFromGroupNode', changeType: 'Remove', undoObject: cloneObject(undoGroup),
-                redoObject: cloneObject(group), category: 'Internal', objectId: id, childTable: childTable
-            };
-            this.addHistoryEntry(entry);
-            this.endGroupAction();
-        }
-        //880811 - diagram elements not updated properly while grouping nodes at runtime
-        const element: Node | Connector = this.nameTable[child as string] ? this.nameTable[child as string] : child;
-        const elementZindex: number = element.zIndex;
-        const layerNum: number = this.layers.indexOf(this.commandHandler.getObjectLayer(element.id));
-        const insertBeforeObj: string = this.layers[parseInt(layerNum.toString(), 10)].objects[elementZindex + 1];
-        const insertBeforeElement: HTMLElement = document.getElementById(insertBeforeObj + '_groupElement');
-        const childElementToMove: HTMLElement = document.getElementById(element.id + '_groupElement');
-        const targetGroupElement: HTMLElement = document.getElementById(group.id + '_groupElement');
-        if (targetGroupElement && childElementToMove) {
-            if (insertBeforeObj && insertBeforeElement) {
-                if (targetGroupElement.contains(insertBeforeElement)) {
-                    targetGroupElement.insertBefore(childElementToMove, insertBeforeElement);
-                } else if (targetGroupElement.parentNode.contains(insertBeforeElement) && insertBeforeElement.parentElement
-                    === targetGroupElement.parentElement) {
-                    targetGroupElement.parentNode.insertBefore(childElementToMove, insertBeforeElement);
+        if (isContainer) {
+            if (isHistoryAdded) {
+                const childTable: object = {};
+                childTable[`${id}`] = cloneObject(this.getObject(id));
+                const entry: HistoryEntry = {
+                    type: 'RemoveChildFromGroupNode',
+                    changeType: 'Remove',
+                    undoObject: undoGroup,
+                    redoObject: cloneObject(group),
+                    category: 'Internal',
+                    objectId: id,
+                    childTable: childTable
+                };
+                this.addHistoryEntry(entry);
+                removeChild((child as Node), this);
+            }
+        } else {
+            const id: string = this.removeChild(group, child);
+            if (isHistoryAdded) {
+                const childTable: object = {};
+                childTable[`${id}`] = cloneObject(this.getObject(id));
+                const entry: HistoryEntry = {
+                    type: 'RemoveChildFromGroupNode', changeType: 'Remove', undoObject: cloneObject(undoGroup),
+                    redoObject: cloneObject(group), category: 'Internal', objectId: id, childTable: childTable
+                };
+                this.addHistoryEntry(entry);
+            }
+            //880811 - diagram elements not updated properly while grouping nodes at runtime
+            const element: Node | Connector = this.nameTable[child as string] ? this.nameTable[child as string] : child;
+            const elementZindex: number = element.zIndex;
+            const layerNum: number = this.layers.indexOf(this.commandHandler.getObjectLayer(element.id));
+            const insertBeforeObj: string = this.layers[parseInt(layerNum.toString(), 10)].objects[elementZindex + 1];
+            const insertBeforeElement: HTMLElement = document.getElementById(insertBeforeObj + '_groupElement');
+            const childElementToMove: HTMLElement = document.getElementById(element.id + '_groupElement');
+            const targetGroupElement: HTMLElement = document.getElementById(group.id + '_groupElement');
+            if (targetGroupElement && childElementToMove) {
+                if (insertBeforeObj && insertBeforeElement) {
+                    if (targetGroupElement.contains(insertBeforeElement)) {
+                        targetGroupElement.insertBefore(childElementToMove, insertBeforeElement);
+                    } else if (targetGroupElement.parentNode.contains(insertBeforeElement) && insertBeforeElement.parentElement
+                        === targetGroupElement.parentElement) {
+                        targetGroupElement.parentNode.insertBefore(childElementToMove, insertBeforeElement);
+                    } else {
+                        targetGroupElement.parentNode.appendChild(childElementToMove);
+                    }
                 } else {
                     targetGroupElement.parentNode.appendChild(childElementToMove);
                 }
-            } else {
-                targetGroupElement.parentNode.appendChild(childElementToMove);
             }
+        }
+        if (isHistoryAdded) {
+            this.endGroupAction();
         }
         this.protectPropertyChange(propChange);
         this.enableServerDataBinding(severDataBind);
@@ -4511,6 +4748,7 @@ export class Diagram extends Component<HTMLElement> implements INotifyPropertyCh
                 if (layers.objects.indexOf(obj.id) < 0 && !layers.lock) {
                     if (!layers.visible) { layers.visible = true; this.dataBind(); }
                     layers.objects.push(obj.id);
+                    this.activeLayerObjectsSet.add(obj.id);
                 }
                 if (getObjectType(obj) === Connector) {
                     newObj = new Connector(this, 'connectors', obj, true); (newObj as Connector).status = 'New';
@@ -4586,11 +4824,12 @@ export class Diagram extends Component<HTMLElement> implements INotifyPropertyCh
                 if (obj.id !== 'helper' && !(this.diagramActions & DiagramAction.PreventCollectionChangeOnDragOver)) {
                     this.triggerEvent(DiagramEvent.collectionChange, args);
                 }
+                //952756 - Undo redo of adding elements dynamically is not working properly
                 if (!(this.diagramActions & DiagramAction.UndoRedo) && !(this.diagramActions & DiagramAction.Group) &&
                     !(this.diagramActions & DiagramAction.PreventHistory)) {
                     //952756 - Undo redo of adding elements dynamically is not working properly
                     let undoElement: NodeModel | ConnectorModel;
-                    if (obj && obj.shape && obj.shape.type === 'SwimLane') {
+                    if (obj && obj.shape && obj.shape.type === 'SwimLane' || obj && obj.shape && obj.shape.type === 'Bpmn') {
                         undoElement = obj;
                     }
                     else {
@@ -4843,6 +5082,7 @@ export class Diagram extends Component<HTMLElement> implements INotifyPropertyCh
                 this.unSelect(obj);
             }
             this.layers[parseInt(layer.toString(), 10)].objects.splice(objIndex, 1);
+            this.activeLayerObjectsSet.delete(obj.id);
             delete (this.layers[parseInt(layer.toString(), 10)] as Layer).zIndexTable[this.nameTable[obj.id].zIndex];
         }
     }
@@ -4973,7 +5213,8 @@ export class Diagram extends Component<HTMLElement> implements INotifyPropertyCh
                         if ((obj instanceof Node || obj instanceof Connector) && this.deleteDependentConnector) {
                             this.removeDependentConnector(obj);
                         }
-                        if (!(obj as Node).isLane && !(obj as Node).isPhase) {
+                        if (!(obj as Node).isLane && !(obj as Node).isPhase && !((obj as Node).isHeader
+                            && this.nameTable[obj.parentId].shape.type === 'Container')) {
                             if (!(this.diagramActions & DiagramAction.Clear) && !this.isStackChild(obj as Node)) {
                                 this.addHistoryEntry(entry);
                             }
@@ -4999,6 +5240,11 @@ export class Diagram extends Component<HTMLElement> implements INotifyPropertyCh
                     if (currentObj instanceof Node) {
                         if (currentObj.shape.type === 'Bpmn' && this.bpmnModule) {
                             this.bpmnModule.removeBpmnProcesses(currentObj, this);
+                        }
+                        if (currentObj.parentId && this.nameTable[currentObj.parentId]
+                            && this.nameTable[currentObj.parentId].shape.type === 'Container'
+                            || currentObj.shape.type === 'Container') {
+                            removeChildFromContainer(currentObj,this);
                         }
                         if (currentObj.isLane || currentObj.isPhase || currentObj.shape.type === 'SwimLane') {
                             const swimLaneNode: NodeModel = (currentObj.isLane || currentObj.isPhase) ?
@@ -5072,6 +5318,11 @@ export class Diagram extends Component<HTMLElement> implements INotifyPropertyCh
                     }
                 }
             }
+            // EJ2:943679 - Exception occurs while serialize the diagram when annotation is selected
+            const selectedObjects: Selector = this.selectedItems as Selector;
+            if (selectedObjects.annotation) {
+                this.clearSelection();
+            }
         } else if (selectedItems.length > 0) {
             if (this.undoRedoModule) {
                 this.historyManager.startGroupAction();
@@ -5124,7 +5375,9 @@ export class Diagram extends Component<HTMLElement> implements INotifyPropertyCh
                     type: 'ConnectionChanged', undoObject: cloneObject(obj),
                     redoObject: cloneObject(obj), category: 'Internal'
                 };
-                if (!(obj as Node).isLane && !(obj as Node).isPhase) {
+                if (!(obj as Node).isLane && !(obj as Node).isPhase && !((obj as Node).isHeader
+                    && this.nameTable[obj.parentId]
+                    && this.nameTable[obj.parentId].shape.type === 'Container')) {
                     if (!(this.diagramActions & DiagramAction.Clear) && !this.isStackChild(obj as Node)) {
                         this.addHistoryEntry(entry);
                     }
@@ -5895,8 +6148,12 @@ export class Diagram extends Component<HTMLElement> implements INotifyPropertyCh
         let mermaidData: string = '';
         if (this.layout && this.layout.type === 'Flowchart') {
             mermaidData = this.saveFlowDiagramInMermaidFormat();
-        } else {
+        }
+        else if (this.layout && this.layout.type === 'MindMap') {
             mermaidData = this.saveMindmapDiagramInMermaidFormat();
+        }
+        else {
+            mermaidData = this.saveSequenceDiagramAsMermaid();
         }
         return mermaidData;
     }
@@ -6126,6 +6383,9 @@ export class Diagram extends Component<HTMLElement> implements INotifyPropertyCh
             //Task 900266: To load the mermaid data as mindmap
             this.convertMermaidToMindmap(data);
         }
+        else if (this.isSequenceDiagram(data)) {
+            this.loadSequenceDiagramFromMermaid(data);
+        }
         else {
             console.warn('[WARNING] :: Module "FlowchartLayout" or "MindMap" is not available in Diagram component! You either misspelled the module name or forgot to load it.');
         }
@@ -6289,6 +6549,58 @@ export class Diagram extends Component<HTMLElement> implements INotifyPropertyCh
                 }
             }
         }
+    }
+    /**
+     * provides
+     * either constructed internal model equivalent mermaid data
+     * or user provided mermaid data used for constructing sequence diagram
+     * @returns {string} sequence diagram equivalent mermaid data
+     */
+    private saveSequenceDiagramAsMermaid(): string {
+        const model: UmlSequenceDiagram = this.model as UmlSequenceDiagram;
+
+        if (!model.isLoadedFromMermaid) {
+            return model.generateMermaidFromModel();
+        }
+        else {
+            return model.mermaidData;
+        }
+    }
+    private isSequenceDiagram(input: string): boolean {
+        // Split the input string into an array of lines, removing any empty lines
+        const lines: string[] = input.split(/\r?\n/).filter((line: string) => line.trim().length > 0);
+
+        // Check if the first line equals "sequenceDiagram" (case-sensitive)
+        return lines.length > 0 && lines[0].trim() === 'sequenceDiagram';
+    }
+    /**
+     * Generates a UML sequence diagram from the provided mermaid text.
+     * @param {string} mermaidText The mermaid syntax defining the sequence diagram.
+     * @returns {void}
+     */
+    private loadSequenceDiagramFromMermaid(mermaidText: string): void {
+        this.model = {};
+
+        // parse the mermaid data
+        (this.model as UmlSequenceDiagram).parse(mermaidText, this);
+        // initialize the parsed nodes & connectors of sequence diagram
+        this.initLayerObjects();
+        // protect property change in between rendering nodes and connectors
+        const propChange: boolean = this.isProtectedOnChange;
+        this.protectPropertyChange(true);
+        // position the nodes & connect connectors to draw sequence diagram.
+        (this.model as UmlSequenceDiagram).loadDiagramFromMermaid(mermaidText, this);
+        // refresh diagram layer to render the sequence diagram.
+        this.refreshDiagramLayer();
+        // disable protect property change
+        if (!propChange) {
+            this.protectPropertyChange(propChange);
+        }
+        // fit to page to focus the sequence diagram content
+        this.fitToPage({
+            mode: 'Page', region: 'Content', margin: { left: 10, top: 10, right: 10, bottom: 10 },
+            canZoomIn: true, canZoomOut: true
+        });
     }
     /**
      * Creates a data source for the Mermaid diagram based on the provided hierarchy data.
@@ -6889,7 +7201,7 @@ export class Diagram extends Component<HTMLElement> implements INotifyPropertyCh
      *
      * @returns { void }    Adds ports to a node or connector at runtime.\
      * @param { Node | ConnectorModel} obj - object representing the node or connector to which ports will be added.
-     * @param {ShapeAnnotationModel[] | PathAnnotationModel[]} ports - objects representing the ports to be added.
+     * @param {PointPortModel[] | PathPortModel[]} ports - objects representing the ports to be added.
      * @blazorArgsType obj|DiagramNode
      */
     public addPorts(obj: NodeModel | ConnectorModel, ports: PointPortModel[] | PathPortModel[]): void {
@@ -6920,16 +7232,16 @@ export class Diagram extends Component<HTMLElement> implements INotifyPropertyCh
             //Removed isBlazor code
             if ((obj as NodeModel).children) {
                 // 907773: Add port to Group at runtime Issue Fix
-                const container: Container = obj.wrapper;
+                const container: GroupableView = obj.wrapper;
                 for (let k: number = 0; k < container.children.length; k++) {
                     const wrapper: DiagramElement = container.children[parseInt(k.toString(), 10)];
                     if ((wrapper.id).match(container.id)) {
-                        (obj as Node).initPort(this.getDescription, wrapper as Container, newObj);
+                        (obj as Node).initPort(this.getDescription, wrapper as GroupableView, newObj);
                         break;
                     }
                 }
             } else {
-                const canvas: Container = obj.wrapper;
+                const canvas: GroupableView = obj.wrapper;
                 if (obj instanceof Node) {
                     canvas.children.push((obj as Node).initPortWrapper(obj.ports[obj.ports.length - 1] as Port));
                 } else if (obj instanceof Connector) {
@@ -7024,7 +7336,7 @@ export class Diagram extends Component<HTMLElement> implements INotifyPropertyCh
         const annotationCollection: (PathAnnotation | ShapeAnnotation)[] = [];
         //Removed isBlazor code
         obj = this.nameTable[obj.id] || obj;
-        const canvas: Container = obj.wrapper; let newObj: ShapeAnnotation | PathAnnotation;
+        const canvas: GroupableView = obj.wrapper; let newObj: ShapeAnnotation | PathAnnotation;
         if (labels.length > 1) {
             this.startGroupAction();
         }
@@ -7037,7 +7349,7 @@ export class Diagram extends Component<HTMLElement> implements INotifyPropertyCh
                     const node: Node = (obj as Node);
                     for (let i: number = 0; i < node.wrapper.children.length; i++) {
                         if (node.wrapper.children[parseInt(i.toString(), 10)].id === node.id + 'group_container') {
-                            const container: Container = node.wrapper.children[parseInt(i.toString(), 10)] as Container;
+                            const container: GroupableView = node.wrapper.children[parseInt(i.toString(), 10)] as GroupableView;
                             container.children.push(
                                 obj.initAnnotationWrapper(obj.annotations[obj.annotations.length - 1] as Annotation, this.element.id)
                             );
@@ -7241,8 +7553,8 @@ export class Diagram extends Component<HTMLElement> implements INotifyPropertyCh
         obj: Node | ConnectorModel, labels: ShapeAnnotationModel[] | PathAnnotationModel[],
         j: number, wrapper: DiagramElement):
         void {
-        for (let i: number = 0; i < (wrapper as Container).children.length; i++) {
-            const canvas: DiagramElement = (wrapper as Container).children[parseInt(i.toString(), 10)];
+        for (let i: number = 0; i < (wrapper as GroupableView).children.length; i++) {
+            const canvas: DiagramElement = (wrapper as GroupableView).children[parseInt(i.toString(), 10)];
             if ((canvas instanceof TextElement) || (canvas instanceof DiagramHtmlElement)) {
                 if (canvas.id.match('_' + labels[parseInt(j.toString(), 10)].id + '$')) {
                     for (let k: number = 0; k < obj.annotations.length; k++) {
@@ -7257,7 +7569,7 @@ export class Diagram extends Component<HTMLElement> implements INotifyPropertyCh
                             obj.annotations.splice(k, 1);
                         }
                     }
-                    (wrapper as Container).children.splice(i, 1);
+                    (wrapper as GroupableView).children.splice(i, 1);
                     if (this.mode === 'SVG') {
                         let element: HTMLElement = getDiagramElement(canvas.id, this.element.id);
                         if (element) {
@@ -7323,8 +7635,8 @@ export class Diagram extends Component<HTMLElement> implements INotifyPropertyCh
         obj: Node | Connector, ports: PointPortModel[] | PathPortModel[],
         j: number, wrapper: DiagramElement):
         void {
-        for (let i: number = 0; i < (wrapper as Container).children.length; i++) {
-            const canvas: DiagramElement = (wrapper as Container).children[parseInt(i.toString(), 10)];
+        for (let i: number = 0; i < (wrapper as GroupableView).children.length; i++) {
+            const canvas: DiagramElement = (wrapper as GroupableView).children[parseInt(i.toString(), 10)];
             if (canvas instanceof PathElement) {
                 if (canvas.id.match('_' + ports[parseInt(j.toString(), 10)].id + '$')) {
                     for (let k: number = 0; k < obj.ports.length; k++) {
@@ -7339,7 +7651,7 @@ export class Diagram extends Component<HTMLElement> implements INotifyPropertyCh
                             obj.ports.splice(k, 1);
                         }
                     }
-                    (wrapper as Container).children.splice(i, 1);
+                    (wrapper as GroupableView).children.splice(i, 1);
                     if (this.mode === 'SVG') {
                         const element: HTMLElement = getDiagramElement(canvas.id, this.element.id);
                         // 905159: undo redo the multi-node after the group and ungrouping the multi nodes Issue fix
@@ -7744,6 +8056,7 @@ export class Diagram extends Component<HTMLElement> implements INotifyPropertyCh
         //Removed isBlazor code
         const tempTabel: {} = {};
         const bpmnTable: {} = {};
+        const containerTable: {} = {};
 
         const tempNode: NodeModel[] = [];
         const groups: string[] = [];
@@ -7776,7 +8089,12 @@ export class Diagram extends Component<HTMLElement> implements INotifyPropertyCh
                             (tempTabel[`${obj}`].shape as BpmnShape).activity.subProcess.processes &&
                             (tempTabel[`${obj}`].shape as BpmnShape).activity.subProcess.processes.length > 0) {
                             bpmnTable[tempTabel[`${obj}`].id] = obj;
-                        } else {
+                        } else if ((tempTabel[`${obj}`].shape instanceof Container) &&
+                            (tempTabel[`${obj}`].shape as Container).children &&
+                            (tempTabel[`${obj}`].shape as Container).children.length > 0) {
+                            containerTable[tempTabel[`${obj}`].id] = obj;
+                        }
+                        else {
                             this.initNodes(tempTabel[`${obj}`], layer);
                         }
                     } else {
@@ -7824,6 +8142,10 @@ export class Diagram extends Component<HTMLElement> implements INotifyPropertyCh
             this.initObject(tempTabel[`${obj}`]);
             this.bpmnModule.updateDocks(tempTabel[`${obj}`], this);
         }
+        for (const obj of Object.keys(containerTable)) {
+            this.initObject(tempTabel[`${obj}`]);
+            updateContainerDocks(tempTabel[`${obj}`], this);
+        }
         const alignedGroups: string[] = this.alignGroup(groups, tempTabel);
         for (const obj of alignedGroups) {
             const layer: LayerModel = this.commandHandler.getObjectLayer(obj);
@@ -7868,8 +8190,9 @@ export class Diagram extends Component<HTMLElement> implements INotifyPropertyCh
             layer = this.commandHandler.getObjectLayer(obj.id);
         }
         if (!hasLayers || !layer) {
-            if (this.activeLayer.objects.indexOf(obj.id) === -1) {
+            if (!this.activeLayerObjectsSet.has(obj.id)) {
                 this.activeLayer.objects.push(obj.id);
+                this.activeLayerObjectsSet.add(obj.id);
             }
         }
         if ((obj instanceof Node || obj instanceof Connector) &&
@@ -7884,8 +8207,8 @@ export class Diagram extends Component<HTMLElement> implements INotifyPropertyCh
             }
             if (obj instanceof Connector && (obj.sourceID && obj.targetID)) {
                 //EJ2-69577 - We have removed findNodeInLane method to improve the performance.
-                if (this.activeLayer.objects.indexOf(obj.sourceID) !== -1 &&
-                    this.activeLayer.objects.indexOf(obj.targetID) !== -1) {
+                if (this.activeLayerObjectsSet.has(obj.sourceID) &&
+                    this.activeLayerObjectsSet.has(obj.targetID)) {
                     this.setZIndex(layer || this.activeLayer, obj);
                 }
             } else {
@@ -7951,7 +8274,50 @@ export class Diagram extends Component<HTMLElement> implements INotifyPropertyCh
             this.refreshDiagramLayer();
         }
     }
-
+    /**
+     * Refreshes or re-renders the UML sequence diagram based on the latest model data.
+     *
+     * Use this method when you modify participants, messages, fragments, or layout properties
+     * dynamically after the initial rendering, and want those changes to be reflected in the diagram.
+     *
+     * ```typescript
+     * model.participants.push({ id: 'New', content: 'New Participant', ... });
+     * diagram.updateFromModel();
+     * ```
+     *
+     * - Recomputes lifeline positions, message lines, and activation boxes.
+     * - Ensures the diagram reflects the latest structure and layout.
+     *
+     * @returns {void}
+     */
+    public updateFromModel(): void {
+        if (this.model.participants.length > 0) {
+            // update the diagram with required nodes & connectors collection for sequence diagram.
+            (this.model as UmlSequenceDiagram).updateUmlSequenceDiagram(this);
+            // initialize nodes & connectors to initialize its wrapper.
+            this.initLayerObjects();
+            // protect property change in between rendering nodes and connectors
+            const propChange: boolean = this.isProtectedOnChange;
+            this.protectPropertyChange(true);
+            // position the nodes & connect connectors to draw sequence diagram.
+            (this.model as UmlSequenceDiagram).render();
+            // refresh diagram layer to render the sequence diagram.
+            this.refreshDiagramLayer();
+            // enable isRefreshed to prevent sequence diagram getting rendered again at diagram render method
+            if ((!(this.diagramActions & DiagramAction.Render)) || this.mode === 'Canvas') {
+                this.isRefreshed = true;
+            }
+            // disable protect property change
+            if (!propChange) {
+                this.protectPropertyChange(propChange);
+            }
+            // fit to page to focus the sequence diagram content
+            this.fitToPage({
+                mode: 'Page', region: 'Content', margin: { left: 10, top: 10, right: 10, bottom: 10 },
+                canZoomIn: true, canZoomOut: true
+            });
+        }
+    }
     private initData(): void {
         const dataSourceSettings: DataManager = this.dataSourceSettings.dataManager || this.dataSourceSettings.dataSource;
         const adapter: string = 'adaptorName';
@@ -8080,7 +8446,15 @@ export class Diagram extends Component<HTMLElement> implements INotifyPropertyCh
                 if (childNode.children && childNode.children.length > 0) {
                     // Recursively update the z-index for children of group nodes
                     this.setIndex(layer, childNode);
-                } else {
+                }
+                //934140: Save and Load Functionality Not Working Properly in Subprocess
+                else if ((childNode.shape as BpmnShapeModel).activity && (childNode.shape as BpmnShapeModel).activity.subProcess &&
+                        (childNode.shape as BpmnShapeModel).activity.subProcess.processes &&
+                        (childNode.shape as BpmnShapeModel).activity.subProcess.processes.length > 0) {
+                    // Recursively update the z-index for processes of subProcess
+                    this.setIndex(layer, childNode);
+                }
+                else {
                     // Assign zIndex to non-group child node
                     assignZIndex(childNode);
                 }
@@ -8090,7 +8464,7 @@ export class Diagram extends Component<HTMLElement> implements INotifyPropertyCh
             }
         };
         // check object is present in current layer
-        const currentLayerObject: string = layer.objects.find((object: string) => object === obj.id);
+        const currentLayerObject: boolean = layer.objects.indexOf(obj.id) !== -1;
         if (currentLayerObject) {
             if (obj instanceof Node) {
                 // Assign zIndex to group or standalone node
@@ -8100,6 +8474,15 @@ export class Diagram extends Component<HTMLElement> implements INotifyPropertyCh
                     // Update zIndex for each child if there are children
                     for (let k: number = 0; k < obj.children.length; k++) {
                         updateChildIndex(obj.children[parseInt(k.toString(), 10)]);
+                    }
+                }
+                //934140: Save and Load Functionality Not Working Properly in Subprocess
+                else if ((obj.shape as BpmnShapeModel).activity && (obj.shape as BpmnShapeModel).activity.subProcess &&
+                        (obj.shape as BpmnShapeModel).activity.subProcess.processes &&
+                        (obj.shape as BpmnShapeModel).activity.subProcess.processes.length > 0) {
+                    // Update zIndex for each processes if there are processes for subProcess
+                    for (let i: number = 0; i < (obj.shape as BpmnShapeModel).activity.subProcess.processes.length; i++) {
+                        updateChildIndex((obj.shape as BpmnShapeModel).activity.subProcess.processes[parseInt(i.toString(), 10)]);
                     }
                 }
             } else {
@@ -8406,12 +8789,14 @@ export class Diagram extends Component<HTMLElement> implements INotifyPropertyCh
      */
     public updateGroupOffset(node: NodeModel | ConnectorModel, isUpdateSize?: boolean): void {
         const isUpdateGroupToBlazor: boolean = false;
-        if (((node as Node).children && (node as Node).children.length > 0 && (!(node as Node).container)) || ((node as Node).processId)) {
+        if (((node as Node).children && (node as Node).children.length > 0 && (!(node as Node).container)) || ((node as Node).processId)
+            || ((node as Node).parentId && this.nameTable[(node as Node).parentId]
+            && this.nameTable[(node as Node).parentId].shape.type === 'Container')){
             const node1: NodeModel = this.nameTable[node.id];
             if (!(this.realActions & RealAction.PreventScale) && !(this.realActions & RealAction.PreventDrag)) {
                 if (node1.offsetX && ((this.realActions & RealAction.EnableGroupAction) ||
                     ((!(this.diagramActions & DiagramAction.UndoRedo)) && (!(this.diagramActions & DiagramAction.ToolAction)
-                        && !(this.diagramActions & DiagramAction.PublicMethod))))) {
+                        && !(this.diagramActions & DiagramAction.PublicMethod) && !((node as Node).processId))))) {
                     this.realActions |= RealAction.PreventScale;
                     const diffX: number = (node1.offsetX - node.wrapper.offsetX);
                     node1.offsetX = node.wrapper.offsetX;
@@ -8427,7 +8812,7 @@ export class Diagram extends Component<HTMLElement> implements INotifyPropertyCh
                 }
                 if (node1.offsetY && ((this.realActions & RealAction.EnableGroupAction) ||
                     ((!(this.diagramActions & DiagramAction.UndoRedo)) && (!(this.diagramActions & DiagramAction.ToolAction)
-                        && !(this.diagramActions & DiagramAction.PublicMethod))))) {
+                        && !(this.diagramActions & DiagramAction.PublicMethod) && !((node as Node).processId))))) {
                     this.realActions |= RealAction.PreventScale;
                     const diffY: number = (node1.offsetY - node.wrapper.offsetY);
                     node1.offsetY = node.wrapper.offsetY;
@@ -8479,7 +8864,7 @@ export class Diagram extends Component<HTMLElement> implements INotifyPropertyCh
 
     /* eslint-disable */
     private initNode(obj: Node, diagramId: string, group?: boolean): void {
-        const canvas: Container = obj.initContainer(); const portContainer: Canvas = new Canvas(); let content: DiagramElement;
+        const canvas: GroupableView = obj.initContainer(); const portContainer: Canvas = new Canvas(); let content: DiagramElement;
         if (!this.diagramSettings.inversedAlignment) {
             canvas.inversedAlignment = false;
         }
@@ -8544,7 +8929,7 @@ export class Diagram extends Component<HTMLElement> implements INotifyPropertyCh
         } else {
             (obj.children ? canvas : content).description = obj.annotations.length ? obj.annotations[0].content : obj.id;
         }
-        const container: Container = obj.children ? portContainer : canvas;
+        const container: GroupableView = obj.children ? portContainer : canvas;
         obj.initAnnotations(this.getDescription, container, this.element.id, canVitualize(this) ? true : false, this.annotationTemplate);
         obj.initPorts(this.getDescription, container);
         obj.initIcons(this.getDescription, this.layout, container, diagramId);
@@ -8555,23 +8940,18 @@ export class Diagram extends Component<HTMLElement> implements INotifyPropertyCh
         if (obj.shape.type === 'SwimLane' && obj.wrapper && obj.wrapper.children.length > 0 &&
             obj.wrapper.children[0] instanceof GridPanel) {
             this.setZIndex(this.activeLayer, obj);
-            if (this.connectors.length > 0) {
-                for (let i: number = 0; i < this.connectors.length; i++) {
-                    let obj: ConnectorModel = this.connectors[i];
-                    if ((obj.sourceID && obj.targetID) && (this.activeLayer.objects.indexOf(obj.sourceID) === -1 &&
-                        this.activeLayer.objects.indexOf(obj.targetID) === -1)) {
-                        this.setZIndex(this.activeLayer, obj);
-                    }
-                }
-            }
             swimLaneMeasureAndArrange(obj);
             arrangeChildNodesInSwimLane(this, obj);
+            this.updateLaneAfterAddChild (obj);
             this.updateDiagramElementQuad();
         } else {
             canvas.measure(new Size(obj.width, obj.height), obj.id, this.onLoadImageSize.bind(this));
             if (canvas instanceof GridPanel) {
                 canvas.arrange(canvas.desiredSize, true);
             } else { canvas.arrange(canvas.desiredSize); }
+        }
+        if (obj.shape.type === 'Container') {
+            this.updateDiagramElementQuad();
         }
         if (obj.wrapper.flip !== FlipDirection.None) {
             if (obj.children && obj.children.length > 0) {
@@ -8636,6 +9016,15 @@ export class Diagram extends Component<HTMLElement> implements INotifyPropertyCh
             this.updateChildPosition(obj);
         }
     }
+    private updateLaneAfterAddChild(swimlane: NodeModel) {
+        for (let i: number = 0; i < this.nodes.length; i++) {
+            const node: NodeModel = this.nodes[parseInt(i.toString(), 10)];
+            if ((node as Node).parentId === swimlane.id && !(swimlane.shape as SwimLane).hasHeader) {
+                node.width = node.wrapper.width;
+                node.height = node.wrapper.height;
+            }
+        }
+    }
     private applyWrapperFlip(obj: NodeModel) {
         obj.wrapper.flip = obj.flip;
         obj.wrapper.flipMode = obj.flipMode;
@@ -8665,7 +9054,7 @@ export class Diagram extends Component<HTMLElement> implements INotifyPropertyCh
             }
         }
     }
-    private addBpmnAnnotationConnector(node: NodeModel, wrapper: Container) {
+    private addBpmnAnnotationConnector(node: NodeModel, wrapper: GroupableView) {
         if ((node as any).parentObj instanceof Diagram || (node as any).parentObj instanceof Lane) {
             let bpmnAnnotation: BpmnShape = (node.shape as BpmnShape);
             let direction: TextAnnotationDirection = bpmnAnnotation.textAnnotation.textAnnotationDirection;
@@ -8839,7 +9228,8 @@ export class Diagram extends Component<HTMLElement> implements INotifyPropertyCh
      */
     public updateDiagramElementQuad(): void {
         for (let i: number = 0; i < this.nodes.length; i++) {
-            if (this.nodes[parseInt(i.toString(), 10)].wrapper && (this.nodes[parseInt(i.toString(), 10)].wrapper instanceof Container)) {
+            if (this.nodes[parseInt(i.toString(), 10)].wrapper
+            && (this.nodes[parseInt(i.toString(), 10)].wrapper instanceof GroupableView)) {
                 this.updateQuad(this.nodes[parseInt(i.toString(), 10)] as IElement);
             }
         }
@@ -9191,14 +9581,11 @@ export class Diagram extends Component<HTMLElement> implements INotifyPropertyCh
      * @private
      */
     private updateIconVisibility(node: Node, visibility: boolean): void {
-        for (let i: number = 0; i < node.wrapper.children.length; i++) {
-            const child: DiagramElement = node.wrapper.children[parseInt(i.toString(), 10)];
-            if (child.id) {
-                const id: string = child.id.split(node.id)[1];
-                if (id && id.match('^_icon')) {
-                    child.visible = visibility;
-                    this.updateDiagramContainerVisibility(child, visibility);
-                }
+        const prefix: string = `${node.id}_icon`;
+        for (const child of node.wrapper.children as DiagramElement[]) {
+            if (child.id && child.id.startsWith(prefix)) {
+                child.visible = visibility;
+                this.updateDiagramContainerVisibility(child, visibility);
             }
         }
     }
@@ -9277,8 +9664,8 @@ export class Diagram extends Component<HTMLElement> implements INotifyPropertyCh
 
     private updateCanupdateStyle(element: DiagramElement[], value: boolean): void {
         for (let j: number = 0; j < element.length; j++) {
-            if ((element[parseInt(j.toString(), 10)] as Container).children) {
-                this.updateCanupdateStyle((element[parseInt(j.toString(), 10)] as Container).children, value);
+            if ((element[parseInt(j.toString(), 10)] as GroupableView).children) {
+                this.updateCanupdateStyle((element[parseInt(j.toString(), 10)] as GroupableView).children, value);
             }
             element[parseInt(j.toString(), 10)].canApplyStyle = value;
         }
@@ -9555,7 +9942,7 @@ export class Diagram extends Component<HTMLElement> implements INotifyPropertyCh
         const htmlLayer: HTMLElement = getHTMLLayer(view.element.id);
         for (let i: number = 0; i < this.basicElements.length; i++) {
             const element: DiagramElement = this.basicElements[parseInt(i.toString(), 10)];
-            if (element instanceof Container) {
+            if (element instanceof GroupableView) {
                 element.prevRotateAngle = 0;
             }
             element.measure(new Size(element.width, element.height));
@@ -9925,7 +10312,7 @@ export class Diagram extends Component<HTMLElement> implements INotifyPropertyCh
             for (let i: number = 0; i < this.connectors.length; i++) {
                 const connector: Connector = this.connectors[parseInt(i.toString(), 10)] as Connector;
                 this.bridgingModule.updateBridging(connector, this);
-                const canvas: Container = this.connectors[parseInt(i.toString(), 10)].wrapper;
+                const canvas: GroupableView = this.connectors[parseInt(i.toString(), 10)].wrapper;
                 if (canvas && canvas.children && canvas.children.length > 0) {
                     const pathSegment: PathElement = canvas.children[0] as PathElement;
                     const data: string = pathSegment.data;
@@ -10007,14 +10394,22 @@ export class Diagram extends Component<HTMLElement> implements INotifyPropertyCh
      * @private
      */
     public setOffset(offsetX: number, offsetY: number): void {
-        const domTable: string = 'domTable';
-        if (!window[`${domTable}`][this.element.id + 'content']) {
-            window[`${domTable}`][this.element.id + 'content'] = document.getElementById(this.element.id + 'content');
+        const domTableKey: string = `${this.element.id}content`;
+        const domTable: Record<string, HTMLElement | undefined> = window['domTable'];
+        if (!domTable[`${domTableKey}`]) {
+            const element: HTMLElement | null = document.getElementById(domTableKey);
+            if (element) {
+                domTable[`${domTableKey}`] = element;
+            }
         }
-        const container: HTMLElement = window[`${domTable}`][this.element.id + 'content'];
+        const container: HTMLElement | undefined = domTable[`${domTableKey}`];
         if (container) {
-            container.scrollLeft = offsetX;
-            container.scrollTop = offsetY;
+            if (container.scrollLeft !== offsetX) {
+                container.scrollLeft = offsetX;
+            }
+            if (container.scrollTop !== offsetY) {
+                container.scrollTop = offsetY;
+            }
         }
     }
 
@@ -10462,6 +10857,8 @@ export class Diagram extends Component<HTMLElement> implements INotifyPropertyCh
             if (selector.wrapper !== null && selector.wrapper.children && selector.wrapper.children.length) {
                 let canUpdate: boolean = true;
                 let canRender: boolean = true;
+                //EJ2-937180- Multiselected shapes Rotation thumb misplacement on Undo after rotate
+                selector.wrapper.rotateAngle = selector.rotateAngle;
                 if (selectionHasConnector(this, selector)) {
                     const eventHandler: string = 'eventHandler';
                     const rotate: string = this[`${eventHandler}`].action;
@@ -10696,15 +11093,15 @@ export class Diagram extends Component<HTMLElement> implements INotifyPropertyCh
      * getWrapper method \
      *
      * @returns { void }     getWrapper method .\
-     * @param {Container} nodes - provide the node value.
+     * @param {GroupableView} nodes - provide the node value.
      * @param {string} id - provide the childernCollection value.
      *
      * @private
      */
-    public getWrapper(nodes: Container, id: string): DiagramElement {
+    public getWrapper(nodes: GroupableView, id: string): DiagramElement {
         let wrapper: DiagramElement;
         id = nodes.id + '_' + id;
-        const container: Container = nodes instanceof Canvas ? nodes : this.getPortContainer(this.nameTable[nodes.id]);
+        const container: GroupableView = nodes instanceof Canvas ? nodes : this.getPortContainer(this.nameTable[nodes.id]);
         for (let i: number = 0; i < container.children.length; i++) {
             if (id === container.children[parseInt(i.toString(), 10)].id) {
                 wrapper = container.children[parseInt(i.toString(), 10)];
@@ -10745,10 +11142,9 @@ export class Diagram extends Component<HTMLElement> implements INotifyPropertyCh
             }
             return (node.wrapper.children[0] as Canvas).children[0];
         }
-        if (!this.containsMargin(node.wrapper.children[0])) {
-            if (!(node as Node).children) {
-                return node.wrapper.children[0];
-            }
+        const firstChild: DiagramElement = node.wrapper.children[0];
+        if (firstChild && !this.containsMargin(firstChild) && (!(node as Node).children || (node as Node).children.length === 0)) {
+            return firstChild;
         }
         return node.wrapper;
     }
@@ -10969,24 +11365,34 @@ export class Diagram extends Component<HTMLElement> implements INotifyPropertyCh
 
     //To move the diagram elements five pixel based on the arrow keys
     private shiftCommand(direction: string): void {
-        for (let i: number = 0; i < this.selectedItems.nodes.length; i++) {
-            const pixel: number = 5;
-            if (direction === 'Up') {
-                this.selectedItems.nodes[parseInt(i.toString(), 10)].offsetY
-                    = this.selectedItems.nodes[parseInt(i.toString(), 10)].offsetY - pixel;
+        if (this.selectedItems instanceof Selector && this.selectedItems.wrapper
+            && this.constraints & DiagramConstraints.RestrictNegativeAxisDragDrop) {
+            const bounds: Rect = this.selectedItems.wrapper.bounds;
+            if (bounds) {
+                if (direction === 'Left' && bounds.x - 5 < 0) {
+                    return;
+                }
+                if (direction === 'Top' && bounds.y - 5 < 0) {
+                    return;
+                }
             }
-            else if (direction === 'Down') {
-                this.selectedItems.nodes[parseInt(i.toString(), 10)].offsetY
-                    = this.selectedItems.nodes[parseInt(i.toString(), 10)].offsetY + pixel;
-            }
-            else if (direction === 'Left') {
-                this.selectedItems.nodes[parseInt(i.toString(), 10)].offsetX
-                    = this.selectedItems.nodes[parseInt(i.toString(), 10)].offsetX - pixel;
-            }
-            else if (direction === 'Right') {
-                this.selectedItems.nodes[parseInt(i.toString(), 10)].offsetX
-                    = this.selectedItems.nodes[parseInt(i.toString(), 10)].offsetX + pixel;
-            }
+        }
+        let tx: number = 0; let ty: number = 0;
+        const pixel: number = 5;
+        let negativeDirection: boolean;
+        if (direction === 'Left' || direction === 'Right') {
+            negativeDirection = (direction === 'Left');
+            tx = (negativeDirection ? -pixel : pixel);
+        } else {
+            negativeDirection = (direction === 'Up');
+            ty = (negativeDirection ? -pixel : pixel);
+        }
+        const obj: SelectorModel = this.selectedItems;
+        const annotation: DiagramElement = this.selectedItems.wrapper.children[0];
+        if (annotation instanceof TextElement) {
+            this.commandHandler.labelDrag(obj.nodes[0], annotation, tx, ty);
+        } else {
+            this.drag(obj, tx, ty);
         }
         for (let i: number = 0; i < this.selectedItems.connectors.length; i++) {
             const connector: SelectorModel = this.selectedItems;
@@ -11473,7 +11879,7 @@ export class Diagram extends Component<HTMLElement> implements INotifyPropertyCh
 
     /* tslint:disable */
     private swimLaneNodePropertyChange(actualObject: Node, oldObject: Node, node: Node, update: boolean): boolean {
-        if (actualObject.shape.type === 'SwimLane' && !this.currentSymbol) {
+        if ((actualObject.shape.type === 'SwimLane' || actualObject.shape.type === 'Container') && !this.currentSymbol) {
             if (oldObject.shape) {
                 const shape: SwimLaneModel = node.shape as SwimLaneModel;
                 const actualShape: SwimLaneModel = actualObject.shape as SwimLaneModel;
@@ -11509,7 +11915,14 @@ export class Diagram extends Component<HTMLElement> implements INotifyPropertyCh
                                     const node: Node = this.nameTable[`${id}`]; oldObjects = lane.children[Number(childNodeIndex)];
                                     newObjects = (newLane as LaneModel).children[Number(childNodeIndex)];
                                     this.nodePropertyChange(node, oldObjects as Node, newObjects as Node);
+                                    const parent: Node = this.nameTable[node.parentId];
+                                    //943622-update max width and height of lane child is not working properly
+                                    if (!(this.diagramActions & DiagramAction.UndoRedo)) {
+                                        this.startGroupAction();
+                                        updateLaneBoundsAfterAddChild(parent, actualObject, node, this);
+                                    }
                                 }
+                                this.updateSelector();
                             }
                             if (lane.width && !orientation) {
                                 laneIndex = (actualShape.phases && actualShape.phaseSize) ? indexValue + 1 : indexValue;
@@ -11606,8 +12019,13 @@ export class Diagram extends Component<HTMLElement> implements INotifyPropertyCh
                         } else { grid.updateColumnWidth(0, shape.phaseSize, false); }
                     }
                 }
-                if (actualShape.header && (actualShape as SwimLane).hasHeader && oldShape.header) {
-                    const id: string = grid.rows[0].cells[0].children[0].id;
+                if (actualShape.header && (actualShape as SwimLane | Container).hasHeader && oldShape.header) {
+                    let id: string;
+                    if (actualObject.shape.type === 'SwimLane') {
+                        id = grid.rows[0].cells[0].children[0].id;
+                    } else if (actualObject.shape.type === 'Container') {
+                        id = grid.children[1].id;
+                    }
                     newObjects = shape.header;
                     oldObjects = oldShape.header;
                     // 945079: Swimlane Diagram Header and Phase Annotations Alignment Not Working properly
@@ -11703,7 +12121,12 @@ export class Diagram extends Component<HTMLElement> implements INotifyPropertyCh
         if (node.width !== undefined) {
             if (!actualObject.children) {
                 actualObject.wrapper.children[0].width = node.width; update = true; updateConnector = true;
-            } else if (!actualObject.container) {
+                //953540-swimlane scale method does not update properly break
+                if (actualObject.shape.type === 'SwimLane') {
+                    actualObject.wrapper.width = node.width;
+                }
+            }
+            else if (!actualObject.container) {
                 this.scaleObject(actualObject, node.width, true);
             } else {
                 actualObject.wrapper.width = node.width;
@@ -11713,6 +12136,24 @@ export class Diagram extends Component<HTMLElement> implements INotifyPropertyCh
         if (node.height !== undefined) {
             if (!actualObject.children) {
                 actualObject.wrapper.children[0].height = node.height; update = true; updateConnector = true;
+                //953540-swimlane scale method does not update properly break
+                if (actualObject.shape.type === 'SwimLane') {
+                    actualObject.wrapper.height = node.height;
+                    // 943621 - undo redo of updating height of swimlane is not working.
+                    if (actualObject.shape.type === 'SwimLane' && this.isUndo) {
+                        const swimlane: SwimLaneModel = actualObject.shape as SwimLaneModel;
+                        if (swimlane.header && (swimlane as SwimLane).hasHeader) {
+                            const grid: GridPanel = actualObject.wrapper.children[0] as GridPanel;
+                            const padding: number = (swimlane as SwimLane).padding;
+                            const heightDiff: number = oldObject.height - node.height;
+                            const rowDefinitions: RowDefinition[] = grid.rowDefinitions();
+                            const lastRowIndex: number = rowDefinitions.length - 1;
+                            const adjustedHeight: number = rowDefinitions[parseInt(lastRowIndex.toString(), 10)].height - heightDiff;
+                            grid.updateRowHeight(lastRowIndex, adjustedHeight, true, padding, true);
+                        }
+                    }
+
+                }
             } else if (!actualObject.container) {
                 this.scaleObject(actualObject, node.height, false);
             } else {
@@ -11795,41 +12236,45 @@ export class Diagram extends Component<HTMLElement> implements INotifyPropertyCh
             updateConnector = true;
             sizeChanged = true;
         }
-        if (node.flip !== undefined) {
-            const horizontal: boolean = ((node.flip & FlipDirection.Horizontal) ^
-                (actualObject.wrapper.flip & FlipDirection.Horizontal)) === FlipDirection.Horizontal;
-            const vertical: boolean = ((node.flip & FlipDirection.Vertical) ^
-                (actualObject.wrapper.flip & FlipDirection.Vertical)) === FlipDirection.Vertical;
-            if (horizontal) {
-                actualObject.wrapper.flip ^=  FlipDirection.Horizontal;
-            }
-            if (vertical) {
-                actualObject.wrapper.flip ^= FlipDirection.Vertical;
-            }
-            update = true;
-            updateConnector = true;
-            if (actualObject.children) {
-                const connectorInGroup: string[] = actualObject.children.filter((con: string)=>this.nameTable[`${con}`] &&
-                    this.nameTable[`${con}`] instanceof Connector);
-                if (connectorInGroup && connectorInGroup.length > 0) {
-                    this.groupBounds = actualObject.wrapper.bounds;
+        if (actualObject.shape.type !== 'Container' && !(actualObject.shape.type === 'Bpmn'
+            && (actualObject.shape as BpmnShape).shape === 'Activity'
+            && (actualObject.shape as BpmnShape).activity.activity === 'SubProcess')) {
+            if (node.flip !== undefined) {
+                const horizontal: boolean = ((node.flip & FlipDirection.Horizontal) ^
+                    (actualObject.wrapper.flip & FlipDirection.Horizontal)) === FlipDirection.Horizontal;
+                const vertical: boolean = ((node.flip & FlipDirection.Vertical) ^
+                    (actualObject.wrapper.flip & FlipDirection.Vertical)) === FlipDirection.Vertical;
+                if (horizontal) {
+                    actualObject.wrapper.flip ^=  FlipDirection.Horizontal;
+                }
+                if (vertical) {
+                    actualObject.wrapper.flip ^= FlipDirection.Vertical;
+                }
+                update = true;
+                updateConnector = true;
+                if (actualObject.children) {
+                    const connectorInGroup: string[] = actualObject.children.filter((con: string)=>this.nameTable[`${con}`] &&
+                        this.nameTable[`${con}`] instanceof Connector);
+                    if (connectorInGroup && connectorInGroup.length > 0) {
+                        this.groupBounds = actualObject.wrapper.bounds;
+                    } else {
+                        this.groupBounds = null;
+                    }
                 } else {
                     this.groupBounds = null;
                 }
-            } else {
-                this.groupBounds = null;
+                alignElement(actualObject.wrapper, actualObject.offsetX, actualObject.offsetY, this, undefined, horizontal, vertical);
+                //To update the port and text wrapper element flip
+                this.updateWrapperChildFlip(actualObject);
             }
-            alignElement(actualObject.wrapper, actualObject.offsetX, actualObject.offsetY, this, undefined, horizontal, vertical);
-            //To update the port and text wrapper element flip
-            this.updateWrapperChildFlip(actualObject);
-        }
-        if (node.flipMode !== undefined) {
-            let changeFlipMode: string = '';
-            changeFlipMode = actualObject.wrapper.flipMode = node.flipMode;
-            update = true;
-            updateConnector = true;
-            //To update the port and text wrapper element flip mode
-            this.updateWrapperChildFlip(actualObject, changeFlipMode as FlipMode);
+            if (node.flipMode !== undefined) {
+                let changeFlipMode: string = '';
+                changeFlipMode = actualObject.wrapper.flipMode = node.flipMode;
+                update = true;
+                updateConnector = true;
+                //To update the port and text wrapper element flip mode
+                this.updateWrapperChildFlip(actualObject, changeFlipMode as FlipMode);
+            }
         }
         if (node.rotateAngle !== undefined && (actualObject.constraints & NodeConstraints.Rotate)) {
             if (actualObject.children && rotate) {
@@ -11839,6 +12284,22 @@ export class Diagram extends Component<HTMLElement> implements INotifyPropertyCh
             actualObject.wrapper.rotateAngle = node.rotateAngle; update = true;
             updateConnector = true;
             angleChanged = true;
+            if (actualObject.processId || (actualObject.parentId && this.nameTable[actualObject.parentId].shape.type === 'Container')) {
+                const changes: any = cloneObject(actualObject);
+                let target: Node;
+                if (actualObject.processId) {
+                    target = this.nameTable[actualObject.processId];
+                } else {
+                    target = this.nameTable[actualObject.parentId];
+                }
+                changes.margin.top = (actualObject.offsetY - (actualObject.actualSize.height / 2))
+                    - (target.offsetY - (target.actualSize.height / 2));
+                changes.margin.left = (actualObject.offsetX - (actualObject.actualSize.width / 2))
+                    - (target.offsetX - (target.actualSize.width / 2));
+                if (changes.margin.left !== actualObject.margin.left || changes.margin.top !== actualObject.margin.top) {
+                    this.updateMargin(actualObject, changes);
+                }
+            }
         }
         if (node.backgroundColor !== undefined) {
             actualObject.wrapper.style.fill = node.backgroundColor;
@@ -11851,14 +12312,27 @@ export class Diagram extends Component<HTMLElement> implements INotifyPropertyCh
         if (node.margin) {
             update = true;
             this.updateMargin(actualObject, node);
+            if (actualObject.parentId && this.nameTable[actualObject.parentId].shape.type === 'Container') {
+                updateChildWrapper(actualObject, this);
+            }
             updateConnector = true;
             offsetChanged = true;
         }
-        if ((((node.shape !== undefined && (node.shape.type === undefined)) || node.width !== undefined || node.height !== undefined ||
-            node.style !== undefined) && actualObject.shape.type === 'Bpmn' && this.bpmnModule)) {
+        if ((((node.shape !== undefined && (node.shape.type === undefined)) || node.width !== undefined ||
+            node.maxWidth !== undefined || node.minWidth !== undefined || node.maxHeight !== undefined ||
+            node.minHeight !== undefined || node.height !== undefined || node.style !== undefined)
+            && actualObject.shape.type === 'Bpmn' && this.bpmnModule)) {
             update = true;
             updateConnector = true;
             this.bpmnModule.updateBPMN(node, oldObject, actualObject, this);
+        }
+        if (((node.width !== undefined || node.height !== undefined) && actualObject.shape.type === 'Container')) {
+            update = true;
+            setSizeForContainer(node, oldObject, actualObject, ((actualObject.wrapper as Canvas).children[0] as Canvas), this);
+        }
+        if (((node.style !== undefined) && actualObject.shape.type === 'Container')) {
+            update = true;
+            updateStyle(node.style, ((actualObject.wrapper as Canvas).children[0] as Canvas).children[0]);
         }
         if (actualObject.shape.type === 'UmlActivity' && ((!isBlazor() && (actualObject.shape as UmlActivityShapeModel).shape === 'FinalNode'))) {
             update = true;
@@ -11907,10 +12381,32 @@ export class Diagram extends Component<HTMLElement> implements INotifyPropertyCh
                                 if (collection[parseInt(j.toString(), 10)].id === (actualObject[`${laneHeader}`] || actualObject[`${phaseHeader}`])) {
                                     collection[parseInt(j.toString(), 10)].header.annotation.content = actualObject.annotations[0].content;
                                     collection[parseInt(j.toString(), 10)].header.annotation.style = actualObject.annotations[0].style;
+                                    //EJ2-957840: Annotation position changes after interaction and perform save and load
+                                    collection[parseInt(j.toString(), 10)].header.annotation.offset.x =
+                                        actualObject.annotations[0].offset.x;
+                                    collection[parseInt(j.toString(), 10)].header.annotation.offset.y =
+                                        actualObject.annotations[0].offset.y;
+                                    collection[parseInt(j.toString(), 10)].header.annotation.width = actualObject.annotations[0].width;
+                                    collection[parseInt(j.toString(), 10)].header.annotation.height = actualObject.annotations[0].height;
                                     break;
                                 }
                             }
                         }
+                        //EJ2-957840: Annotation position changes after interaction and perform save and load
+                        else if (actualObject.isHeader) {
+                            (swimLaneNode.shape as SwimLaneModel).header.annotation.offset.x = actualObject.annotations[0].offset.x;
+                            (swimLaneNode.shape as SwimLaneModel).header.annotation.offset.y = actualObject.annotations[0].offset.y;
+                            (swimLaneNode.shape as SwimLaneModel).header.annotation.rotateAngle = actualObject.annotations[0].rotateAngle;
+                            (swimLaneNode.shape as SwimLaneModel).header.annotation.width = actualObject.annotations[0].width;
+                            (swimLaneNode.shape as SwimLaneModel).header.annotation.height = actualObject.annotations[0].height;
+                        }
+                    } else if (swimLaneNode && (swimLaneNode.shape as Container).type === 'Container') {
+                        const header: HeaderModel = (swimLaneNode.shape as Container).header;
+                        header.annotation.content = actualObject.annotations[0].content;
+                        header.annotation.offset = actualObject.annotations[0].offset;
+                        header.annotation.width = actualObject.annotations[0].width;
+                        header.annotation.height = actualObject.annotations[0].height;
+                        header.annotation.rotateAngle = actualObject.annotations[0].rotateAngle;
                     }
                 }
             }
@@ -11945,8 +12441,7 @@ export class Diagram extends Component<HTMLElement> implements INotifyPropertyCh
 
         if (node.tooltip !== undefined) { this.updateTooltip(actualObject, node); }
         if (update) {
-            if (this.bpmnModule !== undefined && (offsetChanged || sizeChanged) && !angleChanged) {
-
+            if (this.bpmnModule !== undefined && ((offsetChanged && !sizeChanged && !(this as any).sizeUndo) || (sizeChanged && actualObject.shape.type === 'Bpmn' && (actualObject.shape as BpmnShape).shape !== 'TextAnnotation')) && !angleChanged) {
                 // eslint-disable-next-line max-len
                 this.updateBpmnAnnotationPosition(oldBpmnOffsetX, oldBpmnOffsetY, newBpmnOffsetX, newBpmnOffsetY, actualObject, actualObject.wrapper, (actualObject.shape as BpmnShape), (actualObject.shape as BpmnShape).shape === 'TextAnnotation',oldObject, sizeChanged, (this as any).sizeUndo);
             }
@@ -11996,7 +12491,11 @@ export class Diagram extends Component<HTMLElement> implements INotifyPropertyCh
             if (this.bpmnModule !== undefined) {
                 this.bpmnModule.updateDocks(actualObject, this);
             }
-            if ((!node.annotations || !actualObject.processId) && node.flip === undefined) {
+            if (actualObject.shape instanceof Container) {
+                updateContainerDocks(actualObject, this);
+            }
+            if (((!node.annotations && !actualObject.isHeader) || (!actualObject.processId && !(actualObject.parentId
+                 && this.nameTable[actualObject.parentId].shape.type === 'Container'))) && node.flip === undefined) {
                 this.updateGroupOffset(actualObject);
             }
             // if (existingBounds.equals(existingBounds, actualObject.wrapper.outerBounds) === false) { this.updateQuad(actualObject); }
@@ -12270,7 +12769,7 @@ export class Diagram extends Component<HTMLElement> implements INotifyPropertyCh
     }
     //To update text annotation position while dragging the text annotation's parent node.
     private updateBpmnAnnotationPosition(oldX: number, oldY: number, newX: number, newY: number, node: NodeModel,
-                                         wrapper: Container, shape: BpmnShape, isTextAnnotation: boolean, oldObject: Node,
+                                         wrapper: GroupableView, shape: BpmnShape, isTextAnnotation: boolean, oldObject: Node,
                                          sizeChanged: boolean, isUndo: boolean) {
         let x = newX > oldX ? Math.abs(newX - oldX) : Math.abs(oldX - newX);
         let y = newY > oldY ? Math.abs(newY - oldY) : Math.abs(oldY - newY);
@@ -12401,7 +12900,7 @@ export class Diagram extends Component<HTMLElement> implements INotifyPropertyCh
             }
         }
     }
-    private updateFlipOffset(element: Container, diffX: number, diffY: number, flip: FlipDirection): void {
+    private updateFlipOffset(element: GroupableView, diffX: number, diffY: number, flip: FlipDirection): void {
         if (element.hasChildren()) {
             for (const child of element.children) {
                 if (flip === FlipDirection.Horizontal || flip === FlipDirection.Both) {
@@ -12410,7 +12909,7 @@ export class Diagram extends Component<HTMLElement> implements INotifyPropertyCh
                 if (flip === FlipDirection.Vertical || flip === FlipDirection.Both) {
                     child.flipOffset.y = child.flipOffset.y + diffY;
                 }
-                if (child instanceof Canvas || child instanceof Container) {
+                if (child instanceof Canvas || child instanceof GroupableView) {
                     this.updateFlipOffset(child, diffX, diffY, flip);
                 }
             }
@@ -12428,6 +12927,7 @@ export class Diagram extends Component<HTMLElement> implements INotifyPropertyCh
             outerFinalNode.height = changedProp.height / 1.5;
         }
     }
+
     /**
      * updateConnectorProperties method \
      *
@@ -12724,20 +13224,20 @@ export class Diagram extends Component<HTMLElement> implements INotifyPropertyCh
      * update the  opacity  and visibility for the node  once the layout animation starts \
      *
      * @returns { void }  update the  opacity  and visibility for the node  once the layout animation starts .\
-     * @param {Container} element - provide the element value.
+     * @param {GroupableView} element - provide the element value.
      * @param {boolean} visible - provide the visible value.
      * @param {number} opacity - provide the opacity value.
      *
      * @private
      */
-    public updateNodeProperty(element: Container, visible?: boolean, opacity?: number): void {
+    public updateNodeProperty(element: GroupableView, visible?: boolean, opacity?: number): void {
         if (visible === undefined) {
             this.updateElementVisibility(element, this.nameTable[element.id], visible);
         } else {
             element.style.opacity = opacity;
             for (let i: number = 0; i < element.children.length; i++) {
-                if (element.children[parseInt(i.toString(), 10)] instanceof Container) {
-                    this.updateNodeProperty(element.children[parseInt(i.toString(), 10)] as Container, undefined, opacity);
+                if (element.children[parseInt(i.toString(), 10)] instanceof GroupableView) {
+                    this.updateNodeProperty(element.children[parseInt(i.toString(), 10)] as GroupableView, undefined, opacity);
                 }
                 element.children[parseInt(i.toString(), 10)].style.opacity = opacity;
             }
@@ -12777,7 +13277,7 @@ export class Diagram extends Component<HTMLElement> implements INotifyPropertyCh
      * @private
      */
     private updateDiagramContainerVisibility(element: DiagramElement, visible: boolean): void {
-        if (element instanceof Container) {
+        if (element instanceof GroupableView) {
             for (let i: number = 0; i < element.children.length; i++) {
                 this.updateDiagramContainerVisibility(element.children[parseInt(i.toString(), 10)], visible);
             }
@@ -12790,13 +13290,13 @@ export class Diagram extends Component<HTMLElement> implements INotifyPropertyCh
      * Updates the visibility of the node/connector \
      *
      * @returns { void }  Updates the visibility of the node/connector .\
-     * @param {Container} element - provide the element value.
+     * @param {GroupableView} element - provide the element value.
      * @param {Connector | Node} obj - provide the obj value.
      * @param {boolean} visible - provide the visible value.
      *
      * @private
      */
-    public updateElementVisibility(element: Container, obj: Connector | Node, visible: boolean): void {
+    public updateElementVisibility(element: GroupableView, obj: Connector | Node, visible: boolean): void {
         if (visible !== undefined) {
             element.visible = visible;
             if (obj instanceof Node) {
@@ -12864,7 +13364,7 @@ export class Diagram extends Component<HTMLElement> implements INotifyPropertyCh
                 }
             }
             if ((obj as NodeModel).expandIcon || (obj as NodeModel).collapseIcon) {
-                const wrapper: Container = this.getWrapper(element, 'icon_content') as Container;
+                const wrapper: GroupableView = this.getWrapper(element, 'icon_content') as GroupableView;
                 if (wrapper) {
                     for (let i: number = 0; i < wrapper.children.length; i++) {
                         wrapper.children[parseInt(i.toString(), 10)].visible = visible;
@@ -12918,14 +13418,14 @@ export class Diagram extends Component<HTMLElement> implements INotifyPropertyCh
      * @returns { void }  updateConnectorfixedUserHandle method .\
      * @param {ConnectorFixedUserHandleModel} changedObject - provide the changedObject value.
      * @param {ConnectorFixedUserHandleModel} actualfixedUserHandle - provide the actualfixedUserHandle value.
-     * @param {Container} nodes - provide the nodes value.
+     * @param {GroupableView} nodes - provide the nodes value.
      * @param {Object} actualObject - provide the actualObject value.
      * @param {boolean} canUpdateSize - provide the canUpdateSize value.
      *
      * @private
      */
     public updateConnectorfixedUserHandle(
-        changedObject: ConnectorFixedUserHandleModel, actualfixedUserHandle: ConnectorFixedUserHandleModel, nodes: Container,
+        changedObject: ConnectorFixedUserHandleModel, actualfixedUserHandle: ConnectorFixedUserHandleModel, nodes: GroupableView,
         actualObject?: Object, canUpdateSize?: boolean): void {
         let isMeasure: boolean = false;
         const fixedUserHandleWrapper: Canvas = this.getWrapper(nodes, actualfixedUserHandle.id) as Canvas;
@@ -12980,14 +13480,14 @@ export class Diagram extends Component<HTMLElement> implements INotifyPropertyCh
      * @returns { void }  updateAnnotation method .\
      * @param {AnnotationModel} changedObject - provide the changedObject value.
      * @param {ShapeAnnotationModel} actualAnnotation - provide the actualAnnotation value.
-     * @param {Container} nodes - provide the nodes value.
+     * @param {GroupableView} nodes - provide the nodes value.
      * @param {Object} actualObject - provide the actualObject value.
      * @param {boolean} canUpdateSize - provide the canUpdateSize value.
      *
      * @private
      */
     public updateAnnotation(
-        changedObject: AnnotationModel, actualAnnotation: ShapeAnnotationModel, nodes: Container,
+        changedObject: AnnotationModel, actualAnnotation: ShapeAnnotationModel, nodes: GroupableView,
         actualObject?: Object, canUpdateSize?: boolean): void {
         let isMeasure: boolean = false;
         // eslint-disable-next-line max-len
@@ -13069,6 +13569,11 @@ export class Diagram extends Component<HTMLElement> implements INotifyPropertyCh
             if (changedObject.visibility !== undefined) {
                 annotationWrapper.visible = (nodes.visible && changedObject.visibility) ? true : false;
                 (annotationWrapper as TextElement).annotationVisibility = annotationWrapper.visible ? 'Visible' : 'Collapsed';
+                // EJ2:943684 - Selection of annotation not removed while turn off the annotation visibility
+                const selectedItems: Selector = this.selectedItems as Selector;
+                if (!annotationWrapper.visible && selectedItems.annotation) {
+                    this.clearSelection();
+                }
             }
             if (changedObject.constraints !== undefined) {
                 const updateSelector: boolean = false;
@@ -13102,7 +13607,7 @@ export class Diagram extends Component<HTMLElement> implements INotifyPropertyCh
 
     private updatefixedUserHandleContent(
         changedObject: ConnectorFixedUserHandleModel, isMeasure: boolean, fixedUserHandleWrapper: Canvas,
-        actualObject: Object, fixedUserHandleAnnotation: ConnectorFixedUserHandleModel, nodes: Container
+        actualObject: Object, fixedUserHandleAnnotation: ConnectorFixedUserHandleModel, nodes: GroupableView
     ): void {
         if (changedObject !== undefined) {
             this.updateConnectorfixedUserHandleWrapper(fixedUserHandleWrapper, actualObject, fixedUserHandleAnnotation, nodes);
@@ -13110,14 +13615,14 @@ export class Diagram extends Component<HTMLElement> implements INotifyPropertyCh
     }
     private updateConnectorfixedUserHandleWrapper(
         fixedUserHandleWrapper: Canvas | DiagramHtmlElement, actualObject: Object,
-        actualAnnotation: ConnectorFixedUserHandleModel, nodes: Container
+        actualAnnotation: ConnectorFixedUserHandleModel, nodes: GroupableView
     ): void {
         for (const elementId of this.views) {
             removeElement(fixedUserHandleWrapper.id + '_groupElement', elementId);
             removeElement(fixedUserHandleWrapper.id + '_html_element', elementId);
         }
         if (actualObject instanceof Connector) {
-            const canvas: Container = actualObject.wrapper;
+            const canvas: GroupableView = actualObject.wrapper;
             const segment: DiagramElement = canvas.children[0];
             const bounds: Rect = new Rect(
                 segment.offsetX - segment.width / 2, segment.offsetY - segment.height / 2, segment.width, segment.height);
@@ -13136,7 +13641,7 @@ export class Diagram extends Component<HTMLElement> implements INotifyPropertyCh
 
     private updateAnnotationContent(
         changedObject: AnnotationModel, isMeasure: boolean, annotationWrapper: TextElement | DiagramHtmlElement,
-        actualObject: Object, actualAnnotation: ShapeAnnotationModel, nodes: Container
+        actualObject: Object, actualAnnotation: ShapeAnnotationModel, nodes: GroupableView
     ): void {
         if (changedObject.content !== undefined) {
             if (annotationWrapper as TextElement) {
@@ -13160,7 +13665,7 @@ export class Diagram extends Component<HTMLElement> implements INotifyPropertyCh
 
     private updateAnnotationWrapper(
         annotationWrapper: TextElement | DiagramHtmlElement, actualObject: Object,
-        actualAnnotation: ShapeAnnotationModel, nodes: Container
+        actualAnnotation: ShapeAnnotationModel, nodes: GroupableView
     ): void {
         for (const elementId of this.views) {
             removeElement(annotationWrapper.id + '_groupElement', elementId);
@@ -13171,7 +13676,7 @@ export class Diagram extends Component<HTMLElement> implements INotifyPropertyCh
                 (actualObject as Node).initAnnotationWrapper(
                     actualAnnotation as Annotation, this.element.id) as DiagramHtmlElement | TextElement;
         } else if (actualObject instanceof Connector) {
-            const canvas: Container = actualObject.wrapper;
+            const canvas: GroupableView = actualObject.wrapper;
             const segment: DiagramElement = canvas.children[0];
             const bounds: Rect = new Rect(
                 segment.offsetX - segment.width / 2, segment.offsetY - segment.height / 2, segment.width, segment.height);
@@ -13194,13 +13699,13 @@ export class Diagram extends Component<HTMLElement> implements INotifyPropertyCh
      * @returns { void }  updateNodefixedUserHandle method .\
      * @param {NodeFixedUserHandleModel} changedObject - provide the changedObject value.
      * @param {NodeFixedUserHandleModel} actualfixedUserHandle - provide the actualfixedUserHandle value.
-     * @param {Container} nodes - provide the changedObject value.
+     * @param {GroupableView} nodes - provide the changedObject value.
      * @param {Object} actualObject - provide the changedObject value.
      *
      * @private
      */
     public updateNodefixedUserHandle(
-        changedObject: NodeFixedUserHandleModel, actualfixedUserHandle: NodeFixedUserHandleModel, nodes: Container,
+        changedObject: NodeFixedUserHandleModel, actualfixedUserHandle: NodeFixedUserHandleModel, nodes: GroupableView,
         actualObject?: Object): void {
         //let fixedUserHandleWrapper: Canvas;
         let isMeasure: boolean = false;
@@ -13264,7 +13769,7 @@ export class Diagram extends Component<HTMLElement> implements INotifyPropertyCh
     }
     private updatefixedUserHandleWrapper(
         fixedUserHandleWrapper: DiagramElement, actualObject: Object,
-        actualAnnotation: FixedUserHandleModel, nodes: Container
+        actualAnnotation: FixedUserHandleModel, nodes: GroupableView
     ): void {
         for (const elementId of this.views) {
             removeElement(fixedUserHandleWrapper.id + '_groupElement', elementId);
@@ -13286,11 +13791,11 @@ export class Diagram extends Component<HTMLElement> implements INotifyPropertyCh
      * @returns { void }  updatePort method .\
      * @param {PointPortModel} changedObject - provide the changedObject value.
      * @param {PointPortModel} actualPort - provide the changedObject value.
-     * @param {Container} nodes - provide the changedObject value.
+     * @param {GroupableView} nodes - provide the changedObject value.
      * @param {Connector} actualObject - The actual connector object to be used.
      * @private
      */
-    public updatePort(changedObject: PointPortModel, actualPort: PointPortModel, nodes: Container, actualObject?: Connector): void {
+    public updatePort(changedObject: PointPortModel, actualPort: PointPortModel, nodes: GroupableView, actualObject?: Connector): void {
         let isMeasure: boolean = false;
         const portWrapper: DiagramElement = this.getWrapper(nodes, actualPort.id);
         if (portWrapper !== undefined) {
@@ -13414,15 +13919,15 @@ export class Diagram extends Component<HTMLElement> implements INotifyPropertyCh
             const index: number = actualObject.wrapper.children.indexOf(iconContainer);
             actualObject.wrapper.children.splice(index, 1);
         }
-        const portContainer: Container = this.getPortContainer(actualObject);
+        const portContainer: GroupableView = this.getPortContainer(actualObject);
         actualObject.initIcons(this.getDescription, this.layout, portContainer, this.element.id);
     }
 
-    private getPortContainer(actualObject: Node): Container {
+    private getPortContainer(actualObject: Node): GroupableView {
         if (actualObject.children) {
             for (let i: number = 0; i < actualObject.wrapper.children.length; i++) {
                 if (actualObject.wrapper.children[parseInt(i.toString(), 10)].id === actualObject.id + 'group_container') {
-                    return actualObject.wrapper.children[parseInt(i.toString(), 10)] as Container;
+                    return actualObject.wrapper.children[parseInt(i.toString(), 10)] as GroupableView;
                 }
             }
         }
@@ -13639,6 +14144,18 @@ export class Diagram extends Component<HTMLElement> implements INotifyPropertyCh
             if (previewIndex >= 0) {
                 this.nodes.splice(previewIndex, 1);
             }
+        } else if (preview.shape.type === 'Container') {
+            if ((preview.shape as Container).hasHeader) {
+                const headerIndex: number = this.nodes.indexOf(this.nameTable[preview.id +
+                                                               (preview.shape as Container).header.id]);
+                if (headerIndex >= 0) {
+                    this.nodes.splice(headerIndex, 1);
+                }
+            }
+            const previewIndex: number = this.nodes.indexOf(this.nameTable[this.currentSymbol.id]);
+            if (previewIndex >= 0) {
+                this.nodes.splice(previewIndex, 1);
+            }
         }
     }
 
@@ -13754,7 +14271,7 @@ export class Diagram extends Component<HTMLElement> implements INotifyPropertyCh
                             this.allowServerDataBinding = false;
                             clonedObject = cloneObject(sourceElement[`${selectedSymbols}`]);
                             childTable = sourceElement[`${childtable}`];
-                            const wrapper: DiagramElement = (obj.wrapper.children[0] as Container).children[0];
+                            const wrapper: DiagramElement = (obj.wrapper.children[0] as GroupableView).children[0];
                             preview = getPreviewSize(sourceElement, clonedObject as Node, wrapper);
                             if (sourceElement[`${selectedSymbols}`] instanceof Node) {
                                 if (((obj as Node).shape as BpmnShape).shape === 'TextAnnotation') {
@@ -13833,6 +14350,35 @@ export class Diagram extends Component<HTMLElement> implements INotifyPropertyCh
                                     }
                                     this.diagramActions &= ~DiagramAction.PreventHistory;
                                 }
+                                if (newNode.shape.type === 'Container') {
+                                    this.diagramActions |= DiagramAction.PreventHistory;
+                                    this.diagramActions |= DiagramAction.PreventCollectionChangeOnDragOver;
+                                    if ((newNode.shape as Container).hasHeader) {
+                                        header = {
+                                            id: 'header' + randomId()
+                                        };
+                                        header.width = newNode.width;
+                                        header.height = (newNode.shape as Container).header.height;
+                                        header.style = (newNode.shape as Container).header.style;
+                                    }
+                                    const group: NodeModel = {
+                                        id: 'group' + randomId()
+                                    };
+                                    (group as Node).shape = newNode.shape;
+                                    ((group as Node).shape as Container).header = header;
+                                    (group as Node).width = newNode.width;
+                                    (group as Node).height = newNode.height;
+                                    (group as Node).previewSize = (newNode as Node).previewSize;
+                                    (group as Node).dragSize = (newNode as Node).dragSize;
+                                    (group as Node).addInfo = (newNode as Node).addInfo;
+                                    (group as Node).offsetX = (newNode as Node).offsetX;
+                                    (group as Node).offsetY = (newNode as Node).offsetY;
+                                    (group as Node).ports = (newNode as Node).ports;
+                                    (group as Node).style = (newNode as Node).style;
+                                    newNode = this.add(group) as Node;
+                                    this.diagramActions &= ~DiagramAction.PreventCollectionChangeOnDragOver;
+                                    this.diagramActions &= ~DiagramAction.PreventHistory;
+                                }
                                 if ((newNode.shape as SwimLane).isPhase) {
                                     isHorizontal = ((newNode.shape as SwimLane).orientation === 'Horizontal') ? true : false;
                                     if (isHorizontal) {
@@ -13897,7 +14443,7 @@ export class Diagram extends Component<HTMLElement> implements INotifyPropertyCh
                                 newObj.sourcePoint.x += tx; newObj.sourcePoint.y += ty;
                                 newObj.targetPoint.x += tx; newObj.targetPoint.y += ty;
                             }
-                            if (!(newObj.shape as SwimLane).isLane) {
+                            if (!(newObj.shape as SwimLane).isLane && newObj.shape.type !== 'Container') {
                                 newObj.id += randomId();
                             }
                             const arg: IDragEnterEventArgs | IBlazorDragEnterEventArgs = {
@@ -13948,7 +14494,22 @@ export class Diagram extends Component<HTMLElement> implements INotifyPropertyCh
                                     newObj.width = 1;
                                 }
                             }
-                            if (!this.activeLayer.lock && !arg.cancel) {
+                            let restrictAdding: boolean = false;
+                            if ((this.element as any).ej2_instances[0].constraints & DiagramConstraints.RestrictNegativeAxisDragDrop) {
+                                if (newObj instanceof Node) {
+                                    const x: number = (newObj as Node).offsetX - (newObj as Node).width * (newObj as Node).pivot.x;
+                                    const y: number = (newObj as Node).offsetY - (newObj as Node).height * (newObj as Node).pivot.y;
+                                    restrictAdding = x < 0 || y < 0;
+                                } else if (newObj instanceof Connector) {
+                                    const x: number = Math.min((newObj as Connector).sourcePoint.x, (newObj as Connector).targetPoint.x);
+                                    const y: number = Math.min((newObj as Connector).sourcePoint.y, (newObj as Connector).targetPoint.y);
+                                    restrictAdding = x < 0 || y < 0;
+                                }
+                                if (restrictAdding) {
+                                    (this.element as any).ej2_instances[0].setCursor('not-allowed');
+                                }
+                            }
+                            if (!this.activeLayer.lock && !arg.cancel && !restrictAdding) {
                                 this.preventDiagramUpdate = true;
                                 if ((newObj as Node).children) {
                                     this.findChild((newObj as Node), entryTable);
@@ -13957,7 +14518,9 @@ export class Diagram extends Component<HTMLElement> implements INotifyPropertyCh
                                 if (newObj.zIndex !== Number.MIN_VALUE) {
                                     newObj.zIndex = Number.MIN_VALUE;
                                 }
-                                this.initObject(newObj as IElement, undefined, undefined, true);
+                                if (newObj.shape.type !== 'Container') {
+                                    this.initObject(newObj as IElement, undefined, undefined, true);
+                                }
                                 if (this.bpmnModule) {
                                     for (let i: number = 0; i < this.bpmnModule.bpmnTextAnnotationConnector.length; i++) {
                                         if (this.bpmnModule.bpmnTextAnnotationConnector[parseInt(i.toString(), 10)].wrapper === null) {
@@ -14012,7 +14575,8 @@ export class Diagram extends Component<HTMLElement> implements INotifyPropertyCh
                 this.removeElements(this.currentSymbol);
                 //887625-UML class nodes cloned in diagram canvas while dragging nodes outside diagram page
                 if (((this.currentSymbol.shape as SwimLaneModel).isLane ||
-                    (this.currentSymbol.shape as SwimLaneModel).isPhase) || this.currentSymbol.shape.type === 'UmlClassifier') {
+                    (this.currentSymbol.shape as SwimLaneModel).isPhase) || this.currentSymbol.shape.type === 'UmlClassifier'
+                    || this.currentSymbol.shape.type === 'Container') {
                     this.removeChildInNodes(this.currentSymbol as Node);
                 }
                 if (arg.cancel) { removeChildNodes(this.currentSymbol as Node, this); }
@@ -14160,6 +14724,13 @@ export class Diagram extends Component<HTMLElement> implements INotifyPropertyCh
                             delete this.nameTable[(this.currentSymbol as Node).children[parseInt(i.toString(), 10)]];
                         }
                     }
+                    if ((this.currentSymbol as Node).shape.type === 'Container' && ((this.currentSymbol as Node).shape as Container).hasHeader) {
+                        const child: NodeModel = this.nameTable[this.currentSymbol.id +
+                                                                ((this.currentSymbol as Node).shape as Container).header.id];
+                        this.removeFromAQuad(child as Node);
+                        delete this.nameTable[child.id];
+                        this.removeElements(child);
+                    }
                 }
                 this.currentSymbol = null; const selectedSymbols: string = 'selectedSymbols';
                 this.droppable[`${selectedSymbols}`].style.opacity = '1';
@@ -14188,13 +14759,22 @@ export class Diagram extends Component<HTMLElement> implements INotifyPropertyCh
 
 
     private removeChildInNodes(node: NodeModel) {
-        if (node) {
+        if (node && node.shape.type !== 'Container') {
             if (node.children) {
                 for (let i: number = 0; i < node.children.length; i++) {
                     this.removeChildInNodes(this.nameTable[node.children[parseInt(i.toString(), 10)]]);
                 }
             }
             const index: number = this.nodes.indexOf(node as Node);
+            if (index !== -1) {
+                this.nodes.splice(index, 1);
+            }
+        } else if (node && node.shape.type === 'Container') {
+            if ((node.shape as Container).hasHeader) {
+                this.removeChildInNodes(this.nameTable[node.id + (node.shape as Container).header.id]);
+
+            }
+            const index: number = this.nodes.indexOf(node);
             if (index !== -1) {
                 this.nodes.splice(index, 1);
             }
@@ -14350,6 +14930,208 @@ export class Diagram extends Component<HTMLElement> implements INotifyPropertyCh
      */
     public removeData(node?: Node | Connector): object {
         return this.crudOperation(node, 'destroy', this.getDeletedNodes());
+    }
+
+    /**
+     * Evenly distributes the ports on the edges of the specified nodes.
+     * Calculates the position of each port based on the total number of ports
+     * and distributes them uniformly along the edge(s).
+     * @returns { void }  Evenly distributes the ports on the edges of the specified nodes.
+     * @param {string[]} nodeIds - An array of node IDs on which the ports need to be distributed.
+     */
+    public distributePorts(nodeIds: string[]): void {
+        for (let n = 0; n < nodeIds.length; n++) {
+            const node: Node = this.nameTable[nodeIds[parseInt(n.toString(), 10)]];
+            if (!node || !node.ports || !node.width || !node.height) {
+                continue;
+            }
+            for (let i = 0; i < node.ports.length; i++) {
+                const port: PointPortModel = node.ports[parseInt(i.toString(), 10)];
+                let totalConnectors: number = 0;
+                if (port.inEdges && port.inEdges.length) {
+                    totalConnectors += port.inEdges.length;
+                }
+                if (port.outEdges && port.outEdges.length) {
+                    totalConnectors += port.outEdges.length;
+                }
+                if (totalConnectors > 1) {
+                    continue;
+                }
+                const x: number = port.offset.x * node.width;
+                const y: number = port.offset.y * node.height;
+                const distLeft: number = x;
+                const distRight: number = node.width - x;
+                const distTop: number = y;
+                const distBottom: number = node.height - y;
+                const distances: { edge: Direction, value: number }[] = [
+                    { edge: 'Left', value: distLeft },
+                    { edge: 'Right', value: distRight },
+                    { edge: 'Top', value: distTop },
+                    { edge: 'Bottom', value: distBottom }
+                ];
+                const minDist: number = Math.min(distLeft, distRight, distTop, distBottom);
+                const minEdges: { edge: Direction, value: number }[] = distances.filter(d => d.value === minDist);
+                let chosenEdge: Direction = minEdges[0].edge;
+                if (minEdges.length > 1) {
+                    let connector: Connector = null;
+                    if (port.outEdges && port.outEdges.length > 0) {
+                        connector = this.nameTable[port.outEdges[0]];
+                    } else if (port.inEdges && port.inEdges.length > 0) {
+                        connector = this.nameTable[port.inEdges[0]];
+                    }
+                    if (connector) {
+                        const target: PointModel = connector.targetPoint;
+                        if (target) {
+                            const nodeLeft: number = node.offsetX - node.width * node.pivot.x;
+                            const nodeTop: number = node.offsetY - node.height * node.pivot.y;
+                            const portAbs: {
+                                x: number;
+                                y: number;
+                            } = {
+                                x: nodeLeft + port.offset.x * node.width,
+                                y: nodeTop + port.offset.y * node.height
+                            };
+                            const dx: number = target.x - portAbs.x;
+                            const dy: number = target.y - portAbs.y;
+                            const absDx: number = Math.abs(dx); const absDy: number = Math.abs(dy);
+                            if (absDx > absDy) {
+                                if (dx < 0 && minEdges.some(e => e.edge === 'Left')) {
+                                    chosenEdge = 'Left';
+                                }
+                                else if (dx > 0 && minEdges.some(e => e.edge === 'Right')) {
+                                    chosenEdge = 'Right';
+                                }
+                            } else {
+                                if (dy < 0 && minEdges.some(e => e.edge === 'Top')) {
+                                    chosenEdge = 'Top';
+                                }
+                                else if (dy > 0 && minEdges.some(e => e.edge === 'Bottom')) {
+                                    chosenEdge = 'Bottom';
+                                }
+                            }
+                        }
+                    }
+                }
+                switch (chosenEdge) {
+                case 'Left': {
+                    port.offset.x = 0;
+                    break;
+                }
+                case 'Right': {
+                    port.offset.x = 1;
+                    break;
+                }
+                case 'Top': {
+                    port.offset.y = 0;
+                    break;
+                }
+                case 'Bottom': {
+                    port.offset.y = 1;
+                    break;
+                }
+                }
+            }
+            const edgeGroups: {
+                Left: PointPortModel[], Right: PointPortModel[], Top: PointPortModel[],
+                Bottom: PointPortModel[]
+            } = { Left: [], Right: [], Top: [], Bottom: [] };
+            for (let j = 0; j < node.ports.length; j++) {
+                const port: PointPortModel = node.ports[parseInt(j.toString(), 10)];
+                if (port.offset.x === 0) {
+                    edgeGroups.Left.push(port);
+                }
+                else if (port.offset.x === 1) {
+                    edgeGroups.Right.push(port);
+                }
+                else if (port.offset.y === 0) {
+                    edgeGroups.Top.push(port);
+                }
+                else if (port.offset.y === 1) {
+                    edgeGroups.Bottom.push(port);
+                }
+            }
+            (['Left', 'Right', 'Top', 'Bottom']).forEach((edge: Direction) => {
+                const ports = edgeGroups[`${edge}`];
+                if (ports.length === 0) {
+                    return;
+                }
+                ports.sort(this.callSort(node, edge, this));
+                const N: number = ports.length;
+                for (let i = 0; i < N; i++) {
+                    const port: PointPortModel = ports[parseInt(i.toString(), 10)];
+                    let totalConnectors: number = 0;
+                    if (port.inEdges && port.inEdges.length) {
+                        totalConnectors += port.inEdges.length;
+                    }
+                    if (port.outEdges && port.outEdges.length) {
+                        totalConnectors += port.outEdges.length;
+                    }
+                    if (totalConnectors > 1) {
+                        continue;
+                    }
+                    const pos: number = (i + 1) / (N + 1);
+                    if (edge === 'Left' || edge === 'Right') {
+                        port.offset.y = pos;
+                    } else {
+                        port.offset.x = pos;
+                    }
+                }
+            });
+        }
+    }
+
+    private getProjectedOffset(
+        port: PointPortModel,
+        node: Node,
+        edge: Direction): number {
+        if (edge === 'Left' || edge === 'Right') {
+            return port.offset.y;
+        }
+        if (edge === 'Top' || edge === 'Bottom') {
+            return port.offset.x;
+        }
+        return 0;
+    }
+
+    private callSort(node: Node, edge: Direction, diagram: Diagram): (a: PointPortModel, b: PointPortModel) => number {
+        return (a: PointPortModel, b: PointPortModel) => {
+            const aHasConn: number = (a.outEdges && a.outEdges.length) || (a.inEdges && a.inEdges.length);
+            const bHasConn: number = (b.outEdges && b.outEdges.length) || (b.inEdges && b.inEdges.length);
+            const aVal: number = aHasConn ? diagram.getConnectorTargetOffset(a, node, edge, diagram)
+                : diagram.getProjectedOffset(a, node, edge);
+            const bVal: number = bHasConn ? diagram.getConnectorTargetOffset(b, node, edge, diagram)
+                : diagram.getProjectedOffset(b, node, edge);
+            return aVal - bVal;
+        };
+    }
+
+    private getConnectorTargetOffset(
+        port: PointPortModel,
+        node: Node,
+        edge: Direction,
+        diagram: Diagram
+    ): number {
+        let connector: Connector = null;
+        if (port.outEdges && port.outEdges.length > 0) {
+            connector = diagram.nameTable[port.outEdges[0]];
+        } else if (port.inEdges && port.inEdges.length > 0) {
+            connector = diagram.nameTable[port.inEdges[0]];
+        }
+        if (connector) {
+            const target: PointModel = connector.targetPoint;
+            if (target) {
+                const nodeLeft: number = node.offsetX - node.width * node.pivot.x;
+                const nodeTop: number = node.offsetY - node.height * node.pivot.y;
+                if (edge === 'Left' || edge === 'Right') {
+                    const relY: number = (target.y - nodeTop) / node.height;
+                    return Math.max(0, Math.min(1, relY));
+                } else {
+                    const relX: number = (target.x - nodeLeft) / node.width;
+                    return Math.max(0, Math.min(1, relX));
+                }
+            }
+        }
+        return this.getProjectedOffset(port, node, edge);
     }
 
     private crudOperation(node: Node | Connector, crud: string, getNodesCollection: IDataSource) {

@@ -748,7 +748,6 @@ export class TextArea extends Component<HTMLTextAreaElement> implements INotifyP
                 this.textareaWrapper.container.classList.add(AUTO_WIDTH);
                 this.textareaWrapper.container.style.width = '';
             }
-
             if (this.textareaWrapper.container.style.width.includes('%')) {
                 EventHandler.add(this.element, 'mousemove', this.onMouseMove, this);
             }

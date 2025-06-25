@@ -958,7 +958,7 @@ describe('Diagram Control', () => {
                 document.body.appendChild(ele);
                 nodes = [
                     {
-                        id: 'top1', offsetX: 50, offsetY: 250, width: 30, height: 100,
+                        id: 'top1', offsetX: 50, offsetY: 245, width: 30, height: 100,
                         style: { fill: '#41f5e7', strokeWidth: 2, strokeColor: '#02aab0' },
                     },
                     {

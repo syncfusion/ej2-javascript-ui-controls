@@ -48,6 +48,9 @@ export class Export {
         case 'drawAnnotation':
             this.drawAnnotation(args.value['context'], args.value['ratio']);
             break;
+        case 'downScaleImgCanvas':
+            this.downScaleImgCanvas(args.value['canvas'], args.value['width'], args.value['height']);
+            break;
         }
     }
 

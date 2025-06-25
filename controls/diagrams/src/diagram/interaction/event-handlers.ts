@@ -11,7 +11,7 @@ import { FixedUserHandleEventsArgs } from '../objects/interface/IElement';
 import { ICommandExecuteEventArgs, IKeyEventArgs } from '../objects/interface/IElement';
 import { IBlazorDoubleClickEventArgs, IBlazorClickEventArgs, IBlazorMouseEventArgs } from '../objects/interface/IElement';
 import { DiagramElement } from '../core/elements/diagram-element';
-import { Container } from '../core/containers/container';
+import { GroupableView } from '../core/containers/container';
 import { MarginModel, TextStyleModel } from '../core/appearance-model';
 import { Diagram } from '../diagram';
 import { Connector } from '../objects/connector';
@@ -19,17 +19,17 @@ import { NodeDrawingTool, ConnectorDrawingTool, TextDrawingTool, FreeHandTool } 
 import { PolygonDrawingTool, PolyLineDrawingTool, FixedUserHandleTool } from './tool';
 import { Native, Node, SwimLane, Lane, Phase, UmlClassAttribute, MethodArguments, UmlClassMethod, UmlEnumerationMember, BpmnShape } from '../objects/node';
 import { ConnectorModel } from '../objects/connector-model';
-import { PointPortModel } from '../objects/port-model';
+import { PointPortModel, PathPortModel, PortModel } from '../objects/port-model';
 import { NodeModel, BpmnShapeModel, BasicShapeModel, SwimLaneModel, LaneModel, PhaseModel, UmlClassAttributeModel, UmlClassMethodModel, UmlClassifierShapeModel, UmlEnumerationMemberModel } from '../objects/node-model';
 import { ToolBase, SelectTool, MoveTool, ResizeTool, RotateTool, ConnectTool, ExpandTool, LabelTool, ZoomPanTool } from './tool';
 import { LabelDragTool, LabelResizeTool, LabelRotateTool } from './tool';
 import { ConnectorEditing } from './connector-editing';
 import { Selector } from '../objects/node';
 import { CommandHandler } from './command-manager';
-import { Actions, findToolToActivate, isSelected, getCursor, contains } from './actions';
+import { Actions, findToolToActivate, isSelected, getCursor, contains, findPortToolToActivate } from './actions';
 import { DiagramAction, KeyModifiers, Keys, DiagramEvent, DiagramTools, RendererAction, DiagramConstraints, PortConstraints, NudgeDirection, FlipDirection } from '../enum/enum';
 import { BlazorAction, ScrollActions } from '../enum/enum';
-import { isPointOverConnector, findObjectType, insertObject, getObjectFromCollection, getTooltipOffset, findParentInSwimlane, findPort } from '../utility/diagram-util';
+import { isPointOverConnector, findObjectType, insertObject, getObjectFromCollection, getTooltipOffset, findParentInSwimlane, findPort, sortNodeCollection } from '../utility/diagram-util';
 import { getObjectType, getInOutConnectPorts, removeChildNodes, cloneBlazorObject, checkPort } from '../utility/diagram-util';
 import { canZoomPan, canDraw, canDrag, canZoomTextEdit, canVitualize, canPreventClearSelection, canSingleSelect, canMultiSelect} from './../utility/constraints-util';
 import { selectionHasConnector } from '../utility/diagram-util';
@@ -532,6 +532,7 @@ export class DiagramEventHandler {
         this.checkUserHandleEvent(DiagramEvent.onUserHandleMouseDown);
         if (!this.checkEditBoxAsTarget(evt) && (canUserInteract(this.diagram)) ||
             (canZoomPan(this.diagram) && !defaultTool(this.diagram))) {
+            this.diagram.restrictedDeltaValue = { x: 0, y: 0 };
             if (this.action === 'Select' || this.action === 'Drag') {
                 this.diagram.updatePortVisibility(this.hoverElement as Node, PortVisibility.Hover, true);
             }
@@ -576,6 +577,9 @@ export class DiagramEventHandler {
                 } else if ((ctrlKey || evt.shiftKey) && (canSingleSelect(this.diagram) || canMultiSelect(this.diagram))) {
                     this.action = 'Select';
                 }
+                if (this.diagram.constraints & DiagramConstraints.AutomaticPortCreation && evt.ctrlKey && this.eventArgs.actualObject) {
+                    this.createPortAutomaticallyAndActivateTool(true);
+                }
                 this.tool = this.diagram.getTool(this.action);
                 if (!this.tool) {
                     this.action = 'Select';
@@ -617,6 +621,148 @@ export class DiagramEventHandler {
         if (!this.isForeignObject(evt.target as HTMLElement) && !this.isForeignObject(evt.target as HTMLElement, true) && (!touches)) {
             evt.preventDefault();
         }
+    }
+
+    private deletePortAutomatically(): void {
+        if (this.hoverElement instanceof PointPort || this.hoverElement instanceof PathPort) {
+            const port: PortModel = this.hoverElement as PortModel;
+            const parentNode: (Node | Connector) = this.diagram.nameTable[(port as any).parentObj.id];
+            for (let i: number = 0; i < parentNode.ports.length; i++) {
+                if (parentNode.ports[parseInt(i.toString(), 10)].id === port.id
+                    && port.inEdges.length === 0 && port.outEdges.length === 0) {
+                    this.diagram.removePorts(parentNode, [port]);
+                }
+            }
+        }
+    }
+
+    private createPortAutomaticallyAndActivateTool(isSourceEnd: boolean): void {
+        if (this.hoverElement) {
+            if (this.hoverElement instanceof Node) {
+                const node: NodeModel = this.hoverElement;
+                const nodeBounds: Rect = node.wrapper.bounds;
+                const offsetX: number = (this.currentPosition.x - nodeBounds.x) / nodeBounds.width;
+                const offsetY: number = (this.currentPosition.y - nodeBounds.y) / nodeBounds.height;
+                let port: PointPortModel;
+
+                if (node.ports && node.ports.length > 0) {
+                    port = cloneObject(node.ports[0]);
+                    port.id = 'port' + randomId();
+                    port.offset = { x: offsetX, y: offsetY };
+                    port.constraints |= PortConstraints.Draw;
+                } else {
+                    port = {
+                        id: 'port' + randomId(),
+                        offset: { x: offsetX, y: offsetY },
+                        visibility: PortVisibility.Visible,
+                        constraints: PortConstraints.Default | PortConstraints.Draw
+                    } as PointPortModel;
+                }
+
+                if (isSourceEnd) {
+                    this.diagram.addPorts(node, [port]);
+                    const newAction: Actions = findPortToolToActivate(this.diagram, node.ports[node.ports.length - 1]);
+                    this.action = newAction === 'PortDraw' ? newAction : this.action;
+                }
+                else {
+                    if (this.eventArgs.source instanceof Connector && this.eventArgs.target instanceof Node) {
+                        const targetNode: Node = this.eventArgs.target;
+                        if (targetNode.id === node.id) {
+                            this.diagram.addPorts(node, [port]);
+                            const drawingConnector: Connector = this.eventArgs.source;
+                            drawingConnector.targetID = node.id;
+                            drawingConnector.targetPortID = port.id;
+                        }
+                    }
+                }
+            } else if (this.hoverElement instanceof Connector) {
+                const connector: Connector = this.hoverElement;
+                const offset: number = this.findConnectorOffset(connector.intermediatePoints);
+                let port: PathPortModel;
+
+                if (connector.ports && connector.ports.length > 0) {
+                    port = cloneObject(connector.ports[0]);
+                    port.id = 'port' + randomId();
+                    port.offset = offset;
+                    port.constraints |= PortConstraints.Draw;
+                } else {
+                    port = {
+                        id: 'port' + randomId(),
+                        offset: offset,
+                        visibility: PortVisibility.Visible,
+                        constraints: PortConstraints.Default | PortConstraints.Draw
+                    } as PathPortModel;
+                }
+
+                if (isSourceEnd) {
+                    this.diagram.addPorts(connector, [port]);
+                    this.diagram.drawingObject = { sourcePortID: port.id, sourceID: connector.id, type: 'Orthogonal' };
+                    this.action = 'PortDraw';
+                }
+                else {
+                    if (this.eventArgs.source instanceof Connector && this.eventArgs.target instanceof Connector) {
+                        const targetConnector: Connector = this.eventArgs.target;
+                        const drawingConnector: Connector = this.eventArgs.source;
+                        if (drawingConnector.id !== connector.id && targetConnector.id === connector.id) {
+                            this.diagram.addPorts(connector, [port]);
+                            drawingConnector.targetID = connector.id;
+                            drawingConnector.targetPortID = port.id;
+                        }
+                    }
+                }
+            }
+            else if (this.hoverElement instanceof PointPort || this.hoverElement instanceof PathPort) {
+                const port: PortModel = this.hoverElement as PortModel;
+                if (port.inEdges.length === 0 && port.outEdges.length === 0) {
+                    this.action = 'PortDraw';
+                }
+            }
+        }
+    }
+
+    private findConnectorOffset(points: PointModel[]): number {
+        let totalLength: number = 0;
+        const segmentLengths: number[] = [];
+        for (let i: number = 0; i < points.length - 1; i++) {
+            const dx: number = points[i + 1].x - points[parseInt(i.toString(), 10)].x;
+            const dy: number = points[i + 1].y - points[parseInt(i.toString(), 10)].y;
+            const segLen: number = Math.hypot(dx, dy);
+            segmentLengths.push(segLen);
+            totalLength += segLen;
+        }
+
+        let offsetDistance: number = 0;
+        let closestDistance: number = Infinity;
+
+        for (let j: number = 0, accLength: number = 0; j < points.length - 1; j++) {
+            const segmentStart: PointModel = points[parseInt(j.toString(), 10)];
+            const segmentEnd: PointModel = points[j + 1];
+            const projection: PointModel = this.getProjectionOnSegment(this.currentPosition, segmentStart, segmentEnd);
+            const distance: number = Math.hypot(this.currentPosition.x - projection.x, this.currentPosition.y - projection.y);
+
+            if (distance < closestDistance) {
+                closestDistance = distance;
+                offsetDistance = accLength + Math.hypot(projection.x - segmentStart.x, projection.y - segmentStart.y);
+            }
+            accLength += segmentLengths[parseInt(j.toString(), 10)];
+        }
+
+        return offsetDistance / totalLength;
+    }
+
+    private getProjectionOnSegment(point: PointModel, segmentStart: PointModel, segmentEnd: PointModel): PointModel {
+        const dx: number = segmentEnd.x - segmentStart.x;
+        const dy: number = segmentEnd.y - segmentStart.y;
+        const lengthSquared: number = dx * dx + dy * dy;
+        if (lengthSquared === 0) {
+            return segmentStart;
+        }
+        let projectionFactor: number = ((point.x - segmentStart.x) * dx + (point.y - segmentStart.y) * dy) / lengthSquared;
+        projectionFactor = Math.max(0, Math.min(1, projectionFactor));
+        return {
+            x: segmentStart.x + projectionFactor * dx,
+            y: segmentStart.y + projectionFactor * dy
+        };
     }
 
     /**   @private  */
@@ -1011,6 +1157,13 @@ export class DiagramEventHandler {
                 }
                 let avoidDropChildren: boolean = false;
                 const history: HistoryLog = this.updateContainerProperties();
+                if (this.eventArgs.actualObject && this.eventArgs.actualObject instanceof Node
+                    && ((this.eventArgs.actualObject as Node).shape.type === 'Container' ||
+                        ((this.eventArgs.actualObject.shape as BpmnShape).activity &&
+                         (this.eventArgs.actualObject.shape as BpmnShape).activity.subProcess
+                         && (this.eventArgs.actualObject.shape as BpmnShape).activity.subProcess.processes))) {
+                    this.diagram.updateDiagramElementQuad();
+                }
                 let isGroupAction: boolean; this.addUmlNode();
                 this.inAction = false; this.isMouseDown = false;
                 //912163- Restricting node selection
@@ -1078,12 +1231,18 @@ export class DiagramEventHandler {
                                 this.commandHandler.clearSelection(true);
                             }
                         }
+                        if (this.diagram.constraints & DiagramConstraints.AutomaticPortCreation && evt.ctrlKey) {
+                            this.createPortAutomaticallyAndActivateTool(false);
+                        }
                         this.isSwimlaneSelected = false;
                         // 948882: Improper Selection Behavior When Node Drag Constraint is Disabled
                         if (this.tool instanceof SelectTool) {
                             this.tool.mouseUp(this.eventArgs, evt.button);
                         } else {
                             this.tool.mouseUp(this.eventArgs);
+                        }
+                        if (this.diagram.constraints & DiagramConstraints.AutomaticPortCreation && evt.ctrlKey) {
+                            this.deletePortAutomatically();
                         }
                         if (this.diagram.checkMenu && (window.navigator.userAgent.indexOf('Linux') !== -1 || window.navigator.userAgent.indexOf('X11') !== -1)) {
                             if (!evt.pageY && (evt instanceof TouchEvent) && evt.changedTouches) {
@@ -1102,7 +1261,9 @@ export class DiagramEventHandler {
                 if (isGroupAction) { this.diagram.endGroupAction(); }
                 this.updateContainerBounds(true);
                 if (this.eventArgs.clickCount !== 2) {
-                    this.commandHandler.updateSelectedNodeProperties(this.eventArgs.source);
+                    if (this.action !== 'Select') {
+                        this.commandHandler.updateSelectedNodeProperties(this.eventArgs.source);
+                    }
                     if (avoidDropChildren) {
                         this.diagram.diagramActions = this.diagram.diagramActions & ~DiagramAction.PreventLaneContainerUpdate;
                         const nodes: NodeModel[] = this.eventArgs.source instanceof Selector
@@ -1306,7 +1467,7 @@ export class DiagramEventHandler {
         }
         if (canInsert && (targetNode as Node)) {
             if (shape && shape.header && (shape as SwimLane).hasHeader && shape.orientation === 'Horizontal') { index = 1; }
-            if (shape.phases.length > 0) { index += 1; }
+            if (shape.phases && shape.phases.length > 0) { index += 1; }
             if (actualShape.isPhase) {
                 if (shape.orientation === 'Horizontal') {
                     offset = this.currentPosition.x - swimlaneNode.wrapper.bounds.x;
@@ -2272,7 +2433,8 @@ export class DiagramEventHandler {
             objects = this.diagram.findObjectsUnderMouse(this.currentPosition, source);
             obj = this.diagram.findTargetObjectUnderMouse(objects, this.action, this.inAction, args.position, source);
         }
-        if (obj && (obj as Node).isHeader) {
+        //Bug 943625: Enable interaction of header annotation of swimlane throws exception
+        if (obj && (obj as Node).isHeader && ['LabelSelect', 'LabelDrag'].indexOf(this.currentAction) === -1) {
             obj = this.diagram.nameTable[(obj as Node).parentId];
             this.eventArgs.actualObject = obj;
         }
@@ -2678,8 +2840,8 @@ export class DiagramEventHandler {
                     const pivot: PointModel = (this.tool as any).getPivot((this.tool as any).corner);
                     for (let i: number = 0; i < (obj as SelectorModel).nodes.length; i++) {
                         const node: NodeModel =  (obj as SelectorModel).nodes[parseInt(i.toString(), 10)];
-                        const element: Container = node.wrapper;
-                        const refWrapper: Container =  (obj as SelectorModel).wrapper;
+                        const element: GroupableView = node.wrapper;
+                        const refWrapper: GroupableView =  (obj as SelectorModel).wrapper;
                         const x: number = refWrapper.offsetX - refWrapper.actualSize.width * refWrapper.pivot.x;
                         const y: number = refWrapper.offsetY - refWrapper.actualSize.height * refWrapper.pivot.y;
                         const refPoint: PointModel = getPoint(x, y, refWrapper.actualSize.width, refWrapper.actualSize.height,
@@ -2908,7 +3070,7 @@ class ObjectFinder {
                 }
             }
         }
-        let container: Container; let bounds: Rect; let child: DiagramElement; let matrix: Matrix;
+        let container: GroupableView; let bounds: Rect; let child: DiagramElement; let matrix: Matrix;
         const endPadding: number = (source && (source instanceof Connector) &&
             ((source.constraints & ConnectorConstraints.ConnectToNearByNode) ||
                 (source.constraints & ConnectorConstraints.ConnectToNearByPort)) && source.connectionPadding) || 0;
@@ -2950,7 +3112,11 @@ class ObjectFinder {
             }
         }
         for (const layer of diagram.layers) {
-            actualTarget = actualTarget.concat(layerObjTable[layer.zIndex] || []);
+            let nodes: (Node|Connector)[] = layerObjTable[layer.zIndex];
+            if (nodes && nodes.length > 1) {
+                nodes = sortNodeCollection(nodes);
+            }
+            actualTarget = actualTarget.concat(nodes || []);
             for (const obj of actualTarget) {
                 const eventHandler: string = 'eventHandler';
                 if (obj.shape.type === 'Bpmn' && (obj as Node).processId && (!(diagram[`${eventHandler}`].tool instanceof MoveTool) ||
@@ -3079,8 +3245,8 @@ class ObjectFinder {
         //908151: The connector automatically connects to the subprocess
         //909560: prevent child connector connecting to its own parent group
         //937174: Drag and drop subprocess and add children try to connect with connector throw exception
-        if (actualTarget && (
-            (node && actualTarget.id === (node as Node).processId) ||
+        if (actualTarget && (((node && actualTarget.id === (node as Node).processId)
+            || (node && actualTarget.shape.type === 'Container' && actualTarget.id === node.parentId)) ||
             ((action === 'ConnectorSourceEnd' || action === 'ConnectorTargetEnd') && actualTarget.id === (connector as Connector).parentId)
         )) {
             actualTarget = null;
@@ -3165,7 +3331,8 @@ class ObjectFinder {
                     }
                 }
                 if (actualTarget && actualTarget.shape.type === 'Bpmn') {
-                    if (diagram.selectedItems.nodes.length > 0 && diagram.selectedItems.nodes[0].shape.type === 'Bpmn') {
+                    if (diagram.selectedItems.nodes.length > 0 && diagram.selectedItems.nodes[0].shape.type === 'Bpmn'
+                        && (diagram.selectedItems.nodes[0].shape as BpmnShape).shape !== 'TextAnnotation') {
                         // eslint-disable-next-line no-self-assign
                         actualTarget = actualTarget;
                     } else {
@@ -3198,7 +3365,8 @@ class ObjectFinder {
                 actualTarget = objects[objects.length - 1];
                 eventArg.actualObject = actualTarget as Node;
                 if (!diagram[`${eventHandler}`].itemClick(actualTarget, true)) {
-                    if ((actualTarget as Node).parentId) {
+                    if ((actualTarget as Node).parentId && diagram.nameTable[(actualTarget as Node).parentId]
+                        && diagram.nameTable[(actualTarget as Node).parentId].shape.type !== 'Container') {
                         let obj: Node = actualTarget as Node;
                         const selected: boolean = isSelected(diagram, obj);
                         while (obj) {
@@ -3254,7 +3422,7 @@ class ObjectFinder {
         return this.findTargetElement(obj.wrapper, position, diagram, padding);
     }
     /** @private */
-    public findTargetElement(container: Container, position: PointModel, diagram: Diagram, padding?: number): DiagramElement {
+    public findTargetElement(container: GroupableView, position: PointModel, diagram: Diagram, padding?: number): DiagramElement {
         for (let i: number = container.children.length - 1; i >= 0; i--) {
             const element: DiagramElement = container.children[parseInt(i.toString(), 10)];
             //Bug 957467: Annotation text box not rendered properly after flip the node
@@ -3283,7 +3451,7 @@ class ObjectFinder {
             if (element && (flippedBounds ? containsBounds(flippedBounds, position, padding || 0)
                 : element.outerBounds.containsPoint(position, padding || 0))) {
                 if (element.visible) {
-                    if (element instanceof Container) {
+                    if (element instanceof GroupableView) {
                         const target: DiagramElement = this.findTargetElement(element, position, diagram);
                         if (target) {
                             return target;

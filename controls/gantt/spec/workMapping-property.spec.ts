@@ -89,7 +89,7 @@ describe('gantt task creation with duration unit and work mapping in taskfields'
         }, done);
     });
     it('gantt task creation with duration unit and work mapping', () => {
-        expect(ganttObj.getFormatedDate(ganttObj.currentViewData[0].ganttProperties.endDate, 'M/dd/yyyy h:mm:ss')).toBe('2/19/2025 3:46:37');
+        expect(ganttObj.getFormatedDate(ganttObj.currentViewData[0].ganttProperties.endDate, 'M/dd/yyyy h:mm:ss')).toBe('2/19/2025 3:46:38');
     });
     afterAll(() => {
         if (ganttObj) {
@@ -97,3 +97,4 @@ describe('gantt task creation with duration unit and work mapping in taskfields'
         }
     });
 });
+

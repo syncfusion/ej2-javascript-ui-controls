@@ -1,4 +1,4 @@
-import { Container } from '../../core/containers/container';
+import { GroupableView } from '../../core/containers/container';
 import { Diagram } from '../../diagram';
 import { ConnectorModel } from '../connector-model';
 import { NodeModel, TextModel } from '../node-model';
@@ -26,7 +26,7 @@ import { AnnotationModel } from '../annotation-model';
  */
 export interface IElement {
     /** returns the wrapper of the diagram element */
-    wrapper: Container;
+    wrapper: GroupableView;
     // eslint-disable-next-line @typescript-eslint/ban-types
     init(diagram: Diagram, getDescription?: Function): void;
 }

@@ -931,8 +931,8 @@ describe('Schedule day view', () => {
             expect(schObj.element.querySelectorAll('.e-block-appointment').length).toEqual(1);
             const blockEvent: HTMLElement = schObj.element.querySelector('[data-id="Appointment_1"]') as HTMLElement;
             expect(blockEvent.offsetTop).toEqual(720);
-            expect(blockEvent.style.width).toEqual('100%');
-            expect(blockEvent.offsetHeight).toEqual(108);
+            expect(blockEvent.style.width).toEqual('99%');
+            expect(blockEvent.offsetHeight).toEqual(107);
         });
 
         it('add event', (done: DoneFn) => {

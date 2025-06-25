@@ -28,8 +28,9 @@ import {
     ILoadedEventArgs, IPointRenderEventArgs,
     ILegendRenderEventArgs, IAnimationCompleteEventArgs
 } from '../../../src/chart/model/chart-interface';
+import { LastValueLabel } from '../../../src/chart/series/last-value-label';
 Chart.Inject(LineSeries, ColumnSeries, DataLabel, Category, DateTime, RangeColumnSeries, Legend, Tooltip, Crosshair, Logarithmic, Selection,
-    HiloSeries, Export);
+    HiloSeries, Export, LastValueLabel);
 
 let prevent: Function = (): void => {
     //Prevent Function
@@ -1330,6 +1331,59 @@ describe('Chart', () => {
                 { x: 5, low: 0, high: 10, }, { x: 6, low: -22, high: 36, },
                 { x: 7, low: -12, high: 27, }, { x: 8, low: 12, high: 40, }];
             chartObj.series[0].setData(dataSource);    
+            chartObj.refresh();
+        });
+        it('Checking Hilo series with lastValueLabel', (done: Function) => {
+            loaded = (args: Object): void => {
+                const lastValueLabelGroup: Element = document.getElementById('container_LastValueLabel_Group_0');
+                const lastValueLabelBackground: Element = document.getElementById('container_LastValueLabel_Background_0');
+                const lastValueLabel: Element = document.getElementById('container_LastValueLabel_0');
+                const lastValueLabelLine: Element = document.getElementById('container_LastValueLine_0');
+                expect(lastValueLabelGroup.getAttribute('transform') === 'translate(506.38666666666666,43.25)').toBe(true);
+                expect(lastValueLabelBackground.getAttribute('x')).toBe('-12');
+                expect(lastValueLabelBackground.getAttribute('y') === '927.75').toBe(true);
+                expect(lastValueLabel.getAttribute('x')).toBe('0');
+                expect(lastValueLabel.getAttribute('y') === '946.5').toBe(true);
+                expect(lastValueLabelLine.getAttribute('d') === 'M 0 0 L 0 927.75').toBe(true);
+                done();
+            };
+            chartObj.loaded = loaded;
+            var dataSource = [
+                { x: 1, low: -12, high: 0, }, { x: 2, low: 12, high: 1, },
+                { x: 3, low: 23, high: 10, }, { x: 4, low: 20, high: 43, },
+                { x: 5, low: 0, high: 10, }, { x: 6, low: -22, high: 36, },
+                { x: 7, low: -12, high: 27, }, { x: 8, low: 12, high: 40, }
+            ];
+            chartObj.isTransposed = true;
+            chartObj.series[0].lastValueLabel.enable = true;
+            chartObj.series[0].setData(dataSource);
+            chartObj.refresh();
+        });
+        it('Checking Hilo series with lastValueLabel axis oppossed', (done: Function) => {
+            loaded = (args: Object): void => {
+                const lastValueLabelGroup: Element = document.getElementById('container_LastValueLabel_Group_0');
+                const lastValueLabelBackground: Element = document.getElementById('container_LastValueLabel_Background_0');
+                const lastValueLabel: Element = document.getElementById('container_LastValueLabel_0');
+                const lastValueLabelLine: Element = document.getElementById('container_LastValueLine_0');
+                expect(lastValueLabelGroup.getAttribute('transform') === 'translate(506.38666666666666,68.75)').toBe(true);
+                expect(lastValueLabelBackground.getAttribute('x')).toBe('-12');
+                expect(lastValueLabelBackground.getAttribute('y') === '-37').toBe(true);
+                expect(lastValueLabel.getAttribute('x')).toBe('0');
+                expect(lastValueLabel.getAttribute('y') === '-18.25').toBe(true);
+                expect(lastValueLabelLine.getAttribute('d') === 'M 0 921.25 L 0 -10').toBe(true);
+                done();
+            };
+            chartObj.loaded = loaded;
+            var dataSource = [
+                { x: 1, low: -12, high: 0, }, { x: 2, low: 12, high: 1, },
+                { x: 3, low: 23, high: 10, }, { x: 4, low: 20, high: 43, },
+                { x: 5, low: 0, high: 10, }, { x: 6, low: -22, high: 36, },
+                { x: 7, low: -12, high: 27, }, { x: 8, low: 12, high: 40, }
+            ];
+            chartObj.isTransposed = true;
+            chartObj.primaryYAxis.opposedPosition = true;
+            chartObj.series[0].lastValueLabel.enable = true;
+            chartObj.series[0].setData(dataSource);
             chartObj.refresh();
         });
     });

@@ -1,7 +1,7 @@
 import { SpreadsheetModel, Spreadsheet } from '../../../src/spreadsheet/index';
 import { SpreadsheetHelper } from "../util/spreadsheethelper.spec";
 import { defaultData } from '../util/datasource.spec';
-import { CellModel, SheetModel } from '../../../src/index';
+import { CellModel, SheetModel, focus } from '../../../src/index';
 import { MenuItemModel } from '@syncfusion/ej2-navigations';
 
 
@@ -777,6 +777,30 @@ describe('Spreadsheet context menu module ->', () => {
             });
         });
     });
+    describe('Checking public methods in spreadsheet ->', () => {
+        beforeAll((done: Function) => {
+            helper.initializeSpreadsheet({
+                sheets: [{ ranges: [{ dataSource: defaultData }] }], enableKeyboardNavigation: false,
+            }, done);
+        });
+        afterAll(() => {
+            helper.invoke('destroy');
+        });
+        it('EJ2-899869 - Navigation works on context menus when setting keyboard navigation to disabled', (done: Function) => {
+            const td: HTMLTableCellElement = helper.invoke('getCell', [0, 0]);
+            const coords: DOMRect = <DOMRect>td.getBoundingClientRect();
+            helper.triggerMouseAction('contextmenu', { x: coords.x, y: coords.y }, null, td);
+            helper.setAnimationToNone('#' + helper.id + '_contextmenu');
+            const menu: HTMLElement = document.getElementById('spreadsheet_contextmenu');
+            expect(menu).toBeTruthy();
+            focus(menu);
+            const wrapper: Element = document.querySelector('.e-spreadsheet-contextmenu.e-contextmenu-wrapper');
+            helper.triggerKeyNativeEvent(38, false, false, menu, 'keyup', false, wrapper);
+            helper.triggerKeyNativeEvent(40, false, false, menu, 'keyup', false, wrapper);
+            expect(menu.querySelector('.e-menu-item.e-focused')).toBeNull();
+            done();
+        });
+    });
     describe('EJ2-878041: allowDelete Issue ->', () => {
         beforeAll((done: Function) => {
             helper.initializeSpreadsheet({
@@ -795,6 +819,69 @@ describe('Spreadsheet context menu module ->', () => {
                 expect(helper.getElement('#' + helper.id + '_contextmenu li:nth-child(2)').classList).toContain('e-disabled');
                 done();
             }, 100);
+        });
+    });
+
+    describe('Spreadsheet ContextMenu Events', () => {
+        let spreadsheet: Spreadsheet;
+        let contextMenuBeforeOpenCalled: boolean = false;
+        let contextMenuItemSelectCalled: boolean = false;
+        let contextMenuBeforeCloseCalled: boolean = false;
+        let contextMenuBeforeOpenArgs: any;
+        let contextMenuBeforeCloseArgs: any;
+        let contextMenuItemSelectArgs: any;
+        beforeAll((done: Function) => {
+            helper.initializeSpreadsheet({ sheets: [{ ranges: [{ dataSource: defaultData }] }] }, done);
+            spreadsheet = helper.getInstance();
+        });
+        afterAll(() => {
+            helper.invoke('destroy');
+        });
+        it('ContextMenuBeforeOpen,ContextMenuBeforeClose and ContextMenuItemSelect event trigger', (done: Function) => {
+            spreadsheet.contextMenuBeforeOpen = (args: any) => {
+                contextMenuBeforeOpenCalled = true;
+                contextMenuBeforeOpenArgs = args.name;
+            };
+            spreadsheet.contextMenuItemSelect = (args: any) => {
+                contextMenuItemSelectCalled = true;
+                contextMenuItemSelectArgs = args.name;
+            };
+            spreadsheet.contextMenuBeforeClose = (args: any) => {
+                contextMenuBeforeCloseCalled = true;
+                contextMenuBeforeCloseArgs = args.name;
+            };
+            const td: HTMLTableCellElement = helper.invoke('getCell', [0, 0]);
+            const coords: DOMRect = <DOMRect>td.getBoundingClientRect();
+            helper.setAnimationToNone(`#${helper.id}_contextmenu`);
+            helper.triggerMouseAction('contextmenu', { x: coords.x, y: coords.y }, null, td);
+            expect(contextMenuBeforeOpenCalled).toBeTruthy();
+            expect(contextMenuBeforeOpenArgs).toBe('contextMenuBeforeOpen');
+            const menuPopup: HTMLElement = document.querySelector('.e-spreadsheet-contextmenu');
+            expect(menuPopup).not.toBeNull();
+            const copyItem: HTMLElement = document.getElementById('spreadsheet_cmenu_copy');
+            copyItem.click();
+            expect(contextMenuItemSelectCalled).toBeTruthy();
+            expect(contextMenuItemSelectArgs).toBe('contextMenuItemSelect');
+            expect(contextMenuBeforeCloseCalled).toBeTruthy();
+            expect(contextMenuBeforeCloseArgs).toBe('contextMenuBeforeClose');
+            spreadsheet.contextMenuBeforeOpen = undefined;
+            spreadsheet.contextMenuBeforeClose = undefined;
+            spreadsheet.contextMenuItemSelect = undefined;
+            done();
+        });
+        it('ContextMenuBeforeOpen when args.cancel is set to true', (done: Function) => {
+            contextMenuBeforeOpenCalled = false;
+            spreadsheet.contextMenuBeforeOpen = (args: any) => {
+                contextMenuBeforeOpenCalled = true;
+                args.cancel = true;
+            };
+            const td: HTMLTableCellElement = helper.invoke('getCell', [0, 0]);
+            const coords: DOMRect = <DOMRect>td.getBoundingClientRect();
+            helper.setAnimationToNone(`#${helper.id}_contextmenu`);
+            helper.triggerMouseAction('contextmenu', { x: coords.x, y: coords.y }, null, td);
+            expect(contextMenuBeforeOpenCalled).toBeTruthy();
+            spreadsheet.contextMenuBeforeOpen = undefined;
+            done();
         });
     });
 });

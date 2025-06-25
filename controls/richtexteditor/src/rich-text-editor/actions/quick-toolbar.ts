@@ -2,21 +2,22 @@ import { select, isNullOrUndefined, Browser, addClass, removeClass, EventHandler
 import { OverflowMode } from '@syncfusion/ej2-navigations';
 import { RenderType } from '../base/enum';
 import * as events from '../base/constant';
-import { pageYOffset, hasClass, isIDevice } from '../base/util';
-import { IRichTextEditor, IQuickToolbarOptions, IRenderer, IToolbarItems, NotifyArgs, ICssClassArgs } from '../base/interface';
+import { pageYOffset, hasClass } from '../base/util';
+import { IRichTextEditor, IQuickToolbarOptions, ICssClassArgs, IQuickToolbar, IRenderer } from '../base/interface';
+import { NotifyArgs, IToolbarItems, IToolbarStatus } from '../../common/interface';
+import { isIDevice } from '../../common/util';
 import { ServiceLocator } from '../services/service-locator';
-import { RendererFactory } from '../services/renderer-factory';
 import { BaseQuickToolbar } from './base-quick-toolbar';
 import { BaseToolbar } from './base-toolbar';
-import { PopupRenderer } from '../renderer/popup-renderer';
 import { RichTextEditorModel } from '../base/rich-text-editor-model';
-import { CLS_INLINE_POP, CLS_INLINE, CLS_VID_CLICK_ELEM} from '../base/classes';
+import { CLS_INLINE_TOOLBAR, CLS_INLINE, CLS_VID_CLICK_ELEM} from '../base/classes';
+import { QuickToolbarType } from '../../common/types';
 import { BeforeOpenCloseMenuEventArgs } from '@syncfusion/ej2-splitbuttons';
 
 /**
  * `Quick toolbar` module is used to handle Quick toolbar actions.
  */
-export class QuickToolbar {
+export class QuickToolbar implements IQuickToolbar {
     private offsetX: number;
     private offsetY: number;
     private deBouncer: number;
@@ -32,15 +33,12 @@ export class QuickToolbar {
     public tableQTBar: BaseQuickToolbar;
     public inlineQTBar: BaseQuickToolbar;
     public debounceTimeout: number = 1000;
-    private renderFactory: RendererFactory;
     public isDestroyed: boolean;
     private escapeKeyPressed: boolean = false;
 
     public constructor(parent?: IRichTextEditor, locator?: ServiceLocator) {
         this.parent = parent;
         this.locator = locator;
-        this.renderFactory = this.locator.getService<RendererFactory>('rendererFactory');
-        this.renderFactory.addRenderer(RenderType.Popup, new PopupRenderer(this.parent));
         this.addEventListener();
         this.isDestroyed = false;
     }
@@ -91,18 +89,18 @@ export class QuickToolbar {
      * @hidden
      * @deprecated
      */
-    public createQTBar(popupType: string, mode: string, items: (string | IToolbarItems)[], type: RenderType): BaseQuickToolbar {
+    public createQTBar(popupType: QuickToolbarType, mode: string, items: (string | IToolbarItems)[], type: RenderType): BaseQuickToolbar {
         if (items.length < 1) {
             return null;
         }
-        const qTBar: BaseQuickToolbar = new BaseQuickToolbar(this.parent, this.locator);
+        const qTBar: BaseQuickToolbar = new BaseQuickToolbar(popupType, this.parent, this.locator);
         qTBar.render(this.getQTBarOptions(popupType, mode, this.formatItems(items), type));
         return qTBar;
     }
 
     private initializeQuickToolbars(): void {
         this.parent.quickToolbarModule = this;
-        this.contentRenderer = this.renderFactory.getRenderer(RenderType.Content);
+        this.contentRenderer = this.parent.contentModule;
         if (this.parent.inlineMode.enable && this.parent.inlineMode.onSelection && isIDevice()) {
             EventHandler.add(this.contentRenderer.getDocument(), 'selectionchange', this.selectionChangeHandler, this);
         }
@@ -124,20 +122,24 @@ export class QuickToolbar {
         if (this.linkQTBar || this.imageQTBar || this.audioQTBar || this.videoQTBar || this.textQTBar || this.tableQTBar) {
             return;
         }
-        this.linkQTBar = this.createQTBar('Link', 'Scrollable', this.parent.quickToolbarSettings.link, RenderType.LinkToolbar);
-        this.renderFactory.addRenderer(RenderType.LinkToolbar, this.linkQTBar);
+        if (this.parent.quickToolbarSettings.link && this.parent.quickToolbarSettings.link.length > 0) {
+            this.linkQTBar = this.createQTBar('Link', 'Scrollable', this.parent.quickToolbarSettings.link, RenderType.LinkToolbar);
+        }
         if (!isNOU(this.parent.quickToolbarSettings.text) && !this.parent.inlineMode.enable) {
             this.textQTBar = this.createQTBar('Text', 'MultiRow', this.parent.quickToolbarSettings.text, RenderType.TextToolbar);
-            this.renderFactory.addRenderer(RenderType.TextToolbar, this.textQTBar);
         }
-        this.imageQTBar = this.createQTBar('Image', 'MultiRow', this.parent.quickToolbarSettings.image, RenderType.ImageToolbar);
-        this.renderFactory.addRenderer(RenderType.ImageToolbar, this.imageQTBar);
-        this.audioQTBar = this.createQTBar('Audio', 'MultiRow', this.parent.quickToolbarSettings.audio, RenderType.AudioToolbar);
-        this.renderFactory.addRenderer(RenderType.AudioToolbar, this.audioQTBar);
-        this.videoQTBar = this.createQTBar('Video', 'MultiRow', this.parent.quickToolbarSettings.video, RenderType.VideoToolbar);
-        this.renderFactory.addRenderer(RenderType.VideoToolbar, this.videoQTBar);
-        this.tableQTBar = this.createQTBar('Table', 'MultiRow', this.parent.quickToolbarSettings.table, RenderType.TableToolbar);
-        this.renderFactory.addRenderer(RenderType.TableToolbar, this.tableQTBar);
+        if (this.parent.quickToolbarSettings.image && this.parent.quickToolbarSettings.image.length > 0) {
+            this.imageQTBar = this.createQTBar('Image', 'MultiRow', this.parent.quickToolbarSettings.image, RenderType.ImageToolbar);
+        }
+        if (this.parent.quickToolbarSettings.audio && this.parent.quickToolbarSettings.audio.length > 0) {
+            this.audioQTBar = this.createQTBar('Audio', 'MultiRow', this.parent.quickToolbarSettings.audio, RenderType.AudioToolbar);
+        }
+        if (this.parent.quickToolbarSettings.video && this.parent.quickToolbarSettings.video.length > 0) {
+            this.videoQTBar = this.createQTBar('Video', 'MultiRow', this.parent.quickToolbarSettings.video, RenderType.VideoToolbar);
+        }
+        if (this.parent.quickToolbarSettings.table && this.parent.quickToolbarSettings.table.length > 0) {
+            this.tableQTBar = this.createQTBar('Table', 'MultiRow', this.parent.quickToolbarSettings.table, RenderType.TableToolbar);
+        }
         if (this.linkQTBar) {
             EventHandler.add(this.linkQTBar.element, 'mousedown', this.onMouseDown, this);
             EventHandler.add(this.linkQTBar.element, 'keyup', this.keyUpQT, this);
@@ -168,7 +170,6 @@ export class QuickToolbar {
         if (this.parent.inlineMode.enable && (!Browser.isDevice || isIDevice())) {
             addClass([this.parent.element], [CLS_INLINE]);
             this.inlineQTBar = this.createQTBar('Inline', 'MultiRow', this.parent.toolbarSettings.items, RenderType.InlineToolbar);
-            this.renderFactory.addRenderer(RenderType.InlineToolbar, this.inlineQTBar);
             EventHandler.add(this.inlineQTBar.element, 'mousedown', this.onMouseDown, this);
             EventHandler.add(this.inlineQTBar.element, 'keyup', this.keyUpQT, this);
         }
@@ -180,15 +181,16 @@ export class QuickToolbar {
      * @param {number} x -specifies the value of x.
      * @param {number} y - specifies the y valu.
      * @param {HTMLElement} target - specifies the target element.
+     * @param {KeyboardEvent | MouseEvent} originalEvent - specifies the original event.
      * @returns {void}
      * @hidden
      * @deprecated
      */
-    public showInlineQTBar(x: number, y: number, target: HTMLElement): void {
+    public showInlineQTBar(x: number, y: number, target: HTMLElement, originalEvent?: KeyboardEvent | MouseEvent): void {
         if (isNOU(this.parent) || this.parent.readonly || target.tagName.toLowerCase() === 'img' || this.inlineQTBar.element.querySelector('.e-rte-color-content')) {
             return;
         }
-        this.inlineQTBar.showPopup(x, y, target);
+        this.inlineQTBar.showPopup(target, originalEvent);
     }
 
     /**
@@ -199,7 +201,7 @@ export class QuickToolbar {
      * @deprecated
      */
     public hideInlineQTBar(): void {
-        if (this.inlineQTBar && !hasClass(this.inlineQTBar.element, 'e-popup-close')) {
+        if (this.inlineQTBar && this.inlineQTBar.element.classList.contains('e-popup-open') && document.body.contains(this.inlineQTBar.element)) {
             this.inlineQTBar.hidePopup();
         }
         this.escapeKeyPressed = false;
@@ -213,22 +215,22 @@ export class QuickToolbar {
      * @deprecated
      */
     public hideQuickToolbars(): void {
-        if (this.linkQTBar && !hasClass(this.linkQTBar.element, 'e-popup-close') && document.body.contains(this.linkQTBar.element)) {
+        if (this.linkQTBar && this.linkQTBar.element && this.linkQTBar.element.classList.contains('e-popup-open') && document.body.contains(this.linkQTBar.element)) {
             this.linkQTBar.hidePopup();
         }
-        if (!this.escapeKeyPressed && this.textQTBar && !hasClass(this.textQTBar.element, 'e-popup-close') && document.body.contains(this.textQTBar.element)) {
+        if (!this.escapeKeyPressed && this.textQTBar && this.textQTBar.element && this.textQTBar.element.classList.contains('e-popup-open') && document.body.contains(this.textQTBar.element)) {
             this.textQTBar.hidePopup();
         }
-        if (!this.escapeKeyPressed && this.imageQTBar && !hasClass(this.imageQTBar.element, 'e-popup-close') && document.body.contains(this.imageQTBar.element)) {
+        if (!this.escapeKeyPressed && this.imageQTBar && this.imageQTBar.element && this.imageQTBar.element.classList.contains('e-popup-open') && document.body.contains(this.imageQTBar.element)) {
             this.imageQTBar.hidePopup();
         }
-        if (!this.escapeKeyPressed && this.audioQTBar && !hasClass(this.audioQTBar.element, 'e-popup-close') && document.body.contains(this.audioQTBar.element)) {
+        if (!this.escapeKeyPressed && this.audioQTBar && this.audioQTBar.element && this.audioQTBar.element.classList.contains('e-popup-open') && document.body.contains(this.audioQTBar.element)) {
             this.audioQTBar.hidePopup();
         }
-        if (!this.escapeKeyPressed && this.videoQTBar && !hasClass(this.videoQTBar.element, 'e-popup-close') && document.body.contains(this.videoQTBar.element)) {
+        if (!this.escapeKeyPressed && this.videoQTBar && this.videoQTBar.element && this.videoQTBar.element.classList.contains('e-popup-open') && document.body.contains(this.videoQTBar.element)) {
             this.videoQTBar.hidePopup();
         }
-        if (!this.escapeKeyPressed && this.tableQTBar && !hasClass(this.tableQTBar.element, 'e-popup-close') && document.body.contains(this.tableQTBar.element)) {
+        if (!this.escapeKeyPressed && this.tableQTBar && this.tableQTBar.element && this.tableQTBar.element.classList.contains('e-popup-open') && document.body.contains(this.tableQTBar.element)) {
             this.tableQTBar.hidePopup();
         }
         if (!isNOU(this.parent) && this.parent.inlineMode.enable && (!Browser.isDevice || isIDevice())) {
@@ -237,10 +239,10 @@ export class QuickToolbar {
         this.escapeKeyPressed = false;
     }
 
-    private deBounce(x: number, y: number, target: HTMLElement): void {
+    private deBounce(x: number, y: number, target: HTMLElement, args: KeyboardEvent | MouseEvent): void {
         clearTimeout(this.deBouncer);
         this.deBouncer = window.setTimeout(() => {
-            this.showInlineQTBar(x, y, target);
+            this.showInlineQTBar(x, y, target, args);
         }, this.debounceTimeout);
     }
 
@@ -250,7 +252,7 @@ export class QuickToolbar {
                 (e.args as TouchEvent).changedTouches[0] : e.args as MouseEvent;
             const range: Range = this.parent.getRange();
             let target: HTMLElement = (e.args as MouseEvent).target as HTMLElement;
-            if (isNullOrUndefined(select('.' + CLS_INLINE_POP, document.body))) {
+            if (isNullOrUndefined(select('.' + CLS_INLINE_TOOLBAR, document.body))) {
                 if (isIDevice() && e.touchData && e.touchData.prevClientX !== e.touchData.clientX
                     && e.touchData.prevClientY !== e.touchData.clientY) {
                     return;
@@ -260,7 +262,7 @@ export class QuickToolbar {
                 this.offsetX = this.parent.iframeSettings.enable ? window.pageXOffset + parentLeft + args.clientX : args.pageX;
                 this.offsetY = pageYOffset(args, this.parent.element, this.parent.iframeSettings.enable);
                 if (target.nodeName === 'TEXTAREA') {
-                    this.showInlineQTBar(this.offsetX, this.offsetY, target);
+                    this.showInlineQTBar(this.offsetX, this.offsetY, target, e.args as MouseEvent);
                 } else {
                     const closestAnchor: HTMLElement = closest(target, 'a') as HTMLElement;
                     target = closestAnchor ? closestAnchor : target;
@@ -274,7 +276,7 @@ export class QuickToolbar {
                             return;
                         }
                         this.target = target;
-                        this.showInlineQTBar(this.offsetX, this.offsetY, target);
+                        this.showInlineQTBar(this.offsetX, this.offsetY, target, e.args as MouseEvent);
                     }
                 }
             }
@@ -294,12 +296,19 @@ export class QuickToolbar {
             const range: Range = this.parent.getRange();
             if ((range.endContainer.parentElement.tagName === range.startContainer.parentElement.tagName && (range.startContainer.parentElement.tagName === 'A' && range.endContainer.parentElement.tagName === 'A')) ||
              (target.tagName === 'IMG') || (target.tagName === 'VIDEO' || this.isEmbedVidElem(target)) || (target.tagName === 'AUDIO') || (target.childNodes[0] && target.childNodes[0].nodeType === 1 && (target.childNodes[0 as number] as HTMLElement).classList.contains('e-rte-audio')) ||
-             (this.parent.getRange().startOffset === this.parent.getRange().endOffset)) {
+             (this.parent.getRange().startOffset === this.parent.getRange().endOffset) || this.hasResizeElement(this.parent.inputElement)) {
                 return;
             }
             this.target = target;
-            this.textQTBar.showPopup(this.offsetX, this.offsetY, target, 'text');
+            this.textQTBar.showPopup(target, args as MouseEvent);
         }
+    }
+
+    private hasResizeElement(target: HTMLElement): boolean {
+        if (target && (target.querySelector('.e-img-resize') || target.querySelector('.e-vid-resize'))) {
+            return true;
+        }
+        return false;
     }
 
     private isEmbedVidElem(target: HTMLElement): boolean {
@@ -314,12 +323,12 @@ export class QuickToolbar {
     private keyDownHandler(e: NotifyArgs): void {
         const preventHide: boolean = (e.args as KeyboardEvent).altKey;
         if (this.parent.inlineMode.enable && (e.args as KeyboardEvent).metaKey && (e.args as KeyboardEvent).keyCode === 65) {
-            this.showInlineQTBar(this.offsetX, this.offsetY, (e.args as KeyboardEvent).target as HTMLElement);
+            this.showInlineQTBar(this.offsetX, this.offsetY, (e.args as KeyboardEvent).target as HTMLElement, e.args as KeyboardEvent);
             return;
         }
         if (!preventHide) {
             if ((this.parent.inlineMode.enable && (!Browser.isDevice || isIDevice()))
-                && !isNullOrUndefined(select('.' + CLS_INLINE_POP, document))) {
+                && !isNullOrUndefined(select('.' + CLS_INLINE_TOOLBAR, document))) {
                 this.hideInlineQTBar();
             }
             if (this.textQTBar && !hasClass(this.textQTBar.element, 'e-popup-close')) {
@@ -330,7 +339,7 @@ export class QuickToolbar {
 
     private inlineQTBarMouseDownHandler(): void {
         if ((this.parent.inlineMode.enable && (!Browser.isDevice || isIDevice()))
-            && !isNullOrUndefined(select('.' + CLS_INLINE_POP, document))) {
+            && !isNullOrUndefined(select('.' + CLS_INLINE_TOOLBAR, document))) {
             this.hideInlineQTBar();
         }
         if (!isNOU(this.parent.quickToolbarSettings.text)) {
@@ -348,18 +357,18 @@ export class QuickToolbar {
                     if ((args.ctrlKey && args.keyCode === 65) || (args.shiftKey && (args.keyCode === 33 || args.keyCode === 34 ||
                         args.keyCode === 35 || args.keyCode === 36 || args.keyCode === 37 || args.keyCode === 38 ||
                         args.keyCode === 39 || args.keyCode === 40))) {
-                        this.showInlineQTBar(this.offsetX, this.offsetY, args.target as HTMLElement);
+                        this.showInlineQTBar(this.offsetX, this.offsetY, args.target as HTMLElement, e.args as KeyboardEvent);
                     }
                 }
                 return;
             }
-            this.deBounce(this.offsetX, this.offsetY, args.target as HTMLElement);
+            this.deBounce(this.offsetX, this.offsetY, args.target as HTMLElement, e.args as KeyboardEvent);
         }
         if (this.parent.quickToolbarSettings.text && !Browser.isDevice) {
             if ((args.ctrlKey && args.keyCode === 65) || (args.shiftKey && (args.keyCode === 33 || args.keyCode === 34 ||
                 args.keyCode === 35 || args.keyCode === 36 || args.keyCode === 37 || args.keyCode === 38 ||
                 args.keyCode === 39 || args.keyCode === 40))) {
-                this.textQTBar.showPopup(this.offsetX, this.offsetY, args.target as HTMLElement , 'text');
+                this.textQTBar.showPopup(args.target as HTMLElement , args as KeyboardEvent);
             }
         }
     }
@@ -372,7 +381,7 @@ export class QuickToolbar {
     }
 
     private onSelectionChange(e: Event): void {
-        if (!isNullOrUndefined(select('.' + CLS_INLINE_POP, document.body))) {
+        if (!isNullOrUndefined(select('.' + CLS_INLINE_TOOLBAR, document.body))) {
             return;
         }
         const selection: Selection = this.contentRenderer.getDocument().getSelection();
@@ -498,6 +507,9 @@ export class QuickToolbar {
         if (this.parent.quickToolbarSettings.actionOnScroll === 'hide') {
             this.parent.on(events.scroll, this.hideQuickToolbars, this);
             this.parent.on(events.contentscroll, this.hideQuickToolbars, this);
+        } else {
+            this.parent.on(events.scroll, this.onScroll, this);
+            this.parent.on(events.contentscroll, this.onScroll, this);
         }
         this.parent.on(events.focusChange, this.hideQuickToolbars, this);
         this.parent.on(events.iframeMouseDown, this.onIframeMouseDown, this);
@@ -508,6 +520,7 @@ export class QuickToolbar {
         this.parent.on(events.hidePopup, this.hideQuickToolbars, this);
         this.parent.on(events.renderQuickToolbar, this.renderQuickToolbars, this);
         this.parent.on(events.preventQuickToolbarClose, this.preventQuickToolbarClose, this);
+        this.parent.on(events.windowResize, this.onWindowResize, this);
     }
     private preventQuickToolbarClose(args: BeforeOpenCloseMenuEventArgs): void {
         const editorBaseId: string = this.parent.getID();
@@ -608,6 +621,9 @@ export class QuickToolbar {
         if (this.parent.quickToolbarSettings.actionOnScroll === 'hide') {
             this.parent.off(events.scroll, this.hideQuickToolbars);
             this.parent.off(events.contentscroll, this.hideQuickToolbars);
+        } else {
+            this.parent.off(events.scroll, this.onScroll);
+            this.parent.off(events.contentscroll, this.onScroll);
         }
         this.parent.off(events.focusChange, this.hideQuickToolbars);
         this.parent.off(events.destroy, this.destroy);
@@ -618,6 +634,7 @@ export class QuickToolbar {
         this.parent.off(events.hidePopup, this.hideQuickToolbars);
         this.parent.off(events.renderQuickToolbar, this.renderQuickToolbars);
         this.parent.off(events.preventQuickToolbarClose, this.preventQuickToolbarClose);
+        this.parent.off(events.windowResize, this.onWindowResize);
     }
 
     /**
@@ -634,11 +651,15 @@ export class QuickToolbar {
                 switch (prop) {
                 case 'actionOnScroll':
                     if (e.newProp.quickToolbarSettings.actionOnScroll === 'none') {
+                        this.parent.on(events.scroll, this.onScroll);
+                        this.parent.on(events.contentscroll, this.onScroll);
                         this.parent.off(events.scroll, this.hideQuickToolbars);
                         this.parent.off(events.contentscroll, this.hideQuickToolbars);
                     } else {
                         this.parent.on(events.scroll, this.hideQuickToolbars, this);
                         this.parent.on(events.contentscroll, this.hideQuickToolbars, this);
+                        this.parent.off(events.scroll, this.onScroll);
+                        this.parent.off(events.contentscroll, this.onScroll);
                     }
                     break;
                 }
@@ -676,5 +697,45 @@ export class QuickToolbar {
      */
     public getQuickToolbarInstance(): BaseQuickToolbar[] {
         return [this.linkQTBar, this.imageQTBar, this.audioQTBar, this.videoQTBar, this.tableQTBar, this.textQTBar, this.inlineQTBar];
+    }
+
+    public onScroll(e: MouseEvent): void {
+        this.refreshQuickToolbarPopup(e);
+    }
+
+    /**
+     * Refreshes the quick toolbar popups by hiding and then displaying them again
+     * at a target element's location. This method iterates over all available quick
+     * toolbars, checking their rendered state and visibility. If a toolbar is
+     * currently visible, it is hidden and then shown again to refresh its position
+     * based on the specified mouse event. Additionally, for text toolbars, any
+     * previously stored status is restored after the refresh.
+     *
+     * @param {MouseEvent} e - The mouse event that triggers the refresh, used to
+     *                         determine the new position for the toolbars.
+     * @returns {void}
+     */
+    public refreshQuickToolbarPopup(e?: MouseEvent): void {
+        const quickToolbars: BaseQuickToolbar[] = this.getQuickToolbarInstance();
+        for (const quickToolbar of quickToolbars) {
+            if (quickToolbar && quickToolbar.isRendered && quickToolbar.element && quickToolbar.element.classList.contains('e-popup-open')) {
+                quickToolbar.hidePopup();
+                const target: HTMLElement = quickToolbar.previousTarget as HTMLElement;
+                quickToolbar.showPopup(target, e);
+                // update previous status
+                if (this.parent.quickToolbarSettings.text) {
+                    const previousStatus: IToolbarStatus = quickToolbar.getPreviousStatus();
+                    if (previousStatus) {
+                        quickToolbar.updateStatus(previousStatus);
+                    }
+                }
+            }
+        }
+    }
+
+    private onWindowResize(e: NotifyArgs): void {
+        if (!isNOU(e.args)) {
+            this.refreshQuickToolbarPopup(e.args as MouseEvent);
+        }
     }
 }

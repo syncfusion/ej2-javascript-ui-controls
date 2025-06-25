@@ -395,7 +395,7 @@ export class FocusStrategy {
         this.setActiveByKey(e.action, this.getContent());
         let returnVal: boolean = this.content.lastIdxCell ? false : this.getContent().onKeyPress(e);
         if (e.target && parentsUntil(e.target as Element, 'e-gridheader')) {
-            if (e.action === 'tab' && bValue.toString() === this.active.matrix.current.toString()) {
+            if (!isNullOrUndefined(this.active) && e.action === 'tab' && bValue.toString() === this.active.matrix.current.toString()) {
                 const nextHeaderCellIndex: number[] = findCellIndex(this.active.matrix.matrix, this.active.matrix.current, true);
                 let lastHeaderCellIndex: number[] = [this.active.matrix.matrix.length - 1,
                     this.active.matrix.matrix[this.active.matrix.matrix.length - 1].length - 1];
@@ -451,7 +451,7 @@ export class FocusStrategy {
                     this.active.matrix.current = nextHeaderCellIndex;
                 }
             }
-            if (e.action === 'shiftTab' && bValue.toString() === this.active.matrix.current.toString()) {
+            if (!isNullOrUndefined(this.active) && e.action === 'shiftTab' && bValue.toString() === this.active.matrix.current.toString()) {
                 let previousCellIndex: number[] = findCellIndex(this.active.matrix.matrix, this.active.matrix.current, false);
                 const prevCell: Element = getValue(`${previousCellIndex[0]}.cells.${previousCellIndex[1]}`, this.active.matrix.getRowsFromIndex(previousCellIndex[0], this.active));
                 if (prevCell && prevCell.getBoundingClientRect().width === 0 && previousCellIndex[0] === 0) {

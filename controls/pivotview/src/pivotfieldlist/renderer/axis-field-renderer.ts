@@ -29,6 +29,7 @@ export class AxisFieldRenderer {
         if (!this.parent.pivotButtonModule || (this.parent.pivotButtonModule && this.parent.pivotButtonModule.isDestroyed)) {
             new PivotButton(this.parent);
         }
+        this.parent.pivotButtonModule.cleanupButtonElements();
         this.createPivotButtons();
     }
     private createPivotButtons(): void {
@@ -65,6 +66,30 @@ export class AxisFieldRenderer {
                         axis: axis[len as number].toString()
                     };
                     this.parent.notify(events.pivotButtonUpdate, args);
+                }
+            }
+        }
+    }
+
+    /**
+     * Destroys the AxisFieldRenderer instance
+     *
+     * @returns {void}
+     * @hidden
+     */
+    public destroy(): void {
+        const parentElement: HTMLElement = this.parent.dialogRenderer.parentElement;
+        if (parentElement) {
+            const contentSelectors: string[] = [
+                '.' + cls.FIELD_LIST_CLASS + '-filters',
+                '.' + cls.FIELD_LIST_CLASS + '-rows',
+                '.' + cls.FIELD_LIST_CLASS + '-columns',
+                '.' + cls.FIELD_LIST_CLASS + '-values'
+            ];
+            for (const selector of contentSelectors) {
+                const element: Element = parentElement.querySelector(selector);
+                if (element && element.querySelector('.' + cls.AXIS_CONTENT_CLASS)) {
+                    element.querySelector('.' + cls.AXIS_CONTENT_CLASS).innerHTML = '';
                 }
             }
         }

@@ -4,7 +4,7 @@ import { isNullOrUndefined } from '@syncfusion/ej2-base';
 import { ImageFormatInfo, ImageStringInfo, HelperMethods, SfdtExport } from '../index';
 import { Dictionary, TabJustification, TabLeader, WColumnFormat, LocaleId } from '../../index';
 import { WTabStop } from '../index';
-import { ProtectionType, CompatibilityMode, BreakClearType, AutoShapeType, nsidProperty, ExportAutoShapeType } from '../../base/index';
+import { ProtectionType, CompatibilityMode, BreakClearType, AutoShapeType, nsidProperty, ExportAutoShapeType, childShapeProperty, offsetXValue, offsetYValue, extentXValue, extentYValue } from '../../base/index';
 import { DocumentHelper } from '../viewer';
 import { Revision } from '../track-changes/track-changes';
 import { sectionsProperty, hiddenProperty, fontSubstitutionTableProperty, paraStyleNameProperty, isLegalStyleNumberingProperty, breakClearTypeProperty, characterFormatProperty, paragraphFormatProperty, listsProperty, abstractListsProperty, backgroundProperty, stylesProperty, commentsProperty, revisionsProperty, customXmlProperty, defaultTabWidthProperty, formattingProperty, trackChangesProperty, protectionTypeProperty, enforcementProperty, hashValueProperty, saltValueProperty, cryptProviderTypeProperty, cryptAlgorithmClassProperty, cryptAlgorithmTypeProperty, cryptAlgorithmSidProperty, cryptSpinCountProperty, doNotUseHTMLParagraphAutoSpacingProperty, alignTablesRowByRowProperty, formFieldShadingProperty, lastParagraphMarkCopiedProperty, footnotesProperty, endnotesProperty, compatibilityModeProperty, themeFontLanguagesProperty, themesProperty, nameProperty, basedOnProperty, nextProperty, linkProperty, localeIdProperty, localeIdFarEastProperty, localeIdBidiProperty, boldProperty, italicProperty, underlineProperty, fontHintTypeProperty, baselineAlignmentProperty, strikethroughProperty, highlightColorProperty, fontSizeProperty, fontColorProperty, fontFamilyProperty, styleNameProperty, bidiProperty, bdoProperty, fontSizeBidiProperty, fontFamilyBidiProperty, boldBidiProperty, italicBidiProperty, allCapsProperty, complexScriptProperty, fontFamilyAsciiProperty, fontFamilyFarEastProperty, fontFamilyNonFarEastProperty, revisionIdsProperty, listIdProperty, listLevelNumberProperty, leftIndentProperty, rightIndentProperty, firstLineIndentProperty, textAlignmentProperty, afterSpacingProperty, beforeSpacingProperty, spaceAfterAutoProperty, spaceBeforeAutoProperty, lineSpacingProperty, lineSpacingTypeProperty, listFormatProperty, keepWithNextProperty, widowControlProperty, keepLinesTogetherProperty, outlineLevelProperty, contextualSpacingProperty, bordersProperty, tabsProperty, headerDistanceProperty, footerDistanceProperty, differentFirstPageProperty, differentOddAndEvenPagesProperty, pageWidthProperty, pageHeightProperty, leftMarginProperty, rightMarginProperty, topMarginProperty, bottomMarginProperty, restartPageNumberingProperty, pageStartingNumberProperty, endnoteNumberFormatProperty, footNoteNumberFormatProperty, restartIndexForFootnotesProperty, restartIndexForEndnotesProperty, initialFootNoteNumberProperty, initialEndNoteNumberProperty, pageNumberStyleProperty, columnsProperty, numberOfColumnsProperty, equalWidthProperty, lineBetweenColumnsProperty, breakCodeProperty, cellWidthProperty, columnSpanProperty, rowSpanProperty, verticalAlignmentProperty, allowBreakAcrossPagesProperty, isHeaderProperty, heightTypeProperty, beforeWidthProperty, afterWidthProperty, gridBeforeProperty, gridBeforeWidthProperty, gridBeforeWidthTypeProperty, gridAfterProperty, gridAfterWidthProperty, gridAfterWidthTypeProperty, allowAutoFitProperty, cellSpacingProperty, shadingProperty, tableAlignmentProperty, preferredWidthProperty, preferredWidthTypeProperty, horizontalPositionAbsProperty, textureProperty, backgroundColorProperty, foregroundColorProperty, shadowProperty, hasNoneStyleProperty, verticalProperty, horizontalProperty, diagonalUpProperty, diagonalDownProperty, lineStyleProperty, lineWidthProperty, layoutProperty, dataFormatProperty, yValueProperty, chartDataProperty, categoryXNameProperty, lineProperty, foreColorProperty, patternProperty, layoutXProperty, layoutYProperty, directionProperty, endStyleProperty, numberValueProperty, markerStyleProperty, markerColorProperty, markerSizeProperty, forwardProperty, backwardProperty, interceptProperty, isDisplayRSquaredProperty, isDisplayEquationProperty, seriesNameProperty, dataLabelProperty, errorBarProperty, seriesFormatProperty, trendLinesProperty, dataPointsProperty, firstSliceAngleProperty, holeSizeProperty, isLegendKeyProperty, isBubbleSizeProperty, isCategoryNameProperty, isSeriesNameProperty, isValueProperty, isPercentageProperty, isLeaderLinesProperty, showSeriesKeysProperty, hasHorizontalBorderProperty, hasVerticalBorderProperty, hasBordersProperty, categoryTypeProperty, chartCategoryProperty, chartSeriesProperty, chartAreaProperty, chartTitleAreaProperty, plotAreaProperty, chartLegendProperty, chartPrimaryCategoryAxisProperty, chartPrimaryValueAxisProperty, chartTitleProperty, chartTypeProperty, gapWidthProperty, overlapProperty, chartDataTableProperty, textProperty, shapeIdProperty, alternativeTextProperty, visibleProperty, widthProperty, heightProperty, widthScaleProperty, heightScaleProperty, lineFormatProperty, fillFormatProperty, textWrappingStyleProperty, textWrappingTypeProperty, verticalRelativePercentProperty, horizontalRelativePercentProperty, zOrderPositionProperty, layoutInCellProperty, lockAnchorProperty, autoShapeTypeProperty, textFrameProperty, colorProperty, fillProperty, textVerticalAlignmentProperty, imageStringProperty, metaFileImageStringProperty, lengthProperty, isInlineImageProperty, isMetaFileProperty, topProperty, bottomProperty, rightProperty, leftProperty, getImageHeightProperty, getImageWidthProperty, hasFieldEndProperty, formFieldDataProperty, fieldTypeProperty, enabledProperty, helpTextProperty, statusTextProperty, textInputProperty, checkBoxProperty, dropDownListProperty, maxLengthProperty, defaultValueProperty, formatProperty, sizeTypeProperty, sizeProperty, checkedProperty, dropDownItemsProperty, selectedIndexProperty, commentIdProperty, commentCharacterTypeProperty, authorProperty, initialProperty, dateProperty, doneProperty, replyCommentsProperty, revisionTypeProperty, revisionIdProperty, itemIDProperty, xmlProperty, footnoteTypeProperty, symbolCodeProperty, symbolFontNameProperty, customMarkerProperty, inlinesProperty, contentControlPropertiesProperty, lockContentControlProperty, lockContentsProperty, tagProperty, titleProperty, hasPlaceHolderTextProperty, multiLineProperty, isTemporaryProperty, dateCalendarTypeProperty, dateStorageFormatProperty, dateDisplayLocaleProperty, dateDisplayFormatProperty, isCheckedProperty, uncheckedStateProperty, checkedStateProperty, contentControlListItemsProperty, xmlMappingProperty, fontProperty, valueProperty, displayTextProperty, isMappedProperty, isWordMlProperty, prefixMappingProperty, xPathProperty, storeItemIdProperty, customXmlPartProperty, idProperty, cellFormatProperty, rowFormatProperty, cellsProperty, rowsProperty, descriptionProperty, wrapTextAroundProperty, positioningProperty, tableFormatProperty, allowOverlapProperty, distanceTopProperty, distanceRightProperty, distanceLeftProperty, distanceBottomProperty, verticalOriginProperty, verticalPositionProperty, horizontalOriginProperty, horizontalAlignmentProperty, horizontalPositionProperty, blocksProperty, headerProperty, footerProperty, evenHeaderProperty, evenFooterProperty, firstPageHeaderProperty, firstPageFooterProperty, headersFootersProperty, sectionFormatProperty, listLevelPatternProperty, followCharacterProperty, startAtProperty, restartLevelProperty, levelNumberProperty, numberFormatProperty, abstractListIdProperty, levelsProperty, overrideListLevelProperty, levelOverridesProperty, separatorProperty, continuationSeparatorProperty, continuationNoticeProperty, bookmarkTypeProperty, propertiesProperty, tabJustificationProperty, positionProperty, deletePositionProperty, leaderProperty, tabLeaderProperty, editRangeIdProperty, columnFirstProperty, columnLastProperty, userProperty, groupProperty, editableRangeStartProperty, spaceProperty, fontSchemeProperty, fontSchemeNameProperty, majorFontSchemeProperty, minorFontSchemeProperty, fontSchemeListProperty, fontTypefaceProperty, typefaceProperty, panoseProperty, typeProperty, majorUnitProperty, maximumValueProperty, minimumValueProperty, hasMajorGridLinesProperty, hasMinorGridLinesProperty, majorTickMarkProperty, minorTickMarkProperty, tickLabelPositionProperty, rgbProperty, appearanceProperty, lineFormatTypeProperty, allowSpaceOfSameStyleInTableProperty, weightProperty, inlineFormatProperty, fontNameProperty, isCompressedProperty, columnIndexProperty, isAfterRowMarkProperty, isAfterParagraphMarkProperty, columnCountProperty, gridProperty, characterSpacingProperty, scalingProperty, horizontalRuleProperty, underlineColorProperty, isAutoMajorProperty } from '../../index';
@@ -2185,15 +2185,44 @@ export class WordExport {
         const cy: number = Math.round(picture[heightProperty[this.keywordIndex]] * this.emusPerPoint);
         writer.writeAttributeString(undefined, 'cy', undefined, cy.toString());
         writer.writeEndElement(); //end of extent
+        writer.writeStartElement(undefined, 'effectExtent', this.wpNamespace);
+        writer.writeAttributeString(undefined, 'l', undefined, '0');
+        writer.writeAttributeString(undefined, 't', undefined, '0');
+        writer.writeAttributeString(undefined, 'r', undefined, '0');
+        writer.writeAttributeString(undefined, 'b', undefined, '0');
+        writer.writeAttributeString('xmlns', 'wp', undefined, this.wpNamespace);
+        writer.writeEndElement(); // end of wp: effectExtent
 
         if (!isNullOrUndefined(picture[imageStringProperty[this.keywordIndex]])) {
             // this.serializePicProperties(writer, draw);
             this.serializeShapeWrapStyle(writer, picture);
             this.serializeDrawingGraphics(writer, picture);
-        } else {
-            this.serializeShapeDrawingGraphics(writer, picture);
+        } else if (!isNullOrUndefined(picture[childShapeProperty[this.keywordIndex]])) {
+            this.serializeShapeDrawings(writer, picture);
+            this.serializeGroupShapeDrawingGraphics(writer, picture);
+        }
+        else {
+            this.serializeShapeDrawings(writer, picture);
+            this.serializeShapeDrawingGraphics(writer, picture);            
         }
         writer.writeEndElement(); // end of anchor
+    }
+    private serializeShapeDrawings(writer: XmlWriter, picture: any): void {
+        this.serializeShapeWrapStyle(writer, picture);
+        writer.writeStartElement('wp', 'docPr', this.wpNamespace);
+        writer.writeAttributeString(undefined, 'id', undefined, (this.mDocPrID++).toString());
+        writer.writeAttributeString(undefined, 'name', undefined, picture[nameProperty[this.keywordIndex]]);
+        writer.writeAttributeString(undefined, 'title', undefined, picture[titleProperty[this.keywordIndex]]);
+        writer.writeEndElement();
+        writer.writeStartElement('wp', 'cNvGraphicFramePr', this.wpNamespace);
+        writer.writeEndElement(); // end of cNvGraphicFramePr
+        writer.writeStartElement('a', 'graphic', this.aNamespace);
+        writer.writeStartElement('a', 'graphicData', this.aNamespace);
+        if (!isNullOrUndefined(picture[childShapeProperty[this.keywordIndex]])) {
+            writer.writeAttributeString(undefined, 'uri', undefined, this.wpGroupNamespace);
+        } else {
+            writer.writeAttributeString(undefined, 'uri', undefined, this.wpShapeNamespace);
+        }
     }
     // Serialize the inline picture & Shape.
     private serializeInlinePictureAndShape(writer: XmlWriter, draw: any): void {
@@ -2205,6 +2234,13 @@ export class WordExport {
         const cy: number = Math.round(draw[heightProperty[this.keywordIndex]] * this.emusPerPoint);
         writer.writeAttributeString(undefined, 'cy', undefined, cy.toString());
         writer.writeEndElement();
+        writer.writeStartElement(undefined, 'effectExtent', this.wpNamespace);
+        writer.writeAttributeString(undefined, 'l', undefined, '0');
+        writer.writeAttributeString(undefined, 't', undefined, '0');
+        writer.writeAttributeString(undefined, 'r', undefined, '0');
+        writer.writeAttributeString(undefined, 'b', undefined, '0');
+        writer.writeAttributeString('xmlns', 'wp', undefined, this.wpNamespace);
+        writer.writeEndElement(); // end of wp: effectExtent
         // double borderWidth = (double)picture.PictureShape.PictureDescriptor.BorderLeft.LineWidth / DLSConstants.BorderLineFactor;
         // if (borderWidth > 0 && picture.DocxProps.length === 0) {
         //     long leftTop = 0, rightBottom = 0;
@@ -2221,7 +2257,12 @@ export class WordExport {
         if (!isNullOrUndefined(draw[imageStringProperty[this.keywordIndex]])) {
             this.serializeShapeWrapStyle(writer, draw);
             this.serializeDrawingGraphics(writer, draw);
-        } else {
+        } else if (!isNullOrUndefined(draw[childShapeProperty[this.keywordIndex]])) {
+            this.serializeShapeDrawings(writer, draw);
+            this.serializeGroupShapeDrawingGraphics(writer, draw);
+        }
+        else {
+            this.serializeShapeDrawings(writer, draw);
             this.serializeShapeDrawingGraphics(writer, draw);
         }
         writer.writeEndElement();
@@ -3710,19 +3751,84 @@ export class WordExport {
     public startsWith(sourceString: string, startString: string): boolean {
         return startString.length > 0 && sourceString.substring(0, startString.length) === startString;
     }
-    private serializeShapeDrawingGraphics(writer: XmlWriter, shape: any): void {
-        let val: number | string = shape[autoShapeTypeProperty[this.keywordIndex]];
-        let id: number = shape[shapeIdProperty[this.keywordIndex]];
-        this.serializeShapeWrapStyle(writer, shape);
-        writer.writeStartElement('wp', 'docPr', this.wpNamespace);
-        writer.writeAttributeString(undefined, 'id', undefined, (this.mDocPrID++).toString());
-        writer.writeAttributeString(undefined, 'name', undefined, shape[nameProperty[this.keywordIndex]]);
-        writer.writeAttributeString(undefined, 'title', undefined, shape[titleProperty[this.keywordIndex]]);
+    private serializeGroupShapeDrawingGraphics(writer: XmlWriter, shape: any, isNested?: boolean): void {
+        if (isNested) {
+            writer.writeStartElement('wpg', 'grpSp', this.wpGroupNamespace);
+            writer.writeStartElement('wpg', 'cNvGrpSpPr', this.wpGroupNamespace);
+        } else {
+            writer.writeStartElement('wpg', 'wgp', this.wpGroupNamespace);
+            writer.writeStartElement('wpg', 'cNvGrpSpPr', this.wpGroupNamespace);
+        }
         writer.writeEndElement();
-        writer.writeStartElement('a', 'graphic', this.aNamespace);
-        writer.writeStartElement('a', 'graphicData', this.aNamespace);
-        writer.writeAttributeString(undefined, 'uri', undefined, this.wpShapeNamespace);
+        writer.writeStartElement('wpg', 'grpSpPr', this.wpGroupNamespace);
+        writer.writeStartElement('a', 'xfrm', this.aNamespace);
+        writer.writeStartElement('a', 'off', this.aNamespace);
+        let x: number = 0;
+        let y: number = 0;
+        if (!isNested) {
+            x = Math.round((shape['x'] * this.emusPerPoint));
+            y = Math.round((shape['y'] * this.emusPerPoint));
+        } else {
+            x = Math.round((shape[offsetXValue[this.keywordIndex]] * this.emusPerPoint));
+            y = Math.round((shape[offsetYValue[this.keywordIndex]] * this.emusPerPoint));
+        }
+        writer.writeAttributeString(undefined, 'x', undefined, x.toString());
+        writer.writeAttributeString(undefined, 'y', undefined, y.toString());
+        writer.writeEndElement();
+        writer.writeStartElement('a', 'ext', this.aNamespace);
+        let cx: number = Math.round(((shape[widthProperty[this.keywordIndex]] * shape[widthScaleProperty[this.keywordIndex]]) / 100) * this.emusPerPoint);
+        writer.writeAttributeString(undefined, 'cx', undefined, cx.toString());
+        let cy: number = Math.round(((shape[heightProperty[this.keywordIndex]] * shape[heightScaleProperty[this.keywordIndex]]) / 100) * this.emusPerPoint);
+        writer.writeAttributeString(undefined, 'cy', undefined, cy.toString());
+        writer.writeEndElement();
+        writer.writeStartElement('a', 'chOff', this.aNamespace);
+        x = Math.round((shape['x'] * this.emusPerPoint));
+        y = Math.round((shape['y'] * this.emusPerPoint));
+        writer.writeAttributeString(undefined, 'x', undefined, x.toString());
+        writer.writeAttributeString(undefined, 'y', undefined, y.toString());
+        writer.writeEndElement();
+        writer.writeStartElement('a', 'chExt', this.aNamespace);
+        cx = Math.round((shape[extentXValue[this.keywordIndex]] * this.emusPerPoint));
+        writer.writeAttributeString(undefined, 'cx', undefined, cx.toString());
+        cy = Math.round((shape[extentYValue[this.keywordIndex]] * this.emusPerPoint));
+        writer.writeAttributeString(undefined, 'cy', undefined, cy.toString());
+        writer.writeEndElement();
+        writer.writeEndElement();
+        writer.writeEndElement();
+        let childShape = shape[childShapeProperty[this.keywordIndex]];
+        for (let index = 0; index < childShape.length; index++) {
+            let currentParargaph: any = this.paragraph;
+            if (childShape[index].hasOwnProperty(childShapeProperty[this.keywordIndex])) {
+                this.serializeGroupShapeDrawingGraphics(writer, childShape[index], true);
+            }
+            else if (childShape[index].hasOwnProperty(autoShapeTypeProperty[this.keywordIndex])) {
+                this.serializeShapeDrawingGraphics(writer, childShape[index], true);
+            }
+            else if (childShape[index].hasOwnProperty(chartTypeProperty[this.keywordIndex])) {
+                this.serializeChildChart(writer, childShape[index]);
+            }
+            else if (childShape[index].hasOwnProperty(imageStringProperty[this.keywordIndex])) {
+                this.serializeDrawingGraphics(writer, childShape[index], true);
+            }
+            this.paragraph = currentParargaph;
+        }
+        writer.writeEndElement();
+        if (!isNested) {
+            writer.writeEndElement();
+            writer.writeEndElement();
+        }
+    };
+    private serializeShapeDrawingGraphics(writer: XmlWriter, shape: any, isGroup?: boolean): void {
+        let val: number | string = shape[autoShapeTypeProperty[this.keywordIndex]];
         writer.writeStartElement('wps', 'wsp', this.wpShapeNamespace);
+        if (isGroup) {
+            writer.writeStartElement('wps', 'cNvPr', this.wpShapeNamespace);
+            let id = shape[shapeIdProperty[this.keywordIndex]];
+            let name = shape[nameProperty[this.keywordIndex]];
+            writer.writeAttributeString(undefined, 'id', undefined, id.toString());
+            writer.writeAttributeString(undefined, 'name', undefined, name.toString());
+            writer.writeEndElement();
+        }
         writer.writeStartElement('wps', 'cNvCnPr', this.wpShapeNamespace);
         writer.writeStartElement('a', 'cxnSpLocks', this.aNamespace);
         writer.writeAttributeString(undefined, 'noChangeShapeType', undefined, '1');
@@ -3732,9 +3838,15 @@ export class WordExport {
         writer.writeAttributeString(undefined, 'bwMode', undefined, 'auto');
         writer.writeStartElement('a', 'xfrm', this.aNamespace);
         writer.writeStartElement('a', 'off', this.aNamespace);
-        writer.writeAttributeString(undefined, 'x', undefined, '0');
-        writer.writeAttributeString(undefined, 'y', undefined, '0');
-
+        if (isGroup) {
+            let x: number = Math.round((shape['x'] * this.emusPerPoint));
+            let y: number = Math.round((shape['y'] * this.emusPerPoint));
+            writer.writeAttributeString(undefined, 'x', undefined, x.toString());
+            writer.writeAttributeString(undefined, 'y', undefined, y.toString());
+        } else {
+            writer.writeAttributeString(undefined, 'x', undefined, '0');
+            writer.writeAttributeString(undefined, 'y', undefined, '0');
+        }
         writer.writeEndElement();
         writer.writeStartElement('a', 'ext', this.aNamespace);
         let cx: number = Math.round((shape[widthProperty[this.keywordIndex]] * this.emusPerPoint));
@@ -3833,10 +3945,50 @@ export class WordExport {
         }
         writer.writeEndElement();
         writer.writeEndElement();
+        if (!isGroup) {
+            writer.writeEndElement();
+            writer.writeEndElement();
+        }
+    }
+
+    private serializeChildChart(writer: XmlWriter, childChart: any): void {
+        this.chart = childChart
+        let rid: string = '';
+        rid = this.updatechartId(this.chart);
+        writer.writeStartElement('wpg', 'graphicFrame', this.wpGroupNamespace);
+        writer.writeStartElement('wpg', 'cNvPr', this.wpGroupNamespace);
+        // writer.writeAttributeString(undefined, 'id', undefined, rid);
+        writer.writeAttributeString(undefined, 'id', undefined, (this.mDocPrID++).toString());
+        writer.writeAttributeString(undefined, 'name', undefined, this.getNextChartName());
+        writer.writeEndElement();
+        writer.writeStartElement('wpg', 'cNvFrPr', this.wpNamespace);
+        writer.writeEndElement();
+        writer.writeStartElement('wpg', 'xfrm', this.wpGroupNamespace);
+        writer.writeStartElement('a', 'off', this.aNamespace);
+        let x: number = Math.round((this.chart['x'] * this.emusPerPoint));
+        let y: number = Math.round((this.chart['y'] * this.emusPerPoint));
+        writer.writeAttributeString(undefined, 'x', undefined, x.toString());
+        writer.writeAttributeString(undefined, 'y', undefined, y.toString());
+        writer.writeEndElement();
+        writer.writeStartElement('a', 'ext', this.aNamespace);
+        let cx: number = Math.round((this.chart[widthProperty[this.keywordIndex]] * this.emusPerPoint));
+        writer.writeAttributeString(undefined, 'cx', undefined, cx.toString());
+        let cy: number = Math.round((this.chart[heightProperty[this.keywordIndex]] * this.emusPerPoint));
+        writer.writeAttributeString(undefined, 'cy', undefined, cy.toString());
         writer.writeEndElement();
         writer.writeEndElement();
-
-
+        writer.writeStartElement('a', 'graphic', this.aNamespace);
+        writer.writeStartElement('a', 'graphicData', this.aNamespace);
+        writer.writeAttributeString(undefined, 'uri', undefined, this.chartNamespace);
+        writer.writeStartElement('c', 'chart', this.chartNamespace);
+        writer.writeAttributeString('xmlns', 'c', undefined, this.chartNamespace);
+        writer.writeAttributeString('xmlns', 'r', undefined, this.rNamespace);
+        writer.writeAttributeString('r', 'id', undefined, rid);
+        writer.writeEndElement(); // end of chart
+        writer.writeEndElement(); // end of graphic data
+        writer.writeEndElement(); // end of graphic
+        writer.writeEndElement();
+        this.serializeChartStructure();
     }
     private getTextVerticalAlignmentProperty(vert: string): string {
         switch (vert) {
@@ -3871,7 +4023,7 @@ export class WordExport {
         }
     }
     // Serialize the graphics element for pictures.
-    private serializeDrawingGraphics(writer: XmlWriter, picture: any): void {
+    private serializeDrawingGraphics(writer: XmlWriter, picture: any, isGroup?: boolean): void {
         let id: string = '';
         let format: string;
         let imageStringInfo: ImageStringInfo = this.getBase64ImageString(picture);
@@ -3883,25 +4035,29 @@ export class WordExport {
             }
         }
         id = this.updateShapeId(picture, false);
-        // picture.ShapeId = this.getNextDocPrID();
-        // Processing picture
-        writer.writeStartElement('wp', 'docPr', this.wpNamespace);
-        writer.writeAttributeString(undefined, 'id', undefined, (this.mDocPrID++).toString());
-        if (!isNullOrUndefined(picture[alternativeTextProperty[this.keywordIndex]])) {
-            writer.writeAttributeString(undefined, 'descr', undefined, picture[alternativeTextProperty[this.keywordIndex]]);
+        if (!isGroup) {
+            // picture.ShapeId = this.getNextDocPrID();
+            // Processing picture
+            writer.writeStartElement('wp', 'docPr', this.wpNamespace);
+            writer.writeAttributeString(undefined, 'id', undefined, (this.mDocPrID++).toString());
+            if (!isNullOrUndefined(picture[alternativeTextProperty[this.keywordIndex]])) {
+                writer.writeAttributeString(undefined, 'descr', undefined, picture[alternativeTextProperty[this.keywordIndex]]);
+            }
+            writer.writeAttributeString(undefined, 'name', undefined, !isNullOrUndefined(picture[nameProperty[this.keywordIndex]]) ? picture[nameProperty[this.keywordIndex]] : '');
+            if (!isNullOrUndefined(picture[titleProperty[this.keywordIndex]]))
+                writer.writeAttributeString(undefined, 'title', undefined, picture[titleProperty[this.keywordIndex]]);
+            // else
+            // writer.writeAttributeString(undefined, 'title', undefined, '');
+            // if (!picture.Visible)
+            //     m_writer.WriteAttributeString('hidden', '1');
+            // SerializePictureHyperlink(picture);
+            writer.writeEndElement();
         }
-        writer.writeAttributeString(undefined, 'name', undefined, !isNullOrUndefined(picture[nameProperty[this.keywordIndex]]) ? picture[nameProperty[this.keywordIndex]] : '');
-        if (!isNullOrUndefined(picture[titleProperty[this.keywordIndex]]))
-            writer.writeAttributeString(undefined, 'title', undefined, picture[titleProperty[this.keywordIndex]]);
-        // else
-        // writer.writeAttributeString(undefined, 'title', undefined, '');
-        // if (!picture.Visible)
-        //     m_writer.WriteAttributeString('hidden', '1');
-        // SerializePictureHyperlink(picture);
-        writer.writeEndElement();
-        writer.writeStartElement('a', 'graphic', this.aNamespace);
-        writer.writeStartElement('a', 'graphicData', this.aNamespace);
-        writer.writeAttributeString(undefined, 'uri', undefined, this.pictureNamespace);
+        if (!isGroup) {
+            writer.writeStartElement('a', 'graphic', this.aNamespace);
+            writer.writeStartElement('a', 'graphicData', this.aNamespace);
+            writer.writeAttributeString(undefined, 'uri', undefined, this.pictureNamespace);
+        }
         writer.writeStartElement('pic', 'pic', this.pictureNamespace);
         writer.writeStartElement('pic', 'nvPicPr', this.pictureNamespace);
         writer.writeStartElement('pic', 'cNvPr', this.pictureNamespace);
@@ -3967,8 +4123,15 @@ export class WordExport {
         // if (picture.Rotation !== 0)
         //     m_writer.WriteAttributeString('rot', picture.Rotation.ToString());
         writer.writeStartElement('a', 'off', this.aNamespace);
-        writer.writeAttributeString(undefined, 'x', undefined, '0');
-        writer.writeAttributeString(undefined, 'y', undefined, '0');
+        if (isGroup) {
+            let x: number = Math.round((picture['x'] * this.emusPerPoint));
+            let y: number = Math.round((picture['y'] * this.emusPerPoint));
+            writer.writeAttributeString(undefined, 'x', undefined, x.toString());
+            writer.writeAttributeString(undefined, 'y', undefined, y.toString());
+        } else {
+            writer.writeAttributeString(undefined, 'x', undefined, '0');
+            writer.writeAttributeString(undefined, 'y', undefined, '0');
+        }
         writer.writeEndElement();
         writer.writeStartElement('a', 'ext', this.aNamespace);
         let cx: number = Math.round((picture[widthProperty[this.keywordIndex]] * this.emusPerPoint));
@@ -3995,8 +4158,10 @@ export class WordExport {
         //     SerializeDocxProps(picture.DocxProps, 'effectLst');
         writer.writeEndElement();
         writer.writeEndElement();
-        writer.writeEndElement();
-        writer.writeEndElement();
+        if (!isGroup) {
+            writer.writeEndElement();
+            writer.writeEndElement();
+        }
     }
     private serializeBlipExtensions(writer: XmlWriter, picture: any): void {
         writer.writeStartElement('a', 'extLst', this.aNamespace);

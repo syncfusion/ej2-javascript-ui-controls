@@ -2157,7 +2157,7 @@
       .e-resource-column-wrap.e-transition {
         overscroll-behavior: none;
       }
-      
+
       &.e-vertical-view,
       &.e-month-view {
         .e-content-table {
@@ -3474,7 +3474,11 @@
         text-align: left;
       }
 
-      .e-date-time-icon {
+      .e-date-time-icon,
+      .e-location-icon,
+      .e-time-zone-icon,
+      .e-description-icon,
+      .e-resource-icon {
         padding: 0 0 0 10px;
       }
     }

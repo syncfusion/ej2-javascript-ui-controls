@@ -8,18 +8,21 @@ import { ImageProperties } from './properties-pane/image-properties-pane';
 import { TocProperties } from './properties-pane/table-of-content-pane';
 import { TableProperties } from './properties-pane/table-properties-pane';
 import { StatusBar } from './properties-pane/status-bar';
-import { ViewChangeEventArgs, RequestNavigateEventArgs, ContainerContentChangeEventArgs, ContainerSelectionChangeEventArgs, ContainerDocumentChangeEventArgs, CustomContentMenuEventArgs, BeforeOpenCloseCustomContentMenuEventArgs, BeforePaneSwitchEventArgs, LayoutType, CommentDeleteEventArgs, RevisionActionEventArgs, ServiceFailureArgs, CommentActionEventArgs, XmlHttpRequestEventArgs } from '../document-editor/base';
+import { ViewChangeEventArgs, RequestNavigateEventArgs, ContainerContentChangeEventArgs, ContainerSelectionChangeEventArgs, ContainerDocumentChangeEventArgs, CustomContentMenuEventArgs, BeforeOpenCloseCustomContentMenuEventArgs, BeforePaneSwitchEventArgs, LayoutType, CommentDeleteEventArgs, RevisionActionEventArgs, ServiceFailureArgs, CommentActionEventArgs, XmlHttpRequestEventArgs, ToolbarItem, ToolbarMode, FileMenuItemType, RibbonLayoutType } from '../document-editor/base';
 import { createSpinner } from '@syncfusion/ej2-popups';
 import { ContainerServerActionSettingsModel, DocumentEditorModel, DocumentEditorSettingsModel, DocumentSettingsModel, FormFieldSettingsModel } from '../document-editor/document-editor-model';
 import { CharacterFormatProperties, ParagraphFormatProperties, SectionFormatProperties } from '../document-editor/implementation';
-import { ToolbarItem } from '../document-editor/base/types';
 import { CustomToolbarItemModel, TrackChangeEventArgs, AutoResizeEventArgs, ContentChangeEventArgs } from '../document-editor/base/events-helper';
-import { ClickEventArgs } from '@syncfusion/ej2-navigations';
+import { ClickEventArgs, MenuItemModel } from '@syncfusion/ej2-navigations';
 import { beforeAutoResize, internalAutoResize, internalZoomFactorChange, beforeCommentActionEvent, commentDeleteEvent, contentChangeEvent, trackChangeEvent, beforePaneSwitchEvent, serviceFailureEvent, documentChangeEvent, selectionChangeEvent, customContextMenuSelectEvent, customContextMenuBeforeOpenEvent, internalviewChangeEvent, beforeXmlHttpRequestSend, protectionTypeChangeEvent, internalDocumentEditorSettingsChange, internalStyleCollectionChange, revisionActionEvent, trackChanges, internalOptionPaneChange } from '../document-editor/base/constants';
 import { HelperMethods } from '../index';
 import { SanitizeHtmlHelper } from '@syncfusion/ej2-base';
 import { DialogUtility } from '@syncfusion/ej2-popups';
 import { Text } from './properties-pane/text-properties';
+import { Ribbon } from './ribbon/ribbon';
+import { BackStageMenuModel } from '@syncfusion/ej2-ribbon';
+import { defaultLocaleStrings } from './locale-strings';
+import { IToolbarHandler } from './helper/toolbar-handler';
 /**
  * Document Editor container component.
  */
@@ -33,7 +36,7 @@ export class DocumentEditorContainer extends Component<HTMLElement> implements I
     @Property(true)
     public showPropertiesPane: boolean;
     /**
-     * Enable or disable the toolbar in document editor container.
+     * Enable or disable either `Toolbar` or `Ribbon` based on the `toolbarMode` property.
      *
      * @default true
      */
@@ -164,6 +167,23 @@ export class DocumentEditorContainer extends Component<HTMLElement> implements I
     public autoResizeOnVisibilityChange: boolean;
 
     /**
+     * Specifies the toolbar mode for the document editor container. Two modes are available: 'Toolbar' and 'Ribbon'.
+     * @default 'Toolbar'
+     */
+    @Property('Toolbar')
+    public toolbarMode: ToolbarMode;
+
+    /**
+     * Specifies the current ribbon layout type, either 'Classic' or 'Simplified'.
+     *
+     * Note: This property is only considered when the `toolbarMode` property is set to `Ribbon`.
+     *
+     * @default 'Simplified'
+     */
+    @Property('Simplified')
+    public ribbonLayout: RibbonLayoutType;
+
+    /**
      * Triggers when the component is created
      *
      * @event created
@@ -207,6 +227,15 @@ export class DocumentEditorContainer extends Component<HTMLElement> implements I
      */
     @Event()
     public toolbarClick: EmitType<ClickEventArgs>;
+    /**
+     * Triggers when toolbar item is clicked.
+     *
+     * Note: This event is only considered when the `toolbarMode` property is set to `Ribbon`.
+     *
+     * @event fileMenuItemClick
+     */
+    @Event()
+    public fileMenuItemClick: EmitType<ClickEventArgs>;
     /**
      * Triggers while selecting the custom context-menu option.
      *
@@ -283,6 +312,12 @@ export class DocumentEditorContainer extends Component<HTMLElement> implements I
      */
     public toolbarModule: Toolbar;
     /**
+     * Document editor container's ribbon module
+     *
+     * @private
+     */
+    public ribbonModule: Ribbon;
+    /**
      * @private
      */
     public localObj: L10n;
@@ -294,6 +329,10 @@ export class DocumentEditorContainer extends Component<HTMLElement> implements I
      * @private
      */
     public toolbarContainer: HTMLElement;
+    /**
+     * @private
+     */
+    public ribbonContainer: HTMLElement;
     /**
      * @private
      */
@@ -360,7 +399,6 @@ export class DocumentEditorContainer extends Component<HTMLElement> implements I
      * @private
      */
     public showPane: boolean = true;
-
     /**
      * Defines the settings for DocumentEditor customization.
      *
@@ -398,6 +436,27 @@ export class DocumentEditorContainer extends Component<HTMLElement> implements I
      */
     @Property([])
     public headers: object[];
+    /**
+     * Defines file menu items for Ribbon.
+     *
+     * Note: This property is only considered when the `toolbarMode` property is set to `Ribbon`.
+     *
+     * @default ['New', 'Open', 'Export','Print']
+     */
+    @Property(['New', 'Open', 'Export', 'Print'])
+    public fileMenuItems: (FileMenuItemType | MenuItemModel)[];
+
+    /**
+     * Gets or sets the backstage menu configuration.
+     * When set, this will replace the traditional file menu with a backstage view.
+     *
+     * Note: This property is only considered when the `toolbarMode` property is set to `Ribbon`.
+     *
+     * @default undefined
+     */
+    @Property(undefined)
+    public backstageMenu: BackStageMenuModel;
+
     /* eslint-enable */
     /**
      * Gets the DocumentEditor instance.
@@ -417,6 +476,15 @@ export class DocumentEditorContainer extends Component<HTMLElement> implements I
         return this.toolbarModule;
     }
     /**
+     * Gets the ribbon instance.
+     *
+     * @returns {Ribbon} Returns the ribbon module.
+     */
+    public get ribbon(): Ribbon {
+        return this.ribbonModule;
+    }
+
+    /**
      * Initializes a new instance of the DocumentEditorContainer class.
      *
      * @param { DocumentEditorContainerModel } options Specifies the DocumentEditorContainer model as options.
@@ -430,215 +498,7 @@ export class DocumentEditorContainer extends Component<HTMLElement> implements I
      *
      * @private
      */
-    public defaultLocale: Object = {
-        'New': 'New',
-        'Insert Footnote': 'Insert Footnote',
-        'Insert Endnote': 'Insert Endnote',
-        'Footnote Tooltip': 'Insert Footnote (Alt+Ctrl+F).',
-        'Endnote Tooltip': 'Insert Endnote (Alt+Ctrl+D).',
-        'Open': 'Open',
-        'Undo': 'Undo',
-        'Redo': 'Redo',
-        'Image': 'Image',
-        'Table': 'Table',
-        'Link': 'Link',
-        'Bookmark': 'Bookmark',
-        'Table of Contents': 'Table of Contents',
-        'HEADING - - - - 1': 'HEADING - - - - 1',
-        'HEADING - - - - 2': 'HEADING - - - - 2',
-        'HEADING - - - - 3': 'HEADING - - - - 3',
-        'Header': 'Header',
-        'Footer': 'Footer',
-        'XML Mapping Pane': 'XML Mapping Pane',
-        'Page Setup': 'Page Setup',
-        'Page Number': 'Page Number',
-        'Break': 'Break',
-        'Find': 'Find',
-        'Local Clipboard': 'Local Clipboard',
-        'Restrict Editing': 'Restrict Editing',
-        'Upload from computer': 'Upload from computer',
-        'By URL': 'By URL',
-        'Page': 'Page',
-        'Show properties pane': 'Show properties pane',
-        'Hide properties pane': 'Hide properties pane',
-        'Next Page': 'Next Page',
-        'Continuous': 'Continuous',
-        'Header And Footer': 'Header & Footer',
-        'Options': 'Options',
-        'XML Mapping': 'XML Mapping',
-        'Custom XML Part:': 'Custom XML Part:',
-        'Core Properties': 'Core Properties',
-        'Levels': 'Levels',
-        'Different First Page': 'Different First Page',
-        'Different header and footer for odd and even pages': 'Different header and footer for odd and even pages.',
-        'Different Odd And Even Pages': 'Different Odd & Even Pages',
-        'Different header and footer for first page': 'Different header and footer for first page.',
-        'Position': 'Position',
-        'Header from Top': 'Header from Top',
-        'Footer from Bottom': 'Footer from Bottom',
-        'Distance from top of the page to top of the header': 'Distance from top of the page to top of the header.',
-        'Distance from bottom of the page to bottom of the footer': 'Distance from bottom of the page to bottom of the footer.',
-        'Aspect ratio': 'Aspect ratio',
-        'W': 'W',
-        'H': 'H',
-        'Width': 'Width',
-        'Height': 'Height',
-        'Text': 'Text',
-        'Paragraph': 'Paragraph',
-        'Fill': 'Fill',
-        'Fill color': 'Fill color',
-        'Border Style': 'Border Style',
-        'Outside borders': 'Outside borders',
-        'All borders': 'All borders',
-        'Inside borders': 'Inside borders',
-        'Left border': 'Left border',
-        'Inside vertical border': 'Inside vertical border',
-        'Right border': 'Right border',
-        'Top border': 'Top border',
-        'Inside horizontal border': 'Inside horizontal border',
-        'Bottom border': 'Bottom border',
-        'Border color': 'Border color',
-        'Border width': 'Border width',
-        'Cell': 'Cell',
-        'Merge cells': 'Merge cells',
-        'Insert Or Delete': 'Insert / Delete',
-        'Insert columns to the left': 'Insert columns to the left',
-        'Insert columns to the right': 'Insert columns to the right',
-        'Insert rows above': 'Insert rows above',
-        'Insert rows below': 'Insert rows below',
-        'Delete rows': 'Delete rows',
-        'Delete columns': 'Delete columns',
-        'Cell Margin': 'Cell Margin',
-        'Top': 'Top',
-        'Bottom': 'Bottom',
-        'Left': 'Left',
-        'Right': 'Right',
-        'Align Text': 'Align Text',
-        'Align top': 'Align top',
-        'Align bottom': 'Align bottom',
-        'Align center': 'Align center',
-        'Number of heading or outline levels to be shown in table of contents': 'Number of heading or outline levels to be shown in table of contents.',
-        'Show page numbers': 'Show page numbers',
-        'Show page numbers in table of contents': 'Show page numbers in table of contents.',
-        'Right align page numbers': 'Right align page numbers',
-        'Right align page numbers in table of contents': 'Right align page numbers in table of contents.',
-        'Use hyperlinks': 'Use hyperlinks',
-        'Use hyperlinks instead of page numbers': 'Use hyperlinks instead of page numbers.',
-        'Font': 'Font',
-        'Font Size': 'Font Size',
-        'Font color': 'Font color',
-        'Text highlight color': 'Text highlight color',
-        'Clear all formatting': 'Clear all formatting',
-        'Bold Tooltip': 'Bold (Ctrl+B)',
-        'Italic Tooltip': 'Italic (Ctrl+I)',
-        'Underline Tooltip': 'Underline (Ctrl+U)',
-        'Strikethrough': 'Strikethrough',
-        'Superscript Tooltip': 'Superscript (Ctrl+Shift++)',
-        'Subscript Tooltip': 'Subscript (Ctrl+=)',
-        'Align left Tooltip': 'Align left (Ctrl+L)',
-        'Center Tooltip': 'Center (Ctrl+E)',
-        'Align right Tooltip': 'Align right (Ctrl+R)',
-        'Justify Tooltip': 'Justify (Ctrl+J)',
-        'Decrease indent': 'Decrease indent',
-        'Increase indent': 'Increase indent',
-        'Line spacing': 'Line spacing',
-        'Bullets': 'Bullets',
-        'Numbering': 'Numbering',
-        'Styles': 'Styles',
-        'Manage Styles': 'Manage Styles',
-        'of': 'of',
-        'Fit one page': 'Fit one page',
-        'Spell Check': 'Spell Check',
-        'Spelling': 'Spelling',
-        'Underline errors': 'Underline errors',
-        'Fit page width': 'Fit page width',
-        'Update': 'Update',
-        'Cancel': 'Cancel',
-        'Insert': 'Insert',
-        'No Border': 'No Border',
-        'Create a new document': 'Create a new document.',
-        'Open a document': 'Open a document.',
-        'Undo Tooltip': 'Undo the last operation (Ctrl+Z).',
-        'Redo Tooltip': 'Redo the last operation (Ctrl+Y).',
-        'Insert inline picture from a file': 'Insert inline picture from a file.',
-        'Insert a table into the document': 'Insert a table into the document',
-        'Create Hyperlink': 'Create a link in your document for quick access to web pages and files (Ctrl+K).',
-        'Insert a bookmark in a specific place in this document': 'Insert a bookmark in a specific place in this document.',
-        'Provide an overview of your document by adding a table of contents': 'Provide an overview of your document by adding a table of contents.',
-        'Add or edit the header': 'Add or edit the header.',
-        'Add or edit the footer': 'Add or edit the footer.',
-        'Open the page setup dialog': 'Open the page setup dialog.',
-        'Content Control': 'Content Control',
-        'Insert Content Control': 'Insert Content Control',
-        'Add page numbers': 'Add page numbers.',
-        'Find Text': 'Find text in the document (Ctrl+F).',
-        'Toggle between the internal clipboard and system clipboard': 'Toggle between the internal clipboard and system clipboard.</br>' +
-            'Access to system clipboard through script is denied due to browsers security policy. Instead, </br>' +
-            ' 1. You can enable internal clipboard to cut, copy and paste within the component.</br>' +
-            ' 2. You can use the keyboard shortcuts (Ctrl+X, Ctrl+C and Ctrl+V) to cut, copy and paste with system clipboard.',
-        'Current Page Number': 'The current page number in the document. Click or tap to navigate specific page.',
-        'Read only': 'Read only',
-        'Protections': 'Protections',
-        'Error in establishing connection with web server': 'Error in establishing connection with web server',
-        'Single': 'Single',
-        'Double': 'Double',
-        'New comment': 'New comment',
-        'Comments': 'Comments',
-        'Print layout': 'Print layout',
-        'Web layout': 'Web layout',
-        'Form Fields': 'Form Fields',
-        'Text Form': 'Text Form',
-        'Check Box': 'Check Box',
-        'DropDown': 'Drop-Down',
-        'Update Fields': 'Update Fields',
-        'Update cross reference fields': 'Update cross reference fields',
-        'Track Changes': 'Keep track of the changes made in the document',
-        'TrackChanges': 'Track Changes',
-        'AllCaps': 'AllCaps',
-        'Change case Tooltip': 'Change case',
-        'UPPERCASE': 'UPPERCASE',
-        'SentenceCase': 'Sentence case',
-        'Lowercase': 'Lowercase',
-        'CapitalizeEachWord': 'Capitalize each word',
-        'ToggleCase': 'tOGGLE cASE',
-        'No color': 'No color',
-        'Top margin': 'Top margin',
-        'Bottom margin': 'Bottom margin',
-        'Left margin': 'Left margin',
-        'Right margin': 'Right margin',
-        'Normal': 'Normal',
-        'Heading': 'Heading',
-        'Heading 1': 'Heading 1',
-        'Heading 2': 'Heading 2',
-        'Heading 3': 'Heading 3',
-        'Heading 4': 'Heading 4',
-        'Heading 5': 'Heading 5',
-        'Heading 6': 'Heading 6',
-        'Heading 7': 'Heading 7',
-        'Heading 8': 'Heading 8',
-        'Heading 9': 'Heading 9',
-        'ZoomLevelTooltip': 'Zoom level. Click or tap to open the Zoom options.',
-        'None': 'None',
-        'Borders': 'Borders',
-        'ShowHiddenMarks Tooltip': 'Show the hidden characters like spaces, tab, paragraph marks, and breaks.(Ctrl + *)',
-        'Columns': 'Columns',
-        'Column': 'Column',
-        'Page Breaks': 'Page Breaks',
-        'Section Breaks': 'Section Breaks',
-        'Link to Previous': 'Link to Previous',
-        'Link to PreviousTooltip': 'Link this section with previous section header or footer',
-        'Alternate Text': 'Alternate Text',
-        'The address of this site is not valid. Check the address and try again.': 'The address of this site is not valid. Check the address and try again.',
-        'OK': 'OK',
-        'Information': 'Information',
-        'Rich Text Content Control': 'Rich Text Content Control',
-        'Plain Text Content Control': 'Plain Text Content Control',
-        'Picture Content Control': 'Picture Content Control',
-        'Combo Box Content Control': 'Combo Box Content Control',
-        'Drop-Down List Content Control': 'Drop-Down List Content Control',
-        'Date Picker Content Control': 'Date Picker Content Control',
-        'Check Box Content Control': 'Check Box Content Control'
-    };
+    public defaultLocale: Object = defaultLocaleStrings;
     /* eslint-enable @typescript-eslint/naming-convention */
     /**
      * @private
@@ -646,6 +506,15 @@ export class DocumentEditorContainer extends Component<HTMLElement> implements I
      */
     public getModuleName(): string {
         return 'DocumentEditorContainer';
+    }
+    // Create a property to hold the current toolbar handler
+
+    private get toolbarHandler(): IToolbarHandler {
+        if (this.toolbarMode === 'Ribbon') {
+            return this.ribbonModule;
+        } else {
+            return this.toolbarModule;
+        }
     }
     /**
      * @private
@@ -667,11 +536,8 @@ export class DocumentEditorContainer extends Component<HTMLElement> implements I
                     }
                     if (this.documentEditor) {
                         this.documentEditor.enableTrackChanges = newModel.enableTrackChanges;
-                        if (this.toolbarModule) {
-                            this.toolbarModule.toggleTrackChanges(newModel.enableTrackChanges);
-                        }
-                        if (this.documentEditor.enableTrackChanges) {
-                            this.documentEditor.documentHelper.showRevision = true;
+                        if (this.toolbarHandler) {
+                            this.toolbarHandler.toggleTrackChanges(newModel.enableTrackChanges);
                         }
                         this.documentEditor.resize();
                     }
@@ -709,8 +575,8 @@ export class DocumentEditorContainer extends Component<HTMLElement> implements I
                     if (this.documentEditor) {
                         this.documentEditor.enableComment = newModel.enableComment;
                     }
-                    if (this.toolbarModule) {
-                        this.toolbarModule.enableDisableInsertComment(newModel.enableComment);
+                    if (this.toolbarHandler) {
+                        this.toolbarHandler.enableDisableInsertComment(newModel.enableComment);
                     }
                     break;
                 case 'enableSpellCheck':
@@ -755,18 +621,14 @@ export class DocumentEditorContainer extends Component<HTMLElement> implements I
                         } else {
                             this.statusBar.toggleWebLayout();
                         }
+                        if (this.ribbon) {
+                            this.ribbon.tabManager.viewTab.onSelectionChange();
+                        }
                     }
                     break;
+                case 'toolbarMode':
                 case 'enableToolbar':
-                    this.createToolbarContainer(this.enableRtl, true);
-                    if (newModel.enableToolbar && this.toolbarModule) {
-                        this.toolbarModule.initToolBar(this.toolbarItems);
-                        this.toolbarModule.enableDisableInsertComment(this.enableComment);
-                        this.toolbarModule.toggleTrackChanges(this.enableTrackChanges);
-                    }
-                    if (this.documentEditor) {
-                        this.documentEditor.resize();
-                    }
+                    this.handleToolbarModeChange();
                     break;
                 case 'height':
                     this.element.style.height = formatUnit(this.height);
@@ -791,10 +653,31 @@ export class DocumentEditorContainer extends Component<HTMLElement> implements I
                         this.documentEditor.autoResizeOnVisibilityChange = newModel.autoResizeOnVisibilityChange;
                     }
                     break;
+                case 'backstageMenu':
+                    if (this.ribbonModule) {
+                        this.ribbonModule.backstageMenu = newModel.backstageMenu;
+                        this.ribbonModule.ribbon.refresh();
+                    }
+                    break;
+                case 'fileMenuItems':
+                    if (this.ribbonModule) {
+                        this.ribbonModule.fileMenuItems = newModel.fileMenuItems;
+                        this.ribbonModule.ribbon.refresh();
+                    }
+                    break;
             }
         }
     }
 
+    private handleToolbarModeChange(): void {
+        this.createToolbarContainer(this.enableRtl, true);
+        if (this.toolbarHandler) {
+            this.toolbarHandler.initialize(true);
+        }
+        if (this.documentEditor) {
+            this.documentEditor.resize();
+        }
+    }
     /**
      * @private
      */
@@ -811,9 +694,8 @@ export class DocumentEditorContainer extends Component<HTMLElement> implements I
      * @private
      */
     protected render(): void {
-        if (this.toolbarModule) {
-            this.toolbarModule.initToolBar(this.toolbarItems);
-            this.toolbarModule.enableDisableInsertComment(this.enableComment);
+        if (this.toolbarHandler) {
+            this.toolbarHandler.initialize();
         }
         if (this.height !== '') {
             this.element.style.height = formatUnit(this.height);
@@ -826,23 +708,66 @@ export class DocumentEditorContainer extends Component<HTMLElement> implements I
         if (this.restrictEditing) {
             this.restrictEditingToggleHelper(this.restrictEditing);
         }
-        this.headerFooterProperties = new HeaderFooterProperties(this, this.enableRtl);
-        this.imageProperties = new ImageProperties(this, this.enableRtl);
-        this.tocProperties = new TocProperties(this, this.enableRtl);
-        this.tableProperties = new TableProperties(this, this.imageProperties, this.enableRtl);
+        if (this.toolbarMode !== 'Ribbon') {
+            this.initializePane();
+        }
         this.statusBar = new StatusBar(this.statusBarElement, this);
         // Waiting popup
         createSpinner({ target: this.containerTarget, cssClass: 'e-spin-overlay' });
         this.setserverActionSettings();
         this.renderComplete();
     }
+    /**
+     * @return {void}
+     * @private
+     */
+    public initializePane(): void {
+        if (!this.headerFooterProperties) {
+            this.headerFooterProperties = new HeaderFooterProperties(this, this.enableRtl);
+        }
+        if (!this.imageProperties) {
+            this.imageProperties = new ImageProperties(this, this.enableRtl);
+        }
+        if (!this.tocProperties) {
+            this.tocProperties = new TocProperties(this, this.enableRtl);
+        }
+        if (!this.tableProperties) {
+            this.tableProperties = new TableProperties(this, this.imageProperties, this.enableRtl);
+        }
+    }
+    /**
+     * @return {void}
+     * @private
+     */
+    public destroyPane(): void {
+        if (this.headerFooterProperties) {
+            this.headerFooterProperties.destroy();
+            this.headerFooterProperties = undefined;
+        }
+        if (this.imageProperties) {
+            this.imageProperties.destroy();
+            this.imageProperties = undefined;
+        }
+        if (this.tocProperties) {
+            this.tocProperties.destroy();
+            this.tocProperties = undefined;
+        }
+        if (this.tableProperties) {
+            this.tableProperties.destroy();
+            this.tableProperties = undefined;
+        }
+        if (this.propertiesPaneContainer) {
+            this.propertiesPaneContainer.parentElement.removeChild(this.propertiesPaneContainer);
+            this.propertiesPaneContainer = undefined;
+        }
+    }
     private restrictEditingToggleHelper(restrictEditing: boolean): void {
         this.documentEditor.isReadOnly = restrictEditing;
-        if (this.toolbarModule) {
-            this.toolbarModule.enableDisableToolBarItem(!restrictEditing, false);
-            this.toolbarModule.toggleRestrictEditing(restrictEditing);
+        if (this.toolbarHandler) {
+            this.toolbarHandler.restrictEditingToggleHelper(restrictEditing);
+
         }
-        if (this.showPane) {
+        if (this.showPane && this.toolbarMode !== 'Ribbon') {
             this.showPropertiesPane = !restrictEditing;
             this.showHidePropertiesPane(!restrictEditing);
         }
@@ -977,11 +902,19 @@ export class DocumentEditorContainer extends Component<HTMLElement> implements I
     /* eslint-disable  */
     protected requiredModules(): ModuleDeclaration[] {
         let modules: ModuleDeclaration[] = [];
+
         if (this.enableToolbar) {
-            modules.push({
-                member: 'toolbar', args: [this]
-            });
+            if (this.toolbarMode === 'Ribbon') {
+                modules.push({
+                    member: 'ribbon', args: [this]
+                });
+            } else {
+                modules.push({
+                    member: 'toolbar', args: [this]
+                });
+            }
         }
+
         return modules;
     }
 
@@ -991,14 +924,6 @@ export class DocumentEditorContainer extends Component<HTMLElement> implements I
         this.containerTarget = this.createElement('div', { className: 'e-de-ctn' });
         this.containerTarget.contentEditable = 'false';
         this.createToolbarContainer(isRtl);
-        let propertiesPaneContainerBorder: string;
-        if (!isRtl) {
-            propertiesPaneContainerBorder = 'e-de-pane';
-        } else {
-            propertiesPaneContainerBorder = 'e-de-pane-rtl';
-        }
-        this.propertiesPaneContainer = this.createElement('div', { className: propertiesPaneContainerBorder, styles: 'display:none' });
-        this.editorContainer.appendChild(this.propertiesPaneContainer);
         this.containerTarget.appendChild(this.editorContainer);
         this.statusBarElement = this.createElement('div', { className: 'e-de-status-bar' });
         if (isRtl) {
@@ -1007,23 +932,61 @@ export class DocumentEditorContainer extends Component<HTMLElement> implements I
         this.containerTarget.appendChild(this.statusBarElement);
         this.element.appendChild(this.containerTarget);
     }
+    private initializePaneElement(): void {
+        if (this.toolbarMode != 'Ribbon' && !this.propertiesPaneContainer) {
+            let propertiesPaneContainerBorder: string;
+            if (!this.enableRtl) {
+                propertiesPaneContainerBorder = 'e-de-pane';
+            } else {
+                propertiesPaneContainerBorder = 'e-de-pane-rtl';
+            }
+            this.propertiesPaneContainer = this.createElement('div', { className: propertiesPaneContainerBorder, styles: 'display:none' });
+            this.editorContainer.appendChild(this.propertiesPaneContainer);
+        }
+    }
     private createToolbarContainer(isRtl: boolean, isCustom?: boolean): void {
         if (isNullOrUndefined((this.editorContainer))) {
             this.editorContainer = this.createElement('div', { className: 'e-de-tool-ctnr-properties-pane' + (isRtl ? ' e-de-ctnr-rtl' : '') });
         }
         if (this.enableToolbar) {
-            this.toolbarContainer = this.createElement('div', { className: 'e-de-ctnr-toolbar' + (isRtl ? ' e-de-ctnr-rtl' : '') });
-            if (isCustom) {
-                this.containerTarget.insertBefore(this.toolbarContainer, this.containerTarget.firstChild);
+            this.editorContainer.classList.remove(...['e-de-tool-ctnr-properties-pane', 'e-de-ribbon-simplified-ctnr-properties-pane', 'e-de-ribbon-classic-ctnr-properties-pane']);
+            if (this.toolbarMode === 'Ribbon') {
+                // Create ribbon container
+                this.ribbonContainer = this.createElement('div', {
+                    className: 'e-de-ctnr-ribbon' + (isRtl ? ' e-de-ctnr-rtl' : '')
+                    // styles: 'min-height: 150px' // Adjust height as needed
+                });
+
+                // Add to DOM
+                if (isCustom) {
+                    this.containerTarget.insertBefore(this.ribbonContainer, this.containerTarget.firstChild);
+                } else {
+                    this.containerTarget.appendChild(this.ribbonContainer);
+                }
+                if (this.ribbonLayout === 'Simplified') {
+                    this.editorContainer.classList.add('e-de-ribbon-simplified-ctnr-properties-pane');
+                } else {
+                    this.editorContainer.classList.add('e-de-ribbon-classic-ctnr-properties-pane');
+                }
             } else {
-                this.containerTarget.appendChild(this.toolbarContainer);
+                // Original toolbar container creation
+                this.toolbarContainer = this.createElement('div', {
+                    className: 'e-de-ctnr-toolbar' + (isRtl ? ' e-de-ctnr-rtl' : '')
+                });
+                if (isCustom) {
+                    this.containerTarget.insertBefore(this.toolbarContainer, this.containerTarget.firstChild);
+                } else {
+                    this.containerTarget.appendChild(this.toolbarContainer);
+                }
+                this.editorContainer.classList.add('e-de-tool-ctnr-properties-pane');
             }
             this.editorContainer.classList.remove('e-de-ctnr-properties-pane');
-            this.editorContainer.classList.add('e-de-tool-ctnr-properties-pane');
+
         } else {
-            this.editorContainer.classList.remove('e-de-tool-ctnr-properties-pane');
+            this.editorContainer.classList.remove(...['e-de-tool-ctnr-properties-pane', 'e-de-ribbon-simplified-ctnr-properties-pane', 'e-de-ribbon-classic-ctnr-properties-pane']);
             this.editorContainer.classList.add('e-de-ctnr-properties-pane');
         }
+        this.initializePaneElement();
     }
     private initializeDocumentEditor(): void {
         let id: string = this.element.id + '_editor';
@@ -1076,7 +1039,7 @@ export class DocumentEditorContainer extends Component<HTMLElement> implements I
         window.addEventListener('resize', this.onWindowResize.bind(this));
         this.documentEditor.on(internalZoomFactorChange, this.onZoomFactorChange, this);
         this.documentEditor.on(internalviewChangeEvent, this.onViewChange, this);
-        this.documentEditor.on(protectionTypeChangeEvent, this.showPropertiesPaneOnSelection, this);
+        this.documentEditor.on(protectionTypeChangeEvent, this.onProtectionChange, this);
         this.documentEditor.on(internalDocumentEditorSettingsChange, this.updateShowHiddenMarks, this);
         this.documentEditor.on(internalStyleCollectionChange, this.updateStyleCollection, this);
         // Internal event to trigger auto resize.
@@ -1095,6 +1058,9 @@ export class DocumentEditorContainer extends Component<HTMLElement> implements I
 
     private onOptionPaneChange(args: any): void {
         //this.documentEditorSettings.showNavigationPane = args.show;
+        if (this.toolbarMode === 'Ribbon' && this.ribbonModule) {
+            this.ribbonModule.tabManager.viewTab.onSelectionChange();
+        }
     }
 
     private onEnableTrackChanges(model: DocumentEditorModel): void {
@@ -1124,18 +1090,18 @@ export class DocumentEditorContainer extends Component<HTMLElement> implements I
         }
         this.documentEditor.off(internalZoomFactorChange, this.onZoomFactorChange);
         this.documentEditor.off(internalviewChangeEvent, this.onViewChange);
-        this.documentEditor.off(protectionTypeChangeEvent, this.showPropertiesPaneOnSelection);
+        this.documentEditor.off(protectionTypeChangeEvent, this.onProtectionChange);
         this.documentEditor.off(internalDocumentEditorSettingsChange, this.updateShowHiddenMarks);
         this.documentEditor.off(internalStyleCollectionChange, this.updateStyleCollection);
     }
     private onCommentBegin(): void {
-        if (this.toolbarModule) {
-            this.toolbarModule.enableDisableInsertComment(false);
+        if (this.toolbarHandler) {
+            this.toolbarHandler.enableDisableInsertComment(false);
         }
     }
     private onCommentEnd(): void {
-        if (this.toolbarModule) {
-            this.toolbarModule.enableDisableInsertComment(true && this.enableComment);
+        if (this.toolbarHandler) {
+            this.toolbarHandler.enableDisableInsertComment(true && this.enableComment);
         }
     }
     private beforeXmlHttpSend(args: XmlHttpRequestEventArgs): void {
@@ -1152,10 +1118,9 @@ export class DocumentEditorContainer extends Component<HTMLElement> implements I
     }
     private onTrackChange(args: TrackChangeEventArgs): void {
         this.trigger(trackChangeEvent, args);
-        if (this.toolbarModule) {
-            this.toolbarModule.toggleTrackChanges(args.isTrackChangesEnabled);
+        if (this.toolbarHandler) {
+            this.toolbarHandler.toggleTrackChanges(args.isTrackChangesEnabled);
         }
-
     }
     private onBeforePaneSwitch(args: BeforePaneSwitchEventArgs): void {
         this.trigger(beforePaneSwitchEvent, args);
@@ -1173,7 +1138,9 @@ export class DocumentEditorContainer extends Component<HTMLElement> implements I
         if (this.showPropertiesPane) {
             this.showPropertiesPaneOnSelection();
         }
-        this.propertiesPaneContainer.style.display = show ? 'block' : 'none';
+        if (this.propertiesPaneContainer) {
+            this.propertiesPaneContainer.style.display = show ? 'block' : 'none';
+        }
         if (this.toolbarModule) {
             this.toolbarModule.propertiesPaneButton.element.style.opacity = show ? '1' : '0.5';
         }
@@ -1181,8 +1148,14 @@ export class DocumentEditorContainer extends Component<HTMLElement> implements I
 
     }
     private updateStyleCollection(): void {
+        if (this.documentEditor.skipStyleUpdate) {
+            return;
+        }
         if (!isNullOrUndefined(this.tableProperties) && !isNullOrUndefined(this.tableProperties.tableTextProperties) && !isNullOrUndefined(this.tableProperties.tableTextProperties.paragraph)) {
             this.tableProperties.tableTextProperties.paragraph.updateStyleNames();
+        }
+        if (this.toolbarMode == 'Ribbon' && this.ribbon) {
+            this.ribbon.tabManager.homeTab.updateStyleGallery();
         }
     }
     /**
@@ -1214,7 +1187,7 @@ export class DocumentEditorContainer extends Component<HTMLElement> implements I
             if (this.toolbarModule) {
                 this.toolbarModule.toolbar.refreshOverflow();
             }
-            if (this.showPropertiesPane) {
+            if (this.showPropertiesPane && this.tableProperties) {
                 this.tableProperties.updateTabContainerHeight();
             }
         }
@@ -1237,8 +1210,8 @@ export class DocumentEditorContainer extends Component<HTMLElement> implements I
      * @private
      */
     public onContentChange(args: ContentChangeEventArgs): void {
-        if (this.toolbarModule) {
-            this.toolbarModule.enableDisableUndoRedo();
+        if (this.toolbarHandler) {
+            this.toolbarHandler.onContentChange();
         }
         if (this.statusBar) {
             this.statusBar.updatePageCount();
@@ -1259,10 +1232,8 @@ export class DocumentEditorContainer extends Component<HTMLElement> implements I
             const fontFamilyValue: string[] = this.documentEditorSettings.fontFamilies;
             this.refreshFontFamilies(fontFamilyValue);
         }
-        if (this.toolbarModule) {
-            this.toolbarModule.isCommentEditing = false;
-            this.toolbarModule.enableDisableInsertComment(true);
-            this.toolbarModule.enableDisableUndoRedo();
+        if (this.toolbarHandler) {
+            this.toolbarHandler.onDocumentChange();
         }
         if (this.statusBar) {
             this.statusBar.updatePageCount();
@@ -1278,8 +1249,8 @@ export class DocumentEditorContainer extends Component<HTMLElement> implements I
         setTimeout(() => {
             if (!isNullOrUndefined(this.documentEditor)) {
                 this.showPropertiesPaneOnSelection();
-                if (this.documentEditor.documentHelper.isSelectionActive) {
-                    this.documentEditor.documentHelper.isSelectionCompleted = false;
+                if (this.ribbonModule) {
+                    this.ribbonModule.updateRibbonState();
                 }
                 let eventArgs: ContainerSelectionChangeEventArgs = { source: this, isCompleted: this.documentEditor.documentHelper.isSelectionCompleted };
                 this.trigger(selectionChangeEvent, eventArgs);
@@ -1293,6 +1264,19 @@ export class DocumentEditorContainer extends Component<HTMLElement> implements I
     private onZoomFactorChange(): void {
         if (this.statusBar) {
             this.statusBar.updateZoomContent();
+        }
+        // Update ribbon zoom button states if ribbon is active
+        if (this.toolbarMode === 'Ribbon' && this.ribbonModule) {
+            this.ribbonModule.onZoomFactorChange();
+        }
+
+    }
+
+    private onProtectionChange(): void {
+        if (this.toolbarMode == 'Ribbon') {
+            this.ribbon.stateManager.updateRibbonState(this.ribbon.ribbon);
+        } else {
+            this.showPropertiesPaneOnSelection();
         }
     }
     private updateShowHiddenMarks(settings: DocumentEditorSettingsModel): void {
@@ -1402,7 +1386,7 @@ export class DocumentEditorContainer extends Component<HTMLElement> implements I
             }
         }
         this.previousContext = this.documentEditor.selectionModule.contextType;
-        if (this.toolbarModule && this.toolbarModule.toolbar) {
+        if (this.toolbarHandler) {
             this.toolbarModule.enableDisableInsertComment(!this.documentEditor.enableHeaderAndFooter && this.enableComment && !this.documentEditor.isReadOnlyMode && !this.documentEditor.selectionModule.isinFootnote && !this.documentEditor.selectionModule.isinEndnote &&
                 !this.documentEditor.selectionModule.isPlainContentControl());
         }
@@ -1514,6 +1498,6 @@ export class DocumentEditorContainer extends Component<HTMLElement> implements I
         this.statusBarElement = undefined;
         this.editorContainer = undefined;
         this.statusBar = undefined;
-        this.previousContext = undefined;         
+        this.previousContext = undefined;
     }
 }

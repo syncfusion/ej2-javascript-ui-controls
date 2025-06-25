@@ -1,7 +1,8 @@
 /**
  * RTE Formatter spec
  */
-import { RichTextEditor, ActionBeginEventArgs } from "../../../src/rich-text-editor/index";
+import { RichTextEditor } from "../../../src/rich-text-editor/index";
+import { ActionBeginEventArgs } from "../../../src/common/interface";
 import { MarkdownFormatter } from '../../../src/rich-text-editor/formatter/markdown-formatter';
 import { renderRTE, destroy, setCursorPoint } from './../render.spec';
 

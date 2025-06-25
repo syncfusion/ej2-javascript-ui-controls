@@ -1,5 +1,6 @@
 import * as events from '../base/constant';
-import { IRichTextEditor, IToolbarItemModel, IRenderer, NotifyArgs } from '../base/interface';
+import { IRichTextEditor, IRenderer } from '../base/interface';
+import { NotifyArgs, IToolbarItemModel } from '../../common/interface';
 import { ServiceLocator } from '../services/service-locator';
 import { isNullOrUndefined, addClass, removeClass } from '@syncfusion/ej2-base';
 import { MarkdownFormatter } from '../formatter/markdown-formatter';

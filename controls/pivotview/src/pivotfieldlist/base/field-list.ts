@@ -779,7 +779,8 @@ export class PivotFieldList extends Component<HTMLElement> implements INotifyPro
             (this.staticPivotGridModule ? this.staticPivotGridModule.localeObj : this.localeObj);
         const isDrillThrough: boolean = this.pivotGridModule ?
             (this.pivotGridModule.allowDrillThrough || this.pivotGridModule.editSettings.allowEditing) : true;
-        const enableValueSorting: boolean = this.pivotGridModule ? this.pivotGridModule.enableValueSorting : undefined;
+        const enableValueSorting: boolean = this.pivotGridModule ? this.pivotGridModule.enableValueSorting : this.staticPivotGridModule ?
+            this.staticPivotGridModule.enableValueSorting : this.enableValueSorting;
         const allowDataCompression: boolean = this.pivotGridModule && this.pivotGridModule.allowDataCompression ?
             this.pivotGridModule.allowDataCompression : false;
         const enableOptimizedRendering: boolean = this.pivotGridModule && (this.pivotGridModule.enableVirtualization &&
@@ -869,7 +870,7 @@ export class PivotFieldList extends Component<HTMLElement> implements INotifyPro
             enablePaging: this.pivotGridModule && this.pivotGridModule.enablePaging,
             enableVirtualization: this.pivotGridModule && this.pivotGridModule.enableVirtualization,
             allowDataCompression: this.pivotGridModule && this.pivotGridModule.allowDataCompression,
-            isTabular: this.pivotGridModule ? this.pivotGridModule.isTabular : false
+            isTabular: this.pivotGridModule && this.pivotGridModule.isTabular
         };
         if (this.request.readyState === XMLHttpRequest.UNSENT || this.request.readyState === XMLHttpRequest.OPENED) {
             this.request.withCredentials = false;
@@ -1277,6 +1278,10 @@ export class PivotFieldList extends Component<HTMLElement> implements INotifyPro
             case 'allowDeferLayoutUpdate':
                 this.isDeferLayoutUpdate = this.allowDeferLayoutUpdate;
                 this.fieldListRender();
+                if (this.pivotGridModule && this.pivotGridModule.showGroupingBar &&
+                    this.pivotGridModule.groupingBarModule && this.pivotGridModule.showFieldList) {
+                    this.pivotGridModule.groupingBarModule.alignIcon();
+                }
                 break;
             }
             if (requireRefresh) {
@@ -1423,13 +1428,14 @@ export class PivotFieldList extends Component<HTMLElement> implements INotifyPro
     private fieldListRender(): void {
         this.element.innerHTML = '';
         let showDialog: boolean;
-        if (this.renderMode === 'Popup' && this.dialogRenderer.fieldListDialog && !this.dialogRenderer.fieldListDialog.isDestroyed) {
+        if (this.renderMode === 'Popup' && this.dialogRenderer && this.dialogRenderer.fieldListDialog &&
+            !this.dialogRenderer.fieldListDialog.isDestroyed) {
             showDialog = this.dialogRenderer.fieldListDialog.visible;
             this.dialogRenderer.fieldListDialog.destroy();
             remove(document.getElementById(this.element.id + '_Container'));
         }
         this.renderModule.render();
-        if (this.renderMode === 'Popup') {
+        if (this.renderMode === 'Popup' && this.dialogRenderer) {
             this.fieldListSpinnerElement = this.dialogRenderer.fieldListDialog.element;
             if (showDialog) {
                 this.dialogRenderer.fieldListDialog.show();
@@ -1450,7 +1456,8 @@ export class PivotFieldList extends Component<HTMLElement> implements INotifyPro
             pivotEngine: this.dataType === 'olap' ? this.olapEngineModule : this.engineModule,
             dataSourceSettings: this.dataSourceSettings as IDataOptions,
             id: this.element.id,
-            element: this.renderMode === 'Popup' ? this.dialogRenderer.fieldListDialog.element : select('#' + this.element.id + '_Container', this.element),
+            element: (this.renderMode === 'Popup' && this.dialogRenderer) ? this.dialogRenderer.fieldListDialog.element :
+                select('#' + this.element.id + '_Container', this.element),
             moduleName: this.getModuleName(),
             enableRtl: this.enableRtl,
             enableHtmlSanitizer: this.enableHtmlSanitizer,
@@ -1535,13 +1542,16 @@ export class PivotFieldList extends Component<HTMLElement> implements INotifyPro
                 PivotUtil.updateDataSourceSettings(pivot.pivotGridModule, observedArgs.dataSourceSettings);
             }
             if (isNullOrUndefined(isEngineRefresh)) {
-                const enableValueSorting: boolean = isSorted ? false : pivot.staticPivotGridModule ?
-                    pivot.staticPivotGridModule.enableValueSorting : pivot.enableValueSorting;
-                if (isSorted && pivot.dataSourceSettings.valueSortSettings.headerText !== '') {
+                const enableValueSorting: boolean = isSorted ? false : pivot.pivotGridModule ?
+                    pivot.pivotGridModule.enableValueSorting : pivot.staticPivotGridModule ?
+                        pivot.staticPivotGridModule.enableValueSorting : pivot.enableValueSorting;
+                if (isSorted && (pivot.dataSourceSettings.valueSortSettings.headerText !== '' ||
+                        pivot.dataSourceSettings.valueSortSettings.rowHeaderText !== '' ||
+                            pivot.dataSourceSettings.valueSortSettings.columnHeaderText !== '')) {
                     if (pivot.pivotGridModule) {
-                        pivot.pivotGridModule.setProperties({ dataSourceSettings: { valueSortSettings: { headerText: '' } } }, true);
+                        pivot.pivotGridModule.setProperties({ dataSourceSettings: { valueSortSettings: { headerText: '', rowHeaderText: '', columnHeaderText: '' } } }, true);
                     }
-                    pivot.setProperties({ dataSourceSettings: { valueSortSettings: { headerText: '' } } }, true);
+                    pivot.setProperties({ dataSourceSettings: { valueSortSettings: { headerText: '', rowHeaderText: '', columnHeaderText: '' } } }, true);
                 }
                 if (pivot.dataType === 'pivot') {
                     const customProperties: ICustomProperties = pivot.frameCustomProperties();
@@ -1618,7 +1628,7 @@ export class PivotFieldList extends Component<HTMLElement> implements INotifyPro
                 }
                 pivot.isRequiredUpdate = false;
             }
-            if (pivot.dataSourceSettings.mode !== 'Server') {
+            if (pivot.dataSourceSettings.mode !== 'Server' || !isTreeViewRefresh) {
                 pivot.enginePopulatedEventMethod(pivot, isTreeViewRefresh, isOlapDataRefreshed);
             } else if ((pivot.allowDeferLayoutUpdate && !pivot.isRequiredUpdate) || pivot.isRequiredUpdate) {
                 hideSpinner(this.fieldListSpinnerElement as HTMLElement);
@@ -1884,87 +1894,90 @@ export class PivotFieldList extends Component<HTMLElement> implements INotifyPro
      */
     public destroy(): void {
         this.unWireEvent();
+        if (this.fieldListSpinnerElement) {
+            hideSpinner(this.fieldListSpinnerElement as HTMLElement);
+            this.fieldListSpinnerElement = null;
+        }
+        if (this.request) {
+            this.request.abort();
+            this.request = null;
+        }
+        if (this.contextMenuModule) {
+            this.contextMenuModule.destroy();
+            this.contextMenuModule = null;
+        }
+        if (this.calculatedFieldModule) {
+            this.calculatedFieldModule.destroy();
+            this.calculatedFieldModule = null;
+        }
+        if (this.pivotButtonModule) {
+            this.pivotButtonModule.destroy();
+            this.pivotButtonModule = null;
+        }
+        if (this.axisFieldModule) {
+            this.axisFieldModule.destroy();
+            this.axisFieldModule = null;
+        }
+        if (this.axisTableModule) {
+            this.axisTableModule.destroy();
+            this.axisTableModule = null;
+        }
+        if (this.treeViewModule) {
+            this.treeViewModule.destroy();
+            this.treeViewModule = null;
+        }
+        if (this.dialogRenderer) {
+            this.dialogRenderer.destroy();
+            this.dialogRenderer = null;
+        }
+        if (this.renderModule) {
+            this.renderModule = null;
+        }
+        if (this.pivotCommon) {
+            this.pivotCommon.destroy();
+            this.pivotCommon = null;
+        }
         if (this.engineModule && !this.destroyEngine) {
             this.engineModule.fieldList = {};
             this.engineModule.rMembers = null;
             this.engineModule.cMembers = null;
             (this.engineModule as PivotEngine).valueMatrix = [];
-            this.engineModule = {} as PivotEngine;
+            this.engineModule.pivotValues = [];
+            this.engineModule.data = [];
+            this.engineModule = null;
         }
         if (this.olapEngineModule && !this.destroyEngine) {
             this.olapEngineModule.fieldList = {};
-            this.olapEngineModule = {} as OlapEngine;
+            this.olapEngineModule.fieldListData = null;
+            this.olapEngineModule.pivotValues = [];
+            this.olapEngineModule = null;
         }
         if (this.pivotFieldList) {
-            this.pivotFieldList = {};
+            this.pivotFieldList = null;
         }
-        if (this.contextMenuModule) {
-            this.contextMenuModule.destroy();
+        this.clonedDataSet = [];
+        this.clonedDataSource = {};
+        this.clonedFieldList = {};
+        this.clonedFieldListData = [];
+        this.clonedReport = {};
+        this.lastSortInfo = {};
+        this.lastFilterInfo = {};
+        this.lastAggregationInfo = {};
+        this.lastCalcFieldInfo = {};
+        this.remoteData = [];
+        this.actionObj = {};
+        this.savedDataSourceSettings = null;
+        this.localeObj = null;
+        this.defaultLocale = null;
+        this.globalize = null;
+        this.pivotGridModule = null;
+        this.staticPivotGridModule = null;
+        this.filterTargetID = null;
+        if (this.element) {
+            this.element.innerHTML = '';
+            removeClass([this.element], cls.ROOT);
+            removeClass([this.element], cls.RTL);
+            removeClass([this.element], cls.DEVICE);
         }
-        if (this.treeViewModule) {
-            this.treeViewModule.destroy();
-        }
-        if (this.pivotButtonModule) {
-            this.pivotButtonModule.destroy();
-        }
-        if (this.pivotCommon) {
-            this.pivotCommon.destroy();
-        }
-        if (this.dialogRenderer) {
-            this.dialogRenderer.destroy();
-        }
-        if (this.calculatedFieldModule) {
-            this.calculatedFieldModule.destroy();
-        }
-        super.destroy();
-        if (this.contextMenuModule) {
-            this.contextMenuModule = null;
-        }
-        if (this.treeViewModule) {
-            this.treeViewModule = null;
-        }
-        if (this.pivotButtonModule) {
-            this.pivotButtonModule = null;
-        }
-        if (this.pivotCommon) {
-            this.pivotCommon = null;
-        }
-        if (this.dialogRenderer) {
-            this.dialogRenderer = null;
-        }
-        if (this.calculatedFieldModule) {
-            this.calculatedFieldModule = null;
-        }
-        if (this.axisFieldModule) {
-            this.axisFieldModule = null;
-        }
-        if (this.axisTableModule) {
-            this.axisTableModule = null;
-        }
-        if (this.renderModule) {
-            this.renderModule = null;
-        }
-        if (this.clonedDataSet) {
-            this.clonedDataSet = null;
-        }
-        if (this.clonedReport) {
-            this.clonedReport = null;
-        }
-        if (this.clonedFieldList) {
-            this.clonedFieldList = null;
-        }
-        if (this.clonedFieldListData) {
-            this.clonedFieldListData = null;
-        }
-        if (this.localeObj) {
-            this.localeObj = null;
-        }
-        if (this.defaultLocale) {
-            this.defaultLocale = null;
-        }
-        this.element.innerHTML = '';
-        removeClass([this.element], cls.ROOT);
-        removeClass([this.element], cls.RTL);
-        removeClass([this.element], cls.DEVICE);
     }
 }

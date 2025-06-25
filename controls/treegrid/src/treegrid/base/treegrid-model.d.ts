@@ -482,6 +482,13 @@ export interface TreeGridModel extends ComponentModel{
     enableImmutableMode?: boolean;
 
     /**
+     *  Enables the sticky header feature, which keeps the column headers visible while scrolling the Tree Grid content or the entire document.
+     *
+     * @default false
+     */
+    enableStickyHeader?: boolean;
+
+    /**
      * Defines the scrollable height of the TreeGrid content.
      *
      * @default 'auto'
