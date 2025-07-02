@@ -6262,6 +6262,64 @@ describe('Tab Control', () => {
             expect(element.querySelector('.e-content #e-content' + tab.tabId + '_0').innerHTML).toEqual('<div>Content0</div>');
         });
     });
+    describe('Shift+F10 key should not prevent context menu from opening', () => {
+        let tab: any;
+        let keyEventArgs: any;
+        beforeEach((): void => {
+            let css: string = commonCss2;
+            let style: HTMLStyleElement = document.createElement('style');
+            style.type = 'text/css';
+            style.id = 'scroll';
+            style.appendChild(document.createTextNode(css));
+            document.getElementsByTagName('head')[0].appendChild(style);
+            tab = undefined;
+            let ele: HTMLElement = createElement('div', { id: 'ej2Tab' });
+            document.body.appendChild(ele);
+            tab = new Tab({
+                height: '100px',
+                heightAdjustMode: 'None',
+                headerPlacement: 'Left',
+                overflowMode: 'Popup',
+                items: [
+                    { header: { "text": "header-item0" }, content: "Content0" },
+                    { header: { "text": "header-item1" }, content: "Content1" },
+                    { header: { "text": "header-item2" }, content: "Content2" },
+                    { header: { "text": "header-item3" }, content: "Content3" },
+                    { header: { "text": "header-item4" }, content: "Content4" },
+                    { header: { "text": "header-item5" }, content: "Content5" }
+                ]
+            });
+            tab.appendTo('#ej2Tab');
+        });
+        afterEach((): void => {
+            if (tab) {
+                tab.destroy();
+            }
+            document.body.innerHTML = '';
+        });
+        it('Open Popup when press shift+f10 key', (done: Function) => {
+            let element: HTMLElement = document.getElementById('ej2Tab');
+            let trgEle: HTMLElement = <HTMLElement>element.querySelector('.e-hor-nav');
+            keyEventArgs = {
+                preventDefault: function () { },
+                action: 'openPopup',
+                target: trgEle,
+            };
+            tab.keyHandler(keyEventArgs);
+            setTimeout(function () {
+                let element: HTMLElement = document.getElementById('ej2Tab');
+                expect(element.querySelector('.e-toolbar-pop').classList.contains('e-popup-open')).toEqual(true);
+                keyEventArgs = {
+                    preventDefault: function () { },
+                    action: 'openPopup',
+                    target: trgEle,
+                };
+                tab.keyHandler(keyEventArgs);
+                expect(element.querySelector('.e-toolbar-pop').classList.contains('e-popup-open')).toEqual(true);
+                done();
+            }, 1000);
+        });
+    });
     describe('Items - Animations related testing', () => {
         let tab: Tab;
         beforeEach((done: Function): void => {
@@ -12760,7 +12818,7 @@ describe('Tab Control', () => {
 
     describe('Tab with Toolbar Tests', () => {
         let tab: Tab;
-
+    
         function createToolbar(): HTMLElement {
             const toolbarContainer = document.createElement('div');
             const toolbarItems: ItemModel[] = [
@@ -12774,7 +12832,7 @@ describe('Tab Control', () => {
             toolbar.appendTo(toolbarContainer);
             return toolbarContainer;
         }
-
+    
         beforeEach(() => {
             const ele: HTMLElement = createElement('div', { id: 'ej2Tab' });
             document.body.appendChild(ele);
@@ -12791,19 +12849,19 @@ describe('Tab Control', () => {
             });
             tab.appendTo('#ej2Tab');
         });
-
+    
         afterEach(() => {
             if (tab) {
                 tab.destroy();
             }
             document.body.innerHTML = '';
         });
-
+    
         it('should render tab with toolbar', () => {
             expect(document.querySelector('#ej2Tab .e-toolbar')).toBeTruthy();
             expect(document.querySelector('#ej2Tab .e-tab-header')).toBeTruthy();
         });
-
+    
         it('should remove tab with toolbar when close icon is clicked', () => {
             const closeIcon = document.querySelector('.e-toolbar-item .e-close-icon') as HTMLElement;
             if (closeIcon) {

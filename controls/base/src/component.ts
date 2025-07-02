@@ -114,7 +114,7 @@ export abstract class Component<ElementType extends HTMLElement> extends Base<El
         this.moduleLoader.clean();
         this.destroy();
         this.clearChanges();
-        if (this.enablePersistence && this.getModuleName() === 'grid') {
+        if (this.enablePersistence) {
             this.attachUnloadEvent();
         }
         this.localObserver = new Observer(this);
@@ -214,7 +214,7 @@ export abstract class Component<ElementType extends HTMLElement> extends Base<El
                 diagram: 'all',
                 PdfViewer: 'all',
                 grid: ['logger'],
-                richtexteditor: ['link', 'table', 'image', 'audio', 'video', 'formatPainter', 'emojiPicker', 'pasteCleanup', 'htmlEditor', 'toolbar', 'importExport'],
+                richtexteditor: ['link', 'table', 'image', 'audio', 'video', 'formatPainter', 'emojiPicker', 'pasteCleanup', 'htmlEditor', 'toolbar', 'importExport', 'codeBlock'],
                 treegrid: ['filter'],
                 gantt: ['tooltip'],
                 chart: ['Export', 'Zoom'],
@@ -441,8 +441,10 @@ export abstract class Component<ElementType extends HTMLElement> extends Base<El
             callback();
         }
     }
-    protected clearTemplate(templateName?: string[], index?: any): void {
-        //No Code
+    protected clearTemplate(templateName?: string[], index?: any, callback?: any): void {
+        if (!isNullOrUndefined(callback)) {
+            callback();
+        }
     }
 
     private getUniqueID(definedName?: string): string {

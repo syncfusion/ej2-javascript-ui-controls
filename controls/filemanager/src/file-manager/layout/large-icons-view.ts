@@ -1,5 +1,5 @@
 import { ListBase, ListBaseOptions, ItemCreatedArgs } from '@syncfusion/ej2-lists';
-import { createElement, select, selectAll, EventHandler, KeyboardEvents, closest, DragEventArgs, Draggable } from '@syncfusion/ej2-base';
+import { createElement, select, selectAll, EventHandler, KeyboardEvents, closest, DragEventArgs, Draggable, Fetch } from '@syncfusion/ej2-base';
 import { isNullOrUndefined as isNOU, addClass, removeClass, Touch, TapEventArgs, isVisible } from '@syncfusion/ej2-base';
 import { TouchEventArgs, MouseEventArgs, KeyboardEventArgs, getValue, setValue, remove } from '@syncfusion/ej2-base';
 import { IFileManager, FileOpenEventArgs, FileLoadEventArgs } from '../base/interface';
@@ -7,15 +7,15 @@ import { FileSelectEventArgs, NotifyArgs, FileSelectionEventArgs } from '../base
 import { DataManager, Query, DataUtil } from '@syncfusion/ej2-data';
 import { hideSpinner, showSpinner } from '@syncfusion/ej2-popups';
 import * as events from '../base/constant';
-import { ReadArgs, MouseArgs } from '../../index';
+import { ReadArgs, MouseArgs, BeforeImageLoadEventArgs } from '../../index';
 import * as CLS from '../base/classes';
 import { createCheckBox } from '@syncfusion/ej2-buttons';
-import { read, GetDetails, Delete } from '../common/operations';
+import { read, GetDetails, Delete, triggerFetchFailure, triggerFetchSuccess } from '../common/operations';
 import { doRename, getAccessClass, getPathObject, getFullPath, getDirectoryPath, rename, doDownload, getItemName } from '../common/index';
 import { removeBlur, cutFiles, copyFiles, addBlur, openSearchFolder, removeActive, pasteHandler } from '../common/index';
 import { createVirtualDragElement, dragStopHandler, dragStartHandler, draggingHandler, getModule } from '../common/index';
 import { updateRenamingData, doDeleteFiles, doDownloadFiles } from '../common/index';
-import { openAction, fileType, refresh, getImageUrl, getSortedData, createDeniedDialog, updateLayout } from '../common/utility';
+import { openAction, fileType, refresh, getImageUrl, getSortedData, createDeniedDialog, updateLayout, getLocaleText } from '../common/utility';
 import { createEmptyElement, hasReadAccess, hasEditAccess } from '../common/utility';
 import { createDialog, createImageDialog } from '../pop-up/dialog';
 
@@ -50,6 +50,8 @@ export class LargeIconsView {
     private isPasteOperation: boolean = false;
     private dragObj: Draggable;
     private isInteracted: boolean = true;
+    private imageEventArgsMap: Map<string, BeforeImageLoadEventArgs> = new Map<string, BeforeImageLoadEventArgs>();
+    private imageUrlCache: Map<string, string> = new Map<string, string>();
 
     /**
      * Constructor for the LargeIcons module.
@@ -130,7 +132,7 @@ export class LargeIconsView {
                     groupItemRole: 'group', wrapperRole: ''
                 },
                 showIcon: true,
-                fields: { text: 'name', iconCss: '_fm_icon', imageUrl: '_fm_imageUrl', htmlAttributes: '_fm_htmlAttr' },
+                fields: { text: 'name', iconCss: '_fm_icon', imageUrl: '_fm_imageUrl', imageAttributes: '_fm_imageAttr', htmlAttributes: '_fm_htmlAttr' },
                 sortOrder: this.parent.sortOrder,
                 itemCreated: this.onItemCreated.bind(this),
                 enableHtmlSanitizer: this.parent.enableHtmlSanitizer
@@ -147,6 +149,9 @@ export class LargeIconsView {
             this.listElements = ListBase.createListFromJson(createElement, <{ [key: string]: Object; }[]>this.items, this.listObj);
             this.itemList = Array.prototype.slice.call(selectAll('.' + CLS.LIST_ITEM, this.listElements));
             this.element.appendChild(this.listElements);
+            if (this.imageEventArgsMap.size > 0) {
+                this.loadImages();
+            }
             this.listElements.setAttribute('aria-label', 'listbox');
             this.preventImgDrag();
             this.createDragObj();
@@ -191,7 +196,46 @@ export class LargeIconsView {
             if (this.parent.selectedItems.length) { this.checkItem(); }
         }
     }
-
+    private loadImages(): void {
+        const imageEle: NodeListOf<Element> = this.parent.element.querySelectorAll('.e-list-img');
+        imageEle.forEach((imgElement: HTMLElement) => {
+            const imageKey: string = imgElement.getAttribute('data-image-key');
+            if (!imageKey) {return; }
+            if (this.imageUrlCache.has(imageKey)) {
+                imgElement.setAttribute('src', this.imageUrlCache.get(imageKey));
+                imgElement.classList.remove('image-blur');
+                return;
+            }
+            const imageDetails: BeforeImageLoadEventArgs = this.imageEventArgsMap.get(imageKey);
+            if (!imageDetails) {return; }
+            const fetch: Fetch = new Fetch({
+                url: getValue('url', imageDetails.ajaxSettings),
+                type: getValue('type', imageDetails.ajaxSettings),
+                contentType: getValue('contentType', imageDetails.ajaxSettings),
+                responseType: getValue('responseType', imageDetails.ajaxSettings),
+                beforeSend: getValue('beforeSend', imageDetails.ajaxSettings),
+                onSuccess: (blob: Blob) => {
+                    const blobUrl: string = URL.createObjectURL(blob);
+                    this.imageUrlCache.set(imageKey, blobUrl);
+                    imgElement.setAttribute('src', blobUrl);
+                    imgElement.classList.remove('image-blur');
+                    triggerFetchSuccess(this.parent, imageDetails.ajaxSettings);
+                },
+                onFailure: (response: Response) => {
+                    const result: ReadArgs = {
+                        files: null,
+                        error: {
+                            code: response.status ? response.status.toString() : '404',
+                            message: getLocaleText(this.parent, 'Network-Error') + ' ' + getValue('url', imageDetails.ajaxSettings),
+                            fileExists: null
+                        }
+                    };
+                    triggerFetchFailure(this.parent, imageDetails.ajaxSettings, result);
+                }
+            });
+            fetch.send(getValue('data', imageDetails.ajaxSettings));
+        });
+    }
     private comparer (x: number | string, y: number | string): number | string {
         if (this.parent.sortOrder === 'Descending') {
             const z: number | string = x;
@@ -364,9 +408,18 @@ export class LargeIconsView {
                 className += ' ' + getAccessClass(items[i as number]);
             }
             if (icon === CLS.ICON_IMAGE && this.parent.showThumbnail && hasReadAccess(items[i as number])) {
-                const imgUrl: string = getImageUrl(this.parent, items[i as number]);
-                setValue('_fm_imageUrl', imgUrl, items[i as number]);
-                setValue('_fm_imageAttr', { alt: name }, items[i as number]);
+                const imageData: BeforeImageLoadEventArgs = getImageUrl(this.parent, items[i as number]);
+                if (imageData.useImageAsUrl) {
+                    setValue('_fm_imageUrl', imageData.imageUrl, items[i as number]);
+                    setValue('_fm_imageAttr', { alt: name }, items[i as number]);
+                }
+                else {
+                    const uniqueKey: string = `img_${name}_${i}`;
+                    this.imageEventArgsMap.set(uniqueKey, imageData);
+                    setValue('_fm_imageUrl', '', items[i as number]);
+                    setValue('_fm_imageAttr', {alt: name, class: 'e-list-img image-blur', 'data-image-key': uniqueKey }, items[i as number]);
+
+                }
             } else {
                 setValue('_fm_icon', icon, items[i as number]);
             }
@@ -922,8 +975,8 @@ export class LargeIconsView {
                     } else {
                         const icon: string = fileType(details);
                         if (icon === CLS.ICON_IMAGE) {
-                            const imgUrl: string = getImageUrl(this.parent, details);
-                            createImageDialog(this.parent, text, imgUrl);
+                            const imageData: BeforeImageLoadEventArgs = getImageUrl(this.parent, details);
+                            createImageDialog(this.parent, text, imageData);
                         }
                     }
                 }

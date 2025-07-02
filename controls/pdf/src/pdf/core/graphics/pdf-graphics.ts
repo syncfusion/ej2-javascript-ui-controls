@@ -4,7 +4,7 @@ import { _PdfBaseStream, _PdfContentStream } from './../base-stream';
 import { _floatToString, _addProcSet, _reverseMapBlendMode, _mapBlendMode, _getNewGuidString, _getBezierArc, _numberToString, _bytesToString, _stringToUnicodeArray } from './../utils';
 import { _PdfDictionary, _PdfReference, _PdfName } from './../pdf-primitives';
 import { _PdfCrossReference } from './../pdf-cross-reference';
-import { PdfFont, PdfFontStyle, PdfStandardFont, PdfTrueTypeFont } from './../fonts/pdf-standard-font';
+import { PdfCjkStandardFont, PdfFont, PdfFontStyle, PdfStandardFont, PdfTrueTypeFont } from './../fonts/pdf-standard-font';
 import { _PdfStringLayouter, _PdfStringLayoutResult, _LineInfo, _LineType, _StringTokenizer } from './../fonts/string-layouter';
 import { PdfTextAlignment, _PdfGraphicsUnit, PdfTextDirection, PdfSubSuperScript, PdfBlendMode, PdfLineJoin, PdfLineCap, PdfDashStyle, PdfFillMode, PathPointType } from './../enumerator';
 import { PdfStringFormat, PdfVerticalAlignment } from './../fonts/pdf-string-format';
@@ -1790,7 +1790,9 @@ export class PdfGraphics {
             if (hAlignShift !== 0) {
                 this._sw._startNextLine(hAlignShift, 0);
             }
-            if (unicode) {
+            if (font instanceof PdfCjkStandardFont) {
+                this._drawCjkString(lineInfo, layoutRectangle, font, format);
+            } else if (unicode) {
                 this._drawUnicodeLine(lineInfo, layoutRectangle[2], font, format);
             } else {
                 this._drawAsciiLine(lineInfo, layoutRectangle[2], format, font);
@@ -1806,6 +1808,48 @@ export class PdfGraphics {
                 this._sw._modifyTM(matrix);
             }
         }
+    }
+    _drawCjkString(lineInfo: _LineInfo, layoutRectangle: number[], font: PdfFont, format: PdfStringFormat): void {
+        if (font) {
+            this._justifyLine(lineInfo, layoutRectangle[2], format, font);
+            const line: string = lineInfo._text;
+            const lines: Uint8Array = this._getCjkString(line);
+            const value: string = _bytesToString(lines);
+            this._sw._showNextLineText('(' + value + ')', false);
+        }
+    }
+    _getCjkString(line: string): Uint8Array {
+        if (line === null || typeof line === 'undefined') {
+            throw new Error('line cannot be null');
+        }
+        let value: Uint8Array = _stringToUnicodeArray(line);
+        value = this._escapeSymbols(value);
+        return value;
+    }
+    _escapeSymbols(data: Uint8Array): Uint8Array {
+        if (data === null) {
+            throw new Error('data cannot be null');
+        }
+        const escaped: number[] = [];
+        for (let i: number = 0, len: number = data.length; i < len; i++) {
+            const bt: any = data[<number>i]; // eslint-disable-line
+            switch (bt) {
+            case 40:
+            case 41:
+            case 92:
+                escaped.push(92);
+                escaped.push(bt);
+                break;
+            case 13:
+                escaped.push(92);
+                escaped.push(114);
+                break;
+            default:
+                escaped.push(bt);
+                break;
+            }
+        }
+        return new Uint8Array(escaped);
     }
     _drawUnicodeLine(lineInfo: _LineInfo, width: number, font: PdfFont, format: PdfStringFormat): void {
         const line: string = lineInfo._text;

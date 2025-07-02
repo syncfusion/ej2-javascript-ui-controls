@@ -137,6 +137,35 @@ describe('FileManager control Grid view', () => {
                 done();
             }, 500);
         });
+        it('for created function with dropArea as null', (done: Function) => {
+            feObj = new FileManager({
+                view: 'Details',
+                ajaxSettings: {
+                    url: '/FileOperations',
+                    uploadUrl: '/Upload',
+                    downloadUrl: '/Download',
+                    getImageUrl: '/GetImage'
+                },
+                showThumbnail: false,
+                created: function () {
+                    feObj.uploadObj.dropArea = null; 
+                }
+            });
+            feObj.appendTo('#file');
+            this.request = jasmine.Ajax.requests.mostRecent();
+            this.request.respondWith({
+                status: 200,
+                responseText: JSON.stringify(data1)
+            });
+            setTimeout(function () {
+                if(document.getElementById('file_grid').querySelector('.e-empty'))
+                {
+                    expect(document.getElementById('file_grid').querySelector('.e-empty').querySelector('.e-empty-inner-content').innerHTML).toEqual('');
+                }
+                done();
+            }, 500);
+        });
+        
         it('for fileSelection with cancel', (done: Function) => {
             feObj = new FileManager({
                 view: 'Details',

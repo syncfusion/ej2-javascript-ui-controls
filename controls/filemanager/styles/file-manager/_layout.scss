@@ -343,18 +343,18 @@
         @if ($fm-skin-name != 'fluent2') {
           margin: $fe-search-icon-margin;
         }
-        @if $fm-skin-name == 'tailwind' or $fm-skin-name == 'bootstrap5' {
+        @if ($fm-skin-name == 'tailwind' or $fm-skin-name == 'bootstrap5') {
           margin-right: 4px;
-          padding: 3px;
+          padding: $fe-search-input-padding;
         }
-        @if ($fm-skin-name == 'Material3') {
+        @else if ($fm-skin-name == 'Material3') {
           padding: $fe-search-input-padding;
         }
         @else if ($fm-skin-name == 'fluent2') {
           padding: $fe-search-input-padding;
         }
         @else if ($fm-skin-name == 'tailwind3') {
-          padding: 3px;
+          padding: $fe-search-input-padding;
         }
         @else {
           padding: 5px;
@@ -847,6 +847,10 @@
         vertical-align: bottom;
       }
 
+      .image-blur {
+        filter: blur(8px);
+      }
+      
       .e-list-text {
         @include ellipsis;
         display: block;
@@ -1156,6 +1160,13 @@
         visibility: visible;
       }
     }
+    
+    .e-fm-view-container {
+      display: flex;
+      width: 100%;
+      flex-direction: column;
+      height: 100%;
+    }
   }
 
   .e-fe-popup {
@@ -1317,5 +1328,36 @@
   
   .e-content-placeholder.e-filemanager.e-placeholder-filemanager {
     @include size(100%, 100%);
+  }
+
+  .e-filemanager-dialog {
+    z-index: 1005;
+    display: flex;
+    position: absolute;
+  }
+
+  .e-image-wrap-style {
+    height: 100%;
+  }
+
+  .e-fe-popup.e-dialog td.e-permission-content{
+    white-space: unset;
+  }
+
+  .e-large-icon-visible {
+    visibility: visible;
+  }
+
+  .e-large-icon-hidden {
+    visibility: hidden;
+  }
+
+  .e-filemanager .e-empty-state-container {
+    display: flex;
+    height: 100%;
+  }
+
+  .e-filemanager .e-empty.e-view-container {
+    margin: auto;
   }
 }

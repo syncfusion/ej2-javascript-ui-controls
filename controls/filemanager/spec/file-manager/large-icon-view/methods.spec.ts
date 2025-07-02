@@ -7,12 +7,290 @@ import { DetailsView } from '../../../src/file-manager/layout/details-view';
 import { Toolbar } from '../../../src/file-manager/actions/toolbar';
 import { createElement } from '@syncfusion/ej2-base';
 import { data1, idData1, filterData, data4, data5, data6a, rename2, pastesuccess } from '../data';
-import { data1Delete, idData1Delete, folderRename, rename, idData1Rename1, idData1Rename, data17, idData4 } from '../data';
+import { data1Delete, idData1Delete, folderRename, rename, idData1Rename1, idData1Rename, data17, idData4, imageData } from '../data';
 import { ColumnModel } from '@syncfusion/ej2-grids';
 
 FileManager.Inject(Toolbar, NavigationPane, DetailsView);
 
 describe('FileManager control LargeIcons view', () => {
+    describe('FileManager getImage', () => {
+        let feObj: any;
+        let ele: HTMLElement;
+        let originalTimeout: any;
+        beforeEach((): void => {
+            jasmine.Ajax.install();
+            ele = createElement('div', { id: 'file' });
+            document.body.appendChild(ele);
+            feObj = undefined;
+            originalTimeout = jasmine.DEFAULT_TIMEOUT_INTERVAL;
+            jasmine.DEFAULT_TIMEOUT_INTERVAL = 50000;
+        });
+        afterEach((): void => {
+            jasmine.Ajax.uninstall();
+            if (feObj) feObj.destroy();
+            ele.remove();
+            jasmine.DEFAULT_TIMEOUT_INTERVAL = originalTimeout;
+        });
+        it('for getImage with useImageAsUrl false', (done: Function) => {
+            feObj = new FileManager({
+                view: 'LargeIcons',
+                ajaxSettings: {
+                    url: '/FileOperations',
+                    downloadUrl: '/Download',
+                    getImageUrl: '/GetImage',
+                    uploadUrl: '/Upload'
+                },
+                showThumbnail: true,
+                beforeImageLoad: function (args: any) { args.useImageAsUrl = false; }
+            });
+            feObj.appendTo('#file');
+            this.request = jasmine.Ajax.requests.mostRecent();
+            this.request.respondWith({
+                status: 200,
+                responseText: JSON.stringify(imageData)
+            });
+            setTimeout(function () {
+                const imgElements = feObj.element.querySelectorAll('.e-list-img');
+                expect(imgElements.length).toBe(5);
+                if (!feObj.beforeImageLoad.useImageAsUrl) {
+                    if (imgElements[0].src && imgElements[0].src.includes('time')) {
+                        expect(imgElements[0].src.includes('time')).toBe(false);
+                        done();
+                    } else {
+                        // Set up a mutation observer to watch for src attribute changes
+                        const observer = new MutationObserver((mutations) => {
+                            mutations.forEach((mutation) => {
+                                if (mutation.type === 'attributes' && mutation.attributeName === 'src') {
+                                    const newSrc = imgElements[0].src;
+                                    if (newSrc && newSrc.length > 0) {
+                                        expect(newSrc.includes('time')).toBe(false);
+                                        expect(newSrc.includes('loading-indicator')).toBe(false);
+                                        observer.disconnect();
+                                        done();
+                                    }
+                                }
+                            });
+                        });
+                        observer.observe(imgElements[0], { attributes: true });
+                        // Set a timeout to prevent the test from hanging
+                        setTimeout(() => {
+                            observer.disconnect();
+                            done();
+                        }, 5000);
+                    }
+                }
+            }, 500);
+        });
+        it('for getImage with useImageAsUrl true', (done: Function) => {
+            feObj = new FileManager({
+                view: 'LargeIcons',
+                ajaxSettings: {
+                    url: '/FileOperations',
+                    downloadUrl: '/Download',
+                    getImageUrl: '/GetImage',
+                    uploadUrl: '/Upload'
+                },
+                showThumbnail: true,
+                beforeImageLoad: function (args: any) { args.useImageAsUrl = true; }
+            });
+            feObj.appendTo('#file');
+            this.request = jasmine.Ajax.requests.mostRecent();
+            this.request.respondWith({
+                status: 200,
+                responseText: JSON.stringify(imageData)
+            });
+            setTimeout(function () {
+                const imgElements = feObj.element.querySelectorAll('.e-list-img');
+                expect(imgElements.length).toBe(5);
+                expect(imgElements[0].src.includes('base64')).toBe(false);
+                done();
+            }, 500);
+        });
+        it('should trigger only the success event when getImage succeeds', (done: Function) => {
+            let successEventTriggered = false;
+            feObj = new FileManager({
+                view: 'LargeIcons',
+                ajaxSettings: {
+                    url: '/FileOperations',
+                    downloadUrl: '/Download',
+                    getImageUrl: '/GetImage',
+                    uploadUrl: '/Upload'
+                },
+                showThumbnail: true,
+                beforeImageLoad: function (args: any) { args.useImageAsUrl = false; },
+                success: function (args: any) {
+                    successEventTriggered = true;
+                }
+            });
+            feObj.appendTo('#file');
+            this.request = jasmine.Ajax.requests.mostRecent();
+            this.request.respondWith({
+                status: 200,
+                responseText: imageData
+            });
+            setTimeout(function () {
+                expect(successEventTriggered).toBe(true);
+                done();
+            }, 500);
+        });
+        it('should trigger failure event on image load error', (done: Function) => {
+            let failureEventTriggered = false;
+            feObj = new FileManager({
+                view: 'LargeIcons',
+                ajaxSettings: {
+                    url: '/FileOperations', downloadUrl: '/Download', getImageUrl: '/GetImage', uploadUrl: '/Upload'
+                },
+                showThumbnail: true,
+                beforeImageLoad: function (args: any) { args.useImageAsUrl = false; },
+                failure: function (args: any) { failureEventTriggered = true; }
+            });
+            feObj.appendTo('#file');
+            this.request = jasmine.Ajax.requests.mostRecent();
+            this.request.respondWith({
+                status: 404,
+                responseText: 'Not Found'
+            });
+            setTimeout(function () {
+                expect(failureEventTriggered).toBe(true);
+                done();
+            }, 500);
+        });
+        it('should handle empty image data response gracefully', (done: Function) => {
+            feObj = new FileManager({
+                view: 'LargeIcons',
+                ajaxSettings: {
+                    url: '/FileOperations',
+                    downloadUrl: '/Download',
+                    getImageUrl: '/GetImage',
+                    uploadUrl: '/Upload'
+                },
+                showThumbnail: true
+            });
+            feObj.appendTo('#file');
+            this.request = jasmine.Ajax.requests.mostRecent();
+            this.request.respondWith({
+                status: 200,
+                responseText: JSON.stringify([]) // Empty response
+            });
+            setTimeout(function () {
+                const imgElements = feObj.element.querySelectorAll('.e-list-img');
+                expect(imgElements.length).toBe(0); // Expect no images to be rendered
+                done();
+            }, 500);
+        });
+        it('should display error message when response has status 500', (done: Function) => {
+            let errorMessageDisplayed = false;
+            feObj = new FileManager({
+                view: 'LargeIcons',
+                ajaxSettings: {
+                    url: '/FileOperations',
+                    getImageUrl: '/GetImage',
+                    uploadUrl: '/Upload'
+                },
+                showThumbnail: true,
+                failure: function () { errorMessageDisplayed = true; }
+            });
+            feObj.appendTo('#file');
+            this.request = jasmine.Ajax.requests.mostRecent();
+            this.request.respondWith({
+                status: 500,
+                responseText: 'Internal Server Error'
+            });
+            setTimeout(function () {
+                expect(errorMessageDisplayed).toBe(true);
+                done();
+            }, 500);
+        });
+        it('should recover gracefully from a network failure', (done: Function) => {
+            let networkFailureHandled = false;
+            feObj = new FileManager({
+                view: 'LargeIcons',
+                ajaxSettings: {
+                    url: '/FileOperations',
+                    getImageUrl: '/GetImage',
+                    uploadUrl: '/Upload'
+                },
+                showThumbnail: true,
+                beforeImageLoad: function (args: any) { args.useImageAsUrl = false; },
+                failure: function () { networkFailureHandled = true; }
+            });
+            feObj.appendTo('#file');
+            this.request = jasmine.Ajax.requests.mostRecent();
+            this.request.respondWith({
+                status: 0,
+                responseText: ''
+            });
+            setTimeout(function () {
+                expect(networkFailureHandled).toBe(true);
+                done();
+            }, 500);
+        });
+    });
+    describe('Large Icon View to Details View - Rename Selection Test', () => {
+        let feObj: FileManager;
+        let ele: HTMLElement;
+        let originalTimeout: number;
+
+        beforeEach((done: Function) => {
+            originalTimeout = jasmine.DEFAULT_TIMEOUT_INTERVAL;
+            jasmine.DEFAULT_TIMEOUT_INTERVAL = 50000;
+            jasmine.Ajax.install();
+            ele = createElement('div', { id: 'file_wrap2', styles: "display: block" });
+            document.body.appendChild(ele);
+            const fmEle: HTMLElement = createElement('div', { id: 'file2' });
+            ele.appendChild(fmEle);
+            done();
+        });
+
+        afterEach(() => {
+            if (feObj) {
+                feObj.destroy();
+            }
+            document.body.removeChild(ele);
+            jasmine.DEFAULT_TIMEOUT_INTERVAL = originalTimeout;
+            jasmine.Ajax.uninstall();
+        });
+
+        it('for rename in large icon view and switch to details view', (done: Function) => {
+            feObj = new FileManager({
+                view: 'LargeIcons',
+                ajaxSettings: {
+                    url: '/FileOperations',
+                    uploadUrl: '/Upload',
+                    downloadUrl: '/Download',
+                    getImageUrl: '/GetImage'
+                },
+                showThumbnail: false
+            });
+            feObj.appendTo("#file2");
+            const request: JasmineAjaxRequest = jasmine.Ajax.requests.mostRecent();
+            request.respondWith({
+                status: 200,
+                responseText: JSON.stringify(data1)
+            });
+            setTimeout(() => {
+                const newName: string = 'RenamedFile.txt';
+                feObj.renamedItem = { name: newName };
+                feObj.setProperties({ selectedItems: [newName] }, true);
+                feObj.notify('renameEnd', {});
+                feObj.view = 'Details';
+                const viewChangeRequest: JasmineAjaxRequest = jasmine.Ajax.requests.mostRecent();
+                const responseData: any = JSON.parse(JSON.stringify(data1));
+                if (responseData.files && responseData.files.length > 0) {
+                    responseData.files[0].name = newName;
+                }
+                viewChangeRequest.respondWith({
+                    status: 200,
+                    responseText: JSON.stringify(responseData)
+                });
+                setTimeout(() => {
+                    expect(feObj.selectedItems.length).toEqual(1);
+                    expect(feObj.selectedItems[0]).toEqual(newName);
+                    done();
+                }, 800);
+            }, 600);
+        });
+    });
     describe('methods testing', () => {
         let feObj: FileManager;
         let ele: HTMLElement, fmEle: HTMLElement;

@@ -611,6 +611,7 @@ export class ToolbarRenderer implements IRenderer {
             value: colorValue,
             showButtons: false,
             cssClass: args.cssClass,
+            disabled: !this.parent.enabled,
             created: () => {
                 const colorPickerDiv: HTMLElement = (args.element.parentElement as HTMLElement);
                 if (!colorPickerDiv) { return; }

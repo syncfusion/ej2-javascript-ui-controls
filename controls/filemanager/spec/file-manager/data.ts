@@ -21,6 +21,18 @@ export let data1: any = {
     "details": null,
     "cwd": { "name": "FileContent", "size": 0, "dateModified": "11/15/2018 11:42:21 AM", "dateCreated": "11/8/2018 4:07:00 PM", "hasChild": true, "isFile": false, "type": "", "filterPath": "" },
 };
+export let imageData: any = {
+    "files": [
+        { "name": "sunset.jpg", "size": 45678, "dateModified": "1/5/2018 2:15:30 PM", "dateCreated": "10/18/2018 11:30:22 AM", "hasChild": false, "isFile": true, "type": ".jpg", "filterPath": "\\" },
+        { "name": "mountain.png", "size": 67890, "dateModified": "1/7/2018 3:22:15 PM", "dateCreated": "10/19/2018 10:45:18 AM", "hasChild": false, "isFile": true, "type": ".png", "filterPath": "\\" },
+        { "name": "beach.jpeg", "size": 54321, "dateModified": "1/10/2018 1:05:45 PM", "dateCreated": "10/20/2018 9:15:33 AM", "hasChild": false, "isFile": true, "type": ".jpeg", "filterPath": "\\" },
+        { "name": "forest.gif", "size": 32456, "dateModified": "1/12/2018 5:30:10 PM", "dateCreated": "10/21/2018 2:40:55 PM", "hasChild": false, "isFile": true, "type": ".gif", "filterPath": "\\" },
+        { "name": "cityscape.bmp", "size": 78901, "dateModified": "1/15/2018 11:45:22 AM", "dateCreated": "10/22/2018 4:20:12 PM", "hasChild": false, "isFile": true, "type": ".bmp", "filterPath": "\\" }
+    ],
+    "error": null,
+    "details": null,
+    "cwd": { "name": "ImageGallery", "size": 0, "dateModified": "11/16/2018 10:30:15 AM", "dateCreated": "11/9/2018 3:15:45 PM", "hasChild": true, "isFile": false, "type": "", "filterPath": "" },
+};
 export let dataForSanitization: any = {
     "files": [
         { "name": "1.png", "size": 49792, "dateModified": "1/3/2018 4:07:28 PM", "dateCreated": "10/17/2018 12:57:59 PM", "hasChild": false, "isFile": true, "type": ".png", "filterPath": "\\" },

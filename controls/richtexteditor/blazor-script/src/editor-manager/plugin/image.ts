@@ -271,7 +271,11 @@ export class ImageCommand {
         } else if (!isNOU(closest(e.item.selectNode[0], '.' + classes.CLASS_CAPTION))) {
             detach(closest(e.item.selectNode[0], '.' + classes.CLASS_CAPTION));
         } else {
+            const imgParentElem: HTMLElement = e.item.selectNode[0].parentElement;
             detach(e.item.selectNode[0]);
+            if (imgParentElem.childNodes.length === 0) {
+                imgParentElem.appendChild(document.createElement('br'));
+            }
         }
         this.callBack(e);
     }

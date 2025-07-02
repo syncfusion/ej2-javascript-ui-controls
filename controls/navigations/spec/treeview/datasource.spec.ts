@@ -1349,3 +1349,10 @@ export let hierarchicalDataSource2: { [key: string]: Object }[] = [
         ]
     },
 ];
+export const data: { [key: string]: Object }[] = [
+    {
+        id: 1, name: 'Root', hasChildren: true, expanded: false, child: [
+            { id: 2, name: 'Child' }
+        ]
+    }
+];

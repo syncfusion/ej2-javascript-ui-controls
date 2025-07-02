@@ -1624,6 +1624,10 @@ export class PdfDocument {
         }
         if (!this._version) {
             this._version = version.substring(5);
+            if (this._version === '%PDF-1.3' || this._version === '%PDF-1.0' || this._version === '%PDF-1.1'
+                || this._version === '%PDF-1.2') {
+                this.fileStructure.isIncrementalUpdate = false;
+            }
         }
     }
     _parse(recoveryMode: boolean): void {

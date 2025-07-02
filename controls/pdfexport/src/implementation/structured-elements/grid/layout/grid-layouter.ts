@@ -1377,7 +1377,7 @@ export class PdfGridLayouter extends ElementLayouter {
                         }
                         rowHeightWithSpan = 0;
                     }
-                }
+                }     
             }
             let calculatedHeight : number = row.rowBreakHeight > 0.0 ? row.rowBreakHeight : row.height;
             if (typeof this.Grid.isChildGrid !== 'undefined' && this.Grid.isChildGrid && typeof this.Grid.ParentCell !== 'undefined' && this.Grid.ParentCell != null) {

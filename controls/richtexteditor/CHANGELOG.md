@@ -2,6 +2,29 @@
 
 ## [Unreleased]
 
+## 30.1.38 (2025-07-02)
+
+### RichTextEditor
+
+#### Bug Fixes
+
+- `#I742990` - Now, images are inserted properly in the Rich Text Editor after enabling the toolbar dynamically.
+
+- `#I737320` - Now, when the Rich Text Editor value is dynamically modified, formatting actions will be correctly applied within the block node—even if the editor is not focused at the time of interaction.
+
+- `#I738301` - Now, The issue with the image upload popup appearing outside the Rich Text Editor when pasting images has now been resolved.
+- `#I724438` - Now, the issue with the editor's height getting jumped when clicking inside the table in the RichTextEditor has now been resolved.
+
+- `#I740682` - Now, The issue with maximize shortcut does not work when code view is enabled in the Rich Text Editor, has now been resolved.
+
+- `#I733810` - Now, The tooltips and hover effects are shown when hovering over the toolbar items in disabled RichTextEditor, has now been resolved.
+
+- `#I733547` - Now, The issue with the setting Default in the FontSize toolbar doesn't reset the fontSize in the RichTextEditor has now been resolved.
+
+- `#I738478` - Now, the aria-label modification works properly in the Rich Text Editor, ensuring persistent values even after reloading.
+
+- `#I740431` - Now, the Rich Text Editor works properly with enhanced protection against XSS security vulnerabilities, ensuring safer content editing and management.
+
 ## 30.1.37 (2025-06-25)
 
 ### RichTextEditor

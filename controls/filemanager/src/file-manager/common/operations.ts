@@ -242,6 +242,11 @@ function createNewItem(data: { [key: string]: any }, target: { [key: string]: an
         size: isCopy ? data.size : 0,
         type: isCopy ? data.type : ''
     });
+    if (!isNOU(target.filterId)) {
+        Object.assign(newItem, {
+            filterId: target.filterId + target.id + '/'
+        });
+    }
     return newItem;
 }
 
@@ -486,6 +491,12 @@ function triggerMoveOrCopyOperation(parent: IFileManager, data: Object, eventArg
                         }
                         fileData.parentId = target.id;
                         fileData.filterPath = target.id === 0 ? '\\' : target.filterPath + target.name + '\\';
+                        if (!isNOU(target.filterId)) {
+                            fileData.filterId = target.filterId + target.id + '/';
+                        }
+                        if (!currItem.isFile) {
+                            updateMovedItemChildren(parent, fileData);
+                        }
                     }
                     else {
                         file.push(currItem.name);
@@ -805,6 +816,26 @@ function copyFolderItems(parent: IFileManager, data: { [key: string]: any }, tar
     for (let i: number = 0; i < copiedItems.length; i++) {
         copyFolderItems(parent, copiedItems[i as number], newObject, null);
     }
+}
+/**
+ * Function to move operation.
+ *
+ * @param {IFileManager} parent - specifies the parent element.
+ * @param {Object} itemData - specifies the data.
+ * @returns {void}
+ * @private
+ */
+function updateMovedItemChildren(parent: IFileManager, itemData: { [key: string]: any }): void {
+    const childItems: Object[] = filterByParent(parent, itemData.id);
+    childItems.forEach((childItem: any) => {
+        childItem.filterPath = itemData.filterPath + itemData.name + '\\';
+        if (!isNOU(itemData.filterId)) {
+            childItem.filterId = itemData.filterId + itemData.id + '/';
+        }
+        if (!childItem.isFile) {
+            updateMovedItemChildren(parent, childItem);
+        }
+    });
 }
 /**
  * Function for trigger Ajax failure in File Manager.
@@ -1306,4 +1337,33 @@ function handleCatchError(parent: IFileManager, error: any, action: string): voi
         }
     };
     onFailure(parent, errorResult, action);
+}
+/**
+ * Function for trigger Fetch success in File Manager.
+ *
+ * @param {IFileManager} parent - specifies the parent element.
+ * @param {Object} ajaxSettings - specifies the ajax settings.
+ * @returns {void}
+ */
+export function triggerFetchSuccess(parent: IFileManager, ajaxSettings: Object): void {
+    parent.notify(events.afterRequest, { action: 'success' });
+    if (ajaxSettings && typeof getValue('onSuccess', ajaxSettings) === 'function') {
+        getValue('onSuccess', ajaxSettings)();
+    }
+}
+
+/**
+ * Function for trigger Fetch failure in File Manager.
+ *
+ * @param {IFileManager} parent - specifies the parent element.
+ * @param {Object} ajaxSettings - specifies the ajax settings.
+ * @param {ReadArgs} result - specifies the result.
+ * @returns {void}
+ */
+export function triggerFetchFailure(parent: IFileManager, ajaxSettings: Object, result: ReadArgs): void {
+    parent.notify(events.afterRequest, { action: 'failure' });
+    createDialog(parent, 'Error', result);
+    if (typeof getValue('onFailure', ajaxSettings) === 'function') {
+        getValue('onFailure', ajaxSettings)();
+    }
 }

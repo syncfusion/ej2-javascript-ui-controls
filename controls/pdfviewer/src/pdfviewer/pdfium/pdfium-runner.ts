@@ -229,7 +229,7 @@ export function PdfiumRunner(): void {
                 // console.log('Loading PDF document using custom loader...');
 
                 // load the document using the custom loader
-                const docHandle: any = FPDF.LoadCustomDocument(ptr, null);
+                const docHandle: any = FPDF.LoadCustomDocument(ptr, event.data.password);
                 documentDetails = new DocumentInfo({
                     wasm: docHandle,
                     wasmBuffer: wasmBuffer

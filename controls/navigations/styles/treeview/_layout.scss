@@ -81,6 +81,10 @@
       }
     }
 
+    .e-mask-parent {
+      display: none;
+    }
+
     & > .e-ul {
       -webkit-overflow-scrolling: touch;
       overflow: auto;

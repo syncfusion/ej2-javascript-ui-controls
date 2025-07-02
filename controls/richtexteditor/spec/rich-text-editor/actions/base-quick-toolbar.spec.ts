@@ -2,6 +2,7 @@ import { RichTextEditor } from "../../../src/rich-text-editor/base";
 import { renderRTE, destroy } from "../render.spec";
 import { BASIC_MOUSE_EVENT_INIT } from "../../constant.spec";
 import { createElement } from "@syncfusion/ej2-base";
+import { BeforeQuickToolbarOpenArgs } from "../../../src/components";
 
 describe('Base Quick Toolbar', ()=> {
 
@@ -37,11 +38,13 @@ describe('Base Quick Toolbar', ()=> {
                 <p><span class="e-video-wrap" contenteditable="false"><video controls="" style="width: 30%;" class="e-rte-video e-video-inline"><source src="https://cdn.syncfusion.com/ej2/richtexteditor-resources/RTE-Ocean-Waves.mp4" type="video/mp4"></video></span><br></p>
                 <table class="e-rte-table" style="width: 80.4728%; min-width: 0px; height: 406px;"><tbody><tr style="height: 6.38821%;"><td style="width: 50%;">Issues</td><td style="width: 50%;">Status<br></td></tr><tr style="height: 6.38821%;"><td style="width: 50%;" class="">Color picker popup opens outside the editor</td><td style="width: 50%;" class="">Not started</td></tr><tr style="height: 11.5479%;"><td style="width: 50%;" class="">Native quick toolbar opened when text selection on Mobile device</td><td style="width: 50%;" class="">Not Started<br></td></tr><tr style="height: 6.38821%;"><td style="width: 50%;" class="">On window resize dialog does not close.</td><td style="width: 50%;" class="">Not Started</td></tr><tr style="height: 11.5479%;"><td style="width: 50%;" class="">Text quick toolbar opened when the Image resize is completed.</td><td style="width: 50%;" class="">Not Started</td></tr></tbody></table>`;
     
+    const OVERVIEW_CONTENT: string = `<h2>Welcome to the Syncfusion<sup>®</sup> Rich Text Editor</h2><p>The Rich Text Editor, a WYSIWYG (what you see is what you get) editor, is a user interface that allows you to create, edit, and format rich text content. You can try out a demo of this editor here.</p><h3>Do you know the key features of the editor?</h3><ul> <li>Basic features include headings, block quotes, numbered lists, bullet lists, and support to insert images, tables, audio, and video.</li> <li>Inline styles include <b>bold</b>, <em>italic</em>, <span style="text-decoration: underline">underline</span>, <span style="text-decoration: line-through">strikethrough</span>, <a class="e-rte-anchor" href="https://ej2.syncfusion.com/demos/#/material/rich-text-editor/tools.html" title="https://ej2.syncfusion.com/demos/#/material/rich-text-editor/tools.html" aria-label="Open in new window">hyperlinks</a>,<code>InlineCode</code>, 😀 and more.</li> <li>The toolbar has multi-row, expandable, and scrollable modes. The Editor supports an inline toolbar, a floating toolbar, and custom toolbar items.</li> <li>Integration with Syncfusion<sup>®</sup> Mention control lets users tag other users. To learn more, check out the <a class="e-rte-anchor" href="https://ej2.syncfusion.com/documentation/rich-text-editor/mention-integration" title="Mention Documentation" aria-label="Open in new window">documentation</a> and <a class="e-rte-anchor" href="https://ej2.syncfusion.com/demos/#/material/rich-text-editor/mention-integration.html" title="Mention Demos" aria-label="Open in new window">demos</a>.</li> <li><b>Paste from MS Word</b> - helps to reduce the effort while converting the Microsoft Word content to HTML format with format and styles. To learn more, check out the documentation <a class="e-rte-anchor" href="https://ej2.syncfusion.com/documentation/rich-text-editor/paste-cleanup" title="Paste from MS Word Documentation" aria-label="Open in new window">here</a>.</li> <li>Other features: placeholder text, character count, form validation, enter key configuration, resizable editor, IFrame rendering, tooltip, source code view, RTL mode, persistence, HTML Sanitizer, autosave, and <a class="e-rte-anchor" href="https://ej2.syncfusion.com/documentation/api/rich-text-editor/" title="Rich Text Editor API" aria-label="Open in new window">more</a>.</li></ul><blockquote><p><em>Easily access Audio, Image, Link, Video, and Table operations through the quick toolbar by right-clicking on the corresponding element with your mouse.</em></p></blockquote><h3>Unlock the Power of Tables</h3><p>A table can be created in the editor using either a keyboard shortcut or the toolbar. With the quick toolbar, you can perform table cell insert, delete, split, and merge operations. You can style the table cells using background colours and borders.</p><table class="e-rte-table" style="width: 100%; min-width: 0px; height: 151px"> <thead style="height: 16.5563%"> <tr style="height: 16.5563%"> <th style="width: 12.1813%"><span>S No</span><br></th> <th style="width: 23.2295%"><span>Name</span><br></th> <th style="width: 9.91501%"><span>Age</span><br></th> <th style="width: 15.5807%"><span>Gender</span><br></th> <th style="width: 17.9887%"><span>Occupation</span><br></th> <th style="width: 21.1048%">Mode of Transport</th> </tr> </thead> <tbody> <tr style="height: 16.5563%"> <td style="width: 12.1813%">1</td> <td style="width: 23.2295%">Selma Rose</td> <td style="width: 9.91501%">30</td> <td style="width: 15.5807%">Female</td> <td style="width: 17.9887%"><span>Engineer</span><br></td> <td style="width: 21.1048%"><span style="font-size: 14pt">🚴</span></td> </tr> <tr style="height: 16.5563%"> <td style="width: 12.1813%">2</td> <td style="width: 23.2295%"><span>Robert</span><br></td> <td style="width: 9.91501%">28</td> <td style="width: 15.5807%">Male</td> <td style="width: 17.9887%"><span>Graphic Designer</span></td> <td style="width: 21.1048%"><span style="font-size: 14pt">🚗</span></td> </tr> <tr style="height: 16.5563%"> <td style="width: 12.1813%">3</td> <td style="width: 23.2295%"><span>William</span><br></td> <td style="width: 9.91501%">35</td> <td style="width: 15.5807%">Male</td> <td style="width: 17.9887%">Teacher</td> <td style="width: 21.1048%"><span style="font-size: 14pt">🚗</span></td> </tr> <tr style="height: 16.5563%"> <td style="width: 12.1813%">4</td> <td style="width: 23.2295%"><span>Laura Grace</span><br></td> <td style="width: 9.91501%">42</td> <td style="width: 15.5807%">Female</td> <td style="width: 17.9887%">Doctor</td> <td style="width: 21.1048%"><span style="font-size: 14pt">🚌</span></td> </tr> <tr style="height: 16.5563%"> <td style="width: 12.1813%">5</td><td style="width: 23.2295%"><span>Andrew James</span><br></td><td style="width: 9.91501%">45</td><td style="width: 15.5807%">Male</td><td style="width: 17.9887%">Lawyer</td><td style="width: 21.1048%"><span style="font-size: 14pt">🚕</span></td></tr></tbody></table><h3>Elevating Your Content with Images</h3><p>Images can be added to the editor by pasting or dragging into the editing area, using the toolbar to insert one as a URL, or uploading directly from the File Browser. Easily manage your images on the server by configuring the <a class="e-rte-anchor" href="https://ej2.syncfusion.com/documentation/api/rich-text-editor/#insertimagesettings" title="Insert Image Settings API" aria-label="Open in new window">insertImageSettings</a> to upload, save, or remove them. </p><p>The Editor can integrate with the Syncfusion<sup>®</sup> Image Editor to crop, rotate, annotate, and apply filters to images. Check out the demos <a class="e-rte-anchor" href="https://ej2.syncfusion.com/demos/#/material/rich-text-editor/image-editor-integration.html" title="Image Editor Demo" aria-label="Open in new window">here</a>.</p><p><img alt="Sky with sun" src="https://cdn.syncfusion.com/ej2/richtexteditor-resources/RTE-Overview.png" style="width: 440px" class="e-rte-image e-imginline"></p>`;
+
     const TABLE_TOP_POSITION_CONTENT: string = '<h2>Welcome to the Syncfusion<sup>®</sup> Rich Text Editor</h2><p>A table can be created in the editor using either a keyboard shortcut or the toolbar. With the quick toolbar, you can perform table cell insert, delete, split, and merge operations. You can style the table cells using background colours and borders.</p><table class="e-rte-table" style="width: 100%; min-width: 0px; height: 151px"> <thead style="height: 16.5563%"> <tr style="height: 16.5563%"> <th style="width: 12.1813%"><span>S No</span><br></th> <th style="width: 23.2295%"><span>Name</span><br></th> <th style="width: 9.91501%"><span>Age</span><br></th> <th style="width: 15.5807%"><span>Gender</span><br></th> <th style="width: 17.9887%"><span>Occupation</span><br></th> <th style="width: 21.1048%">Mode of Transport</th> </tr> </thead> <tbody> <tr style="height: 16.5563%"> <td style="width: 12.1813%">1</td> <td style="width: 23.2295%">Selma Rose</td> <td style="width: 9.91501%">30</td> <td style="width: 15.5807%">Female</td> <td style="width: 17.9887%"><span>Engineer</span><br></td> <td style="width: 21.1048%"><span style="font-size: 14pt">🚴</span></td> </tr> <tr style="height: 16.5563%"> <td style="width: 12.1813%">2</td> <td style="width: 23.2295%"><span>Robert</span><br></td> <td style="width: 9.91501%">28</td> <td style="width: 15.5807%">Male</td> <td style="width: 17.9887%"><span>Graphic Designer</span></td> <td style="width: 21.1048%"><span style="font-size: 14pt">🚗</span></td> </tr> <tr style="height: 16.5563%"> <td style="width: 12.1813%">3</td> <td style="width: 23.2295%"><span>William</span><br></td> <td style="width: 9.91501%">35</td> <td style="width: 15.5807%">Male</td> <td style="width: 17.9887%">Teacher</td> <td style="width: 21.1048%"><span style="font-size: 14pt">🚗</span></td> </tr> <tr style="height: 16.5563%"> <td style="width: 12.1813%">4</td> <td style="width: 23.2295%"><span>Laura Grace</span><br></td> <td style="width: 9.91501%">42</td> <td style="width: 15.5807%">Female</td> <td style="width: 17.9887%">Doctor</td> <td style="width: 21.1048%"><span style="font-size: 14pt">🚌</span></td> </tr> <tr style="height: 16.5563%"> <td style="width: 12.1813%">5</td><td style="width: 23.2295%"><span>Andrew James</span><br></td><td style="width: 9.91501%">45</td><td style="width: 15.5807%">Male</td><td style="width: 17.9887%">Lawyer</td><td style="width: 21.1048%"><span style="font-size: 14pt">🚕</span></td></tr></tbody></table><h3>Elevating Your Content with Images</h3><p>Images can be added to the editor by pasting or dragging into the editing area, using the toolbar to insert one as a URL, or uploading directly from the File Browser. Easily manage your images on the server by configuring the <a class="e-rte-anchor" href="https://ej2.syncfusion.com/documentation/api/rich-text-editor/#insertimagesettings" title="Insert Image Settings API" aria-label="Open in new window">insertImageSettings</a> to upload, save, or remove them. </p><p>The Editor can integrate with the Syncfusion<sup>®</sup> Image Editor to crop, rotate, annotate, and apply filters to images. Check out the demos <a class="e-rte-anchor" href="https://ej2.syncfusion.com/demos/#/material/rich-text-editor/image-editor-integration.html" title="Image Editor Demo" aria-label="Open in new window">here</a>.</p><p><img alt="Sky with sun" src="https://cdn.syncfusion.com/ej2/richtexteditor-resources/RTE-Overview.png" style="width: 440px" class="e-rte-image e-imginline"></p>';
    
     const TABLE_FIT_POSITION_CONTENT: string = '<table class="e-rte-table" style="width: 100%; min-width: 0px; height: 151px"> <thead style="height: 16.5563%"> <tr style="height: 16.5563%"> <th style="width: 12.1813%"><span>S No</span><br></th> <th style="width: 23.2295%"><span>Name</span><br></th> <th style="width: 9.91501%"><span>Age</span><br></th> <th style="width: 15.5807%"><span>Gender</span><br></th> <th style="width: 17.9887%"><span>Occupation</span><br></th> <th style="width: 21.1048%">Mode of Transport</th> </tr> </thead> <tbody> <tr style="height: 16.5563%"> <td style="width: 12.1813%">1</td> <td style="width: 23.2295%">Selma Rose</td> <td style="width: 9.91501%">30</td> <td style="width: 15.5807%">Female</td> <td style="width: 17.9887%"><span>Engineer</span><br></td> <td style="width: 21.1048%"><span style="font-size: 14pt">🚴</span></td> </tr> <tr style="height: 16.5563%"> <td style="width: 12.1813%">2</td> <td style="width: 23.2295%"><span>Robert</span><br></td> <td style="width: 9.91501%">28</td> <td style="width: 15.5807%">Male</td> <td style="width: 17.9887%"><span>Graphic Designer</span></td> <td style="width: 21.1048%"><span style="font-size: 14pt">🚗</span></td> </tr> <tr style="height: 16.5563%"> <td style="width: 12.1813%">3</td> <td style="width: 23.2295%"><span>William</span><br></td> <td style="width: 9.91501%">35</td> <td style="width: 15.5807%">Male</td> <td style="width: 17.9887%">Teacher</td> <td style="width: 21.1048%"><span style="font-size: 14pt">🚗</span></td> </tr> <tr style="height: 16.5563%"> <td style="width: 12.1813%">4</td> <td style="width: 23.2295%"><span>Laura Grace</span><br></td> <td style="width: 9.91501%">42</td> <td style="width: 15.5807%">Female</td> <td style="width: 17.9887%">Doctor</td> <td style="width: 21.1048%"><span style="font-size: 14pt">🚌</span></td> </tr> <tr style="height: 16.5563%"> <td style="width: 12.1813%">5</td><td style="width: 23.2295%"><span>Andrew James</span><br></td><td style="width: 9.91501%">45</td><td style="width: 15.5807%">Male</td><td style="width: 17.9887%">Lawyer</td><td style="width: 21.1048%"><span style="font-size: 14pt">🚕</span></td></tr></tbody></table><h3>Elevating Your Content with Images</h3><p>Images can be added to the editor by pasting or dragging into the editing area, using the toolbar to insert one as a URL, or uploading directly from the File Browser. Easily manage your images on the server by configuring the <a class="e-rte-anchor" href="https://ej2.syncfusion.com/documentation/api/rich-text-editor/#insertimagesettings" title="Insert Image Settings API" aria-label="Open in new window">insertImageSettings</a> to upload, save, or remove them. </p><p>The Editor can integrate with the Syncfusion<sup>®</sup> Image Editor to crop, rotate, annotate, and apply filters to images. Check out the demos <a class="e-rte-anchor" href="https://ej2.syncfusion.com/demos/#/material/rich-text-editor/image-editor-integration.html" title="Image Editor Demo" aria-label="Open in new window">here</a>.</p><p><img alt="Sky with sun" src="https://cdn.syncfusion.com/ej2/richtexteditor-resources/RTE-Overview.png" style="width: 440px" class="e-rte-image e-imginline"></p>';
     
-    const TABLE_BOT_POSITION_CONTENT: string = '<table class="e-rte-table" style="width: 100%; min-width: 0px; height: 151px"> <thead style="height: 13.5417%;"> <tr style="height: 13.5417%;"> <th style="width: 12.1813%"><span>S No</span><br></th> <th style="width: 23.2295%"><span>Name</span><br></th> <th style="width: 9.91501%"><span>Age</span><br></th> <th style="width: 15.5807%"><span>Gender</span><br></th> <th style="width: 17.9887%"><span>Occupation</span><br></th> <th style="width: 21.1048%">Mode of Transport</th> </tr> </thead> <tbody> <tr style="height: 17.1875%;"> <td style="width: 12.1813%">1</td> <td style="width: 23.2295%">Selma Rose</td> <td style="width: 9.91501%">30</td> <td style="width: 15.5807%">Female</td> <td style="width: 17.9887%"><span>Engineer</span><br></td> <td style="width: 21.1048%"><span style="font-size: 14pt">🚴</span></td> </tr> <tr style="height: 17.1875%;"> <td style="width: 12.1813%">2</td> <td style="width: 23.2295%"><span>Robert</span><br></td> <td style="width: 9.91501%">28</td> <td style="width: 15.5807%">Male</td> <td style="width: 17.9887%"><span>Graphic Designer</span></td> <td style="width: 21.1048%"><span style="font-size: 14pt">🚗</span></td> </tr> <tr style="height: 17.1875%;"> <td style="width: 12.1813%">3</td> <td style="width: 23.2295%"><span>William</span><br></td> <td style="width: 9.91501%">35</td> <td style="width: 15.5807%">Male</td> <td style="width: 17.9887%">Teacher</td> <td style="width: 21.1048%"><span style="font-size: 14pt">🚗</span></td> </tr> <tr style="height: 17.1875%;"> <td style="width: 12.1813%">4</td> <td style="width: 23.2295%"><span>Laura Grace</span><br></td> <td style="width: 9.91501%">42</td> <td style="width: 15.5807%">Female</td> <td style="width: 17.9887%">Doctor</td> <td style="width: 21.1048%"><span style="font-size: 14pt">🚌</span></td> </tr> <tr style="height: 17.1875%;"> <td style="width: 12.1813%">5</td><td style="width: 23.2295%"><span>Andrew James</span><br></td><td style="width: 9.91501%">45</td><td style="width: 15.5807%">Male</td><td style="width: 17.9887%">Lawyer</td><td style="width: 21.1048%"><span style="font-size: 14pt">🚕</span></td></tr></tbody></table><p><br></p>';
+    const TABLE_BOT_POSITION_CONTENT: string = '<table class="e-rte-table" style="width: 100%; min-width: 0px; height: 151px"> <thead style="height: 13.5417%;"> <tr style="height: 13.5417%;"> <th style="width: 12.1813%"><span>S No</span><br></th> <th style="width: 23.2295%"><span>Name</span><br></th> <th style="width: 9.91501%"><span>Age</span><br></th> <th style="width: 15.5807%"><span>Gender</span><br></th> <th style="width: 17.9887%"><span>Occupation</span><br></th> <th style="width: 21.1048%">Mode of Transport</th> </tr> </thead> <tbody> <tr style="height: 17.1875%;"> <td style="width: 12.1813%">1</td> <td style="width: 23.2295%">Selma Rose</td> <td style="width: 9.91501%">30</td> <td style="width: 15.5807%">Female</td> <td style="width: 17.9887%"><span>Engineer</span><br></td> <td style="width: 21.1048%"><span style="font-size: 14pt">🚴</span></td> </tr> <tr style="height: 17.1875%;"> <td style="width: 12.1813%">2</td> <td style="width: 23.2295%"><span>Robert</span><br></td> <td style="width: 9.91501%">28</td> <td style="width: 15.5807%">Male</td> <td style="width: 17.9887%"><span>Graphic Designer</span></td> <td style="width: 21.1048%"><span style="font-size: 14pt">🚗</span></td> </tr> <tr style="height: 17.1875%;"> <td style="width: 12.1813%">3</td> <td style="width: 23.2295%"><span>William</span><br></td> <td style="width: 9.91501%">35</td> <td style="width: 15.5807%">Male</td> <td style="width: 17.9887%">Teacher</td> <td style="width: 21.1048%"><span style="font-size: 14pt">🚗</span></td> </tr> <tr style="height: 17.1875%;"> <td style="width: 12.1813%">4</td> <td style="width: 23.2295%"><span>Laura Grace</span><br></td> <td style="width: 9.91501%">42</td> <td style="width: 15.5807%">Female</td> <td style="width: 17.9887%">Doctor</td> <td style="width: 21.1048%"><span style="font-size: 14pt">🚌</span></td> </tr> <tr style="height: 17.1875%;"> <td style="width: 12.1813%">5</td><td style="width: 23.2295%"><span>Andrew James</span><br></td><td style="width: 9.91501%">45</td><td style="width: 15.5807%">Male</td><td style="width: 17.9887%">Lawyer</td><td style="width: 21.1048%"><span style="font-size: 14pt">🚕</span></td></tr></tbody></table><p><br></p><p><br></p>';
     
     beforeAll((done: DoneFn)=> {
         const link: HTMLLinkElement = document.createElement('link');
@@ -305,7 +308,7 @@ describe('Base Quick Toolbar', ()=> {
             destroy(editor);
         });
 
-        it('Should open the quick toolbar above the selected text content and tip pointer should be bottom center.', (done : DoneFn)=> {
+        it('Should open the quick toolbar below the selected text content and tip pointer should be top center.', (done : DoneFn)=> {
             editor.focusIn();
             editor.inputElement.dispatchEvent(INIT_MOUSEDOWN_EVENT);
             const target: HTMLElement = editor.inputElement.querySelector('p');
@@ -316,12 +319,35 @@ describe('Base Quick Toolbar', ()=> {
             window.getSelection().extend(editor.inputElement.querySelector('p').firstChild, 59)
             target.dispatchEvent(MOUSEUP_EVENT);
             setTimeout(() => {
-                // const quickPopup: HTMLElement = document.querySelector('.e-rte-quick-popup');
-                // expect(quickPopup.style.top).toBe('40.3281px');
-                // expect(quickPopup.style.left).toBe('103.531px');
-                // const tipPointer: HTMLElement = quickPopup.querySelector('.e-rte-tip-pointer');
-                // expect(tipPointer.classList.contains('e-rte-tip-bottom')).toBe(true);
-                // expect(tipPointer.classList.contains('e-rte-tip-center')).toBe(true);
+                const quickToolbar: HTMLElement = document.querySelector('.e-rte-quick-popup');
+                const editPanel: HTMLElement = editor.inputElement;
+                const quikTBarRect: ClientRect = quickToolbar.getBoundingClientRect();
+                const editPanelRect: ClientRect = editPanel.getBoundingClientRect();
+                const blockElement: HTMLElement = editor.quickToolbarModule.textQTBar.popupObj.relateTo as HTMLElement;
+                const blockRect: DOMRect = blockElement.getBoundingClientRect() as DOMRect;
+                // expect(blockRect.top).toBeLessThan(quikTBarRect.bottom);
+                done();
+            }, 100);
+        });
+        it('Should open the quick toolbar above the selected text content and tip pointer should be bottom center.', (done : DoneFn)=> {
+            editor.focusIn();
+            editor.inputElement.dispatchEvent(INIT_MOUSEDOWN_EVENT);
+            const target: HTMLElement = editor.inputElement.querySelector('p');
+            const range: Range = new Range();
+            range.setEnd(editor.inputElement.querySelector('li').firstChild, 60);
+            range.setStart(editor.inputElement.querySelector('li').firstChild, 0);
+            editor.selectRange(range);
+            window.getSelection().extend(editor.inputElement.querySelector('h2').firstChild, 30)
+            target.dispatchEvent(MOUSEUP_EVENT);
+            setTimeout(() => {
+                const quickToolbar: HTMLElement = document.querySelector('.e-rte-quick-popup');
+                const editPanel: HTMLElement = editor.inputElement;
+                const quikTBarRect: ClientRect = quickToolbar.getBoundingClientRect();
+                const editPanelRect: ClientRect = editPanel.getBoundingClientRect();
+                expect(quikTBarRect.top).toBeGreaterThanOrEqual(editPanelRect.top);
+                const blockElement: HTMLElement = editor.quickToolbarModule.textQTBar.popupObj.relateTo as HTMLElement;
+                const blockRect: DOMRect = blockElement.getBoundingClientRect() as DOMRect;
+                expect(blockRect.top).toBeGreaterThan(quikTBarRect.bottom);
                 done();
             }, 100);
         });
@@ -454,7 +480,7 @@ describe('Base Quick Toolbar', ()=> {
                     quickToolbarSettings: {
                         text: ['Bold', 'Italic', 'Underline', 'StrikeThrough', '|', 'FontColor', 'BackgroundColor', '|', 'Formats', 'OrderedList', 'UnorderedList'],
                     },
-                    height: '300px',
+                    height: '350px',
                 });
             });
 
@@ -475,6 +501,8 @@ describe('Base Quick Toolbar', ()=> {
                     const quikTBarRect: ClientRect = quickToolbar.getBoundingClientRect();
                     const mainTBarRect: ClientRect = mainToolbar.getBoundingClientRect();
                     expect(quikTBarRect.top).toBeGreaterThanOrEqual(mainTBarRect.bottom);
+                    expect(editor.quickToolbarModule.tableQTBar.popupObj.collision.Y).toBe('flip');
+                    expect(editor.quickToolbarModule.tableQTBar.popupObj.position.Y).toBe('top');
                     done();
                 }, 100);
             });
@@ -491,10 +519,13 @@ describe('Base Quick Toolbar', ()=> {
                     const quikTBarRect: ClientRect = quickToolbar.getBoundingClientRect();
                     const mainTBarRect: ClientRect = mainToolbar.getBoundingClientRect();
                     expect(quikTBarRect.top).toBeGreaterThanOrEqual(mainTBarRect.bottom);
+                    expect(editor.quickToolbarModule.tableQTBar.popupObj.collision.Y).toBe('flip');
+                    expect(editor.quickToolbarModule.tableQTBar.popupObj.position.Y).toBe('bottom');
                     done();
                 }, 100);
             });
             it('CASE 3: Should open table quick toolbar with fit collision.', (done : DoneFn)=> {
+                editor.height = '300px';
                 editor.focusIn();
                 editor.inputElement.innerHTML = TABLE_FIT_POSITION_CONTENT;
                 editor.inputElement.dispatchEvent(INIT_MOUSEDOWN_EVENT);
@@ -506,11 +537,16 @@ describe('Base Quick Toolbar', ()=> {
                     const mainToolbar: HTMLElement = editor.element.querySelector('.e-toolbar-wrapper');
                     const quikTBarRect: ClientRect = quickToolbar.getBoundingClientRect();
                     const mainTBarRect: ClientRect = mainToolbar.getBoundingClientRect();
+                    const editPanel: HTMLElement = editor.inputElement;
+                    const editPanelRect: ClientRect = editPanel.getBoundingClientRect();
                     expect(quikTBarRect.top).toBeGreaterThanOrEqual(mainTBarRect.bottom);
+                    expect(quikTBarRect.top).toBeGreaterThanOrEqual(editPanelRect.top)
+                    expect(editor.quickToolbarModule.tableQTBar.popupObj.collision.Y).toBe('fit');
                     done();
                 }, 100);
             });
-            it('CASE 4: Should open table quick toolbar with bottom with main toolbar expanded.', (done : DoneFn)=> {
+            it('CASE 4: Should open table quick toolbar with fit position with main toolbar expanded.', (done : DoneFn)=> {
+                editor.height = '300px';
                 editor.focusIn();
                 editor.inputElement.innerHTML = TABLE_FIT_POSITION_CONTENT;
                 const expandButton: HTMLElement = editor.element.querySelector('.e-toolbar-wrapper .e-hor-nav.e-expended-nav');
@@ -525,6 +561,7 @@ describe('Base Quick Toolbar', ()=> {
                     const quikTBarRect: ClientRect = quickToolbar.getBoundingClientRect();
                     const mainTBarRect: ClientRect = mainToolbar.getBoundingClientRect();
                     expect(quikTBarRect.top).toBeGreaterThanOrEqual(mainTBarRect.bottom);
+                    expect(editor.quickToolbarModule.tableQTBar.popupObj.collision.Y).toBe('fit');
                     done();
                 }, 100);
             });
@@ -555,7 +592,7 @@ describe('Base Quick Toolbar', ()=> {
                     quickToolbarSettings: {
                         text: ['Bold', 'Italic', 'Underline', 'StrikeThrough', '|', 'FontColor', 'BackgroundColor', '|', 'Formats', 'OrderedList', 'UnorderedList'],
                     },
-                    height: '300px',
+                    height: '350px',
                 });
             });
 
@@ -577,6 +614,8 @@ describe('Base Quick Toolbar', ()=> {
                     const quikTBarRect: ClientRect = quickToolbar.getBoundingClientRect();
                     const editPanelRect: ClientRect = editPanel.getBoundingClientRect();
                     expect(quikTBarRect.top).toBeGreaterThanOrEqual(editPanelRect.top);
+                    expect(editor.quickToolbarModule.tableQTBar.popupObj.collision.Y).toBe('flip');
+                    expect(editor.quickToolbarModule.tableQTBar.popupObj.position.Y).toBe('top');
                     done();
                 }, 100);
             });
@@ -589,15 +628,18 @@ describe('Base Quick Toolbar', ()=> {
                 setCursorPoint(target.firstChild, 0);
                 target.dispatchEvent(MOUSEUP_EVENT);
                 setTimeout(() => {
-                                     const quickToolbar: HTMLElement = document.querySelector('.e-rte-quick-popup');
+                    const quickToolbar: HTMLElement = document.querySelector('.e-rte-quick-popup');
                     const editPanel: HTMLElement = editor.inputElement;
                     const quikTBarRect: ClientRect = quickToolbar.getBoundingClientRect();
                     const editPanelRect: ClientRect = editPanel.getBoundingClientRect();
                     expect(quikTBarRect.top).toBeGreaterThanOrEqual(editPanelRect.top);
+                    expect(editor.quickToolbarModule.tableQTBar.popupObj.collision.Y).toBe('flip');
+                    expect(editor.quickToolbarModule.tableQTBar.popupObj.position.Y).toBe('bottom');
                     done();
                 }, 100);
             });
             it('CASE 3: Should open table quick toolbar with fit collision.', (done : DoneFn)=> {
+                editor.height = '300px';
                 editor.focusIn();
                 window.scrollTo(0, 100);
                 editor.inputElement.innerHTML = TABLE_FIT_POSITION_CONTENT;
@@ -610,7 +652,8 @@ describe('Base Quick Toolbar', ()=> {
                     const editPanel: HTMLElement = editor.inputElement;
                     const quikTBarRect: ClientRect = quickToolbar.getBoundingClientRect();
                     const editPanelRect: ClientRect = editPanel.getBoundingClientRect();
-                    expect(quikTBarRect.top).toBeGreaterThanOrEqual(editPanelRect.top);
+                    expect(quikTBarRect.top).toBeGreaterThanOrEqual(editPanelRect.top)
+                    expect(editor.quickToolbarModule.tableQTBar.popupObj.collision.Y).toBe('fit');
                     done();
                 }, 100);
             });
@@ -630,6 +673,8 @@ describe('Base Quick Toolbar', ()=> {
                     const quikTBarRect: ClientRect = quickToolbar.getBoundingClientRect();
                     const editPanelRect: ClientRect = editPanel.getBoundingClientRect();
                     expect(quikTBarRect.top).toBeGreaterThanOrEqual(editPanelRect.top);
+                    const mainToolbarRect: DOMRect = editor.getToolbarElement().getBoundingClientRect() as DOMRect;
+                    expect(quikTBarRect.top).toBeGreaterThanOrEqual(mainToolbarRect.bottom);
                     done();
                 }, 100);
             });
@@ -670,6 +715,33 @@ describe('Base Quick Toolbar', ()=> {
                 const quikTBarRect: ClientRect = quickToolbar.getBoundingClientRect();
                 const editPanelRect: ClientRect = editPanel.getBoundingClientRect();
                 expect(quikTBarRect.top).toBeGreaterThanOrEqual(editPanelRect.top);
+                done();
+            }, 100);
+        });
+    });
+
+    describe('966006: Text Quick toolbar shows on three rows only when the last table column is selected..', () => {
+        let editor: RichTextEditor;
+        beforeAll(() => {
+            editor = renderRTE({
+                quickToolbarSettings: {
+                        text: ['Bold', 'Italic', 'Underline', 'StrikeThrough', '|', 'FontColor', 'BackgroundColor', '|', 'Formats', 'OrderedList', 'UnorderedList'],
+                },
+                value: OVERVIEW_CONTENT
+            });
+        });
+        afterAll(() => {
+            destroy(editor);
+        });
+        
+        it('Should have proper relateTo Element to the Quick toolbar popup.', (done : DoneFn)=> {
+            editor.focusIn();
+            editor.inputElement.dispatchEvent(INIT_MOUSEDOWN_EVENT);
+            const target: HTMLElement = editor.inputElement.querySelectorAll('th')[5];
+            setSelection(target.firstChild, 16, 17);
+            target.dispatchEvent(MOUSEUP_EVENT);
+            setTimeout(() => {
+                expect((editor.quickToolbarModule.textQTBar.popupObj.relateTo as HTMLElement).nodeName).toBe('TABLE');
                 done();
             }, 100);
         });
@@ -717,6 +789,37 @@ describe('Base Quick Toolbar', ()=> {
         });
     });
 
+    describe('965993: Last character selection results in quick toolbar with improper tip pointer position.', () => {
+        let editor: RichTextEditor;
+        beforeAll(() => {
+            editor = renderRTE({
+                quickToolbarSettings: {
+                        text: ['Bold', 'Italic', 'Underline', 'StrikeThrough', '|', 'FontColor', 'BackgroundColor', '|', 'Formats', 'OrderedList', 'UnorderedList'],
+                },
+                value: EDITOR_CONTENT,
+                beforeQuickToolbarOpen: (args: BeforeQuickToolbarOpenArgs)=> {
+                    args.cancel = true;  
+                }
+                
+            });
+        });
+        afterAll(() => {
+            destroy(editor);
+        });
+        
+        it('Should have the maxwidth 75% before rendering the quick toolbar.', (done : DoneFn)=> {
+            editor.focusIn();
+            editor.inputElement.dispatchEvent(INIT_MOUSEDOWN_EVENT);
+            const target: HTMLElement = editor.inputElement.querySelector('p');
+            setSelection(target.firstChild, 1, 2);
+            target.dispatchEvent(MOUSEUP_EVENT);
+            setTimeout(() => {
+                expect(editor.quickToolbarModule.textQTBar.element.style.maxWidth).toBe('75%');
+                done();
+            }, 100);
+        });
+    });
+
     describe('962330: Text Quick Toolbar: Format Options Disappear After Scrolling the Page', () => {
         let editor: RichTextEditor;
         beforeAll(() => {
@@ -748,5 +851,92 @@ describe('Base Quick Toolbar', ()=> {
     
     });
 
-    
+    describe('964505: Quick toolbar position is not refreshed when the window is resized.', ()=> {
+        let editor: RichTextEditor;
+        let refreshMethodSpy: jasmine.Spy;
+        beforeAll(()=> {
+            editor = renderRTE({
+                value: EDITOR_CONTENT,
+                quickToolbarSettings: {
+                    text: ['Bold', 'Italic', 'Underline', 'StrikeThrough', '|', 'FontColor', 'BackgroundColor', '|', 'Formats', 'OrderedList', 'UnorderedList'],
+                },
+            });
+        });
+        afterAll(()=> {
+            destroy(editor);
+        });
+        it('Should call the RefreshPopup method on window resize.', (done: DoneFn)=> {
+            editor.focusIn();
+            editor.inputElement.dispatchEvent(INIT_MOUSEDOWN_EVENT);
+            const target: HTMLElement = editor.inputElement.querySelector('p');
+            setSelection(target.firstChild, 1, 2);
+            target.dispatchEvent(MOUSEUP_EVENT);
+            setTimeout(() => {
+                const quickPopup: HTMLElement = document.querySelector('.e-rte-quick-popup');
+                expect(quickPopup).not.toBe(null);
+                refreshMethodSpy = spyOn(editor.quickToolbarModule, "refreshQuickToolbarPopup");
+                window.dispatchEvent(new Event('resize'));
+                setTimeout(() => {
+                    expect(refreshMethodSpy).toHaveBeenCalled();
+                    done();
+                }, 100);
+            }, 100);
+        });
+    });
+
+    describe('966020: Table Quick toolbar position is not refreshed instantly when scrolling.', ()=> {
+        let editor: RichTextEditor;
+        let dataBindSpy: jasmine.Spy;
+        beforeAll(()=> {
+            editor = renderRTE({
+                value: EDITOR_CONTENT,
+                quickToolbarSettings: {
+                    text: ['Bold', 'Italic', 'Underline', 'StrikeThrough', '|', 'FontColor', 'BackgroundColor', '|', 'Formats', 'OrderedList', 'UnorderedList'],
+                },
+            });
+        });
+        afterAll(()=> {
+            destroy(editor);
+        });
+        it('Should call the dataBind method when the quick toolbar is shown.', (done: DoneFn)=> {
+            editor.focusIn();
+            editor.inputElement.dispatchEvent(INIT_MOUSEDOWN_EVENT);
+            const target: HTMLElement = editor.inputElement.querySelector('p');
+            setSelection(target.firstChild, 1, 2);
+            target.dispatchEvent(MOUSEUP_EVENT);
+            dataBindSpy = spyOn(editor.quickToolbarModule.textQTBar.popupObj, "dataBind");
+            setTimeout(() => {
+                expect(dataBindSpy).toHaveBeenCalled();
+                done();
+            }, 100);
+        });
+    });
+
+    describe('966000: Link Quick toolbar not collided when there is no bottom space reference to viewport.' , () => {
+        let editor: RichTextEditor;
+        beforeAll(() => {
+            editor = renderRTE({
+                quickToolbarSettings: {
+                        text: ['Bold', 'Italic', 'Underline', 'StrikeThrough', '|', 'FontColor', 'BackgroundColor', '|', 'Formats', 'OrderedList', 'UnorderedList'],
+                },
+                value: OVERVIEW_CONTENT,
+                height: '300px'
+            });
+        });
+        afterAll(() => {
+            destroy(editor);
+        });
+        
+        it('Should Open on top position instead of bottom.', (done : DoneFn)=> {
+            editor.focusIn();
+            editor.inputElement.dispatchEvent(INIT_MOUSEDOWN_EVENT);
+            const target: HTMLElement = editor.inputElement.querySelectorAll('li')[1];
+            setSelection(target.firstChild, 1, 2);
+            target.dispatchEvent(MOUSEUP_EVENT);
+            setTimeout(() => {
+                expect((editor.quickToolbarModule.textQTBar as any).currentTipPosition).toBe('Bottom-Left');
+                done();
+            }, 100);
+        });
+    });
 });

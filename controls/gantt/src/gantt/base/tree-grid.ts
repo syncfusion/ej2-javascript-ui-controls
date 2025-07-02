@@ -229,6 +229,7 @@ export class GanttTreeGrid {
             this.parent.updateContentHeight(args);
         }
         setValue('contentModule.objectEqualityChecker', this.objectEqualityChecker, this.parent.treeGrid.grid);
+        this.parent['isExpandPerformed'] = false;
     }
     private dataBound(args: object): void {
         if (this.parent.isReact) {
@@ -356,6 +357,7 @@ export class GanttTreeGrid {
         this.parent['hideLoadingIndicator']();
         this.parent.isCollapseAll = false;
         this.parent.trigger('expanded', args);
+        this.parent['isExpandPerformed'] = true;
     }
     private actionBegin(args: FilterEventArgs | SortEventArgs): void {
         if (this.parent.undoRedoModule && (args.requestType === 'filtering' || args.requestType === 'searching' || args.requestType === 'sorting'  || args.requestType === 'filterAfterOpen')) {

@@ -6,7 +6,7 @@ import { RichTextEditor } from '../../src/rich-text-editor/base/rich-text-editor
 import { renderRTE, destroy, dispatchEvent as dispatchEve, setCursorPoint } from './../rich-text-editor/render.spec';
 import { NodeSelection } from '../../src/selection/selection';
 import { Dialog } from '@syncfusion/ej2-popups';
-import { BACKSPACE_EVENT_INIT, BASIC_MOUSE_EVENT_INIT, ENTERKEY_EVENT_INIT } from '../constant.spec';
+import { BACKSPACE_EVENT_INIT, BASIC_MOUSE_EVENT_INIT, ENTERKEY_EVENT_INIT, ESCAPE_KEY_EVENT_INIT } from '../constant.spec';
 
 describe('RTE CR issues ', () => {
 
@@ -148,6 +148,48 @@ describe('RTE CR issues ', () => {
             document.body.innerHTML = "";
         });
     });
+    describe('Bug 964391: Format tag inserted outside the <p> tag after clearing content ', () => {
+        let customBtn: HTMLElement;
+        let rteObj: RichTextEditor;
+        const onCreate = () => {
+            customBtn = document.getElementById('custom_tbar') as HTMLElement;
+            customBtn.onclick = (e: Event) => {
+                rteObj.value = '';
+            };
+        }
+        beforeAll(() => {
+            rteObj = renderRTE(
+                {
+                    toolbarSettings: {
+                        items: [{
+                            tooltipText: 'Change Text',
+                            template:
+                                '<button class="e-tbar-btn e-btn e-rte-elements" tabindex="-1" id="custom_tbar"  style="width:100%"> Change Text </button>'
+                        }, 'Bold']
+                    },
+                    created: onCreate,
+                    value: `<div style="display:block;">
+                            <p style="margin-right:10px">
+                                The custom command "insert special character" is configured 
+                                as the last item of the toolbar. Click on the command and choose the special character 
+                                you want to include from the popup.
+                            </p>
+                        </div>`,
+                }
+            );
+        });
+        it(' Format tag should be inserted within the p tag', () => {
+            rteObj.focusIn();
+            (document.getElementById('custom_tbar') as HTMLElement).click();
+            rteObj.dataBind();
+            (document.querySelector('[title="Bold (Ctrl+B)"]') as HTMLElement).click();
+            expect(rteObj.contentModule.getEditPanel().innerHTML === `<p><strong>​</strong></p>`).toBe(true);
+        });
+        afterAll(() => {
+            destroy(rteObj);
+            document.body.innerHTML = "";
+        });
+    });
     describe('930848: Formatting, Shift+Enter, and zero-width space removal', () => {
         let rteObj: RichTextEditor;
         let keyboardEventArgs: any;
@@ -255,6 +297,46 @@ describe('RTE CR issues ', () => {
             expect(rteObj.inputElement.innerHTML === '<ol><li class="startnode" style="font-size: 24pt;"><span style="font-size: 24pt;">list 1</span></li><li style="font-size: 24pt;"><span style="font-size: 24pt;">list 2</span></li><li class="endnode" style="font-size: 24pt;"><span style="font-size: 24pt;">list 3</span></li></ol>').toBe(true);
         });
     });
+    describe("966215 - Maximize Shortcut Does Not Work When Code View Is Enabled", () => {
+            let rteObj: RichTextEditor;
+            beforeAll(() => {
+                rteObj = renderRTE({
+                    value: `<p><b>Description:</b></p><p class="custom">The Rich Text Editor (RTE) control is an easy to render in client side.</p>`,
+                    toolbarSettings: {
+                        items: ['FullScreen', 'SourceCode']
+                    }
+                });
+            });
+            it("Maximize should work", (done) => {
+                rteObj.focusIn();
+                let keyboardEventArgs = {
+                    preventDefault: function () { },
+                    altKey: false,
+                    ctrlKey: true,
+                    shiftKey: true,
+                    char: '',
+                    key: 'F',
+                    charCode: 0,
+                    keyCode: 70,
+                    which: 70,
+                    code: 'KeyF',
+                    action: '',
+                    type: 'keydown'
+                };
+                const toolbarElems:NodeListOf<HTMLElement> = rteObj.element.querySelectorAll('.e-toolbar-item');
+                toolbarElems[1].click();
+                let textarea: HTMLTextAreaElement = (rteObj as any).element.querySelector('.e-rte-srctextarea');
+                textarea.dispatchEvent(new KeyboardEvent('keydown', keyboardEventArgs));
+                expect(rteObj.element.classList.contains('e-rte-full-screen')).toBe(true);
+                const escapeKeyDownEvent: KeyboardEvent = new KeyboardEvent('keydown', ESCAPE_KEY_EVENT_INIT);
+                textarea.dispatchEvent(escapeKeyDownEvent);
+                expect(rteObj.element.classList.contains('e-rte-full-screen')).toBe(false);
+                done();
+            });
+            afterAll(() => {
+                destroy(rteObj);
+            });
+        });
     describe('877787 - InsertHtml executeCommand deletes the entire content when we insert html by selection in RichTextEditor', () => {
         let rteObj: RichTextEditor;
         beforeAll(() => {
@@ -1648,6 +1730,62 @@ describe('RTE CR issues ', () => {
         });
     });
 
+    describe('Bug 963324: RichTextEditor Content Height Is Rendered as 0 Inside Dialog When Using IframeSettings', () => {
+        let editor: RichTextEditor;
+        let height: number | string;
+        const onCreate = () => {
+            if (editor) {
+                height = editor.element.querySelector('iframe').style.height;
+            }
+        }
+        beforeEach((done: DoneFn) => {
+            editor = renderRTE({
+                iframeSettings: {
+                    enable: true
+                },
+                created: onCreate,
+                value: `<p><strong>The <span style="text-decoration: line-through;">Rich</span> Text Editor, a WYSIWYG (what you see is what you get) editor, is a user interface that allows you to create, edit, and format rich text content. You can try out a demo of this editor here.</strong></p>`
+            });
+            done();
+        });
+        afterEach((done: DoneFn) => {
+            destroy(editor);
+            done();
+        });
+        it(' Height of the editor should be changed after refreshUi method is called when rte is rendered in iframe', (done: DoneFn) => {
+            editor.refreshUI();
+            expect(height !== editor.element.querySelector('iframe').style.height);
+            done();
+        });
+    });
+
+    describe('Bug 963324: RichTextEditor Content Height Is Rendered as 0 Inside Dialog When Using IframeSettings', () => {
+        let editor: RichTextEditor;
+        let height: number | string;
+        const onCreate = () => {
+            if (editor) {
+                height = editor.inputElement.style.height;
+            }
+        }
+        beforeEach((done: DoneFn) => {
+            editor = renderRTE({
+                created: onCreate,
+                editorMode: 'Markdown',
+                value: `<p><strong>The <span style="text-decoration: line-through;">Rich</span> Text Editor, a WYSIWYG (what you see is what you get) editor, is a user interface that allows you to create, edit, and format rich text content. You can try out a demo of this editor here.</strong></p>`
+            });
+            done();
+        });
+        afterEach((done: DoneFn) => {
+            destroy(editor);
+            done();
+        });
+        it(' Height of the editor should be changed after refreshUi method is called when rte is rendered as markdown', (done: DoneFn) => {
+            editor.refreshUI();
+            expect(height !== editor.inputElement.style.height);
+            done();
+        });
+    });
+
     describe('920157: The "Minimize" toolbar icon does not update when dynamically enabling and disabling the toolbar.', () => {
         let editorObj: RichTextEditor;
         beforeAll(() => {
@@ -2016,6 +2154,59 @@ describe('RTE CR issues ', () => {
         });
         it('check the tooltip for custom toolbar item', () => {
             expect(document.querySelectorAll(".e-toolbar-item")[0].getAttribute("title")).toBe("Inline Code (Ctrl+`)");
+        });
+    });
+
+    describe('966050 - Modified aria-label value gets reverted after reloading in RichTextEditor', () => {
+        let rteObj: RichTextEditor;
+        const initialValue = `<p><a class="e-rte-anchor" href="https://ftngd" title="https://ftngd" target="_blank" aria-label="Open in new window">Link</a></p>`;
+        const modifiedLabel = 'Modified';
+        beforeAll(() => {
+            rteObj = renderRTE({
+                value: initialValue
+            });
+        });
+        it('should change aria-label and persist after reload', (done: DoneFn) => {
+            const linkElement = rteObj.element.querySelector('a.e-rte-anchor');
+            expect(linkElement.getAttribute('aria-label')).toBe('Open in new window');
+            linkElement.setAttribute('aria-label', modifiedLabel);
+            localStorage.setItem('editorValue', rteObj.getHtml());
+            const storedValue = localStorage.getItem('editorValue');
+            rteObj.value = storedValue;
+            rteObj.dataBind();
+            rteObj.refresh();
+            const refreshedLinkElement = rteObj.element.querySelector('a.e-rte-anchor');
+            expect(refreshedLinkElement.getAttribute('aria-label')).toBe(modifiedLabel);
+            done();
+        });
+        afterAll(() => {
+            destroy(rteObj);
+            localStorage.removeItem('editorValue');
+        });
+    });
+
+    describe('966048 - XSS security issues in RichTextEditor', () => {
+        let rteObj: RichTextEditor;
+        let rteEle: HTMLElement;
+        beforeAll(() => {
+            rteObj = renderRTE({
+                toolbarSettings: {
+                    items: ['SourceCode']
+                }
+            });
+            rteEle = rteObj.element;
+        });
+        it('should sanitize and update the DOM after toggling source code view', (done) => {
+            rteObj.contentModule.getEditPanel().innerHTML = '<p>abc</p><p>afaf<img src="mir" onerror="alert`test`" /></p>';
+            let sourceCodeButton: HTMLElement = <HTMLElement>rteEle.querySelectorAll('.e-toolbar-item')[0];
+            sourceCodeButton.click();
+            const sourceCodeTextarea = rteObj.element.querySelector('.e-rte-srctextarea') as HTMLTextAreaElement;
+            expect(sourceCodeTextarea).not.toBe(null);
+            expect(sourceCodeTextarea.value).toBe('<p>abc</p><p>afaf<img src="mir" class="e-rte-image e-imginline"></p>');
+            done();
+        });
+        afterAll(() => {
+            destroy(rteObj);
         });
     });
 });

@@ -326,6 +326,16 @@ export interface BeforeImageLoadEventArgs {
      * Specifies the URL along with custom attributes to be sent to server.
      */
     imageUrl?: string;
+    /**
+     * Returns the AJAX configuration details used when the `ajaxSettings` URL is specified.
+     */
+    ajaxSettings?: Object;
+    /**
+     * Specifies whether the image source should be represented as a URL or a Blob object.
+     * Set this property to <c>false</c> to render the image source as a Blob (e.g., via `URL.createObjectURL(file)`), which is useful in scenarios.
+     * where the File Manager must authenticate requests to access the images.
+     */
+    useImageAsUrl?: boolean;
 }
 /**
  * Interface for folder create event arguments.

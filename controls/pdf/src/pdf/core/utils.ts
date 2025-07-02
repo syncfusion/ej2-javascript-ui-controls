@@ -40,6 +40,16 @@ export type Size = {
     height: number;
 };
 /**
+ * Represents a point in a two-dimensional coordinate system.
+ *
+ * @property {number} x - The x-coordinate of the point.
+ * @property {number} y - The y-coordinate of the point.
+ */
+export type Point = {
+    x: number;
+    y: number;
+};
+/**
  * Gets the unsigned value.
  *
  * @param {number} value input value.
@@ -1026,9 +1036,10 @@ export function _reverseMapEndingStyle(style: PdfLineEndingStyle): string {
  *
  * @private
  * @param {string} style Style value in string.
+ * @param {PdfLineEndingStyle} defaultValue Default style value to return.
  * @returns {PdfLineEndingStyle} enum value default 0.
  */
-export function _mapLineEndingStyle(style: string): PdfLineEndingStyle {
+export function _mapLineEndingStyle(style: string, defaultValue?: PdfLineEndingStyle): PdfLineEndingStyle { // eslint-disable-line
     let value: PdfLineEndingStyle;
     switch (style.toLowerCase()) {
     case 'openarrow':
@@ -3724,7 +3735,7 @@ export function _obtainFontDetails(form: PdfForm, widget: PdfWidgetAnnotation, f
     if ((font === null || typeof font === 'undefined') || (font && font.size === 1)) {
         if (widget && !(widget._field instanceof PdfComboBoxField)) {
             font = widget._circleCaptionFont;
-        } else if (field && !(field instanceof PdfComboBoxField)) {
+        } else if (field && !(field instanceof PdfComboBoxField) ) {
             font = field._circleCaptionFont;
         }
     }

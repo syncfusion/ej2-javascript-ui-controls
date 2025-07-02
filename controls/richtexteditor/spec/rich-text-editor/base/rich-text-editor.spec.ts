@@ -3351,6 +3351,7 @@ describe('RTE Base module ', () => {
                 expect(rteEle.querySelectorAll(".e-toolbar-item")[1].getAttribute("title")).toBe("kursiv (Ctrl+I)");
             });
             it('ensure through onproperty change - Locale property', () => {
+                rteObj.enabled = true;
                 rteObj.locale = 'en-US';
                 rteObj.dataBind();
                 let rteEle: HTMLElement = rteObj.element;

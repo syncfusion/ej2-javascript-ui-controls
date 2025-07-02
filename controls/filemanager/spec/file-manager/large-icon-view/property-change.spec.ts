@@ -146,6 +146,7 @@ describe('FileManager control LargeIcons view', () => {
             feObj.dataBind();
             expect(document.getElementById('file_toolbar').classList.contains('e-toolbar')).toEqual(true);
             expect(document.getElementById('file_largeicons').offsetHeight).toEqual(321);
+            
         });
         it('for toolbarSettings', () => {
             feObj = new FileManager({

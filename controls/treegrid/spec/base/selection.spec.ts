@@ -1406,3 +1406,55 @@ describe('941596: Selection not applied properly when adding data with paging en
         gridObj = null;
     });
 });
+
+describe('Bug 962581: TreeGrid Checkbox Selection with Empty Data Source', () => {
+    let gridObj: TreeGrid;
+
+    beforeAll((done: Function) => {
+        gridObj = createGrid (
+            {
+                dataSource: [],
+                childMapping: 'children',
+                allowExcelExport: true,
+                allowPdfExport: true,
+                treeColumnIndex: 1,
+                toolbar: ['PdfExport', 'ExcelExport', 'CsvExport'],
+                height: 400,
+                columns: [
+                    { type: 'checkbox', width: 50 },
+                    { field: 'FreightID', headerText: 'Freight ID', width: 130 },
+                    { field: 'FreightName', width: 200, headerText: 'Freight Name' },
+                    { field: 'UnitWeight', headerText: 'Weight Per Unit', type: 'number', width: 140, textAlign: 'Right' },
+                    { field: 'TotalUnits', headerText: 'Total Units', type: 'number', width: 140, textAlign: 'Right' }
+                ],
+                aggregates: [{
+                    columns: [
+                        {
+                            type: 'Max',
+                            field: 'UnitWeight',
+                            columnName: 'UnitWeight',
+                            footerTemplate: 'Maximum: ${Max}'
+                        },
+                        {
+                            type: 'Min',
+                            field: 'TotalUnits',
+                            columnName: 'TotalUnits',
+                            footerTemplate: 'Minimum: ${Min}'
+                        }
+                    ],
+                }]
+            }, done);
+    });
+
+    it('should ensure header checkbox is unchecked when data source is empty', function (done) {
+        gridObj.grid.isCheckBoxSelection = true;
+        (<HTMLElement>gridObj.element.querySelector('.e-checkselectall')).click();
+        expect(gridObj.getSelectedRowIndexes().length).toBe(0);
+        done();
+    });
+
+    afterAll(() => {
+        destroy(gridObj);
+        gridObj = null;
+    });
+});

@@ -3065,7 +3065,7 @@ describe('Editor specs', ()=> {
             range.setStart(rteObj2.element.querySelector('.e-content'), 1);
             rteObj2.formatter.editorManager.nodeSelection.setRange(document, range);
             rteObj2.executeCommand('bold');
-            expect(rteObj2.inputElement.innerHTML === '<p><strong></strong>second RTEC</p>').toBe(true);
+            expect(rteObj2.inputElement.innerHTML === '<p><strong>​</strong>second RTEC</p>').toBe(true);
             rteObj2.value= `<p><strong></strong>second RTEC</p><p><strong></strong>second RTEC</p>`;
             range.setStart(rteObj2.element.querySelector('.e-content'), 1);
             rteObj2.formatter.editorManager.nodeSelection.setRange(document, range);

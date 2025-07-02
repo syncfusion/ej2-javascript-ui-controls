@@ -182,7 +182,8 @@ export class VirtualScroll {
             this.existingDataCollection = this.parent.resourceBase.renderedResources;
             if ((conWrap.scrollTop) - this.translateY < 0) {
                 resCollection = this.upScroll(conWrap, firstTDIndex);
-            } else if (conWrap.scrollTop - this.translateY > scrollHeight) {
+            } else if ((conWrap.scrollTop + conWrap.clientHeight >= conWrap.scrollHeight - this.itemSize) ||
+                (conWrap.scrollTop > (this.translateY + scrollHeight))) {
                 resCollection = this.downScroll(conWrap, firstTDIndex);
             }
             if (!isNullOrUndefined(resCollection) && resCollection.length > 0) {

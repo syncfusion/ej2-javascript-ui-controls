@@ -41,6 +41,7 @@ export class TtfReader {
     private missedGlyphs : number = 0;
     private tableNames : string[] = ['cvt ', 'fpgm', 'glyf', 'head', 'hhea', 'hmtx', 'loca', 'maxp', 'prep'];
     private entrySelectors : number[] = [0, 0, 1, 1, 2, 2, 2, 2, 3, 3, 3, 3, 3, 3, 3, 3, 4, 4, 4, 4, 4];
+    _isOpenTypeFont: boolean = false;
     /**
      * Width table.
      */
@@ -185,6 +186,9 @@ export class TtfReader {
             }
             this.offset = this.readInt32(this.offset);
             version = this.readInt32(this.offset);
+        }
+        if (version === 0x4f54544f) {
+            this._isOpenTypeFont = true;
         }
         return version;
     }
@@ -599,7 +603,7 @@ export class TtfReader {
         // NOTE: Strange!
         this.metrics.stemV = 80;
         this.metrics.widthTable = this.updateWidth();
-        this.metrics.contains = this.tableDirectory.containsKey('CFF');
+        this.metrics.contains = this.tableDirectory.containsKey('CFF ');
         this.metrics.subScriptSizeFactor = headTable.unitsPerEm / os2Table.ySubscriptYSize;
         this.metrics.superscriptSizeFactor = headTable.unitsPerEm / os2Table.ySuperscriptYSize;
     }
@@ -1108,6 +1112,15 @@ export class TtfReader {
         let newLocaUpdated : number[] = result2.newLocaUpdated;
         let fontProgram : number[] = this.getFontProgram(newLocaUpdated, newGlyphTable, glyphTableSize, newLocaSize);
         return fontProgram;
+    }
+    _readCompactFontFormatTable(): number[] {
+        const tableInfo: TtfTableInfo = this.getTable('CFF ');
+        const length: number = tableInfo.length;
+        const offset: number = tableInfo.offset;
+        const cffData: number[] = new Array(length);
+        this.setOffset(offset);
+        const result : {buffer : number[], written : number} = this.read(cffData, 0, length);
+        return result.buffer;
     }
     /**
      * Reconverts string to be in proper format saved into PDF file.

@@ -1092,4 +1092,115 @@ describe('Diagram Control', () => {
             done();
         });
     });
+     describe('Bug 961464 - Flipping rotated nodes is not working properly as it does not consider the rotation angle after the flip', () => {
+        let diagram: Diagram;
+        let ele: HTMLElement;
+        beforeAll((): void => {
+            const isDef = (o: any) => o !== undefined && o !== null;
+            if (!isDef(window.performance)) {
+                console.log("Unsupported environment, window.performance.memory is unavailable");
+                this.skip(); //Skips test (in Chai)
+                return;
+            }
+            ele = createElement('div', { id: 'diagramFlipRotatedGroup' });
+            document.body.appendChild(ele);
+            diagram = new Diagram({
+                width: '1050px', height: '800px',
+                nodes: [
+                    {
+                        id: 'node1',
+                        flipMode: 'PortAndLabel',
+                        style: { fill: 'red' },
+                        shape: { type: 'Basic', shape: 'RightTriangle' },
+                        offsetX: 40,
+                        offsetY: 160,
+                    },
+                    {
+                        id: 'node2',
+                        flipMode: 'PortAndLabel',
+                        style: { fill: 'blue' },
+                        shape: { type: 'Basic', shape: 'RightTriangle' },
+                        offsetX: 140,
+                        offsetY: 160,
+                    },
+                    {
+                        id: 'node3',
+                        flipMode: 'PortAndLabel',
+                        style: { fill: 'green' },
+                        shape: { type: 'Basic', shape: 'RightTriangle' },
+                        offsetX: 240,
+                        offsetY: 160,
+                    },
+                    {
+                        id: 'node4',
+                        flipMode: 'PortAndLabel',
+                        style: { fill: 'red' },
+                        shape: { type: 'Basic', shape: 'RightTriangle' },
+                        offsetX: 460,
+                        offsetY: 40,
+                    },
+                    {
+                        id: 'node5',
+                        flipMode: 'PortAndLabel',
+                        style: { fill: 'blue' },
+                        shape: { type: 'Basic', shape: 'RightTriangle' },
+                        offsetX: 460,
+                        offsetY: 140,
+                    },
+                    {
+                        id: 'node6',
+                        flipMode: 'PortAndLabel',
+                        style: { fill: 'green' },
+                        shape: { type: 'Basic', shape: 'RightTriangle' },
+                        offsetX: 460,
+                        offsetY: 240,
+                    },
+                ]
+            });
+            diagram.appendTo('#diagramFlipRotatedGroup');
+        });
+        afterAll((): void => {
+            diagram.destroy();
+            ele.remove();
+        });
+        it('Rotate node and flip-horizontal', function (done) {
+            let node = diagram.nameTable['node6'];
+            node.rotateAngle = 30;
+            diagram.dataBind();
+            node.flip ^= FlipDirection.Horizontal;
+            diagram.dataBind();
+            expect(node.flip === FlipDirection.Horizontal && node.rotateAngle === 330).toBe(true);
+            done();
+        });
+        it('Rotate node and flip-vertical', function (done) {
+            let node = diagram.nameTable['node5'];
+            node.rotateAngle = 30;
+            diagram.dataBind();
+            node.flip ^= FlipDirection.Vertical;
+            diagram.dataBind();
+            expect(node.flip === FlipDirection.Vertical && node.rotateAngle === 330).toBe(true);
+            done();
+        });
+        it('Rotate group and flip-horizontal', function (done) {
+            let node1 = diagram.nameTable['node1'];
+            let node2 = diagram.nameTable['node2'];
+            let node3 = diagram.nameTable['node3'];
+            diagram.select([node1, node2, node3]);
+            diagram.group();
+            let groupNode = diagram.selectedItems.nodes[0];
+            groupNode.rotateAngle = 30;
+            diagram.dataBind();
+            groupNode.flip ^= FlipDirection.Horizontal;
+            diagram.dataBind();
+            expect(groupNode.flip === FlipDirection.Horizontal && groupNode.rotateAngle === 330).toBe(true);
+            done();
+        });
+        it('Rotate group and flip-vertical', function (done) {
+            let groupNode = diagram.selectedItems.nodes[0];
+            groupNode.flip ^= FlipDirection.Vertical;
+            diagram.dataBind();
+            expect(groupNode.flip === FlipDirection.Both && groupNode.rotateAngle === 30).toBe(true);
+            done();
+        });
+    });
 });

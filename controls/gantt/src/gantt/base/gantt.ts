@@ -3545,6 +3545,7 @@ export class Gantt extends Component<HTMLElement>
         if (this.undoRedoModule && Object.keys(this.undoRedoModule['undoActionDetails']).length !== 0) {
             const actionDetail: object = this.undoRedoModule['undoActionDetails'];
             if (actionDetail['action'] === 'RowDragAndDrop' || actionDetail['action'] === 'TaskbarDragAndDrop') {
+                this.undoRedoModule['isUndoRedoPerformed'] = true;
                 actionDetail['beforeDrop'].forEach((data: Object) => {
                     this.updateRecordByID(data['data']);
                 });
@@ -3554,8 +3555,8 @@ export class Gantt extends Component<HTMLElement>
             } else if (actionDetail['action'] === 'Indent' || actionDetail['action'] === 'Outdent') {
                 this.undoRedoModule['isUndoRedoPerformed'] = true;
                 this.updateRecordByID(actionDetail['droppedRecord']);
-                this.undoRedoModule['isUndoRedoPerformed'] = false;
             }
+            this.undoRedoModule['isUndoRedoPerformed'] = false;
             this.undoRedoModule['undoActionDetails'] = {};
         }
         this.trigger('dataBound', args);
@@ -4844,22 +4845,31 @@ export class Gantt extends Component<HTMLElement>
     public setRecordValue(field: string, value: any, record: IGanttData | ITaskData, isTaskData?: boolean): void {
         value = isUndefined(value) ? null : value;
         const resultIf: boolean = (this.isOnEdit || this.isOnDelete) ? true : false;
-        if (resultIf) {
-            this.makeCloneData(field, record, isTaskData);
-            const ganttData: ITaskData = isTaskData ? (record as ITaskData) : (record as IGanttData).ganttProperties;
+        let shouldUpdateModifiedData: boolean = false;
+        const ganttData: ITaskData = isTaskData ? (record as ITaskData) : (record as IGanttData).ganttProperties;
+        if (this.enableUndoRedo && this.undoRedoModule && !this.undoRedoModule['isFromUndoRedo'] && !resultIf && !this.isLoad &&
+            ganttData) {
+            shouldUpdateModifiedData = true;
+        }
+        if (resultIf || shouldUpdateModifiedData) {
+            if (!shouldUpdateModifiedData) {
+                this.makeCloneData(field, record, isTaskData);
+            }
             const id: string  = ganttData.rowUniqueID;
             const task: IGanttData = this.getRecordByID(id);
             let isValid: boolean = false;
             isValid = (isNullOrUndefined(value) ||
             (!isNullOrUndefined(value) && !isNullOrUndefined(record[`${field}`]) &&
-            (value instanceof Date ? value.getTime() !== record[`${field}`].getTime() :
+            ((value instanceof Date && record[`${field}`] instanceof Date) ? value.getTime() !== record[`${field}`].getTime() :
                 record[`${field}`] !== value))) ? true : isValid;
             if (task && ((this.editedRecords.indexOf(task) === -1 && isValid) || this.editedRecords.length === 0)) {
                 if (this.editModule['draggedRecord'] && this.editModule['draggedRecord'].ganttProperties.taskId === ganttData.taskId) {
                     this.editedRecords.splice(0, 0, task);
                 }
                 else {
-                    this.editedRecords.push(task);
+                    if (!shouldUpdateModifiedData) {
+                        this.editedRecords.push(task);
+                    }
                 }
                 if (this.undoRedoModule) {
                     if (this.undoRedoModule['changedRecords'].indexOf(task) === -1) {
@@ -4868,17 +4878,21 @@ export class Gantt extends Component<HTMLElement>
                     const undoCollections: Object[] = this.undoRedoModule['getUndoCollection'];
                     const currentAction: string = undoCollections.length > 0 ? undoCollections[undoCollections.length - 1]['action'] : null;
                     if (this.editModule && this.editSettings.allowEditing && !this.undoRedoModule['isUndoRedoPerformed'] && !this.isOnDelete && !this.isOnAdded && currentAction !== 'outdent' && currentAction !== 'indent' &&
-                        currentAction !== 'RowDragAndDrop' && currentAction !== 'TaskbarDragAndDrop') {
+                        currentAction !== 'RowDragAndDrop') {
                         const oldRecord: IGanttData = this.previousFlatData.filter((data: IGanttData) => {
                             return data.ganttProperties.taskId === task.ganttProperties.taskId;
                         })[0];
+                        if (shouldUpdateModifiedData && undoCollections[undoCollections.length - 1]
+                            && !undoCollections[undoCollections.length - 1]['modifiedRecords']) {
+                            undoCollections[undoCollections.length - 1]['modifiedRecords'] = [];
+                        }
                         if (oldRecord && undoCollections[undoCollections.length - 1] && undoCollections[undoCollections.length - 1]['modifiedRecords']
                             && undoCollections[undoCollections.length - 1]['modifiedRecords'].indexOf(oldRecord) === -1) {
                             (undoCollections[undoCollections.length - 1]['modifiedRecords'] as Object[]).push(oldRecord);
                         }
                     }
                 }
-                if (this.enableImmutableMode) {
+                if (this.enableImmutableMode && !shouldUpdateModifiedData) {
                     this.modifiedRecords.push(task);
                 }
             }

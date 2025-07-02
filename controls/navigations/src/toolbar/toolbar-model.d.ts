@@ -1,5 +1,5 @@
 import { Component, EventHandler, Property, Event, EmitType, BaseEventArgs } from '@syncfusion/ej2-base';import { addClass, removeClass, isVisible, closest, attributes, detach, classList, KeyboardEvents } from '@syncfusion/ej2-base';import { selectAll, setStyleAttribute as setStyle, KeyboardEventArgs, select } from '@syncfusion/ej2-base';import { isNullOrUndefined as isNOU, getUniqueID, formatUnit, Collection, compile as templateCompiler } from '@syncfusion/ej2-base';import { INotifyPropertyChanged, NotifyPropertyChanges, ChildProperty, Browser, SanitizeHtmlHelper } from '@syncfusion/ej2-base';import { Popup } from '@syncfusion/ej2-popups';import { calculatePosition } from '@syncfusion/ej2-popups';import { Button, IconPosition } from '@syncfusion/ej2-buttons';import { HScroll } from '../common/h-scroll';import { VScroll } from '../common/v-scroll';
-import {OverflowOption,ItemType,DisplayMode,ItemAlign,ClickEventArgs,OverflowMode,BeforeCreateArgs} from "./toolbar";
+import {OverflowOption,ItemType,DisplayMode,ItemAlign,ClickEventArgs,OverflowMode,BeforeCreateArgs,KeyDownEventArgs} from "./toolbar";
 import {ComponentModel} from '@syncfusion/ej2-base';
 
 /**
@@ -283,5 +283,12 @@ export interface ToolbarModel extends ComponentModel{
      * @event beforeCreate
      */
     beforeCreate?: EmitType<BeforeCreateArgs>;
+
+    /**
+     * The event will be fired when the keyboard interaction occurs on the Toolbar.
+     *
+     * @event keyDown
+     */
+    keyDown?: EmitType<KeyDownEventArgs>;
 
 }

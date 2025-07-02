@@ -8,6 +8,26 @@
 
 #### Bug Fixes
 
+- `#F733919` - The issue with the context menu popup does not open when we press `Shift+F10` key has been resolved.
+
+### Toolbar
+
+#### Bug Fixes
+
+- `#I731032` - An issue where focus moved to a disabled item in the toolbar popup when pressing the down arrow key has been fixed.
+
+### Treeview
+
+#### Bug Fixes
+
+- `#I730143` - The flickering issue on animation due to height calculation while expanding a node in TreeView has been resolved.
+
+## 29.2.8 (2025-06-03)
+
+### Tab
+
+#### Bug Fixes
+
 - `#I717262` - The issue with `hideTab` not working correctly in mobile (popup) mode of the Tab component has been resolved.
 
 - `#I696042` - The issue with the `ActiveTab` is not set properly in the mobile mode of the Tab component has been resolved.
@@ -40,7 +60,7 @@
 
 #### Bug Fixes
 
-- `#I712180` - Enhanced the node selection behavior in the TreeView component by introducing a new property `checkOnClick`, which provides control over node interaction and helps prevent unintended actions during user interactions.
+- `#I712180` - Enhanced the node selection behaviour in the TreeView component by introducing a new property `checkOnClick`, which provides control over node interaction and helps prevent unintended actions during user interactions.
 
 ## 29.2.4 (2025-05-14)
 
@@ -117,6 +137,26 @@
 #### Bug Fixes
 
 - `#I694965` - Resolved an issue where the parent node check state was not maintained in nested data after filtering when Select All was used in the `DropdownTree` component.
+
+## 28.2.11 (2025-03-11)
+
+### ContextMenu
+
+#### Bug Fixes
+
+- `#I625957` - The issue with the `enableItems` and `insertAfter` methods not functioning correctly when the `enableScrolling` property of the context menu is enabled has been resolved.
+
+### Menu
+
+#### Bug Fixes
+
+- `#I695706` - The accessibility violation issue encountered when opening the submenu of the menu component has been resolved.
+
+### Toolbar
+
+#### Bug Fixes
+
+- `#I689782` - An issue with the toolbar focus style not being applied in Tailwind 3 and Fluent 2 themes while using keyboard navigation in the Mac Safari browser has been resolved.
 
 ## 28.2.6 (2025-02-18)
 

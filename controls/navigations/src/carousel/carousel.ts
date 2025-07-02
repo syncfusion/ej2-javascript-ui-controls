@@ -521,9 +521,6 @@ export class Carousel extends Component<HTMLElement> implements INotifyPropertyC
                 }
                 break;
             case 'enableTouchSwipe':
-                if (!this.enableTouchSwipe && this.touchModule) {
-                    this.touchModule.destroy();
-                }
                 if (this.element.querySelector(`.${CLS_ITEMS}`)) {
                     this.renderTouchActions();
                 }
@@ -927,9 +924,6 @@ export class Carousel extends Component<HTMLElement> implements INotifyPropertyC
     }
 
     private renderTouchActions(): void {
-        if (!this.enableTouchSwipe) {
-            return;
-        }
         this.touchModule = new Touch(this.element, { swipe: this.swipeHandler.bind(this) });
     }
 
@@ -1495,7 +1489,7 @@ export class Carousel extends Component<HTMLElement> implements INotifyPropertyC
     }
 
     private wireEvents(): void {
-        if (this.animationEffect !== 'Custom' && this.enableTouchSwipe) {
+        if (this.animationEffect !== 'Custom') {
             this.swipeModehandlers();
         }
         EventHandler.add(this.element, 'focusin focusout', this.onFocusActions, this);

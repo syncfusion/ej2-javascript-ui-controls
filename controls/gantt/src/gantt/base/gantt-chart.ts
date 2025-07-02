@@ -166,7 +166,9 @@ export class GanttChart {
             }
         }
         this.updateWidthAndHeight();
-        if (this.parent.isLoad) {
+        const isUpdateRowIndex: boolean = this.parent.loadChildOnDemand &&
+                (this.parent['isExpandPerformed'] || (!isNullOrUndefined(this.parent['isVirtualScroll']) && this.parent['isVirtualScroll']));
+        if (this.parent.isLoad && !isUpdateRowIndex) {
             this.parent.notify('selectRowByIndex', {});
         }
         if (this.parent.timelineModule.isZoomedToFit) {

@@ -7,7 +7,7 @@ import { EventHandler, EmitType } from '@syncfusion/ej2-base';
 import { isNullOrUndefined, enableRipple } from '@syncfusion/ej2-base';
 import { TreeView, DragAndDropEventArgs, NodeEditEventArgs, NodeCheckEventArgs, NodeExpandEventArgs,  NodeSelectEventArgs } from "../../src/treeview/treeview";
 import { DataManager, Query,ODataV4Adaptor } from '@syncfusion/ej2-data';
-import { hierarchicalData, hierarchicalData1, hierarchicalData2, hierarchicalData3, hierarchicalData8, localData, localData1, localData2, localData3, hierarchicalData9, localData10, localData11, hierarchicalDataWithSelectable, hierarchicalData10, localDataHtmlAttributes, selectableFieldData } from '../../spec/treeview/datasource.spec';
+import { hierarchicalData, hierarchicalData1, hierarchicalData2, hierarchicalData3, hierarchicalData8, localData, localData1, localData2, localData3, hierarchicalData9, localData10, localData11, hierarchicalDataWithSelectable, hierarchicalData10, localDataHtmlAttributes, selectableFieldData, data} from '../../spec/treeview/datasource.spec';
 import { remoteData, remoteData1, remoteData2, remoteData2_1, remoteData1_1, hierarchicalData4, localData4, localData5, localData6} from '../../spec/treeview/datasource.spec';
 import { hierarchicalData5, expandIconParentData, expandIconChildData, remoteData2_2, remoteData2_3 , remoteData3_1, hierarchicalData6} from '../../spec/treeview/datasource.spec';
 import { localData7, localData8, localData9, localData12, localData13, hierarchicalDataSource2, checkData, XSSData, XSSnestedData, checkboxData, updatedremoteNode_1, updatedremoteNode_2} from '../../spec/treeview/datasource.spec';
@@ -13357,90 +13357,88 @@ describe('TreeView control', () => {
             EventHandler.trigger(<any>(document), 'mousemove', mousemove);
             expect(i).toBe(1);         
     });
-});
-describe('check on click property testing', function () {
-    let treeObj: any;
-    let mouseEventArgs: any;
-    treeObj = undefined;
-    let tapEvent: any;
-    let keyboardEventArgs: any = {
-        preventDefault: (): void => { },
-        action: null,
-        target: null,
-        shiftKey: true,
-        stopImmediatePropagation: (): void => { },
-    };
-    let ele: HTMLElement = createElement('div', { id: 'tree' });
-    let i: number = 0;
-    beforeEach(() => {
-        document.body.appendChild(ele);
-        mouseEventArgs = {
-            preventDefault: (): void => { },
-            stopImmediatePropagation: (): void => { },
+    });
+    describe('check on click property testing', function() {
+        let treeObj: any;
+        let mouseEventArgs: any;
+        treeObj = undefined;
+        let tapEvent: any;
+        let keyboardEventArgs: any = {
+            preventDefault: (): void => {},
+            action: null,
             target: null,
-            type: null,
-            shiftKey: false,
-            ctrlKey: false,
-            originalEvent: { target: null }
+            shiftKey:true,
+            stopImmediatePropagation: (): void => {},
         };
-        i = 0;
-        tapEvent = {
-            originalEvent: mouseEventArgs,
-            tapCount: 1
-        };
-        treeObj = new TreeView({
-            fields: { dataSource: hierarchicalData1, id: "nodeId", text: "nodeText", child: "nodeChild" },
-            checkOnClick: false, showCheckBox: true, allowMultiSelection: true, autoCheck: false
+        let ele: HTMLElement = createElement('div', { id: 'tree' });
+        let i: number = 0;
+        beforeEach(() => {
+            document.body.appendChild(ele);
+            mouseEventArgs = {
+                preventDefault: (): void => {},
+                stopImmediatePropagation: (): void => {},
+                target: null,
+                type: null,
+                shiftKey: false,
+                ctrlKey: false,
+                originalEvent:{ target: null}
+            };
+            i = 0;
+            tapEvent = {
+                originalEvent: mouseEventArgs,
+                tapCount: 1
+            };
+            treeObj = new TreeView({
+                fields: { dataSource: hierarchicalData1, id: "nodeId", text: "nodeText", child: "nodeChild" },
+                checkOnClick: false, showCheckBox: true, allowMultiSelection: true, autoCheck: false
+            });
+            treeObj.appendTo(ele);
+            jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000;
+        })
+        afterEach(() => {
+            if (treeObj)
+                treeObj.destroy();
+            document.body.innerHTML = '';
         });
-        treeObj.appendTo(ele);
-        jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000;
-    })
-    afterEach(() => {
-        if (treeObj)
-            treeObj.destroy();
-        document.body.innerHTML = '';
-    });
-    it('checkOnClick false clicking on the text', () => {
-        let checkEle: Element[] = <Element[] & NodeListOf<Element>>treeObj.element.querySelectorAll('.e-checkbox-wrapper');
-        let li: Element[] = <Element[] & NodeListOf<Element>>treeObj.element.querySelectorAll('li');
-        mouseEventArgs.target = li[0].querySelector('.e-list-text');
-        treeObj.touchClickObj.tap(tapEvent);
-        expect(li[0].classList.contains('e-active')).toBe(true);
-        expect(checkEle[0].querySelector('.e-frame.e-icons').classList.contains('e-check')).toBe(false);
-    });
-
-    it('checkOnClick true and clicking on the text', () => {
-        let checkEle: Element[] = <Element[] & NodeListOf<Element>>treeObj.element.querySelectorAll('.e-checkbox-wrapper');
-        treeObj.checkOnClick = true;
-        treeObj.dataBind();
-        let li: Element[] = <Element[] & NodeListOf<Element>>treeObj.element.querySelectorAll('li');
-        mouseEventArgs.target = li[0].querySelector('.e-list-text');
-        treeObj.touchClickObj.tap(tapEvent);
-        expect(li[0].classList.contains('e-active')).toBe(true);
-        expect(checkEle[0].querySelector('.e-frame.e-icons').classList.contains('e-check')).toBe(true);
-    });
-
-    it('clicking on the checkbox', () => {
-        let checkEle: Element[] = <Element[] & NodeListOf<Element>>treeObj.element.querySelectorAll('.e-checkbox-wrapper');
-        treeObj.checkOnClick = true;
-        treeObj.dataBind();
-        var mousedown = new MouseEvent("mousedown", { view: window, bubbles: true, cancelable: true });
-        checkEle[0].querySelector('.e-frame').dispatchEvent(mousedown);
-        var mouseup = new MouseEvent("mouseup", { view: window, bubbles: true, cancelable: true });
-        checkEle[0].querySelector('.e-frame').dispatchEvent(mouseup);
-        let li: Element[] = <Element[] & NodeListOf<Element>>treeObj.element.querySelectorAll('li');
-        expect(li[0].classList.contains('e-active')).toBe(true);
-        expect(checkEle[0].querySelector('.e-frame.e-icons').classList.contains('e-check')).toBe(true);
-        treeObj.checkOnClick = false;
-        treeObj.dataBind();
-        var mousedown = new MouseEvent("mousedown", { view: window, bubbles: true, cancelable: true });
-        checkEle[1].querySelector('.e-frame').dispatchEvent(mousedown);
-        var mouseup = new MouseEvent("mouseup", { view: window, bubbles: true, cancelable: true });
-        checkEle[1].querySelector('.e-frame').dispatchEvent(mouseup);
-        let li1: Element[] = <Element[] & NodeListOf<Element>>treeObj.element.querySelectorAll('li');
-        expect(li1[1].classList.contains('e-active')).toBe(false);
-        expect(checkEle[1].querySelector('.e-frame.e-icons').classList.contains('e-check')).toBe(true);
-    });
+        it('checkOnClick false clicking on the text', () => {
+            let checkEle: Element[] = <Element[] & NodeListOf<Element>>treeObj.element.querySelectorAll('.e-checkbox-wrapper');
+            let li: Element[] = <Element[] & NodeListOf<Element>>treeObj.element.querySelectorAll('li');
+            mouseEventArgs.target = li[0].querySelector('.e-list-text');
+            treeObj.touchClickObj.tap(tapEvent);
+            expect(li[0].classList.contains('e-active')).toBe(true); 
+            expect(checkEle[0].querySelector('.e-frame.e-icons').classList.contains('e-check')).toBe(false);
+        });
+        it('checkOnClick true and clicking on the text', () => {
+            let checkEle: Element[] = <Element[] & NodeListOf<Element>>treeObj.element.querySelectorAll('.e-checkbox-wrapper');
+            treeObj.checkOnClick = true;
+            treeObj.dataBind();
+            let li: Element[] = <Element[] & NodeListOf<Element>>treeObj.element.querySelectorAll('li');
+            mouseEventArgs.target = li[0].querySelector('.e-list-text');
+            treeObj.touchClickObj.tap(tapEvent);
+            expect(li[0].classList.contains('e-active')).toBe(true); 
+            expect(checkEle[0].querySelector('.e-frame.e-icons').classList.contains('e-check')).toBe(true);
+        });
+        it('clicking on the checkbox', () => {
+            let checkEle: Element[] = <Element[] & NodeListOf<Element>>treeObj.element.querySelectorAll('.e-checkbox-wrapper');
+            treeObj.checkOnClick = true;
+            treeObj.dataBind();
+            var mousedown = new MouseEvent("mousedown", { view: window, bubbles: true, cancelable: true });
+            checkEle[0].querySelector('.e-frame').dispatchEvent(mousedown);
+            var mouseup = new MouseEvent("mouseup", { view: window, bubbles: true, cancelable: true });
+            checkEle[0].querySelector('.e-frame').dispatchEvent(mouseup);
+            let li: Element[] = <Element[] & NodeListOf<Element>>treeObj.element.querySelectorAll('li');
+            expect(li[0].classList.contains('e-active')).toBe(true);
+            expect(checkEle[0].querySelector('.e-frame.e-icons').classList.contains('e-check')).toBe(true);
+            treeObj.checkOnClick = false;
+            treeObj.dataBind();
+            var mousedown = new MouseEvent("mousedown", { view: window, bubbles: true, cancelable: true });
+            checkEle[1].querySelector('.e-frame').dispatchEvent(mousedown);
+            var mouseup = new MouseEvent("mouseup", { view: window, bubbles: true, cancelable: true });
+            checkEle[1].querySelector('.e-frame').dispatchEvent(mouseup);
+            let li1: Element[] = <Element[] & NodeListOf<Element>>treeObj.element.querySelectorAll('li');
+            expect(li1[1].classList.contains('e-active')).toBe(false);
+            expect(checkEle[1].querySelector('.e-frame.e-icons').classList.contains('e-check')).toBe(true);
+        });
 });
 describe('Drag and drop with different TreeView functionality testing with empty dataSource', () => {
     let treeObj: any;
@@ -17823,4 +17821,33 @@ describe('TreeView dynamic datasource addition and keyboard navigation', () => {
         expect(li.length).toBeGreaterThan(0);
         expect(li[0].classList.contains('e-node-focus')).toBe(true);
     });
+});
+describe('TreeView Height Calculation Animation', () => {
+    it('should calculate correct end height during expand animation including paddings', (done) => {
+        const ele = createElement('div', { id: 'treeHeightCalc' });
+        document.body.appendChild(ele);
+        const treeObj = new TreeView({
+            fields: { dataSource: data, id: 'id', text: 'name', child: 'child', hasChildren: 'hasChildren' },
+            animation: { expand: { effect: 'SlideDown', duration: 400, easing: '' } }
+        });
+        treeObj.appendTo(ele);
+        const parentLi = treeObj.element.querySelector('li');
+        treeObj.collapseAll();
+        const liText = parentLi.querySelector('.e-text-content') as HTMLElement;
+        liText.style.paddingTop = '10px';
+        liText.style.paddingBottom = '15px';
+        treeObj.expandAll();
+        setTimeout(() => {
+            const computed = window.getComputedStyle(liText);
+            const pt = parseFloat(computed.paddingTop);
+            const pb = parseFloat(computed.paddingBottom);
+            const textWrap = parentLi.querySelector('.e-list-text') as HTMLElement;
+            const expectedHeight = textWrap.offsetHeight + pt + pb;
+            expect(Math.abs(liText.offsetHeight - expectedHeight)).toBeLessThan(2);
+            treeObj.destroy();
+            document.body.removeChild(ele);
+            done();
+        }, 450);
+    });
+
 });

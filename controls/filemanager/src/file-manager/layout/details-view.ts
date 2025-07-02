@@ -7,7 +7,7 @@ import { DataManager, Query } from '@syncfusion/ej2-data';
 import { hideSpinner, showSpinner } from '@syncfusion/ej2-popups';
 import * as events from '../base/constant';
 import * as CLS from '../base/classes';
-import { ReadArgs, SearchArgs, FileDetails, NotifyArgs, SortOrder } from '../base/interface';
+import { ReadArgs, SearchArgs, FileDetails, NotifyArgs, SortOrder, BeforeImageLoadEventArgs } from '../base/interface';
 import { FileSelectEventArgs, FileLoadEventArgs, FileSelectionEventArgs } from '../base/interface';
 import { FileOpenEventArgs } from '../base/interface';
 import { createDialog, createImageDialog } from '../pop-up/dialog';
@@ -455,7 +455,8 @@ export class DetailsView {
         if (this.parent.layoutSelectedItems.length) {
             this.selectRecords(this.parent.layoutSelectedItems);
         }
-        if (this.parent.renamedItem) {
+        if (this.parent.renamedItem && this.parent.selectedItems.length === 0) {
+            this.gridObj.clearSelection();
             this.addSelection(this.parent.renamedItem);
             this.parent.renamedItem = null;
         }
@@ -703,8 +704,8 @@ export class DetailsView {
                 if (getValue('isFile', data)) {
                     const icon: string = fileType(data);
                     if (icon === CLS.ICON_IMAGE) {
-                        const imgUrl: string = getImageUrl(this.parent, data);
-                        createImageDialog(this.parent, name, imgUrl);
+                        const imageData: BeforeImageLoadEventArgs = getImageUrl(this.parent, data);
+                        createImageDialog(this.parent, name, imageData);
                     }
                 } else {
                     const val: string = this.parent.breadcrumbbarModule.searchObj.element.value;

@@ -2,24 +2,15 @@
 
 ## [Unreleased]
 
+## 30.1.38 (2025-07-02)
+
+### Pdf Export
+
+#### Bug Fixes
+
+- Fixed an issue where the text was not preserved in page graphics with an OTF font.
+
 ## 30.1.37 (2025-06-25)
-
-### Pdf Export
-
-#### Bug Fixes
-
-- Fixed an issue where grid rows with large row spans break across pages and leads to alignment issues.
-- Fixed an issue where PDF colour ignored alpha settings.
-
-## 29.1.40 (2025-04-29)
-
-### Pdf Export
-
-#### Bug Fixes
-
-- Fixed an issue where grid cell content wrapping was not preserved when drawing text on page graphics.
-
-## 29.1.33 (2025-03-25)
 
 ### Pdf Export
 

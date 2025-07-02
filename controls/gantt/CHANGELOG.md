@@ -2,6 +2,17 @@
 
 ## [Unreleased]
 
+## 30.1.38 (2025-07-02)
+
+### GanttChart
+
+#### Bug fixes
+
+- `#I737233` - Unwanted Element Appearing Next to Gantt Chart During Row Drag and Drop issue has been resolved.
+- `#F196872` - The issue where the Gantt chart became unresponsive when editing the start date of a task with multiple dependency connections has been resolved.
+- `#I730000` - Resolved the issue where the scrollbar reverted to the top and white space appeared during child load in combination with the expand-on-demand action.
+- `#F196826` - Resolved the performance issue occurring when the critical path was enabled dynamically for large data sets.
+
 ## 30.1.37 (2025-06-25)
 
 ### GanttChart

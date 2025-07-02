@@ -263,7 +263,11 @@ export class UnicodeTrueTypeFont {
         this.descendantFont.isResource = true;
         this.descendantFont.descendantFontBeginSave = new SaveDescendantFontEventHandler(this);
         this.descendantFont.items.setValue(this.dictionaryProperties.type, new PdfName(this.dictionaryProperties.font));
-        this.descendantFont.items.setValue(this.dictionaryProperties.subtype, new PdfName(this.dictionaryProperties.cIDFontType2));
+        if (this.ttfReader && this.ttfReader._isOpenTypeFont) {
+            this.descendantFont.items.setValue(this.dictionaryProperties.subtype, new PdfName(this.dictionaryProperties.cIDFontType0));
+        } else {
+            this.descendantFont.items.setValue(this.dictionaryProperties.subtype, new PdfName(this.dictionaryProperties.cIDFontType2));
+        }
         this.descendantFont.items.setValue(this.dictionaryProperties.baseFont, new PdfName(this.subsetName));
         this.descendantFont.items.setValue(this.dictionaryProperties.cIDToGIDMap, new PdfName(this.dictionaryProperties.identity));
         this.descendantFont.items.setValue(this.dictionaryProperties.dw, new PdfNumber(1000));
@@ -292,7 +296,12 @@ export class UnicodeTrueTypeFont {
         descriptor.items.setValue(this.dictionaryProperties.descent, new PdfNumber(metrics.winDescent));
         descriptor.items.setValue(this.dictionaryProperties.leading, new PdfNumber(metrics.leading));
         descriptor.items.setValue(this.dictionaryProperties.avgWidth, new PdfNumber(metrics.widthTable[32]));
-        descriptor.items.setValue(this.dictionaryProperties.fontFile2, new PdfReferenceHolder(this.fontProgram));
+        if (this.ttfReader.metrics.contains) {
+            descriptor.items.setValue(this.dictionaryProperties.fontFile3, new PdfReferenceHolder(this.fontProgram));
+            this.fontProgram.items.setValue(this.dictionaryProperties.subtype, new PdfName(this.dictionaryProperties.cIDFontType0C));
+        } else {
+            descriptor.items.setValue(this.dictionaryProperties.fontFile2, new PdfReferenceHolder(this.fontProgram));
+        }
         descriptor.items.setValue(this.dictionaryProperties.maxWidth, new PdfNumber(metrics.widthTable[32]));
         descriptor.items.setValue(this.dictionaryProperties.xHeight, new PdfNumber(0));
         descriptor.items.setValue(this.dictionaryProperties.stemH, new PdfNumber(0));
@@ -488,13 +497,19 @@ export class UnicodeTrueTypeFont {
      * Generates font program.
      */
     private generateFontProgram() : void {
-        let fontProgram : number[] = null;
         this.usedChars = (this.usedChars === null || this.usedChars === undefined) ? new Dictionary<string, string>() : this.usedChars;
         this.ttfReader.setOffset(0);
-        fontProgram = this.ttfReader.readFontProgram(this.usedChars);
-        this.fontProgram.clearStream();
-        this.fontProgram.isResource = true;
-        this.fontProgram.writeBytes(fontProgram);
+        if (this.ttfReader.metrics.contains && this.ttfReader._isOpenTypeFont) {
+            const cffData: number[] = this.ttfReader._readCompactFontFormatTable();
+            this.fontProgram.clearStream();
+            this.fontProgram.isResource = true;
+            this.fontProgram.writeBytes(cffData);
+        } else {
+            const fontProgram: number[] = this.ttfReader.readFontProgram(this.usedChars);
+            this.fontProgram.clearStream();
+            this.fontProgram.isResource = true;
+            this.fontProgram.writeBytes(fontProgram);
+        }
     }
     /**
      * Calculates flags for the font descriptor.

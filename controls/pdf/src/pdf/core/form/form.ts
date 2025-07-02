@@ -606,6 +606,7 @@ export class PdfForm {
                         const annotDictionary: _PdfDictionary = this._crossReference._fetch(ref);
                         if (annotDictionary && annotDictionary.has('Subtype') &&
                             annotDictionary.get('Subtype').name === 'Widget') {
+                            annotDictionary._reference = ref;
                             widgets.push(annotDictionary);
                         }
                     }
@@ -734,41 +735,30 @@ export class PdfForm {
         if (widgetCollection && widgetCollection.indexOf(ref) !== -1) {
             return true;
         }
-        let found: boolean = false;
         pageWidgets.forEach((widgets: _PdfDictionary[], pageIndex: number) => {
-            if (found) {
-                return;
-            }
             if (widgets && widgets.length > 0) {
                 for (let j: number = 0; j < widgets.length; j++) {
                     const widget: _PdfDictionary = widgets[<number>j];
                     if (widget && this._compareWidgets(widget, fieldDictionary)) {
-                        if (this._crossReference && this._crossReference._document) {
-                            const page: PdfPage = this._crossReference._document.getPage(pageIndex);
-                            if (page && page._ref && fieldDictionary.has('FT')) {
-                                fieldDictionary.update('P', page._ref);
-                                found = true;
-                                return;
-                            }
+                        if (this._fields.indexOf(widget._reference) === -1) {
+                            this._fields.push(widget._reference);
                         }
+                        return;
                     }
                 }
             }
         });
-        return found;
+        return false;
     }
     _compareWidgets(widget: _PdfDictionary, annotDictionary: _PdfDictionary): boolean {
         if (!widget || !annotDictionary) {
             return false;
         }
-        let widgetType: _PdfName;
-        let annotType: _PdfName;
-        if (widget.has('FT')) {
-            widgetType = widget.get('FT');
+        if (!(widget.has('FT') && annotDictionary.has('FT'))) {
+            return false;
         }
-        if (annotDictionary.has('FT')) {
-            annotType = annotDictionary.get('FT');
-        }
+        const widgetType: _PdfName = widget.get('FT');
+        const annotType: _PdfName = annotDictionary.get('FT');
         if (widgetType && annotType && widgetType.name !== annotType.name) {
             return false;
         }
@@ -783,18 +773,20 @@ export class PdfForm {
         if (widgetName && annotName && widgetName !== annotName) {
             return false;
         }
-        let widgetValue: string;
-        let annotValue: string;
+        let widgetValue: any; // eslint-disable-line
+        let annotValue: any; // eslint-disable-line
         if (widget.has('V')) {
             widgetValue = widget.get('V');
         }
         if (annotDictionary.has('V')) {
             annotValue = annotDictionary.get('V');
         }
-        if (typeof widgetValue !== 'string' || typeof annotValue !== 'string' || widgetValue !== annotValue) {
-            return false;
+        if (typeof widgetValue === 'string' && typeof annotValue === 'string') {
+            return true;
+        } else if (widgetValue instanceof _PdfName && annotValue instanceof _PdfName && widgetValue.name === annotValue.name) {
+            return true;
         }
-        return true;
+        return false;
     }
     _isNode(kids: Array<any>) : boolean { // eslint-disable-line
         let isNode: boolean = false;

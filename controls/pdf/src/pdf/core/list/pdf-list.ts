@@ -1543,7 +1543,7 @@ export class _PdfListLayouter {
         const posY: number = height + y;
         let posX: number = indent + x;
         let itemHeight: number = 0;
-        let itemSize: number[] = this._size;
+        let itemSize: number[] = [...this._size];
         let text: string = item.text;
         let markerText: string;
         let itemBrush: PdfBrush = this._currentBrush;
@@ -1600,7 +1600,7 @@ export class _PdfListLayouter {
             canDrawMarker = true;
         }
         if (text && canDrawMarker) {
-            itemSize = this._size;
+            itemSize = [...this._size];
             itemSize[0] = itemSize[0] - pageResult.markerWidth;
             if (item.textIndent === 0) {
                 itemSize[0] = itemSize[0] - textIndent;
@@ -1893,7 +1893,7 @@ export class _PdfListLayouter {
         if (page._pageIndex < document.pageCount - 1) {
             return document.getPage(page._pageIndex + 1);
         } else {
-            return document.addPage();
+            return document.addPage(page._pageSettings);
         }
     }
 }

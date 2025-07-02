@@ -1130,7 +1130,7 @@ export class AIAssistView extends InterActiveChatBase implements INotifyProperty
             this.l10n.setLocale(this.locale);
             messageElement.textContent = this.l10n.getConstant('fileSizeFailure');
 
-            failureAlert.classList.add('show');
+            failureAlert.classList.add('e-show');
             setTimeout(() => {
                 this.handleFailureAlertRemove(failureAlert);
             }, 3000);
@@ -1151,7 +1151,7 @@ export class AIAssistView extends InterActiveChatBase implements INotifyProperty
     }
 
     private handleFailureAlertRemove(alertElement: HTMLElement): void {
-        alertElement.classList.remove('show');
+        alertElement.classList.remove('e-show');
         EventHandler.remove(alertElement, 'click', this.handleFailureAlertRemove);
         if (this.viewWrapper) {
             this.viewWrapper.removeChild(alertElement);

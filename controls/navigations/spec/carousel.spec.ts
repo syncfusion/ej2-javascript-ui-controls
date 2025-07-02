@@ -2292,9 +2292,9 @@ describe('Carousel Testing', () => {
             carousel.dataBind();
             triggerSwipeEvent(carouselElement, 300, 400);
             jasmine.clock().tick(1500);
-            expect(carouselElement.querySelectorAll('.e-carousel-item')[1].classList.contains('e-active')).toBe(true);
-            expect(carouselElement.querySelectorAll('.e-carousel-item')[2].classList.contains('e-active')).toBe(false);
-            expect(carousel.selectedIndex).toEqual(0);
+            expect(carouselElement.querySelectorAll('.e-carousel-item')[1].classList.contains('e-active')).toBe(false);
+            expect(carouselElement.querySelectorAll('.e-carousel-item')[2].classList.contains('e-active')).toBe(true);
+            expect(carousel.selectedIndex).toEqual(1);
             triggerSwipeEvent(carouselElement, 400, 200);
             jasmine.clock().tick(1500);
             expect(carouselElement.querySelectorAll('.e-carousel-item')[1].classList.contains('e-active')).toBe(true);

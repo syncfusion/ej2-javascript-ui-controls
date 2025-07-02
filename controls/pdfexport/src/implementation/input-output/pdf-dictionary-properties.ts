@@ -291,6 +291,11 @@ export class DictionaryProperties {
      */
     public readonly cIDToGIDMap : string = 'CIDToGIDMap';
     /**
+     * Specifies the value of 'cIDFontType0C'.
+     * @private
+     */
+    public readonly cIDFontType0C: string = 'CIDFontType0C';
+    /**
      * Specifies the value of 'identity'.
      * @private
      */
@@ -310,6 +315,11 @@ export class DictionaryProperties {
      * @private
      */
     public readonly cIDSystemInfo : string = 'CIDSystemInfo';
+    /**
+     * Specifies the value of 'CIDFontType0'.
+     * @private
+     */
+    public readonly cIDFontType0: string = 'CIDFontType0';
     /**
      * Specifies the value of 'fontName'.
      * @private
@@ -370,6 +380,11 @@ export class DictionaryProperties {
      * @private
      */
     public readonly fontFile2 : string = 'FontFile2';
+    /**
+     * Specifies the value of 'fontFile3'.
+     * @private
+     */
+    public readonly fontFile3 : string = 'FontFile3';
     /**
      * Specifies the value of 'maxWidth'.
      * @private

@@ -675,7 +675,7 @@ export class ConnectorLineEdit {
         } else if (args.validateMode.preserveLinkWithEditing) {
             let connectedTaskId: string;
             if (this.parent.updateOffsetOnTaskbarEdit) {
-                const taskId: string = ganttRecord.ganttProperties.taskId;
+                const taskId: string = ganttRecord.ganttProperties.taskId.toString();
                 if (ganttRecord.ganttProperties.predecessor) {
                     ganttRecord.ganttProperties.predecessor.forEach((predecessor: IPredecessor) => {
                         if (taskId === predecessor.from) {
@@ -686,7 +686,9 @@ export class ConnectorLineEdit {
                 }
             }
             this.parent.editModule.updateEditedTask(args.editEventArgs);
-            this.processPredecessors(connectedTaskId);
+            let processedPredecessor: string[] = [];
+            this.processPredecessor(connectedTaskId, processedPredecessor);
+            processedPredecessor = [];
         }
     }
     private compareArrays(arr1: IPredecessor[], arr2: IPredecessor[]): boolean {
@@ -697,7 +699,7 @@ export class ConnectorLineEdit {
         const str2: string = JSON.stringify(arr2);
         return str1 === str2;
     }
-    private processPredecessors(parentId: string): void {
+    private processPredecessor(parentId: string, processedPredecessor?: string[]): void {
         if (parentId) {
             const record: IGanttData = this.parent.getRecordByID(parentId);
             if (record && record.ganttProperties && record.ganttProperties.predecessor) {
@@ -717,7 +719,10 @@ export class ConnectorLineEdit {
                 const predecessors: IPredecessor[] = record.ganttProperties.predecessor;
                 predecessors.forEach((predecessor: IPredecessor) => {
                     if (record.ganttProperties.taskId === predecessor.from && isIdInclude) {
-                        this.processPredecessors(predecessor.to);
+                        if (processedPredecessor && processedPredecessor.indexOf(predecessor.to) === -1) {
+                            this.processPredecessor(predecessor.to, processedPredecessor);
+                            processedPredecessor.push(predecessor.to);
+                        }
                     }
                 });
             }

@@ -103,8 +103,10 @@ export class TableCommand {
 
         // Browser-specific event handlers for table resizing
         if (!Browser.isDevice && this.tableModel.tableSettings.resize) {
-            EventHandler.remove(this.tableModel.getEditPanel(), 'mouseover', this.resizeHelper);
-            EventHandler.remove(this.tableModel.getEditPanel(), Browser.touchStartEvent, this.resizeStart);
+            EventHandler.remove(this.iframeSettings.enable ? this.tableModel.getEditPanel() :
+                this.tableModel.getEditPanel().parentElement, 'mouseover', this.resizeHelper);
+            EventHandler.remove(this.iframeSettings.enable ? this.tableModel.getEditPanel() :
+                this.tableModel.getEditPanel().parentElement, Browser.touchStartEvent, this.resizeStart);
         }
         if (this.curTable) {
             EventHandler.remove(this.curTable, 'mouseleave', this.tableMouseLeave);
@@ -2677,7 +2679,8 @@ export class TableCommand {
                 left: offset.left - tableParentOffset.left + 1
             };
         } else {
-            return { top: elem.offsetTop, left: elem.offsetLeft };
+            return { top: this.iframeSettings.enable ? elem.offsetTop : offset.top - parentOffset.top,
+                left: offset.left - parentOffset.left };
         }
     }
 
@@ -2904,11 +2907,13 @@ export class TableCommand {
      * @private
      */
     public addResizeEventHandlers(): void {
+        const editPanel: Element = this.iframeSettings.enable ? this.tableModel.getEditPanel() :
+            this.tableModel.getEditPanel().parentElement;
         // Add touch event handlers for resizing on all devices
-        EventHandler.add(this.tableModel.getEditPanel(), Browser.touchStartEvent, this.resizeStart, this);
+        EventHandler.add(editPanel, Browser.touchStartEvent, this.resizeStart, this);
         // Add mouseover handler for non-mobile devices only
         if (!Browser.isDevice) {
-            EventHandler.add(this.tableModel.getEditPanel(), 'mouseover', this.resizeHelper, this);
+            EventHandler.add(editPanel, 'mouseover', this.resizeHelper, this);
         }
     }
 
@@ -2969,18 +2974,20 @@ export class TableCommand {
         this.isResizeBind = true;
         EventHandler.remove(this.tableModel.getDocument(), Browser.touchMoveEvent, this.resizing);
         EventHandler.remove(this.tableModel.getDocument(), Browser.touchEndEvent, this.resizeEnd);
-        if (this.tableModel.getEditPanel().querySelector('.e-table-box') &&
-            this.tableModel.getEditPanel().contains(this.tableModel.getEditPanel().querySelector('.e-table-box'))) {
-            const rzBox: Element = this.tableModel.getEditPanel().querySelector('.e-table-box');
+        const editorPanel: Element = this.iframeSettings.enable ? this.tableModel.getEditPanel() :
+            this.tableModel.getEditPanel().parentElement;
+        if (editorPanel.querySelector('.e-table-box') &&
+            editorPanel.contains(editorPanel.querySelector('.e-table-box'))) {
+            const rzBox: Element = editorPanel.querySelector('.e-table-box');
             if (!isNOU(rzBox)) {
                 rzBox.classList.remove('e-hide');
             }
             if (!Browser.isDevice) {
-                EventHandler.add(this.tableModel.getEditPanel(), 'mouseover', this.resizeHelper, this);
+                EventHandler.add(editorPanel, 'mouseover', this.resizeHelper, this);
             }
             this.removeResizeElement();
         }
-        if (this.helper && this.tableModel.getEditPanel().contains(this.helper)) {
+        if (this.helper && editorPanel.contains(this.helper)) {
             detach(this.helper);
             this.helper = null;
         }
@@ -3031,7 +3038,8 @@ export class TableCommand {
      */
     public removeResizeElement(): void {
         const selector: string = '.e-column-resize, .e-row-resize, .e-table-box, .e-table-rhelper';
-        const editPanel: Element = this.tableModel.getEditPanel();
+        const editPanel: Element = this.iframeSettings.enable ? this.tableModel.getEditPanel() :
+            this.tableModel.getEditPanel().parentElement;
         const items: NodeListOf<Element> = editPanel.querySelectorAll(selector);
         if (items && items.length > 0) {
             for (let i: number = 0; i < items.length; i++) {
@@ -3104,7 +3112,9 @@ export class TableCommand {
         this.pageY = pageY;
         let maxiumWidth: number;
         const currentTdElement: HTMLElement = this.curTable.closest('td');
-        const tableReBox: HTMLElement = this.tableModel.getEditPanel().querySelector('.e-table-box') as HTMLElement;
+        const editorPanel: Element = this.iframeSettings.enable ? this.tableModel.getEditPanel() :
+            this.tableModel.getEditPanel().parentElement;
+        const tableReBox: HTMLElement = editorPanel.querySelector('.e-table-box') as HTMLElement;
         const tableWidth: number = parseInt(getComputedStyle(this.curTable).width as string, 10);
         const tableHeight: number = !isNaN(parseInt(this.curTable.style.height, 10)) ?
             parseInt(this.curTable.style.height, 10) : parseInt(getComputedStyle(this.curTable).height, 10);
@@ -3320,8 +3330,13 @@ export class TableCommand {
                 const leftOffset: number = isMultiCell ? 0 : pos.left;
                 colPos = leftOffset + this.calcPos(curCol).left - 2;
             }
-            colReEle.style.cssText = 'height:' + height + 'px;width:4px;top:' + pos.top + 'px;left:' + colPos + 'px;';
-            this.tableModel.getEditPanel().appendChild(colReEle);
+            colReEle.style.cssText = 'height:' + height + 'px;width:4px;top:' + pos.top + 'px;left:' + colPos + 'px; z-index: 2';
+            if (this.iframeSettings.enable) {
+                this.tableModel.getEditPanel().appendChild(colReEle);
+            }
+            else {
+                this.tableModel.getEditPanel().parentElement.appendChild(colReEle);
+            }
         }
     }
 
@@ -3341,8 +3356,12 @@ export class TableCommand {
             const topPos: number = this.calcPos(row as HTMLElement).top + (isMultiCell ? 0 :
                 pos.top) + (row as HTMLElement).offsetHeight - 2;
             rowReEle.style.cssText = 'width:' + width + 'px;height:4px;top:' + topPos + 'px;left:' + (rowPosLeft + pos.left) + 'px; z-index: 2';
-            rowReEle.style.cssText = 'width:' + width + 'px;height:4px;top:' + topPos + 'px;left:' + (rowPosLeft + pos.left) + 'px;';
-            this.tableModel.getEditPanel().appendChild(rowReEle);
+            if (this.iframeSettings.enable) {
+                this.tableModel.getEditPanel().appendChild(rowReEle);
+            }
+            else {
+                this.tableModel.getEditPanel().parentElement.appendChild(rowReEle);
+            }
         }
     }
 
@@ -3354,11 +3373,16 @@ export class TableCommand {
             className: EVENTS.CLS_TB_BOX_RES + this.tableModel.getCssClass(true),
             attrs: { 'data-col': colCount.toString(), 'unselectable': 'on', 'contenteditable': 'false' }
         });
-        tableReBox.style.cssText = 'top:' + (pos.top + height - 4) + 'px;left:' + (pos.left + width - 4) + 'px;';
+        tableReBox.style.cssText = 'top:' + (pos.top + height - 4) + 'px;left:' + (pos.left + width - 4) + 'px;z-index: 2';
         if (Browser.isDevice) {
             tableReBox.classList.add('e-rmob');
         }
-        this.tableModel.getEditPanel().appendChild(tableReBox);
+        if (this.iframeSettings.enable) {
+            this.tableModel.getEditPanel().appendChild(tableReBox);
+        }
+        else {
+            this.tableModel.getEditPanel().parentElement.appendChild(tableReBox);
+        }
     }
 
     /**

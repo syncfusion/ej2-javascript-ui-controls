@@ -1644,6 +1644,9 @@ export class DataUtil {
             if (ignoreCase) {
                 return DataUtil.toLowerCase(actual) > DataUtil.toLowerCase(expected);
             }
+            if (isNullOrUndefined(actual)) {
+                actual = undefined;
+            }
             return actual > expected;
         },
         /**
@@ -1674,9 +1677,6 @@ export class DataUtil {
         greaterthanorequal: (actual: string | number | boolean, expected: string | number | boolean, ignoreCase?: boolean): boolean => {
             if (ignoreCase) {
                 return DataUtil.toLowerCase(actual) >= DataUtil.toLowerCase(expected);
-            }
-            if (isNullOrUndefined(actual)) {
-                actual = undefined;
             }
             return actual >= expected;
         },

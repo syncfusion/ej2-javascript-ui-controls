@@ -5174,3 +5174,44 @@ describe('EJ2-948682: Selection not applied for newly added row with customized 
         gridObj = preventDefault = null;
     });
 });
+
+describe('EJ2-960920: Script error occurs while editing when multiline value as true is set in editParams =>', () => {
+    let gridObj: Grid;
+    let stringParams: any = {
+        params: {
+            multiline: true,
+        }
+    }
+    beforeAll((done: Function) => {
+    gridObj = createGrid(
+        {
+            dataSource: data,
+            editSettings: { allowEditing: true, allowAdding: true, allowDeleting: true, mode: 'Normal' },
+            toolbar: ['Add','Edit', 'Delete', 'Update', 'Cancel'],
+            columns: [
+                {
+                    field: 'OrderID', isPrimaryKey: true, headerText: 'Order ID', textAlign: 'Right',
+                    validationRules: { required: true, number: true }, width: 140
+                },
+                {  field: 'ShipAddress', headerText: 'ShipAddress', width: 170, edit: stringParams},
+                {
+                    field: 'CustomerID', headerText: 'Customer ID',
+                    validationRules: { required: true }, width: 140
+                },
+                {
+                    field: 'Freight', headerText: 'Freight', textAlign: 'Right', editType: 'numericedit',
+                    width: 140, format: 'C2', validationRules: { required: true }
+                },
+            ],
+        }, done);
+    });
+
+    it('Coverage - Editing the row', function () {
+        (gridObj as any).dblClickHandler({ target: gridObj.element.querySelectorAll('.e-row')[1].firstElementChild });
+    });
+
+    afterAll(() => {
+        destroy(gridObj);
+        gridObj = null;
+    });
+});

@@ -13,7 +13,7 @@ export function getCommandMenuItems(): CommandItemModel[] {
             id: 'checklist-command',
             type: BlockType.CheckList,
             groupHeader: 'General',
-            label: 'CheckList',
+            label: 'Checklist',
             tooltip: 'Create a checklist',
             iconCss: 'e-icons e-check-box',
             shortcut: 'Ctrl+Shift+7'
@@ -123,7 +123,8 @@ export function getCommandMenuItems(): CommandItemModel[] {
             groupHeader: 'Text Styles',
             label: 'Toggle Paragraph',
             tooltip: 'Add a toggle paragraph block',
-            iconCss: 'e-icons e-be-toggle-paragraph'
+            iconCss: 'e-icons e-be-toggle-paragraph',
+            shortcut: 'Ctrl+Alt+5'
         },
         {
             id: 'toggle-heading1-command',
@@ -131,7 +132,8 @@ export function getCommandMenuItems(): CommandItemModel[] {
             groupHeader: 'Text Styles',
             label: 'Toggle Heading 1',
             tooltip: 'Add a toggle heading1 block',
-            iconCss: 'e-icons e-be-toggle-h1'
+            iconCss: 'e-icons e-be-toggle-h1',
+            shortcut: 'Ctrl+Alt+6'
         },
         {
             id: 'toggle-heading2-command',
@@ -139,7 +141,8 @@ export function getCommandMenuItems(): CommandItemModel[] {
             groupHeader: 'Text Styles',
             label: 'Toggle Heading 2',
             tooltip: 'Add a toggle heading2 block',
-            iconCss: 'e-icons e-be-toggle-h2'
+            iconCss: 'e-icons e-be-toggle-h2',
+            shortcut: 'Ctrl+Alt+7'
         },
         {
             id: 'toggle-heading3-command',
@@ -147,7 +150,8 @@ export function getCommandMenuItems(): CommandItemModel[] {
             groupHeader: 'Text Styles',
             label: 'Toggle Heading 3',
             tooltip: 'Add a toggle heading3 block',
-            iconCss: 'e-icons e-be-toggle-h3'
+            iconCss: 'e-icons e-be-toggle-h3',
+            shortcut: 'Ctrl+Alt+8'
         },
         {
             id: 'toggle-heading4-command',
@@ -155,7 +159,8 @@ export function getCommandMenuItems(): CommandItemModel[] {
             groupHeader: 'Text Styles',
             label: 'Toggle Heading 4',
             tooltip: 'Add a toggle heading4 block',
-            iconCss: 'e-icons e-be-toggle-h4'
+            iconCss: 'e-icons e-be-toggle-h4',
+            shortcut: 'Ctrl+Alt+9'
         },
         {
             id: 'quote-command',

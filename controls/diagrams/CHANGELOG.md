@@ -2,6 +2,17 @@
 
 ## [Unreleased]
 
+## 30.1.38 (2025-07-02)
+
+### Diagram
+
+#### Bug Fixes
+
+- `#I731236` - Resolved the issue with flipping rotated group nodes.
+- `#I732003` - The connectors in layout will no longer overlaps on nodes.
+- `#I734671` - Resolved the issue in viewport changing on serialization.
+- `#I733087` - Now, Polyline connectors can be drawn from ports.
+
 ## 30.1.37 (2025-06-25)
 
 ### Diagram

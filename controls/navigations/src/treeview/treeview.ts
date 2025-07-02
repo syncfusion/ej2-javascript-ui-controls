@@ -2773,7 +2773,10 @@ export class TreeView extends Component<HTMLElement> implements INotifyPropertyC
                                 activeElement.classList.add(ITEM_ANIMATION_ACTIVE);
                             }
                             start = liEle.offsetHeight;
-                            end = (<HTMLElement>select('.' + TEXTWRAP, currLi)).offsetHeight;
+                            const computedStyle: CSSStyleDeclaration = window.getComputedStyle(liEle);
+                            const paddingTop: number = parseFloat(computedStyle.paddingTop);
+                            const paddingBottom: number = parseFloat(computedStyle.paddingBottom);
+                            end = (select('.' + TEXTWRAP, currLi) as HTMLElement).offsetHeight + paddingBottom + paddingTop;
                         },
                         progress: (args: AnimationOptions): void => {
                             args.element.style.display = 'block';
@@ -3469,8 +3472,7 @@ export class TreeView extends Component<HTMLElement> implements INotifyPropertyC
                 case 'space':
                     if (this.showCheckBox) {
                         this.checkNode(e);
-                    }
-                    else {
+                    } else {
                         this.toggleSelect(focusedNode, e);
                     }
                     break;
@@ -4442,6 +4444,15 @@ export class TreeView extends Component<HTMLElement> implements INotifyPropertyC
                 this.dragAction(e, virtualEle);
             },
             dragStop: (e: { event: MouseEvent & TouchEvent, element: HTMLElement, target: Element, helper: HTMLElement }) => {
+                if (!e.target) {
+                    if (e.helper && e.helper.parentNode) {
+                        detach(e.helper);
+                    }
+                    document.body.style.cursor = '';
+                    removeClass([this.element], DRAGGING);
+                    this.dragStartAction = false;
+                    return;
+                }
                 removeClass([this.element], DRAGGING);
                 if (!e.target.classList.contains('e-sibling')) {
                     this.removeVirtualEle();
@@ -4479,6 +4490,9 @@ export class TreeView extends Component<HTMLElement> implements INotifyPropertyC
         });
         this.dropObj = new Droppable(this.element, {
             out: (e: { evt: MouseEvent & TouchEvent, target: Element }) => {
+                if (!e.target) {
+                    return;
+                }
                 if (!isNOU(e) && !e.target.classList.contains(SIBLING) &&
                     (this.dropObj.dragData.default && this.dropObj.dragData.default.helper.classList.contains(ROOT))) {
                     document.body.style.cursor = 'not-allowed';
@@ -4519,6 +4533,9 @@ export class TreeView extends Component<HTMLElement> implements INotifyPropertyC
     }
 
     private dragAction(e: DropEventArgs, virtualEle: HTMLElement): void {
+        if (!e.target) {
+            return;
+        }
         const dropRoot: Element = closest(e.target, '.' + DROPPABLE);
         let dropWrap: Element = closest(e.target, '.' + TEXTWRAP);
         const icon: Element = select('div.' + ICON, virtualEle);
@@ -6325,7 +6342,10 @@ export class TreeView extends Component<HTMLElement> implements INotifyPropertyC
             }
             this.groupedData = this.getGroupedData(this.treeData, this.fields.parentID);
         }
-        this.setNodeFocusable();
+        const fNode: Element = select('.' + LISTITEM + '[tabindex="0"]', this.element);
+        if (isNOU(fNode)) {
+            this.setNodeFocusable();
+        }
         this.updateCheckedStateFromDS();
         if (this.showCheckBox && dropLi) {
             this.ensureParentCheckState(dropLi);
@@ -6721,7 +6741,7 @@ export class TreeView extends Component<HTMLElement> implements INotifyPropertyC
      * @returns {void}
      */
     public uncheckAll(nodes?: string[] | Element[]): void {
-        if (this.showCheckBox) {
+        if (this.showCheckBox && this.checkedNodes.length > 0) {
             this.doCheckBoxAction(nodes, false);
         }
     }

@@ -478,10 +478,8 @@ export class PasteCleanup {
             relateTo: imgElem as HTMLElement,
             height: '85px',
             width: '300px',
-            collision: { X: 'fit', Y: 'fit' },
             content: contentEle,
-            viewPortElement: this.parent.contentModule.getPanel() as HTMLElement,
-            position: { X: 'center', Y: 'top' },
+            viewPortElement: this.parent.inputElement,
             enableRtl: this.parent.enableRtl,
             zIndex: 10001,
             close: (event: { [key: string]: object }) => {
@@ -766,7 +764,6 @@ export class PasteCleanup {
 
     /* Positions popup at the top of editor */
     private positionPopupAtTop(popupObj: Popup): void {
-        popupObj.relateTo = this.parent.inputElement;
         popupObj.offsetY = this.parent.iframeSettings.enable ? -30 : -65;
         popupObj.element.style.display = 'block';
     }

@@ -3010,7 +3010,9 @@ class MatrixModel {
                     const childset2: string[] = this.selectIds(vertex2.connectsAsSource, false);
                     const parentequals: boolean = this.compareLists(parentset1, parentset2);
                     const childequals: boolean = this.compareLists(childset1, childset2);
-                    if (parentequals && childequals) {
+                    // 962088 - Connector overlapping with nodes in layout
+                    const isParentsSameLevel: boolean = this.checkparentsLevel(parentset1, parentset2, matrixModel);
+                    if (parentequals && childequals && isParentsSameLevel) {
                         this.updateMutualSharing(vertices[0], vertex2.id);
                         this.updateMutualSharing(vertices[1], vertex1.id);
                         vertices.splice(1, 1);
@@ -3438,6 +3440,31 @@ class MatrixModel {
         return returnIds;
     }
 
+    // 962088 - Connector overlapping with nodes in layout
+    private checkparentsLevel(list1: string[], list2: string[], matrixModel: MatrixModelObject): boolean {
+        if (list1.length === 1 || list2.length === 1) {
+            return true;
+        }
+        for (let i: number = 0; i < matrixModel.model.ranks.length; i++) {
+            const rank: any = matrixModel.model.ranks[parseInt(i.toString(), 10)];
+            if (rank.length < list1.length) {
+                continue;
+            }
+            let objCount: number = 0;
+            list1.forEach((obj1: string) => {
+                if (rank.some((rankObj: any) => rankObj.id === obj1)) {
+                    objCount++;
+                }
+            });
+            if (objCount === list1.length) {
+                return true;
+            } else if (objCount > 0 && objCount !== list1.length) {
+                return false;
+            }
+        }
+        return false;
+    }
+
     private compareLists(list1: string[], list2: string[]): boolean {
         const newList1: string[] = list1.slice();
         const newList2: string[] = list2.slice();
@@ -3557,7 +3584,27 @@ class MatrixModel {
     public setEdgeMapper(value: EdgeMapperObject): void {
         this.edgeMapper.push(value);
     }
-
+    // 962088 - Connector overlapping with nodes in layout
+    public findLevelDifference(connector: Connector) {
+        let sourceLevel: number = 0;
+        let targetLevel: number = 0;
+        let difference: number  = 0;
+        if ((this.diagram.layout as any).ranks) {
+            const collection: any = (this.diagram.layout as any).ranks;
+            for (let i: number = 0; i < collection.length; i++) {
+                for (let j: number = 0; j < collection[parseInt(i.toString(), 10)].length; j++) {
+                    if (connector.sourceID === collection[parseInt(i.toString(), 10)][parseInt(j.toString(), 10)].id) {
+                        sourceLevel = i;
+                    }
+                    if (connector.targetID === collection[parseInt(i.toString(), 10)][parseInt(j.toString(), 10)].id) {
+                        targetLevel = i;
+                    }
+                }
+            }
+            difference = sourceLevel - targetLevel;
+        }
+        return difference < 0 ? -difference : difference;
+    }
     public updateLayout(viewPort: PointModel, modelBounds: any, layoutProp: Layout, layout: LayoutProp, nodeWithMultiEdges: INode[],
                         nameTable: object, vertexTable: object): void {
         let trnsX: number = ((viewPort.x - modelBounds.width) / 2) - modelBounds.x;
@@ -3584,7 +3631,13 @@ class MatrixModel {
                     internalConnector['pointCollection'] = [];
                     let segmentsize: number = inversespacing / 2.0;
                     let intermediatePoint: object = null;
-                    if (count > 1) {
+                    // 962088 - Connector overlapping with nodes in layout
+                    let isMultiLevel: boolean = false;
+                    const levelDiff: number = this.findLevelDifference(internalConnector);
+                    if (levelDiff > 1) {
+                        isMultiLevel = true;
+                    }
+                    if (count > 1 || isMultiLevel) {
                         let key: number = -1;
                         const edgeMapper: EdgeMapperObject[] = this.getEdgeMapper();
                         for (let k: number = 0; k < edgeMapper.length; k++) {
@@ -3639,8 +3692,8 @@ class MatrixModel {
                             }
                         }
                     }
-
-                    if (count > 1 || isVariableSizeNode) {
+                    // 962088 - Connector overlapping with nodes in layout
+                    if (count > 1 || isVariableSizeNode || isMultiLevel) {
                         // eslint-disable-next-line max-len
                         pts = this.updateConnectorPoints(pts as Point[], segmentsize, intermediatePoint as Point, (transModelBounds as RectModel), layout.orientation);
                         // 933466: Excessive Spacing Between Nodes in Complex Hierarchical Tree Layout

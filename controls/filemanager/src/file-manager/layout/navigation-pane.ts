@@ -679,6 +679,9 @@ export class NavigationPane {
         }
         this.moveNames = [];
         const obj: object[] = this.parent.isDragDrop ? this.parent.dragData : this.parent.actionRecords;
+        if (!obj || !Array.isArray(obj)) {
+            return;
+        }
         for (let i: number = 0; i < obj.length; i++) {
             if (getValue('isFile', obj[i as number]) === false) {
                 this.moveNames.push(getValue('_fm_id', obj[i as number]));

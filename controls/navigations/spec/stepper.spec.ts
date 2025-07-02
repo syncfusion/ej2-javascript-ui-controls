@@ -1456,6 +1456,8 @@ describe('Stepper', () => {
             expect(stepperElement.classList.contains('.e-vertical') != null).toEqual(true);
             stepper.orientation = 'horizontal';
             stepper.dataBind();
+            const progressEle: HTMLElement = stepperElement.querySelector('.e-progressbar-value');
+            expect(progressEle.style.transitionDuration).toBe('0ms');
             expect(stepperElement.classList.contains('.e-stepper') != null).toEqual(true);
             expect(stepperElement.classList.contains('.e-horizontal') != null).toEqual(true);
         });

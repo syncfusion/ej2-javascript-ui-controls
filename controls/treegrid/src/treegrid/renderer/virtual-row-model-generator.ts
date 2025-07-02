@@ -31,7 +31,7 @@ export class TreeVirtualRowModelGenerator extends VirtualRowModelGenerator {
         if (notifyArgs.requestType === 'refresh' && (notifyArgs as any).isExpandCollapse) {
             notifyArgs.virtualInfo = this['prevInfo'];
         }
-        if (!isNullOrUndefined(notifyArgs.virtualInfo) && this.parent.root.loadChildOnDemand) {
+        if (!isNullOrUndefined(notifyArgs.virtualInfo) && !(this.parent.root.loadChildOnDemand && isRemoteData(this.parent.root))) {
             if (notifyArgs.virtualInfo.direction !== 'right' && notifyArgs.virtualInfo.direction !== 'left') {
                 if ((!isRemoteData(this.parent.root) || isCountRequired(this.parent))
                     || notifyArgs.virtualInfo.blockIndexes.length === 1) {

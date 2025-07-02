@@ -1041,7 +1041,7 @@ export class ChartRows extends DateProcessor {
     private getParentTaskbarNode(i: number, rootElement?: NodeList): NodeList {
         let parentTaskbarNode: NodeList = null;
         const data: IGanttData = this.templateData;
-        if (this.parentTaskbarTemplateFunction) {
+        if (this.parentTaskbarTemplateFunction && (data.ganttProperties.autoDuration !== 0 && !data.ganttProperties.isMilestone)) {
             parentTaskbarNode = this.parentTaskbarTemplateFunction(
                 extend({ index: i }, data), this.parent, 'ParentTaskbarTemplate',
                 this.getTemplateID('ParentTaskbarTemplate'), false, undefined, rootElement[0], this.parent.treeGrid['root']);
@@ -1800,12 +1800,7 @@ export class ChartRows extends DateProcessor {
         if (this.templateData.hasChildRecords) {
             let parentTaskbarTemplateNode: NodeList;
             if ((!this.parent.enableMultiTaskbar || (this.parent.enableMultiTaskbar && this.templateData.expanded))) {
-                if (this.templateData.ganttProperties.autoDuration !== 0 && !this.templateData.ganttProperties.isMilestone) {
-                    parentTaskbarTemplateNode = this.getParentTaskbarNode(i, taskbarContainerNode);
-                }
-                else {
-                    parentTaskbarTemplateNode = this.getMilestoneNode(i, taskbarContainerNode);
-                }
+                parentTaskbarTemplateNode = this.getParentTaskbarNode(i, taskbarContainerNode);
             }
             else {
                 taskbarContainerNode = [];

@@ -8,14 +8,6 @@
 
 #### Bug Fixes
 
-- `#I718268` - Resolved Persistence not properly working when using `SetCulture` in Grid.
-
-## 29.1.35 (2025-04-01)
-
-### Common
-
-#### Bug Fixes
-
 - `#I696647` - Resolved null cases in the `getComponent` method in the base library.
 
 ## 23.2.6 (2023-11-28)

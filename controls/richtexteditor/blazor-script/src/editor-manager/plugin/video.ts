@@ -262,7 +262,7 @@ export class VideoCommand {
     }
     private setStyle(sourceElement: HTMLSourceElement | HTMLElement | HTMLIFrameElement,
                      e: IHtmlItem, videoEle: HTMLSourceElement | HTMLElement | HTMLIFrameElement): void {
-        if (e.item.url !== '' && !isNOU(e.item.url) && isNOU(sourceElement) ? false : sourceElement.nodeName.toLowerCase() !== 'iframe') {
+        if (e.item.url !== '' && !isNOU(e.item.url) && isNOU(sourceElement) ? false : sourceElement && sourceElement.nodeName && sourceElement.nodeName.toLowerCase() !== 'iframe') {
             sourceElement.setAttribute('src', e.item.url);
         }
         if (!e.item.isEmbedUrl) {

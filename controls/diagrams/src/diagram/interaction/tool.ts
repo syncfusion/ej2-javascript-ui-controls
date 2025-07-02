@@ -76,6 +76,11 @@ export class ToolBase {
     protected inAction: boolean = false;
 
     /**
+     * Sets/Gets which end connector is dragged
+     */
+    protected connectorEndPoint: string;
+
+    /**
      * Sets/Gets the protect change
      */
     protected isProtectChange: boolean = false;
@@ -2401,6 +2406,7 @@ export class PolyLineDrawingTool extends ToolBase {
     public drawingObject: Node | Connector;
     constructor(commandHandler: CommandHandler) {
         super(commandHandler, true);
+        this.connectorEndPoint = 'ConnectorSourceEnd';
     }
     /**
      * @param args
@@ -2408,6 +2414,7 @@ export class PolyLineDrawingTool extends ToolBase {
      */
     public mouseMove(args: MouseEventArgs): boolean {
         super.mouseMove(args);
+        let canConnect: boolean = false;
         if (this.inAction) {
             const obj: Connector = (this.drawingObject as Connector);
             obj.targetPoint = this.currentPosition;
@@ -2415,6 +2422,29 @@ export class PolyLineDrawingTool extends ToolBase {
             // 927554: ElementDraw Arguments updated wrongly for Polyline drawing
             this.triggerElementDrawEvent(this.drawingObject, 'Progress', 'Connector', (this.commandHandler.diagram.drawingObject as ConnectorModel).type, false);
             this.commandHandler.updateConnectorPoints(obj);
+            // 962382: Drawing polyLine from port and node
+            args.source = this.drawingObject;
+            if (args.target && !(args.target as SwimLaneModel).isLane && args.targetWrapper) {
+                canConnect = this.canConnect(args.targetWrapper, args.target, this.connectorEndPoint, 'In');
+                if (canConnect) {
+                    this.commandHandler.renderHighlighter(args, this.connectorEndPoint === 'ConnectorSourceEnd');
+                }
+            }
+            if (this.connectorEndPoint === 'ConnectorSourceEnd' && (args.actualObject && args.actualObject instanceof Node && args.sourceWrapper )) {
+                if ((args.source as any).sourceID === '' || (args.source as any).sourceID !== (args.source as any).targetID) {
+                    this.commandHandler.connect(this.connectorEndPoint, args);
+                }
+            }
+            this.connectorEndPoint = 'ConnectorTargetEnd';
+        }
+        if (!this.inAction) {
+            this.commandHandler.updateSelector();
+            if (args.source && !(args.source as SwimLaneModel).isLane && args.sourceWrapper) {
+                canConnect = this.canConnect(args.sourceWrapper, args.source, this.connectorEndPoint, 'Out');
+                if (canConnect) {
+                    this.commandHandler.renderHighlighter(args, true);
+                }
+            }
         }
         return true;
     }
@@ -2461,6 +2491,26 @@ export class PolyLineDrawingTool extends ToolBase {
         super.mouseMove(args);
         if (this.inAction) {
             if (this.drawingObject) {
+                // 962382: Drawing polyLine from port and node
+                if (this.connectorEndPoint === 'ConnectorTargetEnd') {
+                    const eventhandler: any = (this.commandHandler.diagram as any).eventHandler;
+                    let hoverObject: any = eventhandler.hoverElement;
+                    if (hoverObject) {
+                        hoverObject = hoverObject instanceof Node ? hoverObject : hoverObject.parentObj;
+                        const padding: number = eventhandler.getConnectorPadding(args);
+                        /* eslint-disable max-len */
+                        let wrapper: any = this.commandHandler.diagram.findElementUnderMouse(hoverObject, this.currentPosition, this.commandHandler.diagram, padding);
+                        const isMouseAboveObject: boolean = wrapper && wrapper.bounds.containsPoint(this.currentPosition, padding);
+                        if (isMouseAboveObject) {
+                            args.actualObject = hoverObject;
+                            args.target = hoverObject;
+                            args.targetWrapper = wrapper;
+                            if ((this.drawingObject as any).sourceID !== (args.target as any).id) {
+                                this.commandHandler.connect(this.connectorEndPoint, args);
+                            }
+                        }
+                    }
+                }
                 const drawObject: ConnectorModel = this.drawingObject as ConnectorModel;
                 (drawObject.segments[drawObject.segments.length - 1] as StraightSegment).point = { x: 0, y: 0 };
                 this.commandHandler.addObjectToDiagram(this.drawingObject);
@@ -2475,6 +2525,21 @@ export class PolyLineDrawingTool extends ToolBase {
     public endAction(): void {
         this.drawingObject = null;
         this.inAction = false;
+    }
+    /**   @private  */
+    public canConnect(wrapper: any, object: any, endpoint: string, connectionType: string): boolean {
+        let canConnect: boolean = false;
+        const targetObject = this.commandHandler.findTarget(wrapper, object, endpoint === 'ConnectorSourceEnd', true);
+        if (targetObject instanceof PointPort) {
+            canConnect = Boolean(connectionType === 'In' ?
+                (this.connectorEndPoint === 'ConnectorTargetEnd' && canPortInConnect(targetObject)) :
+                (this.connectorEndPoint === 'ConnectorSourceEnd' && canPortOutConnect(targetObject)));
+        } else if (targetObject instanceof Node) {
+            canConnect = Boolean(connectionType === 'In' ?
+                (this.connectorEndPoint === 'ConnectorTargetEnd' && canInConnect(targetObject)) :
+                (this.connectorEndPoint === 'ConnectorSourceEnd' && canOutConnect(targetObject)));
+        }
+        return canConnect;
     }
 }
 

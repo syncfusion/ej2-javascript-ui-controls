@@ -44,6 +44,7 @@ export class FormatPainter implements IFormatPainter {
             this.actionHandler(clickargs, 'keyBoard');
         }
         if (this.parent.quickToolbarModule && !isNOU(this.parent.quickToolbarSettings.text) &&
+            this.parent.quickToolbarModule.textQTBar &&
             this.parent.element.ownerDocument.contains(this.parent.quickToolbarModule.textQTBar.element)){
             this.parent.quickToolbarModule.textQTBar.hidePopup();
         }

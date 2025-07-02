@@ -45,7 +45,7 @@ import { ZoomOptions, IPrintOptions, IExportOptions, IFitOptions, ActiveLabel, I
 import { View, IDataSource, IFields } from './objects/interface/interfaces';
 import { GroupableView } from './core/containers/container';
 import { Node, BpmnShape, BpmnAnnotation, SwimLane, Path, DiagramShape, UmlActivityShape, FlowShape, BasicShape, UmlClassMethod, MethodArguments, UmlEnumerationMember, UmlClassAttribute, Lane, Shape, Container } from './objects/node';
-import { cloneBlazorObject, cloneSelectedObjects, findObjectIndex, getConnectorArrowType, selectionHasConnector, isLabelFlipped } from './utility/diagram-util';
+import { cloneBlazorObject, cloneSelectedObjects, findObjectIndex, getConnectorArrowType, selectionHasConnector, isLabelFlipped, rotateAfterFlip } from './utility/diagram-util';
 import { checkBrowserInfo } from './utility/diagram-util';
 import { updateDefaultValues, getCollectionChangeEventArguements, getPoint } from './utility/diagram-util';
 import { flipConnector, updatePortEdges, alignElement, setConnectorDefaults, getPreviewSize } from './utility/diagram-util';
@@ -1742,6 +1742,8 @@ export class Diagram extends Component<HTMLElement> implements INotifyPropertyCh
     public activeLayerObjectsSet: Set<string> = new Set();
     /** @private */
     public restrictedDeltaValue: PointModel;
+    /**@private */
+    public isScrollOffsetInverted: boolean = true;
     /**
      * Constructor for creating the widget
      */
@@ -2366,6 +2368,9 @@ export class Diagram extends Component<HTMLElement> implements INotifyPropertyCh
         }
         if (!this.activeLayerObjectsSet) {
             this.activeLayerObjectsSet = new Set();
+        }
+        if (!this.isScrollOffsetInverted) {
+            this.isScrollOffsetInverted = true;
         }
         this.nameTable = {};
         this.pathTable = {};
@@ -12264,6 +12269,11 @@ export class Diagram extends Component<HTMLElement> implements INotifyPropertyCh
                     this.groupBounds = null;
                 }
                 alignElement(actualObject.wrapper, actualObject.offsetX, actualObject.offsetY, this, undefined, horizontal, vertical);
+                // Rotates the object after a flip only if exactly one of the directions (horizontal or vertical) is true.
+                // This ensures that the rotation is applied only when a single flip is performed, not both or none.
+                if (horizontal !== vertical) {
+                    rotateAfterFlip(actualObject, this);
+                }
                 //To update the port and text wrapper element flip
                 this.updateWrapperChildFlip(actualObject);
             }

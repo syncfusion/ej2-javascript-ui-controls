@@ -5617,7 +5617,181 @@ describe('912436-Diagram Tool Change At RunTime', () => {
     });
 });
 
+let nodes: NodeModel[] = [
+    {
+        id: 'PolyLinenode1',
+        offsetX: 200,
+        offsetY: 200,
+        width: 100,
+        height: 100,
+        ports: [
+            {
+                id: 'p1',
+                offset: { x: 1, y: 0.5 },
+                visibility: PortVisibility.Visible,
+                constraints: PortConstraints.Default | PortConstraints.Draw,
+            },
+        ],
+        // constraints: NodeConstraints.Default & ~NodeConstraints.InConnect,
+    },
+    {
+        id: 'PolyLinenode2',
+        offsetX: 400,
+        offsetY: 300,
+        width: 100,
+        height: 100,
+        ports: [
+            {
+                id: 'p1',
+                offset: { x: 0, y: 0 },
+                visibility: PortVisibility.Visible,
+                constraints: PortConstraints.Default | PortConstraints.Draw,
+            },
+        ],
+        // constraints: NodeConstraints.Default & ~NodeConstraints.OutConnect,
+    },
+];
 
+let nodes2: NodeModel[] = [
+    {
+        id: 'PolyLinenode3',
+        offsetX: 200,
+        offsetY: 200,
+        width: 100,
+        height: 100,
+        ports: [
+            {
+                id: 'p1',
+                offset: { x: 1, y: 0.5 },
+                visibility: PortVisibility.Visible,
+                constraints: PortConstraints.Default & ~PortConstraints.OutConnect | PortConstraints.Draw,
+            },
+        ],
+        constraints: NodeConstraints.Default & ~NodeConstraints.InConnect,
+    },
+    {
+        id: 'PolyLinenode4',
+        offsetX: 400,
+        offsetY: 300,
+        width: 100,
+        height: 100,
+        ports: [
+            {
+                id: 'p1',
+                offset: { x: 0, y: 0 },
+                visibility: PortVisibility.Visible,
+                constraints: PortConstraints.Default & ~PortConstraints.InConnect | PortConstraints.Draw,
+            },
+        ],
+        constraints: NodeConstraints.Default & ~NodeConstraints.OutConnect,
+    },
+];
 
+describe('Draw polyline Connector from port and Node', () => {
+    let diagram: Diagram;
+    let ele: HTMLElement;
 
+    beforeAll(() => {
+        const isDef = (o: any) => o !== undefined && o !== null;
+        if (!isDef(window.performance)) {
+            console.log("Unsupported environment, window.performance.memory is unavailable");
+            this.skip(); //Skips test (in Chai)
+            return;
+        }
+        ele = createElement('div', { id: 'diagramPolyLineDraw' });
+        document.body.appendChild(ele);
+
+        diagram = new Diagram({
+            width: '900px', height: '900px',
+            nodes: nodes,
+            tool: DiagramTools.DrawOnce,
+            drawingObject : { type : 'Polyline' },
+            
+        });
+        diagram.appendTo('#diagramPolyLineDraw');
+
+    });
+    afterAll(() => {
+        diagram.destroy();
+        ele.remove();
+    });
+    it('Check Draw Polyline connector from Port', function (done) {
+        let mouseEvents: MouseEvents = new MouseEvents();
+        let diagramCanvas: HTMLElement = document.getElementById(diagram.element.id + 'content');
+        mouseEvents.mouseMoveEvent(diagramCanvas, 209, 157);
+        mouseEvents.mouseMoveEvent(diagramCanvas, 239, 187);   // hover node1
+        mouseEvents.mouseMoveEvent(diagramCanvas, 259, 207);   // hover node1 port
+        mouseEvents.mouseDownEvent(diagramCanvas, 259, 207);   // mouse down on node1 port
+        mouseEvents.mouseMoveEvent(diagramCanvas, 290, 170);   // mouse move
+        mouseEvents.mouseDownEvent(diagramCanvas, 290, 175);   // mouse down
+        mouseEvents.mouseMoveEvent(diagramCanvas, 370, 200);   // mouse move
+        mouseEvents.mouseMoveEvent(diagramCanvas, 400, 280);   // hover node2
+        mouseEvents.mouseMoveEvent(diagramCanvas, 360, 260);   // hover node2 port and mouse up
+        mouseEvents.mouseLeaveEvent(diagramCanvas);
+        let connector: ConnectorModel = diagram.connectors[0];
+        expect(connector.segments.length === 2).toBe(true);
+        done();
+    });
+    it('Draw connector from node', function (done) {
+        diagram.clear();
+        diagram.addElements(nodes);
+        diagram.tool = DiagramTools.DrawOnce;
+        diagram.drawingObject = { type: 'Polyline' };
+        let mouseEvents: MouseEvents = new MouseEvents();
+        let diagramCanvas: HTMLElement = document.getElementById(diagram.element.id + 'content');
+        mouseEvents.mouseMoveEvent(diagramCanvas, 209, 157);
+        mouseEvents.mouseMoveEvent(diagramCanvas, 219, 197);   // hover node1
+        mouseEvents.mouseDownEvent(diagramCanvas, 219, 197); // move mouse 
+        mouseEvents.mouseMoveEvent(diagramCanvas, 400, 200);   // drag down
+        mouseEvents.mouseMoveEvent(diagramCanvas, 400, 280);   // hover node2 and mouse up
+        mouseEvents.mouseLeaveEvent(diagramCanvas);
+        let connector: ConnectorModel = diagram.connectors[0];
+        expect(connector.segments.length === 1).toBe(true);
+        done();
+    });
+    it('Add IN and Out Constraints for node and port check can draw', function (done) {
+        diagram.clear();
+        diagram.addElements(nodes2);
+        diagram.tool = DiagramTools.DrawOnce;
+        diagram.drawingObject = { type: 'Polyline' };
+        let mouseEvents: MouseEvents = new MouseEvents();
+        let diagramCanvas: HTMLElement = document.getElementById(diagram.element.id + 'content');
+        mouseEvents.mouseMoveEvent(diagramCanvas, 209, 157);
+        mouseEvents.mouseMoveEvent(diagramCanvas, 239, 187);   // hover node1
+        mouseEvents.mouseMoveEvent(diagramCanvas, 259, 207);   // hover node1 port
+        mouseEvents.mouseMoveEvent(diagramCanvas, 359, 257);   // hover node2 port
+        mouseEvents.mouseMoveEvent(diagramCanvas, 370, 280);   // hover node2
+        mouseEvents.mouseMoveEvent(diagramCanvas, 440, 80);   // move mouse 
+        mouseEvents.mouseDownEvent(diagramCanvas, 440, 80);   // mouse down
+        mouseEvents.mouseMoveEvent(diagramCanvas, 470, 150);   // drag down
+        mouseEvents.mouseMoveEvent(diagramCanvas, 370, 280);   // hover node2
+        mouseEvents.mouseMoveEvent(diagramCanvas, 359, 257);   // hover node2 port
+        mouseEvents.mouseMoveEvent(diagramCanvas, 259, 207);   // hover node1 port
+        mouseEvents.mouseMoveEvent(diagramCanvas, 239, 187);   // hover node1
+        mouseEvents.mouseMoveEvent(diagramCanvas, 370, 180);   // mouse move
+        mouseEvents.mouseDownEvent(diagramCanvas, 370, 180);   // mouse down
+        mouseEvents.mouseMoveEvent(diagramCanvas, 400, 200);   // drag down
+        mouseEvents.mouseMoveEvent(diagramCanvas, 400, 280);   // hover node2 and mouse up
+        mouseEvents.mouseLeaveEvent(diagramCanvas);
+        let connector: ConnectorModel = diagram.connectors[0];
+        expect(connector.segments.length === 2).toBe(true);
+        done();
+    });
+    it('Draw connector', function (done) {
+        diagram.clear();
+        diagram.addElements(nodes2);
+        diagram.tool = DiagramTools.DrawOnce;
+        diagram.drawingObject = { type: 'Freehand', bezierSettings: { allowSegmentsReset: false }  };
+        let mouseEvents: MouseEvents = new MouseEvents();
+        let diagramCanvas: HTMLElement = document.getElementById(diagram.element.id + 'content');
+        mouseEvents.mouseMoveEvent(diagramCanvas, 209, 157);
+        mouseEvents.mouseMoveEvent(diagramCanvas, 239, 207);
+        mouseEvents.mouseDownEvent(diagramCanvas, 239, 207);
+        mouseEvents.mouseMoveEvent(diagramCanvas, 290, 170);
+        mouseEvents.mouseUpEvent(diagramCanvas, 290, 170);
+        var connector = diagram.connectors[0];
+        expect(connector.segments.length === 1).toBe(true);
+        done();
+    });
+});
 

@@ -868,14 +868,18 @@ export class DataManager {
         this.fetchDeffered = new Deferred();
 
         if (!this.isCustomDataAdaptor(this.adaptor)) {
-            const fetch: Fetch = new Fetch(res);
-
-            fetch.beforeSend = () => {
-                this.beforeSend(fetch.fetchRequest, fetch);
-            };
-            fetch.onSuccess = this.successFunc.bind(this);
-            fetch.onFailure = this.failureFunc.bind(this);
-            (<Promise<Response>>fetch.send()).catch((e: Error) => true); // to handle the failure requests.
+            let promise: Promise<Object> = (<Promise<Object>>this.useMiddleware(res));
+            let fetch: Fetch;
+            promise.then((response: any) => {
+                fetch = new Fetch(res);
+                fetch.beforeSend = () => {              
+                    this.beforeSend(fetch.fetchRequest, fetch, response);
+                };
+                fetch.onSuccess = this.successFunc.bind(this);
+                fetch.onFailure = this.failureFunc.bind(this);
+                res = fetch.send();
+                (<Promise<Response>>res).catch((e: Error) => true); // to handle the failure requests.
+            }).catch((e: Error) => this.dataManagerFailure(e, this.fetchDeffered, {} as Object));
         } else {
             this.fetchReqOption = res as Fetch;
             fetchFunc.call(this, {

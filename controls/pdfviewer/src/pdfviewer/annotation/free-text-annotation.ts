@@ -921,8 +921,10 @@ export class FreeTextAnnotation {
                 if (commentsDiv && commentsDiv.childNodes) {
                     if (commentsDiv.childNodes[0].ej2_instances) {
                         commentsDiv.childNodes[0].ej2_instances[0].value = inputValue;
+                        commentsDiv.childNodes[0].ej2_instances[0].dataBind();
                     } else if (commentsDiv.childNodes[0].childNodes && commentsDiv.childNodes[0].childNodes[1].ej2_instances) {
                         commentsDiv.childNodes[0].childNodes[1].ej2_instances[0].value = inputValue;
+                        commentsDiv.childNodes[0].childNodes[1].ej2_instances[0].dataBind();
                     }
                 }
                 this.pdfViewer.renderSelector(this.selectedAnnotation.pageIndex, this.selectedAnnotation.annotationSelectorSettings);

@@ -2902,3 +2902,108 @@ describe('Manual parent connector line render', () => {
         destroyGantt(ganttObj);
     });
 });
+describe('calling processpredcessor method for code coverage', () => {
+    let ganttObj: Gantt;
+       const data =[
+        {
+            TaskID: '1',
+            TaskName: 'Contract Award / Terms / Execution',
+            StartDate: '2025-05-21T22:00:00.000Z',
+            EndDate: '2025-05-22T22:00:00.000Z',
+            Duration: 1,
+            Progress: 0
+        },
+        {
+            TaskID: '2',
+            TaskName: 'Signed Contract with Owner',
+            StartDate: '2025-05-22T22:00:00.000Z',
+            EndDate: '2025-05-27T22:00:00.000Z',
+            Duration: 3,
+            Progress: 0,
+            Dependencies: '1 FS',
+        },
+        {
+            TaskID: '3',
+            TaskName: 'Project Kickoff Meeting',
+            StartDate: '2025-05-27T22:00:00.000Z',
+            EndDate: '2025-06-03T22:00:00.000Z',
+            Duration: 5,
+            Progress: 0,
+            Dependencies: '2 FS',
+        },
+        {
+            TaskID: '7',
+            TaskName: 'Preliminary Pricing / Budget Finalization',
+            StartDate: '2025-06-03T22:00:00.000Z',
+            EndDate: '2025-06-10T22:00:00.000Z',
+            Duration: 5,
+            Progress: 0,
+            Dependencies: '3 FS'
+        },
+        {
+            TaskID: '8',
+            TaskName: 'Design Finalization / Construction Documents',
+            StartDate: '2025-06-03T22:00:00.000Z',
+            EndDate: '2025-06-06T22:00:00.000Z',
+            Duration: 3,
+            Progress: 0,
+            Dependencies: '3 FS',
+        },
+        {
+            TaskID: '9',
+            TaskName: 'Value Engineering Process',
+            StartDate: '2025-06-10T22:00:00.000Z',
+            EndDate: '2025-06-17T22:00:00.000Z',
+            Duration: 5,
+            Progress: 0,
+            Dependencies: '7 FS,8 SS'
+        },
+        {
+            TaskID: '10',
+            TaskName: 'Drawings Update based on VE',
+            StartDate: '2025-06-17T22:00:00.000Z',
+            EndDate: '2025-06-24T22:00:00.000Z',
+            Duration: 5,
+            Progress: 0,
+            Dependencies: '9 FS'
+        }]
+    beforeAll((done: Function) => {
+        ganttObj = createGantt({
+            dataSource: data,
+            taskFields: {
+                id: 'TaskID',
+                name: 'TaskName',
+                startDate: 'StartDate',
+                endDate: 'EndDate',
+                duration: 'Duration',
+                progress: 'Progress',
+                dependency: 'Dependencies',
+                baselineStartDate: 'BaselineStartDate',
+                baselineEndDate: 'BaselineEndDate',
+                parentID: 'ParentID',
+            },
+            resourceFields : {
+                id: 'resourceId',
+                name: 'resourceName',
+            },
+            enableTimelineVirtualization: true,
+            enableVirtualization: true,
+            renderBaseline: true,
+            baselineColor: 'red',
+            editSettings: {
+                allowAdding: true,
+                allowEditing: true,
+                allowDeleting: true,
+                allowTaskbarEditing: true,
+                showDeleteConfirmDialog: true
+            },
+        }, done);
+    });
+    it('calling processpredcessor method for code coverage', () => {
+        ganttObj.connectorLineEditModule['processPredecessor']('3',[]);
+        expect(ganttObj.currentViewData[2].ganttProperties.predecessorsName).toBe('2 FS');
+    });
+    afterAll(() => {
+        destroyGantt(ganttObj);
+    });
+});

@@ -2,7 +2,11 @@
 
 ## [Unreleased]
 
-## 29.1.33 (2025-03-25)
+## 30.1.38 (2025-07-02)
+
+- `FB68201` - Fixed an issue where middleware was not triggered during `CRUD` operations.
+
+## 30.1.37 (2025-06-25)
 
 ### DataManager
 

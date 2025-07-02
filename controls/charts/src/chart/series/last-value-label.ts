@@ -73,10 +73,17 @@ export class LastValueLabel {
         const transformValue: string = 'translate(' + translateX + ',' + translateY + ')';
         const previousTransform: string = series.lastValueLabelElement ? series.lastValueLabelElement.getAttribute('transform') : null;
         const labelFormat: string = yAxis.labelFormat;
-
-        const lastLabeltext: string  = labelFormat && labelFormat.match('{value}') !== null
-            ? labelFormat.replace('{value}', yAxis.format(rawValue))
-            : yAxis.format(rawValue);
+        let formattedRawValue: string = rawValue.toString();
+        if (!(labelFormat && labelFormat.indexOf('n') > -1)) {
+            formattedRawValue = (rawValue % 1 === 0)
+                ? rawValue.toFixed(0)
+                : (rawValue.toFixed(2).slice(-1) === '0'
+                    ? rawValue.toFixed(1)
+                    : rawValue.toFixed(2));
+        }
+        const lastLabeltext: string = labelFormat && labelFormat.match('{value}') !== null
+            ? labelFormat.replace('{value}', yAxis.format(parseFloat(formattedRawValue)))
+            : yAxis.format(parseFloat(formattedRawValue));
 
         const style: FontModel = lastValueLabel.font;
         const size: Size = measureText(lastLabeltext, style, this.chart.themeStyle.crosshairLabelFont);

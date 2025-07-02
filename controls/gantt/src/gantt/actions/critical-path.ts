@@ -220,9 +220,10 @@ export class CriticalPath {
                     });
                 }
             }
+            const slackCallCache: { [key: string]: string } = {};
             for (let k: number = 0; k < endTask.length; k++) {
                 fromDataObject.push(endTask[k as number]);
-                this.slackCalculation(fromDataObject, collection, collectionTaskId, checkEndDate, totalRecords, modelIds);
+                this.slackCalculation(fromDataObject, collection, collectionTaskId, checkEndDate, totalRecords, modelIds, slackCallCache);
             }
             criticalPathIds = this.finalCriticalPath(collection, taskBeyondEnddate, totalRecords, modelIds, checkEndDate);
             this.validatedids = [];
@@ -243,7 +244,9 @@ export class CriticalPath {
         }
     }
     /* eslint-disable-next-line */
-    public slackCalculation(fromDataObject: object[], collection: object[], collectionTaskId: any, checkEndDate: Date, flatRecords: IGanttData[], modelRecordIds: string[]): void {
+    public slackCalculation(fromDataObject: object[], collection: object[], collectionTaskId: any, checkEndDate: Date, flatRecords: IGanttData[], modelRecordIds: string[],
+                            slackCallCache: { [key: string]: string }
+    ): void {
         const fromDateArray: string[] = fromDataObject[0]['fromdata'].split(',');
         const fromDataPredecessor: string[] = fromDataObject[0]['fromDataPredecessor'].split(',');
         collectionTaskId = collectionTaskId.toString();
@@ -261,6 +264,17 @@ export class CriticalPath {
             fromDateArray1 = fromDateArray[i as number].split(':');
             fromTaskIdIndex = collectionTaskId.indexOf((fromDateArray1[0].toString()));
             totaskId = collectionTaskId.indexOf((fromDataObject[0]['todateID'].toString()));
+            if (fromTaskIdIndex !== -1) {
+                const cacheKey: string = fromTaskIdIndex.toString();
+                const currentValue: string = JSON.stringify(collection[fromTaskIdIndex as number]);
+                if (
+                    Object.prototype.hasOwnProperty.call(slackCallCache, cacheKey) &&
+                    slackCallCache[cacheKey as string] === currentValue
+                ) {
+                    return;
+                }
+                slackCallCache[cacheKey as string] = currentValue;
+            }
             if (this.parent.viewType === 'ProjectView') {
                 indexFromTaskId = modelRecordIds.indexOf(fromDateArray1[0].toString());
                 indexToTaskId = modelRecordIds.indexOf(fromDataObject[0]['todateID'].toString());
@@ -583,7 +597,7 @@ export class CriticalPath {
                         fromdata: collection[fromTaskIdIndex as number]['from'], todateID: collection[fromTaskIdIndex as number]['taskid'],
                         fromDataPredecessor: collection[fromTaskIdIndex as number]['fromPredecessor']
                     });
-                    this.slackCalculation(data, collection, collectionTaskId, checkEndDate, flatRecords, modelRecordIds);
+                    this.slackCalculation(data, collection, collectionTaskId, checkEndDate, flatRecords, modelRecordIds, slackCallCache);
                 }
             }
         }

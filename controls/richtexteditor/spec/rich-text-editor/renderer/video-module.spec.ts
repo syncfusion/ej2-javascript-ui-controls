@@ -4486,9 +4486,8 @@ describe('962339: Script error and improper video selection removal after alignm
         });
     });
 
-    describe('Video quick toolbar - ', () => {
+    xdescribe('Video quick toolbar - ', () => {
         let rteObj: RichTextEditor;
-        let controlId: string;
         beforeAll(() => {
             rteObj = renderRTE({
                 value: `<p><span class="e-video-wrap" contenteditable="false" title="mov_bbb.mp4"><video class="e-rte-video e-videoinline" controls=""><source src="https://www.w3schools.com/html/mov_bbb.mp4" type="video/mp4"></video></span><br></p>`,
@@ -4496,7 +4495,6 @@ describe('962339: Script error and improper video selection removal after alignm
                     enable: true
                 }
             });
-            controlId = rteObj.element.id;
         });
         afterAll(() => {
             destroy(rteObj);

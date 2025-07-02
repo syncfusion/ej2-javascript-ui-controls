@@ -7,6 +7,7 @@ import { PdfCrossReferenceType } from './enumerator';
 import { PdfDocument } from './pdf-document';
 import { _CipherTransform, _MD5, _PdfEncryptor } from './security/encryptor';
 export class _PdfCrossReference {
+    _uint8Chunks: Array<Uint8Array> = [];
     _stream: _PdfStream;
     _pendingRefs: _PdfReferenceSet;
     _entries: _PdfObjectInformation[];
@@ -35,6 +36,7 @@ export class _PdfCrossReference {
     _offsetReference: Map<_PdfReference, any>; // eslint-disable-line
     _objectStream: _PdfArchievedStream;
     _currentLength: number;
+    _bufferLength: number = 0;
     constructor(document: PdfDocument, password?: string) {
         this._password = password;
         this._document = document;
@@ -78,6 +80,9 @@ export class _PdfCrossReference {
             this._encrypt = new _PdfEncryptor(encrypt, fileId, this._password);
             this._document._isUserPassword = this._encrypt._isUserPassword;
             this._document._encryptOnlyAttachment = this._encrypt._encryptOnlyAttachment;
+            if (this._document._encryptOnlyAttachment) {
+                this._document.fileStructure.isIncrementalUpdate = false;
+            }
             if (this._document.fileStructure.isIncrementalUpdate) {
                 this._document.fileStructure.crossReferenceType = PdfCrossReferenceType.stream;
             } else {
@@ -688,44 +693,67 @@ export class _PdfCrossReference {
     _getCatalogObj(): _PdfDictionary {
         return this._root;
     }
+    _flushBuffer(data: Array<number>): void {
+        if (data.length === 0) {
+            return;
+        }
+        const chunk: Uint8Array = new Uint8Array(data.length);
+        for (let i: number = 0; i < data.length; i++) {
+            chunk[<number>i] = data[<number>i];
+        }
+        this._uint8Chunks.push(chunk);
+        this._bufferLength += chunk.length;
+        data.length = 0;
+    }
     _save(): Uint8Array {
+        this._uint8Chunks = [];
+        this._bufferLength = 0;
         const buffer: Array<number> = [37, 80, 68, 70, 45];
         this._writeString(`${this._version}${this._newLine}`, buffer);
         buffer.push(0x25, 0x83, 0x92, 0xfa, 0xfe);
         this._writeString(this._newLine, buffer);
+        let result: Uint8Array;
+        let offset: number = 0;
         if (!this._document.fileStructure.isIncrementalUpdate) {
             this._currentLength = 0;
             const objectCollection: _PdfMainObjectCollection = new _PdfMainObjectCollection(this);
             this._writeObjectCollection(objectCollection._mainObjectCollection, buffer);
-            const stream: _PdfStream = new _PdfStream(buffer);
-            this._stream = stream;
-            this._document._stream = stream;
-            const array: Uint8Array = new Uint8Array(this._stream.length);
-            array.set(this._stream.bytes);
-            array.set(buffer, 0);
-            return array;
+            if (buffer.length > 0) {
+                this._flushBuffer(buffer);
+            }
+            result = new Uint8Array(this._bufferLength);
         } else {
             this._currentLength = this._stream.length;
-            const buffer: Array<number> = [37, 80, 68, 70, 45];
-            this._writeString(`${this._version}${this._newLine}`, buffer);
-            buffer.push(0x25, 0x83, 0x92, 0xfa, 0xfe);
-            this._writeString(this._newLine, buffer);
             if (this._document._fileStructure._crossReferenceType === PdfCrossReferenceType.stream) {
                 this._saveAsStream(this._currentLength, buffer);
             } else {
                 this._saveAsTable(this._currentLength, buffer);
             }
-            const array: Uint8Array = new Uint8Array(this._stream.length + buffer.length);
-            array.set(this._stream.bytes);
-            array.set(buffer, this._stream.length);
-            return array;
+            if (buffer.length > 0) {
+                this._flushBuffer(buffer);
+            }
+            result = new Uint8Array(this._stream.length + this._bufferLength);
+            result.set(this._stream.bytes);
+            offset = this._stream.length;
         }
+        for (const chunk of this._uint8Chunks) {
+            result.set(chunk, offset);
+            offset += chunk.length;
+        }
+        if (!this._document.fileStructure.isIncrementalUpdate) {
+            const stream: _PdfStream = new _PdfStream(result);
+            this._stream = stream;
+            this._document._stream = stream;
+        }
+        this._uint8Chunks = [];
+        return result;
     }
     _saveAsStream(currentLength: number, buffer: number[]): void {
         const objectStreamCollection: Map<_PdfReference, _PdfArchievedStream> = new Map<_PdfReference, _PdfArchievedStream>();
         this._indexes = [];
         this._indexes.push(0, 1);
         this._offsets = [];
+        const flushThreshold: number = 512000; // 500KB threshold
         this._cacheMap.forEach((value: any, key: _PdfReference) => { // eslint-disable-line
             if (value instanceof _PdfBaseStream) {
                 const dictionary: _PdfDictionary = value.dictionary;
@@ -736,6 +764,9 @@ export class _PdfCrossReference {
                     }
                     this._updatedDictionary(currentLength, key, buffer, value, cipher);
                     dictionary._isProcessed = true;
+                    if (buffer.length > flushThreshold) {
+                        this._flushBuffer(buffer);
+                    }
                 }
             }
         });
@@ -745,24 +776,23 @@ export class _PdfCrossReference {
                     this._writeArchiveStream(objectStreamCollection, key, value);
                 } else if (value._updated && (value.isCatalog || this._allowCatalog)) {
                     this._updatedDictionary(currentLength, key, buffer, value);
+                    if (buffer.length > flushThreshold) {
+                        this._flushBuffer(buffer);
+                    }
                 }
             } else if (value instanceof _PdfBaseStream) {
                 const dictionary: _PdfDictionary = value.dictionary;
                 if (dictionary && dictionary._updated && (!dictionary.isCatalog || this._allowCatalog) && !dictionary._isProcessed) {
                     this._updatedDictionary(currentLength, key, buffer, value);
+                    if (buffer.length > flushThreshold) {
+                        this._flushBuffer(buffer);
+                    }
                 }
             }
         });
         this._objectStream = undefined;
         this._objectStreamCollection = objectStreamCollection;
         this._writeXrefStream(buffer);
-    }
-    _updatedDictionary(currentLength: number, key: _PdfReference, buffer: number[], value: any, // eslint-disable-line
-                       cipher?: _CipherTransform): void {
-        this._indexes.push(key.objectNumber, 1);
-        this._offsets.push(currentLength + buffer.length);
-        this._writeObject(value, buffer, key, cipher);
-        value._updated = false;
     }
     _writeXrefStream(buffer: number[]): void {
         this._objectStreamCollection.forEach((value: _PdfArchievedStream, key: _PdfReference) => {
@@ -771,11 +801,15 @@ export class _PdfCrossReference {
                 this._indexes.push(...value._collection);
             }
             this._indexes.push(key.objectNumber, 1);
+            if (buffer.length > 524288) {
+                this._flushBuffer(buffer);
+            }
         });
-        const formatValue: number = Math.max(_getSize(this._currentLength + buffer.length), _getSize(this._nextReferenceNumber));
+        const formatValue: number = Math.max(_getSize(this._currentLength + this._bufferLength + buffer.length),
+                                             _getSize(this._nextReferenceNumber));
         const newRef: _PdfReference = this._getNextReference();
         this._indexes.push(newRef.objectNumber, 1);
-        const newStartXref: number = this._currentLength + buffer.length;
+        const newStartXref: number = this._currentLength + this._bufferLength + buffer.length;
         const newXref: _PdfDictionary = new _PdfDictionary(this);
         newXref.set('Type', _PdfName.get('XRef'));
         newXref.set('Index', this._indexes);
@@ -791,7 +825,7 @@ export class _PdfCrossReference {
         if (this._offsets.length > 0) {
             for (let index: number = 0; index < this._offsets.length; index++) {
                 this._writeLong(1, 1, newXrefData);
-                this._writeLong(this._offsets[index], formatValue, newXrefData); // eslint-disable-line
+                this._writeLong(this._offsets[<number>index], formatValue, newXrefData);
                 this._writeLong(0, 1, newXrefData);
             }
         }
@@ -817,40 +851,21 @@ export class _PdfCrossReference {
             cipher = this._encrypt._createCipherTransform(newRef.objectNumber, newRef.generationNumber);
         }
         this._writeObject(newXrefStream, buffer, newRef, cipher, true);
-        this._writeString(`startxref${this._newLine}${newStartXref}${this._newLine}%%EOF${this._newLine}`,
-                          buffer);
-    }
-    _saveAsTable(currentLength: number, buffer: number[]): void {
-        let tempBuffer: string = '';
-        this._cacheMap.forEach((value: any, key: _PdfReference) => { // eslint-disable-line
-            let dictionary: _PdfDictionary;
-            if (value instanceof _PdfDictionary) {
-                dictionary = value;
-            } else if (value instanceof _PdfBaseStream) {
-                dictionary = value.dictionary;
-            }
-            if (dictionary && dictionary._updated && (!dictionary.isCatalog || this._allowCatalog)) {
-                const offsetString: string = this._processString((currentLength + buffer.length).toString(), 10);
-                const genString: string = this._processString(key.generationNumber.toString(), 5);
-                tempBuffer += `${key.objectNumber} 1${this._newLine}${offsetString} ${genString} n${this._newLine}`;
-                this._writeObject(value, buffer, key);
-            }
-        });
-        const newStartXref: number = buffer.length + currentLength;
-        this._writeString(`xref${this._newLine}0 1${this._newLine}0000000000 65535 f${this._newLine}`, buffer);
-        this._writeXref(buffer, tempBuffer, newStartXref);
-    }
-    _writeXref(buffer: number[], tempBuffer: string, newStartXref: number): void {
-        this._writeString(tempBuffer, buffer);
-        this._writeString(`trailer${this._newLine}`, buffer);
-        const newXref: _PdfDictionary = new _PdfDictionary(this);
-        this._copyTrailer(newXref);
-        this._writeDictionary(newXref, buffer, this._newLine);
         this._writeString(`startxref${this._newLine}${newStartXref}${this._newLine}%%EOF${this._newLine}`, buffer);
+        if (buffer.length > 0) {
+            this._flushBuffer(buffer);
+        }
+    }
+    _updatedDictionary(currentLength: number, key: _PdfReference, buffer: number[], value: any, // eslint-disable-line
+                       cipher?: _CipherTransform): void {
+        this._indexes.push(key.objectNumber, 1);
+        this._offsets.push(currentLength + this._bufferLength + buffer.length);
+        this._writeObject(value, buffer, key, cipher);
+        value._updated = false;
     }
     _writeXrefTable(buffer: number[]): void {
         let tempBuffer: string = '';
-        let collection: Map<_PdfReference, any> = this._getSortedReferences(this._offsetReference); // eslint-disable-line
+        const collection: Map<_PdfReference, any> = this._getSortedReferences(this._offsetReference); // eslint-disable-line
         collection.forEach((value: any, key: _PdfReference) => { // eslint-disable-line
             const offsetString: string = this._processString(value.toString(), 10);
             const genString: string = this._processString(key.generationNumber ? '0' : '', 5);
@@ -860,12 +875,23 @@ export class _PdfCrossReference {
                 tempBuffer += `${offsetString} ${genString} f${this._newLine}`;
             }
         });
-        const newStartXref: number = buffer.length;
+        const newStartXref: number = buffer.length + this._bufferLength;
         const xrefHeader: string = `xref${this._newLine}`;
         const xrefEntry: string = `0 ${collection.size + 1}${this._newLine}`;
         const initialEntry: string = `0000000000 65535 f${this._newLine}`;
         this._writeString(xrefHeader + xrefEntry + initialEntry, buffer);
         this._writeXref(buffer, tempBuffer, newStartXref);
+        if (buffer.length > 512000) { // 500KB threshold
+            this._flushBuffer(buffer);
+        }
+    }
+    _writeXref(buffer: number[], tempBuffer: string, newStartXref: number): void {
+        this._writeString(tempBuffer, buffer);
+        this._writeString(`trailer${this._newLine}`, buffer);
+        const newXref: _PdfDictionary = new _PdfDictionary(this);
+        this._copyTrailer(newXref);
+        this._writeDictionary(newXref, buffer, this._newLine);
+        this._writeString(`startxref${this._newLine}${newStartXref}${this._newLine}%%EOF${this._newLine}`, buffer);
     }
     _processString(value: string, length: number): string {
         while (value.length < length) {
@@ -1182,13 +1208,20 @@ export class _PdfCrossReference {
         const objectStreamCollection: Map<_PdfReference, _PdfArchievedStream> = new Map<_PdfReference, _PdfArchievedStream>();
         this._indexes = [];
         this._indexes.push(0, 1);
+        const flushThreshold: number = 512000; // 500KB threshold
         objectCollection.forEach((value: any, key: _PdfReference) => { // eslint-disable-line
             this._writeObjectToBuffer(key, value, buffer, objectStreamCollection);
+            if (buffer.length > flushThreshold) {
+                this._flushBuffer(buffer);
+            }
         });
         if (this._cacheMap.size > objectCollection.size) {
             this._cacheMap.forEach((value: any, key: _PdfReference) => { // eslint-disable-line
                 if (!objectCollection.has(key)) {
                     this._writeObjectToBuffer(key, value, buffer, objectStreamCollection);
+                    if (buffer.length > flushThreshold) {
+                        this._flushBuffer(buffer);
+                    }
                 }
             });
         }
@@ -1198,6 +1231,35 @@ export class _PdfCrossReference {
             this._writeXrefStream(buffer);
         } else {
             this._writeXrefTable(buffer);
+        }
+    }
+    _saveAsTable(currentLength: number, buffer: number[]): void {
+        let tempBuffer: string = '';
+        const flushThreshold: number = 512000; // 500KB threshold
+        let processedCount: number = 0;
+        this._cacheMap.forEach((value: any, key: _PdfReference) => { // eslint-disable-line
+            let dictionary: _PdfDictionary;
+            if (value instanceof _PdfDictionary) {
+                dictionary = value;
+            } else if (value instanceof _PdfBaseStream) {
+                dictionary = value.dictionary;
+            }
+            if (dictionary && dictionary._updated && (!dictionary.isCatalog || this._allowCatalog)) {
+                const offsetString: string = this._processString((currentLength + this._bufferLength + buffer.length).toString(), 10);
+                const genString: string = this._processString(key.generationNumber.toString(), 5);
+                tempBuffer += `${key.objectNumber} 1${this._newLine}${offsetString} ${genString} n${this._newLine}`;
+                this._writeObject(value, buffer, key);
+                processedCount++;
+                if (buffer.length > flushThreshold || processedCount % 2 === 0) {
+                    this._flushBuffer(buffer);
+                }
+            }
+        });
+        const newStartXref: number = this._bufferLength + buffer.length + currentLength;
+        this._writeString(`xref${this._newLine}0 1${this._newLine}0000000000 65535 f${this._newLine}`, buffer);
+        this._writeXref(buffer, tempBuffer, newStartXref);
+        if (buffer.length > 0) {
+            this._flushBuffer(buffer);
         }
     }
     _writeArchiveStream(objectStreamCollection: Map<_PdfReference, _PdfArchievedStream>,
@@ -1224,7 +1286,7 @@ export class _PdfCrossReference {
                     this._writeToBuffer(buffer, key, value);
                 }
             } else {
-                this._offsetReference.set(key, buffer.length);
+                this._offsetReference.set(key, this._bufferLength + buffer.length);
                 this._indexes.push(key.objectNumber, 1);
                 this._writeObject(value, buffer, key);
             }
@@ -1244,10 +1306,13 @@ export class _PdfCrossReference {
         }
     }
     _writeToBuffer(buffer: number[], key: any, value: any, cipher?: _CipherTransform): void { // eslint-disable-line
-        this._offsets.push(buffer.length);
-        this._offsetReference.set(key, buffer.length);
+        this._offsets.push(this._bufferLength + buffer.length);
+        this._offsetReference.set(key, this._bufferLength + buffer.length);
         this._indexes.push(key.objectNumber, 1);
         this._writeObject(value, buffer, key, cipher);
+        if (buffer.length > 512000) { // 500KB threshold
+            this._flushBuffer(buffer);
+        }
     }
     _getSortedReferences(collection: Map<_PdfReference, any>): Map<_PdfReference, any> {  // eslint-disable-line
         let entriesArray: [_PdfReference, any][] = [];  // eslint-disable-line
@@ -1323,7 +1388,7 @@ class _PdfArchievedStream {
         newDict.set('First', this._archiveXRef.length);
         newDict.set('Length', data.length);
         const archiveStream: _PdfStream = new _PdfStream(data, newDict, 0, data.length);
-        this._archiveOffset = currentLength + buffer.length;
+        this._archiveOffset = this._crossReference._bufferLength + currentLength + buffer.length;
         let cipher: _CipherTransform;
         if (this._crossReference._encrypt) {
             cipher = this._crossReference._encrypt._createCipherTransform(this._reference.objectNumber, this._reference.generationNumber);

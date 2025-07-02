@@ -318,8 +318,17 @@ export class StampAnnotation {
         let annot: PdfAnnotationBaseModel;
         let annotation: any = this.currentStampAnnotation;
         const subject: string = (this.pdfViewer.annotationSettings.subject !== '' && !isNullOrUndefined(this.pdfViewer.annotationSettings.subject)) ? this.pdfViewer.annotationSettings.subject : this.pdfViewer.stampSettings.subject ? this.pdfViewer.stampSettings.subject : !isNullOrUndefined(annotation) ? annotation.iconName : '';
-        const annotationSelectorSettings: AnnotationSelectorSettingsModel = this.pdfViewer.stampSettings.annotationSelectorSettings;
-        this.pdfViewerBase.updateSelectorSettings(annotationSelectorSettings);
+        const annotationSelectorSettings: AnnotationSelectorSettingsModel = {
+            resizerFillColor: this.pdfViewer.annotationSelectorSettings.resizerFillColor,
+            resizerBorderColor: this.pdfViewer.annotationSelectorSettings.resizerBorderColor,
+            selectionBorderColor: this.pdfViewer.annotationSelectorSettings.selectionBorderColor,
+            resizerSize: this.pdfViewer.annotationSelectorSettings.resizerSize,
+            resizerShape: this.pdfViewer.annotationSelectorSettings.resizerShape,
+            resizerCursorType: this.pdfViewer.annotationSelectorSettings.resizerCursorType,
+            selectionBorderThickness: this.pdfViewer.annotationSelectorSettings.selectionBorderThickness,
+            selectorLineDashArray: this.pdfViewer.annotationSelectorSettings.selectorLineDashArray
+        };
+        this.updateStampSelectorSettings(annotationSelectorSettings);
         if (annotation && annotation.shapeAnnotationType === 'Image') {
             annot = {
                 id: 'stamp' + this.pdfViewerBase.customStampCount, bounds: { x: X, y: Y, width: annotation.bounds.width, height: annotation.bounds.height }, pageIndex: pageIndex, data: annotation.data, modifiedDate: annotation.modifiedDate,
@@ -618,8 +627,8 @@ export class StampAnnotation {
         if (annotation.shapeAnnotationType === 'Stamp') {
             annotation.isPrint = this.pdfViewer.stampSettings.isPrint;
         }
-        const annotationSelectorSettings: any = this.pdfViewer.stampSettings.annotationSelectorSettings ?
-            this.pdfViewer.stampSettings.annotationSelectorSettings : this.pdfViewer.annotationSelectorSettings;
+        const annotationSelectorSettings: any = this.pdfViewer.annotationSelectorSettings;
+        this.updateStampSelectorSettings(annotationSelectorSettings);
         const allowedInteractions: any = this.pdfViewer.stampSettings.allowedInteractions ?
             this.pdfViewer.stampSettings.allowedInteractions : this.pdfViewer.annotationSettings.allowedInteractions;
         if (annotation.shapeAnnotationType === 'Image') {
@@ -789,8 +798,17 @@ export class StampAnnotation {
             annotationSelectorSettings = typeof(annotation.AnnotationSelectorSettings) === 'string' ? JSON.parse(annotation.AnnotationSelectorSettings) : annotation.AnnotationSelectorSettings;
         }
         else {
-            annotationSelectorSettings = this.pdfViewer.stampSettings.annotationSelectorSettings;
-            this.pdfViewerBase.updateSelectorSettings(annotationSelectorSettings);
+            annotationSelectorSettings = {
+                resizerFillColor: this.pdfViewer.annotationSelectorSettings.resizerFillColor,
+                resizerBorderColor: this.pdfViewer.annotationSelectorSettings.resizerBorderColor,
+                selectionBorderColor: this.pdfViewer.annotationSelectorSettings.selectionBorderColor,
+                resizerSize: this.pdfViewer.annotationSelectorSettings.resizerSize,
+                resizerShape: this.pdfViewer.annotationSelectorSettings.resizerShape,
+                resizerCursorType: this.pdfViewer.annotationSelectorSettings.resizerCursorType,
+                selectionBorderThickness: this.pdfViewer.annotationSelectorSettings.selectionBorderThickness,
+                selectorLineDashArray: this.pdfViewer.annotationSelectorSettings.selectorLineDashArray
+            };
+            this.updateStampSelectorSettings(annotationSelectorSettings);
         }
         const annot: PdfAnnotationBaseModel = {
             id: 'stamp' + this.pdfViewerBase.customStampCount, allowedInteractions: allowedInteractions, bounds: { x: position.left, y: position.top, width: position.width, height: position.height }, pageIndex: pageIndex, data: image.src, modifiedDate: modifiedDate,
@@ -1632,8 +1650,8 @@ export class StampAnnotation {
         const apperarance: any = [];
         let isDynamic: boolean = false;
         let author: string =  annotationObject.author ? annotationObject.author : 'Guest';
-        const annotationSelectorSettings: any = this.pdfViewer.stampSettings.annotationSelectorSettings;
-        this.pdfViewerBase.updateSelectorSettings(annotationSelectorSettings);
+        const annotationSelectorSettings: any = this.pdfViewer.annotationSelectorSettings;
+        this.updateStampSelectorSettings(annotationSelectorSettings);
         const annotationSettings: any = this.pdfViewer.annotationModule.updateSettings(this.pdfViewer.stampSettings);
         author = author ? author : this.pdfViewer.annotationModule.updateAnnotationAuthor('stamp', annotationSettings.annotationSubType);
         const allowedInteractions: any = this.pdfViewer.stampSettings.allowedInteractions ?
@@ -1762,6 +1780,76 @@ export class StampAnnotation {
             defaultText: annot.dynamicText, fontStyle: annot.font, textAlignment: annot.textAlign
         };
         this.pdfViewer.fireAnnotationAdd(annot.pageIndex, annot.annotName, 'Stamp', annot.bounds, settings);
+    }
+
+    private updateStampSelectorSettings(annotationSelectorSettings: any): void {
+        if (this.pdfViewer.stampSettings.annotationSelectorSettings && this.pdfViewer.stampSettings.annotationSelectorSettings.resizerFillColor !== '#FF4081') {
+            annotationSelectorSettings.resizerFillColor = this.pdfViewer.stampSettings.annotationSelectorSettings.resizerFillColor;
+        }
+        else {
+            annotationSelectorSettings.resizerFillColor = !isNullOrUndefined(annotationSelectorSettings.resizerFillColor) ? annotationSelectorSettings.resizerFillColor : '#FF4081';
+        }
+        if (this.pdfViewer.stampSettings.annotationSelectorSettings && this.pdfViewer.stampSettings.annotationSelectorSettings.resizerBorderColor !== 'black') {
+            annotationSelectorSettings.resizerBorderColor = this.pdfViewer.stampSettings.annotationSelectorSettings.resizerBorderColor;
+        }
+        else {
+            annotationSelectorSettings.resizerBorderColor = !isNullOrUndefined(annotationSelectorSettings.resizerBorderColor) ? annotationSelectorSettings.resizerBorderColor : 'black';
+        }
+        if (this.pdfViewer.stampSettings.annotationSelectorSettings && this.pdfViewer.stampSettings.annotationSelectorSettings.selectionBorderColor !== '') {
+            annotationSelectorSettings.selectionBorderColor = this.pdfViewer.stampSettings.annotationSelectorSettings.selectionBorderColor;
+        }
+        else {
+            annotationSelectorSettings.selectionBorderColor = !isNullOrUndefined(annotationSelectorSettings.selectionBorderColor) ? annotationSelectorSettings.selectionBorderColor : '';
+        }
+        if (this.pdfViewer.stampSettings.annotationSelectorSettings &&
+            this.pdfViewer.stampSettings.annotationSelectorSettings.resizerSize !== 8) {
+            annotationSelectorSettings.resizerSize = this.pdfViewer.stampSettings.annotationSelectorSettings.resizerSize;
+        }
+        else {
+            annotationSelectorSettings.resizerSize =
+                !isNullOrUndefined(annotationSelectorSettings.resizerSize) ? annotationSelectorSettings.resizerSize : 8;
+        }
+        if (this.pdfViewer.stampSettings.annotationSelectorSettings && this.pdfViewer.stampSettings.annotationSelectorSettings.resizerShape !== 'Square') {
+            annotationSelectorSettings.resizerShape = this.pdfViewer.stampSettings.annotationSelectorSettings.resizerShape;
+        }
+        else {
+            annotationSelectorSettings.resizerShape = !isNullOrUndefined(annotationSelectorSettings.resizerShape) ? annotationSelectorSettings.resizerShape : 'Square';
+        }
+        if (this.pdfViewer.stampSettings.annotationSelectorSettings &&
+            this.pdfViewer.stampSettings.annotationSelectorSettings.resizerCursorType !== null) {
+            annotationSelectorSettings.resizerCursorType = this.pdfViewer.stampSettings.annotationSelectorSettings.resizerCursorType;
+        }
+        else {
+            annotationSelectorSettings.resizerCursorType =
+                !isNullOrUndefined(annotationSelectorSettings.resizerCursorType) ? annotationSelectorSettings.resizerCursorType : null;
+        }
+        if (this.pdfViewer.stampSettings.annotationSelectorSettings &&
+            this.pdfViewer.stampSettings.annotationSelectorSettings.selectionBorderThickness !== 1) {
+            annotationSelectorSettings.selectionBorderThickness =
+                this.pdfViewer.stampSettings.annotationSelectorSettings.selectionBorderThickness;
+        }
+        else {
+            annotationSelectorSettings.selectionBorderThickness = !isNullOrUndefined(annotationSelectorSettings.selectionBorderThickness) ?
+                annotationSelectorSettings.selectionBorderThickness : 1;
+        }
+        if (this.pdfViewer.stampSettings.annotationSelectorSettings &&
+            this.pdfViewer.stampSettings.annotationSelectorSettings.selectorLineDashArray.length !== 0) {
+            annotationSelectorSettings.selectorLineDashArray =
+                this.pdfViewer.stampSettings.annotationSelectorSettings.selectorLineDashArray;
+        }
+        else {
+            annotationSelectorSettings.selectorLineDashArray = !isNullOrUndefined(annotationSelectorSettings.selectorLineDashArray) ?
+                annotationSelectorSettings.selectorLineDashArray : [];
+        }
+        if (this.pdfViewer.stampSettings.annotationSelectorSettings &&
+            this.pdfViewer.stampSettings.annotationSelectorSettings.resizerLocation !== 3) {
+            annotationSelectorSettings.resizerLocation =
+                this.pdfViewer.stampSettings.annotationSelectorSettings.resizerLocation;
+        }
+        else {
+            annotationSelectorSettings.resizerLocation =
+                !isNullOrUndefined(annotationSelectorSettings.resizerLocation) ? annotationSelectorSettings.resizerLocation : 3;
+        }
     }
 
 }

@@ -21,7 +21,8 @@ import {
     EmojiPicker,
     FileManager,
     FormatPainter,
-    MarkdownEditor} from '@syncfusion/ej2-richtexteditor';
+    MarkdownEditor,
+    IToolbarItems} from '@syncfusion/ej2-richtexteditor';
 import { AddDialogFieldSettingsModel, EditDialogFieldSettingsModel, TaskFieldsModel, ResourceFieldsModel, AddDialogFieldSettings } from '../models/models';
 import { CObject, ConstraintType, DialogFieldType } from '../base/enum';
 import { ColumnModel as GanttColumnModel } from '../models/column';
@@ -40,7 +41,6 @@ import {
     RowDD  as TreeGridRowDD, ToolbarItem as TreeGridToolbarItem
 } from '@syncfusion/ej2-treegrid';
 import { getUid } from '../base/utils';
-import { IToolbarItems } from '@syncfusion/ej2-richtexteditor/src/common/interface';
 interface EJ2Instance extends HTMLElement {
     // eslint-disable-next-line
     ej2_instances: Object[];

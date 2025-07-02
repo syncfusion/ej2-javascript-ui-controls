@@ -223,6 +223,7 @@ export class FormatPainter implements IFormatPainter {
     private isTextQuickToolbarAvailable(): boolean {
         const quickToolbarSettings: QuickToolbarSettingsModel = this.parent.quickToolbarSettings;
         return quickToolbarSettings.text.length !== 0 && !isNOU(quickToolbarSettings.text) &&
+            this.parent.quickToolbarModule.textQTBar &&
             this.parent.element.ownerDocument.contains(this.parent.quickToolbarModule.textQTBar.element);
     }
 

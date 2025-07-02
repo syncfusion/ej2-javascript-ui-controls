@@ -781,4 +781,410 @@ describe('FileManager control Grid view', () => {
             done();
         });
     });
+
+    describe('events testing with filterId', () => {
+        let mouseEventArgs: any, tapEvent: any;
+        let feObj: any;
+        let ele: HTMLElement;
+        let i: number = 0;
+        let originalTimeout: any;
+        let flatDataWithFilterId: any = [
+            {
+                dateCreated: new Date('2023-11-15T19:02:02.3419426+05:30'),
+                dateModified: new Date('2024-01-08T18:16:38.4384894+05:30'),
+                filterPath: '',
+                filterId:"",
+                hasChild: true,
+                id: '0',
+                isFile: false,
+                name: 'Files',
+                parentId: null,
+                size: 1779448,
+                type: 'folder',
+              },
+              {
+                dateCreated: new Date('2023-11-15T19:02:02.3419426+05:30'),
+                dateModified: new Date('2024-01-08T16:55:20.9464164+05:30'),
+                filterPath: '\\',
+                filterId:"0/",
+                hasChild: false,
+                id: '1',
+                isFile: false,
+                name: 'Documents',
+                parentId: '0',
+                size: 680786,
+                type: 'folder'
+              },
+              {
+                dateCreated: new Date('2023-11-15T19:02:02.3419426+05:30'),
+                dateModified: new Date('2024-01-08T16:55:20.9464164+05:30'),
+                filterPath: '\\',
+                filterId:"0/",
+                hasChild: false,
+                id: '2',
+                isFile: false,
+                name: 'Downloads',
+                parentId: '0',
+                size: 6172,
+                type: 'folder',
+              },
+              {
+                dateCreated: new Date('2023-11-15T19:02:02.3419426+05:30'),
+                dateModified: new Date('2024-01-08T16:55:20.9464164+05:30'),
+                filterPath: '\\',
+                hasChild: false,
+                id: '3',
+                isFile: false,
+                filterId:"0/",
+                name: 'Music',
+                parentId: '0',
+                size: 20,
+                type: 'folder',
+              },
+              {
+                dateCreated: new Date('2023-11-15T19:02:02.3419426+05:30'),
+                dateModified: new Date('2024-01-08T16:55:20.9464164+05:30'),
+                filterPath: '\\',
+                filterId:"0/",
+                hasChild: true,
+                id: '4',
+                isFile: false,
+                name: 'Pictures',
+                parentId: '0',
+                size: 228465,
+                type: 'folder',
+              },
+              {
+                dateCreated: new Date('2023-11-15T19:02:02.3419426+05:30'),
+                dateModified: new Date('2024-01-08T16:55:20.9464164+05:30'),
+                filterPath: '\\',
+                filterId:"0/",
+                hasChild: false,
+                id: '5',
+                isFile: false,
+                name: 'Videos',
+                parentId: '0',
+                size: 20,
+                type: 'folder',
+              },
+              {
+                dateCreated: new Date('2023-11-15T19:02:02.3419426+05:30'),
+                dateModified: new Date('2024-01-08T16:55:20.9464164+05:30'),
+                filterPath: '\\Documents\\',
+                filterId:"0/1/",
+                hasChild: false,
+                id: '6',
+                isFile: true,
+                name: 'EJ2_File_Manager',
+                parentId: '1',
+                size: 12403,
+                type: '.docx',
+              },
+              {
+                dateCreated: new Date('2023-11-15T19:02:02.3419426+05:30'),
+                dateModified: new Date('2024-01-08T16:55:20.9464164+05:30'),
+                filterPath: '\\Documents\\',
+                filterId:"0/1/",
+                hasChild: false,
+                id: '7',
+                isFile: true,
+                name: 'EJ2_File_Manager',
+                parentId: '1',
+                size: 90099,
+                type: '.pdf',
+              },
+              {
+                dateCreated: new Date('2023-11-15T19:02:02.3419426+05:30'),
+                dateModified: new Date('2024-01-08T16:55:20.9464164+05:30'),
+                filterPath: '\\Documents\\',
+                hasChild: false,
+                filterId:"0/1/",
+                id: '8',
+                isFile: true,
+                name: 'File_Manager_PPT',
+                parentId: '1',
+                size: 578010,
+                type: '.pptx',
+              },
+              {
+                dateCreated: new Date('2023-11-15T19:02:02.3419426+05:30'),
+                dateModified: new Date('2024-01-08T16:55:20.9464164+05:30'),
+                filterPath: '\\Documents\\',
+                filterId:"0/1/",
+                hasChild: false,
+                id: '9',
+                isFile: true,
+                name: 'File_Manager',
+                parentId: '1',
+                size: 274,
+                type: '.txt',
+              },
+              {
+                dateCreated: new Date('2023-11-15T19:02:02.3419426+05:30'),
+                dateModified: new Date('2024-01-08T16:55:20.9464164+05:30'),
+                filterPath: '\\Downloads\\',
+                filterId:"0/2/",
+                hasChild: false,
+                id: '10',
+                isFile: true,
+                name: 'Sample_Work_Sheet',
+                parentId: '2',
+                size: 6172,
+                type: '.xlsx',
+              },
+              {
+                dateCreated: new Date('2023-11-15T19:02:02.3419426+05:30'),
+                dateModified: new Date('2024-01-08T16:55:20.9464164+05:30'),
+                filterPath: '\\Music\\',
+                filterId:"0/3/",
+                hasChild: false,
+                id: '11',
+                isFile: true,
+                name: 'Music',
+                parentId: '3',
+                size: 10,
+                type: '.mp3',
+              },
+              {
+                dateCreated: new Date('2023-11-15T19:02:02.3419426+05:30'),
+                dateModified: new Date('2024-01-08T16:55:20.9464164+05:30'),
+                filterPath: '\\Music\\',
+                filterId:"0/3/",
+                hasChild: false,
+                id: '12',
+                isFile: true,
+                name: 'Sample_Music',
+                parentId: '3',
+                size: 10,
+                type: '.mp3',
+              },
+              {
+                dateCreated: new Date('2023-11-15T19:02:02.3419426+05:30'),
+                dateModified: new Date('2024-01-08T16:55:20.9464164+05:30'),
+                filterPath: '\\Videos\\',
+                filterId:"0/5/",
+                hasChild: false,
+                id: '13',
+                isFile: true,
+                name: 'Demo_Video',
+                parentId: '5',
+                size: 10,
+                type: '.mp4',
+              },
+              {
+                dateCreated: new Date('2023-11-15T19:02:02.3419426+05:30'),
+                dateModified: new Date('2024-01-08T16:55:20.9464164+05:30'),
+                filterPath: '\\Videos\\',
+                filterId:"0/5/",
+                hasChild: false,
+                id: '14',
+                isFile: true,
+                name: 'Sample_Video',
+                parentId: '5',
+                size: 10,
+                type: '.mp4',
+              },
+              {
+                dateCreated: new Date('2023-11-15T19:02:02.3419426+05:30'),
+                dateModified: new Date('2024-01-08T16:55:20.9464164+05:30'),
+                filterPath: '\\Pictures\\',
+                hasChild: false,
+                filterId:"0/4/",
+                id: '15',
+                isFile: false,
+                name: 'Employees',
+                parentId: '4',
+                size: 237568,
+                type: 'folder',
+              },
+              {
+                dateCreated: new Date('2023-11-15T19:02:02.3419426+05:30'),
+                dateModified: new Date('2024-01-08T16:55:20.9464164+05:30'),
+                filterPath: '\\Pictures\\Employees\\',
+                filterId:"0/4/15/",
+                hasChild: false,
+                id: '16',
+                isFile: true,
+                name: 'Albert',
+                parentId: '15',
+                size: 53248,
+                type: '.png',
+                imageUrl:
+                  'https://ej2.syncfusion.com/demos/https://ej2.syncfusion.com/react/demos/src/avatar/images/pic01.png',
+              },
+              {
+                dateCreated: new Date('2023-11-15T19:02:02.3419426+05:30'),
+                dateModified: new Date('2024-01-08T16:55:20.9464164+05:30'),
+                filterPath: '\\Pictures\\Employees\\',
+                filterId:"0/4/15/",
+                hasChild: false,
+                id: '17',
+                isFile: true,
+                name: 'Nancy',
+                parentId: '15',
+                size: 65536,
+                type: '.png',
+                imageUrl:
+                  'https://ej2.syncfusion.com/demos/https://ej2.syncfusion.com/react/demos/src/avatar/images/pic02.png',
+              },
+              {
+                dateCreated: new Date('2023-11-15T19:02:02.3419426+05:30'),
+                dateModified: new Date('2024-01-08T16:55:20.9464164+05:30'),
+                filterPath: '\\Pictures\\Employees\\',
+                filterId:"0/4/15/",
+                hasChild: false,
+                id: '18',
+                isFile: true,
+                name: 'Michael',
+                parentId: '15',
+                size: 69632,
+                type: '.png',
+                imageUrl:
+                  'https://ej2.syncfusion.com/demos/https://ej2.syncfusion.com/react/demos/src/avatar/images/pic03.png',
+              },
+              {
+                dateCreated: new Date('2023-11-15T19:02:02.3419426+05:30'),
+                dateModified: new Date('2024-01-08T16:55:20.9464164+05:30'),
+                filterPath: '\\Pictures\\Employees\\',
+                filterId:"0/4/15/",
+                hasChild: false,
+                id: '19',
+                isFile: true,
+                name: 'Robert',
+                parentId: '15',
+                size: 48951,
+                type: '.png',
+                imageUrl:
+                  'https://ej2.syncfusion.com/demos/https://ej2.syncfusion.com/react/demos/src/avatar/images/pic04.png',
+              },
+        ];
+        function clickFn(): void {
+            i++;
+        }
+        beforeEach(() => {
+            jasmine.Ajax.install();
+            ele = createElement('div', { id: 'file' });
+            document.body.appendChild(ele);
+            feObj = undefined;
+            i = 0;
+            mouseEventArgs = {
+                preventDefault: (): void => { },
+                stopImmediatePropagation: (): void => { },
+                target: null,
+                type: null,
+                shiftKey: false,
+                ctrlKey: false,
+                originalEvent: { target: null }
+            };
+            tapEvent = {
+                originalEvent: mouseEventArgs,
+                tapCount: 1
+            };
+            originalTimeout = jasmine.DEFAULT_TIMEOUT_INTERVAL;
+            jasmine.DEFAULT_TIMEOUT_INTERVAL = 50000;
+        });
+        afterEach(() => {
+            jasmine.Ajax.uninstall();
+            if (feObj) feObj.destroy();
+            ele.remove();
+            jasmine.DEFAULT_TIMEOUT_INTERVAL = originalTimeout;
+        });
+        it('for move event with copy operation', (done: Function) => {
+            let dblclickevent:any;
+            let moveEventArgs: MoveEventArgs;
+            feObj = new FileManager({
+                view: 'Details',
+                fileSystemData: flatDataWithFilterId,
+                move: (args: MoveEventArgs) => {
+                    moveEventArgs = args;
+                }
+            });
+            feObj.appendTo('#file');
+            dblclickevent = new MouseEvent('dblclick', {
+                'view': window,
+                'bubbles': true,
+                'cancelable': true
+            });
+            setTimeout(() => {
+                feObj.detailsviewModule.gridObj.selectRows([4]);
+                const copyButton: HTMLElement = document.getElementById('file_tb_copy');
+                copyButton.click();
+                feObj.detailsviewModule.gridObj.selectRows([3]);
+                feObj.detailsviewModule.gridObj.element.querySelectorAll('.e-row')[3].firstElementChild.dispatchEvent(dblclickevent);
+                setTimeout(() => {
+                    const pasteButton: HTMLElement = document.getElementById('file_tb_paste');
+                    pasteButton.click();
+                    setTimeout(() => {
+                        expect(moveEventArgs.itemData.length).toBeGreaterThan(0);
+                        expect(moveEventArgs.itemData[0].filterId).toEqual('0/4/');
+                        done();
+                    }, 500);
+                }, 500);
+            }, 500);
+        });
+        it('for move event with cut operation', (done: Function) => {
+            let dblclickevent:any;
+            let moveEventArgs: MoveEventArgs;
+            feObj = new FileManager({
+                view: 'Details',
+                fileSystemData: flatDataWithFilterId,
+                move: (args: MoveEventArgs) => {
+                    moveEventArgs = args;
+                }
+            });
+            feObj.appendTo('#file');
+            dblclickevent = new MouseEvent('dblclick', {
+                'view': window,
+                'bubbles': true,
+                'cancelable': true
+            });
+            setTimeout(() => {
+                feObj.detailsviewModule.gridObj.selectRows([4]);
+                const cutButton: HTMLElement = document.getElementById('file_tb_cut');
+                cutButton.click();
+                feObj.detailsviewModule.gridObj.selectRows([2]);
+                feObj.detailsviewModule.gridObj.element.querySelectorAll('.e-row')[2].firstElementChild.dispatchEvent(dblclickevent);
+                setTimeout(() => {
+                    const pasteButton: HTMLElement = document.getElementById('file_tb_paste');
+                    pasteButton.click();
+                    setTimeout(() => {
+                        expect(moveEventArgs.itemData.length).toBeGreaterThan(0);
+                        expect(moveEventArgs.itemData[0].filterId).toEqual('0/3/');
+                        done();
+                    }, 500);
+                }, 500);
+            }, 500);
+        });
+        it('for folderCreate event', (done: Function) => {
+            let dblclickevent:any;
+            let folderCreateEventArgs: FolderCreateEventArgs;
+            feObj = new FileManager({
+                view: 'Details',
+                fileSystemData: flatDataWithFilterId,
+                folderCreate: (args: FolderCreateEventArgs) => {
+                    folderCreateEventArgs = args;
+                }
+            });
+            feObj.appendTo('#file');
+            dblclickevent = new MouseEvent('dblclick', {
+                'view': window,
+                'bubbles': true,
+                'cancelable': true
+            });
+            setTimeout(() => {
+                feObj.detailsviewModule.gridObj.selectRows([1]);
+                feObj.detailsviewModule.gridObj.element.querySelectorAll('.e-row')[1].firstElementChild.dispatchEvent(dblclickevent);
+                setTimeout(() => {
+                    let item: any = document.getElementById('file_tb_newfolder');
+                    item.click();
+                    (<any>document.querySelector('.e-fe-popup .e-input')).value = "New folder";
+                    (<HTMLElement>document.querySelector('.e-fe-popup.e-btn.e-primary')).click();
+                    setTimeout(() => {
+                        expect(feObj.fileSystemData.filter((item: { [key: string]: Object; }) => item.name === 'New folder')[0].filterId).toEqual('0/2/');
+                        done();
+                    }, 500);
+                }, 500);
+            }, 500);
+        });
+    });
 });

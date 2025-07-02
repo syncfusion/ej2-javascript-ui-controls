@@ -410,6 +410,8 @@ export class Sidebar extends Component<HTMLElement> implements INotifyPropertyCh
         const sibling: HTMLElement = (<HTMLElement>document.querySelector('.e-main-content')) || this.targetEle;
         if (this.target && this.showBackdrop && sibling && !isNullOrUndefined(this.defaultBackdropDiv)) {
             removeClass([this.defaultBackdropDiv], DEFAULTBACKDROP);
+            this.defaultBackdropDiv.remove();
+            this.defaultBackdropDiv = null;
         } else if (this.showBackdrop && this.modal) {
             this.modal.style.display = 'none';
             this.modal.outerHTML = '';
@@ -509,7 +511,9 @@ export class Sidebar extends Component<HTMLElement> implements INotifyPropertyCh
                 removeClass([this.element], CLOSE);
                 setStyle(this.element, { 'width': formatUnit(this.width) });
                 this.setType(this.type);
-                this.createBackDrop();
+                if (this.targetEle && !this.targetEle.querySelector('.e-sidebar-overlay')) {
+                    this.createBackDrop();
+                }
                 this.setAnimation();
                 if (this.type === 'Slide') {
                     document.body.classList.add('e-sidebar-overflow');

@@ -64,7 +64,6 @@
         padding: $pager-device-messabar-padding;
         @if $pager-skin == 'material3' {
           vertical-align: top;
-          margin-top: 5px;
         }
       }
     }

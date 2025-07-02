@@ -13231,18 +13231,18 @@ describe('Hscroll module scrollStep change in beforeCreate', () => {
         let toolbar: Toolbar;
         let disableBtn: Button;
         let enableBtn: Button;
-
+        
         beforeEach((): void => {
             let ele: HTMLElement = createElement('div', { id: 'toolbar_default' });
             document.body.appendChild(ele);
-
+            
             let disableEle: HTMLElement = createElement('button', { id: 'disable' });
             document.body.appendChild(disableEle);
-
+            
             let enableEle: HTMLElement = createElement('button', { id: 'enable' });
             document.body.appendChild(enableEle);
         });
-
+        
         afterEach((): void => {
             if (toolbar) {
                 toolbar.destroy();
@@ -13255,7 +13255,7 @@ describe('Hscroll module scrollStep change in beforeCreate', () => {
             }
             document.body.innerHTML = '';
         });
-
+        
         it('should render toolbar with icons and tooltips', () => {
             toolbar = new Toolbar({
                 items: [
@@ -13264,7 +13264,7 @@ describe('Hscroll module scrollStep change in beforeCreate', () => {
                 ]
             });
             toolbar.appendTo('#toolbar_default');
-
+            
             const element: HTMLElement = document.getElementById('toolbar_default');
             const items = element.querySelectorAll('.e-toolbar-item');
             expect(items.length).toEqual(2);
@@ -13277,7 +13277,7 @@ describe('Hscroll module scrollStep change in beforeCreate', () => {
             expect(items[0].querySelector('.e-icons.e-cut')).not.toBeNull();
             expect(items[1].querySelector('.e-icons.e-paste')).not.toBeNull();
         });
-
+        
         it('should enable and disable items through external buttons', () => {
             toolbar = new Toolbar({
                 items: [
@@ -13286,7 +13286,7 @@ describe('Hscroll module scrollStep change in beforeCreate', () => {
                 ]
             });
             toolbar.appendTo('#toolbar_default');
-
+            
             disableBtn = new Button();
             disableBtn.appendTo('#disable');
             disableBtn.element.onclick = (): void => {
@@ -13307,19 +13307,455 @@ describe('Hscroll module scrollStep change in beforeCreate', () => {
             expect(cutItem.querySelector('button').getAttribute('aria-disabled')).toEqual('false');
             expect(cutItem.querySelector('button').getAttribute('tabindex')).toEqual('0');
             expect(pasteItem.querySelector('button').getAttribute('tabindex')).toEqual('-1');
-
+            
             (document.getElementById('disable') as HTMLElement).click();
-
+            
             expect(cutItem.classList.contains('e-overlay')).toBe(true);
             expect(cutItem.querySelector('button').getAttribute('aria-disabled')).toEqual('true');
             expect(cutItem.querySelector('button').getAttribute('tabindex')).toEqual('-1');
             expect(pasteItem.querySelector('button').getAttribute('tabindex')).toEqual('0');
 
             (document.getElementById('enable') as HTMLElement).click();
-
+            
             expect(cutItem.classList.contains('e-overlay')).toBe(false);
             expect(cutItem.querySelector('button').getAttribute('aria-disabled')).toEqual('false');
             expect(cutItem.querySelector('button').getAttribute('tabindex')).toEqual('0');
+        });
+    });
+
+    describe('Toolbar keyDown event testing', () => {
+        let toolbar: any;
+        let keyEventArgs: any;
+        let keyDownEventArgs: any;
+        
+        beforeEach((): void => {
+            toolbar = undefined;
+            keyDownEventArgs = null;
+            let ele: HTMLElement = createElement('div', { id: 'ej2Toolbar' });
+            document.body.appendChild(ele);
+        });
+        
+        afterEach((): void => {
+            if (toolbar) {
+                toolbar.destroy();
+            }
+            document.body.innerHTML = '';
+        });
+        
+        function keyDownHandler(args: any): void {
+            keyDownEventArgs = args;
+        }
+        
+        function keyDownHandlerWithCancel(args: any): void {
+            args.cancel = true;
+            keyDownEventArgs = args;
+        }
+        
+        it('should trigger keyDown event when keyboard navigation occurs', () => {
+            toolbar = new Toolbar({
+                items: [
+                    { type: 'Button', text: 'Cut' },
+                    { type: 'Button', text: 'Copy' },
+                    { type: 'Button', text: 'Paste' }
+                ],
+                keyDown: keyDownHandler
+            });
+            toolbar.appendTo('#ej2Toolbar');
+            
+            const firstItem = toolbar.element.querySelectorAll('.e-toolbar-item')[0];
+            firstItem.firstChild.focus();
+            
+            keyEventArgs = {
+                preventDefault: function () { },
+                action: 'moveRight',
+                target: firstItem
+            };
+            
+            toolbar.keyActionHandler(keyEventArgs);
+            
+            expect(keyDownEventArgs).not.toBeNull();
+            expect(keyDownEventArgs.originalEvent.action).toBe('moveRight');
+            expect(keyDownEventArgs.originalEvent).not.toBeNull();
+            expect(keyDownEventArgs.currentItem).not.toBeNull();
+            expect(keyDownEventArgs.nextItem).not.toBeNull();
+        });
+        
+        it('should provide correct item references in keyDown event args', () => {
+            toolbar = new Toolbar({
+                items: [
+                    { type: 'Button', text: 'Cut' },
+                    { type: 'Button', text: 'Copy' },
+                    { type: 'Button', text: 'Paste' }
+                ],
+                keyDown: keyDownHandler
+            });
+            toolbar.appendTo('#ej2Toolbar');
+            
+            const firstItem = toolbar.element.querySelectorAll('.e-toolbar-item')[0];
+            firstItem.firstChild.focus();
+            
+            keyEventArgs = {
+                preventDefault: function () { },
+                action: 'moveRight',
+                target: firstItem
+            };
+            
+            toolbar.keyActionHandler(keyEventArgs);
+            
+            expect(keyDownEventArgs.currentItem).toBe(firstItem);
+            expect(keyDownEventArgs.nextItem).toBe(toolbar.element.querySelectorAll('.e-toolbar-item')[1]);
+        });
+        
+        it('should cancel navigation when keyDown event is cancelled', () => {
+            toolbar = new Toolbar({
+                items: [
+                    { type: 'Button', text: 'Cut' },
+                    { type: 'Button', text: 'Copy' },
+                    { type: 'Button', text: 'Paste' }
+                ],
+                keyDown: keyDownHandlerWithCancel
+            });
+            toolbar.appendTo('#ej2Toolbar');
+            
+            const firstItem = toolbar.element.querySelectorAll('.e-toolbar-item')[0];
+            firstItem.firstChild.focus();
+            const activeElement = document.activeElement;
+            
+            keyEventArgs = {
+                preventDefault: function () { },
+                action: 'moveRight',
+                target: firstItem
+            };
+            
+            toolbar.keyActionHandler(keyEventArgs);
+            
+            expect(keyDownEventArgs.cancel).toBe(true);
+        });
+        
+        it('should handle home key in keyDown event', () => {
+            toolbar = new Toolbar({
+                items: [
+                    { type: 'Button', text: 'Cut' },
+                    { type: 'Button', text: 'Copy' },
+                    { type: 'Button', text: 'Paste' }
+                ],
+                keyDown: keyDownHandler
+            });
+            toolbar.appendTo('#ej2Toolbar');
+            
+            const secondItem = toolbar.element.querySelectorAll('.e-toolbar-item')[1];
+            secondItem.firstChild.focus();
+            
+            keyEventArgs = {
+                preventDefault: function () { },
+                action: 'home',
+                target: secondItem
+            };
+            
+            toolbar.keyActionHandler(keyEventArgs);
+            
+            expect(keyDownEventArgs.originalEvent.action).toBe('home');
+            expect(keyDownEventArgs.currentItem).not.toBeNull();
+        });
+        
+        it('should handle end key in keyDown event', () => {
+            toolbar = new Toolbar({
+                items: [
+                    { type: 'Button', text: 'Cut' },
+                    { type: 'Button', text: 'Copy' },
+                    { type: 'Button', text: 'Paste' }
+                ],
+                keyDown: keyDownHandler
+            });
+            toolbar.appendTo('#ej2Toolbar');
+            
+            const firstItem = toolbar.element.querySelectorAll('.e-toolbar-item')[0];
+            firstItem.firstChild.focus();
+            
+            keyEventArgs = {
+                preventDefault: function () { },
+                action: 'end',
+                target: firstItem
+            };
+            
+            toolbar.keyActionHandler(keyEventArgs);
+            
+            expect(keyDownEventArgs.originalEvent.action).toBe('end');
+            expect(keyDownEventArgs.currentItem).not.toBeNull();
+        });
+        
+        it('should handle moveLeft key in keyDown event', () => {
+            toolbar = new Toolbar({
+                items: [
+                    { type: 'Button', text: 'Cut' },
+                    { type: 'Button', text: 'Copy' },
+                    { type: 'Button', text: 'Paste' }
+                ],
+                keyDown: keyDownHandler
+            });
+            toolbar.appendTo('#ej2Toolbar');
+            
+            const secondItem = toolbar.element.querySelectorAll('.e-toolbar-item')[1];
+            secondItem.firstChild.focus();
+            
+            keyEventArgs = {
+                preventDefault: function () { },
+                action: 'moveLeft',
+                target: secondItem
+            };
+            
+            toolbar.keyActionHandler(keyEventArgs);
+            
+            expect(keyDownEventArgs.originalEvent.action).toBe('moveLeft');
+            expect(keyDownEventArgs.currentItem).not.toBeNull();
+        });
+        
+        it('should handle moveUp key in keyDown event for vertical toolbar', () => {
+            toolbar = new Toolbar({
+                items: [
+                    { type: 'Button', text: 'Cut' },
+                    { type: 'Button', text: 'Copy' },
+                    { type: 'Button', text: 'Paste' }
+                ],
+                keyDown: keyDownHandler
+            });
+            toolbar.appendTo('#ej2Toolbar');
+            toolbar.element.classList.add('e-vertical');
+            toolbar.isVertical = true;
+            
+            const secondItem = toolbar.element.querySelectorAll('.e-toolbar-item')[1];
+            secondItem.firstChild.focus();
+            
+            keyEventArgs = {
+                preventDefault: function () { },
+                action: 'moveUp',
+                target: secondItem
+            };
+            
+            toolbar.keyActionHandler(keyEventArgs);
+            
+            expect(keyDownEventArgs.originalEvent.action).toBe('moveUp');
+            expect(keyDownEventArgs.currentItem).not.toBeNull();
+        });
+        
+        it('should handle moveDown key in keyDown event for vertical toolbar', () => {
+            toolbar = new Toolbar({
+                items: [
+                    { type: 'Button', text: 'Cut' },
+                    { type: 'Button', text: 'Copy' },
+                    { type: 'Button', text: 'Paste' }
+                ],
+                keyDown: keyDownHandler
+            });
+            toolbar.appendTo('#ej2Toolbar');
+            toolbar.element.classList.add('e-vertical');
+            toolbar.isVertical = true;
+            
+            const secondItem = toolbar.element.querySelectorAll('.e-toolbar-item')[1];
+            secondItem.firstChild.focus();
+            
+            keyEventArgs = {
+                preventDefault: function () { },
+                action: 'moveDown',
+                target: secondItem
+            };
+            
+            toolbar.keyActionHandler(keyEventArgs);
+            
+            expect(keyDownEventArgs.originalEvent.action).toBe('moveDown');
+            expect(keyDownEventArgs.currentItem).not.toBeNull();
+        });
+        
+        it('should handle tab key in keyDown event', () => {
+            toolbar = new Toolbar({
+                items: [
+                    { type: 'Button', text: 'Cut' },
+                    { type: 'Button', text: 'Copy' },
+                    { type: 'Button', text: 'Paste' }
+                ],
+                keyDown: keyDownHandler
+            });
+            toolbar.appendTo('#ej2Toolbar');
+            
+            const firstItem = toolbar.element.querySelectorAll('.e-toolbar-item')[0];
+            firstItem.firstChild.focus();
+            
+            keyEventArgs = {
+                preventDefault: function () { },
+                action: 'tab',
+                target: firstItem
+            };
+            
+            toolbar.keyActionHandler(keyEventArgs);
+            
+            expect(keyDownEventArgs.originalEvent.action).toBe('tab');
+            expect(keyDownEventArgs.currentItem).not.toBeNull();
+        });
+        
+        it('should handle keyDown event with template items', () => {
+            toolbar = new Toolbar({
+                items: [
+                    { type: 'Button', text: 'Cut' },
+                    { template: '<input placeholder="Search"/>' },
+                    { type: 'Button', text: 'Paste' }
+                ],
+                keyDown: keyDownHandler
+            });
+            toolbar.appendTo('#ej2Toolbar');
+            
+            const firstItem = toolbar.element.querySelectorAll('.e-toolbar-item')[0];
+            firstItem.firstChild.focus();
+            
+            keyEventArgs = {
+                preventDefault: function () { },
+                action: 'moveRight',
+                target: firstItem
+            };
+            
+            toolbar.keyActionHandler(keyEventArgs);
+            
+            expect(keyDownEventArgs.originalEvent.action).toBe('moveRight');
+            expect(keyDownEventArgs.currentItem).not.toBeNull();
+            expect(keyDownEventArgs.nextItem.classList.contains('e-template')).toBe(true);
+        });
+        
+        it('should handle keyDown event with disabled items', () => {
+            toolbar = new Toolbar({
+                items: [
+                    { type: 'Button', text: 'Cut' },
+                    { type: 'Button', text: 'Copy', disabled: true },
+                    { type: 'Button', text: 'Paste' }
+                ],
+                keyDown: keyDownHandler
+            });
+            toolbar.appendTo('#ej2Toolbar');
+            
+            const firstItem = toolbar.element.querySelectorAll('.e-toolbar-item')[0];
+            firstItem.firstChild.focus();
+            
+            keyEventArgs = {
+                preventDefault: function () { },
+                action: 'moveRight',
+                target: firstItem
+            };
+            
+            toolbar.keyActionHandler(keyEventArgs);
+            
+            expect(keyDownEventArgs.originalEvent.action).toBe('moveRight');
+            expect(keyDownEventArgs.currentItem).not.toBeNull();
+            // Should skip disabled item and focus on the next enabled item
+            expect(keyDownEventArgs.nextItem).toBe(toolbar.element.querySelectorAll('.e-toolbar-item')[2]);
+        });
+        
+        it('should handle keyDown event with popup mode', () => {
+            toolbar = new Toolbar({
+                width: 300,
+                overflowMode: 'Popup',
+                items: [
+                    { type: 'Button', text: 'Cut' },
+                    { type: 'Button', text: 'Copy' },
+                    { type: 'Button', text: 'Paste' },
+                    { type: 'Button', text: 'Bold' },
+                    { type: 'Button', text: 'Italic' },
+                    { type: 'Button', text: 'Underline' }
+                ],
+                keyDown: keyDownHandler
+            });
+            toolbar.appendTo('#ej2Toolbar');
+            
+            // Force popup mode by reducing width
+            toolbar.element.style.width = '100px';
+            toolbar.refreshOverflow();
+            
+            const popupNav = toolbar.element.querySelector('.e-hor-nav');
+            popupNav.focus();
+            
+            keyEventArgs = {
+                preventDefault: function () { },
+                action: 'popupOpen',
+                target: popupNav
+            };
+            
+            toolbar.keyActionHandler(keyEventArgs);
+            
+            expect(keyDownEventArgs.originalEvent.action).toBe('popupOpen');
+            expect(keyDownEventArgs.currentItem).not.toBeNull();
+        });
+        
+        it('should handle keyDown event with aligned items', () => {
+            toolbar = new Toolbar({
+                items: [
+                    { type: 'Button', text: 'Cut', align: 'Left' },
+                    { type: 'Button', text: 'Copy', align: 'Center' },
+                    { type: 'Button', text: 'Paste', align: 'Right' }
+                ],
+                keyDown: keyDownHandler
+            });
+            toolbar.appendTo('#ej2Toolbar');
+            
+            const leftItem = toolbar.element.querySelector('.e-toolbar-left').firstElementChild;
+            leftItem.firstChild.focus();
+            
+            keyEventArgs = {
+                preventDefault: function () { },
+                action: 'moveRight',
+                target: leftItem
+            };
+            
+            toolbar.keyActionHandler(keyEventArgs);
+            
+            expect(keyDownEventArgs.originalEvent.action).toBe('moveRight');
+            expect(keyDownEventArgs.currentItem).not.toBeNull();
+            expect(keyDownEventArgs.nextItem.parentElement.classList.contains('e-toolbar-center')).toBe(true);
+        });
+    });
+
+    describe('Toolbar Extended Mode Keyboard Navigation', () => {
+        let toolbar: Toolbar;
+        let element: HTMLElement;
+        beforeEach(() => {
+            element = document.createElement('div');
+            element.id = 'extendedToolbar';
+            document.body.appendChild(element);
+            toolbar = new Toolbar({
+                overflowMode: 'Extended',
+                width: '300px',
+                items: [
+                    { text: 'Item 1', },
+                    { text: 'Item 2 ' },
+                    { text: 'Item 3', },
+                    { text: 'Item 4 (Disabled)', disabled: true },
+                    { text: 'Item 5', },
+                    { text: 'Item 6 ' },
+                    { text: 'Item 7', },
+                ]
+            });
+            toolbar.appendTo('#extendedToolbar');
+        });
+
+        afterEach(() => {
+            toolbar.destroy();
+            document.body.removeChild(element);
+        });
+
+        it('should skip disabled first item in extended popup when using down arrow key', () => {
+            const popupNavBtn = toolbar.element.querySelector('.e-hor-nav') as HTMLElement;
+            popupNavBtn.click();
+            const tool: any = toolbar;
+            tool.popObj.show();
+            const extendedPopup = document.querySelector('.e-toolbar-extended') as HTMLElement;
+            expect(extendedPopup).toBeTruthy();
+            const disabledItem = extendedPopup.querySelector('.e-toolbar-item.e-overlay') as HTMLElement;
+            expect(disabledItem).toBeTruthy();
+            const keyEventArgs = {
+                action: 'moveDown',
+                target: popupNavBtn,
+                preventDefault: function () { },
+            };
+            (toolbar as any).keyActionHandler(keyEventArgs);
+            const popupEle = document.body.querySelector('.e-toolbar-pop');
+            const popupItems = popupEle.querySelectorAll('.e-toolbar-item');
+            expect(document.activeElement).toBe(popupItems[1].firstChild as HTMLElement);
         });
     });
 

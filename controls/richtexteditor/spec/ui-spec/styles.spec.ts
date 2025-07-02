@@ -1061,16 +1061,13 @@ describe('UI Spec ', () => {
             destroy(rteObj);
         })
         it('Check the insert link item added in Quick toolbar', (done) => {
-            (rteObj.contentModule.getEditPanel() as HTMLElement).focus();
-            var clickEvent = document.createEvent("MouseEvents");
-            clickEvent.initEvent('mousedown', false, true);
-            rteObj.inputElement.dispatchEvent(clickEvent);
-            let imgEle: HTMLElement = rteObj.element.querySelector("img");
-            imgEle.focus();
-            setCursorPoint(imgEle, 0);
-            var eventsArg = { pageX: 50, pageY: 300, target: imgEle };
+            rteObj.focusIn();
+            const INIT_MOUSEDOWN_EVENT: MouseEvent = new MouseEvent('mousedown', BASIC_MOUSE_EVENT_INIT);
+            rteObj.inputElement.dispatchEvent(INIT_MOUSEDOWN_EVENT);
+            const target: HTMLElement = rteObj.inputElement.querySelector('img');
+            setCursorPoint(target, 0);
             const MOUSEUP_EVENT: MouseEvent = new MouseEvent('mouseup', BASIC_MOUSE_EVENT_INIT);
-            eventsArg.target.dispatchEvent(MOUSEUP_EVENT);
+            target.dispatchEvent(MOUSEUP_EVENT);
             setTimeout(() => {
                 let imageQTBarEle: HTMLElement = <HTMLElement>document.querySelector('.e-rte-quick-popup');
                 expect(getComputedStyle(imageQTBarEle.querySelector("[title='Open Link']")).display === "none").toBe(true);
@@ -1084,8 +1081,8 @@ describe('UI Spec ', () => {
                     urlInput.value = "http://www.google.com";
                     let insertButton: HTMLElement = dialog.querySelector('.e-update-link.e-primary');
                     insertButton.click();
-                    setCursorPoint(imgEle, 0);
-                    eventsArg.target.dispatchEvent(MOUSEUP_EVENT);
+                    setCursorPoint(target, 0);
+                    target.dispatchEvent(MOUSEUP_EVENT);
                     setTimeout(() => {
                         expect(getComputedStyle(imageQTBarEle.querySelector("[title='Insert Link']") as HTMLElement).display === "none").toBe(true);
                         done();

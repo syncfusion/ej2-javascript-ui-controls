@@ -47,6 +47,13 @@ export class SelectionCommands {
             const nodeCutter: NodeCutter = new NodeCutter();
             const isFormatted: IsFormatted = new IsFormatted();
             let range: Range = domSelection.getRange(docElement);
+            if (range.collapsed && range.startContainer === range.endContainer && range.startContainer ===
+                domSelection.editableElement && !isNOU(range.startContainer.firstChild)) {
+                const modifiedRange: Range = docElement.createRange();
+                range.setStart(range.startContainer.firstChild, 0);
+                range.collapse(true);
+                domSelection.setRange(docElement, modifiedRange);
+            }
             let counter: number = 0;
             const currentAnchorNode: HTMLElement = range.startContainer.parentElement;
             if (range.collapsed && !isNOU(currentAnchorNode) &&

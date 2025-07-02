@@ -449,9 +449,6 @@ export class Stepper extends StepperBase implements INotifyPropertyChanged {
     private updateAnimation(): void {
         const progressEle: HTMLElement = this.element.querySelector('.e-progressbar-value');
         if (this.animation.enable) {
-            if (this.animation.duration >= 0) {
-                if (progressEle) { progressEle.style.setProperty('--duration', ((this.animation.duration) + 'ms')); }
-            }
             if (this.animation.delay >= 0) {
                 if (progressEle) { progressEle.style.setProperty('--delay', ((this.animation.delay) + 'ms')); }
             }
@@ -968,6 +965,9 @@ export class Stepper extends StepperBase implements INotifyPropertyChanged {
     }
 
     private navigationHandler(index: number, stepStatus?: string, isUpdated?: boolean): void {
+        if (index !== this.activeStep && this.progressbar) {
+            this.progressbar.style.transitionDuration = this.animation.duration + 'ms';
+        }
         index = Math.min(index, this.steps.length - 1);
         const Itemslength: number = this.stepperItemElements.length;
         if (index >= 0 && index < Itemslength - 1) {
@@ -1012,6 +1012,7 @@ export class Stepper extends StepperBase implements INotifyPropertyChanged {
             this.updateIndicatorStatus(i, itemElement);
         }
         this.updateStepInteractions();
+        if (this.progressbar) { this.progressbar.style.transitionDuration = '0ms'; }
     }
 
     private calculateProgressbarPos(): void {

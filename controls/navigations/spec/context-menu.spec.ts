@@ -2044,7 +2044,7 @@ describe('ContextMenu', () => {
             expect(contextMenu.element.querySelector('.e-focused')).not.toBeNull();
         });
     });
-
+    
     describe('Context Menu Template Select Event', () => {
         let contextMenu: ContextMenu;
         let div: HTMLElement;
@@ -2091,7 +2091,7 @@ describe('ContextMenu', () => {
             (liElements[0] as HTMLElement).click();
         });
     });
-    
+
     describe('Context Menu With Template ID Attribute', () => {
         let contextMenu: ContextMenu;
         let div: HTMLElement;

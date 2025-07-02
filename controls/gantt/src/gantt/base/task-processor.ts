@@ -125,7 +125,7 @@ export class TaskProcessor extends DateProcessor {
                     }
                 }
             }
-            if (index !== -1) {
+            if (index !== -1 || (this.parent.loadChildOnDemand && this.parent.taskFields.hasChildMapping)) {
                 rootData.push.apply(rootData, groupData.items);    // eslint-disable-line
             }
         }

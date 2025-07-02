@@ -1436,7 +1436,8 @@ export class Annotation {
                         } else {
                             viewerContainer.style.right = this.pdfViewerBase.navigationPane.getViewerContainerRight() + 'px';
                         }
-                        viewerContainer.style.width = (this.pdfViewer.element.clientWidth - this.pdfViewerBase.navigationPane.getViewerContainerLeft() - this.pdfViewerBase.navigationPane.getViewerContainerRight()) + 'px';
+                        viewerContainer.style.width = ((this.pdfViewer.element.clientWidth > 0 ? this.pdfViewer.element.clientWidth :
+                            this.pdfViewer.element.offsetWidth) - this.pdfViewerBase.navigationPane.getViewerContainerLeft() - this.pdfViewerBase.navigationPane.getViewerContainerRight()) + 'px';
                         pageContainer.style.width = (viewerContainer.offsetWidth - this.pdfViewerBase.navigationPane.getViewerContainerScrollbarWidth()) + 'px';
                     }
                     this.pdfViewerBase.updateZoomValue();
@@ -1448,10 +1449,12 @@ export class Annotation {
                         if (this.pdfViewer.selectedItems.annotations.length > 0) {
                             const commentDiv: any = document.getElementById(this.pdfViewer.selectedItems.annotations[0].annotName);
                             if (commentDiv && commentDiv.lastElementChild.children[1] &&
-                                 commentDiv.lastElementChild.children[1].ej2_instances) {
+                                commentDiv.lastElementChild.children[1].ej2_instances) {
                                 commentDiv.lastElementChild.children[1].ej2_instances[0].enableEditMode = true;
+                                commentDiv.lastElementChild.children[1].ej2_instances[0].dataBind();
                             } else if (commentDiv && commentDiv.lastElementChild.ej2_instances) {
                                 commentDiv.lastElementChild.ej2_instances[0].enableEditMode = true;
+                                commentDiv.lastElementChild.ej2_instances[0].dataBind();
                                 commentDiv.lastElementChild.style.display = 'block';
                                 if (commentDiv.lastElementChild.children[1]) {
                                     commentDiv.lastElementChild.children[1].style.display = 'block';

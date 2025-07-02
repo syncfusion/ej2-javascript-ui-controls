@@ -2,35 +2,15 @@
 
 ## [Unreleased]
 
+## 30.1.38 (2025-07-02)
+
+### FileManager
+
+#### Bug Fixes
+
+- `#I740738` - Resolved the inconsistent drag-and-drop issue with nested-level files in the File Manager component's flat data sample.
+
 ## 30.1.37 (2025-06-25)
-
-### FileManager
-
-#### Bug Fixes
-
-- `#I732080` - The issue with the File Manager select event not being triggered for each selection in the navigation pane has been resolved.
-
-## 29.1.39 (2025-04-22)
-
-### FileManager
-
-#### Bug Fixes
-
-- `#F196559` - The problem related to range selection in the File Manager component has been resolved.
-
-## 29.1.37 (2025-04-08)
-
-### FileManager
-
-#### Bug Fixes
-
-- `#I708564` - The issue preventing the error dialog from appearing when a path was unavailable in the File Manager component has been fixed.
-
-**Note**
-
-Additionally, if you want to prevent the error dialog when a folder is unavailable and load the available parent directory instead, you can use the `beforePopupOpen` and `failure` events of the File Manager component. The `beforePopupOpen` event allows you to prevent the error dialog from appearing, while the `failure` event provides the failed location through `path` property. By setting the previous valid location to the File Manager's path and refreshing it, you can ensure that the available parent directory is loaded instead of displaying an error dialog.
-
-## 29.1.33 (2025-03-25)
 
 ### FileManager
 

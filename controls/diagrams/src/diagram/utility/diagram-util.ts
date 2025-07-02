@@ -1266,6 +1266,7 @@ function removeUnnecessaryNodes(children: string[], diagram: Diagram): void {
 export function serialize(model: Diagram): string {
     let removeNodes: string[] = getSwimLaneChildren(model.nodes);
     let clonedObject: Object = cloneObject(model, model.getCustomProperty);
+    (clonedObject as Diagram).isScrollOffsetInverted = model.isScrollOffsetInverted;
     (clonedObject as Diagram).selectedItems.nodes = [];
     (clonedObject as Diagram).selectedItems.connectors = [];
     (clonedObject as Diagram).selectedItems.wrapper = null;
@@ -1549,6 +1550,9 @@ export function deserialize(model: string|Object, diagram: Diagram): Object {
     diagram.addInfo = dataObj.addInfo || undefined;
     diagram.getDescription = getDescription;
     diagram.scrollSettings = dataObj.scrollSettings || {};
+    if (dataObj.isScrollOffsetInverted) {
+        updateScrollSettingsOffset(diagram);
+    }
     diagram.commandManager = dataObj.commandManager || {};
     /**
     * EJ2-62846-Exception occurs after save and load when layers are undefined.
@@ -1658,6 +1662,11 @@ export function deserialize(model: string|Object, diagram: Diagram): Object {
             });
         }
     });
+    if (dataObj.isScrollOffsetInverted) {
+        diagram.protectPropertyChange(true);
+        updateScrollSettingsOffset(diagram);
+        diagram.protectPropertyChange(false);
+    }
     return dataObj;
 }
 /**
@@ -1761,6 +1770,22 @@ export function upgrade(dataObj: Diagram): Diagram {
 
     }
     return dataObj;
+}
+
+/**
+ * updateScrollSettingsOffset method \
+ *
+ * @returns {void }
+ * @param {Diagram} diagram - provide horizontalOffset and verticalOffset.
+ * @private
+ */
+export function updateScrollSettingsOffset(diagram: Diagram): void {
+    if (diagram.scrollSettings && diagram.scrollSettings.horizontalOffset) {
+        diagram.scrollSettings.horizontalOffset = - diagram.scrollSettings.horizontalOffset;
+    }
+    if (diagram.scrollSettings && diagram.scrollSettings.verticalOffset) {
+        diagram.scrollSettings.verticalOffset = - diagram.scrollSettings.verticalOffset;
+    }
 }
 
 /**
@@ -3159,6 +3184,42 @@ export let alignElement: Function = (element: GroupableView, offsetX: number, of
         }
     }
 };
+
+/** @private */
+export let rotateAfterFlip: Function = (node: NodeModel, diagram: Diagram): void => {
+    // Handle single nodes
+    if ((!node.children || node.children.length === 0) && node instanceof Node) {
+        // Apply opposite rotation to the single node
+        const normalized: number = ((node.rotateAngle % 360) + 360) % 360;
+        node.rotateAngle = normalized === 0 ? 0 : (360 - normalized);
+        diagram.nodePropertyChange(node as Node, {} as Node, { rotateAngle: node.rotateAngle } as Node, undefined, true);
+    }
+    // Handle group nodes
+    else {
+        //First store the child rotation angle before group rotation
+        const childAngles: object[] = [];
+        for (let child of node.children) {
+            const childObj: NodeModel = diagram.nameTable[`${child}`];
+            childAngles[`${child}`] = childObj.rotateAngle;
+        }
+        // Then apply opposite rotation to the group itself
+        const groupNormalized: number = ((node.rotateAngle % 360) + 360) % 360;
+        node.rotateAngle = groupNormalized === 0 ? 0 : (360 - groupNormalized);
+        diagram.nodePropertyChange(node as Node, {} as Node, { rotateAngle: node.rotateAngle } as Node, undefined, true);
+        // Then apply opposite rotation to each child node
+        for (const childId of node.children) {
+            const child: Node = diagram.nameTable[`${childId}`];
+            if (child instanceof Node) {
+                const childAngle: number = childAngles[child.id];
+                if (child) {
+                    const childNormalized: number = ((childAngle % 360) + 360) % 360;
+                    child.rotateAngle = childNormalized === 0 ? 0 : (360 - childNormalized);
+                    diagram.nodePropertyChange(child, {} as Node, { rotateAngle: child.rotateAngle } as Node, undefined, true);
+                }
+            }
+        }
+    }
+}
 
 /** @private */
 export let cloneSelectedObjects: Function = (diagram: Diagram): object => {

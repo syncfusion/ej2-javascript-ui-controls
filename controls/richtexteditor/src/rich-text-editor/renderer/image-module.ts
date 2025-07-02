@@ -2305,10 +2305,8 @@ export class Image {
             relateTo: imageElement,
             height: '85px',
             width: '300px',
-            collision: { X: 'fit', Y: 'fit' },
             content: uploadEle,
-            viewPortElement: this.parent.contentModule.getPanel() as HTMLElement,
-            position: { X: 'center', Y: 'top' },
+            viewPortElement: this.parent.inputElement,
             enableRtl: this.parent.enableRtl,
             zIndex: 10001,
             // eslint-disable-next-line
@@ -2425,7 +2423,6 @@ export class Image {
             imageElement.offsetTop : imageElement.offsetTop;
         const rtePosition: number = this.parent.element.offsetTop + this.parent.element.offsetHeight;
         if (imgPosition > rtePosition) {
-            this.popupObj.relateTo = this.parent.inputElement;
             this.popupObj.offsetY = this.parent.iframeSettings.enable ? -30 : -65;
             this.popupObj.element.style.display = 'block';
         } else {

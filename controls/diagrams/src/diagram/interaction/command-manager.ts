@@ -53,7 +53,7 @@ import { SelectorConstraints, Direction, DiagramConstraints } from '../enum/enum
 import { PageSettings } from '../diagram/page-settings';
 import { DiagramScroller, Segment } from '../interaction/scroller';
 import { remove, isBlazor, isNullOrUndefined, initializeCSPTemplate } from '@syncfusion/ej2-base';
-import { ConnectTool } from './tool';
+import { ConnectTool, PolyLineDrawingTool } from './tool';
 import { getOppositeDirection, getPortDirection, findAngle, Intersection } from './../utility/connector';
 import { ILayout } from '../layout/layout-base';
 import { swapBounds, findPoint, orthoConnection2Segment, End, getIntersection } from './../utility/connector';
@@ -738,6 +738,11 @@ export class CommandHandler {
             connector = selectorModel.connectors[0] as Connector;
         } else if (args.source instanceof Connector && this.diagram.currentDrawingObject) {
             connector = this.diagram.currentDrawingObject as Connector;
+        }
+        // 962382: Drawing polyLine from port and node
+        else if ( (this.diagram as any).eventHandler.tool && (this.diagram as any).eventHandler.tool instanceof PolyLineDrawingTool
+        && (this.diagram as any).eventHandler.tool.drawingObject) {
+            connector = (this.diagram as any).eventHandler.tool.drawingObject;
         }
         const target: NodeModel | PointPortModel = this.findTarget(
             (args.targetWrapper || args.sourceWrapper),

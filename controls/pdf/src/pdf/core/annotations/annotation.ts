@@ -1210,7 +1210,7 @@ export abstract class PdfAnnotation {
     _getRotationAngle(): number {
         let angle: number = 0;
         if (this._dictionary && !(this instanceof PdfRectangleAnnotation) &&
-            !(this instanceof PdfPolygonAnnotation)) {
+           !(this instanceof PdfPolygonAnnotation)) {
             if (this._dictionary.has('Rotate')) {
                 angle = this._dictionary.get('Rotate');
             } else if (this._dictionary.has('Rotation')) {

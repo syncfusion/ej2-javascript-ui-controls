@@ -45,7 +45,7 @@ export class PdfPage {
     _pageSettings: PdfPageSettings;
     _isNew: boolean = false;
     _isDuplicate: boolean = false;
-    _isLineAnnotation: boolean = false;
+    _isLineAnnotation: boolean  = false;
     /**
      * Represents a loaded page of the PDF document.
      *

@@ -269,7 +269,9 @@ export class SfRichTextEditor {
         this.viewSourceModule = new ViewSource(this);
         this.fullScreenModule = new FullScreen(this);
         this.enterKeyModule = new EnterKeyAction(this);
-        this.codeBlockModule = new CodeBlock(this);
+        if (this.editorMode === 'HTML') {
+            this.codeBlockModule = new CodeBlock(this);
+        }
     }
     public initialize(): void {
         this.value = this.replaceEntities(this.value);
@@ -309,7 +311,9 @@ export class SfRichTextEditor {
         if (item.length > 0) {
             for (let i: number = 0; i < item.length; i++) {
                 if (item[i as number].hasAttribute('target') && item[i as number].getAttribute('target') === '_blank') {
-                    item[i as number].setAttribute('aria-label', this.localeData.linkAriaLabel);
+                    if (!item[i as number].hasAttribute('aria-label') || item[i as number].getAttribute('aria-label') === '') {
+                        item[i as number].setAttribute('aria-label', this.localeData.linkAriaLabel);
+                    }
                 }
             }
         }
@@ -542,8 +546,8 @@ export class SfRichTextEditor {
     }
     public refreshUI(): void {
         this.refresh();
-        // when the editor mode is markdown, need to set the height manually
-        if (this.editorMode === 'Markdown') {
+        // when the editor mode is markdown or iframe, need to set the height manually
+        if (this.editorMode === 'Markdown' || this.iframeSettings.enable) {
             this.autoResize();
         }
     }
@@ -561,8 +565,9 @@ export class SfRichTextEditor {
                 value = value.replace(/&(amp;)*(times|divide|ne)/g, '&amp;amp;$2');
             }
             if (!isNOU(getTextArea) && this.rootContainer.classList.contains('e-source-code-enabled')) {
-                value = /&(amp;)*((times)|(divide)|(ne))/.test(getTextArea.value) ?
-                    getTextArea.value.replace(/&(amp;)*(times|divide|ne)/g, '&amp;amp;$2') : getTextArea.value;
+                const textAreaValue: string = this.enableHtmlSanitizer ? this.htmlEditorModule.sanitizeHelper(
+                    getTextArea.value) : getTextArea.value;
+                value = /&(amp;)*((times)|(divide)|(ne))/.test(textAreaValue) ? textAreaValue.replace(/&(amp;)*(times|divide|ne)/g, '&amp;amp;$2') : textAreaValue;
             }
             value = cleanupInternalElements(value, this.editorMode);
         } else {
@@ -1619,7 +1624,8 @@ export class SfRichTextEditor {
                 (closest(range.startContainer.parentNode, 'td,th')) || (this.iframeSettings.enable &&
                     !hasClass(parentNode.ownerDocument.querySelector('body'), 'e-lib'))) && range.collapsed &&
                 args.subCommand === 'BackgroundColor' && container === 'quick') {
-                this.observer.notify(events.tableColorPickerChanged, { item: args, name: 'colorPickerChanged' });
+                args.command = 'Table';
+                this.formatter.process(this, { item: args, name: 'colorPickerChanged' }, undefined, args.value);
             } else {
                 this.observer.notify(events.selectionRestore, {});
                 this.formatter.process(this, { item: args, name: 'colorPickerChanged' }, undefined, null);
@@ -2187,9 +2193,7 @@ export class SfRichTextEditor {
     private onIframeMouseDown(e: MouseEvent): void {
         this.isBlur = false;
         this.observer.notify(events.iframeMouseDown, e);
-        if (!isNOU(this.getToolbarElement()) && (this.getToolbarElement().querySelectorAll('.e-rte-dropdown-btn.e-active').length > 0 || this.getToolbarElement().querySelectorAll('.e-dropdown-btn.e-rte-inline-dropdown.e-active').length > 0 || this.getToolbarElement().querySelectorAll('.e-rte-dropdown.e-active').length > 0)) {
-            dispatchEvent(document.body, 'mousedown');
-        }
+        dispatchEvent(document.body, 'mousedown');
         this.removeHrFocus(e);
     }
     public cleanList(e: KeyboardEvent): void {
@@ -2575,13 +2579,13 @@ export class SfRichTextEditor {
         if (this.editorMode === 'Markdown') {
             const args: object = { requestType: 'Paste', editorMode: this.editorMode, event: e };
             this.formatter.onSuccess(this, args);
-            if (!(this.maxLength === -1 || totalLength < this.maxLength)) {
+            if (!(this.maxLength === -1 || totalLength <= this.maxLength)) {
                 e.preventDefault();
             }
             return;
         }
         if (this.inputElement.contentEditable === 'true' &&
-            (this.maxLength === -1 || totalLength < this.maxLength)) {
+            (this.maxLength === -1 || totalLength <= this.maxLength)) {
             const currentRange: Range = this.getRange();
             const codeBlockPasteAction: Element = (this.formatter.editorManager.codeBlockObj.
                 isValidCodeBlockStructure(currentRange.startContainer)
@@ -2606,6 +2610,11 @@ export class SfRichTextEditor {
             if (!closest(target, '.' + classes.CLS_RTE_ELEMENTS)) {
                 dispatchEvent(this.valueContainer, 'focusout');
             }
+        }
+        const hideQuickToolbarChecker: boolean = this.quickToolbarModule && !this.inlineMode.enable &&
+            isNOU(this.quickToolbarModule.inlineQTBar);
+        if ((hideQuickToolbarChecker && !isNOU(closest(target, '.' + 'e-toolbar-container'))) || (hideQuickToolbarChecker && (!isNOU(closest(target, '.e-rte-table-resize')) || !isNOU(closest(target, '.e-table-box'))))) {
+            this.quickToolbarModule.hideQuickToolbars();
         }
         this.observer.notify(events.docClick, { args: e });
         this.removeHrFocus(e);

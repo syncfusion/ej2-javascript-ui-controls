@@ -4313,13 +4313,13 @@ export class Grid extends Component<HTMLElement> implements INotifyPropertyChang
         const cols: Column[] = this.getColumns();
         for (let i: number = 0; i < headerCells.length; i++) {
             const cell: Element = headerCells[parseInt(i.toString(), 10)];
-            if (this.allowGrouping || this.allowReordering || this.allowSorting) {
-                if (!cols[parseInt(i.toString(), 10)].allowReordering || !cols[parseInt(i.toString(), 10)].allowSorting
-                    || !cols[parseInt(i.toString(), 10)].allowGrouping) {
-                    cell.classList.add('e-defaultcursor');
-                } else {
-                    cell.classList.add('e-mousepointer');
-                }
+            const column: ColumnModel = cols[parseInt(i.toString(), 10)];
+            if ((this.allowGrouping && column.allowGrouping) || (this.allowReordering && column.allowReordering)
+                || (this.allowSorting && column.allowSorting)) {
+                cell.classList.add('e-mousepointer');
+            }
+            else {
+                cell.classList.add('e-defaultcursor');
             }
         }
         for (let count: number = 0; count < stdHdrCell.length; count++) {

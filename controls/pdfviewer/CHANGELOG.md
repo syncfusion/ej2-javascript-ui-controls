@@ -2,6 +2,17 @@
 
 ## [Unreleased]
 
+## 30.1.38 (2025-07-02)
+
+### PDF Viewer
+
+#### Bug Fixes
+
+- `#I731877` - Fixed an issue where Annotations are not rendered on non-rendered pages due to same name with imported annotation.
+- `#I729510` - Fixed an issue where the Viewer container does not adjust properly when the display is not set to block.
+- `#I729539` - Resolved an issue where the annotation selector settings are not applied properly without the `resizerSize` property.
+- `#I723498` - The comment panel input field now opens correctly on `SharePoint` wiki and web part pages.
+
 ## 30.1.37 (2025-06-25)
 
 ### PDF Viewer

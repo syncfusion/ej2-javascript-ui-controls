@@ -3462,7 +3462,7 @@ export class TreeGrid extends Component<HTMLElement> implements INotifyPropertyC
                 const checkedTarget: HTMLInputElement = this.grid.getHeaderContent().querySelector('.e-checkselectall');
                 const checkedLen: number = this.grid.getSelectedRowIndexes().length;
                 const totalRecords: number = this.getCurrentViewRecords().length;
-                if (checkedLen === totalRecords){
+                if (totalRecords > 0 && checkedLen === totalRecords){
                     const spanEle: HTMLElement = checkedTarget.nextElementSibling as HTMLElement;
                     removeClass([spanEle], ['e-stop', 'e-uncheck']);
                     addClass([spanEle], ['e-check']);

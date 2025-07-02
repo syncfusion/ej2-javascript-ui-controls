@@ -2,6 +2,12 @@
 
 ## [Unreleased]
 
+## 30.1.38 (2025-07-02)
+
+### Schedule
+
+- `#I693587` - The issue with resources not rendering correctly in the Scheduler when virtual scrolling was enabled has been fixed.
+
 ## 29.2.10 (2025-06-10)
 
 ### Schedule

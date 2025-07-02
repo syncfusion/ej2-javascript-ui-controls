@@ -82,6 +82,18 @@ export class ViewSource {
                 (firstActiveItem.firstElementChild as HTMLElement).focus();
             }
             break;
+        case 'escape':
+            if (this.parent.element.classList.contains('e-rte-full-screen')) {
+                this.parent.dotNetRef.invokeMethodAsync('HideFullScreenClient');
+                this.parent.fullScreenModule.hideFullScreen(event);
+                event.preventDefault();
+            }
+            break;
+        case 'full-screen':
+            this.parent.dotNetRef.invokeMethodAsync('ShowFullScreenClient');
+            this.parent.fullScreenModule.showFullScreen(event);
+            event.preventDefault();
+            break;
         }
     }
     private onKeyDown(e: IHtmlKeyboardEvent): void {
@@ -167,7 +179,8 @@ export class ViewSource {
                 if (!previewArgs.cancel) {
                     const editHTML: HTMLTextAreaElement = this.getPanel() as HTMLTextAreaElement;
                     if (!isNullOrUndefined(editHTML)) {
-                        editHTML.value = cleanHTMLString(editHTML.value, this.parent.element);
+                        editHTML.value = this.parent.enableHtmlSanitizer ? cleanHTMLString(this.parent.htmlEditorModule.sanitizeHelper(
+                            editHTML.value), this.parent.element) : cleanHTMLString(editHTML.value, this.parent.element);
                         editHTML.value = this.replaceAmpersand(editHTML.value);
                     }
                     const serializeValue: string = this.parent.serializeValue(editHTML.value);

@@ -240,6 +240,48 @@ describe('EJ2-6660-Header template', () => {
         });
     });
 
+    describe('EJ2-962883-The cursor does not turns into hand cursor when grouping is disabled for a column', () => {
+        let gridObj: Grid;
+        beforeAll((done: Function) => {
+            gridObj = createGrid({
+                dataSource: data,
+                allowSorting: true,
+                allowGrouping: true,
+                allowPaging: true,
+                columns: [
+                    { field: 'OrderID', headerText: 'Order ID', isPrimaryKey: true, allowGrouping: false, width: 120 },
+                    { field: 'CustomerID', headerText: 'Customer ID', width: 120 },
+                    { field: 'ShipCountry', headerText: 'Ship Country', allowGrouping: false, allowSorting: false, width: 150, minWidth: 10, },
+                    { field: 'ShipAddress', width: 150 },
+                ],
+            }, done);
+        });
+
+        it('Header should show pointer cursor when sorting enabled but grouping disabled', () => {
+            const headerCell = gridObj.getHeaderContent().querySelectorAll('.e-headercell:not(.e-stackedheadercell)');
+            expect(headerCell[0].classList.contains('e-mousepointer')).toBe(true); //second column to have hand cursor
+            expect(headerCell[0].classList.contains('e-defaultcursor')).toBe(false);
+        });
+
+        it('Header should show pointer cursor when both sorting and grouping enabled', () => {
+            const headerCell = gridObj.getHeaderContent().querySelectorAll('.e-headercell:not(.e-stackedheadercell)');
+            expect(headerCell[1].classList.contains('e-mousepointer')).toBe(true); //third column to have hand cursor
+            expect(headerCell[1].classList.contains('e-defaultcursor')).toBe(false);
+        });
+
+        it('Header should show default cursor when both sorting and grouping disabled', () => {
+            const headerCell = gridObj.getHeaderContent().querySelectorAll('.e-headercell:not(.e-stackedheadercell)');
+            expect(headerCell[2].classList.contains('e-mousepointer')).toBe(false); //fourth column to have default cursor
+            expect(headerCell[2].classList.contains('e-defaultcursor')).toBe(true);
+        });
+
+        afterAll(() => {
+            destroy(gridObj);
+            gridObj = null;
+        });
+
+    });
+
     // coverage code
     describe('Code Coverage feature - 1', () => {
         let gridObj: Grid;

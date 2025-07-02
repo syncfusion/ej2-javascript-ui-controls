@@ -2,6 +2,14 @@
 
 ## [Unreleased]
 
+## 30.1.38 (2025-07-02)
+
+### Tree Grid
+
+#### Bug Fixes
+
+- `#F68080` - Fixed an issue where the header checkbox remained checked when the data source was empty and aggregate columns were included.
+
 ## 30.1.37 (2025-06-25)
 
 ### Tree Grid

@@ -53,6 +53,46 @@ export class UndoRedo {
             return false;
         }.bind(this));
     }
+    private preparePreviousUndoActions(updateAction: Object, previousActions: Object): void {
+        if (!updateAction['modifiedRecords']) {
+            return;
+        }
+        previousActions['action'] = updateAction['action'];
+        previousActions['modifiedRecords'] = [];
+        for (let i: number = 0; i < updateAction['modifiedRecords'].length; i++) {
+            let index: number;
+            if (this.parent.viewType === 'ProjectView') {
+                index = this.findTaskRowIndex(updateAction['modifiedRecords'][i as number].ganttProperties.taskId.toString());
+            }
+            else {
+                index = this.parent.undoRedoModule['getResourceViewRowIndex'](updateAction['modifiedRecords'][i as number]);
+            }
+            previousActions['modifiedRecords'].push(extend([], [this.parent.flatData[index as number]], [], true)[0]);
+        }
+    }
+    private preparePreviousRedoActions(updateAction: Object, previousActions: Object): void {
+        if (!updateAction['modifiedRecords']) {
+            return;
+        }
+        previousActions['action'] = updateAction['action'];
+        previousActions['modifiedRecords'] = [];
+        for (let i: number = 0; i < updateAction['modifiedRecords'].length; i++) {
+            const index: number = this.findTaskRowIndex(updateAction['modifiedRecords'][i as number].ganttProperties.taskId.toString());
+            previousActions['modifiedRecords'].push(extend([], [this.parent.flatData[index as number]], [], true)[0]);
+        }
+    }
+
+    private updateModifiedAndConnectedRecords(updateAction: Object): void {
+        if (!updateAction['modifiedRecords']) {
+            return;
+        }
+        this.parent.updateRecordByID(this.getUndoCollection[this.getUndoCollection.length - 1]['modifiedRecords'][0]);
+        if (updateAction['connectedRecords'] && this.parent.viewType === 'ProjectView') {
+            for (let i: number = 0; i < updateAction['connectedRecords'].length; i++) {
+                this.parent.updateRecordByID(updateAction['connectedRecords'][i as number]);
+            }
+        }
+    }
 
     /**
      *Initiates an undo action to revert the most recent change performed.
@@ -127,6 +167,7 @@ export class UndoRedo {
                 previousDetails['dropPosition'] = updateAction['afterDrop'].dropPosition;
                 previousActions['afterDrop'] = previousDetails;
                 this['findPosition'](rowItems, previousActions, 'beforeDrop');
+                this.preparePreviousUndoActions(updateAction, previousActions);
             }
             else if (updateAction['action'] === 'Indent' || updateAction['action'] === 'Outdent') {
                 previousActions['selectedRowIndexes'] = updateAction['selectedRowIndexes'];
@@ -161,18 +202,7 @@ export class UndoRedo {
                 this.findPosition(rowItems, previousActions, 'deletedRecordsDetails');
             }
             else {
-                previousActions['action'] = updateAction['action'];
-                previousActions['modifiedRecords'] = [];
-                for (let i: number = 0; i < updateAction['modifiedRecords'].length; i++) {
-                    let index: number;
-                    if (this.parent.viewType === 'ProjectView') {
-                        index = this.findTaskRowIndex(updateAction['modifiedRecords'][i as number].ganttProperties.taskId.toString());
-                    }
-                    else {
-                        index = this.parent.undoRedoModule['getResourceViewRowIndex'](updateAction['modifiedRecords'][i as number]);
-                    }
-                    previousActions['modifiedRecords'].push(extend([], [this.parent.flatData[index as number]], [], true)[0]);
-                }
+                this.preparePreviousUndoActions(updateAction, previousActions);
             }
             this.getRedoCollection.push(previousActions);
             this.isUndoRedoPerformed = true;
@@ -253,6 +283,7 @@ export class UndoRedo {
                     const toIndex: number = this.findTaskRowIndex(updateAction['beforeDrop'][i as number]['id'].toString());
                     this.parent.reorderRows([fromIndex], toIndex, updateAction['beforeDrop'][i as number].position);
                 }
+                this.updateModifiedAndConnectedRecords(updateAction);
             }
             else if (updateAction['action'] === 'Indent' || updateAction['action'] === 'Outdent') {
                 this.parent.selectRow(this.findTaskRowIndex(updateAction['modifiedRecord'][0].data.ganttProperties.taskId.toString()));
@@ -313,12 +344,7 @@ export class UndoRedo {
                 this.parent.editSettings.showDeleteConfirmDialog = isShowDeleteConfirmDialog;
             }
             else {
-                this.parent.updateRecordByID(this.getUndoCollection[this.getUndoCollection.length - 1]['modifiedRecords'][0]);
-                if (updateAction['connectedRecords'] && this.parent.viewType === 'ProjectView') {
-                    for (let i: number = 0; i < updateAction['connectedRecords'].length; i++) {
-                        this.parent.updateRecordByID(updateAction['connectedRecords'][i as number]);
-                    }
-                }
+                this.updateModifiedAndConnectedRecords(updateAction);
             }
             let args: Object = {};
             args = extend([], [], [this.getUndoCollection[this.getUndoCollection.length - 1]], true)[0];
@@ -428,6 +454,7 @@ export class UndoRedo {
                 previousDetails['dropPosition'] = updateAction['afterDrop'].dropPosition;
                 previousActions['afterDrop'] = previousDetails;
                 this['findPosition'](rowItems, previousActions, 'beforeDrop');
+                this.preparePreviousRedoActions(updateAction, previousActions);
             }
             else if (updateAction['action'] === 'Indent' || updateAction['action'] === 'Outdent') {
                 previousActions['selectedRowIndexes'] = updateAction['selectedRowIndexes'];
@@ -446,12 +473,7 @@ export class UndoRedo {
                 previousActions['addedRecords'] = [updateAction['deletedRecordsDetails'][0].data];
             }
             else {
-                previousActions['action'] = updateAction['action'];
-                previousActions['modifiedRecords'] = [];
-                for (let i: number = 0; i < updateAction['modifiedRecords'].length; i++) {
-                    const index: number = this.findTaskRowIndex(updateAction['modifiedRecords'][i as number].ganttProperties.taskId.toString());
-                    previousActions['modifiedRecords'].push(extend([], [this.parent.flatData[index as number]], [], true)[0]);
-                }
+                this.preparePreviousRedoActions(updateAction, previousActions);
             }
             this.getUndoCollection.push(previousActions);
             this.isUndoRedoPerformed = true;
@@ -526,6 +548,9 @@ export class UndoRedo {
                     const fromIndex: number = this.findTaskRowIndex(updateAction['beforeDrop'][i as number].data.ganttProperties.taskId.toString());
                     const toIndex: number = this.findTaskRowIndex(updateAction['beforeDrop'][i as number]['id'].toString());
                     this.parent.reorderRows([fromIndex], toIndex, updateAction['beforeDrop'][i as number].position);
+                }
+                if (updateAction['modifiedRecords']) {
+                    this.parent.updateRecordByID(updateAction['modifiedRecords'][0]);
                 }
             }
             else if (updateAction['action'] === 'Indent' || updateAction['action'] === 'Outdent') {

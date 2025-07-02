@@ -300,6 +300,30 @@
     }
   }
 
+  .e-richtexteditor.e-disabled .e-rte-toolbar .e-toolbar-item {
+    .e-tbar-btn,
+    .e-rte-dropdown-menu,
+    .e-rte-dropdown {
+      pointer-events: none;
+      cursor: default;
+      background: transparent;
+      border: none;
+
+      &:hover {
+        background: transparent;
+        border: none;
+
+        .e-icons,
+        .e-rte-dropdown-btn-text,
+        .e-rte-font-color::before,
+        .e-background-color::before {
+          color: inherit;
+          background: transparent;
+        }
+      }
+    }
+  }
+
   .e-richtexteditor .e-rte-toolbar .e-toolbar-item,
   .e-rte-quick-popup .e-rte-quick-toolbar .e-toolbar-item {
     .e-rte-dropdown {

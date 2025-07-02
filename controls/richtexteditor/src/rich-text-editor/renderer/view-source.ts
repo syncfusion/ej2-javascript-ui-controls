@@ -103,6 +103,16 @@ export class ViewSource {
                 (firstActiveItem.firstElementChild as HTMLElement).focus();
             }
             break;
+        case 'escape':
+            if (this.parent.element.classList.contains('e-rte-full-screen')) {
+                this.parent.fullScreenModule.hideFullScreen(event);
+                event.preventDefault();
+            }
+            break;
+        case 'full-screen':
+            this.parent.fullScreenModule.showFullScreen(event);
+            event.preventDefault();
+            break;
         }
     }
 
@@ -202,7 +212,8 @@ export class ViewSource {
                     baseToolbar: this.parent.getBaseToolbarObject()
                 });
                 if (!isNOU(editHTML)) {
-                    editHTML.value = cleanHTMLString(editHTML.value, this.parent.element);
+                    editHTML.value = this.parent.enableHtmlSanitizer ? cleanHTMLString(this.parent.htmlEditorModule.sanitizeHelper(
+                        editHTML.value), this.parent.element) : cleanHTMLString(editHTML.value, this.parent.element);
                     editHTML.value = resetContentEditableElements(this.replaceAmpersand(editHTML.value), this.parent.editorMode);
                 }
                 const serializeValue: string = this.parent.serializeValue(editHTML.value);

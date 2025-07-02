@@ -76,7 +76,6 @@ export function getPath(element: Element | Node, text: string, hasId: boolean): 
     }
     return path;
 }
-
 /**
  * Functions for get path id in FileManager
  *
@@ -515,18 +514,19 @@ export function fileType(file: Object): string {
  *
  * @param {IFileManager} parent - specifies the parent element.
  * @param {Object} item - specifies the item.
- * @returns {string} - returns the image url.
+ * @returns {BeforeImageLoadEventArgs} - returns the eventargs.
  * @private
  */
-export function getImageUrl(parent: IFileManager, item: Object): string {
+export function getImageUrl(parent: IFileManager, item: Object): BeforeImageLoadEventArgs {
     let imgUrl: string = isFileSystemData(parent) ? getValue('imageUrl', item) : '';
     if (isFileSystemData(parent)) {
         const eventArgs: BeforeImageLoadEventArgs = {
             fileDetails: [item],
-            imageUrl: imgUrl
+            imageUrl: imgUrl,
+            useImageAsUrl: true
         };
         parent.trigger('beforeImageLoad', eventArgs);
-        return eventArgs.imageUrl;
+        return eventArgs;
     }
     const baseUrl: string = parent.ajaxSettings.getImageUrl ? parent.ajaxSettings.getImageUrl : parent.ajaxSettings.url;
     const pathUrl: string = (baseUrl.indexOf('?') !== -1) ? '&path=' : '?path=';
@@ -541,12 +541,25 @@ export function getImageUrl(parent: IFileManager, item: Object): string {
         imgUrl = baseUrl + pathUrl + parent.path + fileName;
     }
     imgUrl = imgUrl + '&time=' + (new Date().getTime()).toString();
+    const data: Object = { 'action': 'getImage', 'path': parent.path + fileName, 'id': getValue('id', item) };
+    const ajaxSettings: Object = {
+        url: baseUrl,
+        type: 'POST',
+        contentType: 'application/json',
+        responseType: 'blob',
+        data: JSON.stringify(data),
+        onSuccess: null,
+        onFailure: null,
+        beforeSend: null
+    };
     const eventArgs: BeforeImageLoadEventArgs = {
         fileDetails: [item],
-        imageUrl: imgUrl
+        imageUrl: imgUrl,
+        useImageAsUrl: true,
+        ajaxSettings: ajaxSettings
     };
     parent.trigger('beforeImageLoad', eventArgs);
-    return eventArgs.imageUrl;
+    return eventArgs;
 }
 /* istanbul ignore next */
 /**
@@ -662,7 +675,7 @@ export function createEmptyElement(parent: IFileManager, element: HTMLElement, a
             element.querySelector('.' + CLS.EMPTY_INNER_CONTENT).innerHTML = getLocaleText(parent, 'Search-Key');
         } else {
             element.querySelector('.' + CLS.EMPTY_CONTENT).innerHTML = getLocaleText(parent, 'Folder-Empty');
-            element.querySelector('.' + CLS.EMPTY_INNER_CONTENT).innerHTML = getLocaleText(parent, 'File-Upload');
+            element.querySelector('.' + CLS.EMPTY_INNER_CONTENT).innerHTML = parent.uploadObj.dropArea == null ? getLocaleText(parent, '') : getLocaleText(parent, 'File-Upload');
         }
     }
     const eDiv: HTMLElement = <HTMLElement>select('.' + CLS.EMPTY, element);
@@ -1026,7 +1039,10 @@ export function getParentPath(oldPath: string): string {
  */
 export function getDirectoryPath(parent: IFileManager, args: ReadArgs): string {
     const filePath: string = getValue(parent.hasId ? 'id' : 'name', args.cwd) + '/';
-    const fPath: string = getValue(parent.hasId && !isNullOrUndefined(parent.ajaxSettings.url) ? 'filterId' : 'filterPath', args.cwd);
+    let fPath: string = getValue(parent.hasId && !isNullOrUndefined(parent.ajaxSettings.url) ? 'filterId' : 'filterPath', args.cwd);
+    if (!isNOU(fPath) && isFileSystemData(parent) && fPath !== '' && fPath !== '\\') {
+        fPath = '\\' + args.cwd.parentId + '\\';
+    }
     if (!isNOU(fPath)) {
         if (fPath === '') {
             return '/';
@@ -1663,7 +1679,6 @@ export function getTargetPath(parent: IFileManager, itemData: Object): string {
         return getValue('filterPath', itemData).replace(/\\/g, '/');
     }
 }
-
 /**
  * Access control handler
  *

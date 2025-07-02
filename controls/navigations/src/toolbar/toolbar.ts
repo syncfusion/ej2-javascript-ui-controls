@@ -131,6 +131,19 @@ export interface BeforeCreateArgs extends BaseEventArgs {
     /** Specifies the scrolling distance in scroller. */
     scrollStep: number
 }
+
+/** An interface that holds options to control keyDown event in the toolbar. */
+export interface KeyDownEventArgs extends BaseEventArgs {
+    /** Defines the keyboard event arguments. */
+    originalEvent: KeyboardEventArgs;
+    /** Defines the prevent action. */
+    cancel?: boolean;
+    /** Defines the current Toolbar item. */
+    currentItem?: HTMLElement;
+    /** Defines the next Toolbar item. */
+    nextItem?: HTMLElement;
+}
+
 /** @hidden */
 interface EJ2Instance extends HTMLElement {
     // eslint-disable-next-line camelcase
@@ -462,6 +475,13 @@ export class Toolbar extends Component<HTMLElement> implements INotifyPropertyCh
     @Event()
     public beforeCreate: EmitType<BeforeCreateArgs>;
     /**
+     * The event will be fired when the keyboard interaction occurs on the Toolbar.
+     *
+     * @event keyDown
+     */
+    @Event()
+    public keyDown: EmitType<KeyDownEventArgs>;
+    /**
      * Removes the control from the DOM and also removes all its related events.
      *
      * @returns {void}.
@@ -672,6 +692,42 @@ export class Toolbar extends Component<HTMLElement> implements INotifyPropertyCh
         }
         return clst;
     }
+
+    private getNextFocusableItem(currentItem: HTEle, action: string): HTMLElement {
+        const selector: string = `.${CLS_ITEM}:not(.${CLS_DISABLE}):not(.${CLS_SEPARATOR}):not(.${CLS_HIDDEN})`;
+        const items: HTMLElement[] = Array.from(this.element.querySelectorAll(selector));
+        const currentIndex: number = items.indexOf(currentItem);
+        if (currentIndex < 0) {
+            return null;
+        }
+        let nextIndex: number;
+        switch (action) {
+        case 'moveRight':
+        case 'moveDown':
+        case 'tab':
+            nextIndex = (currentIndex + 1) % items.length;
+            break;
+        case 'moveLeft':
+        case 'moveUp':
+            nextIndex = (currentIndex - 1 + items.length) % items.length;
+            break;
+        case 'home':
+            nextIndex = 0;
+            break;
+        case 'end':
+            nextIndex = items.length - 1;
+            break;
+        default:
+            nextIndex = currentIndex;
+        }
+
+        if (nextIndex >= 0 && nextIndex < items.length) {
+            return items[parseInt(nextIndex.toString(), 10)];
+        }
+
+        return null;
+    }
+
     private keyHandling(clst: HTEle, e: KeyboardEventArgs, trgt: HTEle, navChk: boolean, scrollChk: boolean): void {
         const popObj: Popup = this.popObj;
         const rootEle: HTEle = this.element;
@@ -733,16 +789,26 @@ export class Toolbar extends Component<HTMLElement> implements INotifyPropertyCh
             if (!this.isVertical) {
                 if (popObj && closest(trgt, '.e-popup')) {
                     const popEle: HTEle = popObj.element;
-                    const popFrstEle: HTEle = popEle.firstElementChild as HTEle;
-                    if ((value === 'previous' && popFrstEle === clst)) {
-                        (<HTEle>popEle.lastElementChild.firstChild).focus();
+                    if ((value === 'previous' && popEle.firstElementChild === clst)) {
+                        const lastVisibleEle: HTMLElement = this.focusLastVisibleEle([].slice.call(popEle.children));
+                        if (lastVisibleEle) {
+                            this.elementFocus(lastVisibleEle);
+                        }
                     } else if (value === 'next' && popEle.lastElementChild === clst) {
-                        (<HTEle>popFrstEle.firstChild).focus();
+                        const firstVisibleEle: HTMLElement = this.focusFirstVisibleEle([].slice.call(popEle.children));
+                        if (firstVisibleEle) {
+                            this.elementFocus(firstVisibleEle);
+                        }
                     } else {
                         this.eleFocus(clst, value);
                     }
                 } else if (e.action === 'moveDown' && popObj && isVisible(popObj.element)) {
-                    this.elementFocus(clst);
+                    const skipEle: string | boolean = this.eleContains(clst);
+                    if (skipEle) {
+                        this.eleFocus(clst, value);
+                    } else {
+                        this.elementFocus(clst);
+                    }
                 }
             } else {
                 if (e.action === 'moveUp') {
@@ -785,7 +851,8 @@ export class Toolbar extends Component<HTMLElement> implements INotifyPropertyCh
     }
     private keyActionHandler(e: KeyboardEventArgs): void {
         const trgt: HTEle = <HTEle>e.target;
-        if (trgt.tagName === 'INPUT' || trgt.tagName === 'TEXTAREA' || this.element.classList.contains(CLS_DISABLE)) {
+        if ((e.action === 'home' || e.action === 'end' || e.action === 'moveRight' || e.action === 'moveLeft' || e.action === 'moveUp' || e.action === 'moveDown')
+            && (trgt.tagName === 'INPUT' || trgt.tagName === 'TEXTAREA' || this.element.classList.contains(CLS_DISABLE))) {
             return;
         }
         e.preventDefault();
@@ -793,7 +860,19 @@ export class Toolbar extends Component<HTMLElement> implements INotifyPropertyCh
         const tbarScrollChk: boolean = trgt.classList.contains(CLS_TBARSCRLNAV);
         const clst: HTEle = this.clstElement(tbrNavChk, trgt);
         if (clst || tbarScrollChk) {
-            this.keyHandling(clst, e, trgt, tbrNavChk, tbarScrollChk);
+            const currentItem: HTMLElement = clst;
+            const nextItem: HTMLElement = this.getNextFocusableItem(currentItem, e.action);
+            const keyDownEventArgs: KeyDownEventArgs = {
+                originalEvent: e,
+                currentItem: currentItem,
+                nextItem: nextItem,
+                cancel: false
+            };
+            this.trigger('keyDown', keyDownEventArgs, (keyDownArgs: KeyDownEventArgs) => {
+                if (!keyDownArgs.cancel) {
+                    this.keyHandling(clst, e, trgt, tbrNavChk, tbarScrollChk);
+                }
+            });
         }
     }
     /**
@@ -831,7 +910,7 @@ export class Toolbar extends Component<HTMLElement> implements INotifyPropertyCh
         let index: number = 0;
         while (index < nodes.length) {
             const ele: HTMLElement = nodes[parseInt(index.toString(), 10)] as HTMLElement;
-            if (!ele.classList.contains(CLS_HIDDEN) && !ele.classList.contains(CLS_DISABLE)) {
+            if (!ele.classList.contains(CLS_SEPARATOR) && !ele.classList.contains(CLS_HIDDEN) && !ele.classList.contains(CLS_DISABLE)) {
                 return ele;
             }
             index++;
@@ -843,7 +922,7 @@ export class Toolbar extends Component<HTMLElement> implements INotifyPropertyCh
         let index: number = nodes.length - 1;
         while (index >= 0) {
             const ele: HTMLElement = nodes[parseInt(index.toString(), 10)] as HTMLElement;
-            if (!ele.classList.contains(CLS_HIDDEN) && !ele.classList.contains(CLS_DISABLE)) {
+            if (!ele.classList.contains(CLS_SEPARATOR) && !ele.classList.contains(CLS_HIDDEN) && !ele.classList.contains(CLS_DISABLE)) {
                 return ele;
             }
             index--;
@@ -2243,10 +2322,6 @@ export class Toolbar extends Component<HTMLElement> implements INotifyPropertyCh
         return isNOU(ele.getAttribute('data-tabindex')) ? '-1' : ele.getAttribute('data-tabindex');
     }
     private itemClick(e: Event): void {
-        const itemClosest: boolean = !isNOU(closest(e.currentTarget as Element, '.' + CLS_TEMPLATE));
-        if (itemClosest) {
-            return;
-        }
         this.activeEleSwitch(<HTEle>e.currentTarget);
     }
     private activeEleSwitch(ele: HTEle): void {

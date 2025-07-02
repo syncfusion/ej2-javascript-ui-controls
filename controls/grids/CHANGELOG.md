@@ -2,6 +2,17 @@
 
 ## [Unreleased]
 
+## 30.1.38 (2025-07-02)
+
+### Grid
+
+#### Bug Fixes
+
+- `#I731295` - A script error encountered during the editing process, specifically when the multiline attribute is set to true within `editParams`, has been successfully resolved.
+- `#I734380` - The issue where the cursor does not change to a hand icon when grouping was disabled for a column has been resolved.
+- `#I731049` - The issue where column resizing did not work properly when the resize mode was set to `auto` and a column had a `minWidth` has been resolved.
+- `#FB68201` - Fixed an issue where middleware was not triggered during CRUD operations.
+
 ## 30.1.37 (2025-06-25)
 
 ### Grid

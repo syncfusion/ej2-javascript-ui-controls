@@ -304,6 +304,7 @@ $range-bigger-small-icon-container-min-width: 34px !default;
 $range-bigger-small-icon-container-min-height: 34px !default;
 $range-bigger-small-icon-border-radius: 20px !default;
 
-.e-bigger.e-daterangepicker .e-calendar.e-week-number {
+.e-bigger.e-daterangepicker .e-calendar.e-week-number,
+.e-bigger .e-daterangepicker .e-calendar.e-week-number {
   max-width: 350px;
 }

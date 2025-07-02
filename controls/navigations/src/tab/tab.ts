@@ -1798,7 +1798,9 @@ export class Tab extends Component<HTMLElement> implements INotifyPropertyChange
                 }
                 break;
             case 'openPopup':
-                e.preventDefault();
+                 if (!isNOU(e.target) && ((e.target as HTMLElement).classList.contains(CLS_WRAP))) {
+                    e.preventDefault();
+                }
                 if (!isNOU(this.popEle) && this.popEle.classList.contains(CLS_POPUP_CLOSE)) {
                     this.popObj.show(this.show);
                 }

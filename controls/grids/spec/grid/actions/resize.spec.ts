@@ -1943,4 +1943,37 @@ describe('Resize module', () => {
             destroy(gridObj);
         });
     });
+
+    describe('EJ2-960441 - Column resizing not working properly when the resize mode as auto and the column has minwidth', () => {
+        let gridObj: any;
+        beforeAll((done: Function) => {
+            gridObj = createGrid(
+                {
+                    allowResizing: true,
+                    resizeSettings: { mode: 'Auto'},
+                    dataSource: data,
+                    columns: [
+                        { field: 'OrderID', headerText: 'OrderID', width: 200, minWidth: 150 },
+                        { field: 'CustomerID', headerText: 'CustomerID', width: 150 },
+                        { field: 'EmployeeID', headerText: 'EmployeeID', width: 150 },
+                        { field: 'Freight', headerText: 'Freight', width: 150 },
+                        { field: 'ShipCity', headerText: 'ShipCity', width: 150 }
+                    ],
+                }, done);
+        });
+
+        it('Column width after resize', (done: Function) => {
+            let width = (gridObj.getHeaderTable().querySelectorAll('th')[1]).offsetWidth;
+            let handler: HTMLElement = gridObj.getHeaderTable().querySelectorAll('.' + resizeClassList.root)[0];
+            gridObj.resizeModule.resizeStart({ target: handler, pageX: 300 });
+            gridObj.resizeModule.resizing({ target: handler, pageX: 500 });
+            expect(gridObj.getHeaderTable().querySelectorAll('th')[1].offsetWidth).toEqual(width);
+            done();
+        })
+
+        afterAll(() => {
+            destroy(gridObj);
+            gridObj = null;
+        });
+    });
 });

@@ -5979,5 +5979,32 @@ client side. Customer easy to edit the contents and get the HTML content for
         });
     });
 
+    describe('960605 - Deleting image using quick toolbar and then press enter key was not working in RichTextEditor', () => {
+        let rteObj: RichTextEditor;
+        beforeAll((done: Function) => {
+            rteObj = renderRTE({
+                value: `<p><img alt="Sky with sun" src="https://cdn.syncfusion.com/ej2/richtexteditor-resources/RTE-Overview.png" style="width: 50%" class="e-rte-image e-imginline"></p>`
+            });
+            done();
+        });
+        afterAll((done: Function) => {
+            destroy(rteObj);
+            done();
+        });
+        it("The deleting image using the quick toolbar and then pressing the enter key was not working in RichTextEditor.", (done) => {
+            rteObj.focusIn();
+            rteObj.inputElement.dispatchEvent(INIT_MOUSEDOWN_EVENT);
+            const target: HTMLElement = rteObj.inputElement.querySelector('img');
+            setCursorPoint(target, 0);
+            target.dispatchEvent(MOUSEUP_EVENT);
+             setTimeout(function () {
+                const quickPopup: HTMLElement = document.querySelector('.e-rte-quick-popup');
+                const deleteButton: HTMLElement = quickPopup.querySelectorAll('.e-toolbar-item')[13] as HTMLElement;
+                deleteButton.click();
+                expect(rteObj.inputElement.innerHTML === '<p><br></p>').toBe(true);
+                done();
+            }, 100);
+        });
+    });
 
 });

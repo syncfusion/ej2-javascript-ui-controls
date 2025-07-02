@@ -1665,104 +1665,36 @@ export class Drawing {
              8 ? 8 : annotationSelector.resizerSize) * t.scale;
             options.height = (isNullOrUndefined(annotationSelector.resizerSize) || annotationSelector.resizerSize ===
              8 ? 8 : annotationSelector.resizerSize) * t.scale;
-            if (type === 'Line' && this.pdfViewer.lineSettings.annotationSelectorSettings) {
-                // eslint-disable-next-line max-len
-                options.radius = (isNullOrUndefined(this.pdfViewer.annotationSelectorSettings.resizerSize) || this.pdfViewer.annotationSelectorSettings.resizerSize !== 8 ? this.pdfViewer.annotationSelectorSettings.resizerSize : (!isNullOrUndefined(this.pdfViewer.lineSettings.annotationSelectorSettings) && !isNullOrUndefined(this.pdfViewer.lineSettings.annotationSelectorSettings.resizerSize)) ? this.pdfViewer.lineSettings.annotationSelectorSettings.resizerSize / 2 : 8);
-                // eslint-disable-next-line max-len
-                options.width = (isNullOrUndefined(this.pdfViewer.annotationSelectorSettings.resizerSize) || this.pdfViewer.annotationSelectorSettings.resizerSize !== 8 ? this.pdfViewer.annotationSelectorSettings.resizerSize : (!isNullOrUndefined(this.pdfViewer.lineSettings.annotationSelectorSettings) && !isNullOrUndefined(this.pdfViewer.lineSettings.annotationSelectorSettings.resizerSize)) ? this.pdfViewer.lineSettings.annotationSelectorSettings.resizerSize * t.scale : 8);
-                // eslint-disable-next-line max-len
-                options.height = (isNullOrUndefined(this.pdfViewer.annotationSelectorSettings.resizerSize) || this.pdfViewer.annotationSelectorSettings.resizerSize !== 8 ? this.pdfViewer.annotationSelectorSettings.resizerSize : (!isNullOrUndefined(this.pdfViewer.lineSettings.annotationSelectorSettings) && !isNullOrUndefined(this.pdfViewer.lineSettings.annotationSelectorSettings.resizerSize)) ? this.pdfViewer.lineSettings.annotationSelectorSettings.resizerSize * t.scale : 8);
-            } else if (type === 'LineWidthArrowHead' && this.pdfViewer.arrowSettings.annotationSelectorSettings) {
-                // eslint-disable-next-line max-len
-                options.radius = (isNullOrUndefined(this.pdfViewer.annotationSelectorSettings.resizerSize) || this.pdfViewer.annotationSelectorSettings.resizerSize !== 8 ? this.pdfViewer.annotationSelectorSettings.resizerSize : (!isNullOrUndefined(this.pdfViewer.arrowSettings.annotationSelectorSettings) && !isNullOrUndefined(this.pdfViewer.arrowSettings.annotationSelectorSettings.resizerSize)) ? this.pdfViewer.arrowSettings.annotationSelectorSettings.resizerSize / 2 : 8);
-                // eslint-disable-next-line max-len
-                options.width = (isNullOrUndefined(this.pdfViewer.annotationSelectorSettings.resizerSize) || this.pdfViewer.annotationSelectorSettings.resizerSize !== 8 ? this.pdfViewer.annotationSelectorSettings.resizerSize : (!isNullOrUndefined(this.pdfViewer.arrowSettings.annotationSelectorSettings) && !isNullOrUndefined(this.pdfViewer.arrowSettings.annotationSelectorSettings.resizerSize)) ? this.pdfViewer.arrowSettings.annotationSelectorSettings.resizerSize * t.scale : 8);
-                // eslint-disable-next-line max-len
-                options.height = (isNullOrUndefined(this.pdfViewer.annotationSelectorSettings.resizerSize) || this.pdfViewer.annotationSelectorSettings.resizerSize !== 8 ? this.pdfViewer.annotationSelectorSettings.resizerSize : (!isNullOrUndefined(this.pdfViewer.arrowSettings.annotationSelectorSettings) && !isNullOrUndefined(this.pdfViewer.arrowSettings.annotationSelectorSettings.resizerSize)) ? this.pdfViewer.arrowSettings.annotationSelectorSettings.resizerSize * t.scale : 8);
-            } else if (type === 'Rectangle' && this.pdfViewer.rectangleSettings.annotationSelectorSettings) {
-                // eslint-disable-next-line max-len
-                options.radius = (isNullOrUndefined(this.pdfViewer.annotationSelectorSettings.resizerSize) || this.pdfViewer.annotationSelectorSettings.resizerSize !== 8 ? this.pdfViewer.annotationSelectorSettings.resizerSize : (!isNullOrUndefined(this.pdfViewer.rectangleSettings.annotationSelectorSettings) && !isNullOrUndefined(this.pdfViewer.rectangleSettings.annotationSelectorSettings.resizerSize)) ? this.pdfViewer.rectangleSettings.annotationSelectorSettings.resizerSize / 2 : 8);
-                // eslint-disable-next-line max-len
-                options.width = (isNullOrUndefined(this.pdfViewer.annotationSelectorSettings.resizerSize) || this.pdfViewer.annotationSelectorSettings.resizerSize !== 8 ? this.pdfViewer.annotationSelectorSettings.resizerSize : (!isNullOrUndefined(this.pdfViewer.rectangleSettings.annotationSelectorSettings) && !isNullOrUndefined(this.pdfViewer.rectangleSettings.annotationSelectorSettings.resizerSize)) ? this.pdfViewer.rectangleSettings.annotationSelectorSettings.resizerSize * t.scale : 8);
-                // eslint-disable-next-line max-len
-                options.height = (isNullOrUndefined(this.pdfViewer.annotationSelectorSettings.resizerSize) || this.pdfViewer.annotationSelectorSettings.resizerSize !== 8 ? this.pdfViewer.annotationSelectorSettings.resizerSize : (!isNullOrUndefined(this.pdfViewer.rectangleSettings.annotationSelectorSettings) && !isNullOrUndefined(this.pdfViewer.rectangleSettings.annotationSelectorSettings.resizerSize)) ? this.pdfViewer.rectangleSettings.annotationSelectorSettings.resizerSize * t.scale : 8);
-            } else if (type === 'Ellipse' && this.pdfViewer.circleSettings.annotationSelectorSettings) {
-                // eslint-disable-next-line max-len
-                options.radius = (isNullOrUndefined(this.pdfViewer.annotationSelectorSettings.resizerSize) || this.pdfViewer.annotationSelectorSettings.resizerSize !== 8 ? this.pdfViewer.annotationSelectorSettings.resizerSize : (!isNullOrUndefined(this.pdfViewer.circleSettings.annotationSelectorSettings) && !isNullOrUndefined(this.pdfViewer.circleSettings.annotationSelectorSettings.resizerSize)) ? this.pdfViewer.circleSettings.annotationSelectorSettings.resizerSize / 2 : 8);
-                // eslint-disable-next-line max-len
-                options.width = (isNullOrUndefined(this.pdfViewer.annotationSelectorSettings.resizerSize) || this.pdfViewer.annotationSelectorSettings.resizerSize !== 8 ? this.pdfViewer.annotationSelectorSettings.resizerSize : (!isNullOrUndefined(this.pdfViewer.circleSettings.annotationSelectorSettings) && !isNullOrUndefined(this.pdfViewer.circleSettings.annotationSelectorSettings.resizerSize)) ? this.pdfViewer.circleSettings.annotationSelectorSettings.resizerSize * t.scale : 8);
-                // eslint-disable-next-line max-len
-                options.height = (isNullOrUndefined(this.pdfViewer.annotationSelectorSettings.resizerSize) || this.pdfViewer.annotationSelectorSettings.resizerSize !== 8 ? this.pdfViewer.annotationSelectorSettings.resizerSize : (!isNullOrUndefined(this.pdfViewer.circleSettings.annotationSelectorSettings) && !isNullOrUndefined(this.pdfViewer.circleSettings.annotationSelectorSettings.resizerSize)) ? this.pdfViewer.circleSettings.annotationSelectorSettings.resizerSize * t.scale : 8);
-            } else if (type === 'Distance' && this.pdfViewer.distanceSettings.annotationSelectorSettings) {
-                // eslint-disable-next-line max-len
-                options.radius = (isNullOrUndefined(this.pdfViewer.annotationSelectorSettings.resizerSize) || this.pdfViewer.annotationSelectorSettings.resizerSize !== 8 ? this.pdfViewer.annotationSelectorSettings.resizerSize : (!isNullOrUndefined(this.pdfViewer.distanceSettings.annotationSelectorSettings) && !isNullOrUndefined(this.pdfViewer.distanceSettings.annotationSelectorSettings.resizerSize)) ? this.pdfViewer.distanceSettings.annotationSelectorSettings.resizerSize / 2 : 8);
-                // eslint-disable-next-line max-len
-                options.width = (isNullOrUndefined(this.pdfViewer.annotationSelectorSettings.resizerSize) || this.pdfViewer.annotationSelectorSettings.resizerSize !== 8 ? this.pdfViewer.annotationSelectorSettings.resizerSize : (!isNullOrUndefined(this.pdfViewer.distanceSettings.annotationSelectorSettings) && !isNullOrUndefined(this.pdfViewer.distanceSettings.annotationSelectorSettings.resizerSize)) ? this.pdfViewer.distanceSettings.annotationSelectorSettings.resizerSize * t.scale : 8);
-                // eslint-disable-next-line max-len
-                options.height = (isNullOrUndefined(this.pdfViewer.annotationSelectorSettings.resizerSize) || this.pdfViewer.annotationSelectorSettings.resizerSize !== 8 ? this.pdfViewer.annotationSelectorSettings.resizerSize : (!isNullOrUndefined(this.pdfViewer.distanceSettings.annotationSelectorSettings) && !isNullOrUndefined(this.pdfViewer.distanceSettings.annotationSelectorSettings.resizerSize)) ? this.pdfViewer.distanceSettings.annotationSelectorSettings.resizerSize * t.scale : 8);
-            } else if (type === 'Polygon' && this.pdfViewer.polygonSettings.annotationSelectorSettings) {
-                // eslint-disable-next-line max-len
-                options.radius = (isNullOrUndefined(this.pdfViewer.annotationSelectorSettings.resizerSize) || this.pdfViewer.annotationSelectorSettings.resizerSize !== 8 ? this.pdfViewer.annotationSelectorSettings.resizerSize : (!isNullOrUndefined(this.pdfViewer.polygonSettings.annotationSelectorSettings) && !isNullOrUndefined(this.pdfViewer.polygonSettings.annotationSelectorSettings.resizerSize)) ? this.pdfViewer.polygonSettings.annotationSelectorSettings.resizerSize / 2 : 8);
-                // eslint-disable-next-line max-len
-                options.width = (isNullOrUndefined(this.pdfViewer.annotationSelectorSettings.resizerSize) || this.pdfViewer.annotationSelectorSettings.resizerSize !== 8 ? this.pdfViewer.annotationSelectorSettings.resizerSize : (!isNullOrUndefined(this.pdfViewer.polygonSettings.annotationSelectorSettings) && !isNullOrUndefined(this.pdfViewer.polygonSettings.annotationSelectorSettings.resizerSize)) ? this.pdfViewer.polygonSettings.annotationSelectorSettings.resizerSize * t.scale : 8);
-                // eslint-disable-next-line max-len
-                options.height = (isNullOrUndefined(this.pdfViewer.annotationSelectorSettings.resizerSize) || this.pdfViewer.annotationSelectorSettings.resizerSize !== 8 ? this.pdfViewer.annotationSelectorSettings.resizerSize : (!isNullOrUndefined(this.pdfViewer.polygonSettings.annotationSelectorSettings) && !isNullOrUndefined(this.pdfViewer.polygonSettings.annotationSelectorSettings.resizerSize)) ? this.pdfViewer.polygonSettings.annotationSelectorSettings.resizerSize * t.scale : 8);
-            } else if (type === 'Radius' && this.pdfViewer.radiusSettings.annotationSelectorSettings) {
-                // eslint-disable-next-line max-len
-                options.radius = (isNullOrUndefined(this.pdfViewer.annotationSelectorSettings.resizerSize) || this.pdfViewer.annotationSelectorSettings.resizerSize !== 8 ? this.pdfViewer.annotationSelectorSettings.resizerSize : (!isNullOrUndefined(this.pdfViewer.radiusSettings.annotationSelectorSettings) && !isNullOrUndefined(this.pdfViewer.radiusSettings.annotationSelectorSettings.resizerSize)) ? this.pdfViewer.radiusSettings.annotationSelectorSettings.resizerSize / 2 : 8);
-                // eslint-disable-next-line max-len
-                options.width = (isNullOrUndefined(this.pdfViewer.annotationSelectorSettings.resizerSize) || this.pdfViewer.annotationSelectorSettings.resizerSize !== 8 ? this.pdfViewer.annotationSelectorSettings.resizerSize : (!isNullOrUndefined(this.pdfViewer.radiusSettings.annotationSelectorSettings) && !isNullOrUndefined(this.pdfViewer.radiusSettings.annotationSelectorSettings.resizerSize)) ? this.pdfViewer.radiusSettings.annotationSelectorSettings.resizerSize * t.scale : 8);
-                // eslint-disable-next-line max-len
-                options.height = (isNullOrUndefined(this.pdfViewer.annotationSelectorSettings.resizerSize) || this.pdfViewer.annotationSelectorSettings.resizerSize !== 8 ? this.pdfViewer.annotationSelectorSettings.resizerSize : (!isNullOrUndefined(this.pdfViewer.radiusSettings.annotationSelectorSettings) && !isNullOrUndefined(this.pdfViewer.radiusSettings.annotationSelectorSettings.resizerSize)) ? this.pdfViewer.radiusSettings.annotationSelectorSettings.resizerSize * t.scale : 8);
-            } else if ((type === 'Stamp' || type === 'Image') && this.pdfViewer.stampSettings.annotationSelectorSettings) {
-                // eslint-disable-next-line max-len
-                options.radius = (isNullOrUndefined(this.pdfViewer.annotationSelectorSettings.resizerSize) || this.pdfViewer.annotationSelectorSettings.resizerSize !== 8 ? this.pdfViewer.annotationSelectorSettings.resizerSize : (!isNullOrUndefined(this.pdfViewer.stampSettings.annotationSelectorSettings) && !isNullOrUndefined(this.pdfViewer.stampSettings.annotationSelectorSettings.resizerSize)) ? this.pdfViewer.stampSettings.annotationSelectorSettings.resizerSize / 2 : 8);
-                // eslint-disable-next-line max-len
-                options.width = (isNullOrUndefined(this.pdfViewer.annotationSelectorSettings.resizerSize) || this.pdfViewer.annotationSelectorSettings.resizerSize !== 8 ? this.pdfViewer.annotationSelectorSettings.resizerSize : (!isNullOrUndefined(this.pdfViewer.stampSettings.annotationSelectorSettings) && !isNullOrUndefined(this.pdfViewer.stampSettings.annotationSelectorSettings.resizerSize)) ? this.pdfViewer.stampSettings.annotationSelectorSettings.resizerSize * t.scale : 8);
-                // eslint-disable-next-line max-len
-                options.height = (isNullOrUndefined(this.pdfViewer.annotationSelectorSettings.resizerSize) || this.pdfViewer.annotationSelectorSettings.resizerSize !== 8 ? this.pdfViewer.annotationSelectorSettings.resizerSize : (!isNullOrUndefined(this.pdfViewer.stampSettings.annotationSelectorSettings) && !isNullOrUndefined(this.pdfViewer.stampSettings.annotationSelectorSettings.resizerSize)) ? this.pdfViewer.stampSettings.annotationSelectorSettings.resizerSize * t.scale : 8);
-            } else if (type === 'FreeText' && this.pdfViewer.freeTextSettings.annotationSelectorSettings) {
-                // eslint-disable-next-line max-len
-                options.radius = (isNullOrUndefined(this.pdfViewer.annotationSelectorSettings.resizerSize) || this.pdfViewer.annotationSelectorSettings.resizerSize !== 8 ? this.pdfViewer.annotationSelectorSettings.resizerSize : (!isNullOrUndefined(this.pdfViewer.freeTextSettings.annotationSelectorSettings) && !isNullOrUndefined(this.pdfViewer.freeTextSettings.annotationSelectorSettings.resizerSize)) ? this.pdfViewer.freeTextSettings.annotationSelectorSettings.resizerSize / 2 : 8);
-                // eslint-disable-next-line max-len
-                options.width = (isNullOrUndefined(this.pdfViewer.annotationSelectorSettings.resizerSize) || this.pdfViewer.annotationSelectorSettings.resizerSize !== 8 ? this.pdfViewer.annotationSelectorSettings.resizerSize : (!isNullOrUndefined(this.pdfViewer.freeTextSettings.annotationSelectorSettings) && !isNullOrUndefined(this.pdfViewer.freeTextSettings.annotationSelectorSettings.resizerSize)) ? this.pdfViewer.freeTextSettings.annotationSelectorSettings.resizerSize * t.scale : 8);
-                // eslint-disable-next-line max-len
-                options.height = (isNullOrUndefined(this.pdfViewer.annotationSelectorSettings.resizerSize) || this.pdfViewer.annotationSelectorSettings.resizerSize !== 8 ? this.pdfViewer.annotationSelectorSettings.resizerSize : (!isNullOrUndefined(this.pdfViewer.freeTextSettings.annotationSelectorSettings) && !isNullOrUndefined(this.pdfViewer.freeTextSettings.annotationSelectorSettings.resizerSize)) ? this.pdfViewer.freeTextSettings.annotationSelectorSettings.resizerSize * t.scale : 8);
-            } else if ((type === 'HandWrittenSignature' || type === 'SignatureText' || type === 'SignatureImage') && this.pdfViewer.handWrittenSignatureSettings.annotationSelectorSettings) {
-                // eslint-disable-next-line max-len
-                options.radius = (isNullOrUndefined(this.pdfViewer.annotationSelectorSettings.resizerSize) || this.pdfViewer.annotationSelectorSettings.resizerSize !== 8 ? this.pdfViewer.annotationSelectorSettings.resizerSize : (!isNullOrUndefined(this.pdfViewer.handWrittenSignatureSettings.annotationSelectorSettings) && !isNullOrUndefined(this.pdfViewer.handWrittenSignatureSettings.annotationSelectorSettings.resizerSize)) ? this.pdfViewer.handWrittenSignatureSettings.annotationSelectorSettings.resizerSize / 2 : 8);
-                // eslint-disable-next-line max-len
-                options.width = (isNullOrUndefined(this.pdfViewer.annotationSelectorSettings.resizerSize) || this.pdfViewer.annotationSelectorSettings.resizerSize !== 8 ? this.pdfViewer.annotationSelectorSettings.resizerSize : (!isNullOrUndefined(this.pdfViewer.handWrittenSignatureSettings.annotationSelectorSettings) && !isNullOrUndefined(this.pdfViewer.handWrittenSignatureSettings.annotationSelectorSettings.resizerSize)) ? this.pdfViewer.handWrittenSignatureSettings.annotationSelectorSettings.resizerSize * t.scale : 8);
-                // eslint-disable-next-line max-len
-                options.height = (isNullOrUndefined(this.pdfViewer.annotationSelectorSettings.resizerSize) || this.pdfViewer.annotationSelectorSettings.resizerSize !== 8 ? this.pdfViewer.annotationSelectorSettings.resizerSize : (!isNullOrUndefined(this.pdfViewer.handWrittenSignatureSettings.annotationSelectorSettings) && !isNullOrUndefined(this.pdfViewer.handWrittenSignatureSettings.annotationSelectorSettings.resizerSize)) ? this.pdfViewer.handWrittenSignatureSettings.annotationSelectorSettings.resizerSize * t.scale : 8);
-            } else if (type === 'Perimeter' && this.pdfViewer.perimeterSettings.annotationSelectorSettings) {
-                // eslint-disable-next-line max-len
-                options.radius = (isNullOrUndefined(this.pdfViewer.annotationSelectorSettings.resizerSize) || this.pdfViewer.annotationSelectorSettings.resizerSize !== 8 ? this.pdfViewer.annotationSelectorSettings.resizerSize : (!isNullOrUndefined(this.pdfViewer.perimeterSettings.annotationSelectorSettings) && !isNullOrUndefined(this.pdfViewer.perimeterSettings.annotationSelectorSettings.resizerSize)) ? this.pdfViewer.perimeterSettings.annotationSelectorSettings.resizerSize / 2 : 8);
-                // eslint-disable-next-line max-len
-                options.width = (isNullOrUndefined(this.pdfViewer.annotationSelectorSettings.resizerSize) || this.pdfViewer.annotationSelectorSettings.resizerSize !== 8 ? this.pdfViewer.annotationSelectorSettings.resizerSize : (!isNullOrUndefined(this.pdfViewer.perimeterSettings.annotationSelectorSettings) && !isNullOrUndefined(this.pdfViewer.perimeterSettings.annotationSelectorSettings.resizerSize)) ? this.pdfViewer.perimeterSettings.annotationSelectorSettings.resizerSize * t.scale : 8);
-                // eslint-disable-next-line max-len
-                options.height = (isNullOrUndefined(this.pdfViewer.annotationSelectorSettings.resizerSize) || this.pdfViewer.annotationSelectorSettings.resizerSize !== 8 ? this.pdfViewer.annotationSelectorSettings.resizerSize : (!isNullOrUndefined(this.pdfViewer.perimeterSettings.annotationSelectorSettings) && !isNullOrUndefined(this.pdfViewer.perimeterSettings.annotationSelectorSettings.resizerSize)) ? this.pdfViewer.perimeterSettings.annotationSelectorSettings.resizerSize * t.scale : 8);
-            } else if (type === 'Area' && this.pdfViewer.areaSettings.annotationSelectorSettings) {
-                // eslint-disable-next-line max-len
-                options.radius = (isNullOrUndefined(this.pdfViewer.annotationSelectorSettings.resizerSize) || this.pdfViewer.annotationSelectorSettings.resizerSize !== 8 ? this.pdfViewer.annotationSelectorSettings.resizerSize : (!isNullOrUndefined(this.pdfViewer.areaSettings.annotationSelectorSettings) && !isNullOrUndefined(this.pdfViewer.areaSettings.annotationSelectorSettings.resizerSize)) ? this.pdfViewer.areaSettings.annotationSelectorSettings.resizerSize / 2 : 8);
-                // eslint-disable-next-line max-len
-                options.width = (isNullOrUndefined(this.pdfViewer.annotationSelectorSettings.resizerSize) || this.pdfViewer.annotationSelectorSettings.resizerSize !== 8 ? this.pdfViewer.annotationSelectorSettings.resizerSize : (!isNullOrUndefined(this.pdfViewer.areaSettings.annotationSelectorSettings) && !isNullOrUndefined(this.pdfViewer.areaSettings.annotationSelectorSettings.resizerSize)) ? this.pdfViewer.areaSettings.annotationSelectorSettings.resizerSize * t.scale : 8);
-                // eslint-disable-next-line max-len
-                options.height = (isNullOrUndefined(this.pdfViewer.annotationSelectorSettings.resizerSize) || this.pdfViewer.annotationSelectorSettings.resizerSize !== 8 ? this.pdfViewer.annotationSelectorSettings.resizerSize : (!isNullOrUndefined(this.pdfViewer.areaSettings.annotationSelectorSettings) && !isNullOrUndefined(this.pdfViewer.areaSettings.annotationSelectorSettings.resizerSize)) ? this.pdfViewer.areaSettings.annotationSelectorSettings.resizerSize * t.scale : 8);
-            } else if (type === 'Volume' && this.pdfViewer.volumeSettings.annotationSelectorSettings) {
-                // eslint-disable-next-line max-len
-                options.radius = (isNullOrUndefined(this.pdfViewer.annotationSelectorSettings.resizerSize) || this.pdfViewer.annotationSelectorSettings.resizerSize !== 8 ? this.pdfViewer.annotationSelectorSettings.resizerSize : (!isNullOrUndefined(this.pdfViewer.volumeSettings.annotationSelectorSettings) && !isNullOrUndefined(this.pdfViewer.volumeSettings.annotationSelectorSettings.resizerSize)) ? this.pdfViewer.volumeSettings.annotationSelectorSettings.resizerSize / 2 : 8);
-                // eslint-disable-next-line max-len
-                options.width = (isNullOrUndefined(this.pdfViewer.annotationSelectorSettings.resizerSize) || this.pdfViewer.annotationSelectorSettings.resizerSize !== 8 ? this.pdfViewer.annotationSelectorSettings.resizerSize : (!isNullOrUndefined(this.pdfViewer.volumeSettings.annotationSelectorSettings) && !isNullOrUndefined(this.pdfViewer.volumeSettings.annotationSelectorSettings.resizerSize)) ? this.pdfViewer.volumeSettings.annotationSelectorSettings.resizerSize * t.scale : 8);
-                // eslint-disable-next-line max-len
-                options.height = (isNullOrUndefined(this.pdfViewer.annotationSelectorSettings.resizerSize) || this.pdfViewer.annotationSelectorSettings.resizerSize !== 8 ? this.pdfViewer.annotationSelectorSettings.resizerSize : (!isNullOrUndefined(this.pdfViewer.volumeSettings.annotationSelectorSettings) && !isNullOrUndefined(this.pdfViewer.volumeSettings.annotationSelectorSettings.resizerSize)) ? this.pdfViewer.volumeSettings.annotationSelectorSettings.resizerSize * t.scale : 8);
-            } else if (type === 'Ink' && this.pdfViewer.inkAnnotationSettings.annotationSelectorSettings) {
-                // eslint-disable-next-line max-len
-                options.radius = (isNullOrUndefined(this.pdfViewer.annotationSelectorSettings.resizerSize) || this.pdfViewer.annotationSelectorSettings.resizerSize !== 8 ? this.pdfViewer.annotationSelectorSettings.resizerSize : (!isNullOrUndefined(this.pdfViewer.inkAnnotationSettings.annotationSelectorSettings) && !isNullOrUndefined(this.pdfViewer.inkAnnotationSettings.annotationSelectorSettings.resizerSize)) ? this.pdfViewer.inkAnnotationSettings.annotationSelectorSettings.resizerSize / 2 : 8);
-                // eslint-disable-next-line max-len
-                options.width = (isNullOrUndefined(this.pdfViewer.annotationSelectorSettings.resizerSize) || this.pdfViewer.annotationSelectorSettings.resizerSize !== 8 ? this.pdfViewer.annotationSelectorSettings.resizerSize : (!isNullOrUndefined(this.pdfViewer.inkAnnotationSettings.annotationSelectorSettings) && !isNullOrUndefined(this.pdfViewer.inkAnnotationSettings.annotationSelectorSettings.resizerSize)) ? this.pdfViewer.inkAnnotationSettings.annotationSelectorSettings.resizerSize * t.scale : 8);
-                // eslint-disable-next-line max-len
-                options.height = (isNullOrUndefined(this.pdfViewer.annotationSelectorSettings.resizerSize) || this.pdfViewer.annotationSelectorSettings.resizerSize !== 8 ? this.pdfViewer.annotationSelectorSettings.resizerSize : (!isNullOrUndefined(this.pdfViewer.inkAnnotationSettings.annotationSelectorSettings) && !isNullOrUndefined(this.pdfViewer.inkAnnotationSettings.annotationSelectorSettings.resizerSize)) ? this.pdfViewer.inkAnnotationSettings.annotationSelectorSettings.resizerSize * t.scale : 8);
+            const currentType : string = typeof(type) === 'string' ? type : type.shapeAnnotationType;
+            const settingsMap : any = {
+                'Line': this.pdfViewer.lineSettings,
+                'LineWidthArrowHead': this.pdfViewer.arrowSettings,
+                'Rectangle': this.pdfViewer.rectangleSettings,
+                'Ellipse': this.pdfViewer.circleSettings,
+                'Distance': this.pdfViewer.distanceSettings,
+                'Polygon': this.pdfViewer.polygonSettings,
+                'Radius': this.pdfViewer.radiusSettings,
+                'Area': this.pdfViewer.areaSettings,
+                'Volume': this.pdfViewer.volumeSettings,
+                'Ink': this.pdfViewer.inkAnnotationSettings,
+                'Stamp': this.pdfViewer.stampSettings,
+                'Image': this.pdfViewer.stampSettings,
+                'FreeText': this.pdfViewer.freeTextSettings,
+                'HandWrittenSignature': this.pdfViewer.handWrittenSignatureSettings,
+                'SignatureText': this.pdfViewer.handWrittenSignatureSettings,
+                'SignatureImage': this.pdfViewer.handWrittenSignatureSettings,
+                'Perimeter': this.pdfViewer.perimeterSettings
+            };
+            const settings: any = settingsMap[`${currentType}`];
+            if (settings && settings.annotationSelectorSettings) {
+                const resizerSize: number = this.pdfViewer.annotationSelectorSettings.resizerSize || 8;
+                const annotationResizerSize: number = settings.annotationSelectorSettings.resizerSize;
+                options.radius = (annotationResizerSize && annotationResizerSize !== 8)
+                    ? annotationResizerSize / 2 : resizerSize / 2;
+                const resizerValue: number = (annotationResizerSize && annotationResizerSize !== 8)
+                    ? annotationResizerSize * t.scale : resizerSize * t.scale;
+                options.width = resizerValue;
+                options.height = resizerValue;
             }
         }
     }

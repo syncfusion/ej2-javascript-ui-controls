@@ -295,6 +295,10 @@ export class ToolbarStatus {
 
     private static isFontSize(docElement: Document, node: Node, fontSize?: string[]): string {
         let size: string = (node as HTMLElement).style && (node as HTMLElement).style.fontSize;
+        const isInlineTags: boolean = IsFormatted.inlineTags.indexOf(node.nodeName.toLowerCase()) > -1;
+        if (size && node.nodeType === 1 && !isInlineTags ) {
+            size = null;
+        }
         if ((size === null || size === undefined || size === '') && node.nodeType !== 3 &&
             (node as HTMLElement).parentElement.classList.contains('e-content')) {
             size = this.getComputedStyle(docElement, (node as HTMLElement), 'font-size');
@@ -309,7 +313,11 @@ export class ToolbarStatus {
 
     private static isFontName(docElement: Document, node: Node, fontName?: string[]): string {
         let name: string = (node as HTMLElement).style && (node as HTMLElement).style.fontFamily;
-        if ((name === null || name === undefined || name === '') && node.nodeType !== 3) {
+        const isInlineTags: boolean = IsFormatted.inlineTags.indexOf(node.nodeName.toLowerCase()) > -1;
+        if (name && node.nodeType === 1 && !isInlineTags ) {
+            name = null;
+        }
+        if ((name === null || name === undefined || name === '') && node.nodeType !== 3 && isInlineTags) {
             name = this.getComputedStyle(docElement, (node as HTMLElement), 'font-family');
         }
         let index: number = null;

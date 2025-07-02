@@ -5,7 +5,7 @@ import * as constant from '../constant';
 import * as classes from '../classes';
 import { IToolbarStatus } from '../../src/common/interface';
 import { ISetToolbarStatusArgs } from '../interfaces';
-import { setToolbarStatus, dispatchEvent } from '../util';
+import { setToolbarStatus } from '../util';
 import { isIDevice } from '../../src/common/util';
 import { SfRichTextEditor } from '../sf-richtexteditor-fn';
 import { QuickPopupRenderer } from '../renderer/quick-popup-renderer';
@@ -99,16 +99,15 @@ export class BaseQuickToolbar implements IBaseQuickToolbar {
             direction: direction,
             type: triggerType
         };
+        if (this.element.style.maxWidth !== '75%') {
+            setStyleAttribute(this.element, { maxWidth: '75%' });
+        }
         this.popupWidth = this.getPopupDimension(this.popupObj, 'width');
         this.popupHeight = this.getPopupDimension(this.popupObj, 'height');
-        this.toolbarHeight =  this.parent.getToolbarElement().getBoundingClientRect().height;
+        this.toolbarHeight =  !isNullOrUndefined(this.parent.getToolbarElement()) ?
+            this.parent.getToolbarElement().getBoundingClientRect().height : 0;
         const offsetX: number = this.calculateOffsetX(offsetCalculationParam);
         let offsetY: number = this.calculateOffsetY(offsetCalculationParam);
-        const lastBlockCollision: boolean = this.checkLastCollision(offsetCalculationParam);
-        if (lastBlockCollision) {
-            offsetY = this.handleLastBlockCollision(offsetCalculationParam, offsetY);
-            this.currentTipPosition = this.currentTipPosition.replace('Top', 'Bottom') as TipPointerPosition;
-        }
         if (direction === 'Backward') {
             offsetY = this.handleBackwardsSelection(offsetY, offsetCalculationParam);
         }
@@ -116,13 +115,7 @@ export class BaseQuickToolbar implements IBaseQuickToolbar {
             cancel: false, targetElement: relativeElem,
             type: triggerType, positionX: offsetX, positionY: offsetY
         };
-        if (this.type === 'Audio' || this.type === 'Image' || this.type === 'Table' || this.type === 'Video') {
-            if (this.parent.iframeSettings.enable) {
-                args = this.handleIFrameVerticalCollision(offsetCalculationParam, args);
-            } else {
-                args = this.handleVerticalCollision(offsetCalculationParam, args);
-            }
-        }
+        args = this.handleVerticalCollision(offsetCalculationParam, args);
         this.setTipPointerPostion(this.currentTipPosition);
         if (this.type === 'Audio' || this.type === 'Image' || this.type === 'Video') {
             if (this.currentTipPosition === 'Bottom-Center' || this.currentTipPosition === 'Bottom-Left' || this.currentTipPosition === 'Bottom-Right') {
@@ -153,7 +146,6 @@ export class BaseQuickToolbar implements IBaseQuickToolbar {
         this.popupObj.setProperties(popupProps);
         removeClass([this.element], [classes.CLS_HIDE, classes.CLS_POPUP_OPEN]);
         this.popupObj.show();
-        setStyleAttribute(this.element, { maxWidth: '75%' });
         this.isRendered = true;
         this.parent.dotNetRef.invokeMethodAsync(constant.updateClass, this.popupObj.element.classList.toString(), this.type);
     }
@@ -172,10 +164,6 @@ export class BaseQuickToolbar implements IBaseQuickToolbar {
         EventHandler.remove(this.element, 'keyup', this.keyUpQT);
     }
     private removeEleFromDOM(): void {
-        const dropDownBtn: HTMLElement = this.popupObj.element.querySelector('.e-rte-dropdown-btn.e-active') || this.popupObj.element.querySelector('.e-rte-dropdown.e-active');
-        if (!isNOU(dropDownBtn)) {
-            dispatchEvent(document.body, 'mousedown');
-        }
         this.popupObj.hide();
         if (this.isRendered) {
             if (this.parent.quickTbClosedEnabled) {
@@ -276,6 +264,9 @@ export class BaseQuickToolbar implements IBaseQuickToolbar {
         case 'Text':
             blockElement = this.parent.formatter.editorManager.domTree.isBlockNode(focusNode as HTMLElement) ? focusNode as HTMLElement :
                 this.parent.formatter.editorManager.domTree.getParentBlockNode(focusNode);
+            if (blockElement.nodeName === 'TD' || blockElement.nodeName === 'TH') {
+                blockElement = closest(currentTarget, 'table') as HTMLElement;
+            }
             break;
         case 'Link':
             blockElement = focusNode.nodeType === 3 ? focusNode.parentElement : focusNode as HTMLElement;
@@ -439,64 +430,6 @@ export class BaseQuickToolbar implements IBaseQuickToolbar {
         return finalY;
     }
 
-    // To check whether the popup is collide with the last line of the content either scrolled or not scrolled.
-    private checkLastCollision(args: QuickToolbarOffsetParam): boolean {
-        let isCollision: boolean = false;
-        if (this.type === 'Inline' || this.type === 'Link' || this.type === 'Text' || this.type === 'Image' || this.type === 'Audio' || this.type === 'Video') {
-            // const rangeTop: number = args.rangeRect.bottom;
-            const contentPanel: HTMLDivElement | HTMLIFrameElement = this.parent.getPanel() as HTMLDivElement;
-            const scrollTop: number = this.parent.iframeSettings.enable ? (contentPanel as HTMLIFrameElement).contentWindow.pageYOffset :
-                contentPanel.scrollTop;
-            const popupHeight: number = this.popupHeight;
-            if (this.parent.iframeSettings.enable) {
-                const iframeRect: DOMRect = args.iframeRect;
-                const iframeContentRect: DOMRect = this.parent.inputElement.getBoundingClientRect() as DOMRect;
-                const visibleBottom: number = iframeRect.top + iframeContentRect.height - scrollTop;
-                const selectedRangeBottom: number = args.rangeRect.bottom + iframeRect.top;
-                if (scrollTop > 0) { // Content scroll use case
-                    isCollision = selectedRangeBottom > visibleBottom - popupHeight && selectedRangeBottom <= visibleBottom;
-                } else { // No scrolling
-                    isCollision = args.iframeRect.top + args.blockRect.top > args.iframeRect.bottom - popupHeight;
-                }
-            } else {
-                if (scrollTop > 0) { // Content scroll use case.
-                    const visibleBottom: number = contentPanel.getBoundingClientRect().bottom;
-                    const selectedRangeBottom: number = args.rangeRect.bottom;
-                    isCollision = selectedRangeBottom > visibleBottom - popupHeight && selectedRangeBottom <= visibleBottom;
-                } else { // No scrolling
-                    isCollision = args.blockRect.bottom > contentPanel.getBoundingClientRect().bottom - popupHeight;
-                }
-            }
-        }
-        return isCollision;
-    }
-
-    // To calculate a new OffsetY since there is a collision and the last line of the content.
-    private handleLastBlockCollision(args: QuickToolbarOffsetParam, offsetY: number): number {
-        let newOffsetY: number = 0;
-        const cursorHeight: number = args.rangeRect.height;
-        switch (this.type) {
-        case 'Text':
-        case 'Inline':
-        case 'Link':
-            if (this.parent.iframeSettings.enable) {
-                const pageYOffset: number = window.pageYOffset;
-                const iframeScrollTop: number = (args.contentPanelElement as HTMLIFrameElement).contentWindow.pageYOffset;
-                newOffsetY = pageYOffset + args.iframeRect.top + args.rangeRect.top -
-                        args.blockRect.top - this.popupHeight - cursorHeight - iframeScrollTop;
-            } else {
-                newOffsetY = args.rangeRect.top - args.blockRect.top - this.popupHeight - cursorHeight;
-            }
-            break;
-        case 'Image':
-        case 'Audio':
-        case 'Video':
-            newOffsetY = offsetY;
-            break;
-        }
-        return newOffsetY;
-    }
-
     // To update the tip pointer position on the element.
     private setTipPointerPostion(type: TipPointerPosition): void {
         this.tipPointerElem.className = '';
@@ -511,11 +444,29 @@ export class BaseQuickToolbar implements IBaseQuickToolbar {
         this.tipPointerElem.classList.add('e-rte-tip-' + horizontalPosition.toLowerCase());
     }
 
-    // In this method we change the popup properties to position the popup on top, bottom of the target element also achieve sticky collision using the 'fit' collision type.
     private handleVerticalCollision(offsetParams: QuickToolbarOffsetParam, args: BeforeQuickToolbarOpenArgs): BeforeQuickToolbarOpenArgs {
-        const scrollToparentElement: HTMLElement = this.parent.scrollParentElements && this.parent.scrollParentElements.length > 0 &&
+        if (this.parent.iframeSettings.enable) {
+            if (this.type === 'Audio' || this.type === 'Image' || this.type === 'Table' || this.type === 'Video') {
+                args = this.handleIFrameMediaCollision(offsetParams, args);
+            } else {
+                args = this.handleIFrameTextVerticalCollision(offsetParams, args);
+            }
+        } else {
+            if (this.type === 'Audio' || this.type === 'Image' || this.type === 'Table' || this.type === 'Video') {
+                args = this.handleMediaVerticalCollision(offsetParams, args);
+            } else {
+                args = this.handleTextVerticalCollision(offsetParams, args);
+            }
+        }
+        return args;
+    }
+
+    // In this method we change the popup properties to position the popup on top, bottom of the target element also achieve sticky collision using the 'fit' collision type.
+    private handleMediaVerticalCollision(offsetParams: QuickToolbarOffsetParam
+        , args: BeforeQuickToolbarOpenArgs): BeforeQuickToolbarOpenArgs {
+        const scrollTopParentElement: HTMLElement = this.parent.scrollParentElements && this.parent.scrollParentElements.length > 0 &&
         this.parent.scrollParentElements[0].nodeName !== '#document' ? this.parent.scrollParentElements[0] : this.parent.inputElement;
-        const scrollParentRect: DOMRect = scrollToparentElement.getBoundingClientRect() as DOMRect;
+        const scrollParentRect: DOMRect = scrollTopParentElement.getBoundingClientRect() as DOMRect;
         const blockRect: DOMRect = offsetParams.blockRect;
         const toolbarRect: DOMRect = this.parent.getToolbarElement().getBoundingClientRect() as DOMRect;
         const isBottomToolbar: boolean = this.parent.toolbarSettings.position === 'Bottom';
@@ -523,10 +474,10 @@ export class BaseQuickToolbar implements IBaseQuickToolbar {
         const isFloatingTop: boolean = isFloating && this.parent.toolbarSettings.position === 'Top';
         const isFLoatingBot: boolean = isFloating && this.parent.toolbarSettings.position === 'Bottom';
         const parentRect: DOMRect = offsetParams.editPanelDomRect as DOMRect;
-        const spaceAbove: number = parentRect.top < 0 && !isFloatingTop ? offsetParams.blockRect.top : isFloatingTop ?
-            offsetParams.blockRect.top - toolbarRect.top - toolbarRect.height : offsetParams.blockRect.top - parentRect.top;
-        const spaceBelow: number = isFloatingTop && blockRect.bottom > scrollParentRect.bottom ? 0 : isFLoatingBot ?
-            parentRect.bottom - offsetParams.blockRect.bottom - toolbarRect.height : parentRect.bottom - offsetParams.blockRect.bottom;
+        const spaceAbove: number = this.getSpaceAbove(
+            offsetParams, isFloatingTop, toolbarRect, scrollParentRect, scrollTopParentElement !== this.parent.inputElement);
+        const spaceBelow: number = this.getSpaceBelow(
+            offsetParams, isFLoatingBot, toolbarRect, scrollParentRect, scrollTopParentElement !== this.parent.inputElement);
         const topViewPortSpace: number = blockRect.top;
         const botViewPortSpace: number = blockRect.bottom;
         let yPosition: string;
@@ -548,9 +499,21 @@ export class BaseQuickToolbar implements IBaseQuickToolbar {
             yPosition = 'top';
             yCollision = 'fit';
             const withToolbarHeight: number = -(blockRect.top) + toolbarRect.bottom; // WHen floating Main toolbar will hide the quick toolbar so need to add the main toolbar height.
-            const withOutToolbarHeight: number = scrollToparentElement === this.parent.inputElement ?
+            const withOutToolbarHeight: number = scrollTopParentElement === this.parent.inputElement ?
                 -(blockRect.top) : (-blockRect.top) + parentRect.top; // When there is no floating Main toolbar wont hide the quick toolbar so no need to add main toolbar height.
-            args.positionY = isFloating && !isBottomToolbar ? withToolbarHeight : withOutToolbarHeight;
+            if (isBottomToolbar) {
+                args.positionY = withOutToolbarHeight;
+            } else {
+                if (isFloating) {
+                    args.positionY = withToolbarHeight;
+                } else {
+                    if (scrollTopParentElement === this.parent.inputElement) {
+                        args.positionY = withOutToolbarHeight;
+                    } else {
+                        args.positionY = -(blockRect.top - scrollParentRect.top);
+                    }
+                }
+            }
             this.currentTipPosition = 'None';
         }
         const newProps: PopupModel = {
@@ -579,7 +542,7 @@ export class BaseQuickToolbar implements IBaseQuickToolbar {
         }
     }
 
-    private handleIFrameVerticalCollision(offsetParams: QuickToolbarOffsetParam, args: BeforeQuickToolbarOpenArgs):
+    private handleIFrameMediaCollision(offsetParams: QuickToolbarOffsetParam, args: BeforeQuickToolbarOpenArgs):
     BeforeQuickToolbarOpenArgs {
         const scrollTopParentElement: HTMLElement = this.parent.scrollParentElements && this.parent.scrollParentElements.length > 0 &&
         this.parent.scrollParentElements[0].nodeName !== '#document' ? this.parent.scrollParentElements[0] : this.parent.inputElement;
@@ -624,6 +587,89 @@ export class BaseQuickToolbar implements IBaseQuickToolbar {
             this.currentTipPosition = 'None';
         }
         args.targetElement = this.parent.getPanel().parentElement;
+        return args;
+    }
+
+    private getSpaceAbove(args: QuickToolbarOffsetParam, isFloatingTop: boolean
+        , toolbarRect: DOMRect, scrollParentRect: DOMRect, isScrollParent: boolean): number {
+        let spaceAbove: number;
+        const blockRect: DOMRect = args.blockRect;
+        const parentRect: DOMRect = args.editPanelDomRect;
+        if (isFloatingTop) { // When the toolbar is floating at top.
+            spaceAbove = blockRect.top - toolbarRect.top - toolbarRect.height;
+        } else {
+            if (isScrollParent) { // When there is a overflow parent element.
+                if (parentRect.top < 0) {
+                    spaceAbove = blockRect.top - scrollParentRect.top;
+                } else {
+                    spaceAbove = blockRect.top - parentRect.top;
+                }
+            } else {
+                if (parentRect.top < 0) {
+                    spaceAbove = blockRect.top;
+                } else {
+                    spaceAbove = blockRect.top - parentRect.top;
+                }
+            }
+        }
+        return spaceAbove;
+    }
+
+    private getSpaceBelow(args: QuickToolbarOffsetParam, isFloatingBot: boolean, toolbarRect: DOMRect, scrollParentRect: DOMRect
+        , isScrollParent: boolean): number {
+        let spaceBelow: number;
+        const blockRect: DOMRect = args.blockRect;
+        const parentRect: DOMRect = args.editPanelDomRect;
+        if (isFloatingBot) { // Floating Bottom toolbar
+            spaceBelow = parentRect.bottom - blockRect.bottom - toolbarRect.height;
+        } else {
+            if (isScrollParent) { // When there is a overflow parent element.
+                if ((scrollParentRect.bottom - blockRect.bottom) < (this.popupHeight + this.tipPointerHeight)) {
+                    spaceBelow = 0;
+                } else {
+                    spaceBelow = scrollParentRect.bottom - blockRect.bottom;
+                }
+            } else {
+                spaceBelow = parentRect.bottom - blockRect.bottom;
+            }
+        }
+        const toolbarHeight: number = isFloatingBot ? this.toolbarHeight : 0;
+        if ((window.innerHeight - blockRect.bottom - toolbarHeight) < (this.popupHeight + this.tipPointerHeight)) {
+            spaceBelow = 0;
+        }
+        return spaceBelow;
+    }
+
+    private handleTextVerticalCollision(offsetParams: QuickToolbarOffsetParam, args: BeforeQuickToolbarOpenArgs)
+        : BeforeQuickToolbarOpenArgs {
+        const scrollTopParentElement: HTMLElement = this.parent.scrollParentElements && this.parent.scrollParentElements.length > 0 &&
+        this.parent.scrollParentElements[0].nodeName !== '#document' ? this.parent.scrollParentElements[0] : this.parent.inputElement;
+        const scrollParentRect: DOMRect = scrollTopParentElement.getBoundingClientRect() as DOMRect;
+        const blockRect: DOMRect = offsetParams.blockRect;
+        const toolbarRect: DOMRect = this.parent.getToolbarElement().getBoundingClientRect() as DOMRect;
+        const isFloating: boolean = this.parent.toolbarSettings.enableFloating;
+        const isFloatingTop: boolean = isFloating && this.parent.toolbarSettings.position === 'Top';
+        const isFLoatingBot: boolean = isFloating && this.parent.toolbarSettings.position === 'Bottom';
+        const topViewPortSpace: number = blockRect.top;
+        const botViewPortSpace: number = blockRect.bottom;
+        const spaceAbove: number = this.getSpaceAbove(
+            offsetParams, isFloatingTop, toolbarRect, scrollParentRect, scrollTopParentElement !== this.parent.inputElement);
+        const spaceBelow: number = this.getSpaceBelow(
+            offsetParams, isFLoatingBot, toolbarRect, scrollParentRect, scrollTopParentElement !== this.parent.inputElement);
+        const totalPopupHeight: number = (this.tipPointerHeight + this.popupHeight);
+        const isTopPosition: boolean = this.isElemVisible(blockRect, 'top', false) && spaceAbove > totalPopupHeight && topViewPortSpace > totalPopupHeight;
+        const isBotPosition: boolean = this.isElemVisible(blockRect, 'bottom', false) && spaceBelow > totalPopupHeight && botViewPortSpace > totalPopupHeight;
+        if (isBotPosition) {
+            return args; // Default Bottom position no need to change offset.
+        } else if (isTopPosition) {
+            args.positionY = -(this.popupHeight + 10) + (offsetParams.rangeRect.top - offsetParams.blockRect.top);
+            this.currentTipPosition = this.currentTipPosition.replace('Top', 'Bottom') as TipPointerPosition;
+        }
+        return args;
+    }
+
+    private handleIFrameTextVerticalCollision(offsetParams: QuickToolbarOffsetParam, args: BeforeQuickToolbarOpenArgs)
+        : BeforeQuickToolbarOpenArgs {
         return args;
     }
 

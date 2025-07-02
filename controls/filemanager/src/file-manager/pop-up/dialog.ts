@@ -1,12 +1,12 @@
 import { Dialog, BeforeOpenEventArgs, BeforeCloseEventArgs } from '@syncfusion/ej2-popups';
-import { select, isNullOrUndefined as isNOU, createElement, Internationalization } from '@syncfusion/ej2-base';
+import { select, isNullOrUndefined as isNOU, createElement, Internationalization, Fetch } from '@syncfusion/ej2-base';
 import { getValue, remove, selectAll } from '@syncfusion/ej2-base';
-import { IFileManager, ReadArgs, DialogOptions, FileDetails, FileDragEventArgs } from '../base/interface';
+import { IFileManager, ReadArgs, DialogOptions, FileDetails, FileDragEventArgs, BeforeImageLoadEventArgs } from '../base/interface';
 import { BeforePopupOpenCloseEventArgs, PopupOpenCloseEventArgs } from '../base/interface';
 import { createFolder } from '../common/operations';
 import * as CLS from '../base/classes';
 import * as events from '../base/constant';
-import { paste, rename } from '../common/operations';
+import { paste, rename, triggerFetchFailure, triggerFetchSuccess  } from '../common/operations';
 import { getLocaleText, getDuplicateData, objectToString, getCssClass, getTargetPath } from '../common/utility';
 import { SelectedEventArgs, Input } from '@syncfusion/ej2-inputs';
 import { CheckBox, ChangeEventArgs } from '@syncfusion/ej2-buttons';
@@ -897,14 +897,42 @@ function getKeyCode(e: KeyboardEvent): number {
  *
  * @param {IFileManager} parent - specifies the parent element.
  * @param {string} header - specifies the header element.
- * @param {string} imageUrl - specifies the image URL.
+ * @param {BeforeImageLoadEventArgs} imageData - specifies the image eventargs.
  * @returns {void}
  * @private
  */
-export function createImageDialog(parent: IFileManager, header: string, imageUrl: string): void {
+export function createImageDialog(parent: IFileManager, header: string, imageData: BeforeImageLoadEventArgs): void {
     const content: HTMLElement = createElement('div', { className: 'e-image-wrap' });
-    const image: HTMLElement = createElement('img', { className: 'e-image', attrs: { src: imageUrl, alt: header } });
-    content.appendChild(image);
+    if (imageData.useImageAsUrl) {
+        const image: HTMLElement = createElement('img', { className: 'e-image', attrs: { src: imageData.imageUrl, alt: header } });
+        content.appendChild(image);
+    }
+    else {
+        const fetch: Fetch = new Fetch({
+            url: getValue('url', imageData.ajaxSettings),
+            type: getValue('type', imageData.ajaxSettings),
+            contentType: getValue('contentType', imageData.ajaxSettings),
+            responseType: getValue('responseType', imageData.ajaxSettings),
+            beforeSend: getValue('beforeSend', imageData.ajaxSettings),
+            onSuccess: (e: Blob) => {
+                const blobUrl: string = URL.createObjectURL(e);
+                const image: HTMLElement = createElement('img', { className: 'e-image', attrs: { src: blobUrl, alt: header } });
+                content.appendChild(image);
+                triggerFetchSuccess(parent, imageData.ajaxSettings);
+            },
+            onFailure: (e: Response) => {
+                const result: ReadArgs = {
+                    error: {
+                        code: e.status.toString(),
+                        message: getLocaleText(parent, 'Network-Error') + ' ' + getValue('url', imageData.ajaxSettings)
+                    }
+                };
+                triggerFetchFailure(parent, imageData.ajaxSettings, result);
+            }
+        });
+        const data: object = getValue('data', imageData.ajaxSettings);
+        fetch.send(data);
+    }
     if (isNOU(parent.viewerObj)) {
         parent.viewerObj = new Dialog({
             header: header,
@@ -946,6 +974,7 @@ export function createImageDialog(parent: IFileManager, header: string, imageUrl
         parent.viewerObj.show();
     }
 }
+
 
 /**
  *

@@ -1445,26 +1445,6 @@ export class RichTextEditor extends Component<HTMLElement> implements INotifyPro
             modules.push(
                 { member: 'toolbar', args: [this, this.serviceLocator] }
             );
-            modules.push({
-                member: 'link',
-                args: [this, this.serviceLocator]
-            });
-            modules.push({
-                member: 'table',
-                args: [this, this.serviceLocator]
-            });
-            modules.push({
-                member: 'image',
-                args: [this, this.serviceLocator]
-            });
-            modules.push({
-                member: 'audio',
-                args: [this, this.serviceLocator]
-            });
-            modules.push({
-                member: 'video',
-                args: [this, this.serviceLocator]
-            });
             if (this.quickToolbarSettings.enable) {
                 modules.push(
                     { member: 'quickToolbar', args: [this, this.serviceLocator] }
@@ -1486,7 +1466,27 @@ export class RichTextEditor extends Component<HTMLElement> implements INotifyPro
                 { member: 'markdownEditor', args: [this, this.serviceLocator] }
             );
         }
+        modules.push({
+            member: 'link',
+            args: [this, this.serviceLocator]
+        });
+        modules.push({
+            member: 'table',
+            args: [this, this.serviceLocator]
+        });
+        modules.push({
+            member: 'image',
+            args: [this, this.serviceLocator]
+        });
         if (this.editorMode === 'HTML') {
+            modules.push({
+                member: 'audio',
+                args: [this, this.serviceLocator]
+            });
+            modules.push({
+                member: 'video',
+                args: [this, this.serviceLocator]
+            });
             modules.push(
                 { member: 'htmlEditor', args: [this, this.serviceLocator] }
             );
@@ -3302,8 +3302,8 @@ export class RichTextEditor extends Component<HTMLElement> implements INotifyPro
      */
     public refreshUI(): void {
         this.renderModule.refresh();
-        // when the editor mode is markdown, need to set the height manually
-        if (this.editorMode === 'Markdown') {
+        // when the editor mode is markdown or iframe, need to set the height manually
+        if (this.editorMode === 'Markdown' || this.iframeSettings.enable) {
             this.autoResize();
         }
         if (!isNOU(this.quickToolbarModule) && !this.quickToolbarModule.isDestroyed) {
@@ -3833,7 +3833,9 @@ export class RichTextEditor extends Component<HTMLElement> implements INotifyPro
                 value = value.replace(/&(amp;)*(times|divide|ne)/g, '&amp;amp;$2');
             }
             if (!isNOU(getTextArea) && this.rootContainer.classList.contains('e-source-code-enabled')) {
-                value = /&(amp;)*((times)|(divide)|(ne))/.test(getTextArea.value) ? getTextArea.value.replace(/&(amp;)*(times|divide|ne)/g, '&amp;amp;$2') : getTextArea.value;
+                const textAreaValue: string = this.enableHtmlSanitizer ? this.htmlEditorModule.sanitizeHelper(
+                    getTextArea.value) : getTextArea.value;
+                value = /&(amp;)*((times)|(divide)|(ne))/.test(textAreaValue) ? textAreaValue.replace(/&(amp;)*(times|divide|ne)/g, '&amp;amp;$2') : textAreaValue;
             }
         } else {
             value = (this.inputElement as HTMLTextAreaElement).value === '' ? null :
@@ -3870,7 +3872,9 @@ export class RichTextEditor extends Component<HTMLElement> implements INotifyPro
         if (item.length > 0) {
             for (let i: number = 0; i < item.length; i++) {
                 if (item[i as number].hasAttribute('target') && item[i as number].getAttribute('target') === '_blank') {
-                    item[i as number].setAttribute('aria-label', (this.serviceLocator.getService<L10n>('rteLocale') as L10n).getConstant('linkAriaLabel'));
+                    if (!item[i as number].hasAttribute('aria-label') || item[i as number].getAttribute('aria-label') === '') {
+                        item[i as number].setAttribute('aria-label', (this.serviceLocator.getService<L10n>('rteLocale') as L10n).getConstant('linkAriaLabel'));
+                    }
                 }
             }
         }

@@ -531,3 +531,36 @@ describe('924326 - Both Bullet and Number Format Toolbar Icons Highlighted After
         expect(format.numberFormatList).toEqual(false);
     });
 });
+describe('962591 - FontName and FontSize should not be detected from block element like <p> when using ToolbarStatus.get', () => {
+    const domSelection: NodeSelection = new NodeSelection();
+    const divElement: HTMLDivElement = document.createElement('div');
+    let parentDiv: HTMLDivElement;
+    divElement.id = 'divElement';
+    divElement.contentEditable = 'true';
+    beforeAll(() => {
+        document.body.appendChild(divElement);
+    });
+    afterAll(() => {
+        detach(divElement);
+    });
+
+    it('Should return null for fontname and fontsize when inline style is on <p> tag', () => {
+        divElement.innerHTML = `<div id="div1"><p id="focusNode" style="font-family: Arial; font-size: 18pt;">Syncfusion</p></div>`;
+        parentDiv = document.getElementById('div1') as HTMLDivElement;
+        const node = document.getElementById('focusNode');
+        domSelection.setSelectionText(document, node.childNodes[0], node.childNodes[0], 0, 5);
+        const format: IToolbarStatus = ToolbarStatus.get(document, parentDiv, ['p'], ['18pt'], ['Arial']);
+        expect(format.fontname).toBe(null);
+        expect(format.fontsize).toBe(null);
+    });
+
+    it('Should return fontname and fontsize when style is on inline <span> tag', () => {
+        divElement.innerHTML = `<div id="div1"><p><span id="focusNode" style="font-family: Arial; font-size: 18pt;">Syncfusion</span></p></div>`;
+        parentDiv = document.getElementById('div1') as HTMLDivElement;
+        const node = document.getElementById('focusNode');
+        domSelection.setSelectionText(document, node.childNodes[0], node.childNodes[0], 0, 5);
+        const format: IToolbarStatus = ToolbarStatus.get(document, parentDiv, ['p'], ['18pt'], ['Arial']);
+        expect(format.fontname.toLowerCase()).toBe('arial');
+        expect(format.fontsize).toBe('18pt');
+    });
+});

@@ -774,7 +774,9 @@ export class DiagramEventHandler {
             this.checkAutoScroll(e);
         } else {
             if (!this.blocked) {
-                (this.tool.mouseMove(this.eventArgs));
+                if (!(this.tool instanceof PolygonDrawingTool || this.tool instanceof PolyLineDrawingTool)) {
+                    (this.tool.mouseMove(this.eventArgs));
+                }
             }
         }
         if (this.eventArgs.target) {
@@ -3268,6 +3270,9 @@ class ObjectFinder {
         let inPort: PointPortModel;
         let outPort: PointPortModel;
         let actualTarget: NodeModel | ConnectorModel = null;
+        if (eventArg === null) {
+            eventArg = {};
+        }
         if (objects.length !== 0) {
             if (source && source instanceof Selector) {
                 if (source.nodes.length + source.connectors.length === 1) {

@@ -106,7 +106,17 @@ export class EditRender {
                     });
                 }
                 if (!isFocused && isNullOrUndefined(cell.getAttribute('disabled')) && !parentsUntil(cell, 'e-checkbox-disabled')) {
-                    this.focusElement(cell as HTMLInputElement, args.type);
+                    const isMultilineColumn: boolean = !isNullOrUndefined(col.edit) && !isNullOrUndefined(col.edit.params) &&
+                        (col.edit.params as { multiline?: boolean }).multiline;
+                    if (cell.getAttribute('type') === 'hidden' && isMultilineColumn && cell.parentElement &&
+                        cell.parentElement.classList.contains('e-multi-line-input')) {
+                        const textareaElement: HTMLTextAreaElement = cell.parentElement.querySelector('textarea');
+                        if (textareaElement) {
+                            this.focusElement(textareaElement, args.type);
+                        }
+                    } else {
+                        this.focusElement(cell as HTMLInputElement, args.type);
+                    }
                     isFocused = true;
                 }
             }
@@ -114,7 +124,7 @@ export class EditRender {
     }
 
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
-    private focusElement(elem: HTMLInputElement, type?: string): void {
+    private focusElement(elem: HTMLInputElement | HTMLTextAreaElement, type?: string): void {
         const chkBox: HTMLInputElement = this.parent.element.querySelector('.e-edit-checkselect') as HTMLInputElement;
         if (!isNullOrUndefined(chkBox) && chkBox.nextElementSibling) {
             chkBox.nextElementSibling.classList.add('e-focus');

@@ -59,6 +59,9 @@
       @if $pager-skin == 'fluent2' {
         line-height: 20px;
       }
+      span.e-rightalign {
+        text-align: right;
+      }
     }
 
     .e-pagesizes {
@@ -411,6 +414,10 @@
     }
 
     @media (max-width: 769px) {
+      @if $pager-skin != 'bootstrap5' {
+        display: flex;
+        align-items: center;
+      }
       @if $pager-skin == 'fluent2' {
         padding: 11px 0;
       }
@@ -719,6 +726,7 @@
           float: initial;
           margin-left: 0;
           margin-top: $pager-rtl-pagermsgbar-device-margin-top;
+          padding-top: 0;
         }
 
         .e-parentmsgbar {

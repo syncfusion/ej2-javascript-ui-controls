@@ -232,7 +232,8 @@ export class NavigationPane {
             this.pdfViewerBase.viewerContainer.style.left = controlLeft + 'px';
             this.pdfViewerBase.viewerContainer.style.right = controlRight + 'px';
         }
-        this.pdfViewerBase.viewerContainer.style.width = (this.pdfViewer.element.clientWidth - controlLeft - this.commentPanelContainer.clientWidth) + 'px';
+        this.pdfViewerBase.viewerContainer.style.width = ((this.pdfViewer.element.clientWidth > 0 ? this.pdfViewer.element.clientWidth :
+            this.pdfViewer.element.offsetWidth) - controlLeft - this.commentPanelContainer.clientWidth) + 'px';
         this.sideBarContentContainer.style.display = 'none';
         if (!this.pdfViewer.enableNavigationToolbar) {
             if (!this.pdfViewer.enableRtl) {
@@ -539,7 +540,8 @@ export class NavigationPane {
                 } else {
                     viewerContainer.style.right = proxy.getViewerContainerRight() + 'px';
                 }
-                viewerContainer.style.width = (proxy.pdfViewer.element.clientWidth - proxy.getViewerContainerLeft() - proxy.getViewerContainerRight()) + 'px';
+                viewerContainer.style.width = ((proxy.pdfViewer.element.clientWidth > 0 ? proxy.pdfViewer.element.clientWidth :
+                    proxy.pdfViewer.element.offsetWidth) - proxy.getViewerContainerLeft() - proxy.getViewerContainerRight()) + 'px';
                 pageContainer.style.width = (proxy.pdfViewerBase.viewerContainer.offsetWidth - proxy.getViewerContainerScrollbarWidth()) + 'px';
             }
             if (proxy.pdfViewerBase) {
@@ -1124,8 +1126,8 @@ export class NavigationPane {
                     proxy.pdfViewerBase.viewerContainer.style.left = proxy.getViewerContainerLeft() + 'px';
                     proxy.pdfViewerBase.viewerContainer.style.right = proxy.getViewerContainerRight() + 'px';
                 }
-                const viewerWidth: number = (proxy.pdfViewer.element.clientWidth - proxy.getViewerContainerLeft() -
-                 proxy.getViewerContainerRight());
+                const viewerWidth: number = ((proxy.pdfViewer.element.clientWidth > 0 ? proxy.pdfViewer.element.clientWidth :
+                    proxy.pdfViewer.element.offsetWidth) - proxy.getViewerContainerLeft() - proxy.getViewerContainerRight());
                 proxy.pdfViewerBase.viewerContainer.style.width = viewerWidth + 'px';
                 proxy.pdfViewerBase.pageContainer.style.width = proxy.pdfViewerBase.viewerContainer.clientWidth + 'px';
                 proxy.pdfViewer.thumbnailViewModule.gotoThumbnailImage(proxy.pdfViewerBase.currentPageNumber - 1);
@@ -1171,7 +1173,9 @@ export class NavigationPane {
             } else {
                 proxy.pdfViewerBase.viewerContainer.style.left = (proxy.sideToolbarWidth) + 'px';
             }
-            proxy.pdfViewerBase.viewerContainer.style.width = (proxy.pdfViewer.element.clientWidth - proxy.sideToolbarWidth - proxy.getViewerContainerRight()) + 'px';
+            proxy.pdfViewerBase.viewerContainer.style.width = ((proxy.pdfViewer.element.clientWidth > 0 ?
+                proxy.pdfViewer.element.clientWidth : proxy.pdfViewer.element.offsetWidth) - proxy.sideToolbarWidth -
+                proxy.getViewerContainerRight()) + 'px';
             proxy.pdfViewerBase.pageContainer.style.width = (proxy.pdfViewerBase.viewerContainer.offsetWidth - proxy.getViewerContainerScrollbarWidth()) + 'px';
             if (this.restrictUpdateZoomValue){
                 proxy.pdfViewerBase.updateZoomValue();
@@ -1198,7 +1202,9 @@ export class NavigationPane {
             } else {
                 proxy.pdfViewerBase.viewerContainer.style.left = proxy.getViewerContainerLeft() + 'px';
             }
-            proxy.pdfViewerBase.viewerContainer.style.width = (proxy.pdfViewer.element.clientWidth - this.getViewerContainerLeft() - this.getViewerContainerRight()) + 'px';
+            proxy.pdfViewerBase.viewerContainer.style.width = ((proxy.pdfViewer.element.clientWidth > 0 ?
+                proxy.pdfViewer.element.clientWidth : proxy.pdfViewer.element.offsetWidth) - this.getViewerContainerLeft() -
+                this.getViewerContainerRight()) + 'px';
             proxy.pdfViewerBase.pageContainer.style.width = proxy.pdfViewerBase.viewerContainer.clientWidth + 'px';
             proxy.pdfViewerBase.updateZoomValue();
             if (proxy.pdfViewer.enableThumbnail) {
@@ -1240,7 +1246,8 @@ export class NavigationPane {
      * @returns {number} - Returns the number.
      */
     public getViewerMainContainerWidth(): number {
-        return this.pdfViewer.element.clientWidth - this.sideToolbarWidth;
+        return (this.pdfViewer.element.clientWidth > 0 ? this.pdfViewer.element.clientWidth : this.pdfViewer.element.offsetWidth) -
+        this.sideToolbarWidth;
     }
 
     /**
@@ -1333,7 +1340,8 @@ export class NavigationPane {
         if (sideBarContentContainer  && !this.isThumbnailAddedProgrammatically) {
             if (proxy.isThumbnail) {
                 sideBarContentContainer.style.display = 'none';
-                viewerContainer.style.width = proxy.pdfViewer.element.clientWidth + 'px';
+                viewerContainer.style.width = (proxy.pdfViewer.element.clientWidth > 0 ? proxy.pdfViewer.element.clientWidth :
+                    proxy.pdfViewer.element.offsetWidth) + 'px';
                 pageContainer.style.width = viewerContainer.clientWidth + 'px';
                 viewerContainer.style.left = sideBarContentContainer.clientWidth + 'px';
                 proxy.pdfViewerBase.updateZoomValue();
@@ -1417,7 +1425,9 @@ export class NavigationPane {
             } else {
                 this.pdfViewerBase.viewerContainer.style.left = (this.sideToolbarWidth) + 'px';
             }
-            this.pdfViewerBase.viewerContainer.style.width = (this.pdfViewer.element.clientWidth - this.sideToolbarWidth - this.getViewerContainerRight()) + 'px';
+            this.pdfViewerBase.viewerContainer.style.width = ((this.pdfViewer.element.clientWidth > 0 ?
+                this.pdfViewer.element.clientWidth : this.pdfViewer.element.offsetWidth) - this.sideToolbarWidth -
+                this.getViewerContainerRight()) + 'px';
             if (this.pdfViewerBase.pageContainer) {
                 this.pdfViewerBase.pageContainer.style.width = this.pdfViewerBase.viewerContainer.clientWidth + 'px';
             }
@@ -1607,8 +1617,8 @@ export class NavigationPane {
         }
         this.pdfViewer.annotation.stickyNotesAnnotationModule.updateCommentPanelTextTop();
 
-        const viewerWidth: number = (proxy.pdfViewer.element.clientWidth - proxy.getViewerContainerLeft() -
-         proxy.getViewerContainerRight());
+        const viewerWidth: number = ((proxy.pdfViewer.element.clientWidth > 0 ? proxy.pdfViewer.element.clientWidth :
+            proxy.pdfViewer.element.offsetWidth) - proxy.getViewerContainerLeft() - proxy.getViewerContainerRight());
         proxy.pdfViewerBase.viewerContainer.style.width = viewerWidth + 'px';
         proxy.pdfViewerBase.pageContainer.style.width = proxy.pdfViewerBase.viewerContainer.clientWidth + 'px';
         proxy.calculateCommentPanelWidth();
