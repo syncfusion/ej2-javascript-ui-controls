@@ -575,7 +575,7 @@ export class Edit {
                         this.parent.editModule.dialogModule.isResourceUpdate = false;
                     }
                 }
-                if (!this.parent.undoRedoModule || !this.parent.undoRedoModule['isUndoRedoPerformed']) {
+                if (!this.parent.undoRedoModule || this.parent.undoRedoModule['isUndoRedoPerformed']) {
                     ganttData.ganttProperties.resourceInfo = resourceData;
                 }
                 ganttObj.dataOperation.updateMappingData(ganttData, 'resourceInfo');

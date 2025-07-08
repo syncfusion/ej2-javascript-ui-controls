@@ -28,6 +28,8 @@ export class PDFExport {
     public exportProperties: BeforeExportEventArgs;
     private pdfExportHelper: PDFExportHelper;
     private createdDocuments: PdfDocument[] = [];
+    /** @hidden */
+    public drawPosition: { xPosition: number; yPosition: number } = { xPosition: 0, yPosition: 0 };
 
     /**
      * Constructor for the PivotGrid PDF Export module.
@@ -431,7 +433,7 @@ export class PDFExport {
             if (integratedCnt === 0 && this.parent.dataSourceSettings.columns && this.parent.dataSourceSettings.columns.length > 0) {
                 pdfGrid.headers.getHeader(0).cells.getCell(0).rowSpan--;
             }
-            pdfGrid.draw(page, new PointF(10, 20));
+            pdfGrid.draw(page, new PointF(this.drawPosition['xPosition'], this.drawPosition['yPosition']));
             integratedCnt = integratedCnt + pageSize;
             if (integratedCnt >= colLength && eventParams.args.pivotValues.length > (dataCollIndex + 1)) {
                 dataCollIndex++;

@@ -2454,7 +2454,9 @@ export class ChartRows extends DateProcessor {
                     }
                 }
             }
-            this.parent.contentHeight = treeGridContentHeight;
+            this.parent.contentHeight =  this.parent.enableRtl ?
+                this.parent['element'].getElementsByClassName('e-content')[2].children[0]['offsetHeight'] :
+                this.parent['element'].getElementsByClassName('e-content')[0].children[0]['offsetHeight'];
             document.getElementsByClassName('e-chart-rows-container')[0]['style'].height = this.parent.contentHeight + 'px';
         }
     }

@@ -39,6 +39,12 @@ export class Revision {
      */
     public revisionType: RevisionType;
     /**
+     * To set the custom data value. 
+     *
+     * @private
+     */
+    public customData: string = null;
+    /**
      * Holds the reference of the items which are under this revision.
      *
      * @private
@@ -67,7 +73,7 @@ export class Revision {
 
     public constructor(documentHelper: DocumentEditor, author: string, date: string, ownerNode?: ParagraphWidget | WCharacterFormat | WRowFormat) {
         this.author = author;
-        if(isNullOrUndefined(this.author)) {
+        if (isNullOrUndefined(this.author)) {
             this.author = "Unknown";
         }
         this.date = date;
@@ -625,6 +631,7 @@ export class Revision {
         this.range = undefined;
         this.owner = undefined;
         this.ownerNode = undefined;
+        this.customData = undefined;
     }
     /**
      * @private
@@ -638,6 +645,7 @@ export class Revision {
         let revision: Revision = new Revision(undefined, this.author, this.date);
         revision.revisionID = this.revisionID;
         revision.revisionType = this.revisionType;
+        revision.customData = this.customData;
         return revision;
     }
 
@@ -649,7 +657,8 @@ export class Revision {
         revision.revisionID = this.revisionID;
         revision.revisionType = this.revisionType;
         revision.author = this.author;
-        revision.date = this.date
+        revision.date = this.date;
+        revision.customData = this.customData;
         return revision;
     }
     /**

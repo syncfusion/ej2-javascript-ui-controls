@@ -2359,4 +2359,28 @@ describe('Kanban Virtual Scroll Feature', () => {
             remove(document.getElementById(kanbanObj.element.id));
         });
     });
+
+    describe('Bug 966220: Setting height as 100% with Kanban Virtualization is not working as expected.', () => {
+        let kanbanObj: Kanban;
+        const wrapperDiv: HTMLElement = createElement('div', { id: 'kanbanWrapper' , styles: 'height: 500px'});
+        const divElement: HTMLElement = createElement('div', {
+            className: 'defaultKanban'});
+        beforeAll((done: DoneFn) => {
+            wrapperDiv.appendChild(divElement);
+            document.body.appendChild(wrapperDiv);
+            const target: HTMLElement = document.querySelector('.defaultKanban');
+            kanbanObj = util.createKanban({ dataSource: kanbanData , enableVirtualization: true, height: '100%'}, kanbanData, done);
+            kanbanObj.appendTo(target);
+            done();
+        });
+        afterAll(() => {
+            util.destroy(kanbanObj);
+            remove(divElement);
+            remove(wrapperDiv);
+        });
+        it('Should have proper role attribute for the kanban element', () => {
+            expect(kanbanObj.element.getAttribute('role')).toEqual('application');
+            expect(kanbanObj.element.getAttribute('aria-label')).toEqual('Kanban Board');
+        });
+    });
 });

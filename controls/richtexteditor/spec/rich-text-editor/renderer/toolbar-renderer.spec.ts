@@ -804,10 +804,10 @@ describe('Toolbar Bottom Position Testing', () => {
                     expect(table.querySelectorAll('tr').length === 3).toBe(true);
                     expect(table.querySelectorAll('td').length === 9).toBe(true);
                     (rteObj.tableModule as any).tableObj.resizeHelper({ target: table, preventDefault: function () { } });
-                    expect(rteObj.contentModule.getPanel().querySelectorAll('.e-column-resize').length === 4).toBe(true);
-                    expect(rteObj.contentModule.getPanel().querySelectorAll('.e-row-resize').length === 3).toBe(true);
-                    expect(rteObj.contentModule.getPanel().querySelectorAll('.e-table-box').length === 1).toBe(true);
-                    let reCol: any = rteObj.contentModule.getPanel().querySelectorAll('.e-column-resize')[1];
+                    expect(rteObj.contentModule.getEditPanel().querySelectorAll('.e-column-resize').length === 4).toBe(true);
+                    expect(rteObj.contentModule.getEditPanel().querySelectorAll('.e-row-resize').length === 3).toBe(true);
+                    expect(rteObj.contentModule.getEditPanel().querySelectorAll('.e-table-box').length === 1).toBe(true);
+                    let reCol: any = rteObj.contentModule.getEditPanel().querySelectorAll('.e-column-resize')[1];
                     clickEvent.initEvent("mousedown", false, true);
                     reCol.dispatchEvent(clickEvent);
                     (rteObj.tableModule as any).tableObj.resizeStart(clickEvent);

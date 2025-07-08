@@ -95,7 +95,7 @@ export class VirtualRowModelGenerator implements IModelGenerator<Column> {
         const values: number[] = info.blockIndexes;
         for (let i: number = 0; i < values.length; i++) {
             if (!this.isBlockAvailable(values[parseInt(i.toString(), 10)])) {
-                let startIdx: number = !isNullOrUndefined(this.startIndex) ? this.startIndex :
+                let startIdx: number = !isNullOrUndefined(this.startIndex) && !isNaN(this.startIndex) ? this.startIndex :
                     this.getStartIndex(values[parseInt(i.toString(), 10)], data);
                 startIdx = isGroupAdaptive(this.parent) && !this.parent.vcRows.length && (e.requestType === 'sorting'
                     || e.requestType === 'delete') ? 0 : startIdx;

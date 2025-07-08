@@ -7,6 +7,7 @@ import { splitArrayCollection, processPathData, cornersPointsBeforeRotation, Rec
 import { DiagramHtmlElement } from '../drawing/html-element';
 import { ItemModel } from '../pdfviewer-model';
 import { Tooltip } from '@syncfusion/ej2-popups';
+import { PdfPage } from '@syncfusion/ej2-pdf';
 
 /**
  * The `FormFields` module is to render formfields in the PDF document.
@@ -2482,15 +2483,25 @@ export class FormFields {
                 currentWidth = this.ConvertPointToPixel(bounds.Width);
                 currentHeight = this.ConvertPointToPixel(bounds.Height);
             }
+            let bound: any;
+            let newBounds: any;
             const currentPage: number = parseFloat(data['PageIndex']);
-            const bound: any = { left: currentLeft, top: currentTop, width: currentWidth, height: currentHeight };
-            const newBounds: any = this.updateSignatureBounds(bound, currentPage, isFieldRotated);
+            if (this.pdfViewerBase.clientSideRendering && (data.Rotation === 1 || data.Rotation === 3)
+                && (this.pdfViewerBase.isSignatureImageData(data.Value))) {
+                bound = { left: currentLeft, top: currentTop, width: currentHeight, height: currentWidth };
+                newBounds = this.updateSignatureImageBounds(bound, currentPage);
+            }
+            else{
+                bound = { left: currentLeft, top: currentTop, width: currentWidth, height: currentHeight };
+                newBounds = this.updateSignatureBounds(bound, currentPage, isFieldRotated);
+            }
             let annot: PdfAnnotationBaseModel;
             const fontFamily: any = data.FontFamily ? data.FontFamily : data.fontFamily;
             if ((this.pdfViewerBase.isSignatureImageData(data.Value))) {
                 annot = {
                     id: this.pdfViewer.element.id + 'input_' + currentPage + '_' + index, bounds: newBounds, pageIndex: currentPage, data: data.Value, modifiedDate: '',
-                    shapeAnnotationType: 'SignatureImage', opacity: 1, rotateAngle: isFieldRotated ? this.getAngle(currentPage) : 0, annotName: 'SignatureField', comments: [], review: { state: '', stateModel: '', modifiedDate: '', author: '' }
+                    shapeAnnotationType: 'SignatureImage', opacity: 1, rotateAngle: isFieldRotated || (this.pdfViewerBase.clientSideRendering &&
+                        (data.Rotation === 1 || data.Rotation === 2 || data.Rotation === 3)) ? this.getAngle(currentPage) : 0, annotName: 'SignatureField', comments: [], review: { state: '', stateModel: '', modifiedDate: '', author: '' }
                 };
             } else if (this.pdfViewerBase.isSignaturePathData(data.Value)) {
                 let bound: any = newBounds;
@@ -2551,6 +2562,23 @@ export class FormFields {
             const obj: any = this.pdfViewer.formFieldCollection.filter((field: any) => { return annot.id.split('_')[0] === field.id; });
             if (obj.length > 0 && obj[0].visibility !== 'hidden' || !this.pdfViewer.formDesignerModule) {
                 this.pdfViewer.renderDrawing(canvass as any, currentPage);
+            }
+        }
+    }
+
+    private updateSignatureImageBounds(bound: any, pageIndex: number): any {
+        const pageDetails: any = this.pdfViewerBase.pageSize[parseInt(pageIndex.toString(), 10)];
+        if (pageDetails) {
+            if (pageDetails.rotation === 1) {
+                return { x: pageDetails.width - bound.top - bound.height - (bound.width / 2 - bound.height / 2),
+                    y: bound.left - bound.width + (bound.width / 2 + bound.height / 2), width: bound.height, height: bound.width };
+            }
+            else if (pageDetails.rotation === 3) {
+                return { x: bound.top + bound.width - (bound.width / 2 + bound.height / 2),
+                    y: (pageDetails.height - bound.left - bound.width + (bound.width / 2 - bound.height / 2)),
+                    width: bound.height, height: bound.width };
+            } else {
+                return { x: bound.left, y: bound.top, width: bound.width, height: bound.height };
             }
         }
     }

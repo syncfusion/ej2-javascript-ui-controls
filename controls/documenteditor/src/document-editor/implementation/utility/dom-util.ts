@@ -39,6 +39,7 @@ export class RulerHelper {
     private isDraggingIndents3: boolean = false;
     private isDraggingIndents4: boolean = false;
     private isDraggingForTab: boolean = false;
+    private isDraggingVertical: boolean = false;
     private currentTabStop: WTabStop = undefined;
     private currrentParagraph: ParagraphWidget;
     private tabIndex: number = 0;
@@ -454,7 +455,7 @@ export class RulerHelper {
     }
 
     private onRularMouseUp(e: MouseEvent): void {
-        if (this.isDraggingRender && !this.documentEditor.isTableMarkerDragging) {
+        if (this.isDraggingRender && !this.documentEditor.isTableMarkerDragging && !this.isDraggingVertical) {
             const divRect: DOMRect = this.hRuler.getBoundingClientRect() as DOMRect;
             const mouseXRelativeToDiv: number = this.finalmouseXRelativeToDiv; // HelperMethods.convertPixelToPoint(Math.round(e.clientX - divRect.left));
             // const currentLeftMargin = documentEditor.hRuler.startMargin * documentEditor.zoomFactor;
@@ -593,6 +594,7 @@ export class RulerHelper {
     private onVMouseDown(e: MouseEvent): void {
         if (this.resizerEnabled) {
             this.isDraggingRender = true;
+            this.isDraggingVertical = true;
             const divRect: DOMRect = this.vRuler.getBoundingClientRect() as DOMRect;
             this.initialYValue = HelperMethods.convertPixelToPoint(Math.round(e.clientY - divRect.top));
             this.currentScrollTop = this.vRuler.scrollTop;
@@ -608,6 +610,7 @@ export class RulerHelper {
 
     private onVMouseUp(e: MouseEvent): void {
         if (this.isDraggingRender) {
+            this.isDraggingVertical = false;
             const divRect: DOMRect = this.vRuler.getBoundingClientRect() as DOMRect;
             const mouseXRelativeToDiv: number = HelperMethods.convertPixelToPoint(Math.round(e.clientY - divRect.top));
             // const currentTopMargin = documentEditor.hRuler.startMargin * documentEditor.zoomFactor;

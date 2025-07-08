@@ -6,7 +6,7 @@ import { Component, EventHandler, attributes, formatUnit, ChildProperty, remove,
 import { addClass, removeClass, detach, prepend, Complex, closest, setValue, getValue, compile, append } from '@syncfusion/ej2-base';
 import { select, selectAll, isNullOrUndefined as isNOU, matches, Browser, KeyboardEvents, KeyboardEventArgs } from '@syncfusion/ej2-base';
 import { DataManager, Query, DataUtil } from '@syncfusion/ej2-data';
-import { Popup } from '@syncfusion/ej2-popups';
+import { Popup, isCollide } from '@syncfusion/ej2-popups';
 import { TreeView, NodeSelectEventArgs, DataBoundEventArgs, FieldsSettingsModel, NodeClickEventArgs } from '@syncfusion/ej2-navigations';
 import { NodeCheckEventArgs, FailureEventArgs} from '@syncfusion/ej2-navigations';
 import { DropDownTreeModel, FieldsModel, TreeSettingsModel } from './drop-down-tree-model';
@@ -2501,6 +2501,7 @@ export class DropDownTree extends Component<HTMLElement> implements INotifyPrope
                 removeClass([this.popupEle], DDTHIDEICON);
                 this.updatePopupHeight();
                 this.popupObj.refreshPosition();
+                this.checkCollision(this.popupEle);
                 if (!(this.showSelectAll || this.allowFiltering) && (!this.popupDiv.classList.contains(NODATA)
                     && this.treeItems.length > 0)) {
                     let focusedElement: HTMLElement = this.value != null && this.text != null ? this.treeObj.element.querySelector('[data-uid="' + this.value[this.value.length - 1] + '"]') : null;
@@ -2545,6 +2546,13 @@ export class DropDownTree extends Component<HTMLElement> implements INotifyPrope
         });
     }
 
+    private checkCollision(popupEle: HTMLElement): void {
+        const collision: string[] = isCollide(popupEle);
+        if (collision.length > 0) {
+            popupEle.style.marginTop = -parseInt(getComputedStyle(popupEle).marginTop, 10) + 'px';
+        }
+        this.popupObj.resolveCollision();
+    }
     private removeFocus(focusedElement: HTMLElement, oldFocusedElement: HTMLElement): void {
         if (oldFocusedElement && oldFocusedElement !== focusedElement) {
             oldFocusedElement.setAttribute('tabindex', '-1');

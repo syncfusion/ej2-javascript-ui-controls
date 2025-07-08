@@ -2,6 +2,14 @@
 
 ## [Unreleased]
 
+## 30.1.39 (2025-07-08)
+
+### Kanban
+
+#### Bug Fixes
+
+- `#I739684` – Now, Kanban component works properly when the height is set to `100%` with `enableVirtualization` is set to true.
+
 ## 25.1.35 (2024-03-15)
 
 ### Kanban

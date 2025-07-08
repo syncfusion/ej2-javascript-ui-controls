@@ -27,7 +27,7 @@ import { PageSetupDialog, ParagraphDialog, ListDialog, StyleDialog, FontDialog }
 import { TablePropertiesDialog, BordersAndShadingDialog, CellOptionsDialog, TableOptionsDialog } from './index';
 import { SpellChecker } from './implementation/spell-check/spell-checker';
 import { SpellCheckDialog } from './implementation/dialogs/spellCheck-dialog';
-import { DocumentEditorModel, ServerActionSettingsModel, DocumentEditorSettingsModel, FormFieldSettingsModel, CollaborativeEditingSettingsModel, DocumentSettingsModel, AutoResizeSettingsModel } from './document-editor-model';
+import { DocumentEditorModel, ServerActionSettingsModel, DocumentEditorSettingsModel, FormFieldSettingsModel, CollaborativeEditingSettingsModel, DocumentSettingsModel, AutoResizeSettingsModel, RevisionSettingsModel } from './document-editor-model';
 import { CharacterFormatProperties, ParagraphFormatProperties, SectionFormatProperties, DocumentHelper, listsProperty, abstractListsProperty } from './index';
 import { PasteOptions } from './index';
 import { CommentReviewPane, CheckBoxFormFieldDialog, DropDownFormField, TextFormField, CheckBoxFormField, FieldElementBox, TextFormFieldInfo, CheckBoxFormFieldInfo, DropDownFormFieldInfo, ContextElementInfo, CollaborativeEditing, CollaborativeEditingEventArgs, Operation, ProtectionInfo, HistoryInfo, BaseHistoryInfo, WParagraphStyle, WList, WCharacterStyle, CollaborativeEditingHandler, ActionInfo, ExternalFontInfo } from './implementation/index';
@@ -35,7 +35,7 @@ import { TextFormFieldDialog } from './implementation/dialogs/form-field-text-di
 import { DropDownFormFieldDialog } from './implementation/dialogs/form-field-drop-down-dialog';
 import { FormFillingMode, TrackChangeEventArgs, ServiceFailureArgs, ImageFormat, ProtectionType, ContentControlInfo, ServerActionType, CommentInfo, CommentProperties } from './base';
 import { TrackChangesPane } from './implementation/track-changes/track-changes-pane';
-import { RevisionCollection } from './implementation/track-changes/track-changes';
+import { Revision, RevisionCollection } from './implementation/track-changes/track-changes';
 import { NotesDialog } from './implementation/dialogs/notes-dialog';
 import { CommentElementBox, ContentControl, FootNoteWidget, HeaderFooterWidget, IWidget, ImageElementBox, LineWidget, TextElementBox } from './implementation/viewer/page';
 import { internalZoomFactorChange, contentChangeEvent, documentChangeEvent, selectionChangeEvent, zoomFactorChangeEvent, beforeFieldFillEvent, afterFieldFillEvent, serviceFailureEvent, viewChangeEvent, customContextMenuSelectEvent, customContextMenuBeforeOpenEvent, internalviewChangeEvent, internalDocumentEditorSettingsChange, trackChanges, internalOptionPaneChange, documentLoadFailedEvent, beforecontentControlFillEvent, aftercontentControlFillEvent } from './base/constants';
@@ -89,6 +89,12 @@ export class DocumentEditorSettings extends ChildProperty<DocumentEditorSettings
      */
     @Property({ shadingColor: '#cfcfcf', applyShading: true, selectionColor: '#cccccc', formFillingMode: 'Popup' })
     public formFieldSettings: FormFieldSettingsModel;
+
+    /**
+     * Gets or sets the revision settings.
+     */
+    @Property({ customData: '', showCustomDataWithAuthor: false })
+    public revisionSettings: RevisionSettingsModel;
 
     /**
      * Specified the auto resize settings.
@@ -253,6 +259,26 @@ export class DocumentSettings extends ChildProperty<DocumentSettings> {
     public compatibilityMode: CompatibilityMode;
 }
 
+/**
+ * Represents the revision settings.
+ */
+export class RevisionSettings extends ChildProperty<RevisionSettings> {
+    /**
+     * Gets or sets the custom data value
+     *
+     * @default ''
+     */
+    @Property('')
+    public customData: string;
+    /**
+     * Gets or sets a boolean value indicating whether to show custom data along with author in the Track Changes pane.
+     *
+     * @default false
+     *
+     */
+    @Property(false)
+    public showCustomDataWithAuthor: boolean;
+}
 
 
 /**
@@ -1660,6 +1686,7 @@ export class DocumentEditor extends Component<HTMLElement> implements INotifyPro
     }
     private renderNavigationPane(): void {
         if (!this.isReadOnly && this.optionsPaneModule) {
+            this.optionsPaneModule.isNavigationPane = this.documentEditorSettings.showNavigationPane;
             this.optionsPaneModule.showHideOptionsPane(this.documentEditorSettings.showNavigationPane);
         }
     }
@@ -1846,6 +1873,7 @@ export class DocumentEditor extends Component<HTMLElement> implements INotifyPro
                     }
                     if (!isNullOrUndefined(model.documentEditorSettings.showNavigationPane)) {
                         if (!this.isReadOnly && this.optionsPaneModule) {
+                            this.optionsPaneModule.isNavigationPane = model.documentEditorSettings.showNavigationPane;
                             this.optionsPaneModule.showHideOptionsPane(this.documentEditorSettings.showNavigationPane);
                         }
                     }
@@ -1855,8 +1883,16 @@ export class DocumentEditor extends Component<HTMLElement> implements INotifyPro
                     if(!isNullOrUndefined(model.documentEditorSettings.pasteAsNewParagraph)){
                         this.documentEditorSettings.pasteAsNewParagraph=model.documentEditorSettings.pasteAsNewParagraph;
                     }
-                    if(!isNullOrUndefined(model.documentEditorSettings.enableScreenReader)){
-                        this.documentEditorSettings.enableScreenReader=model.documentEditorSettings.enableScreenReader;
+                    if (!isNullOrUndefined(model.documentEditorSettings.enableScreenReader)) {
+                        this.documentEditorSettings.enableScreenReader = model.documentEditorSettings.enableScreenReader;
+                    }
+                    if (!isNullOrUndefined(model.documentEditorSettings.revisionSettings)) {
+                        if (!isNullOrUndefined(model.documentEditorSettings.revisionSettings.customData)) {
+                            this.documentEditorSettings.revisionSettings.customData = model.documentEditorSettings.revisionSettings.customData;
+                        }
+                        if (!isNullOrUndefined(model.documentEditorSettings.revisionSettings.showCustomDataWithAuthor)) {
+                            this.documentEditorSettings.revisionSettings.showCustomDataWithAuthor = model.documentEditorSettings.revisionSettings.showCustomDataWithAuthor;
+                        }
                     }
                     break;
                 case 'height':

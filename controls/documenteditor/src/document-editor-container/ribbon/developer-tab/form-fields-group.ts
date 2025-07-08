@@ -14,6 +14,7 @@ export const DROPDOWN: string = '_dropdown';
 
 /**
  * FormFieldsGroup module
+ * @private
  */
 export class FormFieldsGroup {
     private container: DocumentEditorContainer;

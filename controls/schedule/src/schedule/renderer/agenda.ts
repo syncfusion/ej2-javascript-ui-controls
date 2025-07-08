@@ -348,6 +348,15 @@ export class Agenda extends AgendaBase implements IRenderer {
             this.refreshEvent(startDate);
             filterData = this.parent.eventBase.filterEvents(dateStart, dateEnd);
         }
+        if (!isNullOrUndefined(this.parent.minDate) || !isNullOrUndefined(this.parent.maxDate)) {
+            const fieldMapping: EventFieldsMapping = this.parent.eventFields;
+            filterData = filterData.filter((event: Record<string, any>) => {
+                const eStart: Date = event[fieldMapping.startTime] as Date;
+                const eEnd: Date = event[fieldMapping.endTime] as Date;
+                return !(eStart.getTime() < this.parent.minDate.getTime() ||
+                    eEnd.getTime() > (util.addDays(this.parent.maxDate, 1)).getTime());
+            });
+        }
         return filterData;
     }
 

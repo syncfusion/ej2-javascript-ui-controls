@@ -2801,29 +2801,27 @@ export class Selection {
         if (shiftKey) {
             this.documentHelper.skipScrollToPosition = true;
         }
-        setTimeout(() => {
-            if (isSameScrollTop) {
-                if (!shiftKey) {
-                    if (isPageDown)
-                        this.moveToDocumentEnd();
-                    else
-                        this.moveToDocumentStart();
+        if (isSameScrollTop) {
+            if (!shiftKey) {
+                if (isPageDown)
+                    this.moveToDocumentEnd();
+                else
+                    this.moveToDocumentStart();
+            }
+            else {
+                let position: TextPosition;
+                if (isPageDown) {
+                    position = this.getDocumentEnd();
                 }
                 else {
-                    let position: TextPosition;
-                    if (isPageDown) {
-                        position = this.getDocumentEnd();
-                    }
-                    else {
-                        position = this.getDocumentStart();
-                    }
-                    this.end.setPositionForLineWidget(position.currentWidget, position.offset);
-                    this.fireSelectionChanged(true);
+                    position = this.getDocumentStart();
                 }
-            } else {
-                this.select({ x: offsetX, y: offsetY, extend: shiftKey });
+                this.end.setPositionForLineWidget(position.currentWidget, position.offset);
+                this.fireSelectionChanged(true);
             }
-        }, 0);
+        } else {
+            this.select({ x: offsetX, y: offsetY, extend: shiftKey });
+        }
     }
     // returns current field in FormFill mode
     private getFormFieldInFormFillMode(): FieldElementBox {
@@ -3489,7 +3487,12 @@ export class Selection {
                 } else {
 
                     let nextParagraphWidget: ParagraphWidget = this.documentHelper.selection.getNextParagraphBlock(startPosition.paragraph) as ParagraphWidget;
-                    text = text + '\r';
+                    if (!isNullOrUndefined(startPosition.paragraph.nextSplitWidget) && !isNullOrUndefined(nextParagraphWidget) && (startPosition.paragraph.nextSplitWidget.index === nextParagraphWidget.index) && startPosition.paragraph.nextSplitWidget.equals(nextParagraphWidget)) {
+                            text = text;
+                        }
+                        else {
+                            text = text + '\r';
+                        }
                     while (!isNullOrUndefined(nextParagraphWidget) && nextParagraphWidget.isEmpty()) {
                         text = text + '\r';
                         if (nextParagraphWidget === endPosition.paragraph) {
@@ -3511,6 +3514,21 @@ export class Selection {
         }
         return undefined;
     }
+    private getHeaderFooterIndex(block: HeaderFooterWidget): number {
+        const headersFooters: HeaderFooters[] = this.documentHelper.headersFooters;
+        for (let i = 0; i < headersFooters.length; i++) {
+            const headerFooter = headersFooters[i];
+            for (const key in headerFooter) {
+                if (headerFooter.hasOwnProperty(key)) {
+                    const currentHeaderFooter: HeaderFooterWidget = headerFooter[key];
+                    if (currentHeaderFooter === block) {
+                        return parseInt(key, 10);
+                    }
+                }
+            }
+        }
+        return -1;
+    }
     /**
      * @private
      * @param block
@@ -3521,11 +3539,19 @@ export class Selection {
         let index: string;
         if (block) {
             if (block instanceof HeaderFooterWidget) {
-                const hfString: string = block.headerFooterType.indexOf('Header') !== -1 ? 'H' : 'F';
-                const pageIndex: string = block.page.index.toString();
-                // let headerFooterIndex: string = (this.viewer as PageLayoutViewer).getHeaderFooter(block.headerFooterType).toString();
-                const sectionIndex: number = block.page.sectionIndex;
-                index = sectionIndex + ';' + hfString + ';' + pageIndex + ';' + offset;
+                if (this.owner.enableLayout) {
+                    const hfString: string = block.headerFooterType.indexOf('Header') !== -1 ? 'H' : 'F';
+                    const pageIndex: string = block.page.index.toString();
+                    // let headerFooterIndex: string = (this.viewer as PageLayoutViewer).getHeaderFooter(block.headerFooterType).toString();
+                    const sectionIndex: number = block.page.sectionIndex;
+                    index = sectionIndex + ';' + hfString + ';' + pageIndex + ';' + offset;
+                } else {
+                    const hfString: string = block.headerFooterType.indexOf('Header') !== -1 ? 'H' : 'F';
+                    const pageIndex: string = this.getHeaderFooterIndex(block).toString();
+                    // let headerFooterIndex: string = (this.viewer as PageLayoutViewer).getHeaderFooter(block.headerFooterType).toString();
+                    const sectionIndex: number = block.headerSectionIndex;
+                    index = sectionIndex + ';' + hfString + ';' + pageIndex + ';' + offset;
+                }
             } else {
                 if (block instanceof BodyWidget && !isNullOrUndefined(block.containerWidget) && block.containerWidget instanceof FootNoteWidget) {
                     let ind: number = block.containerWidget.bodyWidgets.indexOf(block);
@@ -3660,7 +3686,7 @@ export class Selection {
         value = position.index.substring(0, index);
         // position = position.substring(index).replace(';', '');
         if (value === 'H' || value === 'F') {
-            return this.getHeaderFooterWidget(position);
+            return this.getHeaderFooterWidget(position, sectionIndex);
         } else if (value === 'FN' || value === 'EN') {
             return this.getFootNoteWidget(position);
         }
@@ -3687,7 +3713,7 @@ export class Selection {
             return page.endnoteWidget.bodyWidgets[index1];
         }
     }
-    private getHeaderFooterWidget(position: IndexInfo): HeaderFooterWidget {
+    private getHeaderFooterWidget(position: IndexInfo, sectionIndex: number): HeaderFooterWidget {
         //HEADER OR FOOTER WIDGET
         let index: number = position.index.indexOf(';');
         let value: string = position.index.substring(0, index);
@@ -3697,15 +3723,25 @@ export class Selection {
         value = position.index.substring(0, index);
         position.index = position.index.substring(index).replace(';', '');
         index = parseInt(value, 10);
-        const page: Page = this.documentHelper.pages[index];
         let headerFooterWidget: HeaderFooterWidget;
-        if (isHeader) {
-            headerFooterWidget = page.headerWidget;
+        if (this.owner.enableLayout) {
+            const page: Page = this.documentHelper.pages[index];
+            if (isHeader) {
+                headerFooterWidget = page.headerWidget;
+            } else {
+                headerFooterWidget = page.footerWidget;
+            }
+            if (!isNullOrUndefined(headerFooterWidget)) {
+                headerFooterWidget.page = page;
+            }
         } else {
-            headerFooterWidget = page.footerWidget;
-        }
-        if (!isNullOrUndefined(headerFooterWidget)) {
-            headerFooterWidget.page = page;
+            const headersFooters = this.documentHelper.headersFooters[sectionIndex];
+            if (headersFooters) {
+                const currentHeaderFooter = headersFooters[index];
+                if (currentHeaderFooter) {
+                    headerFooterWidget = currentHeaderFooter;
+                }
+            }
         }
         return headerFooterWidget;
     }
@@ -4689,8 +4725,14 @@ export class Selection {
      */
     public isExistBeforeInline(currentInline: ElementBox, inline: ElementBox): boolean {
         if (currentInline.line === inline.line) {
-            return currentInline.line.children.indexOf(currentInline) <=
-                inline.line.children.indexOf(inline);
+            let fieldElementStart: FieldElementBox = inline instanceof FieldElementBox ? inline : inline.nextNode as FieldElementBox;
+            if (fieldElementStart instanceof FieldElementBox && fieldElementStart.fieldType === 0 && !(inline instanceof BookmarkElementBox)) {
+                return currentInline.line.children.indexOf(currentInline) >=
+                    inline.line.children.indexOf(inline);
+            } else {
+                return currentInline.line.children.indexOf(currentInline) <=
+                    inline.line.children.indexOf(inline);
+            }
         }
         if (currentInline.line.paragraph === inline.line.paragraph) {
             return currentInline.line.paragraph.childWidgets.indexOf(currentInline.line)
@@ -4722,8 +4764,13 @@ export class Selection {
         if (currentInline.line === inline.line) {
             let selection: Selection = this.documentHelper.selection;
             if (isRetrieve) {
-                return currentInline.line.children.indexOf(currentInline) >=
-                    inline.line.children.indexOf(inline);
+                if (currentInline instanceof FieldElementBox && currentInline.fieldType === 1 && this.isEmpty) {
+                    return currentInline.line.children.indexOf(currentInline) >
+                        inline.line.children.indexOf(inline);
+                } else {
+                    return currentInline.line.children.indexOf(currentInline) >=
+                        inline.line.children.indexOf(inline);
+                }
             } else if (currentInline === inline && selection.start.offset !== selection.end.offset) {
                 return currentInline.line.children.indexOf(currentInline) ===
                     inline.line.children.indexOf(inline);
@@ -7419,8 +7466,10 @@ export class Selection {
                 if (inline instanceof EditRangeEndElementBox) {
                     index = 0;
                 }
-                if (this.isMoveDownOrMoveUp && element instanceof ContentControl) {
-                    index = element.type === 0 ? (index + 1) : (index - 1);
+                if (element instanceof ContentControl) {
+                    if ((element.type == 0 && element.nextNode == element.reference) || (element.type == 1 && element.previousNode == element.reference) || this.isMoveDownOrMoveUp) {
+                        index = element.type === 0 ? (index + 1) : (index - 1);
+                    }
                 }
                 if (!isNullOrUndefined(inline.previousElement) && inline.previousElement instanceof ShapeBase && inline.previousElement.textWrappingStyle !== 'Inline' && index == 0) {
                     inline = inline.previousElement;
@@ -8096,7 +8145,7 @@ export class Selection {
     }
     
     private triggerSpellCheckWhenSelectionChanges(): void {
-        if (this.documentHelper.isSpellCheckPending && this.documentHelper.owner.isSpellCheck && !this.documentHelper.isTextInput) {
+        if (this.documentHelper.isSpellCheckPending && this.documentHelper.owner.isSpellCheck && !this.documentHelper.isTextInput && !this.owner.editorModule.isDeleteOrBackSpace) {
             this.documentHelper.triggerElementsOnLoading = true;
             this.documentHelper.triggerSpellCheck = true;
             this.viewer.updateScrollBars();

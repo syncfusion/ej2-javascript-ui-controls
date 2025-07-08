@@ -135,7 +135,7 @@ export class WParagraphFormat {
         for (let i: number = 0; i < tabs.length; i++) {
             if (!isNullOrUndefined(tabs[i].position) && !isNullOrUndefined(tabs[i].deletePosition) && !isNullOrUndefined(tabStop.position)) {
                 if (tabStop != tabs[i] && (parseFloat(tabs[i].position.toFixed(4)) === parseFloat(tabStop.position.toFixed(4)) ||
-                    parseFloat(tabs[i].deletePosition.toFixed(4)) === parseFloat(tabStop.position.toFixed(4)))) {
+                    (parseFloat(tabs[i].deletePosition.toFixed(4)) !== 0 && parseFloat(tabs[i].deletePosition.toFixed(4)) === parseFloat(tabStop.position.toFixed(4))))) {
                     return false;
                 }
             }

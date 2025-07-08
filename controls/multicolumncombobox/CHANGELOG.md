@@ -2,14 +2,6 @@
 
 ## [Unreleased]
 
-## 30.1.38 (2025-07-02)
-
-### MultiColumn ComboBox
-
-#### Bug Fixes
-
-- `#I629122` - The issue with the value not being maintained properly after selecting an option and pressing the "Enter" key in the Multicolumn ComboBox has been resolved.
-
 ## 27.1.48 (2024-09-18)
 
 ### MultiColumn ComboBox

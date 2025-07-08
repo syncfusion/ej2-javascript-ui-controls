@@ -953,10 +953,6 @@ export class SpellChecker {
         if (jsonObject.HasSpellingError && elementBox.text !== ' ' && isSamePage) {
             const textSearch: TextSearch = this.documentHelper.owner.searchModule.textSearch;
             let matchResults: MatchResults = this.getMatchedResultsFromElement(elementBox, currentText);
-            if (elementBox.previousElement instanceof FieldElementBox && (elementBox.previousElement as FieldElementBox).fieldType === 1) {
-                matchResults.elementInfo.values.pop();
-                matchResults.elementInfo.values.push(0);
-            }
             // Handled combined elements split to multiple lines when textResults is empty.
             // Only the first element will be rendered with wavy line. Other elements will be rendered in renderTextElementBox method in render Element.
             if (!isNullOrUndefined(combinedElements) && matchResults.textResults.length === 0 && combinedElements.length > 0) {

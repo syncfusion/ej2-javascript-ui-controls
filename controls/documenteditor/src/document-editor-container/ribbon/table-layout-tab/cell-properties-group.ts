@@ -8,6 +8,7 @@ export const MERGE_CELLS_BUTTON_ID: string = '_merge_cells_button';
 
 /**
  * Represents the Cell Properties Group in Table Layout tab
+ * @private
  */
 export class CellPropertiesGroup extends RibbonGroupBase {
     private commonID: string;

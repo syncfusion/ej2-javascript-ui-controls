@@ -2,6 +2,20 @@
 
 ## [Unreleased]
 
+## 30.1.39 (2025-07-08)
+
+### ContextMenu
+
+#### Bug Fixes
+
+- `#I741298` - Resolved an icon alignment issue in the nested level of the Context Menu component with template support.
+
+### Tab
+
+#### Bug Fixes
+
+- `#I739187` - Resolved an alignment issue with toolbar items in RTL mode.
+
 ## 30.1.37 (2025-06-25)
 
 ### Tab

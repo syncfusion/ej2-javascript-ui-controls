@@ -60,7 +60,16 @@ export class IsFormatted {
         return node;
     }
 
-    private isFormattedNode(node: Node, format: string): boolean {
+    /**
+     * Checks if the node is formatted with specified format
+     *
+     * @param {Node} node - specifies the node.
+     * @param {string} format - specifies the format type.
+     * @returns {boolean} - returns whether the node has the specified formatting
+     * @hidden
+     * @deprecated
+     */
+    public isFormattedNode(node: Node, format: string): boolean {
         switch (format) {
         case 'bold':
             return IsFormatted.isBold(node);

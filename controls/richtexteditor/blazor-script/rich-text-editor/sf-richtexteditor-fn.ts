@@ -249,8 +249,10 @@ export class SfRichTextEditor {
         }
         this.linkModule = new Link(this);
         this.imageModule = new Image(this);
-        this.audioModule = new Audio(this);
-        this.videoModule = new Video(this);
+        if (this.editorMode === 'HTML') {
+            this.audioModule = new Audio(this);
+            this.videoModule = new Video(this);
+        }
         if (this.showCharCount) { this.countModule = new Count(this); }
         if (this.quickToolbarSettings.enable) {
             this.quickToolbarModule = new QuickToolbar(this);
@@ -265,11 +267,13 @@ export class SfRichTextEditor {
             this.pasteCleanupModule = new PasteCleanup(this);
         }
         if (this.enableResize) { this.resizeModule = new Resize(this); }
-        this.formatPainterModule = new FormatPainter(this);
-        this.viewSourceModule = new ViewSource(this);
-        this.fullScreenModule = new FullScreen(this);
-        this.enterKeyModule = new EnterKeyAction(this);
         if (this.editorMode === 'HTML') {
+            this.formatPainterModule = new FormatPainter(this);
+            this.viewSourceModule = new ViewSource(this);
+        }
+        this.fullScreenModule = new FullScreen(this);
+        if (this.editorMode === 'HTML') {
+            this.enterKeyModule = new EnterKeyAction(this);
             this.codeBlockModule = new CodeBlock(this);
         }
     }
@@ -977,10 +981,18 @@ export class SfRichTextEditor {
         }
     }
     public getToolbar(): HTMLElement {
-        return this.toolbarSettings.enable ? this.element.querySelector('#' + this.id + '_toolbar') : null;
+        if (this.inlineMode.enable) {
+            return this.element.querySelector('#' + this.id + '_Inline_Quick_Popup');
+        } else {
+            return this.toolbarSettings.enable ? this.element.querySelector('#' + this.id + '_toolbar') : null;
+        }
     }
     public getToolbarElement(): Element {
-        return this.toolbarSettings.enable ? this.element.querySelector('#' + this.id + '_toolbar') : null;
+        if (this.inlineMode.enable) {
+            return this.element.querySelector('#' + this.id + '_Inline_Quick_Popup');
+        } else {
+            return this.toolbarSettings.enable ? this.element.querySelector('#' + this.id + '_toolbar') : null;
+        }
     }
     private updateIntervalValue(): void {
         clearTimeout(this.idleInterval);

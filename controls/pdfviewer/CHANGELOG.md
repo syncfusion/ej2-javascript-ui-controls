@@ -2,6 +2,16 @@
 
 ## [Unreleased]
 
+## 30.1.39 (2025-07-08)
+
+### PDF Viewer
+
+#### Bug Fixes
+
+- `#I738319` - Resolved an issue where `enableToolbarItem` method not working for custom toolbar items.
+- `#I737343` - Resolved an issue where the tooltip is not proper for custom toolbar items.
+- `#I736747` - Resolved an issue where the short hex values are not working for annotation color when importing annotations.
+
 ## 30.1.38 (2025-07-02)
 
 ### PDF Viewer

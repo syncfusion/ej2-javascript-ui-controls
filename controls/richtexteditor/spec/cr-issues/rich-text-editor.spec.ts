@@ -1022,6 +1022,43 @@ describe('RTE CR issues ', () => {
             }, 200);
         });
     });
+    describe('Bug 966213: Table insertion does not replace selected content when selection is made bottom to top', () => {
+        let rteEle: HTMLElement;
+        let rteObj: RichTextEditor;
+        beforeAll(() => {
+            rteObj = renderRTE({
+                height: 400,
+                value: `<p class='start'>1</p><p>2</p><p class='end'>3</p>`,
+                toolbarSettings: {
+                    items: ['Bold', 'CreateTable']
+                },
+            });
+            rteEle = rteObj.element;
+        });
+        afterAll(() => {
+            destroy(rteObj);
+        });
+        it(' While selecting multiple elements and applying table, table should replace all the content selected', (done: DoneFn) => {
+            const startNode: Element = rteObj.inputElement.querySelector('.start').firstChild as Element;
+            const endNode: Element = rteObj.inputElement.querySelector('.end').firstChild as Element;
+            rteObj.formatter.editorManager.nodeSelection.setSelectionText(document, startNode, endNode, 0, endNode.textContent.length);
+            (<HTMLElement>rteEle.querySelectorAll(".e-toolbar-item")[1] as HTMLElement).click();
+            let target: HTMLElement = (rteObj as any).tableModule.popupObj.element.querySelector('.e-insert-table-btn');
+            let clickEvent: any = document.createEvent("MouseEvents");
+            clickEvent.initEvent("click", false, true);
+            target.dispatchEvent(clickEvent);
+            rteEle.querySelector('.e-table-row').dispatchEvent(new Event("change"));
+            (rteEle.querySelector('.e-table-row') as HTMLInputElement).blur();
+            target = rteObj.tableModule.editdlgObj.element.querySelector('.e-insert-table') as HTMLElement;
+            target.dispatchEvent(clickEvent);
+            setTimeout(() => {
+                let table: HTMLElement = rteObj.contentModule.getEditPanel().querySelector('table') as HTMLElement;
+                expect(table.querySelectorAll('tr').length === 3).toBe(true);
+                expect(rteObj.contentModule.getEditPanel().innerHTML === `<table class="e-rte-table" style="width: 100%; min-width: 0px;"><colgroup><col style="width: 33.3333%;"><col style="width: 33.3333%;"><col style="width: 33.3333%;"></colgroup><tbody><tr><td class="e-cell-select"><br></td><td><br></td><td><br></td></tr><tr><td><br></td><td><br></td><td><br></td></tr><tr><td><br></td><td><br></td><td><br></td></tr></tbody></table><p><br></p>`).toBe(true);
+                done();
+            }, 200);
+        });
+    });
     describe('894730 - List not get reverted when using executeCommand in the RichTextEditor', () => {
         let rteEle: HTMLElement;
         let rteObj: RichTextEditor;
@@ -2139,7 +2176,104 @@ describe('RTE CR issues ', () => {
             done();
         });
     });
+    describe('960444 - Font color retention when pressing Backspace after Enter', () => {
+        let rteObj: RichTextEditor;
+        let keyboardEventArgs: any;
 
+        beforeAll((done: Function) => {
+            keyboardEventArgs = {
+                preventDefault: function () { },
+                altKey: false,
+                ctrlKey: false,
+                shiftKey: false,
+                char: '',
+                key: '',
+                charCode: 13,
+                keyCode: 13,
+                which: 13,
+                code: 'Enter',
+                action: 'enter',
+                type: 'keydown'
+            };
+            rteObj = renderRTE({
+                height: '200px',
+                enterKey: 'P',
+                value: ''
+            });
+            done();
+        });
+        afterAll(() => {
+            destroy(rteObj);
+        });
+        it('should maintain font color when pressing Backspace after pressing Enter twice', (done) => {
+            rteObj.value = '<p><span style="color: rgb(255, 0, 0);">Red text</span></p>';
+            rteObj.inputElement.innerHTML = '<p><span style="color: rgb(255, 0, 0);">Red text</span></p>';
+            rteObj.dataBind();
+            rteObj.focusIn();
+            const startNode: any = rteObj.inputElement.querySelector('span').childNodes[0];
+            const sel: void = new NodeSelection().setCursorPoint(
+                document, startNode, startNode.textContent.length);
+            (<any>rteObj).keyDown(keyboardEventArgs);
+            (<any>rteObj).keyDown(keyboardEventArgs);
+            const paragraphs = rteObj.inputElement.querySelectorAll('p');
+            expect(paragraphs.length).toBe(3);
+            (<any>rteObj).keyDown({
+                ...keyboardEventArgs,
+                charCode: 8,
+                keyCode: 8,
+                which: 8,
+                code: 'Backspace'
+            });
+            setTimeout(() => {
+                const currentParagraph = rteObj.inputElement.querySelectorAll('p')[1];
+                const spanInCurrentParagraph: HTMLElement = currentParagraph.querySelector('span[style*="color"]');
+                // Verify color formatting is preserved
+                expect(spanInCurrentParagraph).not.toBeNull();
+                expect(spanInCurrentParagraph.style.color).toBe('rgb(255, 0, 0)');
+                // Check HTML structure matches expected format with color preserved
+                expect(rteObj.inputElement.innerHTML).toContain('<p><span style="color: rgb(255, 0, 0);">Red text</span></p>');
+                expect(rteObj.inputElement.innerHTML).toContain('<p><span style="color: rgb(255, 0, 0);">');
+                done();
+            }, 50);
+        });
+
+        it('should maintain complex formatting when pressing Backspace after Enter', (done) => {
+            // Set initial content with multiple formatting styles
+            rteObj.value = '<p><span style="color: rgb(255, 0, 0);"><strong><em>Formatted text</em></strong></span></p>';
+            rteObj.inputElement.innerHTML = '<p><span style="color: rgb(255, 0, 0);"><strong><em>Formatted text</em></strong></span></p>';
+            rteObj.dataBind();
+            rteObj.focusIn();
+            // Get the innermost text node
+            const spanElement = rteObj.inputElement.querySelector('span');
+            const startNode: any = rteObj.inputElement.querySelector('em').childNodes[0];
+            // Place cursor at the end of the text
+            const sel: void = new NodeSelection().setCursorPoint(
+                document, startNode, startNode.textContent.length);
+            // Press Enter twice
+            (<any>rteObj).keyDown(keyboardEventArgs);
+            (<any>rteObj).keyDown(keyboardEventArgs);
+            // Press Backspace
+            (<any>rteObj).keyDown({
+                ...keyboardEventArgs,
+                charCode: 8,
+                keyCode: 8,
+                which: 8,
+                code: 'Backspace'
+            });
+            setTimeout(() => {
+                // Check if all formatting styles are preserved
+                const currentParagraph = rteObj.inputElement.querySelectorAll('p')[1];
+                const colorSpan: HTMLElement = currentParagraph.querySelector('span[style*="color"]');
+                const strongTag = currentParagraph.querySelector('strong');
+                const emTag = currentParagraph.querySelector('em');
+                expect(colorSpan).not.toBeNull();
+                expect(colorSpan.style.color).toBe('rgb(255, 0, 0)');
+                expect(strongTag).not.toBeNull();
+                expect(emTag).not.toBeNull();
+                done();
+            }, 50);
+        });
+    });
     describe('937864 - Inline Code Tooltip Missing Keyboard Shortcut', () => {
         let rteObj: RichTextEditor;
         beforeAll(() => {
@@ -2207,6 +2341,41 @@ describe('RTE CR issues ', () => {
         });
         afterAll(() => {
             destroy(rteObj);
+        });
+    });
+
+    describe('967065 - Modified the modules rendering while toolbar disabled', function () {
+        let rteObj: RichTextEditor;
+        let controlId: string;
+        beforeAll(() => {
+            rteObj = renderRTE({
+                toolbarSettings: {
+                    enable: false,
+                    items: ['Image']
+                },
+            });
+            controlId = rteObj.element.id;
+        });
+        afterAll(() => {
+            destroy(rteObj);
+        });
+        it("Check the image module is rendered or not", (done: DoneFn) => {
+            rteObj.toolbarSettings.enable = true;
+            rteObj.dataBind();
+            let item: HTMLElement = rteObj.element.querySelector('#' + controlId + '_toolbar_Image');
+            item.click();
+            setTimeout(() => {
+                let dialogEle: any = rteObj.element.querySelector('.e-dialog');
+                (dialogEle.querySelector('.e-img-url') as HTMLInputElement).value = 'https://js.syncfusion.com/demos/web/content/images/accordion/baked-chicken-and-cheese.png';
+                (dialogEle.querySelector('.e-img-url') as HTMLInputElement).dispatchEvent(new Event("input"));
+                expect(rteObj.element.lastElementChild.classList.contains('e-dialog')).toBe(true);
+                (document.querySelector('.e-insertImage.e-primary') as HTMLElement).click();
+                let trg = (document.querySelector('.e-rte-image') as HTMLElement);
+                expect(trg).not.toBe(null);
+                expect(document.querySelectorAll('img').length).toBe(1);
+                expect((document.querySelector('img') as HTMLImageElement).src).toBe('https://js.syncfusion.com/demos/web/content/images/accordion/baked-chicken-and-cheese.png');
+                done();
+            }, 100);
         });
     });
 });

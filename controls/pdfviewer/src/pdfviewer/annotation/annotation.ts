@@ -1275,6 +1275,12 @@ export class Annotation {
         }
         return isRender;
     }
+    private getAnnotationIdFromSignatureCollections(annotationId: string): string {
+        const signature: any = this.pdfViewer.signatureCollection.find(
+            (item: any) => annotationId === item.annotationId
+        );
+        return signature ? signature.uniqueKey : annotationId;
+    }
 
     private getAnnotationsFromAnnotationCollections(annotationId: string, annotation?: any): any {
         const collections: AnnotationsInternal[] = this.pdfViewer.annotationCollection;
@@ -1288,8 +1294,12 @@ export class Annotation {
                 }
             }
         }
-        if (this.pdfViewer.selectedItems.annotations.length === 0)
-        {this.pdfViewer.selectedItems.annotations.push((this.pdfViewer.nameTable as any)[`${annotationId}`]); }
+        if (this.pdfViewer.selectedItems.annotations.length === 0) {
+            if (isNullOrUndefined((this.pdfViewer.nameTable as any)[`${annotationId}`])) {
+                annotationId = this.getAnnotationIdFromSignatureCollections(annotationId);
+            }
+            this.pdfViewer.selectedItems.annotations.push((this.pdfViewer.nameTable as any)[`${annotationId}`]);
+        }
     }
 
     private getTextMarkupAnnotations(pageIndex: number, annotation: AnnotationsInternal): IPageAnnotations {

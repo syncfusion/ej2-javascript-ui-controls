@@ -464,6 +464,8 @@ export abstract class PdfField {
         let angle: number;
         if (widget && typeof widget.rotate !== 'undefined') {
             angle = widget.rotate;
+        } else if (this._mkDictionary && this._mkDictionary.has('R')) {
+            angle = this._mkDictionary.get('R');
         } else if (this._dictionary.has('R')) {
             angle = this._dictionary.get('R');
         } else {
@@ -900,11 +902,13 @@ export abstract class PdfField {
      */
     get rotationAngle(): PdfRotationAngle {
         const widget: PdfWidgetAnnotation = this.itemAt(this._defaultIndex);
-        if (!widget) {
-            return PdfRotationAngle.angle0;
+        let mkDictionary: _PdfDictionary;
+        if (widget) {
+            mkDictionary = widget._dictionary.get('MK');
+        } else {
+            mkDictionary = this._mkDictionary;
         }
-        const mkDictionary: _PdfDictionary = widget._dictionary.get('MK');
-        if (mkDictionary.has('R')) {
+        if (mkDictionary && mkDictionary.has('R')) {
             const rotationValue: number = mkDictionary.get('R');
             if (rotationValue !== undefined) {
                 switch (rotationValue) {
@@ -918,6 +922,9 @@ export abstract class PdfField {
                     return PdfRotationAngle.angle0;
                 }
             }
+        }
+        if (!widget) {
+            return PdfRotationAngle.angle0;
         }
         return widget.rotationAngle;
     }

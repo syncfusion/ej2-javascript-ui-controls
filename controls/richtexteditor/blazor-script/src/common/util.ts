@@ -4,6 +4,7 @@
 import { isNullOrUndefined, Browser, removeClass, closest, createElement, detach } from '../../../base'; /*externalscript*/
 import { IToolbarStatus } from './interface';
 import { CLS_AUD_FOCUS, CLS_IMG_FOCUS, CLS_RESIZE, CLS_RTE_DRAG_IMAGE, CLS_TABLE_MULTI_CELL, CLS_TABLE_SEL, CLS_TABLE_SEL_END, CLS_VID_FOCUS } from './constant';
+import { IsFormatted } from '../editor-manager/plugin/isformatted';
 
 /**
  * @returns {boolean} - returns boolean value
@@ -160,6 +161,51 @@ export function getDefaultMDTbStatus(): IToolbarStatus {
         unorderedlist: false,
         formats: null
     };
+}
+
+/**
+ * Checks if the node has any formatting
+ *
+ * @param {Node} node - specifies the node.
+ * @param {IsFormatted} isFormatted - specifies the IsFormatted instance.
+ * @returns {boolean} - returns whether the node has any formatting
+ */
+export function hasAnyFormatting(node: Node, isFormatted: IsFormatted = null): boolean {
+    if (!node) {
+        return false;
+    }
+
+    const nodeName: string = node.nodeName.toUpperCase();
+    if (['TABLE', 'IMG', 'VIDEO', 'AUDIO'].indexOf(nodeName) !== -1) {
+        return false;
+    }
+
+    if (node.nodeType === Node.ELEMENT_NODE && (node as HTMLElement).hasAttribute('style')) {
+        return true;
+    }
+
+    if (!isFormatted) {
+        isFormatted = new IsFormatted();
+    }
+
+    const semanticFormats: string[] = [
+        'bold', 'italic', 'underline', 'strikethrough',
+        'superscript', 'subscript', 'fontcolor', 'fontname',
+        'fontsize', 'backgroundcolor', 'inlinecode'
+    ];
+
+    for (const format of semanticFormats) {
+        if (isFormatted.isFormattedNode(node, format)) {
+            return true;
+        }
+    }
+
+    for (let i: number = 0; i < node.childNodes.length; i++) {
+        if (hasAnyFormatting(node.childNodes[i as number], isFormatted)) {
+            return true;
+        }
+    }
+    return false;
 }
 
 /**
@@ -666,9 +712,13 @@ export function wrapTextAndInlineNodes(node: Node, parentElement: string): void 
     const nodes: Node[] = Array.from(node.childNodes);
     let currentWrapper: HTMLElement | null = null;
     for (const child of nodes) {
+        let needTowrap: boolean = true;
+        if (child.parentElement && child.parentElement.nodeName === 'LI') {
+            needTowrap = needToWrapLiChild(child.parentElement, blockTags);
+        }
         // Process text nodes
         if (child.nodeType === Node.TEXT_NODE) {
-            if (child.nodeValue && child.nodeValue.trim()) {
+            if (child.nodeValue && child.nodeValue.trim() && needTowrap) {
                 if (!currentWrapper) {
                     currentWrapper = document.createElement(parentElement);
                     node.insertBefore(currentWrapper, child);
@@ -688,10 +738,6 @@ export function wrapTextAndInlineNodes(node: Node, parentElement: string): void 
                 let hasBlock: boolean = false;
                 childElements.forEach((node: Element) => {
                     const nodeName: string = node.tagName;
-                    // For LI elements, don't consider UL/OL as block elements for wrapping purposes
-                    if (tagName === 'LI' && (nodeName === 'UL' || nodeName === 'OL')) {
-                        return; // Skip this iteration (equivalent to continue)
-                    }
                     if (node.nodeType === Node.ELEMENT_NODE && isInSet(blockTags, nodeName)) {
                         hasBlock = true;
                         // Can't break from forEach, but we can use other patterns
@@ -703,7 +749,7 @@ export function wrapTextAndInlineNodes(node: Node, parentElement: string): void 
             }
             // Handle inline elements
             else if (!isInSet(blockTags, tagName) && !isInSet(inlineBlockTags, tagName) && !nonWrappableTags.has(tagName) && tagName !== 'HR') {
-                if (child.parentNode && child.parentNode.childNodes.length > 1) {
+                if (child.parentNode && needTowrap && child.parentNode.childNodes.length > 1) {
                     if (!currentWrapper) {
                         currentWrapper = document.createElement(parentElement);
                         node.insertBefore(currentWrapper, child);
@@ -734,15 +780,109 @@ export function wrapTextAndInlineNodes(node: Node, parentElement: string): void 
                     (childElement.firstChild.nodeName === 'P' && childElement.nodeName !== 'DIV') &&
                     (childElement.firstChild as HTMLElement).childNodes.length === 1 &&
                     childElement.firstChild.firstChild &&
-                    (childElement.firstChild as HTMLElement).firstChild.nodeType !== Node.ELEMENT_NODE) {
+                    (childElement.firstChild as HTMLElement).firstChild.nodeType !== Node.ELEMENT_NODE &&
+                    (childElement.firstChild as HTMLElement).attributes.length === 0) {
                     childElement.replaceChild(
                         (childElement.firstChild as HTMLElement).firstChild,
                         childElement.firstChild
                     );
+                } else if (childElement.nodeName === 'P' && childElement.parentElement && childElement.parentElement.nodeName === 'LI' && !needTowrap && (childElement as HTMLElement).attributes.length === 0) {
+                    let isEmptyText: boolean;
+                    const next: Node = getNextMeaningfulSibling(childElement.nextSibling);
+                    const prev: Node = getPreviousMeaningfulSibling(childElement.previousSibling);
+                    if (!next && !prev) {
+                        isEmptyText = true;
+                    }
+                    if (isEmptyText) {
+                        while (childElement.firstChild) {
+                            childElement.parentElement.insertBefore(childElement.firstChild, childElement); // Move each child before the <p>
+                        }
+                        childElement.parentElement.removeChild(childElement); // Remove the empty <p>
+                    }
                 }
             }
         }
     }
+}
+
+/**
+ *
+ * Returns the next meaningful sibling of the given node.
+ *
+ * @param {Node} node - The DOM node whose child nodes are to be wrapped.
+ * @returns {Node | null} - Returns a node or null.
+ */
+export function getNextMeaningfulSibling (node: Node | null): Node | null {
+    while (node) {
+        if ((node.nodeType === Node.TEXT_NODE && node.textContent.trim() === '') || (node.nodeName === 'OL' || node.nodeName === 'UL')) {
+            node = node.nextSibling;
+        } else {
+            return node;
+        }
+    }
+    return null;
+}
+/**
+ *
+ * Returns the previous meaningful sibling of the given node.
+ *
+ * @param {Node} node - The DOM node whose child nodes are to be wrapped.
+ * @returns {Node | null} - Returns a node or null.
+ */
+export function getPreviousMeaningfulSibling (node: Node | null): Node | null {
+    while (node) {
+        if ((node.nodeType === Node.TEXT_NODE && node.textContent.trim() === '') || (node.nodeName === 'OL' || node.nodeName === 'UL')) {
+            node = node.previousSibling;
+        } else {
+            return node;
+        }
+    }
+    return null;
+}
+
+/**
+ *
+ * Checks if the given node is need to be wrapped.
+ *
+ * @param {Node} node - The DOM node whose child nodes are to be wrapped.
+ * @param {Set<string>} blockTags - The set of block tags.
+ * @returns {boolean} - Returns a boolean value.
+ */
+export function needToWrapLiChild(node: Node, blockTags: Set<string>): boolean {
+    let hasBlockElement: boolean = false;
+    let hasNonBlockContent: boolean = false;
+    const liElement: HTMLElement = node as HTMLElement;
+
+    liElement.childNodes.forEach((child: Node) => {
+        if (child.nodeType === Node.ELEMENT_NODE) {
+            const tag: string = child.nodeName;
+
+            if (blockTags.has(tag) && tag !== 'OL' && tag !== 'UL') {
+                const next: Node = child.nextSibling;
+                const isFollowedByList: boolean = next && ['UL', 'OL'].indexOf(next.nodeName) !== -1;
+                if (!isFollowedByList) {
+                    hasBlockElement = true;
+                }
+            } else if (['OL', 'UL'].indexOf(tag) !== -1) {
+                const prev: Node = child.previousSibling;
+                const next: Node = child.nextSibling;
+                const isSurroundedByContent: boolean = prev && blockTags.has(prev.nodeName) && next && next.nodeType === Node.TEXT_NODE &&
+                next.textContent.trim().length > 0;
+                if (isSurroundedByContent) {
+                    hasBlockElement = true;
+                }
+            } else if (!blockTags.has(tag) && tag !== 'LI') {
+                const next: Node = child.nextSibling;
+                const isFollowedByList: boolean = next && ['UL', 'OL'].indexOf(next.nodeName) !== -1;
+                if (!isFollowedByList) {
+                    hasNonBlockContent = true;
+                }
+            }
+        } else if (child.nodeType === Node.TEXT_NODE && child.textContent.trim().length > 0) {
+            hasNonBlockContent = true;
+        }
+    });
+    return hasBlockElement && hasNonBlockContent;
 }
 
 /**

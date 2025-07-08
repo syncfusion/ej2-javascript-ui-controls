@@ -294,7 +294,7 @@
         margin-block-start: 10px;
       }
 
-      e-content ul {
+      .e-content ul {
         list-style-type: disc;
       }
 
@@ -439,6 +439,7 @@
       }
 
       .e-content p:last-child,
+      .e-content p:last-of-type,
       .e-content pre:last-child,
       .e-content blockquote:last-child {
         margin-bottom: 0;
@@ -2128,6 +2129,12 @@
         background: $rte-default-btn-bg;
       }
     }
+  }
+}
+
+@if $theme-name == 'material' or $theme-name == 'material-dark' {
+  .e-richtexteditor .e-rte-toolbar:not(.e-rte-inline-toolbar) .e-toolbar-item .e-tbar-btn.e-btn {
+    margin: 0;
   }
 }
 

@@ -1,6 +1,6 @@
 import { addClass, attributes, Browser, closest, detach, isNullOrUndefined as isNOU, isNullOrUndefined, KeyboardEventArgs, L10n, MouseEventArgs, removeClass } from '@syncfusion/ej2-base';
 import { ClickEventArgs } from '@syncfusion/ej2-navigations';
-import { isIDevice, removeClassWithAttr, scrollToCursor } from '../../common/util';
+import { hasAnyFormatting, isIDevice, removeClassWithAttr, scrollToCursor } from '../../common/util';
 import { EditorManager } from '../../editor-manager';
 import { CodeBlockPosition, IHtmlKeyboardEvent } from '../../editor-manager/base/interface';
 import { InsertHtml } from '../../editor-manager/plugin/inserthtml';
@@ -759,12 +759,24 @@ export class HtmlEditor {
                 !isNOU((currentRange.startContainer.childNodes[currentRange.startOffset - 1] as HTMLElement).isContentEditable) &&
                 !(currentRange.startContainer.childNodes[currentRange.startOffset - 1] as HTMLElement).isContentEditable ?
                 currentRange.startContainer.childNodes[currentRange.startOffset - 1] as HTMLElement : null;
+            const index: number = currentRange.startOffset > 1 ? currentRange.startOffset - 1 : 0;
             if (ChildNode) {
                 ChildNode.remove();
                 (e.args as KeyboardEventArgs).preventDefault();
+            } else if ((checkNode && checkNode.textContent.trim() === '') ||
+                (currentRange.startContainer.childNodes[index as number] &&
+                    currentRange.startContainer.childNodes[index as number].textContent.trim() === '')) {
+                const node: Node = checkNode && checkNode.textContent.trim() === '' ? checkNode : currentRange.startContainer.childNodes[index as number];
+                if (hasAnyFormatting(node) && node.previousSibling && node.previousSibling.textContent.trim() === '') {
+                    this.parent.formatter.editorManager.nodeSelection.setCursorPoint(
+                        this.parent.contentModule.getDocument(), node.previousSibling as HTMLElement, 0);
+                    detach(node);
+                    (e.args as KeyboardEventArgs).preventDefault();
+                }
             }
         }
     }
+
     //Finds the last significant node within the given element.
     private getLastNode(node: Node): Node | null {
         while (node && node.lastChild) {

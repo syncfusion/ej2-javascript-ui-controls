@@ -23,6 +23,7 @@ export class _TrueTypeReader {
     _microsoftDictionary: Dictionary<number, _TrueTypeGlyph>;
     _internalMacintoshGlyphs: Dictionary<number, _TrueTypeGlyph>;
     _internalMicrosoftGlyphs: Dictionary<number, _TrueTypeGlyph>;
+    _isOpenType: boolean = false;
     get macintosh(): Dictionary<number, _TrueTypeGlyph> {
         if (this._macintoshDictionary === null || typeof this._macintoshDictionary === 'undefined') {
             this._macintoshDictionary = new Dictionary<number, _TrueTypeGlyph>();
@@ -125,6 +126,9 @@ export class _TrueTypeReader {
             }
             this._offset = this._readInt32(this._offset);
             version = this._readInt32(this._offset);
+        }
+        if (version === 0x4f54544f) {
+            this._isOpenType = true;
         }
         return version;
     }
@@ -415,6 +419,13 @@ export class _TrueTypeReader {
             this._maxMacIndex = Math.max(i, this._maxMacIndex);
         }
     }
+    _readCompactFontFormatTable(): number[] {
+        const tableInfo: _TrueTypeTableInfo = this._getTable('CFF ');
+        if (typeof tableInfo._offset !== 'undefined' && tableInfo._offset !== null) {
+            this._offset = tableInfo._offset;
+        }
+        return this._readBytes(tableInfo._length);
+    }
     _initializeFontName(nameTable: _TrueTypeNameTable): void {
         for (let i: number = 0; i < nameTable._recordsCount; i++) {
             const record: _TrueTypeNameRecord = nameTable._nameRecords[<number>i];
@@ -501,7 +512,7 @@ export class _TrueTypeReader {
         this._metrics._fontBox = [left, top, right, bottom];
         this._metrics._stemV = 80;
         this._metrics._widthTable = this._updateWidth();
-        this._metrics._contains = this._tableDirectory.containsKey('CFF');
+        this._metrics._contains = this._tableDirectory.containsKey('CFF ');
         this._metrics._subScriptSizeFactor = headTable._unitsPerEm / os2Table._ySubscriptYSize;
         this._metrics._superscriptSizeFactor = headTable._unitsPerEm / os2Table._ySuperscriptYSize;
     }

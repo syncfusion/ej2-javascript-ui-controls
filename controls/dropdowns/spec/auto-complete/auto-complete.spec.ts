@@ -1452,6 +1452,7 @@ describe('AutoComplete', () => {
             dropDowns = new AutoComplete({
                 dataSource: remoteData,
                 debounceDelay: 0,
+                query: new Query().take(9),
                 fields: { value: 'FirstName' },
                 showPopupButton: true,
                 dataBound: () => {
@@ -1523,6 +1524,7 @@ describe('AutoComplete', () => {
             dropDowns = new AutoComplete({
                 dataSource: remoteData,
                 debounceDelay: 0,
+                query: new Query().take(9),
                 fields: { value: 'FirstName' },
                 showPopupButton: true,
                 actionBegin: (e: any) => {
@@ -1563,6 +1565,7 @@ describe('AutoComplete', () => {
                 dataSource: remoteData,
                 fields: { value: 'FirstName' },
                 debounceDelay: 0,
+                query: new Query().take(9),
                 showPopupButton: true,
                 actionComplete: (e: any) => {
                     e.cancel = true;

@@ -2416,6 +2416,7 @@ describe('Kanban base module', () => {
         });
     });
 
+
     it('memory leak', () => {
         profile.sample();
         const average: number = inMB(profile.averageChange);

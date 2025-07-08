@@ -1196,6 +1196,7 @@ describe('ComboBox', () => {
                 dataSource: data,
                 fields: { value: 'EmployeeID', text: 'FirstName' },
                 allowFiltering: true,
+                query: new Query().take(9),
                 debounceDelay: 0,
                 filtering: function (e: FilteringEventArgs) {
                     let query = new Query();
@@ -1241,6 +1242,7 @@ describe('ComboBox', () => {
             ddlObj = new ComboBox({
                 dataSource: data,
                 debounceDelay: 0,
+                query: new Query().take(9),
                 fields: { value: 'EmployeeID', text: 'FirstName' }
             });
             ddlObj.appendTo('#combobox');
@@ -1633,6 +1635,7 @@ describe('ComboBox', () => {
             let isDataBound: boolean = false;
             dropDowns = new ComboBox({
                 dataSource: remoteData,
+                query: new Query().take(9),
                 fields: { value: 'FirstName' },
                 dataBound: () => {
                     isDataBound = true;
@@ -1705,6 +1708,7 @@ describe('ComboBox', () => {
             });
             dropDowns = new ComboBox({
                 dataSource: remoteData,
+                query: new Query().take(9),
                 fields: { value: 'FirstName', text:'FirstName' },
                 allowFiltering: true,
                 debounceDelay: 0,
@@ -2068,6 +2072,7 @@ describe('ComboBox', () => {
                 dataSource: data,
                 fields: { value: 'EmployeeID', text: 'FirstName' },
                 allowFiltering: true,
+                query: new Query().take(9),
                 debounceDelay: 0,
                 filtering: function (e: FilteringEventArgs) {
                     let query = new Query();

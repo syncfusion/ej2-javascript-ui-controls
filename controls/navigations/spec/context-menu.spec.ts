@@ -1569,6 +1569,28 @@ describe('ContextMenu', () => {
             expect(liElements[0].innerHTML).toEqual("JavaScript");
             (contextMenu as any).isReact = false;
         });
+
+        it('Changing the context menu template dynamically', (done) => {
+            const items = [
+                { text: 'JavaScript' },
+                { text: 'TypeScript' },
+                { text: 'Angular' },
+                { text: 'React' },
+                { text: 'Vue' }
+            ];
+            contextMenu = new ContextMenu({
+                items: items,
+                target: '#target',
+                enableScrolling: true,
+                itemTemplate: "<span class='ename'>${text}</span>",
+            }, '#contextmenu');
+            expect(contextMenu.element.classList.contains('e-contextmenu-template')).toBe(true);
+            contextMenu.itemTemplate = "";
+            setTimeout(() => {
+                expect(contextMenu.element.classList.contains('e-contextmenu-template')).toBe(false);
+                done();
+            }, 100);
+        });
     });
 
     describe('Context Menu With scroll enabled', () => {

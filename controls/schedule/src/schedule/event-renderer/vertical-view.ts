@@ -572,7 +572,7 @@ export class VerticalEvent extends EventBase {
         util.resetTime(new Date(this.dateRender[parseInt(resource.toString(), 10)][parseInt(dayIndex.toString(), 10)].getTime()));
         const schedule: { [key: string]: Date } = util.getStartEndHours(currentDate, this.startHour, this.endHour);
         const isValidEvent: boolean = this.isValidEvent(eventObj, eStart, eEnd, schedule);
-        if ((eStart.getTime() < this.parent.minDate.getTime()) || (eEnd.getTime() > this.parent.maxDate.getTime())) {
+        if ((eStart.getTime() < this.parent.minDate.getTime()) || (eEnd.getTime() > (util.addDays(this.parent.maxDate, 1)).getTime())) {
             return;
         }
         if (eStart <= eEnd && isValidEvent && this.isWorkDayAvailable(resource, eStart)) {

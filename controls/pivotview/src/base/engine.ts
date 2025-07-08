@@ -5999,7 +5999,8 @@ export class PivotEngine {
         let spanlength: number = 1;
         for (let f: number = currentRow.length - 1; f >= 0; f--) {
             if (f !== 0) {
-                if (currentRow[f as number].formattedText === currentRow[f - 1].formattedText) {
+                if ((currentRow[f as number].formattedText === currentRow[f - 1].formattedText) &&
+                    (currentRow[f as number].valueSort.levelName === currentRow[f - 1].valueSort.levelName)) {
                     currentRow[f as number].colSpan = 0;
                     spanlength++;
                     currentRow[f - 1].colSpan = spanlength;

@@ -2,6 +2,14 @@
 
 ## [Unreleased]
 
+## 30.1.39 (2025-07-08)
+
+### Schedule
+
+#### Bug fixes
+
+- `#I739675` - The issue with the `maxDate` property preventing events from being displayed on the last date has been resolved.
+
 ## 30.1.38 (2025-07-02)
 
 ### Schedule

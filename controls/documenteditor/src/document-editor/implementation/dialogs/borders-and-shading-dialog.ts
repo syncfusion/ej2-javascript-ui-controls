@@ -126,8 +126,7 @@ export class BordersAndShadingDialog {
      */
     public initBordersAndShadingsDialog(localeValue: L10n, isRtl?: boolean): void {
         this.target = createElement('div', {
-            id: this.documentHelper.owner.containerId + '_table_border_shadings',
-            className: 'e-de-table-border-shading-dlg'
+            id: this.documentHelper.owner.containerId + '_table_border_shadings'
         });
         this.displayText = <HTMLDivElement>createElement('div', {
             innerHTML: localeValue.getConstant('Borders'),
@@ -184,7 +183,7 @@ export class BordersAndShadingDialog {
         });
         this.noneDivContainer = <HTMLDivElement>createElement('div', {
             id: this.target.id + '_None_Div_Container',
-            styles: 'display:flex; flex-direction:column; align-items:center'
+            styles: 'display:flex; flex-direction:column; align-items:center; width:auto'
         });
         this.noneDiv = <HTMLDivElement>createElement('div', {
             id: this.target.id + '_None_Div',
@@ -193,11 +192,11 @@ export class BordersAndShadingDialog {
         this.noneDivLabel = <HTMLDivElement>createElement('div', {
             innerHTML: localeValue.getConstant('None'), className: 'e-de-table-setting-labels-heading',
             id: this.target.id + '_None_Div_Label',
-            styles: 'text-align: center; margin-right: 14px; margin-top: 3px; margin-left: 10px; overflow-wrap: anywhere'
+            styles: 'text-align: center; margin-right: 18px; margin-top: 3px; margin-left: 10px'
         });
         this.boxDivContainer = <HTMLDivElement>createElement('div', {
             id: this.target.id + '_Box_Div_Container',
-            styles: 'display:flex; flex-direction:column; align-items:center'
+            styles: 'display:flex; flex-direction:column; align-items:center; width:auto'
         });
         this.boxDiv = <HTMLDivElement>createElement('div', {
             id: this.target.id + '_Box_Div',
@@ -206,11 +205,11 @@ export class BordersAndShadingDialog {
         this.boxDivLabel = <HTMLDivElement>createElement('div', {
             innerHTML: localeValue.getConstant('Box'), className: 'e-de-table-setting-labels-heading',
             id: this.target.id + '_Box_Div_Label',
-            styles: 'text-align: center; margin-right: 14px; margin-top: 3px; margin-left: 10px; overflow-wrap: anywhere'
+            styles: 'text-align: center; margin-right: 18px; margin-top: 3px; margin-left: 10px'
         });
         this.allDivContainer = <HTMLDivElement>createElement('div', {
             id: this.target.id + '_All_Div_Container',
-            styles: 'display:flex; flex-direction:column; align-items:center'
+            styles: 'display:flex; flex-direction:column; align-items:center; width:auto'
         });
         this.allDiv = <HTMLDivElement>createElement('div', {
             id: this.target.id + '_All_Div',
@@ -219,11 +218,11 @@ export class BordersAndShadingDialog {
         this.allDivLabel = <HTMLDivElement>createElement('div', {
             innerHTML: localeValue.getConstant('All'), className: 'e-de-table-setting-labels-heading',
             id: this.target.id + '_All_Div_Label',
-            styles: 'text-align: center; margin-right: 14px; margin-top: 3px; margin-left: 10px; overflow-wrap: anywhere'
+            styles: 'text-align: center; margin-right: 18px; margin-top: 3px; margin-left: 10px'
         });
         this.customDivContainer = <HTMLDivElement>createElement('div', {
             id: this.target.id + '_Custom_Div_Container',
-            styles: 'display:flex; flex-direction:column; align-items:center; width: 62px'
+            styles: 'display:flex; flex-direction:column; align-items:center; width:auto'
         });
         this.customDiv = <HTMLDivElement>createElement('div', {
             id: this.target.id + '_Custom_Div',
@@ -232,7 +231,7 @@ export class BordersAndShadingDialog {
         this.customDivLabel = <HTMLDivElement>createElement('div', {
             innerHTML: localeValue.getConstant('Custom'), className: 'e-de-table-setting-labels-heading',
             id: this.target.id + '_Custom_Div_Label',
-            styles: 'text-align: center; margin-right: 7px; margin-top: 3px;margin-left: 10px; overflow-wrap: anywhere'
+            styles: 'text-align: center; margin-right: 18px; margin-top: 3px;margin-left: 10px'
         });
         this.noneDivTransparent = createElement('div', {
             id: this.target.id + '_None_Div_Transparent', className: 'e-icons e-de-table-border-setting e-de-table-border-none-setting'

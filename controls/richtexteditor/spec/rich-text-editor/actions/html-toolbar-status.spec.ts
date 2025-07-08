@@ -320,14 +320,14 @@ describe(' HTML editor update toolbar ', () => {
         });
         it('Check orderlist tag ', () => {
             let node: Node = document.getElementById('list31');
-            domSelection.setSelectionText(document, node.childNodes[0], node.childNodes[0], 5, 5);
+            domSelection.setSelectionText(document, node.childNodes[0].firstChild, node.childNodes[0].firstChild, 5, 5);
             (rteObj as any).mouseUp({ target: editNode });
             expect((rteObj.htmlEditorModule as any).toolbarUpdate.toolbarStatus.orderedlist).toEqual(true);
             expect(status.orderedlist).toEqual(true);
         });
         it('Check unorderlist tag ', () => {
             let node: Node = document.getElementById('list32');
-            domSelection.setSelectionText(document, node.childNodes[0], node.childNodes[0], 5, 5);
+            domSelection.setSelectionText(document, node.childNodes[0].firstChild, node.childNodes[0].firstChild, 5, 5);
             (rteObj as any).mouseUp({ target: editNode });
             expect((rteObj.htmlEditorModule as any).toolbarUpdate.toolbarStatus.unorderedlist).toEqual(true);
             expect(status.unorderedlist).toEqual(true);

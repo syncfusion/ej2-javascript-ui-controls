@@ -60,6 +60,8 @@
         height: 32px !important; /* stylelint-disable-line declaration-no-important */
         min-height: 32px;
         z-index: 10;
+        overflow-x: scroll;
+        scrollbar-width: none;
         &.e-show,
         &:hover {
           display: block;

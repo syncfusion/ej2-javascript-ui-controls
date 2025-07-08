@@ -434,6 +434,25 @@ export class Toolbar {
             case 'OrganizePagesTool':
                 this.enableOrganizePagesButton(isEnable);
                 break;
+            default: {
+                let element: HTMLElement;
+                const item: any = (items[parseInt(i.toString(), 10)] as any );
+                if (item.template) {
+                    const match: RegExpMatchArray = item.template.match(/id="([^"]+)"/);
+                    const id: string = match ? match[1] : null;
+                    element = !isNullOrUndefined(id) ? document.getElementById(id) : null;
+                    if (element) {
+                        this.enableItems(element.parentElement.parentElement, isEnable);
+                    }
+                }
+                else {
+                    element = !isNullOrUndefined(item.id) ? document.getElementById(item.id) : null;
+                    if (element) {
+                        this.enableItems(element.parentElement, isEnable);
+                    }
+                }
+                break;
+            }
             }
         }
     }
@@ -1297,6 +1316,37 @@ export class Toolbar {
         this.pdfViewerBase.getElement('_currentPageInputContainer').style.minWidth = '20px';
         this.totalPageItem = this.pdfViewerBase.getElement('_totalPage');
         this.addPropertiesToolItemContainer(this.totalPageItem.parentElement, 'e-pv-total-page-container', '_totalPageContainer');
+        this.createCustomItemTooltip();
+    }
+
+    private createCustomItemTooltip(): void {
+        for (let x: number = 0; x < this.pdfViewer.toolbarSettings.toolbarItems.length; x++) {
+            const toolbarItem: any = this.pdfViewer.toolbarSettings.toolbarItems[parseInt(x.toString(), 10)] as any;
+            let id: string;
+            if (typeof (toolbarItem) === 'object' && toolbarItem.tooltipText) {
+                if (toolbarItem.template) {
+                    const match: RegExpMatchArray = toolbarItem.template.match(/id="([^"]+)"/);
+                    id = match ? match[1] : null;
+                }
+                else {
+                    id = toolbarItem.id;
+                }
+
+                if (id) {
+                    const element: HTMLElement = document.getElementById(id);
+                    if (element) {
+                        element.title = '';
+                        element.parentElement.title = '';
+                        element.classList.add('e-popup-text', 'e-pv-tbar-btn');
+                        this.createTooltip(element, toolbarItem.tooltipText);
+                        if (toolbarItem.template) {
+                            const styles: CSSStyleDeclaration = window.getComputedStyle(element);
+                            element.style.color = styles.color;
+                        }
+                    }
+                }
+            }
+        }
     }
 
     /**

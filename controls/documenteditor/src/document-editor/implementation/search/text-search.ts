@@ -1,6 +1,6 @@
 import { Dictionary } from '../../base/dictionary';
 import { isNullOrUndefined } from '@syncfusion/ej2-base';
-import { FindOption } from '../../base/types';
+import { CONTROL_CHARACTERS, FindOption } from '../../base/types';
 import { TextPosition } from '../selection/selection-helper';
 import {
     LineWidget, ElementBox, TextElementBox, ParagraphWidget,
@@ -121,16 +121,42 @@ export class TextSearch {
                     stringBuilder = stringBuilder + ((inlineElement as TextElementBox).text);
                 }
             } else if (inlineElement instanceof FieldElementBox) {
-                const fieldBegin: FieldElementBox = inlineElement as FieldElementBox;
-                if (!isNullOrUndefined(fieldBegin.fieldEnd)) {
+                let fieldBegin: ElementBox = inlineElement as FieldElementBox;
+                if (!isNullOrUndefined((fieldBegin as FieldElementBox).fieldEnd)) {
                     /* eslint-disable-next-line max-len */
-                    inlineElement = isNullOrUndefined(fieldBegin.fieldSeparator) ? fieldBegin.fieldEnd as FieldElementBox : fieldBegin.fieldSeparator as FieldElementBox;
+                    if (isSpellCheck) {
+                        // In MS Word for field text error will not be shown. So made the text as unique character. So that error will not be generated.
+                        // Also in spell check based on the index only selection will be trigger. So need to consider and calculate the length for the field and concatenate unique character for the text.
+                        while (!isNullOrUndefined(fieldBegin)) {
+                            const nextElement: ElementBox = fieldBegin.nextElement;
+                            if (fieldBegin === inlineElement.fieldEnd) {
+                                stringBuilder += CONTROL_CHARACTERS.Marker_Start;
+                                break;
+                            }
+                            if (nextElement instanceof TextElementBox) {
+                                let text: string = nextElement.text;
+                                text = text.split('').map(() => CONTROL_CHARACTERS.Marker_Start).join('');
+                                stringBuilder += text;
+                            } else {
+                                stringBuilder += CONTROL_CHARACTERS.Marker_Start;
+                            }
+                            fieldBegin = nextElement;
+                        }
+                        inlineElement = inlineElement.fieldEnd;
+                    } else {
+                        inlineElement = isNullOrUndefined((fieldBegin as FieldElementBox).fieldSeparator)
+                            ? (fieldBegin as FieldElementBox).fieldEnd : (fieldBegin as FieldElementBox).fieldSeparator;
+                    }
                 }
             } else if (inlineElement instanceof ShapeElementBox && !isNullOrUndefined(inlineElement.textFrame)
                 && (inlineElement.textFrame as TextFrame).childWidgets.length > 0) {
                 this.findInlineText(inlineElement.textFrame, pattern, findOption, isFirstMatch, results, selectionEnd);
             }
-            if (!(inlineElement instanceof TextElementBox) && !(inlineElement instanceof ListTextElementBox)) {
+            if (!(inlineElement instanceof TextElementBox) && !(inlineElement instanceof ListTextElementBox)
+                && !(isSpellCheck && inlineElement instanceof FieldElementBox)) {
+                if (isSpellCheck) {
+                    stringBuilder = stringBuilder + CONTROL_CHARACTERS.Marker_Start;
+                }
                 previousElementCount += inlineElement.length;
             }
             if (!isNullOrUndefined(inlineElement) && isNullOrUndefined(inlineElement.nextNode)) {

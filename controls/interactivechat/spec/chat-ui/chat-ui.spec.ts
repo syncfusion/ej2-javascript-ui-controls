@@ -1,6 +1,6 @@
 import { createElement, L10n } from "@syncfusion/ej2-base";
 import { ChatUI,MessageModel, MessageReplyModel, UserModel } from "../../src/chat-ui/index";
-import { ToolbarItemClickedEventArgs } from '../../src/interactive-chat-base/index';
+import { ToolbarItemClickedEventArgs, ToolbarItemModel } from '../../src/interactive-chat-base/index';
 import { InterActiveChatBase } from '../../src/interactive-chat-base/index';
 
 interface ClipboardItem {
@@ -1491,6 +1491,46 @@ describe('ChatUI Component', () => {
             expect(bannerElem.querySelector('p').textContent).toEqual('Start your conversation');
             document.body.removeChild(sTag);
         });
+
+        it('EmptyChat template checking', (done: DoneFn) => {
+            const sTag: HTMLElement = createElement('script', { id: 'emptyChatTemplate', attrs: { type: 'text/x-template' } });
+            sTag.innerHTML = '<div><h1>Welcome to Chat</h1><p>Start your conversation</p></div>';
+            document.body.appendChild(sTag);
+            chatUI = new ChatUI({
+                emptyChatTemplate: '#emptyChatTemplate',
+                user: { id: 'user1', user: 'John Doe' }
+            });
+            chatUI.appendTo('#chatUI');
+            const initialBannerView = chatUIElem.querySelector('.e-empty-chat-template');
+            expect(initialBannerView).not.toBeNull();
+            const footerElem: HTMLDivElement = chatUIElem.querySelector('.e-footer');
+            const textareaElem: HTMLDivElement = chatUIElem.querySelector('.e-footer .e-chat-textarea');
+            const sendIcon: HTMLElement = chatUIElem.querySelector('.e-chat-send');
+            expect(textareaElem).not.toBeNull();
+            expect(sendIcon).not.toBeNull();
+            textareaElem.innerText = 'Hello!';
+            const inputEvent: Event = new Event('input', { bubbles: true });
+            textareaElem.dispatchEvent(inputEvent);
+            setTimeout(() => {
+                    const keyEvent: KeyboardEvent = new KeyboardEvent('keydown', { key: 'Enter' });
+                    footerElem.dispatchEvent(keyEvent);
+                    const messageItems: NodeListOf<HTMLElement> = chatUIElem.querySelectorAll('.e-message-item');
+                    const lastMessage: HTMLElement = messageItems[messageItems.length - 1];
+                    expect(lastMessage).not.toBeNull();
+                    expect(lastMessage.querySelector('.e-text').textContent).toBe('Hello!');
+                    const messageWrapper: HTMLElement = chatUIElem.querySelector('.e-message-wrapper');
+                    const pinButton: HTMLElement = messageWrapper.querySelector('.e-chat-pin');
+                    expect(pinButton).not.toBeNull();
+                    pinButton.click();
+                    const pinnedMessage: HTMLElement = chatUIElem.querySelector('.e-pinned-message');
+                    expect(pinnedMessage.querySelector('.e-pinned-message-text').textContent).toBe('Hello!');
+                    const deleteButton: HTMLElement = chatUIElem.querySelector('.e-icons.e-chat-trash');
+                    expect(deleteButton).not.toBeNull();
+                    deleteButton.click();
+                    expect(initialBannerView).not.toBeNull();
+                    done();
+            }, 450, done);
+        });
     
         it('Footer template checking', () => {
             const sTag: HTMLElement = createElement('script', { id: 'chatFooterTemplate', attrs: { type: 'text/x-template' } });
@@ -1983,6 +2023,35 @@ describe('ChatUI Component', () => {
 
             const toolbarIcons = chatUIElem.querySelectorAll('.e-chat-message-toolbar .e-icons');
             expect(toolbarIcons.length).toBe(0); // No icons should be rendered
+        });
+
+        it('should trigger the itemClicked event on toolbar button click', () => {
+            const toolbarClickSpy = jasmine.createSpy('toolbarItemClicked');
+
+            chatUI = new ChatUI({
+                messages: [
+                    {
+                        id: 'msg1',
+                        text: 'This message should trigger the event!',
+                        author: { id: 'user1', user: 'John Doe' },
+                        timeStamp: new Date(),
+                    }
+                ],
+                messageToolbarSettings: {
+                    items: [
+                        { type: 'Button', iconCss: 'e-icons e-chat-copy', tooltip: 'Copy' },
+                    ],
+                    itemClicked: toolbarClickSpy
+                }
+            });
+            chatUI.appendTo('#chatUI');
+
+            const toolbarButton: HTMLElement = chatUIElem.querySelector('.e-chat-message-toolbar .e-icons.e-chat-copy');
+            expect(toolbarButton).not.toBeNull();
+
+            toolbarButton.click();
+
+            expect(toolbarClickSpy).toHaveBeenCalled();
         });
 
         it('should render the toolbar with message options', () => {
@@ -2625,6 +2694,154 @@ describe('ChatUI Component', () => {
             const rightToolbar: HTMLElement = rightMessage.querySelector('.e-chat-message-toolbar') as HTMLElement;
             expect(rightToolbar).not.toBeNull();
             rightMessage.dispatchEvent(new Event('mouseleave'));
+        });
+
+        it('should update toolbar items dynamically', () => {
+            chatUI = new ChatUI({
+                messages: [
+                    {
+                        id: 'msg1',
+                        text: 'This is a message.',
+                        author: { id: 'user1', user: 'John Doe' },
+                        timeStamp: new Date(),
+                    }
+                ],
+                messageToolbarSettings: {
+                    items: [
+                        { type: 'Button', iconCss: 'e-icons e-chat-copy', tooltip: 'Copy' }
+                    ]
+                }
+            });
+            chatUI.appendTo('#chatUI');
+            let toolbar = chatUIElem.querySelector('.e-chat-message-toolbar');
+            expect(toolbar.querySelector('.e-chat-copy')).not.toBeNull();
+
+            // Update toolbar items
+            chatUI.messageToolbarSettings.items = [
+                { type: 'Button', iconCss: 'e-icons e-chat-pin', tooltip: 'Pin' }
+            ];
+            chatUI.dataBind();
+
+            toolbar = chatUIElem.querySelector('.e-chat-message-toolbar');
+            expect(toolbar.querySelector('.e-chat-copy')).toBeNull();
+            expect(toolbar.querySelector('.e-chat-pin')).not.toBeNull();
+        });
+
+        it('should update forwarded message locale dynamically', () => {
+            L10n.load({
+                'en': {
+                    "chat-ui": {
+                        "forwarded": "Forwarded"
+                    }
+                },
+                'fr': {
+                    "chat-ui": {
+                        "forwarded": "Transféré"
+                    }
+                }
+            });
+
+            chatUI = new ChatUI({
+                messages: [
+                    {
+                        id: 'msg1',
+                        text: 'This message is forwarded!',
+                        author: { id: 'user1', user: 'John Doe' },
+                        timeStamp: new Date(),
+                        isForwarded: true
+                    }
+                ],
+                locale: 'en'
+            });
+            chatUI.appendTo('#chatUI');
+            let forwardedIndicator = chatUIElem.querySelector('.e-forwarded-indicator');
+            expect(forwardedIndicator.textContent).toContain('Forwarded');
+
+            // Change locale to French
+            chatUI.locale = 'fr';
+            chatUI.dataBind();
+
+            forwardedIndicator = chatUIElem.querySelector('.e-forwarded-indicator');
+            expect(forwardedIndicator.textContent).toContain('Transféré');
+        });
+
+        it('should hide pinned message wrapper and show pin icon on message when unpin is selected', () => {
+            chatUI = new ChatUI({
+                messages: [
+                    {
+                        id: 'msg1',
+                        text: 'This is a pinned message!',
+                        author: { id: 'user1', user: 'John Doe' },
+                        timeStamp: new Date(),
+                        isPinned: true
+                    }
+                ]
+            });
+            chatUI.appendTo('#chatUI');
+            const pinnedWrapper: HTMLElement = chatUIElem.querySelector('.e-pinned-message-wrapper');
+            expect(pinnedWrapper.style.display).not.toBe('none');
+
+            // Simulate clicking the unpin icon from the message toolbar
+            const unpinButton: HTMLElement = chatUIElem.querySelector('.e-chat-message-toolbar .e-icons.e-chat-unpin');
+            expect(unpinButton).not.toBeNull();
+
+            unpinButton.click();
+
+            expect(pinnedWrapper.style.display).toBe('none');
+
+            // Check the message for pin icon
+            const messagePinButton: HTMLElement = chatUIElem.querySelector('.e-chat-message-toolbar .e-icons.e-chat-pin');
+            expect(messagePinButton).not.toBeNull();
+        });
+    });
+
+    describe('Message toolbar with message template', () => {
+        const customToolbarItems: ToolbarItemModel[] = [
+            { type: 'Button', iconCss: 'e-icons e-custom-action', tooltip: 'Custom Action' }
+        ];
+
+        beforeEach(() => {
+            chatUI = new ChatUI({
+                messages: [
+                    {
+                        id: 'msg1',
+                        text: 'This is a message with a custom toolbar!',
+                        author: { id: 'user1', user: 'John Doe' },
+                        timeStamp: new Date()
+                    }
+                ],
+                messageTemplate: (data: any) => `
+                            <div class="message-template">
+                                <span>${data.message.text}</span>
+                            </div>
+                        `,
+                messageToolbarSettings: {
+                    items: customToolbarItems
+                }
+            });
+            chatUI.appendTo('#chatUI');
+        });
+
+        it('should render custom toolbar item', () => {
+            const toolbar = chatUIElem.querySelector('.e-chat-message-toolbar');
+            expect(toolbar).not.toBeNull();
+            const customIcon = toolbar.querySelector('.e-toolbar-item');
+            expect(customIcon).not.toBeNull();
+            expect(customIcon.getAttribute('title')).toBe('Custom Action');
+        });
+
+        it('should render with default toolbar when no custom items provided', () => {
+            chatUI.messageToolbarSettings.items = [];
+            chatUI.dataBind();
+
+            const toolbarIcons = chatUIElem.querySelectorAll('.e-chat-message-toolbar .e-icons');
+            const defaultClasses = ['e-chat-copy', 'e-chat-reply', 'e-chat-pin', 'e-chat-trash'];
+            
+            expect(toolbarIcons.length).toBeGreaterThan(0);
+            defaultClasses.forEach((className) => {
+                const icon = Array.from(toolbarIcons).find((icon) => icon.classList.contains(className));
+                expect(icon).not.toBeNull();
+            });
         });
     });
 });

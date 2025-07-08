@@ -18,6 +18,11 @@
           @if $skin-name == 'bootstrap5' or $skin-name == 'bootstrap5.3' or $skin-name == 'tailwind' or $skin-name == 'Material3' {
             padding: 4px 0;
           }
+          &.e-contextmenu-template {
+            .e-menu-caret-icon {
+              display: flex;
+            }
+          }
         }
 
         &.e-ul {

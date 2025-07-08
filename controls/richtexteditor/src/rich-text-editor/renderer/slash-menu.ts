@@ -76,7 +76,7 @@ export class SlashMenu {
         const dataSource: { [key: string]: Object; }[] = this.getItems();
         const model: MentionModel = {
             dataSource: dataSource,
-            cssClass: 'e-slash-menu' + this.parent.getCssClass(),
+            cssClass: 'e-slash-menu e-rte-elements' + this.parent.getCssClass(),
             fields: { text: 'text', groupBy: 'type', iconCss: 'iconCss', value: 'description' },
             mentionChar: '/',
             target: this.parent.inputElement,

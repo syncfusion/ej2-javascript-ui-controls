@@ -259,6 +259,7 @@ export const doneProperty: string[] = ['done', 'dn'];
 export const replyCommentsProperty: string[] = ['replyComments', 'rc'];
 export const revisionTypeProperty: string[] = ['revisionType', 'rt'];
 export const revisionIdProperty: string[] = ['revisionId', 'rid'];
+export const customDataProperty: string[] = ['customData', 'cd'];
 export const itemIDProperty: string[] = ['itemID', 'iid'];
 export const xmlProperty: string[] = ['xml', 'x'];
 export const footnoteTypeProperty: string[] = ['footnoteType', 'fnt'];

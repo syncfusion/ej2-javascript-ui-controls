@@ -2165,6 +2165,7 @@ describe('MultiSelect', () => {
                 dataSource: remoteData,
                 fields: { value: 'EmployeeID', text: 'FirstName' },
                 debounceDelay: 0,
+                query: new Query().take(9),
                 mode: 'CheckBox',
                 value: [5],
                 change: () => {

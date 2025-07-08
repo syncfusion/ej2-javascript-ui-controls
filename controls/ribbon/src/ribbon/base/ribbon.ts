@@ -307,6 +307,7 @@ export class Ribbon extends Component<HTMLElement> implements INotifyPropertyCha
     private itemsModel: RibbonItemModel[];
     private targetTabs: { [key: string]: number };
     private isUpdateItems: boolean;
+    private resizeListener: Function;
     /** @hidden */
     public keysPress: string;
     /** @hidden */
@@ -443,7 +444,8 @@ export class Ribbon extends Component<HTMLElement> implements INotifyPropertyCha
     }
 
     private wireEvents(): void {
-        EventHandler.add(<HTMLElement & Window><unknown>window, 'resize', this.resizeHandler, this);
+        this.resizeListener = this.resizeHandler.bind(this);
+        EventHandler.add(<HTMLElement & Window><unknown>window, 'resize', this.resizeListener);
         EventHandler.add(document.body, 'keydown', this.keytipActionHandler, this);
         EventHandler.add(document, 'mousedown', this.mouseEventHandler, this);
         EventHandler.add(document, 'scroll', this.mouseEventHandler, this);
@@ -2256,6 +2258,7 @@ export class Ribbon extends Component<HTMLElement> implements INotifyPropertyCha
                 const eventArgs: OverflowPopupEventArgs = { element: args.element, event: args.event, cancel: args.cancel };
                 this.trigger('overflowPopupClose', eventArgs, (ribbonArgs: OverflowPopupEventArgs) => {
                     if (ele || ribbonArgs.cancel || groupButtonEle) {
+                        args.element = null;
                         args.cancel = true;
                     }
                 });
@@ -4730,7 +4733,7 @@ export class Ribbon extends Component<HTMLElement> implements INotifyPropertyCha
     }
 
     private unwireEvents(): void {
-        EventHandler.remove(<HTMLElement & Window><unknown>window, 'resize', this.resizeHandler);
+        EventHandler.remove(<HTMLElement & Window><unknown>window, 'resize', this.resizeListener);
         EventHandler.remove(document.body, 'keydown', this.keytipActionHandler);
         EventHandler.remove(document, 'mousedown', this.mouseEventHandler);
         EventHandler.remove(document, 'scroll', this.mouseEventHandler);

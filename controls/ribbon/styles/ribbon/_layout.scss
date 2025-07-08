@@ -521,14 +521,6 @@
     }
   }
 
-  body:has(.e-ribbon.e-rbn .e-ribbon-tooltip-target .e-ribbon-open) .e-ribbon-tooltip.e-popup-open {
-    visibility: hidden;
-  }
-
-  body:has(.e-ribbon.e-rbn .e-ribbon-tooltip-target .e-ribbon-hover:not(.e-ribbon-open)) .e-ribbon-tooltip.e-popup-open {
-    visibility: visible;
-  }
-
   .e-ribbon-backstage-popup {
     &.e-ribbon-backstage-open {
       display: flex;

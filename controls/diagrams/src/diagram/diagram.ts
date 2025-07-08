@@ -10309,35 +10309,56 @@ export class Diagram extends Component<HTMLElement> implements INotifyPropertyCh
      *
      * @returns { void } updateBridging method .\
      * @param {string} isLoad - provide the isLoad value.
+     * @param {Connector} obj - provide the connector value.
      *
      * @private
      */
-    public updateBridging(isLoad?: boolean): void {
+    public updateBridging(isLoad?: boolean, obj?: Connector): void {
         if (this.bridgingModule) {
-            for (let i: number = 0; i < this.connectors.length; i++) {
-                const connector: Connector = this.connectors[parseInt(i.toString(), 10)] as Connector;
-                this.bridgingModule.updateBridging(connector, this);
-                const canvas: GroupableView = this.connectors[parseInt(i.toString(), 10)].wrapper;
-                if (canvas && canvas.children && canvas.children.length > 0) {
-                    const pathSegment: PathElement = canvas.children[0] as PathElement;
-                    const data: string = pathSegment.data;
-                    if (connector.isBezierEditing && this.selectedItems.connectors[0].id === connector.id || connector.type !== 'Bezier') {
-                        connector.getSegmentElement(
-                            connector, pathSegment,
-                            this.layout.type === 'ComplexHierarchicalTree' || this.layout.type === 'HierarchicalTree' ?
-                                this.layout.orientation : undefined, undefined, false);
-                    }
-                    if (pathSegment.data !== data) {
-                        canvas.measure(new Size());
-                        canvas.arrange(canvas.desiredSize);
-                        if (this.mode === 'SVG' && !isLoad) {
-                            this.updateDiagramObject(connector);
-                        }
-                    }
+            // 965229 - Connector is not selected after dragging from negative position to positive position
+            if (obj instanceof Connector) {
+                this.updatePathSegmentData(obj, isLoad);
+            }
+            else {
+                for (let i: number = 0; i < this.connectors.length; i++) {
+                    const connector: Connector = this.connectors[parseInt(i.toString(), 10)] as Connector;
+                    this.updatePathSegmentData(connector, isLoad);
                 }
             }
         } else if (this.constraints & DiagramConstraints.Bridging) {
             console.warn('[WARNING] :: Module "ConnectorBridging" is not available in Diagram component! You either misspelled the module name or forgot to load it.');
+        }
+    }
+
+    /**
+     *updatePathSegmentData method \
+     *
+     * @returns { void } updatePathSegmentData method .\
+     * @param {Connector} connector - provide the connector value.
+     * @param {string} isLoad -  provide the isLoad value.
+     *
+     *
+     * @private
+     */
+    public updatePathSegmentData(connector: Connector, isLoad?: boolean): void {
+        this.bridgingModule.updateBridging(connector, this);
+        const canvas: GroupableView = connector.wrapper;
+        if (canvas && canvas.children && canvas.children.length > 0) {
+            const pathSegment: PathElement = canvas.children[0] as PathElement;
+            const data: string = pathSegment.data;
+            if (connector.isBezierEditing && this.selectedItems.connectors[0].id === connector.id || connector.type !== 'Bezier') {
+                connector.getSegmentElement(
+                    connector, pathSegment,
+                    this.layout.type === 'ComplexHierarchicalTree' || this.layout.type === 'HierarchicalTree' ?
+                        this.layout.orientation : undefined, undefined, false);
+            }
+            if (pathSegment.data !== data) {
+                canvas.measure(new Size());
+                canvas.arrange(canvas.desiredSize);
+                if (this.mode === 'SVG' && !isLoad) {
+                    this.updateDiagramObject(connector);
+                }
+            }
         }
     }
 
@@ -13131,7 +13152,7 @@ export class Diagram extends Component<HTMLElement> implements INotifyPropertyCh
             this.commandHandler.updatePathElementOffset(actualObject);
         }
         // eslint-disable-next-line max-len
-        if (!disableBridging) { this.updateBridging(); }
+        if (!disableBridging) { this.updateBridging(false, actualObject); }
         this.updateAnnotations(newProp, actualObject);
         this.updateConnectorPorts(newProp, actualObject);
         this.updatefixedUserHandle(newProp, actualObject);

@@ -286,7 +286,7 @@ export class InsertHtml {
         const sibNode: Node = preNode.previousSibling;
         const parentNode: Node = preNode.parentNode;
         // Update selection based on node structure
-        if (nodes.length === 1 || (insertedNode.nodeName.toLowerCase() === 'table' && (preNode as HTMLElement).childElementCount === 0)) {
+        if (nodes.length === 1) {
             nodeSelection.setSelectionContents(docElement, preNode);
             range = nodeSelection.getRange(docElement);
         } else if (parentNode && parentNode.nodeName !== 'LI') {

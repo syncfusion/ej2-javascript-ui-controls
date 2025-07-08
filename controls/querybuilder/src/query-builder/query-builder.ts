@@ -3662,6 +3662,8 @@ export class QueryBuilder extends Component<HTMLDivElement> implements INotifyPr
                 rule.value = textboxValue ?
                     (rule.type === 'string' ? textboxValue.split(',').map((val: string) => val.trim()) :
                         textboxValue.split(',').map(Number)) : [];
+            } else {
+                rule.value = textboxValue;
             }
             break;
         case 'dropdownlist':
@@ -4872,7 +4874,9 @@ export class QueryBuilder extends Component<HTMLDivElement> implements INotifyPr
         EventHandler.add(wrapper, 'focusout', this.focusEventHandler, this);
         EventHandler.add(wrapper, 'focusin', this.focusEventHandler, this);
         EventHandler.add(this.element, 'keydown', this.keyBoardHandler, this);
-        EventHandler.add(document, 'keydown', this.keyBoardHandler, this);
+        if (this.allowDragAndDrop) {
+            EventHandler.add(document, 'keydown', this.keyBoardHandler, this);
+        }
         window.addEventListener('resize', this.windowResizeHandler.bind(this));
     }
     protected unWireEvents(): void {
@@ -5221,6 +5225,10 @@ export class QueryBuilder extends Component<HTMLDivElement> implements INotifyPr
                         const orGroup: NodeListOf<Element> = groupElem.parentElement.querySelectorAll('.e-btngroup-or');
                         andElem = andGroup[andGroup.length - (1 + index)] as HTMLInputElement;
                         orElem = orGroup[orGroup.length - (1 + index)] as HTMLInputElement;
+                        if (this.isImportRules) {
+                            andElem = groupElem.parentElement.querySelector('.e-btn-group.e-multi-connector .e-btngroup-and');
+                            orElem = groupElem.parentElement.querySelector('.e-btn-group.e-multi-connector .e-btngroup-or');
+                        }
                         element = andGroup[andGroup.length - (1 + index)] as HTMLInputElement;
                         if (element && element.parentElement && element.parentElement.style.display === 'none') {
                             index++;
@@ -5886,6 +5894,9 @@ export class QueryBuilder extends Component<HTMLDivElement> implements INotifyPr
                 const tglBtnElem: Element = parentElem.querySelector('.e-qb-toggle');
                 if (rule.not) {
                     addClass([tglBtnElem], 'e-active-toggle');
+                    if (this.enableSeparateConnector) {
+                        (getComponent(tglBtnElem.querySelector('.e-checkbox') as HTMLElement, 'checkbox') as CheckBox).checked = rule.not;
+                    }
                 } else {
                     removeClass([tglBtnElem], 'e-active-toggle');
                 }

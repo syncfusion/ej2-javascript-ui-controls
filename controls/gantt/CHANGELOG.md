@@ -2,6 +2,15 @@
 
 ## [Unreleased]
 
+## 30.1.39 (2025-07-08)
+
+### GanttChart
+
+#### Bug fixes
+
+- `#I740257` - End date timing not updating properly when `autoCalculateDateScheduling` property is set to false has been resolved.
+- `#F197010` - The issue where the last collapsed parent task was not visible during Gantt chart scrolling has been resolved.
+
 ## 30.1.38 (2025-07-02)
 
 ### GanttChart

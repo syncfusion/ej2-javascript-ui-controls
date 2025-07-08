@@ -108,6 +108,7 @@ export class DropDownList extends DropDownBase implements IInput {
     protected previousItemData: { [key: string]: Object } | string | number | boolean;
     protected hiddenElement: HTMLSelectElement;
     protected isPopupOpen: boolean;
+    private isPopupRender: boolean;
     private isDocumentClick: boolean;
     protected isInteracted: boolean;
     private isFilterFocus: boolean;
@@ -509,6 +510,7 @@ export class DropDownList extends DropDownBase implements IInput {
     private initializeData(): void {
         this.isPopupOpen = false;
         this.isDocumentClick = false;
+        this.isPopupRender = false;
         this.isInteracted = false;
         this.isFilterFocus = false;
         this.beforePopupOpen = false;
@@ -1878,7 +1880,8 @@ export class DropDownList extends DropDownBase implements IInput {
             e.preventDefault();
         }
         if (!this.readonly) {
-            if (this.isPopupOpen) {
+            if (this.isPopupOpen || (this.popupObj && document.body.contains(this.popupObj.element) &&
+                this.beforePopupOpen && this.isPopupRender)) {
                 this.hidePopup(e);
                 if (this.isFilterLayout()) {
                     this.focusDropDown(e);
@@ -2778,6 +2781,7 @@ export class DropDownList extends DropDownBase implements IInput {
             }
             this.getInitialData = false;
             this.isReactTemplateUpdate = true;
+            this.typedString = this.filterInput.value;
             this.searchLists(this.filterArgs);
             return;
         }
@@ -3062,10 +3066,21 @@ export class DropDownList extends DropDownBase implements IInput {
                 document.body.appendChild(popupEle);
                 popupEle.style.top = '0px';
                 initialPopupHeight = popupEle.clientHeight;
-                if (this.enableVirtualization && this.itemTemplate) {
+                if (this.enableVirtualization && (this.itemTemplate || this.isAngular)) {
                     const listitems: NodeListOf<Element> = popupEle.querySelectorAll('li.e-list-item:not(.e-virtual-list)');
-                    this.listItemHeight = listitems.length > 0 ? Math.ceil(listitems[0].getBoundingClientRect().height) +
+                    const virtualListitems: NodeListOf<Element> = popupEle.querySelectorAll('li.e-virtual-list');
+                    const listitemsHeight: number = listitems && listitems.length > 0 ?
+                        Math.ceil(listitems[0].getBoundingClientRect().height) +
                         parseInt(window.getComputedStyle(listitems[0]).marginBottom, 10) : 0;
+                    const VirtualLiHeight: number = virtualListitems && virtualListitems.length > 0 ?
+                        Math.ceil(virtualListitems[0].getBoundingClientRect().height) +
+                        parseInt(window.getComputedStyle(virtualListitems[0]).marginBottom, 10) : 0;
+                    if (listitemsHeight !== VirtualLiHeight && virtualListitems && virtualListitems.length > 0) {
+                        virtualListitems.forEach((item: Element)  => {
+                            item.parentNode.removeChild(item);
+                        });
+                    }
+                    this.listItemHeight = listitemsHeight;
                 }
                 if (this.enableVirtualization && !this.list.classList.contains(dropDownBaseClasses.noData)){
                     this.getSkeletonCount();
@@ -3222,6 +3237,7 @@ export class DropDownList extends DropDownBase implements IInput {
                         }
                         if (!isNullOrUndefined(this.popupObj)) {
                             this.popupObj.show(new Animation(eventArgs.animation), (this.zIndex === 1000) ? this.element : null);
+                            this.isPopupRender = true;
                         }
                         if (this.isReact) {
                             setTimeout(() => {
@@ -3762,6 +3778,7 @@ export class DropDownList extends DropDownBase implements IInput {
                     this.rippleFun();
                 }
                 if (this.isPopupOpen) {
+                    this.isPopupRender = false;
                     this.popupObj.hide(new Animation(eventArgs.animation));
                 } else {
                     this.destroyPopup();
@@ -4754,6 +4771,7 @@ export class DropDownList extends DropDownBase implements IInput {
         }
         this.hidePopup();
         if (this.popupObj) {
+            this.isPopupRender = false;
             this.popupObj.hide();
         }
         this.unWireEvent();

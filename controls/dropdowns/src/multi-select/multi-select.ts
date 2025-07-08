@@ -1372,10 +1372,14 @@ export class MultiSelect extends DropDownBase implements IInput {
             if (!isNullOrUndefined(this.text) && (isNullOrUndefined(this.value) || this.value.length === 0)) {
                 this.initialTextUpdate();
             }
-            if (!this.enableVirtualization || (this.enableVirtualization && (!(this.dataSource instanceof DataManager)))){
+            if (!this.enableVirtualization) {
+                if (!this.isRemoveSelection) {
+                    this.initialValueUpdate(this.listData, true);
+                } else {
+                    this.initialValueUpdate();
+                }
+            } else if (!(this.dataSource instanceof DataManager)) {
                 this.initialValueUpdate();
-            } else if (!this.isRemoveSelection) {
-                this.initialValueUpdate(this.listData, true);
             }
             this.initialUpdate();
             this.refreshPlaceHolder();
@@ -3562,7 +3566,7 @@ export class MultiSelect extends DropDownBase implements IInput {
         isNotTrigger: boolean,
         length?: number, dataValue?: { [key: string]: Object } | string | number | boolean, text?: string): void {
         const list: string[] | number[] | boolean[] | { [key: string]: Object }[] = this.listData;
-        if (this.initStatus && !isNotTrigger) {
+        if (this.initStatus && !isNotTrigger && (!this.allowObjectBinding || (this.allowObjectBinding && value))) {
             value = this.allowObjectBinding ? getValue(((this.fields.value) ? this.fields.value : ''), value) : value;
             const val: FieldSettingsModel = dataValue ? dataValue : this.getDataByValue(value) as any;
             const eventArgs: SelectEventArgs = {
@@ -4499,7 +4503,7 @@ export class MultiSelect extends DropDownBase implements IInput {
                 } else {
                     if (this.listData) {
                         if (this.enableVirtualization) {
-                            if (delim && !this.isDynamicRemoteVirtualData) {
+                            if (delim && !this.isDynamicRemoteVirtualData && !isInitialVirtualData) {
                                 data = this.delimiterWrapper && this.delimiterWrapper.innerHTML === '' ? data :
                                     this.delimiterWrapper.innerHTML;
                             }
@@ -4510,7 +4514,7 @@ export class MultiSelect extends DropDownBase implements IInput {
                                 data = this.text.replace(/,/g, delimiterChar + ' ') + delimiterChar + ' ';
                                 text = this.text.split(delimiterChar);
                             } else {
-                                temp = isInitialVirtualData && delim ? this.text : this.getTextByValue(value);
+                                temp = isInitialVirtualData && delim ? this.text.replace(/,/g, delimiterChar + ' ') : this.getTextByValue(value);
                                 const textValues: string = this.isDynamicRemoteVirtualData && value != null && value !== '' && !isInitialVirtualData ?
                                     this.getTextByValue(value) : isInitialVirtualData ? this.text : (this.text && this.text !== '' ? this.text + this.delimiterChar + temp : temp);
                                 data += temp + delimiterChar + ' ';
@@ -4665,6 +4669,16 @@ export class MultiSelect extends DropDownBase implements IInput {
                         ) {
                             text = this.getTextByValue(value);
                             isCustomData = true;
+                        }
+                        else if (
+                            (isNullOrUndefined(text) && !this.allowCustomValue) &&
+                            (
+                                (!(this.dataSource instanceof DataManager)) ||
+                                (this.dataSource instanceof DataManager && isInitialVirtualData)
+                            )
+                        ) {
+                            this.value.splice(index, 1);
+                            index -= 1;
                         }
                     }
                     else{
@@ -6267,6 +6281,7 @@ export class MultiSelect extends DropDownBase implements IInput {
                 this.isaddNonPresentItems = false;
             }
             else {
+                this.selectedListData = [];
                 if (prop === 'text') {
                     this.initialTextUpdate();
                     newProp = this.value;
@@ -6307,7 +6322,9 @@ export class MultiSelect extends DropDownBase implements IInput {
                                         setTimeout(() => {
                                             this.initialValueUpdate(listItems, true);
                                             this.isDynamicRemoteVirtualData = false;
-                                            this.initialUpdate();
+                                            if (!this.inputFocus || (this.inputFocus && this.mode !== 'Default')) {
+                                                this.initialUpdate();
+                                            }
                                         }, 100);
                                     }
                                 });

@@ -92,6 +92,9 @@ export class DetailRow {
         const tr: HTMLTableRowElement = target.parentElement as HTMLTableRowElement;
         const uid: string = tr.getAttribute('data-uid');
         const rowObj: Row<Column> = gObj.getRowObjectFromUID(uid);
+        if (isNullOrUndefined(rowObj)) {
+            return;
+        }
         let needToRefresh: boolean = false;
         const nextRow: HTMLElement =
             this.parent.getContentTable().querySelector( literals.tbody).children[tr.rowIndex + 1] as HTMLElement;

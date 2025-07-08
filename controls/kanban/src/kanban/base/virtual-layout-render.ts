@@ -235,7 +235,14 @@ export class VirtualLayoutRender extends MobileLayout {
                     //'15' is reduced for optimal padding in the bottom and to avoid page scrollbar appear in the height auto case.
                     if (this.parent.height === 'auto') {
                         td.style.height = window.innerHeight - (headerHeight + this.parent.element.getBoundingClientRect().top + 15) + 'px';
-                    } else {
+                    }
+                    else if (typeof this.parent.height === 'string' && this.parent.height.endsWith('%') && this.parent.element.parentElement && (this.parent.element.parentElement.style.height !== '' || this.parent.element.parentElement.style.minHeight !== '')) {
+                        const parentHeight: number = this.parent.element.parentElement.clientHeight;
+                        const percentageValue: number = parseFloat(this.parent.height) / 100;
+                        const pixelHeight: number = parentHeight * percentageValue;
+                        td.style.height = pixelHeight - (headerHeight + 15) + 'px';
+                    }
+                    else {
                         td.style.height = parseInt(formatUnit(this.parent.height).split('px')[0], 10) - (headerHeight + 15) + 'px';
                     }
                 }

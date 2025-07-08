@@ -88,9 +88,14 @@ export class Scroll implements IAction {
         let mHdrHeight: number = 0;
         const content: HTMLElement = (<HTMLElement>this.parent.getContent().querySelector('.' + literals.content));
         let height: string | number = this.parent.height as string;
-        if (this.parent.enableColumnVirtualization && this.parent.isFrozenGrid() && this.parent.height !== 'auto'
-            && this.parent.height.toString().indexOf('%') < 0) {
-            height = parseInt(height, 10) - Scroll.getScrollBarWidth();
+        if (this.parent.enableColumnVirtualization && this.parent.isFrozenGrid()) {
+            if (this.parent.height !== 'auto' && this.parent.height.toString().indexOf('%') < 0) {
+                height = parseInt(height, 10) - Scroll.getScrollBarWidth();
+            }
+            const movableScrollbarElement: Element = this.parent.getContent().querySelector('.e-movablescrollbar');
+            if (this.parent.height.toString().indexOf('%') > 0 && !isNullOrUndefined(movableScrollbarElement)) {
+                height = 'calc(' + height + ' - ' + movableScrollbarElement.scrollHeight + 'px)';
+            }
         }
         if (!this.parent.enableVirtualization && this.parent.frozenRows && this.parent.height !== 'auto' &&
             this.parent.height !== '100%') {

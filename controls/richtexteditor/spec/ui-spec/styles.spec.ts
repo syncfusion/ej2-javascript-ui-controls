@@ -1091,4 +1091,47 @@ describe('UI Spec ', () => {
             }, 100)
         });
     });
+
+    describe('957812 - Table Resize Handles Misaligned in Rich Text Editor When Used in Bootstrap Grid Columns. ', () => {
+        let editor: RichTextEditor;
+        beforeAll((done: DoneFn) => {
+             const BootstrapLink: HTMLLinkElement = document.createElement('link');
+            BootstrapLink.href = 'https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css';
+            BootstrapLink.rel = 'stylesheet';
+            BootstrapLink.id = 'bootstrapTheme';
+            BootstrapLink.onload = () => {
+                done(); // Only call done when the stylesheet is fully loaded
+            };
+            BootstrapLink.onerror = (e) => {
+                fail(`Failed to load stylesheet: ${BootstrapLink.href}`);
+                done(); // still end the test run to avoid hanging
+            };
+            document.head.appendChild(BootstrapLink);
+            editor = renderRTE({
+                height: 250,
+                toolbarSettings: {
+                    items: ['CreateTable', 'OrderedList', 'UnorderedList']
+                },
+                value: `<div class="row"> <div class="col-lg-12"> <p>Some paragraph text before the table.</p> <table class="e-rte-table first-table" style="width: 100%"> <tbody> <tr> <td style="width: 50%">A</td> <td style="width: 50%">B</td> </tr> <tr> <td>C</td> <td>D</td> </tr> </tbody> </table> <p> Some more paragraph text below to create scrollable content. </p> <p>The Rich Text Editor, a WYSIWYG (what you see is what you get) editor, is a user interface that allows you to create, edit, and format rich text content. You can try out a demo of this editor here.</p> <p>Some paragraph text after the table.</p> <table class="e-rte-table second-table" style="width: 100%"> <tbody> <tr> <td style="width: 50%">A</td> <td style="width: 50%">B</td> </tr> <tr> <td>C</td> <td>D</td> </tr> </tbody> </table> </div> </div>`
+            });
+        });
+        afterAll(() => {
+            destroy(editor);
+            document.getElementById('bootstrapTheme').remove();
+        });
+        it('Table Resize element Misaligned in Rich Text Editor When Used in Bootstrap Grid Columns', () => {
+            editor.focusIn();
+            let table: HTMLElement = editor.contentModule.getEditPanel().querySelector('.first-table') as HTMLElement;
+            (editor.tableModule as any).tableObj.resizeHelper({ target: table, preventDefault: function () { } });
+            let tableResizeElement: HTMLElement = editor.contentModule.getEditPanel().querySelectorAll('.e-table-box')[0] as HTMLElement;
+            expect(tableResizeElement.style.top).toBe("96px");
+            expect(tableResizeElement.style.left).toBe("748px");
+            table = editor.contentModule.getEditPanel().querySelector('.second-table') as HTMLElement;
+            editor.inputElement.scrollTop = 70;
+            (editor.tableModule as any).tableObj.resizeHelper({ target: table, preventDefault: function () { } });
+            tableResizeElement = editor.contentModule.getEditPanel().querySelectorAll('.e-table-box')[0] as HTMLElement;
+            expect(tableResizeElement.style.top).toBe("263px");
+            expect(tableResizeElement.style.left).toBe("748px");
+        });
+    });
 });

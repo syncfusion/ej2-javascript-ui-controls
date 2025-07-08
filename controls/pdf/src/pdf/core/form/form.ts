@@ -520,12 +520,12 @@ export class PdfForm {
                 let fieldDictionary: _PdfDictionary;
                 if (ref && ref instanceof _PdfReference) {
                     fieldDictionary = this._crossReference._fetch(ref);
-                    if (fieldDictionary) {
+                    if (fieldDictionary && fieldDictionary instanceof _PdfDictionary) {
                         fieldsMap.set(fieldDictionary, ref);
                     }
                 }
                 let fieldKids: [];
-                if (fieldDictionary && fieldDictionary.has('Kids')) {
+                if (fieldDictionary && fieldDictionary instanceof _PdfDictionary && fieldDictionary.has('Kids')) {
                     fieldKids = fieldDictionary.get('Kids');
                     if (fieldKids && fieldKids.length > 0) {
                         fieldKids.forEach((reference: _PdfReference) => {
@@ -542,7 +542,7 @@ export class PdfForm {
                     }
                 }
                 if (!fieldKids) {
-                    if (fieldDictionary) {
+                    if (fieldDictionary && fieldDictionary instanceof _PdfDictionary) {
                         if (terminalFields.indexOf(fieldDictionary) === -1) {
                             terminalFields.push(fieldDictionary);
                             if (fieldDictionary.has('T')) {
@@ -599,19 +599,21 @@ export class PdfForm {
                     }
                 }
                 const widgets: _PdfDictionary[] = [];
-                for (let j: number = 0; j < widgetAnnots.length; j++) {
-                    const ref: _PdfReference = widgetAnnots[<number>j];
-                    if (ref && ref instanceof _PdfReference) {
-                        widgetCollection.push(ref);
-                        const annotDictionary: _PdfDictionary = this._crossReference._fetch(ref);
-                        if (annotDictionary && annotDictionary.has('Subtype') &&
-                            annotDictionary.get('Subtype').name === 'Widget') {
-                            annotDictionary._reference = ref;
-                            widgets.push(annotDictionary);
+                if (widgetAnnots && Array.isArray(widgetAnnots) && widgetAnnots.length > 0) {
+                    for (let j: number = 0; j < widgetAnnots.length; j++) {
+                        const ref: _PdfReference = widgetAnnots[<number>j];
+                        if (ref && ref instanceof _PdfReference) {
+                            widgetCollection.push(ref);
+                            const annotDictionary: _PdfDictionary = this._crossReference._fetch(ref);
+                            if (annotDictionary && annotDictionary.has('Subtype') &&
+                                annotDictionary.get('Subtype').name === 'Widget') {
+                                annotDictionary._reference = ref;
+                                widgets.push(annotDictionary);
+                            }
                         }
                     }
+                    pageWidgets.set(i, widgets);
                 }
-                pageWidgets.set(i, widgets);
             }
         }
         for (let i: number = 0; i < terminalFields.length; i++) {

@@ -25,6 +25,7 @@ export interface ToolbarSettingsModel {
      * - Expand: Toolbar items fit within available space, and the rest are placed in the extended menu.
      * - MultiRow: Toolbar placed at the top of the RichTextEditor editing area.
      * - Scrollable: Toolbar items displayed in a single line with horizontal scrolling enabled.
+     * - Popup: Toolbar items displayed in popup container.
      *
      * @default Expand
      */

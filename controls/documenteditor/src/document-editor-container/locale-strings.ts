@@ -227,7 +227,7 @@ export const defaultLocaleStrings: Object =  {
     'Page Width': 'Page Width',
     'Show': 'Show',
     'Ruler': 'Ruler',
-    'Show Bookmark Markers': 'Show Bookmark Markers',
+    'Show Bookmarks': 'Show Bookmarks',
     'View': 'View',
     'Page Numbers': 'Page Numbers',
     'Insert automatic page numbering': 'Insert automatic page numbering',
@@ -307,7 +307,6 @@ export const defaultLocaleStrings: Object =  {
     'Bookmarks': 'Bookmarks',
     'Insert Bookmark': 'Insert Bookmark',
     'All Bookmarks': 'All Bookmarks',
-    'Show Bookmarks': 'Show Bookmarks',
     'Create or manage bookmarks in your document': 'Create or manage bookmarks in your document',
     'View all bookmarks in the document': 'View all bookmarks in the document',
     'Toggle visibility of bookmark markers in the document': 'Toggle visibility of bookmark markers in the document',
@@ -433,5 +432,5 @@ export const defaultLocaleStrings: Object =  {
     'Delete the table' : 'Delete the table',
     'Cell Properties': 'Cell Properties',
     'Show or hide the rulers': 'Show or hide the rulers',
-    'Show or hide bookmark markers': 'Show or hide bookmark markers'
+    'Show or hide bookmarks': 'Show or hide bookmarks'
 };

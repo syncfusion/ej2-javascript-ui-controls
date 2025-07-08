@@ -364,7 +364,7 @@ describe('Mention', () => {
          * remoteData binding with value
          */
         it('Mention at initialize time ', (done) => {
-            mentionObj = new Mention({ dataSource: remoteData, debounceDelay: 0, fields: { value: 'EmployeeID', text: 'FirstName' } });
+            mentionObj = new Mention({ dataSource: remoteData, query: new Query().take(9), debounceDelay: 0, fields: { value: 'EmployeeID', text: 'FirstName' } });
             mentionObj.appendTo(element);
             mentionObj.initValue();
             setTimeout(() => {

@@ -3363,6 +3363,28 @@ export class Grid extends Component<HTMLElement> implements INotifyPropertyChang
         return table;
     }
 
+    private createFrozenMaskRow(td: HTMLElement[], columns: Column[]): void {
+        for (let i: number = 0; i < td.length; i++) {
+            if (i < this.frozenLeftCount) {
+                if (this.frozenLeftCount - 1 === i) {
+                    td[parseInt(i.toString(), 10)].classList.add('e-freezeleftborder');
+                }
+                td[parseInt(i.toString(), 10)].classList.add('e-leftfreeze');
+                td[parseInt(i.toString(), 10)].setAttribute('aria-colindex', (i + 1).toString());
+                td[parseInt(i.toString(), 10)].style.left  = ((<{ valueX?: number }>columns[parseInt(i.toString(), 10)]).valueX -
+                    this.translateX) + 'px';
+            } else if ((td.length - this.frozenRightCount) <= i && columns[parseInt(i.toString(), 10)]) {
+                if ((td.length - this.frozenRightCount) === i) {
+                    td[parseInt(i.toString(), 10)].classList.add('e-freezerightborder');
+                }
+                td[parseInt(i.toString(), 10)].classList.add('e-rightfreeze');
+                td[parseInt(i.toString(), 10)].setAttribute('aria-colindex', (i + 1).toString());
+                td[parseInt(i.toString(), 10)].style.right  = (this.translateX +
+                    (<{ valueX?: number }>columns[parseInt(i.toString(), 10)]).valueX) + 'px';
+            }
+        }
+    }
+
     private createMaskTable(element: Element, columns?: Column[], axisDirection?: string): Element {
         const parentElement: Element = element;
         const header: boolean = closest(parentElement, '.e-gridheader') ? true : false;
@@ -3387,26 +3409,8 @@ export class Grid extends Component<HTMLElement> implements INotifyPropertyChang
         if (header && this.enableColumnVirtualization && axisDirection === 'X') {
             const row: Element = this.createMaskRow(maskColgroup, columns);
             if (this.isFrozenGrid()) {
-                const frzTd: HTMLElement[] = [].slice.call(row.querySelectorAll('.e-rowcell'));
-                for (let i: number = 0; i < frzTd.length; i++) {
-                    if (i < this.frozenLeftCount) {
-                        if (this.frozenLeftCount - 1 === i) {
-                            frzTd[parseInt(i.toString(), 10)].classList.add('e-freezeleftborder');
-                        }
-                        frzTd[parseInt(i.toString(), 10)].classList.add('e-leftfreeze');
-                        frzTd[parseInt(i.toString(), 10)].setAttribute('aria-colindex', (i + 1).toString());
-                        frzTd[parseInt(i.toString(), 10)].style.left  = ((<{ valueX?: number }>columns[parseInt(i.toString(), 10)]).valueX -
-                            this.translateX) + 'px';
-                    } else if ((frzTd.length - this.frozenRightCount) <= i && columns[parseInt(i.toString(), 10)]) {
-                        if ((frzTd.length - this.frozenRightCount) === i) {
-                            frzTd[parseInt(i.toString(), 10)].classList.add('e-freezerightborder');
-                        }
-                        frzTd[parseInt(i.toString(), 10)].classList.add('e-rightfreeze');
-                        frzTd[parseInt(i.toString(), 10)].setAttribute('aria-colindex', (i + 1).toString());
-                        frzTd[parseInt(i.toString(), 10)].style.right  = (this.translateX +
-                            (<{ valueX?: number }>columns[parseInt(i.toString(), 10)]).valueX) + 'px';
-                    }
-                }
+                const frozenTd: HTMLElement[] = [].slice.call(row.querySelectorAll('.e-rowcell'));
+                this.createFrozenMaskRow(frozenTd, columns);
             }
             const thead: Element = table.querySelector('thead');
             const rows: Element[] = [].slice.call(thead.querySelectorAll('tr'));
@@ -3477,10 +3481,13 @@ export class Grid extends Component<HTMLElement> implements INotifyPropertyChang
                 rowCount = (this.enableVirtualization || this.enableColumnVirtualization) && axisDirection ? rows.length
                     : rowCount <= rows.length ? rowCount : rows.length;
                 for (let i: number = 0; i < rowCount; i++) {
-                    maskTBody.appendChild(
-                        this.applyMaskRow(
-                            rows[parseInt(i.toString(), 10)].cloneNode(true) as Element,
-                            rows[parseInt(i.toString(), 10)].getBoundingClientRect().height));
+                    const maskTBodyRow: Element = this.applyMaskRow(rows[parseInt(i.toString(), 10)].cloneNode(true) as Element,
+                                                                    rows[parseInt(i.toString(), 10)].getBoundingClientRect().height);
+                    if (this.enableColumnVirtualization && axisDirection === 'X' && this.isFrozenGrid()) {
+                        const frozenTd: HTMLElement[] = [].slice.call(maskTBodyRow.querySelectorAll('.e-masked-cell'));
+                        this.createFrozenMaskRow(frozenTd, columns);
+                    }
+                    maskTBody.appendChild(maskTBodyRow);
                 }
                 if (addEditRow && addEditRow.classList.contains('e-editedrow') && addEditRowIndex < rowCount) {
                     const addEditMaskRow: HTMLElement = maskTBody.childNodes[parseInt(addEditRowIndex.toString(), 10)] as HTMLElement;
@@ -7556,6 +7563,10 @@ export class Grid extends Component<HTMLElement> implements INotifyPropertyChang
                 parentsUntil(e.target as Element, 'e-headercell').querySelector('.e-checkselectall')) ||
             (!(this.allowGrouping || this.allowReordering) && parentsUntil(e.target as Element, 'e-gridheader'))) &&
             e.touches) {
+            return;
+        }
+        if (this.allowRowDragAndDrop && parentsUntil(e.target as Element, 'e-rowcell')
+            && !parentsUntil(e.target as Element, 'e-rowdragdrop') && e.touches) {
             return;
         }
         if (parentsUntil(e.target as Element, 'e-gridheader') && this.allowRowDragAndDrop &&

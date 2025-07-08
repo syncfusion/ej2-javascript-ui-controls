@@ -71,19 +71,19 @@ export class QuickToolbar {
         });
     }
     public hideImageQTBar(): void {
-        if (this.imageQTBar) {
+        if (this.imageQTBar && this.imageQTBar.isRendered) {
             this.imageQTBar.hidePopup();
             this.parent.dotNetRef.invokeMethodAsync(events.hideImagePopup);
         }
     }
     public hideAudioQTBar(): void {
-        if (this.audioQTBar) {
+        if (this.audioQTBar && this.audioQTBar.isRendered) {
             this.audioQTBar.hidePopup();
             this.parent.dotNetRef.invokeMethodAsync(events.hideAudioQuickToolbar);
         }
     }
     public hideVideoQTBar(): void {
-        if (this.videoQTBar) {
+        if (this.videoQTBar && this.videoQTBar.isRendered) {
             this.videoQTBar.hidePopup();
             this.parent.dotNetRef.invokeMethodAsync(events.hideVideoQuickToolbar);
         }
@@ -101,7 +101,7 @@ export class QuickToolbar {
         });
     }
     public hideLinkQTBar(): void {
-        if (this.linkQTBar) {
+        if (this.linkQTBar && this.linkQTBar.isRendered) {
             this.linkQTBar.hidePopup();
             this.parent.dotNetRef.invokeMethodAsync(events.hideLinkPopup);
         }
@@ -122,7 +122,7 @@ export class QuickToolbar {
         });
     }
     public hideTableQTBar(): void {
-        if (this.tableQTBar) {
+        if (this.tableQTBar && this.tableQTBar.isRendered) {
             this.tableQTBar.hidePopup();
             this.parent.dotNetRef.invokeMethodAsync(events.hideTablePopup);
         }
@@ -158,14 +158,14 @@ export class QuickToolbar {
     }
 
     public hideInlineQTBar(): void {
-        if (this.inlineQTBar) {
+        if (this.inlineQTBar && this.inlineQTBar.isRendered) {
             this.inlineQTBar.hidePopup();
             this.parent.dotNetRef.invokeMethodAsync(events.hideInlinePopup);
         }
     }
 
     public hideTextQTBar(): void {
-        if (this.textQTBar) {
+        if (this.textQTBar && this.textQTBar.isRendered) {
             this.textQTBar.hidePopup();
             this.parent.dotNetRef.invokeMethodAsync(events.hideTextPopup);
         }

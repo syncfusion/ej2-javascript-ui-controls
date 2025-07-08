@@ -755,10 +755,7 @@ export class ChatUI extends InterActiveChatBase implements INotifyPropertyChange
         this.addCssClass(this.element, this.cssClass);
         this.addRtlClass(this.element, this.enableRtl);
         this.updateHeader(this.showHeader, this.chatHeader, this.viewWrapper);
-        if (isNOU(this.messages) || this.messages.length <= 0) {
-            this.renderBannerView(this.emptyChatTemplate, this.messageWrapper, 'emptyChatTemplate');
-            this.isEmptyChatTemplateRendered =  isNOU(this.messageWrapper.querySelector('.e-empty-chat-template')) ? false : true;
-        }
+        this.updateEmptyChatTemplate();
         this.updateFooterEleClass();
         this.wireEvents();
         this.renderTypingIndicator();
@@ -884,6 +881,16 @@ export class ChatUI extends InterActiveChatBase implements INotifyPropertyChange
         this.renderMessageGroup(this.messageWrapper);
     }
 
+    private updateEmptyChatTemplate(): void {
+        if (isNOU(this.messages) || this.messages.length <= 0) {
+            this.renderBannerView(this.emptyChatTemplate, this.messageWrapper, 'emptyChatTemplate');
+            this.isEmptyChatTemplateRendered =  isNOU(this.messageWrapper.querySelector('.e-empty-chat-template')) ? false : true;
+            if (this.pinnedMessageWrapper) {
+                this.pinnedMessageWrapper.style.display = 'none';
+            }
+        }
+    }
+
     private renderChatMessageToolbar(messageItem: HTMLElement, msg: MessageModel): HTMLElement {
         const messageOptionsToolbar: HTMLElement = this.createElement('div', { className: 'e-chat-message-toolbar'});
         let pushToolbar: ItemModel[] = [];
@@ -941,7 +948,7 @@ export class ChatUI extends InterActiveChatBase implements INotifyPropertyChange
         if (!eventArgs.cancel) {
             switch (args.item.prefixIcon){
             case 'e-icons e-chat-copy':
-                this.handleCopyAction(args, messageToolbar);
+                this.handleCopyAction(args, messageToolbar, message.text);
                 break;
             case 'e-icons e-chat-reply':
                 this.handleReplyAction(message);
@@ -1003,6 +1010,7 @@ export class ChatUI extends InterActiveChatBase implements INotifyPropertyChange
             this.messageWrapper.removeChild(messageGroup);
         }
         this.cleanupTimeBreaks();
+        this.updateEmptyChatTemplate();
     }
 
     private cleanupTimeBreaks(): void {
@@ -1028,10 +1036,7 @@ export class ChatUI extends InterActiveChatBase implements INotifyPropertyChange
         });
     }
 
-    private handleCopyAction(args: ClickEventArgs, messageToolbar: Toolbar): void {
-        const messageElement: HTMLElement = (args.originalEvent.target as HTMLElement).closest('.e-message-item') as HTMLElement;
-        const textElement: HTMLElement = messageElement.querySelector('.e-text') as HTMLElement;
-        const textToCopy: string = textElement.innerText;
+    private handleCopyAction(args: ClickEventArgs, messageToolbar: Toolbar, textToCopy: string): void {
         this.getClipBoardContent(textToCopy);
         // Provide feedback to user
         args.item.prefixIcon = 'e-icons e-chat-check';
@@ -1189,41 +1194,33 @@ export class ChatUI extends InterActiveChatBase implements INotifyPropertyChange
 
     private handleMessageMouseEvents(isMouseOver: boolean, messageItem: HTMLElement, toolbarEle: HTMLElement): void {
         if (isMouseOver) {
-            let messageContent: HTMLElement;
             const isLeftMessage: boolean = messageItem.parentElement.classList.contains('e-left');
-
-            // Temporarily display the toolbar to measure its size
             toolbarEle.style.visibility = 'hidden';
             toolbarEle.style.display = 'block';
 
             const toolbarRect: DOMRect = toolbarEle.getBoundingClientRect() as DOMRect;
-
             toolbarEle.style.visibility = '';
-            toolbarEle.style.display = 'none'; // Hide it again after measuring
+            toolbarEle.style.display = 'none';
 
-            // Proceed with positioning using the measured dimensions
-            if (isLeftMessage) {
-                messageContent = messageItem.querySelector('.e-message-content') as HTMLElement;
-            } else {
-                messageContent = messageItem.querySelector('.e-status-wrapper') as HTMLElement;
-            }
+            const messageContent: Element = this.messageTemplate
+                ? messageItem
+                : isLeftMessage
+                    ? messageItem.querySelector('.e-message-content')
+                    : messageItem.querySelector('.e-status-wrapper');
 
             const messageItemRect: DOMRect = messageItem.getBoundingClientRect() as DOMRect;
             const messageContentRect: DOMRect = messageContent.getBoundingClientRect() as DOMRect;
 
             let topPosition: number = messageContentRect.top - messageItemRect.top - toolbarRect.height;
             if (!isLeftMessage) {
-                const marginTop: number = 4;
-                topPosition += marginTop;
+                topPosition += 4; // margin top
             }
 
             const messageWrapperRect: DOMRect = this.messageWrapper.getBoundingClientRect() as DOMRect;
-            const spaceAboveMessage: number = messageContentRect.top - messageWrapperRect.top;
-
-            if (spaceAboveMessage < toolbarRect.height) {
+            if (messageContentRect.top - messageWrapperRect.top < toolbarRect.height) {
                 topPosition = messageContentRect.bottom - messageItemRect.top;
             }
-            toolbarEle.style.top = topPosition + 'px';
+            toolbarEle.style.top = `${topPosition}px`;
 
             if (messageContentRect.width < toolbarRect.width && isLeftMessage) {
                 toolbarEle.style.left = '0';
@@ -1232,13 +1229,12 @@ export class ChatUI extends InterActiveChatBase implements INotifyPropertyChange
                 const statusIconElement: HTMLElement = messageContent.querySelector('.e-status-icon') as HTMLElement;
                 const statusIconWidth: number = statusIconElement ? statusIconElement.getBoundingClientRect().width + 2 : 0;
                 const rightPosition: number = messageItemRect.right - messageContentRect.right + statusIconWidth;
-                toolbarEle.style.right = rightPosition + 'px';
+                toolbarEle.style.right = `${rightPosition}px`;
             }
 
-            toolbarEle.style.display = ''; // Set display back to default to show it
+            toolbarEle.style.display = '';
             toolbarEle.classList.add('e-show');
-        }
-        else {
+        } else {
             toolbarEle.classList.remove('e-show');
         }
     }
@@ -1516,7 +1512,7 @@ export class ChatUI extends InterActiveChatBase implements INotifyPropertyChange
         messageContent.appendChild(textElement);
         this.updateForwardAndReplyElement(msg, messageContent);
         if (this.messageTemplate) {
-            this.getContextObject('messageTemplate', messageGroup, index, msg);
+            this.getContextObject('messageTemplate', messageItem, index, msg);
         } else {
             if (!isUserTimeStampRendered) { messageItem.appendChild(timeSpan); }
             if (showStatus) {
@@ -1530,8 +1526,8 @@ export class ChatUI extends InterActiveChatBase implements INotifyPropertyChange
             else {
                 messageItem.appendChild(messageContent);
             }
-            this.manageChatContent(loadOldChat, messageGroup, messageItem);
         }
+        this.manageChatContent(loadOldChat, messageGroup, messageItem);
         const toolbarEle: HTMLElement = this.renderChatMessageToolbar(messageItem, msg);
         this.wireMessageToolbarEvents(messageItem, toolbarEle);
         messageItem.prepend(toolbarEle);
@@ -1773,6 +1769,7 @@ export class ChatUI extends InterActiveChatBase implements INotifyPropertyChange
         this.messageWrapper.innerHTML = '';
         this.setChatMsgId();
         this.renderMessageGroup(this.messageWrapper);
+        this.updateEmptyChatTemplate();
     }
 
     private onSendIconClick(event: KeyboardEvent | Event): void {
@@ -1893,6 +1890,9 @@ export class ChatUI extends InterActiveChatBase implements INotifyPropertyChange
         else { footerElement.hidden = false; }
     }
     private handleScroll(): void {
+        this.messageWrapper.querySelectorAll('.e-chat-message-toolbar.e-show').forEach((toolbar: Element) => {
+            toolbar.classList.remove('e-show');
+        });
         const atBottom: boolean = this.checkScrollAtBottom();
         if (atBottom) {
             this.toggleClassName(this.downArrowIcon.element, atBottom, 'downArrow');

@@ -1031,25 +1031,19 @@ export class _PdfCrossReference {
                 dictionary.update('DescendantFonts', [reference]);
             }
         }
-        if (dictionary.has('ToUnicode')) {
-            const fonts: any = dictionary.get('ToUnicode'); // eslint-disable-line
+        this._createFontReference('ToUnicode', dictionary);
+        this._createFontReference('FontFile2', dictionary);
+        this._createFontReference('FontFile3', dictionary);
+        this._createFontReference('FontDescriptor', dictionary);
+    }
+    _createFontReference(key: string, dictionary: _PdfDictionary): void {
+        if (dictionary.has(key)) {
+            const fonts: any = dictionary.get(key); // eslint-disable-line
             if (!(fonts instanceof _PdfReference)) {
                 const reference: _PdfReference = this._getNextReference();
                 this._cacheMap.set(reference, fonts);
-                dictionary.update('ToUnicode', reference);
+                dictionary.update(key, reference);
             }
-        }
-        if (dictionary.has('FontFile2')) {
-            const fonts: any = dictionary.get('FontFile2'); // eslint-disable-line
-            const reference: _PdfReference = this._getNextReference();
-            this._cacheMap.set(reference, fonts);
-            dictionary.update('FontFile2', reference);
-        }
-        if (dictionary.has('FontDescriptor')) {
-            const fonts: any = dictionary.get('FontDescriptor'); // eslint-disable-line
-            const reference: _PdfReference = this._getNextReference();
-            this._cacheMap.set(reference, fonts);
-            dictionary.update('FontDescriptor', reference);
         }
     }
     _writeStream(stream: _PdfBaseStream, buffer: Array<number>, transform?: _CipherTransform, isCrossReference?: boolean): void {

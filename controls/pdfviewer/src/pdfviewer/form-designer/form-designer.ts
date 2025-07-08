@@ -14,7 +14,7 @@ import { DropDownList } from '@syncfusion/ej2-dropdowns';
 import { Button, CheckBox } from '@syncfusion/ej2-buttons';
 import { DisplayMode, FontStyle, FormFieldType, Visibility } from '../base/types';
 import { cloneObject } from '../drawing/drawing-util';
-import { PdfBitmap } from '@syncfusion/ej2-pdf';
+import { PdfBitmap, PdfPage } from '@syncfusion/ej2-pdf';
 import { PdfViewerUtils } from '../base/pdfviewer-utlis';
 
 /**
@@ -4701,12 +4701,35 @@ export class FormDesigner {
                         if (currentData.signatureType === 'Text' && !this.pdfViewerBase.signatureModule.checkDefaultFont(currentData.fontFamily)) {
                             this.getTextToImage(currentData);
                         }
+                        if (this.pdfViewerBase.clientSideRendering && currentData.signatureType === 'Image') {
+                            formFieldsData[parseInt(i.toString(), 10)].FormField.signatureBound =
+                                this.getBoundsForSignatureImage(formFieldsData[parseInt(i.toString(), 10)].FormField.signatureBound,
+                                                                formFieldsData[parseInt(i.toString(), 10)].FormField.pageNumber - 1);
+                        }
                     }
                 }
             }
             return (JSON.stringify(formFieldsData));
         } else {
             return null;
+        }
+    }
+
+    private getBoundsForSignatureImage (bound: any, pageIndex: number): any {
+        const pageDetails: any = this.pdfViewerBase.pageSize[parseInt(pageIndex.toString(), 10)];
+        if (pageDetails) {
+            if (pageDetails.rotation === 1) {
+                return { x: bound.x + bound.width - bound.height, y: bound.y, width: bound.height, height: bound.width };
+            }
+            else if (pageDetails.rotation === 3) {
+                return { x: bound.x, y: bound.y - bound.width + bound.height, width: bound.height, height: bound.width };
+            }
+            else {
+                return bound;
+            }
+        }
+        else {
+            return bound;
         }
     }
 

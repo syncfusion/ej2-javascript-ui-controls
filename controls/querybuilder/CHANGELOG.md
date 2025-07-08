@@ -2,7 +2,14 @@
 
 ## [Unreleased]
 
-## 30.1.38 (2025-07-02)
+## 30.1.39 (2025-07-08)
+
+### QueryBuilder
+
+- `#I731152`, `#F197031` - The issue where "Rule values were not updated properly when the operator was changed in string type columns" has been resolved.
+- `#I735162` - Resolved the issue where the "NOT" operator did not update correctly when using the setRules method in the separator sample.
+
+## 30.1.37 (2025-06-25)
 
 ### QueryBuilder
 

@@ -984,7 +984,7 @@ export class UndoRedo {
             diagram.connectorPropertyChange(connector as Connector, {} as Connector, { targetPortID: obj.targetPortID } as Connector);
         }
         if (obj.sourceID !== connector.sourceID) {
-            if (obj.sourceID === '') {
+            if (obj.sourceID === '' || obj.sourceID === null) {
                 node = diagram.nameTable[connector.sourceID];
                 removeItem(node.outEdges, obj.id);
             } else {
@@ -1001,7 +1001,7 @@ export class UndoRedo {
             diagram.connectorPropertyChange(connector as Connector, {} as Connector, { sourceID: obj.sourceID } as Connector);
         }
         if (obj.targetID !== connector.targetID) {
-            if (obj.targetID === '') {
+            if (obj.targetID === '' || obj.targetID === null) {
                 node = diagram.nameTable[connector.targetID];
                 removeItem(node.inEdges, obj.id);
             } else {

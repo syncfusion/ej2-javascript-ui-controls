@@ -221,7 +221,7 @@ export abstract class Widget implements IWidget {
         if (widget instanceof BodyWidget) {
             if (index > 0 && !(widget.containerWidget instanceof FootNoteWidget)) {
                 widget = widget.page.bodyWidgets[index - 1];
-            } else if ((widget.containerWidget instanceof FootNoteWidget) && !widget.page.documentHelper.owner.editorModule.removeEditRange) {
+            } else if ((widget.containerWidget instanceof FootNoteWidget) && !widget.page.documentHelper.owner.editorModule.isDeleteOrBackSpace) {
                 const isEndnote = widget.containerWidget.footNoteType === 'Endnote';
                 const isFirstInContainer = index === 0;
                 if (isEndnote && isFirstInContainer && !isNullOrUndefined(widget.page.previousPage)
@@ -288,7 +288,7 @@ export abstract class Widget implements IWidget {
                     && !isNullOrUndefined(widget.page.nextPage.endnoteWidget) && !isNullOrUndefined(widget.page.nextPage.endnoteWidget.bodyWidgets[0])) {
                     widget = widget.page.nextPage.endnoteWidget.bodyWidgets[0];
                 }
-                else if (index >= widget.containerWidget.bodyWidgets.length - 1 && !widget.page.documentHelper.owner.editorModule.removeEditRange) {
+                else if (index >= widget.containerWidget.bodyWidgets.length - 1 && !widget.page.documentHelper.owner.editorModule.isDeleteOrBackSpace) {
                     widget = undefined;
                 } else {
                     widget = widget.containerWidget.bodyWidgets[index + 1];
@@ -552,6 +552,10 @@ export abstract class BlockContainer extends Widget {
     * @private
     */
     public columnIndex: number = 0;
+    /**
+    * @private
+    */
+    public headerSectionIndex: number = 0;
     /**
      * @private
      */
@@ -2543,7 +2547,7 @@ export class TableWidget extends BlockWidget {
             if (rowFormat.gridBefore > 0 && (row.rowFormat.beforeWidth !== 0 || row.rowFormat.gridBeforeWidth !== 0) && ((this.bodyWidget.page.documentHelper.alignTablesRowByRow) ? row.ownerTable.tableFormat.tableAlignment === 'Left' || (this.bodyWidget.page.documentHelper.compatibilityMode === 'Word2003' && (row.ownerTable.firstChild as TableRowWidget).rowFormat.gridAfter > 0) : true)) {
                 cellWidth = this.getCellWidth(rowFormat.gridBeforeWidth, row.rowFormat.gridAfterWidthType, tableWidth, null);
                 sizeInfo.minimumWidth = cellWidth;
-                this.tableHolder.addColumns(columnSpan, columnSpan = rowFormat.gridBefore, cellWidth, sizeInfo, offset = cellWidth, 'Point');
+                this.tableHolder.addColumns(columnSpan, columnSpan = rowFormat.gridBefore, cellWidth, sizeInfo, offset = cellWidth, 'Point', isAutoWidth);
             }
             for (let j: number = 0; j < row.childWidgets.length; j++) {
                 let cell: TableCellWidget = row.childWidgets[j] as TableCellWidget;
@@ -2572,10 +2576,10 @@ export class TableWidget extends BlockWidget {
                         // If the table gird alone calculated then column index of the rowspanned cell will be directly taken. 
                         // If the gird calculation is done from the UI level operations such as resizing then table holder will have the columns at that time we can get the column index from the table holder.
                         if (this.tableHolder.columns.length > 0) {
-                            this.tableHolder.addColumns(columnSpan, columnSpan = this.tableHolder.columns.indexOf(rowSpannedCell.ownerColumn) + rowSpannedCell.cellFormat.columnSpan, cellWidth, sizeInfo, offset += cellWidth, cell.cellFormat.preferredWidthType);
+                            this.tableHolder.addColumns(columnSpan, columnSpan = this.tableHolder.columns.indexOf(rowSpannedCell.ownerColumn) + rowSpannedCell.cellFormat.columnSpan, cellWidth, sizeInfo, offset += cellWidth, cell.cellFormat.preferredWidthType, isAutoWidth);
                             cell.columnIndex = columnSpan;
                         } else {
-                            this.tableHolder.addColumns(columnSpan, columnSpan = rowSpannedCell.columnIndex + rowSpannedCell.cellFormat.columnSpan, cellWidth, sizeInfo, offset += cellWidth,  cell.cellFormat.preferredWidthType);
+                            this.tableHolder.addColumns(columnSpan, columnSpan = rowSpannedCell.columnIndex + rowSpannedCell.cellFormat.columnSpan, cellWidth, sizeInfo, offset += cellWidth,  cell.cellFormat.preferredWidthType, isAutoWidth);
                             cell.columnIndex = columnSpan;
                         }
                     }
@@ -2604,11 +2608,11 @@ export class TableWidget extends BlockWidget {
                 }
                 sizeInfo = cell.getCellSizeInfo(isAutoFit);
                 cellWidth = this.getCellWidth(cell.cellFormat.preferredWidth, cell.cellFormat.preferredWidthType, tableWidth, cell);
-                this.tableHolder.addColumns(columnSpan, columnSpan += cell.cellFormat.columnSpan, cellWidth, sizeInfo, offset += cellWidth, cell.cellFormat.preferredWidthType);
+                this.tableHolder.addColumns(columnSpan, columnSpan += cell.cellFormat.columnSpan, cellWidth, sizeInfo, offset += cellWidth, cell.cellFormat.preferredWidthType, isAutoWidth);
                 if (j === row.childWidgets.length - 1 && rowFormat.gridAfterWidth > 0) {
                     cellWidth = this.getCellWidth(rowFormat.gridAfterWidth, 'Point', tableWidth, null);
                     sizeInfo.minimumWordWidth = sizeInfo.maximumWordWidth = sizeInfo.minimumWidth = cellWidth;
-                    this.tableHolder.addColumns(columnSpan, columnSpan += rowFormat.gridAfter, cellWidth, sizeInfo, offset += cellWidth, 'Point');
+                    this.tableHolder.addColumns(columnSpan, columnSpan += rowFormat.gridAfter, cellWidth, sizeInfo, offset += cellWidth, 'Point', isAutoWidth);
                 }
             }
         }
@@ -2622,7 +2626,7 @@ export class TableWidget extends BlockWidget {
         this.tableHolder.validateColumnWidths();
         if (isAutoFit) {
             // Fits the column width automatically based on contents.
-            this.tableHolder.autoFitColumn(containerWidth, tableWidth, isAutoWidth, this.isInsideTable, isAutoFit, hasSpannedCells, this.leftIndent + this.rightIndent, pageContainerWidth, this.tableFormat.preferredWidthType);
+            this.tableHolder.autoFitColumn(containerWidth, tableWidth, isAutoWidth, this.isInsideTable, isAutoFit, hasSpannedCells, this.bodyWidget.page.viewer.clientArea.width, this.leftIndent + this.rightIndent, pageContainerWidth, this.tableFormat.preferredWidthType);
         } else {
             // Fits the column width based on preferred width. i.e. Fixed layout.
             this.tableHolder.fitColumns(containerWidth, tableWidth, isAutoWidth, isAutoFit, this.leftIndent + this.rightIndent);
@@ -9950,7 +9954,7 @@ export class WTableHolder {
     /**
      * @private
      */
-    public addColumns(currentColumnIndex: number, columnSpan: number, width: number, sizeInfo: ColumnSizeInfo, offset: number, preferredWidthType: WidthType): void {
+    public addColumns(currentColumnIndex: number, columnSpan: number, width: number, sizeInfo: ColumnSizeInfo, offset: number, preferredWidthType: WidthType, isAutoWidth?: boolean): void {
         for (let i: number = this.columns.length; i < columnSpan; i++) {
             this.columns.push(new WColumn());
         }
@@ -9964,10 +9968,12 @@ export class WTableHolder {
         if (!(gridSpan > 1) && availableWidth < width) {
             this.columns[columnSpan - 1].preferredWidth += (width - availableWidth);
         }
-        if (sizeInfo.minimumWordWidth > this.columns[columnSpan - 1].minimumWordWidth) {
+        // Sets minimum word width for cell with one span, because content from spanned cells are not consider as minimum word of the column
+        if ((!isAutoWidth || columnSpan - currentColumnIndex == 1) && sizeInfo.minimumWordWidth > this.columns[columnSpan - 1].minimumWordWidth) {
             this.columns[columnSpan - 1].minimumWordWidth = sizeInfo.minimumWordWidth;
         }
-        if (sizeInfo.maximumWordWidth > this.columns[columnSpan - 1].maximumWordWidth) {
+        // Sets maximum word width for cell with one span, because content from spanned cells are not consider as maximum word of the column
+        if ((!isAutoWidth || columnSpan - currentColumnIndex == 1) && sizeInfo.maximumWordWidth > this.columns[columnSpan - 1].maximumWordWidth) {
             this.columns[columnSpan - 1].maximumWordWidth = sizeInfo.maximumWordWidth;
         }
         if (sizeInfo.minimumWidth > this.columns[columnSpan - 1].minimumWidth) {
@@ -10038,7 +10044,7 @@ export class WTableHolder {
     /**
      * @private
      */
-    public autoFitColumn(containerWidth: number, preferredTableWidth: number, isAuto: boolean, isNestedTable: boolean, isAutoFit: boolean, hasSpannedCells: boolean, indent?: number, pageContainerWidth?: number, tablePreferredWidthType?: WidthType): void {
+    public autoFitColumn(containerWidth: number, preferredTableWidth: number, isAuto: boolean, isNestedTable: boolean, isAutoFit: boolean, hasSpannedCells: boolean, clientWidth: number, indent?: number, pageContainerWidth?: number, tablePreferredWidthType?: WidthType): void {
         // Cell's preferred width should be considered until the table width fits to the container width.
         let maxTotal: number = 0;
         let minTotal: number = 0;
@@ -10181,6 +10187,7 @@ export class WTableHolder {
                 // Try to fit minimum width for each column and allot remaining space to columns based on their minimum word width.
                 let totalMinimumWordWidth: number = this.getTotalWidth(1);
                 let totalMinWidth: number = this.getTotalWidth(3);
+                let totalMaximumWordWidth: number = this.getTotalWidth(2);
                 if (totalMinWidth > 2112) {
                     let cellWidth: number = 2112 / this.columns.length;
                     for (let i: number = 0; i < this.columns.length; i++) {
@@ -10189,7 +10196,8 @@ export class WTableHolder {
                 } else {
                     let availableWidth: number = 0;
                     if (((totalMinWidth < containerWidth) && ((containerWidth - totalMinWidth) >= 1) && !isAllColumnPointWidth)
-                        || (isAllColumnPointWidth && !hasSpannedCells && totalMinimumWordWidth > containerWidth)) {
+                        || (isAllColumnPointWidth && !hasSpannedCells && totalMinimumWordWidth > containerWidth)
+                        || (hasSpannedCells && totalMinimumWordWidth > containerWidth && totalPreferredWidth > containerWidth && totalMaximumWordWidth > clientWidth)) {
                         availableWidth = containerWidth - totalMinWidth;
                         for (let i: number = 0; i < this.columns.length; i++) {
                             let column: WColumn = this.columns[i];

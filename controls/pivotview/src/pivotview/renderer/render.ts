@@ -1042,6 +1042,7 @@ export class Render {
                     this.parent.gridSettings.columnWidth;
             }
             this.parent.layoutRefresh();
+            this.parent.grid.headerModule.refreshUI();
         }
         this.setGroupWidth(args);
         this.calculateGridHeight(true);

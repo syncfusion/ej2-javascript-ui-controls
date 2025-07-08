@@ -1018,7 +1018,7 @@ export class PdfViewerBase {
             }
         }
         this.pdfViewerRunner.onMessage('PageLoaded,LoadedStampForFormFields,LoadedStamp', function (event: any): void {
-            if (event.data.message === 'PageLoaded') {
+            if (event.data.message === 'PageLoaded' && proxy.clientSideRendering) {
                 proxy.requestSuccessPdfium(event.data);
             }
             else if (event.data.message === 'LoadedStampForFormFields') {

@@ -305,7 +305,8 @@
 .e-bigger .e-richtexteditor {
   .e-rte-toolbar.e-extended-toolbar .e-toolbar-extended .e-toolbar-item,
   .e-rte-toolbar .e-toolbar-pop:not(.e-toolbar-extended) .e-toolbar-item.e-toolbar-popup,
-  .e-rte-toolbar .e-toolbar-item {
+  .e-rte-toolbar .e-toolbar-item,
+  .e-rte-toolbar .e-toolbar-items .e-toolbar-item {
     .e-tbar-btn.e-btn {
       min-height: $rte-big-split-btn-height;
       min-width: $rte-big-split-btn-height;

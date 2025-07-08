@@ -287,6 +287,11 @@ export class RichTextEditor extends Component<HTMLElement> implements INotifyPro
      *   1. Expand: Overflowing toolbar items are hidden and can be accessed by clicking the expand arrow.
      *   2. MultiRow: Overflowing toolbar items wrap into the next row.
      *   3. Scrollable: Toolbar items are on a single line and can be scrolled horizontally if they overflow.
+     *   4. Popup: Overflowing toolbar items wrap into a popup container.
+     *
+     * - position: Defines the toolbar position, with the following options:
+     *   1. Top: Positions the toolbar at the top of the RichTextEditor.
+     *   2. Bottom: Positions the toolbar at the bottom of the RichTextEditor.
      *
      * - items: An array specifying the items aligned horizontally in the toolbar.
      * > '|' and '-' can be used to insert vertical and horizontal separator lines in the toolbar.
@@ -301,6 +306,7 @@ export class RichTextEditor extends Component<HTMLElement> implements INotifyPro
      * {
      * enable: true,
      * enableFloating: true,
+     * position: ToolbarPosition.Top,
      * type: ToolbarType.Expand,
      * items: ['Bold', 'Italic', 'Underline', '|', 'Formats', 'Alignments', 'OrderedList',
      * 'UnorderedList', '|', 'CreateLink', 'Image', '|', 'SourceCode', 'Undo', 'Redo'],
@@ -919,6 +925,8 @@ export class RichTextEditor extends Component<HTMLElement> implements INotifyPro
     /**
      * Predefines advanced list types that populate the code block dropdown in the toolbar.
      *
+     * {% codeBlock src='rich-text-editor/code-block/index.md' %}{% endcodeBlock %}
+     *
      * @default
      * {
      * defaultLanguage: 'plaintext',
@@ -1036,6 +1044,8 @@ export class RichTextEditor extends Component<HTMLElement> implements INotifyPro
      * @default
      * {
      * columns: 10,
+     * modeSwitcher: false,
+     * showRecentColors: true,
      * colorCode: {
      * 'Custom': [
      * '', '#000000', '#e7e6e6', '#44546a', '#4472c4', '#ed7d31', '#a5a5a5', '#ffc000', '#70ad47', '#ff0000',
@@ -1058,6 +1068,8 @@ export class RichTextEditor extends Component<HTMLElement> implements INotifyPro
      * @default
      * {
      * columns: 5,
+     * modeSwitcher: false,
+     * showRecentColors: true,
      * colorCode: {
      * 'Custom': ['#ffff00', '#00ff00', '#00ffff', '#ff00ff', '#0000ff', '#ff0000',
      * '#000080', '#008080', '#008000', '#800080', '#800000', '#808000',

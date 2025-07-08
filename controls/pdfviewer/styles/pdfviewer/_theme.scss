@@ -181,6 +181,10 @@ $lg-desktop: 1399.98;
     position: $pv-page-div-position;
   }
 
+  .e-pdfviewer .e-pv-viewer-container.e-pv-fitHeight {
+    border-style: none;
+  }
+
   .e-pv-viewer-container .e-pv-page-div.e-focused {
     box-shadow: $pv-page-div-focus-style;
   }

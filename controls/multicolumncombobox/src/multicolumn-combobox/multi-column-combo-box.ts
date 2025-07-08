@@ -2,7 +2,7 @@ import { Component, EventHandler, INotifyPropertyChanged, Property, NotifyProper
 import { ChildProperty, prepend, Collection, getUniqueID, Complex, isNullOrUndefined as isNOU, select, L10n, Browser } from '@syncfusion/ej2-base';
 import { formatUnit, addClass, removeClass, NumberFormatOptions, DateFormatOptions, Event, EmitType, AnimationModel, Animation, KeyboardEventArgs } from '@syncfusion/ej2-base';
 import { Input, InputObject } from '@syncfusion/ej2-inputs';
-import { DataManager, Query, Group } from '@syncfusion/ej2-data';
+import { DataManager, Query, Group, DataOptions } from '@syncfusion/ej2-data';
 import { Popup, createSpinner, showSpinner, hideSpinner } from '@syncfusion/ej2-popups';
 import { Grid, Resize, FailureEventArgs, VirtualScroll, Group as GridGroup, Edit, Sort, GridColumnModel } from '@syncfusion/ej2-grids';
 
@@ -927,6 +927,13 @@ export class MultiColumnComboBox extends Component<HTMLElement> implements INoti
     private selectedRowIndex: number;
     private isShowSpinner: boolean = true;
     private hiddenElement: HTMLSelectElement;
+    private isLocaleChanged: boolean;
+    private gridData: Object | DataManager | DataResult;
+    private mainData: Object | DataManager | DataResult;
+    private isMainDataUpdated: boolean;
+    private isCustomFilter: boolean;
+    private customFilterQuery: Query;
+    private typedString: string;
 
     /**
      * *Constructor for creating the component
@@ -999,12 +1006,72 @@ export class MultiColumnComboBox extends Component<HTMLElement> implements INoti
 
     protected render(): void {
         this.renderInput();
+        if (this.gridData == null) {
+            this.setGridData(this.dataSource);
+        }
         this.renderGrid();
         this.popupDiv = this.createElement('div', { className: CONTENT });
         this.popupDiv.appendChild(this.gridEle);
         this.setHTMLAttributes();
         this.renderPopup();
         this.wireEvents();
+    }
+
+    private setGridData(dataSource: Object | DataManager, query?: Query): void {
+        this.trigger('actionBegin', { cancel: false, query: query }, (args: { [key: string]: Object }) => {
+            if (!args.cancel) {
+                if (dataSource instanceof DataManager) {
+                    if (this.isShowSpinner) {
+                        this.showHideSpinner(true);
+                    }
+                    (dataSource as DataManager).executeQuery(this.getQuery(query as Query)).then((e: Object) => {
+                        this.gridData = (e as any).result;
+                        this.trigger('actionComplete', e, (e: Object) => {
+                            this.showHideSpinner(false);
+                            if (!this.isMainDataUpdated) {
+                                this.mainData = this.gridData;
+                                this.isMainDataUpdated = true;
+                            }
+                            if (this.popupDiv) {
+                                this.updateGridDataSource();
+                            }
+                        });
+                    }).catch((e: any) => {
+                        this.trigger('actionFailure', e, null);
+                    });
+                } else {
+                    const dataManager: DataManager = new DataManager(dataSource as DataOptions | JSON[]);
+                    const listItems: { [key: string]: Object }[] = <{ [key: string]: Object }[]>(
+                        this.getQuery(query as Query)).executeLocal(dataManager);
+                    this.gridData = listItems;
+                    this.trigger('actionComplete', { result: listItems }, (e: Object) => {
+                        if (!this.isMainDataUpdated) {
+                            this.mainData = this.gridData;
+                            this.isMainDataUpdated = true;
+                        }
+                        if (this.popupDiv) {
+                            this.updateGridDataSource();
+                        }
+                    });
+                }
+            }
+        });
+    }
+
+    protected getQuery(query: Query): Query {
+        let filterQuery: Query;
+        if (!this.isCustomFilter && this.allowFiltering) {
+            filterQuery = query ? query.clone() : this.query ? this.query.clone() : new Query();
+            const filterType: string = this.typedString === '' ? 'contains' : this.filterType;
+            if ((this.allowFiltering && this.typedString && this.typedString !== '')) {
+                const fields: string = (this.fields.text) ? this.fields.text : '';
+                filterQuery.where(fields, filterType, this.typedString, true, false);
+            }
+        } else {
+            filterQuery = (this.customFilterQuery != null) ?
+                this.customFilterQuery.clone() : query ? query.clone() : this.query ? this.query.clone() : new Query();
+        }
+        return filterQuery;
     }
 
     private setHiddenValue(): void {
@@ -1029,7 +1096,7 @@ export class MultiColumnComboBox extends Component<HTMLElement> implements INoti
         const gridColumns: ColumnModel[] = this.getGridColumns();
         const sortOrder: string = this.sortOrder.toString().toLowerCase();
         this.gridObj = new Grid({
-            dataSource: this.dataSource,
+            dataSource: this.gridData,
             columns: gridColumns,
             allowSorting: this.allowSorting,
             enableStickyHeader: true,
@@ -1039,7 +1106,6 @@ export class MultiColumnComboBox extends Component<HTMLElement> implements INoti
             enableVirtualization: this.enableVirtualization,
             enableRtl: this.enableRtl,
             editSettings: { allowAdding: false },
-            query: this.query,
             allowTextWrap: this.gridSettings.allowTextWrap,
             textWrapSettings: { wrapMode: this.gridSettings.textWrapMode as WrapMode },
             height: this.popupHeight,
@@ -1054,7 +1120,6 @@ export class MultiColumnComboBox extends Component<HTMLElement> implements INoti
             },
             dataBound: () => { this.onDataBound(); },
             actionFailure: (args: FailureEventArgs) => { this.onActionFailure(args); },
-            actionBegin: (args: { [key: string]: Object }) => { this.trigger('actionBegin', args); },
             actionComplete: this.handleActionComplete.bind(this),
             keyPressed: this.handleKeyPressed.bind(this),
             resizing: (args: ResizeArgs) => {
@@ -1088,7 +1153,6 @@ export class MultiColumnComboBox extends Component<HTMLElement> implements INoti
     }
 
     private handleActionComplete(args: { [key: string]: Object }): void {
-        this.trigger('actionComplete', args);
         if (args.requestType === 'sorting') {
             this.updateRowSelection(args);
         }
@@ -1207,6 +1271,11 @@ export class MultiColumnComboBox extends Component<HTMLElement> implements INoti
     }
 
     private onDataBound(): void {
+        if (this.isLocaleChanged) {
+            this.isLocaleChanged = false;
+            this.unWireEvents();
+            this.wireEvents();
+        }
         const dataCount: number = (<{ [key: string]: Object }[]>this.dataSource).length;
         const popupChild: HTMLElement = this.popupDiv.querySelector('.' + MULTICOLUMNGRID);
         const hasNoDataClass: boolean = this.popupDiv.classList.contains(NODATA);
@@ -1432,8 +1501,8 @@ export class MultiColumnComboBox extends Component<HTMLElement> implements INoti
                     // eslint-disable-next-line @typescript-eslint/no-explicit-any
                     const dataLists: { [key: string]: Object }[] = (e as any).result;
                     const filteredData: { [key: string]: Object }[] = dataLists.filter((item: { [key: string]: Object }) => {
-                        const fieldVal: string = this.updateFieldValue(isRerender ? (isValue ? this.fields.value : this.fields.text) :
-                            !isNOU(this.value) ? this.fields.value : this.fields.text, item);
+                        const fieldVal: string = item ? (this.updateFieldValue(isRerender ? (isValue ? this.fields.value :
+                            this.fields.text) : !isNOU(this.value) ? this.fields.value : this.fields.text, item)) : null;
                         return fieldVal === value;
                     });
                     if (filteredData.length > 0) {
@@ -1742,25 +1811,25 @@ export class MultiColumnComboBox extends Component<HTMLElement> implements INoti
         this.showPopup(null, true);
         this.updateClearIconState();
         if (this.allowFiltering) {
-            const inputValue: string = (<HTMLInputElement>e.target).value.toLowerCase();
-            let customFiltering: boolean = false;
+            this.typedString = (<HTMLInputElement>e.target).value.toLowerCase();
             const eventArgs: FilteringEventArgs = {
                 preventDefaultAction: false,
-                text: inputValue,
+                text: this.typedString,
                 updateData: (
                     dataSource: { [key: string]: Object }[] | DataManager,
                     query?: Query,
                     fields?: FieldSettingsModel) => {
                     if (eventArgs.cancel) { return; }
-                    customFiltering = true;
-                    this.filterAction(dataSource, inputValue, query, fields);
+                    this.isCustomFilter = true;
+                    this.customFilterQuery = query ? query.clone() : query;
+                    this.setGridData(dataSource, query);
                 },
                 event: e,
                 cancel: false
             };
             this.trigger('filtering', eventArgs, (eventArgs: FilteringEventArgs) => {
-                if (!eventArgs.cancel && !eventArgs.preventDefaultAction && !customFiltering) {
-                    this.filterAction(this.dataSource, inputValue, this.query, this.fields);
+                if (!eventArgs.cancel && !eventArgs.preventDefaultAction && !this.isCustomFilter) {
+                    this.setGridData(this.dataSource, this.query ? this.query.clone() : null);
                 }
             });
         }
@@ -1771,11 +1840,7 @@ export class MultiColumnComboBox extends Component<HTMLElement> implements INoti
         let data: { [key: string]: Object }[];
         let exactData: { [key: string]: Object }[];
         if (this.dataSource instanceof DataManager) {
-            const query: Query = new Query();
-            /* eslint-disable-next-line  @typescript-eslint/no-explicit-any */
-            const result: any = await (this.dataSource as DataManager).executeQuery(query);
-            const totaldata: { [key: string]: Object }[] = result.result as { [key: string]: Object }[];
-            ({ data, exactData } = this.filterDatas(totaldata, inputValue));
+            ({ data, exactData } = this.filterDatas(this.mainData as { [key: string]: Object }[], inputValue));
         } else if (Array.isArray(this.dataSource)) {
             ({ data, exactData } = this.filterDatas(this.dataSource, inputValue));
         }
@@ -1806,71 +1871,12 @@ export class MultiColumnComboBox extends Component<HTMLElement> implements INoti
         this.matchedRowEle = this.gridObj.getRowByIndex(selectedIndex);
     }
 
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    private filterAction(dataSource: any, inputValue: string, query?: Query, fields?: FieldSettingsModel): void {
-        const isQuery: Query = query || new Query();
-        const filterType: string = this.filterType.toString().toLowerCase();
-        if (isNOU(query) && isNOU(fields)) {
-            this.updateGridDataSource(dataSource);
-        }
-        else if (query) {
-            if (dataSource instanceof DataManager) {
-                this.filteringHandler(dataSource, inputValue, query, fields);
-            }
-            else {
-                new DataManager(dataSource as DataManager).executeQuery(query).then((e: Object) => {
-                    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-                    const dataLists: { [key: string]: Object }[] = (e as any).result;
-                    this.updateGridDataSource(dataLists);
-                });
-            }
-        }
-        else {
-            if (dataSource instanceof DataManager) {
-                this.filteringHandler(dataSource, inputValue, isQuery, fields);
-            } else if (Array.isArray(dataSource)) {
-                const filteredData: { [key: string]: Object }[] =
-                (dataSource as { [key: string]: Object }[]).filter((item: { [key: string]: Object }) =>
-                    this.filterData(item, filterType, inputValue, fields));
-                this.updateGridDataSource(filteredData);
-            }
-        }
-    }
-
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    private filteringHandler(dataSource: any, inputValue: string, query?: Query, fields?: FieldSettingsModel): void {
-        const filterType: string = this.filterType.toString().toLowerCase();
-        let filteredData: { [key: string]: Object }[];
-        (dataSource as DataManager).executeQuery(query).then((e: Object) => {
-            // eslint-disable-next-line @typescript-eslint/no-explicit-any
-            const dataLists: { [key: string]: Object }[] = (e as any).result;
-            filteredData = dataLists.filter(
-                (item: { [key: string]: Object }) => this.filterData(item, filterType, inputValue, fields));
-            this.updateGridDataSource(filteredData);
-        });
-    }
-
-    private filterData(item: { [key: string]: Object }, filterType: string, inputValue: string, fields: FieldSettingsModel): boolean {
-        const dataValue: string = this.updateFieldValue(fields ? fields.text : this.fields.text, item);
-        const itemValue: string = dataValue.toLowerCase();
-        switch (filterType) {
-        case 'startswith':
-            return itemValue.startsWith(inputValue);
-        case 'endswith':
-            return itemValue.endsWith(inputValue);
-        case 'contains':
-            return itemValue.includes(inputValue);
-        default:
-            return false;
-        }
-    }
-
-    private updateGridDataSource(dataSource: { [key: string]: Object }[]): void {
-        if (dataSource.length > 0) {
+    private updateGridDataSource(): void {
+        if (this.gridData && (this.gridData as any).length > 0) {
             removeClass([this.popupDiv], [NODATA]);
             const noRecordEle: HTMLElement = this.popupDiv.querySelector('.e-no-records');
             if (noRecordEle) { this.popupDiv.removeChild(noRecordEle); }
-            this.gridObj.dataSource = dataSource;
+            this.gridObj.dataSource = this.gridData;
             this.isDataFiltered = true;
         } else {
             this.l10nUpdate();
@@ -2136,7 +2142,7 @@ export class MultiColumnComboBox extends Component<HTMLElement> implements INoti
         if (this.gridObj) {
             let dataLength: number;
             this.isShowSpinner = true;
-            this.gridObj.dataSource = newDataSource;
+            this.setGridData(newDataSource);
             const isRemoteData: boolean = oldDataSource instanceof DataManager;
             if (isRemoteData) {
                 (oldDataSource as DataManager).executeQuery(new Query()).then((e: Object) => {
@@ -2248,11 +2254,17 @@ export class MultiColumnComboBox extends Component<HTMLElement> implements INoti
                 else { this.focusOut(); }
                 this.inputEle.removeAttribute('aria-owns');
                 this.inputEle.removeAttribute('aria-activedescendant');
+                this.customFilterQuery = null;
             }
         });
         setTimeout((): void => {
             if (this.gridObj) {
-                this.gridObj.dataSource = this.dataSource;
+                this.gridObj.dataSource = this.allowFiltering ? this.mainData : this.gridData;
+                const noRecordEle: HTMLElement = this.popupDiv.querySelector('.e-no-records');
+                if (noRecordEle) {
+                    this.popupDiv.removeChild(noRecordEle);
+                    removeClass([this.popupDiv], [NODATA]);
+                }
                 this.updateGridHeight(true, false);
             }
         }, 100);
@@ -2455,7 +2467,8 @@ export class MultiColumnComboBox extends Component<HTMLElement> implements INoti
                 this.updateDynamicDataSource(newProp.dataSource, oldProp.dataSource);
                 break;
             case 'query':
-                if (this.gridObj) { this.gridObj.query = newProp.query; }
+                this.isMainDataUpdated = false;
+                this.setGridData(this.dataSource);
                 break;
             case 'gridSettings':
                 if (this.gridObj) {
@@ -2498,6 +2511,9 @@ export class MultiColumnComboBox extends Component<HTMLElement> implements INoti
                     gridColumns = this.getGridColumns();
                     this.gridObj.columns = gridColumns;
                 }
+                break;
+            case 'locale':
+                this.isLocaleChanged = true;
                 break;
             }
         }

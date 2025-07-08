@@ -1,6 +1,6 @@
 import { addClass, attributes, Browser, closest, detach, EventHandler, isNullOrUndefined as isNOU, isNullOrUndefined, KeyboardEventArgs, removeClass, MouseEventArgs } from '../../../base'; /*externalscript*/
 import { ClickEventArgs } from '../../../navigations/src'; /*externalscript*/
-import { isIDevice, removeClassWithAttr, scrollToCursor } from '../../src/common/util';
+import { hasAnyFormatting, isIDevice, removeClassWithAttr, scrollToCursor } from '../../src/common/util';
 import { CodeBlockPosition, IHtmlKeyboardEvent } from '../../src/editor-manager/base/interface';
 import { InsertHtml } from '../../src/editor-manager/plugin/inserthtml';
 import { ActionBeginEventArgs, IDropDownItemModel, IToolbarItemModel, NotifyArgs } from '../../src/common/interface';
@@ -681,9 +681,20 @@ export class HtmlEditor {
                 !isNOU((currentRange.startContainer.childNodes[currentRange.startOffset - 1] as HTMLElement).isContentEditable) &&
                 !(currentRange.startContainer.childNodes[currentRange.startOffset - 1] as HTMLElement).isContentEditable ?
                 currentRange.startContainer.childNodes[currentRange.startOffset - 1] as HTMLElement : null;
+            const index: number = currentRange.startOffset > 1 ? currentRange.startOffset - 1 : 0;
             if (ChildNode) {
                 ChildNode.remove();
                 (e.args as KeyboardEventArgs).preventDefault();
+            } else if ((checkNode && checkNode.textContent.trim() === '') ||
+                (currentRange.startContainer.childNodes[index as number] &&
+                    currentRange.startContainer.childNodes[index as number].textContent.trim() === '')) {
+                const node: Node = checkNode && checkNode.textContent.trim() === '' ? checkNode : currentRange.startContainer.childNodes[index as number];
+                if (hasAnyFormatting(node) && node.previousSibling && node.previousSibling.textContent.trim() === '') {
+                    this.parent.formatter.editorManager.nodeSelection.setCursorPoint(
+                        this.parent.getDocument(), node.previousSibling as HTMLElement, 0);
+                    detach(node);
+                    (e.args as KeyboardEventArgs).preventDefault();
+                }
             }
         }
     }

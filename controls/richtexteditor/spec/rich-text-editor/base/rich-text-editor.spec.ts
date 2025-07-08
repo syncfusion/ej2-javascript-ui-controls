@@ -8975,13 +8975,57 @@ describe('RTE Base module ', () => {
             let startNode = (rteObj as any).inputElement.querySelector('.last_element');
             setCursorPoint(document, (startNode.childNodes[0] as Element), 0);
             rteObj.keyDown(keyBoardEvent);
-            expect((rteObj as any).inputElement.querySelector("UL li p").textContent.indexOf("This is a second list content.") > -1).toBe(true);
-            expect((rteObj as any).inputElement.querySelector("UL li p").lastChild.textContent === 'This is a second list content.').toBe(true);
+            expect((rteObj as any).inputElement.querySelector("UL").textContent.indexOf("This is a second list content.") > -1).toBe(true);
+            expect((rteObj as any).inputElement.querySelector("UL").lastChild.textContent === 'This is a first list contentThis is a second list content.').toBe(true);
             done();
         });
         afterAll((done) => {
             destroy(rteObj);
             done();
+        });
+    });
+
+    describe('965190: While loading the li elements along with p tag and followed my empty text content p tag is not getting proper structured', () => {
+        let rteObj: RichTextEditor;
+        beforeAll(() => {
+            rteObj = renderRTE({
+                value: `<ol><li><p>text</p> </li></ol>`,
+            });
+        });
+        it('Should properly structure the content', (done: Function) => {
+            const result = rteObj.inputElement.innerHTML;
+            const expected = `<ol><li>text </li></ol>`;
+            expect(result === expected).toBe(true);
+            rteObj.value = `<ol><li>aaa <em>ssss</em><p>xxx</p></li></ol>`;
+            rteObj.dataBind();
+            const result1 = rteObj.inputElement.innerHTML;
+            const expected1 = `<ol><li><p>aaa <em>ssss</em></p><p>xxx</p></li></ol>`;
+            expect(result1 === expected1).toBe(true);
+            rteObj.value = `<ol><li><p>xxx</p>aaa <em>ssss</em></li></ol>`;
+            rteObj.dataBind();
+            const result2 = rteObj.inputElement.innerHTML;
+            const expected2 = `<ol><li><p>xxx</p><p>aaa <em>ssss</em></p></li></ol>`;
+            expect(result2 === expected2).toBe(true);
+            rteObj.value = `<ol><li><p>text </p><ol><li><p>case</p></li></ol></li></ol>`;
+            rteObj.dataBind();
+            const result3 = rteObj.inputElement.innerHTML;
+            const expected3 = `<ol><li>text <ol><li>case</li></ol></li></ol>`;
+            expect(result3 === expected3).toBe(true);
+            rteObj.value = `<ol><li><p>text </p><ol><li><p>case</p></li></ol>outside</li></ol>`;
+            rteObj.dataBind();
+            const result4 = rteObj.inputElement.innerHTML;
+            const expected4 = `<ol><li><p>text </p><ol><li>case</li></ol><p>outside</p></li></ol>`;
+            expect(result4 === expected4).toBe(true);
+            rteObj.value = `<ol><li>text <ol><li>case</li></ol><p>outside</p></li></ol>`;
+            rteObj.dataBind();
+            const result5 = rteObj.inputElement.innerHTML;
+            const expected5 = `<ol><li><p>text </p><ol><li>case</li></ol><p>outside</p></li></ol>`;
+            expect(result5 === expected5).toBe(true);
+            rteObj.value = ``;
+            done();
+        });
+        afterAll(() => {
+            destroy(rteObj);
         });
     });
 

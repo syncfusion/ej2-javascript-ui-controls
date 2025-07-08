@@ -2592,6 +2592,162 @@ describe('Vertical View Event Render Module', () => {
             expect((<HTMLElement>recEventList[14]).style.width).toEqual("30.3333%");
         });
     });
+
+    describe('EJ2-MaxDateEvents - Events should render on maxDate', () => {
+        let schObj: Schedule;
+        const appointmentData: Record<string, any>[] = [{
+            Id: 1,
+            Subject: 'Paris',
+            StartTime: new Date(2018, 5, 14, 10, 0),
+            EndTime: new Date(2018, 5, 14, 12, 30)
+        }, {
+            Id: 2,
+            Subject: 'Paris1',
+            StartTime: new Date(2018, 5, 13, 10, 0),
+            EndTime: new Date(2018, 5, 13, 12, 30)
+        }, {
+            Id: 3,
+            Subject: 'Paris3',
+            StartTime: new Date(2018, 5, 15, 10, 0),
+            EndTime: new Date(2018, 5, 15, 10, 30)
+        }];
+
+        beforeAll((done: DoneFn) => {
+            const model: ScheduleModel = {
+                width: '100%',
+                height: '550px',
+                views: ['Day', 'Week', 'Month', 'Agenda', 'Year'],
+                selectedDate: new Date(2018, 5, 13),
+                minDate: new Date(2017, 4, 14),
+                maxDate: new Date(2018, 5, 14)
+            };
+            schObj = util.createSchedule(model, appointmentData, done);
+        });
+
+        afterAll(() => {
+            util.destroy(schObj);
+        });
+
+        it('Should render events on maxDate in Week view', () => {
+            const paris1Event: HTMLElement = schObj.element.querySelector('[data-id="Appointment_1"]');
+            expect(paris1Event).not.toBeNull();
+            expect(paris1Event.querySelector('.e-subject').innerHTML).toBe('Paris');
+            const paris2Event: HTMLElement = schObj.element.querySelector('[data-id="Appointment_2"]');
+            expect(paris2Event).not.toBeNull();
+            expect(paris2Event.querySelector('.e-subject').innerHTML).toBe('Paris1');
+            const paris3Event: HTMLElement = schObj.element.querySelector('[data-id="Appointment_3"]') as HTMLElement;
+            expect(paris3Event).toBeNull();
+        });
+
+        it('Should verify max date constraints in Agenda view for added events', (done: DoneFn) => {
+            schObj.dataBound = () => {
+                var paris1Event = schObj.element.querySelector('[data-id="Appointment_1"]');
+                expect(paris1Event).not.toBeNull();
+                expect(paris1Event.querySelector('.e-subject').innerHTML).toBe('Paris');
+                var paris2Event = schObj.element.querySelector('[data-id="Appointment_2"]');
+                expect(paris2Event).not.toBeNull();
+                expect(paris2Event.querySelector('.e-subject').innerHTML).toBe('Paris1');
+                var paris3Event = schObj.element.querySelector('[data-id="Appointment_3"]');
+                expect(paris3Event).toBeNull();
+                done();
+            };
+            schObj.currentView = 'Agenda';
+            schObj.dataBind();
+        });
+
+        it('Should still respect minDate constraint', (done: DoneFn) => {
+            const beforeMinDateEvent: Record<string, any> = {
+                Id: 4,
+                Subject: 'BeforeMinDate',
+                StartTime: new Date(2017, 3, 14),
+                EndTime: new Date(2017, 3, 14)
+            };
+            schObj.dataBound = () => {
+                schObj.addEvent(beforeMinDateEvent);
+                const beforeMinDateElement: Element = schObj.element.querySelector('[data-id="Appointment_4"]');
+                expect(beforeMinDateElement).toBeNull();
+                done();
+            };
+            schObj.currentView = 'Week';
+            schObj.dataBind();
+        });
+
+        it('Should still respect minDate constraint in Agenda', (done: DoneFn) => {
+            const beforeMinDateEvent: Record<string, any> = {
+                Id: 4,
+                Subject: 'BeforeMinDate',
+                StartTime: new Date(2017, 3, 14),
+                EndTime: new Date(2017, 3, 14)
+            };
+            schObj.dataBound = () => {
+                schObj.addEvent(beforeMinDateEvent);
+                const beforeMinDateElement: Element = schObj.element.querySelector('[data-id="Appointment_4"]');
+                expect(beforeMinDateElement).toBeNull();
+                done();
+            };
+            schObj.currentView = 'Agenda';
+            schObj.dataBind();
+        });
+
+        it('Should render events that end exactly on maxDate', (done: DoneFn) => {
+            schObj.dataBound = () => {
+                const endOnMaxDateElement: Element = schObj.element.querySelector('[data-id="Appointment_5"]');
+                expect(endOnMaxDateElement).not.toBeNull();
+                expect(endOnMaxDateElement.querySelector('.e-subject').innerHTML).toBe('EndsExactlyOnMaxDate');
+                done();
+            };
+
+            schObj.currentView = 'Week';
+            schObj.dataBind();
+
+            const endOnMaxDateEvent: Record<string, any> = {
+                Id: 5,
+                Subject: 'EndsExactlyOnMaxDate',
+                StartTime: new Date(2018, 5, 14, 9, 0),
+                EndTime: new Date(2018, 5, 14, 10, 30)
+            };
+            schObj.addEvent(endOnMaxDateEvent);
+        });
+
+        it('Should render events that end exactly on maxDate in Agenda', (done: DoneFn) => {
+            schObj.dataBound = () => {
+                const endOnMaxDateElement: Element = schObj.element.querySelector('[data-id="Appointment_5"]');
+                expect(endOnMaxDateElement).not.toBeNull();
+                expect(endOnMaxDateElement.querySelector('.e-subject').innerHTML).toBe('EndsExactlyOnMaxDate');
+                done();
+            };
+            schObj.currentView = 'Agenda';
+            schObj.dataBind();
+        });
+
+        it('Should not render events that start after maxDate', (done: DoneFn) => {
+            schObj.dataBound = () => {
+                const afterMaxDateElement: Element = schObj.element.querySelector('[data-id="Appointment_6"]');
+                expect(afterMaxDateElement).toBeNull();
+                done();
+            };
+            schObj.currentView = 'Week';
+            schObj.dataBind();
+            const afterMaxDateEvent: Record<string, any> = {
+                Id: 6,
+                Subject: 'AfterMaxDate',
+                StartTime: new Date(2018, 5, 15, 0, 0),
+                EndTime: new Date(2018, 5, 15, 2, 0)
+            };
+            schObj.addEvent(afterMaxDateEvent);
+        });
+
+        it('Should not render events that start after maxDate in Agenda', (done: DoneFn) => {
+            schObj.dataBound = () => {
+                const afterMaxDateElement: Element = schObj.element.querySelector('[data-id="Appointment_6"]');
+                expect(afterMaxDateElement).toBeNull();
+                done();
+            };
+            schObj.currentView = 'Agenda';
+            schObj.dataBind();
+        });
+    });
+
     it('memory leak', () => {
         profile.sample();
         const average: number = inMB(profile.averageChange);

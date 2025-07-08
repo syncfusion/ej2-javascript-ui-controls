@@ -1,11 +1,11 @@
 /* eslint-disable @typescript-eslint/triple-slash-reference */
 /// <reference path='../common/menu-base-model.d.ts'/>
-import { attributes, getUniqueID, Collection, NotifyPropertyChanges, INotifyPropertyChanged, Property } from '@syncfusion/ej2-base';
+import { attributes, getUniqueID, Collection, NotifyPropertyChanges, INotifyPropertyChanged, Property, isNullOrUndefined, addClass, removeClass } from '@syncfusion/ej2-base';
 import { getZindexPartial } from '@syncfusion/ej2-popups';
 import { ContextMenuModel } from './context-menu-model';
 import { MenuBase, MenuItem } from '../common/menu-base';
 import { MenuItemModel } from './../common/menu-base-model';
-
+const CONTEXTMENUTEMPLATE: string = 'e-contextmenu-template';
 /**
  * The ContextMenu is a graphical user interface that appears on the user right click/touch hold operation.
  * ```html
@@ -88,6 +88,7 @@ export class ContextMenu extends MenuBase implements INotifyPropertyChanged {
 
     protected initialize(): void {
         this.template = this.itemTemplate ? this.itemTemplate : null;
+        this.addTemplateClass();
         super.initialize();
         attributes(this.element, <{ [key: string]: string }>{ 'role': 'menubar', 'tabindex': '0' });
         this.element.style.zIndex = getZindexPartial(this.element).toString();
@@ -116,6 +117,13 @@ export class ContextMenu extends MenuBase implements INotifyPropertyChanged {
         super.closeMenu();
     }
 
+    private addTemplateClass(): void {
+        if (!isNullOrUndefined(this.itemTemplate) && typeof this.itemTemplate === 'function' ||
+            (typeof this.itemTemplate === 'string' && this.itemTemplate !== '')) {
+            addClass([this.element], CONTEXTMENUTEMPLATE);
+        }
+    }
+
     /**
      * Called internally if any of the property value changed.
      *
@@ -138,6 +146,8 @@ export class ContextMenu extends MenuBase implements INotifyPropertyChanged {
                 break;
             case 'itemTemplate':
                 this.itemTemplate = newProp.itemTemplate;
+                removeClass([this.element], CONTEXTMENUTEMPLATE);
+                this.addTemplateClass();
                 this.refresh();
             }
         }

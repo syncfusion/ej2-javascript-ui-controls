@@ -143,7 +143,7 @@ export function Search(
     const listItems: HTMLElement[] = items;
     ignoreCase = ignoreCase !== undefined && ignoreCase !== null ? ignoreCase : true;
     const itemData: { item: Element | null, index: number | null } = { item: null, index: null };
-    if (inputVal && inputVal.length) {
+    if (inputVal && inputVal.length && items) {
         const strLength: number = inputVal.length;
         let queryStr: string = ignoreCase ? inputVal.toLocaleLowerCase() : inputVal;
         queryStr = escapeCharRegExp(queryStr);

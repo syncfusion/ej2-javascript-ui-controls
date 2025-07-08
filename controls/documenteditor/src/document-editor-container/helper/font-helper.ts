@@ -6,6 +6,7 @@ import { ItemModel } from '@syncfusion/ej2-splitbuttons';
 
 /**
  * Helper class for font operations in Document Editor
+ * @private
  */
 export class FontHelper {
     /**

@@ -654,7 +654,7 @@ export class BaseHistoryInfo {
             }
             let sel: Selection = this.owner.selectionModule;
             let deletedNodes: IWidget[] = this.removedNodes;
-            if (this.removedNodes.length > 0) {
+            if (this.removedNodes.length > 0 && this.owner.enableCollaborativeEditing) {
                 if (this.action === 'InsertTable' && this.editorHistory.isRedoing) {
                     for (let i: number = 0; i < this.removedNodes.length; i++) {
                         this.insertedNodes.push(this.removedNodes[parseInt(i.toString(), 10)]);

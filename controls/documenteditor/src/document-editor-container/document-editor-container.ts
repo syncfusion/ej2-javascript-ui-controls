@@ -891,6 +891,9 @@ export class DocumentEditorContainer extends Component<HTMLElement> implements I
         if (!isNullOrUndefined(this.documentEditorSettings.enableScreenReader)) {
             this.documentEditor.documentEditorSettings.enableScreenReader = this.documentEditorSettings.enableScreenReader;
         }
+        if (!isNullOrUndefined(this.documentEditorSettings.revisionSettings)) {
+            this.documentEditor.documentEditorSettings.revisionSettings = this.documentEditorSettings.revisionSettings;
+        }
     }
     /**
      * @private

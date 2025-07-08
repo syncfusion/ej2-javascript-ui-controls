@@ -39,13 +39,13 @@ export class ShowGroup extends RibbonGroupBase {
                             type: 'CheckBox',
                             keyTip: 'B',
                             checkBoxSettings: {
-                                label: this.localObj.getConstant('Show Bookmark Markers'),
+                                label: this.localObj.getConstant('Show Bookmarks'),
                                 checked: false,
                                 change: this.bookmarkMarkersChangeHandler.bind(this)
                             },
                             id: this.ribbonId + RibbonConstants.BOOKMARK_MARKERS_CHECKBOX_ID,
                             ribbonTooltipSettings: {
-                                content: this.localObj.getConstant('Show or hide bookmark markers')
+                                content: this.localObj.getConstant('Show or hide bookmarks')
                             }
                         },
                         {

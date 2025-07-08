@@ -634,6 +634,10 @@
           .e-toolbar-item:first-child {
             margin-right: $tbar-item-nrml-mrgn;
           }
+
+          .e-toolbar-item:last-child {
+            margin-left: $tbar-item-nrml-mrgn;
+          }
         }
       }
       
@@ -696,6 +700,7 @@
 
             &:first-child {
               margin-left: 0;
+              margin-right: $tbar-item-nrml-mrgn;
             }
 
             &:last-child {
@@ -712,11 +717,18 @@
 
         &:first-child {
 
-          > .e-toolbar-item:last-child,
+          > .e-toolbar-item:last-child {
+
+            &:last-child {
+              margin-right: 0;
+            }
+          }
+
           > .e-toolbar-right .e-toolbar-item {
 
             &:last-child {
               margin-right: 0;
+              margin-left: $tbar-item-nrml-mrgn;
             }
 
             &:first-child {

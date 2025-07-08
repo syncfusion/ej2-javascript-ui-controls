@@ -46,7 +46,7 @@ export class _UnicodeTrueTypeFont {
         this._fontDictionaryBeginSave();
         this._fontProgramBeginSave();
         if (this._fontDescriptor) {
-            this._fontDescriptor.update('FontFile2', this._fontProgram);
+            this._fontDescriptor.update(this._ttfMetrics._contains ? 'FontFile3' : 'FontFile2', this._fontProgram);
             this._fontDescriptor._updated = true;
             this._fontDescriptor._isFont = true;
         }
@@ -148,7 +148,12 @@ export class _UnicodeTrueTypeFont {
         this._usedChars = (this._usedChars === null || typeof this._usedChars === 'undefined') ? new Dictionary<string, string>()
             : this._usedChars;
         this._ttfReader._setOffset(0);
-        fontProgram = this._ttfReader._readFontProgram(this._usedChars);
+        if (this._ttfReader._isOpenType && this._ttfMetrics._contains) {
+            fontProgram = this._ttfReader._readCompactFontFormatTable();
+            this._fontProgram.dictionary.update('Subtype', _PdfName.get('CIDFontType0C'));
+        } else {
+            fontProgram = this._ttfReader._readFontProgram(this._usedChars);
+        }
         this._fontProgram._clearStream();
         this._fontProgram._writeBytes(fontProgram);
     }

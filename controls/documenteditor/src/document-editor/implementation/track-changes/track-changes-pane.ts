@@ -766,7 +766,12 @@ export class ChangesSingleView {
         this.outerSingleDiv.appendChild(this.singleInnerDiv);
         let userNameTotalDiv: HTMLElement = createElement('div', { className: 'e-de-track-usernme-div' });
         let userNameLabel: HTMLElement = createElement('div', { className: 'e-de-track-user-nme' });
-        userNameLabel.textContent = SanitizeHtmlHelper.sanitize(revision.author);
+        if (!isNullOrUndefined(revision.customData) && revision.customData != '' && this.owner.documentEditorSettings.revisionSettings.showCustomDataWithAuthor) {
+            userNameLabel.textContent = SanitizeHtmlHelper.sanitize(revision.author) + "[" + revision.customData + "]";
+        }
+        else {
+            userNameLabel.textContent = SanitizeHtmlHelper.sanitize(revision.author);
+        }
         if (!isNullOrUndefined(revision.author)) {
             userNameTotalDiv.style.display = 'flex';
             this.owner.documentHelper.getAvatar(userNameTotalDiv, userNameLabel, undefined, revision);

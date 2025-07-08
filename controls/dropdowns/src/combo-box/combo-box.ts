@@ -1155,7 +1155,7 @@ export class ComboBox extends DropDownList {
                 this.removeFillSelection();
             }
             const dataItem: { [key: string]: string } = this.isSelectCustom ? { text: '' } : this.getItemData();
-            const text: string = !isNullOrUndefined(dataItem.text) ? dataItem.text.replace(/\r\n|\n|\r/g, '') : dataItem.text;
+            const text: string = !isNullOrUndefined(dataItem.text) ? dataItem.text.toString().replace(/\r\n|\n|\r/g, '') : dataItem.text;
             const selected: HTMLElement = !isNullOrUndefined(this.list) ? <HTMLElement>this.list.querySelector('.' + dropDownListClasses.selected) : null;
             if (this.inputElement && text === this.inputElement.value && !isNullOrUndefined(selected)) {
                 if (this.isSelected) {

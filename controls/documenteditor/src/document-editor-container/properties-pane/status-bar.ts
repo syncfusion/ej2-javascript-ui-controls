@@ -186,6 +186,11 @@ export class StatusBar {
         ];
         this.zoom = new DropDownButton({ content: '100%', items: items, enableRtl: this.container.enableRtl, select: this.onZoom.bind(this) });
         this.zoom.isStringTemplate = true;
+        //Selecting the current text in the dropdown
+        this.zoom.beforeOpen = () => {
+            // Used settimeout because drop down will not be rendered.
+            setTimeout(() => this.highlightSelectedItem(this.zoom.content), 0);
+        };
         this.zoom.appendTo(this.zoomBtn);
     }
     private addSpellCheckElement(): HTMLButtonElement {
@@ -240,6 +245,13 @@ export class StatusBar {
     }
     public updateZoomContent(): void {
         this.zoom.content = Math.round(this.documentEditor.zoomFactor * 100) + '%';
+    }
+    private highlightSelectedItem(text: string): void {
+        const listItems: NodeListOf<Element> = document.querySelectorAll('.e-dropdown-popup .e-item');
+        listItems.forEach((item: Element) => {
+            const isMatch: boolean = !isNullOrUndefined(item.textContent) ? item.textContent.trim() === text : false;
+            item.classList.toggle('e-active', isMatch);
+        });
     }
     private setSpellCheckValue(text: string): void {
         this.spellCheckButton.content = this.localObj.getConstant('Spelling');

@@ -2,6 +2,16 @@
 
 ## [Unreleased]
 
+## 30.1.39 (2025-07-08)
+
+### Chat UI
+
+#### Bug Fixes
+
+- `#I741845` - Now the issue with empty chat template not re-rendered when all the messages are dynamically cleared has been resolved.
+
+- `#I742746` - Now the issue with message toolbar not rendered when the `messageTemplate` is configured has been resolved.
+
 ## 29.1.33 (2025-03-25)
 
 ### Chat UI

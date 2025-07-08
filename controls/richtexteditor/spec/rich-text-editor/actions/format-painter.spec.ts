@@ -643,8 +643,8 @@ describe('Format Painter Module', () => {
             rteObject.selectRange(range);
             rteObject.keyDown(copyKeyBoardEventArgs);
             startElement = rteObject.inputElement.querySelector('.pasteFormat');
-            range.setStart(startElement.firstChild, 5);
-            range.setEnd(startElement.firstChild, 5);
+            range.setStart(startElement.firstChild.firstChild, 5);
+            range.setEnd(startElement.firstChild.firstChild, 5);
             rteObject.selectRange(range);
             rteObject.keyDown(pasteKeyBoardEventArgs);
             startElement = rteObject.inputElement.querySelector('.copyFormat');

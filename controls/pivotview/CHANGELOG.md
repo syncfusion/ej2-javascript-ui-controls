@@ -2,7 +2,19 @@
 
 ## [Unreleased]
 
-## 30.1.38 (2025-07-02)
+## 30.1.39 (2025-07-08)
+
+### Pivot Table
+
+#### Bug Fixes
+
+- `#I734750` - The pivot table will now be exported correctly as a PDF document when the tabular layout is enabled.
+- `#I734750` - The pivot table cells will now render correctly without any misalignment when the tabular layout is enabled.
+- The primary X-axis border can now be used to modify the multi-level labels border of the pivot chart.
+- Users can now choose to show or hide subtotals when exporting the pivot table to Excel pivot format.
+- The grouping bar buttons will now display correctly when virtualization is enabled in the pivot table.
+
+## 30.1.37 (2025-06-25)
 
 ### Pivot Table
 

@@ -184,6 +184,7 @@ describe('DropDownBase', () => {
                         adaptor: new WebApiAdaptor,
                         crossDomain: true
                     }),
+                    query: new Query().take(9).requiresCount(),
                     fields: { value: 'EmployeeID', text: 'FirstName' },
                     actionComplete: (e: any) => {
                         expect(e.result.length).toBe(9);
@@ -327,6 +328,7 @@ describe('DropDownBase', () => {
                         crossDomain: true
                     }),
                     fields: { text: 'FirstName' },
+                    query: new Query().take(9).requiresCount(),
                     actionBegin: beginAction,
                     actionComplete: (e: any) => {
                         expect(e.result.length).toBe(9);

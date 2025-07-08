@@ -842,13 +842,15 @@ export class VirtualContentRenderer extends ContentRender implements IRenderer {
                         col = this.parent.getColumnByUid(uid);
                     }
                 }
-                if (col.freeze === 'Left') {
-                    cell.style.left = ((<{ valueX?: number }>col).valueX  - valueX) + 'px';
-                } else if (col.freeze === 'Right') {
-                    cell.style.right = ((<{ valueX?: number }>col).valueX  + valueX) + 'px';
-                } else if (col.freeze === 'Fixed') {
-                    cell.style.left = (frzLeftWidth  - valueX) + 'px';
-                    cell.style.right = (frzRightWidth  + valueX) + 'px';
+                if (!isNullOrUndefined(col)) {
+                    if (col.freeze === 'Left') {
+                        cell.style.left = ((<{ valueX?: number }>col).valueX  - valueX) + 'px';
+                    } else if (col.freeze === 'Right') {
+                        cell.style.right = ((<{ valueX?: number }>col).valueX  + valueX) + 'px';
+                    } else if (col.freeze === 'Fixed') {
+                        cell.style.left = (frzLeftWidth  - valueX) + 'px';
+                        cell.style.right = (frzRightWidth  + valueX) + 'px';
+                    }
                 }
             }
         }

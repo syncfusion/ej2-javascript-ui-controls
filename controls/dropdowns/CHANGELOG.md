@@ -2,6 +2,22 @@
 
 ## [Unreleased]
 
+## 30.1.39 (2025-07-08)
+
+### DropDownTree
+
+#### Bug Fixes
+
+- `#I734293` - Fixed Dropdown Tree popup misalignment issue at 100% display scale on windows.
+
+- `#I737384` - Fixed the alignment issue in the input content of the Dropdown Tree Component in both the material3 and bootstrap5 themes.
+
+### ComboBox
+
+#### Bug Fixes
+
+- `#I734116` - Fixed an issue where the Item Template with a Combo Box caused virtualization rendering problems in the dropdown.
+
 ## 28.2.9 (2025-03-04)
 
 ### ComboBox

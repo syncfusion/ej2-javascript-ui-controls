@@ -2,7 +2,46 @@
 
 ## [Unreleased]
 
+## 30.1.39 (2025-07-08)
+
+### DocumentEditor
+
+#### Bug Fixes
+
+- `#I736749` - Resolved the text overlap issue when deleting content.
+- `#I738500` - Resolved the issue with removing content.
+- `#I739874` - Resolved the issue with selection updates on right-click.
+- `#I724502` - Fixed the paste issue with non-editable content controls.
+- `#I737044` - Fixed the issue where the "Capitalize Each Word" function does not work after tabulation.
+- `#I725100` - Resolved the Border and shading dialog responsive issue specific to localized non-English language.
+
+#### Features
+
+- `#I720493` - Added API to set the custom data in revision.
+
 ## 30.1.38 (2025-07-02)
+
+### DocumentEditor
+
+#### Bug Fixes
+
+- `#I732868` - Improved the performance when applying formatting to content.
+- `#I723831` - Fixed issue where the spell checker not triggered when the selection moved outside the content after delete action.
+- `#I728253`, `#F68214` - Resolved script error when pasting content into a table cell with the spell checker enabled.
+- `#I738426` - Fixed header and footer selection position issue when `enableLayout` is set to false.
+- `#I731084` - Addressed script error when selecting content inside a table cell that spans across two pages.
+- `#I728388` - Improved dropdown item selection behaviour in the zoom factor control.
+- `#I726264` - Fixed header and footer reference mismatch when deleting a section break.
+- `#I731465` - Resolved document scrolling issue when moving the mouse outside the Document Editor area.
+- `#I713824` - Fixed layout issue involving shape elements in the header.
+- `#I732155` - Corrected invalid characters being added to footnotes during DOCX export.
+- `#I726900` - Resolved table layout issues in multi-column sections when opening documents.
+- `#I731473` - Fixed issue where bullet language changed unexpectedly in the Document Editor.
+- `#I734383` - Addressed issues with find and replace functionality for selected content.
+- `#I736267` - Resolved script error triggered by backspace action.
+- `#I729239` - Fixed script error when inserting a merge field after a bullet point.
+
+## 30.1.37 (2025-06-25)
 
 ### DocumentEditor
 

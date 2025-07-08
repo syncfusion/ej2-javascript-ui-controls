@@ -7,7 +7,7 @@ import { ActionBeginEventArgs } from "../../src/common/interface";
 import { NodeSelection } from "../../src/selection/selection";
 import { SelectionCommands } from "../../src/editor-manager/plugin/selection-commands";
 import { ImageCommand } from '../../src/editor-manager/plugin/image';
-import { cleanHTMLString } from "../../src/common/util";
+import { cleanHTMLString, getStructuredHtml } from "../../src/common/util";
 
 describe('Editor specs', ()=> {
     describe('EJ2-20672 - Full Screen not working properly when render inside the overflow element', () => {
@@ -78,7 +78,7 @@ describe('Editor specs', ()=> {
         });
 
         it('I213118 => EJ2-15261 - RTE removes spacing between words when content is pasted from a word document', () => {
-            innerHTML = cleanHTMLString(innerHTML, rteObj.inputElement);
+            innerHTML = getStructuredHtml(cleanHTMLString(innerHTML, rteObj.inputElement), 'P', false);
             expect((rteObj as any).inputElement.innerHTML === innerHTML).toBe(true);
         });
 

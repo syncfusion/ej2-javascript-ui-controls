@@ -1254,14 +1254,22 @@ export class PivotChart {
                     } else {
                         gRows[lKey as number].push({
                             start: sKey, end: sKey + 1, text: headers[lKey as number].text,
-                            type: (headers[lKey as number].span === -1 ? 'WithoutTopandBottomBorder' : 'WithoutTopBorder'),
+                            type: !isNullOrUndefined(this.persistSettings.primaryXAxis) &&
+                                !isNullOrUndefined(this.persistSettings.primaryXAxis.border) &&
+                                    !isNullOrUndefined(this.persistSettings.primaryXAxis.border.type) ?
+                                this.persistSettings.primaryXAxis.border.type : (headers[lKey as number].span === -1 ?
+                                    'WithoutTopandBottomBorder' : 'WithoutTopBorder'),
                             customAttributes: headers[lKey as number]
                         });
                     }
                 } else {
                     gRows[lKey as number] = [{
                         start: sKey, end: sKey + 1, text: headers[lKey as number].text,
-                        type: (headers[lKey as number].span === -1 ? 'WithoutTopandBottomBorder' : 'WithoutTopBorder'),
+                        type: !isNullOrUndefined(this.persistSettings.primaryXAxis) &&
+                                !isNullOrUndefined(this.persistSettings.primaryXAxis.border) &&
+                                    !isNullOrUndefined(this.persistSettings.primaryXAxis.border.type) ?
+                            this.persistSettings.primaryXAxis.border.type : (headers[lKey as number].span === -1 ?
+                                'WithoutTopandBottomBorder' : 'WithoutTopBorder'),
                         customAttributes: headers[lKey as number]
                     }];
                 }
@@ -1350,11 +1358,17 @@ export class PivotChart {
         }
         if (this.chartSettings.showMultiLevelLabels && this.chartSettings.chartSeries.type !== 'Pareto') {
             currentXAxis.multiLevelLabels = this.frameMultiLevelLabels();
-            currentXAxis.border = { width: 1, type: 'WithoutTopandBottomBorder' };
+            currentXAxis.border = { width: 1, type: !isNullOrUndefined(this.persistSettings.primaryXAxis) &&
+                !isNullOrUndefined(this.persistSettings.primaryXAxis.border) &&
+                    !isNullOrUndefined(this.persistSettings.primaryXAxis.border.type) ? this.persistSettings.primaryXAxis.border.type
+                : 'WithoutTopandBottomBorder' };
             currentXAxis.majorTickLines = { width: 0, height: -10 };
         } else {
             currentXAxis.multiLevelLabels = [];
-            currentXAxis.border = { width: 1, type: 'Rectangle' };
+            currentXAxis.border = { width: 1, type: !isNullOrUndefined(this.persistSettings.primaryXAxis) &&
+                !isNullOrUndefined(this.persistSettings.primaryXAxis.border) &&
+                    !isNullOrUndefined(this.persistSettings.primaryXAxis.border.type) ? this.persistSettings.primaryXAxis.border.type
+                : 'Rectangle' };
             currentXAxis.majorTickLines = { width: 0, height: 5 };
         }
         return currentXAxis;

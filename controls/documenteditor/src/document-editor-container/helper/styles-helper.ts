@@ -6,6 +6,7 @@ import { StyleInfo } from './ribbon-interfaces';
 
 /**
  * Helper class for style operations in Document Editor
+ * @private
  */
 export class StylesHelper {
     /**

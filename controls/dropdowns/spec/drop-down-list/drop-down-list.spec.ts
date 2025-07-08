@@ -569,7 +569,7 @@ describe('DDList', () => {
          * remoteData binding with index
          */
         it('index at initialize time ', (done) => {
-            listObj = new DropDownList({ dataSource: remoteData, index: 2, fields: { value: 'EmployeeID', text: 'FirstName' } });
+            listObj = new DropDownList({ dataSource: remoteData, query: new Query().take(9), index: 2, fields: { value: 'EmployeeID', text: 'FirstName' } });
             listObj.appendTo(element);
             setTimeout(() => {
                 // expect(listObj.index).toBe(2);
@@ -583,7 +583,7 @@ describe('DDList', () => {
          * remoteData binding with text
          */
         it('value at initialize time ', (done) => {
-            listObj = new DropDownList({ dataSource: remoteData, value: 5, fields: { value: 'EmployeeID', text: 'FirstName' } });
+            listObj = new DropDownList({ dataSource: remoteData, query: new Query().take(9), value: 5, fields: { value: 'EmployeeID', text: 'FirstName' } });
             listObj.appendTo(element);
             setTimeout(() => {
                 // expect(listObj.value).toBe(5);
@@ -597,7 +597,7 @@ describe('DDList', () => {
          * remoteData binding with value
          */
         it('text at initialize time ', (done) => {
-            listObj = new DropDownList({ dataSource: remoteData, text: 'Robert King', fields: { value: 'EmployeeID', text: 'FirstName' } });
+            listObj = new DropDownList({ dataSource: remoteData, query: new Query().take(9), text: 'Robert King', fields: { value: 'EmployeeID', text: 'FirstName' } });
             listObj.appendTo(element);
             setTimeout(() => {
                 // expect(listObj.text).toBe('Robert King');
@@ -611,7 +611,7 @@ describe('DDList', () => {
          * remoteData binding
          */
         it('index at dynamic changes ', (done) => {
-            listObj = new DropDownList({ dataSource: remoteData, fields: { value: 'EmployeeID', text: 'FirstName' } });
+            listObj = new DropDownList({ dataSource: remoteData, query: new Query().take(9), fields: { value: 'EmployeeID', text: 'FirstName' } });
             listObj.appendTo(element);
             listObj.index = 4;
             listObj.dataBind();
@@ -627,7 +627,7 @@ describe('DDList', () => {
          * remoteData binding with text
          */
         it('text at dynamic changes ', (done) => {
-            listObj = new DropDownList({ dataSource: remoteData, fields: { value: 'EmployeeID', text: 'FirstName' } });
+            listObj = new DropDownList({ dataSource: remoteData, query: new Query().take(9), fields: { value: 'EmployeeID', text: 'FirstName' } });
             listObj.appendTo(element);
             listObj.text = 'Andrew Fuller';
             listObj.dataBind();
@@ -643,7 +643,7 @@ describe('DDList', () => {
          * remoteData binding with value
          */
         it('value at dynamic changes ', (done) => {
-            listObj = new DropDownList({ dataSource: remoteData, fields: { value: 'EmployeeID', text: 'FirstName' } });
+            listObj = new DropDownList({ dataSource: remoteData,query: new Query().take(9), fields: { value: 'EmployeeID', text: 'FirstName' } });
             listObj.appendTo(element);
             listObj.value = 3;
             listObj.dataBind();
@@ -3307,6 +3307,7 @@ describe('DDList', () => {
                     adaptor: new WebApiAdaptor,
                     crossDomain: true
                 }),
+                query: new Query().take(9),
                 fields: { value: 'EmployeeID', text: 'FirstName' }
             });
             ddlObj.appendTo('#dropdownlist');
@@ -3690,7 +3691,7 @@ describe('DDList', () => {
          * set the search key value in text
          */
         it(' set the search key value in text ', (done) => {
-            listObj = new DropDownList({ dataSource: remoteData, fields: { value: 'EmployeeID', text: 'FirstName' } });
+            listObj = new DropDownList({ dataSource: remoteData, query: new Query().take(9), fields: { value: 'EmployeeID', text: 'FirstName' } });
             listObj.appendTo(element);
             listObj.onSearch(keyEventArgs)
             setTimeout(() => {
@@ -4199,6 +4200,7 @@ describe('DDList', () => {
             let isDataBound: boolean = false;
             dropDowns = new DropDownList({
                 dataSource: remoteData,
+                query: new Query().take(9),
                 fields: { value: 'FirstName', text: 'FirstName' },
                 dataBound: () => {
                     isDataBound = true;
@@ -4270,6 +4272,7 @@ describe('DDList', () => {
             dropDowns = new DropDownList({
                 dataSource: remoteData,
                 allowFiltering: true,
+                query: new Query().take(9),
                 debounceDelay: 0,
                 fields: { value: 'FirstName', text: 'FirstName' },
                 actionComplete: (e: any) => {
@@ -4306,6 +4309,7 @@ describe('DDList', () => {
             dropDowns = new DropDownList({
                 dataSource: remoteData,
                 allowFiltering: true,
+                query: new Query().take(9),
                 debounceDelay: 0,
                 fields: { value: 'FirstName', text: 'FirstName' },
                 actionBegin: (e: any) => {
@@ -5676,7 +5680,7 @@ describe('DDList', () => {
          * remoteData binding with index
          */
         it('Open the remote dropDown after initial loading with focus out before the data loaded ', (done) => {
-            listObj = new DropDownList({ dataSource: remoteData, fields: { value: 'EmployeeID', text: 'FirstName' } });
+            listObj = new DropDownList({ dataSource: remoteData, query: new Query().take(9), fields: { value: 'EmployeeID', text: 'FirstName' } });
             listObj.appendTo(element);
             listObj.showPopup();
             mouseEventArgs.target = document.body;

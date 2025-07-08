@@ -2,6 +2,19 @@
 
 ## [Unreleased]
 
+## 30.1.39 (2025-07-08)
+
+### Grid
+
+#### Bug Fixes
+
+- `#I738274` - The issue where checkbox selection toggled incorrectly in mobile view when row drag functionality was enabled has been resolved.
+- `#I737866` - The problem of checkbox selection failing to function after grid refresh when virtual scrolling was enabled has been addressed and resolved.
+- `#I736751` - The issue where column formatting was not applied during horizontal scrolling in column `virtualization` has been rectified.
+- `#I738941` - A script error that occurred upon pressing Enter after modifying the `datasource` in a grid with a detail template has been resolved.
+- `#I739229` - The problem of frozen columns disappearing during rapid horizontal scrolling has been fixed.
+- `#I737749` - The issue of the horizontal scrollbar being absent when the grid height was set to 100% with `virtualization` and frozen columns enabled has been resolved.
+
 ## 30.1.38 (2025-07-02)
 
 ### Grid

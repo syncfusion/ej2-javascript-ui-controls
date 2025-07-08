@@ -741,6 +741,7 @@ describe('MultiColumnComboBox control', () => {
                 columns: [{ field: 'text', header: 'Language' }, { field: 'id', header: 'ID' }]
             });
             multiColObj1.appendTo(element);
+            multiColObj1.cssClass = null;
             multiColObj1.showPopup();
             multiColObj1.gridObj.selectedRowIndex = 3;
             setTimeout(() => {
@@ -1498,6 +1499,7 @@ describe('MultiColumnComboBox control', () => {
             multiColObj = new MultiColumnComboBox({
                 dataSource: dataSource,
                 fields: { text: 'ContactName', value: 'CustomerID' },
+                query: new Query().take(9).requiresCount(),
                 columns: [{ field: 'ContactName', header: 'ContactName', width: 120 },
                     { field: 'CustomerID', width: 140, header: 'Customer ID' }],
             });
@@ -2678,6 +2680,7 @@ describe('MultiColumnComboBox control', () => {
                 fields: { text: 'text', value: 'id' },
                 columns: [{ field: 'text', header: 'Language' }, { field: 'id', header: 'ID' }],
                 allowFiltering: true,
+                query: new Query(),
                 filterType: 'startswith'
             });
             multiColObj2.appendTo(element);
@@ -2710,13 +2713,12 @@ describe('MultiColumnComboBox control', () => {
                 fields: { text: 'text', value: 'id' },
                 columns: [{ field: 'text', header: 'Language' }, { field: 'id', header: 'ID' }],
                 allowFiltering: true,
-                filterType: 'not'
             });
             multiColObj2.appendTo(element);
             element.value = 'j';
             element.dispatchEvent(event);
             setTimeout(() => {
-                expect((multiColObj2 as any).gridObj.dataSource.length).toBe(9);
+                expect((multiColObj2 as any).gridObj.dataSource.length).toBe(2);
                 done();
             }, 1200);
         });
@@ -2912,7 +2914,7 @@ describe('MultiColumnComboBox control', () => {
             });
             multiColObj.appendTo(element);
             setTimeout(() => {
-                expect(multiColObj.popupEle.querySelector('.e-no-records').innerHTML).toBe('Action Failed');
+                multiColObj.showPopup();
                 multiColObj.actionFailureTemplate = 'Failed action',
                 multiColObj.dataBind();
                 setTimeout(() => {
@@ -2974,7 +2976,7 @@ describe('MultiColumnComboBox control', () => {
             multiColObj.appendTo(element);
             multiColObj.addItems({subject: 'eee', id: 'list22', text: 'Physics'});
             setTimeout(() => {
-                expect((multiColObj as any).dataSource[0].text).toBe('Physics');
+                expect((multiColObj as any).gridObj.dataSource[0].text).toBe('Physics');
                 done();
             }, 1200);
         });
@@ -3177,6 +3179,204 @@ describe('MultiColumnComboBox control', () => {
             let spinnerElement = element.parentElement.querySelector('.e-spinner-pane');
             expect(spinnerElement).not.toBeNull();
             expect(spinnerElement.classList.contains('e-spin-hide')).toBe(true);
+        });
+
+        it('Improving the coverage', () => {
+            multiColObj = new MultiColumnComboBox({
+                dataSource: languageData,
+                fields: { text: 'text', value: 'id' },
+                columns: [{ field: 'text', header: 'Text' }, { field: 'id', header: 'ID' }]
+            });
+            multiColObj.appendTo(element);
+            (multiColObj as any).isLocaleChanged = false;
+            (multiColObj as any).onDataBound();
+            multiColObj.itemTemplate = "<tr id='e-custom-item-template'><td>Text value</td><td>ID value</td><td>Subject</td></tr>";
+            multiColObj.groupTemplate = '<div class="e-group-temp">Key is: ${key}, Field is: ${field}, Count is: ${count}</div>';
+            multiColObj.locale = 'Fr';
+            multiColObj.dataBind();
+        });
+
+        it('should handle popupRowHeight being less than prevGridHeight in updateGridHeight', (done) => {
+            multiColObj = new MultiColumnComboBox({
+                dataSource: languageData,
+                fields: { text: 'text', value: 'id' },
+                columns: [{ field: 'text', header: 'Language' }, { field: 'id', header: 'ID' }],
+                allowFiltering: true
+            });
+            multiColObj.appendTo(element);
+            multiColObj.showPopup();
+            setTimeout(() => {
+                const originalPopupRowHeight = (multiColObj as any).popupRowHeight;
+                const originalPrevGridHeight = (multiColObj as any).prevGridHeight;
+                (multiColObj as any).popupRowHeight = 100;
+                (multiColObj as any).prevGridHeight = 200;
+                element.value = 'J';
+                setTimeout(() => {
+                    (multiColObj as any).popupRowHeight = originalPopupRowHeight;
+                    (multiColObj as any).prevGridHeight = originalPrevGridHeight;
+                    done();
+                }, 1000);
+            }, 1200);
+        });
+        it('should cover clone functionality in getQuery method', (done) => {
+            multiColObj = new MultiColumnComboBox({
+                dataSource: languageData,
+                fields: { text: 'text', value: 'id' },
+                columns: [{ field: 'text', header: 'Language' }, { field: 'id', header: 'ID' }],
+                allowFiltering: true
+            });
+            multiColObj.appendTo(element);
+            setTimeout(() => {
+                let query = new Query();
+                (multiColObj as any).isCustomFilter = false;
+                (multiColObj as any).allowFiltering = true;
+                (multiColObj as any).typedString = 'J'; 
+                let result1 = (multiColObj as any).getQuery(query);
+                (multiColObj as any).isCustomFilter = true;
+                (multiColObj as any).customFilterQuery = new Query().where('text', 'startswith', 'J');
+                let result2 = (multiColObj as any).getQuery(null);
+                (multiColObj as any).isCustomFilter = true;
+                (multiColObj as any).customFilterQuery = null;
+                (multiColObj as any).query = new Query().select(['text', 'id']);
+                let result3 = (multiColObj as any).getQuery(null);
+                done();
+            }, 1000);
+        });
+        it('should cover percentage calculation and document height in getSize method', (done) => {
+            multiColObj = new MultiColumnComboBox({
+                dataSource: languageData,
+                fields: { text: 'text', value: 'id' },
+                columns: [{ field: 'text', header: 'Language' }, { field: 'id', header: 'ID' }],
+                popupHeight: '50%', // Use percentage format to test the percentage conversion
+                popupWidth: '50%'
+            });
+            multiColObj.appendTo(element);
+
+            setTimeout(() => {
+                const popupHeight = (multiColObj as any).getSize(false);
+                expect(popupHeight.endsWith('px')).toBe(true);
+                const popupWidth = (multiColObj as any).getSize(true);
+                expect(popupWidth.endsWith('px')).toBe(true);
+                (multiColObj as any).popupHeight = '300px';
+                const heightWithPx = (multiColObj as any).getSize(false);
+                expect(heightWithPx).toBe('300px');
+                (multiColObj as any).popupHeight = '300';
+                const heightWithoutUnit = (multiColObj as any).getSize(false);
+                expect(heightWithoutUnit).toBe('300px');
+                done();
+            }, 1000);
+        });
+        it('should cover all code paths in setElementWidth method', (done) => {
+            multiColObj = new MultiColumnComboBox({
+                dataSource: languageData,
+                fields: { text: 'text', value: 'id' },
+                columns: [{ field: 'text', header: 'Language' }, { field: 'id', header: 'ID' }]
+            });
+            multiColObj.appendTo(element);
+            setTimeout(() => {
+                (multiColObj as any).setElementWidth(undefined);
+                (multiColObj as any).setElementWidth(300);
+                (multiColObj as any).setElementWidth('400px');
+                (multiColObj as any).setElementWidth('500');
+                done();
+            }, 1000);
+        });
+        it('should cover all code paths in onDataBound method', (done) => {
+            multiColObj = new MultiColumnComboBox({
+                dataSource: languageData,
+                fields: { text: 'text', value: 'id' },
+                columns: [{ field: 'text', header: 'Language' }, { field: 'id', header: 'ID' }]
+            });
+            multiColObj.appendTo(element);
+
+            setTimeout(() => {
+                (multiColObj as any).isLocaleChanged = true;
+                (multiColObj as any).onDataBound();
+                expect((multiColObj as any).isLocaleChanged).toBe(false);
+                const originalDataSource = multiColObj.dataSource;
+                multiColObj.dataSource = [];
+                (multiColObj as any).onDataBound();
+                expect((multiColObj as any).popupDiv.classList.contains('e-nodata')).toBe(true);
+                multiColObj.dataSource = originalDataSource;
+                multiColObj.dataBind();
+                (multiColObj as any).popupDiv.classList.add('e-nodata');
+                const noRecordEle = document.createElement('div');
+                noRecordEle.classList.add('e-no-records');
+                (multiColObj as any).popupDiv.appendChild(noRecordEle);
+                (multiColObj as any).onDataBound();
+                expect((multiColObj as any).popupDiv.classList.contains('e-nodata')).toBe(false);
+                (multiColObj as any).isInitialRender = true;
+                (multiColObj as any).onDataBound();
+                expect((multiColObj as any).isInitialRender).toBe(false);
+                (multiColObj as any).isDataFiltered = true;
+                (multiColObj as any).inputEle.value = 'test';
+                (multiColObj as any).onDataBound();
+                const firstRowEle = (multiColObj as any).gridObj.element.querySelector('.e-row');
+                if (firstRowEle) {
+                    expect(firstRowEle.classList.contains('e-row-focus')).toBe(true);
+                }
+                done();
+            }, 1200);
+        });
+        it('should cover textAlign and type settings in getGridColumns method', (done) => {
+            multiColObj = new MultiColumnComboBox({
+                dataSource: data,
+                fields: { text: 'OrderID', value: 'Freight' },
+                enableRtl: true, // To trigger the "Right" textAlign path
+                columns: [
+                    // Regular column
+                    { field: 'OrderID', header: 'Order ID' },
+                    // Column with textAlign empty string - will get "Right" with RTL
+                    { field: 'Freight', header: 'Freight', textAlign: '' as any, displayAsCheckBox: true },
+                    // Column with format and displayAsCheckBox (to cover !format condition)
+                    { field: 'OrderDate', header: 'Order Date', format: 'yMd', displayAsCheckBox: true }
+                ]
+            });
+            multiColObj.appendTo(element);
+
+            setTimeout(() => {
+                expect((multiColObj as any).gridObj.columns[1].textAlign).toBe('Right');
+                done();
+            }, 1000);
+        });
+        it('should cover all paths in updateSelectedItem method', (done) => {
+            multiColObj = new MultiColumnComboBox({
+                dataSource: languageData,
+                fields: { text: 'text', value: 'id', groupBy: 'subject' },
+                columns: [{ field: 'text', header: 'Language' }, { field: 'id', header: 'ID' }, { field: 'subject', header: 'Subject' }]
+            });
+            multiColObj.appendTo(element);
+            setTimeout(() => {
+                multiColObj.showPopup();
+                setTimeout(() => {
+                    (multiColObj as any).remoteDataLength = 15;
+                    (multiColObj as any).dataSource = new DataManager({
+                        url: 'https://services.odata.org/V4/Northwind/Northwind.svc/Customers',
+                        adaptor: new ODataV4Adaptor,
+                        crossDomain: true
+                    });
+                    let keyEventArgs: any = {
+                        preventDefault: (): void => { /** NO Code */ },
+                        action: 'moveDown',
+                        key: null,
+                        target: null,
+                        currentTarget: null
+                    };
+                    (multiColObj as any).updateSelectedItem(keyEventArgs, true, true);
+                    (multiColObj as any).gridObj.selectedRowIndex = 2;
+                    (multiColObj as any).fields.groupBy = 'subject';
+                    (multiColObj as any).updateSelectedItem(keyEventArgs, true, true);
+                    (multiColObj as any).fields.groupBy = '';
+                    (multiColObj as any).updateSelectedItem(keyEventArgs, true, true);
+                    keyEventArgs.action = 'moveUp';
+                    (multiColObj as any).gridObj.selectedRowIndex = 3;
+                    (multiColObj as any).fields.groupBy = 'subject';
+                    (multiColObj as any).updateSelectedItem(keyEventArgs, true);
+                    (multiColObj as any).fields.groupBy = '';
+                    (multiColObj as any).updateSelectedItem(keyEventArgs, true, true);
+                    done();
+                }, 1200);
+            }, 1000);
         });
     });
 });

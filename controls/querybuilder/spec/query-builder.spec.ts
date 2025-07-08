@@ -4224,7 +4224,71 @@ describe('QueryBuilder', () => {
             expect(queryBuilder.getRule(document.getElementById('querybuilder_group0_rule0')).operator).toEqual('equal');
             expect(queryBuilder.getRule(document.getElementById('querybuilder_group0_rule0')).value).toEqual(null);
         });
-
+        it('962413 - Rule values not update properly while operator changes in string type columns', () => {
+            queryBuilder = new QueryBuilder({
+                columns: columnData,
+                rule: {
+                    'condition': 'and',
+					'rules': [
+					{
+						'label': 'Designation',
+						'field': 'Designation',
+						'type': 'string',
+						'operator': 'equal',
+						'value': 'Sales Manager'
+					}]
+                },
+            }, '#querybuilder');
+			const operatorElem: DropDownList = queryBuilder.element.querySelector('.e-rule-operator .e-control').ej2_instances[0];
+            operatorElem.showPopup();
+            const itemsCln: NodeListOf<HTMLElement> = document.getElementById('querybuilder_group0_rule0_operatorkey_options').querySelectorAll('li');
+            itemsCln[4].click();
+            expect(operatorElem.value).toEqual('contains');
+			expect(queryBuilder.getValidRules()).not.toEqual({});
+        });
+        it('963454: The NOT operator value does not update properly based on values passed in the setRules method in the separator sample.', () => {
+            const column: ColumnsModel [] = [
+                { field: 'Name', label: 'Name', type: 'number'},
+                { field: 'ID', label: 'ID', type: 'number'}
+            ];
+            queryBuilder = new QueryBuilder({
+                columns: column,
+                enableSeparateConnector: true,
+                enableNotCondition: true
+            }, '#querybuilder');
+            let rules: RuleModel = {
+                condition: 'and',
+                rules: [
+                    {
+                        label: 'ID',
+                        field: 'ID',
+                        operator: 'equal',
+                        type: 'number',
+                        value: 1,
+                    },
+                    {
+                        condition: 'and',
+                        rules: [
+                        {
+                            label: 'Name',
+                            field: 'Name',
+                            operator: 'equal',
+                            type: 'string',
+                            value: '17',
+                        },
+                        ],
+                        not: true,
+                    },
+                ],
+                not: false,
+            };
+            queryBuilder.setRules(rules);
+            let toggleElems: NodeListOf<HTMLElement> = queryBuilder.element.querySelectorAll('.e-multiconnector.e-active-toggle');
+            if (toggleElems) {
+                expect(toggleElems.length).toEqual(1);
+                expect((getComponent(toggleElems[0].querySelector('.e-checkbox') as HTMLElement, 'checkbox') as CheckBox).checked).toEqual(true);
+            }
+        });
     });
 
     describe('CR Issue', () => {

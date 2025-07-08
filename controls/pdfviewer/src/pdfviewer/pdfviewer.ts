@@ -9713,6 +9713,7 @@ export class PdfViewer extends Component<HTMLElement> implements INotifyProperty
                 if (typeof (importData) === 'object' && !isNullOrUndefined(imporedAnnotation) && !isNullOrUndefined(Object.keys(imporedAnnotation)) && !isNullOrUndefined(Object.keys(imporedAnnotation)[0]) && Object.keys(imporedAnnotation[Object.keys(imporedAnnotation)[0]]).length > 1) {
                     this.viewerBase.importAnnotations(importData);
                 } else {
+                    this.updateShortHexValues(importData);
                     importData = JSON.stringify(importData);
                     this.viewerBase.isPDFViewerJson = false;
                     if (this.viewerBase.clientSideRendering) {
@@ -9732,6 +9733,31 @@ export class PdfViewer extends Component<HTMLElement> implements INotifyProperty
             }
         } else {
             this.viewerBase.getModuleWarningMessage('Annotation');
+        }
+    }
+
+    private updateShortHexValues(importData: any): void {
+        const keys: string[] = Object.keys(importData.pdfAnnotation);
+        for (let x: number = 0; x < keys.length; x++) {
+            const annots: any = importData.pdfAnnotation[keys[parseInt(x.toString(), 10)]].shapeAnnotation;
+            for (let y: number = 0; y < annots.length; y++) {
+                if ((!isNullOrUndefined(annots[parseInt(y.toString(), 10)].color) &&
+                    annots[parseInt(y.toString(), 10)].color.replace('#', '').length === 3)) {
+                    const hex: string = annots[parseInt(y.toString(), 10)].color.replace('#', '');
+                    const r: string = hex[0] + hex[0];
+                    const g: string = hex[1] + hex[1];
+                    const b: string = hex[2] + hex[2];
+                    annots[parseInt(y.toString(), 10)].color = `#${r}${g}${b}`;
+                }
+                if (!isNullOrUndefined(annots[parseInt(y.toString(), 10)]['interior-color']) &&
+                    annots[parseInt(y.toString(), 10)]['interior-color'].replace('#', '').length === 3) {
+                    const fillHex: string = annots[parseInt(y.toString(), 10)]['interior-color'].replace('#', '');
+                    const r: string = fillHex[0] + fillHex[0];
+                    const g: string = fillHex[1] + fillHex[1];
+                    const b: string = fillHex[2] + fillHex[2];
+                    annots[parseInt(y.toString(), 10)]['interior-color'] = `#${r}${g}${b}`;
+                }
+            }
         }
     }
 

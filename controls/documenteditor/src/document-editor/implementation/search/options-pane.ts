@@ -92,6 +92,10 @@ export class OptionsPane {
     /**
      * @private
      */
+    public isNavigationPane: boolean = false;
+    /**
+     * @private
+     */
     public isUpdateHeading: boolean = false;
     private localeValue: L10n;
 
@@ -1314,7 +1318,16 @@ export class OptionsPane {
                     this.tabInstance.select(2);
                     this.isReplace = false;
                     this.isOptionsPane = false;
-                } else {
+                }
+                else if (this.isNavigationPane) {
+                    this.isOptionsPane = false;
+                    this.isHeadingTab = true;
+                    this.onHeadingPane();
+                    this.tabInstance.select(0);
+                    this.isNavigationPane = false;
+                    return;
+                }
+                else {
                     this.tabInstance.select(1);
                 }
                 let treeViewResult: HTMLElement = document.getElementById(this.documentHelper.owner.containerId + '_treeDiv');

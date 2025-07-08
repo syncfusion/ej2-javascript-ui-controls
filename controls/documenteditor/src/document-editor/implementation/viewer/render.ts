@@ -373,10 +373,8 @@ export class Renderer {
             this.isFieldCode = false;
         }
         /* eslint-disable */
-        for (let i: number = 0; i < page.bodyWidgets.length; i++) {
-            if (!isNullOrUndefined(page.bodyWidgets[i].floatingElements)) {
-                this.renderFloatingItems(page, page.bodyWidgets[i].floatingElements, 'Behind');
-            }
+        if (!isNullOrUndefined(bodyWidget.floatingElements)) {
+            this.renderFloatingItems(page, bodyWidget.floatingElements, 'Behind');
         }
         /* eslint-enable */
         let isClipped: boolean = false;
@@ -2600,16 +2598,6 @@ private calculatePathBounds(data: string): Rect {
             let markindex: number = elementBox.line.getOffset(elementBox, 0);
             let spaceValue: number = 1;
             if (splittedText.length > 1) {
-                if (elementBox.previousElement instanceof FieldElementBox)
-                {
-                    for (let i: number = 0; i < elementBox.line.children.length; i++)
-                    {
-                        if(elementBox.line.children[i] instanceof FieldElementBox)
-                        {
-                            markindex --;
-                        }
-                    }
-                }
                 for (let i: number = 0; i < splittedText.length; i++) {
                     let currentText: string = splittedText[i];
                     let retrievedText: string = this.spellChecker.manageSpecialCharacters(currentText, undefined, true);

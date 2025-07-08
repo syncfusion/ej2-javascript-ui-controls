@@ -2,6 +2,12 @@
 
 ## [Unreleased]
 
+## 30.1.39 (2025-07-08)
+
+### Accumulation Chart
+
+- `#I741842` - Now, the legend symbol color can be applied using the arguments fill property in the legend render event.
+
 ## 30.1.37 (2025-06-25)
 
 ### Chart

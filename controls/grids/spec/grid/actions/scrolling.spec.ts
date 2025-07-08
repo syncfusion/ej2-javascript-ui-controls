@@ -466,5 +466,40 @@ describe('Scrolling module', () => {
             grid = null;
         });
     });
-});
 
+    describe('965167: Horizontal Scrollbar Missing When Grid Height Is Set to 100% with Virtualization and Frozen Columns', () => {
+        let grid: Grid;
+        beforeAll((done: Function) => {
+            grid = createGrid(
+                {
+                    enableColumnVirtualization: true,
+                    height: '100%',
+                    frozenColumns: 3,
+                    dataSource: filterData, 
+                    columns: [
+                        {
+                            field: 'OrderID', headerText: 'Order ID', headerTextAlign: 'Right',
+                            textAlign: 'Right', width: 200
+                        },
+                        { field: 'Verified', displayAsCheckbox: true, type: 'boolean', width: 200 },
+                        { field: 'Freight', format: 'C1' },
+                        { field: 'OrderDate', format: 'yMd', width: 200 },
+                        { field: 'EmployeeID', headerText: 'Employee ID', textAlign: 'Right', width: 200 }
+                    ]
+                },
+                done
+            );
+        });
+
+        it('Initial rendering with frozen columns', (done: Function) => {
+            expect((<HTMLElement>grid.element.querySelector('.e-virtual-content')).style.height === "100%").toBeFalsy();
+            done();
+        });
+
+        afterAll(() => {
+            destroy(grid);
+            grid = null;
+        });
+    });
+
+});

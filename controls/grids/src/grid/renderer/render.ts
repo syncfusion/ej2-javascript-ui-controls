@@ -453,7 +453,8 @@ export class Render {
     }
 
     private updateColumnType(record: Object): void {
-        const columns: Column[] = this.parent.getColumns() as Column[];
+        const columns: Column[] = this.parent.enableColumnVirtualization ? this.parent.columns as Column[] :
+            this.parent.getColumns() as Column[];
         let value: Date;
         const cFormat: string = 'customFormat';
         const equalTo: string = 'equalTo';

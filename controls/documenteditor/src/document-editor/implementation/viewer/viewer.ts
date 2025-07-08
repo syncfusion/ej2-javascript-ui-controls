@@ -217,6 +217,7 @@ export class DocumentHelper {
      */
     public isMouseDown: boolean = false;
     private isMouseEntered: boolean = false;
+    private isMouseLeaved: boolean = false;
     private scrollMoveTimer: any = 0;
     /**
      * @private
@@ -1463,6 +1464,7 @@ export class DocumentHelper {
         window.addEventListener('mouseup', this.onImageResizer);
         window.addEventListener('touchend', this.onImageResizer);
         window.addEventListener('copy', this.onCopy);
+        window.addEventListener("mousemove", this.onWindowMouseMoveInternal);
         this.viewerContainer.addEventListener('touchstart', this.onTouchStartInternal);
         this.viewerContainer.addEventListener('touchmove', this.onTouchMoveInternal);
         this.viewerContainer.addEventListener('touchend', this.onTouchUpInternal);
@@ -1682,7 +1684,7 @@ export class DocumentHelper {
         updateCSSText(this.editableDiv, style);
     }
     /* eslint-disable @typescript-eslint/no-explicit-any */
-    private onImageResizer = (args: any): void => {
+    private onImageResizer = (args: any): void => {   
         if (!isNullOrUndefined(this.owner) && !isNullOrUndefined(this.owner.imageResizerModule) &&
             this.owner.imageResizerModule.isImageResizerVisible && this.owner.imageResizerModule.isImageResizing) {
             if (args instanceof MouseEvent) {
@@ -1691,7 +1693,8 @@ export class DocumentHelper {
                 this.onTouchUpInternal(args);
             }
         }
-        if (this.scrollMoveTimer) {
+        if (this.scrollMoveTimer || this.isMouseLeaved) {
+            this.isMouseLeaved = false;
             this.isMouseEntered = true;
             if (this.isMouseDown) {
                 this.isSelectionActive = false;
@@ -2169,6 +2172,10 @@ export class DocumentHelper {
      */
     public onContextMenu = (event: MouseEvent): void => {
         if (this.owner.contextMenuModule) {
+            if(this.isIosDevice) {
+                this.isMouseDown = true;
+                this.onMouseUpInternal(event);
+            }
             if (this.isMouseDown) {
                 this.isMouseDown = false;
             }
@@ -2433,25 +2440,7 @@ export class DocumentHelper {
      */
     public onMouseLeaveInternal = (event: MouseEvent): void => {
         event.preventDefault();
-        const cursorPoint: Point = new Point(event.offsetX, event.offsetY);
-        if (this.isMouseDown) {
-            const viewerTop: number = this.viewerContainer.scrollTop;
-            clearInterval(this.scrollMoveTimer);
-            if (event.offsetY + viewerTop > viewerTop) {
-                this.scrollMoveTimer = setInterval((): void => {
-                    this.isCompleted = false;
-                    this.scrollForwardOnSelection(cursorPoint);
-                }, 100);
-            } else {
-                this.scrollMoveTimer = setInterval((): void => {
-                    this.isCompleted = false;
-                    this.scrollBackwardOnSelection(cursorPoint);
-                }, 100);
-            }
-            if (this.isMouseEntered) {
-                this.isMouseEntered = false;
-            }
-        }
+        this.isMouseLeaved = true;
         if (this.isDragStarted) {
             this.selection.hideCaret();
             if (this.scrollMoveTimer) {
@@ -2460,9 +2449,49 @@ export class DocumentHelper {
             }
         }
     };
+    /**
+     * @private
+     * @param {MouseEvent} event - Specifies mouse event
+     * @returns {void}
+     */
+    public onWindowMouseMoveInternal = (event: MouseEvent): void => {
+        event.preventDefault();
+        if (this.isMouseDown && this.isMouseLeaved) {
+            this.isCompleted = false;
+            clearInterval(this.scrollMoveTimer);
+            let viewerTop: number = this.viewerContainer.getBoundingClientRect().top;
+            let viewerLeft: number = this.viewerContainer.getBoundingClientRect().left;
+            let hRulerHeight: number = this.owner.documentEditorSettings.showRuler ? this.owner.hRuler.thickness : 0;
+            let pageLeft: number = this.pages[this.owner.selectionModule.endPage - 1].boundingRectangle.x;
+            let textYPosition: number = this.owner.selectionModule.end.location.y;
+            let textHeight: number = this.owner.selectionModule.end.currentWidget ? this.owner.selectionModule.end.currentWidget.height : 0;
+            let cursorPoint: Point = new Point(event.x - (pageLeft + viewerLeft), event.y - viewerTop);
+            if (event.y - viewerTop > this.viewerContainer.clientHeight) {
+                this.scrollMoveTimer = setInterval((): void => {
+                    this.viewerContainer.scrollTop += this.owner.selectionModule.end.paragraph ? this.owner.selectionModule.end.paragraph.height : 0;
+                    this.scrollForwardOnSelection(cursorPoint);
+                }, 100);
+            }
+            else if (event.y - viewerTop < this.viewerContainer.clientTop && this.viewerContainer.scrollTop > 0) {
+                this.scrollMoveTimer = setInterval((): void => {
+                    this.viewerContainer.scrollTop -= this.owner.selectionModule.end.paragraph ? this.owner.selectionModule.end.paragraph.height : 0;
+                    this.scrollBackwardOnSelection(cursorPoint);
+                }, 100);
+            }
+            else if (event.y + this.viewerContainer.scrollTop > viewerTop + hRulerHeight + textYPosition + textHeight + this.viewerContainer.scrollTop) {
+                this.scrollForwardOnSelection(cursorPoint);
+            }
+            else if (event.y + this.viewerContainer.scrollTop < viewerTop + hRulerHeight + textYPosition + this.viewerContainer.scrollTop) {
+                this.scrollBackwardOnSelection(cursorPoint);
+            }
+            if (this.isMouseEntered) {
+                this.isMouseEntered = false;
+            }
+        }
+    }
+
     private scrollForwardOnSelection(cursorPoint: Point): void {
         if (this.viewerContainer) {
-            this.viewerContainer.scrollTop = this.viewerContainer.scrollTop + 200;
             const touchPoint: Point = this.owner.viewer.findFocusedPage(cursorPoint, !this.owner.enableHeaderAndFooter);
             const textPosition: TextPosition = this.owner.selectionModule.end;
             if (!this.owner.enableImageResizerMode || !this.owner.imageResizerModule.isImageResizerVisible
@@ -2474,7 +2503,6 @@ export class DocumentHelper {
     }
 
     private scrollBackwardOnSelection(cursorPoint: Point): void {
-        this.viewerContainer.scrollTop = this.viewerContainer.scrollTop - 200;
         const touchPoint: Point = this.owner.viewer.findFocusedPage(cursorPoint, !this.owner.enableHeaderAndFooter);
         const textPosition: TextPosition = this.owner.selectionModule.end;
         if (!this.owner.enableImageResizerMode || !this.owner.imageResizerModule.isImageResizerVisible
@@ -2492,6 +2520,7 @@ export class DocumentHelper {
             this.owner.viewer.updateScrollBars();
         }
         this.isMouseEntered = true;
+        this.isMouseLeaved = false;
         if (this.scrollMoveTimer) {
             clearInterval(this.scrollMoveTimer);
         }
@@ -4112,6 +4141,7 @@ export class DocumentHelper {
         }
         if (!isHandled && !isNullOrUndefined(this.selection)) {
             this.selection.caret.classList.remove("e-de-cursor-animation");
+            this.isSpellCheckPending = true;
             this.selection.onKeyDownInternal(event, ctrl, shift, alt);
         }
         if (!isNullOrUndefined(this.owner.documentHelper) && this.owner.documentHelper.contentControlCollection.length > 0) {
@@ -4666,6 +4696,7 @@ export class DocumentHelper {
         window.removeEventListener('mouseup', this.onImageResizer);
         window.removeEventListener('touchend', this.onImageResizer);
         window.removeEventListener('copy', this.onCopy);
+        window.removeEventListener("mousemove", this.onWindowMouseMoveInternal);
         if (navigator !== undefined && navigator.userAgent.match('Firefox')) {
             this.viewerContainer.removeEventListener('DOMMouseScroll', this.zoomModule.onMouseWheelInternal);
         }
@@ -6391,10 +6422,13 @@ export abstract class LayoutViewer {
         } else {
             this.documentHelper.viewerContainer.scrollLeft = 0;
         }
+        this.updateScrollBars();
         if (scrollToPosition) {
             this.documentHelper.scrollToPosition(this.documentHelper.selection.start, this.documentHelper.selection.end);
+            // When ZoomIn/Zoomout using mouse wheel based on the selection scrolltop will be updated. So updating container top also.
+            // So that second time position will be updated correctly based on the scroll top..
+            this.containerTop = this.documentHelper.viewerContainer.scrollTop;
         }
-        this.updateScrollBars();
         if (this instanceof WebLayoutViewer) {
             this.documentHelper.layout.layoutWholeDocument();
         }

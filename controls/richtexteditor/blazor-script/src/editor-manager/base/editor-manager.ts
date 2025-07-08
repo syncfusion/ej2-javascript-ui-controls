@@ -373,8 +373,8 @@ export class EditorManager {
         const currentRange: Range = this.nodeSelection.getRange(this.currentDocument);
         const node: Node = this.nodeSelection.getNodeCollection(currentRange)[0];
         let startPoint: number = currentRange.startOffset;
-        while (this.nodeSelection.getRange(document).toString().indexOf('/') === -1) {
-            this.nodeSelection.setSelectionText(document, node, node, startPoint, currentRange.endOffset);
+        while (this.nodeSelection.getRange(this.currentDocument).toString().indexOf('/') === -1) {
+            this.nodeSelection.setSelectionText(this.currentDocument, node, node, startPoint, currentRange.endOffset);
             startPoint--;
         }
         const slashRange: Range = this.nodeSelection.getRange(this.currentDocument);

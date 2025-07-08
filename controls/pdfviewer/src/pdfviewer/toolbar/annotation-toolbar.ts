@@ -2913,7 +2913,7 @@ export class AnnotationToolbar {
     private onShapeToolbarClicked = (args: ClickEventArgs): void => {
         const elementId: string = this.pdfViewer.element.id;
         const shapeAnnotationModule: ShapeAnnotation = this.pdfViewer.annotation.shapeAnnotationModule;
-        if (Browser.isDevice || !this.pdfViewer.enableDesktopMode) {
+        if (Browser.isDevice && !this.pdfViewer.enableDesktopMode) {
             if (this.pdfViewerBase.action === 'Polygon') {
                 (this.pdfViewerBase.tool as PolygonDrawingTool).mouseUp((args as MouseEventArgs), true, true);
             }

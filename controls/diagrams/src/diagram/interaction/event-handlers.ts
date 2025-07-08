@@ -997,6 +997,11 @@ export class DiagramEventHandler {
                     this.checkAction(obj);
                     const padding: number = this.getConnectorPadding(this.eventArgs);
                     this.getMouseEventArgs(this.currentPosition, this.eventArgs, this.eventArgs.source, padding);
+                    //Bug 963160: Node Dimensions updates wrongly When Dragging Multiple Selected Nodes with Control Key Pressed
+                    if (e.ctrlKey && this.diagram.lineRoutingModule && (this.diagram.constraints & DiagramConstraints.LineRouting) &&
+                        (this.diagram.selectedItems.nodes.length + this.diagram.selectedItems.connectors.length) > 1) {
+                        this.eventArgs.source = this.diagram.selectedItems as IElement;
+                    }
                     this.updateCursor();
                     this.inAction = true;
                     this.initialEventArgs = null;

@@ -542,7 +542,7 @@ describe('DropDownList', () => {
                 data: {
                     d: new DataManager(data).executeLocal(new Query().take(10).select(['OrderID', 'CustomerID', 'EmployeeID']))
                 }
-            }, new Query());
+            }, new Query().take(10));
             mAjax.promise.then((e: ResponseType) => {
                 result = e.result;
                 done();

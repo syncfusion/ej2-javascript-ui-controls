@@ -1394,6 +1394,7 @@ export class TaskProcessor extends DateProcessor {
                 this.calculateEndDate(ganttData);
             }
             else {
+                this.setTime(this.parent['getCurrentDayEndTime'](endDate), endDate);
                 this.parent.setRecordValue('endDate', endDate, ganttProperties, true);
             }
         }

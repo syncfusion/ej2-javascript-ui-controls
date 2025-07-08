@@ -2,6 +2,14 @@
 
 ## [Unreleased]
 
+## 30.1.39 (2025-07-08)
+
+### Ribbon
+
+#### Bug Fixes
+
+`#I736914` - Now the issue with script error raised on window resizing, after the ribbon is destroyed has been resolved.
+
 ## 25.1.35 (2024-03-15)
 
 ### Ribbon

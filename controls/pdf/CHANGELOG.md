@@ -2,6 +2,15 @@
 
 ## [Unreleased]
 
+## 30.1.39 (2025-07-08)
+
+### PDF Parser
+
+#### Bug Fixes
+
+- Fixed an issue where the rotation angle was not retrieved correctly from the loaded textbox field.
+- Fixed an issue where a script error was thrown while parsing the form from a specific PDF document.
+
 ## 30.1.38 (2025-07-02)
 
 ### PDF Parser
@@ -12,6 +21,7 @@
 - Fixed an issue where annotation was not added to an encrypted PDF document.
 - Fixed an issue where form fields are not parsed from particular PDF document.
 - Fixed an issue memory out of range occurred while drawing a JPEG image on the PDF page graphics.
+- Fixed an issue where the text was not preserved in page graphics with an OTF font.
 
 ## 30.1.37 (2025-06-25)
 
