@@ -690,11 +690,12 @@ export class ColumnBase {
         rect: Rect, topLeft: number, topRight: number,
         bottomLeft: number, bottomRight: number, inverted: boolean = false
     ): string {
-        const halfValue: number = inverted ? rect.width / 2 : rect.height / 2;
-        topLeft = Math.min(topLeft, halfValue);
-        topRight = Math.min(topRight, halfValue);
-        bottomLeft = Math.min(bottomLeft, halfValue);
-        bottomRight = Math.min(bottomRight, halfValue);
+        const halfWidth: number = rect.width / 2;
+        const halfHeight: number = rect.height / 2;
+        topLeft = Math.min(topLeft, halfWidth, halfHeight);
+        topRight = Math.min(topRight, halfWidth, halfHeight);
+        bottomLeft = Math.min(bottomLeft, halfWidth, halfHeight);
+        bottomRight = Math.min(bottomRight, halfWidth, halfHeight);
         return 'M' + ' ' + rect.x + ' ' + (topLeft + rect.y) +
             ' Q ' + rect.x + ' ' + rect.y + ' ' + (rect.x + topLeft) + ' ' +
             rect.y + ' ' + 'L' + ' ' + (rect.x + rect.width - topRight) + ' ' + rect.y +

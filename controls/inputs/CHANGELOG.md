@@ -2,7 +2,13 @@
 
 ## [Unreleased]
 
-## 30.1.39 (2025-07-08)
+## 30.1.40 (2025-07-15)
+
+### Textbox
+
+#### Bug Fixes
+
+- `#I732408` - Fixed the issue where the placeholder value did not update when setting the value with double quotes in the textbox.
 
 ### ColorPicker
 

@@ -299,7 +299,7 @@ describe('GridLayout', () => {
             expect(gridLayOut.element.querySelector('#first').style.width).toEqual('248.8px');
             expect(gridLayOut.element.querySelector('#second').style.width).toEqual('756.4px');
             expect(gridLayOut.element.querySelector('#fifth').style.width).toEqual('502.6px');
-            (document.querySelectorAll('#container')[1] as HTMLElement).style.width = "800px";
+            (document.querySelectorAll('#container')[1] as HTMLElement).style.width = '800px';
             gridLayOut.refresh();
             expect(gridLayOut.element.querySelector('#first').style.width).not.toEqual('248px');
             expect(gridLayOut.element.querySelector('#second').style.width).not.toEqual('754px');
@@ -2125,7 +2125,7 @@ describe('GridLayout', () => {
             gridLayOut.resizePanel('1', 3, 1);
         });
 
-        it('dragStop event args value testing', () => {
+        it('dragStop event args value testing', (done: Function) => {
             gridLayOut = new DashboardLayout({
                 columns: 10,
                 allowResizing: true,
@@ -2136,8 +2136,11 @@ describe('GridLayout', () => {
                     { "id": '2', "sizeX": 2, "sizeY": 1, "row": 1, "col": 2, content: generateTemplate('2') },
                 ],
                 dragStop: function (args: ResizeArgs) {
-                    expect(args.panels[0].id).toBe('1');
-                    expect(args.panels[1].id).toBe('2');
+                    setTimeout(() => {
+                        expect((args as any).target === targetElemnt).toBe(true);
+                        expect((args as any).element === movingElemnt).toBe(true);
+                        done();
+                    }, 100);
                 }
             });
             gridLayOut.appendTo('#gridlayout');

@@ -581,6 +581,35 @@ describe('Hide & Show ->', () => {
                     });
                 });
             });
+
+            it('EJ2-966027 - hideRow() method fails to unhide rows beyond viewport in Spreadsheet ->', (done: Function) => {
+                const spreadsheet: any = helper.getInstance();
+                helper.invoke('hideRow', [60, 70]);
+                expect(spreadsheet.sheets[0].rows[60].hidden).toBeTruthy();
+                expect(spreadsheet.sheets[0].rows[61].hidden).toBeTruthy();
+                expect(spreadsheet.sheets[0].rows[62].hidden).toBeTruthy();
+                expect(spreadsheet.sheets[0].rows[63].hidden).toBeTruthy();
+                expect(spreadsheet.sheets[0].rows[64].hidden).toBeTruthy();
+                expect(spreadsheet.sheets[0].rows[65].hidden).toBeTruthy();
+                expect(spreadsheet.sheets[0].rows[66].hidden).toBeTruthy();
+                expect(spreadsheet.sheets[0].rows[67].hidden).toBeTruthy();
+                expect(spreadsheet.sheets[0].rows[68].hidden).toBeTruthy();
+                expect(spreadsheet.sheets[0].rows[69].hidden).toBeTruthy();
+                expect(spreadsheet.sheets[0].rows[70].hidden).toBeTruthy();
+                helper.invoke('hideRow', [60, 70, false]);
+                expect(spreadsheet.sheets[0].rows[60].hidden).toBeFalsy();
+                expect(spreadsheet.sheets[0].rows[61].hidden).toBeFalsy();
+                expect(spreadsheet.sheets[0].rows[62].hidden).toBeFalsy();
+                expect(spreadsheet.sheets[0].rows[63].hidden).toBeFalsy();
+                expect(spreadsheet.sheets[0].rows[64].hidden).toBeFalsy();
+                expect(spreadsheet.sheets[0].rows[65].hidden).toBeFalsy();
+                expect(spreadsheet.sheets[0].rows[66].hidden).toBeFalsy();
+                expect(spreadsheet.sheets[0].rows[67].hidden).toBeFalsy();
+                expect(spreadsheet.sheets[0].rows[68].hidden).toBeFalsy();
+                expect(spreadsheet.sheets[0].rows[69].hidden).toBeFalsy();
+                expect(spreadsheet.sheets[0].rows[70].hidden).toBeFalsy();
+                done();
+            });
         });
         describe('EJ2-843853->', () => {
             beforeEach((done: Function) => {

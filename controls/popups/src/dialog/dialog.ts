@@ -1996,7 +1996,9 @@ export class Dialog extends Component<HTMLElement> implements INotifyPropertyCha
             this.removeAllChildren(this.contentEle);
         }
         this.contentEle = null;
-        resizeDestroy();
+        if (this.enableResize) {
+            resizeDestroy();
+        }
         super.destroy();
         // eslint-disable-next-line
         if ((this as any).isReact) {

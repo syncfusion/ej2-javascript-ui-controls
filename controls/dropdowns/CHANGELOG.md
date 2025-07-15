@@ -2,6 +2,20 @@
 
 ## [Unreleased]
 
+## 30.1.40 (2025-07-15)
+
+### MultiSelect
+
+#### Bug fixes
+
+- `#I732169` - Fixed an issue where focus was not applied to the custom value when the Sort Order property was enabled.
+
+### ListBox
+
+#### Bug Fixes
+
+- `#I729413` - Fixed an issue where the toolbar settings buttons are enabled when no item is selected if the refresh method is called.
+
 ## 30.1.39 (2025-07-08)
 
 ### DropDownTree

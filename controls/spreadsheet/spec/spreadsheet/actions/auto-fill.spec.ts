@@ -532,7 +532,7 @@ describe('Auto fill ->', () => {
             const spreadsheet: any = helper.getInstance();
             expect(spreadsheet.sheets[0].rows[13].cells[2].format).toBe('mm-dd-yyyy');
             expect(spreadsheet.sheets[0].rows[13].cells[2].value).toBe(42252);
-            expect(helper.invoke('getCell', [13, 2]).textContent).toBe('9/5/2015');
+            expect(helper.invoke('getCell', [13, 2]).textContent).toBe('09-05-2015');
             expect(spreadsheet.sheets[0].rows[13].cells[3].format).toBe('$#,##0.00');
             expect(spreadsheet.sheets[0].rows[13].cells[3].value).toBe(13854.09);
             expect(helper.invoke('getCell', [13, 3]).textContent).toBe('$13,854.09');

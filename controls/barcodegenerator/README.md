@@ -1,5 +1,3 @@
-[![coverage](http://ej2.syncfusion.com/badges/ej2-barcode-generator/coverage.svg)](http://ej2.syncfusion.com/badges/ej2-barcode-generator)
-
 # JavaScript Barcode Generator Control
 
 The [JavaScript Barcode](https://www.syncfusion.com/javascript-ui-controls/js-barcode?utm_source=npm&utm_medium=listing&utm_campaign=javascript-barcode-npm) (QR Code) Generator Control is a light-weight and high-performance control that displays industry-standard 1D and 2D barcodes in JavaScript applications. Generated barcodes are optimized for printing and on-screen scanning. It is designed for ease of use and does not require fonts.

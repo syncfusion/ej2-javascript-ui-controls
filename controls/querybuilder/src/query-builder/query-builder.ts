@@ -2734,9 +2734,14 @@ export class QueryBuilder extends Component<HTMLDivElement> implements INotifyPr
             }
             if (tempRule.operator.indexOf('null') > -1 || (tempRule.operator.indexOf('empty') > -1 )) {
                 const parentElem: HTMLElement = operatorElem.parentElement.querySelector('.e-rule-value') as HTMLElement;
-                const tooltipElem: HTMLElement = parentElem.querySelector('.e-tooltip.e-input-group');
+                let tooltipElem: HTMLElement = parentElem.querySelector('.e-tooltip.e-input-group');
                 if (tooltipElem) {
                     (getComponent( tooltipElem, 'tooltip') as Tooltip).destroy();
+                } else if (prevOper.indexOf('in') > -1) {
+                    tooltipElem = parentElem.querySelector('.e-tooltip');
+                    if (tooltipElem) {
+                        (getComponent( tooltipElem, 'tooltip') as Tooltip).destroy();
+                    }
                 }
                 removeClass([parentElem], 'e-show'); addClass([parentElem], 'e-hide');
             }

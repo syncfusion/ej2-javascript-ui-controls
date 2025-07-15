@@ -5422,7 +5422,7 @@ export class Layout {
                 this.moveEndnoteToNextPage(endnote, paragraphWidget.bodyWidget, true);
                 return;
             }
-            let nextBody: BodyWidget = this.moveBlocksToNextPage(paragraphWidget, index === 0, index, false, isEndnote);
+            let nextBody: BodyWidget = this.moveBlocksToNextPage(paragraphWidget, index === 0, index, false, isEndnote, undefined, isPageBreak);
             if (isEndnote) {
                 let endnote: FootNoteWidget = paragraphWidget.containerWidget.containerWidget as FootNoteWidget;
                 let currentBodyIndex: number = endnote.bodyWidgets.indexOf(paragraphWidget.bodyWidget);
@@ -5433,6 +5433,10 @@ export class Layout {
                 this.viewer.updateClientArea(nextBody, nextBody.page);
             }
             this.viewer.updateClientAreaForBlock(paragraphWidget, true);
+            let isMove: boolean = true;
+            if (paragraphWidget.indexInOwner === 0 && paragraphWidget.bodyWidget.indexInOwner === 0 && index === 0 && isNullOrUndefined(paragraphWidget.previousRenderedWidget)) {
+                isMove = false;
+            }
             if (index > 0) {
                 if (line.isLastLine() && isPageBreak) {
                     return;
@@ -5457,7 +5461,7 @@ export class Layout {
                 this.moveFootNotesToPage(footWidget, paragraphWidget.bodyWidget, nextBody);
                 paragraphWidget = nextParagraph;
                 this.viewer.clientActiveArea.height -= this.getFootNoteHeight(footWidget);
-            } else if (!isPageBreak) {
+            } else if (!isPageBreak && isMove) {
                 paragraphWidget.containerWidget.removeChild(paragraphWidget.indexInOwner);
                 if (paragraphWidget instanceof ParagraphWidget && paragraphWidget.floatingElements.length > 0) {
                     this.addRemoveFloatElementsFromBody(paragraphWidget, paragraphWidget.containerWidget as BodyWidget, false);
@@ -5471,7 +5475,7 @@ export class Layout {
                     }
                 }
             }
-            if (!isPageBreak) {
+            if (!isPageBreak && isMove) {
                 if (nextBody.childWidgets.indexOf(paragraphWidget) === -1) {
                     nextBody.childWidgets.splice(0, 0, paragraphWidget);
                     if (paragraphWidget instanceof ParagraphWidget && paragraphWidget.floatingElements.length > 0) {
@@ -11423,7 +11427,7 @@ export class Layout {
                 }
                 if (((widget.isEndsWithPageBreak && !this.isPageBreakInsideField(widget)) || widget.isEndsWithColumnBreak || this.isPageBreakInsideContentControl(widget)) && this.viewer instanceof PageLayoutViewer) {
                     let nextBodyWidget: BodyWidget = this.createOrGetNextBodyWidget(prevBodyWidget, this.viewer);
-                    nextBodyWidget = this.moveBlocksToNextPage(widget, true);
+                    nextBodyWidget = this.moveBlocksToNextPage(widget, true, undefined, undefined, undefined, undefined, widget.isEndsWithPageBreak);
                     viewer.updateClientArea(nextBodyWidget, nextBodyWidget.page);
                 }
             } else {
@@ -12442,13 +12446,13 @@ export class Layout {
         return { bodyWidget: prevBodyWidget, index: index };
     }
 
-    public moveBlocksToNextPage(block: BlockWidget, moveFootnoteFromLastBlock?: boolean, childStartIndex?: number, sectionBreakContinuous?: boolean, isEndnote?: boolean, isTableSplit?: boolean): BodyWidget {
+    public moveBlocksToNextPage(block: BlockWidget, moveFootnoteFromLastBlock?: boolean, childStartIndex?: number, sectionBreakContinuous?: boolean, isEndnote?: boolean, isTableSplit?: boolean, isPageBreak?: boolean): BodyWidget {
         const body: BodyWidget = block.bodyWidget as BodyWidget;
         this.viewer.columnLayoutArea.setColumns(body.sectionFormat);
         let nextColumn: WColumnFormat = this.viewer.columnLayoutArea.getNextColumnByBodyWidget(block.bodyWidget);
         let nextPage: Page = undefined;
         let nextBody: BodyWidget = undefined;
-        if (!isNullOrUndefined(nextColumn) && !(block instanceof ParagraphWidget && (block as ParagraphWidget).isEndsWithPageBreak)) {
+        if (!isNullOrUndefined(nextColumn) && !(isPageBreak && block instanceof ParagraphWidget && (block as ParagraphWidget).isEndsWithPageBreak)) {
             nextBody = this.moveToNextColumnByBodyWidget(block, childStartIndex);
             nextBody.columnIndex = nextColumn.index;
             nextBody.y = block.bodyWidget.y;

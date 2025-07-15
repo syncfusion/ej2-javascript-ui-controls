@@ -2378,4 +2378,62 @@ describe('RTE CR issues ', () => {
             }, 100);
         });
     });
+
+    describe('968252 - Table is inserted along with placeholder text in Rich Text Editor when not focused', () => {
+        let rteObj: RichTextEditor;
+        let defaultRTE: HTMLElement = createElement('div', { id: 'defaultRTE' });
+        let keyboardEventArgs = {
+            preventDefault: function () { },
+            altKey: false,
+            ctrlKey: false,
+            shiftKey: false,
+            char: '',
+            key: '',
+            charCode: 22,
+            keyCode: 22,
+            which: 22,
+            code: 22,
+            action: ''
+        };
+        beforeEach( () => {
+            document.body.appendChild(defaultRTE);
+            rteObj = new RichTextEditor({
+                height: 400,
+                width: 200,
+                placeholder: 'Insert table here',
+                toolbarSettings: {
+                    items: ['CreateTable']
+                }
+            });
+            rteObj.appendTo('#defaultRTE');
+        });
+        afterEach(() => {
+            destroy(rteObj);
+        });
+        it('Check if the table is inserted properly after undoing the already inserted table', () => {
+            const createTableBtn = rteObj.element.querySelector('.e-create-table') as HTMLElement;
+            expect(createTableBtn).not.toBeNull();
+            createTableBtn.click();
+            const insertTableButton = document.querySelector('.e-insert-table-btn') as HTMLElement;
+            insertTableButton.click();
+            const insertButton = document.querySelector('.e-insert-table') as HTMLElement;
+            insertButton.click();
+            const insertedTable = rteObj.contentModule.getEditPanel().querySelector('table');
+            expect(insertedTable).not.toBeNull();
+            expect(rteObj.element.querySelector('.e-placeholder-enabled')).toBeNull();
+            (<any>rteObj).formatter.editorManager.undoRedoManager.keyUp({ event: keyboardEventArgs });
+            (<any>rteObj).formatter.editorManager.execCommand("Actions", 'Undo', null);
+            expect(rteObj.element.querySelector('.e-rte-table')).toBeNull();
+            const createTableBtn1 = rteObj.element.querySelector('.e-create-table') as HTMLElement;
+            expect(createTableBtn1).not.toBeNull();
+            createTableBtn.click();
+            const insertTableButton1 = document.querySelector('.e-insert-table-btn') as HTMLElement;
+            insertTableButton1.click();
+            const insertButton1 = document.querySelector('.e-insert-table') as HTMLElement;
+            insertButton1.click();
+            const insertedTable1 = rteObj.contentModule.getEditPanel().querySelector('table');
+            expect(insertedTable1).not.toBeNull();
+            expect(rteObj.element.querySelector('.e-placeholder-enabled')).toBeNull();
+        });
+    });
 });

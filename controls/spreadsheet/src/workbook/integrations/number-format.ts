@@ -554,7 +554,7 @@ export class WorkbookNumberFormat {
                 }
                 args.formatApplied = true;
                 let result: string;
-                if (custFormat.startsWith('MM-dd-yyyy ')) { // While auto detect date time value, we will set this format only.
+                if (custFormat.startsWith('m/d/yyyy ')) { // While auto detect date time value, we will set this format only.
                     custFormat = custFormat.split(' ').splice(1).join(' ');
                     result = intl.formatDate(dateArgs.dateObj, { type: 'date', skeleton: 'yMd' }) + (custFormat ? ' ' +
                         intl.formatDate(dateArgs.dateObj, { type: type, format: custFormat }) : '');
@@ -1363,7 +1363,7 @@ export class WorkbookNumberFormat {
             cell.format = args.format = defaultFormats.get(14);
         }
         let format: string;
-        if (args.format === '' || args.format === 'General' || args.format === 'mm-dd-yyyy' || args.format === 'm/d/yyyy') {
+        if (args.format === '' || args.format === 'General' || args.format === 'm/d/yyyy') {
             format = 'MM-dd-yyyy';
             dateObj = { type: 'date', skeleton: 'yMd' };
         } else {
@@ -2152,7 +2152,6 @@ export function getTypeFromFormat(format: string, isRibbonUpdate?: boolean): str
     case '_($* #,##0_);_($* (#,##0);_($* "-"_);_(@_)':
         code = 'Accounting';
         break;
-    case 'mm-dd-yyyy':
     case 'm/d/yyyy':
     case 'dd/MM/yyyy':
         code = 'ShortDate';

@@ -1690,6 +1690,9 @@ export class DataUtil {
          * @param ignoreAccent
          */
         contains: (actual: string | number, expected: string | number, ignoreCase?: boolean, ignoreAccent?: boolean): boolean => {
+            if (expected === '') {
+                return true;
+            }
             if (ignoreAccent) {
                 actual = <string>DataUtil.ignoreDiacritics(actual);
                 expected = <string>DataUtil.ignoreDiacritics(expected);
@@ -1709,6 +1712,9 @@ export class DataUtil {
          * @param  {boolean} ignoreCase?
          */
         doesnotcontain: (actual: string | number, expected: string | number, ignoreCase?: boolean, ignoreAccent?: boolean): boolean => {
+            if (expected === '') {
+                return false;
+            }
             if (ignoreAccent) {
                 actual = <string>DataUtil.ignoreDiacritics(actual);
                 expected = <string>DataUtil.ignoreDiacritics(expected);
@@ -1748,6 +1754,9 @@ export class DataUtil {
          * @param ignoreAccent
          */
         startswith: (actual: string, expected: string, ignoreCase?: boolean, ignoreAccent?: boolean): boolean => {
+            if (expected === '') {
+                return true;
+            }
             if (ignoreAccent) {
                 actual = <string>DataUtil.ignoreDiacritics(actual);
                 expected = <string>DataUtil.ignoreDiacritics(expected);
@@ -1765,6 +1774,9 @@ export class DataUtil {
          * @param  {boolean} ignoreCase?
          */
         doesnotstartwith: (actual: string, expected: string, ignoreCase?: boolean, ignoreAccent?: boolean): boolean => {
+            if (expected === '') {
+                return false;
+            }
             if (ignoreAccent) {
                 actual = <string>DataUtil.ignoreDiacritics(actual);
                 expected = <string>DataUtil.ignoreDiacritics(expected);
@@ -1837,6 +1849,9 @@ export class DataUtil {
          * @param ignoreAccent
          */
         endswith: (actual: string, expected: string, ignoreCase?: boolean, ignoreAccent?: boolean): boolean => {
+            if (expected === '') {
+                return true;
+            }
             if (ignoreAccent) {
                 actual = <string>DataUtil.ignoreDiacritics(actual);
                 expected = <string>DataUtil.ignoreDiacritics(expected);
@@ -1854,6 +1869,9 @@ export class DataUtil {
          * @param  {boolean} ignoreCase?
          */
         doesnotendwith: (actual: string, expected: string, ignoreCase?: boolean, ignoreAccent?: boolean): boolean => {
+            if (expected === '') {
+                return false;
+            }
             if (ignoreAccent) {
                 actual = <string>DataUtil.ignoreDiacritics(actual);
                 expected = <string>DataUtil.ignoreDiacritics(expected);

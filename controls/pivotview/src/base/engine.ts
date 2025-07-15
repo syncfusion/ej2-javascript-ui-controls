@@ -82,6 +82,8 @@ export class PivotEngine {
     /** @hidden */
     public headerCollection: HeaderCollection = { rowHeaders: [], columnHeaders: [], rowHeadersCount: 0, columnHeadersCount: 0 };
     /** @hidden */
+    public lastMember: { [key: string]: string | number | Date } = {};
+    /** @hidden */
     public isValueFilterEnabled: boolean;
     /** @hidden */
     public isEmptyData: boolean;
@@ -187,6 +189,7 @@ export class PivotEngine {
         this.saveDataHeaders = this.allowValueFilter ? this.saveDataHeaders : {};
         this.rMembers = [];
         this.cMembers = [];
+        this.lastMember = {};
         this.slicedHeaders = [];
         this.fieldFilterMem = {};
         this.filterPosObj = {};
@@ -3890,6 +3893,7 @@ export class PivotEngine {
             this.endPos = this.rowStartPos + (this.pageSettings.rowPageSize * requirePageCount * (this.enablePaging ? 1 :
                 this.rowValuesLength)) - (this.enablePaging ? 1 : 0);
             this.endPos = this.endPos > (this.rowCount + 1) ? (this.rowCount + 1) : this.endPos;
+            this.lastMember = {};
             this.rMembers = this.performSlicing(this.rMembers, [], this.rowStartPos, 'row');
             this.memberCnt = this.enablePaging ? 0 : -this.colValuesLength; this.pageInLimit = false; this.colHdrBufferCalculated = false;
             this.colStartPos = ((this.pageSettings.currentColumnPage * this.pageSettings.columnPageSize) -
@@ -3958,6 +3962,10 @@ export class PivotEngine {
                         break;
                     }
                 }
+            }
+            if (headers[pos as number].members.length > 0 && axis === 'row') {
+                this.lastMember[headers[pos as number].actualText] =
+                    headers[pos as number].members[headers[pos as number].members.length - 1].valueSort.levelName;
             }
             slicedHeaders.push(headers[pos as number].members.length > 0 ?
                 this.removeChildMembers(headers[pos as number] as { [key: string]: Object }) : headers[pos as number]);
@@ -4181,7 +4189,13 @@ export class PivotEngine {
                 subTotal.members = []; subTotal.isDrilled = false; subTotal.hasChild = false;
                 subTotal.isSum = true; subTotal.type = 'sum';
                 const parentIndex: number = isValueAxis ? this.getParentIndex(reformAxis, subTotal) : 0;
-                this.getTableData([subTotal], reformAxis, columns, tnum, data, vlt, level, rTotal, cTotal, parentIndex);
+                if ((this.enableVirtualization && reformAxis[tnum as number].members &&
+                    reformAxis[tnum as number].members[reformAxis[tnum as number].members.length - 1]
+                    && reformAxis[tnum as number].members[reformAxis[tnum as number].members.length - 1].valueSort &&
+                    reformAxis[tnum as number].members[reformAxis[tnum as number].members.length - 1].valueSort.levelName ===
+                    this.lastMember[reformAxis[tnum as number].actualText]) || !this.enableVirtualization) {
+                    this.getTableData([subTotal], reformAxis, columns, tnum, data, vlt, level, rTotal, cTotal, parentIndex);
+                }
                 parentIndexes = [tnum as number];
             }
             for (let index: number = 0; index < parentIndexes.length; index++) {

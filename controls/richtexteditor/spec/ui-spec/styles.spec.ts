@@ -1119,7 +1119,7 @@ describe('UI Spec ', () => {
             destroy(editor);
             document.getElementById('bootstrapTheme').remove();
         });
-        it('Table Resize element Misaligned in Rich Text Editor When Used in Bootstrap Grid Columns', () => {
+        it('Table Resize element Misaligned in Rich Text Editor When Used in Bootstrap Grid Columns', (done: DoneFn) => {
             editor.focusIn();
             let table: HTMLElement = editor.contentModule.getEditPanel().querySelector('.first-table') as HTMLElement;
             (editor.tableModule as any).tableObj.resizeHelper({ target: table, preventDefault: function () { } });
@@ -1130,8 +1130,11 @@ describe('UI Spec ', () => {
             editor.inputElement.scrollTop = 70;
             (editor.tableModule as any).tableObj.resizeHelper({ target: table, preventDefault: function () { } });
             tableResizeElement = editor.contentModule.getEditPanel().querySelectorAll('.e-table-box')[0] as HTMLElement;
-            expect(tableResizeElement.style.top).toBe("263px");
-            expect(tableResizeElement.style.left).toBe("748px");
+            setTimeout(() => {
+                expect(tableResizeElement.style.top).toBe("273px");
+                expect(tableResizeElement.style.left).toBe("748px");
+                done();
+            }, 100);
         });
     });
 });

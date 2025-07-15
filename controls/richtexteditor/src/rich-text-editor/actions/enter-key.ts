@@ -218,7 +218,11 @@ export class EnterKeyAction {
                                     const startNodeText: string = this.range.startContainer.textContent;
                                     const splitFirstText: string = startNodeText.substring(0, this.range.startOffset);
                                     const lastCharBeforeCursor: number = splitFirstText.charCodeAt(this.range.startOffset - 1);
-                                    const isSplitTextEmpty: boolean = splitFirstText.trim().length === 0;
+                                    let isSplitTextEmpty: boolean = splitFirstText.trim().length === 0;
+                                    if (isSplitTextEmpty && this.range.startContainer.nodeName !== '#text' && this.range.startContainer.firstChild &&
+                                        this.range.startContainer.firstChild.nodeType === Node.ELEMENT_NODE && (this.range.startContainer.firstChild as HTMLElement).getAttribute('contenteditable') === 'false') {
+                                        isSplitTextEmpty = startNodeText.trim().length === 0;
+                                    }
                                     const hasContentAfterCursor: boolean = startNodeText.slice(this.range.startOffset).trim().length !== 0;
                                     const isCursorAtStartNonPreWrap: boolean = lastCharBeforeCursor !== 160
                                         && isSplitTextEmpty && !isPreWrapApplied && !isTextWrapApplied;
@@ -679,7 +683,7 @@ export class EnterKeyAction {
                 detach(newElem.previousSibling.childNodes[1]);
                 isEmptyBrInserted = true;
             }
-            else if (this.startNode.nodeType === Node.ELEMENT_NODE && this.startNode.childElementCount > 0 && this.startNode.lastElementChild.nodeName === 'IMG') {
+            else if (this.startNode !== this.parent.inputElement && this.startNode.nodeType === Node.ELEMENT_NODE && this.startNode.childElementCount > 0 && this.startNode.lastElementChild.nodeName === 'IMG') {
                 this.startNode.parentElement.insertBefore(brElm, this.startNode);
                 isEmptyBrInserted = true;
                 isImageElement = true;

@@ -2,6 +2,14 @@
 
 ## [Unreleased]
 
+## 30.1.40 (2025-07-15)
+
+### Pivot Table
+
+#### Bug Fixes
+
+- `#I740338` - The issue with sub-totals not rendering correctly when virtualization is enabled in the pivot table has been resolved.
+
 ## 30.1.39 (2025-07-08)
 
 ### Pivot Table

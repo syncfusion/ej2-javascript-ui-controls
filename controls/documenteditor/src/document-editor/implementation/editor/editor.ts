@@ -10294,6 +10294,9 @@ export class Editor {
                         lineWidget.paragraph.floatingElements.splice(shapeIndex, 1);
                     }
                 }
+                if (!paragraph.paragraphFormat.isSameFormat(inline.paragraph.paragraphFormat)) {
+                    inline.isWidthUpdated = false;
+                }
                 (paragraph.firstChild as LineWidget).children.splice(insertIndex, 0, inline);
                 inline.line = (paragraph.firstChild as LineWidget);
                 insertIndex++;
@@ -17142,8 +17145,7 @@ export class Editor {
         return undefined;
     }
 
-    private insertParagraphPaste(paragraph: ParagraphWidget, currentParagraph: ParagraphWidget, start: TextPosition, end: TextPosition, isCombineNextParagraph: boolean, editAction: number, isCombineLastBlock?: boolean, skipHistoryCollection?: boolean): void {
-
+    private insertParagraphPaste(paragraph: ParagraphWidget, currentParagraph: ParagraphWidget, start: TextPosition, end: TextPosition, isCombineNextParagraph: boolean, editAction: number, isCombineLastBlock?: boolean): void {
         if (this.editorHistory && (this.editorHistory.isUndoing || this.editorHistory.isRedoing) && !isNullOrUndefined(this.editorHistory.currentBaseHistoryInfo) && this.editorHistory.currentBaseHistoryInfo.action === 'Paste') {
             let nextParagraph: ParagraphWidget = this.selection.getNextParagraphBlock(currentParagraph);
             if (nextParagraph) {
@@ -17151,9 +17153,11 @@ export class Editor {
                     && this.editorHistory.currentBaseHistoryInfo.action === 'Paste') {
                     //Combines the current paragraph with end paragraph specific for undo/redo paste action.
                     let insertIndex: number = 0;
-                    this.removeBlock(currentParagraph);
                     this.documentHelper.layout.clearListElementBox(nextParagraph);
                     this.documentHelper.layout.clearListElementBox(currentParagraph);
+                    if (!nextParagraph.paragraphFormat.isSameFormat(currentParagraph.paragraphFormat)) {
+                        this.isMeasureParaWidth = true;
+                    }
                     for (let i: number = 0; i < currentParagraph.childWidgets.length; i++) {
                         let line: LineWidget = currentParagraph.childWidgets[i] as LineWidget;
                         nextParagraph.childWidgets.splice(insertIndex, 0, line);
@@ -17162,7 +17166,9 @@ export class Editor {
                         insertIndex++;
                         line.paragraph = nextParagraph;
                     }
+                    this.removeBlock(currentParagraph);
                     this.documentHelper.layout.reLayoutParagraph(nextParagraph, 0, 0);
+                    this.isMeasureParaWidth = false;
                     isCombineNextParagraph = false;
                     let offset: string = this.selection.editPosition.substring(this.selection.editPosition.lastIndexOf(';') + 1);
                     this.selection.editPosition = this.selection.getHierarchicalIndex(nextParagraph, offset);
@@ -18157,13 +18163,10 @@ export class Editor {
                 if (this.owner.enableTrackChanges && currentLine === currentParagraph.lastChild && selection.start.offset === selection.getLineLength(currentLine) && !currentParagraph.isContainsShapeAlone() && this.retrieveRevisionByType(currentParagraph.characterFormat, 'Deletion')) {
                     isInsertAfterCurrentPara = true;
                 }
-                this.splitParagraphInternal(selection, currentParagraph, currentLine, selection.start.offset, characterFormat, isInsertParaBeforeTable, isInsertAfterCurrentPara);
+                let nextparagraph: ParagraphWidget = this.splitParagraphInternal(selection, currentParagraph, currentLine, selection.start.offset, characterFormat, isInsertParaBeforeTable, isInsertAfterCurrentPara);
                 this.setPositionForCurrentIndex(selection.start, initialStart);
                 if (!isNullOrUndefined(breakType) && (breakType === 'PageBreak' || breakType === 'ColumnBreak')) {
                     let currentParagraph: ParagraphWidget = selection.start.paragraph;
-                    let breakParagraph: ParagraphWidget = new ParagraphWidget();
-                    breakParagraph.characterFormat.copyFormat(currentParagraph.characterFormat);
-                    breakParagraph.paragraphFormat.copyFormat(currentParagraph.paragraphFormat);
                     let pageBreak: TextElementBox = new TextElementBox();
                     switch (breakType) {
                         case 'PageBreak':
@@ -18173,18 +18176,16 @@ export class Editor {
                             pageBreak.text = String.fromCharCode(14);
                             break;
                     }
-                    let line: LineWidget = new LineWidget(breakParagraph);
-                    line.children.push(pageBreak);
+                    let line: LineWidget = selection.start.currentWidget;
                     pageBreak.line = line;
-                    breakParagraph.childWidgets.push(line);
+                    line.children.push(pageBreak);
                     if (this.owner.enableTrackChanges && currentParagraph.characterFormat.revisionLength > 0) {
-                        let currentRevision: Revision = this.retrieveRevisionInOder(currentParagraph.characterFormat);
-                        breakParagraph.characterFormat.addRevision(currentRevision);
-                        this.owner.trackChangesPane.updateCurrentTrackChanges(currentRevision);
-                        breakParagraph.characterFormat.removedIds = [];
+                        this.insertRevision(pageBreak, 'Insertion');
                     }
-                    this.insertParagraph(breakParagraph, true);
-                    selection.selectParagraphInternal(breakParagraph, true);
+                    this.documentHelper.layout.layoutBodyWidgetCollection(currentParagraph.index, currentParagraph.containerWidget, currentParagraph, false);
+                    if (nextparagraph) {
+                        selection.selectParagraphInternal(nextparagraph, true);
+                    }
                 }
             }
             let nextNode: BlockWidget = selection.start.paragraph.nextWidget as BlockWidget;
@@ -18192,7 +18193,7 @@ export class Editor {
                 nextNode = selection.getNextRenderedBlock(selection.start.paragraph);
             }
             if (!isSplitTable) {
-                selection.selectParagraphInternal(isInsertParaBeforeTable ? selection.start.paragraph : nextNode as ParagraphWidget, true);
+                selection.selectParagraphInternal((isInsertParaBeforeTable || nextNode instanceof TableWidget) ? selection.start.paragraph : nextNode as ParagraphWidget, true);
             }
             if(!isInsertParaBeforeTable && !isInsertAfterCurrentPara) {
                 this.updateEndPosition();
@@ -18234,7 +18235,7 @@ export class Editor {
         this.updateHistoryForComments(commentStartToInsert);
         this.handledEnter = false;
     }
-    private splitParagraphInternal(selection: Selection, paragraphAdv: ParagraphWidget, currentLine: LineWidget, offset: number, characterFormat: WCharacterFormat, isInsertParaBeforeTable?: boolean, isInsertAfterCurrentPara?: boolean): void {
+    private splitParagraphInternal(selection: Selection, paragraphAdv: ParagraphWidget, currentLine: LineWidget, offset: number, characterFormat: WCharacterFormat, isInsertParaBeforeTable?: boolean, isInsertAfterCurrentPara?: boolean): ParagraphWidget {
         let insertIndex: number = 0;
         let blockIndex: number = paragraphAdv.index;
         let currentPara: ParagraphWidget = paragraphAdv;
@@ -18368,6 +18369,7 @@ export class Editor {
             }
         }
         this.documentHelper.layout.layoutBodyWidgetCollection(blockIndex, container as BodyWidget, paragraph, false);
+        return paragraph;
     }
  
     /**
@@ -20504,6 +20506,7 @@ export class Editor {
                         this.deleteSection(selection, paragraph.bodyWidget, nextParagraph.bodyWidget, editAction);
                         this.editorHistory.currentBaseHistoryInfo.type = "SectionBreak";
                     }
+                    paragraph = paragraph.combineWidget(this.owner.viewer) as ParagraphWidget;
                     for (let i: number = 0; i < nextParagraph.childWidgets.length; i++) {
                         let inline: LineWidget = nextParagraph.childWidgets[i] as LineWidget;
                         nextParagraph.childWidgets.splice(i, 1);

@@ -15471,11 +15471,13 @@ describe('Spreadsheet formula module ->', () => {
                 });
             });
         });
-        describe('I325908 ->', () => {
+        describe('I325908, SF-734277 ->', () => {
             beforeAll((done: Function) => {
                 helper.initializeSpreadsheet(
                     { sheets: [{ rows: [{ cells: [{ value: '0' }, { index: 4, value: '10' }] }, { cells: [{ formula:
-                        '=IF($A1<>0,$A1*E$1,"0,00")' }] }] }] }, done);
+                        '=IF($A1<>0,$A1*E$1,"0,00")' }, {formula: '=IFERROR(__xludf.DUMMYFUNCTION("GOOGLETRANSLATE(B9)"),"View customer profile")'},
+                        {formula: '=IFERROR(__xludf.DUMMYFUNCTION("GOOGLETRANSLATE(B16)"),"#VALUE!")'},{formula: '=IFERROR(__xludf.DUMMYFUNCTION("GOOGLETRANSLATE(B15)"),"Create target groups")'},
+                        {formula: '=IFERROR(__xludf.DUMMYFUNCTION("GOOGLETRANSLATE(B13)"),"Export of push tokens")'}] }] }] }, done);
             });
             afterAll(() => {
                 helper.invoke('destroy');
@@ -15490,6 +15492,46 @@ describe('Spreadsheet formula module ->', () => {
                     expect(helper.invoke('getCell', [1, 0]).textContent).toEqual('100');
                     done();
                 });
+            });
+
+            it('EJ2-965650 -> A #NAME? error occurs when using the IFERROR formula with an unrecognized or unknown function in it', (done: Function) => {
+                const spreadsheet: Spreadsheet = helper.getInstance();
+                expect(spreadsheet.sheets[0].rows[1].cells[1].formula).toBe('=IFERROR(__xludf.DUMMYFUNCTION("GOOGLETRANSLATE(B9)"),"View customer profile")');
+                expect(spreadsheet.sheets[0].rows[1].cells[2].formula).toBe('=IFERROR(__xludf.DUMMYFUNCTION("GOOGLETRANSLATE(B16)"),"#VALUE!")');
+                expect(spreadsheet.sheets[0].rows[1].cells[3].formula).toBe('=IFERROR(__xludf.DUMMYFUNCTION("GOOGLETRANSLATE(B15)"),"Create target groups")');
+                expect(spreadsheet.sheets[0].rows[1].cells[4].formula).toBe('=IFERROR(__xludf.DUMMYFUNCTION("GOOGLETRANSLATE(B13)"),"Export of push tokens")');
+                expect(spreadsheet.sheets[0].rows[1].cells[1].value).not.toBe('#NAME?');
+                expect(spreadsheet.sheets[0].rows[1].cells[2].value).not.toBe('#NAME?');
+                expect(spreadsheet.sheets[0].rows[1].cells[3].value).not.toBe('#NAME?');
+                expect(spreadsheet.sheets[0].rows[1].cells[4].value).not.toBe('#NAME?');
+                expect(spreadsheet.sheets[0].rows[1].cells[1].value).toBe('View customer profile');
+                expect(spreadsheet.sheets[0].rows[1].cells[2].value).toBe('#VALUE!');
+                expect(spreadsheet.sheets[0].rows[1].cells[3].value).toBe('Create target groups');
+                expect(spreadsheet.sheets[0].rows[1].cells[4].value).toBe('Export of push tokens');
+                done();
+            });
+            it('EJ2-965650 -> A #NAME? error occurs when using the IFERROR formula with an unrecognized or unknown function in it', (done: Function) => {
+                const spreadsheet: Spreadsheet = helper.getInstance();
+                helper.edit('C13', '10');
+                helper.edit('C14', '=IFERROR(SUM(C13,5), TEST(D4))');
+                const rows: RowModel[] = spreadsheet.sheets[0].rows;
+                expect(rows[13].cells[2].formula).toBe('=IFERROR(SUM(C13,5), TEST(D4))');
+                expect(rows[13].cells[2].value).toBe('15');
+                helper.edit('C15', '=SUM(IFERROR(C13, DEMO(10)),IFERROR(SUM(DEMO(10), 10), C13))+10');
+                expect(rows[14].cells[2].formula).toBe('=SUM(IFERROR(C13, DEMO(10)),IFERROR(SUM(DEMO(10), 10), C13))+10');
+                expect(rows[14].cells[2].value).toBe('30');
+                helper.edit('C16', '=AVERAGE(iferror(C13, DEMO(10)),iferror(ABS(SUM(DEMO(10), 10)), C13), 22)');
+                expect(rows[15].cells[2].formula).toBe('=AVERAGE(iferror(C13, DEMO(10)),iferror(ABS(SUM(DEMO(10), 10)), C13), 22)');
+                expect(rows[15].cells[2].value).toBe('14');
+                helper.edit('C13', '22');
+                expect(rows[13].cells[2].value).toBe('27');
+                expect(rows[14].cells[2].value).toBe('54');
+                expect(rows[15].cells[2].value).toBe('22');
+                helper.edit('C13', '#DIV/0!');
+                expect(rows[13].cells[2].value).toBe('#NAME?');
+                expect(rows[14].cells[2].value).toBe('#NAME?');
+                expect(rows[15].cells[2].value).toBe('#NAME?');
+                done();
             });
         });
         describe('SF-362961 ->', () => {
@@ -15611,6 +15653,9 @@ describe('Spreadsheet formula module ->', () => {
                                     cells: [
                                         { value: '10', format: '#,##0.00' },
                                         { value: '10', format: '#,##0.00' },
+                                        { formula: '=-(1-(1-ABS(Q21))^12)' },
+                                        { formula: '=-(2-(1+3))^12' },
+                                        { formula: '=-(1^12)' },
                                     ],
                                 },
                             ],
@@ -15623,6 +15668,20 @@ describe('Spreadsheet formula module ->', () => {
             it('Aggregates not calculated properly for custom number formatted values', (done: Function) => {
                 helper.invoke('selectRange', ['A1:B1']);
                 expect(helper.getElement('#' + helper.id + '_aggregate').textContent).toBe('Sum: 20.00')
+                done();
+            });
+
+            it('EJ2-963802 -> Spreadsheet hangs when calculating formulas containing a negative sign combined with the power operators', (done: Function) => {
+                const spreadsheet: Spreadsheet = helper.getInstance();
+                expect(spreadsheet.sheets[0].rows[0].cells[2].formula).toBe('=-(1-(1-ABS(Q21))^12)');
+                expect(spreadsheet.sheets[0].rows[0].cells[3].formula).toBe('=-(2-(1+3))^12');
+                expect(spreadsheet.sheets[0].rows[0].cells[4].formula).toBe('=-(1^12)');
+                expect(spreadsheet.sheets[0].rows[0].cells[2].value).toBe('0');
+                expect(spreadsheet.sheets[0].rows[0].cells[3].value).toBe('4096');
+                expect(spreadsheet.sheets[0].rows[0].cells[4].value).toBe('-1');
+                expect(helper.invoke('getCell', [0, 2]).textContent).toBe('0');
+                expect(helper.invoke('getCell', [0, 3]).textContent).toBe('4096');
+                expect(helper.invoke('getCell', [0, 4]).textContent).toBe('-1');
                 done();
             });
         });
@@ -16841,10 +16900,10 @@ describe('Spreadsheet formula module ->', () => {
             expect(spreadsheet.sheets[0].rows[5].cells[9].value).toBe('43616');
             expect(spreadsheet.sheets[0].rows[6].cells[9].value).toBe('43982');
             expect(spreadsheet.sheets[0].rows[7].cells[9].value).toBe('45808');
-            expect(spreadsheet.sheets[0].rows[4].cells[9].formattedText).toBe('5/31/2017');
-            expect(spreadsheet.sheets[0].rows[5].cells[9].formattedText).toBe('5/31/2019');
-            expect(spreadsheet.sheets[0].rows[6].cells[9].formattedText).toBe('5/31/2020');
-            expect(spreadsheet.sheets[0].rows[7].cells[9].formattedText).toBe('5/31/2025');
+            expect(spreadsheet.sheets[0].rows[4].cells[9].formattedText).toBe('05-31-2017');
+            expect(spreadsheet.sheets[0].rows[5].cells[9].formattedText).toBe('05-31-2019');
+            expect(spreadsheet.sheets[0].rows[6].cells[9].formattedText).toBe('05-31-2020');
+            expect(spreadsheet.sheets[0].rows[7].cells[9].formattedText).toBe('05-31-2025');
             done();
         });
 
@@ -17202,7 +17261,7 @@ describe('Spreadsheet formula module ->', () => {
             helper.invoke('numberFormat', ['mm-dd-yyyy', 'I12']);
             helper.edit('I12', '=SUM(H2:H7)');
             let cellEle = helper.invoke('getCell', [11, 8]);
-            expect(cellEle.textContent).toBe('10/16/1900');
+            expect(cellEle.textContent).toBe('10-16-1900');
             helper.edit('I13', '=SUM(H2:H7)');
             cellEle = helper.invoke('getCell', [12, 8]);
             expect(cellEle.textContent).toBe('290.00');

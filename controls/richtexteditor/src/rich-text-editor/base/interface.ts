@@ -2,7 +2,7 @@ import { Component, Observer, L10n, KeyboardEventArgs, EmitType } from '@syncfus
 import { ItemModel, OverflowMode } from '@syncfusion/ej2-navigations';
 import { ItemModel as DropDownItemModel, DropDownButton, SplitButton } from '@syncfusion/ej2-splitbuttons';
 import { RenderType } from './enum';
-import { ToolbarType, ImageInputSource, TriggerType, CommandName, DialogType, ColorModeType } from '../../common/enum';
+import { ToolbarType, ImageInputSource, CommandName, DialogType, ColorModeType } from '../../common/enum';
 import { Toolbar } from '../actions/toolbar';
 import { UndoRedoManager } from '../../editor-manager/plugin/undo';
 import { ClickEventArgs } from '@syncfusion/ej2-navigations';

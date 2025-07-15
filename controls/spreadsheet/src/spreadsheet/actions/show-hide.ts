@@ -192,7 +192,7 @@ export class ShowHide {
                 } else {
                     if (i <= this.parent.viewport.bottomIndex) {
                         count++;
-                    } else {
+                    } else if (count) {
                         count--;
                     }
                 }
@@ -329,7 +329,6 @@ export class ShowHide {
                 if (args.isFiltering) { model.isFiltered = false; }
                 if (!skipDetach && i > this.parent.viewport.bottomIndex) {
                     setRow(sheet, i, model);
-                    if (startRow === undefined) { return; }
                     continue;
                 }
                 if (startRow === undefined) { startRow = i; }

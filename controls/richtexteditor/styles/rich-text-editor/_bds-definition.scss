@@ -249,8 +249,8 @@ $rte-code-block-line-height: 20px !default;
 $rte-hr-border: 2px solid rgba(176, 179, 184, 1) !default;
 $rte-hr-outline: rgba(0, 120, 214, 1) !default;
 
-$rte-quick-toolbar-tip-pointer-border: inherit !default;
-$rte-quick-toolbar-tip-pointer-content: inherit !default;
+$rte-quick-toolbar-tip-pointer-border: $border-secondary !default;
+$rte-quick-toolbar-tip-pointer-content: $content-bg-color-alt2 !default;
 
 $rte-popup-padding: 0 8px !default;
 $rte-popup-item-padding: 4px 4px !default;

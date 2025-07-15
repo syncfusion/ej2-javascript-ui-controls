@@ -2249,7 +2249,7 @@ export class Drawing {
                     let isReadOnly: boolean = false;
                     this.pdfViewer.formFieldCollection.filter((field: any) => field.id === obj.id.split('_')[0])
                         .forEach((field: any) => isReadOnly = field.isReadonly);
-                    if (!(isLock || (isReadOnly && isSign))) {
+                    if (!(isReadOnly && isSign)) {
                         selectorModel.annotations.push(obj);
                         const checkBorder: boolean = this.shownBorder();
                         if (checkBorder) {
@@ -2439,11 +2439,15 @@ export class Drawing {
                                     }
                                 } else {
                                     if (ratio !== 0) {
+                                        const targetWidth: number = actualObject.rotateAngle > 0 ?
+                                            actualObject.wrapper.actualSize.width : actualObject.bounds.width;
                                         element.style.fontSize = this.fontSizeCalculation(actualObject,
-                                                                                          element, (actualObject.bounds.width - 20));
+                                                                                          element, (targetWidth - 20));
                                     } else {
+                                        const targetWidth: number = actualObject.rotateAngle > 0 ?
+                                            actualObject.wrapper.actualSize.width : actualObject.wrapper.bounds.width;
                                         element.style.fontSize = this.
-                                            fontSizeCalculation(actualObject, element, (actualObject.wrapper.bounds.width - 20));
+                                            fontSizeCalculation(actualObject, element, (targetWidth - 20));
                                     }
                                 }
                                 if (ratio !== 0) {

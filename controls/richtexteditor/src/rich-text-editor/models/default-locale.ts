@@ -3,7 +3,7 @@
  * Export default locale
  */
 
-import { SlashMenuItems } from "../../common/enum";
+import { SlashMenuItems } from "../../common/types";
 
 
 export let defaultLocale: { [key: string]: string } = {

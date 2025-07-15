@@ -392,9 +392,11 @@ export class Table {
             this.parent.dotNetRef.invokeMethodAsync('CloseCreateTableDialog');
             if (this.parent.toolbarSettings.type === 'Popup' && !this.parent.inlineMode.enable) {
                 const expendedNav: HTMLElement = this.parent.element.querySelector('.e-hor-nav.e-nav-active');
-                const expandNextElement: HTMLElement = expendedNav.nextElementSibling as HTMLElement;
-                if (expendedNav && expandNextElement && expandNextElement.classList.contains('e-popup-open') && expandNextElement.classList.contains('e-toolbar-pop')) {
-                    expendedNav.click();
+                if (expendedNav) {
+                    const expandNextElement: HTMLElement = expendedNav.nextElementSibling as HTMLElement;
+                    if (expandNextElement && expandNextElement.classList.contains('e-popup-open') && expandNextElement.classList.contains('e-toolbar-pop')) {
+                        expendedNav.click();
+                    }
                 }
             }
         } else {

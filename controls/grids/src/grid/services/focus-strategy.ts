@@ -149,10 +149,11 @@ export class FocusStrategy {
             if (focusableToolbarItems.length > 0 && focusableToolbarItems[0].querySelector('.e-toolbar-item-focus,.e-btn,.e-input')) {
                 (toolbarElement as HTMLElement).tabIndex = -1;
                 (focusableToolbarItems[0].querySelector('.e-toolbar-item-focus,.e-btn,.e-input') as HTMLElement).tabIndex = 0;
-            } else {
+                return;
+            } else if (gObj.toolbarTemplate) {
                 (toolbarElement as HTMLElement).tabIndex = 0;
+                return;
             }
-            return;
         }
         if (gObj.getColumns().length) {
             const firstHeaderCell: HTMLElement = gObj.getHeaderContent().querySelector('.e-headercell:not(.e-hide)');
@@ -356,7 +357,7 @@ export class FocusStrategy {
                     (focusableToolbarItems[0].querySelector('.e-toolbar-item-focus,.e-btn,.e-input') as HTMLElement).focus();
                     return;
                 }
-                if (!(e.target as HTMLElement).classList.contains('e-toolbar')) {
+                if (!(e.target as HTMLElement).classList.contains('e-toolbar') && this.parent.toolbarTemplate) {
                     e.preventDefault();
                     (toolbarElement as HTMLElement).focus();
                     return;
@@ -674,13 +675,16 @@ export class FocusStrategy {
         if (this.parent.toolbar || this.parent.toolbarTemplate) {
             const toolbarElement: Element = (this.parent as Grid).toolbarModule.element;
             const focusableToolbarItems: Element[] = (this.parent as Grid).toolbarModule.getFocusableToolbarItems();
-            e.preventDefault();
             if (focusableToolbarItems.length > 0) {
+                e.preventDefault();
                 (focusableToolbarItems[focusableToolbarItems.length - 1].querySelector('.e-toolbar-item-focus,.e-btn,.e-input') as HTMLElement).focus();
-            } else {
-                (toolbarElement as HTMLElement).focus();
+                return;
             }
-            return;
+            else if (this.parent.toolbarTemplate) {
+                e.preventDefault();
+                (toolbarElement as HTMLElement).focus();
+                return;
+            }
         }
         if (this.parent.allowGrouping && this.parent.groupSettings.showDropArea) {
             const groupModule: Group = (this.parent as Grid).groupModule;

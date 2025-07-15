@@ -759,4 +759,13 @@ export class WParagraphFormat {
             this.widowControl = format.getValue('widowControl') as boolean;
         }
     }
+    /**
+     * Returns true if both paragraph formats are equal
+     * @private
+     * @returns {boolean}
+     */
+    public isSameFormat(format: WParagraphFormat): boolean {
+        return this.baseStyle === format.baseStyle &&
+            this.uniqueParagraphFormat === format.uniqueParagraphFormat;
+    }
 }

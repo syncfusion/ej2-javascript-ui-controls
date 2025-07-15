@@ -956,7 +956,8 @@ export class NumericTextBox extends Component<HTMLInputElement> implements INoti
         /* istanbul ignore next */
         if ( this.isAngular
             && this.element.value !== getValue('decimal', getNumericObject(this.locale))
-            && this.element.value !== getValue('minusSign', getNumericObject(this.locale)) ) {
+            && this.element.value !== getValue('minusSign', getNumericObject(this.locale))
+            && this.numericRegex().test(this.element.value)) {
             let parsedValue: number = this.instance.getNumberParser({ format: 'n' })(this.element.value);
             parsedValue = isNaN(parsedValue) ? null : parsedValue;
             numerictextboxObj.localChange({value: parsedValue});

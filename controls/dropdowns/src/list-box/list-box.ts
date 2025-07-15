@@ -1,4 +1,3 @@
-
 // eslint-disable-next-line @typescript-eslint/triple-slash-reference
 /// <reference path='../drop-down-base/drop-down-base-model.d.ts'/>
 import { Input, InputObject } from '@syncfusion/ej2-inputs';
@@ -502,6 +501,9 @@ export class ListBox extends DropDownBase {
             this.unSelectAllText = l10nSelect.getConstant('unSelectAllText');
             this.popupWrapper = this.list;
             this.checkBoxSelectionModule.checkAllParent = null;
+            if (this.filterParent) {
+                this.filterParent = null ;
+            }
             this.notify('selectAll', {});
         }
     }
@@ -572,6 +574,8 @@ export class ListBox extends DropDownBase {
         } else if (scope) {
             this.tBListBox = getComponent(document.getElementById(scope), this.getModuleName());
             this.tBListBox.updateToolBarState();
+        } else if (this.refreshing) {
+            this.updateToolBarState();
         }
     }
 
@@ -1560,7 +1564,6 @@ export class ListBox extends DropDownBase {
             }
             this.inputString = this.filterInput.value;
             this.filterWireEvents();
-            this.ulElement.style.setProperty('height', 'calc(100% - ' + (this.filterParent.offsetHeight) + 'px)', 'important');
             return filterInputObj;
         }
     }

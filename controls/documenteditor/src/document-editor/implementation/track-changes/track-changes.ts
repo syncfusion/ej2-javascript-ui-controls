@@ -179,10 +179,6 @@ export class Revision {
             this.owner.editorHistoryModule.currentBaseHistoryInfo.removedNodes.reverse();
         }
         if (this.owner.editorHistoryModule) {
-            if (this.owner.trackChangesPane.isTrackingPageBreak) {
-                this.owner.editorHistoryModule.currentBaseHistoryInfo.action = 'TrackingPageBreak';
-                this.owner.trackChangesPane.isTrackingPageBreak = false;
-            }
             let editorHistory: EditorHistory = this.owner.editorHistoryModule;
             if (editorHistory.currentHistoryInfo && (editorHistory.currentHistoryInfo.action === 'Accept All' || editorHistory.currentHistoryInfo.action === 'Reject All')) {
                 if (this.owner.documentHelper.blockToShift) {
@@ -393,8 +389,6 @@ export class Revision {
                     this.updateRevisionID();
                     this.removeRevisionFromPara(start, end);
                 }
-                // Set false to this because we retrived the revision based on above action (after this iteration we have changed the action basded the below property)
-                this.owner.trackChangesPane.isTrackingPageBreak = false;
             }
         } else if (!this.canSkipTableItems && (item instanceof WCharacterFormat) && (!removeChanges)) {
             this.owner.editorHistoryModule.currentBaseHistoryInfo.action = 'ClearRevisions';

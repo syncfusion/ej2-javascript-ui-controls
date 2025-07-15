@@ -1870,6 +1870,7 @@ export class MultiSelect extends DropDownBase implements IInput {
                 (tempData[0]  as string | boolean) = (typeof customData === 'boolean') ?
                     (tempData[0] === 'true' ? true : (tempData[0] === 'false' ? false : tempData[0])) : tempData[0];
                 this.resetList(tempData, field);
+                this.focusAtLastListItem(value);
             }
         }
         else if (this.listData && this.mainData && !dataChecks && this.allowCustomValue) {
@@ -3257,6 +3258,7 @@ export class MultiSelect extends DropDownBase implements IInput {
             }
         } else {
             this.setFloatLabelType();
+            Input.createSpanElement(this.overAllWrapper, this.createElement);
         }
         this.expandTextbox();
     }

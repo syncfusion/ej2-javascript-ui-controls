@@ -3099,9 +3099,11 @@ export class TextSearch {
                 if (!characterBounds) { continue; }
                 const pageResult: SearchResultModel = { pageIndex: i, bounds: [] };
                 for (const matchIndex of matches) {
-                    const rect: IPdfRectBounds =
-                        this.calculateTextBounds(term, matchIndex, characterBounds);
-                    pageResult.bounds.push(rect);
+                    const textBoundsCollection: IPdfRectBounds[] =
+                        this.calculateTextBounds(term, matchIndex, characterBounds, pageResult.pageIndex);
+                    for (const rect of textBoundsCollection) {
+                        pageResult.bounds.push(rect);
+                    }
                 }
                 if (pageResult.bounds.length > 0) {
                     searchResults[`${term}`].push(pageResult);
@@ -3117,33 +3119,79 @@ export class TextSearch {
      * @param {string} searchText - The text string for which to calculate the bounding rectangle.
      * @param {any} matchIndex - The starting index of the match within the character bounds array.
      * @param {any} characterBounds - An array containing the bounds of each character on the page.
+     * @param {any} pageIndex - Defines the page number
      * @private
      * @returns {IPdfRectBounds} - The calculated bounding rectangle, specifying the position and dimensions
      *                             (x, y, width, height) of the highlighted text area on the PDF page.
      */
-    public calculateTextBounds(searchText: string, matchIndex: any, characterBounds: any): IPdfRectBounds {
-        const startBound: any = characterBounds[parseInt(matchIndex.toString(), 10)].Bounds;
-        const left: any = startBound.X;
-        const top: any = startBound.Y;
-        let width: number = 0;
-        let height: any = startBound.Height;
-        let lastRight: number = 0;
-        for (let k: number = 0; k < searchText.length; k++) {
-            const index: number = matchIndex && !isNullOrUndefined(matchIndex.length) && matchIndex.length > 1 ?
-                matchIndex[0] : matchIndex;
-            const currentBound: any = characterBounds[parseInt((index + k).toString(), 10)].Bounds;
-            height = Math.max(height, currentBound.Height);
-            if (k === searchText.length - 1){
-                lastRight = currentBound.Right;
+    public calculateTextBounds(searchText: string, matchIndex: any, characterBounds: any, pageIndex: any): IPdfRectBounds[] {
+        const textBoundscollection: IPdfRectBounds[] = [];
+        let prevLength: number = 0;
+        if (!Array.isArray(matchIndex)) {
+            matchIndex = [matchIndex];
+        }
+        for (let i: number = 0; i < matchIndex.length; i++) {
+            const startBound: any = characterBounds[parseInt(matchIndex[i as number].toString(), 10)].Bounds;
+            let left: any = startBound.X;
+            let top: any = startBound.Y;
+            let width: number = 0;
+            let height: any = startBound.Height;
+            let lastRight: number = 0;
+            let initialLength: number = searchText.length;
+            let textLength: number = initialLength;
+            if (matchIndex[0] === 0) {
+                initialLength += 1;
+            }
+            if (matchIndex.length >= 1) {
+                if (i === matchIndex.length - 1) {
+                    textLength = initialLength - prevLength;
+                } else {
+                    textLength = matchIndex[i as number + 1] - matchIndex[i as number] - (i as number + 1);
+                    prevLength += textLength;
+                }
+            }
+            for (let k: number = 0; k < textLength; k++) {
+                const index: number = matchIndex && !isNullOrUndefined(matchIndex.length) && matchIndex.length > 1 ?
+                    matchIndex[i as number] : matchIndex[i as number];
+                const currentBound: any = characterBounds[parseInt((index + k).toString(), 10)].Bounds;
+                height = Math.max(height, currentBound.Height);
+                if (k === textLength - 1) {
+                    lastRight = currentBound.Right;
+                    width = lastRight - left;
+                    const pageDetails: any = this.pdfViewerBase.pageSize[parseInt(pageIndex.toString(), 10)];
+                    const docHeight: any = this.pdfViewerBase.ConvertPixelToPoint(pageDetails.height);
+                    const docWidth: any = this.pdfViewerBase.ConvertPixelToPoint(pageDetails.width);
+                    switch (pageDetails.rotation) {
+                    case 0:
+                        left = startBound.X;
+                        top = startBound.Y;
+                        break;
+                    case 1:
+                        left = docHeight - startBound.Y - height;
+                        top = startBound.X;
+                        [width, height] = [height, width];
+                        break;
+                    case 2:
+                        left = docWidth - lastRight;
+                        top = docHeight - startBound.Y - height;
+                        break;
+                    case 3:
+                        left = docWidth - docHeight + startBound.Top;
+                        top = docHeight - startBound.X - width;
+                        [width, height] = [height, width];
+                        break;
+                    }
+                    const boundsObject: IPdfRectBounds  = {
+                        x: left,
+                        y: top,
+                        width: width,
+                        height: height
+                    };
+                    textBoundscollection.push(boundsObject);
+                }
             }
         }
-        width = lastRight - left;
-        return {
-            x: left,
-            y: top,
-            width: width,
-            height: height
-        };
+        return textBoundscollection;
     }
 
     /**

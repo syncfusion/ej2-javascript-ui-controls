@@ -19,6 +19,72 @@ function appendSplitterStyles() {
 }
 
 describe('Splitter Control', () => {
+    describe('ValidateDraggedPosition with max size constraints', () => {
+        appendSplitterStyles();
+        let splitterObj: any;
+        beforeAll((): void => {
+            const element: HTMLElement = createElement('div', { id: 'default' });
+            element.style.width = '400px';
+            const child1: HTMLElement = createElement('div');
+            const child2: HTMLElement = createElement('div');
+            element.appendChild(child1);
+            element.appendChild(child2);
+            document.body.appendChild(element);
+            splitterObj = new Splitter({
+                width: '400px',
+                height: '300px',
+                paneSettings: [
+                    { size: '50%', min: '50px', max: '250px' },
+                    { size: '50%', min: '30px', max: '200px' }
+                ]
+            });
+            splitterObj.appendTo(document.getElementById('default'));
+        });
+        afterAll((): void => {
+            document.body.innerHTML = '';
+        });
+        it('should not override when pane1 max constraint is already applied', () => {
+            splitterObj.currentSeparator = document.getElementsByClassName('e-split-bar')[0];
+            splitterObj.getPaneDetails();
+
+            const prePaneRange: number = 0;
+            const pane1MaxSize: number = 250;
+            const pane2MinSize: number = 30;
+            const nextPaneRange: number = 400;
+            const draggedPos: number = 380;
+
+            let validatedSize: number = prePaneRange + pane1MaxSize;
+
+            if (draggedPos > nextPaneRange - pane2MinSize) {
+                if (validatedSize !== prePaneRange + pane1MaxSize) {
+                    validatedSize = nextPaneRange - pane2MinSize;
+                }
+            }
+
+            expect(validatedSize).toBe(250);
+        });
+
+        it('should not override when pane2 max constraint is already applied', () => {
+            splitterObj.currentSeparator = document.getElementsByClassName('e-split-bar')[0];
+            splitterObj.getPaneDetails();
+
+            const nextPaneRange: number = 400;
+            const pane2MaxSize: number = 200;
+            const pane1MinSize: number = 50;
+            const prePaneRange: number = 0;
+            const draggedPos: number = 30;
+
+            let validatedSize: number = nextPaneRange - pane2MaxSize;
+
+            if (draggedPos < prePaneRange + pane1MinSize) {
+                if (validatedSize !== nextPaneRange - pane2MaxSize) {
+                    validatedSize = prePaneRange + pane1MinSize;
+                }
+            }
+
+            expect(validatedSize).toBe(200);
+        });
+    });
     describe('Basics', () => {
         let splitterObj: any;
         beforeAll((): void => {

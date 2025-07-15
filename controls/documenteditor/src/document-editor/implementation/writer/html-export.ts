@@ -18,6 +18,7 @@ export class HtmlExport {
     private keywordIndex: number = undefined;
     private images: Dictionary<number, string[]>;
     private isSkipStyle: boolean = false;
+    private isInlineOnlySelected: boolean = false;
 
     /**
      * @private
@@ -25,9 +26,10 @@ export class HtmlExport {
     public fieldCheck: number = 0;
 
 
-    public writeHtml(document: any, isOptimizeSfdt: boolean, skipStyle?: boolean): string {
+    public writeHtml(document: any, isOptimizeSfdt: boolean, skipStyle?: boolean, isInlineOnlySelected?: boolean): string {
         this.keywordIndex = isOptimizeSfdt ? 1 : 0;
         this.isSkipStyle = skipStyle;
+        this.isInlineOnlySelected = isInlineOnlySelected;
         this.document = document;
         let html: string = '';
         if (document.hasOwnProperty(imagesProperty[this.keywordIndex])) {
@@ -37,6 +39,7 @@ export class HtmlExport {
             html += this.serializeSection(document[sectionsProperty[this.keywordIndex]][i]);
         }
         this.isSkipStyle = false;
+        this.isInlineOnlySelected = false;
         return html;
     }
     private serializeImages(data: any): void {
@@ -129,7 +132,9 @@ export class HtmlExport {
         } else {
             this.prevListLevel = undefined;
             this.isOrdered = undefined;
-            blockStyle += this.createAttributesTag(this.getStyleName(paragraph[paragraphFormatProperty[this.keywordIndex]][styleNameProperty[this.keywordIndex]]), tagAttributes);
+            if (!this.isInlineOnlySelected) {
+                blockStyle += this.createAttributesTag(this.getStyleName(paragraph[paragraphFormatProperty[this.keywordIndex]][styleNameProperty[this.keywordIndex]]), tagAttributes);
+            }
         }
         if (paragraph[inlinesProperty[this.keywordIndex]].length === 0) {
             //Handled to preserve non breaking space for empty paragraphs similar to MS Word behavior.
@@ -144,7 +149,7 @@ export class HtmlExport {
             } else if (blockStyle.indexOf('<ol') > -1) {
                 this.isOrdered = true;
             }
-        } else {
+        } else if (!this.isInlineOnlySelected) {
             blockStyle += this.endTag(this.getStyleName(paragraph[paragraphFormatProperty[this.keywordIndex]][styleNameProperty[this.keywordIndex]]));
         }
         return blockStyle;

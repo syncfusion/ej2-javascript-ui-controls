@@ -16,15 +16,6 @@ export declare type CommandName = 'bold' | 'italic' | 'underline' | 'strikeThrou
 
 
 /**
- * Defines the behavior of the quick toolbar when scrolling occurs.
- *
- * Options:
- * - 'hide': The quick toolbar will be hidden when scrolling occurs
- * - 'none': No action will be taken when scrolling occurs (toolbar remains visible)
- */
-export type ActionOnScroll = 'hide' | 'none';
-
-/**
  * Specifies the types of items that can be used in the toolbar.
  */
 export type ToolbarItems = 'alignments' | 'justifyLeft' | 'justifyCenter' | 'justifyRight'
@@ -59,33 +50,6 @@ export type ToolbarConfigItems = 'Alignments' | 'JustifyLeft' | 'JustifyCenter' 
  * Defines types to be used as colorMode for color selection in the RichTextEditor.
  */
 export declare type ColorModeType = 'Picker' | 'Palette';
-
-
-/**
- * @hidden
- */
-export type SelectionDirection = 'Backward' | 'Forward';
-
-/**
- * @hidden
- */
-export type TriggerType = 'keyup' | 'contextmenu' | 'mouseup' | 'trippleclick' | 'none' | 'scroll';
-
-/**
- * Defines the type of the Quick Toolbar tip pointer position.
- *
- * @hidden
- *
- */
-export type TipPointerPosition = 'Top-Left' | 'Top-LeftMiddle' | 'Top-Center' | 'Top-RightMiddle' | 'Top-Right' | 'Bottom-Left' | 'Bottom-LeftMiddle' | 'Bottom-Center' | 'Bottom-RightMiddle' | 'Bottom-Right' | 'None';
-
-
-/**
- * Lists the items available in the slash menu.
- */
-export type SlashMenuItems = 'Heading 1' | 'Heading 2' | 'Heading 3' | 'Heading 4'
-| 'Paragraph' | 'Blockquote' | 'OrderedList' | 'UnorderedList' | 'Table' | 'Image'
-| 'Audio' | 'Video' | 'CodeBlock' | 'Emojipicker' | 'Link';
 
 /**
  * Enumerates the types of dialogs that can be opened or closed in the Rich Text Editor.

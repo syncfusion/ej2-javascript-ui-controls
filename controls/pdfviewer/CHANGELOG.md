@@ -2,6 +2,14 @@
 
 ## [Unreleased]
 
+## 30.1.40 (2025-07-15)
+
+### PDF Viewer
+
+#### Bug Fixes
+
+- `I743298` - Resolved an issue where the `findText` bounds are not proper for the different line sentence.
+
 ## 30.1.39 (2025-07-08)
 
 ### PDF Viewer

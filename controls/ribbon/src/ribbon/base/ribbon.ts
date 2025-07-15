@@ -665,14 +665,14 @@ export class Ribbon extends Component<HTMLElement> implements INotifyPropertyCha
 
     private resizeHandler(): void {
         const activeContent: HTMLElement = this.tabObj.element.querySelector('#' + this.tabs[this.selectedTab].id + constants.CONTENT_ID);
-        this.checkOverflow(this.selectedTab, activeContent);
+        if (!isNullOrUndefined(activeContent)) { this.checkOverflow(this.selectedTab, activeContent); }
         if (this.scrollModule) {
             const scrollEle: HTMLElement = this.tabObj.element.querySelector('.' + constants.HORIZONTAL_SCROLLBAR);
             this.scrollModule.scrollStep = scrollEle.offsetWidth;
         }
         if (this.activeLayout === 'Simplified') {
             const activePopup: NodeListOf<Element> = document.querySelectorAll('.e-ribbon .e-dropdown-btn.e-active, .e-ribbon-group-overflow-ddb .e-dropdown-btn.e-active');
-            if (activePopup.length) {
+            if (!isNullOrUndefined(activePopup) && activePopup.length) {
                 for (let i: number = 0; i < activePopup.length; i++) {
                     const dropDownBtn: DropDownButton =
                     getInstance(activePopup[parseInt(i.toString(), 10)] as HTMLElement, DropDownButton) as DropDownButton;

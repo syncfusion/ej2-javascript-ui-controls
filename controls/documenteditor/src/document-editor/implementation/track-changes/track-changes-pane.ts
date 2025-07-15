@@ -47,7 +47,6 @@ export class TrackChangesPane {
      */
     public sortedRevisions: Revision[] = [];
     private noChangesVisibleInternal: boolean = true;
-    public isTrackingPageBreak: boolean = false;
     public enableButtons: boolean = true;
     public renderedChanges: Dictionary<Revision, ChangesSingleView>;
     public get setNoChangesVisibility(): boolean {

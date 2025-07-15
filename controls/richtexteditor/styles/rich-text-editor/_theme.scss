@@ -33,6 +33,9 @@
       width: max-content;
       padding: $rte-popup-padding;
     }
+    .e-toolbar-pop:not(.e-toolbar-extended) {
+      max-width: 75%;
+    }
   }
   
   .e-rte-container .e-toolbar-wrapper.e-rte-tb-bottom {

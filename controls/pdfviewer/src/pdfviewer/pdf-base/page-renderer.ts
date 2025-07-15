@@ -352,27 +352,7 @@ export class PageRenderer{
                                     rubberStampAnnotation.RotateAngle = rubberStampAnnotationAngle - 360;
                                 }
                             }
-                            let isBoundsEqual: boolean = false;
-                            if (rubberStampAnnotation.RotateAngle !== 0) {
-                                isBoundsEqual = (
-                                    Math.ceil(stampAnnotation._innerTemplateBounds.x * 100) / 100 ===
-                                    Math.ceil(stampAnnotation.bounds.x * 100) / 100 &&
-                                    Math.ceil(stampAnnotation._innerTemplateBounds.y * 100) / 100 ===
-                                    Math.ceil(stampAnnotation.bounds.y * 100) / 100 &&
-                                    Math.ceil(stampAnnotation._innerTemplateBounds.width * 100) / 100 ===
-                                    Math.ceil(stampAnnotation.bounds.width * 100) / 100 &&
-                                    Math.ceil(stampAnnotation._innerTemplateBounds.height * 100) / 100 ===
-                                    Math.ceil(stampAnnotation.bounds.height * 100) / 100
-                                );
-                            }
-                            if ((rubberStampAnnotation.RotateAngle !== 0 && isBoundsEqual) || (rubberStampAnnotation.RotateAngle === 0)) {
-                                rubberStampAnnotation.Rect = this.getBounds(stampAnnotation.bounds, height, width, pageRotation);
-                            }
-                            else {
-                                const bounds: Rect = this.getRubberStampBounds(stampAnnotation._innerTemplateBounds,
-                                                                               stampAnnotation.bounds, height, width, pageRotation);
-                                rubberStampAnnotation.Rect = bounds;
-                            }
+                            rubberStampAnnotation.Rect = this.getBounds(stampAnnotation.bounds, height, width, pageRotation);
                             if (rubberStampAnnotation.Rect.y < 0) {
                                 const cropRect: Rect = new Rect(rubberStampAnnotation.Rect.x,
                                                                 loadedPage.cropBox[1] + rubberStampAnnotation.Rect.y,
@@ -601,10 +581,10 @@ export class PageRenderer{
         pageSettings.margins = new PdfMargins(0);
         // pageSettings.rotation = this.getPageRotation(annotation);
         pageSettings.rotation = pageRotation;
-        pageSettings.size = template.size;
+        pageSettings.size = [(template.size[0] + annotation.border.width * 2.3), (template.size[1] + annotation.border.width * 2.3)];
         const page: PdfPage = stampDocument.addPage(pageSettings);
         // Draw template into new page graphics
-        page.graphics.drawTemplate(template, { x: 0, y: 0, width: template.size[0], height: template.size[1] });
+        page.graphics.drawTemplate(template, { x: 1, y: 1, width: template.size[0], height: template.size[1] });
         // Remove existing PDF page at index 0
         stampDocument.removePage(0);
         // Save the PDF document which have appearance template

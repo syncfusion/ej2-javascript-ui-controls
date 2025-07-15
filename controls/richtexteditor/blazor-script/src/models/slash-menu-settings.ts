@@ -1,7 +1,8 @@
 import { ChildProperty, Property } from '../../../base'; /*externalscript*/
-import { DialogType, SlashMenuItems } from '../common/enum';
+import { DialogType } from '../common/enum';
 import { ISlashMenuItem } from '../common/interface';
 import { CommandName } from '../common/enum';
+import { SlashMenuItems } from '../common/types';
 
 /**
  * Configures the slash menu settings of the RichTextEditor.

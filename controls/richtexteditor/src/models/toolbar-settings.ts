@@ -1,6 +1,6 @@
 import { Property, ChildProperty } from '@syncfusion/ej2-base';
-import { SaveFormat, DisplayLayoutOptions } from '../common';
-import { ActionOnScroll, ToolbarItems, ToolbarConfigItems, ColorModeType } from '../common/enum';
+import { SaveFormat, DisplayLayoutOptions, ActionOnScroll } from '../common/types';
+import { ToolbarItems, ToolbarConfigItems, ColorModeType } from '../common/enum';
 import { ToolbarType } from '../common/enum';
 import { IToolbarItems, IDropDownItemModel, ICodeBlockLanguageModel, IToolsItemConfigs, IListDropDownModel } from '../common/interface';
 import { backgroundColor, fontColor, fontFamily, fontSize, formatItems, predefinedItems, TableStyleItems, numberFormatList, bulletFormatList, codeBlockList } from '../models/items';

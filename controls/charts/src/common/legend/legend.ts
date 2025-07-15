@@ -851,6 +851,10 @@ export class BaseLegend {
             for (let i: number = 0; i < this.legendCollections.length; i++) {
                 legendOption = this.legendCollections[i as number];
                 legendIndex = !this.isReverse ? count : (this.legendCollections.length - 1) -  count;
+                if (this.chart.getModuleName() === 'accumulationchart' && (this.chart as AccumulationChart).accumulationLegendModule.legendRenderArgFill.indexOf(i as number) === -1) {
+                    legendOption.fill = (this.chart as Chart || this.chart as AccumulationChart || this.chart as StockChart ||
+                        this.chart as Chart3D).visibleSeries[0].points[legendOption.pointIndex].color;
+                }
                 if (this.chart.getModuleName() === 'stockChart'){
                     legendOption.type = (this.chart as StockChart).visibleSeries[count as number].type;
                 }

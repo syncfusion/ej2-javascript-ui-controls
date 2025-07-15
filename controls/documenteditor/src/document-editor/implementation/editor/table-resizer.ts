@@ -460,6 +460,9 @@ export class TableResizer {
                 for (let i: number = 0; i < leftColumnCollection.length; i++) {
                     const cell: TableCellWidget = leftColumnCollection[parseInt(i.toString(), 10)];
                     if (selectedCells.indexOf(cell) !== -1) {
+                        if (dragValue < 0 && !(cell.cellFormat.preferredWidth + dragValue > cell.ownerColumn.minimumWidth)) {
+                            dragValue = -(cell.cellFormat.preferredWidth - cell.ownerColumn.minimumWidth);
+                        }
                         this.increaseOrDecreaseWidth(cell, dragValue, true);
                     }
                 }
@@ -713,7 +716,9 @@ export class TableResizer {
         this.owner.editorModule.isSkipOperationsBuild = false;
         if (dragValue) {
             this.startingPoint.x += HelperMethods.convertPointToPixel(dragValue);
-            // this.resizerPosition = this.getCellReSizerPosition(this.startingPoint);
+            if (!this.documentHelper.selection.isEmpty) {
+                this.resizerPosition = this.getCellReSizerPosition(this.startingPoint);
+            }
         }
     }
     private getColumnCells(table: TableWidget, columnIndex: number, isLeftSideCollection: boolean): TableCellWidget[] {
@@ -851,7 +856,23 @@ export class TableResizer {
                             diff = newGridBefore;
                         }
                         cell.ownerRow.rowFormat.gridBeforeWidth = 0;
+                        cell.ownerRow.rowFormat.beforeWidth = 0;
                         cell.ownerRow.rowFormat.gridBeforeWidthType = 'Auto';
+                    }
+                } else {
+                    const previousCellWidget: TableCellWidget = cell.previousWidget as TableCellWidget;
+                    if (dragValue < 0 && !isNullOrUndefined(previousCellWidget) &&
+                        previousCellWidget.cellFormat.preferredWidth - previousCellWidget.ownerColumn.minimumWidth >= dragValue) {
+                        let isContinue: boolean = true;
+                        let newRightWidth: number;
+                        while (isContinue) {
+                            newRightWidth = HelperMethods.round(previousCellWidget.cellFormat.preferredWidth + dragValue, 2);
+                            if (newRightWidth >= previousCellWidget.ownerColumn.minimumWidth) {
+                                isContinue = false;
+                            } else {
+                                dragValue -= newRightWidth - previousCellWidget.ownerColumn.minimumWidth;
+                            }
+                        }
                     }
                 }
                 this.increaseOrDecreaseWidth(cell, dragValue, false);

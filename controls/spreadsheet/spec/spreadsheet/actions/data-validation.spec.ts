@@ -2689,6 +2689,25 @@ describe('Data validation ->', () => {
                     done();
                 });
             });
+
+            it('EJ2-959309 -> Empty cell values appear as options in List Validation when formula-based range is used in spreadsheet.', (done: Function) => {
+                const spreadsheet: Spreadsheet = helper.getInstance();
+                helper.edit('A14', '123');
+                helper.edit('A3', '');
+                helper.edit('J2', 'Sync');
+                expect(spreadsheet.sheets[0].rows[1].cells[9].value).toBe('Sync');
+                helper.invoke('addDataValidation', [{ type: 'List', value1: '=A1:A20' }, 'J2:J11']);
+                helper.invoke('selectRange', ['J2']);
+                const ddlObj: any = getComponent(helper.invoke('getCell', [1, 9]).querySelector('.e-dropdownlist'), 'dropdownlist');
+                ddlObj.showPopup();
+                setTimeout(() => {
+                    let popUpElem: HTMLElement = helper.getElement('.e-popup-open .e-dropdownbase');
+                    expect(popUpElem.firstElementChild.childElementCount).toBe(12);
+                    helper.click('.e-ddl.e-popup li:nth-child(3)');
+                    expect(spreadsheet.sheets[0].rows[1].cells[9].value).toBe('');
+                    done();
+                }, 10);
+            });
         });
     });
     describe('EJ2-65124->', () => {

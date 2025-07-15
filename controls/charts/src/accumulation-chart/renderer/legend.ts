@@ -21,6 +21,7 @@ export class AccumulationLegend extends BaseLegend {
     public titleRect: Rect;
     private totalRowCount: number;
     private maxColumnWidth: number;
+    public legendRenderArgFill: number[] = [];
     /**
      * Constructor for Accumulation Legend.
      *
@@ -189,6 +190,9 @@ export class AccumulationLegend extends BaseLegend {
             legendOption.text = legendOption.originalText = ((legendEventArgs.text.indexOf('&') > -1) ?
                 this.convertHtmlEntities(legendEventArgs.text) : legendEventArgs.text);
             legendOption.fill = legendEventArgs.fill;
+            if (legendOption.fill !== legendEventArgs.fill) {
+                this.legendRenderArgFill.push(i as number);
+            }
             legendOption.shape = legendEventArgs.shape;
             legendOption.textSize = measureText(legendOption.text, legend.textStyle, this.chart.themeStyle.legendLabelFont);
             if (legendOption.render && legendOption.text !== '') {

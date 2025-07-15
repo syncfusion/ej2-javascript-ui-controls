@@ -3021,3 +3021,24 @@ describe('Handle Enter key press on HR element between headers', function () {
         expect(rteObj.inputElement.innerHTML).toBe('<h1>Header 1</h1><hr><p><br></p><h3>Header 3</h3>');
     });
 });
+
+describe('968970 - Enter key as BR breaks the content when pressing Enter in RichTextEditor', function () {
+    let rteObj: RichTextEditor;
+    keyboardEventArgs.shiftKey = false;
+    beforeAll(function (done) {
+        rteObj = renderRTE({
+            enterKey:'BR',
+            value: "Hey,<br><br>Thanks for getting in touch. Do you have a copy of what the customer printed, or can you replicate the issue on your end?<br><br>We could definitely go down the track of building a custom report for printing if you would like more control over the layout. Please see the image below for reference.<br><br><img src='https://ej2.syncfusion.com/demos/src/rich-text-editor/images/RTEImage-Feather.png' class='e-rte-image e-imginline'>",
+        });
+        done();
+    });
+    afterAll(function () {
+        destroy(rteObj);
+    });
+    it('When enter key as and RTE content has image element enter action was not working', () => {
+        const nodetext: any = rteObj.inputElement.childNodes[3];
+        const sel: void = new NodeSelection().setCursorPoint(document, nodetext, 28);
+        (<any>rteObj).keyDown(keyboardEventArgs);
+        expect(rteObj.inputElement.innerHTML).toBe('Hey,<br><br>Thanks for getting in touch.<br> Do you have a copy of what the customer printed, or can you replicate the issue on your end?<br><br>We could definitely go down the track of building a custom report for printing if you would like more control over the layout. Please see the image below for reference.<br><br><img src="https://ej2.syncfusion.com/demos/src/rich-text-editor/images/RTEImage-Feather.png" class="e-rte-image e-imginline">');
+    });
+});

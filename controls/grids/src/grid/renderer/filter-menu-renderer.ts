@@ -113,10 +113,12 @@ export class FilterMenuRenderer {
                 this.dlgObj.destroy();
                 remove(elem);
             }
-            let gridPopup: HTMLElement = document.getElementById(this.parent.element.id + '_e-popup');
-            if (!isNullOrUndefined(gridPopup)) {
-                remove(gridPopup);
-                gridPopup = null;
+            if (!this.parent.showColumnChooser) {
+                let gridPopup: HTMLElement = document.getElementById(this.parent.element.id + '_e-popup');
+                if (!isNullOrUndefined(gridPopup)) {
+                    remove(gridPopup);
+                    gridPopup = null;
+                }
             }
             if (!isNullOrUndefined(this.dlgObj['storeActiveElement'])) {
                 this.dlgObj['storeActiveElement'].focus();

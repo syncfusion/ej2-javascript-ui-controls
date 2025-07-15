@@ -846,7 +846,6 @@ export class BaseHistoryInfo {
             this.documentHelper.updateFocus();
             isSelectionChanged = true;
         }
-        this.owner.trackChangesPane.isTrackingPageBreak = false;
         let index: number = this.insertIndex;
         // Updates insert position of history info instance.
         this.insertPosition = start;
@@ -1114,17 +1113,18 @@ export class BaseHistoryInfo {
                     if (lastNode instanceof BodyWidget && !isNullOrUndefined(deletedNodes[1])) {
                         lastNode = deletedNodes[1];
                     }
-                    if (this.action === 'TrackingPageBreak' || ((this.action === 'SectionBreak' || this.action === 'SectionBreakContinuous') && lastNode instanceof BodyWidget ||
-                        !isNullOrUndefined(this.editorHistory.currentHistoryInfo) &&
-                        this.editorHistory.currentHistoryInfo.action === 'PageBreak')) {
+                    if (this.action === 'TrackingPageBreak' || ((this.action === 'SectionBreak' || this.action === 'SectionBreakContinuous') && lastNode instanceof BodyWidget)) {
                         lastNode = deletedNodes[1];
                     }
                     // While accepting or rejecting changes, we combined the next paragraph according to Microsoft Word's behavior. Therefore, in this case, we need to first insert the combined block.
                     if (!isNullOrUndefined(this.isAcceptOrReject) && this.owner.selectionModule.start.offset > 0 && lastNode instanceof ElementBox && deletedNodes[deletedNodes.length - 1] instanceof ParagraphWidget && deletedNodes[deletedNodes.length - 2] instanceof ParagraphWidget) {
                         lastNode = deletedNodes[deletedNodes.length - 2];
                     }
+                    if (lastNode instanceof ParagraphWidget && this.editorHistory && this.editorHistory.currentBaseHistoryInfo && this.editorHistory.currentBaseHistoryInfo.action === 'Paste') {
+                        lastNode = deletedNodes[deletedNodes.length - 1];
+                    }
                     if (lastNode instanceof ParagraphWidget && this.owner.selectionModule.start.offset > 0) {
-                        if (this.editorHistory && this.editorHistory.currentBaseHistoryInfo && this.editorHistory.currentBaseHistoryInfo.action === 'Paste' && deletedNodes.length === 1) {
+                        if (this.editorHistory && this.editorHistory.currentBaseHistoryInfo && this.editorHistory.currentBaseHistoryInfo.action === 'Paste') {
                             this.owner.editorModule.insertNewParagraphWidget(lastNode, false);
                         } else {
                             this.owner.editorModule.insertNewParagraphWidget(lastNode, true);

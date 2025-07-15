@@ -4725,8 +4725,9 @@ export class Selection {
      */
     public isExistBeforeInline(currentInline: ElementBox, inline: ElementBox): boolean {
         if (currentInline.line === inline.line) {
-            let fieldElementStart: FieldElementBox = inline instanceof FieldElementBox ? inline : inline.nextNode as FieldElementBox;
-            if (fieldElementStart instanceof FieldElementBox && fieldElementStart.fieldType === 0 && !(inline instanceof BookmarkElementBox)) {
+            const fieldBegin: FieldElementBox = inline instanceof FieldElementBox ? inline : inline.nextNode as FieldElementBox;
+            const offset: number = this.isForward ? this.start.offset : this.end.offset;
+            if (fieldBegin instanceof FieldElementBox && fieldBegin.fieldType === 0 && !(inline instanceof BookmarkElementBox) && (inline instanceof FieldElementBox || offset === inline.line.getOffset(inline, inline.length))) {
                 return currentInline.line.children.indexOf(currentInline) >=
                     inline.line.children.indexOf(inline);
             } else {
@@ -10499,13 +10500,21 @@ export class Selection {
      * @private
      */
     public getHtmlContent(skipStyle?: boolean): string {
+        let isInlineOnlySelected: boolean = false;
+        let endPosition: TextPosition = this.end;
+        if (!this.isForward) {
+            endPosition = this.start;
+        }
+        if (this.start.paragraph === this.end.paragraph && endPosition.offset <= this.getLineLength(endPosition.currentWidget as LineWidget)) {
+            isInlineOnlySelected = true;
+        }
         let documentContent: any = this.writeSfdt();
         this.sfdtContent = JSON.stringify(documentContent);
         if (this.owner.editorModule) {
             this.owner.editorModule.copiedData = JSON.stringify(documentContent);
         }
         let isOptimizedSfdt: boolean = this.owner.documentEditorSettings.optimizeSfdt;
-        return this.htmlWriter.writeHtml(documentContent, isOptimizedSfdt, skipStyle);
+        return this.htmlWriter.writeHtml(documentContent, isOptimizedSfdt, skipStyle, isInlineOnlySelected);
     }
 
     private copyToClipboard(htmlContent?: string): boolean {
@@ -11854,9 +11863,6 @@ export class Selection {
                     let currentPara: ParagraphWidget = lastElement.ownerBase as ParagraphWidget;
                     const splittedWidgets = currentPara.getSplitWidgets();
                     currentPara = splittedWidgets[splittedWidgets.length - 1] as ParagraphWidget;
-                    if (currentPara.isEndsWithPageBreak || currentPara.isEndsWithColumnBreak) {
-                        this.owner.trackChangesPane.isTrackingPageBreak = true;
-                    }
                     // Changed the condition to get last child of current paragraph instead of next para of current para if current para contain page break
                     if (currentPara.childWidgets.length > 1) {
                         offset = this.getParagraphLength(currentPara) - this.getParagraphLength(currentPara, currentPara.lastChild as LineWidget);

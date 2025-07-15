@@ -2,29 +2,13 @@
 
 ## [Unreleased]
 
-## 30.1.39 (2025-07-08)
+## 30.1.40 (2025-07-15)
 
-### Dashboard Layout
-
-#### Bug Fixes
-
-- `#I654305` - Provided an additional argument in the `resizeStop` and `dragStop` events to predict the panels for which the positions were changed during resize and drag actions.
-
-## 29.1.37 (2025-04-08)
-
-### Dashboard Layout
+### Splitter
 
 #### Bug Fixes
 
-- `#I703775` - Resolved the console error when adding panels dynamically after performing a drag and drop action in the Dashboard Layout component.
-
-## 29.1.35 (2025-04-01)
-
-### Dashboard Layout
-
-#### Bug Fixes
-
-- `#I704506` - An issue with change event when adding the panel to the Dashboard Layout component has been resolved.
+- `#I737169` - The pane resizing issues with the Splitter component has been resolved.
 
 ## 25.1.35 (2024-03-15)
 

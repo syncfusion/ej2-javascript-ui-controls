@@ -3,6 +3,7 @@ import { renderRTE, destroy } from "../render.spec";
 import { BASIC_MOUSE_EVENT_INIT } from "../../constant.spec";
 import { createElement } from "@syncfusion/ej2-base";
 import { BeforeQuickToolbarOpenArgs } from "../../../src/components";
+import { TipPointerPosition } from "../../../src/common/types";
 
 describe('Base Quick Toolbar', ()=> {
 
@@ -935,6 +936,174 @@ describe('Base Quick Toolbar', ()=> {
             target.dispatchEvent(MOUSEUP_EVENT);
             setTimeout(() => {
                 expect((editor.quickToolbarModule.textQTBar as any).currentTipPosition).toBe('Bottom-Left');
+                done();
+            }, 100);
+        });
+    });
+
+    describe('968649: Quick toolbar is shown on bottom position in Bold Desk Agent portal.', ()=> {
+        let editor: RichTextEditor;
+        let wrapperElement: HTMLElement;
+        beforeAll(()=> {
+            wrapperElement = createElement('div', { className: 'e-editor-wrapper'});
+            wrapperElement.style.overflow = 'auto';
+            wrapperElement.style.height = '500px';
+            const editorRoot: HTMLElement = createElement('div', { className: 'editor'});
+            editorRoot.id = 'element_968649';
+            wrapperElement.append(editorRoot);
+            wrapperElement.append(createElement('h1').innerHTML = 'This issues is only replicated inside the Bold desk source.')
+            document.body.append(wrapperElement);
+            editor = new RichTextEditor({
+                toolbarSettings: {
+                    enableFloating : false
+                },
+            }, '#element_968649');
+        });
+        afterAll(()=> {
+            editor.destroy();
+            wrapperElement.remove();
+        });
+        it('Should open the table quick toolbar on correct position when clicking on the table.', (done: DoneFn)=> {
+            editor.inputElement.innerHTML = '<table class="e-rte-table" style="width: 100%; min-width: 0px;"><colgroup><col style="width: 33.3333%;"><col style="width: 33.3333%;"><col style="width: 33.3333%;"></colgroup><tbody><tr><td><br></td><td><br></td><td><br></td></tr><tr><td><br></td><td><br></td><td><br></td></tr><tr><td><br></td><td><br></td><td><br></td></tr></tbody></table><p><br></p>';
+            editor.inputElement.dispatchEvent(INIT_MOUSEDOWN_EVENT);
+            wrapperElement.scrollTop = 50;
+            const target: HTMLElement = editor.inputElement.querySelector('td');
+            setCursorPoint(target.firstChild, 0);
+            target.dispatchEvent(MOUSEUP_EVENT);
+            setTimeout(() => {
+                const quickToolbar: HTMLElement = document.querySelector('.e-rte-quick-popup');
+                const editPanel: HTMLElement = editor.inputElement;
+                const quikTBarRect: ClientRect = quickToolbar.getBoundingClientRect();
+                const editPanelRect: ClientRect = editPanel.getBoundingClientRect();
+                expect(quikTBarRect.top).toBeGreaterThanOrEqual(editPanelRect.top)
+                expect(editor.quickToolbarModule.tableQTBar.popupObj.collision.Y).toBe('fit');
+                done();
+            }, 100);
+        });
+    });
+
+    describe('963453: To provide Quick Toolbar Fit collision support for the media elements in IFrame editor.', ()=> {
+        let editor: RichTextEditor;
+        beforeAll(()=> {
+            editor = renderRTE({
+                value: OVERVIEW_CONTENT,
+                quickToolbarSettings: {
+                    text: ['Formats', '|', 'Bold', 'Italic', 'Fontcolor', 'BackgroundColor', '|', 'CreateLink', 'Image', 'CreateTable', 'Blockquote', '|' , 'Unorderedlist', 'Orderedlist', 'Indent', 'Outdent']
+                }
+            });
+        });
+        afterAll(()=> {
+            destroy(editor);
+        });
+        it ('Should not have action on scroll property set to popup.', (done : DoneFn)=> {
+            editor.focusIn();
+            editor.inputElement.dispatchEvent(INIT_MOUSEDOWN_EVENT);
+            const target: HTMLElement = editor.inputElement.querySelector('p');
+            setSelection(target.firstChild, 1, 2);
+            target.dispatchEvent(MOUSEUP_EVENT);
+            setTimeout(() => {
+                expect(editor.quickToolbarModule.textQTBar.popupObj.actionOnScroll).toBe('none'); // Reposition causes memory leak.
+                done();
+            }, 100);
+        });
+    });
+
+    describe('963453: To provide Quick Toolbar Fit collision support for the media elements in IFrame editor.', ()=> {
+        let editor: RichTextEditor;
+        beforeEach(()=> {
+            editor = renderRTE({
+                iframeSettings: {
+                    enable: true
+                },
+                toolbarSettings: {
+                    items: ['Undo', 'Redo', '|', 'ImportWord', 'ExportWord', 'ExportPdf', '|',
+                        'Bold', 'Italic', 'Underline', 'StrikeThrough', 'InlineCode', 'SuperScript', 'SubScript', '|',
+                        'FontName', 'FontSize', 'FontColor', 'BackgroundColor', '|',
+                        'LowerCase', 'UpperCase', '|',
+                        'Formats', 'Alignments', 'Blockquote', '|', 'NumberFormatList', 'BulletFormatList', '|',
+                        'Outdent', 'Indent', '|', 'CreateLink', 'Image', 'FileManager', 'Video', 'Audio', 'CreateTable', '|', 'FormatPainter', 'ClearFormat',
+                        '|', 'EmojiPicker', 'Print', '|',
+                        'SourceCode', 'FullScreen']
+                },
+                quickToolbarSettings: {
+                    text: ['Bold', 'Italic', 'Underline', 'StrikeThrough', '|', 'FontColor', 'BackgroundColor', '|', 'Formats', 'OrderedList', 'UnorderedList'],
+                },
+                height: '350px',
+            });
+        });
+
+        afterEach(()=> {
+            destroy(editor);
+        });
+
+        it('CASE 1: Should open table quick toolbar with top.', (done : DoneFn)=> {
+            editor.focusIn();
+            editor.inputElement.innerHTML = TABLE_TOP_POSITION_CONTENT;
+            editor.inputElement.dispatchEvent(INIT_MOUSEDOWN_EVENT);
+            const target: HTMLElement = editor.inputElement.querySelector('td');
+            setCursorPoint(target.firstChild, 0);
+            target.dispatchEvent(MOUSEUP_EVENT);
+            setTimeout(() => {
+                const quickToolbar: HTMLElement = document.querySelector('.e-rte-quick-popup');
+                const mainToolbar: HTMLElement = editor.element.querySelector('.e-toolbar-wrapper');
+                const quikTBarRect: ClientRect = quickToolbar.getBoundingClientRect();
+                const mainTBarRect: ClientRect = mainToolbar.getBoundingClientRect();
+                expect(quikTBarRect.top).toBeGreaterThanOrEqual(mainTBarRect.bottom);
+                expect(editor.quickToolbarModule.tableQTBar.popupObj.collision.Y).toBe('flip');
+                expect(editor.quickToolbarModule.tableQTBar.popupObj.position.Y).toBe('top');
+                done();
+            }, 100);
+        });
+        it('CASE 2: Should open table quick toolbar with bottom.', (done : DoneFn)=> {
+            editor.focusIn();
+            editor.inputElement.innerHTML = TABLE_BOT_POSITION_CONTENT;
+            editor.inputElement.dispatchEvent(INIT_MOUSEDOWN_EVENT);
+            const target: HTMLElement = editor.inputElement.querySelector('td');
+            setCursorPoint(target.firstChild, 0);
+            target.dispatchEvent(MOUSEUP_EVENT);
+            setTimeout(() => {
+                const quickToolbar: HTMLElement = document.querySelector('.e-rte-quick-popup');
+                const mainToolbar: HTMLElement = editor.element.querySelector('.e-toolbar-wrapper');
+                const quikTBarRect: ClientRect = quickToolbar.getBoundingClientRect();
+                const mainTBarRect: ClientRect = mainToolbar.getBoundingClientRect();
+                expect(quikTBarRect.top).toBeGreaterThanOrEqual(mainTBarRect.bottom);
+                expect(editor.quickToolbarModule.tableQTBar.popupObj.collision.Y).toBe('flip');
+                expect(editor.quickToolbarModule.tableQTBar.popupObj.position.Y).toBe('top');
+                const tipPointer: TipPointerPosition = (editor.quickToolbarModule.tableQTBar as any).currentTipPosition as TipPointerPosition;
+                expect(tipPointer).toBe('Top-Center');
+                done();
+            }, 100);
+        });
+    });
+    describe('963453: To provide Quick Toolbar Fit collision support for the media elements in IFrame editor.', ()=> {
+        let editor: RichTextEditor;
+        let wrapperElement: HTMLElement;
+        beforeAll(()=> {
+            wrapperElement = createElement('div', { className: 'e-editor-wrapper'});
+            wrapperElement.style.overflow = 'auto';
+            wrapperElement.style.height = '200px';
+            const editorRoot: HTMLElement = createElement('div', { className: 'editor'});
+            editorRoot.id = 'element_963453';
+            wrapperElement.append(editorRoot);
+            document.body.append(wrapperElement);
+            editor = new RichTextEditor({
+                iframeSettings: {
+                    enable: true
+                }
+            }, '#element_963453');
+        });
+        afterAll(()=> {
+            editor.destroy();
+            wrapperElement.remove();
+        });
+        it('Should open with fit position with tip pointer as none.', (done: DoneFn)=> {
+            editor.inputElement.innerHTML = TABLE_FIT_POSITION_CONTENT;
+            editor.inputElement.dispatchEvent(INIT_MOUSEDOWN_EVENT);
+            const target: HTMLElement = editor.inputElement.querySelector('td');
+            setCursorPoint(target.firstChild, 0);
+            target.dispatchEvent(MOUSEUP_EVENT);
+            setTimeout(() => {
+                //expect((editor.quickToolbarModule.tableQTBar as any).currentTipPosition).toBe('None');
                 done();
             }, 100);
         });

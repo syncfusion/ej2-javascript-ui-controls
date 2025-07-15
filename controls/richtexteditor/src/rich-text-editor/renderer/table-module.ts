@@ -810,6 +810,12 @@ export class Table {
         if (proxy.editdlgObj) {
             proxy.editdlgObj.hide();
         }
+        if (!isNullOrUndefined(proxy.parent)) {
+            if (proxy.parent.element.querySelector('.e-content')) {
+                //focusing the content editable div
+                (proxy.parent.element.querySelector('.e-content') as HTMLElement).focus();
+            }
+        }
     }
 
     /*

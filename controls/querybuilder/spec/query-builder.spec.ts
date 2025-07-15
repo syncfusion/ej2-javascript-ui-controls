@@ -4289,6 +4289,34 @@ describe('QueryBuilder', () => {
                 expect((getComponent(toggleElems[0].querySelector('.e-checkbox') as HTMLElement, 'checkbox') as CheckBox).checked).toEqual(true);
             }
         });
+        it('966473 - Validation message is not removed properly once the multi select value renders in QueryBuilder', () => {
+            const customFieldData: ColumnsModel[] = [
+                { field: 'EmployeeID', label: 'Employee ID', type: 'number' },
+                { field: 'FirstName', label: 'First Name', type: 'string' }
+            ];
+            const iRules: RuleModel = {
+                'condition': 'and',
+                'rules': [{
+                    'label': 'FirstName',
+                    'field': 'FirstName',
+                    'type': 'string',
+                    'operator': 'in'
+                }]
+            };
+            queryBuilder = new QueryBuilder({
+                dataSource: employeeData,
+                columns: customFieldData,
+                allowValidation: true,
+                rule: iRules
+            }, '#querybuilder');
+            queryBuilder.validateFields();
+            const operatorElem: DropDownList = queryBuilder.element.querySelector('.e-rule-operator .e-control').ej2_instances[0];
+            operatorElem.showPopup();
+            const itemsCln: NodeListOf<HTMLElement> = document.getElementById('querybuilder_group0_rule0_operatorkey_options').querySelectorAll('li');
+            itemsCln[10].click();
+            expect(operatorElem.value).toEqual('isempty');
+			expect(queryBuilder.element.querySelectorAll('.e-tooltip').length).toEqual(0);
+        });
     });
 
     describe('CR Issue', () => {

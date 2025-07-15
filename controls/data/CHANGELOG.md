@@ -2,7 +2,15 @@
 
 ## [Unreleased]
 
-## 30.1.39 (2025-07-08)
+## 30.1.40 (2025-07-15)
+
+### DataManager
+
+#### Bug Fixes
+
+- `#I743131` - Resolved an issue where filtering a string column with an empty string in local data shows no records.
+
+## 30.1.38 (2025-07-02)
 
 - `FB68201` - Fixed an issue where middleware was not triggered during `CRUD` operations.
 

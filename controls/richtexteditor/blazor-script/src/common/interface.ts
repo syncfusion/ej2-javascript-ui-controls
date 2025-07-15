@@ -5,7 +5,7 @@
  * @deprecated
  */
 import { EmitType, KeyboardEventArgs, Observer } from '../../../base'; /*externalscript*/
-import { EditorMode, EnterKey } from './types';
+import { EditorMode, EnterKey, SelectionDirection, TriggerType } from './types';
 import { MarkdownSelection } from '../markdown-parser/plugin/markdown-selection';
 import { UndoRedoManager } from '../editor-manager/plugin/undo';
 import { UndoRedoCommands } from '../markdown-parser/plugin/undo';
@@ -22,7 +22,7 @@ import { FormatPainterSettingsModel, IFrameSettingsModel, ImageSettingsModel, Pa
 import { ClickEventArgs } from '../../../navigations/src'; /*externalscript*/
 import { Popup, Dialog } from '../../../popups/src'; /*externalscript*/
 import { ColorPicker, ColorPickerEventArgs, ColorPickerModel } from '../../../inputs/src'; /*externalscript*/
-import { ImageInputSource, SelectionDirection, TriggerType } from './enum';
+import { ImageInputSource } from './enum';
 
 
 /**

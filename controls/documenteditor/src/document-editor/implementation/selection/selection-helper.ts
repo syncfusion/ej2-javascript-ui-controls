@@ -1269,15 +1269,13 @@ export class TextPosition {
 
     private getPreviousWordOffsetBookMark(bookmark: BookmarkElementBox, selection: Selection, indexInInline: number, type: number, isInField: boolean, isStarted: boolean, endSelection: boolean, endPosition: TextPosition): void {
         if (bookmark.previousNode) {
-            if (bookmark.previousNode instanceof TextElementBox) {
-                const inline: TextElementBox = bookmark.previousNode as TextElementBox;
-                if (HelperMethods.lastIndexOfAny(inline.text, HelperMethods.wordSplitCharacters) !== inline.text.length - 1) {
-                    this.getPreviousWordOffset(inline, selection, indexInInline, type, isInField, isStarted, endSelection, endPosition);
-                } else {
-                    endPosition.setPositionParagraph(bookmark.line, bookmark.line.getOffset(bookmark, 0));
-                }
+            const inline: ElementBox = bookmark.previousNode as ElementBox;
+            if (inline instanceof TextElementBox && HelperMethods.lastIndexOfAny(inline.text, HelperMethods.wordSplitCharacters) === inline.text.length - 1
+                && selection.isSelectCurrentWord) {
+                endPosition.setPositionParagraph(bookmark.line, bookmark.line.getOffset(bookmark, 0));
+            } else {
+                this.getPreviousWordOffset(inline, selection, inline.length, type, isInField, isStarted, endSelection, endPosition);
             }
-
         } else {
             endPosition.setPositionParagraph(bookmark.line, selection.getStartLineOffset(bookmark.line));
         }

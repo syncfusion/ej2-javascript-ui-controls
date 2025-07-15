@@ -2,6 +2,15 @@
 
 ## [Unreleased]
 
+## 30.1.40 (2025-07-15)
+
+### DocumentEditor
+
+#### Bug Fixes
+
+- `#I736018` - Fixed browser hanging issue that occurred when accepting page breaks in track changes mode.
+- `#I738556` - Fixed section break deletion issue in multi-column documents.
+
 ## 30.1.39 (2025-07-08)
 
 ### DocumentEditor

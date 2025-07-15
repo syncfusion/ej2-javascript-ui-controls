@@ -26,6 +26,7 @@ let resizeStart: Function = null;
 let resize: Function = null;
 let resizeEnd: Function = null;
 let resizeWestWidth: number;
+let resizeCount: number = 0;
 let setLeft: boolean = true;
 let previousWidth: number = 0;
 let setWidth: boolean = true;
@@ -75,6 +76,7 @@ export function createResize(args: ResizeArgs): void {
     minWidth = args.minWidth;
     maxWidth = args.maxWidth;
     maxHeight = args.maxHeight;
+    resizeCount++;
     if (args.proxy && args.proxy.element && args.proxy.element.classList.contains('e-dialog')) {
         wireEvents(args.proxy);
     } else {
@@ -582,11 +584,14 @@ export function removeResize(): void {
  * @returns {void}
  */
 export function resizeDestroy(): void {
-    targetElement = null;
-    selectedHandler = null;
-    containerElement = null;
-    resizeWestWidth = null;
-    resizeStart = null;
-    resize = null;
-    resizeEnd = null;
+    resizeCount--;
+    if (resizeCount === 0) {
+        targetElement = null;
+        selectedHandler = null;
+        containerElement = null;
+        resizeWestWidth = null;
+        resizeStart = null;
+        resize = null;
+        resizeEnd = null;
+    }
 }

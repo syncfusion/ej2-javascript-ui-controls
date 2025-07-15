@@ -106,6 +106,7 @@ export class Logarithmic extends Double {
         const actualDesiredIntervalsCount: number = getActualDesiredIntervalsCount(size, axis);
         let niceInterval: number = delta;
         const minInterval: number = Math.pow(axis.logBase, Math.floor(logBase(niceInterval, 10)));
+        axis.intervalDivs = niceInterval >= 10 ? [10, 5, 2, 1, 0.5, 0.2] : axis.intervalDivs;
         for (let j: number = 0, len: number = axis.intervalDivs.length; j < len; j++) {
             const currentInterval: number = minInterval * axis.intervalDivs[j as number];
             if (actualDesiredIntervalsCount < (delta / currentInterval)) {

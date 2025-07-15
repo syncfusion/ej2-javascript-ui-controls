@@ -2,11 +2,25 @@
 
 ## [Unreleased]
 
-## 30.1.39 (2025-07-08)
+## 30.1.40 (2025-07-15)
+
+### Chart
+
+#### Bug Fixes
+
+- `#I710720` - Logarithmic axis labels render correctly when the interval is not set.
 
 ### Accumulation Chart
 
 - `#I741842` - Now, the legend symbol color can be applied using the arguments fill property in the legend render event.
+
+## 30.1.39 (2025-07-08)
+
+### Chart
+
+#### Feature
+
+- `#I653358` - Provided support for DateTime value type on the primary Y-axis.
 
 ## 30.1.37 (2025-06-25)
 

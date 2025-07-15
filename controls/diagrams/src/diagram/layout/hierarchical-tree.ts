@@ -120,6 +120,9 @@ export class HierarchicalTree {
             //let check: boolean;
             this.updateEdges(layout, node, 1, action, nodes);
         }
+        // 965868: Layout Overlaps with other layout, when child node has larger size
+        const layoutBoundsArray: Bounds[] = [];
+        const rootNodeDictionary: Object = {};
         if (layout.firstLevelNodes.length > 0) {
             layout.rootNode = layout.firstLevelNodes[0];
 
@@ -135,6 +138,7 @@ export class HierarchicalTree {
             for (i = 0; i < layout.firstLevelNodes.length; i++) {
                 bounds = this.updateTree(layout, x, y, layout.firstLevelNodes[parseInt(i.toString(), 10)],
                                          0, layout.firstLevelNodes[i - 1]);
+                layoutBoundsArray.push(bounds);
                 const rootInfo: LayoutInfo = layout.graphNodes[layout.firstLevelNodes[parseInt(i.toString(), 10)].id];
                 bounds.y = Math.min(bounds.y, rootInfo.y);
                 bounds.x = Math.min(bounds.x, rootInfo.x);
@@ -154,9 +158,45 @@ export class HierarchicalTree {
                 layout.levels = [];
                 layout.maxLevel = undefined;
             }
+            // 965868: Layout Overlaps with other layout, when child node has larger size
+            let overlapSize: number = 0;
+            if (layoutBoundsArray.length > 1) {
+                for (i = 0; i < layoutBoundsArray.length - 1; i++) {
+                    const currentBounds: Bounds = layoutBoundsArray[parseInt(i.toString(), 10)];
+                    const nextBounds: Bounds = layoutBoundsArray[parseInt(i.toString(), 10) + 1];
+                    const currentLayoutBounds: Rect = new Rect(
+                        currentBounds.x, currentBounds.y,
+                        (currentBounds.right - currentBounds.x),
+                        (currentBounds.bottom - currentBounds.y)
+                    );
+                    const nextLayoutBounds: Rect = new Rect(
+                        nextBounds.x, nextBounds.y,
+                        (nextBounds.right - nextBounds.x),
+                        (nextBounds.bottom - nextBounds.y)
+                    );
+                    if (nextLayoutBounds.intersects(currentLayoutBounds)) {
+                        overlapSize = currentLayoutBounds.right - nextLayoutBounds.left;
+                    }
+                    if (layout.firstLevelNodes[parseInt(i.toString(), 10) + 1]) {
+                        rootNodeDictionary[layout.firstLevelNodes[parseInt(i.toString(), 10) + 1].id] = { size: overlapSize };
+                    }
+                }
+            }
 
             this.updateAnchor(layout, { x: minX, y: minY, right: maxX, bottom: maxY }, viewport);
             for (i = 0; i < layout.firstLevelNodes.length; i++) {
+                // 965868: Layout Overlaps with other layout, when child node has larger size
+                if (i > 0) {
+                    const rootNode: INode = layout.firstLevelNodes[parseInt(i.toString(), 10)];
+                    if (rootNodeDictionary[rootNode.id].size > 0) {
+                        if (layout.orientation === 'TopToBottom' || layout.orientation === 'BottomToTop') {
+                            layout.anchorX += (rootNodeDictionary[rootNode.id].size + layout.horizontalSpacing);
+                        }
+                        if (layout.orientation === 'RightToLeft' || layout.orientation === 'LeftToRight') {
+                            layout.anchorY += (rootNodeDictionary[rootNode.id].size + layout.verticalSpacing);
+                        }
+                    }
+                }
                 this.updateNodes(layout, layout.firstLevelNodes[parseInt(i.toString(), 10)], 0);
             }
 

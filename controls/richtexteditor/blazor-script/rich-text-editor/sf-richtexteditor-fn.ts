@@ -1674,7 +1674,8 @@ export class SfRichTextEditor {
     }
 
     private isColorIconBtnClicked(currentDocument: Document): boolean {
-        if ((currentDocument.activeElement.querySelector('.e-active')) || (currentDocument.activeElement as HTMLElement).classList.contains('e-palette')) {
+        if ((currentDocument.activeElement.querySelector('.e-active')) || (currentDocument.activeElement as HTMLElement).classList.contains('e-palette') ||
+            (currentDocument.activeElement as HTMLElement).classList.contains('e-apply')) {
             return false;
         }
         return true;

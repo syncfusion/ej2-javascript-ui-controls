@@ -428,15 +428,21 @@ export class DataValidation {
                 } else {
                     indexes = getRangeIndexes(address);
                 }
-                let cell: CellModel;
+                let cell: CellModel; let preventEmptyValue: boolean;
                 for (let rowIdx: number = indexes[0]; rowIdx <= indexes[2]; rowIdx++) {
                     if (!sheet.rows[rowIdx as number]) { setRow(sheet, rowIdx, {}); }
                     for (let colIdx: number = indexes[1]; colIdx <= indexes[3]; colIdx++) {
                         if (!sheet.rows[rowIdx as number].cells) { setCell(rowIdx, colIdx, sheet, {}); }
-                        count += 1;
                         cell = sheet.rows[rowIdx as number].cells[colIdx as number];
                         const formattedText: string = this.parent.getDisplayText(cell) || '';
-                        data.push({ text: formattedText, id: 'list-' + count });
+                        if (formattedText) {
+                            count += 1;
+                            data.push({ text: formattedText, id: 'list-' + count });
+                        } else if (!preventEmptyValue) {
+                            preventEmptyValue = true;
+                            count += 1;
+                            data.push({ text: formattedText, id: 'list-' + count });
+                        }
                     }
                 }
             }

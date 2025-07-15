@@ -2,11 +2,21 @@
 
 ## [Unreleased]
 
+## 30.1.40 (2025-07-15)
+
+### RichTextEditor
+
+#### Bug Fixes
+
+- `#I742044` - Now, The issue with the inserted mention chip being removed when pressing the Enter key in the Rich Text Editor has now been resolved.
+
 ## 30.1.39 (2025-07-08)
 
 ### RichTextEditor
 
 #### Bug Fixes
+
+- `#I743184` - Now, tables are inserted properly in the Rich Text Editor without overlapping the placeholder text when the editor is not focused.
 
 - `#I733547` - Now, The issue with the setting Default in the FontSize toolbar doesn't reset the fontSize in the RichTextEditor has now been resolved.
 

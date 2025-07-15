@@ -2,6 +2,12 @@
 
 ## [Unreleased]
 
+## 30.1.40 (2025-07-15)
+
+### QueryBuilder
+
+- `#I739645` - The issue where "Validation message is not removed properly once the multi select value renders in QueryBuilder" has been resolved.
+
 ## 30.1.39 (2025-07-08)
 
 ### QueryBuilder

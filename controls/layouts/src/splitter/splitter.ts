@@ -2359,18 +2359,23 @@ export class Splitter extends Component<HTMLElement> {
         const pane1MaxSize: number = this.getMinMax(this.prevPaneIndex, this.previousPane, 'max');
         const pane2MaxSize: number = this.getMinMax(this.nextPaneIndex, this.nextPane, 'max');
         let validatedSize: number = draggedPos;
-        if (draggedPos > nextPaneRange - pane2MinSize) {
-            validatedSize = nextPaneRange - pane2MinSize;
-        } else if (draggedPos < prePaneRange + pane1MinSize) {
-            validatedSize = prePaneRange + pane1MinSize;
-        }
         if (!isNullOrUndefined(pane1MaxSize)) {
             if (draggedPos > prePaneRange + pane1MaxSize) {
                 validatedSize = prePaneRange + pane1MaxSize;
             }
-        } else if (!isNullOrUndefined(pane2MaxSize)) {
+        }
+        if (!isNullOrUndefined(pane2MaxSize)) {
             if (draggedPos < nextPaneRange - pane2MaxSize) {
                 validatedSize = nextPaneRange - pane2MaxSize;
+            }
+        }
+        if (draggedPos > nextPaneRange - pane2MinSize) {
+            if (isNullOrUndefined(pane1MaxSize) || validatedSize !== prePaneRange + pane1MaxSize) {
+                validatedSize = nextPaneRange - pane2MinSize;
+            }
+        } else if (draggedPos < prePaneRange + pane1MinSize) {
+            if (isNullOrUndefined(pane2MaxSize) || validatedSize !== nextPaneRange - pane2MaxSize) {
+                validatedSize = prePaneRange + pane1MinSize;
             }
         }
         return validatedSize;

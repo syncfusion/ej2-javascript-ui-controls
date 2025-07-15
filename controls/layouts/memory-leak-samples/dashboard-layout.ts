@@ -12,7 +12,6 @@ function renderDashboard(): void {
         showGridLines: true,
         allowFloating: true,
         allowResizing: true,
-        enableRtl: true,
         enablePersistence: true,
         cellAspectRatio: 1.5,
         panels: [

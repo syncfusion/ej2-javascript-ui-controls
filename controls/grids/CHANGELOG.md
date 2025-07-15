@@ -2,6 +2,17 @@
 
 ## [Unreleased]
 
+## 30.1.40 (2025-07-15)
+
+### Grid
+
+#### Bug Fixes
+
+- `#I744173` - Resolved an issue where the `ColumnChooser` could not be opened after the Filter dialog was opened.
+- `#I743131` - Resolved an issue where filtering a string column with an empty string in local data shows no records.
+- `#FB68522` - Fixed an issue where focus incorrectly shifted to the grid toolbar when all toolbar items were disabled.
+- `#I737920` - Fixed an issue where the group caption aggregate was missing for the first numeric column during server-side Excel export.
+
 ## 30.1.39 (2025-07-08)
 
 ### Grid

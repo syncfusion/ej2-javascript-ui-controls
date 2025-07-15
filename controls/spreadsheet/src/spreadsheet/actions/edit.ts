@@ -1048,7 +1048,7 @@ export class Edit {
             this.parent.notify(workbookEditOperation, evtArgs);
             const updatedCell: CellModel = getCell(cellIndex[0], cellIndex[1], sheet, true);
             let cellValue: string;
-            if (!isNullOrUndefined(updatedCell)) {
+            if (!isNullOrUndefined(updatedCell) && !isNullOrUndefined(updatedCell.value)) {
                 cellValue = updatedCell.value.toString();
             }
             const isCircularRefError: boolean = cellValue === '#CIRCULARREF!';

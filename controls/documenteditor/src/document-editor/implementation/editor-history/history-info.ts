@@ -134,8 +134,10 @@ export class HistoryInfo extends BaseHistoryInfo {
                         revisionType: markerData.revisionType
                     };
                     operations.push(operation);
+                    if (action === 'ColumnBreak') {
+                        operations.push(operation);
+                    }
                     operations.push(breakOperation);
-                    operations.push(operation);
                     operation.markerData.skipOperation = true;
                 }
             } else {
@@ -143,10 +145,12 @@ export class HistoryInfo extends BaseHistoryInfo {
                     for (let i: number = 0; i < this.modifiedActions.length; i++) {
                         const currentHistory: BaseHistoryInfo = this.modifiedActions[parseInt(i.toString(), 10)];
                         currentHistory.endIndex = currentHistory.startIndex;
-                        //Basically for pagebreak and column break there will three paragraph difference. So for transformation we sended three backspace operation.
+                        //Basically for pagebreak and column break there will one paragraph and one page break textelementbox difference. So for transformation we sended two backspace operation.
                         operations.push(currentHistory.getDeleteOperation('Delete'));
                         operations.push(currentHistory.getDeleteOperation('Delete'));
-                        operations.push(currentHistory.getDeleteOperation('Delete'));
+                        if (action === 'ColumnBreak') {
+                            operations.push(currentHistory.getDeleteOperation('Delete'));
+                        }
                         if (currentHistory.isRemovedNodes) {
                             const operationCollection: Operation[] = currentHistory.getDeleteContent('BackSpace');
                             operations = [...operations, ...operationCollection];
@@ -161,11 +165,12 @@ export class HistoryInfo extends BaseHistoryInfo {
                     }
                     const operation: Operation = this.getInsertOperation('Enter');
                     operation.markerData = { skipOperation: true };
-                    //Basically for pagebreak and column break there will three paragraph difference. So for transformation we sended three insert operation.
+                    //Basically for pagebreak and column break there will one paragraph and page break textelementbox difference. So for transformation we sended two insert operation.
                     operations.push(operation);
-                    operations.push(operation);
+                    if (action === 'ColumnBreak') {
+                        operations.push(operation);
+                    }
                     operations.push(this.getInsertOperation(action));
-                    operations.push(operation);
                 }
             }
             break;

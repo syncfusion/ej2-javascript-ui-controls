@@ -524,14 +524,27 @@ export namespace Input {
     }
 
     function encodePlaceHolder(placeholder: string): string {
-        let result: string = '';
-        if (!isNullOrUndefined(placeholder) && placeholder !== '') {
-            const spanEle: HTMLElement = document.createElement('span');
-            spanEle.innerHTML = '<input  placeholder="' + placeholder + '"/>';
-            const hiddenInput: HTMLInputElement = (spanEle.children[0]) as HTMLInputElement;
-            result = hiddenInput.placeholder;
+        if (placeholder == null || placeholder === '') {
+            return '';
         }
-        return result;
+        const decoded: string = decodeHtmlEntities(placeholder);
+        return decoded;
+    }
+
+    function decodeHtmlEntities(str: string): string {
+        const entityMap: { [key: string]: string } = {
+            '&amp;': '&',
+            // eslint-disable-next-line quotes
+            '&quot;': '"', // tslint:disable-line:quotemark
+            // eslint-disable-next-line quotes
+            '&#39;': "'", // tslint:disable-line:quotemark
+            '&lt;': '<',
+            '&gt;': '>',
+            '&eacute;': 'é'// tslint:disable-line:comma-dangle
+        };
+        // tslint:disable-next-line:typedef
+        // tslint-disable-next-line security/detect-object-injection
+        return str.replace(/&[a-zA-Z#0-9]+;/g, (entity: string) => entityMap[entity as string] || entity);
     }
 
     /**

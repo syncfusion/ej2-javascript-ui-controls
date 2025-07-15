@@ -2,13 +2,22 @@
 
 ## [Unreleased]
 
-## 30.1.39 (2025-07-08)
+## 30.1.40 (2025-07-15)
 
 ### Diagram
 
 #### Bug Fixes
 
 - `#I737645` - Connectors are now selected after being dragged from a negative position to a positive position.
+- `#I739876` - now no error occurs when moving group node into a layer.
+- `#I739181` - The issue "Child nodes overlapping on another layout in organizational chart" has been fixed.
+
+## 30.1.39 (2025-07-08)
+
+### Diagram
+
+#### Bug Fixes
+
 - `#I732921` - Resolved the issue of node dimension changes when dragging multiple selected nodes.
 - `#I739052` - Undo now works correctly for connectors without a target id.
 

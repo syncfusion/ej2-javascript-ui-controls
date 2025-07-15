@@ -1229,6 +1229,28 @@ export class Magnification {
                                 this.pdfViewerBase.isReRenderRequired = true;
                             }
                         }
+                        if (textLayer) {
+                            textLayer.style.width = width + 'px';
+                            textLayer.style.height = height + 'px';
+                            if (this.pdfViewer.textSelectionModule) {
+                                if (this.isPinchZoomed) {
+                                    textLayer.style.display = 'none';
+                                } else if (this.isMagnified) {
+                                    const lowerValue: number = ((pageNumber - 2) === 0) ? 0 : (pageNumber - 2);
+                                    const higherValue: number = ((pageNumber) === (this.pdfViewerBase.pageCount)) ?
+                                        (this.pdfViewerBase.pageCount - 1) : (pageNumber + 1);
+                                    if ((lowerValue <= i) && (i <= higherValue) && ((this.pdfViewer.textSelectionModule.isTextSelection &&
+                                        isSelectionAvailable) || this.pdfViewerBase.textLayer.getTextSearchStatus() ||
+                                        this.pdfViewerBase.isInitialPageMode)) {
+                                        this.pdfViewerBase.textLayer.resizeTextContentsOnZoom(i);
+                                        if (this.pdfViewer.textSelectionModule.isTextSelection && isSelectionAvailable) {
+                                            this.pdfViewer.textSelectionModule.applySelectionRangeOnScroll(i);
+                                        }
+                                    }
+                                }
+                            }
+                            this.pdfViewerBase.applyElementStyles(textLayer, i);
+                        }
                         const adornerSvg: HTMLElement = getDiagramElement(this.pdfViewer.element.id + '_textLayer_' + i);
                         if (adornerSvg) {
                             const adonerLayer: HTMLElement = getDiagramElement(this.pdfViewer.element.id + i + '_diagramAdorner_svg');

@@ -14,4 +14,10 @@
     max-height: 100px;
     max-width: 100px;
   }
+  .e-datamatrix-blazor-rect{
+    shape-rendering: crispEdges;
+  }
+  .e-qrcode-blazor-rect{
+    shape-rendering: crispEdges;
+  }
 }

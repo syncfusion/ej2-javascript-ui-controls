@@ -1,4 +1,4 @@
-import { ChildProperty, Property } from '@syncfusion/ej2-base';import { DialogType, SlashMenuItems } from '../common/enum';import { ISlashMenuItem } from '../common/interface';import { CommandName } from '../common/enum';
+import { ChildProperty, Property } from '@syncfusion/ej2-base';import { DialogType } from '../common/enum';import { ISlashMenuItem } from '../common/interface';import { CommandName } from '../common/enum';import { SlashMenuItems } from '../common/types';
 
 /**
  * Interface for a class SlashMenuSettings

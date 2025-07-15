@@ -505,10 +505,11 @@ export class Parser {
         text = text.split(',+').join(',').split(this.parent.leftBracket + '+').join(this.parent.leftBracket).split('=+').join('=').split('>+').join('>').split('<+').join('<').split('/+').join('/').split('*+').join('*').split('++').join('+').split('*-').join('*u').split('/-').join('/u').split('w-').join('wu').split('i-').join('iu').toString();
         text = text.split('>-').join('>u').split('<-').join('<u').split('h-').join('hu').split('f-').join('fu').split('z-').join('zu');
         if (text.length > 0 && text[0] === '-') {
-            text = text.substring(1).split('-').join(this.tokenOr);
+            const tokenOrOp: string = String.fromCharCode(132);
+            text = text.substring(1).split('-').join(tokenOrOp);
             text = '0-' + text;
             text = this.parseSimpleOperators(text, [this.tokenSubtract], [this.charSubtract]);
-            text = text.split(this.tokenOr).join('-');
+            text = text.split(tokenOrOp).join('-');
         } else if (text.length > 0 && text[0] === '+') {
             text = text.substring(1);
         } else if (text.length > 0 && text[text.length - 1] === '+') {
@@ -1042,19 +1043,28 @@ export class Parser {
                     formula = formula.substring(0, i + 1) + 'q' + this.parent.substring(formula, i + 1, len) +
                         (substr.split('(').join(this.parent.leftBracket))
                             .split(')').join(this.parent.rightBracket) + formula.substring(rightParens + 1);
-                } else if (len > 0) {
-                    return this.parent.getErrorStrings()[CommonErrors.Name];
                 } else {
-                    let s: string = this.emptyStr;
-                    if (leftParens > 0) {
-                        s = formula.substring(0, leftParens);
+                    const isIfErrorArg: (beforeFormula: string) => boolean = (beforeFormula: string): boolean => {
+                        if (beforeFormula.includes('IFERROR(')) {
+                            const idx: number = beforeFormula.lastIndexOf('(');
+                            return beforeFormula.substring(idx - 7, idx) === 'IFERROR' || isIfErrorArg(beforeFormula.substring(0, idx));
+                        }
+                        return false;
+                    };
+                    if (len > 0 && !isIfErrorArg(formula.substring(0, i + 1))) {
+                        return this.parent.getErrorStrings()[CommonErrors.Name];
+                    } else {
+                        let s: string = this.emptyStr;
+                        if (leftParens > 0) {
+                            s = formula.substring(0, leftParens);
+                        }
+                        s = s + '{' + this.parent.substring(formula, leftParens + 1, rightParens - leftParens - 1) + '}';
+                        if (rightParens < formula.length) {
+                            s = s + formula.substring(rightParens + 1);
+                        }
+                        s = this.markNamedRanges(s);
+                        formula = s;
                     }
-                    s = s + '{' + this.parent.substring(formula, leftParens + 1, rightParens - leftParens - 1) + '}';
-                    if (rightParens < formula.length) {
-                        s = s + formula.substring(rightParens + 1);
-                    }
-                    s = this.markNamedRanges(s);
-                    formula = s;
                 }
                 rightParens = formula.indexOf(')');
             }

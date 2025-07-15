@@ -5354,4 +5354,43 @@ describe('Uploader Control', () => {
             uploadObj.createFormInput(uploadObj.filesData);
         });
     });
+
+    describe('Customize Button Element by appending span', () => {
+        let customButtonuploadObj: any;
+        beforeEach((): void => {
+            var preLoadFiles = [
+                { name: 'Books', size: 500, type: '.png' },
+                { name: 'Movies', size: 12000, type: '.pdf' },
+                { name: 'Study materials', size: 500000, type: '.docx' },
+            ];
+            let element: HTMLElement = createElement('input', {id: 'buttonCustomize'}); 
+            var uploadEle = document.createElement("span");
+            uploadEle.innerText = "Upload All"; 
+            uploadEle.className = "upload e-icons";
+
+            var clearEle = document.createElement("span");
+            clearEle.innerHTML = 'Clear All';
+            clearEle.className = 'remove e-icons';
+
+            document.body.appendChild(element);
+
+            customButtonuploadObj = new Uploader({ autoUpload: false, files: preLoadFiles,
+            buttons: {
+                browse: 'Click to select file!',
+                clear: clearEle,
+                upload: uploadEle
+            } 
+        });
+            customButtonuploadObj.appendTo('#buttonCustomize');
+        });
+        
+        afterEach((): void => {
+            document.body.innerHTML = '';
+        });
+        it('should cover specific branch', () => {
+            expect(customButtonuploadObj.uploadWrapper.querySelector('.e-css.e-btn').innerHTML).toBe('Click to select file!');
+            expect(customButtonuploadObj.uploadWrapper.querySelector('.remove.e-icons').innerHTML).toBe('Clear All');
+            expect(customButtonuploadObj.uploadWrapper.querySelector('.upload.e-icons').innerHTML).toBe('Upload All');
+        });
+    });
 });

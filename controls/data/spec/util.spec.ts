@@ -318,4 +318,15 @@ describe('DataUtil', () => {
         });
     });
 
+    describe('EJ2-968758-Filtering String Column with Empty String', () => {
+        it('Check the empty string value', () => {
+            expect(DataUtil.fnOperators.startswith('hanar', '')).toBeTruthy();
+            expect(DataUtil.fnOperators.doesnotstartwith('hanar', '')).toBeFalsy();
+            expect(DataUtil.fnOperators.endswith('hanar', '')).toBeTruthy();
+            expect(DataUtil.fnOperators.doesnotendwith('hanar', '')).toBeFalsy();
+            expect(DataUtil.fnOperators.contains('hanar', '')).toBeTruthy();
+            expect(DataUtil.fnOperators.doesnotcontain('hanar', '')).toBeFalsy();
+        })
+    })
+
 });
