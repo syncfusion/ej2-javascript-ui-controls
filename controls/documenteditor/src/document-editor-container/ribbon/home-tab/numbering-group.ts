@@ -7,7 +7,7 @@ import { ParagraphWidget, WAbstractList, WList, WListLevel } from '../../../docu
 import { ItemModel } from '@syncfusion/ej2-splitbuttons';
 import { RibbonItemModel, RibbonItemSize, RibbonSplitButtonSettingsModel } from '@syncfusion/ej2-ribbon';
 import { BulletListHelper } from '../../helper/bullet-list-helper';
-import { ListLevelPattern } from '../../../../blazor';
+import { ListLevelPattern } from '../../../document-editor/base';
 import { ElementsMap } from '../../helper/ribbon-interfaces';
 
 // Numbering list constants
