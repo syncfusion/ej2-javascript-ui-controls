@@ -6079,7 +6079,7 @@ export class Gantt extends Component<HTMLElement>
     public resetTemplates(): void {
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         if ((this as any).isReact) {
-            this.clearTemplate();
+            this.clearTemplate(['TaskbarTemplate', 'ParentTaskbarTemplate', 'MilestoneTemplate', 'TaskLabelTemplate', 'RightLabelTemplate', 'LeftLabelTemplate', 'TooltipTaskbarTemplate', 'TooltipBaselineTemplate', 'TooltipConnectorLineTemplate', 'TimelineTemplate']);
         }
     }
 }

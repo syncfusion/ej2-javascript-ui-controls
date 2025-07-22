@@ -3042,3 +3042,25 @@ describe('968970 - Enter key as BR breaks the content when pressing Enter in Ric
         expect(rteObj.inputElement.innerHTML).toBe('Hey,<br><br>Thanks for getting in touch.<br> Do you have a copy of what the customer printed, or can you replicate the issue on your end?<br><br>We could definitely go down the track of building a custom report for printing if you would like more control over the layout. Please see the image below for reference.<br><br><img src="https://ej2.syncfusion.com/demos/src/rich-text-editor/images/RTEImage-Feather.png" class="e-rte-image e-imginline">');
     });
 });
+
+describe('969195 - Script error thrown when we press the Shift Enter key before the image in RichTextEditor', function () {
+    let rteObj: RichTextEditor;
+    keyboardEventArgs.shiftKey = false;
+    beforeAll(function (done) {
+        rteObj = renderRTE({
+            value: "<div style='font-family: Arial; font-size: 10pt'> <span class='focusNode'> <img alt='Sky with sun' src='https://cdn.syncfusion.com/ej2/richtexteditor-resources/RTE-Overview.png' width='309' style='min-width: 10px; min-height: 10px; width: 309px; height: 174px;' class='e-rte-image e-imginline' height='174'> </span><br> </div>",
+        });
+        done();
+    });
+    afterAll(function () {
+        destroy(rteObj);
+    });
+    it('Now the Rich Text Editor works properly when pressing the Shift + Enter key before an image without throwing a script error', () => {
+        const nodetext: any = rteObj.inputElement.querySelector('.focusNode');
+        const sel: void = new NodeSelection().setCursorPoint(document, nodetext, 1);
+        (<any>rteObj).keyDown(keyboardEventArgs);
+        (<any>rteObj).keyDown(shiftkeyboarArgs);
+        (<any>rteObj).keyDown(shiftkeyboarArgs);
+        expect(rteObj.inputElement.innerHTML).toBe('<p style="font-family: Arial; font-size: 10pt;"> <span class="focusNode"><br></span></p><div style="font-family: Arial; font-size: 10pt"><br><br><span class="focusNode"><img alt="Sky with sun" src="https://cdn.syncfusion.com/ej2/richtexteditor-resources/RTE-Overview.png" width="309" style="min-width: 10px; min-height: 10px; width: 309px; height: 174px;" class="e-rte-image e-imginline" height="174"> </span><br> </div>');
+    });
+});

@@ -916,7 +916,7 @@ export class TreeViewRenderer implements IAction {
                 data = this.performeSearching(this.fieldSearch.value) as { [key: string]: Object; }[];
             }
         } else {
-            const keys: string[] = this.parent.pivotFieldList ? Object.keys(this.parent.pivotFieldList) : [];
+            const keys: string[] = this.parent.pivotFieldList ? Object.keys(this.parent.pivotFieldList).reverse() : [];
             const treeDataInfo: { [key: string]: { id?: string; pid?: string; caption?: string; isSelected?: boolean;
                 hasChildren?: boolean } } = {};
             for (const key of keys) {

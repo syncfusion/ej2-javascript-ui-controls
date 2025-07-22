@@ -2,6 +2,12 @@
 
 ## [Unreleased]
 
+## 30.1.41 (2025-07-22)
+
+### QueryBuilder
+
+- `#F68215` - Resolved the issue of an unwanted group header item appearing in the mobile mode dropdownlist of the query builder.
+
 ## 30.1.40 (2025-07-15)
 
 ### QueryBuilder

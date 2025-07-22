@@ -120,11 +120,7 @@ export class UndoRedoAction {
      * @hidden
      */
     public undo(): void {
-        const inlineTbarPopup: HTMLElement = document.querySelector('.e-blockeditor-inline-toolbar-popup');
-        const isInlineTbarOpen: boolean = inlineTbarPopup && inlineTbarPopup.classList.contains('e-popup-open');
-        if (isInlineTbarOpen) {
-            this.editor.inlineToolbarModule.hideInlineToolbar();
-        }
+        this.editor.inlineToolbarModule.hideInlineToolbar();
         if (this.undoStack.length < 1) {
             return;
         }
@@ -156,11 +152,7 @@ export class UndoRedoAction {
      * @hidden
      */
     public redo(): void {
-        const inlineTbarPopup: HTMLElement = document.querySelector('.e-blockeditor-inline-toolbar-popup');
-        const isInlineTbarOpen: boolean = inlineTbarPopup && inlineTbarPopup.classList.contains('e-popup-open');
-        if (isInlineTbarOpen) {
-            this.editor.inlineToolbarModule.hideInlineToolbar();
-        }
+        this.editor.inlineToolbarModule.hideInlineToolbar();
         if (this.redoStack.length === 0) {
             return;
         }
@@ -216,7 +208,8 @@ export class UndoRedoAction {
                 const endNode: Node = getNodeFromPath(endBlock, selection.endContainerPath);
                 const isSelectivePaste: boolean = currentState.action === 'clipboardPaste'
                     && (currentState.data as IClipboardPasteUndoRedo).isSelectivePaste;
-                const canRestoreForActions: boolean = currentState.action === 'indent' || currentState.action === 'formattingAction';
+                const canRestoreForActions: boolean = currentState.action === 'indent' || currentState.action === 'formattingAction'
+                    || currentState.action === 'multipleBlocksDeleted';
                 if ((this.isUndoing || (canRestoreForActions && this.isRedoing))
                     && !selection.isCollapsed && startNode && endNode && !currentState.isFormattingOnUserTyping) {
                     this.restoreSelection(startNode, endNode, selection.startOffset, selection.endOffset);
@@ -529,11 +522,17 @@ export class UndoRedoAction {
             this.editor.blockAction.createDefaultEmptyBlock(true, state.oldBlockModel ? state.oldBlockModel.id : '');
         }
         else if (data.deletionType === DeletionType.Partial) {
-            const blocksToDelete: BlockModel[] = data.deletedBlocks
-                .filter((block: BlockModel) => getBlockModelById(block.id, this.editor.blocksInternal))
-                .map(sanitizeBlock);
+            const blocksToDelete: BlockModel[] = [];
+            for (let i: number = 0; i < data.deletedBlocks.length; i++) {
+                const block: BlockModel = data.deletedBlocks[i as number];
+                const currentBlockModel: BlockModel = getBlockModelById(block.id, this.editor.blocksInternal);
+                if (currentBlockModel) {
+                    blocksToDelete.push(currentBlockModel);
+                }
+            }
             if (blocksToDelete.length > 0) {
-                this.editor.handleMultipleBlockDeletion(deepClone(blocksToDelete), data.direction || 'previous', true);
+                this.updateCursorSelection(state);
+                this.editor.handleMultipleBlockDeletion(blocksToDelete, data.direction || 'previous', true);
             }
         }
     }
@@ -793,8 +792,6 @@ export class UndoRedoAction {
     public destroy(): void {
         this.removeEventListener();
         this.clear();
-        this.editor = null;
-        this.contentRenderer = null;
     }
 
     protected removeEventListener(): void {

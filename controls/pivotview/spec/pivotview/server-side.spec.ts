@@ -70,7 +70,7 @@ describe('Server side pivot engine ', () => {
             }, 4500);
         });
         it('Popup field list - ascend & descend', () => {
-            expect(document.querySelectorAll('.e-field-table .e-field-list-tree-outer-div .e-field-list ul li')[0].textContent).toBe('ProductID');
+            expect(document.querySelectorAll('.e-field-table .e-field-list-tree-outer-div .e-field-list ul li')[0].textContent).toBe('Production Year');
             (document.querySelectorAll('.e-sort-ascend')[0] as HTMLElement).click();
         });
         it('Popup field list - ascend & descend-1', (done: Function) => {
@@ -182,7 +182,7 @@ describe('Server side pivot engine ', () => {
             }, 4000);
         });
         it('Popup field list - ascend & descend', () => {
-            expect(document.querySelectorAll('.e-field-table .e-field-list-tree-outer-div .e-field-list ul li')[0].textContent).toBe('ProductID');
+            expect(document.querySelectorAll('.e-field-table .e-field-list-tree-outer-div .e-field-list ul li')[0].textContent).toBe('Production Year');
         });
         it('Field list Filering - rows - 1', (done: Function) => {
             setTimeout(() => {

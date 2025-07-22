@@ -46,49 +46,6 @@ export function cleanupElement(element: HTMLElement | null): void {
 }
 
 /**
- * Focuses the last nbsp
- *
- * @param {HTMLElement} container - The container element to search within.
- * @returns {void}
- */
-export function focusLastNbsp(container: HTMLElement): void {
-    const walker: TreeWalker = document.createTreeWalker(
-        container,
-        NodeFilter.SHOW_TEXT,
-        {
-            acceptNode: (node: Node) => {
-                return node.nodeValue.indexOf('\u00A0') !== -1 ? NodeFilter.FILTER_ACCEPT : NodeFilter.FILTER_SKIP;
-            }
-        }
-    );
-
-    let lastNbspNode: Text | null = null;
-    while (walker.nextNode()) {
-        lastNbspNode = walker.currentNode as Text;
-    }
-
-    if (lastNbspNode) {
-        const lastIndex: number = lastNbspNode.nodeValue!.lastIndexOf('\u00A0');
-        const range: Range = document.createRange();
-        range.setStart(lastNbspNode, lastIndex + 1); // Move after last &nbsp;
-        range.collapse(true);
-
-        const selection: Selection = window.getSelection();
-        selection.removeAllRanges();
-        selection.addRange(range);
-    }
-    else {
-        const range: Range = document.createRange();
-        range.selectNodeContents(container);
-        range.collapse(false);
-
-        const sel: Selection = window.getSelection();
-        sel.removeAllRanges();
-        sel.addRange(range);
-    }
-}
-
-/**
  * Gets template content based on the template property value.
  *
  * @param {string | Function} template - Template property value.

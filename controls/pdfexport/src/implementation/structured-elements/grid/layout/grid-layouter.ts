@@ -1523,12 +1523,12 @@ export class PdfGridLayouter extends ElementLayouter {
             return result;
         } else {
             let skipcell : boolean = false;
-            let location : PointF = new PointF(this.currentBounds.x, this.currentBounds.y);
+            let loc : PointF = new PointF(this.currentBounds.x, this.currentBounds.y);
             // if (row.grid.isChildGrid && row.grid.allowRowBreakAcrossPages && this.startLocation.x !== this.currentBounds.x && row.width <
             //                 this.currentPage.getClientSize().width) {
             //     location.x = this.startLocation.x;
             // }
-            result.bounds = new RectangleF(location, new SizeF(0, 0));
+            result.bounds = new RectangleF(loc, new SizeF(0, 0));
             height = this.ReCalculateHeight(row, height);
             for (let i : number = this.cellStartIndex; i <= this.cellEndIndex; i++) {
                 let cancelSpans : boolean = ((i > this.cellEndIndex + 1) && (row.cells.getCell(i).columnSpan > 1));
@@ -1557,7 +1557,7 @@ export class PdfGridLayouter extends ElementLayouter {
                 row.cells.getCell(i).value !== null) ? row.cells.getCell(i).value : '') as string;
 
                 row.cells.getCell(i).style = this.RaiseBeforeCellDraw(this.currentGraphics, this.currentRowIndex, i,
-                                                                    new RectangleF(location, size), tempValue, cellstyle);
+                                                                    new RectangleF(loc, size), tempValue, cellstyle);
                 //row.cells.getCell(i).style = cellstyle;
                 if (!skipcell) {
                     if (row.cells.getCell(i).value instanceof PdfGrid)
@@ -1566,7 +1566,7 @@ export class PdfGridLayouter extends ElementLayouter {
                         grid.parentCellIndex = i;
                     }
                 let stringResult : PdfStringLayoutResult = row.cells.getCell(i).draw(this.currentGraphics,
-                                                            new RectangleF(location, size), cancelSpans);
+                                                            new RectangleF(loc, size), cancelSpans);
                 if (row.grid.style.allowHorizontalOverflow && (row.cells.getCell(i).columnSpan > this.cellEndIndex ||
                             i + row.cells.getCell(i).columnSpan > this.cellEndIndex + 1) && this.cellEndIndex < row.cells.count - 1) {
                     row.rowOverflowIndex = this.cellEndIndex;
@@ -1586,24 +1586,24 @@ export class PdfGridLayouter extends ElementLayouter {
                               row.cells.getCell(i).value !== null) ? row.cells.getCell(i).value : '') as string;
                 if (!cancelSpans) {
                     this.raiseAfterCellDraw(this.currentGraphics, this.currentRowIndex, i,
-                                            new RectangleF(location, size), tempValue, row.cells.getCell(i).style);
+                                            new RectangleF(loc, size), tempValue, row.cells.getCell(i).style);
                     }
                 if (row.cells.getCell(i).value instanceof PdfGrid) {
                     let grid : PdfGrid = row.cells.getCell(i).value as PdfGrid;
                     if (this.Grid.columns.getColumn(i).width >= this.currentGraphics.clientSize.width) {
-                        location.x = grid.rowLayoutBoundsWidth;
-                        location.x += grid.style.cellSpacing;
+                        loc.x = grid.rowLayoutBoundsWidth;
+                        loc.x += grid.style.cellSpacing;
                     } else {
-                        location.x += this.Grid.columns.getColumn(i).width;
+                        loc.x += this.Grid.columns.getColumn(i).width;
                     }
                 } else {
-                        location.x += this.Grid.columns.getColumn(i).width;
+                        loc.x += this.Grid.columns.getColumn(i).width;
                 }
             }
             if (!row.rowMergeComplete || row.isRowHeightSet) {
                 this.currentBounds.y += height;
             }
-            result.bounds = new RectangleF(new PointF(result.bounds.x, result.bounds.y), new SizeF(location.x, location.y));
+            result.bounds = new RectangleF(new PointF(result.bounds.x, result.bounds.y), new SizeF(loc.x, loc.y));
         }
     }
 

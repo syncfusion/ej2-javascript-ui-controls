@@ -77,6 +77,7 @@ export class PasteCleanup {
     private destroy(): void {
         if (this.refreshPopupTime) { clearTimeout(this.refreshPopupTime); this.refreshPopupTime = null; }
         this.removeEventListener();
+        this.pastedValue = '';
     }
 
     /* Removes all event listeners from the parent component's observer */
@@ -160,6 +161,10 @@ export class PasteCleanup {
         let value: string = null;
         if (!isNOU((e.args as ClipboardEvent).clipboardData)) {
             value = (e.args as ClipboardEvent).clipboardData.getData('text/html');
+            // Store plain text content for later use
+            if ((e.args as ClipboardEvent).clipboardData.getData('text/plain')) {
+                this.pastedValue = (e.args as ClipboardEvent).clipboardData.getData('text/plain');
+            }
         }
         let file: File;
         if (value !== null) {
@@ -188,6 +193,7 @@ export class PasteCleanup {
         // Escape HTML characters
         value = value.replace(/</g, '&lt;').replace(/>/g, '&gt;');
         this.containsHtml = htmlRegex.test(value);
+        this.pastedValue = value;
         // Extract file from clipboard if present
         const file: File = this.pasteObj.extractFileFromClipboard(e);
         // Notify paste event

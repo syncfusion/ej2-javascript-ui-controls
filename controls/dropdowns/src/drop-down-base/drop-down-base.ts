@@ -236,6 +236,10 @@ export class DropDownBase extends Component<HTMLElement> implements INotifyPrope
     private scrollTimer: number;
     protected list: HTMLElement;
     protected fixedHeaderElement: HTMLElement;
+    protected isFilterAction: boolean;
+    private isUpdateGroupTemplate: boolean;
+    private groupHeaderItems: HTMLElement[];
+    private fiteredGroupHeaderItems: HTMLElement[];
     protected keyboardModule: KeyboardEvents;
     protected enableRtlElements: HTMLElement[];
     protected rippleFun: Function;
@@ -1208,10 +1212,15 @@ export class DropDownBase extends Component<HTMLElement> implements INotifyPrope
                                     this.totalItemCount = !this.virtualSelectAll ? (e as any).count : this.totalItemCount;
                                     ulElement = this.renderItems(listItems, fields);
                                     this.appendUncheckList = false;
+                                    this.isUpdateGroupTemplate = false;
                                     this.onActionComplete(ulElement, listItems, e);
                                     if (this.groupTemplate) {
+                                        if (this.isAngular && this.getModuleName() === 'multiselect') {
+                                            this.updateGroupHeaderItems(ulElement);
+                                        }
                                         this.renderGroupTemplate(ulElement);
                                     }
+                                    this.isUpdateGroupTemplate = true;
                                     this.isRequested = false;
                                     this.bindChildItems(listItems, ulElement, fields, e);
                                     if (this.getInitialData){
@@ -1314,10 +1323,15 @@ export class DropDownBase extends Component<HTMLElement> implements INotifyPrope
                             }
                             if (!localDataArgs.cancel) {
                                 ulElement = this.renderItems(localDataArgs.result as { [key: string]: Object }[], fields);
+                                this.isUpdateGroupTemplate = false;
                                 this.onActionComplete(ulElement, localDataArgs.result as { [key: string]: Object }[], event);
                                 if (this.groupTemplate) {
+                                    if (this.isAngular && this.getModuleName() === 'multiselect') {
+                                        this.updateGroupHeaderItems(ulElement);
+                                    }
                                     this.renderGroupTemplate(ulElement);
                                 }
+                                this.isUpdateGroupTemplate = true;
                                 this.bindChildItems(localDataArgs.result as { [key: string]: Object }[], ulElement, fields);
                                 if (this.getInitialData){
                                     this.getInitialData = false;
@@ -1334,6 +1348,19 @@ export class DropDownBase extends Component<HTMLElement> implements INotifyPrope
                     }
                 }
             });
+        }
+    }
+    private updateGroupHeaderItems(ulElement: HTMLElement): void {
+        const headerElements: HTMLElement[] = <HTMLElement[] & NodeListOf<Element>>ulElement.querySelectorAll('.' + dropDownBaseClasses.group);
+        const clonedHeaders: HTMLElement[] = [];
+        for (let i: number = 0; i < headerElements.length; i++) {
+            clonedHeaders.push(headerElements[i as number].cloneNode ? headerElements[i as number].cloneNode(true) as HTMLElement :
+                headerElements[i as number] as HTMLElement);
+        }
+        if (!this.isFilterAction) {
+            this.groupHeaderItems = clonedHeaders as HTMLElement[];
+        } else {
+            this.fiteredGroupHeaderItems = clonedHeaders as HTMLElement[];
         }
     }
     protected handleVirtualKeyboardActions(e: KeyboardEventArgs, pageCount: number): void {
@@ -1490,6 +1517,21 @@ export class DropDownBase extends Component<HTMLElement> implements INotifyPrope
         if (!isNullOrUndefined(this.list)) {
             if (!this.isVirtualizationEnabled) {
                 this.list.innerHTML = '';
+                if (this.isUpdateGroupTemplate && this.isAngular && this.groupTemplate && this.getModuleName() === 'multiselect') {
+                    const headerItems: HTMLElement[] = <HTMLElement[] & NodeListOf<Element>>ulElement.querySelectorAll('.' + dropDownBaseClasses.group);
+                    if (headerItems.length > 0 && this.groupHeaderItems.length > 0) {
+                        const groupHeaderMap: { [key: string]: string } = {};
+                        for (let i: number = 0; i < this.groupHeaderItems.length; i++) {
+                            groupHeaderMap[this.groupHeaderItems[i as number].id] = this.groupHeaderItems[i as number].innerHTML;
+                        }
+                        for (let i: number = 0; i < headerItems.length; i++) {
+                            if (Object.prototype.hasOwnProperty.call(groupHeaderMap, headerItems[i as number].id)) {
+                                headerItems[i as number].innerHTML = groupHeaderMap[headerItems[i as number].id];
+                            }
+                        }
+                    }
+                    this.renderGroupTemplate(ulElement);
+                }
                 this.list.appendChild(ulElement);
                 this.liCollections = <HTMLElement[] & NodeListOf<Element>>this.list.querySelectorAll('.' + dropDownBaseClasses.li);
                 this.ulElement = this.list.querySelector('ul');
@@ -1593,7 +1635,9 @@ export class DropDownBase extends Component<HTMLElement> implements INotifyPrope
         if (this.fields.groupBy !== null && this.dataSource || this.element.querySelector('.' + dropDownBaseClasses.group)) {
             const dataSource: { [key: string]: Object }[] = <{ [key: string]: Object }[]>this.dataSource;
             const option: { [key: string]: Object } = { groupTemplateID: this.groupTemplateId, isStringTemplate: this.isStringTemplate };
-            const headerItems: Element[] = <NodeListOf<Element> & Element[]>listEle.querySelectorAll('.' + dropDownBaseClasses.group);
+            const headerItems: Element[] = this.isAngular && this.getModuleName() === 'multiselect' && !isNullOrUndefined(listEle) &&
+                listEle.classList.contains(dropDownBaseClasses.fixedHead) ? [listEle] as Element[] :
+                <NodeListOf<Element> & Element[]>listEle.querySelectorAll('.' + dropDownBaseClasses.group);
             const groupcheck: boolean = this.templateCompiler(this.groupTemplate);
             if (typeof this.groupTemplate !== 'function' &&  groupcheck) {
                 const groupValue: string = select(this.groupTemplate, document).innerHTML.trim();
@@ -1747,10 +1791,38 @@ export class DropDownBase extends Component<HTMLElement> implements INotifyPrope
         }
     }
 
+    private updateFixedGroupTemplateHader(element: HTMLElement): void {
+        const groupData: HTMLElement = element.cloneNode ? <HTMLElement>element.cloneNode(true) : element;
+        let isGroupDataUpdated: boolean = false;
+        if (this.groupHeaderItems && this.groupHeaderItems.length > 0) {
+            for (let i: number = 0; i < this.groupHeaderItems.length; i++) {
+                if (groupData.id === this.groupHeaderItems[i as number].id) {
+                    groupData.innerHTML = this.groupHeaderItems[i as number].innerHTML;
+                    isGroupDataUpdated = true;
+                    break;
+                }
+            }
+        }
+        if (!isGroupDataUpdated && this.fiteredGroupHeaderItems && this.fiteredGroupHeaderItems.length > 0) {
+            for (let i: number = 0; i < this.fiteredGroupHeaderItems.length; i++) {
+                if (groupData.id === this.fiteredGroupHeaderItems[i as number].id) {
+                    groupData.innerHTML = this.fiteredGroupHeaderItems[i as number].innerHTML;
+                    break;
+                }
+            }
+        }
+        this.fixedHeaderElement.innerHTML = groupData.innerHTML;
+        this.renderGroupTemplate(this.fixedHeaderElement);
+    }
+
     private updateGroupFixedHeader(element: HTMLElement, target: Element): void {
         if (this.fixedHeaderElement) {
             if (!isNullOrUndefined(element.innerHTML)) {
-                this.fixedHeaderElement.innerHTML = element.innerHTML;
+                if (this.groupTemplate && this.isAngular && this.getModuleName() === 'multiselect') {
+                    this.updateFixedGroupTemplateHader(element);
+                } else {
+                    this.fixedHeaderElement.innerHTML = element.innerHTML;
+                }
             }
             this.fixedHeaderElement.style.position = 'fixed';
             this.fixedHeaderElement.style.top = (this.list.parentElement.offsetTop + this.list.offsetTop) - window.scrollY + 'px';
@@ -1954,7 +2026,11 @@ export class DropDownBase extends Component<HTMLElement> implements INotifyPrope
         setStyleAttribute(this.fixedHeaderElement, { zIndex: 10 });
         const firstLi: HTMLElement = this.ulElement.querySelector('.' + dropDownBaseClasses.group + ':not(.e-hide-listitem)') as HTMLElement;
         if (!isNullOrUndefined(firstLi)) {
-            this.fixedHeaderElement.innerHTML = firstLi.innerHTML;
+            if (this.groupTemplate && this.isAngular && this.getModuleName() === 'multiselect') {
+                this.updateFixedGroupTemplateHader(firstLi);
+            } else {
+                this.fixedHeaderElement.innerHTML = firstLi.innerHTML;
+            }
         }
     }
     private getSortedDataSource(dataSource: { [key: string]: Object }[]): { [key: string]: Object }[] {
@@ -2512,6 +2588,8 @@ export class DropDownBase extends Component<HTMLElement> implements INotifyPrope
         this.ulElement = null;
         this.list = null;
         this.enableRtlElements = null;
+        this.groupHeaderItems = null;
+        this.fiteredGroupHeaderItems = null;
         this.rippleFun = null;
         super.destroy();
     }

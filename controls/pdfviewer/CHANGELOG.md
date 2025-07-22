@@ -2,6 +2,14 @@
 
 ## [Unreleased]
 
+## 30.1.41 (2025-07-22)
+
+### PDF Viewer
+
+#### Bug Fixes
+
+- `#I744124` - Resolved an issue where the context menu is not proper with nested custom context menu items.
+
 ## 30.1.40 (2025-07-15)
 
 ### PDF Viewer

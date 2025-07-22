@@ -468,12 +468,14 @@ export class UndoRedo {
         const obj: LaneModel | PhaseModel = entry.undoObject as LaneModel | PhaseModel;
         let changeType: string;
         if (entry.isUndo) {
+            diagram.itemType = 'Undo';
             if (entry.changeType === 'Insert') {
                 changeType = 'Remove';
             } else {
                 changeType = 'Insert';
             }
         } else {
+            diagram.itemType = 'Redo';
             changeType = entry.changeType;
         }
         if (changeType === 'Remove') {
@@ -1045,6 +1047,7 @@ export class UndoRedo {
                 changeType = entry.changeType;
             }
             if (changeType === 'Remove') {
+                diagram.itemType = 'Undo';
                 if ((obj as BpmnAnnotation).nodeId) {
                     diagram.remove(diagram.nameTable[(obj as BpmnAnnotation).nodeId + '_textannotation_' + obj.id]);
                 } else {
@@ -1058,6 +1061,7 @@ export class UndoRedo {
                     diagram.clearSelectorLayer();
                 }
             } else {
+                diagram.itemType = 'Redo';
                 diagram.clearSelectorLayer();
                 if ((obj as Node | Connector).parentId && (diagram.nameTable[(obj as Node).parentId]
                     && diagram.nameTable[(obj as Node).parentId].shape.type !== 'Container')) {
@@ -1090,7 +1094,6 @@ export class UndoRedo {
                     addContainerChild((obj as Node), (obj as Node).parentId, diagram);
                 }
             }
-
             if (diagram.mode !== 'SVG') {
                 diagram.refreshDiagramLayer();
             }

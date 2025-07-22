@@ -1,8 +1,7 @@
 import { BlockAction } from '../../actions';
 import { BlockEditor, BlockType } from '../../base/index';
 import { BlockModel } from '../../models/index';
-import { generateUniqueId } from '../../utils/common';
-import { appendDocumentNodes } from './block-utils';
+import { appendDocumentNodes, handleExistingContentElement } from './block-utils';
 
 
 export class ListRenderer {
@@ -38,24 +37,10 @@ export class ListRenderer {
             }
         });
 
+        listContainer.appendChild(listItem);
+
         if (existingContentElement) {
-            if (existingContentElement instanceof HTMLElement) {
-                listItem.innerHTML = existingContentElement.innerHTML;
-                if (existingContentElement.id) {
-                    listItem.id = existingContentElement.id;
-                }
-            }
-            else if (existingContentElement instanceof Node) {
-                existingContentElement.childNodes.forEach((node: Node) => {
-                    listItem.appendChild(node.cloneNode(true));
-                });
-                const childLen: number = existingContentElement.childNodes.length;
-                if ((childLen === 0) || (childLen === 1 && existingContentElement.childNodes[0].nodeType === Node.TEXT_NODE)) {
-                    listItem.id = block.content && block.content.length === 1
-                        ? block.content[0].id
-                        : generateUniqueId('content');
-                }
-            }
+            handleExistingContentElement(block, blockElement, listItem, existingContentElement);
         } else {
             this.parent.contentRenderer.renderContent(block, listItem);
         }
@@ -76,11 +61,6 @@ export class ListRenderer {
                 (this.editor as any).isProtectedOnChange = prevOnChange;
                 /* eslint-enable @typescript-eslint/no-explicit-any */
             });
-        }
-
-        listContainer.appendChild(listItem);
-        if (existingContentElement) {
-            appendDocumentNodes(blockElement, listContainer, existingContentElement);
         }
         return listContainer;
     }

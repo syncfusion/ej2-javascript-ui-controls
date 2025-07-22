@@ -2,7 +2,25 @@
 
 ## [Unreleased]
 
+## 30.1.41 (2025-07-22)
+
+### PDF Parser
+
+#### Bug Fixes
+
+- Fixed an issue where form fields are not parsed from particular PDF document.
+- Fixed an issue where the appearance template size was incorrect when a stamp annotation was rotated.
+
 ## 30.1.40 (2025-07-15)
+
+### PDF Parser
+
+#### Bug Fixes
+
+- Fixed an issue where a pop up annotation was not removed from the annotation collection.
+- Fixed an issue with preserving annotations during import from a JSON file.
+
+## 30.1.39 (2025-07-08)
 
 ### PDF Parser
 

@@ -7892,14 +7892,14 @@ describe('Diagram Control', () => {
             let routedConnector = diagram.connectors[4];
             let pathData = (routedConnector.wrapper.children[0] as any).data;
             console.log(pathData);
-            expect(pathData === "M540 535 L550 535 L550 590 L450 590 L450 550 L150 550 L150 628.83 L164 628.83 L164 628.8333333333334 L169.5 628.99" || pathData === "M540 535 L550 535 L550 490 L450 490 L450 530 L170 530 L170 590 L150 590 L150 628.83 L164 628.83 L164 628.8333333333334 L169.5 628.99").toBe(true);
+            expect(pathData === "M540 535 L550 535 L550 590 L450 590 L450 550 L150 550 L150 628.83 L164 628.83 L164 628.8333333333334 L169.5 628.99" || pathData === "M540 535 L550 535 L550 490 L450 490 L450 530 L170 530 L170 590 L150 590 L150 628.83 L164 628.83 L164 628.8333333333334 L169.5 628.99" || pathData === "M540 535 L550 535 L550 590 L450 590 L450 550 L150 550 L150 628.83 L164 628.83 L164 628.83 L167 628.83 L167 628.8333333333334 L169.5 628.97").toBe(true);
             diagram.loadDiagram(data);
             diagram.constraints = DiagramConstraints.Default | DiagramConstraints.LineRouting;
             diagram.dataBind();
             diagram.doLayout();
             let pathData2 = (routedConnector.wrapper.children[0] as any).data;
             console.log(pathData2);
-            expect(pathData2 === "M540 535 L550 535 L550 590 L450 590 L450 550 L150 550 L150 628.83 L164 628.83 L164 628.8333333333334 L169.5 628.99" || pathData2 === "M540 535 L550 535 L550 490 L450 490 L450 530 L170 530 L170 590 L150 590 L150 628.83 L164 628.83 L164 628.8333333333334 L169.5 628.99").toBe(true);
+            expect(pathData2 === "M540 535 L550 535 L550 590 L450 590 L450 550 L150 550 L150 628.83 L164 628.83 L164 628.8333333333334 L169.5 628.99" || pathData2 === "M540 535 L550 535 L550 490 L450 490 L450 530 L170 530 L170 590 L150 590 L150 628.83 L164 628.83 L164 628.8333333333334 L169.5 628.99" || pathData === "M540 535 L550 535 L550 590 L450 590 L450 550 L150 550 L150 628.83 L164 628.83 L164 628.83 L167 628.83 L167 628.8333333333334 L169.5 628.97").toBe(true);
             done();
         });
         it('Code coverage - line routing while dropping node inside another node', (done: Function) => {

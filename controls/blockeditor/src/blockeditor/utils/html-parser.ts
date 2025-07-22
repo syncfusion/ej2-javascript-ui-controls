@@ -55,7 +55,6 @@ export function convertHtmlElementToBlocks(container: HTMLElement, keepFormat: b
                 case 2: blockType = BlockType.Heading2; break;
                 case 3: blockType = BlockType.Heading3; break;
                 case 4: blockType = BlockType.Heading4; break;
-                default: blockType = BlockType.Paragraph;
                 }
 
                 blocks.push(createBlockFromElement(element, blockType, keepFormat));
@@ -370,7 +369,7 @@ export function renderContentAsHTML(content: ContentModel[] = []): string {
             let text: string = escapeHTML(item.content);
             if (item.styles) {
                 const styleOrder: string[] = ['bold', 'italic', 'underline', 'strikethrough', 'superscript',
-                    'subscript', 'uppercase', 'lowercase', 'color', 'bgColor'];
+                    'subscript', 'uppercase', 'lowercase', 'color', 'bgColor', 'custom'];
                 for (const style of styleOrder) {
                     if ((item.styles as any)[`${style}`]) {
                         switch (style.toLowerCase()) {

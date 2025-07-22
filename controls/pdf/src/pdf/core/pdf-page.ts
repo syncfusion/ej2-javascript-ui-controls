@@ -616,12 +616,9 @@ export class PdfPage {
     }
     _removeAnnotation(reference: _PdfReference): void {
         if (this._pageDictionary && this._pageDictionary.has('Annots')) {
-            const annots: Array<_PdfReference> = this._getProperty('Annots');
+            let annots: Array<_PdfReference> = this._getProperty('Annots');
             if (_isNullOrUndefined(annots) && Array.isArray(annots)) {
-                const index: number = annots.indexOf(reference);
-                if (index >= 0) {
-                    annots.splice(index, 1);
-                }
+                annots = annots.filter((item: _PdfReference) => item !== reference);
                 this._pageDictionary.set('Annots', annots);
                 this._pageDictionary._updated = true;
             }

@@ -19,7 +19,7 @@ import { cleanCheckmarkElement, getAdjacentBlock, getBlockContentElement, getBlo
 import { setCursorPosition, getSelectionRange, captureSelectionState, getPathFromBlock, getTextOffset } from '../utils/selection';
 import { sanitizeBlock, sanitizeContent, sanitizeLabelItems, sanitizeStyles, transformIntoToolbarItem } from '../utils/transform';
 import { IInlineContentInsertionArgs, IMentionRenderOptions, IPopupRenderOptions, ISplitContent, RangePath, IAddBlockArgs, IUndoRedoState, IUndoRedoSelection, ITransformBlockArgs } from './interface';
-import { deepClone, focusLastNbsp, generateUniqueId, getAbsoluteOffset, getAutoAvatarColor, getNormalizedKey, getTemplateFunction, getUserInitials, isNodeAroundSpecialElements } from '../utils/common';
+import { deepClone, generateUniqueId, getAbsoluteOffset, getAutoAvatarColor, getNormalizedKey, getTemplateFunction, getUserInitials, isNodeAroundSpecialElements } from '../utils/common';
 import { getBlockActionsMenuItems, getCommandMenuItems, getContextMenuItems, getInlineToolbarItems, getLabelMentionDisplayTemplate, getLabelMenuItems, getUserMentionDisplayTemplate } from '../utils/data';
 import { BlockType, BuiltInToolbar, ContentType, DeletionType } from './enums';
 import { InlineContentInsertionModule, NodeSelection, SlashCommandModule, ContextMenuModule, BlockActionMenuModule, InlineToolbarModule, LinkModule, ClipboardCleanupModule } from '../plugins/index';
@@ -376,7 +376,8 @@ export class BlockEditor extends Component<HTMLElement> implements INotifyProper
     public menubarRenderer: MenuBarRenderer;
 
     /* Plugins */
-    private inlineContentInsertionModule: InlineContentInsertionModule;
+    /** @hidden */
+    public inlineContentInsertionModule: InlineContentInsertionModule;
     /** @hidden */
     public slashCommandModule: SlashCommandModule;
     /** @hidden */
@@ -620,7 +621,7 @@ export class BlockEditor extends Component<HTMLElement> implements INotifyProper
             this.labelMenuObj,
             this.addIconTooltip,
             this.dragIconTooltip,
-            this.contextMenuModule ? this.contextMenuModule.contextMenuObj : undefined
+            this.contextMenuModule.contextMenuObj
         ];
 
         for (const target of rtlTargets) {
@@ -694,7 +695,7 @@ export class BlockEditor extends Component<HTMLElement> implements INotifyProper
     }
 
     private checkIsEntireEditorSelected(): boolean {
-        const selection: Selection = document.getSelection();
+        const selection: Selection = this.nodeSelection.getSelection();
         if (!selection || selection.rangeCount === 0) {
             return false;
         }
@@ -752,7 +753,7 @@ export class BlockEditor extends Component<HTMLElement> implements INotifyProper
     }
 
     private handleEditorSelection(e: Event): void {
-        const range: Range = getSelectionRange();
+        const range: Range = this.nodeSelection.getRange();
         if (!range) { return; }
         const isMoreThanSingleSelection: boolean = (range.startContainer !== range.endContainer || range.startOffset !== range.endOffset);
         if (isMoreThanSingleSelection && this.element.contains(range.commonAncestorContainer)) {
@@ -823,9 +824,6 @@ export class BlockEditor extends Component<HTMLElement> implements INotifyProper
         if (this.inlineToolbarModule) {
             this.inlineToolbarModule.hideInlineToolbar(e);
         }
-        const notAllowedTypes: string[] = ['Image'];
-        const blockModel: BlockModel = getBlockModelById(this.currentFocusedBlock.id, this.blocksInternal);
-        if (!blockModel || notAllowedTypes.indexOf(blockModel.type) !== -1) { return; }
         this.togglePlaceholder(this.currentFocusedBlock, true);
         this.hideDragIconForEmptyBlock(this.currentFocusedBlock);
         const blockContent: HTMLElement = getBlockContentElement(this.currentFocusedBlock);
@@ -833,8 +831,6 @@ export class BlockEditor extends Component<HTMLElement> implements INotifyProper
             this.showFloatingIcons(this.currentFocusedBlock);
         }
         this.filterSlashCommandOnUserInput();
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        const isInputType: boolean = (e as any).inputType === 'insertText';
         /* Handling where user activates any formatting using keyboard(eg.ctrl+b) and starts typing */
         if ((this.formattingAction.activeInlineFormats && this.formattingAction.activeInlineFormats.size > 0)
             || this.formattingAction.lastRemovedFormat) {
@@ -990,9 +986,6 @@ export class BlockEditor extends Component<HTMLElement> implements INotifyProper
                 contentElement = toggleHeader.querySelector('.e-block-content');
             }
         }
-        else if (block.type === 'Table') {
-            contentElement = findClosestParent(range.startContainer, '.e-block-content');
-        }
 
         const prevOnChange: boolean = this.isProtectedOnChange;
         this.isProtectedOnChange = true;
@@ -1137,6 +1130,14 @@ export class BlockEditor extends Component<HTMLElement> implements INotifyProper
             if (isListTypeBlock(block.type)) {
                 this.listBlockAction.updateListItemMarkers(blockElement);
             }
+            if (isChildrenTypeBlock(block.type) && block.children.length > 0) {
+                block.children.forEach((childBlock: BlockModel) => {
+                    if (isListTypeBlock(childBlock.type)) {
+                        const childBlockElement: HTMLElement = blockElement.querySelector('#' + childBlock.id);
+                        this.listBlockAction.updateListItemMarkers(childBlockElement);
+                    }
+                });
+            }
         });
 
         if (lastBlockElement) {
@@ -1151,7 +1152,9 @@ export class BlockEditor extends Component<HTMLElement> implements INotifyProper
                 setCursorPosition(getBlockContentElement(lastBlockElement), position);
                 blocks.forEach((block: BlockModel) => {
                     if (block.type === 'CheckList') {
-                        this.blockAction.listRenderer.toggleCheckedState(block, block.isChecked);
+                        if (this.blockAction && this.blockAction.listRenderer) {
+                            this.blockAction.listRenderer.toggleCheckedState(block, block.isChecked);
+                        }
                     }
                 });
             });
@@ -1292,7 +1295,7 @@ export class BlockEditor extends Component<HTMLElement> implements INotifyProper
         }
         const contentElement: HTMLElement = getBlockContentElement(transformedElement);
         this.togglePlaceholder(transformedElement, true);
-        if (block.type === 'Callout') {
+        if (transformedElement.getAttribute('data-block-type') === 'Callout') {
             const firstChild: HTMLElement = transformedElement.querySelector('.e-block') as HTMLElement;
             this.setFocusToBlock(firstChild);
         }
@@ -1307,8 +1310,7 @@ export class BlockEditor extends Component<HTMLElement> implements INotifyProper
     }
 
     private handleTextSelection(e: Event): void {
-        const range: Range = getSelectionRange();
-        this.nodeSelection.updateSelectionRangeOnUserModel();
+        const range: Range = this.nodeSelection.getRange();
         if (!range || range.toString().trim().length === 0) {
             this.inlineToolbarModule.hideInlineToolbar(e);
             return;
@@ -1554,24 +1556,17 @@ export class BlockEditor extends Component<HTMLElement> implements INotifyProper
             event.preventDefault();
             break;
         }
-        case 'Space': {
-            if (getBlockContentElement(blockElement).textContent.trim() === '') {
-                // event.preventDefault();
-                // focusLastNbsp(getBlockContentElement(blockElement));
-            }
-            break;
-        }
         case 'Home':
         case 'End': {
             if (!event.shiftKey) {
-                this.handleHomeEndKeyActions(event, range, blockElement);
+                this.handleHomeEndKeyActions(event, blockElement);
             }
             break;
         }
         }
     }
 
-    private handleHomeEndKeyActions(event: KeyboardEvent, range: Range, blockElement: HTMLElement): void {
+    private handleHomeEndKeyActions(event: KeyboardEvent, blockElement: HTMLElement): void {
         const contentElement: HTMLElement = getBlockContentElement(blockElement);
         const isHomeKey: boolean = event.key === 'Home';
 
@@ -1594,7 +1589,7 @@ export class BlockEditor extends Component<HTMLElement> implements INotifyProper
     }
 
     private handleEntireBlockDeletion(event: KeyboardEvent): void {
-        const prevFocusedBlockid: string = this.currentFocusedBlock ? this.currentFocusedBlock.id : '';
+        const prevFocusedBlockid: string = this.currentFocusedBlock.id;
         const allBlocks: BlockModel[] = this.blocksInternal.map((block: BlockModel) => deepClone(sanitizeBlock(block)));
         this.blocksInternal = [];
         const newlyInsertedBlock: BlockModel = this.blockAction.createDefaultEmptyBlock(true);
@@ -1652,7 +1647,7 @@ export class BlockEditor extends Component<HTMLElement> implements INotifyProper
         lastBlockContent.appendChild(lastSplit.afterFragment);
 
         this.blockAction.deleteBlockAtCursor({
-            blockElement: lastBlockElement,
+            blockElement: direction === 'previous' ? lastBlockElement : firstBlockElement,
             mergeDirection: direction,
             isUndoRedoAction: true
         });
@@ -1696,8 +1691,8 @@ export class BlockEditor extends Component<HTMLElement> implements INotifyProper
         const prevOnChange: boolean = this.isProtectedOnChange;
         this.isProtectedOnChange = true;
         block.content.forEach((content: ContentModel) => {
+            let isSplitted: boolean = false;
             const contentEl: HTMLElement = getContentElementBasedOnId(content, blockElement);
-            if (!contentEl) { return; }
 
             const isCurrentContentIntersectsNode: boolean = range.intersectsNode(contentEl);
             const isCurrentContentFoundInAfterNodes: boolean = isContentFoundInCollection(contentEl, afterFragmentNodes);
@@ -1706,11 +1701,17 @@ export class BlockEditor extends Component<HTMLElement> implements INotifyProper
             }
             if (contentEl === contentElementOfSplitNode) {
                 content.content = mode === 'keepBefore'
-                    ? splitNode.textContent.substring(0, splitOffset) || ''
-                    : splitNode.textContent.substring(splitOffset) || '';
+                    ? splitNode.textContent.substring(0, splitOffset)
+                    : (splitNode.textContent.substring(splitOffset) || '');
+                if (mode === 'keepAfter') {
+                    const splittedNodeId: string = afterFragmentNodes.length && (afterFragmentNodes[0].nodeType === Node.ELEMENT_NODE
+                        ? (afterFragmentNodes[0] as HTMLElement).id : content.id);
+                    content.id = splittedNodeId;
+                }
+                isSplitted = true;
             }
             const isCurrentContentFoundInBeforeNodes: boolean = isContentFoundInCollection(contentEl, beforeFragmentNodes);
-            if (mode === 'keepAfter' && isCurrentContentFoundInBeforeNodes && isCurrentContentIntersectsNode) {
+            if (!isSplitted && mode === 'keepAfter' && isCurrentContentFoundInBeforeNodes && isCurrentContentIntersectsNode) {
                 return;
             }
             if (content.content.trim()) {
@@ -1758,7 +1759,7 @@ export class BlockEditor extends Component<HTMLElement> implements INotifyProper
         const blockModel: BlockModel = getBlockModelById(blockElement.id, this.blocksInternal);
         const oldContentClone: ContentModel[] = deepClone(sanitizeContent(blockModel.content));
         const contentElement: HTMLElement = getBlockContentElement(blockElement);
-        const range: Range = getSelectionRange();
+        const range: Range = this.nodeSelection.getRange();
         if (!range) { return; }
         const absoluteOffset: number = getAbsoluteOffset(contentElement, range.startContainer, range.startOffset);
         // Find the affected content in range
@@ -1766,7 +1767,6 @@ export class BlockEditor extends Component<HTMLElement> implements INotifyProper
         const contentModel: ContentModel = blockModel.content.find((content: ContentModel) => {
             return content.id === closestContentElement.id;
         });
-        if (!contentModel) { return; }
 
         // Update the \n at correct place in the content model
         contentModel.content = contentModel.content.substring(0, range.startOffset) + '\n' + contentModel.content.substring(range.startOffset);
@@ -1861,10 +1861,6 @@ export class BlockEditor extends Component<HTMLElement> implements INotifyProper
         }
         const prevOnChange: boolean = this.isProtectedOnChange;
         this.isProtectedOnChange = true;
-        if (blockModel.type === BlockType.Template) {
-            const newHtmlContent: string = contentElement.innerHTML;
-            blockModel.template = newHtmlContent;
-        }
         //Before clearing current block model, store the after block content to create new block with it
         const afterBlockContents: ContentModel[] = this.getContentModelForFragment(
             splitContent.afterFragment,
@@ -1943,7 +1939,7 @@ export class BlockEditor extends Component<HTMLElement> implements INotifyProper
     public togglePlaceholder(blockElement: HTMLElement, isFocused: boolean): void {
         const blockModel: BlockModel = getBlockModelById(blockElement.id, this.blocksInternal);
         if (!blockModel) { return; }
-        const blockType: string = blockElement.getAttribute('data-block-type') || 'Paragraph';
+        const blockType: string = blockElement.getAttribute('data-block-type');
         const placeholderValue: string = this.getPlaceholderValue(blockType, blockModel.placeholder);
         const contentEle: HTMLElement = getBlockContentElement(blockElement);
         const isEmptyContent: boolean = isElementEmpty(contentEle);

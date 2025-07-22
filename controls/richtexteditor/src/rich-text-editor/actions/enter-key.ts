@@ -181,6 +181,8 @@ export class EnterKeyAction {
                             }
                             this.getRangeNode();
                         }
+                        const isImageAtStartNode: boolean = (this.range.startContainer.childNodes.length > 0 && this.range.startContainer.childNodes[0].textContent.trim() === ''
+                                && !isNOU(this.range.startContainer.childNodes[this.range.startOffset]) && this.range.startContainer.childNodes[this.range.startOffset].nodeName === 'IMG');
                         if ((this.parent.enterKey === 'P' && !shiftKey) || (this.parent.enterKey === 'DIV' && !shiftKey) ||
                         (this.parent.shiftEnterKey === 'P' && shiftKey) ||
                         (this.parent.shiftEnterKey === 'DIV' && shiftKey)) {
@@ -232,7 +234,8 @@ export class EnterKeyAction {
                                         !this.range.startContainer.previousSibling) {
                                         isFocusedFirst = true;
                                     }
-                                } else if (this.range.startOffset === 0 && this.range.endOffset === 0) {
+                                } else if ((this.range.startOffset === 0 && this.range.endOffset === 0) ||
+                                  (this.range.startOffset === 1 && this.range.endOffset === 1 && isImageAtStartNode)) {
                                     isFocusedFirst = true;
                                 }
                                 this.removeBRElement(nearBlockNode);
@@ -539,6 +542,8 @@ export class EnterKeyAction {
                                         const imageElement: Node = this.range.startContainer.nodeName === 'IMG' ? this.range.startContainer :
                                             this.range.startContainer.childNodes[this.range.startOffset];
                                         currentParent.insertBefore(focusBRElem, imageElement);
+                                    } else if (this.range.startOffset === 1 && this.range.endOffset === 1 && isImageAtStartNode) {
+                                        currentParent.insertBefore(focusBRElem, this.range.startContainer);
                                     } else {
                                         const lineBreakBRElem: HTMLElement = this.parent.createElement('br');
                                         const parentElement: HTMLElement = this.range.startContainer.parentElement;

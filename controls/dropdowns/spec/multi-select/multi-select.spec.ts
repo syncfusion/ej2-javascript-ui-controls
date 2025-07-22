@@ -10852,7 +10852,113 @@ describe('MultiSelect', () => {
             }, 450);
         });
     });
-    
+    describe('EJ2-955248 - Multiselect Group Template on ng-template', () => {
+        let listObj: MultiSelect;
+        let element: HTMLInputElement = <HTMLInputElement>createElement('input', { id: 'multiselect', attrs: { type: "text" } });
+        let datasource: { [key: string]: Object }[] = [
+            { Vegetable: 'Cabbage', Category: 'Leafy and Salad', Id: 'item1' },
+            { Vegetable: 'Chickpea', Category: 'Beans', Id: 'item2' },
+            { Vegetable: 'Garlic', Category: 'Bulb and Stem', Id: 'item3' },
+            { Vegetable: 'Green bean', Category: 'Beans', Id: 'item4' },
+            { Vegetable: 'Horse gram', Category: 'Beans', Id: 'item5' },
+            { Vegetable: 'Nopal', Category: 'Bulb and Stem', Id: 'item6' },
+            { Vegetable: 'Onion', Category: 'Bulb and Stem', Id: 'item7' },
+            { Vegetable: 'Pumpkins', Category: 'Leafy and Salad', Id: 'item8' },
+            { Vegetable: 'Spinach', Category: 'Leafy and Salad', Id: 'item9' },
+            { Vegetable: 'Wheat grass', Category: 'Leafy and Salad', Id: 'item10' },
+            { Vegetable: 'Yarrow', Category: 'Leafy and Salad', Id: 'item11' }
+        ];
+        const keyboardEventArgs = {
+            preventDefault: (): void => { },
+            altKey: false,
+            ctrlKey: false,
+            shiftKey: false,
+            char: 'c',
+            key: 'KeyC',
+            charCode: 67,
+            keyCode: 67,
+            which: 67,
+            code: 67
+        };
+        let focusCount: number = 0;
+        let blurCount: number = 0;
+        beforeAll(() => {
+            document.body.appendChild(element);
+            listObj = new MultiSelect({
+                dataSource: datasource,
+                fields: { groupBy: 'Category', text: 'Vegetable', value: 'Id' },
+                mode: 'CheckBox',
+                changeOnBlur:  false,
+                value: ['item2'],
+                groupTemplate:"<strong>${Category}</strong>"
+            });
+            listObj.isAngular = true;
+            listObj.appendTo(element);
+            listObj.dataBind();
+        });
+        afterAll(() => {
+            if (element) {
+                listObj.destroy();
+                element.remove();
+            }
+        });
+        it('Check GroupTemplate', (done) => {
+            (<any>listObj).showPopup();
+            setTimeout((): void => {
+                expect((listObj as any).list.querySelector('.e-list-group-item').innerText).toBe('Leafy and Salad');
+                done();
+            }, 0);
+            (<any>listObj).list.scrollTop = 90;
+            (<any>listObj).checkBoxSelectionModule.filterInput.value = "c";
+            (<any>listObj).keyDownStatus = true;
+            (<any>listObj).onInput();
+            (<any>listObj).keyUp(keyboardEventArgs);
+            (<any>listObj).popupHeight = '100px';
+            (<any>listObj).dataBind();
+            (<any>listObj).list.scrollTop = 50;
+        });
+    });
+
+    describe('EJ2-955248 - Multiselect Group Template on ng-template with remoteData', () => {
+        let listObj: MultiSelect;
+        let element: HTMLInputElement = <HTMLInputElement>createElement('input', { id: 'multiselect', attrs: { type: "text" } });
+        let originalTimeout: number;
+        let remoteData: DataManager = new DataManager({
+            url: 'https://services.odata.org/V4/Northwind/Northwind.svc/Products',
+            adaptor: new WebApiAdaptor,
+            crossDomain: true
+        });
+        beforeAll(() => {
+            document.body.innerHTML = '';
+            document.body.appendChild(element);
+            originalTimeout = jasmine.DEFAULT_TIMEOUT_INTERVAL;
+            jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000;
+        });
+        afterAll(() => {
+            jasmine.DEFAULT_TIMEOUT_INTERVAL = originalTimeout;
+            if (element) {
+                listObj.destroy();
+                element.remove();
+            }
+        });
+        it('Check GroupTemplate', (done) => {
+            listObj = new MultiSelect({
+                dataSource: remoteData,
+                fields: { text: 'ProductName', value: 'ProductID', groupBy: 'CategoryID' },
+                query: new Query().take(9),
+                mode: 'CheckBox',
+                changeOnBlur: false,
+                groupTemplate: "<strong>${CategoryID}</strong>"
+            });
+            (<any>listObj).isAngular = true;
+            (<any>listObj).appendTo(element);
+            (<any>listObj).showPopup();
+            (<any>listObj).list.scrollTop = 90;
+            setTimeout((): void => {
+                done();
+            }, 700);
+        });
+    });
     describe('Null or undefined value testing', () => {
         let listObj: MultiSelect;
         let empList: { [key: string]: Object }[] = [

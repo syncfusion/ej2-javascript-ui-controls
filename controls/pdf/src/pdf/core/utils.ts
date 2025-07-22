@@ -4,7 +4,7 @@ import { PdfFormFieldVisibility, PdfAnnotationFlag, PdfCheckBoxStyle, PdfHighlig
 import { _PdfTransformationMatrix } from './graphics/pdf-graphics';
 import { PdfDocument, PdfPageSettings } from './pdf-document';
 import { _PdfBaseStream, _PdfStream } from './base-stream';
-import { PdfStateItem, PdfComment, PdfWidgetAnnotation, PdfAnnotation, PdfLineAnnotation, PdfInteractiveBorder, _PaintParameter } from './annotations/annotation';
+import { PdfStateItem, PdfComment, PdfWidgetAnnotation, PdfAnnotation, PdfLineAnnotation, PdfInteractiveBorder, _PaintParameter, PdfRubberStampAnnotation } from './annotations/annotation';
 import { PdfPopupAnnotationCollection } from './annotations/annotation-collection';
 import { PdfTemplate } from './graphics/pdf-template';
 import { PdfField, PdfTextBoxField, PdfComboBoxField } from './form/field';
@@ -1945,10 +1945,13 @@ export function _getColorValue(colorName: string): number[] {
  * @private
  * @param {PdfTemplate} template Template object.
  * @param {number} angle Angle value.
+ * @param {PdfRubberStampAnnotation} annotation Rubberstamp annotation.
  * @returns {void} Nothing.
  */
-export function _setMatrix(template: PdfTemplate, angle?: number): void {
+export function _setMatrix(template: PdfTemplate, angle?: number, annotation?: PdfRubberStampAnnotation): void {
     const box: number[] = template._content.dictionary.getArray('BBox');
+    let centerX: number = 0.1;
+    let centerY: number = 0.1;
     if (box && typeof angle !== 'undefined' && angle !== null) {
         if (angle === 0) {
             template._content.dictionary.set('Matrix', [1, 0, 0, 1, -box[0], -box[1]]);
@@ -1961,10 +1964,121 @@ export function _setMatrix(template: PdfTemplate, angle?: number): void {
             } else if (angle === 270) {
                 matrix._translate(-box[1], box[2]);
             }
+            if (angle % 90 !== 0 && annotation && annotation instanceof PdfRubberStampAnnotation) {
+                let box0: number;
+                let box1: number;
+                if (box && Array.isArray(box) && box.length > 1) {
+                    box0 = box[0];
+                    box1 = box[1];
+                }
+                const w: number = annotation.bounds.width;
+                const h: number = annotation.bounds.height;
+                if (typeof box0 === 'number' && typeof box1 === 'number' && box0 !== 0 && box1 !== 0) {
+                    const width: number = _getCenterX(angle, box, centerX, annotation);
+                    const height: number = _getCenterY(angle, box, centerY, annotation);
+                    if (width > 0) {
+                        if (w > width) {
+                            while (
+                                Math.round(w * 10) / 10 !== Math.round(_getCenterX(angle, box, centerX, annotation) * 10) / 10 &&
+                                Math.round(w * 10) / 10 > Math.round(_getCenterX(angle, box, centerX, annotation) * 10) / 10
+                            ) {
+                                centerX += 0.1;
+                            }
+                        } else {
+                            while (
+                                Math.round(w * 10) / 10 !== Math.round(_getCenterX(angle, box, centerX, annotation) * 10) / 10 &&
+                                Math.round(w * 10) / 10 < Math.round(_getCenterX(angle, box, centerX, annotation) * 10) / 10
+                            ) {
+                                centerX -= 0.1;
+                            }
+                        }
+                    } else {
+                        while (
+                            Math.round(w * 10) / 10 !== Math.round(_getCenterX(angle, box, centerX, annotation) * 10) / 10 &&
+                            Math.round(w * 10) / 10 > Math.round(_getCenterX(angle, box, centerX, annotation) * 10) / 10
+                        ) {
+                            centerX += 0.1;
+                        }
+                    }
+                    if (height > 0) {
+                        if (h > height) {
+                            while (
+                                Math.round(h * 10) / 10 !== Math.round(_getCenterY(angle, box, centerY, annotation) * 10) / 10 &&
+                                Math.round(h * 10) / 10 > Math.round(_getCenterY(angle, box, centerY, annotation) * 10) / 10
+                            ) {
+                                centerY += 0.1;
+                            }
+                        } else {
+                            while (
+                                Math.round(h * 10) / 10 !== Math.round(_getCenterY(angle, box, centerY, annotation) * 10) / 10 &&
+                                Math.round(h * 10) / 10 < Math.round(_getCenterY(angle, box, centerY, annotation) * 10) / 10
+                            ) {
+                                centerY -= 0.1;
+                            }
+                        }
+                    } else {
+                        while (
+                            Math.round(h * 10) / 10 !== Math.round(_getCenterY(angle, box, centerY, annotation) * 10) / 10 &&
+                            Math.round(h * 10) / 10 > Math.round(_getCenterY(angle, box, centerY, annotation) * 10) / 10
+                        ) {
+                            centerY += 0.1;
+                        }
+                    }
+                    matrix._translate(centerX, centerY);
+                } else {
+                    const targetCenterX: number = Math.abs(annotation.bounds.width -
+                        Math.round(_getCenterX(angle, box, centerX, annotation)));
+                    const targetCenterY: number = Math.abs(annotation.bounds.height -
+                        Math.round(_getCenterY(angle, box, centerY, annotation)));
+                    if (Math.round(annotation.bounds.width) > centerX) {
+                        centerX = Math.round(targetCenterX / centerX) * centerX;
+                    }
+                    if (Math.round(annotation.bounds.width) > centerY) {
+                        centerY = Math.round(targetCenterY / centerY) * centerY;
+                    }
+                    matrix._translate(centerX, centerY);
+                }
+            }
             matrix._rotate(angle);
             template._content.dictionary.set('Matrix', matrix._matrix._elements);
         }
     }
+}
+/**
+ * Computes the center X-coordinate after transforming the bounding box by a rotation matrix.
+ *
+ * @private
+ * @param {number} angle The rotation angle in degrees.
+ * @param {number[]} bbox The bounding box represented as an array of four numbers [x, y, width, height].
+ * @param {number} x The original center X-coordinate.
+ * @param {PdfRubberStampAnnotation} annotation The annotation to be transformed.
+ * @returns {number} The transformed center X-coordinate.
+ */
+export function _getCenterX(angle: number, bbox: number[], x: number, annotation: PdfRubberStampAnnotation): number {
+    const matrix: _PdfTransformationMatrix = new _PdfTransformationMatrix();
+    matrix._translate(x, x);
+    matrix._rotate(angle);
+    const rectangleF: number[] = annotation._transformBBox({x: bbox[0], y: bbox[1], width: bbox[2], height: bbox[3]},
+                                                           matrix._matrix._elements);
+    return rectangleF[2];
+}
+/**
+ * Computes the center Y-coordinate after transforming the bounding box by a rotation matrix.
+ *
+ * @private
+ * @param {number} angle The rotation angle in degrees.
+ * @param {number[]} bbox The bounding box represented as an array of four numbers [x, y, width, height].
+ * @param {number} y The original center Y-coordinate.
+ * @param {PdfRubberStampAnnotation} annotation The annotation to be transformed.
+ * @returns {number} The transformed center Y-coordinate.
+ */
+export function _getCenterY(angle: number, bbox: number[], y: number, annotation: PdfRubberStampAnnotation): number {
+    const matrix: _PdfTransformationMatrix = new _PdfTransformationMatrix();
+    matrix._translate(y, y);
+    matrix._rotate(angle);
+    const rectangleF: number[] = annotation._transformBBox({x: bbox[0], y: bbox[1], width: bbox[2], height: bbox[3]},
+                                                           matrix._matrix._elements);
+    return rectangleF[3];
 }
 /**
  * Get the state item style to string
@@ -4415,5 +4529,24 @@ export function _updateDashedBorderStyle(border: PdfInteractiveBorder, parameter
     if (border.style === PdfBorderStyle.dashed) {
         parameter.borderPen._dashStyle = PdfDashStyle.dash;
         parameter.borderPen._dashPattern = [3];
+    }
+}
+/**
+ * Sets the rotation angle for a PDF annotation if necessary.
+ * It ensures that the rotation is within the normalized range [0, 360) degrees.
+ *
+ * @param {number} rotateAngle - The rotation angle to be set for the annotation. Negative values are normalized.
+ * @param {PdfAnnotation} annot - The PDF annotation object which may have its rotation angle modified.
+ * @returns {void} Nothing.
+ */
+export function _setRotateAngle(rotateAngle: number, annot: PdfAnnotation): void {
+    if (annot && rotateAngle !== annot.rotate) {
+        if (rotateAngle < 0) {
+            rotateAngle = 360 + rotateAngle;
+        }
+        if (rotateAngle >= 360) {
+            rotateAngle = 360 - rotateAngle;
+        }
+        annot._dictionary.update('Rotate', rotateAngle);
     }
 }

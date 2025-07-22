@@ -65,14 +65,16 @@ export class BlockEditorMethods {
             const newBlockElement: HTMLElement = this.editor.blockAction.createBlockElement(updatedBlockModel);
             if (parentBlock) {
                 const parentBlockElement: HTMLElement = this.editor.blockWrapper.querySelector(`#${parentBlock.id}`);
-                const selector: string = updatedBlockModel.type === 'Callout' ? '.e-callout-content' : '.e-toggle-content';
+                const selector: string = parentBlock.type === 'Callout' ? '.e-callout-content' : '.e-toggle-content';
                 const wrapper: HTMLElement = parentBlockElement.querySelector(selector);
                 wrapper.insertBefore(newBlockElement, oldBlockElement);
             }
-            this.editor.blockWrapper.insertBefore(
-                newBlockElement,
-                this.editor.blockWrapper.children[parseInt(indexToUpdate.toString(), 10)]
-            );
+            else {
+                this.editor.blockWrapper.insertBefore(
+                    newBlockElement,
+                    this.editor.blockWrapper.children[parseInt(indexToUpdate.toString(), 10)]
+                );
+            }
             detach(oldBlockElement);
             if (isListTypeBlock(updatedBlockModel.type)) {
                 this.editor.listBlockAction.recalculateMarkersForListItems();
@@ -169,7 +171,7 @@ export class BlockEditorMethods {
         if (this.editor.blockWrapper) {
             this.editor.blockWrapper.blur();
             const selection: Selection = window.getSelection();
-            if (selection) { selection.removeAllRanges(); }
+            selection.removeAllRanges();
         }
     }
 
@@ -179,7 +181,6 @@ export class BlockEditorMethods {
 
     public enableDisableToolbarItems(itemId: string | string[], enable: boolean): void {
         const toolbarPopup: HTMLElement = document.querySelector('.e-blockeditor-inline-toolbar-popup');
-        if (!toolbarPopup) { return; }
 
         const ids: string[] = typeof itemId === 'string' ? [itemId] : itemId;
 
@@ -197,9 +198,7 @@ export class BlockEditorMethods {
 
         tbarItemModels.forEach((item: ToolbarItemModel) => {
             const element: HTMLElement = toolbarPopup.querySelector(`[data-command=${item.item}]`) as HTMLElement;
-            if (item) {
-                parentToolbarElements.push(element);
-            }
+            parentToolbarElements.push(element);
         });
         this.editor.inlineToolbarModule.toolbarObj.enableItems(parentToolbarElements, enable);
     }

@@ -67,12 +67,18 @@ export class ShowHide {
         const keys: string[] = this.getToggleFields(columnName);
         const columns: Column[] = this.getColumns(keys, showBy);
         this.parent.notify(events.tooltipDestroy, { module: 'edit' });
-
-        for (let i: number = 0; i < columns.length; i++) {
-            columns[parseInt(i.toString(), 10)].visible = true;
+        if (this.parent.enableVirtualization && this.parent.groupSettings.enableLazyLoading && this.parent.groupSettings.columns.length) {
+            const showColumns: Column[] = columns.filter((column: Column) => !column.visible);
+            showColumns.forEach((column: Column) => column.visible = true);
+            if (showColumns.length > 0) {
+                this.setVisible(showColumns);
+            }
+        } else {
+            for (let i: number = 0; i < columns.length; i++) {
+                columns[parseInt(i.toString(), 10)].visible = true;
+            }
+            this.setVisible(columns);
         }
-
-        this.setVisible(columns);
     }
 
     /**
@@ -86,12 +92,18 @@ export class ShowHide {
         const keys: string[] = this.getToggleFields(columnName);
         const columns: Column[] = this.getColumns(keys, hideBy);
         this.parent.notify(events.tooltipDestroy, { module: 'edit' });
-
-        for (let i: number = 0; i < columns.length; i++) {
-            columns[parseInt(i.toString(), 10)].visible = false;
+        if (this.parent.enableVirtualization && this.parent.groupSettings.enableLazyLoading && this.parent.groupSettings.columns.length) {
+            const hideColumns: Column[] = columns.filter((column: Column) => column.visible);
+            hideColumns.forEach((column: Column) => column.visible = false);
+            if (hideColumns.length > 0) {
+                this.setVisible(hideColumns);
+            }
+        } else {
+            for (let i: number = 0; i < columns.length; i++) {
+                columns[parseInt(i.toString(), 10)].visible = false;
+            }
+            this.setVisible(columns);
         }
-
-        this.setVisible(columns);
     }
 
     private getToggleFields(key: string | string[]): string[] {

@@ -1,14 +1,17 @@
 import { createElement, isNullOrUndefined, Browser } from '@syncfusion/ej2-base';
 import { Chart } from '../../chart/chart';
-import { SvgRenderer } from '@syncfusion/ej2-svg-base';
+import { SvgRenderer, measureText } from '@syncfusion/ej2-svg-base';
 import { AccumulationChart } from '../../accumulation-chart/accumulation';
-import { removeElement } from '../utils/helper';
+import { removeElement, textWrap } from '../utils/helper';
 import { ExportType } from '../utils/enum';
 import { IAfterExportEventArgs } from '../../common/model/interface';
 import { afterExport } from '../model/constants';
 import {
     PdfPageOrientation, PdfDocument, PdfBitmap, SizeF, PdfMargins, PdfStandardFont, PdfPageTemplateElement,
-    PdfSolidBrush, PdfColor
+    PdfSolidBrush, PdfColor,
+    PointF,
+    PdfTextElement,
+    RectangleF
 } from '@syncfusion/ej2-pdf-export';
 import { RangeNavigator } from '../..';
 import { StockChart } from '../../stock-chart/stock-chart';
@@ -337,8 +340,15 @@ export class ExportUtils {
                     (height[i as number] + margin.top + margin.bottom) : pdfDefaultHeight;
             if (header !== undefined) {
                 const font: PdfStandardFont = new PdfStandardFont(1, header.fontSize || 15);
-                const pdfHeader: PdfPageTemplateElement = new PdfPageTemplateElement(exactWidth, 30);
-                pdfHeader.graphics.drawString(header.content + '', font, null, new PdfSolidBrush(new PdfColor(0, 0, 0)), header.x, header.y, null);
+                const brush: PdfSolidBrush = new PdfSolidBrush(new PdfColor(0, 0, 0));
+                const headerTextCollection: string[] = textWrap(header.content, (width[i as number] - (margin.left + margin.right + pdfDefaultWidth / 2)), { size: header.fontSize.toString(), fontStyle: 'Normal', fontWeight: '400', fontFamily: 'Segoe UI'}, null);
+                const lineHeight: number = measureText('chartMeasureText', {size: header.fontSize.toString(), fontStyle: 'Normal', fontWeight: '400', fontFamily: 'Segoe UI'}).height;
+                const totalHeight: number = lineHeight * headerTextCollection.length;
+                const pdfHeader: PdfPageTemplateElement = new PdfPageTemplateElement(exactWidth, totalHeight);
+                for (let i: number = 0; i < headerTextCollection.length; i++) {
+                    const yPosition: number = (header.y || 0) + i * lineHeight;
+                    pdfHeader.graphics.drawString(headerTextCollection[i as number], font, null, brush, header.x, yPosition, null);
+                }
                 document.template.top = pdfHeader;
             }
             if (footer !== undefined) {

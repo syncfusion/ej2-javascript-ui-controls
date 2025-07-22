@@ -179,14 +179,12 @@ export class BlockActionMenuModule {
     }
 
     private isFirstChildBlock(block: BlockModel, parentBlock: BlockModel): boolean {
-        if (!parentBlock.children.length) { return false; }
-        return parentBlock.children[0].id === block.id;
+        return (parentBlock.children.length > 0 && parentBlock.children[0].id === block.id);
     }
 
     private isLastChildBlock(block: BlockModel, parentBlock: BlockModel): boolean {
-        if (!parentBlock.children.length) { return false; }
         const children: BlockModel[] = parentBlock.children;
-        return children[children.length - 1].id === block.id;
+        return (parentBlock.children.length > 0 && children[children.length - 1].id === block.id);
     }
 
     private toggleDisabledItems(blockElement: HTMLElement): void {
@@ -218,7 +216,6 @@ export class BlockActionMenuModule {
 
         this.editor.blockActionsMenu.items.forEach((item: BlockActionItemModel) => {
             const listElement: HTMLElement = this.popupObj.element.querySelector('#' + item.id);
-            if (!listElement) { return; }
 
             let disable: boolean = item.disabled;
 
@@ -242,7 +239,9 @@ export class BlockActionMenuModule {
                 break;
             }
 
-            listElement.classList.toggle('e-disabled', disable);
+            if (listElement) {
+                listElement.classList.toggle('e-disabled', disable);
+            }
         });
     }
 
@@ -250,7 +249,7 @@ export class BlockActionMenuModule {
         const clickEventArgs: BlockActionItemClickEventArgs = {
             item: (args.item as BlockActionItemModel),
             element: args.element,
-            isInteracted: Object.keys(args.event).length > 0 ? true : false,
+            isInteracted: (args.event && Object.keys(args.event).length > 0) ? true : false,
             cancel: false
         };
         if (this.editor.blockActionsMenu.itemClick) {
@@ -305,10 +304,7 @@ export class BlockActionMenuModule {
 
     private isItemDisabled(itemId: string): boolean {
         const listElement: HTMLElement = this.popupObj.element.querySelector('#' + itemId);
-        if (listElement) {
-            return listElement.classList.contains('e-disabled');
-        }
-        return false;
+        return listElement && listElement.classList.contains('e-disabled');
     }
 
     public isPopupOpen(): boolean {
@@ -376,7 +372,7 @@ export class BlockActionMenuModule {
                     }
                     break;
                 case 'items':
-                    this.menuObj.items = newProp.items;
+                    this.menuObj.items = sanitizeBlockActionItems(newProp.items);
                 }
             }
         }

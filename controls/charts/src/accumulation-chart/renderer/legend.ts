@@ -189,10 +189,10 @@ export class AccumulationLegend extends BaseLegend {
             legendOption.render = !legendEventArgs.cancel;
             legendOption.text = legendOption.originalText = ((legendEventArgs.text.indexOf('&') > -1) ?
                 this.convertHtmlEntities(legendEventArgs.text) : legendEventArgs.text);
-            legendOption.fill = legendEventArgs.fill;
             if (legendOption.fill !== legendEventArgs.fill) {
                 this.legendRenderArgFill.push(i as number);
             }
+            legendOption.fill = legendEventArgs.fill;
             legendOption.shape = legendEventArgs.shape;
             legendOption.textSize = measureText(legendOption.text, legend.textStyle, this.chart.themeStyle.legendLabelFont);
             if (legendOption.render && legendOption.text !== '') {

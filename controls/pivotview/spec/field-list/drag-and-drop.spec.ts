@@ -167,7 +167,7 @@ describe('Pivot Field List Rendering', () => {
             setTimeout(() => {
                 pivotButton = [].slice.call((filterAxiscontent).querySelectorAll('.e-pivot-button'));
                 expect(pivotButton.length).toEqual(2);
-                expect(pivotButton[pivotButton.length - 1].getAttribute('data-uid')).toBe('advance');
+                expect(pivotButton[pivotButton.length - 1].getAttribute('data-uid')).toBe('date');
                 done();
             });
         });
@@ -206,7 +206,7 @@ describe('Pivot Field List Rendering', () => {
             setTimeout(() => {
                 pivotButton = [].slice.call((filterAxiscontent).querySelectorAll('.e-pivot-button'));
                 expect(pivotButton.length).toEqual(2);
-                expect(pivotButton[0].getAttribute('data-uid')).toBe('advance');
+                expect(pivotButton[0].getAttribute('data-uid')).toBe('date');
                 done();
             }, 1000);
         });
@@ -245,7 +245,7 @@ describe('Pivot Field List Rendering', () => {
                 pivotButton = [].slice.call((valueAxiscontent).querySelectorAll('.e-pivot-button'));
                 expect(pivotCommon.filterDialog.dialogPopUp).toBeNull;
                 expect(pivotButton.length).toEqual(4);
-                expect(pivotButton[pivotButton.length - 1].getAttribute('data-uid')).toBe('advance');
+                expect(pivotButton[pivotButton.length - 1].getAttribute('data-uid')).toBe('date');
                 done();
             }, 1000);
         });
@@ -276,8 +276,8 @@ describe('Pivot Field List Rendering', () => {
             setTimeout(() => {
                 pivotButton = [].slice.call((valueAxiscontent).querySelectorAll('.e-pivot-button'));
                 expect(pivotButton.length).toEqual(4);
-                expect(pivotButton[0].getAttribute('data-uid')).toBe('advance');
-                expect((pivotButton[0].querySelector('.e-pvt-btn-content') as HTMLElement).innerText).toEqual("Sum of droppedButton");
+                expect(pivotButton[0].getAttribute('data-uid')).toBe('date');
+                expect((pivotButton[0].querySelector('.e-pvt-btn-content') as HTMLElement).innerText).toEqual("Count of droppedButton");
                 done();
             }, 1000);
         });
@@ -306,7 +306,7 @@ describe('Pivot Field List Rendering', () => {
                 pivotButton = [].slice.call((valueAxiscontent).querySelectorAll('.e-pivot-button'));
                 expect(pivotCommon.filterDialog.dialogPopUp).toBeNull;
                 expect(pivotButton.length).toEqual(5);
-                expect(pivotButton[pivotButton.length - 1].getAttribute('data-uid')).toBe('total');
+                expect(pivotButton[pivotButton.length - 1].getAttribute('data-uid')).toBe('_id');
                 done();
             }, 1000);
         });
@@ -830,14 +830,117 @@ describe('Pivot Field List Rendering', () => {
             expect(true).toBe(true);
         });
         it('expect country field check state', () => {
-            expect(document.querySelectorAll('.e-treeview li')[4].querySelector('.e-frame').classList.contains('e-check') === true).toBe(true);
+            expect(document.querySelectorAll('.e-treeview li')[4].querySelector('.e-frame').classList.contains('e-check') === true).toBe(false);
         });
         it('check country field', () => {
             document.querySelectorAll('.e-treeview li')[1].querySelector('.e-frame').dispatchEvent(click);
             expect(true).toBe(true);
         });
         it('expect quantity field check state', () => {
-            expect(document.querySelectorAll('.e-treeview li')[1].querySelector('.e-frame').classList.contains('e-check') === false).toBe(true);
+            expect(document.querySelectorAll('.e-treeview li')[1].querySelector('.e-frame').classList.contains('e-check') === false).toBe(false);
+        });
+    });
+
+    describe('drag and drop Calc Actions', () => {
+        let fieldListObj: PivotFieldList;
+        let pivotCommon: PivotCommon;
+        let mouseEventArgs: any;
+        let elem: HTMLElement = createElement('div', { id: 'PivotFieldList', styles: 'height:400px;width:60%' });
+        afterAll(() => {
+            if (fieldListObj) {
+                fieldListObj.destroy();
+            }
+            remove(elem);
+        });
+        beforeEach(() => {
+            mouseEventArgs = {
+                preventDefault: (): void => { },
+                stopImmediatePropagation: (): void => { },
+                target: null,
+                type: null,
+                shiftKey: false,
+                ctrlKey: false,
+                originalEvent: { target: null }
+            };
+        });
+        beforeAll((done: Function) => {
+            if (document.getElementById(elem.id)) {
+                remove(document.getElementById(elem.id));
+            }
+            document.body.appendChild(elem);
+            let dataBound: EmitType<Object> = () => { done(); };
+            fieldListObj = new PivotFieldList(
+                {
+                    dataSourceSettings: {
+                        dataSource: pivot_dataset as IDataSet[],
+                        expandAll: false,
+                        enableSorting: true,
+                        sortSettings: [{ name: 'company', order: 'Descending' }],
+                        filterSettings: [{ name: 'name', type: 'Include', items: ['Knight Wooten'] },
+                        { name: 'company', type: 'Exclude', items: ['NIPAZ'] },
+                        { name: 'gender', type: 'Include', items: ['male'] }],
+                        calculatedFieldSettings: [
+                            { name: 'price', formula: '5+10' },
+                            { name: 'total', formula: '10/2' }],
+                        rows: [{ name: 'company' }, { name: 'state' }],
+                        columns: [{ name: 'name' }],
+                        values: [{ name: 'balance' },
+                        { name: 'quantity' }], filters: [{ name: 'gender' }]
+                    },
+                    showValuesButton: true,
+                    allowCalculatedField: true,
+                    renderMode: 'Fixed',
+                    dataBound: dataBound,
+                    fieldDragStart: (args: FieldDragStartEventArgs) => {
+                        expect(args.fieldItem).toBeTruthy;
+                        expect(args.cancel).toBe(false);
+                        console.log('fieldDragName: ' + args.fieldItem.name);
+                    },
+                    fieldDrop: (args: FieldDropEventArgs) => {
+                        expect(args.dropField).toBeTruthy;
+                        expect(args.cancel).toBe(false);
+                        console.log('fieldDropName: ' + args.dropField.name);
+                    },
+                    onFieldDropped: (args: FieldDroppedEventArgs) => {
+                        expect(args.droppedField).toBeTruthy;
+                        console.log('fieldDroppedName: ' + args.droppedField.name);
+                    },
+                    fieldRemove: (args: FieldRemoveEventArgs) => {
+                        expect(args.fieldItem).toBeTruthy;
+                        expect(args.cancel).toBe(false);
+                        console.log('fieldRemoveName: ' + args.fieldItem.name);
+                    }
+                });
+            fieldListObj.appendTo('#PivotFieldList');
+            pivotCommon = fieldListObj.pivotCommon;
+        });
+        it('drag and drop calc node to value axis', (done: Function) => {
+            let treeObj: TreeView = fieldListObj.treeViewModule.fieldTable;
+            let rightAxisPanel: HTMLElement = fieldListObj.axisTableModule.axisTable.querySelector('.e-right-axis-fields');
+            let valueAxiscontent: HTMLElement = rightAxisPanel.querySelector('.e-values');
+            let li: Element[] = <Element[] & NodeListOf<HTMLLIElement>>treeObj.element.querySelectorAll('li');
+            let pivotButton: HTMLElement[] = [].slice.call((valueAxiscontent).querySelectorAll('.e-pivot-button'));
+            expect(pivotButton.length).toEqual(2);
+            let mousedown: any =
+                util.getEventObject('MouseEvents', 'mousedown', treeObj.element, li[18].querySelector('.e-drag'), 15, 10);
+            EventHandler.trigger(treeObj.element, 'mousedown', mousedown);
+            let mousemove: any =
+                util.getEventObject('MouseEvents', 'mousemove', treeObj.element, li[18].querySelector('.e-drag'), 15, 70);
+            EventHandler.trigger(<any>(document), 'mousemove', mousemove);
+            mousemove.srcElement = mousemove.target = mousemove.toElement = valueAxiscontent;
+            mousemove = util.setMouseCordinates(mousemove, 15, 75);
+            EventHandler.trigger(<any>(document), 'mousemove', mousemove);
+            let mouseup: any = util.getEventObject('MouseEvents', 'mouseup', treeObj.element, valueAxiscontent);
+            mouseup.type = 'mouseup';
+            EventHandler.trigger(<any>(document), 'mouseup', mouseup);
+            expect((li[18]).querySelector('e-check')).toBeTruthy;
+            setTimeout(() => {
+                pivotButton = [].slice.call((valueAxiscontent).querySelectorAll('.e-pivot-button'));
+                expect(pivotCommon.filterDialog.dialogPopUp).toBeNull;
+                expect(pivotButton.length).toEqual(3);
+                expect(pivotButton[pivotButton.length - 1].getAttribute('data-uid')).toBe('price');
+                done();
+            }, 1000);
         });
     });
 

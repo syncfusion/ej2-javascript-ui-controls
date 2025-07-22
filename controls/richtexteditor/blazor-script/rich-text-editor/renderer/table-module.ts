@@ -218,6 +218,9 @@ export class Table {
      * Handles the resize start event by triggering an event and processing the result.
      */
     private resizeStart(args: ResizeArgs): void {
+        if (this.parent.getDocument().activeElement !== this.parent.inputElement) {
+            this.parent.focusIn();
+        }
         if (this.parent.onResizeStartEnabled) {
             (this.parent.dotNetRef.invokeMethodAsync('ResizeStartEvent', args) as unknown as Promise<ResizeArgs>).then((resizeStartArgs: ResizeArgs) => {
                 if (resizeStartArgs.cancel && this.tableObj) {

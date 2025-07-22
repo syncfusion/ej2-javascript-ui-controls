@@ -128,10 +128,18 @@
           cursor: pointer;
         }
 
+        & .e-header-back-icon {
+          display: none;
+        }
+
         .e-text {
           cursor: default;
           text-indent: 0;
         }
+      }
+
+      & .e-list-navigation .e-but-back.e-header-back-icon {
+        display: block;
       }
 
       & .e-has-header > .e-view {

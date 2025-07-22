@@ -2797,7 +2797,8 @@ export class Selection implements IAction {
     private checkBoxSelectionChanged(): void {
         const gobj: IGrid = this.parent;
         gobj.off(events.contentReady, this.checkBoxSelectionChanged);
-        const checkboxColumn: Column[] = gobj.getColumns().filter((col: Column) => col.type === 'checkbox');
+        const columns: Column[] = gobj.enableColumnVirtualization ? (gobj.columns as Column[]) : gobj.getColumns();
+        const checkboxColumn: Column[] = columns.filter((col: Column) => col.type === 'checkbox');
         if (checkboxColumn.length > 0) {
             gobj.isCheckBoxSelection = true;
             this.chkField = checkboxColumn[0].field;

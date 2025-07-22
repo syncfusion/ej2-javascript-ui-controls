@@ -198,8 +198,9 @@ export class LineDistribution {
         for (let m: number = 0; m < graph.length; m++) {
             const row: GraphObject = graph[parseInt(m.toString(), 10)];
             const sortedrow: ObstacleSegmentValues[] = row.value;
-            sortedrow.sort();
-
+            //Bug 969032: Connectors Overlapping Issue in Complex Hierarchical Tree
+            //Sort the connectors by start point from lowest to highest
+            sortedrow.sort((a: ObstacleSegmentValues, b: ObstacleSegmentValues) => a.start - b.start);
             let groupby: ObstacleSegmentValues[];
             groupby = [];
 

@@ -217,7 +217,6 @@ export class ClipboardCleanupModule {
                     const listTypes: string[] = ['A', 'a', 'I', 'i', 'α', '1', '01', '1-']; // Add '1-' for rare list type.
                     if (listTypes.indexOf(startString) === -1) {
                         if (listStyleType === 'decimal') {
-                            // Bug in getlistStyleType() list style stype is returned as decimal for nested list with start attribute
                             if (!isNaN(parseInt(startString, 10))) {
                                 startAttr = parseInt(startString, 10);
                             }
@@ -505,14 +504,14 @@ export class ClipboardCleanupModule {
     private getListContent(elem: Element): void {
         let pushContent: string = '';
         const firstChild: Element = elem.firstElementChild;
-        if (firstChild.textContent.trim() === '' && !isNOU(firstChild.firstElementChild) &&
+        if (firstChild && !isNOU(firstChild.firstElementChild) && firstChild.textContent.trim() === '' &&
             firstChild.firstElementChild.nodeName === 'IMG') {
             pushContent = elem.innerHTML.trim();
             this.listContents.push('');
             this.listContents.push(pushContent);
         } else {
             //Add to support separate list which looks like same list and also to add all tags as it is inside list
-            if (firstChild.childNodes.length > 0) {
+            if (firstChild && firstChild.childNodes.length > 0) {
                 const listIgnoreTag: NodeListOf<Element> = firstChild.querySelectorAll('[style*="mso-list"]');
                 for (let i: number = 0; i < listIgnoreTag.length; i++) {
                     listIgnoreTag[i as number].setAttribute('style', listIgnoreTag[i as number].getAttribute('style').replace(/\n/g, ''));
@@ -990,10 +989,5 @@ export class ClipboardCleanupModule {
         }
 
         return result;
-    }
-
-    public destroy(): void {
-        this.editor = null;
-        // this.cropImageData = [];
     }
 }

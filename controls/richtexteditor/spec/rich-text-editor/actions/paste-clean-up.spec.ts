@@ -2597,7 +2597,67 @@ describe("852026 - pasting plain text when BR is configured in enterkey", () => 
             let pasteOK: any = document.getElementById(rteObj.getID() + '_pasteCleanupDialog').getElementsByClassName(CLS_RTE_PASTE_OK);
             pasteOK[0].click();
         }
-        const expectedElem: string = 'dsvsdv<br>sdvsdv<br>sdvdsv<br><br>sdvsdv<br>sdvdsv<br><br><br><br>sdvsdvdsv<br>sdvdsvdsvdsv<br>sdvsdvsdvsvv<br>';
+        const expectedElem: string = 'dsvsdv<br>sdvsdv<br>sdvdsv<br><br>sdvsdv<br>sdvdsv<br><br><br><br>sdvsdvdsv<br>sdvdsvdsvdsv<br>sdvsdvsdvsvv';
+        const pastedElem: string = (rteObj as any).inputElement.innerHTML;
+        expect(expectedElem === pastedElem).toBe(true);
+        done();
+      }, 100);
+    });
+    afterAll((done: DoneFn) => {
+      destroy(rteObj);
+      done();
+    });
+});
+
+describe("968502 - pasting plain text when BR is configured in enterkey", () => {
+    let rteObj: RichTextEditor;
+    let editorObj: EditorManager;
+    let keyBoardEvent: any = {
+      preventDefault: () => { },
+      type: "keydown",
+      stopPropagation: () => { },
+      ctrlKey: false,
+      shiftKey: false,
+      action: null,
+      which: 64,
+      key: ""
+    };
+    beforeAll((done: Function) => {
+      rteObj = renderRTE({
+        pasteCleanupSettings: {
+          prompt: true
+        },
+        enterKey: 'BR'
+      });
+      editorObj = new EditorManager({ document: document, editableElement: document.getElementsByClassName("e-content")[0] });
+      done();
+    });
+    it("Unwanted <br> Tag Appended After Pasting Content in Rich Text Editor ", (done) => {
+      keyBoardEvent.clipboardData = {
+        getData: (e: any) => {
+          if (e === "text/plain") {
+            return `list 1\r\nlist 2\r\nlist 3`;
+          } else {
+            return '';
+          }
+        },
+        items: []
+      };
+      rteObj.pasteCleanupSettings.deniedTags = [];
+      rteObj.pasteCleanupSettings.deniedAttrs = [];
+      rteObj.pasteCleanupSettings.allowedStyleProps = [];
+      rteObj.dataBind();
+      (rteObj as any).inputElement.focus();
+      setCursorPoint((rteObj as any).inputElement, 0);
+      rteObj.onPaste(keyBoardEvent);
+      setTimeout(() => {
+        if (rteObj.pasteCleanupSettings.prompt) {
+            let plainFormat: any = document.getElementById(rteObj.getID() + "_pasteCleanupDialog").getElementsByClassName(CLS_RTE_PASTE_PLAIN_FORMAT);
+            plainFormat[0].click();
+            let pasteOK: any = document.getElementById(rteObj.getID() + '_pasteCleanupDialog').getElementsByClassName(CLS_RTE_PASTE_OK);
+            pasteOK[0].click();
+        }
+        const expectedElem: string = 'list 1<br>list 2<br>list 3';
         const pastedElem: string = (rteObj as any).inputElement.innerHTML;
         expect(expectedElem === pastedElem).toBe(true);
         done();

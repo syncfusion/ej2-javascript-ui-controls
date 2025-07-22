@@ -1,8 +1,7 @@
 import { BlockAction } from '../../actions/index';
 import { BlockEditor } from '../../base/index';
 import { BlockModel } from '../../models/index';
-import { generateUniqueId } from '../../utils/common';
-import { appendDocumentNodes } from './block-utils';
+import { handleExistingContentElement } from './block-utils';
 
 
 export class HeadingRenderer {
@@ -33,24 +32,7 @@ export class HeadingRenderer {
             }
         });
         if (existingContentElement) {
-            if (existingContentElement instanceof HTMLElement) {
-                heading.innerHTML = existingContentElement.innerHTML;
-                if (existingContentElement.id) {
-                    heading.id = existingContentElement.id;
-                }
-            }
-            else if (existingContentElement instanceof Node) {
-                existingContentElement.childNodes.forEach((node: Node) => {
-                    heading.appendChild(node.cloneNode(true));
-                });
-                const childLen: number = existingContentElement.childNodes.length;
-                if ((childLen === 0) || (childLen === 1 && existingContentElement.childNodes[0].nodeType === Node.TEXT_NODE)) {
-                    heading.id = block.content && block.content.length === 1
-                        ? block.content[0].id
-                        : generateUniqueId('content');
-                }
-            }
-            appendDocumentNodes(blockElement, heading, existingContentElement);
+            handleExistingContentElement(block, blockElement, heading, existingContentElement);
         } else {
             this.parent.contentRenderer.renderContent(block, heading);
         }

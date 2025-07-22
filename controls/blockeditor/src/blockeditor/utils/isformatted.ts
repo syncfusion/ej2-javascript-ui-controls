@@ -170,21 +170,4 @@ export class FormattingHelper {
             return '';
         }
     }
-
-    /**
-     * isCode method
-     *
-     * @param {Node} node - specifies the node value
-     * @returns {boolean} - returns the boolean value
-     * @hidden
-     * @deprecated
-     */
-    public static isCode(node: Node): boolean {
-        const validTags: string[] = ['code'];
-        if (validTags.indexOf(node.nodeName.toLowerCase()) !== -1) {
-            return true;
-        } else {
-            return false;
-        }
-    }
 }

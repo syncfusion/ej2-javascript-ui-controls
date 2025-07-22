@@ -21,7 +21,6 @@ export class NodeSelection {
 
     public saveSelection(container: HTMLElement): void {
         const selection: Selection | null = this.getSelection();
-        if (!selection) { return; }
 
         const range: Range = this.getRange();
         if (!range) { return; }
@@ -38,8 +37,6 @@ export class NodeSelection {
         // Save current range and selection
         this.currentRange = range.cloneRange();
         this.currentSelection = selection;
-
-        this.updateSelectionRangeOnUserModel();
     }
 
     public restoreSelection(container: HTMLElement): void {
@@ -47,12 +44,12 @@ export class NodeSelection {
         // Handle text changes between save/restore
         const [start, end]: [number, number] = this.adjustOffsetsToTextChanges(newText);
         const range: Range = this.createRangeFromTextPositions(container, start, end);
-        if (!range) { return; }
 
-        const selection: Selection | null = this.getSelection();
-        selection.removeAllRanges();
-        selection.addRange(range);
-        this.updateSelectionRangeOnUserModel();
+        if (range) {
+            const selection: Selection | null = this.getSelection();
+            selection.removeAllRanges();
+            selection.addRange(range);
+        }
     }
 
     private adjustOffsetsToTextChanges(newText: string): [number, number] {
@@ -70,7 +67,7 @@ export class NodeSelection {
         const walker: TreeWalker = document.createTreeWalker(container, NodeFilter.SHOW_TEXT);
         while (walker.nextNode()) {
             const node: Text = walker.currentNode as Text;
-            const textLength: number = node.textContent.length || 0;
+            const textLength: number = node.textContent.length;
             if (!startSet && charCount + textLength >= start) {
                 range.setStart(node, start - charCount);
                 startSet = true;
@@ -185,6 +182,26 @@ export class NodeSelection {
     }
 
     /**
+     * Creates a range with the specified start, end nodes and offsets.
+     *
+     * @param {Node} startNode - The start node of the range.
+     * @param {Node} endNode - The end node of the range.
+     * @param {number} startOffset - The start offset of the range.
+     * @param {number} endOffset - The end offset of the range.
+     *
+     * @returns {void} - Returns void
+     * @hidden
+     */
+    public createRangeWithOffsets(startNode: Node, endNode: Node, startOffset: number, endOffset: number): void {
+        const selection: Selection | null = window.getSelection();
+        const range: Range = document.createRange();
+        range.setStart(startNode, startOffset);
+        range.setEnd(endNode, endOffset);
+        selection.removeAllRanges();
+        selection.addRange(range);
+    }
+
+    /**
      * Checks if selection contains or intersects with a specific node type
      *
      * @param {string} tagName - The tag name to check for.
@@ -242,20 +259,8 @@ export class NodeSelection {
             const endElement: HTMLElement = endContainer.nodeType === Node.ELEMENT_NODE
                 ? endContainer as HTMLElement
                 : endContainer.parentElement;
-            if (startElement) {
-                const closestAnchor: HTMLElement = startElement.closest(tagName) as HTMLElement;
-                if (closestAnchor) { return closestAnchor; }
-            }
-            else if (endElement) { return endElement.closest(tagName) as HTMLElement; }
+            return (startElement.closest(tagName) || endElement.closest(tagName)) as HTMLElement;
         }
         return null;
-    }
-
-    public updateSelectionRangeOnUserModel(): void {
-        // const range: Range = this.getRange();
-        // const currentUserModel: UserModel = this.editor.users.find((user: UserModel) => user.id === this.editor.currentUserId);
-        // if (currentUserModel) {
-        //     currentUserModel.selectionRange = [range.startOffset, range.endOffset];
-        // }
     }
 }

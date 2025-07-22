@@ -659,7 +659,8 @@ export class DialogEdit {
                 const controlObj: any = <any>(<EJ2Instance>div.querySelector('#' + ganttObj.element.id + fieldName)).ej2_instances[0];
                 if (!isNullOrUndefined(controlObj)) {
                     const column: GanttColumnModel = ganttObj.columnByField[fieldName as string];
-                    if (!isNullOrUndefined(column) && !isNullOrUndefined(column.edit) && isNullOrUndefined(column.edit.params)) {
+                    if (!isNullOrUndefined(column) && !isNullOrUndefined(column.edit) && !isNullOrUndefined(column.edit.destroy) &&
+                    isNullOrUndefined(column.edit.params)) {
                         let destroy: Function = column.edit.destroy as Function;
                         if (typeof destroy === 'string') {
                             destroy = getObject(destroy, window);
@@ -3197,7 +3198,7 @@ export class DialogEdit {
             divElement.style.width = '100%';
         }
         const editArgs: Record<string, unknown> = { column: column, data: ganttData };
-        if (!isNullOrUndefined(column.edit) && isNullOrUndefined(column.edit.params)) {
+        if (!isNullOrUndefined(column.edit) && !isNullOrUndefined(column.edit.create) && isNullOrUndefined(column.edit.params)) {
             let create: Function = column.edit.create as Function;
             if (typeof create === 'string') {
                 create = getObject(create, window);
@@ -3254,7 +3255,7 @@ export class DialogEdit {
                 }
             }
         }
-        if (!isNullOrUndefined(column.edit) && isNullOrUndefined(column.edit.params)) {
+        if (!isNullOrUndefined(column.edit) && !isNullOrUndefined(column.edit.write) && isNullOrUndefined(column.edit.params)) {
             let write: Function = column.edit.write as Function;
             let inputObj: Inputs;
             if (typeof write === 'string') {
@@ -3662,7 +3663,8 @@ export class DialogEdit {
                     this.rowData[fieldName as string] !== controlObj.value) {
                     this.disableUndo = true;
                 }
-                if (!isNullOrUndefined(column) && !isNullOrUndefined(column.edit) && isNullOrUndefined(column.edit.params)) {
+                if (!isNullOrUndefined(column) && !isNullOrUndefined(column.edit) && !isNullOrUndefined(column.edit.read) &&
+                isNullOrUndefined(column.edit.params)) {
                     let read: Function = column.edit.read as Function;
                     if (typeof read === 'string') {
                         read = getObject(read, window);

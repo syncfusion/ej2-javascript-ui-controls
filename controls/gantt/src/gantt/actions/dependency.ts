@@ -654,6 +654,9 @@ export class Dependency {
             const properties: ITaskData = currentTask.ganttProperties;
             if (properties.predecessorsName) {
                 this.validatePredecessorDates(currentTask, flatDataCollection);
+                if (currentTask.hasChildRecords && properties.startDate && this.parent.allowParentDependency) {
+                    this.updateChildItems(currentTask);
+                }
                 const predecessorCollection: IPredecessor[] = properties.predecessor;
                 if (predecessorCollection && predecessorCollection.length > 1) {
                     for (const predecessor of predecessorCollection) {
@@ -668,9 +671,6 @@ export class Dependency {
                             this.validatePredecessorDates(validateRecord, flatDataCollection);
                         }
                     }
-                }
-                if (currentTask.hasChildRecords && properties.startDate && this.parent.allowParentDependency) {
-                    this.updateChildItems(currentTask);
                 }
                 if (currentTask.parentItem) {
                     const recordId: string = currentTask.parentItem.taskId;

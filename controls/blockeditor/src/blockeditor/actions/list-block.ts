@@ -39,10 +39,6 @@ export class ListBlockAction {
             this.handleBackspaceKey(event, blockElement, range, blockModel);
             this.editor.isEntireEditorSelected = false;
             break;
-        case 'Delete':
-            this.handleDeleteKey(event, blockElement, range);
-            this.editor.isEntireEditorSelected = false;
-            break;
         default:
             break;
         }
@@ -65,7 +61,7 @@ export class ListBlockAction {
          * ([]) for checklist.
          */
         const content: string = blockElement.textContent.trim();
-        if (content.length < 0) { return; }
+        if (content.length <= 0) { return; }
         const validLength: number = (content.startsWith('*') || content.startsWith('-')) ? 1 : 2;
         const isListTrigger: boolean =
             content.startsWith('*') ||
@@ -87,8 +83,6 @@ export class ListBlockAction {
             case '[]':
                 listType = BlockType.CheckList;
                 break;
-            default:
-                break;
             }
             this.transformBlockToList(blockElement, blockModel, listType);
         }
@@ -96,9 +90,6 @@ export class ListBlockAction {
 
     private handleEnterKey(event: KeyboardEvent, blockElement: HTMLElement, range: Range, blockModel: BlockModel): void {
         event.preventDefault();
-
-        const isAtStart: boolean = range.collapsed && range.startOffset === 0;
-        const isAtEnd: boolean = range.collapsed && range.startOffset === blockElement.textContent.length;
         const isEmpty: boolean = blockElement.textContent.trim() === '';
 
         if (isEmpty) {
@@ -127,20 +118,6 @@ export class ListBlockAction {
         event.preventDefault();
 
         this.blockAction.transformBlockToParagraph(blockElement, blockModel);
-        this.recalculateMarkersForListItems();
-    }
-
-    private handleDeleteKey(event: KeyboardEvent, blockElement: HTMLElement, range: Range): void {
-        const isAtEnd: boolean = range.collapsed && range.startOffset === blockElement.textContent.length;
-        const isEmpty: boolean = blockElement.textContent.trim() === '';
-
-        if (!isAtEnd && !isEmpty) { return; }
-        event.preventDefault();
-
-        this.blockAction.deleteBlockAtCursor({
-            blockElement: blockElement,
-            mergeDirection: 'next'
-        });
         this.recalculateMarkersForListItems();
     }
 
@@ -196,9 +173,9 @@ export class ListBlockAction {
         let index: number = 1;
         const allBlocks: HTMLElement[] = this.getAllBlockElements();
         const currentBlockIndex: number = allBlocks.indexOf(blockElement);
+        if (currentBlockIndex < 0) { return index; }
         const currentIndentLevel: number = this.getIndentLevel(blockElement);
 
-        if (currentBlockIndex < 0) { return index; }
 
         // Count only blocks with same indent level and same type starting from current block
         for (let i: number = currentBlockIndex - 1; i >= 0; i--) {

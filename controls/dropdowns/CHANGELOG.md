@@ -10,6 +10,8 @@
 
 - `#I732169` - Fixed an issue where focus was not applied to the custom value when the Sort Order property was enabled.
 
+- `#I714583` - Fixed an issue where the value was not updating dynamically when using `groupTemplate`.
+
 ### ListBox
 
 #### Bug Fixes

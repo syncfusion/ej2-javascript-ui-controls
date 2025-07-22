@@ -2,6 +2,15 @@
 
 ## [Unreleased]
 
+## 30.1.41 (2025-07-22)
+
+### Pivot Table
+
+#### Bug Fixes
+
+- `#I741630` - The fields in the pivot field list treeview will now be organized correctly according to the datasource order when the `defaultFieldListOrder` property is set to `None` during the `load` event in the pivot table.
+- `#I747426` - The pivot table will now export correctly as an Excel file when using the server-side engine.
+
 ## 30.1.40 (2025-07-15)
 
 ### Pivot Table

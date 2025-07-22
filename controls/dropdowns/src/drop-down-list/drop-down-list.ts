@@ -2774,8 +2774,16 @@ export class DropDownList extends DropDownBase implements IInput {
             this.isNotSearchList = false;
             return;
         }
-        if (this.getInitialData){
-            this.updateActionCompleteDataValues(ulElement, list);
+        if (this.getInitialData) {
+            if (this.itemTemplate && this.element.tagName === 'EJS-COMBOBOX' && this.allowFiltering) {
+                setTimeout(
+                    () => {
+                        this.updateActionCompleteDataValues(ulElement, list);
+                    },
+                    0);
+            } else {
+                this.updateActionCompleteDataValues(ulElement, list);
+            }
             if (this.enableVirtualization) {
                 this.updateSelectElementData(this.allowFiltering);
             }

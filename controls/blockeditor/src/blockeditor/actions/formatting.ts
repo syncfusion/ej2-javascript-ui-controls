@@ -44,7 +44,7 @@ export class FormattingAction {
     private handleFormatting(args: ExecCommandOptions): void {
         const range: Range = this.currentSelectionRange = getSelectionRange();
         const selectedBlocks: BlockModel[] = this.editor.getSelectedBlocks();
-        if (!range || selectedBlocks.length > 1) { return; }
+        if (!range || (selectedBlocks && selectedBlocks.length > 1)) { return; }
         const parentBlock: HTMLElement = getParentBlock(range.startContainer);
         if (!parentBlock) { return; }
         const contentElement: HTMLElement = getBlockContentElement(parentBlock);

@@ -378,11 +378,8 @@ export class GanttTreeGrid {
         if (flag !== null) {
             setValue('doubleClickTarget', null, this.parent.treeGrid.editModule);
         }
-        if (this.parent.cellSave && args.type === 'save') {
-            this.parent.trigger('cellSave', args);
-        } else {
-            this.parent.trigger('actionBegin', args);
-        }
+        this.parent.trigger('actionBegin', args);
+        this.parent.trigger('cellSave', args);
         if (args.requestType !== 'virtualscroll' && args.type !== 'edit' && args.requestType !== 'beginEdit' && !args.cancel) {
             this.parent['showLoadingIndicator']();
         }

@@ -78,9 +78,9 @@
         }
         color: $btn-active-color;
         @if $skin-name == 'fluent2' {
-          background: $secondary-bg-color-selected !important; /* stylelint-disable-line declaration-no-important */
-          border-color: $secondary-border-color-selected !important; /* stylelint-disable-line declaration-no-important */
-          color: $secondary-text-color-selected !important; /* stylelint-disable-line declaration-no-important */
+          background: $secondary-bg-color-selected; /* stylelint-disable-line declaration-no-important */
+          border-color: $secondary-border-color-selected; /* stylelint-disable-line declaration-no-important */
+          color: $secondary-text-color-selected; /* stylelint-disable-line declaration-no-important */
         }
       }
 

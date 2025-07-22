@@ -63,7 +63,7 @@
             }
 
             &.e-stop {
-              background-color: $cbox-focussed-checkmark-bgcolor;
+              background-color: $cbox-indeterminate-bgcolor;
               border-color: $cbox-focussed-checkmark-border-color;
               box-shadow: $cbox-focussed-box-shadow;
               color: $cbox-indeterminate-hover-color;

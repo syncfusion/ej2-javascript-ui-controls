@@ -56,9 +56,6 @@ export class MentionRenderer {
                 if (args.beforeClose) {
                     args.beforeClose.call(this, e);
                 }
-                if (args.closed) {
-                    args.closed.call(this, e);
-                }
             }
         }, args.element);
     }

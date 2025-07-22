@@ -186,8 +186,8 @@ describe('Pivot Field List Rendering - Defer Update', () => {
             let treeObj: TreeView = fieldListObj.treeViewModule.fieldTable;
             let checkEle: Element[] = <Element[] & NodeListOf<Element>>treeObj.element.querySelectorAll('.e-checkbox-wrapper');
             expect(checkEle.length).toBeGreaterThan(0);
-            closest(checkEle[0], 'li').dispatchEvent(down);
-            closest(checkEle[0], 'li').dispatchEvent(up);
+            closest(checkEle[18], 'li').dispatchEvent(down);
+            closest(checkEle[18], 'li').dispatchEvent(up);
             expect(pivotGridObj.element.querySelectorAll('.e-pivot-button').length).toBe(6);
         });
         it('Cancel button', (done: Function) => {
@@ -202,8 +202,8 @@ describe('Pivot Field List Rendering - Defer Update', () => {
                 let treeObj: TreeView = fieldListObj.treeViewModule.fieldTable;
                 let checkEle: Element[] = <Element[] & NodeListOf<Element>>treeObj.element.querySelectorAll('.e-checkbox-wrapper');
                 expect(checkEle.length).toBeGreaterThan(0);
-                closest(checkEle[0], 'li').dispatchEvent(down);
-                closest(checkEle[0], 'li').dispatchEvent(up);
+                closest(checkEle[18], 'li').dispatchEvent(down);
+                closest(checkEle[18], 'li').dispatchEvent(up);
                 expect(pivotGridObj.element.querySelectorAll('.e-pivot-button').length).toBe(6);
                 done();
             });
@@ -220,8 +220,8 @@ describe('Pivot Field List Rendering - Defer Update', () => {
                 let treeObj: TreeView = fieldListObj.treeViewModule.fieldTable;
                 let checkEle: Element[] = <Element[] & NodeListOf<Element>>treeObj.element.querySelectorAll('.e-checkbox-wrapper');
                 expect(checkEle.length).toBeGreaterThan(0);
-                closest(checkEle[0], 'li').dispatchEvent(down);
-                closest(checkEle[0], 'li').dispatchEvent(up);
+                closest(checkEle[18], 'li').dispatchEvent(down);
+                closest(checkEle[18], 'li').dispatchEvent(up);
                 expect(pivotGridObj.element.querySelectorAll('.e-pivot-button').length).toBe(7);
                 done();
             });
@@ -237,8 +237,8 @@ describe('Pivot Field List Rendering - Defer Update', () => {
             let treeObj: TreeView = fieldListObj.treeViewModule.fieldTable;
             let checkEle: Element[] = <Element[] & NodeListOf<Element>>treeObj.element.querySelectorAll('.e-checkbox-wrapper');
             expect(checkEle.length).toBeGreaterThan(0);
-            closest(checkEle[0], 'li').dispatchEvent(down);
-            closest(checkEle[0], 'li').dispatchEvent(up);
+            closest(checkEle[18], 'li').dispatchEvent(down);
+            closest(checkEle[18], 'li').dispatchEvent(up);
             setTimeout(() => {
                 expect(pivotGridObj.element.querySelectorAll('.e-pivot-button').length).toBe(7);
                 done();

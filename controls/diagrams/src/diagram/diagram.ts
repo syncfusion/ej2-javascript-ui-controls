@@ -61,7 +61,7 @@ import { SnapSettingsModel } from './diagram/grid-lines-model';
 import { NodeModel, TextModel, BpmnShapeModel, BpmnAnnotationModel, HeaderModel, HtmlModel, UmlClassMethodModel, UmlClassAttributeModel, UmlEnumerationMemberModel, UmlClassModel, UmlClassifierShapeModel, BasicShapeModel, FlowShapeModel, PathModel } from './objects/node-model';
 import { UmlActivityShapeModel, SwimLaneModel, LaneModel, PhaseModel } from './objects/node-model';
 import { Size } from './primitives/size';
-import { Keys, KeyModifiers, DiagramTools, AlignmentMode, AnnotationConstraints, NodeConstraints, ScrollActions, TextWrap, UmlClassChildType, TextAnnotationDirection, ConnectorConstraints, DecoratorShapes, FlipMode, Direction } from './enum/enum';
+import { Keys, KeyModifiers, DiagramTools, AlignmentMode, AnnotationConstraints, NodeConstraints, ScrollActions, TextWrap, UmlClassChildType, TextAnnotationDirection, ConnectorConstraints, DecoratorShapes, FlipMode, Direction, ItemSourceType } from './enum/enum';
 import { RendererAction, State } from './enum/enum';
 import { BlazorAction } from './enum/enum';
 import { DiagramConstraints, BridgeDirection, AlignmentOptions, SelectorConstraints, PortVisibility, DiagramEvent } from './enum/enum';
@@ -1711,6 +1711,8 @@ export class Diagram extends Component<HTMLElement> implements INotifyPropertyCh
     public swimlaneZIndexTable: {} = {};
     /** @private */
     public canExpand: boolean = false;
+    /** @private */
+    public itemType: ItemSourceType = 'PublicMethod';
     private changedConnectorCollection: ConnectorModel[] = [];
     private changedNodesCollection: NodeModel[] = [];
     private previousNodeCollection: NodeModel[] = [];
@@ -4707,7 +4709,8 @@ export class Diagram extends Component<HTMLElement> implements INotifyPropertyCh
         if (obj) {
             obj = cloneObject(obj); let args: ICollectionChangeEventArgs | IBlazorCollectionChangeEventArgs;
             args = {
-                element: obj, cause: this.diagramActions, diagramAction: this.getDiagramAction(this.diagramActions), state: 'Changing', type: 'Addition', cancel: false
+                element: obj, cause: this.diagramActions, diagramAction: this.getDiagramAction(this.diagramActions), state: 'Changing', type: 'Addition', cancel: false,
+                itemSource: this.itemType
             };
             if (this.parentObject) {
                 args.parentId = this.parentObject.id;
@@ -4820,7 +4823,8 @@ export class Diagram extends Component<HTMLElement> implements INotifyPropertyCh
                     }
                 }
                 args = {
-                    element: newObj, cause: this.diagramActions, diagramAction: this.getDiagramAction(this.diagramActions), state: 'Changed', type: 'Addition', cancel: false
+                    element: newObj, cause: this.diagramActions, diagramAction: this.getDiagramAction(this.diagramActions), state: 'Changed', type: 'Addition', cancel: false,
+                    itemSource: this.itemType
                 };
                 if (this.parentObject) {
                     args.parentId = this.parentObject.id;
@@ -4874,6 +4878,7 @@ export class Diagram extends Component<HTMLElement> implements INotifyPropertyCh
             }
         }
         this.renderReactTemplates();
+        this.itemType = 'PublicMethod';
         return newObj;
     }
     /**
@@ -5171,6 +5176,7 @@ export class Diagram extends Component<HTMLElement> implements INotifyPropertyCh
     }
 
     private removeCommand(): void {
+        this.itemType = 'Clipboard';
         this.remove();
     }
     /**
@@ -5190,7 +5196,7 @@ export class Diagram extends Component<HTMLElement> implements INotifyPropertyCh
             if (obj && (canDelete(obj) || (this.diagramActions & DiagramAction.Clear))) {
                 args = {
                     element: obj, cause: this.diagramActions, diagramAction: this.getDiagramAction(this.diagramActions),
-                    state: 'Changing', type: 'Removal', cancel: false
+                    state: 'Changing', type: 'Removal', cancel: false, itemSource: this.itemType
                 };
                 //Removed isBlazor code
                 if (!(this.diagramActions & DiagramAction.Clear) && (obj.id !== 'helper')) {
@@ -5312,7 +5318,7 @@ export class Diagram extends Component<HTMLElement> implements INotifyPropertyCh
                             this.removeFromAQuad(currentObj as IElement);
                             args = {
                                 element: obj, cause: this.diagramActions, diagramAction: this.getDiagramAction(this.diagramActions),
-                                state: 'Changed', type: 'Removal', cancel: false
+                                state: 'Changed', type: 'Removal', cancel: false, itemSource: this.itemType
                             };
                             //Removed isBlazor code
                             if (obj.id !== 'helper') {
@@ -5891,6 +5897,7 @@ export class Diagram extends Component<HTMLElement> implements INotifyPropertyCh
         const nodes: INode[] = this.removeChildrenFromLayout(this.nodes as INode[]);
         const canEnableRouting: boolean = this.layout.enableRouting && this.layout.type === 'ComplexHierarchicalTree';
         const viewPort: PointModel = { x: this.scroller.viewPortWidth, y: this.scroller.viewPortHeight };
+        let isRoutingConnectorsRefreshed: boolean = false;
         if (this.layout.type !== 'None') {
             if (this.organizationalChartModule || this.mindMapChartModule || this.radialTreeModule || this.symmetricalLayoutModule
                 || this.complexHierarchicalTreeModule || this.flowchartLayoutModule) {
@@ -6018,6 +6025,10 @@ export class Diagram extends Component<HTMLElement> implements INotifyPropertyCh
                     this.updateDiagramObject(connector, true);
                 }
                 if (canEnableRouting || (this.layout as Layout).connectionPointOrigin === 'DifferentPoint' && this.lineDistributionModule && canDoOverlap) {
+                    if ((this.diagramActions & DiagramAction.Render) && this.layout.enableRouting) {
+                        this.refreshRoutingConnectors();
+                        isRoutingConnectorsRefreshed = true;
+                    }
                     this.lineDistributionModule.distributeLines((this.layout as Layout), this);
                 }
                 this.refreshFlowChartConnectors();
@@ -6035,7 +6046,7 @@ export class Diagram extends Component<HTMLElement> implements INotifyPropertyCh
         if (update) {
             this.updateDiagramElementQuad();
         }
-        if ((this.diagramActions & DiagramAction.Render) && this.layout.enableRouting) {
+        if ((this.diagramActions & DiagramAction.Render) && this.layout.enableRouting && !isRoutingConnectorsRefreshed) {
             this.refreshRoutingConnectors();
         }
         if (update) {
@@ -12546,7 +12557,9 @@ export class Diagram extends Component<HTMLElement> implements INotifyPropertyCh
                     }
                     if (actualObject.parentId) {
                         const parent = this.nameTable[actualObject.parentId];
-                        if (parent.shape.type !== 'BPMN') {
+                        //Bug 967781: Addressed performance issues when dragging a group node containing multiple child nodes.
+                        //Optimization: Suppressed the updateDiagramObject method call during group node drag operations to enhance performance.
+                        if (parent.shape.type !== 'BPMN' && !(this.diagramActions & DiagramAction.isGroupDragging)) {
                             if (this.diagramActions & DiagramAction.PreventZIndexOnDragging) {
                                 this.updateDiagramObject(parent, true);
                             }
@@ -14599,6 +14612,7 @@ export class Diagram extends Component<HTMLElement> implements INotifyPropertyCh
                 this.removePreviewChildren(this.currentSymbol as Node);
                 delete this.nameTable[this.currentSymbol.id]; this.currentSymbol = null;
                 this.protectPropertyChange(true);
+                this.itemType = 'SymbolPalette';
                 if (!arg.cancel) {
                     this.startGroupAction();
                     if (clonedObject && (((clonedObject as Node).shape as SwimLaneModel).isLane || isPhase)) {

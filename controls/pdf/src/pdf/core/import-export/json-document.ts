@@ -840,9 +840,11 @@ export class _JsonDocument extends _ExportHelper {
                             if (pageAnnotation) {
                                 const pageAnnotationKeys: string[] = Object.keys(pageAnnotation);
                                 if (pageAnnotationKeys && pageAnnotationKeys.length > 0 && pageAnnotationKeys.indexOf('shapeAnnotation') !== -1) {
-                                    const annotations: any[] = pageAnnotation['shapeAnnotation']; // eslint-disable-line
-                                    if (annotations && annotations.length > 0) {
-                                        annotations.forEach((annotation: any) => { // eslint-disable-line
+                                    const annotationsData: any = pageAnnotation['shapeAnnotation']; // eslint-disable-line
+                                    if (annotationsData) {
+                                        const annotationsArray: any[] = Array.isArray(annotationsData) ? annotationsData : // eslint-disable-line
+                                            Object.keys(annotationsData).map((key: string) => annotationsData[key]); // eslint-disable-line
+                                        annotationsArray.forEach((annotation: any) => { // eslint-disable-line
                                             const annotationKeys: string[] = Object.keys(annotation);
                                             if (annotationKeys && annotationKeys.length > 0 && annotationKeys.indexOf('type') !== -1) {
                                                 const dictionary: _PdfDictionary = new _PdfDictionary(this._crossReference);

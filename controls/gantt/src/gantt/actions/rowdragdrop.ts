@@ -780,7 +780,9 @@ export class RowDD {
                 this.parent.setRecordValue('level' , this.draggedRecord.level , this.draggedRecord);
                 this.updateChildRecordLevel(draggedRecord, level);
             }
-            droppedRecord.expanded = true;
+            if (!this.parent.enableMultiTaskbar) {
+                droppedRecord.expanded = true;
+            }
         }
     }
     private deleteDragRow(): void {

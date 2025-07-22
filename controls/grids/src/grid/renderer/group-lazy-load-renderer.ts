@@ -58,7 +58,7 @@ export class GroupLazyLoadRenderer extends ContentRender implements IRenderer {
     private objIdxByUid: { [x: number]: Row<Column>[] } = {};
     private initialGroupCaptions: { [x: number]: Row<Column>[] } = {};
     private requestType: string[] = ['paging', 'columnstate', 'reorder', 'cancel', 'save', 'beginEdit', 'add', 'delete',
-        'filterBeforeOpen', 'filterchoicerequest', 'infiniteScroll', 'virtualscroll'];
+        'filterBeforeOpen', 'filterchoicerequest', 'infiniteScroll', 'virtualscroll', 'columnVisibilityUpdate'];
     private scrollTopCache: number|undefined = undefined;
 
     /** @hidden */
@@ -1259,7 +1259,8 @@ export class GroupLazyLoadRenderer extends ContentRender implements IRenderer {
         const tr: Element[] = [].slice.call(this.parent.getContent().getElementsByClassName(literals.row));
         let row: Element;
         for (let i: number = 0; !isNullOrUndefined(index) && i < tr.length; i++) {
-            if (parseInt(tr[parseInt(i.toString(), 10)].getAttribute(literals.ariaRowIndex).toString(), 10) - 1 === index) {
+            const rowIndex: number = parseInt(tr[parseInt(i.toString(), 10)].getAttribute(literals.ariaRowIndex), 10);
+            if (rowIndex && rowIndex - 1 === index) {
                 row = tr[parseInt(i.toString(), 10)];
                 break;
             }
@@ -1313,33 +1314,61 @@ export class GroupLazyLoadRenderer extends ContentRender implements IRenderer {
         if (!this.parent.groupSettings.columns.length) {
             setDisplayValue(tr, idx, displayVal, rows);
         } else {
+            let isColSpanAdded: boolean = false;
+            if (this.parent.enableVirtualization && this.parent.groupSettings.enableLazyLoading &&
+                    (<{vgenerator?: Row<Column>[]}>this.parent.contentModule).vgenerator) {
+                const vgenerator: Record<string, Row<Column>[]> =
+                    (<{ vgenerator?: { cache?: Record<string, Row<Column>[]> }}>this.parent.contentModule).vgenerator.cache;
+                const cacheKeys: string[] = Object.keys(vgenerator);
+                const visibleColumnsLength: number = this.parent.getVisibleColumns().length;
+                for (let i: number = 0; i < cacheKeys.length; i++) {
+                    const cacheRows: Row<Column>[] = vgenerator[cacheKeys[parseInt(i.toString(), 10)]];
+                    for (let k: number = 0; k < cacheRows.length; k++) {
+                        const cacheRow: Row<Column> = cacheRows[parseInt(k.toString(), 10)];
+                        if (cacheRow.isCaptionRow) {
+                            cacheRow.cells[cacheRow.indent + 1].colSpan = this.parent.enableColumnVirtualization ? 1 :
+                                (visibleColumnsLength + this.parent.groupSettings.columns.length
+                                    + (this.parent.detailTemplate || this.parent.childGrid ? 1 : 0) - cacheRow.indent
+                                    + (visibleColumnsLength ? -1 : 0));
+                        }
+                        if (cacheRow.isDataRow) {
+                            cacheRow.cells[parseInt(oriIdx.toString(), 10)].visible = displayVal === '' ? true : false;
+                        }
+                    }
+                }
+                isColSpanAdded = true;
+            }
             const keys: string[] = Object.keys(this.groupCache);
             for (let j: number = 0; j < keys.length; j++) {
                 const uids: Row<Column>[] = this.rowsByUid[keys[parseInt(j.toString(), 10)]] as Row<Column>[];
-                const idxs: string[] = Object.keys(uids);
-                for (let i: number = 0; i < idxs.length; i++) {
-                    const tr: HTMLTableRowElement = this.parent.getContent()
-                        .querySelector('tr[data-uid=' + idxs[parseInt(i.toString(), 10)] + ']');
-                    const row: Row<Column> = uids[idxs[parseInt(i.toString(), 10)]];
-                    if (row.isCaptionRow) {
-                        if (!this.captionModelGen.isEmpty()) {
-                            this.changeCaptionRow(row, tr, keys[parseInt(j.toString(), 10)]);
-                        } else {
-                            row.cells[row.indent + 1].colSpan = displayVal === '' ? row.cells[row.indent + 1].colSpan + 1
-                                : row.cells[row.indent + 1].colSpan - 1;
-                            if (tr) {
-                                tr.cells[row.indent + 1].colSpan = row.cells[row.indent + 1].colSpan;
+                if (!isNullOrUndefined(uids)) {
+                    const idxs: string[] = Object.keys(uids);
+                    for (let i: number = 0; i < idxs.length; i++) {
+                        const tr: HTMLTableRowElement = this.parent.getContent()
+                            .querySelector('tr[data-uid=' + idxs[parseInt(i.toString(), 10)] + ']');
+                        const row: Row<Column> = uids[idxs[parseInt(i.toString(), 10)]];
+                        if (row.isCaptionRow) {
+                            if (!this.captionModelGen.isEmpty()) {
+                                this.changeCaptionRow(row, tr, keys[parseInt(j.toString(), 10)]);
+                            } else {
+                                if (!isColSpanAdded) {
+                                    row.cells[row.indent + 1].colSpan = displayVal === '' ? row.cells[row.indent + 1].colSpan + 1
+                                        : row.cells[row.indent + 1].colSpan - 1;
+                                }
+                                if (tr) {
+                                    tr.cells[row.indent + 1].colSpan = row.cells[row.indent + 1].colSpan;
+                                }
                             }
                         }
-                    }
-                    if (row.isDataRow) {
-                        this.showAndHideCells(tr, idx, displayVal, false);
-                        row.cells[parseInt(oriIdx.toString(), 10)].visible = displayVal === '' ? true : false;
-                    }
-                    if (!row.isCaptionRow && !row.isDataRow && isNullOrUndefined(row.indent)) {
-                        row.cells[parseInt(oriIdx.toString(), 10)].visible = displayVal === '' ? true : false;
-                        row.visible = row.cells.some((cell: Cell<AggregateColumnModel>) => cell.isDataCell && cell.visible);
-                        this.showAndHideCells(tr, idx, displayVal, true, row);
+                        if (row.isDataRow) {
+                            this.showAndHideCells(tr, idx, displayVal, false);
+                            row.cells[parseInt(oriIdx.toString(), 10)].visible = displayVal === '' ? true : false;
+                        }
+                        if (!row.isCaptionRow && !row.isDataRow && isNullOrUndefined(row.indent)) {
+                            row.cells[parseInt(oriIdx.toString(), 10)].visible = displayVal === '' ? true : false;
+                            row.visible = row.cells.some((cell: Cell<AggregateColumnModel>) => cell.isDataCell && cell.visible);
+                            this.showAndHideCells(tr, idx, displayVal, true, row);
+                        }
                     }
                 }
             }

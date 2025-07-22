@@ -10640,4 +10640,68 @@ the tool bar support, it�s also customiza</p><table class="e-rte-table" style=
                 expect(insertedTable).not.toBeNull();
             });
     });
+
+    describe('968937 - Table height and width resizing functionality', () => {
+        let editor: RichTextEditor;
+        let rteEle: HTMLElement;
+
+        beforeAll(() => {
+            editor = renderRTE({
+                saveInterval: 1,
+                toolbarSettings: {
+                    items: ['Bold', 'CreateTable']
+                },
+                value: `<table class="e-rte-table" style="width: 50%; min-width: 0px; height: 150px;">
+                        <tbody>
+                            <tr>
+                                <td style="width: 33.3333%;">Cell 1</td>
+                                <td style="width: 33.3333%;">Cell 2</td>
+                                <td style="width: 33.3333%;">Cell 3</td>
+                            </tr>
+                            <tr>
+                                <td style="width: 33.3333%;">Cell 4</td>
+                                <td style="width: 33.3333%;">Cell 5</td>
+                                <td style="width: 33.3333%;">Cell 6</td>
+                            </tr>
+                        </tbody>
+                    </table>`
+            });
+            rteEle = editor.element;
+        });
+
+        afterAll(() => {
+            destroy(editor);
+        });
+
+        it('should resize table width using column resize handles', (done: DoneFn) => {
+            editor.focusOut();
+            let activeElement = document.activeElement;
+            const table = editor.contentModule.getEditPanel().querySelector('table') as HTMLTableElement;
+            const initialWidth = table.offsetWidth;
+            (editor.tableModule as any).tableObj.resizeHelper({ target: table, preventDefault: function () { } });
+            const columnHandle = editor.contentModule.getEditPanel().querySelectorAll('.e-column-resize')[0] as HTMLElement;
+            expect(columnHandle).not.toBeNull();
+            const mouseDownEvent = new MouseEvent('mousedown', {
+                bubbles: true,
+                cancelable: true,
+                view: window
+            });
+            columnHandle.dispatchEvent(mouseDownEvent);
+            (editor.tableModule as any).tableObj.resizeStart(mouseDownEvent);
+            (editor.tableModule as any).tableObj.resizing({
+                target: columnHandle,
+                pageX: initialWidth + 50, // Move 50px to right
+                pageY: 0,
+                preventDefault: function () { }
+            });
+            const mouseUpEvent = new MouseEvent('mouseup', {
+                bubbles: true,
+                cancelable: true,
+                view: window
+            });
+            document.dispatchEvent(mouseUpEvent);
+            expect(activeElement).not.toBe(document.activeElement);
+            done();
+        });
+    });
 });

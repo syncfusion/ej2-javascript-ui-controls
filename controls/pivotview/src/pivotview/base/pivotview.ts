@@ -923,9 +923,31 @@ export class PivotView extends Component<HTMLElement> implements INotifyProperty
     @Complex<HyperlinkSettingsModel>({}, HyperlinkSettings)
     public hyperlinkSettings: HyperlinkSettingsModel;
 
-
     /**
-     * Allows to set the page information to display the pivot table with specific page during paging and virtual scrolling.
+     * Configures paging settings to split large datasets into smaller pages for display when `enablePaging` is enabled.
+     * This property customizes page size and current page for row and column axes using the `PageSettings` class, which includes:
+     * - `columnPageSize`: Total columns per page (default: 5, must be a positive integer).
+     * - `rowPageSize`: Total rows per page (default: 5, must be a positive integer).
+     * - `currentColumnPage`: Current column page displayed (default: 1, must be a positive integer).
+     * - `currentRowPage`: Current row page displayed (default: 1, must be a positive integer).
+     *
+     * @example
+     * ```typescript
+     * // Initialize PivotView with paging enabled and custom page settings
+     * // Note: Ensure page sizes and current pages are positive integers to avoid errors
+     *
+     * const pivotObj = new PivotView({
+     *   enablePaging: true,
+     *   pageSettings: {
+     *     rowPageSize: 10,
+     *     columnPageSize: 5,
+     *     currentColumnPage: 1,
+     *     currentRowPage: 1
+     *   }
+     * });
+     * pivotObj.appendTo('#PivotView');
+     * ```
+     * @see PageSettings
      */
     @Complex<PageSettingsModel>({}, PageSettings)
     public pageSettings: PageSettingsModel;

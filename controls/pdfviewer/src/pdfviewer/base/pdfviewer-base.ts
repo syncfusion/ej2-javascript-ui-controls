@@ -4576,7 +4576,7 @@ export class PdfViewerBase {
                          this.getHorizontalValue(currentBound.right, i) >
                             event.clientX && this.getVerticalValue(currentBound.top, i) < event.clientY &&
                             this.getVerticalValue(currentBound.bottom, i) > event.clientY) ||
-                             (this.pdfViewer.textSelectionModule.selectionRangeArray[0].rectangleBounds.length === 1 &&
+                             (this.pdfViewer.textSelectionModule.selectionRangeArray[0].rectangleBounds.length >= 1 &&
                                  event.clientX !== 0) && !this.pdfViewer.annotationModule.textMarkupAnnotationModule.
                                  isTextMarkupAnnotationMode) {
                             isWithin = true;

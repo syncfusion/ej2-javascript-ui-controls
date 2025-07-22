@@ -310,7 +310,6 @@ export class DragAndDropAction {
                 listItem.insertAdjacentElement(isAfter ? 'afterend' : 'beforebegin', this.dropIndicator);
                 return true;
             }
-            return false;
         }
         return false;
     }

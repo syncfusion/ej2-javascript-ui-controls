@@ -1347,8 +1347,6 @@ export class InsertHtml {
     // Moves the cursor to the end of the content node, ensuring proper placement.
     private static placeCursorEnd(
         lastSelectionNode: Node, insertedNode: Node, nodeSelection: NodeSelection, docElement: Document, editNode?: Element): void {
-        lastSelectionNode = lastSelectionNode.nodeName === 'BR' ? (isNOU(lastSelectionNode.previousSibling) ? lastSelectionNode.parentNode
-            : lastSelectionNode.previousSibling) : lastSelectionNode;
         while (!isNOU(lastSelectionNode) && lastSelectionNode.nodeName !== '#text' && lastSelectionNode.nodeName !== 'IMG' &&
         lastSelectionNode.nodeName !== 'BR' && lastSelectionNode.nodeName !== 'HR') {
             if (!isNOU(lastSelectionNode.lastChild) && (lastSelectionNode.lastChild.nodeName === 'P' &&

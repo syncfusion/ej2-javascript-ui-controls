@@ -794,6 +794,49 @@ describe('ChatUI Component', () => {
             expect(toolbarItems[0].querySelector('.e-icons').classList.contains('e-user')).toBe(true);
             expect(toolbarItems[1].querySelector('.e-icons').classList.contains('e-folder')).toBe(true);
         });
+
+        it('Header Toolbar tabindex value checking', () => {
+            chatUI = new ChatUI({
+                headerToolbar: {
+                    items: [
+                        { iconCss: 'e-icons e-menu', align: 'Left', tabIndex: 1 },
+                        { iconCss: 'e-icons e-search', align: 'Right', tabIndex: 2 }
+                    ]
+                }
+            });
+            chatUI.appendTo('#chatUI');
+            const toolbarItems: NodeListOf<HTMLDivElement> = chatUIElem.querySelectorAll('.e-chat-header .e-toolbar-item');
+            expect(toolbarItems.length).toBe(2);
+            expect(toolbarItems[0].children[0].getAttribute('tabindex')).toEqual('1');
+            expect(toolbarItems[1].children[0].getAttribute('tabindex')).toEqual('2');
+        });
+
+        it('Header Toolbar dynamic tabindex value checking', () => {
+            chatUI = new ChatUI({
+                headerToolbar: {
+                    items: [
+                        { iconCss: 'e-icons e-search', align: 'Right' }
+                    ]
+                }
+            });
+            chatUI.appendTo('#chatUI');
+            const toolbarElement: HTMLDivElement = chatUIElem.querySelector('.e-chat-toolbar.e-toolbar');
+            let toolbarItems: NodeListOf<HTMLDivElement> = toolbarElement.querySelectorAll('.e-toolbar-item');
+            expect(toolbarItems.length).toBe(1);
+            expect(toolbarItems[0].children[0].getAttribute('tabindex')).toEqual('0');
+            chatUI.headerToolbar = {
+                items: [{ iconCss: 'e-icons e-user', align: 'Right', tabIndex: 1 }, { iconCss: 'e-icons e-folder', align: 'Right', tabIndex: 2 }],
+            };
+            chatUI.dataBind();
+            (toolbarElement as any).ej2_instances[0].dataBind();
+            toolbarItems = chatUIElem.querySelectorAll('.e-chat-header .e-toolbar-item');
+            expect(toolbarItems.length).toBe(2);
+            expect(toolbarItems[0].querySelector('.e-icons').classList.contains('e-search')).toBe(false);
+            expect(toolbarItems[0].querySelector('.e-icons').classList.contains('e-user')).toBe(true);
+            expect(toolbarItems[1].querySelector('.e-icons').classList.contains('e-folder')).toBe(true);
+            expect(toolbarItems[0].children[0].getAttribute('tabindex')).toEqual('1');
+            expect(toolbarItems[1].children[0].getAttribute('tabindex')).toEqual('2');
+        });
     
         it('Suggestions checking', () => {
             const suggestionList = ['How are you?', 'Nice to meet you', 'What\'s up?'];
@@ -2842,6 +2885,59 @@ describe('ChatUI Component', () => {
                 const icon = Array.from(toolbarIcons).find((icon) => icon.classList.contains(className));
                 expect(icon).not.toBeNull();
             });
+        });
+
+        it('Message toolbar with tabindex', () => {
+            chatUI = new ChatUI({
+                messages: [
+                    {
+                        id: 'msg1',
+                        text: 'This is a message.',
+                        author: { id: 'user1', user: 'John Doe' },
+                        timeStamp: new Date(),
+                    }
+                ],
+                messageToolbarSettings: {
+                    items: [
+                        { type: 'Button', iconCss: 'e-icons e-chat-copy', tabIndex: 1 }
+                    ]
+                }
+            });
+            chatUI.appendTo('#chatUI');
+            let toolbar = chatUIElem.querySelector('.e-chat-message-toolbar');
+            expect(toolbar.querySelector('.e-chat-copy')).not.toBeNull();
+            expect(toolbar.querySelector('.e-tbar-btn').getAttribute('tabindex')).toEqual('1');
+        });
+
+        it('Message toolbar with dynamic tabindex value update', () => {
+            chatUI = new ChatUI({
+                messages: [
+                    {
+                        id: 'msg1',
+                        text: 'This is a message.',
+                        author: { id: 'user1', user: 'John Doe' },
+                        timeStamp: new Date(),
+                    }
+                ],
+                messageToolbarSettings: {
+                    items: [
+                        { type: 'Button', iconCss: 'e-icons e-chat-copy' }
+                    ]
+                }
+            });
+            chatUI.appendTo('#chatUI');
+            let toolbar = chatUIElem.querySelector('.e-chat-message-toolbar');
+            expect(toolbar.querySelector('.e-chat-copy')).not.toBeNull();
+            expect(toolbar.querySelector('.e-tbar-btn').getAttribute('tabindex')).toEqual('0');
+            // Update toolbar items
+            chatUI.messageToolbarSettings.items = [
+                { type: 'Button', iconCss: 'e-icons e-chat-pin', tooltip: 'Pin', tabIndex: 1 }
+            ];
+            chatUI.dataBind();
+
+            toolbar = chatUIElem.querySelector('.e-chat-message-toolbar');
+            expect(toolbar.querySelector('.e-chat-copy')).toBeNull();
+            expect(toolbar.querySelector('.e-tbar-btn').getAttribute('tabindex')).toEqual('1');
         });
     });
 });

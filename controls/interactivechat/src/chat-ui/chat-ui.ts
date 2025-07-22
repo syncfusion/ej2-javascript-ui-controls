@@ -815,7 +815,8 @@ export class ChatUI extends InterActiveChatBase implements INotifyPropertyChange
                 tooltipText: item.tooltip,
                 prefixIcon: item.iconCss,
                 text: item.text,
-                align: item.align
+                align: item.align,
+                tabIndex: item.tabIndex
             }));
             this.toolbar = new Toolbar({
                 items: pushToolbar,
@@ -860,7 +861,8 @@ export class ChatUI extends InterActiveChatBase implements INotifyPropertyChange
                 tooltipText: item.tooltip,
                 prefixIcon: item.iconCss,
                 text: item.text,
-                align: item.align
+                align: item.align,
+                tabIndex: item.tabIndex
             }));
             this.toolbar.items = pushToolbar;
         }
@@ -919,7 +921,8 @@ export class ChatUI extends InterActiveChatBase implements INotifyPropertyChange
                 prefixIcon: item.iconCss,
                 text: item.text,
                 align: item.align,
-                width: this.messageToolbarSettings.width
+                width: this.messageToolbarSettings.width,
+                tabIndex: item.tabIndex
             }));
         }
         const messageToolbar: Toolbar = new Toolbar({

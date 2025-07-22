@@ -778,7 +778,6 @@ export class MultiSelect extends DropDownBase implements IInput {
     private keyCode: number;
     private beforePopupOpen: boolean;
     private remoteCustomValue: boolean;
-    private filterAction: boolean;
     private remoteFilterAction: boolean;
     private selectAllEventData: FieldSettingsModel[] = [];
     private selectAllEventEle: HTMLLIElement[] = [];
@@ -1579,7 +1578,7 @@ export class MultiSelect extends DropDownBase implements IInput {
                 return filterQuery;
             }
         }
-        if (this.filterAction) {
+        if (this.isFilterAction) {
             if ((this.targetElement() !== null && !this.enableVirtualization) || (this.enableVirtualization &&
                 this.targetElement() !== null && this.targetElement().trim() !== '')) {
                 const dataType: string = <string>this.typeOfData(this.dataSource as { [key: string]: Object }[]).typeof;
@@ -4269,7 +4268,7 @@ export class MultiSelect extends DropDownBase implements IInput {
             this.isFilterPrevented = eventArgs.cancel;
             if (!eventArgs.cancel) {
                 if (!this.isFiltered && !eventArgs.preventDefaultAction) {
-                    this.filterAction = true;
+                    this.isFilterAction = true;
                     this.isFilteringAction = true;
                     if (this.dataSource instanceof DataManager && this.allowCustomValue) {
                         this.isCustomRendered = false;
@@ -4443,7 +4442,7 @@ export class MultiSelect extends DropDownBase implements IInput {
     private initializeData(): void {
         this.mainListCollection = [];
         this.beforePopupOpen = false;
-        this.filterAction = false;
+        this.isFilterAction = false;
         this.remoteFilterAction = false;
         this.isFirstClick = false;
         this.mobFilter = true;
@@ -4784,7 +4783,7 @@ export class MultiSelect extends DropDownBase implements IInput {
         }
     }
     protected updateDataList(): void {
-        if (this.mainList && this.ulElement && !(this.isFiltered || this.filterAction || this.targetElement().trim())) {
+        if (this.mainList && this.ulElement && !(this.isFiltered || this.isFilterAction || this.targetElement().trim())) {
             const isDynamicGroupItemUpdate: boolean = this.mainList.childElementCount < this.ulElement.childElementCount;
             const isReactTemplateUpdate: boolean = ((this.ulElement.childElementCount > 0 &&
                 this.ulElement.children[0].childElementCount > 0) &&
@@ -6030,7 +6029,7 @@ export class MultiSelect extends DropDownBase implements IInput {
             this.isDynamicDataChange = true;
         }
         if (this.getModuleName() === 'multiselect') {
-            this.filterAction = false;
+            this.isFilterAction = false;
             this.setUpdateInitial(['fields', 'query', 'dataSource'], newProp as { [key: string]: string });
         }
         for (const prop of Object.keys(newProp)) {

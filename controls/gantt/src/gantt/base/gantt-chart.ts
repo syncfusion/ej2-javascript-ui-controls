@@ -1395,13 +1395,8 @@ export class GanttChart {
      * @private
      */
     public getRecordByTaskBar(target: Element): IGanttData {
-        let item: IGanttData;
-        if (this.parent.enableVirtualization && this.parent.enableMultiTaskbar) {
-            item = this.parent.flatData[this.getIndexByTaskBar(target)];
-        }
-        else {
-            item = this.parent.currentViewData[this.getIndexByTaskBar(target)];
-        }        return item;
+        const item: IGanttData = this.parent.flatData[this.getIndexByTaskBar(target)];
+        return item;
     }
     private updateElement(next: Element, currentColumn: ColumnModel, isTab: boolean, isInEditedState: boolean, row: IGanttData): Element {
         if (this.parent.ganttColumns[parseInt(next.getAttribute('aria-colindex'), 10) - 1].field === this.parent.taskFields.progress) {
@@ -1990,7 +1985,7 @@ export class GanttChart {
                     recordIndex = this.parent.ids.indexOf(record.ganttProperties.taskId.toString());
                 }
                 else {
-                    recordIndex = this.parent.currentViewData.indexOf(record);
+                    recordIndex = this.parent.flatData.indexOf(record);
                 }
             }
         }

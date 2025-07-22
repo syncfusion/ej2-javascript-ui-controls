@@ -97,7 +97,6 @@ export class Legend extends BaseLegend {
         this.legendCollections = [];
         let seriesType: ChartDrawType | ChartSeriesType;
         let fill: string;
-        let dashArray: string;
         const colors: string[] = [];
         this.isRtlEnable = chart.enableRtl;
         this.isReverse = !this.isRtlEnable && chart.legendSettings.reverse;
@@ -109,14 +108,13 @@ export class Legend extends BaseLegend {
                 if (series.category !== 'Indicator') {
                     seriesType = (chart.chartAreaType === 'PolarRadar') ? <ChartDrawType>series.drawType :
                         <ChartSeriesType>series.type;
-                    dashArray = !series.marker.visible && (seriesType.indexOf('Line') > -1 && seriesType.indexOf('Area') === -1) ? series.dashArray : '';
                     fill = series.interior;
                     this.legendCollections.push(new LegendOptions(
                         series.name, fill, series.legendShape, (series.category === 'TrendLine' ?
                             (this.chart as Chart).series[series.sourceIndex].trendlines[series.index].visible : series.visible),
                         seriesType, series.legendImageUrl ? series.legendImageUrl : (series.type === 'Scatter' && series.marker.shape === 'Image' ?
                             series.marker.imageUrl : ''),
-                        series.marker.shape, series.marker.visible, null, null, dashArray
+                        series.marker.shape, series.marker.visible, null, null
                     ));
                 }
             } else if (this.legend.mode === 'Point') {

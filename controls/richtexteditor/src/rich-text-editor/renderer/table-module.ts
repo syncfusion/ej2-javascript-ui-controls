@@ -268,6 +268,9 @@ export class Table {
      * Handles the resize start event by triggering an event and processing the result.
      */
     private resizeStart(args: ResizeArgs): void {
+        if (this.parent.contentModule.getDocument().activeElement !== this.parent.inputElement) {
+            this.parent.focusIn();
+        }
         this.parent.trigger(events.resizeStart, args, (resizeStartArgs: ResizeArgs) => {
             if (resizeStartArgs.cancel && this.tableObj) {
                 this.tableObj.cancelResizeAction();

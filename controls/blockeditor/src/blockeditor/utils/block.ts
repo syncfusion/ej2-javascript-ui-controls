@@ -14,6 +14,7 @@ import { findClosestParent } from './dom';
  * @returns {BlockModel | null} The matching block or null if not found.
  */
 export function getBlockModelById(blockId: string, blocks: BlockModel[]): BlockModel | null {
+    if (!blocks) { return null; }
     for (const block of blocks) {
         if (block.id === blockId) {
             return block;
@@ -40,7 +41,7 @@ export function getBlockIndexById(id: string, blocks: BlockModel[]): number {
         return -1;
     }
     const blockModel: BlockModel = getBlockModelById(id, blocks);
-    if (blockModel.parentId && blockModel.parentId !== '') {
+    if (blockModel && blockModel.parentId && blockModel.parentId !== '') {
         const parentBlock: BlockModel = getBlockModelById(blockModel.parentId, blocks);
         if (parentBlock) {
             return parentBlock.children.indexOf(blockModel);

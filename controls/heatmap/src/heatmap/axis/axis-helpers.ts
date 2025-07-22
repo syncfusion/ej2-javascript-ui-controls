@@ -531,16 +531,6 @@ export class AxisHelper {
                     this.drawSvgCanvas.createText(options, labelElement, label);
                 }
             }
-            if (compactInterval === 0) {
-                const labelInterval: number = (axis.valueType === 'DateTime' && axis.showLabelOn !== 'None') ?
-                    axis.dateTimeAxisLabelInterval[i as number] : axis.axisLabelInterval;
-                lableStartY = lableStartY + (axis.isInversed ? (labelInterval * interval) :
-                    -(labelInterval * interval));
-            } else {
-                lableStartY = lableStartY + (axis.isInversed ? (compactInterval * interval) : -(compactInterval * interval));
-                i = i + (compactInterval - 1);
-            }
-            this.drawYAxisBorder(axis, borderElement, axis.rect, y, elementSize.height, i);
             label = this.getMaxLabel(wrappedLabel, axis);
             if (label.indexOf('...') !== -1) {
                 const xValue: number = axis.opposedPosition ? x : (x - ( axis.angle % 360 !== 0 ? (rotateSize.width / 2) : elementSize.width));
@@ -553,6 +543,16 @@ export class AxisHelper {
                             xValue, yValue, (axis.angle % 360 !== 0 ? rotateSize.width : elementSize.width),
                             (axis.angle % 360 !== 0 ? rotateSize.height : elementSize.height * wrappedLabel.length))));
             }
+            if (compactInterval === 0) {
+                const labelInterval: number = (axis.valueType === 'DateTime' && axis.showLabelOn !== 'None') ?
+                    axis.dateTimeAxisLabelInterval[i as number] : axis.axisLabelInterval;
+                lableStartY = lableStartY + (axis.isInversed ? (labelInterval * interval) :
+                    -(labelInterval * interval));
+            } else {
+                lableStartY = lableStartY + (axis.isInversed ? (compactInterval * interval) : -(compactInterval * interval));
+                i = i + (compactInterval - 1);
+            }
+            this.drawYAxisBorder(axis, borderElement, axis.rect, y, elementSize.height, i);
         }
         if (!heatMap.enableCanvasRendering) {
             parent.appendChild(labelElement);

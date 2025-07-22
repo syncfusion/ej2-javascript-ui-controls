@@ -7,7 +7,7 @@ import { ProtectionType } from '../../base/types';
 import { Base64 } from '../editor/editor-helper';
 import { ListView } from '@syncfusion/ej2-lists';
 import { DropDownList } from '@syncfusion/ej2-dropdowns';
-
+import { Key } from 'selenium-webdriver';
 /**
  * @private
  * @param {any} args - Specifies the args

@@ -2,6 +2,15 @@
 
 ## [Unreleased]
 
+## 30.1.41 (2025-07-22)
+
+### Chart
+
+#### Bug Fixes
+
+- `#I739203` - Now the header in the exported PDF renders properly with wrapping instead of being cropped.
+- `#I738322` - The legend will render without a dash array for the marker-disabled dashed line series chart.
+
 ## 30.1.40 (2025-07-15)
 
 ### Chart

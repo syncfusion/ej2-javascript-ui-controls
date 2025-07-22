@@ -1528,10 +1528,10 @@ export class PdfRenderer {
                 }
                 if (options !== ExtractTextOption.TextOnly) {
                     const bound: AnnotBounds = new AnnotBounds(
-                        this.convertPixelToPoint(detail.X),
-                        this.convertPixelToPoint(detail.Y + cropBox[1]),
-                        this.convertPixelToPoint(detail.Width),
-                        this.convertPixelToPoint(detail.Height)
+                        this.convertPointToPixel(detail.X ? detail.X : detail.Bounds.X),
+                        this.convertPointToPixel((detail.Y ? detail.Y : detail.Bounds.Y) + cropBox[1]),
+                        this.convertPointToPixel(detail.Width ? detail.Width : detail.Bounds.Width),
+                        this.convertPointToPixel(detail.Height ? detail.Height : detail.Bounds.Height)
                     );
                     textData.push(new TextData(text, bound));
                 }

@@ -1,8 +1,7 @@
 import { BlockAction } from '../../actions/index';
 import { BlockEditor } from '../../base/index';
 import { BlockModel } from '../../models/index';
-import { generateUniqueId } from '../../utils/index';
-import { appendDocumentNodes } from './block-utils';
+import { handleExistingContentElement } from './block-utils';
 
 
 export class ParagraphRenderer {
@@ -31,24 +30,7 @@ export class ParagraphRenderer {
             }
         });
         if (existingContentElement) {
-            if (existingContentElement instanceof HTMLElement) {
-                paragraph.innerHTML = existingContentElement.innerHTML;
-                if (existingContentElement.id) {
-                    paragraph.id = existingContentElement.id;
-                }
-            }
-            else if (existingContentElement instanceof Node) {
-                existingContentElement.childNodes.forEach((node: Node) => {
-                    paragraph.appendChild(node.cloneNode(true));
-                });
-                const childLen: number = existingContentElement.childNodes.length;
-                if ((childLen === 0) || (childLen === 1 && existingContentElement.childNodes[0].nodeType === Node.TEXT_NODE)) {
-                    paragraph.id = block.content && block.content.length === 1
-                        ? block.content[0].id
-                        : generateUniqueId('content');
-                }
-            }
-            appendDocumentNodes(blockElement, paragraph, existingContentElement);
+            handleExistingContentElement(block, blockElement, paragraph, existingContentElement);
         } else {
             this.parent.contentRenderer.renderContent(block, paragraph);
         }

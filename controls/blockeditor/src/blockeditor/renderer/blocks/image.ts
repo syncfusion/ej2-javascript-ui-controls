@@ -46,8 +46,8 @@ export class ImageRenderer {
             this.editor.element.querySelectorAll<HTMLImageElement>('img');
         images.forEach((image: HTMLImageElement): void => {
             const isTargetImage: boolean = image === target || target.contains(image);
-            const resizeHandles: NodeListOf<HTMLElement> | null =
-                image.parentElement.querySelectorAll<HTMLElement>('.e-image-rsz-handle') || null;
+            const resizeHandles: NodeListOf<HTMLElement> =
+                image.parentElement.querySelectorAll<HTMLElement>('.e-image-rsz-handle');
             if (isImageClick && isTargetImage) {
                 image.classList.add('e-image-focus');
                 resizeHandles.forEach((handle: HTMLElement): void => {
@@ -65,7 +65,7 @@ export class ImageRenderer {
     public renderImage(block: BlockModel, blockElement: HTMLElement, isTransform?: boolean): HTMLElement {
         const settings: ImageSettingsModel = block.imageSettings;
 
-        const blockId: string = block.id || generateUniqueId('image');
+        const blockId: string = block.id;
 
         const container: HTMLElement = this.editor.createElement('div', {
             className: 'e-image-container',
@@ -139,14 +139,15 @@ export class ImageRenderer {
                 document.body.removeChild(fileInput);
                 return;
             }
-            if (!img) {
-                document.body.removeChild(fileInput);
-                return;
-            }
 
             // this.handleFileReaderForImage(file, img, settings);
             const src: string = await this.getImageSrcFromFile(file, settings.saveFormat);
+            /* eslint-disable @typescript-eslint/no-explicit-any */
+            const prevOnChange: boolean = (this.editor as any).isProtectedOnChange;
+            (this.editor as any).isProtectedOnChange = true;
             img.src = settings.src = src;
+            (this.editor as any).isProtectedOnChange = prevOnChange;
+            /* eslint-enable @typescript-eslint/no-explicit-any */
 
             fileInput.removeEventListener('change', handleFileChange);
             if (fileInput.parentNode) {
@@ -199,10 +200,9 @@ export class ImageRenderer {
 
                 reader.readAsDataURL(file);
             });
-        } else if (format === 'blob') {
+        } else {
             return URL.createObjectURL(file);
         }
-        return '';
     }
 
     private addResizeHandles(container: HTMLElement, img: HTMLImageElement): void {
@@ -270,7 +270,7 @@ export class ImageRenderer {
 
     private handleImageResize = (e: MouseEvent): void => {
         const allowedTarget: HTMLElement = this.editor.element as HTMLElement;
-        if (!allowedTarget.contains(e.target as Node) && (!this.isResizing || !this.currentImage)) {
+        if (!allowedTarget.contains(e.target as Node) && (!this.isResizing)) {
             return;
         }
 
@@ -304,7 +304,7 @@ export class ImageRenderer {
 
         cancelAnimationFrame(this.animationFrameId);
         this.animationFrameId = requestAnimationFrame(() => {
-            if (this.currentImage) {
+            if (this.currentImage && this.currentImage.parentElement) {
                 this.currentImage.style.width = this.currentImage.parentElement.style.width = formatUnit(newWidth);
                 this.currentImage.style.height = this.currentImage.parentElement.style.height = formatUnit(newHeight);
             }

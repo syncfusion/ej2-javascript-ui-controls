@@ -501,9 +501,6 @@ export class ListBox extends DropDownBase {
             this.unSelectAllText = l10nSelect.getConstant('unSelectAllText');
             this.popupWrapper = this.list;
             this.checkBoxSelectionModule.checkAllParent = null;
-            if (this.filterParent) {
-                this.filterParent = null ;
-            }
             this.notify('selectAll', {});
         }
     }

@@ -231,6 +231,13 @@ export class PdfAnnotationCollection {
                 const reviewHistory: PdfPopupAnnotationCollection = (parsedAnnotation as PdfComment).reviewHistory;
                 this._processAnnotations(comments, array);
                 this._processAnnotations(reviewHistory, array);
+                if (parsedAnnotation._dictionary && parsedAnnotation._dictionary.has('Popup')) {
+                    const popupRef: _PdfReference = parsedAnnotation._dictionary.getRaw('Popup');
+                    const popupIndex: number = (popupRef && popupRef instanceof _PdfReference) ? array.indexOf(popupRef) : -1;
+                    if (popupIndex > -1) {
+                        array.splice(popupIndex, 1);
+                    }
+                }
             }
             const actualIndex: number = array.indexOf(reference);
             if (actualIndex > -1) {

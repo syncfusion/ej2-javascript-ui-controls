@@ -5,7 +5,7 @@ import { createElement, remove, L10n } from '@syncfusion/ej2-base';
 import { Gantt, Selection, Toolbar, DayMarkers, Edit, Filter, Reorder, Resize, ColumnMenu, VirtualScroll, Sort, RowDD, ContextMenu, ExcelExport, PdfExport } from '../../src/index';
 import { destroyGantt, createGantt, triggerMouseEvent } from './gantt-util.spec';
 import { ContextMenuClickEventArgs} from './../../src/gantt/base/interface';
-import { columnTemplateData, data15, editingData13, editingData14, editingData15, editingData16, editingData17, predData1, predData2, predData3, predData4, predData5, predData6, predData8,resourceResourcesUndo,localizationData, CR927012, dataCollection } from './data-source.spec';
+import { columnTemplateData, data15, editingData13, editingData14, editingData15, editingData16, editingData17, predData1, predData2, predData3, predData4, predData5, predData6, predData8,resourceResourcesUndo,localizationData, CR927012, dataCollection, cr969720 } from './data-source.spec';
 Gantt.Inject(Selection, Toolbar, DayMarkers, Edit, Filter, Reorder, Resize, ColumnMenu, VirtualScroll, Sort, RowDD, ContextMenu, ExcelExport, PdfExport);
 
 
@@ -2156,6 +2156,59 @@ describe('Gantt chart update value by updateRecordByID in Predecessor and taskna
             };
         ganttObj.updateRecordByID(data);
         expect(ganttObj.currentViewData[0].ganttProperties.taskName).toBe('Updated by index value');
+    });
+    afterAll(() => {
+        if (ganttObj) {
+            destroyGantt(ganttObj);
+        }
+    });
+});
+describe('CR-969720', () => {
+    let ganttObj: Gantt;
+    beforeAll((done: Function) => {
+        ganttObj = createGantt(
+            {
+                dataSource: cr969720,
+                dateFormat: 'MMM dd, y',
+                treeColumnIndex: 1,
+                allowSelection: true,
+                showColumnMenu: false,
+                highlightWeekends: true,
+                taskFields: {
+                    id: 'TaskID',
+                    name: 'TaskName',
+                    startDate: 'StartDate',
+                    endDate: 'EndDate',
+                    duration: 'Duration',
+                    progress: 'Progress',
+                    dependency: 'Predecessor',
+                    child: 'subtasks',
+                },
+                height: "600px",
+                editSettings: {
+                    allowAdding: true,
+                    allowEditing: true,
+                    allowDeleting: true,
+                    allowTaskbarEditing: true,
+                    showDeleteConfirmDialog: true,
+                },
+                gridLines: 'Both',
+                toolbar: [
+                    'Add',
+                    'Edit',
+                    'Update',
+                    'Delete',
+                    'Cancel',
+                    'ExpandAll',
+                    'CollapseAll',
+                    'Indent',
+                    'Outdent',
+                ],
+                includeWeekend: false
+            }, done);
+    });
+    it('Checking StartDate', () => {
+        expect(ganttObj.getFormatedDate(ganttObj.flatData[4].ganttProperties.startDate,'M/d/yyyy')).toBe('4/8/2024');
     });
     afterAll(() => {
         if (ganttObj) {

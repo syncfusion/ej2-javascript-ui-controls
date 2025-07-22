@@ -2,7 +2,15 @@
 
 ## [Unreleased]
 
-## 30.1.40 (2025-07-15)
+## 30.1.41 (2025-07-22)
+
+### Pdf Export
+
+#### Bug Fixes
+
+- Fixed an issue where grid content was misaligned across pages when a span was applied.
+
+## 30.1.38 (2025-07-02)
 
 ### Pdf Export
 

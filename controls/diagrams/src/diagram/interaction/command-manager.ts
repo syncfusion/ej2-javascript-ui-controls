@@ -1331,6 +1331,7 @@ export class CommandHandler {
         }
         //867606 - Exception throws while grouping the existing group nodes.
         if (obj.children.length > 0) {
+            this.diagram.itemType = 'Group';
             const group: Node | Connector = this.diagram.add(obj as IElement);
             if (group) {
                 this.select(group);
@@ -1616,6 +1617,7 @@ export class CommandHandler {
             if ((cloneObject as Node).shape && ((cloneObject as Node).shape as BpmnShape).shape === 'TextAnnotation') {
                 (cloneObject as any).isTextAnnotationCopied = true;
             }
+            this.diagram.itemType = 'Clipboard';
             newNode = this.diagram.add(cloneObject) as Node;
         }
         if (node.shape && node.shape.type === 'SwimLane') {
@@ -1929,6 +1931,7 @@ export class CommandHandler {
             && ((this.diagram.drawingObject as ConnectorModel) && (this.diagram.drawingObject as ConnectorModel).type === 'Bezier')) {
             obj.segments = [];
         }
+        this.diagram.itemType = 'DrawingTool';
         const newObj: Node | Connector = this.diagram.add(obj);
         if (this.diagram.mode !== 'SVG') {
             this.diagram.refreshDiagramLayer();

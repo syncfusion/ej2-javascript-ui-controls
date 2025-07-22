@@ -61,7 +61,8 @@ export const classNames: ClassNames = {
     checkboxLeft: 'e-checkbox-left',
     listviewCheckbox: 'e-listview-checkbox',
     itemCheckList: 'e-checklist',
-    virtualElementContainer: 'e-list-virtualcontainer'
+    virtualElementContainer: 'e-list-virtualcontainer',
+    listTemplate: 'e-listview-template'
 };
 
 const LISTVIEW_TEMPLATE_PROPERTY: string = 'Template';
@@ -842,6 +843,11 @@ export class ListView extends Component<HTMLElement> implements INotifyPropertyC
             const frameElement: Element = checkboxElement.querySelector('.' + classNames.checkboxIcon);
             args.item.classList.add(classNames.itemCheckList);
             args.item.firstElementChild.classList.add(classNames.checkbox);
+            if (this.template && this.element) {
+                addClass([this.element], classNames.listTemplate);
+            } else if (this.template === null && this.element && this.element.classList && this.element.classList.contains('e-listview-template')) {
+                removeClass([this.element], classNames.listTemplate);
+            }
             if (typeof (this.dataSource as string[])[0] !== 'string' && typeof (this.dataSource as number[])[0] !== 'number') {
                 fieldData = <DataSource>getFieldValues(args.curData, this.listBaseOption.fields);
                 if (this.enablePersistence && !isNullOrUndefined(this.selectedId)) {
@@ -2524,6 +2530,7 @@ export interface ClassNames {
     listviewCheckbox: string;
     itemCheckList: string;
     virtualElementContainer: string;
+    listTemplate: string;
 }
 
 /**

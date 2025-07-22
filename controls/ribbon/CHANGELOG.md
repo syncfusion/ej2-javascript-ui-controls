@@ -2,6 +2,14 @@
 
 ## [Unreleased]
 
+## 30.1.41 (2025-07-22)
+
+### Ribbon
+
+#### Bug Fixes
+
+`#I744491` - Now the script error raised in Ribbon on window resizing with minimal layout has been resolved.
+
 ## 30.1.39 (2025-07-08)
 
 ### Ribbon

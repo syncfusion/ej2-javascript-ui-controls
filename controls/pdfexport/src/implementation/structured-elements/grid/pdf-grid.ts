@@ -428,7 +428,7 @@ export class PdfGrid extends PdfLayoutElement {
             hasChanged = true;
         }
         if (typeof param.bounds.height === 'undefined' || param.bounds.height === 0) {
-            height = param.page.getClientSize().height - param.bounds.y;
+            height = param.page.getClientSize().height;
             hasChanged = true;
         }
         if (hasChanged) {

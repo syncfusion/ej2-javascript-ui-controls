@@ -151,7 +151,6 @@ export class InlineToolbarModule {
     }
 
     public hideInlineToolbar(e?: Event): void {
-        if (!this.editor.inlineToolbar.enable) { return; }
         const inlineTbarPopup: HTMLElement = document.querySelector('.e-blockeditor-inline-toolbar-popup');
         if (inlineTbarPopup && !inlineTbarPopup.classList.contains('e-popup-open')) {
             return;
@@ -285,9 +284,6 @@ export class InlineToolbarModule {
                 this.setColors(type, (commonStyles as any)[`${type}`]);
                 break;
             }
-            case 'Custom':
-                isActive = !!commonStyles.custom;
-                break;
             }
             item.classList.toggle('e-active', isActive);
         });

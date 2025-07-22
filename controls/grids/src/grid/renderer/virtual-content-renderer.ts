@@ -1437,18 +1437,22 @@ export class VirtualContentRenderer extends ContentRender implements IRenderer {
     }
 
     public getVirtualRowIndex(index: number): number {
-        const prev: number[] = this.prevInfo.blockIndexes;
-        let startIdx: number = (prev[0] - 1) * this.getBlockSize();
-        if (this.parent.enableVirtualization && this.parent.allowGrouping && this.parent.groupSettings.columns.length) {
-            const vGroupedRows: Row<Column>[] = this.vgenerator.cache[prev[0]];
-            for (let i: number = 0; i < vGroupedRows.length; i++) {
-                if (vGroupedRows[`${i}`].isDataRow) {
-                    startIdx =  vGroupedRows[`${i}`].index;
-                    break;
+        if (isNullOrUndefined(this.prevInfo)) {
+            return index;
+        } else {
+            const prev: number[] = this.prevInfo.blockIndexes;
+            let startIdx: number = (prev[0] - 1) * this.getBlockSize();
+            if (this.parent.enableVirtualization && this.parent.allowGrouping && this.parent.groupSettings.columns.length) {
+                const vGroupedRows: Row<Column>[] = this.vgenerator.cache[prev[0]];
+                for (let i: number = 0; i < vGroupedRows.length; i++) {
+                    if (vGroupedRows[`${i}`].isDataRow) {
+                        startIdx =  vGroupedRows[`${i}`].index;
+                        break;
+                    }
                 }
             }
+            return startIdx + index;
         }
-        return startIdx + index;
     }
 
     /**
@@ -1541,7 +1545,8 @@ export class VirtualContentRenderer extends ContentRender implements IRenderer {
             }
             this.parent.invokedFromMedia = false;
         }
-        if (isRefresh) {
+        if (isRefresh && !(this.parent.enableVirtualization && this.parent.groupSettings && this.parent.groupSettings.columns.length
+            && this.parent.groupSettings.enableLazyLoading)) {
             this.refreshContentRows({ requestType: 'refresh' });
         } else {
             this.parent.notify(events.partialRefresh, { rows: rows, args: { isFrozen: false, rows: rows } });

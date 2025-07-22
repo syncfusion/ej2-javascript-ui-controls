@@ -25,7 +25,6 @@ export class CodeRenderer {
     private addEventListeners(): void {
         this.editor.on('keydown', this.handleCodeBlockKeydown, this);
         this.editor.on('input', this.handleCodeBlockInput, this);
-        this.editor.on('mouseup', this.handleCodeBlockSelection, this);
         this.editor.on('locale-changed', this.handleLocaleChange, this);
         this.editor.on(events.destroy, this.destroy, this);
     }
@@ -33,7 +32,6 @@ export class CodeRenderer {
     private removeEventListeners(): void {
         this.editor.off('keydown', this.handleCodeBlockKeydown);
         this.editor.off('input', this.handleCodeBlockInput);
-        this.editor.off('mouseup', this.handleCodeBlockSelection);
         this.editor.off('locale-changed', this.handleLocaleChange);
         this.editor.off(events.destroy, this.destroy);
     }
@@ -89,7 +87,7 @@ export class CodeRenderer {
         copyButton.addEventListener('click', () => {
             const codeElement: HTMLElement = codeContainer.querySelector('code');
             if (codeElement) {
-                const codeText: string = codeElement.textContent || '';
+                const codeText: string = codeElement.textContent;
                 // eslint-disable-next-line @typescript-eslint/no-explicit-any
                 (window as any).navigator.clipboard.writeText(codeText)
                     .then((): void => {
@@ -166,8 +164,6 @@ export class CodeRenderer {
 
     private handleEnterKey(e: KeyboardEvent, codeElement: HTMLElement, block: BlockModel): void {
         e.preventDefault();
-        const selection: Selection = window.getSelection();
-        if (!selection.rangeCount) { return; }
 
         const cursorPosition: number = this.getCursorPosition(codeElement);
         if (this.shouldExitCodeBlock(codeElement)) {
@@ -183,7 +179,7 @@ export class CodeRenderer {
 
     private handleDeletion(e: KeyboardEvent, codeElement: HTMLElement, block: BlockModel, isDeleteKey: boolean): void {
         const cursorPosition: number = this.getCursorPosition(codeElement);
-        const textContent: string = codeElement.textContent || '';
+        const textContent: string = codeElement.textContent;
         const range: Range = getSelectionRange();
         const shouldPreventDefault: boolean = isDeleteKey
             ? (cursorPosition >= textContent.length)
@@ -215,25 +211,10 @@ export class CodeRenderer {
         const block: BlockModel = getBlockModelById(this.editor.currentFocusedBlock.id, this.editor.blocksInternal);
         if (!codeElement || block.type !== BlockType.Code) { return; }
         const textContent: string = codeElement.textContent || '';
-        if (textContent && codeElement.innerHTML === '<br>') {
-            codeElement.innerHTML = textContent;
-        }
 
         if (!textContent.trim() && codeElement.innerHTML !== '<br>') {
             codeElement.innerHTML = '<br>';
         }
-    }
-
-    private handleCodeBlockSelection(e: MouseEvent): void {
-        const codeElement: HTMLElement = this.editor.currentFocusedBlock.querySelector('code');
-        if (!codeElement) { return; }
-        const selection: Selection = window.getSelection();
-        if (!selection.rangeCount) { return; }
-
-        const selectedText: string = selection.toString();
-        // if (selectedText.length === 1 && !selection.isCollapsed) {
-        //     this.selectEntireCodeBlock(codeElement);
-        // }
     }
 
     private handleCtrlASelection(e: KeyboardEvent, codeElement: HTMLElement): void {
@@ -250,10 +231,7 @@ export class CodeRenderer {
     }
 
     private getCursorPosition(element: HTMLElement): number {
-        const selection: Selection = window.getSelection();
-        if (!selection.rangeCount) { return 0; }
-
-        const range: Range = selection.getRangeAt(0);
+        const range: Range = this.editor.nodeSelection.getRange();
         const preCaretRange: Range = range.cloneRange();
         preCaretRange.selectNodeContents(element);
         preCaretRange.setEnd(range.endContainer, range.endOffset);
@@ -287,9 +265,9 @@ export class CodeRenderer {
     }
 
     private getCurrentLineIndentation(element: HTMLElement, cursorPosition: number): string {
-        const textContent: string = element.textContent || '';
+        const textContent: string = element.textContent;
         const lines: string[] = textContent.substring(0, cursorPosition).split('\n');
-        const currentLine: string = lines[lines.length - 1] || '';
+        const currentLine: string = lines[lines.length - 1];
 
         const indentMatch: RegExpMatchArray | null = currentLine.match(/^(\s*)/);
         return indentMatch ? indentMatch[1] : '';
@@ -361,26 +339,15 @@ export class CodeRenderer {
 
     private addIndentation(): void {
         const indent: string = ' '.repeat(this.INDENT_SIZE);
-        const selection: Selection = window.getSelection();
-        if (!selection.rangeCount) { return; }
-
-        const range: Range = selection.getRangeAt(0);
-        if (indent) {
-            range.insertNode(document.createTextNode(indent));
-        }
-        // selection.removeAllRanges();
-        // selection.addRange(range);
+        const range: Range = this.editor.nodeSelection.getRange();
+        range.insertNode(document.createTextNode(indent));
         const endContainer: Node = range.endContainer;
         setCursorPosition(endContainer as HTMLElement, endContainer.textContent.length);
     }
 
     private removeIndentation(element: HTMLElement): void {
-        const selection: Selection = window.getSelection();
-        if (!selection.rangeCount) { return; }
-
-        const range: Range = selection.getRangeAt(0);
         const cursorPosition: number = this.getCursorPosition(element);
-        const textContent: string = element.textContent || '';
+        const textContent: string = element.textContent;
 
         const beforeCursor: string = textContent.substring(0, cursorPosition);
         const lastNewlineIndex: number = beforeCursor.lastIndexOf('\n');

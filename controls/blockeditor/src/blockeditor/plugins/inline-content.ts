@@ -37,16 +37,20 @@ export class InlineContentInsertionModule {
         const { range, contentType, blockElement }: IInlineContentInsertionArgs = this.currentArgs;
         if (!range || !blockElement) { return; }
 
-        const insertedNode: HTMLElement = this.findInsertedNode(range, contentType);
+        const rangeParent: HTMLElement = this.getRangeParent(range);
 
-        this.splitAndReorganizeContent(insertedNode, contentType);
+        const insertedNode: HTMLElement = this.findInsertedNode(contentType, rangeParent);
+
+        this.splitAndReorganizeContent(insertedNode, contentType, rangeParent);
     }
 
-    private findInsertedNode(range: Range, contentType: ContentType): HTMLElement | null {
-        const rangeParent: HTMLElement = range.startContainer.nodeType === Node.TEXT_NODE
+    private getRangeParent(range: Range): HTMLElement {
+        return range.startContainer.nodeType === Node.TEXT_NODE
             ? range.startContainer.parentElement
             : (range.startContainer as HTMLElement);
+    }
 
+    private findInsertedNode(contentType: ContentType, rangeParent: HTMLElement): HTMLElement | null {
         const contentClassMap: { [key: string]: string } = {
             [ContentType.Mention]: 'e-mention-chip',
             [ContentType.Label]: 'e-mention-chip'
@@ -55,11 +59,8 @@ export class InlineContentInsertionModule {
         return rangeParent.querySelector(`.${contentClassMap[`${contentType}`]}`) as HTMLElement;
     }
 
-    private splitAndReorganizeContent(insertedNode: HTMLElement, contentType: ContentType): void {
-        const { range, block }: IInlineContentInsertionArgs = this.currentArgs;
-        const rangeParent: HTMLElement = range.startContainer.nodeType === Node.TEXT_NODE
-            ? range.startContainer.parentElement
-            : (range.startContainer as HTMLElement);
+    private splitAndReorganizeContent(insertedNode: HTMLElement, contentType: ContentType, rangeParent: HTMLElement): void {
+        const { block }: IInlineContentInsertionArgs = this.currentArgs;
         const blockIndex: number = getBlockIndexById(block.id, this.editor.blocksInternal);
 
         const blockContentElement: HTMLElement = rangeParent.closest('.e-block-content') as HTMLElement;

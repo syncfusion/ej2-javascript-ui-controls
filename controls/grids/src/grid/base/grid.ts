@@ -3775,7 +3775,8 @@ export class Grid extends Component<HTMLElement> implements INotifyPropertyChang
         if (this.aggregates.length && this.element.scrollHeight > parseInt(this.height.toString(), 10) && footerContent) {
             addClass([footerContent], ['e-footerpadding']);
         }
-        const checkboxColumn: Column[] = this.getColumns().filter((col: Column) => col.type === 'checkbox');
+        const columns: Column[] = this.enableColumnVirtualization ? (this.columns as Column[]) : this.getColumns();
+        const checkboxColumn: Column[] = columns.filter((col: Column) => col.type === 'checkbox');
         if (checkboxColumn.length === 0 || checkboxColumn.length && this.selectionSettings.checkboxMode === 'ResetOnRowClick') {
             this.isCheckBoxSelection = false;
         }

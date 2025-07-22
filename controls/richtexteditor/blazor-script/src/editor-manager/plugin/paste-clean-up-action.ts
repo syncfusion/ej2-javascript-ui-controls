@@ -80,15 +80,23 @@ export class PasteCleanupAction {
             const contentWithSpace: string = this.normalizeSpacesForHtml(content);
             const contentWithLineBreak: string = contentWithSpace.replace(/\r\n|\n/g, '<br>');
             if (i === 0) {
-                if (isBrFormat && !contentWithLineBreak.endsWith('<br>')) {
-                    finalText += (contentWithLineBreak + endNode);
-                } else {
+                if (isBrFormat && (i !== enterSplitText.length - 1 || contentWithLineBreak.endsWith('<br>'))) {
+                    if (i !== enterSplitText.length - 1) {
+                        finalText += (contentWithLineBreak + endNode + endNode);
+                    } else {
+                        finalText += (contentWithLineBreak + endNode);
+                    }
+                }
+                else {
                     finalText += contentWithLineBreak; // In order to merge the content in current line. No P/Div tag is added.
                 }
             } else {
                 if (isBrFormat) {
-                    if (i === enterSplitText.length - 1) {
+                    if (contentWithLineBreak.endsWith('<br>') || (contentWithLineBreak === '' && i === enterSplitText.length - 1)) {
                         finalText += (contentWithLineBreak + endNode);
+                    }
+                    else if (i === enterSplitText.length - 1) {
+                        finalText += contentWithLineBreak;
                     } else {
                         finalText += (contentWithLineBreak + endNode + endNode);
                     }

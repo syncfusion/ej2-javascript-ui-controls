@@ -249,13 +249,13 @@ export class CommentReviewPane {
                 const localObj: L10n = new L10n('documenteditor', this.owner.defaultLocale);
                 localObj.setLocale(this.owner.locale);
                 this.confirmDialog = DialogUtility.confirm({
-                    title: localObj.getConstant('Un-posted comments'),
-                    content: localObj.getConstant('Discard Comment'),
+                    title: localObj.getConstant('Unsaved comments'),
+                    content: localObj.getConstant('Discard Comment body'),
                     okButton: {
-                        text: localObj.getConstant('Discard'), click: this.discardButtonClick.bind(this)
+                        text: localObj.getConstant('Discard comments'), click: this.discardButtonClick.bind(this), cssClass: 'e-btn e-danger'
                     },
                     cancelButton: {
-                        text: localObj.getConstant('Cancel'), click: this.closeDialogUtils.bind(this)
+                        text: localObj.getConstant('Keep editing'), click: this.closeDialogUtils.bind(this)
                     },
                     showCloseIcon: true,
                     closeOnEscape: true,

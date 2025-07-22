@@ -767,3 +767,168 @@ describe('Spec for empty method ', () => {
         });
     });
 });
+
+
+describe('templatecompiler Spec for empty method ', () => {
+    let listObj: any;
+    let element: HTMLElement;
+    beforeEach(() => {
+        element = createElement('div', { id: 'dropdownbase' });
+        document.body.appendChild(element);
+    });
+    afterEach(() => {
+        if (element) {
+            element.remove();
+        };
+        document.body.innerHTML = '';
+    });
+    it('addItem method', () => {
+        listObj = new DropDownBase({ dataSource: datasource });
+        listObj.appendTo(element);
+        (<any>listObj).templateCompiler(null);
+    });
+});
+
+describe('DropDownBase Coverage Tests', () => {
+    let listObj: any;
+    let element: HTMLElement;
+    let datasource: string[] = ['Audi', 'BMW', 'Bentley', 'Rolls Royce', 'Tata'];
+    
+    beforeEach(() => {
+        element = createElement('div', { id: 'dropdownbase', attrs: { 'tabindex': '1' } });
+        document.body.appendChild(element);
+    });
+    
+    afterEach(() => {
+        if (listObj) {
+            listObj.destroy();
+        }
+        if (element) {
+            element.remove();
+            document.body.innerHTML = '';
+        }
+    });
+
+    it('templateCompiler method coverage', (done) => {
+        listObj = new DropDownBase({
+            dataSource: datasource,
+        });
+        listObj.appendTo(element);
+        
+        (<any>listObj).templateCompiler(null);
+        done();
+    });
+
+    it('createListItems method coverage', (done) => {
+        listObj = new DropDownBase({
+            dataSource: datasource,
+        });
+        listObj.appendTo(element);
+        (<any>listObj).createListItems(null);
+        done();
+    });
+
+    it('removeScrollEvent method coverage', (done) => {
+        listObj = new DropDownBase({
+            dataSource: datasource
+        });
+        listObj.appendTo(element);
+        
+        (<any>listObj).list = null;
+        (<any>listObj).removeScrollEvent();
+        done();
+    });
+
+    it('isDisabledItemByIndex method coverage', (done) => {
+        let customDataSource = [
+            { text: 'Audi', id: '1', disabled: true },
+            { text: 'BMW', id: '2', disabled: false },
+            { text: 'Bentley', id: '3' }
+        ];
+
+        listObj = new DropDownBase({
+            dataSource: customDataSource,
+        });
+        listObj.appendTo(element);
+        (<any>listObj).fields.disabled = null;
+        let isDisabled1 = (<any>listObj).isDisabledItemByIndex(0);
+        done();
+    });
+
+     it('createVirtualContent method coverage', (done) => {
+        listObj = new DropDownBase({
+            dataSource: datasource,
+        });
+        listObj.appendTo(element);
+        (<any>listObj).list = document.createElement('div');
+        (<any>listObj).createVirtualContent();
+        done();
+    });
+});
+
+describe('Spec for empty method updateFixedGroupTemplateHader', () => {
+    let listObj: any;
+    let element: HTMLElement;
+    let datasource1 = [
+            { name: 'Audi', id: "1" },
+            { name: 'BMW', id: "2" },
+            { name: 'Bently', id: "3" },
+            { name: 'Rolls Royce', id: "4" },
+            { name: 'Tata', id: "5" }
+        ];
+    beforeEach(() => {
+        element = createElement('div', { id: 'dropdownbase' });
+        document.body.appendChild(element);
+    });
+    afterEach(() => {
+        if (element) {
+            element.remove();
+        };
+        document.body.innerHTML = '';
+    });
+    it('addItem method', () => {
+        listObj = new DropDownBase({ dataSource: datasource });
+        listObj.appendTo(element);
+        element.id = "3" ;
+        (<any>listObj).fixedHeaderElement = document.createElement('div');
+        (<any>listObj).fixedHeaderElement.innerHTML = "";
+        (<any>listObj).groupHeaderItems = datasource1;
+        (<any>listObj).addItem([{ id: 'list3', text: 'HTML' }, { id: 'list4', text: 'PHP' }]);
+        (<any>listObj).updateFixedGroupTemplateHader(element);
+    });
+});
+
+describe('templatecompiler Spec for empty method ', () => {
+    let listObj: any;
+    let element: HTMLElement;
+    let datasource1 = [
+            { name: 'Audi', id: "1" },
+            { name: 'BMW', id: "2" },
+            { name: 'Bently', id: "3" },
+            { name: 'Rolls Royce', id: "4" },
+            { name: 'Tata', id: "5" }
+        ];
+    let fields = {
+        value: 'id',
+        text: 'name',
+    };
+    beforeEach(() => {
+        element = createElement('div', { id: 'dropdownbase' });
+        document.body.appendChild(element);
+    });
+    afterEach(() => {
+        if (element) {
+            element.remove();
+        };
+        document.body.innerHTML = '';
+    });
+    it('addItem method', () => {
+        listObj = new DropDownBase({ dataSource: datasource });
+        listObj.appendTo(element);
+        (<any>listObj).templateCompiler(null);
+    });
+    it('remainingItems setting dulmmy data' , () => {
+        (<any>listObj).itemTemplate = '<div class="ename"> ${text} </div><div class="desig"> ${id} </div>';
+        (<any>listObj).remainingItems(datasource1 , fields);
+    })
+});

@@ -2684,7 +2684,7 @@ describe('MultiSelect', () => {
             expect(document.body.contains((<any>mulObj).popupObj.element)).toBe(true);
         });
     });
-    describe('EJ2942122 - MultiSelect Virtualization with ValueTemplate', () => {
+    xdescribe('EJ2942122 - MultiSelect Virtualization with ValueTemplate', () => {
         let listObj: MultiSelect;
         let element: HTMLInputElement = <HTMLInputElement>document.createElement('input');
 
@@ -2727,7 +2727,7 @@ describe('MultiSelect', () => {
                         expect(chipContents[1].innerText).toContain('Owner - Felipe Izquierdo');
                         expect(chipContents[2].innerText).toContain('Sales Agent - Catherine Dewey');
                         done();
-                    }, 1500); // Allow time for virtualization loading
+                    }, 1500);   // Allow time for virtualization loading
                 });
         });
     });

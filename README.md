@@ -1,7 +1,7 @@
 <h1>
  <a href="https://www.syncfusion.com/javascript-ui-controls">
   <img src="https://ej2.syncfusion.com/github/images/syncfusion.svg" alt="Syncfusion Inc." title="Syncfusion Inc." align="top" height="40px" />
-  <span>Syncfusion JavaScript UI Controls  Library</span>
+  <span>Syncfusion JavaScript UI Controls Library</span>
  </a>
 </h1>
 

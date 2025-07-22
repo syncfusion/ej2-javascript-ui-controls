@@ -238,9 +238,6 @@ export class DiagramScroller {
 
         const x: number = - pageBounds.left;
         const y: number = - pageBounds.top;
-        let set: boolean = false;
-        const viewWidth: number = this.viewPortWidth * this.currentZoom;
-        const viewHeight: number = this.viewPortHeight * this.currentZoom;
         const newX: number = x - hOffset;
         if (newX !== this.horizontalOffset) {
             if (x < this.horizontalOffset) {
@@ -249,29 +246,10 @@ export class DiagramScroller {
                 } else {
                     this.horizontalOffset = newX;
                 }
-                set = true;
-            }
-            const right: number = Math.max(pageBounds.right + this.vScrollSize, viewWidth);
-            if (!set && right < -newX + this.viewPortWidth) {
-                const actualRight: number = -newX + viewWidth - this.vScrollSize;
-                const currentRight: number = -this.horizontalOffset + viewWidth - this.vScrollSize;
-                if (actualRight < currentRight) {
-                    //define
-                    this.horizontalOffset = newX;
-                } else {
-                    if (actualRight - pageBounds.right > actualRight - currentRight) {
-                        this.horizontalOffset = newX;
-                    } else {
-                        this.horizontalOffset = -(pageBounds.right + this.vScrollSize - viewWidth);
-                    }
-                }
-                set = true;
-            }
-            if (!set) {
-                this.horizontalOffset = x - hOffset;
+            } else {
+                this.horizontalOffset = newX;
             }
         }
-        set = false;
         //vertical offset
         const newY: number = y - vOffset;
         if (newY !== this.verticalOffset) {
@@ -281,26 +259,8 @@ export class DiagramScroller {
                 } else {
                     this.verticalOffset = newY;
                 }
-                set = true;
-            }
-            const bottom: number = Math.max(pageBounds.bottom + this.hScrollSize, viewHeight);
-            if (!set && bottom < -newY + viewHeight) {
-                const actualBottom: number = -newY + viewHeight - this.hScrollSize;
-                const currentBottom: number = -this.verticalOffset + viewHeight - this.hScrollSize;
-                if (actualBottom < currentBottom) {
-                    //define
-                    this.verticalOffset = newY;
-                } else {
-                    if (actualBottom - pageBounds.bottom > actualBottom - currentBottom) {
-                        this.verticalOffset = newY;
-                    } else {
-                        this.verticalOffset = -(pageBounds.bottom + this.hScrollSize - viewHeight);
-                    }
-                }
-                set = true;
-            }
-            if (!set) {
-                this.verticalOffset = y - vOffset;
+            } else {
+                this.verticalOffset = newY;
             }
         }
 

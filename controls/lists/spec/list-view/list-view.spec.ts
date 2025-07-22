@@ -4096,3 +4096,79 @@ describe('ListBase - createList with enableHtmlSanitizer', () => {
         expect(liElements[0].innerText).toEqual('text1');
     });
 });
+
+describe('ListView template class handling', () => {
+    let listObj: any;
+    let ele: HTMLElement;
+
+    beforeEach(() => {
+        ele = createElement('div', { id: 'ListView' });
+        document.body.appendChild(ele);
+    });
+
+    it('should add listTemplate class when template is provided', () => {
+        let template: Element = createElement('div', { id: 'template' });
+        template.innerHTML = '<div>${text}</div>';
+        document.body.appendChild(template);
+
+        listObj = new ListView({
+            dataSource: dataSource,
+            template: '#template',
+            showCheckBox: true
+        });
+        listObj.appendTo(ele);
+
+        expect(ele.classList.contains('e-listview-template')).toBe(true);
+        template.remove();
+    });
+
+    it('should remove listTemplate class when template is set to null', () => {
+        let template: Element = createElement('div', { id: 'template' });
+        template.innerHTML = '<div>${text}</div>';
+        document.body.appendChild(template);
+
+        listObj = new ListView({
+            dataSource: dataSource,
+            template: '#template',
+            showCheckBox: true
+        });
+        listObj.appendTo(ele);
+
+        expect(ele.classList.contains('e-listview-template')).toBe(true);
+
+        listObj.template = null;
+        listObj.dataBind();
+
+        expect(ele.classList.contains('e-listview-template')).toBe(false);
+        template.remove();
+    });
+
+    it('should not have template class when template is set but checkbox is disabled', () => {
+        let template: Element = createElement('div', { id: 'checkboxTemplate' });
+        template.innerHTML = '<div class="custom-template">${text}</div>';
+        document.body.appendChild(template);
+
+        listObj = new ListView({
+            dataSource: dataSource,
+            template: '#checkboxTemplate',
+            showCheckBox: false
+        });
+        listObj.appendTo(ele);
+
+        expect(ele.classList.contains('e-listview-template')).toBe(false);
+
+        listObj.template = null;
+        listObj.dataBind();
+
+        expect(ele.classList.contains('e-listview-template')).toBe(false);
+
+        template.remove();
+    });
+
+    afterEach(() => {
+        if (listObj) {
+            listObj.destroy();
+        }
+        ele.remove();
+    });
+});

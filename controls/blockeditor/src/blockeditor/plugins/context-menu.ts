@@ -288,7 +288,7 @@ export class ContextMenuModule {
                     }
                     break;
                 case 'items':
-                    this.contextMenuObj.items = newProp.items;
+                    this.contextMenuObj.items = sanitizeContextMenuItems(newProp.items);
                     break;
                 case 'itemTemplate':
                     if (newProp.itemTemplate !== oldProp.itemTemplate) {

@@ -221,6 +221,11 @@ export class ContextMenu implements IContextMenu {
                      !isNullOrUndefined(this.pdfViewer.toolbar.formDesignerToolbarModule)) {
                         this.pdfViewer.toolbar.formDesignerToolbarModule.showHideDeleteIcon(true);
                     }
+                } else if (this.customMenuItems.length !== 0 && this.pdfViewer.annotation.isShapeCopied &&
+                    this.pdfViewer.selectedItems.annotations.length === 0 && this.pdfViewer.annotationModule &&
+                    this.pdfViewer.annotationModule.textMarkupAnnotationModule &&
+                    !this.pdfViewer.annotationModule.textMarkupAnnotationModule.currentTextMarkupAnnotation) {
+                    this.onOpeningForShape(false);
                 } else {
                     let target: any = this.pdfViewerBase.designerModetarget;
                     const annotationModule: any = this.pdfViewer.annotationModule;

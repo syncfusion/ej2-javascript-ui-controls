@@ -1,7 +1,7 @@
 import { BlockEditor } from '../base/blockeditor';
 import { BlockModel, ContentModel, StyleModel } from '../models/index';
 import { BlockType, ContentType } from '../base/enums';
-import { generateUniqueId, deepClone } from '../utils/common';
+import { generateUniqueId, deepClone, getAbsoluteOffset } from '../utils/common';
 import { getBlockContentElement, getBlockIndexById, getBlockModelById, getClosestContentElementInDocument, getContentElementBasedOnId, getContentModelById, isAtStartOfBlock, isListTypeBlock } from '../utils/block';
 import { findClosestParent, isElementEmpty } from '../utils/dom';
 import { convertHtmlElementToBlocks, getBlockDataAsHTML, convertInlineElementsToContentModels } from '../utils/html-parser';
@@ -215,7 +215,8 @@ export class ClipboardAction {
         const blockeditorData: string = e.clipboardData.getData('text/blockeditor');
         const html: string = e.clipboardData.getData('text/html');
         const text: string = e.clipboardData.getData('text/plain');
-        const file: File = e.clipboardData.items.length > 0 && e.clipboardData.items[0].getAsFile();
+        const file: File = e.clipboardData.items && e.clipboardData.items.length > 0
+            && e.clipboardData.items[0].getAsFile();
 
         this.performPasteOperation({
             blockeditorData, html, text, file
@@ -283,8 +284,10 @@ export class ClipboardAction {
                     (node as HTMLElement).remove();
                 }
             });
+            const newCursorPos: number = getAbsoluteOffset(contentElement, range.startContainer, range.startOffset);
             this.editor.updateContentOnUserTyping(blockElement);
             this.editor.blockAction.setFocusAndUIForNewBlock(blockElement);
+            setCursorPosition(contentElement, newCursorPos);
             if (selectedBlocks[0].type === 'Code') {
                 if (contentElement && contentElement.textContent.trim() === '') {
                     contentElement.innerHTML = '<br>';
@@ -315,8 +318,6 @@ export class ClipboardAction {
             case 'contents':
                 this.handleContentPasteWithinBlock(parsedData.contents);
                 break;
-            default:
-                break;
             }
         } catch (error) {
             console.error('Error parsing Block Editor clipboard data:', error);
@@ -326,7 +327,7 @@ export class ClipboardAction {
     private handleContentPasteWithinBlock(content: ContentModel[]): void {
         if (!content.length) { return; }
 
-        const range: Range = getSelectionRange();
+        const range: Range = this.editor.nodeSelection.getRange();
         if (!range) { return; }
 
         const cursorBlockElement: HTMLElement = findClosestParent(range.startContainer, '.e-block');
@@ -377,7 +378,7 @@ export class ClipboardAction {
     public handleMultiBlocksPaste(blocks: BlockModel[], isUndoRedoAction: boolean = false): void {
         if (!blocks.length) { return; }
 
-        const range: Range = getSelectionRange();
+        const range: Range = this.editor.nodeSelection.getRange();
         if (!range) { return; }
 
         const cursorBlockElement: HTMLElement = findClosestParent(range.startContainer, '.e-block');
@@ -388,12 +389,16 @@ export class ClipboardAction {
         const isContentEmpty: boolean = contentElement && isElementEmpty(contentElement);
         const isCursorAtStart: boolean = isAtStartOfBlock(contentElement);
 
+        const parentBlock: BlockModel = getBlockModelById(cursorBlock.parentId, this.editor.blocksInternal);
+        if (parentBlock) {
+            // Map parent id for all blocks that are about to be pasted
+            blocks.forEach((block: BlockModel) => { block.parentId = parentBlock.id; });
+        }
         if (isContentEmpty) {
             const prevOnChange: boolean = (this.editor as any).isProtectedOnChange;
             (this.editor as any).isProtectedOnChange = true;
             this.editor.blockAction.generateNewIdsForBlock(blocks[0]);
             blocks[0].id = cursorBlockElement.id;
-            const parentBlock: BlockModel = getBlockModelById(cursorBlock.parentId, this.editor.blocksInternal);
             if (parentBlock) {
                 const parentIndex: number = getBlockIndexById(parentBlock.id, this.editor.blocksInternal);
                 parentBlock.children.splice(cursorBlockIndex, 1, blocks[0]);

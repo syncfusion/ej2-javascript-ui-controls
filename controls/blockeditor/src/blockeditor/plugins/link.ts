@@ -190,7 +190,7 @@ export class LinkModule {
         const target: HTMLElement = e.target as HTMLElement;
         if (!this.popupElement) { return; }
         if (this.popupElement.classList.contains('e-popup-open')
-            && (!this.popupElement.contains(target) || (!target.closest('.e-blockeditor-link-dialog')))) {
+            && (!this.popupElement.contains(target))) {
             this.hideLinkPopup();
         }
     }
@@ -244,7 +244,7 @@ export class LinkModule {
             if (linkInfo) {
                 textInput.value = linkInfo.text;
                 urlInput.value = linkInfo.url;
-                titleInput.value = linkInfo.title || '';
+                titleInput.value = linkInfo.title;
                 this.linkCheckBoxObj.checked = linkInfo.openInNewWindow;
             }
         }, 10);
@@ -253,12 +253,13 @@ export class LinkModule {
     public hideLinkPopup(): void {
         const linkPopup: HTMLElement = document.querySelector('.e-blockeditor-link-dialog');
         if (linkPopup.classList.contains('e-popup-close')) { return; }
-        const contentElement: HTMLElement = getBlockContentElement(this.editor.currentFocusedBlock);
-        if (!contentElement) { return; }
         this.clearInputValues();
         this.linkPopup.hide();
 
-        this.selectionManager.restoreSelection(contentElement);
+        const contentElement: HTMLElement = getBlockContentElement(this.editor.currentFocusedBlock);
+        if (contentElement) {
+            this.selectionManager.restoreSelection(contentElement);
+        }
     }
 
     private clearInputValues(): void {
@@ -339,7 +340,7 @@ export class LinkModule {
         const linkElements: NodeListOf<HTMLAnchorElement> = this.editor.element.querySelectorAll('a');
         for (let i: number = 0; i < linkElements.length; i++) {
             const linkElement: HTMLAnchorElement = linkElements[parseInt(i.toString(), 10)];
-            const blockElement: HTMLElement = findClosestParent(linkElement, 'e-block');
+            const blockElement: HTMLElement = findClosestParent(linkElement, '.e-block');
             const contentElement: HTMLElement = getClosestContentElementInDocument(linkElement);
             const blockModel: BlockModel = getBlockModelById(blockElement.id, this.editor.blocksInternal);
             const contentModel: ContentModel = getContentModelById(contentElement.id, blockModel.content);

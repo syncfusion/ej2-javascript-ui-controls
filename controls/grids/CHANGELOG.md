@@ -2,6 +2,16 @@
 
 ## [Unreleased]
 
+## 30.1.41 (2025-07-22)
+
+### Grid
+
+#### Bug Fixes
+
+- `#I747365` - Resolved a script error that occurred when clicking the `Select All` checkbox while both `ColumnVirtualization` and infinite scrolling were enabled.
+- `#I747475` - Fixed a script error that appeared when expanding grouped records in Lazy Load Grouping with the `URLAdaptor`.
+- `I7443387` - Fixed an issue where the `show/hide` columns feature failed to work when using Lazy Load Grouping with `virtualization`.
+
 ## 30.1.40 (2025-07-15)
 
 ### Grid

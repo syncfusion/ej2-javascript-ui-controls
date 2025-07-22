@@ -1077,4 +1077,32 @@ describe('ShowHide module testing', () => {
             destroy(gridObj);
         });
     });
+    
+    describe('EJ2-968748 - Issue with dynamically hide columns after expanding the grouped data when using lazyloadgrouping and virtualization', () => {
+        let gridObj: Grid;
+        beforeAll((done: Function) => {
+            gridObj = createGrid(
+                {
+                    dataSource: filterData,
+                    height: 300,
+                    allowGrouping: true,
+                    enableVirtualization: true,
+                    groupSettings: {columns: ['CustomerID'], enableLazyLoading: true },
+                    columns: [
+                        { field: 'OrderID', headerText: 'Order ID', width: 120, textAlign: 'Right' },
+                        { field: 'CustomerID', headerText: 'Customer Name', width: 150 },
+                        { field: 'OrderDate', headerText: 'Order Date', width: 130, format: 'yMd', textAlign: 'Right' },
+                        { field: 'Freight', width: 120, format: 'C2', textAlign: 'Right'}
+                    ],
+                }, done);
+        });
+
+        it('Show/Hide a Columns - Coverage', () => {
+            gridObj.hideColumns(['Order ID']);
+            gridObj.showColumns(['Order ID']);
+        });
+        afterAll(() => {
+            destroy(gridObj);
+        });
+    });
 });

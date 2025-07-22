@@ -65,7 +65,7 @@ describe('PivotFieldList spec', () => {
             it('Field searing - ensuring', (done: Function) => {
                 searchField1.element.dispatchEvent(new Event('input', { bubbles: true }));
                 setTimeout(() => {
-                    expect(fieldListObj1.element.querySelectorAll('.e-field-table .e-field-list ul li:not(.e-disable)')[0].textContent).toBe('dateMonths (date)Quarters (date)Years (date)Days (date)');
+                    expect(fieldListObj1.element.querySelectorAll('.e-field-table .e-field-list ul li:not(.e-disable)')[0].textContent).toBe('dateDays (date)Years (date)Quarters (date)Months (date)');
                     done();
                 }, 1500);
             });
@@ -74,7 +74,7 @@ describe('PivotFieldList spec', () => {
                 searchField1.element.dispatchEvent(new Event('input', { bubbles: true }));
                 setTimeout(() => {
                     searchField1.element.dispatchEvent(new Event('input', { bubbles: true }));
-                    expect(fieldListObj1.element.querySelectorAll('.e-field-table .e-field-list ul li:not(.e-disable)')[0].textContent).toBe('dateMonths (date)Quarters (date)Years (date)Days (date)');
+                    expect(fieldListObj1.element.querySelectorAll('.e-field-table .e-field-list ul li:not(.e-disable)')[0].textContent).toBe('dateDays (date)Years (date)Quarters (date)Months (date)');
                     fieldListObj1.dataSourceSettings.groupSettings = [];
                     done();
                 }, 1500);
@@ -458,7 +458,7 @@ describe('PivotFieldList spec', () => {
                     let leftAxisPanel: HTMLElement = fieldListObj.axisTableModule.axisTable.querySelector('.e-left-axis-fields');
                     let pivotButtons: HTMLElement[] = [].slice.call(leftAxisPanel.querySelectorAll('.e-pivot-button'));
                     expect(pivotButtons.length).toBeGreaterThan(0);
-                    expect((pivotButtons[pivotButtons.length - 1]).getAttribute('data-uid')).toBe('pno');
+                    expect((pivotButtons[pivotButtons.length - 1]).getAttribute('data-uid')).toBe('_id');
                     done();
                 });
             });
@@ -756,14 +756,14 @@ describe('PivotFieldList spec', () => {
             searchField.value = 'p';
             searchField.element.dispatchEvent(new Event('input', { bubbles: true }));
             setTimeout(() => {
-                expect(fieldListObj.element.querySelectorAll('.e-field-table .e-field-list ul li:not(.e-disable)')[0].textContent).toBe('pno');
+                expect(fieldListObj.element.querySelectorAll('.e-field-table .e-field-list ul li:not(.e-disable)')[0].textContent).toBe('_id');
                 searchField.element.dispatchEvent(new Event('input', { bubbles: true }));
                 done();
             }, 1000);
         });
         it('validating search - 1 && checking search - 2', (done: Function) => {
             setTimeout(() => {
-                expect(fieldListObj.element.querySelectorAll('.e-field-table .e-field-list ul li:not(.e-disable)')[0].textContent).toBe('pno');
+                expect(fieldListObj.element.querySelectorAll('.e-field-table .e-field-list ul li:not(.e-disable)')[0].textContent).toBe('company');
                 searchField.value = 'pr';
                 searchField.element.dispatchEvent(new Event('input', { bubbles: true }));
                 done();
@@ -840,14 +840,14 @@ describe('PivotFieldList spec', () => {
             searchField.value = 'p';
             searchField.element.dispatchEvent(new Event('input', { bubbles: true }));
             setTimeout(() => {
-                expect(document.querySelectorAll('.e-field-table .e-field-list ul li:not(.e-disable)')[0].textContent).toBe('pno');
+                expect(document.querySelectorAll('.e-field-table .e-field-list ul li:not(.e-disable)')[0].textContent).toBe('_id');
                 searchField.element.dispatchEvent(new Event('input', { bubbles: true }));
                 done();
             }, 2000);
         });
         it('validating searching - 1', (done: Function) => {
             setTimeout(() => {
-                expect(document.querySelectorAll('.e-field-table .e-field-list ul li:not(.e-disable)')[0].textContent).toBe('pno');
+                expect(document.querySelectorAll('.e-field-table .e-field-list ul li:not(.e-disable)')[0].textContent).toBe('Population');
                 let checkEle: Element[] = <Element[] & NodeListOf<Element>>document.querySelectorAll('.e-field-table .e-field-list ul li:not(.e-disable)');
                 checkEle[0].dispatchEvent(down);
                 checkEle[0].dispatchEvent(up);

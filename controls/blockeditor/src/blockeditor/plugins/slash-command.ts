@@ -136,7 +136,6 @@ export class SlashCommandModule {
         const selectedItem: string = commandItem.type;
         if (!selectedItem || !this.editor.currentFocusedBlock) { return; }
         const blockElement: HTMLElement = this.editor.currentFocusedBlock;
-        if (!blockElement) { return; }
         const block: BlockModel = getBlockModelById(blockElement.id, this.editor.blocksInternal);
         this.editor.handleBlockTransformation({
             block: block,
@@ -168,7 +167,7 @@ export class SlashCommandModule {
             command: this.editor.commandMenu.commands.find((c: CommandItemModel) => c.type === (args.itemData as any).type),
             element: args.item,
             event: (args.e as Event),
-            isInteracted: Object.keys(args.e).length === 0 ? false : true,
+            isInteracted: true,
             cancel: false
         };
         if (this.editor.commandMenu.itemClicked) {
@@ -306,7 +305,8 @@ export class SlashCommandModule {
                     }
                     break;
                 case 'commands':
-                    this.mentionObj.dataSource = (newProp.commands as any);
+                    this.mentionObj.dataSource = (sanitizeCommandMenuItems(newProp.commands) as any);
+                    break;
                 }
             }
         }

@@ -2,6 +2,16 @@
 
 ## [Unreleased]
 
+## 30.1.41 (2025-07-22)
+
+### RichTextEditor
+
+#### Bug Fixes
+
+- `#I743536` - Now, the Rich Text Editor works properly when resizing tables without editor focus, correctly updating values.
+
+- `#F68651` - Now, the Rich Text Editor works properly when pressing the Shift + Enter key before an image, without throwing a script error.
+
 ## 30.1.40 (2025-07-15)
 
 ### RichTextEditor

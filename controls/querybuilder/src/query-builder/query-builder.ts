@@ -825,7 +825,7 @@ export class QueryBuilder extends Component<HTMLDivElement> implements INotifyPr
         } else if (this.columns && this.columns.length) {
             const columns: ColumnsModel[] = this.columns;
             for (let i: number = 0, len: number = columns.length; i < len; i++) {
-                if (columns[i as number].category) {
+                if (columns[i as number].category && columns[i as number].category !== this.l10n.getConstant('OtherFields')) {
                     this.fields = { text: 'label', value: 'field', groupBy: 'category' };
                 } else {
                     columns[i as number].category = this.l10n.getConstant('OtherFields');

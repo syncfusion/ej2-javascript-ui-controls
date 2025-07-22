@@ -1,8 +1,7 @@
 import { BlockAction } from '../../actions/index';
 import { BlockEditor } from '../../base/index';
 import { BlockModel } from '../../models/index';
-import { generateUniqueId } from '../../utils/common';
-import { appendDocumentNodes } from './block-utils';
+import { handleExistingContentElement } from './block-utils';
 
 
 export class QuoteRenderer {
@@ -31,24 +30,7 @@ export class QuoteRenderer {
         });
         blockElement.classList.add('e-quote-block');
         if (existingContentElement) {
-            if (existingContentElement instanceof HTMLElement) {
-                quoteElement.innerHTML = existingContentElement.innerHTML;
-                if (existingContentElement.id) {
-                    quoteElement.id = existingContentElement.id;
-                }
-            }
-            else if (existingContentElement instanceof Node) {
-                existingContentElement.childNodes.forEach((node: Node) => {
-                    quoteElement.appendChild(node.cloneNode(true));
-                });
-                const childLen: number = existingContentElement.childNodes.length;
-                if ((childLen === 0) || (childLen === 1 && existingContentElement.childNodes[0].nodeType === Node.TEXT_NODE)) {
-                    quoteElement.id = block.content && block.content.length === 1
-                        ? block.content[0].id
-                        : generateUniqueId('content');
-                }
-            }
-            appendDocumentNodes(blockElement, quoteElement, existingContentElement);
+            handleExistingContentElement(block, blockElement, quoteElement, existingContentElement);
         } else {
             this.parent.contentRenderer.renderContent(block, quoteElement);
         }

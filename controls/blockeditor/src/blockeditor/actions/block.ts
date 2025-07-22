@@ -312,8 +312,8 @@ export class BlockAction {
         if (!args.blockElement) { return; }
         const blockModel: BlockModel = getBlockModelById(args.blockElement.id, this.editor.blocksInternal);
         const blockIndex: number = getBlockIndexById(args.blockElement.id, this.editor.blocksInternal);
-        const parentBlock: BlockModel = getBlockModelById(blockModel.parentId, this.editor.blocksInternal);
         if (blockIndex === -1) { return; }
+        const parentBlock: BlockModel = getBlockModelById(blockModel.parentId, this.editor.blocksInternal);
         let deletedBlocks: BlockModel[];
         const prevOnChange: boolean = (this.editor as any).isProtectedOnChange;
         (this.editor as any).isProtectedOnChange = true;
@@ -364,9 +364,9 @@ export class BlockAction {
         if (!toBlockElement) { return; }
         const toBlockModel: BlockModel = getBlockModelById(toBlockId, this.editor.blocksInternal);
         const toBlockIndex: number = getBlockIndexById(toBlockId, this.editor.blocksInternal);
+        if (toBlockIndex < 0) { return; }
         const toParentBlock: BlockModel = getBlockModelById(toBlockModel.parentId, this.editor.blocksInternal);
         const toParentBlockIndex: number = toParentBlock ? getBlockIndexById(toParentBlock.id, this.editor.blocksInternal) : -1;
-        if (toBlockIndex < 0) { return; }
         const allFromModels: IFromBlockArgs[] = [];
         const allBlocks: HTMLElement[] = Array.from(this.editor.blockWrapper.children) as HTMLElement[];
         const toBlockDOM: HTMLElement = (toParentBlock
@@ -466,8 +466,8 @@ export class BlockAction {
 
         const blockModel: BlockModel = getBlockModelById(blockElement.id, this.editor.blocksInternal);
         const blockIndex: number = getBlockIndexById(blockElement.id, this.editor.blocksInternal);
-        const parentBlock: BlockModel = getBlockModelById(blockModel.parentId, this.editor.blocksInternal);
         if (blockIndex === -1) { return; }
+        const parentBlock: BlockModel = getBlockModelById(blockModel.parentId, this.editor.blocksInternal);
 
         // Deep clone the block model and generate new IDs
         const blockToClone: BlockModel = parentBlock
@@ -576,8 +576,6 @@ export class BlockAction {
         case BlockType.Template:
             contentElement = this.commonBlocksRenderer.renderTemplateBlock(block, blockElement);
             break;
-        default:
-            break;
         }
         if (contentElement) {
             const notAllowedTypes: string[] = [BlockType.Code, BlockType.Callout]; //Table, Code, Callout etc.
@@ -668,8 +666,6 @@ export class BlockAction {
             break;
         case BlockType.Callout:
             newContentElement = this.calloutRenderer.renderCallout(block, blockElement, true);
-            break;
-        default:
             break;
         }
         const isListType: boolean = isListTypeBlock(newBlockType);
@@ -814,7 +810,7 @@ export class BlockAction {
         const contentElement: HTMLElement = getBlockContentElement(blockElement);
         if (!contentElement) { return null; }
         let startContainer: Node = null;
-        const range: Range = getSelectionRange();
+        const range: Range = this.editor.nodeSelection.getRange();
         if (isUndoRedoAction) {
             if (!args.lastChild) { return null; }
             startContainer = Node.ELEMENT_NODE === args.lastChild.nodeType ? getDeepestTextNode(args.lastChild) : args.lastChild;
@@ -850,7 +846,7 @@ export class BlockAction {
         ): void => {
             if (node.nodeType === Node.TEXT_NODE) {
                 const textNode: Text = node as Text;
-                const fullText: string = textNode.textContent || '';
+                const fullText: string = textNode.textContent;
                 if (!isAfter && node === splitNode) {
                     const beforeText: string = fullText.slice(0, splitOffset);
                     const afterText: string = fullText.slice(splitOffset);
@@ -976,10 +972,6 @@ export class BlockAction {
         this.editor.togglePlaceholder(targetBlock, true);
         this.editor.showFloatingIcons(targetBlock);
 
-        if (targetBlockModel.type === BlockType.Template) {
-            const newHtmlContent: string = targetContent.innerHTML;
-            targetBlockModel.template = newHtmlContent;
-        }
         this.updateContentModelsAfterDeletion(sourceContent, targetContent, targetBlockModel, sourceBlockModel);
         this.deleteBlock({
             ...args,
@@ -988,13 +980,17 @@ export class BlockAction {
             splitOffset: splitOffset,
             contentElement: sourceContent
         });
+        const isListType: boolean = isListTypeBlock(sourceBlockModel.type) || isListTypeBlock(targetBlockModel.type);
+        if (isListType) {
+            this.editor.listBlockAction.recalculateMarkersForListItems();
+        }
     }
 
     private mergeBlocksAtDOMLevel(sourceContent: HTMLElement, targetContent: HTMLElement): void {
         const sourceBlockModel: BlockModel = getBlockModelById(sourceContent.closest('.e-block').id, this.editor.blocksInternal);
         sourceContent.childNodes.forEach((node: ChildNode, index: number) => {
             if (node.nodeType === Node.TEXT_NODE) {
-                const text: string = node.textContent || '';
+                const text: string = node.textContent;
                 if (targetContent.childNodes.length === 0) {
                     targetContent.appendChild(document.createTextNode(text));
                 } else {
@@ -1242,7 +1238,7 @@ export class BlockAction {
     }
 
     private updateBlockProperties(oldBlock: BlockModel, newBlock: BlockModel, prop: keyof BlockModel): void {
-        const blockElement: HTMLElement = document.querySelector(newBlock.id);
+        const blockElement: HTMLElement = this.editor.element.querySelector('#' + newBlock.id);
         if (!blockElement) { return; }
         switch (prop) {
         case 'type':
@@ -1275,7 +1271,7 @@ export class BlockAction {
 
     private adjustViewForFocusedBlock(): void {
         const lastBlock: BlockModel = this.editor.blocksInternal[this.editor.blocksInternal.length - 1];
-        if (!this.editor.currentFocusedBlock || !this.editor.element) {
+        if (!this.editor.currentFocusedBlock) {
             return;
         }
         const currentBlockElement: HTMLElement = this.editor.currentFocusedBlock;

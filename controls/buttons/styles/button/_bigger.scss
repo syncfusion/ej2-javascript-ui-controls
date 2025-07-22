@@ -163,6 +163,9 @@
       @if $skin-name == 'fluent2' {
         line-height: 16px;
       }
+      @if $skin-name == 'highcontrast' {
+        padding: 3px 11px;
+      }
       @include mat3-border-radius;
     }
 

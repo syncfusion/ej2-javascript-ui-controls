@@ -646,15 +646,29 @@ export class PdfForm {
             }
             for (let j: number = 0; j < widgetAnnots.length; j++) {
                 const ref: _PdfReference = widgetAnnots[<number>j];
-                if (ref && ref instanceof _PdfReference && this._fields.indexOf(ref) === -1) {
+                if (ref instanceof _PdfReference && this._fields.indexOf(ref) === -1) {
                     const annotDictionary: _PdfDictionary = this._crossReference._fetch(ref);
                     if (annotDictionary &&
-                        annotDictionary.has('FT') &&
                         annotDictionary.has('Subtype') &&
+                        annotDictionary.get('Subtype') &&
                         annotDictionary.get('Subtype').name === 'Widget' &&
-                        annotDictionary.has('T') && annotDictionary.has('P') &&
-                        this._formNames.indexOf(annotDictionary.get('T')) === -1) {
-                        this._fields.push(ref);
+                        annotDictionary.has('P')
+                    ) {
+                        if (annotDictionary.has('Parent')) {
+                            const parentRef: _PdfReference = annotDictionary.getRaw('Parent');
+                            let annotationParentDictionary: _PdfDictionary;
+                            if (parentRef && parentRef instanceof _PdfReference) {
+                                annotationParentDictionary = this._crossReference._fetch(parentRef);
+                                if (annotationParentDictionary && annotationParentDictionary.has('T')) {
+                                    const parentValue: string = annotationParentDictionary.get('T');
+                                    if (this._formNames.indexOf(parentValue) === -1 && this._fields.indexOf(parentRef) === -1) {
+                                        this._fields.push(parentRef);
+                                    }
+                                }
+                            }
+                        } else if (annotDictionary.has('FT') && annotDictionary.has('T') && this._formNames.indexOf(annotDictionary.get('T')) === -1) {
+                            this._fields.push(ref);
+                        }
                     }
                 }
             }
@@ -737,7 +751,7 @@ export class PdfForm {
         if (widgetCollection && widgetCollection.indexOf(ref) !== -1) {
             return true;
         }
-        pageWidgets.forEach((widgets: _PdfDictionary[], pageIndex: number) => {
+        pageWidgets.forEach((widgets: _PdfDictionary[], pageIndex: number) => { // eslint-disable-line
             if (widgets && widgets.length > 0) {
                 for (let j: number = 0; j < widgets.length; j++) {
                     const widget: _PdfDictionary = widgets[<number>j];

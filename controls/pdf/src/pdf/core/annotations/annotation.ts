@@ -10673,11 +10673,11 @@ export class PdfRubberStampAnnotation extends PdfComment {
             if (this.rotateAngle === 0) {
                 this.rotateAngle = this.rotationAngle * 90;
             }
-            this.bounds = this._getRotatedBounds(this.bounds, this.rotateAngle);
+            this.bounds = this._getRotatedBounds(this.bounds, this.rotate);
         } else {
             this.rotateAngle = this._getRotationAngle();
         }
-        _setMatrix(template, this.rotateAngle);
+        _setMatrix(template, this.rotate, this);
         if (!this._appearance) {
             this._drawStampAppearance(template);
         }

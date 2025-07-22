@@ -9,7 +9,7 @@ import { DiagramElement } from '../core/elements/diagram-element';
 import { getUserHandlePosition, checkPortRestriction, canShowControlPoints } from '../utility/diagram-util';
 import { NodeModel } from './../objects/node-model';
 import { canMove, canDragSourceEnd, canDragTargetEnd, canContinuousDraw, canDragSegmentThumb, canSingleSelect, canMultiSelect } from '../utility/constraints-util';
-import { canZoomPan, defaultTool, canDrawOnce, canDrag, canDraw, canSelect, canRotate } from '../utility/constraints-util';
+import { canZoomPan, defaultTool, canDrawOnce, canDrag, canDraw, canSelect, canRotate, canPortOutConnect } from '../utility/constraints-util';
 import { canShowCorner, canResizeCorner } from '../utility/diagram-util';
 import { Point } from '../primitives/point';
 import { ITouches } from '../objects/interface/interfaces';
@@ -293,6 +293,10 @@ export function findPortToolToActivate(
     } else if (canDraw(target, diagram) && (checkPortRestriction(target as PointPortModel, PortVisibility.Hover)
         || (checkPortRestriction(target as PointPortModel, PortVisibility.Visible)))) {
         if (target.constraints & PortConstraints.Draw) {
+            //968940 - Restrict Connector Creation from InConnect-Only Ports
+            if (!canPortOutConnect(target as PointPortModel)) {
+                return 'None';
+            }
             diagram.drawingObject = {};
             const connector: ConnectorModel = { type: 'Orthogonal', sourcePortID: target.id };
             diagram.drawingObject = connector;
