@@ -3348,6 +3348,9 @@ export class Chart extends Component<HTMLElement> implements INotifyPropertyChan
                         clearTimeout(this.resizeTo);
                         return;
                     }
+                    if ((this.axisCollections[0].zoomingScrollBar && this.axisCollections[0].zoomingScrollBar.isScrollUI)) {
+                        this.axisCollections[0].zoomingScrollBar.isScrollUI = false;
+                    }
                     this.createChartSvg();
                     arg.currentSize = this.availableSize;
                     this.trigger(resized, arg);

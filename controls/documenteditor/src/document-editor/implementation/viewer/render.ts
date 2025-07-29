@@ -95,6 +95,9 @@ export class Renderer {
            || !this.documentHelper.owner.enableLayout) {
             return;
         }
+        if (this.documentHelper.selection) {
+            this.documentHelper.selection.updateEditRegionByPage(page);
+        }
         this.pageContext.fillStyle = HelperMethods.getColor(this.documentHelper.backgroundColor);
         this.pageContext.beginPath();
         if (this.viewer instanceof WebLayoutViewer) {
@@ -132,6 +135,14 @@ export class Renderer {
         if (page.footerWidget) {
             this.renderHFWidgets(page, page.footerWidgetIn, width, false);
         }
+        // Need to render the behind shape for all floating items in the page. So that it will not overlap with multiple body widgets.
+        /* eslint-disable */
+        for (let i: number = 0; i < page.bodyWidgets.length; i++) {
+            if (!isNullOrUndefined(page.bodyWidgets[i].floatingElements)) {
+                this.renderFloatingItems(page, page.bodyWidgets[i].floatingElements, 'Behind');
+            }
+        }
+        /* eslint-enable */
         for (let i: number = 0; i < page.bodyWidgets.length; i++) {
             this.render(page, page.bodyWidgets[parseInt(i.toString(), 10)]);
             if (page.footnoteWidget && this.documentHelper.owner.layoutType === 'Pages') {
@@ -372,11 +383,6 @@ export class Renderer {
         if (this.isFieldCode) {
             this.isFieldCode = false;
         }
-        /* eslint-disable */
-        if (!isNullOrUndefined(bodyWidget.floatingElements)) {
-            this.renderFloatingItems(page, bodyWidget.floatingElements, 'Behind');
-        }
-        /* eslint-enable */
         let isClipped: boolean = false;
 
         let nextColumnBody: BodyWidget;
@@ -946,6 +952,9 @@ private calculatePathBounds(data: string): Rect {
             return;
         }
         let table: TableWidget = parentTable.clone(true);
+        if (!isNullOrUndefined(this.documentHelper.owner.editorModule)) {
+            this.documentHelper.owner.editorModule.constructRevisionsForTable(table, true);
+        }
         table.childWidgets = [];
         page.viewer.updateClientAreaLocation(table, new Rect(isMultiColumn ? widget.x : page.viewer.clientArea.x, top, table.width, table.height));
         this.updateTableHeaderRows(header, table, page, top, isMultiColumn ? widget.x : page.viewer.clientArea.x, isMultiColumn);
@@ -973,6 +982,9 @@ private calculatePathBounds(data: string): Rect {
             let row: TableRowWidget = table.childWidgets[i] as TableRowWidget;
             if (row.rowFormat.isHeader) {
                 let clonedRow: TableRowWidget = row.clone();
+                if (!isNullOrUndefined(this.documentHelper.owner.editorModule)) {
+                    this.documentHelper.owner.editorModule.constructRevisionFromID(clonedRow.rowFormat);
+                }
                 clonedTable.childWidgets.push(clonedRow);
                 clonedRow.containerWidget = clonedTable;
                 page.viewer.updateClientAreaLocation(clonedRow, new Rect(left, top, clonedRow.width, clonedRow.height));
@@ -988,6 +1000,9 @@ private calculatePathBounds(data: string): Rect {
                             let nextRow: TableRowWidget = table.childWidgets[i + k] as TableRowWidget;
                             if (!isNullOrUndefined(nextRow)) {
                                 let clonedRow: TableRowWidget = nextRow.clone();
+                                if (!isNullOrUndefined(this.documentHelper.owner.editorModule)) {
+                                    this.documentHelper.owner.editorModule.constructRevisionFromID(clonedRow.rowFormat);
+                                }
                                 clonedTable.childWidgets.push(clonedRow);
                                 clonedRow.containerWidget = clonedTable;
                                 page.viewer.updateClientAreaLocation(clonedRow, new Rect(left, top, clonedRow.width, clonedRow.height));

@@ -303,7 +303,7 @@ export class WRowFormat {
                 this.rightMargin = format.rightMargin;
                 this.bottomMargin = format.bottomMargin;
                 this.leftIndent = format.leftIndent;
-                this.revisions = format.revisions;
+                // this.revisions = format.revisions;
             }
             if (!isNullOrUndefined(format.borders)) {
                 this.borders = new WBorders(this);

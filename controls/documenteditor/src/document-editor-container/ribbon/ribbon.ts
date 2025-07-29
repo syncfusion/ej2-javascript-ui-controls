@@ -61,7 +61,10 @@ export class Ribbon implements IToolbarHandler {
      * @private
      */
     fileMenuItems: (FileMenuItemType | MenuItemModel)[];
-
+    /**
+     * @private
+     */
+    public previousContext: string = '';
     /**
      * Gets the document editor instance
      * @private
@@ -340,6 +343,7 @@ export class Ribbon implements IToolbarHandler {
         } else {
             this.contextualTabManager.hideContextualTab(this.ribbon);
         }
+        this.previousContext = currentContext;
     }
 
     /**

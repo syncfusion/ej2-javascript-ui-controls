@@ -1,4 +1,4 @@
-import { DocumentEditorContainer, ContainerContentChangeEventArgs, DocumentEditor, Selection, Editor, EditorHistory, CollaborativeEditingHandler, SfdtExport } from '../../../src/index';
+import { DocumentEditorContainer, ContainerContentChangeEventArgs, DocumentEditor, Selection, Editor, EditorHistory, CollaborativeEditingHandler, SfdtExport, LineWidget } from '../../../src/index';
 import { createElement } from '@syncfusion/ej2-base';
 import { Toolbar } from '../../../src/document-editor-container/tool-bar/tool-bar';
 import { TestHelper } from '../../test-helper.spec';
@@ -261,3 +261,39 @@ describe('Enable track changes in collaborative editing', () => {
         expect(argsEle.operations[0].markerData).toBeDefined();
     });
 });
+// describe('Track changes - Reject on Bookmark', () => {
+//     let container: DocumentEditor;
+//     beforeAll(() => {
+//         document.body.innerHTML = '';
+//         let ele: HTMLElement = createElement('div', { id: 'container' });
+//         document.body.appendChild(ele);
+//         DocumentEditor.Inject(Editor, Selection, EditorHistory, SfdtExport);
+//         container = new DocumentEditor({ enableEditor: true, isReadOnly: false, enableEditorHistory: true, enableSfdtExport: true, enableSelection: true });
+//         (container.documentHelper as any).containerCanvasIn = TestHelper.containerCanvas;
+//         (container.documentHelper as any).selectionCanvasIn = TestHelper.selectionCanvas;
+//         (container.documentHelper.render as any).pageCanvasIn = TestHelper.pageCanvas;
+//         (container.documentHelper.render as any).selectionCanvasIn = TestHelper.pageSelectionCanvas;
+//         container.appendTo('#container');
+//     });
+//     afterAll((done): void => {
+//         container.destroy();
+//         document.body.removeChild(document.getElementById('container'));
+//         container = undefined;
+//         document.body.innerHTML = '';
+//         setTimeout(function () {
+//             done();
+//         }, 1000);
+//     });
+//     it('Track changes - Reject on Bookmark', function () {
+//         console.log('Track changes - Reject on Bookmark');
+//         container.openBlank();
+//         container.enableTrackChanges = true;
+//         container.editor.insertText("Hello");
+//         container.editor.onEnter();
+//         container.editor.insertText("world");
+//         container.selection.select('0;0;0', '0;1;6');
+//         container.editor.insertBookmark('b1');
+//         container.revisions.get(0).reject();
+//         expect(((container.selection.start.paragraph.childWidgets[0]) as LineWidget).children.length).toBe(0);
+//     });
+// });

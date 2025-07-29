@@ -188,6 +188,8 @@ export class Revision {
             editorHistory.updateHistory();
             if (removeChanges && this.owner.editorHistory && !isNullOrUndefined(this.owner.editorHistory.currentHistoryInfo)) {
                 for (let k: number = 0; k < comments.length; k++) {
+                    // Reset the removedIds array of the current comment element to an empty array.
+                    comments[k].removedIds = [];
                     this.owner.editorModule.initInsertInline(comments[k], false);
                 }
                 this.owner.editorHistory.currentHistoryInfo.endPosition = this.owner.selection.startOffset;
@@ -245,7 +247,7 @@ export class Revision {
         let isItemAlreadyUnlinked: boolean = this.owner.selectionModule.selectRevision(this, undefined, undefined, undefined, true, isAccept);
         if (!isItemAlreadyUnlinked) {
             this.owner.editorModule.initHistory(isAccept ? 'Accept Change' : 'Reject Change');
-            this.owner.editorModule.deleteSelectedContents(this.owner.selectionModule, true, true);
+            this.owner.editorModule.deleteSelectedContents(this.owner.selectionModule, true);
             if (!isNullOrUndefined(this.owner.editorHistory) && this.owner.editorHistoryModule.currentBaseHistoryInfo) {
                 this.owner.editorHistoryModule.currentBaseHistoryInfo.isAcceptOrReject = isAccept ? 'Accept' : 'Reject';
             }

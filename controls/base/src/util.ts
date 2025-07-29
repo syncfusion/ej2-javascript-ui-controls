@@ -56,7 +56,7 @@ export function setImmediate(handler: Function): Function {
         }
     };
     window.addEventListener('message', <EventListener>messageHandler, false);
-    window.postMessage(secret, '*');
+    window.postMessage(secret, window.location.origin);
     return unbind = () => {
         window.removeEventListener('message', <EventListener>messageHandler);
         handler = messageHandler = secret = undefined;

@@ -13,9 +13,10 @@ export class StylesHelper {
      * Get style items for gallery
      *
      * @param {DocumentEditor} documentEditor - Document editor instance
+     * @param {L10n} localObj - Localization object
      * @returns {RibbonGalleryItemModel[]} Array of style gallery items
      */
-    public static getStyleItems(documentEditor: DocumentEditor): RibbonGalleryItemModel[] {
+    public static getStyleItems(documentEditor: DocumentEditor, localObj: L10n): RibbonGalleryItemModel[] {
         const styles: RibbonGalleryItemModel[] = [];
 
         // Get styles from document's stylesMap
@@ -58,13 +59,19 @@ export class StylesHelper {
         // If no styles found, provide some defaults
         if (styles.length === 0) {
             styles.push({
-                content: 'Normal',
-                htmlAttributes: { style: 'font-family: Calibri; font-size: 11pt;' }
+                content: localObj.getConstant('Normal'),
+                htmlAttributes: {
+                    style: 'font-family: Calibri; font-size: 11pt;',
+                    title: localObj.getConstant('Normal')
+                }
             });
 
             styles.push({
-                content: 'Heading 1',
-                htmlAttributes: { style: 'font-family: "Calibri Light"; font-size: 16pt; color: #2F5496; font-weight: bold;' }
+                content: localObj.getConstant('Heading 1'),
+                htmlAttributes: {
+                    style: 'font-family: "Calibri Light"; font-size: 16pt; color: #2F5496; font-weight: bold;',
+                    title: localObj.getConstant('Heading 1')
+                }
             });
         }
 
@@ -115,7 +122,8 @@ export class StylesHelper {
                 styles.push({
                     content: styleName,
                     htmlAttributes: {
-                        style: styleInfo.Style
+                        style: styleInfo.Style,
+                        title: styleName
                     }
                 });
             }
@@ -135,7 +143,8 @@ export class StylesHelper {
                 styles.push({
                     content: style.StyleName,
                     htmlAttributes: {
-                        style: style.Style
+                        style: style.Style,
+                        title: style.StyleName
                     }
                 });
                 addedStylesMap[style.StyleName] = true;
@@ -149,7 +158,8 @@ export class StylesHelper {
                 styles.push({
                     content: style.StyleName,
                     htmlAttributes: {
-                        style: style.Style
+                        style: style.Style,
+                        title: style.StyleName
                     }
                 });
                 addedStylesMap[style.StyleName] = true;

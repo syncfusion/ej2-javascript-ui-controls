@@ -61,6 +61,7 @@ export class SfdtReader {
     public endnotes: Footnote = undefined;
     public keywordIndex: number = undefined;
     public themes:Themes = undefined;
+    private stylesCollection: any[] = [];
     /**
      * @private
      */
@@ -78,6 +79,7 @@ export class SfdtReader {
      * @private
      */
     public isHtmlPaste: boolean = false;
+    public hasFieldSeparator: boolean = false;
     private revisionMap: Dictionary<ParagraphWidget | WCharacterFormat | WRowFormat , Dictionary<string, Revision>>;
     private get isPasting(): boolean {
         return this.viewer && this.viewer.owner.isPastingContent;
@@ -297,10 +299,16 @@ export class SfdtReader {
     public parseStyles(data: any, styles: WStyles): void {
         for (let i: number = 0; i < data[stylesProperty[this.keywordIndex]].length; i++) {
             var editor = this.documentHelper.owner.editorModule;
-            if ((!isNullOrUndefined(editor) && editor.isRemoteAction) || isNullOrUndefined(this.documentHelper.styles.findByName(data[stylesProperty[this.keywordIndex]][i][nameProperty[this.keywordIndex]]))) {
+            let style: any = this.documentHelper.styles.findByName(data[stylesProperty[this.keywordIndex]][i][nameProperty[this.keywordIndex]]);
+            // As per MS Word Behaaviour we need to replace the existing style with same name & same type with incoming style.
+            if (!isNullOrUndefined(style) && this.stylesCollection.indexOf(data[stylesProperty[this.keywordIndex]][i]) < 0 && style.type === this.getStyleType(style[typeProperty[this.keywordIndex]])) {
+                styles.remove(style);
+            }
+            if ((!isNullOrUndefined(editor) && editor.isRemoteAction) || !styles.contains(style)) {
                 this.parseStyle(data, data[stylesProperty[this.keywordIndex]][i], styles);
             }
         }
+        this.stylesCollection = [];
     }
     public parseRevisions(data: any, revisions: Revision[]): void {
         for (let i: number = 0; i < data[revisionsProperty[this.keywordIndex]].length; i++) {
@@ -571,6 +579,7 @@ export class SfdtReader {
                 wStyle.name = style[nameProperty[this.keywordIndex]];
             }
             styles.push(wStyle);
+            this.stylesCollection.push(style);
             if (!isNullOrUndefined(style[basedOnProperty[this.keywordIndex]])) {
                 let basedOn: Object;
                 if (!isNullOrUndefined(editor) && editor.isRemoteAction) {
@@ -1310,7 +1319,6 @@ export class SfdtReader {
         let hasValidElmts: boolean = false;
         let revision: Revision;
         let trackChange: boolean = this.viewer.owner.enableTrackChanges;
-        let count: number = 0;
         let isCreateTextEleBox: boolean = false;
         let isCreateField: boolean = false;
         let fieldCode: string = undefined;
@@ -1318,12 +1326,11 @@ export class SfdtReader {
             let inline: any = data[i];
             isCreateTextEleBox = false;
             if (inline.hasOwnProperty([fieldTypeProperty[this.keywordIndex]])) {
-                if (inline[fieldTypeProperty[this.keywordIndex]] === 2) {
-                    count = i;
+                if (inline[fieldTypeProperty[this.keywordIndex]] === 2 && (i === data.length - 1 || !data[i + 1].hasOwnProperty(textProperty[this.keywordIndex]))) {
+                    this.hasFieldSeparator = true;
                 }
-                if (inline[fieldTypeProperty[this.keywordIndex]] === 1 && count + 1 === i) {
-                        isCreateTextEleBox = true;
-                        count = 0;
+                if (inline[fieldTypeProperty[this.keywordIndex]] === 1 && this.hasFieldSeparator) {
+                    isCreateTextEleBox = true;
                 }
             }
             if (isCreateTextEleBox && this.documentHelper.isPageField) {
@@ -1332,6 +1339,7 @@ export class SfdtReader {
                 textElement.text = "";
                 textElement.line = lineWidget;
                 lineWidget.children.push(textElement);
+                this.hasFieldSeparator = false;
                 hasValidElmts = true;
                 i--;
                 continue;
@@ -1522,7 +1530,7 @@ export class SfdtReader {
                     }
                     if (inline[fieldTypeProperty[this.keywordIndex]] === 1 && isCreateField) {
                         i--;
-                        count = i;
+                        this.hasFieldSeparator = true;
                     }
                     isCreateField = false;
                 } else if (inline[fieldTypeProperty[this.keywordIndex]] === 1) {
@@ -1582,7 +1590,7 @@ export class SfdtReader {
                 if (!this.isParseHeader || this.isPaste) {
                     if (inline[bookmarkTypeProperty[this.keywordIndex]] === 0) {
                         let isAdd: boolean = this.isPaste && !this.documentHelper.bookmarks.containsKey(bookmark.name);
-                        if (!this.isPaste || (isAdd && !this.isContextBasedPaste)) {
+                        if (!this.isPaste) {
                             this.documentHelper.bookmarks.add(bookmark.name, bookmark);
                         } else if (!isAdd) {
                             lineWidget.children.splice(lineWidget.children.indexOf(bookmark), 1);
@@ -4135,6 +4143,7 @@ export class SfdtReader {
             this.revisionMap.destroy();
         }
         this.revisionMap = undefined;
+        this.stylesCollection = undefined;
         this.fontInfoCollection = undefined;
         this.documentHelper = undefined;
         this.keywordIndex = undefined;

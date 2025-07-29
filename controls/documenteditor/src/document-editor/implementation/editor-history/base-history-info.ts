@@ -455,11 +455,18 @@ export class BaseHistoryInfo {
         let bookmark: BookmarkElementBox = bookmarkInfo.bookmark;
         // When perform undo, redo for drag and drop operation, bookmark reference changed so we couldn't insert or delete proper bookmark. so updated the bookmark based on name.
         if (!isNullOrUndefined(bookmark) && (bookmark.line.indexInOwner === -1 || bookmark.line.paragraph.indexInOwner === -1) &&
-            !isNullOrUndefined(this.owner.documentHelper) && this.owner.documentHelper.bookmarks.length > 0) {
+            !isNullOrUndefined(this.owner.documentHelper) && this.owner.documentHelper.bookmarks.length > 0 &&
+            !isNullOrUndefined(bookmark.line.paragraph.containerWidget)) {
             bookmark = this.owner.documentHelper.bookmarks.get(bookmark.name);
             (this.removedNodes[0] as BookmarkInfo).bookmark = bookmark;
         }
         if (this.editorHistory.isUndoing) {
+            if (isNullOrUndefined(bookmark.line.paragraph.containerWidget) && !isNullOrUndefined(this.owner.selection)) {
+                const startPosition: TextPosition = this.owner.selection.getTextPosBasedOnLogicalIndex(this.selectionStart);
+                const endPosition: TextPosition = this.owner.selection.getTextPosBasedOnLogicalIndex(this.selectionEnd);
+                bookmark.line = startPosition.currentWidget;
+                bookmark.reference.line = endPosition.currentWidget;
+            }
             const markerData: MarkerInfo = this.owner.editorModule.getMarkerData(bookmark);
             this.documentHelper.bookmarks.add(bookmark.name, bookmark);
             this.markerData.push(markerData);
@@ -722,14 +729,13 @@ export class BaseHistoryInfo {
             this.endPosition = undefined;
             // Use this property to skip deletion if already selected content deleted case.
             let isRemoveContent: boolean = false;
-            let isDeletecell: boolean = false;
-            if (this.action === 'DeleteCells' || this.action === 'RemoveRowTrack' || this.action === 'Accept Change' || this.action === 'Reject Change') {
-                isDeletecell = true;
-            }
+            // Added the boolean for tracked content deletion.
+            let isDeleteTrack: boolean = false;
             if (this.endRevisionLogicalIndex && deletedNodes.length > 0) {
                 let currentPosition: TextPosition = sel.getTextPosBasedOnLogicalIndex(this.endRevisionLogicalIndex);
                 if ((this.editorHistory.isUndoing && !this.editorHistory.currentBaseHistoryInfo.isRevisionEndInAnotherCell) || (this.editorHistory.isRedoing && insertTextPosition.isAtSamePosition(endTextPosition))) {
                     sel.selectPosition(insertTextPosition, currentPosition);
+                    isDeleteTrack = true;
                 }
                 this.collabEnd = this.endRevisionLogicalIndex;
                 if (this.owner.enableCollaborativeEditing) {
@@ -737,22 +743,20 @@ export class BaseHistoryInfo {
                     this.endIndex += this.paraInclude(currentPosition);
                 }
                 if (this.editorHistory.isUndoing || (this.editorHistory.isRedoing && !insertTextPosition.isAtSamePosition(endTextPosition))) {
-                    this.owner.editorModule.deleteSelectedContents(sel, true, isDeletecell);
+                    this.owner.editorModule.deleteSelectedContents(sel, true, isDeleteTrack);
                     isRemoveContent = true;
                 }
             }
             if (!insertTextPosition.isAtSamePosition(endTextPosition) && !isRemoveContent) {
                 isRemoveContent = this.action === 'BackSpace' || this.action === 'Delete' || this.action === 'ClearCells'
                     || this.action === 'DeleteCells' || this.action === 'PasteOverwrite' || this.action === "PasteRow" || this.action === 'PasteNested';
-                let skipDelete: boolean = (deletedNodes.length > 0 && this.action === 'ParaMarkTrack') || this.action === 'ClearRevisions';
                 if (!(isRemoveContent) && this.action !== 'MergeCells' && this.action !== 'InsertRowAbove'
                     && this.action !== 'InsertRowBelow' && this.action !== 'InsertColumnLeft'
                     && this.action !== 'InsertColumnRight' && this.action !== 'Borders'
                     && this.action !== 'DeleteTable' && this.action !== 'DeleteColumn' && this.action !== 'DeleteRow') {
                     sel.end.setPositionInternal(endTextPosition);
-                    if (!this.owner.selectionModule.isEmpty && !skipDelete) {
-                        if (this.editorHistory.isRedoing && this.action !== 'Accept Change' && this.action !== 'ParaMarkTrack' &&
-                            this.action !== 'ParaMarkReject' && this.action !== 'RemoveRowTrack') {
+                    if (!this.owner.selectionModule.isEmpty && this.action !== 'ClearRevisions') {
+                        if (this.editorHistory.isRedoing && this.action !== 'Accept Change' && this.action !== 'RemoveRowTrack') {
                             this.owner.editorModule.removeSelectedContents(sel);
                         } else {
                             // Bug 873011: Handled the separate deletion for field begin and field end for "Accept Change" action on hyperlink redo.
@@ -774,7 +778,7 @@ export class BaseHistoryInfo {
                                     this.editorHistory.currentBaseHistoryInfo.removedNodes.reverse();
                                 }
                             } else {
-                                this.owner.editorModule.deleteSelectedContents(sel, true, isDeletecell);
+                                this.owner.editorModule.deleteSelectedContents(sel, true);
                             }
                         }
                         if (!isNullOrUndefined(this.editorHistory.currentHistoryInfo) &&
@@ -819,7 +823,7 @@ export class BaseHistoryInfo {
             this.revertModifiedNodes(deletedNodes, isRedoAction, isForwardSelection ? start : end, start === end, isForwardSelection ? end : start);
             // Use this property to delete table or cell based on history action.
             if (isRemoveContent) {
-                this.removeContent(insertTextPosition, endTextPosition, isDeletecell);
+                this.removeContent(insertTextPosition, endTextPosition);
             }
             //this.owner.editorModule.reLayout(this.documentHelper.selection);
         }
@@ -885,7 +889,7 @@ export class BaseHistoryInfo {
             }
         }
     }
-    private removeContent(insertTextPosition: TextPosition, endTextPosition: TextPosition, isDeletecell?: boolean): void {
+    private removeContent(insertTextPosition: TextPosition, endTextPosition: TextPosition): void {
         //If the base parent of the insert text position and end text position is null 
         //then the paragraphs already removed.
         //Example scenario: In table editing that is delete cells operation 
@@ -898,7 +902,8 @@ export class BaseHistoryInfo {
         const endContainer = endTextPosition.paragraph.containerWidget;
         if (insertContainer && endContainer && ((insertContainer instanceof BodyWidget && endContainer instanceof BodyWidget)
             || ((insertContainer instanceof TableCellWidget || endContainer instanceof TableCellWidget) && insertTextPosition.paragraph.bodyWidget)
-            || (insertContainer instanceof TextFrame && endContainer instanceof TextFrame))) {
+            || (insertContainer instanceof TextFrame && endContainer instanceof TextFrame)
+            || (insertContainer instanceof HeaderFooterWidget && endContainer instanceof HeaderFooterWidget))) {
             //Removes if any empty paragraph is added while delete.
             this.owner.selectionModule.selectRange(insertTextPosition, endTextPosition);
             this.documentHelper.updateFocus();
@@ -906,7 +911,7 @@ export class BaseHistoryInfo {
             if (this.action === 'BackSpace' || this.action === 'Uppercase' || this.action === 'RemoveRowTrack') {
                 isDelete = true;
             }
-            this.owner.editorModule.deleteSelectedContents(this.owner.selectionModule, isDelete, isDeletecell);
+            this.owner.editorModule.deleteSelectedContents(this.owner.selectionModule, isDelete);
         }
     }
     public updateEndRevisionLogicalIndex(): void {
@@ -962,6 +967,7 @@ export class BaseHistoryInfo {
                     if (this.action === 'AddRevision' && index !== -1) {
                         start.paragraph.characterFormat.removeRevision(index);
                         this.owner.revisions.remove(revision);
+                        this.owner.editorModule.splitRevisionsAndViewBasedOnUntrackedContent(start.paragraph.characterFormat);
                     }
                     else if (this.action === 'RemoveRevision' && index === -1) {
                         start.paragraph.characterFormat.addRevision(revision);
@@ -972,6 +978,7 @@ export class BaseHistoryInfo {
                     if (this.action === 'RemoveRevision' && index !== -1) {
                         start.paragraph.characterFormat.removeRevision(index);
                         this.owner.revisions.remove(revision);
+                        this.owner.editorModule.splitRevisionsAndViewBasedOnUntrackedContent(start.paragraph.characterFormat);
                     }
                     else if (this.action === 'AddRevision' && index === -1) {
                         start.paragraph.characterFormat.addRevision(revision);
@@ -1116,10 +1123,6 @@ export class BaseHistoryInfo {
                     if (this.action === 'TrackingPageBreak' || ((this.action === 'SectionBreak' || this.action === 'SectionBreakContinuous') && lastNode instanceof BodyWidget)) {
                         lastNode = deletedNodes[1];
                     }
-                    // While accepting or rejecting changes, we combined the next paragraph according to Microsoft Word's behavior. Therefore, in this case, we need to first insert the combined block.
-                    if (!isNullOrUndefined(this.isAcceptOrReject) && this.owner.selectionModule.start.offset > 0 && lastNode instanceof ElementBox && deletedNodes[deletedNodes.length - 1] instanceof ParagraphWidget && deletedNodes[deletedNodes.length - 2] instanceof ParagraphWidget) {
-                        lastNode = deletedNodes[deletedNodes.length - 2];
-                    }
                     if (lastNode instanceof ParagraphWidget && this.editorHistory && this.editorHistory.currentBaseHistoryInfo && this.editorHistory.currentBaseHistoryInfo.action === 'Paste') {
                         lastNode = deletedNodes[deletedNodes.length - 1];
                     }
@@ -1130,7 +1133,7 @@ export class BaseHistoryInfo {
                             this.owner.editorModule.insertNewParagraphWidget(lastNode, true);
                         }
                         if (lastNode.characterFormat.removedIds.length > 0) {
-                            this.owner.editorModule.constructRevisionFromID(lastNode.characterFormat, undefined);
+                            this.owner.editorModule.constructRevisionFromID(lastNode.characterFormat);
                         }
                         deletedNodes.splice(deletedNodes.indexOf(lastNode), 1);
                         // When deleting at start of paragraph using backspace, 2 para widgets will be added to the removedNodes. So, both nodes should be inserted.
@@ -1192,7 +1195,7 @@ export class BaseHistoryInfo {
                     }
                     let elementInfo: ElementInfo = this.owner.selectionModule.start.currentWidget.getInline(this.owner.selectionModule.start.offset, 0);
                     let elementBox: ElementBox = elementInfo.element;
-                    let lastLine: LineWidget = (this.owner.selectionModule.start.paragraph.lastChild as LineWidget);
+                    let lastLine: LineWidget = ((this.owner.selectionModule.start.paragraph.combineWidget(this.viewer) as ParagraphWidget).lastChild as LineWidget);
                     if (this.owner.selectionModule.start.currentWidget.isEndsWithLineBreak && this.owner.selectionModule.start.offset > 0
                         && this.owner.documentHelper.layout.isConsiderAsEmptyLineWidget(lastLine) && !isNullOrUndefined(lastLine.previousLine)) {
                         lastLine = lastLine.previousLine;
@@ -1205,7 +1208,7 @@ export class BaseHistoryInfo {
                         let editor: Editor = this.owner.editorModule;
                         editor.insertNewParagraphWidget(firstNode as ParagraphWidget, false);
                         if (firstNode.characterFormat.removedIds.length > 0) {
-                            this.owner.editorModule.constructRevisionFromID(firstNode.characterFormat, undefined);
+                            this.owner.editorModule.constructRevisionFromID(firstNode.characterFormat);
                         }
                         deletedNodes.splice(deletedNodes.indexOf(firstNode), 1);
                         //Removes the intermediate empty paragraph instance.
@@ -1256,9 +1259,8 @@ export class BaseHistoryInfo {
                 if (node instanceof TableRowWidget) {
                     if (block instanceof TableWidget) {
                         block.childWidgets.splice(index, 0, node);
-                        if (this.owner.enableTrackChanges) {
-                            this.owner.editor.constructRevisionsForTable(node.ownerTable, true);
-                        }
+                        node.containerWidget = block;
+                        this.owner.editor.constructRevisionsForTable(node.ownerTable, true);
                         this.owner.editorModule.updateNextBlocksIndex(node, true);
                         if (i === 0 || !(deletedNodes[i - 1] instanceof TableRowWidget)) {
                             this.documentHelper.layout.layoutBodyWidgetCollection(block.index, block.containerWidget, block, false);
@@ -1285,7 +1287,7 @@ export class BaseHistoryInfo {
                 if (wiget instanceof ParagraphWidget) {
                     if (node.removedIds.length > 0) {
                         wiget.characterFormat.removedIds = node.removedIds.slice();
-                        this.owner.editorModule.constructRevisionFromID(wiget.characterFormat, true);
+                        this.owner.editorModule.constructRevisionFromID(wiget.characterFormat);
                     } else if (wiget.characterFormat.revisionLength > 0) {
                         for (let i: number = 0; i < wiget.characterFormat.revisionLength; i++) {
                             let currentRevision: Revision = wiget.characterFormat.getRevision(i);
@@ -4625,5 +4627,13 @@ export interface ListInfo {
     /**
      * Reserved for internal use only.
      */
-    listId?: number
+    listId?: number,
+    /**
+     * Reserved for internal use only.
+     */
+    listLevel?: WListLevel,
+    /**
+     * Reserved for internal use only.
+     */
+    isTagClosed?: boolean
 }

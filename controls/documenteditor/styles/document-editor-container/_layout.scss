@@ -90,4 +90,12 @@
       font-size: 18px;
     }
   }
+
+  .e-de-contextmenu-wrapper {
+    .e-lib.e-contextmenu.e-control.e-menu-parent {
+      .e-blankicon {
+        padding-left: $de-tbl-merge-cell !important; /* stylelint-disable-line declaration-no-important */
+      }
+    }
+  }
 }

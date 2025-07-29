@@ -4,6 +4,8 @@ import { CellVerticalAlignment, LineStyle } from '../../base/types';
 import { WCharacterFormat } from '../format/character-format';
 import { WParagraphFormat } from '../format/paragraph-format';
 import { HelperMethods } from '../editor/editor-helper';
+import { WListLevel } from '../list/list-level';
+import { ListInfo } from '../editor-history/base-history-info';
 import { sectionsProperty, characterFormatProperty, paragraphFormatProperty, listsProperty, abstractListsProperty, nameProperty, boldProperty, italicProperty, underlineProperty, baselineAlignmentProperty, strikethroughProperty, highlightColorProperty, fontSizeProperty, fontColorProperty, fontFamilyProperty, styleNameProperty, allCapsProperty, listIdProperty, listLevelNumberProperty, leftIndentProperty, rightIndentProperty, firstLineIndentProperty, textAlignmentProperty, afterSpacingProperty, beforeSpacingProperty, lineSpacingProperty, lineSpacingTypeProperty, listFormatProperty, bordersProperty, leftMarginProperty, rightMarginProperty, topMarginProperty, bottomMarginProperty, cellWidthProperty, columnSpanProperty, rowSpanProperty, verticalAlignmentProperty, isHeaderProperty, cellSpacingProperty, shadingProperty, tableAlignmentProperty, preferredWidthProperty, preferredWidthTypeProperty, backgroundColorProperty, hasNoneStyleProperty, lineStyleProperty, lineWidthProperty, textProperty, widthProperty, heightProperty, colorProperty, imageStringProperty, topProperty, bottomProperty, rightProperty, leftProperty, fieldTypeProperty, inlinesProperty, cellFormatProperty, rowFormatProperty, cellsProperty, rowsProperty, tableFormatProperty, blocksProperty, listLevelPatternProperty, abstractListIdProperty, levelsProperty, bookmarkTypeProperty, inlineFormatProperty, startAtProperty, characterSpacingProperty, scalingProperty, DocumentEditor,imagesProperty, Dictionary, isMetaFileProperty, isCreatedUsingHtmlSpanTagProperty, restartLevelProperty, titleProperty, descriptionProperty, tabsProperty, tabJustificationProperty, tabLeaderProperty, positionProperty, contentControlPropertiesProperty} from '../../index';
 
 /**
@@ -13,13 +15,14 @@ export class HtmlExport {
     private document: any = undefined;
     private characterFormat: WCharacterFormat;
     private paragraphFormat: WParagraphFormat;
-    private prevListLevel: any = undefined;
-    private isOrdered: boolean = undefined;
     private keywordIndex: number = undefined;
     private images: Dictionary<number, string[]>;
     private isSkipStyle: boolean = false;
     private isInlineOnlySelected: boolean = false;
-
+    /**
+     * @private
+     */
+    public listInfoDetails: ListInfo[] = [];
     /**
      * @private
      */
@@ -56,13 +59,10 @@ export class HtmlExport {
     }
     private serializeSection(section: any): string {
         let string: string = '';
-        let listLevel: any = undefined;
-        let listCloseCount: any[] = [];
         for (let i: number = 0; i < section[blocksProperty[this.keywordIndex]].length; i++) {
             const block: any = section[blocksProperty[this.keywordIndex]][i];
             if (block.hasOwnProperty(inlinesProperty[this.keywordIndex])) {
-                string += this.serializeParagraph(block, listCloseCount);
-                listLevel = this.getListLevel(block);
+                string += this.serializeParagraph(block, i, section);
             } else if (block.hasOwnProperty(blocksProperty[this.keywordIndex])) {
                 string += this.serializeSection(block);
             } else {
@@ -70,68 +70,33 @@ export class HtmlExport {
                 string += this.serializeTable(block);
             }
         }
-        if (listCloseCount.length > 0 && (isNullOrUndefined(listLevel) || isNullOrUndefined(this.prevListLevel) || (this.prevListLevel[restartLevelProperty[this.keywordIndex]] === listLevel[restartLevelProperty[this.keywordIndex]] && this.prevListLevel[paragraphFormatProperty[this.keywordIndex]][leftIndentProperty[this.keywordIndex]] === listLevel[paragraphFormatProperty[this.keywordIndex]][leftIndentProperty[this.keywordIndex]]))) {
-            while (listCloseCount.length > 0) {
-                string += this.closeList();
-                listCloseCount.pop();
-            }
-        }
         string += this.closeList();
-        this.prevListLevel = undefined;
-        this.isOrdered = undefined;
         return string;
     }
 
     // Serialize Paragraph
-    private serializeParagraph(paragraph: any, listCloseCount?: any[]): string {
+    private serializeParagraph(paragraph: any, currentIndex?: number, section?: any): string {
         let blockStyle: string = '';
         let isList: boolean = false;
-        let isPreviousList: boolean = false;
-        let restartLevel: number = undefined;
-        let leftIndent: number = 0;
-        if (!isNullOrUndefined(this.prevListLevel)) {
-            isPreviousList = true;
-        }
         const tagAttributes: string[] = [];
-        let listLevel: any = undefined;
+        let listLevel: WListLevel = undefined;
         if (!isNullOrUndefined(paragraph[paragraphFormatProperty[this.keywordIndex]][listFormatProperty[this.keywordIndex]])) {
             listLevel = this.getListLevel(paragraph);
-            if (!isPreviousList) {
-                this.prevListLevel = listLevel;
+            if (!isNullOrUndefined(listLevel)) {
+                isList = true;
+                blockStyle += this.handleNestedList(paragraph[paragraphFormatProperty[this.keywordIndex]][listFormatProperty[this.keywordIndex]][listIdProperty[this.keywordIndex]], paragraph[paragraphFormatProperty[this.keywordIndex]][listFormatProperty[this.keywordIndex]][listLevelNumberProperty[this.keywordIndex]], listLevel);
             }
-            if (this.prevListLevel !== listLevel) {
-                isPreviousList = false;
-            }
-            if (!isNullOrUndefined(listCloseCount) && !isNullOrUndefined(listLevel) && !isNullOrUndefined(this.prevListLevel) && ((this.prevListLevel[restartLevelProperty[this.keywordIndex]] < listLevel[restartLevelProperty[this.keywordIndex]] && this.prevListLevel !== listLevel) || (this.prevListLevel[paragraphFormatProperty[this.keywordIndex]][leftIndentProperty[this.keywordIndex]] !== listLevel[paragraphFormatProperty[this.keywordIndex]][leftIndentProperty[this.keywordIndex]]))) {
-                listCloseCount.push(listCloseCount.length);
-                restartLevel = this.prevListLevel[restartLevelProperty[this.keywordIndex]];
-                leftIndent = this.prevListLevel[paragraphFormatProperty[this.keywordIndex]][leftIndentProperty[this.keywordIndex]];
-            }
-            this.prevListLevel = listLevel;
-        }
-        if (!isNullOrUndefined(listCloseCount) && listCloseCount.length > 0 && (isNullOrUndefined(listLevel) || isNullOrUndefined(this.prevListLevel) || (this.prevListLevel[restartLevelProperty[this.keywordIndex]] === restartLevel && this.prevListLevel[paragraphFormatProperty[this.keywordIndex]][leftIndentProperty[this.keywordIndex]] === leftIndent))) {
-            while (listCloseCount.length > 0) {
-                blockStyle += this.closeList();
-                listCloseCount.pop();
-            }
-        }
-        if (!isPreviousList && !(listCloseCount && listCloseCount.length !== 0)) {
+        } else {
             blockStyle += this.closeList();
-        }
-        if (!isNullOrUndefined(listLevel)) {
-            isList = true;
-        }
-        if (isList && !isPreviousList) {
-            blockStyle += this.getHtmlList(listLevel, paragraph[paragraphFormatProperty[this.keywordIndex]][listFormatProperty[this.keywordIndex]][listLevelNumberProperty[this.keywordIndex]]);
         }
         if (!this.isSkipStyle) {
             tagAttributes.push('style="' + this.serializeParagraphStyle(paragraph, '', isList) + ';' + 'white-space:pre' + '"' );
         }
         if (isList) {
             blockStyle += this.createAttributesTag('li', tagAttributes);
+            // Mark this level as having an open list item
+            this.listInfoDetails[this.listInfoDetails.length - 1].isTagClosed = true;
         } else {
-            this.prevListLevel = undefined;
-            this.isOrdered = undefined;
             if (!this.isInlineOnlySelected) {
                 blockStyle += this.createAttributesTag(this.getStyleName(paragraph[paragraphFormatProperty[this.keywordIndex]][styleNameProperty[this.keywordIndex]]), tagAttributes);
             }
@@ -143,26 +108,124 @@ export class HtmlExport {
             blockStyle = this.serializeInlines(paragraph, blockStyle);
         }
         if (isList) {
-            blockStyle += this.endTag('li');
-            if (blockStyle.indexOf('<ul') > -1) {
-                this.isOrdered = false;
-            } else if (blockStyle.indexOf('<ol') > -1) {
-                this.isOrdered = true;
+            const isNextParagraphNested: boolean = this.checkNextParagraphNested(currentIndex, section);
+            if (!isNextParagraphNested) {
+                blockStyle += this.endTag('li');
+                // Mark this level as no longer having an open list item 
+                this.listInfoDetails[this.listInfoDetails.length - 1].isTagClosed = false;
             }
         } else if (!this.isInlineOnlySelected) {
             blockStyle += this.endTag(this.getStyleName(paragraph[paragraphFormatProperty[this.keywordIndex]][styleNameProperty[this.keywordIndex]]));
         }
         return blockStyle;
     }
+    private checkNextParagraphNested(currentIndex: number, section: any): boolean {
+        if (isNullOrUndefined(currentIndex) || !section || currentIndex >= section[blocksProperty[this.keywordIndex]].length - 1) {
+            return false;
+        }
+        const nextBlock: any = section[blocksProperty[this.keywordIndex]][currentIndex + 1];
+        if (!nextBlock || !nextBlock.hasOwnProperty(inlinesProperty[this.keywordIndex])) {
+            return false;
+        }
+        // Check if next paragraph is a list item
+        if (!isNullOrUndefined(nextBlock[paragraphFormatProperty[this.keywordIndex]][listFormatProperty[this.keywordIndex]])) {
+            const nextLevelNumber = nextBlock[paragraphFormatProperty[this.keywordIndex]][listFormatProperty[this.keywordIndex]][listLevelNumberProperty[this.keywordIndex]];
+            const nextListId: number = nextBlock[paragraphFormatProperty[this.keywordIndex]][listFormatProperty[this.keywordIndex]][listIdProperty[this.keywordIndex]];
+            // If next paragraph has a higher level number, it will be nested
+            return nextLevelNumber > this.listInfoDetails[this.listInfoDetails.length - 1].listLevelNumber && nextListId === this.listInfoDetails[this.listInfoDetails.length - 1].listId;
+        }
+        return false;
+    }
+    private handleNestedList(listId: number, currentLevelNumber: number, listLevel: WListLevel): string {
+        let html: string = '';
+        if (this.listInfoDetails.length === 0) {
+            html += this.getHtmlList(listLevel, currentLevelNumber);
+            this.listInfoDetails.push({
+                listId: listId,
+                listLevelNumber: currentLevelNumber,
+                listLevel: listLevel,
+                isTagClosed: false
+            });
+        } else {
+            if (currentLevelNumber > this.listInfoDetails[this.listInfoDetails.length - 1].listLevelNumber) {
+                html += this.getHtmlList(listLevel, currentLevelNumber);
+                this.listInfoDetails.push({
+                    listId: listId,
+                    listLevelNumber: currentLevelNumber,
+                    listLevel: listLevel,
+                    isTagClosed: false
+                });
+            } else if (currentLevelNumber < this.listInfoDetails[this.listInfoDetails.length - 1].listLevelNumber) {
+                html += this.closeListLevelTag(currentLevelNumber);
+
+                // Check if we need to open a new list at this level
+                const stackItemAtLevel: ListInfo = this.findStackItemAtLevel(currentLevelNumber);
+                if (!stackItemAtLevel || this.isListPatternChanged(stackItemAtLevel.listLevel, listLevel)) {
+                    html += this.closeList();
+                    html += this.getHtmlList(listLevel, currentLevelNumber);
+                    this.listInfoDetails.push({
+                        listId: listId,
+                        listLevelNumber: currentLevelNumber,
+                        listLevel: listLevel,
+                        isTagClosed: false
+                    });
+                }
+            } else {
+                // Same level - check if list type changed (ul to ol or vice versa)
+                const lastStackItem: ListInfo = this.listInfoDetails[this.listInfoDetails.length - 1];
+                if (lastStackItem && this.isListPatternChanged(lastStackItem.listLevel, listLevel)) {
+                    // Close current list and open new one
+                    const isOrderedList: boolean = (lastStackItem.listLevel as any)[listLevelPatternProperty[this.keywordIndex]] !== (this.keywordIndex == 1 ? 10 : 'Bullet');
+                    html += this.endTag(isOrderedList ? 'ol' : 'ul');
+                    html += this.getHtmlList(listLevel, currentLevelNumber);
+                    this.listInfoDetails[this.listInfoDetails.length - 1] = {
+                        listId: listId,
+                        listLevelNumber: currentLevelNumber,
+                        listLevel: listLevel,
+                        isTagClosed: false
+                    };
+                }
+            }
+        }
+        return html;
+    }
+    private findStackItemAtLevel(level: number): ListInfo {
+        for (let i = this.listInfoDetails.length - 1; i >= 0; i--) {
+            if (this.listInfoDetails[i].listLevelNumber === level) {
+                return this.listInfoDetails[i];
+            }
+        }
+        return undefined;
+    }
+    private isListPatternChanged(previousListLevel: WListLevel, currentListLevel: WListLevel): boolean {
+        const isPreviousListOrdered: boolean = (previousListLevel as any)[listLevelPatternProperty[this.keywordIndex]] !== (this.keywordIndex == 1 ? 10 : 'Bullet');
+        const isCurrentListOrdered: boolean = (currentListLevel as any)[listLevelPatternProperty[this.keywordIndex]] !== (this.keywordIndex == 1 ? 10 : 'Bullet');
+        return isPreviousListOrdered !== isCurrentListOrdered;
+    }
+    private closeListLevelTag(targetLevel: number): string {
+        let html: string = '';
+        while (this.listInfoDetails.length > 0 && this.listInfoDetails[this.listInfoDetails.length - 1].listLevelNumber > targetLevel) {
+            const stackItem: ListInfo = this.listInfoDetails.pop();
+            if (stackItem) {
+                if (stackItem.isTagClosed) {
+                    html += this.endTag('li');
+                }
+                const isOrderedList: boolean = (stackItem.listLevel as any)[listLevelPatternProperty[this.keywordIndex]] !== (this.keywordIndex == 1 ? 10 : 'Bullet');
+                html += this.endTag(isOrderedList ? 'ol' : 'ul');
+            }
+        } return html;
+    }
     private closeList(): string {
         let blockStyle: string = '';
-        if (!isNullOrUndefined(this.isOrdered)) {
-            if (this.isOrdered) {
-                blockStyle = this.endTag('ol');
-            } else {
-                blockStyle = this.endTag('ul');
+        while (this.listInfoDetails.length > 0) {
+            const stackItem: ListInfo = this.listInfoDetails.pop();
+            if (stackItem) {
+                if (stackItem.isTagClosed) {
+                    blockStyle += this.endTag('li');
+                }
+                const isOrderedList: boolean = (stackItem.listLevel as any)[listLevelPatternProperty[this.keywordIndex]] !== (this.keywordIndex == 1 ? 10 : 'Bullet');
+                blockStyle += isOrderedList ? this.endTag('ol') : this.endTag('ul');
             }
-            this.isOrdered = undefined;
         }
         return blockStyle;
     }
@@ -199,7 +262,7 @@ export class HtmlExport {
         let html: string = '';
         if (listLevel[listLevelPatternProperty[this.keywordIndex]] === (this.keywordIndex == 1 ? 10 : 'Bullet')) {
             html += '<ul type="';
-            switch (levelNumer) {
+            switch (levelNumer % 3) {
             case 0:
                 html += 'disc';
                 listLevel[characterFormatProperty[this.keywordIndex]][fontFamilyProperty[this.keywordIndex]] = 'Symbol';

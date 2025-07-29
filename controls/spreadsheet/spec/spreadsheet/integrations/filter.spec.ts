@@ -2943,6 +2943,39 @@ describe('Filter ->', () => {
                     done();
                 });
             });
+            it('EJ2-968587 -> Applied Filter Value With "notEqual" Operator Is Not Maintained Properly', (done: Function) => {
+                helper.edit('A12', 'RA02');
+                helper.edit('A13', 'RA02');
+                helper.edit('A14', 'RA02');
+                helper.edit('A15', 'RA02');
+                helper.edit('A16', 'RA02');
+                helper.edit('A17', 'RA02');
+                helper.invoke('applyFilter', [[{ field: 'A', predicate: 'or', operator: 'notequal', value: 'RA02' }], 'A1:A17']);
+                setTimeout(() => {
+                    const spreadsheet: any = helper.getInstance();
+                    expect(spreadsheet.filterModule.filterCollection.get(0)[0].value).toBe('RA02');
+                    expect(spreadsheet.filterModule.filterCollection.get(0)[0].operator).toBe('notequal');
+                    expect(spreadsheet.filterModule.filterCollection.get(0)[0].predicate).toBe('or');
+                    expect(spreadsheet.sheets[0].rows[11].hidden).toBeTruthy();
+                    expect(spreadsheet.sheets[0].rows[12].hidden).toBeTruthy();
+                    expect(spreadsheet.sheets[0].rows[13].hidden).toBeTruthy();
+                    expect(spreadsheet.sheets[0].rows[14].hidden).toBeTruthy();
+                    expect(spreadsheet.sheets[0].rows[15].hidden).toBeTruthy();
+                    expect(spreadsheet.sheets[0].rows[16].hidden).toBeTruthy();
+                    expect(spreadsheet.sheets[0].rows[0].hidden).toBeFalsy();
+                    expect(spreadsheet.sheets[0].rows[1].hidden).toBeFalsy();
+                    expect(spreadsheet.sheets[0].rows[2].hidden).toBeFalsy();
+                    expect(spreadsheet.sheets[0].rows[3].hidden).toBeFalsy();
+                    expect(spreadsheet.sheets[0].rows[4].hidden).toBeFalsy();
+                    expect(spreadsheet.sheets[0].rows[5].hidden).toBeFalsy();
+                    expect(spreadsheet.sheets[0].rows[6].hidden).toBeFalsy();
+                    expect(spreadsheet.sheets[0].rows[7].hidden).toBeFalsy();
+                    expect(spreadsheet.sheets[0].rows[8].hidden).toBeFalsy();
+                    expect(spreadsheet.sheets[0].rows[9].hidden).toBeFalsy();
+                    expect(spreadsheet.sheets[0].rows[10].hidden).toBeFalsy();
+                    done();
+                });
+            });
         });
     });
 

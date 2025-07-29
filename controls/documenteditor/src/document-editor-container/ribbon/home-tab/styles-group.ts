@@ -63,7 +63,7 @@ export class StylesGroup extends RibbonGroupBase implements IRibbonGroup {
     }
 
     private getStyleItems(): RibbonGalleryItemModel[] {
-        return StylesHelper.getStyleItems(this.documentEditor);
+        return StylesHelper.getStyleItems(this.documentEditor, this.localObj);
     }
 
 
@@ -79,7 +79,7 @@ export class StylesGroup extends RibbonGroupBase implements IRibbonGroup {
         }
 
         // Update gallery items using the helper
-        galleryItem.gallerySettings.groups[0].items = StylesHelper.getStyleItems(this.documentEditor);
+        galleryItem.gallerySettings.groups[0].items = StylesHelper.getStyleItems(this.documentEditor, this.localObj);
 
         // Set the selected item based on current selection
         const currentStyle: string = StylesHelper.getCurrentStyleName(this.documentEditor);

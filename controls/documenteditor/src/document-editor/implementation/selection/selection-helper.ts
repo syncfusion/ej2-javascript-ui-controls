@@ -1672,14 +1672,17 @@ export class TextPosition {
      *
      * @private
      */
-    public moveToParagraphEndInternal(selection: Selection, moveToNextParagraph: boolean): void {
+    public moveToParagraphEndInternal(selection: Selection, moveToNextParagraph: boolean, isIncludeParaMark?: boolean): void {
 
         let splittedParagraph: ParagraphWidget = this.currentWidget.paragraph;
         while (splittedParagraph.nextSplitWidget) {
             splittedParagraph = splittedParagraph.nextSplitWidget as ParagraphWidget;
         }
         this.currentWidget = splittedParagraph.childWidgets[splittedParagraph.childWidgets.length - 1] as LineWidget;
-        const endOffset: number = this.currentWidget.getEndOffset() + 1;
+        let endOffset: number = this.currentWidget.getEndOffset() 
+        if (!isIncludeParaMark){
+            endOffset +=1;
+        }
         if (this.offset === endOffset && moveToNextParagraph) {
             const paragraphEnd: boolean = this.moveToNextParagraphInTableCheck();
             if (paragraphEnd) {

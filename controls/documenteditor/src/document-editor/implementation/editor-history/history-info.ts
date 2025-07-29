@@ -17,7 +17,10 @@ export class HistoryInfo extends BaseHistoryInfo {
      * @private
      */
     public modifiedActions: BaseHistoryInfo[];
-
+    /**
+     * @private
+     */
+    public isTrackingEnabled: boolean = undefined;
     private isChildHistoryInfo: boolean = false;
     public editRangeStart: EditRangeStartElementBox = undefined;
 

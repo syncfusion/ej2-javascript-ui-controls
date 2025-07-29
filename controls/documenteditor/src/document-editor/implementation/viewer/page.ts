@@ -5596,14 +5596,14 @@ export class FieldElementBox extends ElementBox {
         }
         field.width = this.width;
         field.height = this.height;
-        if (!isNullOrUndefined(this.paragraph) && this.paragraph.isInHeaderFooter) {
-            if (this.revisionLength > 0) {
-                for (let i: number = 0; i < this.revisionLength; i++) {
-                    let revision: Revision = this.getRevision(i);
-                    field.addRevision(revision.clone());
-                }
-            }
-        } else {
+        // if (!isNullOrUndefined(this.paragraph) && this.paragraph.isInHeaderFooter) {
+        //     if (this.revisionLength > 0) {
+        //         for (let i: number = 0; i < this.revisionLength; i++) {
+        //             let revision: Revision = this.getRevision(i);
+        //             field.addRevision(revision.clone());
+        //         }
+        //     }
+        // } else {
             if (this.revisionLength > 0) {
                 field.removedIds = Revision.cloneRevisions(this.getAllRevision());
                 if (this.fieldEnd) {
@@ -5615,7 +5615,7 @@ export class FieldElementBox extends ElementBox {
                     field.hasFieldEnd = this.hasFieldEnd;
                 }
             }
-        }
+        // }
         field.fieldCodeType = this.fieldCodeType;
         return field;
     }
@@ -5968,14 +5968,14 @@ export class TextElementBox extends ElementBox {
             textEle.margin = this.margin.clone();
         }
         textEle.baselineOffset = this.baselineOffset;
-        if (!isNullOrUndefined(this.paragraph) && this.paragraph.isInHeaderFooter) {
-            if (this.revisionLength > 0) {
-                for (let i: number = 0; i < this.revisionLength; i++) {
-                    let revision: Revision = this.getRevision(i);
-                    textEle.addRevision(revision.clone());
-                }
-            }
-        } else {
+        // if (!isNullOrUndefined(this.paragraph) && this.paragraph.isInHeaderFooter) {
+        //     if (this.revisionLength > 0) {
+        //         for (let i: number = 0; i < this.revisionLength; i++) {
+        //             let revision: Revision = this.getRevision(i);
+        //             textEle.addRevision(revision.clone());
+        //         }
+        //     }
+        // } else {
             // Copy the revisions when cloning the header row.
             if (this.paragraph && this.paragraph.isInsideTable && this.paragraph.containerWidget instanceof TableCellWidget && this.paragraph.containerWidget.ownerRow.rowFormat.isHeader) {
                 textEle.revisions = this.revisions;
@@ -5986,7 +5986,7 @@ export class TextElementBox extends ElementBox {
                     textEle.removedIds = this.removedIds.slice();
                 }
             }
-        }
+        // }
         textEle.width = this.width;
         textEle.height = this.height;
         if (this.contentControlProperties) {
@@ -6154,20 +6154,20 @@ export class FootnoteElementBox extends TextElementBox {
             span.bodyWidget.childWidgets.push(element);
         }
         span.bodyWidget.page = this.bodyWidget.page;
-        if (!isNullOrUndefined(this.paragraph) && this.paragraph.isInHeaderFooter) {
-            if (this.revisionLength > 0) {
-                for (let i: number = 0; i < this.revisionLength; i++) {
-                    let revision: Revision = this.getRevision(i);
-                    span.addRevision(revision.clone());
-                }
-            }
-        } else {
+        // if (!isNullOrUndefined(this.paragraph) && this.paragraph.isInHeaderFooter) {
+        //     if (this.revisionLength > 0) {
+        //         for (let i: number = 0; i < this.revisionLength; i++) {
+        //             let revision: Revision = this.getRevision(i);
+        //             span.addRevision(revision.clone());
+        //         }
+        //     }
+        // } else {
             if (this.revisionLength > 0) {
                 span.removedIds = Revision.cloneRevisions(this.getAllRevision());
             } else {
                 span.removedIds = this.removedIds.slice();
             }
-        }
+        // }
         if (this.margin) {
             span.margin = this.margin.clone();
         }
@@ -6271,20 +6271,20 @@ export class FieldTextElementBox extends TextElementBox {
         if (this.margin) {
             fieldSpan.margin = this.margin.clone();
         }
-        if (!isNullOrUndefined(this.paragraph) && this.paragraph.isInHeaderFooter) {
-            if (this.revisionLength > 0) {
-                for (let i: number = 0; i < this.revisionLength; i++) {
-                    let revisionChanges: Revision = this.getRevision(i);
-                    fieldSpan.addRevision(revisionChanges.clone());
-                }
-            }
-        } else {
+        // if (!isNullOrUndefined(this.paragraph) && this.paragraph.isInHeaderFooter) {
+        //     if (this.revisionLength > 0) {
+        //         for (let i: number = 0; i < this.revisionLength; i++) {
+        //             let revisionChanges: Revision = this.getRevision(i);
+        //             fieldSpan.addRevision(revisionChanges.clone());
+        //         }
+        //     }
+        // } else {
             if (this.revisionLength > 0) {
                 fieldSpan.removedIds = Revision.cloneRevisions(this.getAllRevision());
             } else {
                 fieldSpan.removedIds = this.removedIds.slice();
             }
-        }
+        // }
         fieldSpan.width = this.width;
         fieldSpan.height = this.height;
         return fieldSpan;
@@ -6344,20 +6344,20 @@ export class TabElementBox extends TextElementBox {
         }
         tabSpan.width = this.width;
         tabSpan.height = this.height;
-        if (!isNullOrUndefined(this.paragraph) && this.paragraph.isInHeaderFooter) {
-            if (this.revisionLength > 0) {
-                for (let i: number = 0; i < this.revisionLength; i++) {
-                    let revision: Revision = this.getRevision(i);
-                    tabSpan.addRevision(revision.clone());
-                }
-            }
-        } else {
+        // if (!isNullOrUndefined(this.paragraph) && this.paragraph.isInHeaderFooter) {
+        //     if (this.revisionLength > 0) {
+        //         for (let i: number = 0; i < this.revisionLength; i++) {
+        //             let revision: Revision = this.getRevision(i);
+        //             tabSpan.addRevision(revision.clone());
+        //         }
+        //     }
+        // } else {
             if (this.revisionLength > 0) {
                 tabSpan.removedIds = Revision.cloneRevisions(this.getAllRevision());
             } else {
                 tabSpan.removedIds = this.removedIds.slice();
             }
-        }
+        // }
         return tabSpan;
     }
 }
@@ -6510,20 +6510,20 @@ export class ContentControl extends ElementBox {
         if (this.margin) {
             span.margin = this.margin.clone();
         }
-        if (!isNullOrUndefined(this.paragraph) && this.paragraph.isInHeaderFooter) {
-            if (this.revisionLength > 0) {
-                for (let i: number = 0; i < this.revisionLength; i++) {
-                    let revisionChange: Revision = this.getRevision(i);
-                    span.addRevision(revisionChange.clone());
-                }
-            }
-        } else {
+        // if (!isNullOrUndefined(this.paragraph) && this.paragraph.isInHeaderFooter) {
+        //     if (this.revisionLength > 0) {
+        //         for (let i: number = 0; i < this.revisionLength; i++) {
+        //             let revisionChange: Revision = this.getRevision(i);
+        //             span.addRevision(revisionChange.clone());
+        //         }
+        //     }
+        // } else {
             if (this.revisionLength > 0) {
                 span.removedIds = Revision.cloneRevisions(this.getAllRevision());
             } else {
                 span.removedIds = this.removedIds.slice();
             }
-        }
+        // }
         span.type = this.type;
         span.width = this.width;
         span.height = this.height;
@@ -7108,20 +7108,20 @@ export class ShapeElementBox extends ShapeBase {
         if (this.margin) {
             shape.margin = this.margin.clone();
         }
-        if (!isNullOrUndefined(this.paragraph) && this.paragraph.isInHeaderFooter) {
-            if (this.revisionLength > 0) {
-                for (let i: number = 0; i < this.revisionLength; i++) {
-                    let revision: Revision = this.getRevision(i);
-                    shape.addRevision(revision.clone());
-                }
-            }
-        } else {
+        // if (!isNullOrUndefined(this.paragraph) && this.paragraph.isInHeaderFooter) {
+        //     if (this.revisionLength > 0) {
+        //         for (let i: number = 0; i < this.revisionLength; i++) {
+        //             let revision: Revision = this.getRevision(i);
+        //             shape.addRevision(revision.clone());
+        //         }
+        //     }
+        // } else {
             if (this.revisionLength > 0) {
                 shape.removedIds = Revision.cloneRevisions(this.getAllRevision());
             } else {
                 shape.removedIds = this.removedIds.slice();
             }
-        }
+        // }
         return shape;
     }
 }
@@ -7537,20 +7537,20 @@ export class ImageElementBox extends ShapeBase {
         if (this.margin) {
             image.margin = this.margin.clone();
         }
-        if (!isNullOrUndefined(this.paragraph) && this.paragraph.isInHeaderFooter) {
-            if (this.revisionLength > 0) {
-                for (let i: number = 0; i < this.revisionLength; i++) {
-                    let revision: Revision = this.getRevision(i);
-                    image.addRevision(revision.clone());
-                }
-            }
-        } else {
+        // if (!isNullOrUndefined(this.paragraph) && this.paragraph.isInHeaderFooter) {
+        //     if (this.revisionLength > 0) {
+        //         for (let i: number = 0; i < this.revisionLength; i++) {
+        //             let revision: Revision = this.getRevision(i);
+        //             image.addRevision(revision.clone());
+        //         }
+        //     }
+        // } else {
             if (this.revisionLength > 0) {
                 image.removedIds = Revision.cloneRevisions(this.getAllRevision());
             } else {
                 image.removedIds = this.removedIds.slice();
             }
-        }
+        // }
         image.name = this.name;
         image.alternateText = this.alternateText;
         image.title = this.title;
@@ -10065,9 +10065,9 @@ export class WTableHolder {
             let column: WColumn = this.columns[i];
             // If preferred width of column is less than column minimum width and also column is empty, considered column preferred width
             if (column.minimumWordWidth === 0 && column.maximumWordWidth === 0 && column.minWidth === 0) {
-                column.minimumWordWidth = column.minimumWidth;
-                column.maximumWordWidth = column.minimumWidth;
-                column.minWidth = column.minimumWidth;
+                column.minimumWordWidth = column.minimumWidth > 0 ? column.minimumWidth : column.preferredWidth;
+                column.maximumWordWidth = column.minimumWidth > 0 ? column.minimumWidth : column.preferredWidth;
+                column.minWidth = column.minimumWidth > 0 ? column.minimumWidth : column.preferredWidth;
             }
             if (isTableHasPointWidth) {
                 this.columns[i].preferredWidth = (this.columns[i].preferredWidth / totalColumnsPreferredWidth) * preferredTableWidth;
@@ -10535,20 +10535,20 @@ export class FootnoteEndnoteMarkerElementBox extends TextElementBox {
             footEndEle.margin = this.margin.clone();
         }
         footEndEle.baselineOffset = this.baselineOffset;
-        if (!isNullOrUndefined(this.paragraph) && this.paragraph.isInHeaderFooter) {
-            if (this.revisionLength > 0) {
-                for (let i: number = 0; i < this.revisionLength; i++) {
-                    let revision: Revision = this.getRevision(i);
-                    footEndEle.addRevision(revision.clone());
-                }
-            }
-        } else {
+        // if (!isNullOrUndefined(this.paragraph) && this.paragraph.isInHeaderFooter) {
+        //     if (this.revisionLength > 0) {
+        //         for (let i: number = 0; i < this.revisionLength; i++) {
+        //             let revision: Revision = this.getRevision(i);
+        //             footEndEle.addRevision(revision.clone());
+        //         }
+        //     }
+        // } else {
             if (this.revisionLength > 0) {
                 footEndEle.removedIds = Revision.cloneRevisions(this.getAllRevision());
             } else {
                 footEndEle.removedIds = this.removedIds.slice();
             }
-        }
+        // }
         footEndEle.width = this.width;
         footEndEle.height = this.height;
         if (this.contentControlProperties) {

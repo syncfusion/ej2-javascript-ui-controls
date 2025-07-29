@@ -54,6 +54,45 @@ export class LayoutParagraphGroup extends RibbonGroupBase {
      */
     public getGroupModel(): RibbonGroupModel {
         const id: string = this.container.element.id + RIBBON_ID;
+        const leftIndentTemplate: any = () => `
+            <div class="e-de-ctnr-layout-ribbon-segment e-de-ctnr-layout-tab"
+                title="${this.localObj.getConstant('Indent Left')}">
+                <div class="e-de-indent-label-container">
+               
+                    <span class="e-de-ribbon-property-label">${this.localObj.getConstant('Indent Left')}:</span>
+                </div>
+                <input id="${this.container.element.id + INDENT_LEFT_ID}" class="e-textbox" />
+            </div>`;
+        const rightIndentTemplate: any = () => `
+            <div class="e-de-ctnr-layout-ribbon-segment e-de-ctnr-layout-tab"
+                title="${this.localObj.getConstant('Indent Right')}">
+                <div class="e-de-indent-label-container">
+              
+                    <span class="e-de-ribbon-property-label">${this.localObj.getConstant('Indent Right')}:</span>
+                </div>
+                <input id="${this.container.element.id + INDENT_RIGHT_ID}" class="e-textbox" />
+            </div>
+        `;
+        const spacingBeforeTemplate: any = () => `
+            <div class="e-de-ctnr-layout-ribbon-segment e-de-ctnr-layout-tab"
+                title="${this.localObj.getConstant('Spacing Before')}">
+                <div class="e-de-property-label-container">
+                   
+                    <span class="e-de-ribbon-property-label">${this.localObj.getConstant('Spacing Before')}:</span>
+                </div>
+                <input id="${this.container.element.id + SPACING_BEFORE_ID}" class="e-textbox" />
+            </div>
+        `;
+        const spacingAfterTemplate: any = () => `
+            <div class="e-de-ctnr-layout-ribbon-segment e-de-ctnr-layout-tab"
+                title="${this.localObj.getConstant('Spacing After')}">
+                <div class="e-de-property-label-container">
+                    <span class="e-de-icon-spaceafter"></span>
+                    <span class="e-de-ribbon-property-label">${this.localObj.getConstant('Spacing After')}:</span>
+                </div>
+                <input id="${this.container.element.id + SPACING_AFTER_ID}" class="e-textbox" />
+            </div>
+        `;
         return {
             header: this.localObj.getConstant('Paragraph'),
             showLauncherIcon: true,
@@ -65,7 +104,7 @@ export class LayoutParagraphGroup extends RibbonGroupBase {
                     items: [
                         {
                             type: RibbonItemType.Template,
-                            itemTemplate: '#' + id + '_indent_left',
+                            itemTemplate: leftIndentTemplate,
                             ribbonTooltipSettings: {
                                 title: this.localObj.getConstant('Indent Left'),
                                 content: this.localObj.getConstant('Set the distance between paragraph and left margin')
@@ -73,7 +112,7 @@ export class LayoutParagraphGroup extends RibbonGroupBase {
                         },
                         {
                             type: RibbonItemType.Template,
-                            itemTemplate: '#' + id + '_indent_right',
+                            itemTemplate: rightIndentTemplate,
                             ribbonTooltipSettings: {
                                 title: this.localObj.getConstant('Indent Right'),
                                 content: this.localObj.getConstant('Set the distance between paragraph and right margin')
@@ -84,7 +123,7 @@ export class LayoutParagraphGroup extends RibbonGroupBase {
                     items: [
                         {
                             type: RibbonItemType.Template,
-                            itemTemplate: '#' + id + '_spacing_before',
+                            itemTemplate: spacingBeforeTemplate,
                             ribbonTooltipSettings: {
                                 title: this.localObj.getConstant('Spacing Before'),
                                 content: this.localObj.getConstant('Set the spacing before the paragraph')
@@ -92,7 +131,7 @@ export class LayoutParagraphGroup extends RibbonGroupBase {
                         },
                         {
                             type: RibbonItemType.Template,
-                            itemTemplate: '#' + id + '_spacing_after',
+                            itemTemplate: spacingAfterTemplate,
                             ribbonTooltipSettings: {
                                 title: this.localObj.getConstant('Spacing After'),
                                 content: this.localObj.getConstant('Set the spacing after the paragraph')

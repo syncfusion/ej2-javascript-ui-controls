@@ -2173,7 +2173,6 @@ export class DocumentHelper {
     public onContextMenu = (event: MouseEvent): void => {
         if (this.owner.contextMenuModule) {
             if(this.isIosDevice) {
-                this.isMouseDown = true;
                 this.onMouseUpInternal(event);
             }
             if (this.isMouseDown) {
@@ -3060,7 +3059,7 @@ export class DocumentHelper {
      */
     private isLeftButtonPressed(event: MouseEvent): boolean {
         this.isTouchInput = false;
-        let button: number = event.which || event.button;
+        let button: number = event.buttons || event.button;
         return button === 1;
     }
     /**

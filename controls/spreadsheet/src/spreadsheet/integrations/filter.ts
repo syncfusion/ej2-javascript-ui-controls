@@ -1,16 +1,16 @@
 import { Spreadsheet, locale, dialog, mouseDown, renderFilterCell, initiateFilterUI, FilterInfoArgs, getStartEvent, duplicateSheetOption, focus, getChartsIndexes, refreshChartCellModel, ExtendedSpreadsheet, readonlyAlert } from '../index';
 import { reapplyFilter, filterCellKeyDown, DialogBeforeOpenEventArgs, ExtendedPredicateModel, refreshFilterRange, createNoteIndicator } from '../index';
 import { getFilteredColumn, cMenuBeforeOpen, filterByCellValue, clearFilter, getFilterRange, applySort } from '../index';
-import { SortOptions, SortDescriptor, LocaleNumericSettings, FilterPredicateOptions, applyPredicates, isHiddenRow, isReadOnlyCells } from '../../workbook/index';
+import { SortOptions, SortDescriptor, LocaleNumericSettings, FilterPredicateOptions, applyPredicates, isHiddenRow, isReadOnlyCells, AutoDetectGeneralFormatArgs } from '../../workbook/index';
 import { checkIsNumberAndGetNumber } from '../../workbook/common/internalization';
-import { filterRangeAlert, setFilteredCollection, beforeDelete, sheetsDestroyed, initiateFilter, duplicateSheetFilterHandler, moveSheetHandler, updateSortCollection } from '../../workbook/common/event';
+import { filterRangeAlert, setFilteredCollection, beforeDelete, sheetsDestroyed, initiateFilter, duplicateSheetFilterHandler, moveSheetHandler, updateSortCollection, checkNumberFormat } from '../../workbook/common/event';
 import { FilterCollectionModel, getRangeIndexes, ColumnModel, beforeInsert, parseLocaleNumber, ChartModel } from '../../workbook/index';
 import { getIndexesFromAddress, getSwapRange, getColumnHeaderText, CellModel, getDataRange, isCustomDateTime } from '../../workbook/index';
 import { getData, Workbook, getTypeFromFormat, getCell, getCellIndexes, getRangeAddress, getSheet, inRange } from '../../workbook/index';
 import { SheetModel, sortImport, clear, getColIndex, SortCollectionModel, setRow, ExtendedRowModel, hideShow } from '../../workbook/index';
 import { beginAction, FilterOptions, BeforeFilterEventArgs, FilterEventArgs, ClearOptions, getValueFromFormat } from '../../workbook/index';
 import { isFilterHidden, isNumber, DateFormatCheckArgs, checkDateFormat, isDateTime, dateToInt, getFormatFromType } from '../../workbook/index';
-import { getComponent, EventHandler, isUndefined, isNullOrUndefined, Browser, KeyboardEventArgs, removeClass, IntlBase, cldrData } from '@syncfusion/ej2-base';
+import { getComponent, EventHandler, isUndefined, isNullOrUndefined, Browser, KeyboardEventArgs, removeClass, IntlBase, cldrData, defaultCurrencyCode, getNumberDependable } from '@syncfusion/ej2-base';
 import { L10n, detach, classList, getNumericObject } from '@syncfusion/ej2-base';
 import { Internationalization } from '@syncfusion/ej2-base';
 import { Dialog } from '../services';
@@ -1149,15 +1149,18 @@ export class Filter {
                                 if (numArgs.isNumber) {
                                     val = Number(numArgs.value) / 100;
                                 } else {
-                                    const parsedNumVal: number = intl.parseNumber(val.trim(), { format: 'n' });
-                                    if (isNumber(parsedNumVal)) {
-                                        if (/^(\(\d+\)|\d+)$/.test(val.trim())) {
-                                            val = -parsedNumVal;
-                                        } else {
-                                            val = parsedNumVal;
-                                        }
+                                    const checkVal: string = val.trim();
+                                    const options: AutoDetectGeneralFormatArgs = { args: { updateValue: true, cell: { value: checkVal },
+                                        value: checkVal, curSymbol: getNumberDependable(this.parent.locale, defaultCurrencyCode),
+                                        isEdit: true }, intl: intl, fResult: checkVal };
+                                    this.parent.notify(checkNumberFormat, options);
+                                    let updatedVal: string = options.args.cell.value;
+                                    if (localeObj.decimal !== '.' && !isNumber(updatedVal) && updatedVal.includes(localeObj.decimal)) {
+                                        updatedVal = updatedVal.replace(localeObj.decimal, '.');
+                                    }
+                                    if (isNumber(updatedVal)) {
+                                        val = Number(updatedVal);
                                     } else {
-                                        const checkVal: string = val.trim();
                                         const dateEventArgs: DateFormatCheckArgs = { value: checkVal, cell: { value: checkVal } };
                                         this.parent.notify(checkDateFormat, dateEventArgs);
                                         if (dateEventArgs.isTime || dateEventArgs.isDate) {

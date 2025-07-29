@@ -2,6 +2,22 @@
 
 ## [Unreleased]
 
+## 30.1.42 (2025-07-29)
+
+### DocumentEditor
+
+#### Bug Fixes
+
+- `#I734726` - Fixed table layout issues when documents contain multiple floating tables.
+- `#I702538` - Enhanced performance when editing large documents with editable regions.
+- `#I737779` - Fixed an issue where Undo did not work correctly with bookmark elements.
+- `#I742694` - Corrected layout problems in Hebrew right to left documents containing form fields.
+- `#I740631` - Resolved a script error that occurred when pasting a table row containing bookmarks inside a cell.
+- `#I743329` - Fixed browser freezing when performing the `Accept` action in Track Changes mode.
+- `#I741247` - Resolved an application crash issue when opening a `.txt` file.
+- `#I744394` - Fixed a script error in documents opened in protection mode.
+- `#I744057` - Modified the Dialog content when closing the comments panel
+
 ## 30.1.40 (2025-07-15)
 
 ### DocumentEditor

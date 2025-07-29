@@ -7,6 +7,7 @@ import { HEADER_FOOTER_TAB_ID } from './../header-footer-tab/header-footer-tab';
 import { Ribbon as EJ2Ribbon, RibbonContextualTabSettingsModel } from '@syncfusion/ej2-ribbon';
 import { RIBBON_ID } from './ribbon-constants';
 import { PICTURE_FORMAT_TAB_ID } from '../picture-format-tab/picture-format-tab';
+import { isNullOrUndefined } from '@syncfusion/ej2-base';
 /**
  * Manages contextual tabs in the ribbon
  * @private
@@ -74,7 +75,9 @@ export class RibbonContextualTabManager {
      * @private
      */
     public updateContextualTabs(ribbon: EJ2Ribbon): void {
-        if (!this.container.documentEditor || !this.container.documentEditor.selection) {
+        if (!this.container.documentEditor || !this.container.documentEditor.selection ||
+            (!isNullOrUndefined(this.container.documentEditor.selection) &&
+            this.container.documentEditor.selection.contextType === this.ribbonDocumentEditor.previousContext)) {
             return;
         }
 
@@ -136,6 +139,10 @@ export class RibbonContextualTabManager {
      * @private
      */
     public hideContextualTab(ribbon: EJ2Ribbon): void {
+        if (this.container.documentEditor.selection &&
+            this.container.documentEditor.selection.contextType === this.ribbonDocumentEditor.previousContext) {
+            return;
+        }
         const ribbonId: string = this.container.element.id + RIBBON_ID;
         ribbon.hideTab(ribbonId + TABLE_DESIGN_TAB_ID, true);
         ribbon.hideTab(ribbonId + TABLE_LAYOUT_TAB_ID, true);

@@ -2,6 +2,14 @@
 
 ## [Unreleased]
 
+## 30.1.42 (2025-07-29)
+
+### Accumulation Chart
+
+#### Bug Fixes
+
+- `#I743995` - Now the legend and series points remain intact when updating the data in the data source.
+
 ## 30.1.41 (2025-07-22)
 
 ### Chart

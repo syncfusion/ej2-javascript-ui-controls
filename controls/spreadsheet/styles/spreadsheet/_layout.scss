@@ -4266,12 +4266,8 @@
           text-overflow: ellipsis;
           width: 130px;
           @if ($skin-name == 'bootstrap5.3' or $skin-name == 'bootstrap5' or $skin-name == 'bootstrap4' or $skin-name == 'bootstrap' ) {
-            background-color: rgba(255, 255, 255, 1);
-            color: rgba(0, 0, 0, 0);
-          }
-          @if ($sheet-skin == 'bootstrap-dark' or $sheet-skin == 'bootstrap5-dark' or $skin-name == 'bootstrap5.3-dark' or $skin-name == 'bootstrap4-dark') {
             background-color: rgba(0, 0, 0, 0);
-            color: rgba(255, 255, 255, 1);
+            color: $spreadsheet-unprotect-label-font-color;
           }
         }
       }

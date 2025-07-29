@@ -231,6 +231,7 @@ export class Selection {
      * @private
      */
     public contentControls: ContentControl[] = [];
+    private editRangeCachePage: Page[] = [];
     /**
      * @private
      */
@@ -1415,6 +1416,10 @@ export class Selection {
         const collection: Dictionary<LineWidget, SelectionWidgetInfo[]> = this.editRegionHighlighters;
         if (collection.containsKey(lineWidget)) {
             highlighters = collection.get(lineWidget);
+            const widgetInfoInternal: SelectionWidgetInfo = this.checkSelectionwidgetInfoPresent(highlighters, left, width);
+            if (!isNullOrUndefined(widgetInfoInternal)) {
+                return widgetInfoInternal;
+            }
         } else {
             highlighters = [];
             collection.add(lineWidget, highlighters);
@@ -1425,6 +1430,16 @@ export class Selection {
         }
         highlighters.push(editRegionHighlight);
         return editRegionHighlight;
+    }
+
+    private checkSelectionwidgetInfoPresent(highlighters: SelectionWidgetInfo[], left: number, width: number): SelectionWidgetInfo {
+        for (let i: number = 0; i < highlighters.length; i++) {
+            const highlighter: SelectionWidgetInfo = highlighters[i];
+            if (highlighter.left === left && highlighter.width === width) {
+                return highlighter;
+            }
+        }
+        return undefined;
     }
 
     private addContentControlEditRegionHighlight(lineWidget: LineWidget, left: number, width: number, contentControl?: ContentControl): void {
@@ -1741,7 +1756,7 @@ export class Selection {
             this.end.setPositionInternal(this.start);
             this.upDownSelectionLength = this.end.location.x;
         } else {
-            this.end.moveToParagraphEndInternal(this, false);
+            this.end.moveToParagraphEndInternal(this, false, true);
             this.start.setPositionInternal(this.end);
             this.upDownSelectionLength = this.start.location.x;
         }
@@ -2194,12 +2209,11 @@ export class Selection {
     public getFirstBlockInFirstCell(table: TableWidget): BlockWidget {
         if (table.childWidgets.length > 0) {
             const firstrow: TableRowWidget = table.childWidgets[0] as TableRowWidget;
-            if (firstrow.childWidgets.length > 0) {
-                const firstcell: TableCellWidget = firstrow.childWidgets[0] as TableCellWidget;
-                if (firstcell.childWidgets.length === 0) {
-                    return undefined;
+            for (let i: number = 0; i < firstrow.childWidgets.length; i++) {
+                const firstcell: TableCellWidget = firstrow.childWidgets[i] as TableCellWidget;
+                if (firstcell.childWidgets.length > 0) {
+                    return firstcell.childWidgets[0] as BlockWidget;
                 }
-                return firstcell.childWidgets[0] as BlockWidget;
             }
         }
         return undefined;
@@ -2260,12 +2274,12 @@ export class Selection {
      * @returns {void}
      */
     //Table
-    public getLastBlockInLastCell(table: TableWidget): BlockWidget {
+    public getLastBlockInLastCell(table: TableWidget, checkSpannedCell?: boolean): BlockWidget {
         if (table.childWidgets.length > 0) {
             const lastRow: TableRowWidget = table.childWidgets[table.childWidgets.length - 1] as TableRowWidget;
             let lastCell: TableCellWidget = lastRow.childWidgets[lastRow.childWidgets.length - 1] as TableCellWidget;
-            while (lastCell.childWidgets.length === 0 && !isNullOrUndefined(lastCell.previousSplitWidget)) {
-                lastCell = lastCell.previousSplitWidget as TableCellWidget;
+            while (lastCell.childWidgets.length === 0 && checkSpannedCell ? !isNullOrUndefined(lastCell.previousWidget) : !isNullOrUndefined(lastCell.previousSplitWidget)) {
+                lastCell = checkSpannedCell ? lastCell.previousWidget as TableCellWidget : lastCell.previousSplitWidget as TableCellWidget;
             }
             return lastCell.childWidgets[lastCell.childWidgets.length - 1] as BlockWidget;
         }
@@ -8122,6 +8136,7 @@ export class Selection {
                 this.highlightContentControlEditRegionInternal(this.contentControls[parseInt(i.toString(), 10)]);
             }
         }
+        this.isHighlightNext = false;
     }
     //Formats Retrieval
     /**
@@ -9230,7 +9245,7 @@ export class Selection {
                 }
                 return true;
             } else {
-                if (index === inline.length && !isNullOrUndefined(inline.nextNode)) {
+                if (index === inline.length && !isNullOrUndefined(inline.nextNode) || (inline instanceof ContentControl && inline.contentControlProperties.type == "RichText")) {
                     this.characterFormat.copyFormat(this.getNextValidCharacterFormat(inline), this.documentHelper.textHelper.getFontNameToRender((inline as TextElementBox).scriptType, inline.characterFormat));
                 } else if (inline instanceof TextElementBox) {
                     this.characterFormat.copyFormat(inline.characterFormat, this.documentHelper.textHelper.getFontNameToRender((inline as TextElementBox).scriptType, inline.characterFormat));
@@ -11301,6 +11316,40 @@ export class Selection {
         }
         this.selectParagraphInternal(block as ParagraphWidget, true);
     }
+
+    private getPageStartEndPosition(page: Page): PositionInfo {
+        const firstBodyWidget: BodyWidget = page.bodyWidgets[0];
+        const lastBodyWidget: BodyWidget = page.bodyWidgets[page.bodyWidgets.length - 1];
+        // Updating the start and end based on the page.
+        if (firstBodyWidget && lastBodyWidget) {
+            let startPosition: TextPosition = new TextPosition(this.owner);
+            let endPosition: TextPosition = new TextPosition(this.owner);
+            let firstBlock: BlockWidget = firstBodyWidget.firstChild as BlockWidget;
+            let lastBlock: BlockWidget = lastBodyWidget.lastChild as BlockWidget;
+            if (firstBlock && lastBlock) {
+                if (firstBlock instanceof TableWidget) {
+                    firstBlock = this.getFirstBlockInFirstCell(firstBlock);
+                    while (firstBlock instanceof TableWidget) {
+                        firstBlock = this.getFirstBlockInFirstCell(firstBlock);
+                    }
+                }
+                let line = firstBlock.firstChild as LineWidget;
+                startPosition.setPosition(line, true);
+                if (lastBlock instanceof TableWidget) {
+                    lastBlock = this.getLastBlockInLastCell(lastBlock, true);
+                    while (lastBlock instanceof TableWidget) {
+                        lastBlock = this.getLastBlockInLastCell(lastBlock, true);
+                    }
+                }
+                line = lastBlock.lastChild as LineWidget;
+                let endOffset: number = line.getEndOffset();
+                endPosition.setPositionParagraph(line, endOffset);
+                return { startPosition, endPosition };
+            }
+        }
+        return undefined;
+    }
+
     /**
      * Disable Header footer
      * @private
@@ -11420,6 +11469,7 @@ export class Selection {
         this.isCellPrevSelected = undefined;
         this.currentFormField = undefined;
         this.contentControls = [];
+        this.editRangeCachePage = [];
     }
     /**
      * Returns the cells in between the bounds.
@@ -11843,17 +11893,6 @@ export class Selection {
                     startPosition.setPositionParagraph(currentPara.lastChild as LineWidget, offset);
                 } else {
                     offset = firstElement.line.getOffset(firstElement, 0);
-                    let line: LineWidget = firstElement.line as LineWidget;
-                    if (line.isFirstLine()) {
-                        for (let i = 0; i < line.children.length; i++) {
-                            if (firstElement === line.children[i] && line.children[i] instanceof TextElementBox && !(line.children[i] instanceof FootnoteElementBox)) {
-                                offset = 0;
-                                break;
-                            } else if (line.children[i] instanceof TextElementBox) {
-                                break;
-                            }
-                        }
-                    }
                     startPosition.setPositionForLineWidget(firstElement.line, offset);
                 }
                 if (isNullOrUndefined(endPosition)) {
@@ -12061,8 +12100,98 @@ export class Selection {
      * @private
      * @returns {void}
      */
-    public highlightEditRegion(): void {
+    public updateEditRegionByPage(page: Page): void {
+        // The logic used here is when the page comes to render for the the first time we will push it on the collection.
+        // Then we we will check is the editregionstart and editregionend is present in the page then we will update the selection.
+        // Also if a edit region has multiple page then we will iterate the blocks and update selection. So that it won't affect the performance. 
+        // If any content inserted then will clear the cache pages. So that it will update only for that page. So that performance won't be affected.
+        // Finally if a page comes for multiple time to update edit region then we will check the page in the collection if yes then we will return it. 
+        if (!this.isHighlightEditRegion || this.documentHelper.editRanges.length === 0) {
+            return;
+        }
+        if (this.editRangeCachePage.indexOf(page) >= 0) {
+            return;
+        } else {
+            this.editRangeCachePage.push(page);
+        }
         this.updateEditRangeCollection();
+        let editRangeCollection: EditRangeStartElementBox[] = [];
+        let headerEditRangeCollection: EditRangeStartElementBox[] = [];
+        let editRangePage: EditRangeStartElementBox = undefined;
+        if (this.editRangeCollection.length > 0) {
+            // Converting the page into start and end position.
+            let pagePostionInfo: PositionInfo = this.getPageStartEndPosition(page);
+            if (pagePostionInfo) {
+                for (let i: number = 0; i < this.editRangeCollection.length; i++) {
+                    const startElement: EditRangeStartElementBox = this.editRangeCollection[i];
+                    if (startElement && startElement.line && startElement.line.paragraph && startElement.line.paragraph.bodyWidget instanceof HeaderFooterWidget) {
+                        headerEditRangeCollection.push(startElement);
+                    } else if (startElement && startElement.editRangeEnd && isNullOrUndefined(editRangePage)) {
+                        // Gets the edit range start and end position.
+                        let positionInfo: PositionInfo = this.getPosition(startElement, true);
+                        if (positionInfo.startPosition && positionInfo.endPosition) {
+                            let editRangeStart: TextPosition = positionInfo.startPosition;
+                            let editRangeEnd: TextPosition = positionInfo.endPosition;
+                            let pageStart: TextPosition = pagePostionInfo.startPosition;
+                            let pageEnd: TextPosition = pagePostionInfo.endPosition;
+                            // Check is the page needs to update completely.
+                            const isPageStartAfter: boolean = pageStart.isExistAfter(editRangeStart);
+                            const isPageEndBefore: boolean = pageEnd.isExistBefore(editRangeEnd);
+                            if (isPageStartAfter && isPageEndBefore) {
+                                editRangePage = startElement;
+                                editRangeCollection = [];
+                            } else if (!((isPageStartAfter && pageStart.isExistAfter(editRangeEnd)) ||
+                                (pageEnd.isExistBefore(editRangeStart) && isPageEndBefore))) {
+                                // Only edit range start or end is present inside the page then need to update it.
+                                editRangeCollection.push(startElement);
+                            }
+                        }
+                    }
+                }
+            } else {
+                editRangeCollection = this.editRangeCollection;
+            }
+        }
+        this.isHightlightEditRegionInternal = true;
+        if (isNullOrUndefined(this.editRegionHighlighters)) {
+            this.editRegionHighlighters = new Dictionary<LineWidget, SelectionWidgetInfo[]>();
+        }
+        if (!isNullOrUndefined(editRangePage)) {
+            // Updating the whole page.
+            let positionInfo: PositionInfo = this.getPosition(editRangePage);
+            let startPosition: TextPosition = positionInfo.startPosition;
+            let endPosition: TextPosition = positionInfo.endPosition;
+            this.isCurrentUser = true;
+            for (let i: number = 0; i < page.bodyWidgets.length; i++) {
+                const bodyWidget: BodyWidget = page.bodyWidgets[i];
+                for (let j: number = 0; j < bodyWidget.childWidgets.length; j++) {
+                    const block: BlockWidget = bodyWidget.childWidgets[j] as BlockWidget;
+                    if (block instanceof ParagraphWidget) {
+                        this.highlight(block, startPosition, endPosition);
+                    } else if (block instanceof TableWidget) {
+                        this.highlightTable(block, startPosition, endPosition);
+                    }
+                }
+            }
+            this.isHighlightNext = false;
+            this.hightLightNextParagraph = undefined;
+            this.isCurrentUser = false;
+        } else {
+            for (let j: number = 0; j < editRangeCollection.length; j++) {
+                this.highlightEditRegionInternal(editRangeCollection[j]);
+            }
+        }
+        // By default whole header footer editrange will be updated because we can't check based on the selection.
+        for (let j: number = 0; j < headerEditRangeCollection.length; j++) {
+            this.highlightEditRegionInternal(headerEditRangeCollection[j]);
+        }
+        this.isHightlightEditRegionInternal = false;
+    }
+    /**
+     * @private
+     * @returns {void}
+     */
+    public highlightEditRegion(): void {
         if (this.owner.enableLockAndEdit) {
             this.viewer.updateScrollBars();
             return;
@@ -12072,15 +12201,12 @@ export class Selection {
             this.viewer.updateScrollBars();
             return;
         }
-        this.isHightlightEditRegionInternal = true;
         if (isNullOrUndefined(this.editRegionHighlighters)) {
             this.editRegionHighlighters = new Dictionary<LineWidget, SelectionWidgetInfo[]>();
         }
         this.editRegionHighlighters.clear();
-        for (let j: number = 0; j < this.editRangeCollection.length; j++) {
-            this.highlightEditRegionInternal(this.editRangeCollection[j]);
-        }
-        this.isHightlightEditRegionInternal = false;
+        // When editing the page need to clear the page. so that it will be update again currently visible page. 
+        this.editRangeCachePage = [];
         this.viewer.updateScrollBars();
     }
     /**

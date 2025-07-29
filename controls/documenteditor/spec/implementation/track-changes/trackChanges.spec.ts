@@ -1381,3 +1381,336 @@ describe('Nested table -track changes pane validation', () => {
         expect(revisions2[0].ownerNode instanceof WRowFormat).toBe(true);
     });
 });
+describe('Track changes - Nested table combination', () => {
+    let container: DocumentEditor;
+    beforeAll(() => {
+        document.body.innerHTML = '';
+        let ele: HTMLElement = createElement('div', { id: 'container' });
+        document.body.appendChild(ele);
+        DocumentEditor.Inject(Editor, Selection, EditorHistory, SfdtExport);
+        container = new DocumentEditor({ enableEditor: true, isReadOnly: false, enableEditorHistory: true, enableSfdtExport: true, enableSelection: true });
+        (container.documentHelper as any).containerCanvasIn = TestHelper.containerCanvas;
+        (container.documentHelper as any).selectionCanvasIn = TestHelper.selectionCanvas;
+        (container.documentHelper.render as any).pageCanvasIn = TestHelper.pageCanvas;
+        (container.documentHelper.render as any).selectionCanvasIn = TestHelper.pageSelectionCanvas;
+        container.appendTo('#container');
+    });
+    afterAll((done): void => {
+        container.destroy();
+        document.body.removeChild(document.getElementById('container'));
+        container = undefined;
+        document.body.innerHTML = '';
+        setTimeout(function () {
+            done();
+        }, 1000);
+    });
+    it('deleting the nested table', () => {
+        console.log('deleting the nested table');
+        container.openBlank();
+        container.enableTrackChanges = true;
+        container.editor.insertTable(2,2);
+        container.currentUser = 'Syncfusion';
+        container.selection.select('0;0;0;0;0;0', '0;0;0;0;0;0');
+        container.editor.insertTable(2,2);
+        container.selection.select('0;1;0', '0;0;0;0;0;0;0;0;0');
+        expect(() => { container.editor.delete(); }).not.toThrowError();
+    });
+    it('nested table - row backspace', () => {
+        console.log('nested table backspace');
+        container.openBlank();
+        container.enableTrackChanges = true;
+        container.editor.insertTable(2,2);
+        container.currentUser = 'Syncfusion1';
+        container.selection.select('0;0;0;0;0;0', '0;0;0;0;0;0');
+        container.editor.insertTable(2,2);
+        container.selection.select('0;0;0;1;0;1', '0;0;0;0;0;1;1;0;1');
+        container.editor.onBackSpace();
+        const widget = (((container.documentHelper.pages[0].bodyWidgets[0].childWidgets[0] as TableWidget).childWidgets[0] as TableRowWidget).childWidgets[0] as TableCellWidget).childWidgets[0];
+        expect(widget instanceof ParagraphWidget).toBe(true);
+    });
+    it('nested table - undo/redo', () => {
+        console.log('nested table - undo,redo');
+        container.openBlank();
+        container.enableTrackChanges = true;
+        container.editor.insertTable(2,2);
+        container.currentUser = 'Syncfusion';
+        container.selection.select('0;0;0;0;0;0', '0;0;0;0;0;0');
+        container.editor.insertTable(2,2);
+        container.selection.select('0;0;0;1;0;1', '0;0;0;0;0;0;1;0;1');
+        container.editor.delete();
+        container.editorHistoryModule.undo();
+        expect(() => { container.editorHistoryModule.redo(); }).not.toThrowError();
+    });
+});
+describe('Track changes - Paramark Combine and split revisions', () => {
+    let container: DocumentEditor;
+    beforeAll(() => {
+        document.body.innerHTML = '';
+        let ele: HTMLElement = createElement('div', { id: 'container' });
+        document.body.appendChild(ele);
+        DocumentEditor.Inject(Editor, Selection, EditorHistory, SfdtExport);
+        container = new DocumentEditor({ enableEditor: true, isReadOnly: false, enableEditorHistory: true, enableSfdtExport: true, enableSelection: true });
+        (container.documentHelper as any).containerCanvasIn = TestHelper.containerCanvas;
+        (container.documentHelper as any).selectionCanvasIn = TestHelper.selectionCanvas;
+        (container.documentHelper.render as any).pageCanvasIn = TestHelper.pageCanvas;
+        (container.documentHelper.render as any).selectionCanvasIn = TestHelper.pageSelectionCanvas;
+        container.appendTo('#container');
+    });
+    afterAll((done): void => {
+        container.destroy();
+        document.body.removeChild(document.getElementById('container'));
+        container = undefined;
+        document.body.innerHTML = '';
+        setTimeout(function () {
+            done();
+        }, 1000);
+    });
+    it('Combine and split revisions in Paramark.', () => {
+        console.log('Combine and split revisions in Paramark.');
+        container.openBlank();
+        container.enableTrackChanges = true;
+        container.editor.insertText("Helloworld");
+        container.enableTrackChanges = false;
+        container.editor.onEnter();
+        container.enableTrackChanges = true;
+        container.editor.onEnter();
+        container.enableTrackChanges = false;
+        container.selection.select('0;0;11', '0;0;11')
+        container.editor.delete();
+        expect(container.revisions.length).toBe(1);
+        container.editorHistory.undo();
+        expect(container.revisions.length).toBe(2);
+        container.editorHistory.redo();
+        expect(container.revisions.length).toBe(1);
+    });
+});
+describe('Track changes - Nested table undo redo', () => {
+    let container: DocumentEditor;
+    beforeAll(() => {
+        document.body.innerHTML = '';
+        let ele: HTMLElement = createElement('div', { id: 'container' });
+        document.body.appendChild(ele);
+        DocumentEditor.Inject(Editor, Selection, EditorHistory, SfdtExport);
+        container = new DocumentEditor({ enableEditor: true, isReadOnly: false, enableEditorHistory: true, enableSfdtExport: true, enableSelection: true });
+        (container.documentHelper as any).containerCanvasIn = TestHelper.containerCanvas;
+        (container.documentHelper as any).selectionCanvasIn = TestHelper.selectionCanvas;
+        (container.documentHelper.render as any).pageCanvasIn = TestHelper.pageCanvas;
+        (container.documentHelper.render as any).selectionCanvasIn = TestHelper.pageSelectionCanvas;
+        container.appendTo('#container');
+    });
+    afterAll((done): void => {
+        container.destroy();
+        document.body.removeChild(document.getElementById('container'));
+        container = undefined;
+        document.body.innerHTML = '';
+        setTimeout(function () {
+            done();
+        }, 1000);
+    });
+    it('Nested table undo redo', () => {
+        console.log('Nested table undo redo');
+        container.openBlank();
+        container.enableTrackChanges = true;
+        container.editor.insertTable(2,2);
+        container.selection.select('0;0;0;0;0;0', '0;0;0;0;0;0');
+        container.editor.insertTable(2,2);
+        container.revisions.acceptAll();
+        expect(((((((container.documentHelper.pages[0].bodyWidgets[0].childWidgets[0] as TableWidget).childWidgets[0] as TableRowWidget).childWidgets[0] as TableCellWidget).childWidgets[0] as TableWidget).childWidgets[0] as TableRowWidget).childWidgets[0] as TableCellWidget).childWidgets[0] instanceof ParagraphWidget).toBe(true);
+
+        container.editorHistory.undo();
+        expect(((((((container.documentHelper.pages[0].bodyWidgets[0].childWidgets[0] as TableWidget).childWidgets[0] as TableRowWidget).childWidgets[0] as TableCellWidget).childWidgets[0] as TableWidget).childWidgets[0] as TableRowWidget).childWidgets[0] as TableCellWidget).childWidgets[0] instanceof ParagraphWidget).toBe(true);
+
+        container.editorHistory.redo();
+        expect(((((((container.documentHelper.pages[0].bodyWidgets[0].childWidgets[0] as TableWidget).childWidgets[0] as TableRowWidget).childWidgets[0] as TableCellWidget).childWidgets[0] as TableWidget).childWidgets[0] as TableRowWidget).childWidgets[0] as TableCellWidget).childWidgets[0] instanceof ParagraphWidget).toBe(true);
+    });
+});
+describe('Track changes - Paragraph and table row combination', () => {
+    let container: DocumentEditor;
+    beforeAll(() => {
+        document.body.innerHTML = '';
+        let ele: HTMLElement = createElement('div', { id: 'container' });
+        document.body.appendChild(ele);
+        DocumentEditor.Inject(Editor, Selection, EditorHistory, SfdtExport);
+        container = new DocumentEditor({ enableEditor: true, isReadOnly: false, enableEditorHistory: true, enableSfdtExport: true, enableSelection: true });
+        (container.documentHelper as any).containerCanvasIn = TestHelper.containerCanvas;
+        (container.documentHelper as any).selectionCanvasIn = TestHelper.selectionCanvas;
+        (container.documentHelper.render as any).pageCanvasIn = TestHelper.pageCanvas;
+        (container.documentHelper.render as any).selectionCanvasIn = TestHelper.pageSelectionCanvas;
+        container.appendTo('#container');
+    });
+    afterAll((done): void => {
+        container.destroy();
+        document.body.removeChild(document.getElementById('container'));
+        container = undefined;
+        document.body.innerHTML = '';
+        setTimeout(function () {
+            done();
+        }, 1000);
+    });
+    it('deleting the tracked para and row', () => {
+        console.log('deleting the nested table');
+        container.openBlank();
+        container.editor.insertText("Helloworld");
+        container.editor.onEnter();
+        container.enableTrackChanges = true;
+        container.editor.insertTable(2,2);
+        container.selection.select('0;0;0', '0;1;0;0;0;1');
+        container.editor.delete();
+        container.editorHistory.undo();
+        expect(container.revisions.length).toBe(1);
+    });
+    it('skip delete track', () => {
+        console.log('skip delete track');
+        container.openBlank();
+        container.enableTrackChanges = false;
+        container.editor.insertTable(2,2);
+        container.selection.select('0;0;0;0;0;0', '0;0;0;0;0;0');
+        container.editor.insertText("Helloworld");
+        container.editor.insertTable(2,2);
+        container.enableTrackChanges = true;
+        container.selection.select('0;0;0;0;0;5', '0;0;0;0;1;0;0;0;1');
+        container.editor.delete();
+        expect(container.revisions.length).toBe(0);
+    });
+});
+describe('Track changes - Command Validation', () => {
+    let container: DocumentEditor;
+    beforeAll(() => {
+        document.body.innerHTML = '';
+        let ele: HTMLElement = createElement('div', { id: 'container' });
+        document.body.appendChild(ele);
+        DocumentEditor.Inject(Editor, Selection, EditorHistory, SfdtExport);
+        container = new DocumentEditor({ enableEditor: true, isReadOnly: false, enableEditorHistory: true, enableSfdtExport: true, enableSelection: true });
+        (container.documentHelper as any).containerCanvasIn = TestHelper.containerCanvas;
+        (container.documentHelper as any).selectionCanvasIn = TestHelper.selectionCanvas;
+        (container.documentHelper.render as any).pageCanvasIn = TestHelper.pageCanvas;
+        (container.documentHelper.render as any).selectionCanvasIn = TestHelper.pageSelectionCanvas;
+        container.appendTo('#container');
+    });
+    afterAll((done): void => {
+        container.destroy();
+        document.body.removeChild(document.getElementById('container'));
+        container = undefined;
+        document.body.innerHTML = '';
+        setTimeout(function () {
+            done();
+        }, 1000);
+    });
+    it('Inserting revision - Track changes enabled', () => {
+        console.log('Inserting revision - Track changes enabled');
+        container.openBlank();
+        container.enableTrackChanges = true;
+        setTimeout(function () {
+            container.editor.insertText('HelloWorld');
+            expect(container.revisions.revisions.length).toBe(1);
+            container.selection.select('0;0;2', '0;0;6');
+            container.editor.insertComment('Sync');
+            expect(container.revisions.revisions.length).toBe(1);
+            container.editorHistoryModule.undo();
+            expect(container.revisions.revisions.length).toBe(1);
+        }, 1000)
+        container.enableTrackChanges = false;
+        setTimeout(function () {
+            container.editorHistoryModule.redo();
+            expect(container.revisions.revisions.length).toBe(1);
+        }, 1000)
+    });
+    it('Inserting revision - Track changes disabled', () => {
+        console.log('Inserting revision - Track changes disabled');
+        container.openBlank();
+        container.enableTrackChanges = false;
+        setTimeout(function () {
+            container.editor.insertText('HelloWorld');
+            expect(container.revisions.revisions.length).toBe(1);
+            container.selection.select('0;0;2', '0;0;6');
+            container.editor.insertComment('Sync');
+            expect(container.revisions.revisions.length).toBe(2);
+            container.editorHistoryModule.undo();
+            expect(container.revisions.revisions.length).toBe(1);
+            container.enableTrackChanges = true;
+        }, 1000)
+        setTimeout(function () {
+            container.editorHistoryModule.redo();
+            expect(container.revisions.revisions.length).toBe(2);
+        }, 1000)
+    });
+    it('Deleting revision - Track changes enabled', () => {
+        console.log('Deleting revision - Track changes enabled');
+        container.openBlank();
+        container.editor.insertText('HelloWorld');
+        container.enableTrackChanges = true;
+        setTimeout(function () {
+            container.selection.select('0;0;0', '0;0;11');
+            container.editor.delete();
+            expect(container.revisions.revisions.length).toBe(1);
+            container.selection.select('0;0;2', '0;0;6');
+            container.editor.insertComment('Sync');
+            expect(container.revisions.revisions.length).toBe(2);
+            container.editorHistoryModule.undo();
+            expect(container.revisions.revisions.length).toBe(1);
+        }, 1000)
+        container.enableTrackChanges = false;
+        setTimeout(function () {
+            container.editorHistoryModule.redo();
+            expect(container.revisions.revisions.length).toBe(2);
+        }, 1000)
+    });
+    it('Deleting revision - Track changes disabled', () => {
+        console.log('Deleting revision - Track changes disabled');
+        container.openBlank();
+        container.editor.insertText('HelloWorld');
+        container.enableTrackChanges = true;
+        setTimeout(function () {
+            container.selection.select('0;0;0', '0;0;11');
+            container.editor.delete();
+            expect(container.revisions.revisions.length).toBe(1);
+            container.enableTrackChanges = false;
+            container.selection.select('0;0;2', '0;0;6');
+            container.editor.insertComment('Sync');
+            expect(container.revisions.revisions.length).toBe(2);
+            container.editorHistoryModule.undo();
+            expect(container.revisions.revisions.length).toBe(1);
+        }, 1000)
+        container.enableTrackChanges = true;
+        setTimeout(function () {
+            container.editorHistoryModule.redo();
+            expect(container.revisions.revisions.length).toBe(2);
+        }, 1000)
+    });
+});
+describe('Track changes - ParaMark Revision', () => {
+    let container: DocumentEditor;
+    beforeAll(() => {
+        document.body.innerHTML = '';
+        let ele: HTMLElement = createElement('div', { id: 'container' });
+        document.body.appendChild(ele);
+        DocumentEditor.Inject(Editor, Selection, EditorHistory, SfdtExport);
+        container = new DocumentEditor({ enableEditor: true, isReadOnly: false, enableEditorHistory: true, enableSfdtExport: true, enableSelection: true });
+        (container.documentHelper as any).containerCanvasIn = TestHelper.containerCanvas;
+        (container.documentHelper as any).selectionCanvasIn = TestHelper.selectionCanvas;
+        (container.documentHelper.render as any).pageCanvasIn = TestHelper.pageCanvas;
+        (container.documentHelper.render as any).selectionCanvasIn = TestHelper.pageSelectionCanvas;
+        container.appendTo('#container');
+    });
+    afterAll((done): void => {
+        container.destroy();
+        document.body.removeChild(document.getElementById('container'));
+        container = undefined;
+        document.body.innerHTML = '';
+        setTimeout(function () {
+            done();
+        }, 1000);
+    });
+    it('Track changes - ParaMark Revision', function () {
+        console.log('Track changes - ParaMark Revision');
+        container.openBlank();
+        container.enableTrackChanges = true;
+        container.editor.insertText("Hello");
+        container.editor.onEnter();
+        container.editor.onEnter();
+        container.enableTrackChanges = false;
+        container.selection.select('0;0;5', '0;0;5');
+        container.editor.onEnter();
+        expect((container.documentHelper.pages[0].bodyWidgets[0].childWidgets[0] as ParagraphWidget).characterFormat.revisionLength).toBe(0);
+    });
+});

@@ -554,12 +554,82 @@ export class WorkbookNumberFormat {
                 }
                 args.formatApplied = true;
                 let result: string;
-                if (custFormat.startsWith('m/d/yyyy ')) { // While auto detect date time value, we will set this format only.
+                if (custFormat.startsWith('M/d/yyyy ')) { // While auto detect date time value, we will set this format only.
                     custFormat = custFormat.split(' ').splice(1).join(' ');
-                    result = intl.formatDate(dateArgs.dateObj, { type: 'date', skeleton: 'yMd' }) + (custFormat ? ' ' +
-                        intl.formatDate(dateArgs.dateObj, { type: type, format: custFormat }) : '');
+                    result = intl.formatDate(dateArgs.dateObj, { type: 'date', skeleton: 'yMd' });
+                    if (custFormat) {
+                        const valArr: string[] = cell.value.toString().split('.');
+                        const dateTimeObj: Date = valArr.length === 2 ? intToDate(parseFloat(valArr[0] + 1 + '.' + valArr[1])) :
+                            dateArgs.dateObj;
+                        result += ' ' + intl.formatDate(dateTimeObj, { type: type, format: custFormat });
+                    }
                 } else {
-                    result = intl.formatDate(dateArgs.dateObj, { type: type, format: custFormat });
+                    if (isDate && custFormat.includes(' ') && custFormat.includes(':') && cell.value.toString().includes('.')) {
+                        const dateTimeFormat: string = custFormat.trim();
+                        let spaceIdx: number = dateTimeFormat.indexOf(':') - 1;
+                        while (spaceIdx > 0 && dateTimeFormat[spaceIdx as number] !== ' ') {
+                            spaceIdx--;
+                        }
+                        if (spaceIdx <= 0) {
+                            spaceIdx = dateTimeFormat.lastIndexOf(':') + 1;
+                            let isAmPmFound: boolean = dateTimeFormat.includes(' a');
+                            while (spaceIdx < dateTimeFormat.length) {
+                                if (dateTimeFormat[spaceIdx as number] === ' ') {
+                                    if (isAmPmFound && dateTimeFormat[spaceIdx + 1] === 'a') {
+                                        spaceIdx++;
+                                        isAmPmFound = false;
+                                    } else {
+                                        break;
+                                    }
+                                }
+                                spaceIdx++;
+                            }
+                            if (spaceIdx < dateTimeFormat.length) {
+                                const timeFormat: string = dateTimeFormat.substring(0, spaceIdx);
+                                let dateFormat: string = dateTimeFormat.substring(spaceIdx + 1);
+                                if (dateFormat && timeFormat) {
+                                    if (dateFormat.includes('m')) {
+                                        dateFormat = dateFormat.split('m').join('M');
+                                    }
+                                    const valArr: string[] = cell.value.toString().split('.');
+                                    result = intl.formatDate(intToDate(
+                                        parseFloat(valArr[0] + 1 + '.' + valArr[1])), { type: 'time', format: timeFormat }) + ' ' +
+                                        intl.formatDate(dateArgs.dateObj, { type: 'date', format: dateFormat });
+                                } else {
+                                    result = intl.formatDate(dateArgs.dateObj, { type: type, format: custFormat });
+                                }
+                            } else {
+                                result = intl.formatDate(dateArgs.dateObj, { type: type, format: custFormat });
+                            }
+                        } else {
+                            let dateFormat: string = dateTimeFormat.substring(0, spaceIdx);
+                            const timeFormat: string = dateTimeFormat.substring(spaceIdx + 1);
+                            if (dateFormat && timeFormat) {
+                                if (dateFormat.includes('m')) {
+                                    dateFormat = dateFormat.split('m').join('M');
+                                }
+                                const valArr: string[] = cell.value.toString().split('.');
+                                result = intl.formatDate(dateArgs.dateObj, { type: 'date', format: dateFormat }) + ' ' + intl.formatDate(
+                                    intToDate(parseFloat(valArr[0] + 1 + '.' + valArr[1])), { type: 'time', format: timeFormat });
+                            } else {
+                                result = intl.formatDate(dateArgs.dateObj, { type: type, format: custFormat });
+                            }
+                        }
+                    } else {
+                        if (!isDate && type === 'time' && custFormat.includes(':') && cell.value.toString().includes('.')) {
+                            const colonIdx: number = custFormat.indexOf(':');
+                            if ((custFormat.endsWith(' a') || custFormat.endsWith('ss') || custFormat.startsWith('H')) &&
+                                (colonIdx === 1 || colonIdx === 2)) {
+                                const valArr: string[] = cell.value.toString().split('.');
+                                result = intl.formatDate(
+                                    intToDate(parseFloat(valArr[0] + 1 + '.' + valArr[1])), { type: 'time', format: custFormat });
+                            } else {
+                                result = intl.formatDate(dateArgs.dateObj, { type: type, format: custFormat });
+                            }
+                        } else {
+                            result = intl.formatDate(dateArgs.dateObj, { type: type, format: custFormat });
+                        }
+                    }
                     custFormat = custFormat.toLowerCase();
                     if (custFormat.startsWith('[h]')) {
                         const totalHours: number = (Number(cell.value.toString().split('.')[0]) * 24) + dateArgs.dateObj.getHours();
@@ -1120,12 +1190,25 @@ export class WorkbookNumberFormat {
                 format = res.includes(this.localeObj.decimal) ? numberFormatsCode.currency[0] : numberFormatsCode.currency[1];
                 res = res.replace(options.args.curSymbol, '');
             }
+            let isNegativeFormatVal: boolean;
             const isEdit: boolean = this.localeObj.decimal === '.' || (options.args.isEdit && !cell.formula);
-            if (isEdit && res.includes(this.localeObj.group) &&
-                parseThousandSeparator(res, this.parent.locale, this.localeObj.group, this.localeObj.decimal)) {
-                res = res.split(this.localeObj.group).join('');
-                if (!format) { // Auto detect 1000 separator format
-                    format = (res.includes(this.localeObj.decimal) ? '#,##0.00' : '#,##0');
+            if (isEdit) {
+                if (res.trim().startsWith('(') && res.trim().endsWith(')')) {
+                    const updatedformat: string = getFormatFromType(<NumberFormatType>'CurrencyWithColorCode');
+                    if (updatedformat.endsWith(')')) {
+                        res = '-' + res.trim().slice(1, -1);
+                        if (format) {
+                            format = updatedformat;
+                        }
+                        isNegativeFormatVal = true;
+                    }
+                }
+                if (res.includes(this.localeObj.group) &&
+                    parseThousandSeparator(res, this.parent.locale, this.localeObj.group, this.localeObj.decimal)) {
+                    res = res.split(this.localeObj.group).join('');
+                    if (!format) { // Auto detect 1000 separator format
+                        format = (res.includes(this.localeObj.decimal) ? '#,##0.00' : '#,##0');
+                    }
                 }
             }
             if (format) {
@@ -1145,8 +1228,23 @@ export class WorkbookNumberFormat {
                         options.isRightAlign = true;
                     }
                 }
-            } else if (this.localeObj.decimal !== '.' && options.args.format === 'General' && isNumber(res) && res.includes('.')) {
-                options.fResult = Number(res).toString().replace('.', this.localeObj.decimal);
+            } else {
+                if (isNegativeFormatVal) {
+                    res = res.replace(this.localeObj.decimal, '.');
+                    if (isNumber(res)) {
+                        options.args.value = Number(res).toString();
+                        if (options.args.updateValue) {
+                            options.args.cell.value = options.args.value;
+                        } else {
+                            setCell(options.rowIdx, options.colIdx, options.sheet, { value: options.args.value }, true);
+                            options.fResult = options.args.value;
+                            options.isRightAlign = true;
+                        }
+                    }
+                }
+                if (this.localeObj.decimal !== '.' && options.args.format === 'General' && isNumber(res) && res.includes('.')) {
+                    options.fResult = Number(res).toString().replace('.', this.localeObj.decimal);
+                }
             }
         }
     }

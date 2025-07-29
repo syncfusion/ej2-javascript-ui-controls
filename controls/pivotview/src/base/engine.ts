@@ -169,6 +169,7 @@ export class PivotEngine {
     private groupedDataType: { [key: string]: string } = {};
     private customProperties: ICustomProperties;
     private tabularPivotValues: IAxisSet[][] = [];
+    private sortMembers: { [key: string]: Object } = {};
     /** @hidden */
     public viewportPageCount: number = 3;
     /**
@@ -202,6 +203,7 @@ export class PivotEngine {
         }
         this.headerObjectsCollection = {};
         this.fieldDrillCollection = {};
+        this.sortMembers = {};
     }
     /**
      * It is used to render the pivot engine.
@@ -3048,10 +3050,13 @@ export class PivotEngine {
         let isHeaderSortByDefault: boolean = false;
         const membersInfo: string[] | number[] = this.fieldList[fieldName as string] && this.fieldList[fieldName as string].membersOrder ?
             [...this.fieldList[fieldName as string].membersOrder] as string[] | number[] : [];
+        if (!this.sortMembers[fieldName as string]) {
+            this.sortMembers[fieldName as string] = Object.keys(childrens.members);
+        }
         const sortDetails: HeadersSortEventArgs = {
             fieldName: fieldName,
             sortOrder: sortOrder as Sorting,
-            members: membersInfo && membersInfo.length > 0 ? membersInfo : Object.keys(childrens.members),
+            members: membersInfo && membersInfo.length > 0 ? membersInfo : this.sortMembers[fieldName as string] as string[],
             IsOrderChanged: false
         };
         type = (type === 'datetime' || type === 'date' || type === 'time') ? (this.formatFields[fieldName as string] &&

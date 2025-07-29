@@ -883,7 +883,7 @@ export class AccumulationSeries extends ChildProperty<AccumulationSeries> {
             this.points = [];
             return null;
         }
-        this.findSumOfPoints(result);
+        if (this.groupTo) { this.findSumOfPoints(result); }
         this.points = [];
         this.clubbedPoints = [];
         this.sumOfClub = 0;
@@ -904,6 +904,7 @@ export class AccumulationSeries extends ChildProperty<AccumulationSeries> {
                 point.isSliced = true;
             }
         }
+        if (!this.groupTo) { this.findSumOfPoints(result); }
         this.lastGroupTo = this.groupTo;
         if (this.sumOfClub > 0) {
             const clubPoint: AccPoints = this.generateClubPoint();
@@ -975,7 +976,8 @@ export class AccumulationSeries extends ChildProperty<AccumulationSeries> {
         const length: number = Object.keys(result).length;
         for (let i: number = 0; i < length; i++) {
             if (!isNullOrUndefined(result[i as number]) && !isNullOrUndefined(result[i as number][this.yName])
-            && !isNaN(result[i as number][this.yName])) {
+            && !isNaN(result[i as number][this.yName]) && (this.points.length && this.points[i as number] &&
+            this.points[i as number].visible && !isNullOrUndefined(this.points[i as number].y) || this.groupTo)) {
                 this.sumOfPoints += Math.abs(result[i as number][this.yName]);
             }
         }
@@ -1000,6 +1002,7 @@ export class AccumulationSeries extends ChildProperty<AccumulationSeries> {
         point.sliceRadius = getValue(this.radius, data[i as number]);
         point.sliceRadius = isNullOrUndefined(point.sliceRadius) ? '80%' : point.sliceRadius;
         point.separatorY = accumulation.intl.formatNumber(point.y, { useGrouping: accumulation.useGroupingSeparator });
+        this.setVisibility(point, i);
         this.setAccEmptyPoint(point, i, data);
         return point;
     }
@@ -1215,6 +1218,23 @@ export class AccumulationSeries extends ChildProperty<AccumulationSeries> {
     }
 
     /**
+     * To set visiblity for the point.
+     *
+     * @private
+     * @param {AccPoints} point - The point to set visibility.
+     * @param {number} i - The index of the point in the data set.
+     *
+     * @returns {void}
+     */
+    public setVisibility(point: AccPoints, i: number): void {
+        if (this.accumulation.accumulationLegendModule && this.accumulation.accumulationLegendModule.legendCollections &&
+            this.accumulation.accumulationLegendModule.legendCollections[i as number] &&
+            !this.accumulation.accumulationLegendModule.legendCollections[i as number].visible) {
+            point.visible = false;
+        }
+    }
+
+    /**
      * Updates the data source for the series.
      *
      * @function setData
@@ -1254,7 +1274,6 @@ export class AccumulationSeries extends ChildProperty<AccumulationSeries> {
                     visiblePoints.push((this.resultData as object[])[i as number]);
                 }
             }
-            this.findSumOfPoints(visiblePoints);
             this.accumulation.redraw = this.borderRadius ? false : this.accumulation.enableAnimation;
             this.accumulation.animateSeries = false;
             const chartDuration: number = this.accumulation.duration;
@@ -1262,6 +1281,7 @@ export class AccumulationSeries extends ChildProperty<AccumulationSeries> {
             this.accumulation[(firstToLowerCase(this.type) + 'SeriesModule')].initProperties(this.accumulation, this);
             this.renderPoints(this.accumulation, getElement(this.accumulation.element.id + '_Series_' + this.index), this.accumulation.redraw, null,
                               null, true);
+            this.findSumOfPoints(visiblePoints);
             if (this.accumulation.centerLabel.text) {
                 this.accumulation.renderCenterLabel(true, true);
             }
@@ -1301,11 +1321,11 @@ export class AccumulationSeries extends ChildProperty<AccumulationSeries> {
                 visiblepoints.push((this.resultData as object[])[i as number]);
             }
         }
-        this.findSumOfPoints(visiblepoints);
         const pointIndex: number = this.points.length === 0 ? 0 : this.points[this.points.length - 1].index + 1;
         const colors: string[] = this.palettes.length ? this.palettes : getSeriesColor(this.accumulation.theme);
         const point: AccPoints = this.setPoints(this.dataSource, pointIndex, colors, this.accumulation);
         this.pushPoints(point, colors);
+        this.findSumOfPoints(visiblepoints);
         this.accumulation.redraw = this.borderRadius ? false : this.accumulation.enableAnimation;
         const chartDuration: number = this.accumulation.duration;
         this.accumulation.duration = isNullOrUndefined(duration) ? 500 : duration;
@@ -1335,7 +1355,6 @@ export class AccumulationSeries extends ChildProperty<AccumulationSeries> {
             }
             dataSource.splice(index, 1);
             (this.dataSource as object[]).splice(index, 1);
-            this.findSumOfPoints(removepoints);
             this.accumulation.redraw = this.borderRadius ? false : this.accumulation.enableAnimation;
             this.accumulation.duration = isNullOrUndefined(duration) ? 500 : duration;
             this.points.splice(index, 1);
@@ -1344,6 +1363,7 @@ export class AccumulationSeries extends ChildProperty<AccumulationSeries> {
                 point.index = i;
                 point.y = this.points[i as number].y;
             }
+            this.findSumOfPoints(removepoints);
             const element: Element = getElement(this.accumulation.element.id + '_Series_0_Point_' + (this.points.length));
             if (element) {
                 element.parentNode.removeChild(element);

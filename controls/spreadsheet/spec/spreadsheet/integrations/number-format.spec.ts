@@ -1965,7 +1965,7 @@ describe('Spreadsheet Number Format Module ->', (): void => {
                 done();
             });
         });
-        describe('EJ2-839539, EJ2-911541 ->', () => {
+        describe('EJ2-839539, EJ2-911541, EJ2-966751 ->', () => {
             beforeAll((done: Function) => {
                 model = {
                     sheets: [{
@@ -2032,6 +2032,88 @@ describe('Spreadsheet Number Format Module ->', (): void => {
                 expect(helper.getInstance().sheets[0].rows[9].cells[2].formattedText).toBe('31-Oct-24');
                 expect(helper.getInstance().sheets[0].rows[10].cells[2].formattedText).toBe('1-Dec-24');
                 expect(helper.getInstance().sheets[0].rows[11].cells[2].formattedText).toBe('31-Dec-24');
+                done();
+            });
+
+            it('Custom DateTime value is incorrectly formatted for the custom date time format in Spreadsheet', (done: Function) => {
+                const spreadsheet: Spreadsheet = helper.getInstance();
+                helper.edit('I2', '45834.00347222222');
+                helper.edit('I3', '45834');
+                helper.invoke('numberFormat', ['m/d/yyyy h:mm:ss', 'I2:I3']);
+                const cell1: CellModel = spreadsheet.sheets[0].rows[1].cells[8];
+                expect(cell1.format).toBe('m/d/yyyy h:mm:ss');
+                expect(cell1.formattedText).toBe('6/26/2025 0:05:00');
+                const cellEle1: HTMLElement = helper.invoke('getCell', [1, 8]);
+                expect(cellEle1.textContent).toBe('6/26/2025 0:05:00');
+                const cell2: CellModel = spreadsheet.sheets[0].rows[2].cells[8];
+                expect(cell2.format).toBe('m/d/yyyy h:mm:ss');
+                expect(cell2.formattedText).toBe('6/26/2025 0:00:00');
+                const cellEle2: HTMLElement = helper.invoke('getCell', [2, 8]);
+                expect(cellEle2.textContent).toBe('6/26/2025 0:00:00');
+                helper.invoke('numberFormat', ['m/yy h:mm AM/PM', 'I2:I3']);
+                expect(cell1.format).toBe('m/yy h:mm AM/PM');
+                expect(cell1.formattedText).toBe('6/25 12:05 AM');
+                expect(cellEle1.textContent).toBe('6/25 12:05 AM');
+                expect(cell2.format).toBe('m/yy h:mm AM/PM');
+                expect(cell2.formattedText).toBe('6/25 12:00 AM');
+                expect(cellEle2.textContent).toBe('6/25 12:00 AM');
+                helper.invoke('numberFormat', ['h:mm AM/PM dd-MM-yyyy', 'I2:I3']);
+                expect(cell1.format).toBe('h:mm AM/PM dd-MM-yyyy');
+                expect(cell1.formattedText).toBe('12:05 AM 26-06-2025');
+                expect(cellEle1.textContent).toBe('12:05 AM 26-06-2025');
+                expect(cell2.format).toBe('h:mm AM/PM dd-MM-yyyy');
+                expect(cell2.formattedText).toBe('12:00 AM 26-06-2025');
+                expect(cellEle2.textContent).toBe('12:00 AM 26-06-2025');
+                helper.invoke('numberFormat', ['mm:ss d-mmm', 'I2']);
+                expect(cell1.format).toBe('mm:ss d-mmm');
+                expect(cell1.formattedText).toBe('05:00 26-Jun');
+                expect(cellEle1.textContent).toBe('05:00 26-Jun');
+                helper.invoke('numberFormat', ['h:mm AM/PM dddd, mmmm dd, yyyy', 'I2:I3']);
+                expect(cell1.format).toBe('h:mm AM/PM dddd, mmmm dd, yyyy');
+                expect(cell1.formattedText).toBe('12:05 AM Thursday, June 26, 2025');
+                expect(cellEle1.textContent).toBe('12:05 AM Thursday, June 26, 2025');
+                helper.invoke('numberFormat', ['dddd, mmmm dd, yyyy hh:mm:ss', 'I2:I3']);
+                expect(cell1.format).toBe('dddd, mmmm dd, yyyy hh:mm:ss');
+                expect(cell1.formattedText).toBe('Thursday, June 26, 2025 00:05:00');
+                expect(cellEle1.textContent).toBe('Thursday, June 26, 2025 00:05:00');
+                helper.invoke('numberFormat', ['d-mmmh:mm:ss AM/PM', 'I2:I3']);
+                expect(cell1.format).toBe('d-mmmh:mm:ss AM/PM');
+                expect(cell1.formattedText).not.toBe('Thursday, June 26, 2025 00:05:00');
+                expect(cellEle1.textContent).not.toBe('Thursday, June 26, 2025 00:05:00');
+                done();
+            });
+            it('Checking custom Time format for the date value is incorrectly formatted for time format in Spreadsheet', (done: Function) => {
+                const spreadsheet: Spreadsheet = helper.getInstance();
+                helper.invoke('numberFormat', ['h:mm:ss', 'I2:I3']);
+                const cell1: CellModel = spreadsheet.sheets[0].rows[1].cells[8];
+                expect(cell1.format).toBe('h:mm:ss');
+                expect(cell1.formattedText).toBe('0:05:00');
+                const cellEle1: HTMLElement = helper.invoke('getCell', [1, 8]);
+                expect(cellEle1.textContent).toBe('0:05:00');
+                const cell2: CellModel = spreadsheet.sheets[0].rows[2].cells[8];
+                expect(cell2.format).toBe('h:mm:ss');
+                expect(cell2.formattedText).toBe('0:00:00');
+                const cellEle2: HTMLElement = helper.invoke('getCell', [2, 8]);
+                expect(cellEle2.textContent).toBe('0:00:00');
+                helper.invoke('numberFormat', ['h:mm AM/PM', 'I2:I3']);
+                expect(cell1.format).toBe('h:mm AM/PM');
+                expect(cell1.formattedText).toBe('12:05 AM');
+                expect(cellEle1.textContent).toBe('12:05 AM');
+                expect(cell2.format).toBe('h:mm AM/PM');
+                expect(cell2.formattedText).toBe('12:00 AM');
+                expect(cellEle2.textContent).toBe('12:00 AM');
+                helper.invoke('numberFormat', ['h:mm', 'I2:I3']);
+                expect(cell1.format).toBe('h:mm');
+                expect(cell1.formattedText).toBe('0:05');
+                expect(cellEle1.textContent).toBe('0:05');
+                helper.invoke('numberFormat', ['mm:ss', 'I2:I3']);
+                expect(cell1.format).toBe('mm:ss');
+                expect(cell1.formattedText).toBe('05:00');
+                expect(cellEle1.textContent).toBe('05:00');
+                helper.invoke('numberFormat', ['hh:mm', 'I2:I3']);
+                expect(cell1.format).toBe('hh:mm');
+                expect(cell1.formattedText).toBe('00:05');
+                expect(cellEle1.textContent).toBe('00:05');
                 done();
             });
         });

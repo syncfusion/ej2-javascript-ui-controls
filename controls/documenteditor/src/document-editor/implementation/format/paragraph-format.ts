@@ -368,18 +368,12 @@ export class WParagraphFormat {
         }
         const ownerBase = this.ownerBase;
         let isInsideBodyWidget = false;
-        let isPaste = false;
         if (ownerBase && ownerBase instanceof ParagraphWidget) {
             const containerWidget = ownerBase.containerWidget;
             isInsideBodyWidget = containerWidget instanceof BlockContainer || containerWidget instanceof TextFrame || containerWidget instanceof TableCellWidget;
-            const bodyWidget = ownerBase.bodyWidget;
-            if (bodyWidget && bodyWidget.page && bodyWidget.page.documentHelper &&
-                bodyWidget.page.documentHelper.owner && bodyWidget.page.documentHelper.owner.editorModule) {
-                isPaste = bodyWidget.page.documentHelper.owner.editorModule.isPaste;
-            }
         }
         // Check and return property value early
-        if (isInsideBodyWidget && !isPaste) {
+        if (isInsideBodyWidget) {
             const propValue = docParagraphFormat.uniqueParagraphFormat.propertiesHash.get(propertyType);
             if (!isNullOrUndefined(propValue)) {
                 return propValue;

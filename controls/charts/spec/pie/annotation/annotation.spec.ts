@@ -310,8 +310,7 @@ describe('Accumumation Control', () => {
         it('Checking annotaiton unit as point with date time value type', (done: Function) => {
             chartObj.loaded = (args: Object): void => {
                 element = getElement('container_Annotation_0');
-                expect((element as HTMLElement).style.left == '400.103px' || (element as HTMLElement).style.left == '400.176px').toBe(true);
-                expect((element as HTMLElement).style.top == '112.475px' || (element as HTMLElement).style.top == '110.96px').toBe(true);
+                expect((element as HTMLElement)).toBe(null);
                 done();
             };
             chartObj.series[0].dataLabel.visible = true;

@@ -2,6 +2,14 @@
 
 ## [Unreleased]
 
+## 30.1.42 (2025-07-29)
+
+### Common
+
+#### Bug Fixes
+
+- `#I741850` - Resolved a security vulnerability in the base library.
+
 ## 30.1.37 (2025-06-25)
 
 ### Common
