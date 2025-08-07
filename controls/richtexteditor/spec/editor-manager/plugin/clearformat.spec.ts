@@ -343,3 +343,25 @@ describe('Bug 907771: BlockQuote Applied Paragraphs Convert to Single Paragraph 
         expect(document.getElementById('divElement').children[0].childElementCount).toBe(2);
     });
 });
+
+describe('Bug 969820: Clear format doesnot remove the highlighted color in the new lines in RichTextEditor', () => {
+    let domSelection: NodeSelection = new NodeSelection();
+    let divElement: HTMLDivElement = document.createElement('div');
+    divElement.id = 'divElement';
+    divElement.contentEditable = 'true';
+    beforeAll(() => {
+        document.body.appendChild(divElement);
+    });
+    afterAll(() => {
+        detach(divElement);
+    });
+    it('Clear Format action in the Rich Text Editor works properly by removing the highlighted background color from new lines', () => {
+        divElement.innerHTML = `<p><code>I have validated that performance issues occur in the RichTextEditor when it is rendered in the dashboard panel. I also checked the Grid component and found that it experiences the same performance issues due to the use of the StateHasChanged method in the dashboard.</code></p><p><code><br></code></p><p><code><br></code></p><p><code>After removing the StateHasChanged method, the performance improved. I have reported this issue to the dashboard team.</code></p>`;
+        new ClearFormat();
+        let node1: Node = document.getElementById('divElement').childNodes[0].childNodes[0].childNodes[0];
+        let node2: Node = document.getElementById('divElement').childNodes[3].childNodes[0].childNodes[0];
+        domSelection.setSelectionText(document, node1, node2, 0, node2.textContent.length);
+        ClearFormat.clear(document, divElement, 'P');
+        expect(document.getElementById('divElement').innerHTML === '<p>I have validated that performance issues occur in the RichTextEditor when it is rendered in the dashboard panel. I also checked the Grid component and found that it experiences the same performance issues due to the use of the StateHasChanged method in the dashboard.</p><p><br></p><p><br></p><p>After removing the StateHasChanged method, the performance improved. I have reported this issue to the dashboard team.</p>').toBe(true);
+    });
+});

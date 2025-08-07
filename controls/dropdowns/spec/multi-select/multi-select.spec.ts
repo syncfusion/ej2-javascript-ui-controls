@@ -1231,6 +1231,26 @@ describe('MultiSelect', () => {
             expect((<any>listObj).value && (<any>listObj).value.length).not.toBeNull();
             listObj.destroy();
         });
+        it('allowCustomValue with virtualization.', () => {
+            listObj = new MultiSelect({ hideSelectedItem: false, dataSource: datasource2, fields: { text: 'text', value: 'text' }, allowCustomValue: true, enableVirtualization: true, debounceDelay: 0, allowFiltering: true, value: ['PHP'] });
+            listObj.appendTo(element);
+            listObj.showPopup();
+            (<any>listObj).inputElement.value = "RUBY";
+            //open action validation
+            keyboardEventArgs.keyCode = 113;
+            (<any>listObj).keyDownStatus = true;
+            (<any>listObj).onInput();
+            (<any>listObj).keyUp(keyboardEventArgs);
+            keyboardEventArgs.altKey = false;
+            keyboardEventArgs.keyCode = 70;
+            (<any>listObj).keyDownStatus = true;
+            (<any>listObj).onInput();
+            (<any>listObj).keyUp(keyboardEventArgs);
+            mouseEventArgs.target = (<any>listObj).liCollections[0];
+            mouseEventArgs.type = 'click';
+            (<any>listObj).onMouseClick(mouseEventArgs);
+            listObj.destroy();
+        });
         it('allowCustomValue with empty datasource', () => {
             listObj = new MultiSelect({ hideSelectedItem: false, dataSource: [], allowCustomValue: true });
             listObj.appendTo(element);

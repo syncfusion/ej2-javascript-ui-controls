@@ -1387,7 +1387,7 @@ export class QuickPopups {
         const popup: Popup = popupName === 'quickPopup' ? this.quickPopup : this.morePopup;
         const buttonCollections: HTMLElement[] = [].slice.call(popup.element.querySelectorAll('.e-control.e-btn'));
         for (const button of buttonCollections) {
-            const instance: Button = (button as EJ2Instance).ej2_instances[0] as Button;
+            const instance: Button = (button as EJ2Instance).ej2_instances ? (button as EJ2Instance).ej2_instances[0] as Button : null;
             if (instance) {
                 instance.destroy();
             }

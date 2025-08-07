@@ -2777,6 +2777,9 @@ export class Editor {
             positionStart = this.selection.isForward ? this.selection.start.clone() : this.selection.end.clone();
             positionEnd = this.selection.isForward ? this.selection.end.clone() : this.selection.start.clone();
             if (this.selection.isParagraphMarkSelected()) {
+                if (positionStart.isAtSamePosition(positionEnd)) {
+                    positionStart.offset -= 1;
+                }
                 positionEnd.offset -= 1;
             }
             if (positionStart.paragraph !== positionEnd.paragraph) {
@@ -2903,6 +2906,9 @@ export class Editor {
             let positionStart: TextPosition = this.selection.isForward ? this.selection.start.clone() : this.selection.end.clone();
             let positionEnd: TextPosition = this.selection.isForward ? this.selection.end.clone() : this.selection.start.clone();
             if (this.selection.isParagraphMarkSelected()) {
+                if (positionStart.isAtSamePosition(positionEnd)) {
+                    positionStart.offset -= 1;
+                }
                 positionEnd.offset -= 1;
             }
             if (positionStart.paragraph !== positionEnd.paragraph) {
@@ -15866,6 +15872,9 @@ export class Editor {
                         (newParagraph.paragraphFormat.baseStyle as WParagraphStyle).copyStyle(style as WParagraphStyle);
                     }
                 }
+                if (!this.owner.enableLayout) {
+                    this.documentHelper.layout.addLineWidget(newParagraph);
+                }
                 this.documentHelper.layout.layoutBodyWidgetCollection(newParagraph.index, newParagraph.bodyWidget, newParagraph, false);
                 if (block.containerWidget instanceof Widget) {
                     block.containerWidget.childWidgets.push(newParagraph);
@@ -22128,6 +22137,7 @@ export class Editor {
                     if (!isNullOrUndefined(this.editorHistory.currentBaseHistoryInfo)) {
                         this.editorHistory.currentBaseHistoryInfo.insertedText = CONTROL_CHARACTERS.Marker_End;
                     }
+                    markerData.contentControlProperties = JSON.stringify(this.getContentControlPropObject(element.contentControlProperties));
                 }
             }
         }

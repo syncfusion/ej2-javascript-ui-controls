@@ -853,11 +853,13 @@ export class PdfRenderer {
                             const annotationCount: { [key: string]: object } = freeTextDetails[parseInt(pageNumber, 10)];
                             const pageAnnotations: any = annotationCount;
                             const page: PdfPage = this.loadedDocument.getPage(parseInt(pageNumber, 10));
+                            const defaultFonts: string[] = ['Helvetica', 'Times New Roman', 'Courier', 'Symbol', 'ZapfDingbats'];
                             const freeText: any = pageAnnotations.find((obj: any) => obj['annotName'].toString() === details['annotationId'].toString());
                             if (!isNullOrUndefined(freeText)) {
                                 details = freeText;
                                 if (!isNullOrUndefined(this.FallbackFontCollection) &&
-                                    Object.keys(this.FallbackFontCollection).length !== 0) {
+                                    Object.keys(this.FallbackFontCollection).length !== 0 &&
+                                    defaultFonts.indexOf(details.fontFamily) === -1) {
                                     annotationRenderer.addFreeText(details, page, this.FallbackFontCollection);
                                 }
                                 else {

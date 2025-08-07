@@ -758,4 +758,266 @@ describe('FileManager control large icon view', () => {
             }, 500);
         });
     });
+    describe('FileManager dynamic folder operations in large icons view', () => {
+        let mouseEventArgs: any, tapEvent: any;
+        let feObj: any;
+        let ele: HTMLElement;
+        let originalTimeout: any;
+
+        beforeEach(() => {
+            jasmine.Ajax.install();
+            ele = createElement('div', { id: 'file' });
+            document.body.appendChild(ele);
+            feObj = undefined;
+
+            mouseEventArgs = {
+                preventDefault: (): void => { },
+                stopImmediatePropagation: (): void => { },
+                target: null,
+                type: null,
+                shiftKey: false,
+                ctrlKey: false,
+                originalEvent: { target: null }
+            };
+
+            tapEvent = {
+                originalEvent: mouseEventArgs,
+                tapCount: 1
+            };
+
+            originalTimeout = jasmine.DEFAULT_TIMEOUT_INTERVAL;
+            jasmine.DEFAULT_TIMEOUT_INTERVAL = 50000;
+        });
+
+        afterEach(() => {
+            jasmine.Ajax.uninstall();
+            if (feObj) feObj.destroy();
+            ele.remove();
+            jasmine.DEFAULT_TIMEOUT_INTERVAL = originalTimeout;
+        });
+
+        it('dynamically create and open folder in large icons view without error', (done) => {
+            let errorOccurred = false;
+            let fileOpenSuccess = false;
+
+            feObj = new FileManager({
+                fileSystemData: flatData,
+                showThumbnail: false,
+                view: 'LargeIcons',
+                failure: (args) => {
+                    errorOccurred = true;
+                    console.log("Error occurred:", args.error);
+                },
+                fileOpen: () => {
+                    fileOpenSuccess = true;
+                }
+            });
+
+            feObj.appendTo('#file');
+
+            setTimeout(function () {
+                const newFolder = {
+                    dateCreated: new Date().toISOString(),
+                    dateModified: new Date().toISOString(),
+                    filterPath: "\\",
+                    hasChild: false,
+                    id: '10',
+                    isFile: false,
+                    name: "DynamicFolder",
+                    parentId: '0',
+                    size: 0,
+                    type: "",
+                };
+
+                feObj.fileSystemData = [...flatData, newFolder];
+                feObj.refresh();
+
+                setTimeout(function () {
+                    const listItems = document.getElementById('file_largeicons').querySelectorAll('li');
+                    const newFolderElement = Array.from(listItems).find(li =>
+                        li.querySelector('.e-list-text') &&
+                        li.querySelector('.e-list-text').textContent === 'DynamicFolder'
+                    );
+
+                    expect(newFolderElement).toBeDefined();
+
+                    mouseEventArgs.target = newFolderElement;
+                    tapEvent.tapCount = 2;
+                    (<any>feObj.largeiconsviewModule).clickObj.tap(tapEvent);
+
+                    setTimeout(function () {
+                        expect(errorOccurred).toBe(false);
+                        expect(fileOpenSuccess).toBe(true);
+
+                        const addressItems = document.querySelectorAll('.e-address-list-item');
+                        const lastAddressItem = addressItems[addressItems.length - 1];
+                        expect(lastAddressItem.textContent).toContain('DynamicFolder');
+
+                        done();
+                    }, 500);
+                }, 500);
+            }, 500);
+        });
+
+        it('dynamically add file to a folder and view in large icons mode', (done) => {
+            let errorOccurred = false;
+
+            feObj = new FileManager({
+                fileSystemData: flatData,
+                showThumbnail: false,
+                view: 'LargeIcons',
+                failure: (args) => {
+                    errorOccurred = true;
+                    console.log("Error occurred:", args.error);
+                }
+            });
+
+            feObj.appendTo('#file');
+
+            setTimeout(function () {
+                // Navigate to an existing folder first
+                let folderElement = Array.from(document.getElementById('file_largeicons').querySelectorAll('li')).find(li =>
+                    li.querySelector('.e-list-text') &&
+                    li.querySelector('.e-list-text').textContent === 'Documents'
+                );
+
+                mouseEventArgs.target = folderElement;
+                tapEvent.tapCount = 2;
+                (<any>feObj.largeiconsviewModule).clickObj.tap(tapEvent);
+
+                setTimeout(function () {
+                    // Create a new file in the current folder
+                    const newFile = {
+                        dateCreated: new Date().toISOString(),
+                        dateModified: new Date().toISOString(),
+                        filterPath: "\\Documents\\",
+                        hasChild: false,
+                        id: '11',
+                        isFile: true,
+                        name: "DynamicFile.txt",
+                        parentId: '1', // Documents folder id
+                        size: 1024,
+                        type: ".txt",
+                    };
+
+                    // Add the new file to the data source
+                    feObj.fileSystemData = [...flatData, newFile];
+                    feObj.refresh();
+
+                    setTimeout(function () {
+                        // Check if the file is visible
+                        const fileElement = Array.from(document.getElementById('file_largeicons').querySelectorAll('li')).find(li =>
+                            li.querySelector('.e-list-text') &&
+                            li.querySelector('.e-list-text').textContent === 'DynamicFile.txt'
+                        );
+                        expect(errorOccurred).toBe(false);
+
+                        // Try to double-click on the file
+                        mouseEventArgs.target = fileElement;
+                        tapEvent.tapCount = 2;
+                        (<any>feObj.largeiconsviewModule).clickObj.tap(tapEvent);
+
+                        setTimeout(function () {
+                            // Should not cause any errors
+                            expect(errorOccurred).toBe(false);
+                            done();
+                        }, 500);
+                    }, 500);
+                }, 500);
+            }, 500);
+        });
+
+        it('dynamically create nested folder structure and navigate through it', (done) => {
+            let errorOccurred = false;
+
+            feObj = new FileManager({
+                fileSystemData: flatData,
+                showThumbnail: false,
+                view: 'LargeIcons',
+                failure: (args) => {
+                    errorOccurred = true;
+                    console.log("Error occurred:", args.error);
+                }
+            });
+
+            feObj.appendTo('#file');
+
+            setTimeout(function () {
+                // Create parent folder
+                const parentFolder = {
+                    dateCreated: new Date().toISOString(),
+                    dateModified: new Date().toISOString(),
+                    filterPath: "\\",
+                    hasChild: true,
+                    id: '12',
+                    isFile: false,
+                    name: "ParentFolder",
+                    parentId: '0',
+                    size: 0,
+                    type: "",
+                };
+
+                // Create child folder
+                const childFolder = {
+                    dateCreated: new Date().toISOString(),
+                    dateModified: new Date().toISOString(),
+                    filterPath: "\\ParentFolder\\",
+                    hasChild: false,
+                    id: '13',
+                    isFile: false,
+                    name: "ChildFolder",
+                    parentId: '12',
+                    size: 0,
+                    type: "",
+                };
+
+                // Add both folders to the data source
+                feObj.fileSystemData = [...flatData, parentFolder, childFolder];
+                feObj.refresh();
+
+                setTimeout(function () {
+                    // Open parent folder
+                    const parentElement = Array.from(document.getElementById('file_largeicons').querySelectorAll('li')).find(li =>
+                        li.querySelector('.e-list-text') &&
+                        li.querySelector('.e-list-text').textContent === 'ParentFolder'
+                    );
+
+                    mouseEventArgs.target = parentElement;
+                    tapEvent.tapCount = 2;
+                    (<any>feObj.largeiconsviewModule).clickObj.tap(tapEvent);
+
+                    setTimeout(function () {
+                        expect(errorOccurred).toBe(false);
+
+                        // Check if child folder is visible
+                        const childElement = Array.from(document.getElementById('file_largeicons').querySelectorAll('li')).find(li =>
+                            li.querySelector('.e-list-text') &&
+                            li.querySelector('.e-list-text').textContent === 'ChildFolder'
+                        );
+
+                        expect(childElement).toBeDefined();
+
+                        // Open child folder
+                        mouseEventArgs.target = childElement;
+                        tapEvent.tapCount = 2;
+                        (<any>feObj.largeiconsviewModule).clickObj.tap(tapEvent);
+
+                        setTimeout(function () {
+                            // Verify no errors occurred during the navigation
+                            expect(errorOccurred).toBe(false);
+
+                            // Check breadcrumb path
+                            const addressItems = document.querySelectorAll('.e-address-list-item');
+                            const breadcrumbPath = Array.from(addressItems).map(item => item.textContent).join('/');
+
+                            expect(breadcrumbPath).toContain('ParentFolder');
+                            expect(breadcrumbPath).toContain('ChildFolder');
+
+                            done();
+                        }, 500);
+                    }, 500);
+                }, 500);
+            }, 500);
+        });
+    });
 });

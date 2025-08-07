@@ -2191,17 +2191,25 @@ export class Signature {
                             if (pageAnnotationObject.annotations[parseInt(z.toString(), 10)].shapeAnnotationType === 'SignatureText' && !this.checkDefaultFont(pageAnnotationObject.annotations[parseInt(z.toString(), 10)].fontFamily)) {
                                 const signTypeCanvas: HTMLCanvasElement = createElement('canvas') as HTMLCanvasElement;
                                 const bounds: any = JSON.parse(pageAnnotationObject.annotations[parseInt(z.toString(), 10)].bounds);
-                                signTypeCanvas.width = (bounds && bounds.width) || 150;
-                                signTypeCanvas.height = (bounds && bounds.height) ||
-                                 pageAnnotationObject.annotations[parseInt(z.toString(), 10)].fontSize * 2;
+                                const scaleFactor: number = 3;
+                                const fontSize: number = pageAnnotationObject.annotations[parseInt(z.toString(), 10)].fontSize;
+                                const width: number = (bounds && bounds.width) || 150;
+                                const height: number = (bounds && bounds.height) || (fontSize * 2.5);
+                                signTypeCanvas.width = width * scaleFactor;
+                                signTypeCanvas.height = height * scaleFactor;
                                 const canvasContext: CanvasRenderingContext2D = signTypeCanvas.getContext('2d');
-                                const x: number = signTypeCanvas.width / 2;
-                                const y: number = (signTypeCanvas.height / 2) +
-                                 pageAnnotationObject.annotations[parseInt(z.toString(), 10)].fontSize / 2 - 10;
+                                canvasContext.scale(scaleFactor, scaleFactor);
+                                (canvasContext as any).textRendering = 'optimizeLegibility';
+                                canvasContext.imageSmoothingEnabled = true;
+                                canvasContext.imageSmoothingQuality = 'high';
                                 canvasContext.textAlign = 'center';
-                                canvasContext.font = pageAnnotationObject.annotations[parseInt(z.toString(), 10)].fontSize + 'px ' + pageAnnotationObject.annotations[parseInt(z.toString(), 10)].fontFamily;
+                                canvasContext.font = fontSize + 'px ' + pageAnnotationObject.annotations[parseInt(z.toString(), 10)].fontFamily;
+                                const x: number = width / 2;
+                                const y: number = (height / 2) + (fontSize * 0.4);
                                 canvasContext.fillText(pageAnnotationObject.annotations[parseInt(z.toString(), 10)].data, x, y);
-                                pageAnnotationObject.annotations[parseInt(z.toString(), 10)].data = JSON.stringify(signTypeCanvas.toDataURL('image/png'));
+                                pageAnnotationObject.annotations[parseInt(z.toString(), 10)].data = JSON.stringify(
+                                    signTypeCanvas.toDataURL('image/png', 1.0)
+                                );
                                 pageAnnotationObject.annotations[parseInt(z.toString(), 10)].shapeAnnotationType = 'SignatureImage';
                             } else {
                                 pageAnnotationObject.annotations[parseInt(z.toString(), 10)].data =
@@ -2394,6 +2402,17 @@ export class Signature {
                             id: 'sign' + this.pdfViewerBase.signatureCount, bounds: { x: currentLeft, y: currentTop, width: currentWidth, height: currentHeight }, pageIndex: pageIndex, data: data, shapeAnnotationType: 'HandWrittenSignature', opacity: currentAnnotation.Opacity, strokeColor: currentAnnotation.StrokeColor, thickness: currentAnnotation.Thickness, signatureName: currentAnnotation.SignatureName ? currentAnnotation.SignatureName : 'ink'
                         };
                     }
+                }
+                if (annot.shapeAnnotationType === 'SignatureText') {
+                    const textWidth: number = this.pdfViewerBase.getTextWidth(annot.data, annot.fontSize, annot.fontFamily);
+                    let widthRatio: number = 1;
+                    if (textWidth > annot.bounds.width) {
+                        widthRatio = annot.bounds.width / textWidth;
+                    }
+                    annot.fontSize = this.pdfViewerBase.getFontSize(Math.floor((annot.fontSize * widthRatio)));
+                    const defaultFontSize: number = 32;
+                    annot.bounds.height = annot.fontSize < defaultFontSize ? annot.fontSize * 2 : annot.bounds.height;
+                    annot.thickness = 0;
                 }
                 this.pdfViewer.add(annot as PdfAnnotationBase);
                 if (this.isAddAnnotationProgramatically) {

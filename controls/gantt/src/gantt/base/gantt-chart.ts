@@ -721,7 +721,6 @@ export class GanttChart {
         this.parent.notify('chartMouseUp', e);
         if (this.parent.showActiveElement) {
             this.parent.showIndicator = true;
-            this.parent['hideLoadingIndicator']();
             if (this.focusedElement && !(e.target as HTMLElement).classList.contains('e-split-bar')) {
                 this.focusedElement.tabIndex = this.focusedElement.tabIndex === 0 ? -1 : this.focusedElement.tabIndex;
                 removeClass([this.focusedElement], 'e-active-container');

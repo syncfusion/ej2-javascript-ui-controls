@@ -2156,7 +2156,7 @@ describe('Link Module', () => {
                 (document.querySelector('.e-rte-linkText') as HTMLInputElement).value = 'Editor';
                 let target: any = (<any>rteObj).linkModule.dialogObj.primaryButtonEle;
                 (<any>rteObj).linkModule.dialogObj.primaryButtonEle.click({ target: target, preventDefault: function () { } });
-                let result: string = document.querySelector('a').childNodes[0].nodeName;
+                let result: string = (<any>rteObj).inputElement.querySelector('a').childNodes[0].nodeName;
                 expect(result === 'STRONG').toBe(true);
                 done();
             }, 200);

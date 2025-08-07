@@ -221,7 +221,7 @@ describe('Gantt spec for tooltip', () => {
         it('Baseline Tooltip', () => {
             let baseline: HTMLElement = ganttObj.element.querySelector('#' + ganttObj.element.id + 'GanttTaskTableBody > tr:nth-child(1) > td > div.e-baseline-bar') as HTMLElement;
             triggerMouseEvent(baseline, 'mouseover', 50);
-            expect((ganttObj.tooltipModule.toolTipObj as any).content()).toBe('<table class = "e-gantt-tooltiptable"><tbody><tr class = "e-gantt-tooltip-rowcell"><td colspan="3">Start-Duration</td></tr><tr><td class = "e-gantt-tooltip-label">Baseline Start Date</td><td>:</td><td class = "e-gantt-tooltip-value">10/23/2017</td></tr><tr><td class = "e-gantt-tooltip-label">Baseline End Date</td><td>:</td><td class = "e-gantt-tooltip-value">10/26/2017</td></tr></tbody></table>');
+            expect((ganttObj.tooltipModule.toolTipObj as any).content()).toBe('<table class = "e-gantt-tooltiptable"><tbody><tr class = "e-gantt-tooltip-rowcell"><td colspan="3">Start-Duration</td></tr><tr><td class = "e-gantt-tooltip-label">Baseline Start Date</td><td class=e-template-padding>:</td><td class = "e-gantt-tooltip-value"> 10/23/2017</td></tr><tr><td class = "e-gantt-tooltip-label">Baseline End Date</td><td class=e-template-padding>:</td><td class = "e-gantt-tooltip-value">10/26/2017</td></tr></tbody></table>');
         });
         it('Indicator Tooltip', () => {
             let indicator: HTMLElement = ganttObj.element.querySelector('#' + ganttObj.element.id + 'GanttTaskTableBody > tr:nth-child(1) > td > label:nth-child(3)') as HTMLElement;

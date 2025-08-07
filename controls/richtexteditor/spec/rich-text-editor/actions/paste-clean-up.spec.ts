@@ -5257,4 +5257,52 @@ StarSymbol"><span style="mso-list:Ignore"><span style="font:7.0pt &quot;Times Ne
         });
     });
 
+     describe('971761 - Cursor jumps to incorrect position after pasting an image from Clipboard into Rich Text Editor', () => {
+        let rteObj: RichTextEditor;
+        const clipboardHtml: string = `<img id="rteImageID" style="width: 300px; height: 300px; transform: rotate(0deg);" alt="Editor Features Overview" src="https://cdn.syncfusion.com/ej2/richtexteditor-resources/RTE-Portrait.png" class="e-rte-image e-imginline">`;
+        beforeAll(() => {
+            rteObj = renderRTE({
+                value: `<p>The</p><p class='focusNode'>Rich Text Editor</p>`
+            });
+        });
+        afterAll(() => {
+            destroy(rteObj);
+        });
+        it('Rich Text Editor works properly when an image is pasted from the clipboard and the backspace key is pressed, ensuring the cursor remains in the correct position', (done: DoneFn) => {
+            const focusNode: Element = document.getElementsByClassName('focusNode')[0];
+            const selection = new NodeSelection();
+            if (focusNode && focusNode.firstChild) {
+                selection.setCursorPoint(document, focusNode.firstChild as Element, (focusNode.firstChild as Element).textContent.length);
+            }
+            const dataTransfer = new DataTransfer();
+            dataTransfer.setData('text/html', clipboardHtml);
+            const pasteEvent: ClipboardEvent = new ClipboardEvent('paste', {
+                clipboardData: dataTransfer
+            } as ClipboardEventInit);
+            rteObj.onPaste(pasteEvent);
+            const pastedElm: string = (rteObj as any).inputElement.innerHTML;
+            let backSpaceEvent: any = {
+                bubbles: true,
+                key: "Backspace",
+                cancelable: true,
+                view: window,
+                keyCode: 8,
+                which: 8,
+                code: "Backspace",
+                location: 0,
+                altKey: false,
+                ctrlKey: false,
+                metaKey: false,
+                shiftKey: false,
+                repeat: false,
+            };
+            rteObj.inputElement.dispatchEvent(new KeyboardEvent('keydown', backSpaceEvent));
+            rteObj.inputElement.dispatchEvent(new KeyboardEvent('keyup', backSpaceEvent));
+            const expectedElem: string = rteObj.inputElement.innerHTML;
+            const expected: boolean = pastedElm.replace(/\s/g, '') === expectedElem.replace(/\s/g, '');
+            expect(expected).toBe(true);
+            done();
+
+        });
+    });
 });// Add the spec above this.

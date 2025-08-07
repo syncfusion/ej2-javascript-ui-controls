@@ -763,6 +763,19 @@ describe('Spec for empty method ', () => {
             listObj.appendTo(element);
             listObj.remainingItems(datasource1, { groupBy: 'category' });
             listObj.emptyDataRequest({ groupBy: 'category' });
+            listObj.updateFields(null, null, 'catagory', { class: 'e-disabled', title: 'Phython' }, 'e-check', 'id')
+            listObj.setEnableRtl = []
+            listObj.list = null;
+            listObj.listData = null;
+            listObj.checkValueCase();
+            listObj.isAngular = true;
+            listObj.isRequesting = true;
+            listObj.setCustomListData();
+            listObj.listOption(null, {values : null});
+            listObj.isAngular = true;
+            listObj.isRequesting = true;
+            listObj.preventChange = true;
+            listObj.setListData()
             done();
         });
     });

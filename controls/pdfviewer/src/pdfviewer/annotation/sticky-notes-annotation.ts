@@ -266,7 +266,12 @@ export class StickyNotesAnnotation {
         image.onload = (): void => {
             let commentsDivid: string;
             let annotationName: string;
-            const author: string = (this.pdfViewer.annotationSettings.author !== 'Guest') ? this.pdfViewer.annotationSettings.author : this.pdfViewer.stickyNotesSettings.author;
+            let author: string;
+            if (!isNullOrUndefined(this.pdfViewer.annotationSettings.author)) {
+                author = (this.pdfViewer.annotationSettings.author !== 'Guest') ? this.pdfViewer.annotationSettings.author : this.pdfViewer.stickyNotesSettings.author;
+            } else {
+                author = 'Guest';
+            }
             const subject: string = (this.pdfViewer.annotationSettings.subject !== '' && !isNullOrUndefined(this.pdfViewer.annotationSettings.subject)) ? this.pdfViewer.annotationSettings.subject : this.pdfViewer.stickyNotesSettings.subject ? this.pdfViewer.stickyNotesSettings.subject : 'Sticky Note';
             const annotationSettings: any = this.pdfViewer.annotationModule.updateSettings(this.pdfViewer.stickyNotesSettings);
             let annotOpacity: number;
@@ -666,7 +671,7 @@ export class StickyNotesAnnotation {
             for (let i: number = 0; i < collections.length; i++) {
                 if (isSignature) {
                     if (collections[parseInt(i.toString(), 10)].signatureName === annotation.signatureName &&
-                        collections[parseInt(i.toString(), 10)].pageNumber === annotation.pageNumber) {
+                        collections[parseInt(i.toString(), 10)].pageNumber === annotation.pageIndex) {
                         isAdded = true;
                         break;
                     }
@@ -1106,7 +1111,8 @@ export class StickyNotesAnnotation {
                 }
                 subject = currentAnnotation.subject;
             }
-            const modifiedAuthor: string = (args.value !== args.prevValue) ? this.updatedAuthor(type, subType, subject) : span.textContent;
+            const modifiedAuthor: string = (args.value !== args.prevValue) ?
+                this.updatedAuthor(type, subType, currentAnnotation.author, subject) : span.textContent;
             span.textContent = modifiedAuthor;
             if ((args.value !== null && args.value !== '' && args.value !== ' ') || (args.value === '' && args.prevValue !== '')) {
                 if (this.pdfViewer.selectedItems.annotations[0] && this.pdfViewer.selectedItems.annotations[0].shapeAnnotationType === 'FreeText') {
@@ -1147,11 +1153,12 @@ export class StickyNotesAnnotation {
     /**
      * @param {string} type - It describes about type of annotation
      * @param {string} annotType - It describes about subType of annotation
+     * @param {string} updatedAuthor - It gets the current annotation author
      * @param {string} subject - It describes about the subject
      * @private
      * @returns {string} - string
      */
-    public updatedAuthor(type: string, annotType: string, subject?: string): string
+    public updatedAuthor(type: string, annotType: string, updatedAuthor: string, subject?: string): string
     {
         let author: string;
         if (type === 'textMarkup') {
@@ -1235,6 +1242,9 @@ export class StickyNotesAnnotation {
         }
         if (!author) {
             author = this.pdfViewer.annotationSettings.author;
+        }
+        if ((author === '' || author === 'Guest') && (updatedAuthor !== 'Guest' && updatedAuthor !== '')) {
+            author = updatedAuthor;
         }
         return author;
     }
@@ -1476,7 +1486,6 @@ export class StickyNotesAnnotation {
                 this.commentsContainer.setAttribute('name', 'freetext');
                 this.createTitleContainer(commentDiv, 'freeText', pageIndex, data.subject, data.modifiedDate);
             } else if (data.shapeAnnotationType === 'Ink') {
-                data.note = data.dynamicText;
                 this.commentsContainer.setAttribute('name', 'ink');
                 this.createTitleContainer(commentDiv, 'ink', pageIndex, data.subject, data.modifiedDate);
             } else {
@@ -1575,7 +1584,7 @@ export class StickyNotesAnnotation {
             }
             subject = currentAnnotation.subject;
         }
-        const author: string = (args.value !== args.prevValue) ? this.updatedAuthor(type, subType, subject) :
+        const author: string = (args.value !== args.prevValue) ? this.updatedAuthor(type, subType, currentAnnotation.author, subject) :
             titleElement.childNodes[0].textContent;
         titleElement.childNodes[0].textContent = author;
         this.modifyCommentsProperty(args.value, commentElement, parentElement, args.prevValue, author);

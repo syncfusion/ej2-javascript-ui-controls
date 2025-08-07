@@ -4,7 +4,7 @@ import { parentsUntil } from '../base/utils';
 import * as cls from '../base/css-constants';
 import { extend, isNullOrUndefined, getValue, EventHandler, closest, SanitizeHtmlHelper, initializeCSPTemplate, append } from '@syncfusion/ej2-base';
 import { ITaskData, IGanttData, BeforeTooltipRenderEventArgs, PredecessorTooltip, IPredecessor } from '../base/interface';
-import { EventMarkerModel } from '../models/models';
+import { EventMarkerModel, TaskFieldsModel } from '../models/models';
 import { Deferred } from '@syncfusion/ej2-data';
 
 /**
@@ -356,18 +356,26 @@ export class Tooltip {
         {
             let baselineStartDateValue: string = this.parent.getFormatedDate(data.baselineStartDate, this.parent.getDateFormat());
             let baselineEndDateValue: string = this.parent.getFormatedDate(data.baselineEndDate, this.parent.getDateFormat());
+            let durationValue: string = this.parent.getDurationString((data.baselineDuration), data.durationUnit);
             if (this.parent.enableHtmlSanitizer) {
                 baselineStartDateValue = SanitizeHtmlHelper.sanitize(baselineStartDateValue);
                 baselineEndDateValue = SanitizeHtmlHelper.sanitize(baselineEndDateValue);
+                durationValue =  SanitizeHtmlHelper.sanitize(durationValue);
             }
             const contentTemp: Function = function (): string {
+                const tasks: TaskFieldsModel = this.parent.taskFields;
+                const baselineStartDates: string = data.baselineStartDate && !isNullOrUndefined(tasks.baselineStartDate) ? '<tr><td class = "e-gantt-tooltip-label">' +
+                    this.parent.localeObj.getConstant('baselineStartDate') +
+                    '</td><td class=' + cls.templatePadding + '>:</td>' + '<td class = "e-gantt-tooltip-value"> ' + baselineStartDateValue + '</td></tr>' : '';
+                const baselineEndDateValues: string = data.baselineEndDate && !isNullOrUndefined(tasks.baselineEndDate) ? '<tr><td class = "e-gantt-tooltip-label">' +
+                        this.parent.localeObj.getConstant('baselineEndDate') +
+                        '</td><td class=' + cls.templatePadding + '>:</td>' + '<td class = "e-gantt-tooltip-value">' + baselineEndDateValue + '</td></tr>' : '';
+                const duration: string = !isNullOrUndefined(data.baselineDuration) && !isNullOrUndefined(tasks.baselineDuration) ? '<tr><td class = "e-gantt-tooltip-label">' +
+                        this.parent.localeObj.getConstant('baselineDuration') + '</td><td class=' + cls.templatePadding + '>:</td>' +
+                        '<td class = "e-gantt-tooltip-value"> ' + durationValue +
+                        '</td></tr>' : '';
                 return '<table class = "e-gantt-tooltiptable"><tbody>' +
-                    taskName + '<tr><td class = "e-gantt-tooltip-label">' +
-                    this.parent.localeObj.getConstant('baselineStartDate') + '</td><td>:</td>' + '<td class = "e-gantt-tooltip-value">' +
-                    baselineStartDateValue + '</td></tr><tr>' +
-                    '<td class = "e-gantt-tooltip-label">' + this.parent.localeObj.getConstant('baselineEndDate') +
-                    '</td><td>:</td><td class = "e-gantt-tooltip-value">' +
-                    baselineEndDateValue + '</td></tr></tbody></table>';
+                    taskName + baselineStartDates + baselineEndDateValues + duration + '</tbody></table>';
             };
             content = initializeCSPTemplate(contentTemp, this);
             break;

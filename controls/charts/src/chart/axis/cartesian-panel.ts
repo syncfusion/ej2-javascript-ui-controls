@@ -597,7 +597,8 @@ export class CartesianAxisLayoutPanel {
             let topOffset: number = (axis.isAxisOpposedPosition && axis.orientation === 'Horizontal' ? -16 : 0)
                 + axis.rect.y + Math.max(0.5, axis.lineStyle.width / 2);
             let leftOffset: number = (axis.isAxisOpposedPosition && axis.orientation !== 'Horizontal' ? 16 : 0)
-                + axis.rect.x - (axis.orientation === 'Vertical' ? axis.scrollbarSettings.height : 0);
+                + (axis.rect.x - (axis.orientation === 'Horizontal' && axis.scrollbarSettings.enableZoom ? axis.zoomingScrollBar.svgExtraWidth / 2 : 0))
+                - (axis.orientation === 'Vertical' ? axis.scrollbarSettings.height : 0);
             if (axis.orientation !== 'Horizontal' && (axis.scrollbarSettings.position === 'Left' || axis.scrollbarSettings.position === 'Right')) {
                 leftOffset = calculateScrollbarOffset(axis.zoomingScrollBar, false);
             }

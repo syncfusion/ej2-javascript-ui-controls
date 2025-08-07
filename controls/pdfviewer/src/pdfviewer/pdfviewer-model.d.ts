@@ -8,7 +8,7 @@ import {ComponentModel} from '@syncfusion/ej2-base';
 export interface ToolbarSettingsModel {
 
     /**
-     * Enable or disables the toolbar of PdfViewer.
+     * Enable or disables the tooltip of the toolbars.
      */
     showTooltip?: boolean;
 
@@ -386,7 +386,7 @@ export interface ServerActionSettingsModel {
     download?: string;
 
     /**
-     * specifies the download action of PdfViewer.
+     * specifies the render thumbnail action of PdfViewer.
      */
     renderThumbnail?: string;
 
@@ -406,17 +406,17 @@ export interface ServerActionSettingsModel {
     exportAnnotations?: string;
 
     /**
-     * specifies the imports action of PdfViewer.
+     * specifies the imports form fields action of PdfViewer.
      */
     importFormFields?: string;
 
     /**
-     * specifies the export action of PdfViewer.
+     * specifies the export form fields action of PdfViewer.
      */
     exportFormFields?: string;
 
     /**
-     * specifies the export action of PdfViewer.
+     * specifies the render pdf texts action of PdfViewer.
      */
     renderTexts?: string;
 
@@ -774,7 +774,7 @@ export interface LineSettingsModel {
     lineHeadEndStyle?: LineHeadStyle;
 
     /**
-     * specifies the border dash array  of the annotation.
+     * specifies the border dash array of the annotation.
      */
     borderDashArray?: number;
 
@@ -794,7 +794,7 @@ export interface LineSettingsModel {
     minWidth?: number;
 
     /**
-     * specifies the minHeight of the annotation.
+     * specifies the maxHeight of the annotation.
      */
     maxHeight?: number;
 
@@ -814,7 +814,7 @@ export interface LineSettingsModel {
     customData?: object;
 
     /**
-     * Gets or sets the allowed interactions for the locked highlight annotations.
+     * Gets or sets the allowed interactions for the locked line annotations.
      * IsLock can be configured using line settings.
      *
      * @default ['None']
@@ -879,12 +879,12 @@ export interface ArrowSettingsModel {
     lineHeadStartStyle?: LineHeadStyle;
 
     /**
-     * specifies the line head start style of the annotation.
+     * specifies the line head end style of the annotation.
      */
     lineHeadEndStyle?: LineHeadStyle;
 
     /**
-     * specifies the border dash array  of the annotation.
+     * specifies the border dash array of the annotation.
      */
     borderDashArray?: number;
 
@@ -904,7 +904,7 @@ export interface ArrowSettingsModel {
     minWidth?: number;
 
     /**
-     * specifies the minHeight of the annotation.
+     * specifies the maxHeight of the annotation.
      */
     maxHeight?: number;
 
@@ -1009,7 +1009,7 @@ export interface RectangleSettingsModel {
     minWidth?: number;
 
     /**
-     * specifies the minHeight of the annotation.
+     * specifies the maxHeight of the annotation.
      */
     maxHeight?: number;
 
@@ -1114,7 +1114,7 @@ export interface CircleSettingsModel {
     minWidth?: number;
 
     /**
-     * specifies the minHeight of the annotation.
+     * specifies the maxHeight of the annotation.
      */
     maxHeight?: number;
 
@@ -1169,7 +1169,7 @@ export interface ShapeLabelSettingsModel {
     fillColor?: string;
 
     /**
-     * specifies the border color of the label.
+     * specifies the font color of the label.
      */
     fontColor?: string;
 
@@ -1179,7 +1179,7 @@ export interface ShapeLabelSettingsModel {
     fontSize?: number;
 
     /**
-     * specifies the max-width of the label.
+     * specifies the font family of the label.
      */
     fontFamily?: string;
 
@@ -1251,7 +1251,7 @@ export interface PolygonSettingsModel {
     minWidth?: number;
 
     /**
-     * specifies the minHeight of the annotation.
+     * specifies the maxHeight of the annotation.
      */
     maxHeight?: number;
 
@@ -1341,7 +1341,7 @@ export interface StampSettingsModel {
     minWidth?: number;
 
     /**
-     * specifies the minHeight of the annotation.
+     * specifies the maxHeight of the annotation.
      */
     maxHeight?: number;
 
@@ -1456,7 +1456,7 @@ export interface CustomStampSettingsModel {
     minWidth?: number;
 
     /**
-     * specifies the minHeight of the annotation.
+     * specifies the maxHeight of the annotation.
      */
     maxHeight?: number;
 
@@ -1546,12 +1546,12 @@ export interface DistanceSettingsModel {
     lineHeadStartStyle?: LineHeadStyle;
 
     /**
-     * specifies the line head start style of the annotation.
+     * specifies the line head end style of the annotation.
      */
     lineHeadEndStyle?: LineHeadStyle;
 
     /**
-     * specifies the border dash array  of the annotation.
+     * specifies the border dash array of the annotation.
      */
     borderDashArray?: number;
 
@@ -1571,7 +1571,7 @@ export interface DistanceSettingsModel {
     minWidth?: number;
 
     /**
-     * specifies the minHeight of the annotation.
+     * specifies the maxHeight of the annotation.
      */
     maxHeight?: number;
 
@@ -1666,12 +1666,12 @@ export interface PerimeterSettingsModel {
     lineHeadStartStyle?: LineHeadStyle;
 
     /**
-     * specifies the line head start style of the annotation.
+     * specifies the line head end style of the annotation.
      */
     lineHeadEndStyle?: LineHeadStyle;
 
     /**
-     * specifies the border dash array  of the annotation.
+     * specifies the border dash array of the annotation.
      */
     borderDashArray?: number;
 
@@ -1686,7 +1686,7 @@ export interface PerimeterSettingsModel {
     minWidth?: number;
 
     /**
-     * specifies the minHeight of the annotation.
+     * specifies the maxHeight of the annotation.
      */
     maxHeight?: number;
 
@@ -1776,7 +1776,7 @@ export interface AreaSettingsModel {
     minWidth?: number;
 
     /**
-     * specifies the minHeight of the annotation.
+     * specifies the maxHeight of the annotation.
      */
     maxHeight?: number;
 
@@ -1881,7 +1881,7 @@ export interface RadiusSettingsModel {
     minWidth?: number;
 
     /**
-     * specifies the minHeight of the annotation.
+     * specifies the maxHeight of the annotation.
      */
     maxHeight?: number;
 
@@ -1971,7 +1971,7 @@ export interface VolumeSettingsModel {
     minWidth?: number;
 
     /**
-     * specifies the minHeight of the annotation.
+     * specifies the maxHeight of the annotation.
      */
     maxHeight?: number;
 
@@ -2171,7 +2171,7 @@ export interface MeasurementSettingsModel {
     conversionUnit?: CalibrationUnit;
 
     /**
-     * specifies the unit of the annotation.
+     * specifies the unit of the annotation in UI.
      */
     displayUnit?: CalibrationUnit;
 
@@ -2288,7 +2288,7 @@ export interface FreeTextSettingsModel {
     minWidth?: number;
 
     /**
-     * specifies the minHeight of the annotation.
+     * specifies the maxHeight of the annotation.
      */
     maxHeight?: number;
 
@@ -2562,7 +2562,7 @@ export interface AnnotationSettingsModel {
     minWidth?: number;
 
     /**
-     * specifies the minHeight of the annotation.
+     * specifies the maxHeight of the annotation.
      */
     maxHeight?: number;
 
@@ -2754,7 +2754,7 @@ export interface FormFieldModel {
     isChecked?: boolean;
 
     /**
-     * Specifies whether the radio button is in checked state or not.
+     * Specifies whether the radio button is in selected state or not.
      */
     isSelected?: boolean;
 
@@ -3246,7 +3246,7 @@ export interface RadioButtonFieldSettingsModel {
     value?: string;
 
     /**
-     * Specifies whether the radio button is in checked state or not.
+     * Specifies whether the radio button is in selected state or not.
      */
     isSelected?: boolean;
 
@@ -3956,7 +3956,7 @@ export interface PdfViewerModel extends ComponentModel{
 
     /**
      * Opens the annotation toolbar when the PDF document is loaded in the PDF Viewer control initially.
-     *
+     * @private
      * @deprecated This property renamed into "isAnnotationToolbarVisible"
      * @default false
      */
@@ -3973,8 +3973,8 @@ export interface PdfViewerModel extends ComponentModel{
     isAnnotationToolbarVisible?: boolean;
 
     /**
-     * Opens the annotation toolbar when the PDF document is loaded in the PDF Viewer control initially
-     * and get the annotation Toolbar Visible status.
+     * Opens the form designer toolbar when the PDF document is loaded in the PDF Viewer control initially
+     * and get the form designer Toolbar Visible status.
      *
      * {% codeBlock src='pdfviewer/isFormDesignerToolbarVisible/index.md' %}{% endcodeBlock %}
      *
@@ -4036,7 +4036,7 @@ export interface PdfViewerModel extends ComponentModel{
     enableThumbnail?: boolean;
 
     /**
-     * Enable or disable the page organizer in the PDF Viewer.
+     * add or remove the page organizer in the PDF Viewer.
      *
      * {% codeBlock src='pdfviewer/enablePageOrganizer/index.md' %}{% endcodeBlock %}
      *
@@ -4403,7 +4403,7 @@ export interface PdfViewerModel extends ComponentModel{
     enableStickyNotesAnnotation?: boolean;
 
     /**
-     * Opens the annotation toolbar when the PDF document is loaded in the PDF Viewer control initially.
+     * Enable or disable the annotation toolbar and the PDF document is loaded with annotations in the PDF Viewer control initially.
      *
      * {% codeBlock src='pdfviewer/enableAnnotationToolbar/index.md' %}{% endcodeBlock %}
      *
@@ -4412,7 +4412,7 @@ export interface PdfViewerModel extends ComponentModel{
     enableAnnotationToolbar?: boolean;
 
     /**
-     * Opens the form designer toolbar when the PDF document is loaded in the PDF Viewer control initially.
+     * Enable or disable the form designer toolbar and the PDF document is loaded with from fields in the PDF Viewer control initially.
      *
      * {% codeBlock src='pdfviewer/enableFormDesignerToolbar/index.md' %}{% endcodeBlock %}
      *
@@ -5349,7 +5349,7 @@ export interface PdfViewerModel extends ComponentModel{
 
     /**
      * Triggers when the button is clicked.
-     *
+     * @private
      * @deprecated This property renamed into "formFieldClick"
      * @event buttonFieldClick
      * @blazorProperty 'ButtonFieldClick'

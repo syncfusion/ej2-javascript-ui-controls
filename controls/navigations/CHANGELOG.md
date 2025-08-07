@@ -4,6 +4,33 @@
 
 ## 30.1.42 (2025-07-29)
 
+### Stepper
+
+#### Bug Fixes
+
+- `#FB68847` - An issue where null value is not assignable to isValid property in the stepper component has been resolved..
+
+### Breadcrumb
+
+#### Bug Fixes
+
+- `#I741569` - Fixed an issue where UI did not reflect updates to the items list when using the maxItems property in the Breadcrumb component.
+
+### Tab
+
+#### Bug Fixes
+
+- `#I733289` - Resolved a console error that occurred when switching between large header tab items in popup mode.
+- `#I746796` - An issue where the toolbar popup does not close when clicked outside the popup has been fixed.
+
+### ContextMenu
+
+#### Bug Fixes
+
+- `#I744139` - Resolved an issue where the Context Menu closed during quick hover actions over submenu items.
+
+## 30.1.39 (2025-07-08)
+
 ### ContextMenu
 
 #### Bug Fixes

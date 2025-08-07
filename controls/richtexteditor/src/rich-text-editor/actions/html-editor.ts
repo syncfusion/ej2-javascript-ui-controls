@@ -619,7 +619,7 @@ export class HtmlEditor {
         const isCursorAtStart: boolean = this.isCursorAtBlockStart(currentRange);
         if (((e as NotifyArgs).args as KeyboardEventArgs).code === 'Backspace' &&
             ((e as NotifyArgs).args as KeyboardEventArgs).keyCode === 8 &&
-            isCursorAtStart && currentRange.startContainer.textContent !== ' ' &&
+            isCursorAtStart && currentRange.startContainer.textContent !== ' ' && currentRange.startContainer.nodeValue !== '\u00A0' &&
             this.parent.getSelection().length === 0 && currentRange.startContainer.textContent.length > 0 &&
             isPreviousNotContentEditable && isSelectedPositionNotStart) {
             if ((!this.parent.formatter.editorManager.domNode.isBlockNode(checkNode as Element) &&
@@ -668,10 +668,12 @@ export class HtmlEditor {
             if (!isNOU(findBlockElement[0]) && currentRange.collapsed && currentRange.startOffset === 0 && currentRange.endOffset === 0 && (findBlockElement[0] as HTMLElement).style.marginLeft !== '') {
                 (findBlockElement[0] as HTMLElement).style.marginLeft = (parseInt((findBlockElement[0] as HTMLElement).style.marginLeft, 10) <= 20) ? '' : (parseInt((findBlockElement[0] as HTMLElement).style.marginLeft, 10) - 20 + 'px');
             }
+            const findBlockElementSibiling: HTMLElement = findBlockElement[0].previousSibling ?
+                findBlockElement[0].previousSibling as HTMLElement : this.findPreviousElementSibling(findBlockElement[0] as HTMLElement);
             if (isNOU(this.oldRangeElement) && isNOU(findBlockElement[0].previousSibling)) {
                 return;
-            } else if (findBlockElement[0].previousSibling) {
-                const prevSibling: HTMLElement = findBlockElement[0].previousSibling as HTMLElement;
+            } else if (findBlockElementSibiling) {
+                const prevSibling: HTMLElement = findBlockElementSibiling;
                 const currentElement: HTMLElement = findBlockElement[0] as HTMLElement;
                 if (prevSibling.textContent.trim()) {
                     this.removeLastBr(prevSibling);
@@ -775,6 +777,21 @@ export class HtmlEditor {
                 }
             }
         }
+    }
+
+    private findPreviousElementSibling(element: HTMLElement): HTMLElement {
+        let current: HTMLElement = element;
+        while (current) {
+            const prevSibling: HTMLElement = current.previousElementSibling as HTMLElement;
+            if (prevSibling) {
+                return prevSibling;
+            }
+            current = current.parentElement;
+            if (current && current === this.parent.inputElement) {
+                return null;
+            }
+        }
+        return null;
     }
 
     //Finds the last significant node within the given element.

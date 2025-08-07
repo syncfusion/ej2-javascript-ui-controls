@@ -4146,6 +4146,14 @@ export class Selection {
             paraElement = line.paragraph;
         }
         let paraLength: number = this.getParagraphLength(paraElement);
+        if (paraElement) {
+            let previous: ParagraphWidget = paraElement.previousSplitWidget as ParagraphWidget;
+            while (previous instanceof ParagraphWidget) {
+                paraElement = previous;
+                paraLength += this.documentHelper.selection.getParagraphLength(paraElement);
+                previous = paraElement.previousSplitWidget as ParagraphWidget;
+            }
+        }
         let endIndices: any = this.getHierarchicalIndexByPosition(end).split(';');
         let endIndex: number = parseInt(endIndices[endIndices.length - 1]);
         if (endIndex > paraLength) {

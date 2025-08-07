@@ -73,7 +73,7 @@ export class ClearFormat {
             let exactNodes: Node[] = nodeSelection.getNodeCollection(range);
             const cloneSelectNodes: Node[] = exactNodes.slice();
             this.clearInlines(
-                nodeSelection.getSelectionNodes(cloneSelectNodes),
+                nodeSelection.getSelectionNodesBr(cloneSelectNodes),
                 cloneSelectNodes,
                 nodeSelection.getRange(docElement),
                 nodeCutter,

@@ -350,7 +350,7 @@ export class BookmarkView {
     }
 
     /**
-     * Get Bookmarks of the PDF document being loaded in the ejPdfViewer control
+     * Get the Bookmarks of a PDF document being loaded in the ejPdfViewer control.
      *
      * @returns {any} - any
      */

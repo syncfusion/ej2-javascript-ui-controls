@@ -2250,6 +2250,13 @@ export abstract class MenuBase extends Component<HTMLUListElement> implements IN
     }
 
     private toggleAnimation(ul: HTMLElement, isMenuOpen: boolean = true): void {
+        const menuWrapper: Element = this.getWrapper();
+        if (menuWrapper) {
+            const activeMenuElements: NodeListOf<Element> = menuWrapper.querySelectorAll('.e-menu-parent');
+            activeMenuElements.forEach((menuElement: Element): void => {
+                Animation.stop(menuElement as HTMLElement);
+            });
+        }
         let pUlHeight: number;
         let pElement: HTMLElement;
         const animateElement: HTMLElement = (this.enableScrolling && !this.isMenu && closest(ul, '.e-menu-vscroll'))

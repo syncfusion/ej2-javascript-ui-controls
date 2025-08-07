@@ -1201,7 +1201,6 @@ export class AccumulationChart extends Component<HTMLElement> implements INotify
         element.style.webkitUserSelect = 'none';
         element.style.position = 'relative';
         element.style.display = 'block';
-        element.style.overflow = 'hidden';
         element.style.height = (element.style.height || (this.height && this.height.indexOf('%') === -1)) ? element.style.height : 'inherit';
         let tabColor: string = '';
         switch (this.theme) {

@@ -566,10 +566,9 @@ export class GanttTreeGrid {
         if (getValue('requestType', args) === 'refresh' && isNullOrUndefined(getValue('type', args)) && this.parent.addDeleteRecord) {
             if (this.parent.selectedRowIndex !== -1) {
                 if (
-                    !isNullOrUndefined(this.parent.selectionModule) &&
+                    this.parent.editModule.isAdded && !isNullOrUndefined(this.parent.selectionModule) &&
                     this.parent.selectionSettings &&
-                    this.parent.selectionSettings.persistSelection &&
-                    this.parent.editModule.isAdded
+                    this.parent.selectionSettings.persistSelection
                 ) {
                     const selectedIndexes: number[] = this.parent.selectionModule.selectedRowIndexes;
                     if (selectedIndexes.length > 1 && this.parent.selectionSettings.persistSelection) {
@@ -639,7 +638,9 @@ export class GanttTreeGrid {
             }
             this.parent.ganttChartModule.renderRangeContainer(this.parent.currentViewData);
         }
-        this.parent['hideLoadingIndicator']();
+        if (args['type'] !== 'save') {
+            this.parent['hideLoadingIndicator']();
+        }
     }
 
     private updateKeyConfigSettings(): void {
@@ -710,7 +711,7 @@ export class GanttTreeGrid {
         this.parent.columnByField = {};
         this.parent.customColumns = [];
         const tasksMapping: string[] = ['id', 'name', 'startDate', 'endDate', 'duration', 'dependency',
-            'progress', 'baselineStartDate', 'baselineEndDate', 'resourceInfo', 'notes', 'work', 'manual', 'type', 'milestone', 'segments', 'constraintType', 'constraintDate'];
+            'progress', 'baselineStartDate', 'baselineEndDate', 'baselineDuration', 'resourceInfo', 'notes', 'work', 'manual', 'type', 'milestone', 'segments', 'constraintType', 'constraintDate'];
         for (let i: number = 0; i < length; i++) {
             let column: GanttColumnModel = {};
             if (typeof ganttObj.columns[i as number] === 'string') {
@@ -733,7 +734,12 @@ export class GanttTreeGrid {
                 }
                 column.headerText = column.headerText ? column.headerText : column.field;
                 column.width = column.width ? column.width : 150;
-                column.allowEditing = (column.field === 'WBSCode' ? false : true);
+                if (column.field === 'WBSCode') {
+                    column.allowEditing = false;
+                }
+                else {
+                    column.allowEditing = !isNullOrUndefined(column.allowEditing) ? column.allowEditing : true;
+                }
                 if (column.field === 'WBSCode' || column.field === 'WBSPredecessor') {
                     column.clipMode = 'EllipsisWithTooltip';
                 }
@@ -823,6 +829,20 @@ export class GanttTreeGrid {
                     column.edit = { params: { renderDayCell: this.parent.renderWorkingDayCell.bind(this.parent) } };
                 }
             }
+        } else if (taskSettings.baselineStartDate === column.field ||
+            taskSettings.baselineEndDate === column.field) {
+            const colName: string = (taskSettings.baselineEndDate === column.field) ? 'baselineEndDate' :
+                'baselineStartDate';
+            column.width = column.width ? column.width : 150;
+            if (this.parent.isLocaleChanged && previousColumn) {
+                column.headerText = previousColumn.headerText ? previousColumn.headerText : this.parent.localeObj.getConstant(colName);
+            }
+            else {
+                column.headerText = column.headerText ? column.headerText : this.parent.localeObj.getConstant(colName);
+            }
+            column.format = column.format ? column.format : { type: 'date', format: this.parent.getDateFormat() };
+            column.editType = column.editType ? column.editType :
+                this.parent.getDateFormat().toLowerCase().indexOf('hh') !== -1 ? 'datetimepickeredit' : 'datepickeredit';
         } else if (taskSettings.endDate === column.field) {
             if (this.parent.isLocaleChanged && previousColumn) {
                 column.headerText = previousColumn.headerText ? previousColumn.headerText : this.parent.localeObj.getConstant('endDate');
@@ -939,21 +959,22 @@ export class GanttTreeGrid {
                     column.template = initializeCSPTemplate(contentTemp);
                 }
             }
-        } else if (taskSettings.baselineStartDate === column.field ||
-            taskSettings.baselineEndDate === column.field) {
-            const colName: string = (taskSettings.baselineEndDate === column.field) ? 'baselineEndDate' :
-                'baselineStartDate';
+        }
+        else if (taskSettings.baselineDuration === column.field) {
             column.width = column.width ? column.width : 150;
             if (this.parent.isLocaleChanged && previousColumn) {
-                column.headerText = previousColumn.headerText ? previousColumn.headerText : this.parent.localeObj.getConstant(colName);
+                column.headerText = previousColumn.headerText ? previousColumn.headerText : this.parent.localeObj.getConstant('baselineDuration');
             }
             else {
-                column.headerText = column.headerText ? column.headerText : this.parent.localeObj.getConstant(colName);
+                column.headerText = column.headerText ? column.headerText : this.parent.localeObj.getConstant('baselineDuration');
             }
-            column.format = column.format ? column.format : { type: 'date', format: this.parent.getDateFormat() };
-            column.editType = column.editType ? column.editType :
-                this.parent.getDateFormat().toLowerCase().indexOf('hh') !== -1 ? 'datetimepickeredit' : 'datepickeredit';
-        } else if (taskSettings.work === column.field) {
+            column.valueAccessor = column.valueAccessor ?
+                column.valueAccessor : !isNullOrUndefined(column.edit) && !isNullOrUndefined(column.edit.read) ? null :
+                    this.baselineDurationValueAccessor.bind(this);
+            column.editType = column.editType ? column.editType : 'stringedit';
+            column.type = column.type ? column.type : 'string';
+        }
+        else if (taskSettings.work === column.field) {
             if (previousColumn && this.parent.isLocaleChanged) {
                 column.headerText = previousColumn.headerText ? previousColumn.headerText : this.parent.localeObj.getConstant('work');
             }
@@ -1289,6 +1310,29 @@ export class GanttTreeGrid {
         const constraintKey: string = Object.keys(ConstraintType)
             .find((key: string) => ConstraintType[key as keyof typeof ConstraintType] === data[field as string]);
         return this.getLocalizedConstraintTypeText(constraintKey);
+    }
+    /**
+     * Returns the formatted baseline duration string for a given task record.
+     *
+     * <p>This accessor method is used for displaying baseline duration in Gantt columns.
+     * It handles both direct property access and cases where child tasks are loaded on demand.</p>
+     *
+     * @param {string} field - The field name mapped to the column.
+     * @param {IGanttData} data - The data record representing a Gantt task.
+     * @param {GanttColumnModel} column - The column configuration model.
+     * @returns {string} - A formatted duration string (e.g., "5 days") or an empty string if unavailable.
+     *
+     */
+    private baselineDurationValueAccessor(field: string, data: IGanttData, column: GanttColumnModel): string {
+        if (!isNullOrUndefined(data) && !isNullOrUndefined(data.ganttProperties))  {
+            const ganttProp: ITaskData = data.ganttProperties;
+            return this.parent.dataOperation.getDurationString(ganttProp.baselineDuration, ganttProp.durationUnit);
+        }
+        else if (this.parent.loadChildOnDemand && this.parent.taskFields.hasChildMapping) {
+            return this.parent.dataOperation.getDurationString(parseInt(data[this.parent.taskFields.baselineDuration], 10),
+                                                               this.parent.durationUnit);
+        }
+        return '';
     }
 
     private idValueAccessor(field: string, data: IGanttData, column: GanttColumnModel): string {   // eslint-disable-line

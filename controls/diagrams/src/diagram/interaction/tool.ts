@@ -2008,14 +2008,39 @@ export class ConnectorDrawingTool extends ConnectTool {
             args.source = this.drawingObject;
             this.triggerElementDrawEvent(args.source,'Progress','Connector',(this.drawingObject as ConnectorModel).type,false);
             //Bug 874781: Port Draw Connection is not proper with group node.
-            if(args.actualObject && ((args.actualObject as Node).parentId || (args.actualObject as Node).children) && (this.drawingObject as ConnectorModel).sourceID === ''){
+            if(args.actualObject && ((args.actualObject as Node).parentId || (args.actualObject as Node).children) && (this.drawingObject as ConnectorModel).sourceID === ''
+                && (this.drawingObject as ConnectorModel).targetID === '') {
                 this.setTarget(args);
             }
             if (((args.target && args.target instanceof Node) || (args.actualObject && args.sourceWrapper && checkPort(args.actualObject, args.sourceWrapper)))
                 && (this.endPoint !== 'ConnectorTargetEnd' || (canInConnect(args.target as NodeModel)))) {
-                this.commandHandler.connect(this.endPoint, args);
+                //970513- Draw connector's target end from InConnect-Only ports
+                if (args.sourceWrapper && args.actualObject && !(args.actualObject as Node).isPhase && !(args.actualObject as Node).isLane) {
+                    const targetObjID: string = (args.sourceWrapper.id).split('_')[0];
+                    const portId: string = (args.sourceWrapper.id).split('_')[1];
+                    const targetPort: PortModel = (args.actualObject as Node).ports.find((port: PortModel) => port.id === portId);
+                    const isInConnectOnly: boolean = targetPort && canPortInConnect(targetPort) && !(canPortOutConnect(targetPort));
+                    if (isInConnectOnly && args.sourceWrapper instanceof PathElement) {
+                        // Reverse: connect target end, move source end with mouse
+                        this.endPoint = 'ConnectorTargetEnd';
+                        args.targetWrapper = args.sourceWrapper;
+                        args.sourceWrapper = null;
+                        if (!args.target || (args.target && (args.target as Node).id !== targetObjID)) {
+                            const targetObject = this.commandHandler.diagram.nameTable[`${targetObjID}`];
+                            args.target = targetObject ? targetObject : args.target;
+                        }
+                        this.commandHandler.connect(this.endPoint, args);
+                        this.endPoint = 'ConnectorSourceEnd';
+                    } else {
+                        // Default: connect source end, move target end with mouse
+                        this.commandHandler.connect(this.endPoint, args);
+                        this.endPoint = 'ConnectorTargetEnd';
+                    }
+                }
             }
-            this.endPoint = 'ConnectorTargetEnd';
+            else if ((this.drawingObject as ConnectorModel).targetID === '') {
+                this.endPoint = 'ConnectorTargetEnd';
+            }
         }
         if (!this.inAction) {
             this.commandHandler.updateSelector();

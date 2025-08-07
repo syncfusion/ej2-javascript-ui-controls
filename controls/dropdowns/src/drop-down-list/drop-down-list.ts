@@ -2024,6 +2024,9 @@ export class DropDownList extends DropDownBase implements IInput {
         }
         if (!isNullOrUndefined(dataItem.value) && !this.enableVirtualization && this.allowFiltering) {
             this.activeIndex = this.getIndexByValueFilter(dataItem.value, this.actionCompleteData.ulElement);
+            if (isNullOrUndefined(this.activeIndex)) {
+                this.activeIndex = this.getIndexByValue(dataItem.value);
+            }
         }
         const clearIcon: string = dropDownListClasses.clearIcon;
         const isFilterElement: boolean = this.isFiltering() && this.filterInput && (this.getModuleName() === 'combobox');

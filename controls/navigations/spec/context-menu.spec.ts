@@ -6,7 +6,7 @@
 import { ContextMenu } from '../src/context-menu/context-menu';
 import { BeforeOpenCloseMenuEventArgs, OpenCloseMenuEventArgs, MenuEventArgs } from '../src/common/menu-base';
 import { MenuItemModel } from '../src/common/menu-base-model';
-import { createElement, select, isVisible, EventHandler, Browser } from '@syncfusion/ej2-base';
+import { Animation,createElement, select, isVisible, EventHandler, Browser } from '@syncfusion/ej2-base';
 import { getScrollableParent } from '@syncfusion/ej2-popups';
 import { profile , inMB, getMemoryProfile } from './common.spec';
 
@@ -2166,6 +2166,58 @@ describe('ContextMenu', () => {
                 expect(ids.has(id)).toBe(false);
                 ids.add(id);
             });
+            done();
+        });
+    });
+    describe('Animation handling for quick hover movements', function (): void {
+        let contextMenu: ContextMenu;
+        let div: HTMLElement;
+        let ul: HTMLElement;
+        beforeEach(() => {
+            div = document.createElement('div');
+            div.id = 'target';
+            document.body.appendChild(div);
+            ul = document.createElement('ul');
+            ul.id = 'contextmenu';
+            document.body.appendChild(ul);
+        });
+        afterEach(() => {
+            if (contextMenu) {
+                contextMenu.destroy();
+            }
+            document.body.removeChild(div);
+            document.body.removeChild(ul);
+        });
+        it('should cancel previous animations when rapidly switching between menu items', function (done) {
+            const items = [
+                { text: 'JavaScript' },
+                { text: 'TypeScript', items: [{ text: 'Sub Item 1' }, { text: 'Sub Item 2' }] },
+                { text: 'Angular' },
+                { text: 'React' },
+                { text: 'Vue' }
+            ];
+            const animationSpy = spyOn(Animation, 'stop').and.callThrough();
+            contextMenu = new ContextMenu({
+                items: items,
+                target: '#target',
+                animationSettings: {
+                    effect: 'SlideDown',
+                    duration: 400,
+                    easing: 'ease'
+                }
+            }, '#contextmenu');
+            contextMenu.open(40, 62);
+            const menuItems = contextMenu.element.querySelectorAll('li.e-menu-item');
+            expect(menuItems.length).toBeGreaterThan(0);
+            const itemWithSubmenu = menuItems[1];
+            const mouseOverEvent1 = new MouseEvent('mouseover', { bubbles: true, cancelable: true });
+            itemWithSubmenu.dispatchEvent(mouseOverEvent1);
+            const anotherItem = menuItems[2];
+            const mouseOverEvent2 = new MouseEvent('mouseover', { bubbles: true, cancelable: true });
+            anotherItem.dispatchEvent(mouseOverEvent2);
+            expect(animationSpy).toHaveBeenCalled();
+            expect(document.body.contains(contextMenu.element)).toBe(true);
+            contextMenu.destroy();
             done();
         });
     });

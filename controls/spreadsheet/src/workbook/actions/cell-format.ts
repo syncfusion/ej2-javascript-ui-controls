@@ -1,4 +1,4 @@
-import { CellStyleModel, getRangeIndexes, setCellFormat, applyCellFormat, activeCellChanged, SetCellFormatArgs, isReadOnly, isReadOnlyCells, workbookReadonlyAlert, mergedRange, MergeArgs, setMerge, updateMergeBorder } from '../common/index';
+import { CellStyleModel, getRangeIndexes, setCellFormat, applyCellFormat, activeCellChanged, SetCellFormatArgs, isReadOnly, isReadOnlyCells, mergedRange, MergeArgs, setMerge, updateMergeBorder } from '../common/index';
 import { CellFormatArgs, getSwapRange, TextDecoration, textDecorationUpdate, ClearOptions, BeforeCellFormatArgs } from '../common/index';
 import { CellStyleExtendedModel, BorderType, clear, getIndexesFromAddress, activeCellMergedRange, deleteHyperlink } from '../common/index';
 import { SheetModel, Workbook, getSheetIndex, isHiddenRow, getSheet, getCell, CellModel, setCell, updateCFModel, getColumn, ColumnModel, RowModel } from '../index';
@@ -16,44 +16,50 @@ export class WorkbookCellFormat {
         this.addEventListener();
     }
     private format(args: SetCellFormatArgs): void {
+        let ranges: string[] | number[][] = [];
         let sheet: SheetModel; let rng: string | number[] = args.range;
-        if (rng && typeof rng === 'string' && rng.indexOf('!') > -1) {
-            const lastIndex: number = rng.lastIndexOf('!');
-            rng = rng.substring(lastIndex + 1);
-            sheet = this.parent.sheets[getSheetIndex(this.parent, (args.range as string).substring(0, lastIndex))];
+        let triggerEvt: boolean;
+        if (rng && typeof rng === 'string') {
+            if (rng.indexOf('!') > -1) {
+                const lastIndex: number = rng.lastIndexOf('!');
+                rng = rng.substring(lastIndex + 1);
+                sheet = this.parent.sheets[getSheetIndex(this.parent, (args.range as string).substring(0, lastIndex))];
+            } else {
+                sheet = this.parent.getActiveSheet();
+            }
+            ranges = rng.split(' ');
+            triggerEvt = args.onActionUpdate && !args.isUndoRedo;
         } else {
             sheet = this.parent.getActiveSheet();
+            if (rng === undefined) {
+                rng = sheet.selectedRange;
+                ranges = rng.split(' ');
+                triggerEvt = args.onActionUpdate && !args.isUndoRedo;
+            } else {
+                ranges = [rng as number[]];
+            }
         }
-        if (rng === undefined) { rng = sheet.selectedRange; }
-        const triggerEvt: boolean = typeof (rng) !== 'object' && args.onActionUpdate && !args.isUndoRedo;
-        const eventArgs: BeforeCellFormatArgs = {
-            range: <string>rng, style: Object.assign({}, args.style), requestType: 'CellFormat' };
+        if (ranges.some((rng: string | number[]): boolean => isReadOnlyCells(
+            this.parent, typeof rng === 'string' ? getSwapRange(getRangeIndexes(rng)) : rng, args.onActionUpdate))) {
+            return;
+        }
+        const eventArgs: BeforeCellFormatArgs = { range: <string>rng, style: Object.assign({}, args.style), requestType: 'CellFormat' };
         if (args.borderType) {
             eventArgs.borderType = args.borderType;
         }
-        const style: CellStyleModel = {};
-        const indexes: number[] = typeof (eventArgs.range) === 'object' ? <number[]>eventArgs.range :
-            getSwapRange(getRangeIndexes(<string>eventArgs.range));
-        const mergeBorderRows: number[] = [];
-        const hasReadOnlyCells: boolean = isReadOnlyCells(this.parent, indexes);
-        if (hasReadOnlyCells) {
-            if (args.onActionUpdate) {
-                this.parent.notify(workbookReadonlyAlert, null);
-            }
-            return;
-        }
-        Object.assign(style, eventArgs.style, null, true);
         if (triggerEvt) {
             this.parent.trigger('beforeCellFormat', eventArgs);
             this.parent.notify('actionBegin', { eventArgs: eventArgs, action: 'format' });
-            if (eventArgs.cancel) { args.cancel = true; return; }
+            if (eventArgs.cancel) {
+                args.cancel = true;
+                return;
+            }
+            if (eventArgs.range !== rng) {
+                rng = eventArgs.range;
+                ranges = rng.split(' ');
+            }
         }
-        if (args.borderType) {
-            this.setTypedBorder(sheet, args.style.border, indexes, args.borderType, args.onActionUpdate, mergeBorderRows);
-            delete args.style.border;
-            delete eventArgs.style.border;
-        }
-        let i: number; let j: number;
+        let indexes: number[]; let mergeBorderRows: number[]; let i: number; let j: number;
         const props: CellUpdateArgs = { cell: null, rowIdx: 0, colIdx: 0, eventOnly: true, preventEvt: !triggerEvt };
         const triggerBeforeEvent: (cellStyle: CellStyleModel) => boolean = (cellStyle: CellStyleModel): boolean => {
             props.cell = { style: cellStyle };
@@ -61,184 +67,208 @@ export class WorkbookCellFormat {
             props.colIdx = j;
             return updateCell(this.parent, sheet, props);
         };
-        if (eventArgs.style.borderTop !== undefined) {
-            for (j = indexes[1]; j <= indexes[3]; j++) {
-                i = indexes[0];
-                if (!triggerBeforeEvent({ borderTop: eventArgs.style.borderTop })) {
-                    if (!args.isUndoRedo) {
-                        this.checkAdjacentBorder(sheet, 'borderBottom', i - 1, j);
-                        this.checkFullBorder(sheet, 'borderBottom', i - 1, j);
-                    }
-                    this.checkFullBorder(sheet, 'borderTop', i, j);
-                    this.setCellBorder(sheet, props.cell.style, i, j, args.onActionUpdate, j === indexes[3], null, null,
-                                       args.isUndoRedo, mergeBorderRows);
-                }
-            }
-            delete eventArgs.style.borderTop;
-        }
-        if (eventArgs.style.borderBottom !== undefined) {
-            let firstCell: CellModel; let lastCell: CellModel;
-            for (j = indexes[1]; j <= indexes[3]; j++) {
-                i = indexes[0];
-                firstCell = getCell(i, j, sheet, false, true);
-                if (firstCell.rowSpan > 0) {
-                    lastCell = getCell(indexes[2], indexes[1], sheet, false, true);
-                } else {
-                    lastCell = getCell(indexes[2], indexes[3], sheet, false, true);
-                }
-                if (!(firstCell.rowSpan > 1 && lastCell.rowSpan < 0)) {
-                    i = indexes[2];
-                }
-                const mergeArgs: { range: number[] } = { range: [i, j, i, j] };
-                this.parent.notify(activeCellMergedRange, mergeArgs);
-                i = mergeArgs.range[0];
-                if (!triggerBeforeEvent({ borderBottom: eventArgs.style.borderBottom })) {
-                    if (!args.isUndoRedo) {
-                        this.checkAdjacentBorder(sheet, 'borderTop', indexes[2] + 1, j);
-                        this.checkFullBorder(sheet, 'borderTop', indexes[2] + 1, j);
-                    }
-                    this.checkFullBorder(sheet, 'borderBottom', indexes[2], j);
-                    this.setCellBorder(sheet, props.cell.style, i, j, args.onActionUpdate, j === indexes[3], null, null, args.isUndoRedo);
-                    this.setBottomBorderPriority(sheet, indexes[2], j);
-                }
-            }
-            delete eventArgs.style.borderBottom;
-        }
-        if (eventArgs.style.borderLeft !== undefined) {
-            for (let i: number = indexes[0]; i <= indexes[2]; i++) {
-                let adjacentJ: number;
-                if (this.parent.enableRtl) {
-                    j = indexes[3];
-                    adjacentJ = j + 1;
-                } else {
-                    j = indexes[1];
-                    adjacentJ = j - 1;
-                }
-                if (!triggerBeforeEvent({ borderLeft: eventArgs.style.borderLeft })) {
-                    if (!args.isUndoRedo) {
-                        this.checkAdjacentBorder(sheet, 'borderRight', i, adjacentJ);
-                        this.checkFullBorder(sheet, 'borderRight', i, adjacentJ);
-                    }
-                    this.checkFullBorder(sheet, 'borderLeft', i, j);
-                    this.setCellBorder(sheet, props.cell.style, i, j, args.onActionUpdate, null, null, null, args.isUndoRedo);
-                }
-            }
-            delete eventArgs.style.borderLeft;
-        }
-        if (eventArgs.style.borderRight !== undefined) {
-            for (let i: number = indexes[0]; i <= indexes[2]; i++) {
-                let adjacentJ: number;
-                if (this.parent.enableRtl) {
-                    j = indexes[1];
-                    adjacentJ = j - 1;
-                } else {
-                    j = indexes[3];
-                    adjacentJ = j + 1;
-                }
-                const mergeArgs: { range: number[] } = { range: [i, j, i, j] };
-                this.parent.notify(activeCellMergedRange, mergeArgs);
-                j = mergeArgs.range[1];
-                if (!triggerBeforeEvent({ borderRight: eventArgs.style.borderRight })) {
-                    if (!args.isUndoRedo) {
-                        this.checkAdjacentBorder(sheet, 'borderLeft', i, adjacentJ);
-                        this.checkFullBorder(sheet, 'borderLeft', i, adjacentJ);
-                    }
-                    this.checkFullBorder(sheet, 'borderRight', i, j);
-                    this.setCellBorder(sheet, props.cell.style, i, j, args.onActionUpdate, null, null, null, args.isUndoRedo);
-                }
-            }
-            delete eventArgs.style.borderRight;
-        }
-        let border: string; let isFullBorder: boolean;
-        const styleKeys: string[] = Object.keys(eventArgs.style);
-        if (styleKeys.length) {
-            let cell: CellModel; let validation: ValidationModel; let col: ColumnModel;
-            const parent: ExtendedWorkbook = this.parent as ExtendedWorkbook;
-            const activeSheet: boolean = parent.viewport && this.parent.getActiveSheet().id === sheet.id;
-            const frozenRow: number = this.parent.frozenRowCount(sheet); const frozenCol: number = this.parent.frozenColCount(sheet);
-            const viewport: number[] = [frozenRow + parent.viewport.topIndex, frozenCol + parent.viewport.leftIndex,
-                parent.viewport.bottomIndex, parent.viewport.rightIndex];
-            let uiRefresh: boolean; let row: ExtendedRowModel; let checkHeight: boolean; let formatColor: string;
-            const isFontColorApplied: boolean = styleKeys.indexOf('color') > -1;
-            const isColorApplied: boolean = isFontColorApplied || styleKeys.indexOf('backgroundColor') > -1;
-            for (i = indexes[0]; i <= indexes[2]; i++) {
-                row = getRow(sheet, i) || {};
-                if (row.isFiltered) {
-                    continue;
-                }
-                uiRefresh = (i >= viewport[0] && i <= viewport[2]) || i < frozenRow;
-                checkHeight = false;
-                for (j = indexes[1]; j <= indexes[3]; j++) {
-                    if (triggerBeforeEvent(eventArgs.style)) {
-                        continue;
-                    }
-                    if (isFullBorder === undefined) {
-                        if (eventArgs.style.border !== undefined) {
-                            border = eventArgs.style.border; delete eventArgs.style.border; isFullBorder = true;
-                        } else {
-                            isFullBorder = false;
+        const updateStylesFn: () => Function = (): Function => {
+            let border: string; let isFullBorder: boolean;
+            const styleKeys: string[] = Object.keys(eventArgs.style);
+            if (styleKeys.length) {
+                let cell: CellModel; let validation: ValidationModel; let col: ColumnModel;
+                const parent: ExtendedWorkbook = this.parent as ExtendedWorkbook;
+                const activeSheet: boolean = parent.viewport && this.parent.getActiveSheet().id === sheet.id;
+                const frozenRow: number = this.parent.frozenRowCount(sheet); const frozenCol: number = this.parent.frozenColCount(sheet);
+                const viewport: number[] = [frozenRow + parent.viewport.topIndex, frozenCol + parent.viewport.leftIndex,
+                    parent.viewport.bottomIndex, parent.viewport.rightIndex];
+                let uiRefresh: boolean; let row: ExtendedRowModel; let checkHeight: boolean; let formatColor: string;
+                const isFontColorApplied: boolean = styleKeys.indexOf('color') > -1;
+                const isColorApplied: boolean = isFontColorApplied || styleKeys.indexOf('backgroundColor') > -1;
+                return (): void => {
+                    for (i = indexes[0]; i <= indexes[2]; i++) {
+                        row = getRow(sheet, i) || {};
+                        if (row.isFiltered) {
+                            continue;
                         }
-                    }
-                    cell = getCell(i, j, sheet, false, true);
-                    col = sheet.columns[j as number];
-                    if (cell.rowSpan > 1 || cell.colSpan > 1) {
-                        for (let k: number = i, rowSpanLen: number = cell.rowSpan > 1 ? i + (cell.rowSpan - 1) : i; k <= rowSpanLen; k++) {
-                            for (let l: number = j, colSpanLen: number = cell.colSpan > 1 ? j + (cell.colSpan - 1) : j;
-                                l <= colSpanLen; l++) {
-                                if (isFullBorder) {
-                                    this.setFullBorder(sheet, border, indexes, k, l, args.onActionUpdate, true);
+                        uiRefresh = (i >= viewport[0] && i <= viewport[2]) || i < frozenRow;
+                        checkHeight = false;
+                        for (j = indexes[1]; j <= indexes[3]; j++) {
+                            if (triggerBeforeEvent(eventArgs.style)) {
+                                continue;
+                            }
+                            if (isFullBorder === undefined && eventArgs.style.border !== undefined) {
+                                border = eventArgs.style.border; delete eventArgs.style.border; isFullBorder = true;
+                            }
+                            cell = getCell(i, j, sheet, false, true);
+                            col = sheet.columns[j as number];
+                            if (cell.rowSpan > 1 || cell.colSpan > 1) {
+                                for (let k: number = i, rowSpanLen: number = cell.rowSpan > 1 ? i + (cell.rowSpan - 1) : i; k <= rowSpanLen;
+                                    k++) {
+                                    for (let l: number = j, colSpanLen: number = cell.colSpan > 1 ? j + (cell.colSpan - 1) : j;
+                                        l <= colSpanLen; l++) {
+                                        if (isFullBorder) {
+                                            this.setFullBorder(sheet, border, indexes, k, l, args.onActionUpdate, true);
+                                        }
+                                        this.setCellStyle(sheet, k, l, eventArgs.style);
+                                    }
                                 }
-                                this.setCellStyle(sheet, k, l, eventArgs.style);
                             }
-                        }
-                    }
-                    if (isFullBorder) {
-                        this.setFullBorder(sheet, border, indexes, i, j, args.onActionUpdate, undefined, mergeBorderRows);
-                    }
-                    this.setCellStyle(sheet, i, j, eventArgs.style);
-                    if (!activeSheet) {
-                        continue;
-                    }
-                    if (uiRefresh && ((j >= viewport[1] && j <= viewport[3]) || j < frozenCol)) {
-                        formatColor = null;
-                        if (isFontColorApplied && cell.format && cell.format.includes('[')) {
-                            const colorCode: string = getColorCode(cell.format);
-                            if (colorCode) {
-                                formatColor = colorCode.toLowerCase();
+                            if (isFullBorder) {
+                                this.setFullBorder(sheet, border, indexes, i, j, args.onActionUpdate, undefined, mergeBorderRows);
                             }
-                        }
-                        this.parent.notify(applyCellFormat, <CellFormatArgs>{ style: eventArgs.style, rowIdx: i, colIdx: j,
-                            lastCell: j === indexes[3], isHeightCheckNeeded: true, manualUpdate: true, onActionUpdate: args.onActionUpdate,
-                            formatColor: formatColor });
-                        if (isColorApplied) {
-                            validation = cell.validation || (checkColumnValidation(col, i, j) && col.validation);
-                            if (validation && validation.isHighlighted) {
-                                this.parent.notify(updateHighlight, {
-                                    rowIdx: i, colIdx: j, cell: cell, validation: validation, col: cell.validation && col
+                            this.setCellStyle(sheet, i, j, eventArgs.style);
+                            if (!activeSheet) {
+                                continue;
+                            }
+                            if (uiRefresh && ((j >= viewport[1] && j <= viewport[3]) || j < frozenCol)) {
+                                formatColor = null;
+                                if (isFontColorApplied && cell.format && cell.format.includes('[')) {
+                                    const colorCode: string = getColorCode(cell.format);
+                                    if (colorCode) {
+                                        formatColor = colorCode.toLowerCase();
+                                    }
+                                }
+                                this.parent.notify(applyCellFormat, <CellFormatArgs>{
+                                    style: eventArgs.style, rowIdx: i, colIdx: j,
+                                    lastCell: j === indexes[3], isHeightCheckNeeded: true, manualUpdate: true,
+                                    onActionUpdate: args.onActionUpdate, formatColor: formatColor
                                 });
+                                if (isColorApplied) {
+                                    validation = cell.validation || (checkColumnValidation(col, i, j) && col.validation);
+                                    if (validation && validation.isHighlighted) {
+                                        this.parent.notify(updateHighlight, {
+                                            rowIdx: i, colIdx: j, cell: cell, validation: validation, col: cell.validation && col
+                                        });
+                                    }
+                                }
+                            } else if (!row.customHeight) {
+                                checkHeight = checkHeight || isHeightCheckNeeded(eventArgs.style, args.onActionUpdate);
+                                if (checkHeight) {
+                                    this.parent.notify(
+                                        applyCellFormat, <CellFormatArgs>{
+                                            rowIdx: i, colIdx: j, lastCell: j === indexes[3], checkHeight: true,
+                                            outsideViewport: !uiRefresh, onActionUpdate: args.onActionUpdate
+                                        });
+                                }
                             }
                         }
-                    } else if (!row.customHeight) {
-                        checkHeight = checkHeight || isHeightCheckNeeded(eventArgs.style, args.onActionUpdate);
-                        if (checkHeight) {
-                            this.parent.notify(
-                                applyCellFormat, <CellFormatArgs>{ rowIdx: i, colIdx: j, lastCell: j === indexes[3], checkHeight: true,
-                                    outsideViewport: !uiRefresh, onActionUpdate: args.onActionUpdate });
+                    }
+                };
+            } else {
+                return (): void => { /* Invoking empty function for empty style objects. */ };
+            }
+        };
+        const style: CellStyleModel = {};
+        Object.assign(style, eventArgs.style, null, true);
+        let updateStyles: Function;
+        ranges.forEach((currentRange: string | number[], index: number) => {
+            indexes = typeof currentRange === 'string' ? getSwapRange(getRangeIndexes(currentRange)) : <number[]>currentRange;
+            Object.assign(eventArgs.style, style);
+            mergeBorderRows = [];
+            if (args.borderType) {
+                this.setTypedBorder(sheet, args.style.border, indexes, args.borderType, args.onActionUpdate, mergeBorderRows);
+                if (index === ranges.length - 1) {
+                    delete args.style.border;
+                }
+                delete eventArgs.style.border;
+            }
+            if (eventArgs.style.borderTop !== undefined) {
+                for (j = indexes[1]; j <= indexes[3]; j++) {
+                    i = indexes[0];
+                    if (!triggerBeforeEvent({ borderTop: eventArgs.style.borderTop })) {
+                        if (!args.isUndoRedo) {
+                            this.checkAdjacentBorder(sheet, 'borderBottom', i - 1, j);
+                            this.checkFullBorder(sheet, 'borderBottom', i - 1, j);
                         }
+                        this.checkFullBorder(sheet, 'borderTop', i, j);
+                        this.setCellBorder(sheet, props.cell.style, i, j, args.onActionUpdate, j === indexes[3], null, null,
+                                           args.isUndoRedo, mergeBorderRows);
                     }
                 }
+                delete eventArgs.style.borderTop;
             }
-        }
-        if (isFullBorder) {
-            eventArgs.style.border = border;
-        }
-        updateMergeBorder(this.parent, mergeBorderRows, [indexes[1], indexes[3]]);
-        this.parent.setUsedRange(indexes[2], indexes[3]);
+            if (eventArgs.style.borderBottom !== undefined) {
+                let firstCell: CellModel; let lastCell: CellModel;
+                for (j = indexes[1]; j <= indexes[3]; j++) {
+                    i = indexes[0];
+                    firstCell = getCell(i, j, sheet, false, true);
+                    if (firstCell.rowSpan > 0) {
+                        lastCell = getCell(indexes[2], indexes[1], sheet, false, true);
+                    } else {
+                        lastCell = getCell(indexes[2], indexes[3], sheet, false, true);
+                    }
+                    if (!(firstCell.rowSpan > 1 && lastCell.rowSpan < 0)) {
+                        i = indexes[2];
+                    }
+                    const mergeArgs: { range: number[] } = { range: [i, j, i, j] };
+                    this.parent.notify(activeCellMergedRange, mergeArgs);
+                    i = mergeArgs.range[0];
+                    if (!triggerBeforeEvent({ borderBottom: eventArgs.style.borderBottom })) {
+                        if (!args.isUndoRedo) {
+                            this.checkAdjacentBorder(sheet, 'borderTop', indexes[2] + 1, j);
+                            this.checkFullBorder(sheet, 'borderTop', indexes[2] + 1, j);
+                        }
+                        this.checkFullBorder(sheet, 'borderBottom', indexes[2], j);
+                        this.setCellBorder(sheet, props.cell.style, i, j, args.onActionUpdate, j === indexes[3], null, null,
+                                           args.isUndoRedo);
+                        this.setBottomBorderPriority(sheet, indexes[2], j);
+                    }
+                }
+                delete eventArgs.style.borderBottom;
+            }
+            if (eventArgs.style.borderLeft !== undefined) {
+                for (let i: number = indexes[0]; i <= indexes[2]; i++) {
+                    let adjacentJ: number;
+                    if (this.parent.enableRtl) {
+                        j = indexes[3];
+                        adjacentJ = j + 1;
+                    } else {
+                        j = indexes[1];
+                        adjacentJ = j - 1;
+                    }
+                    if (!triggerBeforeEvent({ borderLeft: eventArgs.style.borderLeft })) {
+                        if (!args.isUndoRedo) {
+                            this.checkAdjacentBorder(sheet, 'borderRight', i, adjacentJ);
+                            this.checkFullBorder(sheet, 'borderRight', i, adjacentJ);
+                        }
+                        this.checkFullBorder(sheet, 'borderLeft', i, j);
+                        this.setCellBorder(sheet, props.cell.style, i, j, args.onActionUpdate, null, null, null, args.isUndoRedo);
+                    }
+                }
+                delete eventArgs.style.borderLeft;
+            }
+            if (eventArgs.style.borderRight !== undefined) {
+                for (let i: number = indexes[0]; i <= indexes[2]; i++) {
+                    let adjacentJ: number;
+                    if (this.parent.enableRtl) {
+                        j = indexes[1];
+                        adjacentJ = j - 1;
+                    } else {
+                        j = indexes[3];
+                        adjacentJ = j + 1;
+                    }
+                    const mergeArgs: { range: number[] } = { range: [i, j, i, j] };
+                    this.parent.notify(activeCellMergedRange, mergeArgs);
+                    j = mergeArgs.range[1];
+                    if (!triggerBeforeEvent({ borderRight: eventArgs.style.borderRight })) {
+                        if (!args.isUndoRedo) {
+                            this.checkAdjacentBorder(sheet, 'borderLeft', i, adjacentJ);
+                            this.checkFullBorder(sheet, 'borderLeft', i, adjacentJ);
+                        }
+                        this.checkFullBorder(sheet, 'borderRight', i, j);
+                        this.setCellBorder(sheet, props.cell.style, i, j, args.onActionUpdate, null, null, null, args.isUndoRedo);
+                    }
+                }
+                delete eventArgs.style.borderRight;
+            }
+            if (index === 0) {
+                updateStyles = updateStylesFn();
+            }
+            updateStyles();
+            updateMergeBorder(this.parent, mergeBorderRows, [indexes[1], indexes[3]]);
+            this.parent.setUsedRange(indexes[2], indexes[3]);
+            if (sheet.conditionalFormats && sheet.conditionalFormats.length) {
+                this.parent.notify(applyCF, <ApplyCFArgs>{ indexes: indexes });
+            }
+        });
         if (args.refreshRibbon) {
             this.parent.notify(activeCellChanged, null);
-        }
-        if (sheet.conditionalFormats && sheet.conditionalFormats.length) {
-            this.parent.notify(applyCF, <ApplyCFArgs>{ indexes: indexes });
         }
         if (triggerEvt) {
             eventArgs.style = style;
@@ -304,17 +334,23 @@ export class WorkbookCellFormat {
     }
     private textDecorationActionUpdate(args: { style: CellStyleModel, refreshRibbon?: boolean, cancel?: boolean }): void {
         const sheet: SheetModel = this.parent.getActiveSheet();
-        const eventArgs: BeforeCellFormatArgs = { range: sheet.selectedRange, style: args.style, requestType: 'CellFormat' };
-        const indexes: number[] = getSwapRange(getRangeIndexes(sheet.selectedRange));
-        const hasReadOnlyCells: boolean = isReadOnlyCells(this.parent, indexes);
-        if (hasReadOnlyCells) {
-            this.parent.notify(workbookReadonlyAlert, null);
+        const rng: string = sheet.selectedRange;
+        let ranges: string[] = rng.split(' ');
+        if (ranges.some((rng: string): boolean => isReadOnlyCells(this.parent, getSwapRange(getRangeIndexes(rng)), true))) {
             return;
         }
+        const eventArgs: BeforeCellFormatArgs = { range: rng, style: args.style, requestType: 'CellFormat' };
         this.parent.trigger('beforeCellFormat', eventArgs);
         this.parent.notify('actionBegin', { eventArgs: eventArgs, action: 'format' });
-        if (eventArgs.cancel) { args.cancel = true; return; }
-        const value: TextDecoration = <TextDecoration>args.style.textDecoration.toLowerCase(); let changedValue: TextDecoration = value;
+        if (eventArgs.cancel) {
+            args.cancel = true;
+            return;
+        }
+        if (eventArgs.range !== rng) {
+            ranges = eventArgs.range.split(' ');
+        }
+        const value: TextDecoration = <TextDecoration>args.style.textDecoration.toLowerCase();
+        let changedValue: TextDecoration = value;
         const activeCellIndexes: number[] = getRangeIndexes(sheet.activeCell);
         let cellValue: string = this.parent.getCellStyleValue(['textDecoration'], activeCellIndexes).textDecoration.toLowerCase();
         let removeProp: boolean = false;
@@ -328,37 +364,40 @@ export class WorkbookCellFormat {
         if (changedValue === 'none') {
             removeProp = true;
         }
-        let changedStyle: CellStyleModel = { textDecoration: changedValue };
+        let changedStyle: CellStyleModel = { textDecoration: changedValue }; let indexes: number[];
         this.format({ style: changedStyle, range: activeCellIndexes, refreshRibbon: args.refreshRibbon, onActionUpdate: true });
-        for (let i: number = indexes[0]; i <= indexes[2]; i++) {
-            for (let j: number = indexes[1]; j <= indexes[3]; j++) {
-                if (i === activeCellIndexes[0] && j === activeCellIndexes[1]) { continue; }
-                changedStyle = {};
-                cellValue = this.parent.getCellStyleValue(['textDecoration'], [i, j]).textDecoration.toLowerCase();
-                if (cellValue === 'none') {
-                    if (removeProp) { continue; }
-                    changedStyle.textDecoration = value;
-                } else if (cellValue === 'underline' || cellValue === 'line-through') {
-                    if (removeProp) {
-                        if (value === cellValue) {
-                            changedStyle.textDecoration = 'none';
+        ranges.forEach((currentRange: string): void => {
+            indexes = getSwapRange(getRangeIndexes(currentRange));
+            for (let i: number = indexes[0]; i <= indexes[2]; i++) {
+                for (let j: number = indexes[1]; j <= indexes[3]; j++) {
+                    if (i === activeCellIndexes[0] && j === activeCellIndexes[1]) { continue; }
+                    changedStyle = {};
+                    cellValue = this.parent.getCellStyleValue(['textDecoration'], [i, j]).textDecoration.toLowerCase();
+                    if (cellValue === 'none') {
+                        if (removeProp) { continue; }
+                        changedStyle.textDecoration = value;
+                    } else if (cellValue === 'underline' || cellValue === 'line-through') {
+                        if (removeProp) {
+                            if (value === cellValue) {
+                                changedStyle.textDecoration = 'none';
+                            } else {
+                                continue;
+                            }
+                        } else {
+                            changedStyle.textDecoration = value !== cellValue ? 'underline line-through' : value;
+
+                        }
+                    } else if (cellValue === 'underline line-through') {
+                        if (removeProp) {
+                            changedStyle.textDecoration = value === 'underline' ? 'line-through' : 'underline';
                         } else {
                             continue;
                         }
-                    } else {
-                        changedStyle.textDecoration = value !== cellValue ? 'underline line-through' : value;
-
                     }
-                } else if (cellValue === 'underline line-through') {
-                    if (removeProp) {
-                        changedStyle.textDecoration = value === 'underline' ? 'line-through' : 'underline';
-                    } else {
-                        continue;
-                    }
+                    this.format({ style: changedStyle, range: [i, j, i, j], refreshRibbon: args.refreshRibbon, onActionUpdate: true });
                 }
-                this.format({ style: changedStyle, range: [i, j, i, j], refreshRibbon: args.refreshRibbon, onActionUpdate: true });
             }
-        }
+        });
         eventArgs.range = sheet.name + '!' + <string>eventArgs.range;
         eventArgs.style.textDecoration = changedValue;
         this.parent.notify('actionComplete', { eventArgs: eventArgs, action: 'format' });

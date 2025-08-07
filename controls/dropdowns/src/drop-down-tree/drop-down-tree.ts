@@ -1513,7 +1513,7 @@ export class DropDownTree extends Component<HTMLElement> implements INotifyPrope
         }
         if (this.isPopupOpen) {
             this.hidePopup();
-        } else if (!(e instanceof TouchEvent) && e.button !== 2) {
+        } else if (e.type === 'touchstart' || ('button' in e && e.button !== 2)) {
             this.focusIn(e);
             this.renderPopup();
         }

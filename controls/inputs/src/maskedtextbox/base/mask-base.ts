@@ -497,7 +497,7 @@ function maskInputHandler(event: KeyboardEvent): void {
             this.element.value = this.element.value + this.promptMask;
             this.element.setSelectionRange(1, 1);
         }
-        if (!this._callPasteHandler) {
+        if ((!this._callPasteHandler && !Browser.isDevice) || this._callPasteHandler) {
             removeMaskInputValues.call(this, event);
         }
         if (this.element.value.length > this.promptMask.length) {

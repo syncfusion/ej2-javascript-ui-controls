@@ -643,11 +643,15 @@ export class Toolbar extends Component<HTMLElement> implements INotifyPropertyCh
         }
         if (this.tbarAlign) {
             const tbarItems: HTEle = <HTEle>this.element.querySelector('.' + CLS_ITEMS);
-            [].slice.call(tbarItems.children).forEach((el: HTEle) => {
-                detach(el);
-            });
+            if (tbarItems) {
+                if (tbarItems.children) {
+                    [].slice.call(tbarItems.children).forEach((el: HTEle) => {
+                        detach(el);
+                    });
+                }
+                this.remove(tbarItems, CLS_TBARPOS);
+            }
             this.tbarAlign = false;
-            this.remove(tbarItems, CLS_TBARPOS);
         }
         this.clearProperty();
     }
@@ -1050,10 +1054,10 @@ export class Toolbar extends Component<HTMLElement> implements INotifyPropertyCh
      */
     protected render(): void {
         this.initialize();
-        this.renderControl();
-        this.wireEvents();
         this.clickEvent = this.docEvent.bind(this);
         this.scrollEvent = this.docEvent.bind(this);
+        this.renderControl();
+        this.wireEvents();
         this.renderComplete();
         if ((this as any).isReact && (this as Record<string, any>).portals && (this as Record<string, any>).portals.length > 0) {
             this.renderReactTemplates(() => {

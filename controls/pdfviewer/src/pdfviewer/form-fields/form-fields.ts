@@ -1177,11 +1177,11 @@ export class FormFields {
                             shapeAnnotationType: 'SignatureText', opacity: 1, rotateAngle: rotateAngle, annotName: 'SignatureText', comments: [], review: { state: '', stateModel: '', modifiedDate: '', author: '' }, fontFamily: currentFont, fontSize: bounds.height / this.signatureFontSizeConstent
                         };
                         if (annot.shapeAnnotationType === 'SignatureText') {
-                            const textWidth: number = this.getTextWidth(annot.data, annot.fontSize, annot.fontFamily);
+                            const textWidth: number = this.pdfViewerBase.getTextWidth(annot.data, annot.fontSize, annot.fontFamily);
                             let widthRatio: number = 1;
                             if (textWidth > bounds.width)
                             {widthRatio = bounds.width / textWidth; }
-                            annot.fontSize = this.getFontSize(Math.floor((annot.fontSize * widthRatio)));
+                            annot.fontSize = this.pdfViewerBase.getFontSize(Math.floor((annot.fontSize * widthRatio)));
                         }
                         signString = annot.data;
                         signatureFontFamily = annot.fontFamily;
@@ -2780,34 +2780,5 @@ export class FormFields {
      */
     public getModuleName(): string {
         return 'FormFields';
-    }
-
-    /**
-     * @private
-     * @param {any} text - It describes about the text
-     * @param {any} font - It describes about the font
-     * @param {any} fontFamily - It describes about the font family
-     * @returns {number} - number
-     */
-    public getTextWidth(text: any, font: any, fontFamily: any): number {
-        const canvas: HTMLCanvasElement = document.createElement('canvas');
-        const context: CanvasRenderingContext2D = canvas.getContext('2d');
-        let fontName: string;
-        if (font) {
-            fontName = font + 'px' + ' ' + fontFamily;
-        }
-        context.font = fontName || getComputedStyle(document.body).font;
-        const textWidth: number = context.measureText(text).width;
-        this.pdfViewerBase.releaseCanvas(canvas);
-        return textWidth;
-    }
-
-    /**
-     * @private
-     * @param {number} fontSize - Font size.
-     * @returns {number} - Returns the font size.
-     */
-    public getFontSize(fontSize: number): number {
-        return fontSize ;
     }
 }

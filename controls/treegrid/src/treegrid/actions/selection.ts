@@ -510,6 +510,13 @@ export class Selection {
                     this.headerSelection();
                 }
             }
+            else {
+                if ((requestType === 'filtering' || requestType === 'searching' || requestType === 'refresh')
+                    && !isRemoteData(this.parent)) {
+                    this.selectedItems = [];
+                    this.selectedIndexes = [];
+                }
+            }
         }
     }
 

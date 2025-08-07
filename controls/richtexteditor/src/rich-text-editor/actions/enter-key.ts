@@ -330,7 +330,7 @@ export class EnterKeyAction {
                                             0);
                                     }
                                 } else if (nearBlockNode !== this.parent.inputElement && nearBlockNode.textContent.length === 0 && !(!isNOU(nearBlockNode.childNodes[0]) && nearBlockNode.childNodes[0].nodeName === 'IMG' ||
-                                    (nearBlockNode.querySelectorAll('video').length > 0) || (nearBlockNode.querySelectorAll('audio').length > 0) || (nearBlockNode.querySelectorAll('img').length > 0))) {
+                                    (nearBlockNode.querySelectorAll('video').length > 0) || (nearBlockNode.querySelectorAll('.e-video-wrap').length > 0) || (nearBlockNode.querySelectorAll('audio').length > 0) || (nearBlockNode.querySelectorAll('img').length > 0))) {
                                     if (!isNOU(nearBlockNode.children[0]) && nearBlockNode.children[0].tagName !== 'BR') {
                                         const newElem: Node = this.parent.formatter.editorManager.nodeCutter.SplitNode(
                                             this.range, (nearBlockNode as HTMLElement), false).cloneNode(true);
@@ -348,7 +348,7 @@ export class EnterKeyAction {
                                 } else if (this.range.startContainer === this.range.endContainer && this.range.startContainer.nodeType !== Node.TEXT_NODE && ((this.range.startContainer.nodeName === 'IMG' || (this.range.startContainer as HTMLElement).querySelector('img')) ||
                                     (this.range.startContainer.nodeName === 'SPAN' && ((this.range.startContainer as HTMLElement).classList.contains('e-video-wrap') ||
                                         (this.range.startContainer as HTMLElement).classList.contains('e-audio-wrap'))))) {
-                                    if (nearBlockNode.textContent.trim().length > 0) {
+                                    if (nearBlockNode.textContent.trim().length > 0 && !(nearBlockNode.querySelector('iframe') && nearBlockNode.textContent === '&ZeroWidthSpace;')) {
                                         const newElem: Node = this.parent.formatter.editorManager.nodeCutter.SplitNode(
                                             this.range, (nearBlockNode as HTMLElement), true);
                                         const audioVideoElem: Node = !isNOU((newElem.previousSibling as HTMLElement).querySelector('.e-video-wrap')) ?
@@ -380,14 +380,21 @@ export class EnterKeyAction {
                                         let focusElem: Node = newElem.hasChildNodes() ? newElem.previousSibling : newElem;
                                         const imageElem: Node = !isNOU((newElem as HTMLElement).querySelector('img')) ?
                                             (newElem as HTMLElement).querySelector('img') : null;
+                                        const videoElem: Node = !isNOU((newElem as HTMLElement).querySelector('.e-video-wrap')) ?
+                                            (newElem as HTMLElement).querySelector('.e-video-wrap') : null;
                                         const insertElem: HTMLElement = this.createInsertElement(shiftKey);
-                                        if (!isNOU(imageElem)) {
+                                        if (!isNOU(imageElem) || !isNOU(videoElem)) {
                                             if (isFocusedFirst) {
                                                 newElem.parentElement.insertBefore(insertElem, newElem as HTMLElement);
                                                 focusElem = newElem.previousSibling;
                                             }
                                             else {
                                                 this.parent.formatter.editorManager.domNode.insertAfter(insertElem, newElem as HTMLElement);
+                                                const isVideoInfocusElem: boolean = videoElem && focusElem.nodeType === Node.ELEMENT_NODE && (focusElem as HTMLElement).children.length === 1 && (focusElem.lastChild as HTMLElement).classList.contains('e-video-wrap');
+                                                if (!isNOU(focusElem) && focusElem !== newElem && newElem.previousSibling === focusElem &&
+                                                isVideoInfocusElem) {
+                                                    detach(focusElem);
+                                                }
                                                 focusElem = newElem.nextSibling;
                                             }
                                         }
@@ -574,7 +581,7 @@ export class EnterKeyAction {
                                 if (currentParent.textContent.trim().length === 0 || (currentParent.textContent.trim().length === 1 &&
                                     currentParent.textContent.charCodeAt(0) === 8203)) {
                                     if ((currentParent.childElementCount > 0 && currentParent.lastElementChild.nodeName === 'IMG') || (currentParent.lastElementChild && currentParent.lastElementChild.nodeName === 'BR') || !isNOU(currentParent.firstElementChild) &&
-                                        (currentParent.querySelector('.e-video-wrap') || currentParent.querySelector('.e-audio-wrap'))) {
+                                        (currentParent.querySelector('.e-video-wrap') || currentParent.classList.contains('e-video-wrap') || currentParent.querySelector('.e-audio-wrap') || currentParent.classList.contains('e-audio-wrap'))) {
                                         this.insertBRElement();
                                     } else {
                                         const newElem: Node = this.parent.formatter.editorManager.nodeCutter.SplitNode(
@@ -682,10 +689,6 @@ export class EnterKeyAction {
             }
             else if (this.startNode.tagName === 'SPAN' && (this.startNode.classList.contains('e-video-wrap') || this.startNode.classList.contains('e-audio-wrap'))) {
                 this.startNode.parentElement.insertBefore(brElm, this.startNode);
-                const nearBlockNode: Node = this.parent.formatter.editorManager.domNode.blockParentNode(this.startNode);
-                const newElem: Node = this.parent.formatter.editorManager.nodeCutter.SplitNode(
-                    this.range, (nearBlockNode as HTMLElement), true);
-                detach(newElem.previousSibling.childNodes[1]);
                 isEmptyBrInserted = true;
             }
             else if (this.startNode !== this.parent.inputElement && this.startNode.nodeType === Node.ELEMENT_NODE && this.startNode.childElementCount > 0 && this.startNode.lastElementChild.nodeName === 'IMG') {
@@ -698,7 +701,7 @@ export class EnterKeyAction {
                 isEmptyBrInserted = true;
             }
         }
-        const isBRNextElement: boolean = ((!isNOU(brElm.nextSibling) && (brElm.nextSibling.textContent.length > 0 || brElm.nextSibling.nodeName !== '#text' && (brElm.nextSibling as Element).querySelectorAll('audio,video,table,img').length > 0)) || (!isNOU(brElm.nextElementSibling) && brElm.nextElementSibling.tagName === 'BR') || this.range.startContainer.nodeName === 'BR');
+        const isBRNextElement: boolean = ((!isNOU(brElm.nextSibling) && (brElm.nextSibling.textContent.length > 0 || brElm.nextSibling.nodeName !== '#text' && ((brElm.nextSibling as Element).querySelectorAll('audio,video,table,img').length > 0 || (brElm.nextSibling as Element).querySelectorAll('.e-video-wrap').length > 0))) || (!isNOU(brElm.nextElementSibling) && brElm.nextElementSibling.tagName === 'BR') || this.range.startContainer.nodeName === 'BR');
         const isMediaElement: boolean = !isNOU(brElm.nextSibling) && (!isNOU((brElm.nextSibling as HTMLElement).classList) && ((brElm.nextSibling as HTMLElement).classList.contains('e-video-wrap') || (brElm.nextSibling as HTMLElement).classList.contains('e-audio-wrap')));
         if (isBRNextElement && (isEmptyBrInserted || (!isNOU(brElm.nextSibling) && brElm.nextSibling.nodeName === '#text' && brElm.nextSibling.textContent.trim().length === 0 && !isNOU(brElm.nextSibling.nextSibling) && brElm.nextSibling.nextSibling.textContent.trim().length > 0))) {
             this.parent.formatter.editorManager.nodeSelection.setCursorPoint(

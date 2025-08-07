@@ -3059,7 +3059,7 @@ export class DocumentHelper {
      */
     private isLeftButtonPressed(event: MouseEvent): boolean {
         this.isTouchInput = false;
-        let button: number = event.buttons || event.button;
+        let button: number = event.type === 'mouseup' ? event.which || event.button : event.buttons || event.button;
         return button === 1;
     }
     /**
@@ -6896,6 +6896,7 @@ export class WebLayoutViewer extends LayoutViewer {
     }
     public getContentHeight(): number {
         let height: number = 0;
+        let boundingRectHeight: number = 0;
         for (let i: number = 0; i < this.documentHelper.pages.length; i++) {
             let page: Page = this.documentHelper.pages[i];
             if (i === 0) {
@@ -6904,8 +6905,11 @@ export class WebLayoutViewer extends LayoutViewer {
             } else {
                 page.boundingRectangle.y = this.documentHelper.pages[i - 1].boundingRectangle.bottom;
             }
-            page.boundingRectangle.height = page.bodyWidgets[0].height;
-            height += page.bodyWidgets[0].height;
+            for (let j: number = 0; j < page.bodyWidgets.length; j++) {
+                height += page.bodyWidgets[j].height;
+                boundingRectHeight += page.bodyWidgets[j].height;
+            }
+            page.boundingRectangle.height = boundingRectHeight;
             if (i === this.documentHelper.pages.length - 1) {
                 height += this.padding.bottom;
             }

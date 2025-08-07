@@ -219,7 +219,7 @@ export class Toolbar {
         this.wireEvent();
     }
     /**
-     * Shows /hides the toolbar in the PdfViewer
+     * Shows or remove the toolbar in the PdfViewer.
      *
      * @param  {boolean} enableToolbar - If set true , its show the Toolbar
      * @returns {void}
@@ -265,7 +265,7 @@ export class Toolbar {
     }
 
     /**
-     * Shows/hides the Navigation toolbar in the PdfViewer
+     * Shows or remove the Navigation toolbar in the PdfViewer.
      *
      * @param  {boolean} enableNavigationToolbar - If set true , its show the Navigation Toolbar
      * @returns {void}
@@ -299,7 +299,7 @@ export class Toolbar {
     }
 
     /**
-     * Shows /hides the annotation toolbar in the PdfViewer
+     * Shows or hides the annotation toolbar in the PdfViewer.
      *
      * @param  {boolean} enableAnnotationToolbar - If set true , its show the annotation Toolbar
      * @returns {void}
@@ -315,7 +315,7 @@ export class Toolbar {
     }
 
     /**
-     * Shows /hides the the toolbar items in the PdfViewer
+     * Shows or remove the the toolbar items in the PdfViewer.
      *
      * @param  {string[]} items - Defines the toolbar items in the toolbar
      * @param  {boolean} isVisible - If set true, then its show the toolbar Items
@@ -382,7 +382,7 @@ export class Toolbar {
     }
 
     /**
-     * Enables /disables the the toolbar items in the PdfViewer
+     * Shows or hides the the toolbar items in the PdfViewer.
      *
      * @param  {string[]} items - Defines the toolbar items in the toolbar
      * @param  {boolean} isEnable - If set true, then its Enable the toolbar Items
@@ -809,7 +809,7 @@ export class Toolbar {
                     this.enableToolbarItem(['AnnotationEditTool'], false);
                 }
                 this.updateUndoRedoButtons();
-                if (this.pdfViewer && this.pdfViewer.element && this.pdfViewer.element.id && this.pdfViewer.isAnnotationToolbarOpen) {
+                if (this.pdfViewer && this.pdfViewer.element && this.pdfViewer.element.id && this.pdfViewer.isAnnotationToolbarVisible) {
                     const annotationId: string = this.pdfViewer.element.id + '_annotationIcon';
                     this.annotationToolbarModule.createAnnotationToolbarForMobile(annotationId);
                 }

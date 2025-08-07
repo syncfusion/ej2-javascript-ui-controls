@@ -985,9 +985,14 @@ export class SymbolPalette extends Component<HTMLElement> implements INotifyProp
             if (symbol.shape.type === 'UmlClassifier' && (symbol.shape as RelationShipModel).relationship) {
                 if ((symbol.shape as RelationShipModel).relationship === 'Inheritance') {
                     symbol.style.strokeDashArray = symbol.style.strokeDashArray ? symbol.style.strokeDashArray : '4 4';
+                    (symbol as Connector).targetDecorator.style.fill = (symbol as Connector).targetDecorator.style.fill === 'black' ? 'white' : (symbol as Connector).targetDecorator.style.fill;
                 }
                 if ((symbol.shape as RelationShipModel).relationship === 'Dependency') {
                     symbol.style.strokeDashArray = symbol.style.strokeDashArray ? symbol.style.strokeDashArray : '4 4';
+                }
+                // 967766:UML connectors do not consistently apply styles such as decorator fill colors according to UML Class Diagram standards
+                if ((symbol.shape as RelationShipModel).relationship === 'Aggregation') {
+                    (symbol as Connector).sourceDecorator.style.fill = (symbol as Connector).sourceDecorator.style.fill === 'black' ? 'white' : (symbol as Connector).sourceDecorator.style.fill;
                 }
             }
             if (symbol instanceof Node) {

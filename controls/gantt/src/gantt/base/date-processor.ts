@@ -42,13 +42,14 @@ export class DateProcessor {
      * Method to convert given date value as valid start date
      *
      * @param {Date} date .
-     * @param {ITaskData} ganttProp .
-     * @param {boolean} validateAsMilestone .
-     * @param {boolean} isLoad .
+     * @param {ITaskData} ganttProp - The Gantt properties related to the task.
+     * @param {boolean} validateAsMilestone - Indicates whether the date should be validated as a milestone.
+     * @param {boolean} isLoad - A flag indicating if the method is called during the loading process.
+     * @param {boolean} isBaseline - Indicates whether the calculation is specific to baseline dates.
      * @returns {Date} .
      * @private
      */
-    public checkStartDate(date: Date, ganttProp?: ITaskData, validateAsMilestone?: boolean, isLoad?: boolean): Date {
+    public checkStartDate(date: Date, ganttProp?: ITaskData, validateAsMilestone?: boolean, isLoad?: boolean, isBaseline?: boolean): Date {
         if (isNullOrUndefined(date)) {
             return null;
         }
@@ -93,10 +94,15 @@ export class DateProcessor {
                 if (this.isValidateNonWorkDays(ganttProp)) {
                     dayStartTime = this.parent['getCurrentDayStartTime'](tStartDate);
                     if (ganttProp) {
-                        dayEndTime = this.parent['getCurrentDayEndTime'](ganttProp.endDate ? ganttProp.isAutoSchedule ? ganttProp.endDate : ganttProp.autoEndDate : tStartDate);
+                        if (!isBaseline) {
+                            dayEndTime = this.parent['getCurrentDayEndTime'](ganttProp.endDate ? ganttProp.isAutoSchedule ? ganttProp.endDate : ganttProp.autoEndDate : tStartDate);
+                        }
+                        else {
+                            dayEndTime = this.parent['getCurrentDayEndTime'](ganttProp.baselineEndDate ? ganttProp.baselineEndDate : tStartDate);
+                        }
                     }
                     let startTime: number = (!validateAsMilestone || isLoad) ? dayStartTime : dayEndTime;
-                    if (!this.parent.includeWeekend) {
+                    if (!this.parent.includeWeekend && !isBaseline) {
                         const tempDate: Date = new Date(cloneStartDate.getTime());
                         cloneStartDate = this.getNextWorkingDay(cloneStartDate);
                         startTime = this.parent['getCurrentDayStartTime'](cloneStartDate);
@@ -104,15 +110,17 @@ export class DateProcessor {
                             this.setTime(startTime, cloneStartDate);
                         }
                     }
-                    for (let count: number = 0; count < holidayLength; count++) {
-                        const holidayFrom: Date = this.getDateFromFormat(new Date(this.parent.totalHolidayDates[count as number]));
-                        const holidayTo: Date = new Date(holidayFrom.getTime());
-                        holidayFrom.setHours(0, 0, 0, 0);
-                        holidayTo.setHours(23, 59, 59, 59);
-                        if (cloneStartDate.getTime() >= holidayFrom.getTime() && cloneStartDate.getTime() < holidayTo.getTime()) {
-                            cloneStartDate.setDate(cloneStartDate.getDate() + 1);
-                            startTime = this.parent['getCurrentDayStartTime'](cloneStartDate);
-                            this.setTime(startTime, cloneStartDate);
+                    if (!isBaseline) {
+                        for (let count: number = 0; count < holidayLength; count++) {
+                            const holidayFrom: Date = this.getDateFromFormat(new Date(this.parent.totalHolidayDates[count as number]));
+                            const holidayTo: Date = new Date(holidayFrom.getTime());
+                            holidayFrom.setHours(0, 0, 0, 0);
+                            holidayTo.setHours(23, 59, 59, 59);
+                            if (cloneStartDate.getTime() >= holidayFrom.getTime() && cloneStartDate.getTime() < holidayTo.getTime()) {
+                                cloneStartDate.setDate(cloneStartDate.getDate() + 1);
+                                startTime = this.parent['getCurrentDayStartTime'](cloneStartDate);
+                                this.setTime(startTime, cloneStartDate);
+                            }
                         }
                     }
                 }
@@ -269,10 +277,11 @@ export class DateProcessor {
      * @param {Date} date .
      * @param {ITaskData} ganttProp .
      * @param {boolean} validateAsMilestone .
+     * @param {boolean} isBaseline - Indicates whether the calculation is specific to baseline dates.
      * @returns {Date} .
      * @private
      */
-    public checkEndDate(date: Date, ganttProp?: ITaskData, validateAsMilestone?: boolean): Date {
+    public checkEndDate(date: Date, ganttProp?: ITaskData, validateAsMilestone?: boolean, isBaseline? : boolean): Date {
         if (isNullOrUndefined(date)) {
             return null;
         }
@@ -322,7 +331,7 @@ export class DateProcessor {
             do {
                 tempCheckDate = new Date(cloneEndDate.getTime());
                 const holidayLength: number = this.parent.totalHolidayDates.length;
-                if (this.isValidateNonWorkDays(ganttProp)) {
+                if (this.isValidateNonWorkDays(ganttProp) && !isBaseline) {
                     if (!this.parent.includeWeekend) {
                         const tempDate: Date = new Date(cloneEndDate.getTime());
                         cloneEndDate = this.getPreviousWorkingDay(cloneEndDate);
@@ -439,60 +448,90 @@ export class DateProcessor {
      * To calculate start date value from duration and end date
      *
      * @param {IGanttData} ganttData - Defines the gantt data.
+     * @param {boolean} isBaseline - Indicates whether the calculation is specific to baseline dates.
      * @returns {void} .
      * @private
      */
-    public calculateStartDate(ganttData: IGanttData): void {
+    public calculateStartDate(ganttData: IGanttData, isBaseline?: boolean): void {
         const ganttProp: ITaskData = ganttData.ganttProperties;
         let tempStartDate: Date = null;
-        if (!isNullOrUndefined(ganttProp.endDate) && !isNullOrUndefined(ganttProp.duration)) {
-            tempStartDate = this.getStartDate(ganttProp.endDate, ganttProp.duration, ganttProp.durationUnit, ganttProp);
+        if (isBaseline) {
+            if (!isNullOrUndefined(ganttProp.baselineEndDate) && !isNullOrUndefined(ganttProp.baselineDuration)) {
+                tempStartDate = this.getStartDate(ganttProp.baselineEndDate, ganttProp.baselineDuration,
+                                                  ganttProp.durationUnit, ganttProp, undefined, true);
+            }
+            this.parent.setRecordValue('baselineStartDate', tempStartDate, ganttProp, true);
+            if (this.parent.taskFields.baselineStartDate) {
+                this.parent.dataOperation.updateMappingData(ganttData, 'baselineStartDate');
+            }
         }
-        this.parent.setRecordValue('startDate', tempStartDate, ganttProp, true);
-        if (this.parent.taskFields.startDate) {
-            this.parent.dataOperation.updateMappingData(ganttData, 'startDate');
+        else {
+            if (!isNullOrUndefined(ganttProp.endDate) && !isNullOrUndefined(ganttProp.duration)) {
+                tempStartDate = this.getStartDate(ganttProp.endDate, ganttProp.duration, ganttProp.durationUnit, ganttProp);
+            }
+            this.parent.setRecordValue('startDate', tempStartDate, ganttProp, true);
+            if (this.parent.taskFields.startDate) {
+                this.parent.dataOperation.updateMappingData(ganttData, 'startDate');
+            }
         }
     }
     /**
+     * Gets task field mappings based on baseline context.
+     *
+     * @param {boolean} isBaseline - Flag indicating if baseline fields should be used.
+     * @returns {{ startdateField: string, enddateField: string, durationField: string }} - Object containing field names for start date, end date, and duration.
+     */
+    public getFieldMappings(isBaseline: boolean): { startdateField: string; enddateField: string; durationField: string } {
+        return {
+            startdateField: isBaseline ? 'baselineStartDate' : 'startDate',
+            enddateField: isBaseline ? 'baselineEndDate' : 'endDate',
+            durationField: isBaseline ? 'baselineDuration' : 'duration'
+        };
+    }
+
+    /**
      *
      * @param {IGanttData} ganttData - Defines the gantt data.
+     * @param {boolean} isBaseline - Indicates whether the calculation is specific to baseline dates.
      * @returns {void} .
-     * @private
+     * @public
      */
-    public calculateEndDate(ganttData: IGanttData): void {
+    /* eslint-disable */
+    public calculateEndDate(ganttData: IGanttData , isBaseline? : boolean): void {
         const ganttProp: ITaskData = ganttData.ganttProperties;
         let tempEndDate: Date = null;
         let dayStartTime: number;
         let dayEndTime: number;
-        if (!isNullOrUndefined(ganttProp.startDate)) {
-            if (!isNullOrUndefined(ganttProp.endDate) && isNullOrUndefined(ganttProp.duration)) {
-                if (this.compareDates(ganttProp.startDate, ganttProp.endDate) === 1) {
-                    this.parent.setRecordValue('startDate', new Date(ganttProp.endDate.getTime()), ganttProp, true);
-                    dayStartTime = this.parent['getCurrentDayStartTime'](ganttProp.isAutoSchedule ? ganttProp.autoStartDate : ganttProp.startDate);
-                    dayEndTime = this.parent['getCurrentDayEndTime'](ganttProp.isAutoSchedule ? ganttProp.autoEndDate : ganttProp.endDate);
-                    this.setTime(dayStartTime, ganttProp.startDate);
+        const { startdateField, enddateField, durationField } = this.getFieldMappings(isBaseline);
+        if (!isNullOrUndefined(ganttProp[startdateField])) {
+            if (!isNullOrUndefined(ganttProp[enddateField]) && isNullOrUndefined(ganttProp[durationField])) {
+                if (this.compareDates(ganttProp[startdateField], ganttProp[enddateField]) === 1) {
+                    this.parent.setRecordValue(startdateField, new Date(ganttProp[enddateField].getTime()), ganttProp, true);
+                    dayStartTime = this.parent['getCurrentDayStartTime'](ganttProp.isAutoSchedule && !isBaseline ? ganttProp.autoStartDate : ganttProp[startdateField]);
+                    dayEndTime = this.parent['getCurrentDayEndTime'](ganttProp.isAutoSchedule && !isBaseline ? ganttProp.autoEndDate : ganttProp[enddateField]);
+                    this.setTime(dayStartTime, ganttProp[startdateField]);
                 }
-                this.calculateDuration(ganttData);
+                this.calculateDuration(ganttData, isBaseline);
             }
-            if (!isNullOrUndefined(ganttProp.duration)) {
-                const duration: number = !isNullOrUndefined(ganttProp.segments) && ganttProp.segments.length > 1 ?
-                    this.totalDuration(ganttProp.segments) : ganttProp.duration;
-                tempEndDate = this.getEndDate(ganttProp.startDate, duration, ganttProp.durationUnit, ganttProp, false);
+            if (!isNullOrUndefined(ganttProp[durationField])) {
+                const duration: number = !isBaseline && !isNullOrUndefined(ganttProp.segments) && ganttProp.segments.length > 1 ?
+                    this.totalDuration(ganttProp.segments) : ganttProp[durationField];
+                tempEndDate = this.getEndDate(ganttProp[startdateField], duration, ganttProp.durationUnit, ganttProp, false, isBaseline);
             }
-            this.parent.setRecordValue('endDate', tempEndDate, ganttProp, true);
+            this.parent.setRecordValue(enddateField, tempEndDate, ganttProp, true);
         } else {
-            tempEndDate = ganttData[this.parent.taskFields.endDate];
+            tempEndDate = ganttData[this.parent.taskFields[enddateField]];
             if (!isNullOrUndefined(tempEndDate)) {
                 dayEndTime = this.parent['getCurrentDayEndTime'](tempEndDate);
                 this.setTime(dayEndTime, tempEndDate);
             }
-            this.parent.setRecordValue('endDate', tempEndDate, ganttProp, true);
+            this.parent.setRecordValue(enddateField, tempEndDate, ganttProp, true);
         }
-        if (this.parent.taskFields.endDate) {
-            this.parent.dataOperation.updateMappingData(ganttData, 'endDate');
+        if (this.parent.taskFields[enddateField]) {
+            this.parent.dataOperation.updateMappingData(ganttData, enddateField);
         }
     }
-
+    /* eslint-enable */
     public totalDuration(segments: ITaskSegment[]): number {
         let duration: number = 0;
         for (let i: number = 0; i < segments.length; i++) {
@@ -504,43 +543,50 @@ export class DateProcessor {
      * To calculate duration from start date and end date
      *
      * @param {IGanttData} ganttData - Defines the gantt data.
+     * @param {boolean} isBaseline - Indicates whether the calculation is specific to baseline dates.
      * @returns {void} .
      */
-    public calculateDuration(ganttData: IGanttData): void {
+    public calculateDuration(ganttData: IGanttData, isBaseline?: boolean): void {
         const ganttProperties: ITaskData = ganttData.ganttProperties;
         let tDuration: number;
-        if (!isNullOrUndefined(ganttProperties.segments) && ganttProperties.segments.length > 0 &&
+        if (!isBaseline && !isNullOrUndefined(ganttProperties.segments) && ganttProperties.segments.length > 0 &&
             !isNullOrUndefined(this.parent.editModule.taskbarEditModule)) {
             tDuration = this.parent.editModule.taskbarEditModule.sumOfDuration(ganttProperties.segments);
         } else {
-            if ((!isNullOrUndefined(this.parent.taskFields.milestone)) && (!isNullOrUndefined(ganttProperties.startDate))
+            if (!isBaseline && (!isNullOrUndefined(this.parent.taskFields.milestone)) && (!isNullOrUndefined(ganttProperties.startDate))
             && !isNullOrUndefined(ganttProperties.endDate) &&
                 (ganttProperties.startDate).getTime() === (ganttProperties.endDate).getTime()
                 && (ganttData.taskData[this.parent.taskFields.milestone] === false)) {
                 tDuration = 1;
             } else {
-                tDuration = this.getDuration(
-                    ganttProperties.startDate, ganttProperties.endDate, ganttProperties.durationUnit,
-                    ganttProperties.isAutoSchedule, ganttProperties.isMilestone);
+                const startDate: Date = isBaseline ? ganttProperties.baselineStartDate : ganttProperties.startDate;
+                const endDate: Date = isBaseline ? ganttProperties.baselineEndDate : ganttProperties.endDate;
+                const durationUnit: string = ganttProperties.durationUnit;
+                const isAutoSchedule: boolean = isBaseline ? false : ganttProperties.isAutoSchedule;
+                const isMilestone: boolean = isBaseline ? false : ganttProperties.isMilestone;
+                tDuration = this.getDuration(startDate, endDate, durationUnit, isAutoSchedule, isMilestone);
             }
         }
-        this.parent.setRecordValue('duration', tDuration, ganttProperties, true);
-        const col: GanttColumnModel = this.parent.columnByField[this.parent.columnMapping.duration];
+        const duration: string = isBaseline ? 'baselineDuration' : 'duration';
+        this.parent.setRecordValue(duration, tDuration, ganttProperties, true);
+        const col: GanttColumnModel = isBaseline ? this.parent.columnByField[this.parent.columnMapping.baselineDuration] :
+            this.parent.columnByField[this.parent.columnMapping.duration];
         if (!isNullOrUndefined(this.parent.editModule) && !isNullOrUndefined(this.parent.editModule.cellEditModule) &&
             !this.parent.editModule.cellEditModule.isCellEdit && !isNullOrUndefined(col)) {
             if (!isNullOrUndefined(col.edit) && !isNullOrUndefined(col.edit.read)) {
                 const dialog: HTMLElement = this.parent.editModule.dialogModule.dialog;
                 if (!isNullOrUndefined(dialog)) {
-                    const textBox: TextBox = <TextBox>(<EJ2Instance>dialog.querySelector('#' + this.parent.element.id + 'Duration'))
-                        .ej2_instances[0];
+                    const textBox: TextBox = isBaseline ? <TextBox>(<EJ2Instance>dialog.querySelector('#' + this.parent.element.id + 'BaselineDuration'))
+                        .ej2_instances[0] : <TextBox>(<EJ2Instance>dialog.querySelector('#' + this.parent.element.id + 'Duration'))
+                            .ej2_instances[0];
                     if (!isNullOrUndefined(textBox) && textBox.value !== tDuration.toString()) {
                         textBox.value = tDuration.toString();
                         textBox.dataBind();
                     }
                 }
             }
-            if (this.parent.taskFields.duration) {
-                this.parent.dataOperation.updateMappingData(ganttData, 'duration');
+            if (this.parent.taskFields.duration || this.parent.taskFields.baselineDuration) {
+                this.parent.dataOperation.updateMappingData(ganttData, duration);
                 if (this.parent.taskFields.durationUnit) {
                     this.parent.dataOperation.updateMappingData(ganttData, 'durationUnit');
                 }
@@ -553,19 +599,21 @@ export class DateProcessor {
      * @param {Date} eDate .
      * @param {boolean} isAutoSchedule .
      * @param {boolean} isCheckTimeZone .
+     * @param {boolean} isBaseline - Indicates whether the calculation is specific to baseline dates.
      * @returns {number} .
      */
-    private getNonworkingTime(sDate: Date, eDate: Date, isAutoSchedule: boolean, isCheckTimeZone: boolean): number {
+    private getNonworkingTime(sDate: Date, eDate: Date, isAutoSchedule: boolean, isCheckTimeZone: boolean, isBaseline?: boolean): number {
         isCheckTimeZone = isNullOrUndefined(isCheckTimeZone) ? true : isCheckTimeZone;
-        const weekendCount: number = (!this.parent.includeWeekend && this.parent.autoCalculateDateScheduling && !(this.parent.isLoad &&
+        const weekendCount: number = (!isBaseline && !this.parent.includeWeekend && this.parent.autoCalculateDateScheduling &&
+            !(this.parent.isLoad &&
             this.parent.treeGrid.loadChildOnDemand && this.parent.taskFields.hasChildMapping)) && isAutoSchedule ?
             this.getWeekendCount(sDate, eDate) : 0;
         const totalHours: number = this.getNumberOfSeconds(sDate, eDate, isCheckTimeZone);
         const holidaysCount: number = (isAutoSchedule && this.parent.autoCalculateDateScheduling &&
             !(this.parent.isLoad && this.parent.treeGrid.loadChildOnDemand && this.parent.taskFields.hasChildMapping)
-        ) ? this.getHolidaysCount(sDate, eDate) : 0;
+        ) && !isBaseline ? this.getHolidaysCount(sDate, eDate) : 0;
         const totWorkDays: number = (totalHours - (weekendCount * 86400) - (holidaysCount * 86400)) / 86400; // working days between two dates
-        const nonWorkHours: number = this.getNonWorkingSecondsOnDate(sDate, eDate, isAutoSchedule);
+        const nonWorkHours: number = this.getNonWorkingSecondsOnDate(sDate, eDate, isAutoSchedule, isBaseline);
         const totalNonWorkTime: number = (this.parent.weekWorkingTime.length > 0 ?
             this.nonWorkingSeconds(sDate, eDate, isAutoSchedule, totWorkDays) : (totWorkDays * (86400 - this.parent.secondsPerDay))) +
             (weekendCount * 86400) + (holidaysCount * 86400) + nonWorkHours;
@@ -741,11 +789,13 @@ export class DateProcessor {
      * @param {string} durationUnit .
      * @param {ITaskData} ganttProp .
      * @param {boolean} validateAsMilestone .
+     * @param {boolean} isBaseline - Indicates whether the calculation is specific to baseline dates.
      * @returns {Date} .
      * @private
      */
     public getEndDate(
-        startDate: Date, duration: number, durationUnit: string, ganttProp: ITaskData, validateAsMilestone: boolean): Date {
+        startDate: Date, duration: number, durationUnit: string, ganttProp: ITaskData, validateAsMilestone: boolean,
+        isBaseline?: boolean): Date {
         let tempStart: Date = new Date(startDate.getTime());
         let endDate: Date = new Date(startDate.getTime());
         const sDate: Date = new Date(startDate.getTime());
@@ -760,11 +810,11 @@ export class DateProcessor {
         let workHours: number = 0;
         while (secondDuration > 0) {
             endDate.setSeconds(endDate.getSeconds() + secondDuration);
-            nonWork = this.getNonworkingTime(tempStart, endDate, ganttProp.isAutoSchedule, true);
+            nonWork = this.getNonworkingTime(tempStart, endDate, ganttProp.isAutoSchedule, true, isBaseline);
             workHours = secondDuration - nonWork;
             secondDuration = secondDuration - workHours;
             if (secondDuration > 0) {
-                endDate = this.checkStartDate(endDate, ganttProp, validateAsMilestone);
+                endDate = this.checkStartDate(endDate, ganttProp, validateAsMilestone, undefined, isBaseline);
             }
             tempStart = new Date(endDate.getTime());
         }
@@ -778,10 +828,12 @@ export class DateProcessor {
      * @param {string} durationUnit - The unit of duration.
      * @param {ITaskData} ganttProp - The Gantt task properties.
      * @param {boolean} fromValidation - A flag indicating if the calculation is from validation.
+     * @param {boolean} isBaseline - Indicates whether the calculation is specific to baseline dates.
      * @returns {Date} The calculated start date.
      * @private
      */
-    public getStartDate(endDate: Date, duration: number, durationUnit: string, ganttProp: ITaskData, fromValidation?: boolean): Date {
+    public getStartDate(endDate: Date, duration: number, durationUnit: string, ganttProp: ITaskData, fromValidation?: boolean,
+                        isBaseline?: boolean): Date {
         let tempEnd: Date = new Date(endDate.getTime());
         let startDate: Date = new Date(endDate.getTime());
         let secondDuration: number;
@@ -796,11 +848,11 @@ export class DateProcessor {
         let workHours: number = 0;
         while (secondDuration > 0) {
             startDate.setSeconds(startDate.getSeconds() - secondDuration);
-            nonWork = this.getNonworkingTime(startDate, tempEnd, ganttProp.isAutoSchedule, true);
+            nonWork = this.getNonworkingTime(startDate, tempEnd, ganttProp.isAutoSchedule, true, isBaseline);
             workHours = secondDuration - nonWork;
             secondDuration = secondDuration - workHours;
             if (secondDuration > 0) {
-                tempEnd = this.checkEndDate(startDate, ganttProp);
+                tempEnd = this.checkEndDate(startDate, ganttProp, isBaseline);
             }
             tempEnd = new Date(startDate.getTime());
         }
@@ -911,13 +963,14 @@ export class DateProcessor {
     /**
      * @param {ITaskData} ganttProp .
      * @param {boolean} isAuto .
+     * @param {boolean} isBaseline .
      * @returns {Date} .
      * @private
      */
-    public getValidStartDate(ganttProp: ITaskData, isAuto?: boolean): Date {
+    public getValidStartDate(ganttProp: ITaskData, isAuto?: boolean, isBaseline?: boolean): Date {
         let sDate: Date = null;
-        const startDate: Date = isAuto ? ganttProp.autoStartDate : ganttProp.startDate;
-        const endDate: Date = isAuto ? ganttProp.autoEndDate : ganttProp.endDate;
+        const startDate: Date = isBaseline ? ganttProp.baselineStartDate : (isAuto ? ganttProp.autoStartDate : ganttProp.startDate);
+        const endDate: Date = isBaseline ? ganttProp.baselineEndDate : (isAuto ? ganttProp.autoEndDate : ganttProp.endDate);
         const duration: number = !ganttProp.isAutoSchedule && ganttProp.autoDuration ? ganttProp.autoDuration : ganttProp.duration;
         if (isNullOrUndefined(startDate)) {
             if (!isNullOrUndefined(endDate)) {
@@ -947,13 +1000,14 @@ export class DateProcessor {
      *
      * @param {ITaskData} ganttProp .
      * @param {boolean} isAuto .
+     * @param {boolean} isBaseline .
      * @returns {Date} .
      * @private
      */
-    public getValidEndDate(ganttProp: ITaskData, isAuto?: boolean): Date {
+    public getValidEndDate(ganttProp: ITaskData, isAuto?: boolean, isBaseline?: boolean): Date {
         let eDate: Date = null;
-        const startDate: Date = isAuto ? ganttProp.autoStartDate : ganttProp.startDate;
-        const endDate: Date = isAuto ? ganttProp.autoEndDate : ganttProp.endDate;
+        const startDate: Date = isBaseline ? ganttProp.baselineStartDate : (isAuto ? ganttProp.autoStartDate : ganttProp.startDate);
+        const endDate: Date = isBaseline ? ganttProp.baselineEndDate : (isAuto ? ganttProp.autoEndDate : ganttProp.endDate);
         const duration: number = isAuto ? ganttProp.autoDuration : ganttProp.duration;
         if (isNullOrUndefined(endDate)) {
             if (!isNullOrUndefined(startDate)) {
@@ -1369,9 +1423,10 @@ export class DateProcessor {
      * @param {Date} startDate .
      * @param {Date} endDate .
      * @param {boolean} isAutoSchedule .
+     * @param {boolean} isBaseline - Indicates whether the calculation is specific to baseline dates.
      * @returns {number} .
      */
-    protected getNonWorkingSecondsOnDate(startDate: Date, endDate: Date, isAutoSchedule: boolean): number {
+    protected getNonWorkingSecondsOnDate(startDate: Date, endDate: Date, isAutoSchedule: boolean, isBaseline: boolean): number {
         const sHour: number = this.getSecondsInDecimal(startDate);
         const eHour: number = this.getSecondsInDecimal(endDate);
         let startRangeIndex: number = -1;
@@ -1379,10 +1434,10 @@ export class DateProcessor {
         let totNonWrkSecs: number = 0;
         const startOnHoliday: boolean = (isAutoSchedule && this.parent.autoCalculateDateScheduling &&
             !(this.parent.isLoad && this.parent.treeGrid.loadChildOnDemand && this.parent.taskFields.hasChildMapping)
-        ) ? this.isOnHolidayOrWeekEnd(startDate, null) : false;
+        ) && !isBaseline ? this.isOnHolidayOrWeekEnd(startDate, null) : false;
         const endOnHoliday: boolean = (isAutoSchedule && this.parent.autoCalculateDateScheduling &&
             !(this.parent.isLoad && this.parent.treeGrid.loadChildOnDemand && this.parent.taskFields.hasChildMapping)
-        ) ? this.isOnHolidayOrWeekEnd(endDate, null) : false;
+        ) && !isBaseline ? this.isOnHolidayOrWeekEnd(endDate, null) : false;
         let startnonWorkingTimeRange: IWorkingTimeRange[];
         let endnonWorkingTimeRange: IWorkingTimeRange[];
         if (this.parent.weekWorkingTime.length > 0) {

@@ -2,6 +2,18 @@
 
 ## [Unreleased]
 
+## 30.2.4 (2025-08-07)
+
+### Spreadsheet
+
+#### Features
+
+- `#I706975` - Now, interpolation support has been introduced for charts that reference date values, providing behaviour similar to Microsoft Excel.
+
+#### Bug fixes
+
+- `#I747371` - Issue with "extra blank line was added when copying and pasting text from an external source" has been resolved.
+
 ## 30.1.37 (2025-06-25)
 
 ### Spreadsheet

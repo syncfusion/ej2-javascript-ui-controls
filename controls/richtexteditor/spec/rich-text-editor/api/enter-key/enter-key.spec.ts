@@ -2420,7 +2420,7 @@ describe('EJ2-65633 - Enter key Press when audio and video is focused',() => {
         let startNode = (rteObj as any).inputElement.querySelector('.e-video-wrap');
          rteObj.formatter.editorManager.nodeSelection.setSelectionText(document, startNode, startNode, 0, 1);
         (rteObj as any).keyDown(keyboardEventArgs);
-        expect(rteObj.inputElement.innerHTML==`<p><b>Get started Quick Toolbar to click on an audio</b></p><p>By using the quick toolbar, users can replace, display, and delete the selected an audio.</p><p> <span class="e-audio-wrap" contenteditable="false"><span class="e-clickelem"><audio controls="" class="e-rte-audio e-audio-inline"> <source src="https://assets.mixkit.co/sfx/preview/mixkit-rain-and-thunder-storm-2390.mp3" type="audio/mp3"> </audio></span></span><br> </p><p>Rich Text Editor allows inserting video and audio from online sources as well as the local computers where you want to insert a video and audio in your content.</p><p><b>Get started Quick Toolbar to click on a video</b></p><p>By using the quick toolbar, users can replace, align, display, dimension, and delete the selected a video.</p><p><br></p><p><span class="e-video-wrap" contenteditable="false"><video controls="" class="e-rte-video e-video-inline"> <source src="https://www.w3schools.com/tags/movie.mp4" type="video/mp4"> </video></span><br></p>`).toBe(true);
+        expect(rteObj.inputElement.innerHTML == `<p><b>Get started Quick Toolbar to click on an audio</b></p><p>By using the quick toolbar, users can replace, display, and delete the selected an audio.</p><p> <span class="e-audio-wrap" contenteditable="false"><span class="e-clickelem"><audio controls="" class="e-rte-audio e-audio-inline"> <source src="https://assets.mixkit.co/sfx/preview/mixkit-rain-and-thunder-storm-2390.mp3" type="audio/mp3"> </audio></span></span><br> </p><p>Rich Text Editor allows inserting video and audio from online sources as well as the local computers where you want to insert a video and audio in your content.</p><p><b>Get started Quick Toolbar to click on a video</b></p><p>By using the quick toolbar, users can replace, align, display, dimension, and delete the selected a video.</p><p><span class="e-video-wrap" contenteditable="false"><video controls="" class="e-rte-video e-video-inline"> <source src="https://www.w3schools.com/tags/movie.mp4" type="video/mp4"> </video></span><br></p><p><br></p>`).toBe(true);
     });
 
     it('audio dynamically inserted and focus and enter key press',() => {
@@ -2468,6 +2468,35 @@ describe("EJ2-64561- When press the enter key while the cursor focused before vi
         (rteObj as any).keyDown(keyboardEventArgs);
         const corrrectElemString : string = `<p><br></p><p><span class="e-video-wrap" contenteditable="false"><video controls="" class="e-rte-video e-video-inline"><source src="https://www.w3schools.com/tags/movie.mp4" type="video/mp4"></video></span><br></p>`;
         expect(rteObj.inputElement.innerHTML === corrrectElemString ).toBe(true);
+    });
+});
+describe('Bug 970807: Video Element Gets Removed on Pressing Enter Key After Selection ', () => {
+    let rteObj: RichTextEditor;
+    let innerHTML: string = `<span class="e-video-wrap" style="display: block;"><span class="e-video-clickelem"><iframe src="https://www.youtube.com/embed/H55jAgs61Ps" width="560" height="315" loading="lazy" allowfullscreen="" allow="accelerometer; clipboard-write; encrypted-media; gyroscope; picture-in-picture" spellcheck="false" frameborder="0" class="e-rte-video e-video-center e-resize e-video-wrap"></iframe></span></span>`;
+    beforeAll(() => {
+        rteObj = renderRTE({
+            value: innerHTML,
+            enableHtmlSanitizer: false
+        });
+    });
+    afterAll(() => {
+        destroy(rteObj);
+    });
+    it('video focus and enter key press', () => {
+        (rteObj as any).inputElement.focus();
+        let startNode = (rteObj as any).inputElement.querySelector('.e-video-wrap');
+        rteObj.formatter.editorManager.nodeSelection.setSelectionText(document, startNode, startNode, 0, 1);
+        (rteObj as any).keyDown(keyboardEventArgs);
+        expect(rteObj.inputElement.innerHTML === `<p><span class="e-video-wrap" style="display: block;"><span class="e-video-clickelem"><iframe src="https://www.youtube.com/embed/H55jAgs61Ps" width="560" height="315" loading="lazy" allowfullscreen="" allow="accelerometer; clipboard-write; encrypted-media; gyroscope; picture-in-picture" spellcheck="false" frameborder="0" class="e-rte-video e-video-center e-resize e-video-wrap">&ZeroWidthSpace;</iframe></span></span></p><p><br></p>`).toBe(true);
+    });
+    it('video dynamically inserted and focus and enter key press', () => {
+        rteObj.value = `<span class="e-video-wrap" style="display: block;"><span class="e-video-clickelem"><iframe src="https://www.youtube.com/embed/H55jAgs61Ps" width="560" height="315" loading="lazy" allowfullscreen="" allow="accelerometer; clipboard-write; encrypted-media; gyroscope; picture-in-picture" spellcheck="false" frameborder="0" class="e-rte-video e-video-center e-resize e-video-wrap"></iframe></span></span>`;
+        rteObj.dataBind();
+        (rteObj as any).inputElement.focus();
+        let startNode = (rteObj as any).inputElement.querySelector('.e-video-wrap');
+        rteObj.formatter.editorManager.nodeSelection.setSelectionText(document, startNode, startNode, 0, 1);
+        (rteObj as any).keyDown(keyboardEventArgs);
+        expect(rteObj.inputElement.innerHTML === `<p><span class="e-video-wrap" style="display: block;"><span class="e-video-clickelem"><iframe src="https://www.youtube.com/embed/H55jAgs61Ps" width="560" height="315" loading="lazy" allowfullscreen="" allow="accelerometer; clipboard-write; encrypted-media; gyroscope; picture-in-picture" spellcheck="false" frameborder="0" class="e-rte-video e-video-center e-resize e-video-wrap">&ZeroWidthSpace;</iframe></span></span></p><p><br></p>`).toBe(true);
     });
 });
 describe("EJ2-64561- When press the enter key while the cursor focused before video, the video gets duplicated", () => {

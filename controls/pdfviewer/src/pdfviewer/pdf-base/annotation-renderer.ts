@@ -3992,6 +3992,13 @@ export class AnnotationRenderer {
         } else {
             bounds = this.getTextMarkupBounds(quadPoints, height, width, pageRotation, page);
         }
+        if (textMarkup.boundsCollection && textMarkup.boundsCollection.length === 0 && textMarkup.bounds) {
+            const boundsObject: any = {
+                x: textMarkup.bounds.x, y: textMarkup.bounds.y,
+                width: textMarkup.bounds.width, height: textMarkup.bounds.height
+            };
+            bounds.push(this.getBounds(boundsObject, height, width, pageRotation));
+        }
         markupAnnotation.Bounds = bounds;
         markupAnnotation.AnnotType = 'textMarkup';
         for (let i: number = 0; i < textMarkup.reviewHistory.count; i++)

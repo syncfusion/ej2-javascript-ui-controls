@@ -646,7 +646,6 @@ class SequenceDiagramModel {
     public addActivation(activation: ActivationModel): void {
         // Add default color
         UMLHelperClass.updateNodeColor(activation.node, '#6495ED'); // cornflowerblue
-        this.diagram.nodes.push(activation.node);
         // Add to the list of activations
         this.activations.push(activation);
     }
@@ -2204,12 +2203,8 @@ class ActivationRenderer {
         activationNode.offsetY = sourcePoint.y + (targetPoint.y - sourcePoint.y) / 2;
         activationNode.width = this.settings.activationWidth;
         activationNode.height = Math.abs(sourcePoint.y - targetPoint.y);
-        activationNode.zIndex = -100 + activation.activateConnectorDetails.index;
-        this.diagram.preventNodesUpdate = true;
-        this.diagram.nodePropertyChange(activationNode, {} as Node, {
-            offsetX: activationNode.offsetX, offsetY: activationNode.offsetY, width: activationNode.width, height: activationNode.height
-        } as Node, true);
-        this.diagram.preventNodesUpdate = false;
+        // 969718 - Fill Color Change Not Applied for UML Sequence
+        this.diagram.add(activationNode);
     }
 
     private static calculateActivationDepth(activation: ActivationModel, sourcePoint: PointModel, targetPoint: PointModel): number {

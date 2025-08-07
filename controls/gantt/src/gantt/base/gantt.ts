@@ -3635,8 +3635,12 @@ export class Gantt extends Component<HTMLElement>
                 break;
             case 'timelineSettings':
                 this.timelineModule.refreshTimeline();
+                if (this.enableTimelineVirtualization && (!this.undoRedoModule || (this.undoRedoModule &&
+                    !this.undoRedoModule['isZoomingUndoRedoProgress']))) {
+                    isRefresh = true;
+                }
                 if (this.undoRedoModule && this.undoRedoModule['isZoomingUndoRedoProgress']) {
-                    this.undoRedoModule['isZoomingUndoRedoProgress'] =  false;
+                    this.undoRedoModule['isZoomingUndoRedoProgress'] = false;
                 }
                 break;
             case 'rowHeight':
@@ -4334,6 +4338,7 @@ export class Gantt extends Component<HTMLElement>
             redo: 'Redo',
             baselineStartDate: 'Baseline Start Date',
             baselineEndDate: 'Baseline End Date',
+            baselineDuration: 'Baseline Duration',
             taskMode: 'Task Mode',
             changeScheduleMode: 'Change Schedule Mode',
             subTasksStartDate: 'SubTasks Start Date',

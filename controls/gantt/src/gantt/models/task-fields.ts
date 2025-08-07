@@ -116,6 +116,12 @@ export class TaskFields extends ChildProperty<TaskFields> {
     @Property(null)
     public baselineEndDate: string;
     /**
+     * To map baseline duration of task from data source.
+     *
+     */
+    @Property(null)
+    public baselineDuration: string;
+    /**
      * To map assigned resources of task from data source.
      *
      */

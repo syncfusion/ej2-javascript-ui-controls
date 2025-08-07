@@ -61,7 +61,7 @@ import { SnapSettingsModel } from './diagram/grid-lines-model';
 import { NodeModel, TextModel, BpmnShapeModel, BpmnAnnotationModel, HeaderModel, HtmlModel, UmlClassMethodModel, UmlClassAttributeModel, UmlEnumerationMemberModel, UmlClassModel, UmlClassifierShapeModel, BasicShapeModel, FlowShapeModel, PathModel } from './objects/node-model';
 import { UmlActivityShapeModel, SwimLaneModel, LaneModel, PhaseModel } from './objects/node-model';
 import { Size } from './primitives/size';
-import { Keys, KeyModifiers, DiagramTools, AlignmentMode, AnnotationConstraints, NodeConstraints, ScrollActions, TextWrap, UmlClassChildType, TextAnnotationDirection, ConnectorConstraints, DecoratorShapes, FlipMode, Direction, ItemSourceType } from './enum/enum';
+import { Keys, KeyModifiers, DiagramTools, AlignmentMode, AnnotationConstraints, NodeConstraints, ScrollActions, TextWrap, UmlClassChildType, TextAnnotationDirection, ConnectorConstraints, DecoratorShapes, FlipMode, Direction } from './enum/enum';
 import { RendererAction, State } from './enum/enum';
 import { BlazorAction } from './enum/enum';
 import { DiagramConstraints, BridgeDirection, AlignmentOptions, SelectorConstraints, PortVisibility, DiagramEvent } from './enum/enum';
@@ -1712,7 +1712,7 @@ export class Diagram extends Component<HTMLElement> implements INotifyPropertyCh
     /** @private */
     public canExpand: boolean = false;
     /** @private */
-    public itemType: ItemSourceType = 'PublicMethod';
+    public itemType: string = 'PublicMethod';
     private changedConnectorCollection: ConnectorModel[] = [];
     private changedNodesCollection: NodeModel[] = [];
     private previousNodeCollection: NodeModel[] = [];
@@ -4709,8 +4709,7 @@ export class Diagram extends Component<HTMLElement> implements INotifyPropertyCh
         if (obj) {
             obj = cloneObject(obj); let args: ICollectionChangeEventArgs | IBlazorCollectionChangeEventArgs;
             args = {
-                element: obj, cause: this.diagramActions, diagramAction: this.getDiagramAction(this.diagramActions), state: 'Changing', type: 'Addition', cancel: false,
-                itemSource: this.itemType
+                element: obj, cause: this.diagramActions, diagramAction: this.itemType, state: 'Changing', type: 'Addition', cancel: false
             };
             if (this.parentObject) {
                 args.parentId = this.parentObject.id;
@@ -4823,8 +4822,7 @@ export class Diagram extends Component<HTMLElement> implements INotifyPropertyCh
                     }
                 }
                 args = {
-                    element: newObj, cause: this.diagramActions, diagramAction: this.getDiagramAction(this.diagramActions), state: 'Changed', type: 'Addition', cancel: false,
-                    itemSource: this.itemType
+                    element: newObj, cause: this.diagramActions, diagramAction: this.itemType, state: 'Changed', type: 'Addition', cancel: false
                 };
                 if (this.parentObject) {
                     args.parentId = this.parentObject.id;
@@ -5195,8 +5193,8 @@ export class Diagram extends Component<HTMLElement> implements INotifyPropertyCh
             this.insertBlazorConnector(obj as Connector);
             if (obj && (canDelete(obj) || (this.diagramActions & DiagramAction.Clear))) {
                 args = {
-                    element: obj, cause: this.diagramActions, diagramAction: this.getDiagramAction(this.diagramActions),
-                    state: 'Changing', type: 'Removal', cancel: false, itemSource: this.itemType
+                    element: obj, cause: this.diagramActions, diagramAction: this.itemType,
+                    state: 'Changing', type: 'Removal', cancel: false
                 };
                 //Removed isBlazor code
                 if (!(this.diagramActions & DiagramAction.Clear) && (obj.id !== 'helper')) {
@@ -5317,8 +5315,8 @@ export class Diagram extends Component<HTMLElement> implements INotifyPropertyCh
                         if (!(this.diagramActions & DiagramAction.Clear)) {
                             this.removeFromAQuad(currentObj as IElement);
                             args = {
-                                element: obj, cause: this.diagramActions, diagramAction: this.getDiagramAction(this.diagramActions),
-                                state: 'Changed', type: 'Removal', cancel: false, itemSource: this.itemType
+                                element: obj, cause: this.diagramActions, diagramAction: this.itemType,
+                                state: 'Changed', type: 'Removal', cancel: false
                             };
                             //Removed isBlazor code
                             if (obj.id !== 'helper') {
@@ -8158,7 +8156,13 @@ export class Diagram extends Component<HTMLElement> implements INotifyPropertyCh
             this.initObject(tempTabel[`${obj}`]);
             this.bpmnModule.updateDocks(tempTabel[`${obj}`], this);
         }
-        for (const obj of Object.keys(containerTable)) {
+        //Bug 969383: Margin Properties Fail for Nested Containers with Children.
+        //To sort the containerTable to render child containers at first in case of nested containers
+        let sortedContainers: string[] = [];
+        if (Object.keys(containerTable).length > 0) {
+            sortedContainers = this.sortContainersTopologically(containerTable, tempTabel);
+        }
+        for (const obj of sortedContainers) {
             this.initObject(tempTabel[`${obj}`]);
             updateContainerDocks(tempTabel[`${obj}`], this);
         }
@@ -8172,6 +8176,92 @@ export class Diagram extends Component<HTMLElement> implements INotifyPropertyCh
             this.initConnectors(connector, layer);
         }
         //Removed isBlazor code
+    }
+    private hasNestingContainer(containerTable: Record<string, any>, tempTabel: Record<string, any>): boolean {
+        let hasNesting: boolean = false;
+        for (const parentId of Object.keys(containerTable)) {
+            const parent: NodeModel = tempTabel[`${parentId}`];
+            if (
+                parent && parent.shape instanceof Container &&
+                Array.isArray(parent.shape.children)
+            ) {
+                for (const childId of parent.shape.children) {
+                    if (containerTable[`${childId}`]) {
+                        hasNesting = true;
+                        break;
+                    }
+                }
+            }
+            if (hasNesting) {
+                break;
+            }
+        }
+        return hasNesting;
+    }
+    private sortContainersTopologically(containerTable: Record<string, any>, tempTabel: Record<string, any>): string[] {
+        // 1. Detect nested containers
+        const hasNesting: boolean = this.hasNestingContainer(containerTable, tempTabel);
+        if (!hasNesting) {
+            // No nesting: just return the original order
+            return Object.keys(containerTable);
+        }
+        // Dependency graph: maps containerId to list of its child containerIds
+        const dependencyGraph: Record<string, string[]> = {};
+        // Track how many parents each container has
+        const containerInDegree: Record<string, number> = {};
+        // Final sorted order of containerIds
+        const sortedContainerIds: string[] = [];
+
+        // Initialize empty dependency graph and in-degree tracker for each container
+        for (const containerId of Object.keys(containerTable)) {
+            dependencyGraph[`${containerId}`] = [];
+            containerInDegree[`${containerId}`] = 0;
+        }
+
+        // Build dependency graph: parent -> [children], and track child container in-degree
+        for (const parentId of Object.keys(containerTable)) {
+            const parentContainer: NodeModel = tempTabel[`${parentId}`];
+
+            // If parentContainer has children that are themselves containers, create dependency
+            if (
+                parentContainer && parentContainer.shape instanceof Container &&
+                Array.isArray(parentContainer.shape.children) &&
+                parentContainer.shape.children.length > 0
+            ) {
+                for (const childId of parentContainer.shape.children as string[]) {
+                    if (containerTable[`${childId}`]) {
+                        dependencyGraph[`${parentId}`].push(childId);
+                        containerInDegree[`${childId}`] = (containerInDegree[`${childId}`] || 0) + 1;
+                    }
+                }
+            }
+        }
+
+        // Use Kahn's algorithm for topological sorting
+        const processQueue: string[] = [];
+
+        // Start by processing containers without any parents (root containers)
+        for (const containerId of Object.keys(containerInDegree)) {
+            if (containerInDegree[`${containerId}`] === 0) {
+                processQueue.push(containerId);
+            }
+        }
+
+        // Build the sorted order by traversing dependencies
+        while (processQueue.length > 0) {
+            const currentId: string = processQueue.shift() as string;
+            sortedContainerIds.push(currentId);
+
+            for (const childId of dependencyGraph[`${currentId}`]) {
+                containerInDegree[`${childId}`]--;
+                if (containerInDegree[`${childId}`] === 0) {
+                    processQueue.push(childId);
+                }
+            }
+        }
+
+        // Reverse the result to ensure children are rendered before their parents
+        return sortedContainerIds.reverse();
     }
     private alignGroup(parents: string[], tempTabel: {}): string[] {
         let newList: string[] = [];
@@ -11569,7 +11659,8 @@ export class Diagram extends Component<HTMLElement> implements INotifyPropertyCh
                     textWrapper = this.getWrapper(node.wrapper, this.activeLabel.id);
                 }
                 let contentModified = false;
-                if (annotation.content !== text && !args.cancel) {
+                // 970529: Exception Thrown When Editing Node Annotation where id has underscore
+                if (annotation && annotation.content !== text && !args.cancel) {
                     contentModified = true;
                     if (!this.activeLabel.isGroup) {
                         this.startGroupAction();
@@ -12051,8 +12142,13 @@ export class Diagram extends Component<HTMLElement> implements INotifyPropertyCh
                     }
                     this.nodePropertyChange(this.nameTable[`${id}`], oldObjects as Node, newObjects as Node);
                 }
-                actualObject.height = actualObject.wrapper.height = grid.height;
-                actualObject.width = actualObject.wrapper.width = grid.width;
+                // 969733 : Container Node Moves Irregularly When Editing Header Annotation and Resizing Container
+                actualObject.height = grid.height;
+                actualObject.width = grid.width;
+                if (actualObject.shape.type === 'SwimLane') {
+                    actualObject.wrapper.height = grid.height;
+                    actualObject.wrapper.width = grid.width;
+                }
             } else if (oldObject.constraints) {
                 const oldSelectConstraints = (oldObject.constraints & NodeConstraints.Select);
                 const newSelectConstraints = (node.constraints & NodeConstraints.Select);
@@ -12422,7 +12518,9 @@ export class Diagram extends Component<HTMLElement> implements INotifyPropertyCh
                             (swimLaneNode.shape as SwimLaneModel).header.annotation.width = actualObject.annotations[0].width;
                             (swimLaneNode.shape as SwimLaneModel).header.annotation.height = actualObject.annotations[0].height;
                         }
-                    } else if (swimLaneNode && (swimLaneNode.shape as Container).type === 'Container') {
+                    }
+                    // 969381: restrict child  annotation applied for container header
+                    else if (swimLaneNode && (swimLaneNode.shape as Container).type === 'Container' && actualObject.isHeader) {
                         const header: HeaderModel = (swimLaneNode.shape as Container).header;
                         header.annotation.content = actualObject.annotations[0].content;
                         header.annotation.offset = actualObject.annotations[0].offset;

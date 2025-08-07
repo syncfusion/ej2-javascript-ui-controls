@@ -1716,7 +1716,8 @@ export function updateAction(
                 type: eventArgs.type, theme: eventArgs.theme, markerSettings: eventArgs.markerSettings,
                 isSeriesInRows: eventArgs.isSeriesInRows, range: eventArgs.range, id: eventArgs.id,
                 height: eventArgs.height, width: eventArgs.width, top: eventArgs.top,
-                left: eventArgs.left, enableCanvas: eventArgs.enableCanvas
+                left: eventArgs.left, enableCanvas: eventArgs.enableCanvas,
+                skipDateInterpolation: eventArgs.skipDateInterpolation
             }];
             spreadsheet.notify(setChart, {
                 chart: chartOptions, isUndoRedo: false, range: eventArgs.posRange || eventArgs.range, isInitCell: true, isRedo: true
@@ -1732,7 +1733,7 @@ export function updateAction(
                 primaryYAxis: eventArgs.primaryYAxis, isSeriesInRows: eventArgs.isSeriesInRows,
                 range: eventArgs.range, id: eventArgs.id, height: eventArgs.height,
                 width: eventArgs.width, top: eventArgs.top, left: eventArgs.left,
-                enableCanvas: eventArgs.enableCanvas
+                enableCanvas: eventArgs.enableCanvas, skipDateInterpolation: eventArgs.skipDateInterpolation
             }];
             spreadsheet.notify(
                 setChart, { chart: chartOpts, isUndoRedo: false, range: eventArgs.posRange, isInitCell: true, isUndo: true });

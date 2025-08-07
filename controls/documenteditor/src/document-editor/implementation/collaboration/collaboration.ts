@@ -300,7 +300,7 @@ export class CollaborativeEditingHandler {
         if (!isNullOrUndefined(this.documentEditor.commentReviewPane.commentPane.currentEditingComment)) {
             currentTextArea = this.documentEditor.commentReviewPane.commentPane.currentEditingComment.textArea as HTMLTextAreaElement;
         }
-        let contentControlProperties: ContentControlProperties;
+        let contentControl: ContentControl;
         for (let i: number = 0; i < action.operations.length; i++) {
             let markerData: MarkerInfo = action.operations[i].markerData;
             let tableLength: number = undefined;
@@ -493,17 +493,22 @@ export class CollaborativeEditingHandler {
                         }
                     } else if (markerData.type && markerData.type === 'ContentControl') {
                         if (op2.text === CONTROL_CHARACTERS.Marker_Start) {
-                            contentControlProperties = new ContentControlProperties(markerData.text as ContentControlWidgetType);
+                            const contentControlStart = new ContentControl(markerData.text as ContentControlWidgetType);
+                            contentControlStart.contentControlProperties = contentControl.contentControlProperties;
                             if (!isNullOrUndefined(markerData.contentControlProperties)) {
-                                this.documentEditor.editorModule.assignContentControl(contentControlProperties, JSON.parse(markerData.contentControlProperties));
+                                this.documentEditor.editorModule.assignContentControl(contentControl.contentControlProperties, JSON.parse(markerData.contentControlProperties));
                             }
-                        }
-                        const contentControl: ContentControl = new ContentControl(contentControlProperties.contentControlWidgetType);
-                        contentControl.contentControlProperties = contentControlProperties;
-                        contentControl.type = op2.text === CONTROL_CHARACTERS.Marker_Start ? 0 : 1;
-                        this.documentEditor.editorModule.insertElementsInternal(this.documentEditor.selectionModule.start, [contentControl]);
-                        if (op2.text === CONTROL_CHARACTERS.Marker_End && contentControl.reference) {
-                            this.documentEditor.editorModule.updatePropertiesToBlock(contentControl.reference, true);
+                            contentControlStart.type = 0;
+                            contentControlStart.reference = contentControl;
+                            contentControl.reference = contentControlStart;
+                            this.documentEditor.editorModule.insertElementsInternal(this.documentEditor.selectionModule.start, [contentControlStart]);
+                            this.documentEditor.editorModule.updatePropertiesToBlock(contentControlStart, true);
+
+                        } else {
+                            contentControl = new ContentControl(markerData.text as ContentControlWidgetType);
+                            contentControl.contentControlProperties = new ContentControlProperties(markerData.text as ContentControlWidgetType);
+                            contentControl.type = 1;
+                            this.documentEditor.editorModule.insertElementsInternal(this.documentEditor.selectionModule.start, [contentControl]);
                         }
                     }
                 } else if (markerData && !isNullOrUndefined(markerData.dropDownIndex) && op2.type === 'DropDown') {
@@ -721,7 +726,7 @@ export class CollaborativeEditingHandler {
                 this.documentEditor.optionsPaneModule.searchIconClickInternal();
             }
         }
-        contentControlProperties = undefined;
+        contentControl = undefined;
         if (this.documentEditor.editor.isFieldOperation) {
             this.documentEditor.documentHelper.layout.layoutWholeDocument();
             this.documentEditor.editor.isFieldOperation = false;

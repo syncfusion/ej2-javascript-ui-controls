@@ -1855,4 +1855,96 @@ describe('Timeline view events dragging', () => {
             }, 100);
         });
     });
+    describe('Cancel Multiple Event Drag', () => {
+        let schObj: Schedule;
+        const testData = [
+            {
+                "Id": 1,
+                "Subject": "Task 1",
+                "StartTime": "2023-01-01T04:00:00.000Z",
+                "EndTime": "2023-01-01T06:30:00.000Z",
+                "IsAllDay": false,
+                "ProjectId": 1,
+                "TaskId": 1
+            },
+            {
+                "Id": 2,
+                "Subject": "Task 2",
+                "StartTime": "2023-01-01T07:00:00.000Z",
+                "EndTime": "2023-01-01T09:15:00.000Z",
+                "IsAllDay": false,
+                "ProjectId": 2,
+                "TaskId": 2
+            },
+            {
+                "Id": 3,
+                "Subject": "Task 3",
+                "StartTime": "2023-01-02T04:30:00.000Z",
+                "EndTime": "2023-01-02T07:00:00.000Z",
+                "IsAllDay": false,
+                "ProjectId": 1,
+                "TaskId": 2
+            }
+        ];
+
+        beforeAll((done: DoneFn) => {
+            const schOptions: ScheduleModel = {
+                width: '500px',
+                height: '500px',
+                selectedDate: new Date(2023, 0, 1),
+                allowMultiDrag: true,
+                views: ['Month', 'TimelineMonth'],
+                currentView: 'Month',
+                showQuickInfo: false,
+                dragStart: (args: DragEventArgs) => {
+                    const isMatch = args.selectedData.some((e: any) => e.ProjectId === 2);
+                    if (isMatch) {
+                        args.cancel = true;
+                    }
+                },
+                group: {
+                    resources: ['Owners']
+                },
+                resources: [{
+                    field: 'TaskId', title: 'Owners',
+                    name: 'Owners',
+                    dataSource: [
+                        { text: 'Nancy', id: 1, color: '#df5286' },
+                        { text: 'Steven', id: 2, color: '#7fa900' }
+                    ],
+                    textField: 'text', idField: 'id', colorField: 'color'
+                }]
+            };
+            schObj = util.createSchedule(schOptions, testData, done);
+        });
+
+        afterAll(() => {
+            util.destroy(schObj);
+        });
+
+        it('should prevent drag when one of multiple selected events has ProjectId=2', (done: DoneFn) => {
+            const appointments = schObj.element.querySelectorAll('.e-appointment');
+            expect(appointments.length).toBe(3);
+            util.triggerMouseEvent(appointments[0] as HTMLElement, 'click', 0, 0, false, true);
+            expect(schObj.element.querySelectorAll('.e-appointment-border').length).toBe(1);
+            util.triggerMouseEvent(appointments[1] as HTMLElement, 'click', 0, 0, false, true);
+            expect(schObj.element.querySelectorAll('.e-appointment-border').length).toBe(2);
+            triggerMouseEvent(appointments[0] as HTMLElement, 'mousedown', 120, 120);
+            triggerMouseEvent(appointments[0] as HTMLElement, 'mousemove', 140, 140);
+            const cloneElement = schObj.element.querySelector('.e-drag-clone');
+            expect(cloneElement).toBeFalsy();
+            const resourceEle = schObj.element.querySelector('.e-resource-cells');
+            triggerMouseEvent(resourceEle as HTMLElement, 'mousedown');
+            triggerMouseEvent(resourceEle as HTMLElement, 'mouseup');
+            expect(schObj.element.querySelectorAll('.e-appointment-border').length).toBe(0);
+            util.triggerMouseEvent(appointments[0] as HTMLElement, 'click');
+            expect(schObj.element.querySelectorAll('.e-appointment-border').length).toBe(1);
+            triggerMouseEvent(appointments[0] as HTMLElement, 'mousedown', 120, 120);
+            triggerMouseEvent(appointments[0] as HTMLElement, 'mousemove', 140, 140);
+            const singleCloneElement = schObj.element.querySelector('.e-drag-clone');
+            expect(singleCloneElement).toBeTruthy();
+            triggerMouseEvent(appointments[0] as HTMLElement, 'mouseup', 160, 160);
+            done();
+        });
+    });
 });

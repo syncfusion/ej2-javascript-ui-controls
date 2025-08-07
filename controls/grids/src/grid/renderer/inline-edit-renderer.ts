@@ -111,6 +111,7 @@ export class InlineEditRender {
                 tdElement[parseInt(m.toString(), 10)].getAttribute('colspan') : null;
             const col: Column = cols[parseInt(i.toString(), 10)] as Column;
             inputValue = (elements[col.uid]).value;
+            inputValue = !isNullOrUndefined(inputValue) ? inputValue : '';
             const td: HTMLElement = this.parent.createElement(
                 'td', { className: literals.rowCell, attrs: { 'colspan': span ? span : '' }});
             td.style.cssText = col.textAlign ? `text-align: ${col.textAlign};` : '';

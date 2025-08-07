@@ -1019,6 +1019,11 @@ export class PdfViewerBase {
         }
         this.pdfViewerRunner.onMessage('PageLoaded,LoadedStampForFormFields,LoadedStamp', function (event: any): void {
             if (event.data.message === 'PageLoaded' && proxy.clientSideRendering) {
+                if (document.getElementById(proxy.pdfViewer.element.id + '_pageViewContainer') &&
+                    document.getElementById(proxy.pdfViewer.element.id + '_pageViewContainer').children &&
+                    document.getElementById(proxy.pdfViewer.element.id + '_pageViewContainer').children.length > 0) {
+                    proxy.clear(true);
+                }
                 proxy.requestSuccessPdfium(event.data);
             }
             else if (event.data.message === 'LoadedStampForFormFields') {
@@ -2399,7 +2404,7 @@ export class PdfViewerBase {
     }
 
     /**
-     * @param {boolean} isEnable - Enable or disable the toolbar itema.
+     * @param {boolean} isEnable - Enable or disable the toolbar item.
      * @returns {void}
      * @private
      */
@@ -11192,6 +11197,35 @@ export class PdfViewerBase {
 
     /**
      * @private
+     * @param {any} text - It describes about the text
+     * @param {any} font - It describes about the font
+     * @param {any} fontFamily - It describes about the font family
+     * @returns {number} - number
+     */
+    public getTextWidth(text: any, font: any, fontFamily: any): number {
+        const canvas: HTMLCanvasElement = document.createElement('canvas');
+        const context: CanvasRenderingContext2D = canvas.getContext('2d');
+        let fontName: string;
+        if (font) {
+            fontName = font + 'px' + ' ' + fontFamily;
+        }
+        context.font = fontName || getComputedStyle(document.body).font;
+        const textWidth: number = context.measureText(text).width;
+        this.releaseCanvas(canvas);
+        return textWidth;
+    }
+
+    /**
+     * @private
+     * @param {number} fontSize - Font size.
+     * @returns {number} - Returns the font size.
+     */
+    public getFontSize(fontSize: number): number {
+        return fontSize ;
+    }
+
+    /**
+     * @private
      * @param {HTMLElement} target - The target.
      * @returns {boolean} - Returns true or false.
      */
@@ -12689,7 +12723,7 @@ export class PdfViewerBase {
             }
             if (importPageCollections.signatureAnnotation && importPageCollections.signatureAnnotation.length !== 0) {
                 if (signatureObject) {
-                    const annotationObject: IPageAnnotations[] = JSON.parse(inkObject);
+                    const annotationObject: IPageAnnotations[] = JSON.parse(signatureObject);
                     if (annotationObject) {
                         importPageCollections.signatureAnnotation =
                         this.findImportedAnnotations(annotationObject, importPageCollections.signatureAnnotation, pageIndex);
@@ -13542,49 +13576,49 @@ export class PdfViewerBase {
 
     public deleteAnnotations(): void {
         if (this.pdfViewer.annotationModule) {
-            this.updateAnnotationsUndoRedo();
-            this.updateSignatureUndoRedo();
-            if (!isNullOrUndefined(this.pdfViewer.annotations))
-            {
-                this.pdfViewer.annotations.length = 0;
-            }
-            this.pdfViewer.zIndexTable = [];
-            this.pdfViewer.annotationCollection = [];
-            this.pdfViewer.signatureCollection = [];
-            const annotationCollection: any = this.createAnnotationsCollection();
-            this.annotationComments = annotationCollection;
-            this.documentAnnotationCollections = annotationCollection;
-            this.annotationRenderredList = [];
-            for (let i: number = 0; i < this.pageCount; i++) {
-                this.pdfViewer.annotationModule.renderAnnotations(i, null, null, null);
-                this.pdfViewer.renderDrawing(undefined, i);
-                this.pdfViewer.clearSelection(i);
-                const accordionContent: HTMLElement = document.getElementById(this.pdfViewer.element.id + '_accordionContainer' + (i + 1));
-                if (accordionContent) {
-                    accordionContent.remove();
+            if (this.pdfViewer.annotationCollection.length >= 1 || this.pdfViewer.signatureCollection.length >= 1) {
+                this.updateAnnotationsUndoRedo();
+                this.updateSignatureUndoRedo();
+                if (!isNullOrUndefined(this.pdfViewer.annotations)) {
+                    this.pdfViewer.annotations.length = 0;
                 }
-                const accordionContentContainer: HTMLElement = document.getElementById(this.pdfViewer.element.id + '_accordionContentContainer');
-                if (accordionContentContainer) {
-                    if (accordionContentContainer.childElementCount === 0) {
-                        accordionContentContainer.style.display = 'none';
-                        if (document.getElementById(this.pdfViewer.element.id + '_commentsPanelText')) {
-
-                            this.navigationPane.annotationMenuObj.enableItems([this.pdfViewer.localeObj.getConstant('Export Annotations')], false);
-                            this.navigationPane.annotationMenuObj.enableItems([this.pdfViewer.localeObj.getConstant('Export XFDF')],
-                                                                              false);
-                            document.getElementById(this.pdfViewer.element.id + '_commentsPanelText').style.display = 'block';
+                this.pdfViewer.zIndexTable = [];
+                this.pdfViewer.annotationCollection = [];
+                this.pdfViewer.signatureCollection = [];
+                const annotationCollection: any = this.createAnnotationsCollection();
+                this.annotationComments = annotationCollection;
+                this.documentAnnotationCollections = annotationCollection;
+                this.annotationRenderredList = [];
+                for (let i: number = 0; i < this.pageCount; i++) {
+                    this.pdfViewer.annotationModule.renderAnnotations(i, null, null, null);
+                    this.pdfViewer.renderDrawing(undefined, i);
+                    this.pdfViewer.clearSelection(i);
+                    const accordionContent: HTMLElement = document.getElementById(this.pdfViewer.element.id + '_accordionContainer' + (i + 1));
+                    if (accordionContent) {
+                        accordionContent.remove();
+                    }
+                    const accordionContentContainer: HTMLElement = document.getElementById(this.pdfViewer.element.id + '_accordionContentContainer');
+                    if (accordionContentContainer) {
+                        if (accordionContentContainer.childElementCount === 0) {
+                            accordionContentContainer.style.display = 'none';
+                            if (document.getElementById(this.pdfViewer.element.id + '_commentsPanelText')) {
+                                this.navigationPane.annotationMenuObj.enableItems([this.pdfViewer.localeObj.getConstant('Export Annotations')], false);
+                                this.navigationPane.annotationMenuObj.enableItems([this.pdfViewer.localeObj.getConstant('Export XFDF')],
+                                                                                  false);
+                                document.getElementById(this.pdfViewer.element.id + '_commentsPanelText').style.display = 'block';
+                            }
                         }
                     }
                 }
+                this.isImportedAnnotation = false;
+                this.isImportAction = false;
+                this.importedAnnotation = [];
+                this.annotationPageList = [];
+                this.pdfViewer.annotationModule.freeTextAnnotationModule.freeTextPageNumbers = [];
+                this.pdfViewer.annotationModule.stampAnnotationModule.stampPageNumber = [];
+                this.pdfViewer.annotation.inkAnnotationModule.inkAnnotationindex = [];
+                this.isAnnotationCollectionRemoved = true;
             }
-            this.isImportedAnnotation = false;
-            this.isImportAction = false;
-            this.importedAnnotation = [];
-            this.annotationPageList = [];
-            this.pdfViewer.annotationModule.freeTextAnnotationModule.freeTextPageNumbers = [];
-            this.pdfViewer.annotationModule.stampAnnotationModule.stampPageNumber = [];
-            this.pdfViewer.annotation.inkAnnotationModule.inkAnnotationindex = [];
-            this.isAnnotationCollectionRemoved = true;
         } else {
             this.getModuleWarningMessage('Annotation');
         }

@@ -881,9 +881,15 @@ export class PdfExport {
                 gridRow.style.setTextBrush(brush);
                 gridRow.style.setBackgroundBrush(backgroundBrush);
             }
+            let skipDragDropIndent: boolean = this.parent.allowRowDragAndDrop && isNullOrUndefined(this.parent.rowDropSettings.targetID);
             for (let i: number = 0; i < pdfGrid.columns.count + aggIdx; i++) {
                 let cell: Cell<AggregateColumnModel> = row.cells[parseInt(index.toString(), 10)];
                 if (cell.cellType === CellType.DetailFooterIntent) {
+                    i--; index++;
+                    continue;
+                }
+                if (skipDragDropIndent && cell.cellType === CellType.Indent) {
+                    skipDragDropIndent = false;
                     i--; index++;
                     continue;
                 }

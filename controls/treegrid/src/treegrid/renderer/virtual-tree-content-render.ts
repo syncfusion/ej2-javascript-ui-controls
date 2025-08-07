@@ -826,7 +826,7 @@ export class VirtualTreeContentRenderer extends VirtualContentRenderer {
         ) {
             const viewInfo: VirtualInfo = this.currentInfo = getValue('getInfoFromView', this).apply(this, [scrollArgs.direction, info, scrollArgs.offset]);
             this.previousInfo = viewInfo;
-            if (this.prevInfo && ((info.axis === 'Y' && this.prevInfo.blockIndexes.toString() === viewInfo.blockIndexes.toString())
+            if (this.prevInfo && (isRemoteData(this.parent.root) && viewInfo.event !== 'model-changed') && ((info.axis === 'Y' && this.prevInfo.blockIndexes.toString() === viewInfo.blockIndexes.toString())
                 || ((info.axis === 'X' && this.prevInfo.columnIndexes.toString() === viewInfo.columnIndexes.toString())
                     || (this.parent.isFrozenGrid() && this.parent.getVisibleFrozenLeftCount() >= viewInfo.columnIndexes[0]
                         && this.prevInfo.columnIndexes.toString().includes(viewInfo.columnIndexes.toString()))))) {

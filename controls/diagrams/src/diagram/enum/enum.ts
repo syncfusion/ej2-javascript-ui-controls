@@ -2830,32 +2830,6 @@ export type EventState =
     'Cancelled';
 
 /**
- * Defines the source of item addition or removal.
- * PublicMethod: Items added or removed through public API methods.
- * SymbolPalette: Items added via interaction with the Symbol Palette.
- * DrawingTool: Items added using a drawing tool.
- * Clipboard: Items added or removed via clipboard operations (copy, cut, paste).
- * Undo: Items affected by an undo operation.
- * Redo: Items affected by a redo operation.
- * Group: Items added as part of a group operation.
- */
-export type ItemSourceType =
-    /** PublicMethod: Items added or removed through public API methods. */
-    'PublicMethod' |
-    /** SymbolPalette: Items added via interaction with the Symbol Palette. */
-    'SymbolPalette' |
-    /**DrawingTool: Items added using a drawing tool. */
-    'DrawingTool' |
-    /** Clipboard: Items added or removed via clipboard operations (copy, cut, paste). */
-    'Clipboard' |
-    /** Undo: Items affected by an undo operation.*/
-    'Undo' |
-    /**  Redo: Items affected by a redo operation. */
-    'Redo' |
-    /** Group: Items added as part of a group operation.*/
-    'Group';
-
-/**
  * Defines the state of the interactions such as drag, resize and rotate
  * Start - Sets the interaction state as Start
  * Progress - Sets the interaction state as Progress

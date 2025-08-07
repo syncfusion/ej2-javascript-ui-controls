@@ -72,6 +72,7 @@ export interface IDropdownlist extends Component<HTMLElement> {
     appendUncheckList: boolean;
     keyCode: number;
     preventSetCurrentData: boolean;
+    remoteDataCount: number;
     virtualGroupDataSource: { [key: string]: Object }[] | DataManager | string[] | number[] | boolean[];
     renderItems(listData: { [key: string]: Object }[], fields: FieldSettingsModel): HTMLElement;
     renderItems(listData: { [key: string]: Object }[], fields: FieldSettingsModel, isCheckBoxUpdate?: boolean): HTMLElement;

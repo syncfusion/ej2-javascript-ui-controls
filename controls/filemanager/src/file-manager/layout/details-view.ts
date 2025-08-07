@@ -776,6 +776,9 @@ export class DetailsView {
     }
 
     private removePathColumn(isRefresh: boolean): void {
+        if (this.gridObj == null) {
+            return;
+        }
         const len: number = this.gridObj.columns.length;
         const columnData: ColumnModel[] = JSON.parse(JSON.stringify(this.gridObj.columns));
         const filterPathInSettings: boolean = this.parent.detailsViewSettings.columns.some(

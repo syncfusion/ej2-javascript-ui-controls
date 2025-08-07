@@ -1115,13 +1115,17 @@ export class UndoRedo {
                 const sourceParent: NodeModel = diagram.nameTable[(sourceNode as Node).parentId];
                 if (sourceParent && (sourceParent as Node).isLane) {
                     const parentSwimlane: NodeModel = diagram.nameTable[(sourceParent as Node).parentId];
-                    updateZindex(obj, parentSwimlane, diagram);
+                    if (parentSwimlane && parentSwimlane.zIndex > obj.zIndex) {
+                        updateZindex(obj, parentSwimlane, diagram);
+                    }
                 }
             } else if (targetNode && (targetNode as Node).parentId) {
                 const targetParent: NodeModel = diagram.nameTable[(targetNode as Node).parentId];
                 if (targetParent && (targetParent as Node).isLane) {
                     const parentSwimlane: NodeModel = diagram.nameTable[(targetParent as Node).parentId];
-                    updateZindex(obj, parentSwimlane, diagram);
+                    if (parentSwimlane && parentSwimlane.zIndex > obj.zIndex) {
+                        updateZindex(obj, parentSwimlane, diagram);
+                    }
                 }
             }
         }

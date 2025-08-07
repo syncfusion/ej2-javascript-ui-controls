@@ -1,4 +1,4 @@
-import { createElement, EventHandler, isNullOrUndefined, KeyboardEventArgs, removeClass, selectAll } from '../../../base'; /*externalscript*/
+import { createElement, detach, EventHandler, isNullOrUndefined, KeyboardEventArgs, removeClass, selectAll } from '../../../base'; /*externalscript*/
 import { ClickEventArgs } from '../../../navigations/src'; /*externalscript*/
 import { IHtmlKeyboardEvent } from '../../src/editor-manager/base/interface';
 import { ActionBeginEventArgs, ActionCompleteEventArgs } from '../../src/common/interface';
@@ -198,6 +198,14 @@ export class ViewSource {
                     }
                     value = resetContentEditableElements(value, this.parent.editorMode);
                     this.parent.rootContainer.classList.remove('e-source-code-enabled');
+                    let element: HTMLDivElement = document.createElement('div');
+                    element.innerHTML = value;
+                    const textString: string = element.textContent === '\n' ? '' : element.textContent;
+                    detach(element);
+                    element = null;
+                    if (this.parent.maxLength >= 0 && textString.length > this.parent.maxLength) {
+                        value = this.parent.getEditPanel().innerHTML;
+                    }
                     this.parent.getEditPanel().innerHTML = this.replaceAmpersand(value);
                     this.parent.isBlur = false;
                     if (this.parent.getToolbar()) { removeClass([this.parent.getToolbar()], [CLS_EXPAND_OPEN]); }

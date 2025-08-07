@@ -1033,7 +1033,7 @@ export class AnnotationToolbar {
     }
 
     /**
-     * Shows /hides the toolbar in the PdfViewer
+     * Shows or hides the toolbar in the PdfViewer.
      *
      * @param {boolean} enable - If set true , its show the Toolbar
      * @returns {void}
@@ -2157,7 +2157,9 @@ export class AnnotationToolbar {
             const selectedAnnotation: any = this.pdfViewer.annotationCollection.filter(
                 (annotation: any) => annotation.uniqueKey === selectedAnnotationId
             )[0];
-            if (selectedAnnotation && selectedAnnotation.fontSize !== fontSize) {
+            const previousItemData: string = (args && args.fontSize && args.fontSize.previousItemData) ? args.fontSize.previousItemData : '';
+            if ((selectedAnnotation && selectedAnnotation.fontSize !== fontSize) || (this.pdfViewer.annotation.isFreeTextFontsizeChanged &&
+                selectedAnnotation.fontSize !== parseFloat(previousItemData))) {
                 this.pdfViewer.annotation.modifyFontSize(fontSize, isInteracted);
             }
         } else {

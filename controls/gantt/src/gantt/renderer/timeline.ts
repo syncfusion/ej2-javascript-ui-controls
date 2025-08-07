@@ -869,13 +869,6 @@ export class Timeline {
                 tr = null;
                 this.restrictRender = false;
             }
-            if (this.parent.height === 'auto' || this.parent.timelineModule.isSingleTier) {
-                const timelineContainer: number = this.parent.element.getElementsByClassName('e-timeline-header-container')[0]['offsetHeight'];
-                this.parent.element.getElementsByClassName('e-chart-scroll-container e-content')[0]['style'].height = 'calc(100% - ' + timelineContainer + 'px)';
-                if (!isNullOrUndefined(this.parent.element.getElementsByClassName('e-gridcontent')[0])) {
-                    this.parent.treeGrid.element.getElementsByClassName('e-gridcontent')[0]['style'].height = 'calc(100% - ' + timelineContainer + 'px)';
-                }
-            }
             this.timelineVirtualizationStyles();
         }
         else {
@@ -899,13 +892,6 @@ export class Timeline {
                 tr = null;
             }
             this.wholeTimelineWidth = this.totalTimelineWidth;
-            if (this.parent.height === 'auto' || this.parent.timelineModule.isSingleTier) {
-                const timelineContainer: number = this.parent.element.getElementsByClassName('e-timeline-header-container')[0]['offsetHeight'];
-                this.parent.element.getElementsByClassName('e-chart-scroll-container e-content')[0]['style'].height = 'calc(100% - ' + timelineContainer + 'px)';
-                if (!isNullOrUndefined(this.parent.element.getElementsByClassName('e-gridcontent')[0])) {
-                    this.parent.treeGrid.element.getElementsByClassName('e-gridcontent')[0]['style'].height = 'calc(100% - ' + timelineContainer + 'px)';
-                }
-            }
         }
     }
 
@@ -925,9 +911,6 @@ export class Timeline {
             const contentVirtualTable: HTMLElement = this.parent.element.querySelectorAll('.e-chart-scroll-container')[0].querySelector('.e-virtualtable');
             if (!this.parent.undoRedoModule || (this.parent.undoRedoModule && !this.parent.undoRedoModule['isZoomingUndoRedoProgress'])) {
                 contentVirtualTable.style.transform = `translate(${translateXValue}px, ${translateYValue}px)`;
-            }
-            if (this.parent.undoRedoModule && this.parent.undoRedoModule['isZoomingUndoRedoProgress']) {
-                this.parent.undoRedoModule['isZoomingUndoRedoProgress'] = false;
             }
             const contentVirtualTrack: HTMLElement = this.parent.element.querySelectorAll('.e-chart-scroll-container')[0].querySelector('.e-virtualtrack');
             contentVirtualTrack.style.position = 'relative';

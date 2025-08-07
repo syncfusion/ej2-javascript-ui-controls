@@ -1184,11 +1184,12 @@ export class DialogEdit {
                 textBox.enableRtl = this.parent.enableRtl;
                 if (column.field === ganttObj.columnMapping.duration ||
                     column.field === ganttObj.columnMapping.id || column.field === ganttObj.columnMapping.startDate ||
-                    column.field === ganttObj.columnMapping.endDate) {
+                    column.field === ganttObj.columnMapping.endDate || column.field === ganttObj.columnMapping.baselineDuration) {
                     textBox.change = (args: CObject): void => {
                         if (!this.isTriggered) {
                             if ((column.field === this.parent.taskFields.duration ||
-                                column.field === this.parent.taskFields.work) && !this.isTriggered) {
+                                column.field === this.parent.taskFields.work ||
+                                column.field === this.parent.taskFields.baselineDuration) && !this.isTriggered) {
                                 this.isTriggered = true;
                                 this.parent['triggeredColumnName'] = column.field;
                             }
@@ -1235,8 +1236,14 @@ export class DialogEdit {
                 datePickerObj.firstDayOfWeek = ganttObj.timelineModule.customTimelineSettings.weekStartDay;
                 if (column.field === ganttObj.columnMapping.startDate ||
                     column.field === ganttObj.columnMapping.endDate ||
-                    column.field === ganttObj.columnMapping.constraintDate) {
-                    datePickerObj.renderDayCell = this.parent.renderWorkingDayCell.bind(this.parent);
+                    column.field === ganttObj.columnMapping.constraintDate ||
+                    column.field === ganttObj.columnMapping.baselineStartDate ||
+                    column.field === ganttObj.columnMapping.baselineEndDate) {
+                    const isBaseline: boolean = column.field === ganttObj.columnMapping.baselineStartDate ||
+                        column.field === ganttObj.columnMapping.baselineEndDate;
+                    if (!isBaseline) {
+                        datePickerObj.renderDayCell = this.parent.renderWorkingDayCell.bind(this.parent);
+                    }
                     datePickerObj.change = (args: CObject): void => {
                         if (column.field !== taskSettings.constraintDate) {
                             this.validateScheduleFields(args, column, ganttObj);
@@ -1256,8 +1263,14 @@ export class DialogEdit {
                 dateTimePickerObj.strictMode = true;
                 dateTimePickerObj.firstDayOfWeek = ganttObj.timelineModule.customTimelineSettings.weekStartDay;
                 if (column.field === ganttObj.columnMapping.startDate ||
-                    column.field === ganttObj.columnMapping.endDate) {
-                    dateTimePickerObj.renderDayCell = this.parent.renderWorkingDayCell.bind(this.parent);
+                    column.field === ganttObj.columnMapping.endDate ||
+                    column.field === ganttObj.columnMapping.baselineStartDate ||
+                    column.field === ganttObj.columnMapping.baselineEndDate) {
+                    const isBaseline: boolean = column.field === ganttObj.columnMapping.baselineStartDate ||
+                        column.field === ganttObj.columnMapping.baselineEndDate;
+                    if (!isBaseline) {
+                        dateTimePickerObj.renderDayCell = this.parent.renderWorkingDayCell.bind(this.parent);
+                    }
                     dateTimePickerObj.change = (args: CObject): void => {
                         if (column.field !== taskSettings.constraintDate) {
                             this.validateScheduleFields(args, column, ganttObj);
@@ -1516,7 +1529,7 @@ export class DialogEdit {
             break;
         }
     }
-
+    /* eslint-disable */
     private validateScheduleFields(args: CObject, column: GanttColumnModel, ganttObj: Gantt): boolean {
         let dialog: HTMLElement;
         if (!isNullOrUndefined(ganttObj.editModule.dialogModule.dialog)) {
@@ -1537,7 +1550,7 @@ export class DialogEdit {
             targetId = inputElement.querySelector('input').getAttribute('id');
             inputElement = inputElement.querySelector('#' + targetId);
         } else if (!isNullOrUndefined(args.event) && !isNullOrUndefined((args.event as CObject).path) &&
-        !isNullOrUndefined((args.event as CObject).path)[1]) {
+            !isNullOrUndefined((args.event as CObject).path)[1]) {
             inputElement = (args.event as CObject).path[1] as HTMLInputElement;
             targetId = inputElement.querySelector('input').getAttribute('id');
             inputElement = inputElement.querySelector('#' + targetId);
@@ -1546,7 +1559,7 @@ export class DialogEdit {
             cellValue = args.value as string;
             colName = column.field;
         } else {
-            if (column.editType === 'datetimepickeredit'){
+            if (column.editType === 'datetimepickeredit') {
                 cellValue = args.value as string;
             }
             else {
@@ -1556,14 +1569,14 @@ export class DialogEdit {
             if (this.parent.columnByField[this.parent.taskFields.id].editType === 'stringedit') {
                 const customFn: (args: { [key: string]: string }) => boolean = (args: { [key: string]: string }) => {
                     if (strViewType === 'ResourceView') {
-                        return ids.indexOf('T' + args['value']) === -1 && ids.indexOf('R' + args['value']) === -1 ;
+                        return ids.indexOf('T' + args['value']) === -1 && ids.indexOf('R' + args['value']) === -1;
                     } else {
                         return ids.indexOf(args['value']) === -1;
                     }
                 };
                 const options: FormValidatorModel = {
                     rules: {
-                        [this.parent.taskFields.id]: { required: true, minLength: [customFn, 'ID is already present, please enter new value']}
+                        [this.parent.taskFields.id]: { required: true, minLength: [customFn, 'ID is already present, please enter new value'] }
                     }
                 };
                 /* eslint-disable-next-line */
@@ -1576,33 +1589,42 @@ export class DialogEdit {
             this.isTriggered = false;
             return true;
         } else {
-            this.validateScheduleValuesByCurrentField(colName, cellValue, this.editedRecord);
+            let isBaseline: boolean = false;
+            if (this.parent.taskFields.baselineDuration === colName ||
+                this.parent.taskFields.baselineStartDate === colName ||
+                this.parent.taskFields.baselineEndDate === colName) {
+                isBaseline = true;
+            }
+            this.validateScheduleValuesByCurrentField(colName, cellValue, this.editedRecord, isBaseline);
             const ganttProp: ITaskData = currentData.ganttProperties;
+            const { startdateField, enddateField, durationField } = this.parent.dateValidationModule.getFieldMappings(isBaseline);
             const tasks: TaskFieldsModel = ganttObj.taskFields;
-            if (!isNullOrUndefined(tasks.startDate) && tasks.startDate !== colName) {
-                this.updateScheduleFields(dialog, ganttProp, 'startDate');
+            if (!isNullOrUndefined(tasks.startDate || !isNullOrUndefined(tasks.baselineStartDate)) && tasks[startdateField] !== colName) {
+                this.updateScheduleFields(dialog, ganttProp, startdateField);
             }
-            if (tasks.endDate === colName && !isNullOrUndefined(ganttProp.startDate) && !isNullOrUndefined(args.value) &&
-            ganttProp.startDate.getTime() > args.value) {
-                this.updateScheduleFields(dialog, ganttProp, 'endDate');
+            if (tasks[enddateField] === colName && !isNullOrUndefined(ganttProp[startdateField]) && !isNullOrUndefined(args.value) &&
+                ganttProp[startdateField].getTime() > args.value) {
+                this.updateScheduleFields(dialog, ganttProp, enddateField);
             }
-            if (!isNullOrUndefined(tasks.endDate) && tasks.endDate !== colName) {
-                this.updateScheduleFields(dialog, ganttProp, 'endDate');
+            if (!isNullOrUndefined(tasks[enddateField]) && tasks[enddateField] !== colName) {
+                this.updateScheduleFields(dialog, ganttProp, enddateField);
                 if (this.parent.taskFields.constraintType) {
                     this.updateScheduleFields(dialog, ganttProp, 'constraintDate');
                 }
             }
-            if (!isNullOrUndefined(tasks.duration) && tasks.duration !== colName || ganttProp.duration >= 0) {
-                this.updateScheduleFields(dialog, ganttProp, 'duration');
+            if (!isNullOrUndefined(tasks[durationField]) && tasks[durationField] !== colName || ganttProp[durationField] >= 0) {
+                this.updateScheduleFields(dialog, ganttProp, durationField);
             }
             if (!isNullOrUndefined(tasks.work) && (tasks.work !== colName || ganttProp.taskType !== 'FixedWork')) {
                 this.updateScheduleFields(dialog, ganttProp, 'work');
             }
             this.dialogEditValidationFlag = false;
             this.isTriggered = false;
+            isBaseline = false;
             return true;
         }
     }
+
     private getConstraintDateElement(ganttId: string, columnName: string, taskField: TaskFieldsModel): Element | null {
         if (columnName === taskField.constraintDate) {
             for (const item of this.beforeOpenArgs.tabModel['items']) {
@@ -1613,7 +1635,7 @@ export class DialogEdit {
         }
         return null;
     }
-
+   
     private updateScheduleFields(dialog: HTMLElement, ganttProp: ITaskData, ganttField: string): void {
         const ganttObj: Gantt = this.parent;
         const ganttId: string = ganttObj.element.id;
@@ -1621,68 +1643,85 @@ export class DialogEdit {
         const col: GanttColumnModel = ganttObj.columnByField[columnName as string];
         let tempValue: string | Date | number;
         const taskField: TaskFieldsModel = this.parent.taskFields;
-        if (col.editType === 'stringedit') {
-            const element: Element = dialog.querySelector('#' + ganttId + columnName);
-            if (element) {
-                const textBox: TextBox = <TextBox>(<EJ2Instance>element).ej2_instances[0];
-                if (textBox) {
-                    tempValue = !isNullOrUndefined(col.edit) && !isNullOrUndefined(col.edit.read) ? (col.edit.read as () => void)() :
-                        !isNullOrUndefined(col.valueAccessor) ?
-                            (col.valueAccessor as Function)(columnName, ganttObj.editModule.dialogModule.editedRecord, col) :
-                            this.parent.dataOperation.getDurationString(ganttProp.duration, ganttProp.durationUnit);
-                    if (textBox.value !== tempValue.toString() && taskField.duration === columnName) {
-                        textBox.value = tempValue as string;
-                        textBox.dataBind();
-                    } else if (taskField.startDate === columnName || taskField.endDate === columnName) {
-                        textBox.value = taskField.startDate === columnName ? ganttProp.startDate.toString() : ganttProp.endDate.toString();
-                        textBox.dataBind();
+        if (col) {
+            if (col.editType === 'stringedit') {
+                const element: Element = dialog.querySelector('#' + ganttId + columnName);
+                if (element) {
+                    const textBox: TextBox = <TextBox>(<EJ2Instance>element).ej2_instances[0];
+                    if (textBox) {
+                        tempValue = !isNullOrUndefined(col.edit) && !isNullOrUndefined(col.edit.read) ? (col.edit.read as () => void)() :
+                            !isNullOrUndefined(col.valueAccessor) ?
+                                (col.valueAccessor as Function)(columnName, ganttObj.editModule.dialogModule.editedRecord, col) :
+                                this.parent.dataOperation.getDurationString(ganttProp[ganttField], ganttProp.durationUnit);
+                        if (textBox.value !== tempValue.toString() && taskField[ganttField] === columnName) {
+                            textBox.value = tempValue as string;
+                            textBox.dataBind();
+                        } else if (taskField.startDate === columnName || taskField.endDate === columnName ||
+                            taskField.baselineStartDate === columnName || taskField.baselineEndDate === columnName) {
+                            if (taskField.startDate === columnName) {
+                                textBox.value = ganttProp.startDate.toString();
+                            }
+                            else if (taskField.endDate === columnName) {
+                                textBox.value = ganttProp.endDate.toString();
+                            }
+                            else if (taskField.baselineStartDate === columnName) {
+                                textBox.value = ganttProp.baselineStartDate.toString();
+                            }
+                            else if (taskField.baselineEndDate === columnName) {
+                                textBox.value = ganttProp.baselineEndDate.toString();
+                            }
+                            textBox.dataBind();
+                        }
+                    }
+                }
+            } else if (col.editType === 'datepickeredit' || col.editType === 'datetimepickeredit') {
+                let element: Element = dialog.querySelector('#' + ganttId + columnName);
+                if (!element) {
+                    element = this.getConstraintDateElement(ganttId, columnName, taskField);
+                }
+                if (element) {
+                    const picker: DatePicker = col.editType === 'datepickeredit' ?
+                        (<DatePicker>(<EJ2Instance>element).ej2_instances[0]) :
+                        (<DateTimePicker>(<EJ2Instance>element).ej2_instances[0]);
+                    if (picker) {
+                        tempValue = ganttProp[ganttField as string];
+                        if (((isNullOrUndefined(picker.value)) && !isNullOrUndefined(tempValue)) ||
+                            (isNullOrUndefined(tempValue) && !isNullOrUndefined(picker.value)) ||
+                            (picker.value !== tempValue && !isNullOrUndefined(picker.value) && !isNullOrUndefined(tempValue)
+                                && picker.value.toString() !== tempValue.toString())) {
+                            picker.value = tempValue as Date;
+                            picker.dataBind();
+                        }
                     }
                 }
             }
-        } else if (col.editType === 'datepickeredit' || col.editType === 'datetimepickeredit') {
-            let element: Element = dialog.querySelector('#' + ganttId + columnName);
-            if (!element) {
-                element = this.getConstraintDateElement(ganttId, columnName, taskField);
-            }
-            if (element) {
-                const picker: DatePicker = col.editType === 'datepickeredit' ?
-                    (<DatePicker>(<EJ2Instance>element).ej2_instances[0]) :
-                    (<DateTimePicker>(<EJ2Instance>element).ej2_instances[0]);
-                if (picker) {
-                    tempValue = ganttProp[ganttField as string];
-                    if (((isNullOrUndefined(picker.value)) && !isNullOrUndefined(tempValue)) ||
-                        (isNullOrUndefined(tempValue) && !isNullOrUndefined(picker.value)) ||
-                        (picker.value !== tempValue && !isNullOrUndefined(picker.value) && !isNullOrUndefined(tempValue)
-                            && picker.value.toString() !== tempValue.toString())) {
-                        picker.value = tempValue as Date;
-                        picker.dataBind();
-                    }
+            else if (col.editType === 'numericedit') {
+                const numericTextBox: NumericTextBox = <NumericTextBox>(
+                    <EJ2Instance>dialog.querySelector('#' + ganttId + columnName)).ej2_instances[0];
+                tempValue = ganttProp[ganttField as string];
+                if (!isNullOrUndefined(tempValue) && numericTextBox.value !== tempValue) {
+                    numericTextBox.value = tempValue as number;
+                    numericTextBox.dataBind();
                 }
-            }
-        }
-        else if (col.editType === 'numericedit') {
-            const numericTextBox: NumericTextBox = <NumericTextBox>(
-                <EJ2Instance>dialog.querySelector('#' + ganttId + columnName)).ej2_instances[0];
-            tempValue = ganttProp[ganttField as string];
-            if (!isNullOrUndefined(tempValue) && numericTextBox.value !== tempValue) {
-                numericTextBox.value = tempValue as number;
-                numericTextBox.dataBind();
             }
         }
     }
 
     /**
      * @param {IGanttData} ganttData .
+     * @param {boolean} isBaseline - Indicates whether the calculation is specific to baseline dates.
      * @returns {void} .
      * @private
      */
-    public validateDuration(ganttData: IGanttData): void {
+
+    public validateDuration(ganttData: IGanttData, isBaseline?: boolean): void {
         const ganttProp: ITaskData = ganttData.ganttProperties;
         if (!this.dialogEditValidationFlag) {
-            if (!isNullOrUndefined(ganttProp.startDate) && !isScheduledTask(ganttProp) && isNullOrUndefined(ganttProp.duration)) {
+            if (!isBaseline && !isNullOrUndefined(ganttProp.startDate) && !isScheduledTask(ganttProp) &&
+                isNullOrUndefined(ganttProp.duration)) {
                 this.parent.setRecordValue('endDate', null, ganttProp, true);
                 this.parent.setRecordValue('isMilestone', false, ganttProp, true);
-            } else if (isScheduledTask(ganttProp) || !isNullOrUndefined(ganttProp.startDate)) {
+            } else if (!isBaseline && (isScheduledTask(ganttProp) || !isNullOrUndefined(ganttProp.startDate))) {
                 if (ganttData.ganttProperties.isMilestone && ganttData.ganttProperties.duration !== 0) {
                     const updatedStartDate: Date = this.parent.dateValidationModule.checkStartDate(ganttProp.startDate);
                     this.parent.setRecordValue('startDate', updatedStartDate, ganttProp, true);
@@ -1691,33 +1730,58 @@ export class DialogEdit {
                     }
                 }
                 this.parent.dateValidationModule.calculateEndDate(ganttData);
-            } else if (!isScheduledTask(ganttProp) && !isNullOrUndefined(ganttProp.endDate)) {
-                this.parent.dateValidationModule.calculateStartDate(ganttData);
             }
-            const milestone: boolean = ganttProp.duration === 0 ? true : false;
-            this.parent.setRecordValue('isMilestone', milestone, ganttProp, true);
+
+            else if (isBaseline && !isNullOrUndefined(ganttProp.baselineStartDate)) {
+                if (ganttData.ganttProperties.baselineDuration !== 0) {
+                    const updatedStartDate: Date = this.parent.dateValidationModule.checkStartDate(ganttProp.baselineStartDate,
+                        undefined, undefined, undefined, true);
+                    this.parent.setRecordValue('baselineStartDate', updatedStartDate, ganttProp, true);
+                    if (this.parent.taskFields.baselineStartDate) {
+                        this.parent.dataOperation.updateMappingData(ganttData, 'baselineStartDate');
+                    }
+                }
+                this.parent.dateValidationModule.calculateEndDate(ganttData, isBaseline);
+            } else if (!isScheduledTask(ganttProp) && !isNullOrUndefined(ganttProp.endDate)) {
+                this.parent.dateValidationModule.calculateStartDate(ganttData, isBaseline);
+            }
+            else if (!isNullOrUndefined(ganttProp.endDate)) {
+                this.parent.dateValidationModule.calculateStartDate(ganttData, isBaseline);
+            }
+            else if (isNullOrUndefined(ganttProp.baselineEndDate)) {
+                this.parent.dateValidationModule.calculateStartDate(ganttData, isBaseline);
+            }
+            if (!isBaseline) {
+                const milestone: boolean = ganttProp.duration === 0 ? true : false;
+                this.parent.setRecordValue('isMilestone', milestone, ganttProp, true);
+            }
             this.dialogEditValidationFlag = true;
         }
     }
-    private validateStartDate(ganttData: IGanttData): void {
+
+    private validateStartDate(ganttData: IGanttData, isBaseline?: boolean): void {
         const ganttProp: ITaskData = ganttData.ganttProperties;
         const tasks: TaskFieldsModel = this.parent.taskFields;
+        const { startdateField, enddateField, durationField } = this.parent.dateValidationModule.getFieldMappings(isBaseline);
         if (!this.dialogEditValidationFlag) {
-            if (isNullOrUndefined(ganttProp.startDate)) {
-                this.parent.setRecordValue('duration', null, ganttProp, true);
-                this.parent.setRecordValue('isMilestone', false, ganttProp, true);
-                if (this.parent.allowUnscheduledTasks && isNullOrUndefined(tasks.endDate)) {
-                    this.parent.setRecordValue('endDate', null, ganttProp, true);
+            if (isNullOrUndefined(ganttProp[startdateField])) {
+                this.parent.setRecordValue(durationField, null, ganttProp, true);
+                if (!isBaseline) {
+                    this.parent.setRecordValue('isMilestone', false, ganttProp, true);
+                    if (this.parent.allowUnscheduledTasks && isNullOrUndefined(tasks.endDate)) {
+                        this.parent.setRecordValue('endDate', null, ganttProp, true);
+                    }
                 }
-            } else if (isScheduledTask(ganttProp)) {
-                if (isNullOrUndefined(tasks.duration)) {
-                    this.parent.dateValidationModule.calculateDuration(ganttData);
-                } else if (isNullOrUndefined(tasks.endDate)) {
-                    this.parent.dateValidationModule.calculateEndDate(ganttData);
+            } else if (isScheduledTask(ganttProp) || isBaseline) {
+                if (isNullOrUndefined(tasks[durationField])) {
+                    this.parent.dateValidationModule.calculateDuration(ganttData, isBaseline);
+                } else if (isNullOrUndefined(tasks[enddateField])) {
+                    this.parent.dateValidationModule.calculateEndDate(ganttData, isBaseline);
                 } else {
-                    this.parent.dateValidationModule.calculateEndDate(ganttData);
+                    this.parent.dateValidationModule.calculateEndDate(ganttData, isBaseline);
                 }
-            } else {
+            }
+            else {
                 if (!isNullOrUndefined(ganttProp.endDate)) {
                     this.parent.dateValidationModule.calculateDuration(ganttData);
                 } else if (!isNullOrUndefined(ganttProp.duration)) {
@@ -1727,29 +1791,35 @@ export class DialogEdit {
             this.dialogEditValidationFlag = true;
         }
     }
-    private validateEndDate(ganttData: IGanttData): void {
+
+    private validateEndDate(ganttData: IGanttData, isBaseline?: boolean): void {
         const ganttProp: ITaskData = ganttData.ganttProperties;
         const tasks: TaskFieldsModel = this.parent.taskFields;
         if (!this.dialogEditValidationFlag) {
-            if (isNullOrUndefined(ganttProp.endDate)) {
-                this.parent.setRecordValue('duration', null, ganttProp, true);
-                this.parent.setRecordValue('isMilestone', false, ganttProp, true);
-            } else if (isScheduledTask(ganttProp)) {
-                if (isNullOrUndefined(tasks.duration)) {
-                    this.parent.dateValidationModule.calculateDuration(ganttData);
-                } else if (isNullOrUndefined(ganttProp.startDate)) {
-                    this.parent.dateValidationModule.calculateStartDate(ganttData);
+            const { startdateField, enddateField, durationField } = this.parent.dateValidationModule.getFieldMappings(isBaseline);
+            if (isNullOrUndefined(ganttProp[enddateField])) {
+                this.parent.setRecordValue(durationField, null, ganttProp, true);
+                if (!isBaseline) {
+                    this.parent.setRecordValue('isMilestone', false, ganttProp, true);
+                }
+            } else if (isScheduledTask(ganttProp) || isBaseline) {
+                if (isNullOrUndefined(tasks[durationField])) {
+                    this.parent.dateValidationModule.calculateDuration(ganttData, isBaseline);
+                } else if (isNullOrUndefined(ganttProp[startdateField])) {
+                    this.parent.dateValidationModule.calculateStartDate(ganttData, isBaseline);
                 } else {
-                    if (!isNullOrUndefined(ganttProp.segments) && ganttProp.segments.length > 0) {
-                        ganttProp.segments = this.parent.editModule.cellEditModule.validateEndDateWithSegments(ganttProp);
+                    if (!isBaseline) {
+                        if (!isNullOrUndefined(ganttProp.segments) && ganttProp.segments.length > 0) {
+                            ganttProp.segments = this.parent.editModule.cellEditModule.validateEndDateWithSegments(ganttProp);
+                        }
                     }
-                    this.parent.dateValidationModule.calculateDuration(ganttData);
+                    this.parent.dateValidationModule.calculateDuration(ganttData, isBaseline);
                 }
             } else {
-                if (!isNullOrUndefined(ganttProp.duration)) {
-                    this.parent.dateValidationModule.calculateStartDate(ganttData);
-                } else if (!isNullOrUndefined(ganttProp.startDate)) {
-                    this.parent.dateValidationModule.calculateDuration(ganttData);
+                if (!isNullOrUndefined(ganttProp[durationField])) {
+                    this.parent.dateValidationModule.calculateStartDate(ganttData, isBaseline);
+                } else if (!isNullOrUndefined(ganttProp[startdateField])) {
+                    this.parent.dateValidationModule.calculateDuration(ganttData, isBaseline);
                 }
             }
             this.dialogEditValidationFlag = true;
@@ -1775,95 +1845,105 @@ export class DialogEdit {
      * @param {string} columnName .
      * @param {string} value .
      * @param {IGanttData} currentData .
+     * @param {boolean} isBaseline - Indicates whether the calculation is specific to baseline dates.
      * @returns {boolean} .
      * @private
      */
-    public validateScheduleValuesByCurrentField(columnName: string, value: string, currentData: IGanttData): boolean {
+    public validateScheduleValuesByCurrentField(columnName: string, value: string, currentData: IGanttData, isBaseline?: boolean): boolean {
         const ganttObj: Gantt = this.parent;
         const ganttProp: ITaskData = currentData.ganttProperties;
         const taskSettings: TaskFieldsModel = ganttObj.taskFields;
-        if (taskSettings.duration === columnName) {
-            if (!isNullOrUndefined(value) && value !== '' && (parseInt(value, 10) >= 0 || parseFloat(value) >= 0)) {
-                ganttObj.dataOperation.updateDurationValue(value, ganttProp);
-                this.parent.setRecordValue(taskSettings.duration, value, currentData);
-                this.parent.setRecordValue('taskData.' + taskSettings.duration, ganttProp.duration, currentData);
-                if (ganttProp.isMilestone && !isNullOrUndefined(this.parent.editModule.cellEditModule)) {
+        if (taskSettings.duration === columnName || taskSettings.baselineDuration === columnName) {
+            const isValidValue: boolean = !isNullOrUndefined(value) && value !== '' && (parseFloat(value) >= 0);
+            const isInvalidFormat: boolean = /^[^\d.-]+$/.test(value);
+            const isEmpty: boolean = value === '';
+            const durationMapping: string = isBaseline ? taskSettings.baselineDuration : taskSettings.duration;
+            const { startdateField, enddateField, durationField } = this.parent.dateValidationModule.getFieldMappings(isBaseline);
+            if (isValidValue) {
+                ganttObj.dataOperation.updateDurationValue(value, ganttProp, isBaseline);
+                this.parent.setRecordValue(durationMapping, value, currentData);
+                this.parent.setRecordValue(`taskData.${durationMapping}`, ganttProp[durationField], currentData);
+
+                if (!isBaseline && ganttProp.isMilestone && !isNullOrUndefined(this.parent.editModule.cellEditModule)) {
                     const editedArgs: ITaskbarEditedEventArgs = {};
                     editedArgs.data = currentData;
                     this.parent.editModule.cellEditModule['updateDates'](editedArgs);
                 }
-                this.validateDuration(currentData);
+                this.validateDuration(currentData, isBaseline);
             } else {
-                if (ganttObj.allowUnscheduledTasks) {
-                    if ((ganttProp.startDate && ganttProp.endDate && ganttProp.startDate.getTime() > ganttProp.endDate.getTime()) || value.indexOf('-') !== -1) {
-                        this.parent.setRecordValue('duration', 0, ganttProp, true);
-                        if (ganttProp.endDate) {
-                            this.parent.setRecordValue('startDate', ganttProp.endDate, ganttProp, true);
+                if ((isBaseline && isValidValue) || ganttObj.allowUnscheduledTasks) {
+                    if ((ganttProp[startdateField] && ganttProp[enddateField] && ganttProp[startdateField].getTime() > ganttProp[enddateField].getTime()) || value.indexOf('-') !== -1) {
+                        this.parent.setRecordValue(durationField, 0, ganttProp, true);
+                        if (ganttProp[enddateField]) {
+                            this.parent.setRecordValue(startdateField, ganttProp[enddateField], ganttProp, true);
                         }
-                    }
-                    else {
-                        if (value === '') {
-                            this.parent.setRecordValue('duration', null, ganttProp, true);
-                            if (ganttProp.endDate && ganttProp.startDate) {
-                                this.parent.setRecordValue('endDate', null, ganttProp, true);
-                            }
+                    } else if (isEmpty) {
+                        this.parent.setRecordValue(durationField, null, ganttProp, true);
+                        if (ganttProp[startdateField] && ganttProp[startdateField]) {
+                            this.parent.setRecordValue(enddateField, null, ganttProp, true);
                         }
-                        else {
-                            const regex: RegExp = /^[^\d.-]+$/;
-                            if (regex.test(value)) {
-                                const err: string = `The provided value for the ${taskSettings.duration} field is invalid. Please ensure the ${taskSettings.duration} field contains only valid numeric values.`;
-                                this.parent.trigger('actionFailure', { error: err });
-                            }
-                            this.parent.setRecordValue('duration', ganttProp.duration, ganttProp, true);
+                    } else {
+                        if (isInvalidFormat) {
+                            const field: string = isBaseline ? taskSettings.baselineDuration : taskSettings.duration;
+                            const err: string = `The provided value for the ${field} field is invalid. Please ensure it contains only valid numeric values.`;
+                            this.parent.trigger('actionFailure', { error: err });
                         }
+                        this.parent.setRecordValue(durationField, ganttProp[durationField], ganttProp, true);
                     }
                 }
             }
-            this.parent.editModule.updateResourceRelatedFields(currentData, 'duration');
+            if (!isBaseline) {
+                this.parent.editModule.updateResourceRelatedFields(currentData, 'duration');
+            }
         }
-        if (taskSettings.startDate === columnName) {
+        if (taskSettings.startDate === columnName || taskSettings.baselineStartDate === columnName) {
             if (value !== '') {
+                const startField: string = isBaseline ? 'baselineStartDate' : 'startDate';
                 let startDate: Date = this.parent.dateValidationModule.getDateFromFormat(value);
-                startDate = this.parent.dateValidationModule.checkStartDate(startDate, ganttProp);
-                this.parent.setRecordValue('startDate', startDate, ganttProp, true);
-                this.validateStartDate(currentData);
+                startDate = this.parent.dateValidationModule.checkStartDate(startDate, ganttProp, undefined, undefined, isBaseline);
+                this.parent.setRecordValue(startField, startDate, ganttProp, true);
+                this.validateStartDate(currentData, isBaseline);
                 if (this.parent.taskFields.constraintType) {
                     this.updateConstraintDate(ganttProp, currentData);
                 }
             } else {
-                if (ganttObj.allowUnscheduledTasks && !(currentData.hasChildRecords)) {
+                if (!isBaseline && ganttObj.allowUnscheduledTasks && !(currentData.hasChildRecords)) {
                     this.parent.setRecordValue('startDate', null, ganttProp, true);
                     this.parent.setRecordValue('duration', null, ganttProp, true);
                     this.parent.setRecordValue('isMilestone', false, ganttProp, true);
                 }
             }
         }
-        if (taskSettings.endDate === columnName) {
+        if (taskSettings.endDate === columnName || taskSettings.baselineEndDate === columnName) {
+            const { startdateField, enddateField, durationField } = this.parent.dateValidationModule.getFieldMappings(isBaseline);
             if (value !== '') {
                 let endDate: Date = this.parent.dateValidationModule.getDateFromFormat(value);
                 const dayEndTime: number = this.parent['getCurrentDayEndTime'](endDate);
                 if (endDate.getHours() === 0 && dayEndTime !== 86400) {
                     this.parent.dateValidationModule.setTime(dayEndTime, endDate);
                 }
-                if (!isNullOrUndefined(ganttProp.startDate) && !isNullOrUndefined(ganttProp.endDate) && !isNullOrUndefined(endDate) &&
-                ganttProp.startDate.getTime() > endDate.getTime()) {
-                    endDate = ganttProp.endDate;
+                if (!isNullOrUndefined(ganttProp[startdateField]) && !isNullOrUndefined(ganttProp[enddateField]) &&
+                    !isNullOrUndefined(endDate) &&
+                    ganttProp[startdateField].getTime() > endDate.getTime()) {
+                    endDate = ganttProp[enddateField];
                 }
-                endDate = this.parent.dateValidationModule.checkEndDate(endDate, ganttProp);
-                if (isNullOrUndefined(ganttProp.startDate) || endDate.getTime() >= (ganttProp.startDate).getTime()) {
-                    this.parent.setRecordValue('endDate', endDate, ganttProp, true);
+                endDate = this.parent.dateValidationModule.checkEndDate(endDate, ganttProp, undefined, isBaseline);
+                if (isNullOrUndefined(ganttProp[startdateField]) || endDate.getTime() >= (ganttProp[startdateField]).getTime()) {
+                    this.parent.setRecordValue(enddateField, endDate, ganttProp, true);
                 }
-                this.validateEndDate(currentData);
-                if (ganttProp.isMilestone && !isNullOrUndefined(this.parent.editModule.cellEditModule)) {
+                this.validateEndDate(currentData, isBaseline);
+                if (!isBaseline && ganttProp.isMilestone && !isNullOrUndefined(this.parent.editModule.cellEditModule)) {
                     const editedArgs: ITaskbarEditedEventArgs = {};
                     editedArgs.data = currentData;
                     this.parent.editModule.cellEditModule['updateDates'](editedArgs);
                 }
             } else {
-                if (ganttObj.allowUnscheduledTasks) {
-                    this.parent.setRecordValue('endDate', null, ganttProp, true);
-                    this.parent.setRecordValue('duration', null, ganttProp, true);
-                    this.parent.setRecordValue('isMilestone', false, ganttProp, true);
+                if (ganttObj.allowUnscheduledTasks && !isBaseline) {
+                    this.parent.setRecordValue(enddateField, null, ganttProp, true);
+                    this.parent.setRecordValue(durationField, null, ganttProp, true);
+                    if (!isBaseline) {
+                        this.parent.setRecordValue('isMilestone', false, ganttProp, true);
+                    }
                 }
             }
         }
@@ -1886,6 +1966,7 @@ export class DialogEdit {
         }
         return true;
     }
+    
     private getSegmentsModel(fields: string[]): Object {
         const taskSettings: TaskFieldsModel = this.parent.taskFields;
         if (isNullOrUndefined(fields) || fields.length === 0) {
@@ -2008,6 +2089,7 @@ export class DialogEdit {
         segmentInputModel.height = (this.parent.isAdaptive || this.parent.enableAdaptiveUI) ? '100%' : '153px';
         return segmentInputModel;
     }
+    /* eslint-enable */
     private getGridColumnByField(fieldName: string, columns: GridColumnModel[]): GridColumnModel {
         let column: GridColumnModel;
         for (let i: number = 0; i < columns.length; i++) {
@@ -3239,6 +3321,19 @@ export class DialogEdit {
                 const ganttProp: ITaskData = ganttData.ganttProperties;
                 inputModel.value = this.parent.dataOperation.getDurationString(ganttProp.duration, ganttProp.durationUnit);
             }
+        }
+        else if (column.field === this.parent.taskFields.baselineDuration) {
+            if (!isNullOrUndefined(column.valueAccessor)) {
+                if (typeof column.valueAccessor === 'string') {
+                    const valueAccessor: Function = getObject(column.valueAccessor, window);
+                    inputModel.value = valueAccessor(column.field, ganttData, column);
+                } else {
+                    inputModel.value = (column.valueAccessor as Function)(column.field, ganttData, column);
+                }
+            } else if (isNullOrUndefined(column.edit)) {
+                const ganttProp: ITaskData = ganttData.ganttProperties;
+                inputModel.value = this.parent.dataOperation.getDurationString(ganttProp.baselineDuration, ganttProp.durationUnit);
+            }
         } else {
             if (column.editType === 'booleanedit') {
                 if (ganttData[column.field] === true) {
@@ -3658,7 +3753,7 @@ export class DialogEdit {
                     controlObj.value = valueString;
                 }
                 const column: GanttColumnModel = ganttObj.columnByField[fieldName as string];
-                if (fieldName === this.parent.taskFields.duration ?
+                if (fieldName === this.parent.taskFields.duration || this.parent.taskFields.baselineDuration ?
                     parseInt(this.rowData[fieldName as string], 10) !== parseInt(controlObj.value as string, 10) :
                     this.rowData[fieldName as string] !== controlObj.value) {
                     this.disableUndo = true;
@@ -3679,7 +3774,7 @@ export class DialogEdit {
                         tasksData[fieldName as string] = false;
                     }
                 } else {
-                    if (fieldName === this.parent.taskFields.duration) {
+                    if (fieldName === this.parent.taskFields.duration || fieldName === this.parent.taskFields.baselineDuration) {
                         const numericValue: number = parseFloat(String(controlObj.value));
                         tasksData[fieldName as string] = numericValue;
                     }
@@ -3768,6 +3863,9 @@ export class DialogEdit {
         this.parent.setRecordValue('startDate', fromRecord.ganttProperties.startDate, toRecord.ganttProperties, true);
         this.parent.setRecordValue('endDate', fromRecord.ganttProperties.endDate, toRecord.ganttProperties, true);
         this.parent.setRecordValue('duration', fromRecord.ganttProperties.duration, toRecord.ganttProperties, true);
+        this.parent.setRecordValue('baselineDuration', fromRecord.ganttProperties.baselineDuration, toRecord.ganttProperties, true);
+        this.parent.setRecordValue('baselineStartDate', fromRecord.ganttProperties.baselineStartDate, toRecord.ganttProperties, true);
+        this.parent.setRecordValue('baselineEndDate', fromRecord.ganttProperties.baselineEndDate, toRecord.ganttProperties, true);
         this.parent.setRecordValue('durationUnit', fromRecord.ganttProperties.durationUnit, toRecord.ganttProperties, true);
         this.parent.setRecordValue('work', fromRecord.ganttProperties.work, toRecord.ganttProperties, true);
         this.parent.setRecordValue('type', fromRecord.ganttProperties.taskType, toRecord.ganttProperties, true);
@@ -3788,6 +3886,9 @@ export class DialogEdit {
             } else {
                 this.parent.setRecordValue('isMilestone', false, this.rowData.ganttProperties, true);
             }
+        }
+        if (!isNullOrUndefined(this.parent.taskFields.baselineDuration)) {
+            this.parent.dataOperation.updateMappingData(toRecord, 'baselineDuration');
         }
         if (!isNullOrUndefined(this.parent.taskFields.work)) {
             this.parent.dataOperation.updateMappingData(this.rowData, 'work');

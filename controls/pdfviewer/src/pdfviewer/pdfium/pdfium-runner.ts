@@ -9,6 +9,7 @@ export function PdfiumRunner(): void {
     let pageLoaded: boolean = false;
     let moduleLoaded: boolean = false;
     const FPDF: any = {};
+    let readBlockPtr: any;
     // eslint-disable-next-line
     var pdfiumWindow: any = pdfiumWindow ? pdfiumWindow : {};
     let documentDetails: DocumentInfo;
@@ -189,6 +190,9 @@ export function PdfiumRunner(): void {
                 freeFunction(documentDetails.processor.wasmData.wasmBuffer);
                 FPDF.CloseDocument(documentDetails.processor.wasmData.wasm);
                 FPDF.DestroyLibrary();
+                if (PDFiumModule.removeFunction && readBlockPtr) {
+                    PDFiumModule.removeFunction(readBlockPtr);
+                }
                 documentDetails = null;
             }
             pdfiumWindow.fileByteArray = event.data.uploadedFile;
@@ -211,7 +215,7 @@ export function PdfiumRunner(): void {
                 const loader: any = createPDFCustomLoader(event.data.uploadedFile);
 
                 // register the readBlock function in the wasm table
-                const readBlockPtr: any = PDFiumModule.addFunction((param: any, position: any, pBuf: any, size: any) => {
+                readBlockPtr = PDFiumModule.addFunction((param: any, position: any, pBuf: any, size: any) => {
                     return loader.readBlock(position, pBuf, size);
                 }, 'iiiii');
 
@@ -238,6 +242,7 @@ export function PdfiumRunner(): void {
             const pages: number = FPDF.GetPageCount(documentDetails.processor.wasmData.wasm);
             documentDetails.setPages(pages);
             documentDetails.createAllPages();
+            pdfiumWindow.fileByteArray = null;
             ctx.postMessage({ message: 'PageLoaded', pageIndex: event.data.pageIndex, isZoomMode: event.data.isZoomMode, pageCount : pages, pageSizes: documentDetails.pageSizes, pageRotation: documentDetails.pageRotation });
         }
         else if (event.data.message === 'LoadPageStampCollection') {
@@ -480,6 +485,9 @@ export function PdfiumRunner(): void {
                     freeFunction(documentDetails.processor.wasmData.wasmBuffer);
                     FPDF.CloseDocument(documentDetails.processor.wasmData.wasm);
                     FPDF.DestroyLibrary();
+                    if (PDFiumModule.removeFunction && readBlockPtr) {
+                        PDFiumModule.removeFunction(readBlockPtr);
+                    }
                     documentDetails = null;
                 }
             }
@@ -1522,6 +1530,7 @@ export function PdfiumRunner(): void {
                 this.pageSizes[parseInt(i.toString(), 10)] = new SizeF(currentPageSize[0], currentPageSize[1]);
                 const page: any = (FPDF as any).LoadPage(documentDetails.processor.wasmData.wasm, i);
                 const rotation: any = (FPDF as any).GetPageRotation(page);
+                FPDF.ClosePage(page);
                 this.pageRotation.push(rotation);
             }
         }

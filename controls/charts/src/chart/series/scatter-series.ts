@@ -56,6 +56,10 @@ export class ScatterSeries {
                 height: series.marker.height, width: series.marker.width, shape: series.marker.shape
             };
             series.chart.trigger(pointRender, argsData);
+            argsData.border = {
+                width: this.isLineShapeMarker(argsData.shape) ? series.width : series.border.width,
+                color: this.isLineShapeMarker(argsData.shape) ? series.interior : series.border.color
+            };
             if (!argsData.cancel) {
                 point.symbolLocations.push(
                     getCoordinate(point.xValue, point.yValue, series.xAxis, series.yAxis, isInverted, series)
@@ -87,7 +91,7 @@ export class ScatterSeries {
 
     private isLineShapeMarker(shape: ChartShape): boolean
     {
-        return shape === 'HorizontalLine' || shape === 'VerticalLine' || shape === 'Cross';
+        return shape.indexOf('Line') > -1 || shape === 'Plus' || shape === 'Cross';
     }
 
     /**

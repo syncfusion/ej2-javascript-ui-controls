@@ -433,8 +433,8 @@ export class ComboBox extends DropDownList {
                                 const dataItem: { [key: string]: string } = this.getItemData();
                                 const value: string | number | boolean | Object = this.allowObjectBinding ?
                                     this.getDataByValue(dataItem.value) : dataItem.value;
-                                if ((this.value === dataItem.value && this.text !== dataItem.text) ||
-                                    (this.value !== dataItem.value && this.text === dataItem.text)) {
+                                if ((this.value === dataItem.value && this.text !== dataItem.text.toString()) ||
+                                    (this.value !== dataItem.value && this.text === dataItem.text.toString())) {
                                     this.setProperties({ 'text': dataItem.text ? dataItem.text.toString() : dataItem.text, 'value': value });
                                 }
                             }

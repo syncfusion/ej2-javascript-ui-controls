@@ -679,4 +679,300 @@ describe('Diagram Control', () => {
 
         });
     });
+
+    describe('Bug 969383-Margin Properties Fail for Nested Containers with Children', () => {
+        let diagram: Diagram;
+        let mouseEvents: MouseEvents = new MouseEvents();
+        let ele: HTMLElement;
+        beforeAll((): void => {
+            const isDef = (o: any) => o !== undefined && o !== null;
+            if (!isDef(window.performance)) {
+                console.log("Unsupported environment, window.performance.memory is unavailable");
+                this.skip(); //Skips test (in Chai)
+                return;
+            }
+            ele = createElement('div', { id: 'diagramNestedContainer' });
+            document.body.appendChild(ele);
+
+            let nodes: NodeModel[] = [
+                {
+                    id: 'container1',
+                    offsetX: 550,
+                    offsetY: 550,
+                    width: 1000,
+                    height: 1000,
+                    shape: {
+                        type: 'Container',
+                        header: {
+                            annotation: {
+                                content: 'Container 1',
+                                style: {
+                                    fontSize: 18,
+                                    bold: true,
+                                    color: 'white',
+                                    fill: 'transparent',
+                                    strokeColor: 'black',
+                                },
+                            },
+                            height: 40,
+                            style: {
+                                fontSize: 18,
+                                bold: true,
+                                fill: '#5a1985',
+                                strokeColor: 'black',
+                            },
+                        },
+                        children: ['container2', "Terminator1"],
+                        cornerRadius: 50,
+                    },
+                    style: {
+                        fill: '#fcfbe1',
+                        // strokeColor: "orange",
+                        strokeWidth: 1,
+                    },
+                },
+
+                {
+                    id: 'Terminator1',
+                    margin: { left: 100 },
+                    width: 50,
+                    height: 50,
+                    shape: { type: 'Flow', shape: 'Terminator' },
+                },
+                {
+                    id: 'container4',
+                    offsetX: 350,
+                    offsetY: 400,
+                    margin: {
+                        left: 100,
+                        top: 100
+                    },
+                    width: 400,
+                    height: 400,
+                    shape: {
+                        type: 'Container',
+                        header: {
+                            annotation: {
+                                content: 'Container 4',
+                                style: {
+                                    fontSize: 18,
+                                    bold: true,
+                                    color: 'gold',
+                                    fill: 'transparent',
+                                    strokeColor: 'transparent',
+                                },
+                            },
+                            height: 40,
+                            style: {
+                                fontSize: 18,
+                                bold: true,
+                                fill: '#1f5426',
+                                strokeColor: 'transparent',
+                            },
+                        },
+                        children: ["Terminator4", "container5"]
+
+                    },
+                    style: {
+                        fill: 'pink',
+                        strokeColor: '#6AA874',
+                        strokeWidth: 1,
+                    },
+                },
+                {
+                    id: 'container2',
+                    offsetX: 350,
+                    offsetY: 400,
+                    margin: {
+                        left: 100,
+                        top: 100
+                    },
+                    width: 800,
+                    height: 800,
+                    shape: {
+                        type: 'Container',
+                        header: {
+                            annotation: {
+                                content: 'Container 2',
+                                style: {
+                                    fontSize: 18,
+                                    bold: true,
+                                    color: 'gold',
+                                    fill: 'transparent',
+                                    strokeColor: 'transparent',
+                                },
+                            },
+                            height: 40,
+                            style: {
+                                fontSize: 18,
+                                bold: true,
+                                fill: '#1f5426',
+                                strokeColor: 'transparent',
+                            },
+                        },
+                        children: ["Terminator2", "container3"]
+                    },
+                    style: {
+                        fill: '#fa4b5f',
+                        strokeColor: '#6AA874',
+                        strokeWidth: 1,
+                    },
+                },
+                {
+                    id: 'container5',
+                    offsetX: 350,
+                    offsetY: 400,
+                    margin: {
+                        left: 100,
+                        top: 100
+                    },
+                    width: 200,
+                    height: 200,
+                    shape: {
+                        type: 'Container',
+                        header: {
+                            annotation: {
+                                content: 'Container 5',
+                                style: {
+                                    fontSize: 18,
+                                    bold: true,
+                                    color: 'gold',
+                                    fill: 'transparent',
+                                    strokeColor: 'transparent',
+                                },
+                            },
+                            height: 40,
+                            style: {
+                                fontSize: 18,
+                                bold: true,
+                                fill: '#1f5426',
+                                strokeColor: 'transparent',
+                            },
+                        },
+                        children: ["Terminator5"]
+
+                    },
+                    style: {
+                        fill: 'skyblue',
+                        strokeColor: '#6AA874',
+                        strokeWidth: 1,
+                    },
+                },
+                {
+                    id: 'Terminator4',
+                    margin: { left: 100 },
+                    width: 50, height: 50,
+                    shape: { type: 'Flow', shape: 'Terminator' }
+                },
+                {
+                    id: 'container3',
+                    offsetX: 350,
+                    offsetY: 400,
+                    margin: {
+                        left: 100,
+                        top: 100
+                    },
+                    width: 600,
+                    height: 600,
+                    shape: {
+                        type: 'Container',
+                        header: {
+                            annotation: {
+                                content: 'Container 3',
+                                style: {
+                                    fontSize: 18,
+                                    bold: true,
+                                    color: 'gold',
+                                    fill: 'transparent',
+                                    strokeColor: 'transparent',
+                                },
+                            },
+                            height: 40,
+                            style: {
+                                fontSize: 18,
+                                bold: true,
+                                fill: '#1f5426',
+                                strokeColor: 'transparent',
+                            },
+                        },
+                        children: ["Terminator3", "container4"]
+
+                    },
+                    style: {
+                        fill: 'yellow',
+                        strokeColor: '#6AA874',
+                        strokeWidth: 1,
+                    },
+                },
+                {
+                    id: 'Terminator2',
+                    margin: { left: 100 },
+                    width: 50,
+                    height: 50,
+                    shape: { type: 'Flow', shape: 'Terminator' },
+                },
+                {
+                    id: 'Terminator5',
+                    margin: { left: 100 },
+                    width: 50, height: 50,
+                    shape: { type: 'Flow', shape: 'Terminator' }
+                },
+                {
+                    id: 'Terminator3',
+                    margin: { left: 100 },
+                    width: 50, height: 50,
+                    shape: { type: 'Flow', shape: 'Terminator' }
+                }
+            ];
+
+        diagram = new Diagram({
+            width: '1900px', height: '1200px', nodes: nodes,
+            rulerSettings: { showRulers: true }
+        });
+            diagram.appendTo('#diagramNestedContainer');
+        });
+
+        afterAll((): void => {
+            diagram.destroy();
+            ele.remove();
+        });
+
+        it('Render-nested-container-with-child', function (done) {
+            let mainContainer: NodeModel = diagram.nameTable["container1"]
+            expect((mainContainer.wrapper.children[0] as Canvas).children.length === 4 &&
+                (((mainContainer.wrapper.children[0] as Canvas).children[2] as Canvas).children[0] as Canvas).children.length === 4).toBe(true);
+            done();
+        });
+
+        it('Drag the child-node inside nested-Container', function (done) {
+            let lastChild = diagram.nameTable['Terminator5'];
+            let diagramCanvas = document.getElementById(diagram.element.id+'content');
+            diagram.select([lastChild]);
+            const childElement = document.getElementById('Terminator5_groupElement');
+            const bounds = childElement.getBoundingClientRect();
+            const dragX = bounds.left + (bounds.width/2);
+            const dragY = bounds.top + (bounds.height/2);
+            mouseEvents.dragAndDropEvent(diagramCanvas, dragX, dragY, dragX + 200, dragY);
+            //Check outer parent container4 width after dragging inner container5 children drag
+            let container4 = diagram.nameTable['container4'];
+            console.log(container4.wrapper.children[0].width);
+            expect(container4.wrapper.children[0].width > 400).toBe(true);
+            done();
+        })
+        it('Resize the child-node inside nested-Container', function (done) {
+            let child = diagram.nameTable['Terminator4'];
+            let diagramCanvas = document.getElementById(diagram.element.id+'content');
+            diagram.select([child]);
+            let resizeEast: any = document.getElementById('resizeEast');
+            let bounds: any = resizeEast.getBoundingClientRect();
+            let boundsCenterX: number = bounds.left + (bounds.width/2);
+            let boundsCenterY: number = bounds.top + (bounds.height/2);
+            mouseEvents.dragAndDropEvent(diagramCanvas, boundsCenterX, boundsCenterY , boundsCenterX + 500, boundsCenterY);
+            //Check outer parent container3 width after resizing inner container4 children
+            let container3 = diagram.nameTable['container3'];
+            console.log(container3.wrapper.children[0].width);
+            expect(container3.wrapper.children[0].width > 600).toBe(true);
+            done();
+        })
+    });
 });

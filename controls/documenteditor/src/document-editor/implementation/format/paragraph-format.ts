@@ -9,6 +9,7 @@ import { ParagraphWidget, BodyWidget, TableCellWidget, BlockContainer, TextFrame
 import { WStyle, WParagraphStyle } from './style';
 import { WListLevel } from '../list/list-level';
 import { DocumentHelper } from '../viewer';
+import { ParagraphFormatResult } from '../editor/editor-helper';
 /* eslint-disable */
 /**
  * @private
@@ -362,7 +363,9 @@ export class WParagraphFormat {
     }
     private getDefaultValue(property: string): Object {
         const propertyType: number = WUniqueFormat.getPropertyType(WParagraphFormat.uniqueFormatType, property);
-        const docParagraphFormat: WParagraphFormat = this.getDocumentParagraphFormat();
+        const paragraphFormatResult: ParagraphFormatResult = this.getDocumentParagraphFormat();
+        const docParagraphFormat: WParagraphFormat = paragraphFormatResult.docParagraphFormat as WParagraphFormat;
+        const isPaste: boolean = paragraphFormatResult.isPaste;
         if (isNullOrUndefined(docParagraphFormat) || isNullOrUndefined(docParagraphFormat.uniqueParagraphFormat)) {
             return WParagraphFormat.getPropertyDefaultValue(property);
         }
@@ -373,7 +376,7 @@ export class WParagraphFormat {
             isInsideBodyWidget = containerWidget instanceof BlockContainer || containerWidget instanceof TextFrame || containerWidget instanceof TableCellWidget;
         }
         // Check and return property value early
-        if (isInsideBodyWidget) {
+        if (isInsideBodyWidget && !isPaste) {
             const propValue = docParagraphFormat.uniqueParagraphFormat.propertiesHash.get(propertyType);
             if (!isNullOrUndefined(propValue)) {
                 return propValue;
@@ -384,16 +387,23 @@ export class WParagraphFormat {
     /**
     * @private
     */
-    public getDocumentParagraphFormat(): WParagraphFormat {
-        let docParagraphFormat: WParagraphFormat;
+    public getDocumentParagraphFormat(): ParagraphFormatResult {	        
+        let docParagraphFormat: WParagraphFormat = new WParagraphFormat();
+        let isPasteAction: boolean = false;
         if (!isNullOrUndefined(this.ownerBase)) {
             let documentHelper: DocumentHelper = this.getDocumentHelperObject();
             if (!isNullOrUndefined(documentHelper)) {
                 docParagraphFormat = documentHelper.paragraphFormat;
-            }
+                if (!isNullOrUndefined(documentHelper.owner) && !isNullOrUndefined(documentHelper.owner.editorModule)) {
+                    isPasteAction = documentHelper.owner.editorModule.isPaste;
+                }
+            }		            
         }
-        return docParagraphFormat;
-    }
+        return {
+                docParagraphFormat: docParagraphFormat,
+                isPaste: isPasteAction
+            };
+    }		    
     /**
     * @private
     */

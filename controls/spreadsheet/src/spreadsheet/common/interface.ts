@@ -614,6 +614,7 @@ export interface BeforeChartEventArgs {
     isInitCell?: boolean;
     cancel: boolean;
     enableCanvas?: boolean;
+    skipDateInterpolation?: boolean;
 }
 
 /** @hidden */

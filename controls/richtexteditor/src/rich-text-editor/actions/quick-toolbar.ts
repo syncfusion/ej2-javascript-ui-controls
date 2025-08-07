@@ -187,6 +187,10 @@ export class QuickToolbar implements IQuickToolbar {
      * @deprecated
      */
     public showInlineQTBar(x: number, y: number, target: HTMLElement, originalEvent?: KeyboardEvent | MouseEvent): void {
+        if (target.nodeName === 'HTML' || target.nodeName === '#document') {
+            const range: Range = this.parent.formatter.editorManager.nodeSelection.getRange(this.parent.contentModule.getDocument());
+            target = range.commonAncestorContainer.parentElement;
+        }
         if (isNOU(this.parent) || this.parent.readonly || target.tagName.toLowerCase() === 'img' || this.inlineQTBar.element.querySelector('.e-rte-color-content')) {
             return;
         }
@@ -521,6 +525,7 @@ export class QuickToolbar implements IQuickToolbar {
         this.parent.on(events.renderQuickToolbar, this.renderQuickToolbars, this);
         this.parent.on(events.preventQuickToolbarClose, this.preventQuickToolbarClose, this);
         this.parent.on(events.windowResize, this.onWindowResize, this);
+        this.parent.on(events.selectionChangeMouseUp, this.mouseUpHandler, this);
     }
     private preventQuickToolbarClose(args: BeforeOpenCloseMenuEventArgs): void {
         const editorBaseId: string = this.parent.getID();
@@ -635,6 +640,7 @@ export class QuickToolbar implements IQuickToolbar {
         this.parent.off(events.renderQuickToolbar, this.renderQuickToolbars);
         this.parent.off(events.preventQuickToolbarClose, this.preventQuickToolbarClose);
         this.parent.off(events.windowResize, this.onWindowResize);
+        this.parent.off(events.selectionChangeMouseUp, this.mouseUpHandler);
     }
 
     /**

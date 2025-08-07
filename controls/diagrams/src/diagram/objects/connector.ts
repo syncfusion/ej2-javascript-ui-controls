@@ -15,7 +15,7 @@ import { Point } from '../primitives/point';
 import { TextElement } from '../core/elements/text-element';
 import { PointModel } from '../primitives/point-model';
 import { Segments, DecoratorShapes, Transform, ConnectorConstraints, ControlPointsVisibility, BezierSegmentEditOrientation, Orientation, SegmentThumbShapes, PortVisibility, ElementAction } from '../enum/enum';
-import { Direction, LayoutOrientation, Status, PortConstraints, BezierSmoothness, NodeConstraints } from '../enum/enum';
+import { Direction, LayoutOrientation, Status, PortConstraints, BezierSmoothness } from '../enum/enum';
 import { DecoratorModel, ConnectorShapeModel, BpmnFlowModel, VectorModel, DiagramConnectorShapeModel, BezierSettingsModel } from './connector-model';
 import { Rect } from '../primitives/rect';
 import { Size } from '../primitives/size';
@@ -1444,7 +1444,7 @@ export class Connector extends NodeBase implements IElement {
     }
     /* tslint:disable */
     private setPortID(diagram: any, isTarget?: boolean): void {
-        if (this.targetID || this.sourceID) {
+        if (this.targetID && this.sourceID) {
             const targetNode: any = diagram.nameTable[this.targetID];
             const sourceNode: any = diagram.nameTable[this.sourceID];
             const ports: any = isTarget ? (targetNode && targetNode.ports) : (sourceNode && sourceNode.ports);
@@ -1454,20 +1454,10 @@ export class Connector extends NodeBase implements IElement {
                 if (this.targetPortID === port.id && isTarget) {
                     if ((port.constraints & PortConstraints.None) || !(port.constraints & PortConstraints.InConnect)) {
                         this.targetPortID = '';
-                        if (targetNode){
-                            if ((targetNode.constraints & NodeConstraints.None) || !(targetNode.constraints & NodeConstraints.InConnect)) {
-                                this.targetID = '';
-                            }
-                        }
                     }
                 } else if (this.sourcePortID === port.id && !isTarget) {
                     if ((port.constraints & PortConstraints.None) || !(port.constraints & PortConstraints.OutConnect)) {
                         this.sourcePortID = '';
-                        if (sourceNode){
-                            if ((sourceNode.constraints & NodeConstraints.None) || !(sourceNode.constraints & NodeConstraints.OutConnect)) {
-                                this.sourceID = '';
-                            }
-                        }
                     }
                 }
 
@@ -1496,12 +1486,6 @@ export class Connector extends NodeBase implements IElement {
         container.height = bounds.height;
         container.offsetX = bounds.x + container.pivot.x * bounds.width;
         container.offsetY = bounds.y + container.pivot.y * bounds.height;
-        if (this.sourceID === '') {
-            this.sourceWrapper = undefined;
-        }
-        if (this.targetID === '') {
-            this.targetWrapper = undefined;
-        }
         switch (this.shape.type) {
         case 'Bpmn':
             // eslint-disable-next-line no-case-declarations
@@ -1685,28 +1669,22 @@ export class Connector extends NodeBase implements IElement {
     private getConnectorRelation(): void {
         const shape: RelationShip = (this.shape as RelationShip);
         if (shape.relationship === 'Association') {
-            this.segments[0].type = 'Straight';
             this.sourceDecorator.shape = 'None';
             this.targetDecorator.shape = 'Arrow';
 
         } else if (shape.relationship === 'Inheritance') {
-            this.segments[0].type = 'Orthogonal';
             this.sourceDecorator.shape = 'None';
             this.targetDecorator.shape = 'Arrow';
         } else if (shape.relationship === 'Composition') {
-            this.segments[0].type = 'Orthogonal';
             this.sourceDecorator.shape = 'Diamond';
             this.targetDecorator.shape = 'None';
         } else if (shape.relationship === 'Aggregation') {
-            this.segments[0].type = 'Orthogonal';
             this.sourceDecorator.shape = 'Diamond';
             this.targetDecorator.shape = 'None';
         } else if (shape.relationship === 'Dependency') {
-            this.segments[0].type = 'Orthogonal';
             this.sourceDecorator.shape = 'None';
             this.targetDecorator.shape = 'OpenArrow';
         } else if (shape.relationship === 'Realization') {
-            this.segments[0].type = 'Orthogonal';
             this.sourceDecorator.shape = 'None';
             this.targetDecorator.shape = 'Arrow';
         }

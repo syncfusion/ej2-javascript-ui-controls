@@ -261,7 +261,7 @@ describe('Diagram Control', () => {
                 ports: [
                     {
                         id: "port", width: 25, height: 25, offset: { x: 0.5, y: 1 },
-                        visibility: PortVisibility.Visible, constraints:  PortConstraints.Default | PortConstraints.Drag
+                        visibility: PortVisibility.Visible, constraints: PortConstraints.Drag
                     }
                 ]
             };
@@ -567,7 +567,7 @@ describe('Diagram Control', () => {
         let diagramCanvas: HTMLElement = document.getElementById(diagram.element.id + 'content');
         mouseEvents.mouseMoveEvent(diagramCanvas, 358, 68, true);
         let node: NodeModel = diagram.nodes[0];
-        node.ports[0].constraints = PortConstraints.Default | PortConstraints.Draw;
+        node.ports[0].constraints = PortConstraints.Draw;
         mouseEvents.clickEvent(diagramCanvas, 106, 106);
         mouseEvents.mouseDownEvent(diagramCanvas, 106, 106);
         mouseEvents.mouseMoveEvent(diagramCanvas, 106, 108.5);

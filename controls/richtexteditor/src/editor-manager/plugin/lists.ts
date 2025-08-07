@@ -886,6 +886,24 @@ export class Lists {
                         const nestedElement: Element = createElement((elements[i as number].parentNode as Element).tagName);
                         (nestedElement as HTMLElement).style.listStyleType =
                             (elements[i as number].parentNode as HTMLElement).style.listStyleType;
+                        // Compare inline styles of prevSibling with computed styles of current element
+                        const prevInlineStyle: string | null = prevSibling.getAttribute('style');
+                        const computedStyles: CSSStyleDeclaration = getComputedStyle(elements[i as number] as Element);
+                        const currentInlineStyle: CSSStyleDeclaration = (elements[i as number] as HTMLElement).style;
+                        if (prevInlineStyle) {
+                            const stylePairs: string[] = prevInlineStyle.split(';').filter(Boolean);
+                            stylePairs.forEach((style: string) => {
+                                const [prop, value] = style.split(':').map((s: string) => s.trim());
+                                if (prop && value && prop !== 'list-style-type') {
+                                    const computedValue: string = computedStyles.getPropertyValue(prop).trim();
+                                    const currentInlineValue: string = currentInlineStyle.getPropertyValue(prop).trim();
+                                    if (computedValue !== value && !currentInlineValue) {
+                                        // Set the inline style to match the computed style
+                                        (elements[i as number] as HTMLElement).style.setProperty(prop, computedValue);
+                                    }
+                                }
+                            });
+                        }
                         append([nestedElement], prevSibling as Element);
                         append([elements[i as number] as Element], nestedElement);
                     } else if (prevSibling.tagName === 'OL' || prevSibling.tagName === 'UL') {

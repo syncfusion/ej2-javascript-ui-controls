@@ -15437,3 +15437,83 @@ describe('pdf export with hours timeline', () => {
         }
     });
 });
+describe('pdf export with baseline duration', () => {
+    let ganttObj: Gantt;
+    const baselineData: Object[] = [
+    { TaskId: 1, TaskName: 'Receive vehicle and create job card', StartDate: new Date('07/01/2025'), BaselineStartDate: new Date('07/01/2025'), EndDate: new Date('07/01/2025'), BaselineEndDate: new Date('07/01/2025'), baselineDur: 2 },
+    { TaskId: 2, TaskName: 'Allot mechanic and send vehicle to service bay', StartDate: new Date('07/02/2025'), BaselineStartDate: new Date('07/01/2025'), EndDate: new Date('07/04/2025'), BaselineEndDate: new Date('07/03/2025'), baselineDur: 2 },
+    { TaskId: 3, TaskName: 'Change engine oil', StartDate: new Date('07/04/2025'), BaselineStartDate: new Date('07/02/2025'), EndDate: new Date('07/04/2025'), BaselineEndDate: new Date('07/03/2025'), baselineDur: 0 },
+    { TaskId: 4, TaskName: 'Replace the oil filter', StartDate: new Date('07/05/2025'), BaselineStartDate: new Date('07/03/2025'), EndDate: new Date('07/07/2025'), BaselineEndDate: new Date('07/05/2025'), baselineDur: 2 },
+    { TaskId: 5, TaskName: 'Replace the air filter', StartDate: new Date('07/07/2025'), BaselineStartDate: new Date('07/05/2025'), EndDate: new Date('07/09/2025'), BaselineEndDate: new Date('07/07/2025'), baselineDur: 2 },
+    { TaskId: 6, TaskName: 'Replace the fuel filter', StartDate: new Date('07/09/2025'), BaselineStartDate: new Date('07/07/2025'), EndDate: new Date('07/10/2025'), BaselineEndDate: new Date('07/08/2025'), baselineDur: 4 },
+    { TaskId: 7, TaskName: 'Replace the cabin filter', StartDate: new Date('07/11/2025'), BaselineStartDate: new Date('07/09/2025'), EndDate: new Date('07/12/2025'), BaselineEndDate: new Date('07/10/2025'), baselineDur: 1 },
+    { TaskId: 8, TaskName: 'Replace the spark plugs', StartDate: new Date('07/13/2025'), BaselineStartDate: new Date('07/11/2025'), EndDate: new Date('07/14/2025'), BaselineEndDate: new Date('07/12/2025'), baselineDur: 5 },
+    { TaskId: 9, TaskName: 'Refill brake/clutch fluid', StartDate: new Date('07/14/2025'), BaselineStartDate: new Date('07/12/2025'), EndDate: new Date('07/15/2025'), BaselineEndDate: new Date('07/13/2025'), baselineDur: 1 },
+    { TaskId: 10, TaskName: 'Check brake components', StartDate: new Date('07/16/2025'), BaselineStartDate: new Date('07/13/2025'), EndDate: new Date('07/17/2025'), BaselineEndDate: new Date('07/15/2025'), baselineDur: 3 },
+    { TaskId: 11, TaskName: 'Refill power steering fluid', StartDate: new Date('07/18/2025'), BaselineStartDate: new Date('07/14/2025'), EndDate: new Date('07/19/2025'), BaselineEndDate: new Date('07/16/2025'), baselineDur: 2 },
+    { TaskId: 12, TaskName: 'Refill transmission fluid', StartDate: new Date('07/20/2025'), BaselineStartDate: new Date('07/17/2025'), EndDate: new Date('07/21/2025'), BaselineEndDate: new Date('07/19/2025'), baselineDur: 2 },
+    { TaskId: 13, TaskName: 'Grease and lubricate components', StartDate: new Date('07/21/2025'), BaselineStartDate: new Date('07/19/2025'), EndDate: new Date('07/22/2025'), BaselineEndDate: new Date('07/20/2025'), baselineDur: 1 },
+    { TaskId: 14, TaskName: 'Inspect timing belt', StartDate: new Date('07/23/2025'), BaselineStartDate: new Date('07/20/2025'), EndDate: new Date('07/25/2025'), BaselineEndDate: new Date('07/22/2025'), baselineDur: 2 },
+    { TaskId: 15, TaskName: 'Wheel balancing', StartDate: new Date('07/27/2025'), BaselineStartDate: new Date('07/23/2025'), EndDate: new Date('07/29/2025'), BaselineEndDate: new Date('07/26/2025'), baselineDur: 4 }
+    ];
+    beforeAll((done: Function) => {
+        ganttObj = createGantt(
+        {
+          dataSource: baselineData,
+            taskFields: {
+                id: 'TaskId',
+                name: 'TaskName',
+                startDate: 'StartDate',
+                endDate: 'EndDate',
+                baselineStartDate: "BaselineStartDate",
+                baselineEndDate: "BaselineEndDate",
+                baselineDuration: 'baselineDur'
+            },
+            renderBaseline: true,
+            gridLines: 'Both',
+            baselineColor: 'red',
+            columns: [
+                { field: 'TaskId', headerText: 'Task ID' },
+                { field: 'TaskName', headerText: 'Task Name', allowReordering: false  },
+                { field: 'BaselineStartDate', headerText: 'Baseline StartDate', width:'175' },
+                { field: 'BaselineEndDate', headerText: 'Baseline EndDate',width:'175' }, 
+                { field: 'baselineDur', headerText: 'Baseline Duration',width:'175' },
+                { field: 'StartDate', headerText: 'Start Date'},
+                { field: 'EndDate', headerText: 'End Date'}
+            ],
+            treeColumnIndex: 1,
+            allowSelection: true,
+            includeWeekend: true,
+            splitterSettings: {
+            columnIndex: 5
+            },
+            editSettings: {
+                allowAdding: true,
+                allowEditing: true,
+                allowDeleting: true,
+                allowTaskbarEditing: true,
+                showDeleteConfirmDialog: true
+            },
+            toolbar: ['Add', 'Edit', 'Update', 'Delete', 'Cancel','Undo','Redo', 'ExpandAll', 'CollapseAll', 'Search', 'ZoomIn', 'ZoomOut', 'ZoomToFit', 
+            'PrevTimeSpan', 'NextTimeSpan','ExcelExport', 'CsvExport', 'PdfExport'],
+            allowPdfExport: true,
+            tooltipSettings: {
+                taskbar: '#tooltip',
+            },
+            enableUndoRedo: true,
+            undoRedoActions: ['Add', 'Edit', 'Delete'],
+            height: '450px',
+            projectStartDate: new Date('06/29/2025'),
+            projectEndDate: new Date('08/05/2025')
+           
+        }, done);
+    });
+    it('pdf export with baseline duration', () => {
+        ganttObj.pdfExport();
+    });
+    afterAll(() => {
+        if (ganttObj) {
+            destroyGantt(ganttObj);
+        }
+    });
+});

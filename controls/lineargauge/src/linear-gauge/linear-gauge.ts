@@ -1026,6 +1026,7 @@ export class LinearGauge extends Component<HTMLElement> implements INotifyProper
             this.mouseX = args.x;
             this.mouseY = args.y;
             if (this.isTouch) {
+                e.preventDefault();
                 this.isTouchPointer = true;
             }
             if (args.target) {

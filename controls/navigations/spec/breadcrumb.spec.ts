@@ -635,4 +635,41 @@ describe('Breadcrumb', () => {
         });
 
     });
+    describe('Breadcrumb Dynamic Item Updates',() =>{
+        it('should update UI correctly when adding items dynamically with different overflow modes', () => {
+            document.body.appendChild(nav);
+            const overflowModes = ['Menu', 'Hidden', 'Collapsed', 'Wrap', 'Scroll', 'None'];
+            for (const mode of overflowModes) {
+                breadcrumb = new Breadcrumb({
+                    items: items.slice(), 
+                    maxItems: 3,
+                    overflowMode: mode
+                }, '#breadcrumb');
+                const initialCount = breadcrumb.items.length;
+                const initialRenderedItems = breadcrumb.element.querySelectorAll('.e-breadcrumb-item').length;
+                const newItem = { text: `New ${mode} Item`, url: `./breadcrumb/${mode.toLowerCase()}` };
+                breadcrumb.items = [...breadcrumb.items, newItem];
+                breadcrumb.dataBind();
+                expect(breadcrumb.items.length).toBe(initialCount + 1);
+                if (mode === 'Menu') {
+                    const menuButton = breadcrumb.element.querySelector('.e-breadcrumb-menu');
+                    expect(menuButton).not.toBeNull();
+                    if (menuButton) {
+                        menuButton.click();
+                        if (breadcrumb.popupObj) {
+                            expect(document.querySelector('.e-breadcrumb-popup')).not.toBeNull();
+                            breadcrumb.documentClickHandler({ target: document.body });
+                        }
+                    }
+                } else if (mode === 'Hidden') {
+                    const newRenderedItems = breadcrumb.element.querySelectorAll('.e-breadcrumb-item').length;
+                    expect(newRenderedItems >= initialRenderedItems - 1).toBe(true);
+                } else if (mode === 'Collapsed') {
+                    const collapsedIcon = breadcrumb.element.querySelector('.e-breadcrumb-collapsed');
+                    expect(collapsedIcon).not.toBeNull();
+                }
+                breadcrumb.destroy();
+            }
+        });
+    });
 });

@@ -762,4 +762,56 @@ describe('Spreadsheet Sheet tab integration module ->', () => {
             });
         });
     });
+
+    describe('EJ2:967458->Spreadsheet Aggregate with discontinuous ranges->', () => {
+        beforeAll((done: Function) => {
+            helper.initializeSpreadsheet({
+                sheets: [{
+                    ranges: [{ dataSource: defaultData }]
+                }]
+            }, done);
+        });
+        afterAll(() => {
+            helper.invoke('destroy');
+        });
+        it('Aggregate calculation for discontinuous ranges with and without overlapping cells', (done: Function) => {
+            helper.invoke('selectRange', ['D2:D5 F2:F5']);
+            setTimeout(() => {
+                let aggregateBtn: HTMLElement = helper.getElement(`#${helper.id}_aggregate`);
+                expect(aggregateBtn).not.toBeNull();
+                expect(aggregateBtn.textContent).toBe('Sum: 1465');
+                helper.click('#' + helper.id + '_aggregate');
+                helper.click('#' + helper.id + '_aggregate-popup ul li:nth-child(1)');
+                expect(aggregateBtn.textContent).toBe('Count: 8');
+                helper.click('#' + helper.id + '_aggregate');
+                helper.click('#' + helper.id + '_aggregate-popup ul li:nth-child(3)');
+                expect(aggregateBtn.textContent).toBe('Avg: 183.13');
+                helper.click('#' + helper.id + '_aggregate');
+                helper.click('#' + helper.id + '_aggregate-popup ul li:nth-child(4)');
+                expect(aggregateBtn.textContent).toBe('Min: 10');
+                helper.click('#' + helper.id + '_aggregate');
+                helper.click('#' + helper.id + '_aggregate-popup ul li:nth-child(5)');
+                expect(aggregateBtn.textContent).toBe('Max: 600');
+                helper.invoke('selectRange', ['D2:E5 E4:F6']);
+                setTimeout(function () {
+                    let aggregateBtn: HTMLElement = helper.getElement(`#${helper.id}_aggregate`);
+                    expect(aggregateBtn).not.toBeNull();
+                    expect(aggregateBtn.textContent).toBe('Max: 300');
+                    helper.click('#' + helper.id + '_aggregate');
+                    helper.click('#' + helper.id + '_aggregate-popup ul li:nth-child(1)');
+                    expect(aggregateBtn.textContent).toBe('Count: 12');
+                    helper.click('#' + helper.id + '_aggregate');
+                    helper.click('#' + helper.id + '_aggregate-popup ul li:nth-child(2)');
+                    expect(aggregateBtn.textContent).toBe('Sum: 1060');
+                    helper.click('#' + helper.id + '_aggregate');
+                    helper.click('#' + helper.id + '_aggregate-popup ul li:nth-child(3)');
+                    expect(aggregateBtn.textContent).toBe('Avg: 88.33');
+                    helper.click('#' + helper.id + '_aggregate');
+                    helper.click('#' + helper.id + '_aggregate-popup ul li:nth-child(4)');
+                    expect(aggregateBtn.textContent).toBe('Min: 10');
+                    done();
+                });
+            });
+        });
+    });
 });

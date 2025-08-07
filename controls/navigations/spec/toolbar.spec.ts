@@ -13759,6 +13759,70 @@ describe('Hscroll module scrollStep change in beforeCreate', () => {
         });
     });
 
+    
+    describe('Toolbar Popup with Text Shown Testing', () => {
+        let toolbar: any;
+        let keyEventArgs: any;
+        document.body.innerHTML = '';
+
+        beforeEach((done: Function) => {
+            toolbar = undefined;
+            let ele: HTMLElement = createElement('div', { id: 'ej2ToolbarPopupClose' });
+            document.body.appendChild(ele);
+            toolbar = new Toolbar({
+                overflowMode: 'Popup',
+                width: 300,
+                items: [
+                    { prefixIcon: 'e-cut-icon', tooltipText: 'Cut' },
+                    { prefixIcon: 'e-copy-icon', tooltipText: 'Copy' },
+                    { prefixIcon: 'e-paste-icon', tooltipText: 'Paste' },
+                    { type: 'Separator' },
+                    { prefixIcon: 'e-bold-icon', tooltipText: 'Bold' },
+                    { prefixIcon: 'e-underline-icon', tooltipText: 'Underline' },
+                    { prefixIcon: 'e-italic-icon', tooltipText: 'Italic' },
+                    { prefixIcon: 'e-bullets-icon', text: 'Bullets', tooltipText: 'Bullets' },
+                    { prefixIcon: 'e-numbering-icon', text: 'Bullets', tooltipText: 'Numbering' },
+                    { type: 'Separator' },
+                    { prefixIcon: 'e-undo-icon', tooltipText: 'Undo', text: 'Undo' },
+                    { prefixIcon: 'e-redo-icon', tooltipText: 'Redo', text: 'Redo' },
+                    { prefixIcon: 'e-alignleft-icon', tooltipText: 'Align-Left', text: 'Left' },
+                    { prefixIcon: 'e-alignjustify-icon', tooltipText: 'Align-Justify', text: 'Justify' },
+                    { prefixIcon: 'e-alignright-icon', tooltipText: 'Align-Right', text: 'Right' },
+                    { prefixIcon: 'e-aligncenter-icon', tooltipText: 'Align-Center', text: 'Center' }
+                ]
+            });
+            toolbar.appendTo('#ej2ToolbarPopupClose');
+            setTimeout(() => { done(); }, 450);
+        });
+
+        afterEach((): void => {
+            if (toolbar) {
+                toolbar.destroy();
+            }
+            document.body.innerHTML = '';
+        });
+
+        it('should open popup when popup icon is clicked, and close when clicking outside', (done: Function) => {
+            const popupNavBtn = toolbar.element.querySelector('.e-hor-nav');
+            expect(popupNavBtn).not.toBeNull();
+            expect(isVisible(toolbar.popObj.element)).toBe(false);
+            popupNavBtn.click();
+            setTimeout(() => {
+                expect(isVisible(toolbar.popObj.element)).toBe(true);
+                const navIcon = popupNavBtn.firstChild as HTMLElement;
+                expect(navIcon.classList.contains('e-popup-up-icon')).toBe(true);
+                const popupItems = toolbar.popObj.element.querySelectorAll('.e-toolbar-item');
+                expect(popupItems.length).toEqual(6);
+                document.body.click();
+                setTimeout(() => {
+                    expect(isVisible(toolbar.popObj.element)).toBe(false);
+                    expect(navIcon.classList.contains('e-popup-down-icon')).toBe(true);
+                    done();
+                }, 150);
+            }, 150);
+        });
+    });
+
     it('memory leak', () => {     
         profile.sample();
         let average: any = inMB(profile.averageChange)

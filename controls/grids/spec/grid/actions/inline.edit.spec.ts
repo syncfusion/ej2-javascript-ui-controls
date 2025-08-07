@@ -5215,3 +5215,44 @@ describe('EJ2-960920: Script error occurs while editing when multiline value as 
         gridObj = null;
     });
 });
+
+describe('EJ2-969806: Aria Label includes undefined for columns using editTemplate during Inline Edit', function () {
+    let gridObj: Grid;
+    let actionComplete: () => void;
+    beforeAll((done: Function) => {
+        gridObj = createGrid(
+            {
+                dataSource: data,
+                allowPaging: true,
+                editSettings: { allowEditing: true, allowAdding: true, allowDeleting: true, mode: 'Normal' },
+                toolbar: ['Add', 'Edit', 'Delete', 'Update', 'Cancel'],
+                height: "200",
+                columns: [
+                    { field: 'OrderID', headerText: 'Order ID', isPrimaryKey: true, textAlign: 'Right', width: 90 },
+                    { field: 'CustomerID', headerText: 'Customer ID', width: 100, editTemplate: "<input name='CustomerID'>" },
+                    { field: 'ShipCity', headerText: 'ShipCity', width: 100 },
+                    { field: 'ShipName', headerText: 'ShipName', width: 120 }
+                ],
+                actionComplete: actionComplete
+            }, done);
+    });
+
+    it('Check aria-label of CustomerID column editing', (done: Function) => {
+        actionComplete = (args?: any): void => {
+            if (args.requestType === 'beginEdit') {
+                const cells = gridObj.element.querySelector('.e-editedrow').querySelectorAll('.e-rowcell');
+                const ariaLabel = cells[1].getAttribute('aria-label');
+                expect(ariaLabel.startsWith('undefined')).toBe(false);
+                done();
+            }
+        };
+        gridObj.actionComplete = actionComplete;
+        gridObj.selectRow(0, true);
+        (<any>gridObj.toolbarModule).toolbarClickHandler({ item: { id: gridObj.element.id + '_edit' } });
+    });
+
+    afterAll(() => {
+        destroy(gridObj);
+        gridObj = actionComplete = null;
+    });
+});

@@ -487,7 +487,7 @@ describe('Selection commands', () => {
         let node1: Node = document.getElementById('format6');
         domSelection.setSelectionText(document, node1, node1, 0, node1.childNodes.length);
         SelectionCommands.applyFormat(document, 'fontcolor', parentDiv, 'P',  null,'');
-        expect((document.getElementById('format6').childNodes[1] as HTMLElement).nodeName).toEqual('#text');
+        expect((document.getElementById('format6').childNodes[1].childNodes[0] as HTMLElement).nodeName).toEqual('#text');
     });
     it('Apply fontsize tag for list elements', () => {
         let node1: Node = document.getElementById('paragraph20');
@@ -1427,8 +1427,7 @@ describe('EJ2-46956: Applying background color to multiple span element does not
         backgroundColorPicker.click();
         let noColorItem: HTMLElement = <HTMLElement>document.querySelector(".e-nocolor-item");
         noColorItem.click();
-        let afterSpanCount: number = rteObj.element.querySelectorAll('.e-content span').length;
-        expect(initialSpanCount).not.toBe(afterSpanCount);
+        expect(rteObj.element.querySelectorAll('.e-content span')[0].style.backgroundColor).toBe('transparent');
     });
     it(' Apply transparent to text selection', () => {
         rteObj = renderRTE({
@@ -1446,9 +1445,9 @@ describe('EJ2-46956: Applying background color to multiple span element does not
         backgroundColorPicker.click();
         let noColorItem: HTMLElement = <HTMLElement>document.querySelector(".e-nocolor-item");
         noColorItem.click();
-        expect(rteObj.element.querySelectorAll('.e-content span > span')[2].style.backgroundColor).toBe('');
-        expect(rteObj.element.querySelectorAll('.e-content span > span')[4].style.backgroundColor).toBe('');
-        expect(rteObj.element.querySelectorAll('.e-content span > span')[6].style.backgroundColor).toBe('');
+        expect(rteObj.element.querySelectorAll('.e-content span > span')[2].style.backgroundColor).toBe('transparent');
+        expect(rteObj.element.querySelectorAll('.e-content span > span')[4].style.backgroundColor).toBe('transparent');
+        expect(rteObj.element.querySelectorAll('.e-content span > span')[6].style.backgroundColor).toBe('transparent');
     });
     afterEach(() => {
         destroy(rteObj);
@@ -1523,8 +1522,8 @@ describe('Background Color Apply and Remove - Auto Span Creation in List Item', 
             null,
             ''
         );
-        expect(liElement.querySelector('span')).toBeNull();
-        expect(liElement.innerHTML).toEqual('item1'); 
+        expect(liElement.querySelector('span')).not.toBeNull();
+        expect(liElement.innerHTML).toEqual('<span style="background-color: transparent;">item1</span>'); 
         done();
     });
 });
@@ -2545,3 +2544,46 @@ describe(' - remove inline code from pre/code blocks', function () {
     });
 });
 
+describe('EJ2-971467: Cannot Clear Background Color of White Space After Applying Styles', () => {
+    let rteObj: any;
+    let domSelection: NodeSelection = new NodeSelection();
+    it('Allowing users to clear the background color of white space after applying styles', () => {
+        rteObj = renderRTE({
+            value: `<p class="focusNode" style="text-align: left;"><span style="color: rgb(0, 0, 0); font-family: monospace; font-size: 14px; font-style: normal; font-weight: 400; text-align: left; text-indent: 0px; text-transform: none; white-space: normal; background-color: rgb(255, 255, 255); float: none; display: inline !important;">Lorem&nbsp; &nbsp; &nbsp; &nbsp; ipsum</span></p>`,
+            toolbarSettings: {
+                items: ['BackgroundColor']
+            }
+        });
+        let rteEle = rteObj.element;
+        let span1: Text = rteObj.element.querySelectorAll('.focusNode')[0].childNodes[0].childNodes[0];
+        let span2: Text = rteObj.element.querySelectorAll('.focusNode')[0].childNodes[0].childNodes[0];
+        domSelection.setSelectionText(document, span1, span2, 0, span2.length);
+        rteObj.notify('selection-save', {});
+        let backgroundColorPicker = <HTMLElement>rteEle.querySelectorAll(".e-toolbar-item .e-dropdown-btn")[0];
+        backgroundColorPicker.click();
+        let colorItem: HTMLElement = document.querySelector("[aria-label='#ffff00ff']");
+        colorItem.click();
+        domSelection.setSelectionText(document, span1, span2, 0, 5);
+        backgroundColorPicker.click();
+        let noColorItem: HTMLElement = <HTMLElement>document.querySelector(".e-nocolor-item");
+        noColorItem.click();
+        expect(rteObj.element.querySelectorAll('.e-content span')[0].style.backgroundColor).toBe('transparent');
+        span1 = rteObj.element.querySelectorAll('.focusNode')[0].childNodes[1].childNodes[0];
+        span2 = rteObj.element.querySelectorAll('.focusNode')[0].childNodes[1].childNodes[0];
+        domSelection.setSelectionText(document, span1, span2, 0, 8);
+        backgroundColorPicker.click();
+        noColorItem = <HTMLElement>document.querySelector(".e-nocolor-item");
+        noColorItem.click();
+        expect(rteObj.element.querySelectorAll('.e-content span')[1].style.backgroundColor).toBe('transparent');
+        span1 = rteObj.element.querySelectorAll('.focusNode')[0].childNodes[2].childNodes[0];
+        span2 = rteObj.element.querySelectorAll('.focusNode')[0].childNodes[2].childNodes[0];
+        domSelection.setSelectionText(document, span1, span2, 0, 5);
+        backgroundColorPicker.click();
+        noColorItem = <HTMLElement>document.querySelector(".e-nocolor-item");
+        noColorItem.click();
+        expect(rteObj.element.querySelectorAll('.e-content span')[2].style.backgroundColor).toBe('transparent');
+    });
+    afterEach(() => {
+        destroy(rteObj);
+    });
+});

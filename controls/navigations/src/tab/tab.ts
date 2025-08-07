@@ -1069,8 +1069,11 @@ export class Tab extends Component<HTMLElement> implements INotifyPropertyChange
             this.tbItems.appendChild(target);
             this.actEleId = target.id;
             if (this.checkPopupOverflow(lastChild)) {
-                const prevEle: HTEle = <HTEle>(<HTEle>this.tbItems.lastChild).previousElementSibling;
-                this.checkPopupOverflow(prevEle);
+                let prevEle: HTEle = <HTEle>(<HTEle>this.tbItems.lastChild).previousElementSibling;
+                prevEle = <HTEle>(prevEle && prevEle.classList.contains(CLS_INDICATOR) ? prevEle.previousElementSibling : prevEle);
+                if (prevEle) {
+                   this.checkPopupOverflow(prevEle);
+                }
             }
             this.isPopup = true;
         }

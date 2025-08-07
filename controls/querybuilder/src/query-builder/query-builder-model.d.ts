@@ -85,7 +85,7 @@ export interface ColumnsModel {
      *
      * @default null
      */
-    value?:  string[] | number[] | string | number | boolean | Date;
+    value?: string[] | number[] | string | number | boolean | Date;
 
     /**
      * Specifies the category for columns.
@@ -278,11 +278,11 @@ export interface ShowButtonsModel {
 export interface QueryBuilderModel extends ComponentModel{
 
     /**
-     * Triggers when the component is created.
+     * Triggers when the component is created.
      *
-     * @event created
+     * @event created
      * @blazorProperty 'Created'
-     */
+     */
     created?: EmitType<Event>;
 
     /**

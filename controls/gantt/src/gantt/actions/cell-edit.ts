@@ -199,10 +199,15 @@ export class CellEdit {
         editedArgs.action = 'CellEditing';
         editedArgs.data = this.parent.getTaskByUniqueID(data.uniqueID);
         const previousValue: Record<string, unknown> = getValue('previousData', args);
-        const editedValue: object = this.parent.allowUnscheduledTasks ? data[column.field] : ((isNullOrUndefined(data[column.field])
-            || data[column.field] === '') && (this.parent.taskFields.duration === column.field ||
-                this.parent.taskFields.startDate === column.field || this.parent.taskFields.endDate === column.field)) ? previousValue
-            : data[column.field];
+        const isBaseline: boolean = this.parent.taskFields.baselineEndDate === column.field ||
+            this.parent.taskFields.baselineStartDate === column.field ? true : false;
+        const editedValue: object = this.parent.allowUnscheduledTasks && !isBaseline ? data[column.field] :
+            ((isNullOrUndefined(data[column.field])
+                || data[column.field] === '') && (this.parent.taskFields.duration === column.field ||
+                    this.parent.taskFields.startDate === column.field || this.parent.taskFields.endDate === column.field ||
+                    this.parent.taskFields.baselineDuration === column.field ||
+                    this.parent.taskFields.baselineEndDate === column.field || this.parent.taskFields.baselineStartDate === column.field)) ?
+                previousValue : data[column.field];
         if (!isNOU(data)) {
             data[column.field] = previousValue;
             editedArgs.data[column.field] = previousValue;
@@ -227,7 +232,7 @@ export class CellEdit {
             if (column.field === this.parent.taskFields.name) {
                 this.taskNameEdited(editedArgs);
             } else if (column.field === this.parent.taskFields.startDate) {
-                this.startDateEdited(editedArgs);
+                this.startDateEdited(editedArgs, false);
             } else if (column.field === this.parent.taskFields.constraintDate || column.field === this.parent.taskFields.constraintType) {
                 this.constraintEdited(editedArgs);
             } else if (column.field === this.parent.taskFields.endDate) {
@@ -238,9 +243,12 @@ export class CellEdit {
                 this.resourceEdited(editedArgs, editedObj, data);
             } else if (column.field === this.parent.taskFields.progress) {
                 this.progressEdited(editedArgs);
-            } else if (column.field === this.parent.taskFields.baselineStartDate
-                || column.field === this.parent.taskFields.baselineEndDate) {
-                this.baselineEdited(editedArgs);
+            } else if (column.field === this.parent.taskFields.baselineStartDate) {
+                this.startDateEdited(editedArgs, true);
+            } else if (column.field === this.parent.taskFields.baselineEndDate) {
+                this.endDateEditedforBaseline(editedArgs, args['previousData']);
+            } else if (column.field === this.parent.taskFields.baselineDuration) {
+                this.durationEdited(editedArgs, true);
             } else if (column.field === this.parent.taskFields.dependency) {
                 this.dependencyEdited(editedArgs, previousValue);
             } else if (column.field === this.parent.taskFields.notes) {
@@ -303,46 +311,65 @@ export class CellEdit {
         this.parent.editModule.updateTaskScheduleModes(args.data);
         this.updateEditedRecord(args);
     }
-    private updateGanttDataProperties(args: ITaskbarEditedEventArgs, currentValue: Date): void {
+    /**
+     * To update task schedule mode cell with new value
+     *
+     * @param {ITaskbarEditedEventArgs} args .
+     * @param {Date} currentValue .
+     * @param {boolean} isBaseline - Indicates whether the calculation is specific to baseline dates.
+     * @returns {void} .
+     */
+    /* eslint-disable */
+    private updateGanttDataProperties(args: ITaskbarEditedEventArgs, currentValue: Date, isBaseline?: boolean): void {
         const ganttData: IGanttData = args.data;
         const taskProperties: ITaskData = ganttData.ganttProperties;
+        const { startdateField, enddateField, durationField } = this.parent.dateValidationModule.getFieldMappings(isBaseline);
         if (isNOU(currentValue)) {
             if (!ganttData.hasChildRecords) {
-                this.parent.setRecordValue('startDate', null, taskProperties, true);
-                if (!(taskProperties.startDate === null && taskProperties.endDate === null && taskProperties.duration !== null)) {
-                    this.parent.setRecordValue('duration', null, taskProperties, true);
+                if (!isBaseline) {
+                    this.parent.setRecordValue(startdateField, null, taskProperties, true);
+                    this.parent.setRecordValue('isMilestone', false, taskProperties, true);
                 }
-                this.parent.setRecordValue('isMilestone', false, taskProperties, true);
+                if (!(taskProperties.startDate === null && taskProperties.endDate === null && taskProperties.duration !== null)) {
+                    this.parent.setRecordValue(durationField, null, taskProperties, true);
+                }
             }
-        } else if (taskProperties.endDate || !isNOU(taskProperties.duration)) {
-            this.parent.setRecordValue('startDate', new Date(currentValue.getTime()), taskProperties, true);
-            this.parent.dateValidationModule.calculateEndDate(ganttData);
-        } else if (isNOU(taskProperties.endDate) && isNOU(taskProperties.duration)) {
-            this.parent.setRecordValue('startDate', new Date(currentValue.getTime()), taskProperties, true);
+        } else if (taskProperties[enddateField] || !isNOU(taskProperties[durationField])) {
+            this.parent.setRecordValue(startdateField, new Date(currentValue.getTime()), taskProperties, true);
+            if (!isBaseline || (isBaseline && !isNullOrUndefined(this.parent.taskFields.baselineDuration))) {
+                this.parent.dateValidationModule.calculateEndDate(ganttData, isBaseline);
+            }
+        } else if (isNOU(taskProperties[enddateField]) && isNOU(taskProperties[durationField])) {
+            this.parent.setRecordValue(startdateField, new Date(currentValue.getTime()), taskProperties, true);
         }
-        this.parent.setRecordValue('isMilestone', taskProperties.duration === 0 ? true : false, taskProperties, true);
+        if (!isBaseline) {
+            this.parent.setRecordValue('isMilestone', taskProperties.duration === 0 ? true : false, taskProperties, true);
+        }
         this.parent.dataOperation.updateWidthLeft(args.data);
-        this.parent.dataOperation.updateMappingData(ganttData, 'startDate');
-        this.parent.dataOperation.updateMappingData(ganttData, 'endDate');
-        this.parent.dataOperation.updateMappingData(ganttData, 'duration');
+        this.parent.dataOperation.updateMappingData(ganttData, startdateField);
+        this.parent.dataOperation.updateMappingData(ganttData, enddateField);
+        this.parent.dataOperation.updateMappingData(ganttData, durationField);
     }
+    /* eslint-enable */
     /**
      * To update task start date cell with new value
      *
      * @param {ITaskbarEditedEventArgs} args .
+     * @param {boolean} isBaseline - Indicates whether the calculation is specific to baseline dates.
      * @returns {void} .
      */
-    private startDateEdited(args: ITaskbarEditedEventArgs): void {
+    private startDateEdited(args: ITaskbarEditedEventArgs, isBaseline?: boolean): void {
         const ganttData: IGanttData = args.data;
         const ganttProb: ITaskData = args.data.ganttProperties;
-        let currentValue: Date = args.data[this.parent.taskFields.startDate];
+        let currentValue: Date = isBaseline ? args.data[this.parent.taskFields.baselineStartDate] :
+            args.data[this.parent.taskFields.startDate];
         currentValue = currentValue ? new Date(currentValue.getTime()) : null;
         currentValue = this.parent.dateValidationModule.checkStartDate(
-            currentValue, ganttData.ganttProperties, ganttData.ganttProperties.isMilestone);
+            currentValue, ganttData.ganttProperties, ganttData.ganttProperties.isMilestone, undefined, isBaseline);
         if (args.data.ganttProperties.constraintDate) {
             args.data.ganttProperties.constraintDate = currentValue;
         }
-        this.updateGanttDataProperties(args, currentValue);
+        this.updateGanttDataProperties(args, currentValue, isBaseline);
         this.updateEditedRecord(args);
     }
     private constraintEdited(args: ITaskbarEditedEventArgs): void {
@@ -492,27 +519,91 @@ export class CellEdit {
         this.updateEditedRecord(args);
     }
     /**
+     * To update task end date cell with new value
+     *
+     * @param {ITaskbarEditedEventArgs} args - Arguments associated with the taskbar edit event.
+     * @param {Date} previousValue - The previous baseline end date value before editing.
+     * @returns {void} .
+     */
+    private endDateEditedforBaseline(args: ITaskbarEditedEventArgs, previousValue: Date): void {
+        const ganttProb: ITaskData = args.data.ganttProperties;
+        let currentValue: Date = args.data[this.parent.taskFields.baselineEndDate];
+        currentValue = currentValue ? new Date(currentValue.getTime()) : null;
+        if (isNOU(currentValue)) {
+            this.parent.setRecordValue('baselineEndDate', currentValue, ganttProb, true);
+            if (!(ganttProb.baselineStartDate === null && ganttProb.baselineEndDate === null && ganttProb.baselineDuration !== null)) {
+                this.parent.setRecordValue('baselineDuration', null, ganttProb, true);
+            }
+        } else {
+            let dayEndTime: number = this.parent['getCurrentDayEndTime'](currentValue);
+            if ((currentValue.getHours() === 0 || (previousValue &&
+                currentValue.toTimeString().slice(0, 5) === previousValue.toTimeString().slice(0, 5))) && dayEndTime !== 86400) {
+                this.parent.dateValidationModule.setTime(dayEndTime, currentValue);
+            }
+            currentValue = this.parent.dateValidationModule.checkEndDate(currentValue, ganttProb, ganttProb.isMilestone, true);
+            this.parent.setRecordValue('baselineEndDate', currentValue, ganttProb, true);
+            if (!isNOU(ganttProb.baselineStartDate) && isNOU(ganttProb.baselineDuration)) {
+                if (this.parent.dateValidationModule.compareDates(ganttProb.baselineEndDate, ganttProb.baselineStartDate) === -1) {
+                    this.parent.setRecordValue('baselineEndDate', new Date(ganttProb.baselineStartDate.getTime()), ganttProb, true);
+                    dayEndTime = this.parent['getCurrentDayEndTime'](ganttProb.baselineEndDate);
+                    this.parent.dateValidationModule.setTime(dayEndTime, ganttProb.baselineEndDate);
+                }
+            } else if (!isNOU(ganttProb.baselineDuration) && isNOU(ganttProb.baselineStartDate)) {
+                this.parent.setRecordValue(
+                    'baselineStartDate',
+                    this.parent.dateValidationModule.getStartDate(ganttProb.baselineEndDate, ganttProb.baselineDuration,
+                                                                  ganttProb.durationUnit, ganttProb, true),
+                    ganttProb,
+                    true
+                );
+            }
+            if (this.compareDatesFromRecord(ganttProb, true) <= 0) {
+                this.parent.dateValidationModule.calculateDuration(args.data, true);
+            } else {
+                this.parent.editModule.revertCellEdit(args);
+            }
+            this.updateDatesforBaseline(args);
+        }
+        this.parent.dataOperation.updateWidthLeft(args.data);
+        this.parent.dataOperation.updateMappingData(args.data, 'baselineStartDate');
+        this.parent.dataOperation.updateMappingData(args.data, 'baselineEndDate');
+        this.parent.dataOperation.updateMappingData(args.data, 'baselineDuration');
+        this.updateEditedRecord(args);
+    }
+    /**
      * To update duration cell with new value
      *
      * @param {ITaskbarEditedEventArgs} args .
+     * @param {boolean} isBaseline - Indicates whether the calculation is specific to baseline dates.
      * @returns {void} .
      */
-    private durationEdited(args: ITaskbarEditedEventArgs): void {
+    /* eslint-disable */
+    private durationEdited(args: ITaskbarEditedEventArgs, isBaseline?: boolean): void {
         const regex: RegExp = /^[^\d.-]+$/;
-        if (regex.test(args.data[this.parent.taskFields.duration])) {
-            const err: string = `The provided value for the ${this.parent.taskFields.duration} field is invalid. Please ensure the ${this.parent.taskFields.duration} field contains only valid numeric values.`;
+        const duration: string = isBaseline ? 'baselineDuration' : 'duration';
+        if (regex.test(args.data[this.parent.taskFields[duration]])) {
+            const err: string = `The provided value for the ${this.parent.taskFields[duration]} field is invalid. Please ensure the ${this.parent.taskFields[duration]} field contains only valid numeric values.`;
             this.parent.trigger('actionFailure', { error: err });
         }
         const ganttProb: ITaskData = args.data.ganttProperties;
-        if (parseInt(args.data[this.parent.taskFields.duration], 10) < 0) {
+        if (!isBaseline && parseInt(args.data[this.parent.taskFields.duration], 10) < 0) {
             args.data[this.parent.taskFields.duration] = ganttProb.duration;
         }
-        const durationString: string = args.data[this.parent.taskFields.duration];
-        this.parent.dataOperation.updateDurationValue(durationString, ganttProb);
-        this.updateDates(args);
-        this.parent.editModule.updateResourceRelatedFields(args.data, 'duration');
+        else if (isBaseline && parseInt(args.data[this.parent.taskFields.baselineDuration], 10) < 0) {
+            args.data[this.parent.taskFields.baselineDuration] = ganttProb.baselineDuration;
+        }
+        const durationString: string = args.data[this.parent.taskFields[duration]];
+        this.parent.dataOperation.updateDurationValue(durationString, ganttProb, isBaseline);
+        if (!isBaseline) {
+            this.updateDates(args);
+            this.parent.editModule.updateResourceRelatedFields(args.data, 'duration');
+        }
+        else {
+            this.updateDatesforBaseline(args);
+        }
         this.updateEditedRecord(args);
     }
+    /* eslint-enable */
     /**
      * To update start date, end date based on duration
      *
@@ -563,6 +654,40 @@ export class CellEdit {
         this.parent.dataOperation.updateMappingData(args.data, 'duration');
     }
     /**
+     * To update start date, end date based on duration.
+     *
+     * @param {ITaskbarEditedEventArgs} args - The taskbar edited event arguments containing task data.
+     * @returns {void} .
+     */
+    private updateDatesforBaseline(args: ITaskbarEditedEventArgs): void {
+        const ganttProb: ITaskData = args.data.ganttProperties;
+        const endDate: Date = this.parent.dateValidationModule.getDateFromFormat(ganttProb.baselineEndDate);
+        const startDate: Date = this.parent.dateValidationModule.getDateFromFormat(ganttProb.baselineStartDate);
+        const currentDuration: number = ganttProb.baselineDuration;
+        if (isNOU(startDate) && !isNOU(endDate)) {
+            this.parent.setRecordValue(
+                'baselineStartDate',
+                this.parent.dateValidationModule.getStartDate(endDate, currentDuration, ganttProb.durationUnit,
+                                                              ganttProb, undefined, true),
+                ganttProb,
+                true
+            );
+        }
+        if (currentDuration !== 0) {
+            this.parent.setRecordValue(
+                'baselineStartDate',
+                this.parent.dateValidationModule.checkStartDate(ganttProb.baselineStartDate, ganttProb, undefined, undefined, true),
+                ganttProb,
+                true
+            );
+        }
+        this.parent.dateValidationModule.calculateEndDate(args.data, true);
+        this.parent.dataOperation.updateWidthLeft(args.data);
+        this.parent.dataOperation.updateMappingData(args.data, 'baselineEndDate');
+        this.parent.dataOperation.updateMappingData(args.data, 'baselineStartDate');
+        this.parent.dataOperation.updateMappingData(args.data, 'baselineDuration');
+    }
+    /**
      * To update progress cell with new value
      *
      * @param {ITaskbarEditedEventArgs} args .
@@ -598,45 +723,7 @@ export class CellEdit {
         }
         this.updateEditedRecord(args);
     }
-    /**
-     * To update baselines with new baseline start date and baseline end date
-     *
-     * @param {ITaskbarEditedEventArgs} args .
-     * @returns {void} .
-     */
-    private baselineEdited(args: ITaskbarEditedEventArgs): void {
-        const ganttRecord: ITaskData = args.data.ganttProperties;
-        const baseLineStartDate: Date = args.data[this.parent.taskFields.baselineStartDate];
-        const baseLineEndDate: Date = args.data[this.parent.taskFields.baselineEndDate];
-        const dayEndTime: number = this.parent['getCurrentDayEndTime'](baseLineEndDate);
-        if (baseLineEndDate && baseLineEndDate.getHours() === 0 && dayEndTime !== 86400) {
-            this.parent.dateValidationModule.setTime(dayEndTime, baseLineEndDate);
-        }
-        this.parent.setRecordValue(
-            'baselineStartDate',
-            this.parent.dateValidationModule.checkBaselineStartDate(baseLineStartDate, ganttRecord),
-            ganttRecord,
-            true);
-        this.parent.setRecordValue(
-            'baselineEndDate',
-            this.parent.dateValidationModule.checkBaselineEndDate(baseLineEndDate),
-            ganttRecord,
-            true);
-        if (ganttRecord.baselineStartDate && ganttRecord.baselineEndDate) {
-            this.parent.setRecordValue(
-                'baselineLeft',
-                this.parent.dataOperation.calculateBaselineLeft(ganttRecord),
-                ganttRecord, true
-            );
-            this.parent.setRecordValue(
-                'baselineWidth',
-                this.parent.dataOperation.calculateBaselineWidth(ganttRecord),
-                ganttRecord,
-                true
-            );
-        }
-        this.updateEditedRecord(args);
-    }
+
     /**
      * To update task's resource cell with new value
      *
@@ -781,11 +868,12 @@ export class CellEdit {
      * To compare start date and end date from Gantt record
      *
      * @param {ITaskData} ganttRecord .
+     * @param {boolean} isBaseline .
      * @returns {number} .
      */
-    private compareDatesFromRecord(ganttRecord: ITaskData): number {
-        const sDate: Date = this.parent.dateValidationModule.getValidStartDate(ganttRecord);
-        const eDate: Date = this.parent.dateValidationModule.getValidEndDate(ganttRecord);
+    private compareDatesFromRecord(ganttRecord: ITaskData, isBaseline?: boolean): number {
+        const sDate: Date = this.parent.dateValidationModule.getValidStartDate(ganttRecord, null, isBaseline);
+        const eDate: Date = this.parent.dateValidationModule.getValidEndDate(ganttRecord, null, isBaseline);
         return this.parent.dateValidationModule.compareDates(sDate, eDate);
     }
     /**

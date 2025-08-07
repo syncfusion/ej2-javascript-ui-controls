@@ -1748,6 +1748,13 @@ export interface ElementInfo {
 /**
  * @private
  */
+export interface ParagraphFormatResult {
+    docParagraphFormat: WParagraphFormat;
+    isPaste: boolean;
+}
+/**
+ * @private
+ */
 export interface RevisionMatchedInfo {
     element: ElementBox
     isMatched: boolean

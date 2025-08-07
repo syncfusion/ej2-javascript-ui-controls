@@ -1115,6 +1115,11 @@ export class TreeMap extends Component<HTMLElement> implements INotifyPropertyCh
         EventHandler.add(this.element, 'focusout', this.focusHandler, this);
         this.resizeEvent = this.resizeOnTreeMap.bind(this);
         window.addEventListener('resize', this.resizeEvent);
+        this.setStyle(<HTMLElement>this.element);
+    }
+
+    private setStyle(element: HTMLElement): void {
+        element.style.overflow = 'hidden';
     }
 
     /**

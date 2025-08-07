@@ -3,7 +3,7 @@
  */
 import { getValue, isNullOrUndefined, L10n } from '@syncfusion/ej2-base';
 import {  Gantt, Selection, Toolbar, DayMarkers, Edit, Filter, Reorder, Resize, ColumnMenu, Sort, RowDD, ContextMenu, ExcelExport, PdfExport, ContextMenuClickEventArgs, UndoRedo  } from '../../src/index';
-import { dialogEditData, resourcesData, resources, scheduleModeData, projectData1, indentOutdentData, splitTasksData, projectData, crData, scheduleModeData1, splitTasksData2, dialogData1, splitTasksData3, CR886052, MT887459, resourcesDatas1, resourceCollections1, editingResources, workMT887459,resourceData, dialogEditDataLocale,showcaseDatasource,breakIssue, resourceResources, data931222, resource931222} from '../base/data-source.spec';
+import { dialogEditData, resourcesData, resources, scheduleModeData, projectData1, indentOutdentData, splitTasksData, projectData, crData, scheduleModeData1, splitTasksData2, dialogData1, splitTasksData3, CR886052, MT887459, resourcesDatas1, resourceCollections1, editingResources, workMT887459,resourceData, dialogEditDataLocale,showcaseDatasource,breakIssue, resourceResources, data931222, resource931222, baselinedurationdata} from '../base/data-source.spec';
 import { createGantt, destroyGantt, triggerMouseEvent, triggerKeyboardEvent } from '../base/gantt-util.spec';
 import { DropDownList } from '@syncfusion/ej2-dropdowns';
 import { DataManager } from '@syncfusion/ej2-data';
@@ -14,6 +14,9 @@ import { EJ2Intance, Grid } from '@syncfusion/ej2-grids';
 Gantt.Inject( Selection, Toolbar, DayMarkers, Edit, Filter, Reorder, Resize, ColumnMenu, Sort, RowDD, ContextMenu, ExcelExport, PdfExport,UndoRedo);
 interface EJ2Instance extends HTMLElement {
     ej2_instances: Object[];
+}
+ function valueAccess(field: string, data: Object, column: Object) {   
+    return data[field];
 }
 let dropDownElement: HTMLElement;
 let dropDownObj: DropDownList;
@@ -14546,4 +14549,364 @@ describe('additional params for notes dialog', () => {
             destroyGantt(ganttObj);
         }
     });
+});
+describe('Edit baseline duration', function () {
+   let ganttObj: Gantt;
+   beforeAll(function (done) {
+       ganttObj = createGantt({
+           dataSource: baselinedurationdata,
+            taskFields: {
+                id: 'TaskId',
+                name: 'TaskName',
+                startDate: 'StartDate',
+                endDate: 'EndDate',
+                baselineStartDate: "BaselineStartDate",
+                baselineEndDate: "BaselineEndDate",
+                baselineDuration: 'baselineDur'
+            },
+            renderBaseline: true,
+            gridLines: 'Both',
+            baselineColor: 'red',
+            columns: [
+                { field: 'TaskId', headerText: 'Task ID' },
+                { field: 'TaskName', headerText: 'Task Name', allowReordering: false },
+                { field: 'BaselineStartDate', headerText: 'Baseline StartDate', width: '175' },
+                { field: 'BaselineEndDate', headerText: 'Baseline EndDate', width: '175' },
+                { field: 'baselineDur', headerText: 'Baseline Duration', width: '175' },
+                { field: 'StartDate', headerText: 'Start Date' },
+                { field: 'EndDate', headerText: 'End Date' }
+            ],
+            treeColumnIndex: 1,
+            allowSelection: true,
+            includeWeekend: true,
+            splitterSettings: {
+                columnIndex: 5
+            },
+            editSettings: {
+                allowAdding: true,
+                allowEditing: true,
+                allowDeleting: true,
+                allowTaskbarEditing: true,
+                showDeleteConfirmDialog: true
+            },
+            toolbar: ['Add', 'Edit', 'Update', 'Delete', 'Cancel', 'Undo', 'Redo', 'ExpandAll', 'CollapseAll', 'Search', 'ZoomIn', 'ZoomOut', 'ZoomToFit',
+                'PrevTimeSpan', 'NextTimeSpan', 'ExcelExport', 'CsvExport', 'PdfExport'],
+            allowPdfExport: true,
+            tooltipSettings: {
+                taskbar: '#tooltip',
+            },
+            enableUndoRedo: true,
+            undoRedoActions: ['Add', 'Edit', 'Delete'],
+            height: '450px',
+            projectStartDate: new Date('06/29/2025'),
+            projectEndDate: new Date('08/05/2025')
+       }, done);
+   });
+   afterAll(function () {
+       if (ganttObj) {
+           destroyGantt(ganttObj);
+       }
+   });
+   it('editing baseline duration', () => {
+       ganttObj.actionComplete = (args) => {
+           if (args.requestType === 'save') {
+               expect(ganttObj.flatData[0].ganttProperties.baselineDuration).toBe(0);
+           }
+       }
+       ganttObj.openEditDialog(1);
+       let durationField: any = (<EJ2Instance>document.getElementById(ganttObj.element.id + 'baselineDur')).ej2_instances[0];
+       durationField.value = '0 day';
+       durationField.dataBind();
+       let baselineStartdateField: any = (<EJ2Instance>document.getElementById(ganttObj.element.id + 'BaselineStartDate')).ej2_instances[0];
+       baselineStartdateField.value = '05/22/2023';
+       baselineStartdateField.dataBind();
+       let saveRecord: HTMLElement = document.querySelectorAll('#' + ganttObj.element.id + '_dialog > div.e-footer-content > button.e-control')[0] as HTMLElement;
+       triggerMouseEvent(saveRecord, 'click');
+   });
+});
+describe('add record with value accessor', function () {
+   let ganttObj: Gantt;
+   beforeAll(function (done) {
+       ganttObj = createGantt({
+           dataSource: baselinedurationdata,
+            taskFields: {
+                id: 'TaskId',
+                name: 'TaskName',
+                startDate: 'StartDate',
+                endDate: 'EndDate',
+                baselineStartDate: "BaselineStartDate",
+                baselineEndDate: "BaselineEndDate",
+                baselineDuration: 'baselineDur'
+            },
+            renderBaseline: true,
+            gridLines: 'Both',
+            baselineColor: 'red',
+           columns: [
+                { field: 'TaskId', headerText: 'Task ID' },
+                { field: 'TaskName', headerText: 'Task Name', allowReordering: false },
+                { field: 'BaselineStartDate' },
+                { field: 'BaselineEndDate'},
+                { field: 'baselineDur',valueAccessor:valueAccess },
+                { field: 'StartDate' },
+                { field: 'EndDate' }
+            ],
+            treeColumnIndex: 1,
+            allowSelection: true,
+            includeWeekend: true,
+            splitterSettings: {
+                columnIndex: 5
+            },
+            editSettings: {
+                allowAdding: true,
+                allowEditing: true,
+                allowDeleting: true,
+                allowTaskbarEditing: true,
+                showDeleteConfirmDialog: true
+            },
+            toolbar: ['Add', 'Edit', 'Update', 'Delete', 'Cancel', 'Undo', 'Redo', 'ExpandAll', 'CollapseAll', 'Search', 'ZoomIn', 'ZoomOut', 'ZoomToFit',
+                'PrevTimeSpan', 'NextTimeSpan', 'ExcelExport', 'CsvExport', 'PdfExport'],
+            allowPdfExport: true,
+            tooltipSettings: {
+                taskbar: '#tooltip',
+            },
+            enableUndoRedo: true,
+            undoRedoActions: ['Add', 'Edit', 'Delete'],
+            height: '450px',
+            projectStartDate: new Date('06/29/2025'),
+            projectEndDate: new Date('08/05/2025')
+       }, done);
+   });
+   afterAll(function () {
+       if (ganttObj) {
+           destroyGantt(ganttObj);
+       }
+   });
+    beforeEach(() => {
+        let add: HTMLElement = ganttObj.element.querySelector('#' + ganttObj.element.id + '_add') as HTMLElement;
+        triggerMouseEvent(add, 'click');
+    });
+    it('Add new record beyond project dates', () => {
+        ganttObj.actionComplete = (args: any): void => {
+            if (args.action === 'TimescaleUpdate') {
+                expect(ganttObj.getFormatedDate(ganttObj.cloneProjectStartDate, 'M/d/yyyy')).toEqual('03/20/2025');
+            }
+        };
+        let SD: any = (<EJ2Instance>document.getElementById(ganttObj.element.id + 'BaselineStartDate')).ej2_instances[0];
+        SD.value = new Date('03/20/2025');
+        let duration: any = (<EJ2Instance>document.getElementById(ganttObj.element.id + 'baselineDur')).ej2_instances[0];
+        duration.value = '2 days';
+        SD.dataBind();
+        let saveRecord: HTMLElement = document.querySelector('#' + ganttObj.element.id + '_dialog > div.e-footer-content > button') as HTMLElement;
+        triggerMouseEvent(saveRecord, 'click');
+    });
+});
+describe('Edit baseline dates   without startdate', function () {
+   let ganttObj: Gantt;
+   beforeAll(function (done) {
+       ganttObj = createGantt({
+           dataSource: baselinedurationdata,
+            taskFields: {
+                id: 'TaskId',
+                name: 'TaskName',
+                endDate: 'EndDate',
+                baselineStartDate: "BaselineStartDate",
+                baselineEndDate: "BaselineEndDate",
+                baselineDuration: 'baselineDur'
+            },
+            renderBaseline: true,
+            gridLines: 'Both',
+            baselineColor: 'red',
+            columns: [
+                { field: 'TaskId', headerText: 'Task ID' },
+                { field: 'TaskName', headerText: 'Task Name', allowReordering: false },
+                { field: 'BaselineStartDate', headerText: 'Baseline StartDate', width: '175' },
+                { field: 'BaselineEndDate', headerText: 'Baseline EndDate', width: '175' },
+                { field: 'baselineDur', headerText: 'Baseline Duration', width: '175' },
+                { field: 'StartDate', headerText: 'Start Date' },
+                { field: 'EndDate', headerText: 'End Date' }
+            ],
+            treeColumnIndex: 1,
+            allowSelection: true,
+            includeWeekend: true,
+            splitterSettings: {
+                columnIndex: 5
+            },
+            editSettings: {
+                allowAdding: true,
+                allowEditing: true,
+                allowDeleting: true,
+                allowTaskbarEditing: true,
+                showDeleteConfirmDialog: true
+            },
+            toolbar: ['Add', 'Edit', 'Update', 'Delete', 'Cancel', 'Undo', 'Redo', 'ExpandAll', 'CollapseAll', 'Search', 'ZoomIn', 'ZoomOut', 'ZoomToFit',
+                'PrevTimeSpan', 'NextTimeSpan', 'ExcelExport', 'CsvExport', 'PdfExport'],
+            allowPdfExport: true,
+            tooltipSettings: {
+                taskbar: '#tooltip',
+            },
+            enableUndoRedo: true,
+            undoRedoActions: ['Add', 'Edit', 'Delete'],
+            height: '450px',
+            projectStartDate: new Date('06/29/2025'),
+            projectEndDate: new Date('08/05/2025')
+       }, done);
+   });
+   afterAll(function () {
+       if (ganttObj) {
+           destroyGantt(ganttObj);
+       }
+   });
+   it('change baseline dates', () => {
+        ganttObj.actionComplete = (args) => {
+           if (args.requestType === 'save') {
+               expect(ganttObj.flatData[0].ganttProperties.baselineDuration).toBe(0);
+           }
+       }
+       ganttObj.openEditDialog(1);
+       let durationField: any = (<EJ2Instance>document.getElementById(ganttObj.element.id + 'baselineDur')).ej2_instances[0];
+       durationField.value = '0 day';
+       durationField.dataBind();
+       let baselineStartdateField: any = (<EJ2Instance>document.getElementById(ganttObj.element.id + 'BaselineStartDate')).ej2_instances[0];
+       baselineStartdateField.value = '05/22/2023';
+       baselineStartdateField.dataBind();
+       let saveRecord: HTMLElement = document.querySelectorAll('#' + ganttObj.element.id + '_dialog > div.e-footer-content > button.e-control')[0] as HTMLElement;
+       triggerMouseEvent(saveRecord, 'click');
+   });
+});
+describe('Edit baseline dates with args as cancel', function () {
+   let ganttObj: Gantt;
+   beforeAll(function (done) {
+       ganttObj = createGantt({
+           dataSource: baselinedurationdata,
+            taskFields: {
+                id: 'TaskId',
+                name: 'TaskName',
+                endDate: 'EndDate',
+                baselineStartDate: "BaselineStartDate",
+                baselineEndDate: "BaselineEndDate",
+                baselineDuration: 'baselineDur'
+            },
+            renderBaseline: true,
+            gridLines: 'Both',
+            baselineColor: 'red',
+            columns: [
+                { field: 'TaskId', headerText: 'Task ID' },
+                { field: 'TaskName', headerText: 'Task Name', allowReordering: false },
+                { field: 'BaselineStartDate', headerText: 'Baseline StartDate', width: '175' },
+                { field: 'BaselineEndDate', headerText: 'Baseline EndDate', width: '175' },
+                { field: 'baselineDur', headerText: 'Baseline Duration', width: '175' },
+                { field: 'StartDate', headerText: 'Start Date' },
+                { field: 'EndDate', headerText: 'End Date' }
+            ],
+            treeColumnIndex: 1,
+            allowSelection: true,
+            includeWeekend: true,
+            splitterSettings: {
+                columnIndex: 5
+            },
+            editSettings: {
+                allowAdding: true,
+                allowEditing: true,
+                allowDeleting: true,
+                allowTaskbarEditing: true,
+                showDeleteConfirmDialog: true
+            },
+            toolbar: ['Add', 'Edit', 'Update', 'Delete', 'Cancel', 'Undo', 'Redo', 'ExpandAll', 'CollapseAll', 'Search', 'ZoomIn', 'ZoomOut', 'ZoomToFit',
+                'PrevTimeSpan', 'NextTimeSpan', 'ExcelExport', 'CsvExport', 'PdfExport'],
+            allowPdfExport: true,
+            tooltipSettings: {
+                taskbar: '#tooltip',
+            },
+            actionBegin:(args)=>{
+                args.cancel = false
+            },
+            actionComplete:(args)=>{
+                args.cancel = true
+            },
+            enableUndoRedo: true,
+            undoRedoActions: ['Add', 'Edit', 'Delete'],
+            height: '450px',
+            projectStartDate: new Date('06/29/2025'),
+            projectEndDate: new Date('08/05/2025')
+       }, done);
+   });
+   afterAll(function () {
+       if (ganttObj) {
+           destroyGantt(ganttObj);
+       }
+   });
+   it('change baseline dates', () => {
+        ganttObj.actionComplete = (args) => {
+           args.cancel = true
+       }
+        ganttObj.actionBegin = (args) =>{
+                args.cancel = false
+            },
+       ganttObj.openEditDialog(1);
+       let saveRecord: HTMLElement = document.querySelectorAll('#' + ganttObj.element.id + '_dialog > div.e-footer-content > button.e-control')[0] as HTMLElement;
+       triggerMouseEvent(saveRecord, 'click');
+   });
+});
+describe('Edit baseline duration', function () {
+   let ganttObj: Gantt;
+   beforeAll(function (done) {
+       ganttObj = createGantt({
+           dataSource: baselinedurationdata,
+            taskFields: {
+                id: 'TaskId',
+                name: 'TaskName',
+                startDate: 'StartDate',
+                endDate: 'EndDate',
+                baselineStartDate: "BaselineStartDate",
+                baselineEndDate: "BaselineEndDate",
+                baselineDuration: 'baselineDur'
+            },
+            renderBaseline: true,
+            gridLines: 'Both',
+            baselineColor: 'red',
+            columns: [
+                { field: 'TaskId', headerText: 'Task ID' },
+                { field: 'TaskName', headerText: 'Task Name', allowReordering: false },
+                { field: 'BaselineStartDate', headerText: 'Baseline StartDate', width: '175' },
+                { field: 'BaselineEndDate', headerText: 'Baseline EndDate', width: '175' },
+                { field: 'baselineDur', headerText: 'Baseline Duration', width: '175' },
+                { field: 'StartDate', headerText: 'Start Date' },
+                { field: 'EndDate', headerText: 'End Date' }
+            ],
+            treeColumnIndex: 1,
+            allowSelection: true,
+            includeWeekend: true,
+            splitterSettings: {
+                columnIndex: 5
+            },
+            editSettings: {
+                allowAdding: true,
+                allowEditing: true,
+                allowDeleting: true,
+                allowTaskbarEditing: true,
+                showDeleteConfirmDialog: true
+            },
+            toolbar: ['Add', 'Edit', 'Update', 'Delete', 'Cancel', 'Undo', 'Redo', 'ExpandAll', 'CollapseAll', 'Search', 'ZoomIn', 'ZoomOut', 'ZoomToFit',
+                'PrevTimeSpan', 'NextTimeSpan', 'ExcelExport', 'CsvExport', 'PdfExport'],
+            allowPdfExport: true,
+            tooltipSettings: {
+                taskbar: '#tooltip',
+            },
+            enableUndoRedo: true,
+            undoRedoActions: ['Add', 'Edit', 'Delete'],
+            height: '450px',
+            projectStartDate: new Date('06/29/2025'),
+            projectEndDate: new Date('08/05/2025')
+       }, done);
+   });
+   afterAll(function () {
+       if (ganttObj) {
+           destroyGantt(ganttObj);
+       }
+   });
+   it('change baseline duration', () => {
+       ganttObj.editModule.dialogModule['dialogEditValidationFlag'] = false;
+       ganttObj.editModule.dialogModule.validateDuration(ganttObj.currentViewData[1], true)
+
+   });
 });

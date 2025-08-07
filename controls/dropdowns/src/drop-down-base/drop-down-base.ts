@@ -239,6 +239,7 @@ export class DropDownBase extends Component<HTMLElement> implements INotifyPrope
     protected isFilterAction: boolean;
     private isUpdateGroupTemplate: boolean;
     private groupHeaderItems: HTMLElement[];
+    protected isCustomReset: boolean;
     private fiteredGroupHeaderItems: HTMLElement[];
     protected keyboardModule: KeyboardEvents;
     protected enableRtlElements: HTMLElement[];
@@ -1153,11 +1154,12 @@ export class DropDownBase extends Component<HTMLElement> implements INotifyPrope
                             this.emptyDataRequest(fields);
                             return;
                         }
-                        (eventArgs.data as DataManager).executeQuery(this.getQuery(eventArgs.query as Query)).then((e: Object) => {
+                        const query: Query = this.getQuery(eventArgs.query as Query);
+                        (eventArgs.data as DataManager).executeQuery(query).then((e: Object) => {
                             this.isPreventChange = this.isAngular && this.preventChange ? true : this.isPreventChange;
                             let isReOrder: boolean = true;
                             if (!this.virtualSelectAll) {
-                                const newQuery: Query = this.getQuery(eventArgs.query as Query);
+                                const newQuery: Query = query.clone();
                                 for (let queryElements: number = 0; queryElements < newQuery.queries.length; queryElements++) {
                                     if (newQuery.queries[queryElements as number].fn === 'onWhere') {
                                         isWhereExist = true;
@@ -1361,6 +1363,90 @@ export class DropDownBase extends Component<HTMLElement> implements INotifyPrope
             this.groupHeaderItems = clonedHeaders as HTMLElement[];
         } else {
             this.fiteredGroupHeaderItems = clonedHeaders as HTMLElement[];
+        }
+    }
+    private setCustomListData(
+        dataSource: { [key: string]: Object }[] | string[] | number[] | DataManager | boolean[],
+        fields: FieldSettingsModel, query: Query, event?: MouseEvent | KeyboardEventArgs | TouchEvent): void {
+        fields = fields ? fields : this.fields;
+        let ulElement: HTMLElement;
+        this.isActive = true;
+        this.isPreventChange = this.isAngular && this.preventChange ? true : this.isPreventChange;
+        if (!this.isRequesting) {
+            this.isRequesting = true;
+            this.showSpinner();
+            this.isRequesting = false;
+            let isReOrder: boolean = true;
+            let listItems: { [key: string]: Object }[];
+            if (this.isVirtualizationEnabled && !this.virtualGroupDataSource && this.fields.groupBy) {
+                const data: any = <{ [key: string]: Object }[]>new DataManager(
+                    <any[]>this.dataSource).executeLocal(new Query().group(this.fields.groupBy));
+                this.virtualGroupDataSource = (data as any).records;
+            }
+            const dataManager: DataManager = this.isVirtualizationEnabled &&
+                (this.virtualGroupDataSource as DataOptions | JSON[])
+                && !this.isCustomDataUpdated ? new DataManager(this.virtualGroupDataSource as DataOptions | JSON[]) :
+                new DataManager(dataSource as DataOptions | JSON[]);
+            listItems = <{ [key: string]: Object }[]>(
+                this.getQuery(query as Query)).executeLocal(dataManager);
+            if (!this.virtualSelectAll) {
+                const newQuery: Query = this.getQuery(query as Query);
+                // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                if (this.isVirtualizationEnabled && ((listItems as any).count !== 0 &&
+                    (listItems as any).count < (this.itemCount * 2)) && !this.appendUncheckList) {
+                    if (newQuery) {
+                        for (let queryElements: number = 0; queryElements < newQuery.queries.length; queryElements++) {
+                            if (newQuery.queries[queryElements as number].fn === 'onTake') {
+                                // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                                newQuery.queries[queryElements as number].e.nos = (listItems as any).count;
+                                listItems = <{ [key: string]: Object }[]>(newQuery).executeLocal(dataManager);
+                            }
+                            if (this.getModuleName() === 'multiselect' && (newQuery.queries[queryElements as number].e.condition === 'or' || newQuery.queries[queryElements as number].e.operator === 'equal') && !this.isCustomFiltering) {
+                                isReOrder = false;
+                            }
+                        }
+                        if (isReOrder) {
+                            listItems = <{ [key: string]: Object }[]>(newQuery).executeLocal(dataManager);
+                            this.isVirtualTrackHeight = (!(this.dataSource instanceof DataManager) &&
+                                !this.isCustomDataUpdated) ? true : false;
+                        }
+                    }
+                }
+                else {
+                    this.isVirtualTrackHeight = false;
+                    if (newQuery) {
+                        for (let queryElements: number = 0; queryElements < newQuery.queries.length; queryElements++) {
+                            if (this.getModuleName() === 'multiselect' && ((newQuery.queries[queryElements as number].e && newQuery.queries[queryElements as number].e.condition === 'or') || (newQuery.queries[queryElements as number].e && newQuery.queries[queryElements as number].e.operator === 'equal'))) {
+                                isReOrder = false;
+                            }
+                        }
+                    }
+                }
+            }
+            if (isReOrder && (!(this.dataSource instanceof DataManager) && !this.isCustomDataUpdated) &&
+                !this.virtualSelectAll) {
+                // eslint-disable @typescript-eslint/no-explicit-any
+                this.dataCount = this.totalItemCount = this.virtualSelectAll ? (listItems as any).length :
+                    (listItems as any).count;
+            }
+            listItems = this.isVirtualizationEnabled ? (listItems as any).result : listItems;
+            this.isPreventChange = this.isAngular && this.preventChange ? true : this.isPreventChange;
+            this.isCustomFiltering = false;
+            if (this.isIncrementalRequest) {
+                ulElement = this.renderItems(listItems as { [key: string]: Object }[], fields);
+                return;
+            }
+            ulElement = this.renderItems(listItems as { [key: string]: Object }[], fields);
+            this.onActionComplete(ulElement, listItems as { [key: string]: Object }[], event);
+            if (this.groupTemplate) {
+                this.renderGroupTemplate(ulElement);
+            }
+            this.bindChildItems(listItems as { [key: string]: Object }[], ulElement, fields);
+            setTimeout(() => {
+                if (this.getModuleName() === 'multiselect' && this.itemTemplate != null && (ulElement.childElementCount > 0 && (ulElement.children[0].childElementCount > 0 || (this.fields.groupBy && ulElement.children[1] && ulElement.children[1].childElementCount > 0)))) {
+                    this.updateDataList();
+                }
+            });
         }
     }
     protected handleVirtualKeyboardActions(e: KeyboardEventArgs, pageCount: number): void {
@@ -2143,7 +2229,11 @@ export class DropDownBase extends Component<HTMLElement> implements INotifyPrope
             }
             dataSource = this.getModuleName() === 'combobox' && this.selectData && dataSource instanceof Array && dataSource.length < this.selectData.length && this.addedNewItem ? this.selectData : dataSource;
             this.addedNewItem = false;
-            this.setListData(dataSource, fields, query, e);
+            if (this.isCustomReset && this.getModuleName() === 'multiselect') {
+                this.setCustomListData(dataSource, fields, query, e);
+            } else {
+                this.setListData(dataSource, fields, query, e);
+            }
         }
     }
 

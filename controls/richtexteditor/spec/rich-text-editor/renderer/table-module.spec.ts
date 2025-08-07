@@ -9092,6 +9092,49 @@ the tool bar support, it�s also customiza</p><table class="e-rte-table" style=
         });
     });
 
+    describe('Bug 970441: Cursor Misplacement After Sequential Row Deletion in Table (Safari) ', () => {
+        let rteObj: any;
+        const defaultUA: string = Browser.userAgent;
+        beforeAll(() => {
+            Browser.userAgent = 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/18.3 Safari/605.1.15';
+            rteObj = renderRTE({
+                value: `<p>Hello</p><table class="e-rte-table" style="width: 100%; min-width: 0px;"><colgroup><col style="width: 100%;"></colgroup><tbody><tr><td><br></td></tr></tbody></table>`,
+                quickToolbarSettings: {
+                    table: ['TableRows']
+                }
+            });
+        });
+        afterAll(() => {
+            destroy(rteObj);
+            Browser.userAgent = defaultUA;
+        });
+        it('should delete the table and place cursor after the table section', (done) => {
+            rteObj.focusIn();
+            const mouseDownEvent = new MouseEvent('mousedown', BASIC_MOUSE_EVENT_INIT);
+            rteObj.contentModule.getEditPanel().querySelector('td').dispatchEvent(mouseDownEvent);
+            setCursorPoint(rteObj.contentModule.getEditPanel().querySelector('td'), 0);
+            const mouseUpEvent = new MouseEvent('mouseup', BASIC_MOUSE_EVENT_INIT);
+            rteObj.contentModule.getEditPanel().querySelector('td').dispatchEvent(mouseUpEvent);
+            setTimeout(() => {
+                const quickToolbar = document.querySelector('.e-rte-quick-popup');
+                expect(quickToolbar).not.toBeNull();
+                // Find and click the TableRows dropdown button
+                const tableRowsBtn = quickToolbar.querySelector('#' + rteObj.element.id + '_quick_TableRows');
+                expect(tableRowsBtn).not.toBeNull();
+                (tableRowsBtn as HTMLElement).click();
+                const deleteRowOption = document.querySelector('.e-delete-row').parentElement;
+                expect(deleteRowOption).not.toBeNull();
+                (deleteRowOption as HTMLElement).click();
+                setTimeout(() => {
+                    expect(rteObj.element.querySelector('table')).toBe(null);
+                    expect(window.getSelection().getRangeAt(0).startOffset).toBe(1);
+                    expect(window.getSelection().getRangeAt(0).endOffset).toBe(1);
+                    done();
+                }, 100);
+            }, 100)
+        });
+    });
+
     describe('935436 - Improving coverage for toolbar renderer.', () => {
         let editor: RichTextEditor;
         beforeAll(() => {

@@ -1274,6 +1274,7 @@ export class AccumulationSeries extends ChildProperty<AccumulationSeries> {
                     visiblePoints.push((this.resultData as object[])[i as number]);
                 }
             }
+            this.findSumOfPoints(visiblePoints);
             this.accumulation.redraw = this.borderRadius ? false : this.accumulation.enableAnimation;
             this.accumulation.animateSeries = false;
             const chartDuration: number = this.accumulation.duration;
@@ -1281,7 +1282,6 @@ export class AccumulationSeries extends ChildProperty<AccumulationSeries> {
             this.accumulation[(firstToLowerCase(this.type) + 'SeriesModule')].initProperties(this.accumulation, this);
             this.renderPoints(this.accumulation, getElement(this.accumulation.element.id + '_Series_' + this.index), this.accumulation.redraw, null,
                               null, true);
-            this.findSumOfPoints(visiblePoints);
             if (this.accumulation.centerLabel.text) {
                 this.accumulation.renderCenterLabel(true, true);
             }

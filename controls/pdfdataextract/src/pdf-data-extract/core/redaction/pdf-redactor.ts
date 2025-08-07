@@ -1,0 +1,322 @@
+import { _PdfContentStream, _PdfCrossReference, _PdfDictionary, _PdfRecord, PdfDocument, PdfPage} from '@syncfusion/ej2-pdf';
+import { _GraphicState } from '../graphic-state';
+import { TextGlyph } from '../text-structure';
+import { _PdfContentParserHelper } from '../content-parser-helper';
+import { _TextProcessingMode } from '../enum';
+import { _FontStructure } from '../text-extraction';
+import { _addFontResources, _getXObjectResources } from '../utils';
+import { _TextGlyphMapper } from './text-glyph-mapper';
+import { _PdfRedactionProcessor } from './pdf-redaction-processor';
+import { PdfRedactionRegion } from './pdf-redaction-region';
+/**
+ * Represents a content redactor from an existing PDF document.
+ *
+ * ```typescript
+ * let document: PdfDocument = new PdfDocument(data, password);
+ * // Create a new text extractor
+ * let redactor: PdfRedactor = new PdfRedactor(document);
+ * // Add redactions to the collection
+ * let redactions: PdfRedactionRegion[] = [];
+ * redactions.push(new PdfRedaction(0, {x: 10, y: 10, width: 100, height: 50}));
+ * redactions.push(new PdfRedaction(2, {x: 10, y: 10, width: 100, height: 50}, true, [255, 0, 0]));
+ * redactor.add(redactions);
+ * // Apply redactions on the PDF document
+ * redactor.redact();
+ * // Save the document
+ * document.save('output.pdf');
+ * // Destroy the document
+ * document.destroy();
+ * ```
+ */
+export class PdfRedactor {
+    _document: PdfDocument;
+    _isHex: boolean = false;
+    _redactionBounds: {x: number, y: number, width: number, height: number}[] = [];
+    _redaction: Map<number, PdfRedactionRegion[]> = new Map<number, PdfRedactionRegion[]>();
+    _parser: _PdfContentParserHelper;
+    _crossReference: _PdfCrossReference;
+    _object: _PdfRedactionProcessor = new _PdfRedactionProcessor();
+    constructor();
+    constructor(document: PdfDocument)
+    constructor(document?: PdfDocument) {
+        if (document instanceof PdfDocument) {
+            this._document = document;
+            this._crossReference = document._crossReference;
+        }
+        this._document.fileStructure.isIncrementalUpdate = false;
+        this._parser = new _PdfContentParserHelper(_TextProcessingMode.redaction, this);
+    }
+    /**
+     * Add redactions with specified options.
+     *
+     * @param {PdfRedactionRegion[]} redactions An array of redaction objects to specify the page index, bounds and appearance of the redaction to be applied.
+     *
+     * @returns {void} Nothing.
+     *
+     * ```typescript
+     * // Load an existing PDF document
+     * let document: PdfDocument = new PdfDocument(data, password);
+     * // Add redactions to the collection
+     * let redactions: PdfRedactionRegion[] = [];
+     * // Initialize a new instance of the `PdfRedactor` class
+     * let redactor: PdfRedactor = new PdfRedactor(document);
+     * // Initialize a new instance of the `PdfRedaction` class.
+     * let redaction: PdfRedaction = new PdfRedaction(0, {x:40, y: 41.809, width: 80, height: 90});
+     * // Sets the fill color used to fill the redacted area.
+     * redaction.fillColor = [255, 0, 0];
+     * redactions.push(redaction);
+     * // Add redactions with specified options.
+     * redactor.add(redactions);
+     * // Apply redactions on the PDF document
+     * redactor.redact();
+     * // Save the document
+     * document.save('output.pdf');
+     * // Destroy the document
+     * document.destroy();
+     * ```
+     */
+    add(redactions: PdfRedactionRegion[]): void {
+        const options: PdfRedactionRegion[] = redactions;
+        for (let i: number = 0; i < options.length; i++) {
+            const pageIndex: number = options[Number.parseInt(i.toString(), 10)].pageIndex;
+            if (!this._redaction.has(pageIndex)) {
+                this._redaction.set(pageIndex, []);
+            }
+            const redactionArray: PdfRedactionRegion[] = this._redaction.get(pageIndex);
+            if (redactionArray) {
+                redactionArray.push(options[Number.parseInt(i.toString(), 10)]);
+            }
+        }
+    }
+    /**
+     * Redact the PDF document
+     *
+     * @returns {void} Nothing.
+     *
+     * ```typescript
+     * // Load an existing PDF document
+     * let document: PdfDocument = new PdfDocument(data, password);
+     * // Add redactions to the collection
+     * let redactions: PdfRedactionRegion[] = [];
+     * // Initialize a new instance of the `PdfRedactor` class
+     * let redactor: PdfRedactor = new PdfRedactor(document);
+     * // Initialize a new instance of the `PdfRedaction` class.
+     * let redaction: PdfRedaction = new PdfRedaction(0, {x:40, y: 41.809, width: 80, height: 90});
+     * // Sets the fill color used to fill the redacted area.
+     * redaction.fillColor = [255, 0, 0];
+     * redactions.push(redaction);
+     * // Add redactions with specified options.
+     * redactor.add(redactions);
+     * // Apply redactions on the PDF document
+     * redactor.redact();
+     * // Save the document
+     * document.save('output.pdf');
+     * // Destroy the document
+     * document.destroy();
+     * ```
+     */
+    redact(): void {
+        this._redaction.forEach((value: PdfRedactionRegion[], key: number) => {
+            this._redactionBounds = [];
+            this._combineBounds(value);
+            const option: PdfRedactionRegion[] = value;
+            const page: PdfPage = this._document.getPage(key);
+            const graphicState: _GraphicState = new _GraphicState();
+            const recordCollection: _PdfRecord[] = this._parser._getPageRecordCollection(page);
+            const resource: _PdfDictionary = page._pageDictionary.get('Resources');
+            let fontCollection: Map<string, _FontStructure>;
+            let xObjectCollection: Map<string, _FontStructure>;
+            if (typeof(resource) !== 'undefined') {
+                fontCollection = _addFontResources(resource, page._pageDictionary._crossReference );
+                xObjectCollection = _getXObjectResources(resource, page._pageDictionary._crossReference);
+            }
+            let stream: any; // eslint-disable-line
+            if (this._redactionBounds.length > 0) {
+                stream = this._parser._processRecordCollection(recordCollection, page, fontCollection, xObjectCollection, graphicState);
+            }
+            this._object._updateContentStream(page, stream, option, this._document);
+        });
+    }
+    _combineBounds(options: PdfRedactionRegion[]): void {
+        for (let i: number = 0; i < options.length; i++) {
+            this._redactionBounds.push(options[Number.parseInt(i.toString(), 10)].bounds);
+        }
+    }
+    _optimizeContent(recordCollection: _PdfRecord[], index: number, updatedText: string, stream: _PdfContentStream): void {
+        const record: _PdfRecord = recordCollection[Number.parseInt(index.toString(), 10)];
+        if (typeof(record._operands) !== 'undefined' && record._operands.length >= 1) {
+            if (record._operator === 'ID') {
+                const builder: string[] = [];
+                for (let k: number = 0; k < record._operands.length; k++) {
+                    if (k + 1 < record._operands.length && record._operands[k].indexOf("/") !== -1 && record._operands[k + 1].indexOf("/") !==-1) { // eslint-disable-line
+                        builder.push(record._operands[Number.parseInt(k.toString(), 10)], ' ', record._operands[k + 1], '\r\n');
+                        k = k + 1;
+                    } else if (k + 1 < record._operands.length && record._operands[k].indexOf("/") !== -1) { // eslint-disable-line
+                        builder.push(record._operands[Number.parseInt(k.toString(), 10)], ' ', record._operands[k + 1], '\r\n');
+                        k = k + 1;
+                    } else {
+                        builder.push(record._operands[Number.parseInt(k.toString(), 10)], ' ');
+                    }
+                }
+                let text: string = builder.join(""); // eslint-disable-line
+                const bytes: number[] = this._getBytes(text);
+                stream.write(bytes);
+            } else {
+                for (let i: number = 0; i < record._operands.length; i++) {
+                    let operand: string = record._operands[Number.parseInt(i.toString(), 10)];
+                    if (record._operator === 'Tj' || record._operator === "'" || record._operator === '\"' || record._operator === 'TJ') { // eslint-disable-line
+                        if (updatedText !== '') {
+                            operand = updatedText;
+                            if (record._operator === "'" || record._operator === '\"') { // eslint-disable-line
+                                stream.write('T*');
+                                stream.write(' ');
+                                if (record._operator === '\"') { // eslint-disable-line
+                                    i += 2;
+                                }
+                            }
+                            record._operator = 'TJ';
+                        }
+                    }
+                    const bytes: number[] = this._getBytes(operand);
+                    stream.write(bytes);
+                    if (record._operator !== 'Tj' && record._operator !== "'" && record._operator !== '\"' && record._operator !== 'TJ') { // eslint-disable-line
+                        stream.write(' ');
+                    }
+                }
+            }
+        } else if (typeof(record._operands) === 'undefined' && typeof(record._inlineImageBytes) !== 'undefined') {
+            const numberArray: number[] = Array.from(record._inlineImageBytes);
+            stream.write(numberArray);
+            stream.write(' ');
+        }
+        stream.write(record._operator);
+        const count: number = recordCollection.length;
+        if ((index + 1) < count) {
+            if (record._operator === 'ID') {
+                stream.write('\n');
+            } else if ((index + 1) < count && (record._operator === 'W' || record._operator === 'W*') && recordCollection[index + 1]._operator === 'n') {
+                stream.write(' ');
+            } else if (record._operator === 'w' || record._operator === 'EI') {
+                stream.write(' ');
+            } else {
+                stream.write('\r\n');
+            }
+        }
+    }
+    _getBytes(text: string): number[] {
+        const bytes: number[] = [];
+        for (let i: number = 0; i < text.length; i++) {
+            const charCode: number = text.charCodeAt(i);
+            bytes.push(charCode);
+        }
+        return bytes;
+    }
+    _isFoundBounds(values: number[], redactionBounds: {x: number, y: number, width: number, height: number}[]): boolean {
+        const rect: {x: number, y: number, width: number, height: number} = {x: values[0], y: values[1], width: values[2],
+            height: values[3]};
+        for (const bounds of redactionBounds) {
+            if (this._contains(bounds, [rect.x, rect.y]) || this._intersectsWith(bounds, rect)) {
+                return true;
+            }
+        }
+        return false;
+    }
+    _contains(bounds: {x: number, y: number, width: number, height: number}, point: number[]): boolean {
+        return (
+            point[0] >= bounds.x &&
+            point[0] <= bounds.x + bounds.width &&
+            point[1] >= bounds.y &&
+            point[1] <= bounds.y + bounds.height
+        );
+    }
+    _intersectsWith(rect1: {x: number, y: number, width: number, height: number}, rect2: {x: number, y: number, width: number,
+        height: number}): boolean {
+        return (rect2.x < rect1.x + rect1.width) && (rect1.x < (rect2.x + rect2.width)) && (rect2.y < rect1.y + rect1.height) &&
+        (rect1.y < rect2.y + rect2.height);
+    }
+    _splitHexString(hexString: string): string[] {
+        const hexList: string[] = [];
+        hexString = hexString.slice(1, -1);
+        const size: number = hexString.startsWith('0') ? 4 : 2;
+        for (let i: number = 0; i < hexString.length; i += size) {
+            let chunk: string = hexString.substring(i, i + size);
+            if (chunk.indexOf('\n') !== -1) {
+                const extraChar: string = hexString.charAt(i + size);
+                chunk += extraChar;
+                i++;
+            }
+            hexList.push(chunk);
+        }
+        return hexList;
+    }
+    _replacedText(glyph: TextGlyph[], text: string[], originalText: string, decodeText: string[]): string {
+        let isReplacedText: boolean = false;
+        let isOtherText: boolean = false;
+        for (let i: number = 0; i < glyph.length; i++) {
+            if (this._isFoundBounds(glyph[Number.parseInt(i.toString(), 10)]._bounds, this._redactionBounds)) {
+                isReplacedText = true;
+                glyph[Number.parseInt(i.toString(), 10)]._isReplace = true;
+            } else {
+                isOtherText = true;
+                glyph[Number.parseInt(i.toString(), 10)]._text = text[Number.parseInt(i.toString(), 10)];
+            }
+        }
+        let updatedText: string = '';
+        if (!isReplacedText && isOtherText) {
+            return originalText;
+        } else {
+            let mainTextCollection: string[] = [];
+            if (originalText[0] === '(') {
+                mainTextCollection = decodeText;
+            } else if (originalText[0] === '[') {
+                mainTextCollection = decodeText;
+            } else if (originalText[0] === '<') {
+                mainTextCollection = decodeText;
+                this._isHex = true;
+            }
+            const map: _TextGlyphMapper[] = this._mapString(mainTextCollection, glyph);
+            for (let i: number = 0; i < map.length; i++) {
+                map[Number.parseInt(i.toString(), 10)]._isHex = this._isHex;
+                updatedText += map[Number.parseInt(i.toString(), 10)]._getText();
+            }
+            updatedText = '[' + updatedText + ']';
+            this._isHex = false;
+        }
+        return updatedText;
+    }
+    _mapString(mainTextCollection: string[], imageGlyph: TextGlyph[]): _TextGlyphMapper[] {
+        const mappedString: _TextGlyphMapper[] = [];
+        const glyphList: TextGlyph[] = imageGlyph;
+        let startIndex: number = 0;
+        for (let i: number = 0; i < mainTextCollection.length; i++) {
+            const endChar: number = mainTextCollection[Number.parseInt(i.toString(), 10)].length - 1;
+            if (mainTextCollection[Number.parseInt(i.toString(), 10)][0] !== '(' && mainTextCollection[
+                Number.parseInt(i.toString(), 10)][Number.parseInt(endChar.toString(), 10)] !== ')') {
+                const mapping: _TextGlyphMapper = new _TextGlyphMapper();
+                mapping.text = mainTextCollection[Number.parseInt(i.toString(), 10)];
+                mappedString.push(mapping);
+            } else {
+                const mapping: _TextGlyphMapper = new _TextGlyphMapper();
+                mapping.text = mainTextCollection[Number.parseInt(i.toString(), 10)];
+                let text: string = mainTextCollection[Number.parseInt(i.toString(), 10)];
+                const subString: boolean = text.length >= 2;
+                const start: boolean = text.startsWith('(');
+                const end: boolean = text.endsWith(')');
+                if (subString && start && !end) {
+                    text = text.substring(1, text.length);
+                } else if (subString && !start && end) {
+                    text = text.substring(0, text.length - 1);
+                } else if (subString) {
+                    text = text.substring(1, text.length - 1);
+                } else {
+                    continue;
+                }
+                const length: number = text.length;
+                mapping.glyph = glyphList.slice(startIndex, startIndex + length);
+                startIndex += length;
+                mappedString.push(mapping);
+            }
+        }
+        return mappedString;
+    }
+}

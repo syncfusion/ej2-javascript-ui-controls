@@ -2873,7 +2873,7 @@ export class TextSearch {
     }
 
     /**
-     * Searches the target text in the PDF document and highlights the occurrences in the pages
+     * Searches the target text in the PDF document and highlights the occurrences in the pages.
      *
      * @param  {string} searchText - Specifies the searchText content
      * @param  {boolean} isMatchCase - If set true , its highlights the MatchCase content
@@ -2997,7 +2997,10 @@ export class TextSearch {
                 this.documentTextCollection[parseInt(endIndex.toString(), 10)][parseInt(endIndex.toString(), 10)] : null;
         const documentTextCollection: any = fetchTextCollection(endIndex - 1);
         let findTextResult: any = [];
-        if (documentTextCollection && documentTextCollection.TextData.length > 0) {
+        if (documentTextCollection && documentTextCollection.TextData.length > 0 && !isNullOrUndefined(pageIndex)) {
+            findTextResult = this.getSearchResults(searchText, searchTerms, searchResults, startIndex, endIndex,
+                                                   this.documentTextCollection[parseInt(pageIndex.toString(), 10)]);
+        } else if (documentTextCollection && documentTextCollection.TextData.length > 0) {
             findTextResult = this.getSearchResults(searchText, searchTerms, searchResults, startIndex, endIndex,
                                                    this.documentTextCollection);
         }
@@ -3087,14 +3090,24 @@ export class TextSearch {
     private getSearchResults(searchText: string | string[], searchTerms: string[], searchResults: Record<string, SearchResultModel[]>,
                              startIndex: number, endIndex: number, documentCollection: any):
         Record<string, SearchResultModel[]> | SearchResultModel[] {
+        if (!Array.isArray(documentCollection)) {
+            documentCollection = [documentCollection];
+        }
         for (const term of searchTerms) {
             this.calculateSearchCount(term, documentCollection);
             searchResults[`${term}`] = [];
             for (let i: number = startIndex; i < endIndex; i++) {
                 const matches: any = this.searchMatches[parseInt(i.toString(), 10)];
                 if (!matches) { continue; }
-                const pageIndex: number = parseInt(Object.keys(documentCollection[parseInt(i.toString(), 10)])[0], 10);
-                const documentIndex: any = documentCollection[parseInt(i.toString(), 10)][parseInt(pageIndex.toString(), 10)];
+                let pageIndex: number;
+                let documentIndex: any;
+                if (documentCollection.length === 1) {
+                    pageIndex = parseInt(Object.keys(documentCollection[0])[0], 10);
+                    documentIndex = documentCollection[0][parseInt(pageIndex.toString(), 10)];
+                } else {
+                    pageIndex = parseInt(Object.keys(documentCollection[parseInt(i.toString(), 10)])[0], 10);
+                    documentIndex = documentCollection[parseInt(i.toString(), 10)][parseInt(pageIndex.toString(), 10)];
+                }
                 const characterBounds: any = documentIndex.textData ? documentIndex.textData : documentIndex.TextData;
                 if (!characterBounds) { continue; }
                 const pageResult: SearchResultModel = { pageIndex: i, bounds: [] };

@@ -58,12 +58,15 @@ export class Step extends ChildProperty<Step>  {
 
     /**
      * Defines the state whether it is valid completion or not.
+     * If set to true, the completion is valid.
+     * If false, the completion is invalid.
+     * If null, the completion state is not determined.
      *
      * @aspType bool?
      * @default null
      */
     @Property(null)
-    public isValid: boolean;
+    public isValid: boolean | null;
 
     /**
      * Defines the label content of the step.

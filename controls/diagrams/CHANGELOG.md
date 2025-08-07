@@ -2,13 +2,29 @@
 
 ## [Unreleased]
 
+## 30.2.4 (2025-08-07)
+
+### Diagram
+
+#### Bug Fixes
+
+- `#I748546` - Fixed an issue where same tooltip content was shown for different group nodes.
+
 ## 30.1.42 (2025-07-29)
 
 ### Diagram
 
 #### Bug Fixes
 
-- `#I743792` - Now, Connector cannot drawn from InConnect only ports.
+- `#I743792` - Enhanced connector interaction, When initiating a connector from an InConnect-only port, the target end now correctly attaches to the port, while the source end follows the mouse pointer during drawing.
+- `#I745390` - Fixed an issue where an exception was thrown when loading an EJ1 diagram with PreventDefaults set to true in an EJ2 diagram.
+
+## 30.1.41 (2025-07-22)
+
+### Diagram
+
+#### Bug Fixes
+
 - `#I743241` - Improved performance when dragging group nodes containing multiple child nodes.
 - `#I742692` - Resolved diagram flickering issue during panning.
 - `#I742819` - Fixed connector overlapping issue in complex hierarchical tree.

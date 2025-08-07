@@ -1919,4 +1919,26 @@ describe('ListBox', () => {
             expect(Array.isArray(changeArgs)).toBe(true);
         });
     });
+
+    describe('ListBox coverage test ', () => {
+        let listObjc: any;
+        let element: HTMLElement;
+        let elem: HTMLElement = createElement('input', { id: 'updateSelectionSettings' });;
+        beforeAll(() => {
+            document.body.appendChild(elem);
+        });
+        afterEach(() => {
+            listObjc.destroy();
+        });
+        it('should cover updateSelectionSettings when filterParent exists with different class scenarios', () => {
+            listObjc = new ListBox({
+                dataSource: [{ text: 'One', id: '1' }, { text: 'Two', id: '2' }],
+                selectionSettings: { showCheckbox: true, showSelectAll: true }
+            }, elem);
+            (<any>listObjc).ulElement = null ;
+            (<any>listObjc).allowDragAndDrop = false ;
+            (<any>listObjc).initDraggable();
+
+        });
+    });
 });

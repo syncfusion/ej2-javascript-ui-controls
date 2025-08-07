@@ -279,7 +279,10 @@ export class Image {
                     if (isAnchorValid) {
                         range.insertNode(anchorElement);
                     } else {
-                        range.insertNode(imgElement);
+                        if (imgElement.parentNode) {
+                            imgElement.parentNode.removeChild(imgElement);
+                            range.insertNode(imgElement);
+                        }
                     }
                 }
                 imgElement.classList.remove(classes.CLS_RTE_DRAG_IMAGE);

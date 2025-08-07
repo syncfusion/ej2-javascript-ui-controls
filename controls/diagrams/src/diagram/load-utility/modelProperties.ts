@@ -60,6 +60,44 @@ export class Ej1Serialization {
             this.convertedData.getConnectorDefaults = this.getConnectorDefaults((data as any).defaultSettings.connector);
         }
         //this.convertedData.setNodeTemplate = this.getNodeTemplate((data as Diagram).nodeTemplate);
+
+        //969490- Prevent Exception Handling When Loading EJ1 JSON Data into EJ2 Components
+        (data as Diagram).layers = (data as Diagram).layers || [];
+        (data as Diagram).dataSourceSettings = (data as Diagram).dataSourceSettings || {};
+        (data as Diagram).dataSourceSettings.crudAction = (data as Diagram).dataSourceSettings.crudAction || {};
+        (data as Diagram).rulerSettings = (data as Diagram).rulerSettings || {};
+        (data as Diagram).rulerSettings.horizontalRuler = (data as Diagram).rulerSettings.horizontalRuler || {};
+        (data as Diagram).rulerSettings.verticalRuler = (data as Diagram).rulerSettings.verticalRuler || {};
+        (data as Diagram).snapSettings = (data as Diagram).snapSettings || {};
+        (data as any).snapSettings.horizontalGridLines = (data as any).snapSettings.horizontalGridLines || {};
+        (data as any).snapSettings.verticalGridLines = (data as any).snapSettings.verticalGridLines || {};
+        (data as any).snapSettings.snapConstraints = SnapConstraints.All;
+        (data as Diagram).pageSettings = (data as Diagram).pageSettings || {};
+        (data as any).pageSettings.scrollLimit = (data as any).pageSettings.scrollLimit || 'Diagram';
+        (data as any).pageSettings.pageOrientation = (data as any).pageSettings.pageOrientation || 'Landscape';
+        (data as Diagram).pageSettings.boundaryConstraints = (data as Diagram).pageSettings.boundaryConstraints || 'Diagram';
+        (data as any).pageSettings.pageBackgroundColor = (data as any).pageSettings.pageBackgroundColor || 'transparent';
+        (data as any).backgroundImage = (data as any).backgroundImage || {};
+        (data as Diagram).tooltip = (data as Diagram).tooltip || {};
+        (data as Diagram).scrollSettings = (data as Diagram).scrollSettings || {};
+        (data as Diagram).layout = (data as Diagram).layout || {};
+        (data as Diagram).layout.margin = (data as Diagram).layout.margin || { left: 0, right: 0, top: 0, bottom: 0 };
+        (data as Diagram).layout.horizontalAlignment = (data as Diagram).layout.horizontalAlignment || 'Auto';
+        (data as Diagram).layout.verticalAlignment = (data as Diagram).layout.verticalAlignment || 'Auto';
+        (data as Diagram).layout.type = (data as Diagram).layout.type || 'None';
+        (data as Diagram).selectedItems = (data as Diagram).selectedItems || {};
+        (data as Diagram).selectedItems.constraints = (data as Diagram).selectedItems.constraints || SelectorConstraints.All;
+        (data as Diagram).constraints = (data as Diagram).constraints || DiagramConstraints.Default;
+        (data as Diagram).tool = (data as Diagram).tool || DiagramTools.None;
+        (data as Diagram).scrollSettings.horizontalOffset = -(data as Diagram).scrollSettings.horizontalOffset || 0;
+        (data as Diagram).scrollSettings.verticalOffset = -(data as Diagram).scrollSettings.verticalOffset || 0;
+        if (!(data as any).pageSettings.pageWidth) {
+            (data as any).pageSettings.pageWidth = (data as any).scrollSettings.viewPortWidth;
+        }
+        if (!(data as any).pageSettings.pageHeight) {
+            (data as any).pageSettings.pageHeight = (data as any).scrollSettings.viewPortHeight;
+        }
+
         this.setLayers(this.convertedData, (data as Diagram));
         this.setDataSourceSettings(this.convertedData, data);
         this.setRulerSettings(this.convertedData, data);
@@ -70,7 +108,6 @@ export class Ej1Serialization {
             this.convertedData.snapSettings.constraints = this.convertedData.snapSettings.constraints & ~SnapConstraints.SnapToObject;
         }
         if ((data as any).pageSettings.backgroundImage === undefined) {
-            (data as any).pageSettings.pageBackgroundColor = 'transparent';
             (data as any).pageSettings.backgroundImage = {
                 source: '',
                 scale: 'meet',

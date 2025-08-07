@@ -1458,3 +1458,45 @@ describe('Bug 962581: TreeGrid Checkbox Selection with Empty Data Source', () =>
         gridObj = null;
     });
 });
+
+describe('Check getCheckedRecords after the searching', () => {
+    let gridObj: TreeGrid;
+    let actionComplete: () => void;
+    beforeAll((done: Function) => {
+        gridObj = createGrid(
+            {
+                dataSource: sampleData1,
+                childMapping: 'subtasks',
+                treeColumnIndex: 1,
+                height: '410',
+                toolbar: ['Search'],
+                allowFiltering: true,
+                allowSelection: true,
+                selectionSettings: { type: 'Multiple'},
+                columns: [
+                    { field: 'taskID', headerText: 'Order ID', isPrimaryKey: true, width: 120 },
+                    { field: 'taskName', headerText: 'Customer ID', width: 150, showCheckbox: true },
+                    { field: 'duration', headerText: 'Freight', type: 'number', width: 150 },
+                    { field: 'progress', headerText: 'Ship Name', width: 150 }
+                ]
+            },
+            done
+        );
+    });
+
+    it('Show CheckBox Selection After searching', (done: Function) => {
+        actionComplete = (args?: CellSaveEventArgs): void => {
+            if (args.requestType === 'searching') {
+                expect((gridObj.getCheckedRecords() as any).length === 0).toBe(true);
+                done();
+            }
+        };
+        (gridObj.element.querySelectorAll('.e-row')[2].getElementsByClassName('e-frame e-icons')[0] as any).click();
+        gridObj.search('Design');
+        gridObj.actionComplete = actionComplete;
+    });
+
+    afterAll(() => {
+        destroy(gridObj);
+    });
+});

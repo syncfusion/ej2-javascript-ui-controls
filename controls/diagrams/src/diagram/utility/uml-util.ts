@@ -48,6 +48,7 @@ export function getULMClassifierShapes(content: DiagramElement, node: NodeModel,
     const newObj: Node = new Node(
         diagram, 'nodes', {
             id: node.id + '_umlClass_header',
+            offsetX: node.offsetX, offsetY: node.offsetY,
             annotations: [
                 {
                     id: 'name', content: classifier.name,

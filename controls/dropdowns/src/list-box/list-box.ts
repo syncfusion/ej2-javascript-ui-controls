@@ -155,6 +155,7 @@ export class ListBox extends DropDownBase {
     private customDraggedItem: Object[];
     private timer: number;
     private inputFormName: string;
+    private selectedListItemCount : number;
     /**
      * Sets the CSS classes to root element of this component, which helps to customize the
      * complete styles.
@@ -501,6 +502,21 @@ export class ListBox extends DropDownBase {
             this.unSelectAllText = l10nSelect.getConstant('unSelectAllText');
             this.popupWrapper = this.list;
             this.checkBoxSelectionModule.checkAllParent = null;
+            if (this.filterParent) {
+                const parentNode: HTMLElement = this.filterParent.parentNode as HTMLElement;
+                if (parentNode) {
+                    const firstChild: Element = this.filterParent.querySelector('input.e-input-filter') as Element;
+                    if (!firstChild.classList.contains('e-input-focus') && !firstChild.classList.contains('e-valid-input')
+                    && this.selectedListItemCount === 0) {
+                        this.filterParent = null;
+                    }
+                    if (this.selectedListItemCount > 0 && this.showSelectAll) {
+                        this.filterParent = null;
+                    }
+                } else {
+                    this.filterParent = null;
+                }
+            }
             this.notify('selectAll', {});
         }
     }
@@ -614,7 +630,7 @@ export class ListBox extends DropDownBase {
     private setHeight(): void {
         const ele: HTMLElement = this.toolbarSettings.items.length ? this.list.parentElement : this.list;
         ele.style.height = formatUnit(this.height);
-        if (this.allowFiltering && this.height.toString().indexOf('%') < 0) {
+        if (this.allowFiltering && this.height.toString().indexOf('%') > 0) {
             addClass([this.list], 'e-filter-list');
         } else {
             removeClass([this.list], 'e-filter-list');
@@ -708,6 +724,7 @@ export class ListBox extends DropDownBase {
             }
         }
         super.onActionComplete(ulElement, list, e);
+        this.initWrapper();
         if (this.allowFiltering && !isNullOrUndefined(searchEle)) {
             this.list.insertBefore(searchEle, this.list.firstElementChild);
             this.filterParent = this.list.getElementsByClassName('e-filter-parent')[0] as HTMLElement;
@@ -726,7 +743,6 @@ export class ListBox extends DropDownBase {
                 });
             }
         }
-        this.initWrapper();
         this.setSelection(this.value, true, false, !this.isRendered);
         this.initDraggable();
         this.mainList = this.ulElement;
@@ -1498,6 +1514,7 @@ export class ListBox extends DropDownBase {
             }
         }
         const len: number = this.getSelectedItems().length;
+        this.selectedListItemCount = len ;
         if (this.showSelectAll && searchCount) {
             this.notify('checkSelectAll', { module: 'CheckBoxSelection',
                 value: (searchCount === len) ? 'check' : (len === 0) ? 'uncheck' : 'indeterminate'});
@@ -2282,7 +2299,8 @@ export class ListBox extends DropDownBase {
         if (this.allowFiltering && e.ctrlKey && e.keyCode === 65) {
             e.preventDefault(); return;
         }
-        const char: string = String.fromCharCode(e.keyCode);
+        const char: string = e.code && e.keyCode >= 96 && e.keyCode <= 105 ?
+            String.fromCharCode(e.keyCode - 48) : String.fromCharCode(e.keyCode);
         const isWordCharacter: Object = char.match(/\w/);
         const isWordAccentCharacter: Object = char.match(/[A-Za-z0-9\u00C0-\u024F ]/);
         if (!isNullOrUndefined(isWordCharacter) || !isNullOrUndefined(isWordAccentCharacter)) {

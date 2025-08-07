@@ -107,6 +107,12 @@ export interface TaskFieldsModel {
     baselineEndDate?: string;
 
     /**
+     * To map baseline duration of task from data source.
+     *
+     */
+    baselineDuration?: string;
+
+    /**
      * To map assigned resources of task from data source.
      *
      */

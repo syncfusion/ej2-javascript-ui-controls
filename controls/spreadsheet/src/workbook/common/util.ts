@@ -1,5 +1,5 @@
 import { CellModel, ColumnModel, getCell, SheetModel, setCell, Workbook, getSheetIndex, CellStyleModel, getCellIndexes, RowModel, getRow, getColumn } from './../index';
-import { getCellAddress, getRangeIndexes, BeforeCellUpdateArgs, beforeCellUpdate, workbookEditOperation, CellUpdateArgs, getRangeAddress, getSwapRange } from './index';
+import { getCellAddress, getRangeIndexes, BeforeCellUpdateArgs, beforeCellUpdate, workbookEditOperation, CellUpdateArgs, getRangeAddress, getSwapRange, workbookReadonlyAlert } from './index';
 import { InsertDeleteModelArgs, getColumnHeaderText, ConditionalFormat, ConditionalFormatModel, clearFormulaDependentCells } from './index';
 import { isHiddenCol, isHiddenRow, VisibleMergeIndexArgs, checkDateFormat, checkNumberFormat, DateFormatCheckArgs } from './../index';
 import { isUndefined, getNumberDependable, getNumericObject, Internationalization, defaultCurrencyCode, isNullOrUndefined } from '@syncfusion/ej2-base';
@@ -1071,22 +1071,25 @@ export function isReadOnly(cell: CellModel, column: ColumnModel, row: RowModel):
  *
  * @param {Workbook} parent - The spreadsheet instance.
  * @param {number[]} rangeIndexes - The range indexes to check.
+ * @param {boolean} [throwAlert] - Specifies whether to throw an alert if cells are read-only.
  * @returns {boolean} - Returns true if any of the cells is read-only, otherwise false.
  * @hidden
  */
-export function isReadOnlyCells(parent: Workbook, rangeIndexes?: number[]): boolean {
-    const sheet: SheetModel = parent.getActiveSheet(); let hasReadOnlyCell: boolean;
+export function isReadOnlyCells(parent: Workbook, rangeIndexes?: number[], throwAlert?: boolean): boolean {
+    const sheet: SheetModel = parent.getActiveSheet();
     const address: number[] = !isNullOrUndefined(rangeIndexes) ? rangeIndexes : getSwapRange(getRangeIndexes(sheet.selectedRange));
     for (let row: number = address[0]; row <= address[2]; row++) {
         for (let col: number = address[1]; col <= address[3]; col++) {
             const cell: CellModel = getCell(row, col, sheet);
             if (isReadOnly(cell, getColumn(sheet, col), getRow(sheet, row))) {
-                hasReadOnlyCell = true;
-                break;
+                if (throwAlert) {
+                    parent.notify(workbookReadonlyAlert, null);
+                }
+                return true;
             }
         }
     }
-    return hasReadOnlyCell;
+    return false;
 }
 
 /**

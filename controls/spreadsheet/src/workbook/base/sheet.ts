@@ -485,16 +485,6 @@ export function getSelectedRange(sheet: SheetModel): string {
 
 /**
  * @hidden
- * @param {SheetModel} sheet - Specifies the sheet.
- * @returns {string} - To get single selected range.
- */
-export function getSingleSelectedRange(sheet: SheetModel): string {
-    return sheet.selectedRange.split(' ')[0];
-}
-
-
-/**
- * @hidden
  * @param {Workbook} context - Specifies the context.
  * @param {number} idx - Specifies the idx.
  * @returns {SheetModel} - To get sheet.

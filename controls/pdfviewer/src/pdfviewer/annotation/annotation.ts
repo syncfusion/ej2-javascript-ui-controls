@@ -158,7 +158,10 @@ export class Annotation {
      * @private
      */
     public isUndoRedoAction: boolean = false;
-    private isFreeTextFontsizeChanged: boolean = false;
+    /**
+     * @private
+     */
+    public isFreeTextFontsizeChanged: boolean = false;
     /**
      * @private
      */
@@ -2619,11 +2622,15 @@ export class Annotation {
     /**
      * @param {number} currentValue - currentValue
      * @param {boolean} isInteracted - isInteracted
+     * @param {PdfAnnotationBaseModel} annotation annotation object when programmatically updating font size
      * @private
      * @returns {void}
      */
-    public modifyFontSize(currentValue: number, isInteracted: boolean): void {
-        const currentAnnotation: PdfAnnotationBaseModel = this.pdfViewer.selectedItems.annotations[0];
+    public modifyFontSize(currentValue: number, isInteracted: boolean, annotation?: PdfAnnotationBaseModel): void {
+        let currentAnnotation: PdfAnnotationBaseModel = this.pdfViewer.selectedItems.annotations[0];
+        if (isNullOrUndefined(currentAnnotation) && !isNullOrUndefined(annotation)) {
+            currentAnnotation = annotation;
+        }
         const clonedObject: PdfAnnotationBaseModel = cloneObject(currentAnnotation);
         const redoClonedObject: PdfAnnotationBaseModel = cloneObject(currentAnnotation);
         redoClonedObject.fontSize = currentValue;
@@ -5211,6 +5218,12 @@ export class Annotation {
                     this.triggerAnnotationPropChange(currentAnnotation, false, false, false, false, false,
                                                      false, false, true, currentAnnotation.dynamicText, annotation.content);
                 }
+                if (!isNullOrUndefined(annotation.fontSize) && currentAnnotation.fontSize !== annotation.fontSize) {
+                    this.modifyFontSize(annotation.fontSize, true, currentAnnotation);
+                    annotation.bounds.width = currentAnnotation.bounds.width;
+                    annotation.bounds.height = currentAnnotation.bounds.height;
+                }
+                this.isFreeTextFontsizeChanged = true;
                 this.pdfViewer.nodePropertyChange(currentAnnotation, {
                     opacity: annotation.opacity, fontColor: annotation.fontColor, fontSize: annotation.fontSize,
                     fontFamily: annotation.fontFamily,
@@ -5249,7 +5262,8 @@ export class Annotation {
                 this.triggerAnnotationPropChange(currentAnnotation, false, true, false, false);
                 const commentDiv: any = document.getElementById(annotation.annotationId).firstChild.firstChild.childNodes[1];
                 if (commentDiv instanceof Element && commentDiv.classList.contains('e-pv-comment-title')) {
-                    commentDiv.textContent = annotation.author + ' - ' + this.pdfViewer.annotationModule.stickyNotesAnnotationModule.getDateAndTime();
+                    commentDiv.children[0].textContent = annotation.author;
+                    commentDiv.children[1].textContent = ' - ' + this.pdfViewer.annotation.stickyNotesAnnotationModule.getDateAndTime();
                 }
             }
             if (!isNullOrUndefined(annotation.setState) && (currentAnnotation.review.state  !== annotation.setState)) {

@@ -1,6 +1,6 @@
-import { Workbook, getSheetName, getSheet, SheetModel, RowModel, CellModel, getSheetIndexFromId, ColumnModel, setCell, getTypeFromFormat } from '../index';
-import { getSingleSelectedRange, getCell, getSheetIndex, NumberFormatArgs, checkFormulaRef, parseFormulaArgument, sheetRenameUpdate } from '../index';
-import { workbookFormulaOperation, getColumnHeaderText, aggregateComputation, AggregateArgs, clearFormulaDependentCells, formulaInValidation, ValidationModel, LocaleNumericSettings, applyCF, getCellRefValue, commputeFormulaValue } from '../common/index';
+import { Workbook, getSheetName, getSheet, SheetModel, RowModel, CellModel, getSheetIndexFromId, ColumnModel, setCell, getTypeFromFormat, isHiddenRow, isHiddenCol } from '../index';
+import { getCell, getSheetIndex, NumberFormatArgs, checkFormulaRef, parseFormulaArgument, sheetRenameUpdate } from '../index';
+import { workbookFormulaOperation, getColumnHeaderText, aggregateComputation, AggregateArgs, clearFormulaDependentCells, formulaInValidation, ValidationModel, LocaleNumericSettings, applyCF, getCellRefValue, commputeFormulaValue, getAutoDetectFormatParser, calculateFormula } from '../common/index';
 import { Calculate, ValueChangedArgs, CalcSheetFamilyItem, FormulaInfo, CommonErrors, getAlphalabel } from '../../calculate/index';
 import { IFormulaColl } from '../../calculate/common/interface';
 import { isNullOrUndefined, getNumericObject } from '@syncfusion/ej2-base';
@@ -1147,30 +1147,79 @@ export class WorkbookFormula {
 
     private aggregateComputation(args: AggregateArgs): void {
         const sheet: SheetModel = this.parent.getActiveSheet();
-        let range: string = getSingleSelectedRange(sheet);
-        const indexes: number[] = getRangeIndexes(range.split(':')[1]);
-        if (indexes[0] + 1 === sheet.rowCount && indexes[1] + 1 === sheet.colCount) {
-            range = `A1:${getCellAddress(sheet.usedRange.rowIndex, sheet.usedRange.colIndex)}`;
-        }
-        let calcValue: string; let i: number;
-        const cellCol: string | string[] = this.calculateInstance.getCellCollection(range);
-        for (i = 0; i < cellCol.length; i++) {
-            calcValue = this.calculateInstance.getValueFromArg(cellCol[i as number]);
-            if (isNumber(calcValue)) {
-                args.countOnly = false;
-                break;
+        let totalCount: number = 0;
+        let totalSum: number = 0;
+        let numericCellsCount: number = 0;
+        let overallMin: number = Number.POSITIVE_INFINITY;
+        let overallMax: number = Number.NEGATIVE_INFINITY;
+        let row: number; let col: number; let cell: CellModel;
+        const autoDetectFormatFn: (cell: CellModel) => void = getAutoDetectFormatParser(this.parent);
+        const performCalculation: () => void = (): void => {
+            cell = getCell(row, col, sheet);
+            if (!cell || isHiddenCol(sheet, col)) {
+                return;
             }
+            if (cell.formula && isNullOrUndefined(cell.value)) {
+                this.parent.notify(calculateFormula, {
+                    cell: cell, rowIdx: row, colIdx: col, sheetIndex: this.parent.activeSheetIndex
+                });
+            }
+            autoDetectFormatFn(cell);
+            if (cell.value || <unknown>cell.value === 0) {
+                totalCount++;
+                if (isNumber(cell.value)) {
+                    args.countOnly = false;
+                    const numValue: number = Number(cell.value);
+                    totalSum += numValue;
+                    numericCellsCount++;
+                    overallMin = Math.min(overallMin, numValue);
+                    overallMax = Math.max(overallMax, numValue);
+                }
+            }
+        };
+        let checkAndCalculate: () => void;
+        const selectedRanges: string[] = sheet.selectedRange.split(' ');
+        const cellAddress: Set<string> = new Set<string>();
+        if (selectedRanges.length > 1) {
+            checkAndCalculate = (): void => {
+                const key: string = `${row}${col}`;
+                if (cellAddress.has(key)) {
+                    return;
+                }
+                cellAddress.add(key);
+                performCalculation();
+            };
+        } else {
+            checkAndCalculate = (): void => performCalculation();
         }
-        args.Count = this.calculateInstance.getFunction('COUNTA')(range, 'isAggregate');
+        selectedRanges.forEach((range: string) => {
+            const indexes: number[] = getSwapRange(getRangeIndexes(range));
+            if (indexes[2] > sheet.usedRange.rowIndex) {
+                indexes[2] = sheet.usedRange.rowIndex;
+            }
+            if (indexes[3] > sheet.usedRange.colIndex) {
+                indexes[3] = sheet.usedRange.colIndex;
+            }
+            for (row = indexes[0]; row <= indexes[2]; row++) {
+                if (isHiddenRow(sheet, row)) {
+                    continue;
+                }
+                for (col = indexes[1]; col <= indexes[3]; col++) {
+                    checkAndCalculate();
+                }
+            }
+        });
+        args.Count = totalCount;
         if (!args.Count || args.countOnly) {
             return;
         }
-        const formulaVal: string[] = ['SUM', 'AVERAGE', 'MIN', 'MAX'];
+        const finalAvg: number = numericCellsCount > 0 ? totalSum / numericCellsCount : 0;
+        const aggregateValues: number[] = [totalSum, finalAvg, overallMin, overallMax];
         const formatedValues: string[] = [];
-        const index: number[] = getRangeIndexes(sheet.activeCell);
-        const cell: CellModel = getCell(index[0], index[1], sheet, false, true);
-        for (i = 0; i < 4; i++) {
-            calcValue = this.toFixed(this.calculateInstance.getFunction(formulaVal[i as number])(range, 'isAggregate'));
+        const activeIndex: number[] = getRangeIndexes(sheet.activeCell);
+        cell = getCell(activeIndex[0], activeIndex[1], sheet, false, true);
+        aggregateValues.forEach((aggregateVal: number) => {
+            let calcValue: string = this.toFixed(aggregateVal.toString());
             if (cell.format) {
                 const eventArgs: NumberFormatArgs = { formattedText: calcValue, value: calcValue, format: cell.format,
                     cell: { value: calcValue, format: cell.format } };
@@ -1178,9 +1227,11 @@ export class WorkbookFormula {
                 calcValue = eventArgs.formattedText;
             }
             formatedValues.push(calcValue);
-        }
-        args.Sum = formatedValues[0]; args.Avg = formatedValues[1];
-        args.Min = formatedValues[2]; args.Max = formatedValues[3];
+        });
+        args.Sum = formatedValues[0];
+        args.Avg = formatedValues[1];
+        args.Min = formatedValues[2];
+        args.Max = formatedValues[3];
     }
 
     private refreshInsertDelete(args: InsertDeleteEventArgs): void {

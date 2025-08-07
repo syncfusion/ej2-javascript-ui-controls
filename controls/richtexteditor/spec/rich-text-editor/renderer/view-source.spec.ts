@@ -486,4 +486,36 @@ describe('Toolbar - view html', () => {
             rteObj.sourceCodeModule.mouseDownHandler();
         });
     });
+
+     describe("EJ2-969879 - Character limit is not enforced in code view, allowing the user to exceed the maximum length in RichTextEditor", () => {
+        let rteObj: any;
+        let rteEle: HTMLElement;
+        beforeEach((done: Function) => {
+            rteObj = renderRTE({
+                toolbarSettings: {
+                    items: ['SourceCode']
+                },
+                showCharCount: true,
+                maxLength: 25
+            });
+            rteEle = rteObj.element;
+            done();
+        });
+        afterEach((done: Function) => {
+            destroy(rteObj);
+            done();
+        });
+
+        it('Now, the Rich Text Editor works properly by enforcing the character limit in code view, preventing users from exceeding the maximum allowed length.', () => {
+            expect(rteEle.querySelectorAll(".e-toolbar-item")[0].getAttribute("title")).toBe("Code View (Ctrl+Shift+H)");
+            rteObj.contentModule.getEditPanel().innerHTML = '<p>Provide a toolbar support</p>';
+            let trgEle: HTMLElement = <HTMLElement>rteEle.querySelectorAll(".e-toolbar-item")[0];
+            trgEle.click();
+            expect((<any>rteObj).element.querySelector('.e-rte-srctextarea')).not.toBe(null);
+            (<any>rteObj).element.querySelector('.e-rte-srctextarea').value = '<p>Provide a toolbar support</p>ggggg';
+            trgEle = <HTMLElement>rteEle.querySelectorAll(".e-toolbar-item")[0];
+            trgEle.click();
+            expect(rteObj.contentModule.getEditPanel().innerHTML === '<p>Provide a toolbar support</p>').toBe(true);
+        });
+    });
 });

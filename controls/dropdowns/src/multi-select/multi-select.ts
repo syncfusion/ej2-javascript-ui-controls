@@ -1808,6 +1808,7 @@ export class MultiSelect extends DropDownBase implements IInput {
     private checkForCustomValue(query?: Query, fields?: FieldSettingsModel): void {
         const dataChecks: boolean = !this.getValueByText(this.inputElement.value, this.ignoreCase);
         const field: FieldSettingsModel = fields ? fields : this.fields;
+        this.isCustomReset = true;
         if (this.allowCustomValue && dataChecks) {
             const value: string = this.inputElement.value;
             const customData: Object | string = (!isNullOrUndefined(this.mainData) && this.mainData.length > 0) ?
@@ -1860,6 +1861,7 @@ export class MultiSelect extends DropDownBase implements IInput {
                     const tempData: [{ [key: string]: Object }] = JSON.parse(JSON.stringify(this.listData));
                     tempData.splice(0, 0, dataItem);
                     this.resetList(tempData, field, query);
+                    this.focusAtLastListItem(value);
                 }
             } else if (this.listData) {
                 const tempData: string[] = JSON.parse(JSON.stringify(this.listData));
@@ -1890,6 +1892,7 @@ export class MultiSelect extends DropDownBase implements IInput {
                 }
             }
         }
+        this.isCustomReset = false;
         if (this.value && this.value.length) {
             this.refreshSelection();
         }
@@ -2056,7 +2059,9 @@ export class MultiSelect extends DropDownBase implements IInput {
             this.ulElement = this.mainList;
         }
         this.checkPlaceholderSize();
-        Input.createSpanElement(this.overAllWrapper, this.createElement);
+        if (this.element.querySelector('.e-multiselect .e-float-text-content') === null) {
+            Input.createSpanElement(this.overAllWrapper, this.createElement);
+        }
         this.calculateWidth();
         if (!isNullOrUndefined(this.overAllWrapper) && !isNullOrUndefined(this.overAllWrapper.getElementsByClassName('e-ddl-icon')[0] &&
           this.overAllWrapper.getElementsByClassName('e-float-text-content')[0] && this.floatLabelType !== 'Never')) {
@@ -3180,11 +3185,22 @@ export class MultiSelect extends DropDownBase implements IInput {
     }
     private removeChipSelection(): void {
         if (this.chipCollectionWrapper) {
+            const selectedChips :  NodeListOf<Element> = <NodeListOf<HTMLElement>>
+            this.chipCollectionWrapper.querySelectorAll('span.' + CHIP + '.' + CHIP_SELECTED);
+            if (selectedChips && selectedChips.length > 0)
+            {
+                for (let i: number = 0; i < selectedChips.length; i++) {
+                    (<HTMLElement>selectedChips[i as number]).removeAttribute('aria-live');
+                }
+            }
             this.removeChipFocus();
         }
     }
     private addChipSelection(element: Element, e?: MouseEvent | KeyboardEventArgs): void {
         addClass([element], CHIP_SELECTED);
+        if (element) {
+            element.setAttribute('aria-live', 'polite');
+        }
         this.trigger('chipSelection', e);
     }
     private getVirtualDataByValue(value: string | number | boolean | object)
@@ -3257,7 +3273,9 @@ export class MultiSelect extends DropDownBase implements IInput {
             }
         } else {
             this.setFloatLabelType();
-            Input.createSpanElement(this.overAllWrapper, this.createElement);
+            if (this.element.querySelector('.e-multiselect .e-float-text-content') === null) {
+                Input.createSpanElement(this.overAllWrapper, this.createElement);
+            }
         }
         this.expandTextbox();
     }
@@ -3384,6 +3402,9 @@ export class MultiSelect extends DropDownBase implements IInput {
                         const collection: NodeListOf<Element> = <NodeListOf<HTMLElement>>this.list.querySelectorAll('li.'
                             + dropDownBaseClasses.li + ':not(.e-active)');
                         removeClass(collection, 'e-disable');
+                        const mainListCollection: NodeListOf<Element> = <NodeListOf<HTMLElement>>this.mainList.querySelectorAll('li.'
+                            + dropDownBaseClasses.li + ':not(.e-active)');
+                        removeClass(mainListCollection, 'e-disable');
                     }
                     this.trigger('removed', eventArgs);
                     const targetEle: HTMLElement = eve && eve.currentTarget as HTMLElement;
@@ -3683,7 +3704,7 @@ export class MultiSelect extends DropDownBase implements IInput {
         let itemData: { [key: string]: Object } | string | boolean | number = { text: value, value: value };
         const chip: HTMLElement = this.createElement('span', {
             className: CHIP,
-            attrs: { 'data-value': <string>value, 'title': data }
+            attrs: { 'data-value': <string>value, 'title': data , 'role': 'option', 'aria-selected': 'true'}
         });
         let compiledString: Function;
         const chipContent: HTMLElement = this.createElement('span', { className: CHIP_CONTENT });
@@ -4112,7 +4133,9 @@ export class MultiSelect extends DropDownBase implements IInput {
                 this.clearAllCallback(e);
             }
             this.checkAndResetCache();
-            Input.createSpanElement(this.overAllWrapper, this.createElement);
+            if (this.element.querySelector('.e-multiselect .e-float-text-content') === null) {
+                Input.createSpanElement(this.overAllWrapper, this.createElement);
+            }
             this.calculateWidth();
             if (!isNullOrUndefined(this.overAllWrapper) && !isNullOrUndefined(this.overAllWrapper.getElementsByClassName('e-ddl-icon')[0] && this.overAllWrapper.getElementsByClassName('e-float-text-content')[0] && this.floatLabelType !== 'Never')) {
                 this.overAllWrapper.getElementsByClassName('e-float-text-content')[0].classList.add('e-icon');
@@ -4875,6 +4898,11 @@ export class MultiSelect extends DropDownBase implements IInput {
             removeClass(selectedItems, className);
             while (temp > 0) {
                 selectedItems[temp - 1].setAttribute('aria-selected', 'false');
+                if (this.mode === 'CheckBox') {
+                    if (selectedItems && (selectedItems.length > (temp - 1))) {
+                        removeClass([selectedItems[temp - 1].firstElementChild.lastElementChild], 'e-check');
+                    }
+                }
                 temp--;
             }
         }
@@ -6129,7 +6157,9 @@ export class MultiSelect extends DropDownBase implements IInput {
             case 'floatLabelType':
                 this.setFloatLabelType();
                 this.addValidInputClass();
-                Input.createSpanElement(this.overAllWrapper, this.createElement);
+                if (this.element.querySelector('.e-multiselect .e-float-text-content') === null) {
+                    Input.createSpanElement(this.overAllWrapper, this.createElement);
+                }
                 this.calculateWidth();
                 if (!isNullOrUndefined(this.overAllWrapper) &&
                     !isNullOrUndefined(this.overAllWrapper.getElementsByClassName('e-ddl-icon')[0] &&
@@ -6587,6 +6617,22 @@ export class MultiSelect extends DropDownBase implements IInput {
         } else {
             this.setProperties({value: null}, true);
         }
+        this.checkAndResetCache();
+        if (this.enableVirtualization) {
+            this.updateInitialData();
+            if (this.chipCollectionWrapper) {
+                this.chipCollectionWrapper.innerHTML = '';
+            }
+            if (!this.isCustomDataUpdated) {
+                this.notify('setGeneratedData', {
+                    module: 'VirtualScroll'
+                });
+            }
+            this.list.scrollTop = 0;
+            this.virtualListInfo = null;
+            this.previousStartIndex = 0;
+            this.previousEndIndex = this.itemCount;
+        }
     }
     /**
      * To Initialize the control rendering
@@ -6726,7 +6772,9 @@ export class MultiSelect extends DropDownBase implements IInput {
         if (this.element.hasAttribute('data-val')) {
             this.element.setAttribute('data-val', 'false');
         }
-        Input.createSpanElement(this.overAllWrapper, this.createElement);
+        if (this.element.querySelector('.e-multiselect .e-float-text-content') === null) {
+            Input.createSpanElement(this.overAllWrapper, this.createElement);
+        }
         this.calculateWidth();
         if (!isNullOrUndefined(this.overAllWrapper) && !isNullOrUndefined(this.overAllWrapper.getElementsByClassName('e-ddl-icon')[0] &&
             this.overAllWrapper.getElementsByClassName('e-float-text-content')[0] && this.floatLabelType !== 'Never')) {

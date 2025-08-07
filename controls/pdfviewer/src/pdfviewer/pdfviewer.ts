@@ -114,7 +114,7 @@ import { PdfViewerUtils, PdfiumTaskScheduler, TaskPriorityLevel } from './base/p
  */
 export class ToolbarSettings extends ChildProperty<ToolbarSettings> {
     /**
-     * Enable or disables the toolbar of PdfViewer.
+     * Enable or disables the tooltip of the toolbars.
      */
     @Property(true)
     public showTooltip: boolean;
@@ -290,6 +290,7 @@ export class CustomStamp extends ChildProperty<CustomStamp> {
  *          "HighlightTool",
  *          "UnderlineTool",
  *          "StrikethroughTool",
+ *          "SquigglyTool",
  *          "ColorEditTool",
  *          "OpacityEditTool",
  *          "AnnotationDeleteTool",
@@ -377,6 +378,7 @@ export class FormDesignerToolbarSettings extends ChildProperty<FormDesignerToolb
  *  let viewer: PdfViewer = new PdfViewer();
  *  // Change the signature field settings.
  *  viewer.signatureFieldSettings = {
+ *      bounds: {x:0, y:0, width:0, height:0},
  *      name: "",
  *      isReadOnly: true,
  *      visibility: "visible",
@@ -384,6 +386,7 @@ export class FormDesignerToolbarSettings extends ChildProperty<FormDesignerToolb
  *      isPrint: false,
  *      tooltip: "",
  *      thickness: 1,
+ *      pageNumber: 0,
  *      signatureIndicatorSettings: {
  *          opacity: 1,
  *          backgroundColor: "orange",
@@ -396,7 +399,9 @@ export class FormDesignerToolbarSettings extends ChildProperty<FormDesignerToolb
  *      signatureDialogSettings: {
  *          displayMode: DisplayMode.Draw | DisplayMode.Text | DisplayMode.Upload,
  *          hideSaveSignature: false
- *      }
+ *      },
+ *      customData: null,
+ *      typeSignatureFonts: ['arial']
  *  };
  *  viewer.appendTo("#pdfViewer");
  * ```
@@ -493,6 +498,7 @@ export class SignatureFieldSettings extends ChildProperty<SignatureFieldSettings
  *  let viewer: PdfViewer = new PdfViewer();
  *  // Changes the initial field settings.
  *  viewer.initialFieldSettings = {
+ *      bounds: {x:0, y:0, width:0, height:0},
  *      name: "",
  *      isReadOnly: true,
  *      visibility: "visible",
@@ -500,6 +506,8 @@ export class SignatureFieldSettings extends ChildProperty<SignatureFieldSettings
  *      isPrint: true,
  *      tooltip: "",
  *      thickness: 1,
+ *      pageNumber: 0,
+ *      isInitialField: false,
  *      initialIndicatorSettings: {
  *          opacity: 1,
  *          backgroundColor: "orange",
@@ -512,7 +520,9 @@ export class SignatureFieldSettings extends ChildProperty<SignatureFieldSettings
  *      initialDialogSettings: {
  *         displayMode: DisplayMode.Draw | DisplayMode.Text | DisplayMode.Upload,
  *          hideSaveSignature: false
- *      }
+ *      },
+ *      customData: null,
+ *      typeInitialFonts: ['arial']
  *  };
  *  viewer.appendTo("#pdfViewer");
  * ```
@@ -758,7 +768,7 @@ export class ServerActionSettings extends ChildProperty<ServerActionSettings> {
     /**
      * specifies the print action of PdfViewer.
      */
-    @Property('RenderPdfPages')
+    @Property('Print')
     public print: string;
 
     /**
@@ -768,7 +778,7 @@ export class ServerActionSettings extends ChildProperty<ServerActionSettings> {
     public download: string;
 
     /**
-     * specifies the download action of PdfViewer.
+     * specifies the render thumbnail action of PdfViewer.
      */
     @Property('RenderThumbnailImages')
     public renderThumbnail: string;
@@ -792,19 +802,19 @@ export class ServerActionSettings extends ChildProperty<ServerActionSettings> {
     public exportAnnotations: string;
 
     /**
-     * specifies the imports action of PdfViewer.
+     * specifies the imports form fields action of PdfViewer.
      */
     @Property('ImportFormFields')
     public importFormFields: string;
 
     /**
-     * specifies the export action of PdfViewer.
+     * specifies the export form fields action of PdfViewer.
      */
     @Property('ExportFormFields')
     public exportFormFields: string;
 
     /**
-     * specifies the export action of PdfViewer.
+     * specifies the render pdf texts action of PdfViewer.
      */
     @Property('RenderPdfTexts')
     public renderTexts: string;
@@ -827,6 +837,8 @@ export class ServerActionSettings extends ChildProperty<ServerActionSettings> {
  *  let viewer: PdfViewer = new PdfViewer();
  *  // Change the strike through annotation settings.
  *  viewer.strikethroughSettings = {
+ *      pageNumber: 1,
+ *      bounds: [],
  *      opacity: 1,
  *      color: '#ff0000',
  *      author: 'Guest',
@@ -840,11 +852,13 @@ export class ServerActionSettings extends ChildProperty<ServerActionSettings> {
  *          selectorLineDashArray: [],
  *          resizerLocation: AnnotationResizerLocation.Corners | AnnotationResizerLocation.Edges
  *      },
+ *      customData: null,
  *      isLock: false,
  *      enableMultiPageAnnotation: false,
  *      enableTextMarkupResizer: false,
  *      allowedInteractions: ['None'],
- *      isPrint: true
+ *      isPrint: true,
+ *      subject: ''
  *  };
  *  viewer.appendTo("#pdfViewer");
  * ```
@@ -949,6 +963,8 @@ export class StrikethroughSettings extends ChildProperty<StrikethroughSettings> 
  *  let viewer: PdfViewer = new PdfViewer();
  *  // Change the squiggly annotation settings.
  *  viewer.squigglySettings = {
+ *      pageNumber: 1,
+ *      bounds: [],
  *      opacity: 1,
  *      color: '#ff0000',
  *      author: 'Guest',
@@ -962,11 +978,13 @@ export class StrikethroughSettings extends ChildProperty<StrikethroughSettings> 
  *          selectorLineDashArray: [],
  *          resizerLocation: AnnotationResizerLocation.Corners | AnnotationResizerLocation.Edges
  *      },
+ *      customData: null,
  *      isLock: false,
  *      enableMultiPageAnnotation: false,
  *      enableTextMarkupResizer: false,
  *      allowedInteractions: ['None'],
- *      isPrint: true
+ *      isPrint: true,
+ *      subject: ''
  *  };
  *  viewer.appendTo("#pdfViewer");
  * ```
@@ -1071,6 +1089,8 @@ export class SquigglySettings extends ChildProperty<SquigglySettings> {
  *  let viewer: PdfViewer = new PdfViewer();
  *  // Change the underline annotation settings.
  *  viewer.underlineSettings = {
+ *      pageNumber: 1,
+ *      bounds: [],
  *      opacity: 1,
  *      color: '#9c2592',
  *      author: 'Guest',
@@ -1084,11 +1104,13 @@ export class SquigglySettings extends ChildProperty<SquigglySettings> {
  *          selectorLineDashArray: [],
  *          resizerLocation: AnnotationResizerLocation.Corners | AnnotationResizerLocation.Edges
  *      },
+ *      customData: null,
  *      isLock: false,
  *      enableMultiPageAnnotation: false,
  *      enableTextMarkupResizer: false,
  *      allowedInteractions: ['None'],
- *      isPrint: true
+ *      isPrint: true,
+ *      subject: ''
  *  };
  *  viewer.appendTo("#pdfViewer");
  * ```
@@ -1193,6 +1215,8 @@ export class UnderlineSettings extends ChildProperty<UnderlineSettings> {
  *  let viewer: PdfViewer = new PdfViewer();
  *  // Change the highlight annotation settings.
  *  viewer.highlightSettings = {
+ *      pageNumber: 1,
+ *      bounds: [],
  *      opacity: 1,
  *      color: '#ff0000',
  *      author: 'Guest',
@@ -1206,11 +1230,13 @@ export class UnderlineSettings extends ChildProperty<UnderlineSettings> {
  *          selectorLineDashArray: [],
  *          resizerLocation: AnnotationResizerLocation.Corners | AnnotationResizerLocation.Edges
  *      },
+ *      customData: null,
  *      isLock: false,
  *      enableMultiPageAnnotation: false,
  *      enableTextMarkupResizer: false,
  *      allowedInteractions: ['None'],
- *      isPrint: true
+ *      isPrint: true,
+ *      subject: ''
  *  };
  *  viewer.appendTo("#pdfViewer");
  * ```
@@ -1315,9 +1341,17 @@ export class HighlightSettings extends ChildProperty<HighlightSettings> {
  *  let viewer: PdfViewer = new PdfViewer();
  *  // Change the line annotation settings.
  *  viewer.lineSettings = {
+ *      offset: { x:0, y:0 },
+ *      pageNumber: 1,
+ *      vertexPoints: [],
  *      opacity: 1,
- *      color: '#9c2592',
+ *      fillColor: 'ffffff00',
+ *      strokeColor: '#ff0000',
  *      author: 'Guest',
+ *      thickness: 1,
+ *      lineHeadStartStyle: 'None',
+ *      lineHeadEndStyle: 'None',
+ *      borderDashArray: 0,
  *      annotationSelectorSettings: {
  *          selectionBorderColor: '',
  *          resizerBorderColor: 'black',
@@ -1328,11 +1362,15 @@ export class HighlightSettings extends ChildProperty<HighlightSettings> {
  *          selectorLineDashArray: [],
  *          resizerLocation: AnnotationResizerLocation.Corners | AnnotationResizerLocation.Edges
  *      },
+ *      minHeight: 0,
+ *      minWidth: 0,
+ *      maxHeight: 0,
+ *      maxWidth: 0,
  *      isLock: false,
- *      enableMultiPageAnnotation: false,
- *      enableTextMarkupResizer: false,
+ *      customData: null,
  *      allowedInteractions: ['None'],
- *      isPrint: true
+ *      isPrint: true,
+ *      subject: ''
  *  };
  *  viewer.appendTo("#pdfViewer");
  * ```
@@ -1401,7 +1439,7 @@ export class LineSettings extends ChildProperty<LineSettings> {
     public lineHeadEndStyle: LineHeadStyle;
 
     /**
-     * specifies the border dash array  of the annotation.
+     * specifies the border dash array of the annotation.
      */
     @Property(0)
     public borderDashArray: number;
@@ -1425,7 +1463,7 @@ export class LineSettings extends ChildProperty<LineSettings> {
     public minWidth: number;
 
     /**
-     * specifies the minHeight of the annotation.
+     * specifies the maxHeight of the annotation.
      */
     @Property(0)
     public maxHeight: number;
@@ -1449,7 +1487,7 @@ export class LineSettings extends ChildProperty<LineSettings> {
     public customData: object;
 
     /**
-     * Gets or sets the allowed interactions for the locked highlight annotations.
+     * Gets or sets the allowed interactions for the locked line annotations.
      * IsLock can be configured using line settings.
      *
      * @default ['None']
@@ -1480,6 +1518,9 @@ export class LineSettings extends ChildProperty<LineSettings> {
  *  let viewer: PdfViewer = new PdfViewer();
  *  // Change the arrow annotation settings.
  *  viewer.arrowSettings = {
+ *      offset: { x:0, y:0 },
+ *      pageNumber: 1,
+ *      vertexPoints: [],
  *      opacity: 1,
  *      fillColor: '#9c2592',
  *      strokeColor: '#ff0000',
@@ -1504,8 +1545,10 @@ export class LineSettings extends ChildProperty<LineSettings> {
  *      maxWidth: 0,
  *      maxHeight: 0,
  *      isLock: false,
+ *      customData: null,
  *      allowedInteractions: ['None'],
- *      isPrint: true
+ *      isPrint: true,
+ *      subject: ''
  *  };
  *  viewer.appendTo("#pdfViewer");
  * ```
@@ -1568,13 +1611,13 @@ export class ArrowSettings extends ChildProperty<ArrowSettings> {
     public lineHeadStartStyle: LineHeadStyle;
 
     /**
-     * specifies the line head start style of the annotation.
+     * specifies the line head end style of the annotation.
      */
     @Property('None')
     public lineHeadEndStyle: LineHeadStyle;
 
     /**
-     * specifies the border dash array  of the annotation.
+     * specifies the border dash array of the annotation.
      */
     @Property(0)
     public borderDashArray: number;
@@ -1598,7 +1641,7 @@ export class ArrowSettings extends ChildProperty<ArrowSettings> {
     public minWidth: number;
 
     /**
-     * specifies the minHeight of the annotation.
+     * specifies the maxHeight of the annotation.
      */
     @Property(0)
     public maxHeight: number;
@@ -1653,6 +1696,10 @@ export class ArrowSettings extends ChildProperty<ArrowSettings> {
  *  let viewer: PdfViewer = new PdfViewer();
  *  // Change the rectangle annotation settings.
  *  viewer.rectangleSettings = {
+ *      offset: { x:0, y:0 },
+ *      pageNumber: 1,
+ *      width: 100,
+ *      height: 50,
  *      opacity: 1,
  *      fillColor: '#9c2592',
  *      strokeColor: '#ff0000',
@@ -1674,8 +1721,10 @@ export class ArrowSettings extends ChildProperty<ArrowSettings> {
  *      maxWidth: 0,
  *      maxHeight: 0,
  *      isLock: false,
+ *      customData: null,
  *      allowedInteractions: ['None'],
- *      isPrint: true
+ *      isPrint: true,
+ *      subject: ''
  *  };
  *  viewer.appendTo("#pdfViewer");
  * ```
@@ -1755,7 +1804,7 @@ export class RectangleSettings extends ChildProperty<RectangleSettings> {
     public minWidth: number;
 
     /**
-     * specifies the minHeight of the annotation.
+     * specifies the maxHeight of the annotation.
      */
     @Property(0)
     public maxHeight: number;
@@ -1810,6 +1859,10 @@ export class RectangleSettings extends ChildProperty<RectangleSettings> {
  *  let viewer: PdfViewer = new PdfViewer();
  *  // Change the circle annotation settings.
  *  viewer.circleSettings = {
+ *      offset: { x:0, y:0 },
+ *      pageNumber: 1,
+ *      width: 100,
+ *      height: 100,
  *      opacity: 1,
  *      fillColor: '#9c2592',
  *      strokeColor: '#ff0000',
@@ -1831,8 +1884,10 @@ export class RectangleSettings extends ChildProperty<RectangleSettings> {
  *      maxWidth: 0,
  *      maxHeight: 0,
  *      isLock: false,
+ *      customData: null,
  *      allowedInteractions: ['None'],
- *      isPrint: true
+ *      isPrint: true,
+ *      subject: ''
  *  };
  *  viewer.appendTo("#pdfViewer");
  * ```
@@ -1912,7 +1967,7 @@ export class CircleSettings extends ChildProperty<CircleSettings> {
     public minWidth: number;
 
     /**
-     * specifies the minHeight of the annotation.
+     * specifies the maxHeight of the annotation.
      */
     @Property(0)
     public maxHeight: number;
@@ -1969,12 +2024,11 @@ export class CircleSettings extends ChildProperty<CircleSettings> {
  *  viewer.shapeLabelSettings = {
  *      opacity: 1,
  *      fillColor: '#9c2592',
- *      borderColor: '#ff0000',
  *      fontColor: '#000',
  *      fontSize: 16,
- *      labelHeight: 24.6,
- *      labelMaxWidth: 151,
- *      labelContent: 'Label'
+ *      fontFamily: 'Helvetica'
+ *      labelContent: 'Label',
+ *      notes: ''
  *  };
  *  viewer.appendTo("#pdfViewer");
  * ```
@@ -1994,7 +2048,7 @@ export class ShapeLabelSettings extends ChildProperty<ShapeLabelSettings> {
     public fillColor: string;
 
     /**
-     * specifies the border color of the label.
+     * specifies the font color of the label.
      */
     @Property('#000')
     public fontColor: string;
@@ -2004,7 +2058,7 @@ export class ShapeLabelSettings extends ChildProperty<ShapeLabelSettings> {
     @Property(16)
     public fontSize: number;
     /**
-     * specifies the max-width of the label.
+     * specifies the font family of the label.
      */
     @Property('Helvetica')
     public fontFamily: string;
@@ -2030,6 +2084,9 @@ export class ShapeLabelSettings extends ChildProperty<ShapeLabelSettings> {
  *  let viewer: PdfViewer = new PdfViewer();
  *  // Change the polygon annotation settings.
  *  viewer.polygonSettings = {
+ *      offset: { x:0, y:0 },
+ *      pageNumber: 1,
+ *      vertexPoints: [],
  *      opacity: 1,
  *      fillColor: '#4070FF',
  *      strokeColor: '#ff0000',
@@ -2051,8 +2108,10 @@ export class ShapeLabelSettings extends ChildProperty<ShapeLabelSettings> {
  *      maxWidth: 0,
  *      maxHeight: 0,
  *      isLock: false,
+ *      customData: null,
  *      allowedInteractions: ['None'],
- *      isPrint: true
+ *      isPrint: true,
+ *      subject: ''
  *  };
  *  viewer.appendTo("#pdfViewer");
  * ```
@@ -2127,7 +2186,7 @@ export class PolygonSettings extends ChildProperty<PolygonSettings> {
     public minWidth: number;
 
     /**
-     * specifies the minHeight of the annotation.
+     * specifies the maxHeight of the annotation.
      */
     @Property(0)
     public maxHeight: number;
@@ -2182,6 +2241,10 @@ export class PolygonSettings extends ChildProperty<PolygonSettings> {
  *  let viewer: PdfViewer = new PdfViewer();
  *  // Change the stamp annotation settings.
  *  viewer.stampSettings = {
+ *      offset: { x:0, y:0 },
+ *      pageNumber: 1,
+ *      width: 150,
+ *      height: 50,
  *      opacity: 1,
  *      author: 'Guest',
  *      annotationSelectorSettings: {
@@ -2200,6 +2263,7 @@ export class PolygonSettings extends ChildProperty<PolygonSettings> {
  *      maxWidth: 0,
  *      maxHeight: 0,
  *      isLock: false,
+ *      customData: null,
  *      dynamicStamps: [
  *          DynamicStampItem.Revised,
  *          DynamicStampItem.Reviewed,
@@ -2230,7 +2294,8 @@ export class PolygonSettings extends ChildProperty<PolygonSettings> {
  *          StandardBusinessStampItem.InformationOnly
  *      ],
  *      allowedInteractions: ['None'],
- *      isPrint: true
+ *      isPrint: true,
+ *      subject: ''
  *  };
  *  viewer.appendTo("#pdfViewer");
  * ```
@@ -2292,7 +2357,7 @@ export class StampSettings extends ChildProperty<StampSettings> {
     public minWidth: number;
 
     /**
-     * specifies the minHeight of the annotation.
+     * specifies the maxHeight of the annotation.
      */
     @Property(0)
     public maxHeight: number;
@@ -2366,20 +2431,25 @@ export class StampSettings extends ChildProperty<StampSettings> {
  *  let viewer: PdfViewer = new PdfViewer();
  *  // Change the custom stamp annotation settings.
  *  viewer.customStampSettings = {
+ *      offset: { x:0, y:0 },
+ *      pageNumber: 1,
  *      opacity: 1,
  *      author: 'Guest',
  *      width: 0,
  *      height: 0,
  *      left: 0,
  *      top: 0,
+ *      isAddToMenu: false,
  *      minHeight: 0,
  *      minWidth: 0,
  *      maxWidth: 0,
  *      maxHeight: 0,
  *      isLock: false,
+ *      customStamps: '',
  *      enableCustomStamp: true,
  *      allowedInteractions: ['None'],
- *      isPrint: true
+ *      isPrint: true,
+ *      subject: ''
  *  };
  *  viewer.appendTo("#pdfViewer");
  * ```
@@ -2451,7 +2521,7 @@ export class CustomStampSettings extends ChildProperty<CustomStampSettings> {
     public minWidth: number;
 
     /**
-     * specifies the minHeight of the annotation.
+     * specifies the maxHeight of the annotation.
      */
     @Property(0)
     public maxHeight: number;
@@ -2514,6 +2584,9 @@ export class CustomStampSettings extends ChildProperty<CustomStampSettings> {
  *  let viewer: PdfViewer = new PdfViewer();
  *  // Change the distance annotation settings.
  *  viewer.distanceSettings = {
+ *      offset: { x:0, y:0 },
+ *      pageNumber: 1,
+ *      vertexPoints: [],
  *      opacity: 1,
  *      fillColor: '#4070FF',
  *      strokeColor: '#ff0000',
@@ -2538,10 +2611,12 @@ export class CustomStampSettings extends ChildProperty<CustomStampSettings> {
  *      maxWidth: 0,
  *      maxHeight: 0,
  *      isLock: false,
+ *      customData: null,
  *      leaderLength: 40,
  *      resizeCursorType: CursorType.move,
  *      allowedInteractions: ['None'],
- *      isPrint: true
+ *      isPrint: true,
+ *      subject: ''
  *  };
  *  viewer.appendTo("#pdfViewer");
  * ```
@@ -2604,13 +2679,13 @@ export class DistanceSettings extends ChildProperty<DistanceSettings> {
     public lineHeadStartStyle: LineHeadStyle;
 
     /**
-     * specifies the line head start style of the annotation.
+     * specifies the line head end style of the annotation.
      */
     @Property('None')
     public lineHeadEndStyle: LineHeadStyle;
 
     /**
-     * specifies the border dash array  of the annotation.
+     * specifies the border dash array of the annotation.
      */
     @Property(0)
     public borderDashArray: number;
@@ -2634,7 +2709,7 @@ export class DistanceSettings extends ChildProperty<DistanceSettings> {
     public minWidth: number;
 
     /**
-     * specifies the minHeight of the annotation.
+     * specifies the maxHeight of the annotation.
      */
     @Property(0)
     public maxHeight: number;
@@ -2700,6 +2775,9 @@ export class DistanceSettings extends ChildProperty<DistanceSettings> {
  *  let viewer: PdfViewer = new PdfViewer();
  *  // Change the perimeter annotation settings.
  *  viewer.perimeterSettings = {
+ *      offset: { x:0, y:0 },
+ *      pageNumber: 1,
+ *      vertexPoints: [],
  *      opacity: 1,
  *      fillColor: '#4070FF',
  *      strokeColor: '#ff0000',
@@ -2724,7 +2802,8 @@ export class DistanceSettings extends ChildProperty<DistanceSettings> {
  *          resizerCursorType: null
  *      },
  *      allowedInteractions: ['None'],
- *      isPrint: true
+ *      isPrint: true,
+ *      subject: ''
  *  };
  *  viewer.appendTo("#pdfViewer");
  * ```
@@ -2787,13 +2866,13 @@ export class PerimeterSettings extends ChildProperty<PerimeterSettings> {
     public lineHeadStartStyle: LineHeadStyle;
 
     /**
-     * specifies the line head start style of the annotation.
+     * specifies the line head end style of the annotation.
      */
     @Property('None')
     public lineHeadEndStyle: LineHeadStyle;
 
     /**
-     * specifies the border dash array  of the annotation.
+     * specifies the border dash array of the annotation.
      */
     @Property(0)
     public borderDashArray: number;
@@ -2811,7 +2890,7 @@ export class PerimeterSettings extends ChildProperty<PerimeterSettings> {
     public minWidth: number;
 
     /**
-     * specifies the minHeight of the annotation.
+     * specifies the maxHeight of the annotation.
      */
     @Property(0)
     public maxHeight: number;
@@ -2866,6 +2945,9 @@ export class PerimeterSettings extends ChildProperty<PerimeterSettings> {
  *  let viewer: PdfViewer = new PdfViewer();
  *  // Change the area annotation settings.
  *  viewer.areaSettings = {
+ *      offset: { x:0, y:0 },
+ *      pageNumber: 1,
+ *      vertexPoints: [],
  *      opacity: 1,
  *      fillColor: '#4070FF',
  *      strokeColor: '#ff0000',
@@ -2888,7 +2970,8 @@ export class PerimeterSettings extends ChildProperty<PerimeterSettings> {
  *          resizerCursorType: null
  *      },
  *      allowedInteractions: ['None'],
- *      isPrint: true
+ *      isPrint: true,
+ *      subject: ''
  *  };
  *  viewer.appendTo("#pdfViewer");
  * ```
@@ -2957,7 +3040,7 @@ export class AreaSettings extends ChildProperty<AreaSettings> {
     public minWidth: number;
 
     /**
-     * specifies the minHeight of the annotation.
+     * specifies the maxHeight of the annotation.
      */
     @Property(0)
     public maxHeight: number;
@@ -3012,6 +3095,10 @@ export class AreaSettings extends ChildProperty<AreaSettings> {
  *  let viewer: PdfViewer = new PdfViewer();
  *  // Change the radius annotation settings.
  *  viewer.radiusSettings = {
+ *      offset: { x:0, y:0 },
+ *      pageNumber: 1,
+ *      width: 100,
+ *      height: 90,
  *      opacity: 1,
  *      fillColor: '#4070FF',
  *      strokeColor: '#ff0000',
@@ -3033,8 +3120,10 @@ export class AreaSettings extends ChildProperty<AreaSettings> {
  *      maxWidth: 0,
  *      maxHeight: 0,
  *      isLock: false,
+ *      customData: null,
  *      allowedInteractions: ['None'],
- *      isPrint: true
+ *      isPrint: true,
+ *      subject: ''
  *  };
  *  viewer.appendTo("#pdfViewer");
  * ```
@@ -3114,7 +3203,7 @@ export class RadiusSettings extends ChildProperty<RadiusSettings> {
     public minWidth: number;
 
     /**
-     * specifies the minHeight of the annotation.
+     * specifies the maxHeight of the annotation.
      */
     @Property(0)
     public maxHeight: number;
@@ -3169,6 +3258,9 @@ export class RadiusSettings extends ChildProperty<RadiusSettings> {
  *  let viewer: PdfViewer = new PdfViewer();
  *  // Change the volume annotation settings.
  *  viewer.volumeSettings = {
+ *      offset: { x:0, y:0 },
+ *      pageNumber: 1,
+ *      vertexPoints: [],
  *      opacity: 1,
  *      fillColor: '#4070FF',
  *      strokeColor: '#ff0000',
@@ -3191,7 +3283,8 @@ export class RadiusSettings extends ChildProperty<RadiusSettings> {
  *          resizerCursorType: null
  *      },
  *      allowedInteractions: ['None'],
- *      isPrint: true
+ *      isPrint: true,
+ *      subject: ''
  *  };
  *  viewer.appendTo("#pdfViewer");
  * ```
@@ -3260,7 +3353,7 @@ export class VolumeSettings extends ChildProperty<VolumeSettings> {
     public minWidth: number;
 
     /**
-     * specifies the minHeight of the annotation.
+     * specifies the maxHeight of the annotation.
      */
     @Property(0)
     public maxHeight: number;
@@ -3314,6 +3407,11 @@ export class VolumeSettings extends ChildProperty<VolumeSettings> {
  *  let viewer: PdfViewer = new PdfViewer();
  *  // Change the ink annotation settings.
  *  viewer.inkAnnotationSettings = {
+ *      offset: { x:0, y:0 },
+ *      pageNumber: 1,
+ *      width: 0,
+ *      height: 0,
+ *      path: '',
  *      author: 'Guest',
  *      opacity: 1,
  *      strokeColor: '#ff0000',
@@ -3330,8 +3428,10 @@ export class VolumeSettings extends ChildProperty<VolumeSettings> {
  *          resizerCursorType: null
  *      },
  *      isLock: false,
+ *      customData: null
  *      allowedInteractions: ['None'],
- *      isPrint: true
+ *      isPrint: true,
+ *      subject: ''
  *  };
  *  viewer.appendTo("#pdfViewer");
  * ```
@@ -3441,6 +3541,8 @@ export class InkAnnotationSettings extends ChildProperty<InkAnnotationSettings> 
  *  let viewer: PdfViewer = new PdfViewer();
  *  // Change the sticky notes annotation settings.
  *  viewer.stickyNotesSettings = {
+ *      offset: { x:0, y:0 },
+ *      pageNumber: 1,
  *      author: 'Guest',
  *      opacity: 1,
  *      annotationSelectorSettings: {
@@ -3455,8 +3557,10 @@ export class InkAnnotationSettings extends ChildProperty<InkAnnotationSettings> 
  *          resizerCursorType: null
  *      },
  *      isLock: false,
+ *      customData: null,
  *      allowedInteractions: ['None'],
- *      isPrint: true
+ *      isPrint: true,
+ *      subject: ''
  *  };
  *  viewer.appendTo("#pdfViewer");
  * ```
@@ -3561,7 +3665,7 @@ export class MeasurementSettings extends ChildProperty<MeasurementSettings> {
     public conversionUnit: CalibrationUnit;
 
     /**
-     * specifies the unit of the annotation.
+     * specifies the unit of the annotation in UI.
      */
     @Property('in')
     public displayUnit: CalibrationUnit;
@@ -3583,17 +3687,21 @@ export class MeasurementSettings extends ChildProperty<MeasurementSettings> {
  *  let viewer: PdfViewer = new PdfViewer();
  *  // Change the free text annotation settings.
  *  viewer.freeTextSettings = {
+ *      offset: { x:0, y:0 },
+ *      pageNumber: 1,
  *      opacity: 1,
  *      fillColor: '#4070FF',
  *      borderColor: '#4070FF',
  *      author: 'Guest',
  *      borderWidth: 1,
+ *      borderStyle: 'solid',
  *      width: 151,
  *      fontSize: 16,
  *      height: 24.6,
  *      fontColor: '#000',
  *      fontFamily: 'Courier',
  *      defaultText: 'Type Here',
+ *      fontStyle: 'None',
  *      textAlignment: 'Right',
  *      fontStyle: FontStyle.Italic,
  *      allowTextOnly: false,
@@ -3613,10 +3721,12 @@ export class MeasurementSettings extends ChildProperty<MeasurementSettings> {
  *      maxWidth: 0,
  *      maxHeight: 0,
  *      isLock: false,
+ *      customData: null,
  *      allowedInteractions: ['None'],
  *      isPrint: true,
  *      isReadonly: false,
- *      enableAutoFit: false
+ *      enableAutoFit: false,
+ *      subject: ''
  *  };
  *  viewer.appendTo("#pdfViewer");
  * ```
@@ -3743,7 +3853,7 @@ export class FreeTextSettings extends ChildProperty<FreeTextSettings> {
     public minWidth: number;
 
     /**
-     * specifies the minHeight of the annotation.
+     * specifies the maxHeight of the annotation.
      */
     @Property(0)
     public maxHeight: number;
@@ -3980,6 +4090,11 @@ export class PageInfo extends ChildProperty<PageInfo> {
  *      width: 150,
  *      height: 100,
  *      thickness: 1,
+ *      offset: { x:0, y:0 },
+ *      pageNumber: 1,
+ *      fontFamily: 'Helvetica',
+ *      canSave: false,
+ *      typeSignatureFonts: ['arial']
  *      annotationSelectorSettings: {
  *          selectionBorderColor: '',
  *          resizerBorderColor: 'black',
@@ -4136,7 +4251,9 @@ export class HandWrittenSignatureSettings extends ChildProperty<HandWrittenSigna
  *      isLock: false,
  *      skipPrint: false,
  *      skipDownload: false,
- *      allowedInteractions: ['None']
+ *      customData: null,
+ *      allowedInteractions: ['None'],
+ *      subject: ''
  *  };
  *  viewer.appendTo("#pdfViewer");
  * ```
@@ -4162,7 +4279,7 @@ export class AnnotationSettings extends ChildProperty<AnnotationSettings> {
     public minWidth: number;
 
     /**
-     * specifies the minHeight of the annotation.
+     * specifies the maxHeight of the annotation.
      */
     @Property(0)
     public maxHeight: number;
@@ -4385,7 +4502,7 @@ export class FormField extends ChildProperty<FormField> {
     public isChecked: boolean;
 
     /**
-     * Specifies whether the radio button is in checked state or not.
+     * Specifies whether the radio button is in selected state or not.
      */
     @Property(false)
     public isSelected: boolean;
@@ -4636,10 +4753,12 @@ export class ContextMenuSettings extends ChildProperty<ContextMenuSettings> {
  *  let viewer: PdfViewer = new PdfViewer();
  *  // Change the text field settings.
  *  viewer.textFieldSettings = {
+ *      bounds: { x:0,y:0, width: 0, height: 0 },
  *      name: '',
  *      value: '',
  *      fontFamily: 'Courier',
  *      fontSize: 10,
+ *      pageNumber: 0,
  *      fontStyle: 'None',
  *      color: 'black',
  *      borderColor: 'black',
@@ -4652,7 +4771,8 @@ export class ContextMenuSettings extends ChildProperty<ContextMenuSettings> {
  *      isPrint: true,
  *      tooltip: '',
  *      thickness: 1,
- *      isMultiline: false
+ *      isMultiline: false,
+ *      customData: null
  *  };
  *  viewer.appendTo("#pdfViewer");
  * ```
@@ -4791,8 +4911,10 @@ export class TextFieldSettings extends ChildProperty<TextFieldSettings> {
  *  let viewer: PdfViewer = new PdfViewer();
  *  // Change the password field settings.
  *  viewer.passwordFieldSettings = {
+ *      bounds: { x:0,y:0, width: 0, height: 0 },
  *      name: '',
  *      value: '',
+ *      pageNumber: 0,
  *      fontFamily: 'Courier',
  *      fontSize: 10,
  *      fontStyle: 'None',
@@ -4806,7 +4928,8 @@ export class TextFieldSettings extends ChildProperty<TextFieldSettings> {
  *      isRequired: false,
  *      isPrint: true,
  *      tooltip: '',
- *      thickness: 1
+ *      thickness: 1,
+ *      customData: null
  *  };
  *  viewer.appendTo("#pdfViewer");
  * ```
@@ -4939,8 +5062,11 @@ export class PasswordFieldSettings extends ChildProperty<PasswordFieldSettings> 
  *  let viewer: PdfViewer = new PdfViewer();
  *  // Change the check box field settings.
  *  viewer.checkBoxFieldSettings = {
+ *      bounds: { x:0,y:0, width: 0, height: 0 },
  *      name: '',
+ *      value: '',
  *      isChecked: true,
+ *      pageNumber: 0,
  *      backgroundColor: 'white',
  *      isReadOnly: false,
  *      visibility: 'visible',
@@ -4948,7 +5074,8 @@ export class PasswordFieldSettings extends ChildProperty<PasswordFieldSettings> 
  *      tooltip: '',
  *      isRequired: false,
  *      thickness: 5,
- *      borderColor: 'black'
+ *      borderColor: 'black',
+ *      customData: null
  *  };
  *  viewer.appendTo("#pdfViewer");
  * ```
@@ -5052,7 +5179,10 @@ export class CheckBoxFieldSettings extends ChildProperty<CheckBoxFieldSettings> 
  *  let viewer: PdfViewer = new PdfViewer();
  *  // Change the radio button field settings.
  *  viewer.radioButtonFieldSettings = {
+ *      bounds: { x:0,y:0, width: 0, height: 0 },
  *      name: '',
+ *      value: '',
+ *      pageNumber: 0,
  *      isSelected: false,
  *      backgroundColor: 'white',
  *      isReadOnly: false,
@@ -5061,7 +5191,8 @@ export class CheckBoxFieldSettings extends ChildProperty<CheckBoxFieldSettings> 
  *      tooltip: '',
  *      isRequired: false,
  *      thickness: 1,
- *      borderColor: 'black'
+ *      borderColor: 'black',
+ *      customData: null
  *  };
  *  viewer.appendTo("#pdfViewer");
  * ```
@@ -5088,7 +5219,7 @@ export class RadioButtonFieldSettings extends ChildProperty<RadioButtonFieldSett
     public value: string;
 
     /**
-     * Specifies whether the radio button is in checked state or not.
+     * Specifies whether the radio button is in selected state or not.
      */
     @Property(false)
     public isSelected: boolean;
@@ -5164,16 +5295,25 @@ export class RadioButtonFieldSettings extends ChildProperty<RadioButtonFieldSett
  *  let viewer: PdfViewer = new PdfViewer();
  *  // Change the drop down field settings.
  *  viewer.DropdownFieldSettings = {
+ *      bounds: { x:0,y:0, width: 0, height: 0 },
  *      name: '',
- *      isSelected: false,
+ *      value: '',
+ *      fontFamily: 'Helvetica',
+ *      fontSize: 10,
+ *      pageNumber: 0,
+ *      fontStyle: 'None',
+ *      color: 'black',
  *      backgroundColor: 'white',
+ *      alignment: 'Left',
  *      isReadOnly: true,
  *      visibility: 'visible',
  *      isPrint: true,
  *      tooltip: '',
  *      isRequired: false,
+ *      options: '',
  *      thickness: 5,
- *      borderColor: 'blue'
+ *      borderColor: '303030',
+ *      customData: null
  *  };
  *  viewer.appendTo("#pdfViewer");
  * ```
@@ -5306,10 +5446,12 @@ export class DropdownFieldSettings extends ChildProperty<DropdownFieldSettings> 
  *  let viewer: PdfViewer = new PdfViewer();
  *  // Change the list box field settings.
  *  viewer.listBoxFieldSettings = {
+ *      bounds: { x:0,y:0, width: 0, height: 0 },
  *      name: '',
+ *      value: '',
  *      fontFamily: 'Courier',
  *      fontSize: 5,
- *      fontStyle: 'None',
+ *      pageNumber: 0,
  *      color: 'black',
  *      backgroundColor: 'white',
  *      alignment: 'Right',
@@ -6063,7 +6205,7 @@ export class PdfViewer extends Component<HTMLElement> implements INotifyProperty
 
     /**
      * Opens the annotation toolbar when the PDF document is loaded in the PDF Viewer control initially.
-     *
+     * @private
      * @deprecated This property renamed into "isAnnotationToolbarVisible"
      * @default false
      */
@@ -6082,8 +6224,8 @@ export class PdfViewer extends Component<HTMLElement> implements INotifyProperty
     public isAnnotationToolbarVisible: boolean;
 
     /**
-     * Opens the annotation toolbar when the PDF document is loaded in the PDF Viewer control initially
-     * and get the annotation Toolbar Visible status.
+     * Opens the form designer toolbar when the PDF document is loaded in the PDF Viewer control initially
+     * and get the form designer Toolbar Visible status.
      *
      * {% codeBlock src='pdfviewer/isFormDesignerToolbarVisible/index.md' %}{% endcodeBlock %}
      *
@@ -6152,7 +6294,7 @@ export class PdfViewer extends Component<HTMLElement> implements INotifyProperty
     public enableThumbnail: boolean;
 
     /**
-     * Enable or disable the page organizer in the PDF Viewer.
+     * add or remove the page organizer in the PDF Viewer.
      *
      * {% codeBlock src='pdfviewer/enablePageOrganizer/index.md' %}{% endcodeBlock %}
      *
@@ -6555,7 +6697,7 @@ export class PdfViewer extends Component<HTMLElement> implements INotifyProperty
     public enableStickyNotesAnnotation: boolean;
 
     /**
-     * Opens the annotation toolbar when the PDF document is loaded in the PDF Viewer control initially.
+     * Enable or disable the annotation toolbar and the PDF document is loaded with annotations in the PDF Viewer control initially.
      *
      * {% codeBlock src='pdfviewer/enableAnnotationToolbar/index.md' %}{% endcodeBlock %}
      *
@@ -6565,7 +6707,7 @@ export class PdfViewer extends Component<HTMLElement> implements INotifyProperty
     public enableAnnotationToolbar: boolean;
 
     /**
-     * Opens the form designer toolbar when the PDF document is loaded in the PDF Viewer control initially.
+     * Enable or disable the form designer toolbar and the PDF document is loaded with from fields in the PDF Viewer control initially.
      *
      * {% codeBlock src='pdfviewer/enableFormDesignerToolbar/index.md' %}{% endcodeBlock %}
      *
@@ -7847,7 +7989,7 @@ export class PdfViewer extends Component<HTMLElement> implements INotifyProperty
 
     /**
      * Triggers when the button is clicked.
-     *
+     * @private
      * @deprecated This property renamed into "formFieldClick"
      * @event buttonFieldClick
      * @blazorProperty 'ButtonFieldClick'
@@ -9501,11 +9643,11 @@ export class PdfViewer extends Component<HTMLElement> implements INotifyProperty
             }
             currentData.Bounds = bounds;
             const fontSize: number = bounds.height / 1.35;
-            const textWidth: number = this.formFieldsModule.getTextWidth(currentData.value, fontSize, currentData.FontFamily);
+            const textWidth: number = this.viewerBase.getTextWidth(currentData.value, fontSize, currentData.FontFamily);
             let widthRatio: number = 1;
             if (textWidth > bounds.width)
             {widthRatio = bounds.width / textWidth; }
-            currentData.FontSize = this.formFieldsModule.getFontSize(Math.floor((fontSize * widthRatio)));
+            currentData.FontSize = this.viewerBase.getFontSize(Math.floor((fontSize * widthRatio)));
         }
         else if (fieldValue.signatureType === 'Image') {
             bounds = this.formFieldsModule.getSignBounds(currentData.pageIndex, currentData.RotationAngle,

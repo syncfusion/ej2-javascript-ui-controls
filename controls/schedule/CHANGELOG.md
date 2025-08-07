@@ -8,6 +8,15 @@
 
 #### Bug fixes
 
+- `#I745472` - Fixed an issue where drag functionality was not working after being conditionally cancelled for multiple appointments.
+- `#I746809` - Resolved an issue where a script error occurred when closing the Quick Info popup that was customized using `quickInfoTemplates`.
+
+## 30.1.39 (2025-07-08)
+
+### Schedule
+
+#### Bug fixes
+
 - `#I739675` - The issue with the `maxDate` property preventing events from being displayed on the last date has been resolved.
 
 ## 30.1.38 (2025-07-02)

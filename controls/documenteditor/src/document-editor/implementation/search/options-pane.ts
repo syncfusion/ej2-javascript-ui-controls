@@ -1325,6 +1325,7 @@ export class OptionsPane {
                     this.onHeadingPane();
                     this.tabInstance.select(0);
                     this.isNavigationPane = false;
+                    this.isOptionsPaneShow = true;
                     return;
                 }
                 else {

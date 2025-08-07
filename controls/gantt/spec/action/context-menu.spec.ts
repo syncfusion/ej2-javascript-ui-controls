@@ -4628,7 +4628,6 @@ describe('CR:932689-When the context menu action is canceled, the added child re
     });
     it('Add record - Child', () => {
         ganttObj.actionBegin = function (args: any): void {
-            debugger;
             if(args.requestType == "beforeAdd"){
                 if (args.recordIndex != 1 && args.rowPosition == "Child") {
                     args.cancel = true;

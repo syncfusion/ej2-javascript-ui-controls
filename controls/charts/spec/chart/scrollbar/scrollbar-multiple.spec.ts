@@ -77,10 +77,11 @@ describe('Scrollbar Chart', () => {
                 let scrollEle = document.getElementById('container_scrollBar_svgprimaryXAxis');
                 expect(scrollEle.parentElement.id == 'container_scrollElement').toBe(true);
                 expect(scrollEle != null).toBe(true);
-                expect(scrollEle.getAttribute("width") == '816.5' || scrollEle.getAttribute("width") == '820.5').toBe(true);
+
+                expect(scrollEle.getAttribute("width") == '816.5' || scrollEle.getAttribute("width") == '870.5').toBe(true);
                 expect(scrollEle.getAttribute("height") == '16').toBe(true);
                 expect(scrollEle.style.top == '374.5px' || scrollEle.style.top == '378px').toBe(true);
-                expect(scrollEle.style.left == '73.5px' || scrollEle.style.left == '69.5px').toBe(true);
+                expect(scrollEle.style.left == '73.5px' || scrollEle.style.left == '44.5px').toBe(true);
                 done();
             };
             chartObj.loaded = loaded;
@@ -96,7 +97,7 @@ describe('Scrollbar Chart', () => {
                 trigger.draganddropEvent(ele, 200, 200, 350, 350);
                 let svgChildEleX: Element = document.getElementById('container_scrollBar_svgprimaryXAxis').children[0];
                 let thumbRectEleX: Element = svgChildEleX.children[1].children[0];
-                expect(parseInt(thumbRectEleX.getAttribute('x'), 10) === 158
+                expect(parseInt(thumbRectEleX.getAttribute('x'), 10) === 183
                     || parseInt(thumbRectEleX.getAttribute('x'), 10) === 160
                     || parseInt(thumbRectEleX.getAttribute('x'), 10) === 161).toBe(true);   
                 expect(thumbRectEleX.getAttribute('y') === '0').toBe(true);
@@ -120,7 +121,7 @@ describe('Scrollbar Chart', () => {
                 let svgChildEleX: Element = document.getElementById('container_scrollBar_svgprimaryXAxis').children[0];
                 let thumbRectEleX: Element = svgChildEleX.children[1].children[0];
                 let xAxisThumbX: string = thumbRectEleX.getAttribute('x');
-                expect(parseInt(xAxisThumbX, 10) === 158 || parseInt(xAxisThumbX, 10) === 161
+                expect(parseInt(xAxisThumbX, 10) === 183 || parseInt(xAxisThumbX, 10) === 161
                     || parseInt(xAxisThumbX, 10) === 162).toBe(true);  
                 expect(thumbRectEleX.getAttribute('y') === '0').toBe(true);
                 expect(thumbRectEleX.getAttribute('height') === '16').toBe(true);
@@ -210,7 +211,7 @@ describe('Scrollbar Chart', () => {
                 trigger.draganddropEvent(ele, 200, 200, 350, 350);
                 let svgChildEleX: Element = document.getElementById('container_scrollBar_svgprimaryXAxis').children[0];
                 let thumbRectEleX: Element = svgChildEleX.children[1].children[0];
-                expect(thumbRectEleX.getAttribute('x') === '153.26636636636636' ||
+                expect(thumbRectEleX.getAttribute('x') === '182.81739390316795' ||
                     thumbRectEleX.getAttribute('x') === '157.81739390316795').toBe(true);
                 expect(thumbRectEleX.getAttribute('y') === '0').toBe(true);
                 expect(thumbRectEleX.getAttribute('height') === '16').toBe(true);
@@ -309,7 +310,7 @@ describe('Scrollbar Chart', () => {
                 let svgChildEleX: Element = document.getElementById('container_scrollBar_svgprimaryXAxis').children[0];
                 let thumbRectEleX: Element = svgChildEleX.children[1].children[0];
                 expect(thumbRectEleX.getAttribute('x') === '45.47308910257471' ||
-                thumbRectEleX.getAttribute('x') === '46.82589219466939').toBe(true);
+                thumbRectEleX.getAttribute('x') === '71.8258921946694').toBe(true);
                 expect(thumbRectEleX.getAttribute('y') === '0').toBe(true);
                 expect(thumbRectEleX.getAttribute('height') === '16').toBe(true);
                 expect(thumbRectEleX.getAttribute('width') === '40').toBe(true);
@@ -322,13 +323,13 @@ describe('Scrollbar Chart', () => {
                 thumbRectEleY.getAttribute('width') === '42.19409282700422').toBe(true);
                 let svg3: Element = document.getElementById('container_scrollBar_svgxAxis').children[0];
                 let thumbRectEle3: Element = svg3.children[1].children[0];
-                expect(thumbRectEle3.getAttribute('x') === '45.47308910257471' || thumbRectEle3.getAttribute('x') === '46.82589219466939').toBe(true);
+                expect(thumbRectEle3.getAttribute('x') === '45.47308910257471' || thumbRectEle3.getAttribute('x') === '71.8258921946694').toBe(true);
                 expect(thumbRectEle3.getAttribute('y') === '0').toBe(true);
                 expect(thumbRectEle3.getAttribute('height') === '16').toBe(true);
                 expect(thumbRectEle3.getAttribute('width') === '40').toBe(true);
                 let svg4: Element = document.getElementById('container_scrollBar_svgxAxis2').children[0];
                 let thumbRectEle4: Element = svg4.children[1].children[0];
-                expect(thumbRectEle4.getAttribute('x') === '60.63078547009961' || thumbRectEle4.getAttribute('x') === '62.43452292622585').toBe(true);
+                expect(thumbRectEle4.getAttribute('x') === '60.63078547009961' || thumbRectEle4.getAttribute('x') === '87.43452292622585').toBe(true);
                 expect(thumbRectEle4.getAttribute('y') === '0').toBe(true);
                 expect(thumbRectEle4.getAttribute('height') === '16').toBe(true);
                 expect(thumbRectEle4.getAttribute('width') === '40').toBe(true);

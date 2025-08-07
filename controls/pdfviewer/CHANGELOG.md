@@ -2,13 +2,32 @@
 
 ## [Unreleased]
 
+## 30.2.4 (2025-08-07)
+
+### PDF Viewer
+
+#### Bug Fixes
+
+- `#I743981` - Resolved an issue where worker memory increased when loading the PDF document continuously.
+- `#I749027` - Resolved an issue where the script error occurred when downloading the customer provided document.
+
 ## 30.1.42 (2025-07-29)
 
 ### PDF Viewer
 
 #### Bug Fixes
 
+- `#I741878` - Enhanced performance of the `findText` and `deleteAnnotations` methods.
+
+## 30.1.41 (2025-07-22)
+
+### PDF Viewer
+
+#### Bug Fixes
+
 - `#I744124` - Resolved an issue where the context menu is not proper with nested custom context menu items.
+- `#I738912` - Resolved an issue where the signature and initial field indicators were cut off at lower zoom levels.
+- `#I729371` - Resolved an issue where a script error occurred when adding a comment after programmatically editing the annotation author.
 
 ## 30.1.40 (2025-07-15)
 
@@ -16,7 +35,7 @@
 
 #### Bug Fixes
 
-- `I743298` - Resolved an issue where the `findText` bounds are not proper for the different line sentence.
+- `#I743298` - Resolved an issue where the `findText` bounds are not proper for the different line sentence.
 
 ## 30.1.39 (2025-07-08)
 
@@ -163,6 +182,7 @@
 - `#I704004` - The `ajaxRequestSuccess` event is triggered properly after the download action is completed.
 - `#I701556` - The image signature in the signature/initial field is preserved correctly when printing the document.
 - `#I702570` - The form fields on non-rendered pages are now visible when printing the document.
+- `#I705546` - The form field position is updated correctly for non-rendered pages using the `updateFormField` method.
 
 ## 29.1.37 (2025-04-08)
 

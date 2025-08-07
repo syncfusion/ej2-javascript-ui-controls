@@ -390,11 +390,11 @@ export class Renderer {
             && bodyWidget.columnIndex + 1 === (bodyWidget.nextRenderedWidget as BodyWidget).columnIndex) {
             nextColumnBody = bodyWidget.nextRenderedWidget  as BodyWidget;
         }
+        let xPos: number;
+        let width: number;
         if (!(this.viewer instanceof WebLayoutViewer) && bodyWidget.sectionFormat.columns.length > 1
         && !isNullOrUndefined(nextColumnBody)) {
             const colIndex: number = page.bodyWidgets.indexOf(bodyWidget);
-            let xPos: number;
-            let width: number;
             if (bodyWidget.columnIndex === 0) {
                 /* eslint-disable */
                 xPos = page.bodyWidgets[colIndex].x - HelperMethods.convertPointToPixel(page.bodyWidgets[colIndex].sectionFormat.leftMargin);
@@ -424,8 +424,17 @@ export class Renderer {
                 /* eslint-disable-next-line max-len */
                 this.renderHeader(page, widget as TableWidget, this.documentHelper.layout.getHeader(bodyWidget.childWidgets[0] as TableWidget));
             }
-
+            if (isClipped && widget instanceof TableWidget && widget.wrapTextAround) {
+                this.pageContext.restore();
+                isClipped = false;
+            }
             this.renderWidget(page, widget);
+            if (!isClipped && xPos && width) {
+                /* eslint-disable */
+                this.clipRect(xPos, page.bodyWidgets[page.bodyWidgets.indexOf(bodyWidget)].y, this.getScaledValue(width), this.getScaledValue(page.boundingRectangle.height));
+                /* eslint-enable */
+                isClipped = true;
+            }
         }
         if (isClipped) {
             this.pageContext.restore();

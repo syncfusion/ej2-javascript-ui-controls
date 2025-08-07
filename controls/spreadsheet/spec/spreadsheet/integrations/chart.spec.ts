@@ -1,5 +1,5 @@
 import { SpreadsheetHelper } from '../util/spreadsheethelper.spec';
-import { defaultData, GDPData, productData } from '../util/datasource.spec';
+import { defaultData, GDPData, productData, dateData } from '../util/datasource.spec';
 import { CellModel, ChartModel, ExtendedAxisModel, getColumnsWidth, getFormatFromType, setCell, SheetModel, Spreadsheet } from '../../../src/index';
 import { Overlay } from '../../../src/spreadsheet/services/index';
 import { getComponent, EventHandler } from '@syncfusion/ej2-base';
@@ -2413,7 +2413,7 @@ describe('Chart ->', () => {
                     const chartObj: any = getComponent(chart, 'chart');
                     expect(chartObj.series.length).toBe(1);
                     expect(chartObj.series[0].dataModule.dataManager.dataSource.json.length).toBe(3);
-                    expect(chartObj.series[0].dataModule.dataManager.dataSource.json[0].x).toBe('Saturday, January 20, 1900');
+                    expect(chartObj.series[0].dataModule.dataManager.dataSource.json[0].x.toString()).toBe('Sat Jan 20 1900 00:00:00 GMT+0000 (Coordinated Universal Time)');
                     expect(chartObj.series[0].dataModule.dataManager.dataSource.json[0].y).toBe(200);
                     done();
                 });
@@ -3964,6 +3964,431 @@ describe('Chart ->', () => {
                 expect(spreadsheet.sheets[0].rows[0].cells[6]).toBeUndefined();
                 chart = helper.getElement().querySelector('.e-datavisualization-chart');
                 expect(chart).not.toBeNull();
+                done();
+            });
+        });
+    });
+
+    describe('EJ2-953146, Provide Interpolation Support for Charts Referencing Date Values ->', () => {
+        beforeAll((done: Function) => {
+            helper.initializeSpreadsheet({ sheets: [{ ranges: [{ dataSource: dateData }] }] }, done);
+        });
+        afterAll(() => {
+            helper.invoke('destroy');
+        });
+        it('Checking date values in Column chart rendering using public method', (done: Function) => {
+            helper.invoke('insertChart', [[{ type: 'Column', range: 'B1:C4', id: 'chart_1' }]]);
+            const chart: HTMLElement = helper.getInstance().element.querySelector('#chart_1');
+            const chartObj: any = getComponent(chart, 'chart');
+            expect(chartObj.primaryXAxis.valueType).toBe('DateTime');
+            expect(document.getElementById('chart_10_AxisLabel_0').textContent).toBe('2/14/2014');
+            expect(document.getElementById('chart_10_AxisLabel_1').textContent).toBe('3/14/2014');
+            done();
+        });
+        it('Testing inbetween values editing and undo & redo in Column chart ', (done: Function) => {
+            const chart: HTMLElement = helper.getInstance().element.querySelector('#chart_1');
+            const chartObj: any = getComponent(chart, 'chart');
+            helper.edit('B3', 'Hello');
+            expect(chartObj.primaryXAxis.valueType).toBe('Category');
+            expect(document.getElementById('chart_10_AxisLabel_0').textContent).toBe('2/14/2014');
+            expect(document.getElementById('chart_10_AxisLabel_1').textContent).toBe('Hello');
+            helper.invoke('undo');
+            expect(chartObj.primaryXAxis.valueType).toBe('DateTime');
+            expect(document.getElementById('chart_10_AxisLabel_0').textContent).toBe('2/14/2014');
+            expect(document.getElementById('chart_10_AxisLabel_1').textContent).toBe('3/14/2014');
+            helper.invoke('redo');
+            expect(chartObj.primaryXAxis.valueType).toBe('Category');
+            expect(document.getElementById('chart_10_AxisLabel_0').textContent).toBe('2/14/2014');
+            expect(document.getElementById('chart_10_AxisLabel_1').textContent).toBe('Hello');
+            done();
+        });
+        it('Checking date values in Bar chart rendering using public method', (done: Function) => {
+            helper.invoke('numberFormat', [getFormatFromType('LongDate'), 'D1:D11']);
+            helper.invoke('insertChart', [[{ type: 'Bar', range: 'D1:E6', id: 'chart_2' }]]);
+            const chart: HTMLElement = helper.getInstance().element.querySelector('#chart_2');
+            const chartObj: any = getComponent(chart, 'chart');
+            expect(chartObj.primaryXAxis.valueType).toBe('DateTime');
+            expect(document.getElementById('chart_20_AxisLabel_0').textContent).toBe('Friday, February 14, 2014');
+            expect(document.getElementById('chart_20_AxisLabel_1').textContent).toBe('Monday, April 14, 2014');
+            done();
+        });
+        it('Testing inbetween values editing and undo & redo in Bar chart ', (done: Function) => {
+            const chart: HTMLElement = helper.getInstance().element.querySelector('#chart_2');
+            const chartObj: any = getComponent(chart, 'chart');
+            helper.edit('D3', 'Hello');
+            expect(chartObj.primaryXAxis.valueType).toBe('Category');
+            expect(document.getElementById('chart_20_AxisLabel_0').textContent).toBe('Friday, February 14, 2014');
+            expect(document.getElementById('chart_20_AxisLabel_1').textContent).toBe('Hello');
+            helper.invoke('undo');
+            expect(chartObj.primaryXAxis.valueType).toBe('DateTime');
+            expect(document.getElementById('chart_20_AxisLabel_0').textContent).toBe('Friday, February 14, 2014');
+            expect(document.getElementById('chart_20_AxisLabel_1').textContent).toBe('Monday, April 14, 2014');
+            helper.invoke('redo');
+            expect(chartObj.primaryXAxis.valueType).toBe('Category');
+            expect(document.getElementById('chart_20_AxisLabel_0').textContent).toBe('Friday, February 14, 2014');
+            expect(document.getElementById('chart_20_AxisLabel_1').textContent).toBe('Hello');
+            done();
+        });
+        it('Checking date values in Area chart rendering using public method', (done: Function) => {
+            helper.invoke('insertChart', [[{ type: 'Area', range: 'F1:G6', id: 'chart_3' }]]);
+            const chart: HTMLElement = helper.getInstance().element.querySelector('#chart_3');
+            const chartObj: any = getComponent(chart, 'chart');
+            expect(chartObj.primaryXAxis.valueType).toBe('DateTime');
+            expect(document.getElementById('chart_30_AxisLabel_0').textContent).toBe('14-Feb-14');
+            expect(document.getElementById('chart_30_AxisLabel_1').textContent).toBe('14-Mar-14');
+            done();
+        });
+        it('Testing inbetween values editing and undo & redo in Area chart ', (done: Function) => {
+            const chart: HTMLElement = helper.getInstance().element.querySelector('#chart_3');
+            const chartObj: any = getComponent(chart, 'chart');
+            helper.edit('F3', 'Hello');
+            expect(chartObj.primaryXAxis.valueType).toBe('Category');
+            expect(document.getElementById('chart_30_AxisLabel_0').textContent).toBe('14-Feb-14');
+            expect(document.getElementById('chart_30_AxisLabel_1').textContent).toBe('Hello');
+            helper.invoke('undo');
+            expect(chartObj.primaryXAxis.valueType).toBe('DateTime');
+            expect(document.getElementById('chart_30_AxisLabel_0').textContent).toBe('14-Feb-14');
+            expect(document.getElementById('chart_30_AxisLabel_1').textContent).toBe('14-Mar-14');
+            helper.invoke('redo');
+            expect(chartObj.primaryXAxis.valueType).toBe('Category');
+            expect(document.getElementById('chart_30_AxisLabel_0').textContent).toBe('14-Feb-14');
+            expect(document.getElementById('chart_30_AxisLabel_1').textContent).toBe('Hello');
+            done();
+        });
+        it('Checking date values in Line chart rendering using public method', (done: Function) => {
+            helper.invoke('insertChart', [[{ type: 'Line', range: 'H1:I6', id: 'chart_4' }]]);
+            const chart: HTMLElement = helper.getInstance().element.querySelector('#chart_4');
+            const chartObj: any = getComponent(chart, 'chart');
+            expect(chartObj.primaryXAxis.valueType).toBe('DateTime');
+            expect(document.getElementById('chart_40_AxisLabel_0').textContent).toBe('14-Feb');
+            expect(document.getElementById('chart_40_AxisLabel_1').textContent).toBe('14-Apr');
+            done();
+        });
+        it('Testing inbetween values editing and undo & redo in Line chart ', (done: Function) => {
+            const chart: HTMLElement = helper.getInstance().element.querySelector('#chart_4');
+            const chartObj: any = getComponent(chart, 'chart');
+            helper.edit('H3', 'Hello');
+            expect(chartObj.primaryXAxis.valueType).toBe('Category');
+            expect(document.getElementById('chart_40_AxisLabel_0').textContent).toBe('14-Feb');
+            expect(document.getElementById('chart_40_AxisLabel_1').textContent).toBe('Hello');
+            helper.invoke('undo');
+            expect(chartObj.primaryXAxis.valueType).toBe('DateTime');
+            expect(document.getElementById('chart_40_AxisLabel_0').textContent).toBe('14-Feb');
+            expect(document.getElementById('chart_40_AxisLabel_1').textContent).toBe('14-Apr');
+            helper.invoke('redo');
+            expect(chartObj.primaryXAxis.valueType).toBe('Category');
+            expect(document.getElementById('chart_40_AxisLabel_0').textContent).toBe('14-Feb');
+            expect(document.getElementById('chart_40_AxisLabel_1').textContent).toBe('Hello');
+            done();
+        });
+        it('Checking date values in Scatter chart rendering using public method', (done: Function) => {
+            helper.invoke('insertChart', [[{ type: 'Scatter', range: 'J1:K6', id: 'chart_5' }]]);
+            const chart: HTMLElement = helper.getInstance().element.querySelector('#chart_5');
+            const chartObj: any = getComponent(chart, 'chart');
+            expect(chartObj.primaryXAxis.valueType).toBe('DateTime');
+            expect(document.getElementById('chart_50_AxisLabel_0').textContent).toBe('2/14/2014 0:00');
+            expect(document.getElementById('chart_50_AxisLabel_1').textContent).toBe('4/14/2014 0:00');
+            done();
+        });
+        it('Testing inbetween values editing and undo & redo in Scatter chart ', (done: Function) => {
+            const chart: HTMLElement = helper.getInstance().element.querySelector('#chart_5');
+            const chartObj: any = getComponent(chart, 'chart');
+            helper.edit('J3', 'Hello');
+            expect(chartObj.primaryXAxis.valueType).toBe('Category');
+            expect(document.getElementById('chart_50_AxisLabel_0').textContent).toBe('2/14/2014 3:00');
+            expect(document.getElementById('chart_50_AxisLabel_1').textContent).toBe('Hello');
+            helper.invoke('undo');
+            expect(chartObj.primaryXAxis.valueType).toBe('DateTime');
+            expect(document.getElementById('chart_50_AxisLabel_0').textContent).toBe('2/14/2014 0:00');
+            expect(document.getElementById('chart_50_AxisLabel_1').textContent).toBe('4/14/2014 0:00');
+            helper.invoke('redo');
+            expect(chartObj.primaryXAxis.valueType).toBe('Category');
+            expect(document.getElementById('chart_50_AxisLabel_0').textContent).toBe('2/14/2014 3:00');
+            expect(document.getElementById('chart_50_AxisLabel_1').textContent).toBe('Hello');
+            done();
+        });
+        it('Checking date values in Pie chart rendering using public method', (done: Function) => {
+            helper.invoke('undo');
+            helper.invoke('insertChart', [[{ type: 'Pie', range: 'J1:K6', id: 'chart_6' }]]);
+            expect(document.getElementById('chart_6_chart_legend_text_0').textContent).toBe('2/14/2014 3:00');
+            expect(document.getElementById('chart_6_chart_legend_text_1').textContent).toBe('6/11/2014 0:00');
+            done();
+        });
+        it('Checking date values in Doughnut chart rendering using public method', (done: Function) => {
+            helper.invoke('insertChart', [[{ type: 'Doughnut', range: 'L1:M6', id: 'chart_7' }]]);
+            expect(document.getElementById('chart_7_chart_legend_text_0').textContent).toBe('14-Feb');
+            expect(document.getElementById('chart_7_chart_legend_text_1').textContent).toBe('14-Jun');
+            done();
+        });
+        it('Checking date values in Column chart rendering using UI interaction', (done: Function) => {
+            helper.edit('B3', '6/11/2014');
+            helper.invoke('selectRange', ['B1:C5']);
+            helper.switchRibbonTab(2);
+            helper.getElement('#' + helper.id + '_chart-btn').click();
+            const target1: HTMLElement = helper.getElement('#' + helper.id + '_chart-btn-popup .e-menu-item[aria-label="Column"]');
+            (getComponent(target1.parentElement, 'menu') as any).animationSettings.effect = 'None';
+            helper.triggerMouseAction('mouseover', { x: target1.getBoundingClientRect().left + 5, y: target1.getBoundingClientRect().top + 5 }, document, target1);
+            helper.getElement('#clusteredColumn').click();
+            setTimeout(() => {
+                const chartId: string = `#${helper.getInstance().sheets[0].rows[0].cells[1].chart[1].id}`;
+                const chart: HTMLElement = helper.getInstance().element.querySelector(chartId);
+                expect(chart).not.toBeNull();
+                const chartObj: any = getComponent(chart, 'chart');
+                expect(chartObj.primaryXAxis.valueType).toBe('DateTime');
+                expect(chart.querySelector(`${chartId}0_AxisLabel_0`).textContent).toBe('2/14/2014');
+                expect(chart.querySelector(`${chartId}0_AxisLabel_1`).textContent).toBe('4/14/2014');
+                expect(chart.querySelector(`${chartId}0_AxisLabel_2`).textContent).toBe('6/14/2014');
+                done();
+            });
+        });
+        it('Checking date values in stackedArea chart rendering using UI interaction', (done: Function) => {
+            helper.invoke('selectRange', ['B1:C5']);
+            helper.switchRibbonTab(2);
+            helper.getElement('#' + helper.id + '_chart-btn').click();
+            const target1: HTMLElement = helper.getElement('#' + helper.id + '_chart-btn-popup .e-menu-item[aria-label="Area"]');
+            (getComponent(target1.parentElement, 'menu') as any).animationSettings.effect = 'None';
+            helper.triggerMouseAction('mouseover', { x: target1.getBoundingClientRect().left + 5, y: target1.getBoundingClientRect().top + 5 }, document, target1);
+            helper.getElement('#stackedArea').click();
+            setTimeout(() => {
+                const chartId: string = `#${helper.getInstance().sheets[0].rows[0].cells[1].chart[2].id}`;
+                const chart: HTMLElement = helper.getInstance().element.querySelector(chartId);
+                expect(chart).not.toBeNull();
+                const chartObj: any = getComponent(chart, 'chart');
+                expect(chartObj.primaryXAxis.valueType).toBe('DateTime');
+                expect(chart.querySelector(`${chartId}0_AxisLabel_0`).textContent).toBe('2/14/2014');
+                expect(chart.querySelector(`${chartId}0_AxisLabel_3`).textContent).toBe('8/14/2014');
+                done();
+            });
+        });
+        it('Checking date values in stackedLine chart rendering using UI interaction', (done: Function) => {
+            helper.invoke('selectRange', ['B1:C5']);
+            helper.switchRibbonTab(2);
+            helper.getElement('#' + helper.id + '_chart-btn').click();
+            const target1: HTMLElement = helper.getElement('#' + helper.id + '_chart-btn-popup .e-menu-item[aria-label="Line"]');
+            (getComponent(target1.parentElement, 'menu') as any).animationSettings.effect = 'None';
+            helper.triggerMouseAction('mouseover', { x: target1.getBoundingClientRect().left + 5, y: target1.getBoundingClientRect().top + 5 }, document, target1);
+            helper.getElement('#stackedLine').click();
+            setTimeout(() => {
+                const chartId: string = `#${helper.getInstance().sheets[0].rows[0].cells[1].chart[3].id}`;
+                const chart: HTMLElement = helper.getInstance().element.querySelector(chartId);
+                expect(chart).not.toBeNull();
+                const chartObj: any = getComponent(chart, 'chart');
+                expect(chartObj.primaryXAxis.valueType).toBe('DateTime');
+                expect(chart.querySelector(`${chartId}0_AxisLabel_0`).textContent).toBe('2/14/2014');
+                expect(chart.querySelector(`${chartId}0_AxisLabel_3`).textContent).toBe('8/14/2014');
+                done();
+            });
+        });
+    });
+
+    describe('EJ2-970453 ->', () => {
+        beforeAll((done: Function) => {
+            helper.initializeSpreadsheet({ sheets: [{ ranges: [{ dataSource: dateData }] }] }, done);
+        });
+        afterAll(() => {
+            helper.invoke('destroy');
+        });
+        it('Checking date values in lineMarker chart rendering using UI interaction', (done: Function) => {
+            helper.invoke('selectRange', ['B1:C5']);
+            helper.switchRibbonTab(2);
+            helper.getElement('#' + helper.id + '_chart-btn').click();
+            const target1: HTMLElement = helper.getElement('#' + helper.id + '_chart-btn-popup .e-menu-item[aria-label="Line"]');
+            (getComponent(target1.parentElement, 'menu') as any).animationSettings.effect = 'None';
+            helper.triggerMouseAction('mouseover', { x: target1.getBoundingClientRect().left + 5, y: target1.getBoundingClientRect().top + 5 }, document, target1);
+            helper.getElement('#lineMarker').click();
+            setTimeout(() => {
+                const chartId: string = `#${helper.getInstance().sheets[0].rows[0].cells[1].chart[0].id}`;
+                const chart: HTMLElement = helper.getInstance().element.querySelector(chartId);
+                expect(chart).not.toBeNull();
+                const chartObj: any = getComponent(chart, 'chart');
+                expect(chartObj.primaryXAxis.valueType).toBe('DateTime');
+                expect(chart.querySelector(`${chartId}0_AxisLabel_0`).textContent).toBe('2/14/2014');
+                expect(chart.querySelector(`${chartId}0_AxisLabel_3`).textContent).toBe('8/14/2014');
+                done();
+            });
+        });
+        it('Checking date values in StackingLine chart rendering using public method', (done: Function) => {
+            helper.edit('H3', '11-Jun');
+            helper.invoke('insertChart', [[{ type: 'StackingLine', range: 'H1:I6', id: 'chart_1' }]]);
+            const chart: HTMLElement = helper.getInstance().element.querySelector('#chart_1');
+            const chartObj: any = getComponent(chart, 'chart');
+            expect(chartObj.primaryXAxis.valueType).toBe('DateTime');
+            expect(document.getElementById('chart_10_AxisLabel_0').textContent).toBe('14-Feb');
+            expect(document.getElementById('chart_10_AxisLabel_1').textContent).toBe('14-Apr');
+            done();
+        });
+        it('Delete the chart data ranges values and check the chart rendering', (done: Function) => {
+            helper.invoke('selectRange', ['H2']);
+            helper.triggerKeyNativeEvent(46);
+            const chart: HTMLElement = helper.getInstance().element.querySelector('#chart_1');
+            const chartObj: any = getComponent(chart, 'chart');
+            expect(chartObj.primaryXAxis.valueType).toBe('DateTime');
+            expect(document.getElementById('chart_10_AxisLabel_0').textContent).toBe('11-Jun');
+            expect(document.getElementById('chart_10_AxisLabel_1').textContent).toBe('11-Jul');
+            helper.invoke('selectRange', ['H5']);
+            helper.triggerKeyNativeEvent(46);
+            expect(chartObj.primaryXAxis.valueType).toBe('DateTime');
+            expect(document.getElementById('chart_10_AxisLabel_0').textContent).toBe('11-Jun');
+            expect(document.getElementById('chart_10_AxisLabel_1').textContent).toBe('21-Jun');
+            helper.invoke('undo');
+            expect(chartObj.primaryXAxis.valueType).toBe('DateTime');
+            expect(document.getElementById('chart_10_AxisLabel_0').textContent).toBe('11-Jun');
+            expect(document.getElementById('chart_10_AxisLabel_1').textContent).toBe('11-Jul');
+            helper.invoke('redo');
+            expect(chartObj.primaryXAxis.valueType).toBe('DateTime');
+            expect(document.getElementById('chart_10_AxisLabel_0').textContent).toBe('11-Jun');
+            expect(document.getElementById('chart_10_AxisLabel_1').textContent).toBe('21-Jun');
+            done();
+        });
+        it('Resize the chart with date interpolated values ->', (done: Function) => {
+            helper.invoke('insertChart', [[{ type: 'Column', range: 'D1:E11', id: 'chart_2' }]]);
+            const chart: HTMLElement = helper.getInstance().element.querySelector('#chart_2');
+            const chartObj: any = getComponent(chart, 'chart');
+            expect(chartObj.primaryXAxis.valueType).toBe('DateTime');
+            expect(document.getElementById('chart_20_AxisLabel_0').textContent).toBe('2/4/2014');
+            expect(document.getElementById('chart_20_AxisLabel_2').textContent).toBe('6/4/2014');
+            const overlay: HTMLElement = helper.getElementFromSpreadsheet('.e-ss-overlay-active');
+            const overlayHgtHanlde: HTMLElement = overlay.querySelector('.e-ss-overlay-r');
+            let offset: DOMRect = overlayHgtHanlde.getBoundingClientRect() as DOMRect;
+            helper.triggerMouseAction('mousedown', { x: offset.left, y: offset.top }, overlay, overlayHgtHanlde);
+            helper.triggerMouseAction('mousemove', { x: offset.left + 200, y: offset.top }, overlay, overlayHgtHanlde);
+            helper.triggerMouseAction('mouseup', { x: offset.left + 200, y: offset.top }, document, overlayHgtHanlde);
+            done();
+        });
+        it('Undo and redo the resized chart ->', (done: Function) => {
+            expect(document.getElementById('chart_20_AxisLabel_1').textContent).toBe('3/4/2014');
+            expect(document.getElementById('chart_20_AxisLabel_2').textContent).toBe('4/4/2014');
+            helper.switchRibbonTab(1);
+            helper.click('#spreadsheet_undo');
+            setTimeout(() => {
+                expect(document.getElementById('chart_20_AxisLabel_1').textContent).toBe('4/4/2014');
+                expect(document.getElementById('chart_20_AxisLabel_2').textContent).toBe('6/4/2014');
+                helper.click('#spreadsheet_redo');
+                setTimeout(() => {
+                    expect(document.getElementById('chart_20_AxisLabel_1').textContent).toBe('3/4/2014');
+                    expect(document.getElementById('chart_20_AxisLabel_2').textContent).toBe('4/4/2014');
+                    done();
+                });
+            });
+        });
+    });
+
+    describe('EJ2-972229 -> Provide an option to enable/disable the date interpolation support in the chart', () => {
+        beforeAll((done: Function) => {
+            helper.initializeSpreadsheet({
+                sheets: [{ ranges: [{ dataSource: dateData }] }],
+                actionBegin(args: any) {
+                    if (args.action === 'beforeInsertChart') {
+                        if (args.args.eventArgs) { args.args.eventArgs.skipDateInterpolation = true; }
+                    }
+                }
+            }, done);
+        });
+        afterAll(() => {
+            helper.invoke('destroy');
+        });
+        it('Insert Column chart using UI interaction', (done: Function) => {
+            helper.invoke('selectRange', ['B1:C11']);
+            helper.switchRibbonTab(2);
+            helper.getElement('#' + helper.id + '_chart').click();
+            const target: HTMLElement = helper.getElement('#' + helper.id + '_chart-btn-popup .e-menu-item[aria-label="Column"]');
+            helper.triggerMouseAction('mouseover', { x: target.getBoundingClientRect().left + 5, y: target.getBoundingClientRect().top + 5 }, document, target);
+            helper.getElement('#clusteredColumn').click();
+            setTimeout(() => {
+                const chartId: string = `#${helper.getInstance().sheets[0].rows[0].cells[1].chart[0].id}`;
+                const chart: HTMLElement = helper.getInstance().element.querySelector(chartId);
+                expect(chart).not.toBeNull();
+                const chartObj: any = getComponent(chart, 'chart');
+                expect(chartObj.primaryXAxis.valueType).toBe('Category');
+                expect(helper.getInstance().sheets[0].rows[0].cells[1].chart[0].skipDateInterpolation).toBeTruthy();
+                expect(chart.querySelector(`${chartId}0_AxisLabel_0`).textContent).toBe('2/14/...');
+                expect(chart.querySelector(`${chartId}0_AxisLabel_3`).textContent).toBe('11/21...');
+                helper.invoke('deleteChart');
+                done();
+            });
+        });
+        it('Insert Column chart using insertChart method', (done: Function) => {
+            helper.invoke('insertChart', [[{ type: 'Column', range: 'D1:E11' }]]);
+            setTimeout(() => {
+                const chartId: string = `#${helper.getInstance().sheets[0].rows[0].cells[3].chart[0].id}`;
+                const chart: HTMLElement = helper.getInstance().element.querySelector(chartId);
+                expect(chart).not.toBeNull();
+                const chartObj: any = getComponent(chart, 'chart');
+                expect(chartObj.primaryXAxis.valueType).toBe('Category');
+                expect(helper.getInstance().sheets[0].rows[0].cells[3].chart[0].skipDateInterpolation).toBeTruthy();
+                expect(chart.querySelector(`${chartId}0_AxisLabel_0`).textContent).toBe('2/14/...');
+                expect(chart.querySelector(`${chartId}0_AxisLabel_3`).textContent).toBe('11/21...');
+                helper.invoke('deleteChart');
+                done();
+            });
+        });
+        it('Insert Bar chart using UI interaction', (done: Function) => {
+            helper.invoke('selectRange', ['B1:C11']);
+            helper.switchRibbonTab(2);
+            helper.getElement('#' + helper.id + '_chart').click();
+            const target: HTMLElement = helper.getElement('#' + helper.id + '_chart-btn-popup .e-menu-item[aria-label="Bar"]');
+            helper.triggerMouseAction('mouseover', { x: target.getBoundingClientRect().left + 5, y: target.getBoundingClientRect().top + 5 }, document, target);
+            helper.getElement('#clusteredBar').click();
+            setTimeout(() => {
+                const chartId: string = `#${helper.getInstance().sheets[0].rows[0].cells[1].chart[0].id}`;
+                const chart: HTMLElement = helper.getInstance().element.querySelector(chartId);
+                expect(chart).not.toBeNull();
+                const chartObj: any = getComponent(chart, 'chart');
+                expect(chartObj.primaryXAxis.valueType).toBe('Category');
+                expect(helper.getInstance().sheets[0].rows[0].cells[1].chart[0].skipDateInterpolation).toBeTruthy();
+                expect(chart.querySelector(`${chartId}0_AxisLabel_0`).textContent).toBe('2/14/2014');
+                expect(chart.querySelector(`${chartId}0_AxisLabel_3`).textContent).toBe('11/21/2014');
+                helper.invoke('deleteChart');
+                done();
+            });
+        });
+        it('Insert Bar chart using insertChart method', (done: Function) => {
+            helper.invoke('insertChart', [[{ type: 'Bar', range: 'D1:E11' }]]);
+            setTimeout(() => {
+                const chartId: string = `#${helper.getInstance().sheets[0].rows[0].cells[3].chart[0].id}`;
+                const chart: HTMLElement = helper.getInstance().element.querySelector(chartId);
+                expect(chart).not.toBeNull();
+                const chartObj: any = getComponent(chart, 'chart');
+                expect(chartObj.primaryXAxis.valueType).toBe('Category');
+                expect(helper.getInstance().sheets[0].rows[0].cells[3].chart[0].skipDateInterpolation).toBeTruthy();
+                expect(chart.querySelector(`${chartId}0_AxisLabel_0`).textContent).toBe('2/14/2014');
+                expect(chart.querySelector(`${chartId}0_AxisLabel_3`).textContent).toBe('11/21/2014');
+                helper.invoke('deleteChart');
+                done();
+            });
+        });
+        it('Insert Area chart using UI interaction', (done: Function) => {
+            helper.invoke('selectRange', ['B1:C11']);
+            helper.switchRibbonTab(2);
+            helper.getElement('#' + helper.id + '_chart').click();
+            const target: HTMLElement = helper.getElement('#' + helper.id + '_chart-btn-popup .e-menu-item[aria-label="Area"]');
+            helper.triggerMouseAction('mouseover', { x: target.getBoundingClientRect().left + 5, y: target.getBoundingClientRect().top + 5 }, document, target);
+            helper.getElement('#area').click();
+            setTimeout(() => {
+                const chartId: string = `#${helper.getInstance().sheets[0].rows[0].cells[1].chart[0].id}`;
+                const chart: HTMLElement = helper.getInstance().element.querySelector(chartId);
+                expect(chart).not.toBeNull();
+                const chartObj: any = getComponent(chart, 'chart');
+                expect(chartObj.primaryXAxis.valueType).toBe('Category');
+                expect(helper.getInstance().sheets[0].rows[0].cells[1].chart[0].skipDateInterpolation).toBeTruthy();
+                expect(chart.querySelector(`${chartId}0_AxisLabel_0`).textContent).toBe('2/14/...');
+                expect(chart.querySelector(`${chartId}0_AxisLabel_3`).textContent).toBe('11/21...');
+                helper.invoke('deleteChart');
+                done();
+            });
+        });
+        it('Insert Area chart using insertChart method', (done: Function) => {
+            helper.invoke('insertChart', [[{ type: 'Area', range: 'D1:E11' }]]);
+            setTimeout(() => {
+                const chartId: string = `#${helper.getInstance().sheets[0].rows[0].cells[3].chart[0].id}`;
+                const chart: HTMLElement = helper.getInstance().element.querySelector(chartId);
+                expect(chart).not.toBeNull();
+                const chartObj: any = getComponent(chart, 'chart');
+                expect(chartObj.primaryXAxis.valueType).toBe('Category');
+                expect(helper.getInstance().sheets[0].rows[0].cells[3].chart[0].skipDateInterpolation).toBeTruthy();
+                expect(chart.querySelector(`${chartId}0_AxisLabel_0`).textContent).toBe('2/14/...');
+                expect(chart.querySelector(`${chartId}0_AxisLabel_3`).textContent).toBe('11/21...');
+                helper.invoke('deleteChart');
                 done();
             });
         });

@@ -58,6 +58,24 @@ describe('Auto fill ->', () => {
             expect(td.style.fontWeight).toBe('bold');
             done();
         });
+        it('Autofill dropdown width not updated properly after horizontal scrolling in Spreadsheet', (done: Function) => {
+            helper.invoke('goTo', ['Z5']);
+            setTimeout((): void => {
+                const autoFill: HTMLElement = helper.getElementFromSpreadsheet('.e-autofill');
+                let td: HTMLElement = helper.invoke('getCell', [8, 25]);
+                let coords = td.getBoundingClientRect();
+                let autoFillCoords = autoFill.getBoundingClientRect();
+                helper.triggerMouseAction('mousedown', { x: autoFillCoords.left + 1, y: autoFillCoords.top + 1 }, null, autoFill);
+                helper.getInstance().selectionModule.mouseMoveHandler({ target: autoFill, clientX: autoFillCoords.right, clientY: autoFillCoords.bottom });
+                helper.getInstance().selectionModule.mouseMoveHandler({ target: td, clientX: coords.left + 1, clientY: coords.top + 1 });
+                helper.triggerMouseAction('mouseup', { x: coords.left + 1, y: coords.top + 1 }, document, td);
+                setTimeout((): void => {
+                    const autoFillDropdown: HTMLElement = helper.getElementFromSpreadsheet('.e-filloption');
+                    expect(autoFillDropdown.style.width).toBe('52.16px');
+                    done();
+                });
+            });
+        });
     });
 
     describe('Autofill getFillType Type - Down ->', () => {

@@ -9557,6 +9557,37 @@ describe('Tab Control', () => {
             expect(tNestContent.children[2].classList.contains('e-active')).toBe(false);
         });
     });
+    describe('ES-962426 - Encountered a console error when switching between large header tabs in popup mode', () => {
+        let tab: Tab;
+        beforeEach(() => {
+            const ele: HTMLElement = document.createElement('div');
+            ele.id = 'ej2Tab';
+            document.body.appendChild(ele);
+            tab = new Tab({
+                width: '460px',
+                overflowMode: 'Popup',
+                items: [
+                    { header: { text: 'HTML HTML' }, content: 'Content1' },
+                    { header: { text: 'C Sharp(C#) C Sharp(C#) C Sharp(C#) C Sharp(C#) C Sharp(C#)' }, content: 'Content2' },
+                    { header: { text: 'VB.Net VB.Net VB.Net VB.Net VB.Net' }, content: 'Content3' },
+                ]
+            });
+            tab.appendTo('#ej2Tab');
+        });
+        afterEach(() => {
+            if (tab) {
+                tab.destroy();
+            }
+            document.body.innerHTML = '';
+        });
+
+        it('Verifying tab behavior with large headers in popup mode', () => {
+            const element: HTMLElement = document.getElementById('ej2Tab');
+            tab.select(1);
+            expect(element.querySelectorAll('.e-toolbar-items .e-toolbar-item').length).toEqual(1);
+            expect(element.querySelector('.e-toolbar-items .e-indicator')).not.toBeNull();
+        });
+    });
     describe('Vertical Orientation Left - Nested Tab testing with headerPlacement', () => {
         let tabObj: Tab
         beforeAll((): void => {

@@ -1,6 +1,7 @@
 import { Browser, createElement, detach } from '@syncfusion/ej2-base';
 import { DdtChangeEventArgs, DropDownTree } from '../../src/drop-down-tree/drop-down-tree';
 import { Dialog } from '@syncfusion/ej2-popups';
+import { DataManager } from '@syncfusion/ej2-data';
 import { listData , hierarchicalData3, hierarchicalDataString, popupClosedata } from '../../spec/drop-down-tree/dataSource.spec'
 import '../../node_modules/es6-promise/dist/es6-promise';
 
@@ -1671,5 +1672,80 @@ describe('Dropdown Tree with Filter', () => {
                 done();
             }, 350);
         }, 350);
+    });
+});
+
+describe('Remote Data Filtering', () => {
+    let ddtreeObj: DropDownTree;
+    beforeEach((): void => {
+        ddtreeObj = undefined;
+        let ele: HTMLInputElement = <HTMLInputElement>createElement('input', { id: 'ddtree' });
+        document.body.appendChild(ele);
+    });
+    afterEach((): void => {
+        if (ddtreeObj) {
+            ddtreeObj.destroy();
+        }
+        document.body.innerHTML = '';
+    });
+    it('should filter data properly when using remote data source', (done) => {
+        const sampleData = [
+            { id: '1', name: 'Australia', hasChild: true },
+            { id: '2', name: 'New South Wales', pid: '1' },
+            { id: '3', name: 'Victoria', pid: '1' },
+            { id: '4', name: 'South Australia', pid: '1', hasChild: true },
+            { id: '5', name: 'Adelaide', pid: '4' }
+        ];
+        const dataManager = new DataManager(sampleData);
+        ddtreeObj = new DropDownTree({
+            fields: {
+                dataSource: dataManager,
+                value: "id",
+                text: "name",
+                parentValue: "pid",
+                hasChildren: "hasChild"
+            },
+            allowFiltering: true
+        });
+        ddtreeObj.appendTo('#ddtree');
+        (ddtreeObj as any).isRemoteData = true;
+        (ddtreeObj as any).treeData = sampleData;
+        (ddtreeObj as any).isFilteredData = true;
+        let filteredFields = (ddtreeObj as any).remoteDataFilter('aus', (ddtreeObj as any).fields);
+        expect(filteredFields.dataSource).not.toBeNull();
+        let hasAustralia = filteredFields.dataSource.some((item: any) => 
+            item.id === '1' && item.name === 'Australia');
+        expect(hasAustralia).toBe(true);
+        (ddtreeObj as any).treeDataType = 2;
+        const node = { id: '4', name: 'South Australia', pid: '1', hasChild: true, 
+                      child: [{ id: '5', name: 'Adelaide', pid: '4' }] };
+        const result = (ddtreeObj as any).remoteChildFilter('adel', node);
+        expect(result).not.toBeNull();
+        expect(result.child).not.toBeNull();
+        expect(result.child.length).toBe(1);
+        expect(result.child[0].name).toBe('Adelaide');
+        done();
+    });
+    it('should handle ignoreAccent during filtering', (done) => {
+        const accentedData = [
+            { id: '1', name: 'Café', hasChild: true },
+            { id: '2', name: 'Restaurant', pid: '1' }
+        ];
+        ddtreeObj = new DropDownTree({
+            fields: {
+                dataSource: accentedData,
+                value: "id",
+                text: "name",
+                parentValue: "pid",
+                hasChildren: "hasChild"
+            },
+            allowFiltering: true,
+            ignoreAccent: true
+        });
+        ddtreeObj.appendTo('#ddtree');
+        (ddtreeObj as any).treeData = accentedData;
+        const isMatch = (ddtreeObj as any).isMatchedNode('cafe', accentedData[0]);
+        expect(isMatch).toBe(true);
+        done();
     });
 });

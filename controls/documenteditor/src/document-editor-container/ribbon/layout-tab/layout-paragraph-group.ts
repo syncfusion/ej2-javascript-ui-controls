@@ -1,4 +1,4 @@
-import { createElement } from '@syncfusion/ej2-base';
+import { createElement, initializeCSPTemplate } from '@syncfusion/ej2-base';
 import { NumericTextBox, NumericTextBoxModel } from '@syncfusion/ej2-inputs';
 import { DocumentEditorContainer } from '../../document-editor-container';
 import { RibbonGroupModel, RibbonItemType } from '@syncfusion/ej2-ribbon';
@@ -104,7 +104,7 @@ export class LayoutParagraphGroup extends RibbonGroupBase {
                     items: [
                         {
                             type: RibbonItemType.Template,
-                            itemTemplate: leftIndentTemplate,
+                            itemTemplate: initializeCSPTemplate(leftIndentTemplate),
                             ribbonTooltipSettings: {
                                 title: this.localObj.getConstant('Indent Left'),
                                 content: this.localObj.getConstant('Set the distance between paragraph and left margin')
@@ -112,7 +112,7 @@ export class LayoutParagraphGroup extends RibbonGroupBase {
                         },
                         {
                             type: RibbonItemType.Template,
-                            itemTemplate: rightIndentTemplate,
+                            itemTemplate: initializeCSPTemplate(rightIndentTemplate),
                             ribbonTooltipSettings: {
                                 title: this.localObj.getConstant('Indent Right'),
                                 content: this.localObj.getConstant('Set the distance between paragraph and right margin')
@@ -123,7 +123,7 @@ export class LayoutParagraphGroup extends RibbonGroupBase {
                     items: [
                         {
                             type: RibbonItemType.Template,
-                            itemTemplate: spacingBeforeTemplate,
+                            itemTemplate: initializeCSPTemplate(spacingBeforeTemplate),
                             ribbonTooltipSettings: {
                                 title: this.localObj.getConstant('Spacing Before'),
                                 content: this.localObj.getConstant('Set the spacing before the paragraph')
@@ -131,7 +131,7 @@ export class LayoutParagraphGroup extends RibbonGroupBase {
                         },
                         {
                             type: RibbonItemType.Template,
-                            itemTemplate: spacingAfterTemplate,
+                            itemTemplate: initializeCSPTemplate(spacingAfterTemplate),
                             ribbonTooltipSettings: {
                                 title: this.localObj.getConstant('Spacing After'),
                                 content: this.localObj.getConstant('Set the spacing after the paragraph')

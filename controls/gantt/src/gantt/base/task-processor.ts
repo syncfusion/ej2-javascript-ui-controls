@@ -410,7 +410,7 @@ export class TaskProcessor extends DateProcessor {
         progress = (100 < progress) ? 100 : progress;
         const predecessors: string | number | object[] = data[taskSettings.dependency];
         const baselineStartDate: Date = this.getDateFromFormat(data[taskSettings.baselineStartDate], true);
-        let baselineEndDate: Date = this.getDateFromFormat(data[taskSettings.baselineEndDate], true);
+        const baselineEndDate: Date = this.getDateFromFormat(data[taskSettings.baselineEndDate], true);
         let ganttData: IGanttData;
         let unModifiedData: Object;
         if (this.parent.loadChildOnDemand && taskSettings.hasChildMapping && !this.parent.enableVirtualization) {
@@ -500,29 +500,17 @@ export class TaskProcessor extends DateProcessor {
         }
         this.parent.setRecordValue('constraintType', data[taskSettings.constraintType], ganttProperties, true);
         this.parent.setRecordValue('constraintDate', data[taskSettings.constraintDate], ganttProperties, true);
+        if (!isLoad) {
+            this.parent.setRecordValue('baselineStartDate', this.checkBaselineStartDate(baselineStartDate, ganttProperties), ganttProperties, true);
+            if (!data[taskSettings.baselineEndDate]) {
+                this.parent.setRecordValue('baselineEndDate', this.checkBaselineEndDate(baselineEndDate, ganttProperties), ganttProperties, true);
+            }
+            else {
+                this.parent.setRecordValue('baselineEndDate', data[taskSettings.baselineEndDate], ganttProperties, true);
+            }
+        }
         this.calculateScheduledValues(ganttData, data, isLoad);
-        this.parent.setRecordValue('baselineStartDate', this.checkBaselineStartDate(baselineStartDate, ganttProperties), ganttProperties, true);
-        // set default end time, if hour is 0
-        let dayEndTime: number;
-        if (this.parent.weekWorkingTime.length > 0 && baselineEndDate) {
-            dayEndTime = this.parent['getEndTime'](baselineEndDate);
-        }
-        else {
-            dayEndTime = this.parent.defaultEndTime;
-        }
-        if (baselineEndDate && baselineEndDate.getHours() === 0 && dayEndTime !== 86400) {
-            this.setTime(dayEndTime, baselineEndDate);
-        }
-        if ((ganttProperties.baselineStartDate && baselineEndDate &&
-            (ganttProperties.baselineStartDate.getTime() > baselineEndDate.getTime())) ||
-            ((!isNullOrUndefined(ganttProperties.baselineStartDate) && !isNullOrUndefined(ganttProperties.startDate)
-            && (ganttProperties.baselineStartDate.getTime() === ganttProperties.startDate.getTime()))
-            && (!isNullOrUndefined(baselineEndDate) && !isNullOrUndefined(ganttProperties.endDate)
-            && (baselineEndDate.toLocaleDateString() === ganttProperties.endDate.toLocaleDateString())) &&
-                ganttProperties.isMilestone)) {
-            baselineEndDate = ganttProperties.baselineStartDate;
-        }
-        this.parent.setRecordValue('baselineEndDate', this.checkBaselineEndDate(baselineEndDate, ganttProperties), ganttProperties, true);
+        this.calculateScheduledValuesforBaseline(ganttData, data, isLoad);
         this.parent.setRecordValue('progress', progress, ganttProperties, true);
         this.parent.setRecordValue('totalProgress', progress, ganttProperties, true);
         if (data['ganttProperties'] && data['ganttProperties'].predecessorsName && this.parent.undoRedoModule && this.parent.undoRedoModule['isUndoRedoPerformed']) {
@@ -1212,6 +1200,138 @@ export class TaskProcessor extends DateProcessor {
                 this.parent.setRecordValue(this.parent.taskFields.milestone, true, ganttData, true);
             }
             this.parent.setRecordValue('endDate', ganttProperties.startDate, ganttProperties, true);
+        }
+    }
+    /**
+     * Calculates the scheduled values for the baseline of a task.
+     *
+     * @param {IGanttData} ganttData - The Gantt data containing task information.
+     * @param {Object} data - The additional data containing baseline duration and dates.
+     * @param {boolean} isLoad - A flag indicating if the method is called during the loading process.
+     * @returns {void} - No return value.
+     * @public
+     */
+    public calculateScheduledValuesforBaseline(ganttData: IGanttData, data: Object, isLoad: boolean): void {
+        const taskSettings: TaskFieldsModel = this.parent.taskFields;
+        const ganttProperties: ITaskData = ganttData.ganttProperties;
+        let baselineDuration: string = data[taskSettings.baselineDuration];
+        baselineDuration = isNullOrUndefined(baselineDuration) || baselineDuration === '' ? null : baselineDuration;
+        const baselineStartDate: Date = this.getDateFromFormat(data[taskSettings.baselineStartDate], true);
+        const baselineEndDate: Date = this.getDateFromFormat(data[taskSettings.baselineEndDate], true);
+        if (baselineStartDate) {
+            this.calculateDateFromStartDateforBaseline(baselineStartDate, baselineEndDate, baselineDuration, ganttData, isLoad);
+        }
+        else if (baselineEndDate) {
+            this.calculateDateFromEndDateforBaseline(baselineEndDate, baselineDuration, ganttData, true);
+        }
+        else if (!isNullOrUndefined(baselineDuration) && baselineDuration !== '') {
+            this.updateDurationValue(baselineDuration, ganttProperties, true);
+            const startDate: Date = this.getProjectStartDate(ganttProperties, isLoad);
+            this.parent.setRecordValue('baselineStartDate', startDate, ganttProperties, true);
+            this.calculateEndDate(ganttData, true);
+        }
+    }
+    /**
+     * Calculates the baseline enddate and duration from startdate of baseline.
+     *
+     * @param {Date} baselineStartDate - The baseline startdate of the task.
+     * @param {Date} baselineEndDate - The baseline enddate of the task.
+     * @param {string} baselineDuration - The baseline duration of the task.
+     * @param {IGanttData} ganttData - The Gantt data containing task information.
+     * @param {boolean} isLoad - A flag indicating if the method is called during the loading process.
+     * @returns {void} - No return value.
+     * @private
+     */
+    private calculateDateFromStartDateforBaseline(baselineStartDate: Date, baselineEndDate: Date,
+                                                  baselineDuration: string, ganttData: IGanttData, isLoad: boolean): void {
+        const ganttProperties: ITaskData = ganttData.ganttProperties;
+        const validateAsMilestone: boolean = (parseInt(baselineDuration, 10) === 0 || ((baselineStartDate && baselineEndDate) &&
+            (new Date(baselineStartDate.getTime()) === new Date(baselineEndDate.getTime())))) ? true : null;
+        this.parent.setRecordValue('baselineStartDate', this.checkStartDate(baselineStartDate, ganttProperties, validateAsMilestone, isLoad, true), ganttProperties, true);
+        if (!baselineEndDate && (isNullOrUndefined(baselineDuration) || baselineDuration === '')) {
+            this.parent.setRecordValue('baselineDuration', 1, ganttProperties, true);
+            this.calculateEndDate(ganttData, true);
+        } else if (!isNullOrUndefined(baselineDuration) && !baselineEndDate) {
+            this.updateDurationValue(baselineDuration, ganttProperties, true);
+            this.calculateEndDate(ganttData, true);
+        }
+        else if (!isNullOrUndefined(baselineEndDate) && (isNullOrUndefined(baselineDuration) || baselineDuration === '')) {
+            let dayEndTime: number;
+            if (this.parent.weekWorkingTime.length > 0 && baselineEndDate) {
+                dayEndTime = this.parent['getEndTime'](baselineEndDate);
+            }
+            else {
+                dayEndTime = this.parent.defaultEndTime;
+            }
+            if (baselineEndDate && baselineEndDate.getHours() === 0 && dayEndTime !== 86400) {
+                this.setTime(dayEndTime, baselineEndDate);
+            }
+            if ((ganttProperties.baselineStartDate && baselineEndDate &&
+                (ganttProperties.baselineStartDate.getTime() > baselineEndDate.getTime())) ||
+                ((!isNullOrUndefined(ganttProperties.baselineStartDate) && !isNullOrUndefined(ganttProperties.startDate)
+                && (ganttProperties.baselineStartDate.getTime() === ganttProperties.startDate.getTime()))
+                && (!isNullOrUndefined(baselineEndDate) && !isNullOrUndefined(ganttProperties.endDate)
+                && (baselineEndDate.toLocaleDateString() === ganttProperties.endDate.toLocaleDateString())) &&
+                    ganttProperties.isMilestone)) {
+                baselineEndDate = ganttProperties.baselineStartDate;
+            }
+            this.parent.setRecordValue('baselineEndDate', this.checkBaselineEndDate(baselineEndDate, ganttProperties), ganttProperties, true);
+            if (this.compareDates(ganttProperties.baselineStartDate, ganttProperties.baselineEndDate) === 1) {
+                this.parent.setRecordValue('baselineEndDate', ganttProperties.baselineStartDate, ganttProperties, true);
+                this.parent.setRecordValue('baselineDuration', 0, ganttProperties, true);
+            }
+            else {
+                this.calculateDuration(ganttData, true);
+            }
+        } else {
+            this.updateDurationValue(baselineDuration, ganttProperties, true);
+            if (this.parent.autoCalculateDateScheduling && !(this.parent.isLoad && this.parent.treeGrid.loadChildOnDemand &&
+                this.parent.taskFields.hasChildMapping)) {
+                this.calculateEndDate(ganttData, true);
+            }
+            else {
+                this.parent.setRecordValue('baselineEndDate', baselineEndDate, ganttProperties, true);
+            }
+        }
+    }
+    /**
+     * Calculates the baseline enddate and duration from startdate of baseline.
+     *
+     * @param {Date} endDate - The baseline enddate of the task.
+     * @param {string} duration - The baseline duration of the task.
+     * @param {IGanttData} ganttData - The Gantt data containing task information.
+     * @param {boolean} isBaseline - Indicates whether the calculation is specific to baseline dates.
+     * @returns {void} - No return value.
+     * @private
+     */
+    private calculateDateFromEndDateforBaseline(endDate: Date, duration: string, ganttData: IGanttData, isBaseline: boolean): void {
+        const ganttProperties: ITaskData = ganttData.ganttProperties;
+        let dayEndTime: number;
+        if (this.parent.weekWorkingTime.length > 0) {
+            dayEndTime = this.parent['getEndTime'](endDate);
+        }
+        else {
+            dayEndTime = this.parent.defaultEndTime;
+        }
+        if (endDate.getHours() === 0 && dayEndTime !== 86400) {
+            this.setTime(dayEndTime, endDate);
+        }
+        const validateAsMilestone: boolean = (parseInt(duration, 10) === 0) ? true : null;
+        this.parent.setRecordValue('baselineEndDate', this.checkEndDate(endDate, ganttData.ganttProperties, validateAsMilestone, true), ganttProperties, true);
+        if (isNullOrUndefined(duration) || duration === '') {
+            this.parent.setRecordValue('baselineDuration', 1, ganttProperties, true);
+            this.parent.setRecordValue(
+                'baselineStartDate',
+                this.getStartDate(ganttProperties.baselineEndDate, ganttProperties.duration, ganttProperties.durationUnit, ganttProperties),
+                ganttProperties,
+                true);
+        } else if (!isNullOrUndefined(duration) && duration !== '') {
+            this.updateDurationValue(duration, ganttProperties, isBaseline);
+            this.parent.setRecordValue(
+                'baselineStartDate',
+                this.getStartDate(ganttProperties.endDate, ganttProperties.duration, ganttProperties.durationUnit, ganttProperties, true),
+                ganttProperties,
+                true);
         }
     }
     /**
@@ -2166,6 +2286,12 @@ export class TaskProcessor extends DateProcessor {
             this.setRecordDate(ganttData, ganttProp[fieldName as string], columnMapping[fieldName as string]);
         } else if (fieldName === 'duration') {
             this.setRecordDuration(ganttData, columnMapping[fieldName as string]);
+        }
+        else if (fieldName === 'baselineStartDate' || fieldName === 'baselineEndDate') {
+            this.setRecordDate(ganttData, ganttProp[fieldName as string], columnMapping[fieldName as string]);
+        }
+        else if (fieldName === 'baselineDuration') {
+            this.setRecordDuration(ganttData, columnMapping[fieldName as string], true);
         } else if (fieldName === 'work') {
             this.parent.setRecordValue(
                 'taskData.' + columnMapping[fieldName as string],
@@ -2309,11 +2435,11 @@ export class TaskProcessor extends DateProcessor {
         }
     }
 
-    private setRecordDuration(task: IGanttData, mapping: string): void {
-        const duration: number = task.ganttProperties.duration;
+    private setRecordDuration(task: IGanttData, mapping: string, isBaseline?: boolean): void {
+        const duration: number = isBaseline ? task.ganttProperties.baselineDuration : task.ganttProperties.duration;
         const durationUnit: string = task.ganttProperties.durationUnit;
         if (!isNullOrUndefined(duration)) {
-            this.parent.setRecordValue(mapping, task.ganttProperties.duration, task);
+            this.parent.setRecordValue(mapping, duration, task);
             /* eslint-disable-next-line @typescript-eslint/no-explicit-any */
             const durationValue: any = (getValue(mapping, task.taskData));
             if (isNaN(durationValue) && isNullOrUndefined(this.parent.taskFields.durationUnit) && !isNullOrUndefined(durationValue)) {
@@ -2424,6 +2550,9 @@ export class TaskProcessor extends DateProcessor {
             }
             if (dataMapping.baselineEndDate) {
                 this.setRecordDate(ganttData, ganttProperties.baselineEndDate, dataMapping.baselineEndDate);
+            }
+            if (dataMapping.baselineDuration) {
+                this.setRecordDuration(ganttData, dataMapping.baselineDuration, true);
             }
             if (dataMapping.notes) {
                 if (!this.parent.isLoad) {
@@ -2673,12 +2802,16 @@ export class TaskProcessor extends DateProcessor {
      *
      * @param {string} duration .
      * @param {ITaskData} ganttProperties .
+     * @param {boolean} isBaseline - Indicates whether the calculation is specific to baseline dates.
      * @returns {void} .
      * @private
      */
-    public updateDurationValue(duration: string, ganttProperties: ITaskData): void {
+    public updateDurationValue(duration: string, ganttProperties: ITaskData, isBaseline?: boolean): void {
         const tempDuration: Object = this.getDurationValue(duration);
-        if (!isNaN(getValue('duration', tempDuration))) {
+        if (isBaseline && !isNaN(getValue('duration', tempDuration))) {
+            this.parent.setRecordValue('baselineDuration', getValue('duration', tempDuration), ganttProperties, true);
+        }
+        else if (!isNaN(getValue('duration', tempDuration))) {
             this.parent.setRecordValue('duration', getValue('duration', tempDuration), ganttProperties, true);
         }
         if (!isNullOrUndefined(getValue('durationUnit', tempDuration))) {

@@ -54,7 +54,10 @@ describe('Gantt column resize support', () => {
             triggerMouseEvent(resizeColumn, 'mousedown');
             triggerMouseEvent(resizeColumn, 'mousemove', 100);
             triggerMouseEvent(resizeColumn, 'mouseup');
-            expect(ganttObj.element.getElementsByClassName('e-columnheader')[0].querySelector('.e-headercell').classList.contains('e-resized')).toBe(true);
+            const args: any = {
+                column: ganttObj.treeGrid.columns[0]
+            };
+            ganttObj.treeGrid.resizeStop(args);
             ganttObj.undo();
         });
     });

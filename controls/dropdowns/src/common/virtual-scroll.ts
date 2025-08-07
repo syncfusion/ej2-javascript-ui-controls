@@ -130,7 +130,7 @@ export class VirtualScroll {
         if (this.component === 'combobox') {
             let totalData: number = 0;
             if (this.parent.dataSource instanceof DataManager) {
-                totalData = this.parent.dataSource.dataSource.json.length;
+                totalData = this.parent.remoteDataCount;
             } else if (this.parent.dataSource && (this.parent.dataSource as any).length > 0) {
                 // eslint-disable-next-line @typescript-eslint/no-explicit-any
                 totalData = (this.parent.dataSource as any).length;
@@ -475,6 +475,7 @@ export class VirtualScroll {
                 this.parent.isVirtualScrolling = true;
                 setTimeout(() => {
                     this.parent.pageCount = this.parent.getPageCount();
+                    this.parent.isRequesting = false;
                     this.virtualScrollRefreshAsync().then(() => {
                         if (this.parent.popupObj) {
                             this.parent.list = this.parent.popupObj.element.querySelector('.' + 'e-content') || select('.' + 'e-content');

@@ -1191,6 +1191,7 @@ export interface WorkbookParseOptions {
 /** @hidden */
 export interface ExtendedChartModel extends ChartModel {
     enableCanvas?: boolean;
+    skipDateInterpolation?: boolean;
 }
 
 /** @hidden */

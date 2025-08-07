@@ -886,7 +886,8 @@ export class FreeTextAnnotation {
             }
             this.isInuptBoxInFocus = false;
             if (this.selectedAnnotation && this.pdfViewer.selectedItems.annotations) {
-                const isRotated: boolean = this.selectedAnnotation.pageRotation === 90 || this.selectedAnnotation.pageRotation === 270;
+                const isRotated: boolean = (Math.abs(this.selectedAnnotation.rotateAngle) !== 0 &&
+                Math.abs(this.selectedAnnotation.rotateAngle) !== 180);
                 inputEleHeight = parseFloat(isRotated ? this.inputBoxElement.style.width : this.inputBoxElement.style.height) / zoomFactor;
                 inputEleWidth = parseFloat(isRotated ? this.inputBoxElement.style.height : this.inputBoxElement.style.width) / zoomFactor;
                 const heightDiff: number = (inputEleHeight - this.selectedAnnotation.bounds.height);
@@ -910,7 +911,7 @@ export class FreeTextAnnotation {
                 lineSpace = ((parseFloat(this.inputBoxElement.style.fontSize) / zoomFactor) / (this.defaultFontSize / 2));
                 this.selectedAnnotation.wrapper.children[1].margin.left = this.freeTextPaddingLeft;
                 this.selectedAnnotation.wrapper.children[1].margin.top =
-                 ((parseFloat(this.inputBoxElement.style.paddingTop) / zoomFactor)) + lineSpace;
+                 ((parseFloat(this.inputBoxElement.style.paddingTop) / Math.max(1, zoomFactor))) + lineSpace;
                 this.pdfViewer.annotation.modifyDynamicTextValue(inputValue, this.selectedAnnotation.annotName);
                 this.selectedAnnotation.dynamicText = inputValue;
                 this.modifyInCollection('dynamicText', pageIndex, this.selectedAnnotation, isNewlyAdded);
@@ -956,6 +957,10 @@ export class FreeTextAnnotation {
     public onKeyDownInputBox(event: KeyboardEvent): void {
         // eslint-disable-next-line
         if (event.which !== 18) {
+            if (event.ctrlKey && event.key.toLowerCase() === 'a') {
+                event.preventDefault();
+                this.inputBoxElement.select();
+            }
             // eslint-disable-next-line
             const inuptEleObj: FreeTextAnnotation = this;
             if (event.which === 9 || (isNullOrUndefined(this.pdfViewer.selectedItems.annotations[0]) && !this.isNewFreeTextAnnot)) {
@@ -998,8 +1003,8 @@ export class FreeTextAnnotation {
             inuptEleObj.inputBoxElement.style.height = (difference < 0 && !inuptEleObj.inputBoxElement.readOnly) ? (previousHeight + 'px') : inuptEleObj.inputBoxElement.style.height;
         }
         const zoomFactor: number = inuptEleObj.pdfViewerBase.getZoomFactor();
-        const isRotated: boolean = this.selectedAnnotation && (this.selectedAnnotation.pageRotation === 90 ||
-            this.selectedAnnotation.pageRotation === 270);
+        const isRotated: boolean = this.selectedAnnotation && (Math.abs(this.selectedAnnotation.rotateAngle) !== 0 &&
+        Math.abs(this.selectedAnnotation.rotateAngle) !== 180);
         const inputEleHeight: number = parseFloat(isRotated ? this.inputBoxElement.style.width :
             this.inputBoxElement.style.height) / zoomFactor;
         const inputEleWidth: number = parseFloat(isRotated ? this.inputBoxElement.style.height :
@@ -1007,7 +1012,7 @@ export class FreeTextAnnotation {
         let x: number = 0;
         if (this.selectedAnnotation) {
             let heightDiff: number;
-            if (this.selectedAnnotation.pageRotation === 90 || this.selectedAnnotation.pageRotation === 270) {
+            if (isRotated) {
                 heightDiff = (inputEleWidth - inuptEleObj.selectedAnnotation.bounds.width);
             }
             else {
@@ -1243,9 +1248,9 @@ export class FreeTextAnnotation {
             this.autoFitFreeText(currentPosition.x, currentPosition.y);
         }
         this.inputBoxElement.style.paddingLeft = (this.freeTextPaddingLeft * zoomFactor) + 'px';
-        this.inputBoxElement.style.paddingTop = ((((parseFloat(this.inputBoxElement.style.fontSize) / zoomFactor) / this.defaultFontSize) / zoomFactor)) * this.freeTextPaddingTop + 'px';
+        this.inputBoxElement.style.paddingTop = ((((parseFloat(this.inputBoxElement.style.fontSize) / Math.max(1, zoomFactor)) / this.defaultFontSize) / Math.max(1, zoomFactor))) * this.freeTextPaddingTop + 'px';
         let lineSpace: any = 0;
-        lineSpace = ((parseFloat(this.inputBoxElement.style.fontSize) / zoomFactor) / (this.defaultFontSize / 2));
+        lineSpace = ((parseFloat(this.inputBoxElement.style.fontSize) / Math.max(1, zoomFactor)) / (this.defaultFontSize / 2));
         this.inputBoxElement.style.paddingTop = ((parseFloat(this.inputBoxElement.style.paddingTop)) - lineSpace) + 'px';
         pageDiv.appendChild(this.inputBoxElement);
         if (!this.pdfViewer.freeTextSettings.enableAutoFit && (this.defaultHeight * zoomFactor)

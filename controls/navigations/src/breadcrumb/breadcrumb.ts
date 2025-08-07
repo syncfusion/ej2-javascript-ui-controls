@@ -826,10 +826,10 @@ export class Breadcrumb extends Component<HTMLElement> implements INotifyPropert
     public onPropertyChanged(newProp: BreadcrumbModel, oldProp: BreadcrumbModel): void {
         for (const prop of Object.keys(newProp)) {
             switch (prop) {
-            case 'items':
             case 'enableActiveItemNavigation':
                 this.reRenderItems();
                 break;
+            case 'items':
             case 'activeItem':
                 this._maxItems = this.maxItems;
                 this.initPvtProps();

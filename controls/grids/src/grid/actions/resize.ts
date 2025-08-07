@@ -409,6 +409,10 @@ export class Resize implements IAction {
             if (this.parent.isFrozenGrid()) {
                 this.refreshResizefrzCols(true, true);
             }
+            if (this.isDblClk && e.type === 'mousedown') {
+                const args: ResizeArgs = { e : e, column: col };
+                this.parent.trigger(events.resizeStop, args);
+            }
             const header: HTMLElement = <HTMLElement>closest(<HTMLElement>e.target, resizeClassList.header);
             header.classList.add('e-resized');
         }
@@ -1017,8 +1021,10 @@ export class Resize implements IAction {
             this.parent.scrollModule.setPadding();
             cTable.style.overflowY = 'scroll';
         }
-        this.parent.trigger(events.resizeStop, args);
-        closest(this.element, '.e-headercell').classList.add('e-resized');
+        if (!Global.timer || !this.isDblClk) {
+            this.parent.trigger(events.resizeStop, args);
+            closest(this.element, '.e-headercell').classList.add('e-resized');
+        }
         this.isFrozenColResized = false;
         if (this.parent.allowTextWrap) {
             this.updateResizeEleHeight();

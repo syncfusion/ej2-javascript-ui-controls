@@ -3,7 +3,7 @@ import { Diagram } from '../../diagram';
 import { ConnectorModel } from '../connector-model';
 import { NodeModel, TextModel } from '../node-model';
 import { PointModel } from '../../primitives/point-model';
-import { EventState, ChangeType, State, DiagramAction, HistoryChangeAction, KeyModifiers, MouseButtons, LayoutType, LayoutState, ItemSourceType } from '../../enum/enum';
+import { EventState, ChangeType, State, DiagramAction, HistoryChangeAction, KeyModifiers, MouseButtons, LayoutType, LayoutState } from '../../enum/enum';
 import { SelectorModel } from '../../objects/node-model';
 import { DiagramModel } from '../../diagram-model';
 import { Connector } from '../../objects/connector';
@@ -249,7 +249,16 @@ export interface ICollectionChangeEventArgs {
     element: NodeModel | ConnectorModel;
     /** returns the action of diagram */
     cause: DiagramAction;
-    /** returns the string of the DiagramAction*/
+    /**
+     *  returns a actions to enable proper notification of the operations.
+     * PublicMethod: Items added or removed through public API methods.
+     * SymbolPalette: Items added via interaction with the Symbol Palette.
+     * DrawingTool: Items added using a drawing tool.
+     * Clipboard: Items added or removed via clipboard operations (copy, cut, paste).
+     * Undo: Items affected by an undo operation.
+     * Redo: Items affected by a redo operation.
+     * Group: Items added as part of a group operation.
+     */
     diagramAction: string;
     /** returns the state of collection change event (Changing, Changed, Canceled) */
     state: EventState;
@@ -261,8 +270,6 @@ export interface ICollectionChangeEventArgs {
     laneIndex?: Number;
     /** returns a parent node of the target node */
     parentId?: string;
-    /** returns a actions to enable proper notification of the operations. */
-    itemSource: ItemSourceType;
 }
 /**
  * IBlazorCollectionChangeEventArgs notifies while the node/connector are added or removed in the diagram

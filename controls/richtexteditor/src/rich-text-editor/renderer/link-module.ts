@@ -65,6 +65,7 @@ export class Link {
         this.parent.on(events.bindCssClass, this.setCssClass, this);
         this.parent.on(events.destroy, this.destroy, this);
         this.parent.on(events.bindOnEnd, this.bindOnEnd, this);
+        this.parent.on(events.selectionChangeMouseUp, this.editAreaClickHandler, this);
     }
     private bindOnEnd(): void {
         if (this.parent.formatter.editorManager && !this.parent.formatter.editorManager.linkObj) {
@@ -101,6 +102,7 @@ export class Link {
         this.parent.off(events.bindCssClass, this.setCssClass);
         this.parent.off(events.destroy, this.destroy);
         this.parent.off(events.bindOnEnd, this.bindOnEnd);
+        this.parent.off(events.selectionChangeMouseUp, this.editAreaClickHandler);
         if (!isNullOrUndefined(this.contentModule)) {
             (this.parent.element.ownerDocument as Document).removeEventListener('mousedown', this.mouseDown);
             this.mouseDown = null;
@@ -197,6 +199,12 @@ export class Link {
         if (this.parent.editorMode === 'HTML' && this.parent.quickToolbarModule && this.parent.quickToolbarModule.linkQTBar) {
             this.quickToolObj = this.parent.quickToolbarModule;
             let target: HTMLElement = args.target as HTMLElement;
+            const isTargetDocument: boolean = target && ((target as HTMLElement).nodeName === 'HTML' || (target as HTMLElement).nodeName === '#document');
+            const isTargetRteElement: boolean = !(target && (target as HTMLElement).closest && (target as HTMLElement).closest('.e-rte-elements'));
+            if (isTargetDocument || (!this.parent.inputElement.contains(target as HTMLElement) && isTargetRteElement)) {
+                const range: Range = this.parent.formatter.editorManager.nodeSelection.getRange(this.parent.contentModule.getDocument());
+                target = range.commonAncestorContainer.parentElement;
+            }
             target = this.getAnchorNode([target]);
             this.contentModule = this.rendererFactory.getRenderer(RenderType.Content);
             if (target.nodeName === 'A' && (target.childNodes.length > 0 && target.childNodes[0].nodeName !== 'IMG') &&

@@ -1,4 +1,4 @@
-import { KeyboardEventArgs, removeClass, selectAll, isNullOrUndefined as isNOU, EventHandler } from '@syncfusion/ej2-base';
+import { KeyboardEventArgs, removeClass, selectAll, isNullOrUndefined as isNOU, EventHandler, detach } from '@syncfusion/ej2-base';
 import { IRichTextEditor, IRenderer } from '../base/interface';
 import { ActionBeginEventArgs } from '../../common/interface';
 import * as events from '../base/constant';
@@ -228,6 +228,14 @@ export class ViewSource {
                     }
                 } else {
                     value = serializeValue;
+                }
+                let element: HTMLDivElement = document.createElement('div');
+                element.innerHTML = value;
+                const textString: string = element.textContent === '\n' ? '' : element.textContent;
+                detach(element);
+                element = null;
+                if (this.parent.maxLength >= 0 && textString.length > this.parent.maxLength) {
+                    value = this.contentModule.getEditPanel().innerHTML;
                 }
                 this.contentModule.getEditPanel().innerHTML = resetContentEditableElements(this.replaceAmpersand(value),
                                                                                            this.parent.editorMode);

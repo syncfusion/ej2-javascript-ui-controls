@@ -2,7 +2,15 @@
 
 ## [Unreleased]
 
-## 30.1.42 (2025-07-29)
+## 30.1.39 (2025-07-08)
+
+### FileManager
+
+#### Bug Fixes
+
+- `#I742253` - The issue where the fileOpen event in the File Manager component was not triggered during subsequent navigation pane folder navigation has been resolved.
+
+## 30.1.38 (2025-07-02)
 
 ### FileManager
 

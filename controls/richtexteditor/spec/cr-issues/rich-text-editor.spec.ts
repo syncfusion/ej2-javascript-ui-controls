@@ -3,6 +3,7 @@
  */
 import { createElement, Browser, extend } from '@syncfusion/ej2-base';
 import { RichTextEditor } from '../../src/rich-text-editor/base/rich-text-editor';
+import { PasteCleanup } from "../../src/rich-text-editor/index";
 import { renderRTE, destroy, dispatchEvent as dispatchEve, setCursorPoint } from './../rich-text-editor/render.spec';
 import { NodeSelection } from '../../src/selection/selection';
 import { Dialog } from '@syncfusion/ej2-popups';
@@ -899,6 +900,98 @@ describe('RTE CR issues ', () => {
             done();
         });
     });
+
+    describe('Bug 970477: Texts in sub-bullet list turn into Bold in RichTextEditor', () => {
+        let rteObj: RichTextEditor;
+        let keyBoardEvent: any = { type: 'keydown', preventDefault: () => { }, stopPropagation: () => { }, shiftKey: false, which: 9, key: 'Tab', keyCode: 9, target: document.body };
+        beforeEach((done: DoneFn) => {
+            rteObj = renderRTE({
+                toolbarSettings: {
+                    items: ['Undo', 'Redo']
+                },
+            });
+            done();
+        });
+        it('Apply tab key in list', (done: DoneFn) => {
+            rteObj.value = `<ul id="ul"><li style="font-weight: bold;"><strong>Hiiii</strong></li><li style="" id="sublist">Helloo</li></ul>`;
+            rteObj.dataBind();
+            let liElement: HTMLElement = rteObj.inputElement.querySelector('#sublist');
+            setCursorPoint(liElement, 0);
+            (rteObj as any).keyDown(keyBoardEvent);
+            let value = rteObj.inputElement.querySelector('#ul');
+            expect(value.innerHTML === `<li style="font-weight: bold;"><strong>Hiiii</strong><ul><li style="font-weight: 400;" id="sublist">Helloo</li></ul></li>`).toBe(true);
+            done();
+        });
+        afterEach((done) => {
+            destroy(rteObj);
+            done();
+        });
+    });
+
+    describe('Bug 971752: Image Upload fails when dragging and dropping images into RichTextEditor', () => {
+        let rteObj: RichTextEditor;
+        let keyBoardEvent: any = {
+            preventDefault: () => { },
+            type: "keydown",
+            stopPropagation: () => { },
+            ctrlKey: false,
+            shiftKey: false,
+            action: null,
+            which: 64,
+            key: ""
+        };
+        beforeAll((done: Function) => {
+            rteObj = renderRTE({
+                insertImageSettings: {
+                    saveUrl: 'http://aspnetmvc.syncfusion.com/services/api/uploadbox/Save',
+                },
+                pasteCleanupSettings: {
+                    prompt: false,
+                },
+                value: `<div><p>First p node-0</p></div>`,
+            });
+            done();
+        });
+        afterAll((done: Function) => {
+            destroy(rteObj);
+            done();
+        });
+        it(" Need to drag and drop the image after pasting the image", function (done: DoneFn) {
+            rteObj.value = '<p>21</p>';
+            rteObj.pasteCleanupSettings.prompt = false;
+            rteObj.pasteCleanupSettings.plainText = false;
+            rteObj.pasteCleanupSettings.keepFormat = true;
+            rteObj.dataBind();
+            setCursorPoint((rteObj as any).inputElement.firstElementChild, 0);
+            let pasteCleanupObj: PasteCleanup = new PasteCleanup(rteObj, rteObj.serviceLocator);
+            (pasteCleanupObj as any).bindOnEnd();
+            let elem: HTMLElement = createElement('span', {
+                id: 'imagePaste', innerHTML: '<img src="https://cdn.syncfusion.com/content/images/company-logos/Syncfusion_Logo_Image.png" alt="Image result for syncfusion" class="e-resize e-img-focus">'
+            });
+            (pasteCleanupObj as any).imageFormatting(keyBoardEvent, {elements: [elem.firstElementChild]});
+            setTimeout(() => {
+                let pastedElm: any = (rteObj as any).inputElement.innerHTML;
+                expect(rteObj.inputElement.children[0].children[0].tagName.toLowerCase() === 'img').toBe(true);
+                let expected: boolean = false;
+                let expectedElem: string = `<p><img src="https://cdn.syncfusion.com/content/images/company-logos/Syncfusion_Logo_Image.png" alt="Image result for syncfusion" class="e-resize e-img-focus e-rte-image e-imginline">&nbsp;21</p>`;
+                if (pastedElm === expectedElem) {
+                expected = true;
+                }
+                expect(expected).toBe(true);
+                let image: HTMLElement = createElement("IMG");
+                image.classList.add('e-rte-drag-image');
+                image.setAttribute('src', 'https://www.google.co.in/images/branding/googlelogo/2x/googlelogo_color_272x92dp.png');
+                let fileObj: File = new File(["Nice One"], "sample.png", { lastModified: 0, type: "image/png" });
+                rteObj.inputElement.appendChild(image);
+                let event: any = { clientX: 40, clientY: 294, dataTransfer: { files: [fileObj] }, preventDefault: function () { return; } };
+                rteObj.focusIn();
+                (rteObj.imageModule as any).insertDragImage(event);
+                expect(rteObj.inputElement.querySelectorAll('img').length === 2).toBe(true);
+                done();
+            }, 100);
+        });
+    });
+    
 
     describe('936824 - The Shift + Tab behavior needs to be changed when enableTabKey is enabled in RichTextEditor', () => {
         let rteObj: RichTextEditor;
@@ -2434,6 +2527,29 @@ describe('RTE CR issues ', () => {
             const insertedTable1 = rteObj.contentModule.getEditPanel().querySelector('table');
             expect(insertedTable1).not.toBeNull();
             expect(rteObj.element.querySelector('.e-placeholder-enabled')).toBeNull();
+        });
+    });
+
+    describe('971893 - Backspacing the text elements inside the div does not work properly in RichTextEditor.', () => {
+        let rteObj: RichTextEditor;
+        beforeAll((done: Function) => {
+            rteObj = renderRTE({
+                value: `<div style="font-style: normal; font-weight: 400; text-align: start; text-indent: 0px; text-transform: none; white-space: normal; color: rgb(32, 31, 30); font-family: Aptos; font-size: 18.6667px; background-color: rgb(255, 255, 255);">Hi Janet,</div><div style="font-style: normal; font-weight: 400; text-align: start; text-indent: 0px; text-transform: none; white-space: normal; color: rgb(32, 31, 30); font-family: Aptos; font-size: 18.6667px; background-color: rgb(255, 255, 255);"><br></div><div style="font-style: normal; font-weight: 400; text-align: start; text-indent: 0px; text-transform: none; white-space: normal; color: rgb(32, 31, 30); font-family: Aptos; font-size: 18.6667px; background-color: rgb(255, 255, 255);">Thank you for reaching out!</div><div style="font-style: normal; font-weight: 400; text-align: start; text-indent: 0px; text-transform: none; white-space: normal; color: rgb(32, 31, 30); font-family: Aptos; font-size: 18.6667px; background-color: rgb(255, 255, 255);"><br></div><div style="font-style: normal; font-weight: 400; text-align: start; text-indent: 0px; text-transform: none; white-space: normal; color: rgb(32, 31, 30); font-family: Aptos; font-size: 18.6667px; background-color: rgb(255, 255, 255);"> <div><div>Has the claimant previously been absent due to back problems?</div></div> <div><div>Were aware of any pre-existing back problems with the claimant?</div></div> <div><div class="focusNode">Risk assessment for slips, trips and falls together with adverse weather conditions;</div></div> <div><div>Whilst&nbsp;we note there is a stop work authority which the claimant alleges, he never really understood how it worked, did the other agents not know about it either - can we either provide training records or a read and sign;</div></div> </div>`,
+            });
+            done();
+        });
+        it('Rich Text Editor works properly when backspacing text inside nested <div> elements', (done) => {
+            var startNode = rteObj.inputElement.querySelector(".focusNode").childNodes[0];
+            setCursorPoint((startNode as Element), 0);
+            let keyBoardEvent: any = { type: 'keydown', preventDefault: () => { }, ctrlKey: false, code:'Backspace', key: 'backspace', action: 'backspace', keyCode: 8, stopPropagation: () => { }, shiftKey: false, which: 8 };
+            keyBoardEvent.target = rteObj.inputElement;
+            (rteObj as any).keyDown(keyBoardEvent);
+            expect((rteObj as any).inputElement.innerHTML === '<div style="font-style: normal; font-weight: 400; text-align: start; text-indent: 0px; text-transform: none; white-space: normal; color: rgb(32, 31, 30); font-family: Aptos; font-size: 18.6667px; background-color: rgb(255, 255, 255);">Hi Janet,</div><div style="font-style: normal; font-weight: 400; text-align: start; text-indent: 0px; text-transform: none; white-space: normal; color: rgb(32, 31, 30); font-family: Aptos; font-size: 18.6667px; background-color: rgb(255, 255, 255);"><br></div><div style="font-style: normal; font-weight: 400; text-align: start; text-indent: 0px; text-transform: none; white-space: normal; color: rgb(32, 31, 30); font-family: Aptos; font-size: 18.6667px; background-color: rgb(255, 255, 255);">Thank you for reaching out!</div><div style="font-style: normal; font-weight: 400; text-align: start; text-indent: 0px; text-transform: none; white-space: normal; color: rgb(32, 31, 30); font-family: Aptos; font-size: 18.6667px; background-color: rgb(255, 255, 255);"><br></div><div style="font-style: normal; font-weight: 400; text-align: start; text-indent: 0px; text-transform: none; white-space: normal; color: rgb(32, 31, 30); font-family: Aptos; font-size: 18.6667px; background-color: rgb(255, 255, 255);"> <div><div>Has the claimant previously been absent due to back problems?</div></div> <div><div>Were aware of any pre-existing back problems with the claimant?Risk assessment for slips, trips and falls together with adverse weather conditions;</div></div> <div></div> <div><div>Whilst&nbsp;we note there is a stop work authority which the claimant alleges, he never really understood how it worked, did the other agents not know about it either - can we either provide training records or a read and sign;</div></div> </div>').toBe(true);
+            done();
+        });
+        afterAll((done: DoneFn) => {
+            destroy(rteObj);
+            done();
         });
     });
 });

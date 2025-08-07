@@ -912,7 +912,8 @@ export class AIAssistView extends InterActiveChatBase implements INotifyProperty
                 tooltipText: item.tooltip,
                 prefixIcon: item.iconCss,
                 text: item.text,
-                align: item.align
+                align: item.align,
+                tabIndex: item.tabIndex
             }));
             this.toolbarItems = [...this.toolbarItems, ...pushToolbar];
         }
@@ -1626,7 +1627,8 @@ export class AIAssistView extends InterActiveChatBase implements INotifyProperty
                 text: item.text,
                 cssClass: item.cssClass,
                 align: item.align,
-                width: this.responseToolbarSettings.width
+                width: this.responseToolbarSettings.width,
+                tabIndex: item.tabIndex
             };
             if (toolbarItem.prefixIcon === 'e-icons e-assist-like' && this.prompts[parseInt(index.toString(), 10)].isResponseHelpful) {
                 toolbarItem.prefixIcon = 'e-icons e-assist-like-filled';
@@ -1780,7 +1782,8 @@ export class AIAssistView extends InterActiveChatBase implements INotifyProperty
                 prefixIcon: item.iconCss,
                 text: item.text,
                 align: item.align,
-                width: this.promptToolbarSettings.width
+                width: this.promptToolbarSettings.width,
+                tabIndex: item.tabIndex
             }));
         }
         this.promptToolbarEle = new Toolbar({

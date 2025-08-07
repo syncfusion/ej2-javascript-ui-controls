@@ -214,6 +214,8 @@ export class DragAndDrop extends ActionBase {
                 if (!isNullOrUndefined(dragObj)) {
                     dragObj.intDestroy((e as DragEventArgs).event as MouseEvent & TouchEvent);
                 }
+                this.isMultiSelect = false;
+                this.multiData = [];
                 this.actionObj.action = '';
                 this.removeCloneElementClasses();
                 this.removeCloneElement();

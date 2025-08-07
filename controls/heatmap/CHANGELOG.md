@@ -2,7 +2,22 @@
 
 ## [Unreleased]
 
+## 30.2.4 (2025-08-07)
+
+### HeatMap
+
+#### Bug fixes
+
+- `#T752738` - Now, the scroll does not appear when setting overflow to auto in the HeatMap component.
+
 ## 30.1.42 (2025-07-29)
+
+### HeatMap
+
+#### Bug fixes
+
+- `#F69000` - The loaded event will now trigger as expected when the HeatMap is rendered.
+- `#F68977` - Now, the HeatMap component renders when the palette property is set to Fixed during argument rendering.
 
 ### HeatMap
 

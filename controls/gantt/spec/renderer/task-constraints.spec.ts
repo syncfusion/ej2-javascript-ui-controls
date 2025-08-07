@@ -4,6 +4,9 @@
 import { Gantt, DayMarkers , Selection, Edit} from '../../src/index';
 import { constraintsData } from '../base/data-source.spec';
 import { createGantt, destroyGantt, triggerMouseEvent } from '../base/gantt-util.spec';
+interface EJ2Instance extends HTMLElement {
+    ej2_instances: Object[];
+}
 describe('Task constraints', () => {
     describe('Constraints Rendering', () => {
         Gantt.Inject(DayMarkers, Selection, Edit);
@@ -2632,3 +2635,116 @@ describe('Task constraints', () => {
        });
     });
 });
+    describe('Constraints Rendering', () => {
+        Gantt.Inject(DayMarkers, Selection, Edit);
+        let ganttObj: Gantt;
+        beforeAll((done: Function) => {
+            ganttObj = createGantt({
+                dataSource: constraintsData,
+        taskFields: {
+            id: 'TaskID',
+            name: 'TaskName',
+            startDate: 'StartDate',
+            endDate: 'EndDate',
+            duration: 'Duration',
+            progress: 'Progress',
+            dependency: 'Predecessor',
+            constraintType: 'ConstraintType',
+            constraintDate: 'ConstraintDate',
+            child: 'subtasks',
+        },
+        editSettings: {
+            allowAdding: true,
+            allowEditing: true,
+            allowDeleting: true,
+            allowTaskbarEditing: true,
+            showDeleteConfirmDialog: true
+        },
+        toolbar: ['Add', 'Edit', 'Update', 'Delete', 'Cancel', 'ExpandAll', 'CollapseAll', 'Search', 'ZoomIn', 'ZoomOut', 'ZoomToFit',
+            'PrevTimeSpan', 'NextTimeSpan', 'ExcelExport', 'CsvExport', 'PdfExport'],
+        allowExcelExport: true,
+        allowPdfExport: true,
+        allowSelection: true,
+        allowRowDragAndDrop: true,
+        selectedRowIndex: 1,
+        splitterSettings: {
+            position: "50%",
+        },
+        selectionSettings: {
+            mode: 'Row',
+            type: 'Single',
+            enableToggle: false
+        },
+        tooltipSettings: {
+            showTooltip: true
+        },
+        filterSettings: {
+            type: 'Menu'
+        },
+        columns: [
+        { field: 'TaskID' },
+        { field: 'TaskName', headerText: 'Name', width: 250 },
+        {field : 'ConstraintType'},
+        {field: 'ConstraintDate'},
+        { field: 'StartDate' },
+        { field: 'EndDate' },
+        { field: 'Duration' },
+         { field: 'Progress' },
+    ],
+        allowFiltering: true,
+        gridLines: "Both",
+        showColumnMenu: true,
+        highlightWeekends: true,
+        timelineSettings: {
+            showTooltip: true,
+            topTier: {
+                unit: 'Week',
+                format: 'dd/MM/yyyy'
+            },
+            bottomTier: {
+                unit: 'Day',
+                count: 1
+            }
+        },
+        searchSettings: { fields: ['TaskName', 'Duration']
+        },
+        labelSettings: {
+            leftLabel: 'TaskID',
+            rightLabel: 'Task Name: ${taskData.TaskName}',
+            taskLabel: '${Progress}%'
+        },
+        allowResizing: true,
+        readOnly: false,
+        taskbarHeight: 20,
+        rowHeight: 40,
+        height: '550px',
+        allowUnscheduledTasks: true,
+        projectStartDate: new Date('03/25/2019'),
+        projectEndDate: new Date('05/30/2019'),
+            }, done);
+        });
+        // it('Opening edit dialog with constraint', () => {
+        //     let cancelRecord: HTMLElement = document.querySelectorAll('#' + ganttObj.element.id + '_dialog > div.e-footer-content > button.e-control')[1] as HTMLElement;
+        //     triggerMouseEvent(cancelRecord, 'click');
+        //     expect(ganttObj.flatData[0].ganttProperties.constraintDate).toBe(null)
+        // });
+        beforeEach((done: Function) => {
+            ganttObj.openEditDialog(1);
+            setTimeout(done, 500);
+        });
+        it('edit start date cell', () => {
+            let StartDate: any = document.querySelector('#' + ganttObj.element.id + 'ConstraintType') as HTMLInputElement;
+            if (StartDate) {
+                let SD: any = (<EJ2Instance>document.getElementById(ganttObj.element.id + 'ConstraintType')).ej2_instances[0];
+                SD.value = new Date('03/22/2019');
+                SD.dataBind();
+                let save: HTMLElement = document.querySelectorAll('#' + ganttObj.element.id + '_dialog > div.e-footer-content > button.e-control')[0] as HTMLElement;
+                triggerMouseEvent(save, 'click');
+            }
+        });
+        afterAll(() => {
+           if(ganttObj){
+               destroyGantt(ganttObj);
+           }
+       });
+    });

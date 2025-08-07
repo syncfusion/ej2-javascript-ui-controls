@@ -504,6 +504,7 @@ export class HeatMap extends Component<HTMLElement> implements INotifyPropertyCh
     }
 
     private initPrivateVariable(): void {
+        this.rendering = true;
         this.renderer = new SvgRenderer(this.element.id);
         this.canvasRenderer = new CanvasRenderer(this.element.id);
         this.secondaryCanvasRenderer = new CanvasRenderer(this.element.id + '_secondary');
@@ -591,6 +592,7 @@ export class HeatMap extends Component<HTMLElement> implements INotifyPropertyCh
             this.tooltipModule.showHideTooltip(false);
         }
         this.renderComplete();
+        this.trigger('loaded', ({ heatmap: this }));
     }
 
     /**
@@ -1331,6 +1333,7 @@ export class HeatMap extends Component<HTMLElement> implements INotifyPropertyCh
         element.style.webkitUserSelect = 'none';
         element.style.position = 'relative';
         element.style.display = 'block';
+        element.style.overflow = 'hidden';
     }
 
     /**

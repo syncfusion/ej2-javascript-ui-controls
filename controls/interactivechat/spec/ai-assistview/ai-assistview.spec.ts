@@ -1,4 +1,3 @@
-
 import { createElement, EventHandler, isNullOrUndefined, L10n } from "@syncfusion/ej2-base";
 import { AIAssistView, PromptRequestEventArgs } from "../../src/ai-assistview/index";
 import { ToolbarItemClickedEventArgs } from '../../src/interactive-chat-base/index';
@@ -191,6 +190,47 @@ describe('AIAssistView -', () => {
             toolbarItem.click();
         });
 
+        it('Toolbarsettings tabIndex prop checking', () => {
+            aiAssistView = new AIAssistView({
+                toolbarSettings: {
+                    items: [
+                        { iconCss: 'e-icons e-user', align: 'Right', tabIndex: 1 },
+                        { iconCss: 'e-icons e-people', align: 'Right', tabIndex: 2 }
+                    ],
+                }
+            });
+            aiAssistView.appendTo(aiAssistViewElem);
+            const toolbarItems: NodeListOf<HTMLDivElement> = aiAssistViewElem.querySelectorAll('.e-toolbar-item');
+            expect(toolbarItems.length).toBe(3);
+            expect(toolbarItems[1].children[0].getAttribute('tabindex')).toEqual('1');
+            expect(toolbarItems[2].children[0].getAttribute('tabindex')).toEqual('2');
+        });
+
+        it('Toolbarsettings dynamic tabindex value checking', () => {
+            aiAssistView = new AIAssistView({
+                toolbarSettings: {
+                    items: [
+                        { iconCss: 'e-icons e-user', align: 'Right' }
+                    ]
+                }
+            });
+            aiAssistView.appendTo(aiAssistViewElem);
+            const toolbarElement: HTMLDivElement = aiAssistViewElem.querySelector('.e-toolbar');
+            let toolbarItems: NodeListOf<HTMLDivElement> = aiAssistViewElem.querySelectorAll('.e-toolbar-item');
+            expect(toolbarItems.length).toBe(2);
+            expect(toolbarItems[1].children[0].getAttribute('tabindex')).toEqual('-1');
+            aiAssistView.toolbarSettings = {
+                items: [{ iconCss: 'e-icons e-user', align: 'Right', tabIndex: 1 }, { iconCss: 'e-icons e-folder', align: 'Right', tabIndex: 2 }],
+            };
+            aiAssistView.dataBind();
+            (toolbarElement as any).ej2_instances[0].dataBind();
+            toolbarItems = aiAssistViewElem.querySelectorAll('.e-toolbar-item');
+            expect(toolbarItems.length).toBe(4);
+            expect(toolbarItems[1].children[0].getAttribute('tabindex')).toEqual('-1');
+            expect(toolbarItems[2].children[0].getAttribute('tabindex')).toEqual('1');
+            expect(toolbarItems[3].children[0].getAttribute('tabindex')).toEqual('2');
+        });
+
         it('Prompt toolbarsettings prop checking', () => {
             aiAssistView = new AIAssistView({
                 prompts: [ {
@@ -204,14 +244,17 @@ describe('AIAssistView -', () => {
                         }
                     },
                     items: [
-                        { iconCss: 'e-icons e-copy' },
-                        { iconCss: 'e-icons e-edit' }
+                        { iconCss: 'e-icons e-copy', tabIndex: 1 },
+                        { iconCss: 'e-icons e-edit', tabIndex: 2 }
                     ]
                 }
             });
             aiAssistView.appendTo(aiAssistViewElem);
-            const toolbarItems: NodeList = aiAssistViewElem.querySelectorAll('.e-prompt-toolbar .e-toolbar-item');
+            const toolbarItems: NodeListOf<HTMLDivElement> = aiAssistViewElem.querySelectorAll('.e-prompt-toolbar .e-toolbar-item');
             expect(toolbarItems).not.toBeNull();
+            // tabIndex value check
+            expect(toolbarItems[0].children[0].getAttribute('tabindex')).toEqual('1');
+            expect(toolbarItems[1].children[0].getAttribute('tabindex')).toEqual('2');
             const copyItem: HTMLElement = (toolbarItems[0] as HTMLElement).querySelector('button');
             expect(copyItem).not.toBeNull();
             expect(copyItem.querySelector('button span').classList.contains('e-copy')).toEqual(true);
@@ -235,14 +278,17 @@ describe('AIAssistView -', () => {
                         }
                     },
                     items: [
-                        { iconCss: 'e-icons e-copy' },
-                        { iconCss: 'e-icons e-like' }
+                        { iconCss: 'e-icons e-copy', tabIndex: 1 },
+                        { iconCss: 'e-icons e-like', tabIndex: 2 }
                     ]
                 }
             });
             aiAssistView.appendTo(aiAssistViewElem);
-            const toolbarItems: NodeList = aiAssistViewElem.querySelectorAll('.e-content-footer .e-toolbar-item');
+            const toolbarItems: NodeListOf<HTMLDivElement> = aiAssistViewElem.querySelectorAll('.e-content-footer .e-toolbar-item');
             expect(toolbarItems).not.toBeNull();
+            // tabIndex value check
+            expect(toolbarItems[0].children[0].getAttribute('tabindex')).toEqual('1');
+            expect(toolbarItems[1].children[0].getAttribute('tabindex')).toEqual('2');
             const copyItem: HTMLElement = (toolbarItems[0] as HTMLElement).querySelector('button');
             expect(copyItem).not.toBeNull();
             expect(copyItem.querySelector('button span').classList.contains('e-copy')).toEqual(true);

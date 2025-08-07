@@ -82,7 +82,7 @@ export class ExcelExport {
             this.isCollapsedStatePersist = (excelExportProperties as TreeGridExcelExportProperties).isCollapsedStatePersist;
         }
         if (!isNullOrUndefined(excelExportProperties)) {
-            if (!isNullOrUndefined(excelExportProperties.dataSource) && !excelExportProperties.dataSource['dataSource']) {
+            if (!this.isLocal() && !isNullOrUndefined(excelExportProperties.dataSource) && !excelExportProperties.dataSource['dataSource']) {
                 return this.parent.grid.excelExportModule.Map(
                     this.parent.grid, excelExportProperties, isMultipleExport, workbook, isCsv, isBlob);
             }

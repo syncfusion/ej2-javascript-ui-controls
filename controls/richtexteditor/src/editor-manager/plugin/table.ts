@@ -950,9 +950,9 @@ export class TableCommand {
      * Removes the entire table when the last column is being deleted.
      */
     private removeEntireTable(e: IHtmlItem): void {
-        e.item.selection.restore();
         const selectedCell: HTMLElement = e.item.selection.range.startContainer as HTMLElement;
         detach(closest(selectedCell.parentElement, 'table'));
+        e.item.selection.restore();
     }
 
     /*

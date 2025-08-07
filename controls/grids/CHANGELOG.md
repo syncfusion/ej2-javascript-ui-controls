@@ -2,7 +2,24 @@
 
 ## [Unreleased]
 
+## 30.2.4 (2025-08-07)
+
+### Grid
+
+#### Bug Fixes
+
+- `#I747642` - The issue where the `ResizeStop` event failed to trigger during rapid column resizing has been resolved.
+
 ## 30.1.42 (2025-07-29)
+
+### Grid
+
+#### Bug Fixes
+
+- `#I747642` - The issue where the `ResizeStop` event did not return the updated column width when resizing was performed via `double-click` has been resolved.
+- `#I743762` - The issue causing misalignment of aggregate cells in PDF exports when using Aggregates in combination with `detailTemplate` in the Grid has been resolved.
+- `#I745882` - The issue where the `aria-label` attribute as `undefined` during inline editing when using the `editTemplate` feature has been resolved.
+- `#I746481` - The accessibility issue related to the `aria-label` on the group drag icon has been resolved.
 
 ### Grid
 

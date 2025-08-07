@@ -1133,12 +1133,6 @@
       margin-top: 0;
     }
 
-    .e-img-uploadwrap.e-droparea .e-upload .e-upload-files .e-file-abort-btn.e-icons,
-    .e-aud-uploadwrap.e-droparea .e-upload .e-upload-files .e-file-abort-btn.e-icons,
-    .e-vid-uploadwrap.e-droparea .e-upload .e-upload-files .e-file-abort-btn.e-icons {
-      margin-right: 30px;
-    }
-
     .e-img-uploadwrap.e-droparea .e-upload .e-upload-files .e-upload-file-list,
     .e-aud-uploadwrap.e-droparea .e-upload .e-upload-files .e-upload-file-list,
     .e-vid-uploadwrap.e-droparea .e-upload .e-upload-files .e-upload-file-list  {
@@ -1150,7 +1144,6 @@
     .e-aud-uploadwrap.e-droparea .e-upload .e-upload-files .e-upload-file-list .e-file-container,
     .e-vid-uploadwrap.e-droparea .e-upload .e-upload-files .e-upload-file-list .e-file-container {
       margin-left: 0;
-      margin-right: 0;
     }
 
     .e-img-uploadwrap.e-droparea .e-upload .e-upload-files,
@@ -1173,7 +1166,6 @@
     }
 
     .e-dialog .e-img-uploadwrap.e-droparea .e-upload .e-upload-files .e-file-abort-btn.e-icons {
-      margin-right: $rte-img-upload-abort-icon-btn-margin-right;
       margin-top: $rte-img-upload-abort-icon-btn-margin-top;
     }
 

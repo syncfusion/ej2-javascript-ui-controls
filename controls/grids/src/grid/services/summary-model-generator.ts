@@ -107,7 +107,7 @@ export class SummaryModelGenerator implements IModelGenerator<AggregateColumnMod
                     values[parseInt(i.toString(), 10)],
                     summaryRow,
                     i >= indentLength ? this.getCellType() :
-                        i === 0 && this.parent.childGrid ? CellType.DetailFooterIntent : CellType.Indent,
+                        i === 0 && (this.parent.childGrid || this.parent.detailTemplate) ? CellType.DetailFooterIntent : CellType.Indent,
                     indents[parseInt(i.toString(), 10)], isDetailGridAlone));
         }
 

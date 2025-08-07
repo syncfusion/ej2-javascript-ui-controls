@@ -997,7 +997,7 @@ export class Group implements IAction {
             childDiv.appendChild(this.parent.createElement(
                 'span', {
                     className: 'e-drag e-icons e-icon-drag', innerHTML: '&nbsp;',
-                    attrs: { title: 'Drag', tabindex: '-1', 'aria-label': this.l10n.getConstant('GroupedDrag') }
+                    attrs: { title: 'Drag', tabindex: '-1', 'aria-label': this.l10n.getConstant('GroupedDrag'), 'role': 'button' }
                 }));
         }
         childDiv.appendChild(this.parent.createElement('span', {
@@ -1074,7 +1074,7 @@ export class Group implements IAction {
     private createSeparator(): Element {
         const separator: HTMLElement = this.parent.createElement('span', {
             className: 'e-nextgroup e-icons e-icon-next', innerHTML: '&nbsp;',
-            attrs: { tabindex: '-1', 'aria-label': this.l10n.getConstant('GroupSeperator') }
+            attrs: { tabindex: '-1', 'aria-label': this.l10n.getConstant('GroupSeperator'), 'role': 'button' }
         });
         updateCSSText(separator, this.groupSettings.showUngroupButton ? '' : 'display: none;');
         return separator;

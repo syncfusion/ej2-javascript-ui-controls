@@ -269,7 +269,7 @@ export class NodeSelection {
         nodeCollection = nodeCollection.reverse();
         for (let index: number = 0; index < nodeCollection.length; index++) {
             if (nodeCollection[index as number].nodeName !== 'BR' &&
-            (nodeCollection[index as number].nodeType !== 3 || (nodeCollection[index as number].textContent.trim() === ''))) {
+            (nodeCollection[index as number].nodeType !== 3 || (nodeCollection[index as number].textContent.trim() === '' && !nodeCollection[index as number].textContent.includes('\u00A0')))) {
                 nodeCollection.splice(index, 1);
                 index--;
             }

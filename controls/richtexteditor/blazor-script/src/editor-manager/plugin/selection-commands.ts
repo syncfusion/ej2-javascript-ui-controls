@@ -555,8 +555,8 @@ export class SelectionCommands {
         if (child.length > 0 && isFontStyle) {
             for (let num: number = 0; num < child.length; num++) {
                 if (child[num as number].nodeType !== 3 || (child[num as number].textContent &&
-                     child[num as number].textContent.trim().length > 0)) {
-                    if (value !== '' && value !== 'transparent') {
+                     (child[num as number].textContent.trim().length > 0 || child[num as number].textContent.includes('\u00A0')))) {
+                    if (value !== '' || format === 'fontcolor' && value === '') {
                         child[num as number] = InsertMethods.Wrap(
                             child[num as number] as HTMLElement,
                             this.GetFormatNode(format, value, formatNodeTagName, formatNodeStyles));
@@ -572,8 +572,8 @@ export class SelectionCommands {
                         }
                     }
                     if (!isNOU(liElement) && liElement.tagName.toLowerCase() === 'li'
-                        && liElement.textContent.trim() !== nodes[index as number].textContent.trim()) {
-                        liElement.removeAttribute('style');
+                        && liElement.textContent.trim() !== nodes[index as number].textContent.trim() && format === 'fontname') {
+                        liElement.style.removeProperty('font-family');
                     }
                     if (child[num as number].textContent === startText && (range.startContainer.nodeName === '#text' || range.startContainer.nodeName !== '#text'
                         && (range.startContainer as Element).classList && !(range.startContainer as Element).classList.contains('e-multi-cells-select')) ) {

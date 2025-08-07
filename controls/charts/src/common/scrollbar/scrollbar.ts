@@ -28,6 +28,8 @@ export class ScrollBar {
 
     public svgObject: Element;
 
+    public svgExtraWidth: number = 50;
+
     public width: number;
 
     public height: number;
@@ -246,8 +248,8 @@ export class ScrollBar {
 
     private isWithIn(currentX: number): boolean {
         const circleRadius: number = this.axis.scrollbarSettings.height / 2;
-        return (currentX - circleRadius >= 0 &&
-            currentX + this.scrollElements.thumbRectWidth + circleRadius <= this.width);
+        return ((currentX - (this.axis.scrollbarSettings.enableZoom && this.axis.orientation === 'Horizontal' ? this.svgExtraWidth / 2 : 0)) - circleRadius >= 0 &&
+            currentX + this.scrollElements.thumbRectWidth + circleRadius <= (this.width + (this.axis.scrollbarSettings.enableZoom && this.axis.orientation === 'Horizontal' ? this.svgExtraWidth / 2 : 0)));
     }
 
     /**
@@ -280,6 +282,10 @@ export class ScrollBar {
         const axis: Axis = this.axis;
         const circleRadius: number = this.axis.scrollbarSettings.height / 2;
         const circleWidth: number = 1;
+        if (axis.scrollbarSettings.enableZoom && !this.isVertical) {
+            currentX -= (this.svgExtraWidth / 2);
+            currentWidth += (this.svgExtraWidth / 2);
+        }
         const currentScrollWidth: number = currentX + currentWidth + circleRadius + circleWidth;
         const currentZPWidth: number = circleRadius + (circleWidth / 2);
         const axisSize: number = this.isVertical ? axis.rect.height : this.width;
@@ -339,7 +345,7 @@ export class ScrollBar {
                 this.axis.zoomPosition = this.zoomPosition < 0 ? 0 : this.zoomPosition > 0.9 ? 1 : this.zoomPosition;
             }
             this.component.trigger(scrollChanged, this.getArgs(scrollChanged, range, zoomPosition, zoomFactor, currentRange));
-        } else if (this.isResizeLeft || this.isResizeRight) {
+        } else if ((this.isResizeLeft && (this.axis.orientation === 'Horizontal' ? (mouseXY > (this.svgExtraWidth / 2 + this.axis.scrollbarSettings.height / 2)) : true)) || (this.isResizeRight && (this.axis.orientation === 'Horizontal' ? (mouseXY < (this.width + this.svgExtraWidth)) : true))) {
             this.resizeThumb();
         }
     }
@@ -722,7 +728,7 @@ export class ScrollBar {
                 }
             }
         } else if (this.isResizeRight) {
-            currentWidth = mouseXY >= minThumbWidth + this.scrollElements.thumbRectX && mouseXY <= this.width - circleRadius ?
+            currentWidth = mouseXY >= minThumbWidth + this.scrollElements.thumbRectX && mouseXY <= (this.width + (this.axis.orientation === 'Horizontal' ? this.svgExtraWidth / 2 : 0)) - circleRadius ?
                 mouseXY - this.scrollElements.thumbRectX : this.previousWidth;
             this.scrollElements.thumbRectWidth = this.previousWidth = currentWidth;
             this.previousXY = mouseXY;

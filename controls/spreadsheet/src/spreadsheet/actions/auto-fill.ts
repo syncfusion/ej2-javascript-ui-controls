@@ -273,6 +273,7 @@ export class AutoFill {
                             left -= autoFillDropDownRect.width;
                         }
                         this.autoFillDropDown.element.style.top = top + otdiff + 'px';
+                        this.autoFillDropDown.element.style.width = parseFloat(autoFillDropDownRect.width.toFixed(2)) + 'px';
                         if (isRtl) {
                             this.autoFillDropDown.element.style.right = left + oldiff + 'px';
                         } else {

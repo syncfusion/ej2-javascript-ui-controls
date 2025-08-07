@@ -638,7 +638,7 @@ export class PasteCleanup {
 
     /* Cleans up uploader object */
     private cleanupUploader(uploadObj: Uploader): void {
-        if (uploadObj && document.body.contains(uploadObj.element)) {
+        if (uploadObj && !uploadObj.isDestroyed && uploadObj.element) {
             uploadObj.destroy();
         }
     }

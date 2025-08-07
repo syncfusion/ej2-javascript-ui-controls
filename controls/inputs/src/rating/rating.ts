@@ -634,7 +634,6 @@ export class Rating extends Component<HTMLElement> implements INotifyPropertyCha
     }
 
     private updateItemValue(isUpdate: boolean = true): void {
-        if (isUpdate && this.isReact) { this.clearTemplate(['ratingEmptyTemplate', 'ratingFullTemplate']); }
         for (let i: number = 0; i < this.itemsCount; i++) {
             const itemElement: HTMLElement = this.itemElements[parseInt(i.toString(), 10)];
             itemElement.classList.remove(SELECTED, INTERMEDIATE, SELECTEDVALUE);
@@ -658,13 +657,13 @@ export class Rating extends Component<HTMLElement> implements INotifyPropertyCha
         if (!this.fullTemplate && !this.emptyTemplate) { return; }
         const spanEle: HTMLElement = this.itemElements[parseInt(index.toString(), 10)].querySelector('.e-rating-item');
         if (this.fullTemplate && ratingValue === 1) {
-            if (!this.isReact && spanEle.classList.contains(FULLTEMPLATE)) { return; }
+            if (spanEle.classList.contains(FULLTEMPLATE)) { return; }
             this.removeItemContent(spanEle as HTMLElement);
             spanEle.classList.add(FULLTEMPLATE);
             append(this.fullTemplateFunction({ ratingValue: ratingValue, index: index }, this, 'ratingFullTemplate', (this.element.id + 'fullTemplate' + index), this.isStringTemplate), spanEle);
         }
         else if (this.emptyTemplate) {
-            if (!this.isReact && spanEle.classList.contains(EMPTYTEMPLATE)) { return; }
+            if (spanEle.classList.contains(EMPTYTEMPLATE)) { return; }
             this.removeItemContent(spanEle as HTMLElement);
             spanEle.classList.add(EMPTYTEMPLATE);
             append(this.emptyTemplateFunction({ ratingValue: ratingValue, index: index }, this, 'ratingEmptyTemplate', (this.element.id + 'emptyTemplate' + index), this.isStringTemplate), spanEle);
@@ -950,7 +949,6 @@ export class Rating extends Component<HTMLElement> implements INotifyPropertyCha
     }
 
     private updateContent(): void {
-        if (this.isReact) { this.clearTemplate(['ratingEmptyTemplate', 'ratingFullTemplate']); }
         for (let i: number = 0; i < this.itemsCount; i++) {
             const itemElement: HTMLElement = this.itemElements[parseInt(i.toString(), 10)].firstElementChild as HTMLElement;
             this.renderItemContent(itemElement, this.getRatingValue(this.value, i), i, true);

@@ -134,7 +134,7 @@ export class WBorders implements IWidget {
     private documentParagraphFormat(): WParagraphFormat {
         let docParagraphFormat: WParagraphFormat;
         if (this.ownerBase instanceof WParagraphFormat) {
-            docParagraphFormat = (this.ownerBase as WParagraphFormat).getDocumentParagraphFormat();
+            docParagraphFormat = (this.ownerBase as WParagraphFormat).getDocumentParagraphFormat().docParagraphFormat;
         }
         return docParagraphFormat;
     }

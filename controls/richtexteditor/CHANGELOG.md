@@ -2,15 +2,41 @@
 
 ## [Unreleased]
 
+## 30.2.4 (2025-08-07)
+
+### RichTextEditor
+
+#### Bug Fixes
+
+- `#I750223` - Now, images dragged and dropped into the Rich Text Editor will be rendered correctly after a previously pasted image has been removed from the DOM.
+
+- `#I749159` - Now, the Rich Text Editor works properly by allowing users to clear the background color of white space after applying styles.
+
+- `#I742732` - Now, pressing the Enter key on a video rendered within an `iframe` will no longer remove the video element from the DOM in the Rich Text Editor.
+
+- `#I744461` - Now, the inline toolbar opens properly when quickly selecting content in the editor and releasing the mouse outside the Rich Text Editor.
+
+- `#F67499` - Now, the Rich Text Editor font family and font size toolbar status update properly when the selection is made from right to left by releasing the mouse outside the Rich Text Editor.
+
+- `#I749159` - Now, the Rich Text Editor works properly when an image is pasted from the clipboard and the backspace key is pressed, ensuring the cursor remains in the correct position.
+
+- `#I750583` - Now, the Rich Text Editor works properly when backspacing text inside nested `<div>` elements.
+
 ## 30.1.42 (2025-07-29)
 
 ### RichTextEditor
 
 #### Bug Fixes
 
+- `#I747774` - Now, after deleting a table by removing its rows in the Rich Text Editor, the cursor is accurately positioned at the correct location.
+
 - `#I743536` - Now, the Rich Text Editor works properly when resizing tables without editor focus, correctly updating values.
 
 - `#F68651` - Now, the Rich Text Editor works properly when pressing the Shift + Enter key before an image, without throwing a script error.
+
+- `#I746733` - Now, the Clear Format action in the Rich Text Editor works properly by removing the highlighted background color from new lines.
+
+- `#I746844` - Now, the Rich Text Editor works properly by enforcing the character limit in code view, preventing users from exceeding the maximum allowed length.
 
 ## 30.1.40 (2025-07-15)
 

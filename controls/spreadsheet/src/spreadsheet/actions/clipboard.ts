@@ -1,7 +1,7 @@
 import { detach, EventHandler, Browser, L10n, isNullOrUndefined, extend, isUndefined } from '@syncfusion/ej2-base';
 import { ClickEventArgs } from '@syncfusion/ej2-navigations';
 import { Spreadsheet } from '../base/index';
-import { SheetModel, getRangeIndexes, getCell, getSheet, CellModel, getSwapRange, inRange, Workbook, isReadOnly, getRow, isReadOnlyCells, setCell, ValidationModel, checkColumnValidation, getRowHeight, getColumnWidth } from '../../workbook/index';
+import { SheetModel, getRangeIndexes, getCell, getSheet, CellModel, getSwapRange, inRange, Workbook, isReadOnlyCells, setCell, ValidationModel, checkColumnValidation, getRowHeight, getColumnWidth, isReadOnly, getRow } from '../../workbook/index';
 import { CellStyleModel, getRangeAddress, getSheetIndexFromId, getSheetName, NumberFormatArgs } from '../../workbook/index';
 import { RowModel, getFormattedCellObject, workbookFormulaOperation, checkIsFormula, Sheet, mergedRange } from '../../workbook/index';
 import { ExtendedSheet, Cell, setMerge, MergeArgs, getCellIndexes, ChartModel } from '../../workbook/index';
@@ -1267,7 +1267,11 @@ export class Clipboard {
             if (html) { childArr = [].slice.call(ele.children); }
             const getStyle: Function = this.cellStyle(ele);
             pasteModelArgs.colCount = 1;
-            text.split('\n').forEach((row: string) => {
+            const splitArray: string[] = text.split('\n');
+            if (text.endsWith('\r\n') && splitArray.length > 0 && splitArray[splitArray.length - 1] === '') {
+                splitArray.pop();
+            }
+            splitArray.forEach((row: string) => {
                 cellStyle = null;
                 if (html) {
                     filteredChild = childArr.filter(

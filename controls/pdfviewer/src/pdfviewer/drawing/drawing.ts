@@ -3579,6 +3579,7 @@ export class Drawing {
                                             updateAnnotationCollection(newNode, copiedItems[0], false);
                                     }
                                     if (newNode.shapeAnnotationType === 'SignatureText' || newNode.shapeAnnotationType === 'HandWrittenSignature' || newNode.shapeAnnotationType === 'SignatureImage') {
+                                        newNode.signatureName = newNode.id;
                                         this.pdfViewer.viewerBase.signatureModule.storeSignatureData(newNode.pageIndex, newNode);
                                     }
                                     if (!newNode.formFieldAnnotationType && newNode.shapeAnnotationType !== 'SignatureText' && newNode.shapeAnnotationType !== 'HandWrittenSignature' && newNode.shapeAnnotationType !== 'SignatureImage') {

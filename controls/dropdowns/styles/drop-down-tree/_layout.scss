@@ -934,6 +934,11 @@
         }
       }
     }
+    &.e-float-input {
+      .e-float-text.e-label-top {
+        top: 15px;
+      }
+    }
   }
 
   .e-ddt-icon-hide {

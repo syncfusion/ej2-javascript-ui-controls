@@ -2,7 +2,29 @@
 
 ## [Unreleased]
 
+## 30.2.4 (2025-08-07)
+
+### GanttChart
+
+#### Feature
+
+- `#I705390`, `#I665780` - Improved the Gantt chart's baseline functionality by adding support for `baselineDuration` data mapping, alongside the `baselineStartDate` and `baselineEndDate` properties. These enhancements make it easier to configure baseline milestones.
+
+#### Bug fix
+
+- `#I746805` - Fixed blank spaces and missing rows during scroll with timeline virtualization in Gantt Chart.
+
 ## 30.1.42 (2025-07-29)
+
+### GanttChart
+
+#### Bug fixes
+
+- `#I745434` - Taskbar rendering is mismatched between UI and pdf export while using split task issue has been resolved.
+- `#I732347` - Spinner is not shown when editing a cell issue has been resolved.
+- `#I751091` - Disabling `allowEditing` property for custom columns does not work issue has been resolved.
+
+## 30.1.41 (2025-07-08)
 
 ### GanttChart
 

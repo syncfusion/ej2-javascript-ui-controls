@@ -118,6 +118,10 @@ export class UndoRedo {
         } else if (address) {
             if (args.isClearAction && this.beforeActionData.cellDetails.length > 0) {
                 cells = this.beforeActionData.cellDetails;
+            } else if (args.action === 'format' && eventArgs.requestType === 'CellFormat' && eventArgs.range.includes(' ')) {
+                eventArgs.range.split(' ').forEach((currentRange: string) => {
+                    cells.push(...this.getCellDetails(getRangeIndexes(currentRange), sheet, args.action));
+                });
             } else {
                 cells = this.getCellDetails(address, sheet, args.action);
             }
@@ -698,162 +702,168 @@ export class UndoRedo {
         }
         const sheetIndex: number = getSheetIndex(this.parent as Workbook, address[0]);
         const sheet: SheetModel = getSheet(this.parent as Workbook, sheetIndex);
-        let range: number[];
-        if (eventArgs.isColSelected) {
-            const rangeArr: string[] = address[1].split(':');
-            range = [0, getColIndex(rangeArr[0]), sheet.rowCount - 1, getColIndex(rangeArr[1])];
-        } else {
-            range = getSwapRange(getRangeIndexes(address[1]));
-        }
-        const indexes: number[] = range;
         const actionData: BeforeActionData = eventArgs.beforeActionData;
         const isFromUpdateAction: boolean = (args as unknown as { isFromUpdateAction: boolean }).isFromUpdateAction;
         const isRefresh: boolean = this.checkRefreshNeeded(sheetIndex, isFromUpdateAction);
-        const uniqueArgs: { cellIdx: number[], isUnique: boolean, uniqueRange: string } = { cellIdx: [range[0], range[1]], isUnique: false , uniqueRange: ''};
-        if (!eventArgs.isColSelected) {
-            this.parent.notify(checkUniqueRange, uniqueArgs);
-        }
-        if (this.isUndo) {
-            if (uniqueArgs.isUnique && eventArgs.formula && eventArgs.formula.indexOf('UNIQUE') > - 1) {
-                const rangeIdx: number[] = getRangeIndexes(uniqueArgs.uniqueRange);
-                if (getCell(rangeIdx[0], rangeIdx[1], this.parent.getActiveSheet()).value !== '#SPILL!') {
-                    for (let j: number = rangeIdx[0]; j <= rangeIdx[2]; j++) {
-                        for (let k: number = rangeIdx[1]; k <= rangeIdx[3]; k++) {
-                            if (j === rangeIdx[0] && k === rangeIdx[1]) {
-                                k = k + 1;
+        const ranges: string[] = address[1].split(' ');
+        let range: number[];
+        ranges.forEach((currentRange: string) => {
+            if (eventArgs.isColSelected) {
+                const rangeArr: string[] = currentRange.split(':');
+                range = [0, getColIndex(rangeArr[0]), sheet.rowCount - 1, getColIndex(rangeArr[1])];
+            } else {
+                range = getSwapRange(getRangeIndexes(currentRange));
+            }
+            const indexes: number[] = range;
+            const uniqueArgs: { cellIdx: number[], isUnique: boolean, uniqueRange: string } = {
+                cellIdx: [range[0], range[1]], isUnique: false,
+                uniqueRange: ''
+            };
+            if (!eventArgs.isColSelected) {
+                this.parent.notify(checkUniqueRange, uniqueArgs);
+            }
+            if (this.isUndo) {
+                if (uniqueArgs.isUnique && eventArgs.formula && eventArgs.formula.indexOf('UNIQUE') > - 1) {
+                    const rangeIdx: number[] = getRangeIndexes(uniqueArgs.uniqueRange);
+                    if (getCell(rangeIdx[0], rangeIdx[1], this.parent.getActiveSheet()).value !== '#SPILL!') {
+                        for (let j: number = rangeIdx[0]; j <= rangeIdx[2]; j++) {
+                            for (let k: number = rangeIdx[1]; k <= rangeIdx[3]; k++) {
+                                if (j === rangeIdx[0] && k === rangeIdx[1]) {
+                                    k = k + 1;
+                                }
+                                this.parent.updateCellInfo({ value: '' }, getRangeAddress([j, k]), true);
                             }
-                            this.parent.updateCellInfo({value: ''}, getRangeAddress([j, k]), true);
                         }
                     }
                 }
-            }
-            this.updateCellDetails(actionData.cellDetails, sheet, range, isRefresh, args, preventEvt,
-                                   eventArgs.isColSelected, true, isFromAutoFillOption);
-            if (uniqueArgs.isUnique && args.action === 'cellDelete' && eventArgs.isSpill) {
-                const rangeIdx: number[] = getRangeIndexes(uniqueArgs.uniqueRange);
-                const cell: CellModel = getCell(rangeIdx[0], rangeIdx[1], this.parent.getActiveSheet());
-                for (let i: number = rangeIdx[0]; i <= rangeIdx[2]; i++) {
-                    for (let j: number = rangeIdx[1]; j <= rangeIdx[3]; j++) {
-                        for (let k: number = range[0]; k <= range[2]; k++) {
-                            for (let l: number = range[1]; l <= range[3]; l++) {
-                                if (i !== k || j !== l) {
-                                    this.parent.updateCellInfo({value: ''}, getCellAddress(i, j), true);
+                this.updateCellDetails(actionData.cellDetails, sheet, range, isRefresh, args, preventEvt,
+                                       eventArgs.isColSelected, true, isFromAutoFillOption);
+                if (uniqueArgs.isUnique && args.action === 'cellDelete' && eventArgs.isSpill) {
+                    const rangeIdx: number[] = getRangeIndexes(uniqueArgs.uniqueRange);
+                    const cell: CellModel = getCell(rangeIdx[0], rangeIdx[1], this.parent.getActiveSheet());
+                    for (let i: number = rangeIdx[0]; i <= rangeIdx[2]; i++) {
+                        for (let j: number = rangeIdx[1]; j <= rangeIdx[3]; j++) {
+                            for (let k: number = range[0]; k <= range[2]; k++) {
+                                for (let l: number = range[1]; l <= range[3]; l++) {
+                                    if (i !== k || j !== l) {
+                                        this.parent.updateCellInfo({ value: '' }, getCellAddress(i, j), true);
+                                    }
                                 }
                             }
                         }
                     }
+                    cell.value = '#SPILL!';
+                    this.parent.updateCellInfo(cell, getCellAddress(rangeIdx[0], rangeIdx[1]), true);
                 }
-                cell.value = '#SPILL!';
-                this.parent.updateCellInfo(cell, getCellAddress(rangeIdx[0], rangeIdx[1]), true);
-            }
-            if (!eventArgs.isSpill && uniqueArgs.uniqueRange !== '') {
-                const indexes: number[] = getRangeIndexes(uniqueArgs.uniqueRange);
-                for (let j: number = indexes[0]; j <= indexes[2]; j++) {
-                    for (let k: number = indexes[1]; k <= indexes[3]; k++) {
-                        if (j === indexes[0] && k === indexes[1]) {
-                            k = k + 1;
+                if (!eventArgs.isSpill && uniqueArgs.uniqueRange !== '') {
+                    const indexes: number[] = getRangeIndexes(uniqueArgs.uniqueRange);
+                    for (let j: number = indexes[0]; j <= indexes[2]; j++) {
+                        for (let k: number = indexes[1]; k <= indexes[3]; k++) {
+                            if (j === indexes[0] && k === indexes[1]) {
+                                k = k + 1;
+                            }
+                            this.parent.updateCellInfo({ value: '' }, getRangeAddress([j, k]), true);
                         }
-                        this.parent.updateCellInfo({value: ''}, getRangeAddress([j, k]), true);
                     }
+                    this.parent.notify(reApplyFormula, null);
                 }
-                this.parent.notify(reApplyFormula, null);
-            }
-        } else {
-            /* eslint-disable-next-line @typescript-eslint/no-explicit-any */
-            const argsEventArgs: any = args.eventArgs;
-            let activeCellIndexes: number[] = getRangeIndexes(sheet.activeCell);
-            const startRange: string[] = address[1] ? address[1].split(':') : [];
-            if (indexes[0] !== activeCellIndexes[0] && indexes[1] !== activeCellIndexes[1] &&
-                args.action === 'hyperlink' && startRange.length > 0) {
-                sheet.activeCell = startRange[0];
-                activeCellIndexes = getRangeIndexes(sheet.activeCell);
-            }
-            let cellValue: TextDecoration = this.parent.getCellStyleValue(['textDecoration'], activeCellIndexes).textDecoration;
-            if (argsEventArgs && argsEventArgs.style && (argsEventArgs.style as CellStyleModel).textDecoration ) {
-                const value: TextDecoration = (argsEventArgs.style as CellStyleModel).textDecoration;
-                let changedValue: TextDecoration = value;
-                let changedStyle: CellStyleModel;
-                let removeProp: boolean = false;
-                if (cellValue === 'underline') {
-                    changedValue = value === 'underline' ? 'none' : 'underline line-through';
-                } else if (cellValue === 'line-through') {
-                    changedValue = value === 'line-through' ? 'none' : 'underline line-through';
-                } else if (cellValue === 'underline line-through') {
-                    changedValue = value === 'underline' ? 'line-through' : 'underline'; removeProp = true;
+            } else {
+                /* eslint-disable-next-line @typescript-eslint/no-explicit-any */
+                const argsEventArgs: any = args.eventArgs;
+                let activeCellIndexes: number[] = getRangeIndexes(sheet.activeCell);
+                const startRange: string[] = currentRange ? currentRange.split(':') : [];
+                if (indexes[0] !== activeCellIndexes[0] && indexes[1] !== activeCellIndexes[1] &&
+                    args.action === 'hyperlink' && startRange.length > 0) {
+                    sheet.activeCell = startRange[0];
+                    activeCellIndexes = getRangeIndexes(sheet.activeCell);
                 }
-                if (changedValue === 'none') { removeProp = true; }
-                (argsEventArgs.style as CellStyleModel).textDecoration = changedValue;
-                args.eventArgs = argsEventArgs as UndoRedoEventArgs;
-                for (let i: number = indexes[0]; i <= indexes[2]; i++) {
-                    for (let j: number = indexes[1]; j <= indexes[3]; j++) {
-                        changedStyle = {};
-                        cellValue = this.parent.getCellStyleValue(['textDecoration'], [i, j]).textDecoration;
-                        if (cellValue === 'none') {
-                            if (removeProp) { continue; }
-                            changedStyle.textDecoration = value;
-                        } else if (cellValue === 'underline' || cellValue === 'line-through') {
-                            if (removeProp) {
-                                if (value === cellValue) {
-                                    changedStyle.textDecoration = 'none';
+                let cellValue: TextDecoration = this.parent.getCellStyleValue(['textDecoration'], activeCellIndexes).textDecoration;
+                if (argsEventArgs && argsEventArgs.style && (argsEventArgs.style as CellStyleModel).textDecoration) {
+                    const value: TextDecoration = (argsEventArgs.style as CellStyleModel).textDecoration;
+                    let changedValue: TextDecoration = value;
+                    let changedStyle: CellStyleModel;
+                    let removeProp: boolean = false;
+                    if (cellValue === 'underline') {
+                        changedValue = value === 'underline' ? 'none' : 'underline line-through';
+                    } else if (cellValue === 'line-through') {
+                        changedValue = value === 'line-through' ? 'none' : 'underline line-through';
+                    } else if (cellValue === 'underline line-through') {
+                        changedValue = value === 'underline' ? 'line-through' : 'underline'; removeProp = true;
+                    }
+                    if (changedValue === 'none') { removeProp = true; }
+                    (argsEventArgs.style as CellStyleModel).textDecoration = changedValue;
+                    args.eventArgs = argsEventArgs as UndoRedoEventArgs;
+                    for (let i: number = indexes[0]; i <= indexes[2]; i++) {
+                        for (let j: number = indexes[1]; j <= indexes[3]; j++) {
+                            changedStyle = {};
+                            cellValue = this.parent.getCellStyleValue(['textDecoration'], [i, j]).textDecoration;
+                            if (cellValue === 'none') {
+                                if (removeProp) { continue; }
+                                changedStyle.textDecoration = value;
+                            } else if (cellValue === 'underline' || cellValue === 'line-through') {
+                                if (removeProp) {
+                                    if (value === cellValue) {
+                                        changedStyle.textDecoration = 'none';
+                                    } else {
+                                        continue;
+                                    }
+                                } else {
+                                    changedStyle.textDecoration = value !== cellValue ? 'underline line-through' : value;
+                                }
+                            } else if (cellValue === 'underline line-through') {
+                                if (removeProp) {
+                                    changedStyle.textDecoration = value === 'underline' ? 'line-through' : 'underline';
                                 } else {
                                     continue;
                                 }
-                            } else {
-                                changedStyle.textDecoration = value !== cellValue ? 'underline line-through' : value;
                             }
-                        } else if (cellValue === 'underline line-through') {
-                            if (removeProp) {
-                                changedStyle.textDecoration = value === 'underline' ? 'line-through' : 'underline';
-                            } else {
-                                continue;
-                            }
+                            this.parent.notify(setCellFormat, {
+                                style: { textDecoration: changedStyle.textDecoration }, range: [i, j, i, j], refreshRibbon: true,
+                                onActionUpdate: true
+                            });
                         }
-                        this.parent.notify(setCellFormat, {
-                            style: { textDecoration: changedStyle.textDecoration }, range: [i, j, i, j], refreshRibbon: true,
-                            onActionUpdate: true
-                        });
                     }
-                }
-                (argsEventArgs.style as CellStyleModel).textDecoration = value;
-                args.eventArgs = argsEventArgs as UndoRedoEventArgs;
-            } else {
-                if (!isNullOrUndefined(eventArgs.oldValue) && eventArgs.oldValue !== eventArgs.value && uniqueArgs.isUnique) {
-                    const indexes: number[] = getRangeIndexes(uniqueArgs.uniqueRange);
-                    if (getCell(indexes[0], indexes[1], this.parent.getActiveSheet()).value !== '#SPILL!') {
-                        for (let j: number = indexes[0]; j <= indexes[2]; j++) {
-                            for (let k: number = indexes[1]; k <= indexes[3]; k++) {
-                                if (j === indexes[0] && k === indexes[1]) {
-                                    this.parent.updateCellInfo({value: '#SPILL!'}, getRangeAddress([indexes[0], indexes[1]]), true);
-                                    k = k + 1;
+                    (argsEventArgs.style as CellStyleModel).textDecoration = value;
+                    args.eventArgs = argsEventArgs as UndoRedoEventArgs;
+                } else {
+                    if (!isNullOrUndefined(eventArgs.oldValue) && eventArgs.oldValue !== eventArgs.value && uniqueArgs.isUnique) {
+                        const indexes: number[] = getRangeIndexes(uniqueArgs.uniqueRange);
+                        if (getCell(indexes[0], indexes[1], this.parent.getActiveSheet()).value !== '#SPILL!') {
+                            for (let j: number = indexes[0]; j <= indexes[2]; j++) {
+                                for (let k: number = indexes[1]; k <= indexes[3]; k++) {
+                                    if (j === indexes[0] && k === indexes[1]) {
+                                        this.parent.updateCellInfo({ value: '#SPILL!' }, getRangeAddress([indexes[0], indexes[1]]), true);
+                                        k = k + 1;
+                                    }
+                                    this.parent.updateCellInfo({ value: '' }, getRangeAddress([j, k]), true);
                                 }
-                                this.parent.updateCellInfo({value: ''}, getRangeAddress([j, k]), true);
                             }
                         }
                     }
-                }
-                updateAction(args, this.parent, true);
-                if (uniqueArgs.isUnique && args.action === 'cellDelete' && eventArgs.isSpill) {
-                    const indexes: number[] = getRangeIndexes(uniqueArgs.uniqueRange); let Skip: boolean = false;
-                    for (let i: number = indexes[0]; i <= indexes[1]; i++) {
-                        for (let j: number = indexes[1]; j <= indexes[3]; j++) {
-                            if (i === indexes[0] && j === indexes[1]) {
-                                j++;
-                            }
-                            if (getCell(i, j, sheet) && !isNullOrUndefined(getCell(i, j, sheet).value)
-                            && getCell(i, j, sheet).value !== '') {
-                                Skip = true;
+                    updateAction(args, this.parent, true);
+                    if (uniqueArgs.isUnique && args.action === 'cellDelete' && eventArgs.isSpill) {
+                        const indexes: number[] = getRangeIndexes(uniqueArgs.uniqueRange); let Skip: boolean = false;
+                        for (let i: number = indexes[0]; i <= indexes[1]; i++) {
+                            for (let j: number = indexes[1]; j <= indexes[3]; j++) {
+                                if (i === indexes[0] && j === indexes[1]) {
+                                    j++;
+                                }
+                                if (getCell(i, j, sheet) && !isNullOrUndefined(getCell(i, j, sheet).value)
+                                    && getCell(i, j, sheet).value !== '') {
+                                    Skip = true;
+                                }
                             }
                         }
-                    }
-                    if (!Skip) {
-                        const cell: CellModel = getCell(indexes[0], indexes[1], this.parent.getActiveSheet());
-                        cell.value = '';
-                        this.parent.updateCellInfo(cell, getCellAddress(indexes[0], indexes[1]), true);
-                        this.parent.notify(reApplyFormula, null);
+                        if (!Skip) {
+                            const cell: CellModel = getCell(indexes[0], indexes[1], this.parent.getActiveSheet());
+                            cell.value = '';
+                            this.parent.updateCellInfo(cell, getCellAddress(indexes[0], indexes[1]), true);
+                            this.parent.notify(reApplyFormula, null);
+                        }
                     }
                 }
             }
-        }
+        });
         if (args.action === 'autofill') {
             address[1] = this.isUndo ? args.eventArgs.dataRange : args.eventArgs.selectedRange;
         }

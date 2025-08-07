@@ -12,7 +12,7 @@ import { ViewSource } from '../renderer/view-source';
 import { IFormatter, IBaseQuickToolbar, SlashMenuItemSelectArgs, ImageFailedEventArgs, IRenderer } from './interface';
 import { executeGroup, ToolbarStatusEventArgs } from './interface';
 import { ChangeEventArgs, AfterImageDeleteEventArgs, AfterMediaDeleteEventArgs, PasteCleanupArgs } from './interface';
-import { ILinkCommandsArgs, ImageDropEventArgs, IImageCommandsArgs, IAudioCommandsArgs, IVideoCommandsArgs, BeforeSanitizeHtmlArgs, ITableCommandsArgs, ExecuteCommandOption, ICodeBlockCommandsArgs } from '../../common/interface';
+import { ILinkCommandsArgs, ImageDropEventArgs, IImageCommandsArgs, IAudioCommandsArgs, IVideoCommandsArgs, BeforeSanitizeHtmlArgs, ITableCommandsArgs, ExecuteCommandOption, ICodeBlockCommandsArgs, IToolbarItems } from '../../common/interface';
 import { PrintEventArgs, ActionCompleteEventArgs, ActionBeginEventArgs, IFormatPainterArgs, CleanupResizeElemArgs, ImageSuccessEventArgs, IExecutionGroup, ResizeArgs, StatusArgs, BeforeQuickToolbarOpenArgs } from '../../common/interface';
 import { ServiceLocator } from '../services/service-locator';
 import { RendererFactory } from '../services/renderer-factory';
@@ -1438,11 +1438,13 @@ export class RichTextEditor extends Component<HTMLElement> implements INotifyPro
     private initialValue: string;
     private isCopyAll: boolean;
     private isPlainPaste: boolean = false;
+    private isSelecting: boolean;
 
     public constructor(options?: RichTextEditorModel, element?: string | HTMLElement) {
         super(options, <HTMLElement | string>element);
         this.needsID = true;
         this.isCopyAll = false;
+        this.isSelecting = false;
     }
     /**
      * To provide the array of modules needed for component rendering
@@ -4238,6 +4240,10 @@ export class RichTextEditor extends Component<HTMLElement> implements INotifyPro
             EventHandler.add(this.contentModule.getPanel(), 'load', this.iframeLoadHandler, this);
         }
         this.wireScrollElementsEvents();
+        // Handle selectionchange to update selection state
+        EventHandler.add(this.inputElement.ownerDocument, 'selectionchange', this.selectionChangeHandler, this);
+        // Handle mouseup (document-wide to capture outside RTE release)
+        EventHandler.add(this.inputElement.ownerDocument, 'mouseup', this.mouseUpHandlerForSelection, this);
     }
 
     private onIframeMouseDown(e: MouseEvent): void {
@@ -4329,6 +4335,8 @@ export class RichTextEditor extends Component<HTMLElement> implements INotifyPro
             EventHandler.remove(this.inputElement, 'beforeinput', this.beforeInputHandler);
         }
         this.unWireScrollElementsEvents();
+        EventHandler.remove(this.inputElement.ownerDocument, 'mouseup', this.mouseUpHandlerForSelection);
+        EventHandler.remove(this.inputElement.ownerDocument, 'selectionchange', this.selectionChangeHandler);
     }
 
     /**
@@ -4409,6 +4417,75 @@ export class RichTextEditor extends Component<HTMLElement> implements INotifyPro
             if (hr.classList.length === 0) {
                 hr.removeAttribute('class');
             }
+        }
+    }
+
+    // Utility to check if selection is within RTE
+    private isSelectionInRTE(): boolean {
+        const selection: Selection = this.contentModule.getDocument().getSelection();
+        if (selection.rangeCount > 0) {
+            const range: Range = selection.getRangeAt(0);
+            if (range && (this.inputElement.contains(range.startContainer) &&
+                this.inputElement.contains(range.endContainer))) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    // EventHandler for selectionchange event
+    private selectionChangeHandler(event: Event): void {
+        if (this.isSelectionInRTE() && !this.isSelectionCollapsed()) {
+            this.isSelecting = true;
+        }
+    }
+
+    // Checks the selection is within RTE
+    private isMouseUpOutOfRTE(event: Event): boolean {
+        const isTargetDocument: boolean = event.target && ((event.target as HTMLElement).nodeName === 'HTML' || (event.target as HTMLElement).nodeName === '#document');
+        const isClosestOfRTE: boolean = !(event.target && (event.target as HTMLElement).closest && (event.target as HTMLElement).closest('.e-rte-elements'));
+        if (isTargetDocument || (!this.inputElement.contains(event.target as HTMLElement) && isClosestOfRTE)) {
+            return true;
+        }
+        return false;
+    }
+
+    // EventHandler for mouseup event
+    private mouseUpHandlerForSelection(event: MouseEvent): void {
+        if (this.isSelecting && this.isMouseUpOutOfRTE(event)) {
+            this.endSelection(event);
+        }
+    }
+
+    // End selection and trigger onTextSelection
+    private endSelection(e: MouseEvent | KeyboardEvent): void {
+        this.handleSelectionChange(e);
+        this.isSelecting = false;
+    }
+
+    // Checks range is collapsed or not
+    private isSelectionCollapsed(): boolean {
+        const range: Range = this.contentModule.getDocument().getSelection().getRangeAt(0);
+        return (range.startContainer === range.endContainer &&
+            range.startOffset === range.endOffset);
+    }
+
+    // Handles selection changes and updates toolbar and quick toolbar based on user interaction
+    private handleSelectionChange(e: MouseEvent | KeyboardEvent): void {
+        // If selection was made and mouseup occurred (even outside the RTE), trigger quick toolbars
+        if (this.inlineMode.enable === true) {
+            this.notify(events.selectionChangeMouseUp, { args: e });
+        }
+        // Determine if quick toolbar should be rendered based on settings and event type
+        const shouldRenderQuickToolbar: boolean | (string | IToolbarItems)[] = (!this.inlineMode.enable && this.quickToolbarSettings && (this.quickToolbarSettings.text || (this.quickToolbarSettings.link && e.type === 'mouseup')));
+        // Render quick toolbar and notify selectionChangeMouseUp for quicktoolbar functionalities
+        if (shouldRenderQuickToolbar) {
+            this.notify(events.renderQuickToolbar, { args: e });
+            this.notify(events.selectionChangeMouseUp, { args: e });
+        }
+        // Update the toolbar to reflect current selection state
+        if (!(this.quickToolbarModule.linkQTBar && this.quickToolbarModule.linkQTBar.element && this.quickToolbarModule.linkQTBar.element.classList.contains('e-popup-open'))) {
+            this.notify(events.toolbarRefresh, { args: e });
         }
     }
 }

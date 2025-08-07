@@ -625,7 +625,9 @@ export class SheetTabs {
     }
 
     private showAggregate(args?: { remove?: boolean }): void {
-        if (isSingleCell(getRangeIndexes(this.parent.getActiveSheet().selectedRange)) || (args && args.remove)) {
+        const activeSheet: SheetModel = this.parent.getActiveSheet();
+        if (!activeSheet.selectedRange.includes(' ') &&
+            isSingleCell(getRangeIndexes(activeSheet.selectedRange)) || (args && args.remove)) {
             this.removeAggregate();
             return;
         }

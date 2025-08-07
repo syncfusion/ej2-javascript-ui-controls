@@ -2146,19 +2146,20 @@ export class DiagramEventHandler {
                     && (this.hoverElement as PointPort).constraints & PortConstraints.ToolTip)
                 || ((this.hoverElement instanceof ShapeAnnotation || this.hoverElement instanceof PathAnnotation)
                     && (this.hoverElement as ShapeAnnotation | PathAnnotation).constraints & AnnotationConstraints.Tooltip);
-            const content: string | HTMLElement = this.getContent();
+            // 971487 - fix for Displaying same tooltip content for different group nodes
+            let content: string | HTMLElement = this.getContent();
             let children: NodeModel | ConnectorModel;
             if (this.hoverElement && (this.hoverElement as NodeModel).children && (this.hoverElement as NodeModel).children.length > 0) {
                 // EJ2-56981 - Below method is used to check if the mouse pointer position and group children node gets intersect or not
                 children = this.findIntersectChild(this.hoverElement as NodeModel);
+                // 971487 - fix for Displaying same tooltip content for different group nodes
+                if (content === '') {
+                    content = this.hoverElement.tooltip.content;
+                }
             }
             if (this.hoverElement.tooltip.openOn === 'Auto' && content !== '') {
-                // EJ2-56981 - If children returned means then update tooltip for child node else update tooltip for group node.
-                if (children) {
-                    updateTooltip(this.diagram, children);
-                } else {
-                    updateTooltip(this.diagram, isPrivateTooltip ? this.hoverElement : undefined);
-                }
+                // 971487 - fix for Displaying same tooltip content for different group nodes
+                updateTooltip(this.diagram, isPrivateTooltip ? this.hoverElement : undefined);
             }
             // EJ2-66418 - set tooltip relativeMode as mouse
             // Calculating offset position for relativeMode Mouse

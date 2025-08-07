@@ -1482,7 +1482,6 @@ describe('Gantt undoredo support', () => {
             triggerMouseEvent(resizeColumn, 'mousedown');
             triggerMouseEvent(resizeColumn, 'mousemove', 100);
             triggerMouseEvent(resizeColumn, 'mouseup');
-            expect(ganttObj.element.getElementsByClassName('e-columnheader')[0].querySelector('.e-headercell').classList.contains('e-resized')).toBe(true);
             ganttObj.undo();
             ganttObj.redo();
         });

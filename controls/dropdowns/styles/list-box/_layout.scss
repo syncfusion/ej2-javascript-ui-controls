@@ -493,4 +493,12 @@
       border-radius: 4px !important; /* stylelint-disable-line declaration-no-important */
     }
   }
+  
+  .e-list-icon {
+    display: inline-block;
+    vertical-align: middle;
+    width: auto;
+    height: auto;
+    padding-bottom: $listbox-icon-padding;
+  }
 }

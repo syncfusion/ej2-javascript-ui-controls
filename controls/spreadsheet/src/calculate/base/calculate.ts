@@ -5,7 +5,7 @@ import { CalculateModel } from './calculate-model';
 import { CommonErrors, FormulasErrorsStrings } from '../common/enum';
 import { IFormulaColl, FailureEventArgs, StoredCellInfo } from '../common/interface';
 import { Parser } from './parser';
-import { getRangeIndexes, getCellIndexes, getCellAddress, isDateTime, workbookFormulaOperation, SheetModel, isHiddenRow, isHiddenCol } from '../../workbook/index';
+import { getRangeIndexes, getCellIndexes, getCellAddress, isDateTime, workbookFormulaOperation } from '../../workbook/index';
 import { getSheetIndexByName } from '../../workbook/index';
 import { DataUtil } from '@syncfusion/ej2-data';
 
@@ -3361,15 +3361,11 @@ export class Calculate extends Base<HTMLElement> implements INotifyPropertyChang
     public computeMinMax(args: string[], operation: string): string {
         let result: number;
         let argVal: string;
-        let isSubtotalFormula: boolean = false;  let isAggregateComputation: boolean; let sheet: SheetModel;
+        let isSubtotalFormula: boolean = false;
         if (args.length) {
             const lastArgument: string = args[args.length - 1];
             if (lastArgument === 'isSubtotal') {
                 isSubtotalFormula = true;
-                args.pop();
-            } else if (lastArgument === 'isAggregate') {
-                sheet = (this.parentObject as { getActiveSheet: Function }).getActiveSheet();
-                isAggregateComputation = true;
                 args.pop();
             }
         }
@@ -3382,7 +3378,7 @@ export class Calculate extends Base<HTMLElement> implements INotifyPropertyChang
                 result = 0;
             }
         }
-        const argArr: string[] = args; let indexes: number[];
+        const argArr: string[] = args;
         if (argArr.length > 255) {
             return this.getErrorStrings()[CommonErrors.Value];
         }
@@ -3390,12 +3386,6 @@ export class Calculate extends Base<HTMLElement> implements INotifyPropertyChang
             if (argArr[i as number].indexOf(':') > -1 && this.isCellReference(argArr[i as number])) {
                 const cellValue: string[] | string = this.getCellCollection(argArr[i as number]);
                 for (let j: number = 0; j < cellValue.length; j++) {
-                    if (isAggregateComputation) {
-                        indexes = getCellIndexes(cellValue[j as number]);
-                        if (isHiddenRow(sheet, indexes[0]) || isHiddenCol(sheet, indexes[1])) {
-                            continue;
-                        }
-                    }
                     argVal = !isSubtotalFormula ? this.getValueFromArg(cellValue[j as number]) :
                         this.getValueFromArg(cellValue[j as number], null, null, true);
                     if (isSubtotalFormula && argVal.includes('SUBTOTAL(')) {
@@ -3448,29 +3438,19 @@ export class Calculate extends Base<HTMLElement> implements INotifyPropertyChang
      * @hidden
      * @param {string[]} args - Specify the args.
      * @param {boolean} isSubtotalFormula - Specify the args is from subtotal formula or not.
-     * @param {boolean} isAggregateComputation - Specify the args is from aggregate calculation or not.
      * @returns {string} - to calculate average.
      */
-    public calculateAvg(args: string[], isSubtotalFormula?: boolean, isAggregateComputation?: boolean): string {
+    public calculateAvg(args: string[], isSubtotalFormula?: boolean): string {
         const argArr: string[] = args;
         let cellColl: string[] | string = [];
         let cellVal: string; let value: string;
         let avgVal: number = 0;
-        let countNum: number = 0; let indexes: number[]; let sheet: SheetModel;
-        if (isAggregateComputation) {
-            sheet = (this.parentObject as { getActiveSheet: Function }).getActiveSheet();
-        }
+        let countNum: number = 0;
         for (let k: number = 0; k < argArr.length; k++) {
             if (this.isCellReference(argArr[k as number])) {
                 if (argArr[k as number].indexOf(':') > -1) {
                     cellColl = this.getCellCollection(argArr[k as number]);
                     for (let i: number = 0; i < cellColl.length; i++) {
-                        if (isAggregateComputation) {
-                            indexes = getCellIndexes(cellColl[i as number]);
-                            if (isHiddenRow(sheet, indexes[0]) || isHiddenCol(sheet, indexes[1])) {
-                                continue;
-                            }
-                        }
                         cellVal = !isSubtotalFormula ? this.getValueFromArg(cellColl[i as number]) :
                             this.getValueFromArg(cellColl[i as number], null, null, true);
                         if (isSubtotalFormula && cellVal.includes('SUBTOTAL(')) {

@@ -5420,7 +5420,7 @@ export class PivotView extends Component<HTMLElement> implements INotifyProperty
         let rowText: string = '';
         if (cell) {
             let level: number = this.getLevel(cell);
-            if (level === 0 || (this.engineModule && level !== this.engineModule.rowMaxLevel)) {
+            if (this.isTabular && (level === 0 || (this.engineModule && level !== this.engineModule.rowMaxLevel))) {
                 colIndex = level;
                 cell = this.pivotValues[rowIndex as number][colIndex as number];
             }

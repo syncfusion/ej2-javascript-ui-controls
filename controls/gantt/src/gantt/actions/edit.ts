@@ -502,6 +502,9 @@ export class Edit {
                     keys.indexOf(tasks.duration) !== -1) {
                     this.parent.dataOperation.calculateScheduledValues(ganttData, ganttData.taskData, false);
                 }
+                if (keys.indexOf(tasks.baselineDuration) !== -1) {
+                    this.parent.dataOperation.calculateScheduledValuesforBaseline(ganttData, ganttData.taskData, false);
+                }
                 this.parent.dataOperation.updateWidthLeft(ganttData);
                 if (!isUndefined(data[this.parent.taskFields.dependency]) &&
                     data[this.parent.taskFields.dependency] !== ganttData.ganttProperties.predecessorsName) {
@@ -533,16 +536,17 @@ export class Edit {
         const scheduleFieldNames: string[] = [];
         let isScheduleValueUpdated: boolean = false;
         for (const key of Object.keys(data)) {
-            if (tasks.startDate === key || tasks.endDate === key || tasks.duration === key) {
+            if (tasks.startDate === key || tasks.endDate === key || tasks.duration === key || tasks.baselineDuration === key) {
+                const isBaseline: boolean = (tasks.baselineDuration === key) ? true : false;
                 if (isNullOrUndefined(data[`${key}`]) && !ganttObj.allowUnscheduledTasks) {
                     continue;
                 }
                 const ganttProps : ITaskData = ganttData.ganttProperties;
-                const isDurationKey : boolean = tasks.duration === key;
+                const isDurationKey : boolean = tasks.duration === key || tasks.baselineDuration === key;
                 if (isFromDialog) {
                     if (isDurationKey) {
-                        ganttObj.dataOperation.updateDurationValue(data[key as string], ganttProps);
-                        if (ganttProps.duration > 0 && ganttProps.isMilestone) {
+                        ganttObj.dataOperation.updateDurationValue(data[key as string], ganttProps, isBaseline);
+                        if (!isBaseline && ganttProps.duration > 0 && ganttProps.isMilestone) {
                             this.parent.setRecordValue('isMilestone', false, ganttProps, true);
                         }
                     } else {

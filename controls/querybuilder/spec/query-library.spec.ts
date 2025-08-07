@@ -39,18 +39,18 @@ describe('Parameter SQL Query', () => {
         'Address': '722 Moss Bay Blvd.',
         'City': 'Kirkland'
     },
-	{
-		'EmployeeID': 5,
-		'LastName': 'Buchanan',
-		'FirstName': 'Steven',
-		'Title': 'Sales Manager',
-		'TitleOfCourtesy': 'Mr.',
-		'Age': 34,
-		'BirthDate': new Date(-468010800000),
-		'HireDate': new Date(750830400000),
-		'Address': '14 - Garrett Hill',
-		'City': 'London'
-	}];
+    {
+        'EmployeeID': 5,
+        'LastName': 'Buchanan',
+        'FirstName': 'Steven',
+        'Title': 'Sales Manager',
+        'TitleOfCourtesy': 'Mr.',
+        'Age': 34,
+        'BirthDate': new Date(-468010800000),
+        'HireDate': new Date(750830400000),
+        'Address': '14 - Garrett Hill',
+        'City': 'London'
+    }];
 
     let importRules: RuleModel = {
         'condition': 'and',
@@ -78,7 +78,7 @@ describe('Parameter SQL Query', () => {
                 'value':'Sales'
             },
             {
-            'condition': 'and',
+                'condition': 'and',
                 'rules': [{
                     'label': 'City',
                     'field': 'City',
@@ -144,7 +144,7 @@ describe('Parameter SQL Query', () => {
                 'value':'Sales'
             },
             {
-            'condition': 'and',
+                'condition': 'and',
                 'rules': [{
                     'label': 'City',
                     'field': 'City',
@@ -236,7 +236,7 @@ describe('Parameter SQL Query', () => {
     let columnData2: ColumnsModel[] = [
         {
             field: 'TaskID', label: 'Task ID', type: 'number', operators: [{ key: 'equal', value: 'equal' },
-            { key: 'greaterthan', value: 'greaterthan' }, { key: 'lessthan', value: 'lessthan' }]
+                { key: 'greaterthan', value: 'greaterthan' }, { key: 'lessthan', value: 'lessthan' }]
         },
         { field: 'Name', label: 'Name', type: 'string' },
         { field: 'Category', label: 'Category', type: 'string' },
@@ -274,7 +274,7 @@ describe('Parameter SQL Query', () => {
     };
 
     beforeEach((): void => {
-	let Chromebrowser: string = "Mozilla/5.0 (Windows NT 6.3; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/60.0.3112.113 Safari/537.36";
+        let Chromebrowser: string = "Mozilla/5.0 (Windows NT 6.3; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/60.0.3112.113 Safari/537.36";
         Browser.userAgent = Chromebrowser;
         document.body.appendChild(createElement('div', { id: 'querybuilder' }));
     });
