@@ -15517,3 +15517,642 @@ describe('pdf export with baseline duration', () => {
         }
     });
 });
+describe('CR972134:Label customization using pdfQueryTaskbarInfo event not working', () => {
+    let ganttObj: Gantt;
+    const resourcesData: Object[] = [
+        {
+            TaskID: 7, TaskName: 'List materials', StartDate: new Date('04/04/2025'),
+            Duration: 3, Predecessor: '6', Progress: 30, resources: [1], EmailId: 'FullerKing@gmail.com'
+        }
+    ];
+    beforeAll((done: Function) => {
+        ganttObj = createGantt(
+        {
+        dataSource: resourcesData,
+        resources: [ { resourceId: 1, resourceName: 'Martin Tamer' }],
+        taskFields: {
+            id: 'TaskID',
+            name: 'TaskName',
+            startDate: 'StartDate',
+            endDate: 'EndDate',
+            duration: 'Duration',
+            progress: 'Progress',
+            dependency: 'Predecessor',
+            child: 'subtasks',
+            resourceInfo: 'resources'
+        },
+        resourceFields: {
+            id: 'resourceId',
+            name: 'resourceName'
+        },
+        editSettings: {
+            allowAdding: true,
+            allowEditing: true,
+            allowDeleting: true,
+            allowTaskbarEditing: true,
+            showDeleteConfirmDialog: true
+        },
+        columns: [
+            { field: 'TaskID', visible: false },
+            { field: 'TaskName', headerText: 'Name', width: 250 },
+            { field: 'work', headerText: 'Work' },
+            { field: 'Progress' },
+            { field: 'resourceGroup', headerText: 'Group' },
+            { field: 'StartDate' },
+            { field: 'Duration' },
+        ],
+        toolbar: ['Add', 'Edit', 'Update', 'Delete', 'Cancel', 'ExpandAll', 'CollapseAll',
+            'Search', 'ZoomIn', 'ZoomOut', 'ZoomToFit', 'PrevTimeSpan', 'NextTimeSpan', 'ExcelExport', 'CsvExport', 'PdfExport'],
+        allowPdfExport: true,
+        // labelSettings: {
+        //     taskLabel: 'Progress',
+        //     leftLabel: 'resources',
+        //     rightLabel: 'TaskName'
+        // },
+        pdfQueryTaskbarInfo: function (args: any) {
+            args.labelSettings.leftLabel.value = args.data.ganttProperties.taskName;
+            if (args.data.ganttProperties.resourceNames) {
+                args.labelSettings.rightLabel.value =
+                    args.data.ganttProperties.resourceNames;
+                args.labelSettings.taskLabel.value = 'Task Label';
+                // args.labelSettings.taskLabel.fontStyle.fontStyle = 'Bold';
+                // args.labelSettings.taskLabel.fontStyle.fontSize = 8;
+                // args.labelSettings.taskLabel.fontStyle.fontFamily = 1;
+                args.labelSettings.taskLabel.fontStyle.fontColor = new PdfColor(0, 255, 0);
+
+                args.labelSettings.rightLabel.value = 'Right Label';
+                args.labelSettings.rightLabel.fontStyle.fontStyle = 'Italic';
+                args.labelSettings.rightLabel.fontStyle.fontSize = 12;
+                args.labelSettings.rightLabel.fontStyle.fontFamily = 2;
+                args.labelSettings.rightLabel.fontStyle.fontColor = new PdfColor(142, 36, 64);
+
+                args.labelSettings.leftLabel.value = 'Custom Label';
+                args.labelSettings.leftLabel.fontStyle.fontStyle = 'Bold';
+                args.labelSettings.leftLabel.fontStyle.fontSize = 10;
+                args.labelSettings.leftLabel.fontStyle.fontFamily = 6;
+                args.labelSettings.leftLabel.fontStyle.fontColor = new PdfColor(942, 36, 64);
+            }
+            let theme = document.body.classList.contains('tailwind3-dark') ||
+                document.body.classList.contains('fluent2-dark') ||
+                document.body.classList.contains('material3-dark') ||
+                document.body.classList.contains('bootstrap5.3-dark') ||
+                document.body.classList.contains('fluent2-highcontrast') ||
+                document.body.classList.contains('fluent2-dark');
+            if (theme && args.data.isCritical) {
+                args.taskbar.progressColor = new PdfColor(172, 6, 136);
+                args.taskbar.taskColor = args.taskbar.taskBorderColor = new PdfColor(73, 4, 58);
+            }
+            else if (!theme && !args.data.isCritical) {
+                args.taskbar.progressColor = new PdfColor(176, 0, 138);
+                args.taskbar.taskColor = new PdfColor(255, 206, 244);
+            }
+        },
+        splitterSettings: {
+            columnIndex: 3
+        },
+        selectionSettings: {
+            mode: 'Row',
+            type: 'Single',
+            enableToggle: false
+        },
+        tooltipSettings: {
+            showTooltip: true
+        },
+        timelineSettings: {
+            showTooltip: true,
+            topTier: {
+                unit: 'Week',
+                format: 'dd/MM/yyyy'
+            },
+            bottomTier: {
+                unit: 'Day',
+                count: 1
+            }
+        },
+        eventMarkers: [
+            {
+                day: '04/17/2025',
+                cssClass: 'e-custom-event-marker',
+                label: 'Project approval and kick-off'
+            }
+        ],
+        holidays: [{
+                from: "04/04/2025",
+                to: "04/05/2025",
+                label: " Public holidays",
+                cssClass: "e-custom-holiday"
+            }],
+        readOnly: false,
+        allowRowDragAndDrop: true,
+        allowResizing: true,
+        allowFiltering: true,
+        allowSelection: true,
+        highlightWeekends: true,
+        treeColumnIndex: 1,
+        taskbarHeight: 20,
+        rowHeight: 40,
+        height: '550px',
+        projectStartDate: new Date('03/25/2025'),
+        projectEndDate: new Date('04/25/2025')
+           
+        }, done);
+    });
+    it('Export with pdfquerytaskbarInfo customization format', () => {
+            let borderWidth = 1;
+            let borderColor = new PdfColor(227, 22, 91);
+            let pdfpen = new PdfPen(borderColor, borderWidth);
+            pdfpen.dashStyle = PdfDashStyle.Dash;
+            let exportProperties: PdfExportProperties = {
+                pageSize: 'A2',
+                fileName: 'Product Development Report.pdf.pdf',
+                ganttStyle: {
+            
+                eventMarker: {
+                    label: {
+                    fontColor: new PdfColor(33, 33, 33),
+                    fontStyle: PdfFontStyle.Bold,
+                    backgroundColor: new PdfColor(253, 191, 100),
+                    },
+                    lineStyle: pdfpen,
+                },
+                holiday: {
+                    fontColor: new PdfColor(33, 33, 33),
+                    backgroundColor: new PdfColor(243, 244, 246),
+                },
+                },
+
+                header: {
+                fromTop: 0,
+                height: 150,
+                contents: [
+                    {
+                    type: 'Text',
+                    value:
+                        'Product Development Lifecycle Gantt Chart Report March 2025 - June 2025',
+                    position: { x: 20, y: 20 },
+                    style: { textBrushColor: '#00008B', fontSize: 24 },
+                    },
+                    {
+                    type: 'Line',
+                    style: { penColor: '#00008B', penSize: 2, dashStyle: 'Solid' },
+                    points: { x1: 20, y1: 70, x2: 755, y2: 70 },
+                    },
+                ],
+                },
+                footer: {
+                fromBottom: 160,
+                height: 100,
+                contents: [
+                    {
+                    type: 'Text',
+                    value:
+                        '© 2025 Syncfusion Inc. All Rights Reserved.\n' +
+                        'Generated on: ' +
+                        new Date().toLocaleString('en-US', {
+                        month: 'long',
+                        day: '2-digit',
+                        year: 'numeric',
+                        hour: '2-digit',
+                        minute: '2-digit',
+                        second: '2-digit',
+                        hour12: true,
+                        }),
+                    position: { x: 1950, y: 40 },
+                    style: { textBrushColor: '#3a435e', fontSize: 20 },
+                    },
+                ],
+                },
+            };
+        ganttObj.pdfExport(exportProperties);
+    });
+    afterAll(() => {
+        if (ganttObj) {
+            destroyGantt(ganttObj);
+        }
+    });
+});
+describe('CR972134:Label customization using pdfQueryTaskbarInfo event not working with labelSettings', () => {
+    let ganttObj: Gantt;
+    const resourcesData: Object[] = [
+        {
+            TaskID: 7, TaskName: 'List materials', StartDate: new Date('04/04/2025'),
+            Duration: 3, Predecessor: '6', Progress: 30, resources: [1], EmailId: 'FullerKing@gmail.com'
+        }
+    ];
+    beforeAll((done: Function) => {
+        ganttObj = createGantt(
+        {
+        dataSource: resourcesData,
+        resources: [ { resourceId: 1, resourceName: 'Martin Tamer' }],
+        taskFields: {
+            id: 'TaskID',
+            name: 'TaskName',
+            startDate: 'StartDate',
+            endDate: 'EndDate',
+            duration: 'Duration',
+            progress: 'Progress',
+            dependency: 'Predecessor',
+            child: 'subtasks',
+            resourceInfo: 'resources'
+        },
+        resourceFields: {
+            id: 'resourceId',
+            name: 'resourceName'
+        },
+        editSettings: {
+            allowAdding: true,
+            allowEditing: true,
+            allowDeleting: true,
+            allowTaskbarEditing: true,
+            showDeleteConfirmDialog: true
+        },
+        columns: [
+            { field: 'TaskID', visible: false },
+            { field: 'TaskName', headerText: 'Name', width: 250 },
+            { field: 'work', headerText: 'Work' },
+            { field: 'Progress' },
+            { field: 'resourceGroup', headerText: 'Group' },
+            { field: 'StartDate' },
+            { field: 'Duration' },
+        ],
+        toolbar: ['Add', 'Edit', 'Update', 'Delete', 'Cancel', 'ExpandAll', 'CollapseAll',
+            'Search', 'ZoomIn', 'ZoomOut', 'ZoomToFit', 'PrevTimeSpan', 'NextTimeSpan', 'ExcelExport', 'CsvExport', 'PdfExport'],
+        allowPdfExport: true,
+        labelSettings: {
+            taskLabel: 'Progress',
+            leftLabel: 'resources',
+            rightLabel: 'TaskName'
+        },
+        pdfQueryTaskbarInfo: function (args) {
+            args.labelSettings.leftLabel.value = args.data.ganttProperties.taskName;
+            if (args.data.ganttProperties.resourceNames) {
+                args.labelSettings.rightLabel.value =
+                    args.data.ganttProperties.resourceNames;
+                args.labelSettings.taskLabel.value = 'Task Label';
+                args.labelSettings.taskLabel.fontStyle.fontStyle = PdfFontStyle.Italic;
+                args.labelSettings.taskLabel.fontStyle.fontSize = 8;
+                args.labelSettings.taskLabel.fontStyle.fontFamily = 1;
+                args.labelSettings.taskLabel.fontStyle.fontColor = new PdfColor(0, 255, 0);
+
+                args.labelSettings.rightLabel.value = 'Right Label';
+                args.labelSettings.rightLabel.fontStyle.fontStyle = PdfFontStyle.Bold;
+                args.labelSettings.rightLabel.fontStyle.fontSize = 12;
+                args.labelSettings.rightLabel.fontStyle.fontFamily = 2;
+                args.labelSettings.rightLabel.fontStyle.fontColor = new PdfColor(142, 36, 64);
+
+                args.labelSettings.leftLabel.value = 'Custom Label';
+                args.labelSettings.leftLabel.fontStyle.fontStyle = 'Bold';
+                args.labelSettings.leftLabel.fontStyle.fontSize = 10;
+                args.labelSettings.leftLabel.fontStyle.fontFamily = 6;
+                args.labelSettings.leftLabel.fontStyle.fontColor = new PdfColor(942, 36, 64);
+            }
+            let theme = document.body.classList.contains('tailwind3-dark') ||
+                document.body.classList.contains('fluent2-dark') ||
+                document.body.classList.contains('material3-dark') ||
+                document.body.classList.contains('bootstrap5.3-dark') ||
+                document.body.classList.contains('fluent2-highcontrast') ||
+                document.body.classList.contains('fluent2-dark');
+            if (theme && args.data.isCritical) {
+                args.taskbar.progressColor = new PdfColor(172, 6, 136);
+                args.taskbar.taskColor = args.taskbar.taskBorderColor = new PdfColor(73, 4, 58);
+            }
+            else if (!theme && !args.data.isCritical) {
+                args.taskbar.progressColor = new PdfColor(176, 0, 138);
+                args.taskbar.taskColor = new PdfColor(255, 206, 244);
+            }
+        },
+        splitterSettings: {
+            columnIndex: 3
+        },
+        selectionSettings: {
+            mode: 'Row',
+            type: 'Single',
+            enableToggle: false
+        },
+        tooltipSettings: {
+            showTooltip: true
+        },
+        timelineSettings: {
+            showTooltip: true,
+            topTier: {
+                unit: 'Week',
+                format: 'dd/MM/yyyy'
+            },
+            bottomTier: {
+                unit: 'Day',
+                count: 1
+            }
+        },
+        eventMarkers: [
+            {
+                day: '04/17/2025',
+                cssClass: 'e-custom-event-marker',
+                label: 'Project approval and kick-off'
+            }
+        ],
+        holidays: [{
+                from: "04/04/2025",
+                to: "04/05/2025",
+                label: " Public holidays",
+                cssClass: "e-custom-holiday"
+            }],
+        readOnly: false,
+        allowRowDragAndDrop: true,
+        allowResizing: true,
+        allowFiltering: true,
+        allowSelection: true,
+        highlightWeekends: true,
+        treeColumnIndex: 1,
+        taskbarHeight: 20,
+        rowHeight: 40,
+        height: '550px',
+        projectStartDate: new Date('03/25/2025'),
+        projectEndDate: new Date('04/25/2025')
+           
+        }, done);
+    });
+    it('Export with pdfquerytaskbarInfo customization format with labelSettings', () => {
+        let borderWidth = 1;
+        let borderColor = new PdfColor(227, 22, 91);
+        let pdfpen = new PdfPen(borderColor, borderWidth);
+        pdfpen.dashStyle = PdfDashStyle.Dash;
+        let exportProperties: PdfExportProperties = {
+            pageSize: 'A2',
+            fileName: 'Product Development Report.pdf.pdf',
+            ganttStyle: {
+        
+            eventMarker: {
+                label: {
+                fontColor: new PdfColor(33, 33, 33),
+                fontStyle: PdfFontStyle.Bold,
+                backgroundColor: new PdfColor(253, 191, 100),
+                },
+                lineStyle: pdfpen,
+            },
+            holiday: {
+                fontColor: new PdfColor(33, 33, 33),
+                backgroundColor: new PdfColor(243, 244, 246),
+            },
+            },
+
+            header: {
+            fromTop: 0,
+            height: 150,
+            contents: [
+                {
+                type: 'Text',
+                value:
+                    'Product Development Lifecycle Gantt Chart Report March 2025 - June 2025',
+                position: { x: 20, y: 20 },
+                style: { textBrushColor: '#00008B', fontSize: 24 },
+                },
+                {
+                type: 'Line',
+                style: { penColor: '#00008B', penSize: 2, dashStyle: 'Solid' },
+                points: { x1: 20, y1: 70, x2: 755, y2: 70 },
+                },
+            ],
+            },
+            footer: {
+            fromBottom: 160,
+            height: 100,
+            contents: [
+                {
+                type: 'Text',
+                value:
+                    '© 2025 Syncfusion Inc. All Rights Reserved.\n' +
+                    'Generated on: ' +
+                    new Date().toLocaleString('en-US', {
+                    month: 'long',
+                    day: '2-digit',
+                    year: 'numeric',
+                    hour: '2-digit',
+                    minute: '2-digit',
+                    second: '2-digit',
+                    hour12: true,
+                    }),
+                position: { x: 1950, y: 40 },
+                style: { textBrushColor: '#3a435e', fontSize: 20 },
+                },
+            ],
+            },
+        };
+        ganttObj.pdfExport(exportProperties);
+    });
+    afterAll(() => {
+        if (ganttObj) {
+            destroyGantt(ganttObj);
+        }
+    });
+});
+describe('CR972134:Label customization using pdfQueryTaskbarInfo event not working with labelSettings fontSize default', () => {
+    let ganttObj: Gantt;
+    const resourcesData: Object[] = [
+        {
+            TaskID: 7, TaskName: 'List materials', StartDate: new Date('04/04/2025'),
+            Duration: 3, Predecessor: '6', Progress: 30, resources: [1], EmailId: 'FullerKing@gmail.com'
+        }
+    ];
+    beforeAll((done: Function) => {
+        ganttObj = createGantt(
+        {
+        dataSource: resourcesData,
+        resources: [ { resourceId: 1, resourceName: 'Martin Tamer' }],
+        taskFields: {
+            id: 'TaskID',
+            name: 'TaskName',
+            startDate: 'StartDate',
+            endDate: 'EndDate',
+            duration: 'Duration',
+            progress: 'Progress',
+            dependency: 'Predecessor',
+            child: 'subtasks',
+            resourceInfo: 'resources'
+        },
+        resourceFields: {
+            id: 'resourceId',
+            name: 'resourceName'
+        },
+        editSettings: {
+            allowAdding: true,
+            allowEditing: true,
+            allowDeleting: true,
+            allowTaskbarEditing: true,
+            showDeleteConfirmDialog: true
+        },
+        columns: [
+            { field: 'TaskID', visible: false },
+            { field: 'TaskName', headerText: 'Name', width: 250 },
+            { field: 'work', headerText: 'Work' },
+            { field: 'Progress' },
+            { field: 'resourceGroup', headerText: 'Group' },
+            { field: 'StartDate' },
+            { field: 'Duration' },
+        ],
+        toolbar: ['Add', 'Edit', 'Update', 'Delete', 'Cancel', 'ExpandAll', 'CollapseAll',
+            'Search', 'ZoomIn', 'ZoomOut', 'ZoomToFit', 'PrevTimeSpan', 'NextTimeSpan', 'ExcelExport', 'CsvExport', 'PdfExport'],
+        allowPdfExport: true,
+        labelSettings: {
+            taskLabel: 'Progress',
+            leftLabel: 'resources',
+            rightLabel: 'TaskName'
+        },
+        pdfQueryTaskbarInfo: function (args) {
+            args.labelSettings.leftLabel.value = args.data.ganttProperties.taskName;
+            if (args.data.ganttProperties.resourceNames) {
+                args.labelSettings.rightLabel.value =
+                    args.data.ganttProperties.resourceNames;
+                args.labelSettings.taskLabel.value = 'Task Label';
+                args.labelSettings.taskLabel.fontStyle.fontStyle = PdfFontStyle.Italic;
+                args.labelSettings.taskLabel.fontStyle.fontFamily = 1;
+                args.labelSettings.taskLabel.fontStyle.fontColor = new PdfColor(0, 255, 0);
+
+                args.labelSettings.rightLabel.value = 'Right Label';
+                args.labelSettings.rightLabel.fontStyle.fontStyle = PdfFontStyle.Bold;
+                args.labelSettings.rightLabel.fontStyle.fontFamily = 2;
+                args.labelSettings.rightLabel.fontStyle.fontColor = new PdfColor(142, 36, 64);
+
+                args.labelSettings.leftLabel.value = 'Custom Label';
+                args.labelSettings.leftLabel.fontStyle.fontStyle = PdfFontStyle.Bold;
+                args.labelSettings.leftLabel.fontStyle.fontFamily = 6;
+                args.labelSettings.leftLabel.fontStyle.fontColor = new PdfColor(942, 36, 64);
+            }
+            let theme = document.body.classList.contains('tailwind3-dark') ||
+                document.body.classList.contains('fluent2-dark') ||
+                document.body.classList.contains('material3-dark') ||
+                document.body.classList.contains('bootstrap5.3-dark') ||
+                document.body.classList.contains('fluent2-highcontrast') ||
+                document.body.classList.contains('fluent2-dark');
+            if (theme && args.data.isCritical) {
+                args.taskbar.progressColor = new PdfColor(172, 6, 136);
+                args.taskbar.taskColor = args.taskbar.taskBorderColor = new PdfColor(73, 4, 58);
+            }
+            else if (!theme && !args.data.isCritical) {
+                args.taskbar.progressColor = new PdfColor(176, 0, 138);
+                args.taskbar.taskColor = new PdfColor(255, 206, 244);
+            }
+        },
+        splitterSettings: {
+            columnIndex: 3
+        },
+        selectionSettings: {
+            mode: 'Row',
+            type: 'Single',
+            enableToggle: false
+        },
+        tooltipSettings: {
+            showTooltip: true
+        },
+        timelineSettings: {
+            showTooltip: true,
+            topTier: {
+                unit: 'Week',
+                format: 'dd/MM/yyyy'
+            },
+            bottomTier: {
+                unit: 'Day',
+                count: 1
+            }
+        },
+        eventMarkers: [
+            {
+                day: '04/17/2025',
+                cssClass: 'e-custom-event-marker',
+                label: 'Project approval and kick-off'
+            }
+        ],
+        holidays: [{
+                from: "04/04/2025",
+                to: "04/05/2025",
+                label: " Public holidays",
+                cssClass: "e-custom-holiday"
+            }],
+        readOnly: false,
+        allowRowDragAndDrop: true,
+        allowResizing: true,
+        allowFiltering: true,
+        allowSelection: true,
+        highlightWeekends: true,
+        treeColumnIndex: 1,
+        taskbarHeight: 20,
+        rowHeight: 40,
+        height: '550px',
+        projectStartDate: new Date('03/25/2025'),
+        projectEndDate: new Date('04/25/2025')
+           
+        }, done);
+    });
+    it('Export with pdfquerytaskbarInfo customization format with labelSettings', () => {
+        let borderWidth = 1;
+        let borderColor = new PdfColor(227, 22, 91);
+        let pdfpen = new PdfPen(borderColor, borderWidth);
+        pdfpen.dashStyle = PdfDashStyle.Dash;
+        let exportProperties: PdfExportProperties = {
+            pageSize: 'A2',
+            fileName: 'Product Development Report.pdf.pdf',
+            ganttStyle: {
+        
+            eventMarker: {
+                label: {
+                fontColor: new PdfColor(33, 33, 33),
+                fontStyle: PdfFontStyle.Bold,
+                backgroundColor: new PdfColor(253, 191, 100),
+                },
+                lineStyle: pdfpen,
+            },
+            holiday: {
+                fontColor: new PdfColor(33, 33, 33),
+                backgroundColor: new PdfColor(243, 244, 246),
+            },
+            },
+
+            header: {
+            fromTop: 0,
+            height: 150,
+            contents: [
+                {
+                type: 'Text',
+                value:
+                    'Product Development Lifecycle Gantt Chart Report March 2025 - June 2025',
+                position: { x: 20, y: 20 },
+                style: { textBrushColor: '#00008B', fontSize: 24 },
+                },
+                {
+                type: 'Line',
+                style: { penColor: '#00008B', penSize: 2, dashStyle: 'Solid' },
+                points: { x1: 20, y1: 70, x2: 755, y2: 70 },
+                },
+            ],
+            },
+            footer: {
+            fromBottom: 160,
+            height: 100,
+            contents: [
+                {
+                type: 'Text',
+                value:
+                    '© 2025 Syncfusion Inc. All Rights Reserved.\n' +
+                    'Generated on: ' +
+                    new Date().toLocaleString('en-US', {
+                    month: 'long',
+                    day: '2-digit',
+                    year: 'numeric',
+                    hour: '2-digit',
+                    minute: '2-digit',
+                    second: '2-digit',
+                    hour12: true,
+                    }),
+                position: { x: 1950, y: 40 },
+                style: { textBrushColor: '#3a435e', fontSize: 20 },
+                },
+            ],
+            },
+        };
+        ganttObj.pdfExport(exportProperties);
+    });
+    afterAll(() => {
+        if (ganttObj) {
+            destroyGantt(ganttObj);
+        }
+    });
+});

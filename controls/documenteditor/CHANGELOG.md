@@ -2,6 +2,27 @@
 
 ## [Unreleased]
 
+## 30.2.5 (2025-08-13)
+
+### DocumentEditor
+
+#### Bug Fixes
+
+- `#I748873` - Fixed a script error that occurred when decreasing the indent in list paragraphs.
+- `#I971894` - Resolved a script error triggered during `beginUndoAction` when clearing the redo collection.
+- `#I747660` - Addressed an issue where the comments panel failed to display correctly when `showRevision` was set to false.
+- `#I750354` - Resolved an issue where pressing keys on the numeric keypad did not trigger page number input in the status bar.
+- `#I747885` - Corrected layout inconsistencies when inserting white space after selecting content.
+- `#I748857` - Ensured left and right margins are properly applied during horizontal ruler scrolling.
+- `#I748856` - Fixed horizontal ruler misalignment when resizing the vertical ruler.
+- `#I741169` - Resolved an issue where underlines applied to images were not retained correctly.
+- `#I744835` - Fixed a script error occurring when dragging text from a table into the header.
+- `#I746062` - Addressed export issues with nested content controls.
+
+#### Features
+
+- `#I723821` - Added event to access the paste action before it paste
+
 ## 30.1.42 (2025-07-29)
 
 ### DocumentEditor

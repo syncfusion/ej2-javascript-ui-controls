@@ -2,6 +2,14 @@
 
 ## [Unreleased]
 
+## 30.2.5 (2025-08-13)
+
+### MultiSelect
+
+#### Bug fixes
+
+- `#I748341` - Fixed an issue where data was not loading properly and the popup closed automatically after selecting `Select All` and scrolling the list.
+
 ## 30.2.4 (2025-08-07)
 
 ### ListBox

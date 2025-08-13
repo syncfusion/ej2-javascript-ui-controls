@@ -112,6 +112,10 @@ export class BaseHistoryInfo {
     /**
      * @private
      */
+    public isClearCell: boolean = false;
+    /**
+     * @private
+     */
     public markerData: MarkerInfo[] = [];
     /**
      * @private
@@ -479,7 +483,8 @@ export class BaseHistoryInfo {
             bookmark.reference.line.children.splice(bookmarkInfo.endIndex, 0, bookmark.reference);
 
             // Skip recording the changes if the currentHistoryInfo action is InsertBookmark. Because, the changes will be recorded in the update complex history.
-            if (!(this.editorHistory.currentHistoryInfo && this.editorHistory.currentHistoryInfo.action === 'InsertBookmark')) {
+            // Need to skip recording changes if the currentHistoryInfo action is Grouping. Because in grouping the history already recorded while updating complex history.
+            if (!this.editorHistory.currentHistoryInfo || (this.editorHistory.currentHistoryInfo && this.editorHistory.currentHistoryInfo.action !== 'InsertBookmark' && this.editorHistory.currentHistoryInfo.action !== 'Grouping')) {
                 this.editorHistory.recordChanges(this);
             }
             if (this.owner.documentEditorSettings.showBookmarks === true) {
@@ -489,7 +494,8 @@ export class BaseHistoryInfo {
         } else {
             this.owner.editorModule.deleteBookmarkInternal(bookmark);
             // Skip recording the changes if the currentHistoryInfo action is InsertBookmark. Because, the changes will be recorded in the update complex history.
-            if (!(this.editorHistory.currentHistoryInfo && this.editorHistory.currentHistoryInfo.action === 'InsertBookmark')) {
+            // Need to skip recording changes if the currentHistoryInfo action is Grouping. Because in grouping the history already recorded while updating complex history.
+            if (!this.editorHistory.currentHistoryInfo || (this.editorHistory.currentHistoryInfo && this.editorHistory.currentHistoryInfo.action !== 'InsertBookmark' && this.editorHistory.currentHistoryInfo.action !== 'Grouping')) {
                 this.editorHistory.undoStack.push(this);
             }
         }
@@ -729,13 +735,11 @@ export class BaseHistoryInfo {
             this.endPosition = undefined;
             // Use this property to skip deletion if already selected content deleted case.
             let isRemoveContent: boolean = false;
-            // Added the boolean for tracked content deletion.
-            let isDeleteTrack: boolean = false;
             if (this.endRevisionLogicalIndex && deletedNodes.length > 0) {
                 let currentPosition: TextPosition = sel.getTextPosBasedOnLogicalIndex(this.endRevisionLogicalIndex);
                 if ((this.editorHistory.isUndoing && !this.editorHistory.currentBaseHistoryInfo.isRevisionEndInAnotherCell) || (this.editorHistory.isRedoing && insertTextPosition.isAtSamePosition(endTextPosition))) {
                     sel.selectPosition(insertTextPosition, currentPosition);
-                    isDeleteTrack = true;
+                    this.owner.editor.isSelectionBasedonEndRevision = true;
                 }
                 this.collabEnd = this.endRevisionLogicalIndex;
                 if (this.owner.enableCollaborativeEditing) {
@@ -743,7 +747,10 @@ export class BaseHistoryInfo {
                     this.endIndex += this.paraInclude(currentPosition);
                 }
                 if (this.editorHistory.isUndoing || (this.editorHistory.isRedoing && !insertTextPosition.isAtSamePosition(endTextPosition))) {
-                    this.owner.editorModule.deleteSelectedContents(sel, true, isDeleteTrack);
+                    this.owner.editor.isDeleteTrackedContent = true;
+                    this.owner.editorModule.deleteSelectedContents(sel, true);
+                    this.owner.editor.isDeleteTrackedContent = false;
+                    this.owner.editor.isSelectionBasedonEndRevision = false;
                     isRemoveContent = true;
                 }
             }
@@ -865,6 +872,8 @@ export class BaseHistoryInfo {
             (this.editorHistory.currentHistoryInfo.action === 'Accept All'
                 || this.editorHistory.currentHistoryInfo.action === 'Reject All' || this.editorHistory.currentHistoryInfo.action === 'RemoveComment')) {
             if (this.owner.documentHelper.blockToShift) {
+                // Previously added `isModifyingSelectionInternally` to improve performance, but it prevents clearing selectedWidgets, leading to a script error.
+                this.documentHelper.owner.selectionModule.selectedWidgets.clear();
                 this.owner.documentHelper.layout.shiftLayoutedItems(false);
             }
         }
@@ -1069,6 +1078,32 @@ export class BaseHistoryInfo {
                 let insertIndex: string = this.selectionStart;
                 let block: BlockWidget = this.owner.editorModule.getBlock({ index: insertIndex }).node as BlockWidget;
                 let lastNode: IWidget = deletedNodes[deletedNodes.length - 1];
+                let elementInfo: ElementInfo = this.owner.selectionModule.start.currentWidget.getInline(this.owner.selectionModule.start.offset, 0);
+                let elementBox: ElementBox = elementInfo.element;
+                let lastLine: LineWidget = ((this.owner.selectionModule.start.paragraph.combineWidget(this.viewer) as ParagraphWidget).lastChild as LineWidget);
+                if (this.owner.selectionModule.start.currentWidget.isEndsWithLineBreak && this.owner.selectionModule.start.offset > 0
+                    && this.owner.documentHelper.layout.isConsiderAsEmptyLineWidget(lastLine) && !isNullOrUndefined(lastLine.previousLine)) {
+                    lastLine = lastLine.previousLine;
+                }
+                let lastElement: ElementBox = lastLine.children[lastLine.children.length - 1];
+                if (this.action === 'RemoveRowTrack' && lastNode instanceof ParagraphWidget && this.owner.selectionModule.start.offset > 0 && elementBox === lastElement) {
+                    let editor: Editor = this.owner.editorModule;
+                    editor.insertNewParagraphWidget(lastNode as ParagraphWidget, false);
+                    if (lastNode.characterFormat.removedIds.length > 0) {
+                        this.owner.editorModule.constructRevisionFromID(lastNode.characterFormat);
+                    }
+                    deletedNodes.splice(deletedNodes.indexOf(lastNode), 1);
+                    //Removes the intermediate empty paragraph instance.
+                    if (this.owner.selectionModule.start.paragraph !== lastNode.containerWidget.lastChild) {
+                        editor.removeBlock(this.owner.selectionModule.start.paragraph);
+                    }
+                    let paragraph: ParagraphWidget = this.documentHelper.selection.getNextParagraphBlock(lastNode.getSplitWidgets().pop() as BlockWidget);
+                    if (!isNullOrUndefined(paragraph) && lastNode !== lastNode.containerWidget.lastChild) {
+                        this.owner.selectionModule.selectParagraphInternal(paragraph, true);
+                    } else if (!isNullOrUndefined(lastNode)) {
+                        this.owner.selectionModule.selectParagraphInternal(lastNode, false);
+                    }
+                }
                 if ((block instanceof TableWidget || block.previousRenderedWidget instanceof TableWidget || block.isInsideTable)
                     && lastNode instanceof TableWidget) {
                     if (block instanceof ParagraphWidget && !block.isInsideTable) {
@@ -1126,7 +1161,7 @@ export class BaseHistoryInfo {
                     if (lastNode instanceof ParagraphWidget && this.editorHistory && this.editorHistory.currentBaseHistoryInfo && this.editorHistory.currentBaseHistoryInfo.action === 'Paste') {
                         lastNode = deletedNodes[deletedNodes.length - 1];
                     }
-                    if (lastNode instanceof ParagraphWidget && this.owner.selectionModule.start.offset > 0) {
+                    if (lastNode instanceof ParagraphWidget && this.owner.selectionModule.start.offset > 0 && deletedNodes.length > 1) {
                         if (this.editorHistory && this.editorHistory.currentBaseHistoryInfo && this.editorHistory.currentBaseHistoryInfo.action === 'Paste') {
                             this.owner.editorModule.insertNewParagraphWidget(lastNode, false);
                         } else {
@@ -1272,6 +1307,11 @@ export class BaseHistoryInfo {
                     if (node instanceof ParagraphWidget && !node.isInsideTable && this.action === 'RemoveRowTrack') {
                         this.owner.editorModule.insertNewParagraphWidget(node, false);
                     } else if (node instanceof TableWidget && this.action === 'RemoveRowTrack') {
+                            // Assign the selection's container widget to the node to maintain the reference after table replacement.
+                            let currentParagraph: ParagraphWidget = this.owner.selection.start.paragraph;
+                            if (node.isInsideTable) {
+                                node.containerWidget = currentParagraph.containerWidget;
+                            }
                             this.owner.editorModule.insertTableInternal(node as TableWidget, node as TableWidget, false, true);
                         if (!isNullOrUndefined(deletedNodes[i - 1]) && !isNullOrUndefined(node.nextRenderedWidget) && node.nextRenderedWidget instanceof ParagraphWidget) {
                             this.owner.selectionModule.start.setPositionParagraph(node.nextRenderedWidget.firstChild as LineWidget, 0);

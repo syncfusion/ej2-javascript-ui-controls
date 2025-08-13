@@ -1,6 +1,6 @@
 import { isNullOrUndefined, NumberFormatOptions, Internationalization, DateFormatOptions, SanitizeHtmlHelper } from '@syncfusion/ej2-base';
 import { ZipArchive, ZipArchiveItem } from '@syncfusion/ej2-compression';
-import { LineWidget, ElementBox, BodyWidget, ParagraphWidget, TextElementBox, BlockWidget, TableRowWidget, TableCellWidget, TableWidget } from '../viewer/page';
+import { LineWidget, ElementBox, BodyWidget, ParagraphWidget, TextElementBox, BlockWidget, TableRowWidget, TableCellWidget, TableWidget, ListTextElementBox, ImageElementBox } from '../viewer/page';
 import { WCharacterFormat, WCellFormat, TextPosition, TextSearchResults, WList, WAbstractList, Revision, CommentElementBox } from '../index';
 import { HighlightColor, TextFormFieldType, CheckBoxSizeType, RevisionType, CollaborativeEditingAction, CompatibilityMode, BaselineAlignment, Underline, Strikethrough, BiDirectionalOverride, BreakClearType, LineStyle, TextAlignment, LineSpacingType, OutlineLevel, VerticalAlignment, FontHintType } from '../../base/types';
 import { Widget, FieldElementBox, CommentCharacterElementBox } from '../viewer/page';
@@ -94,6 +94,31 @@ export class HelperMethods {
             spellColl.push(spellInfo);
         }
         return spellColl;
+    }
+    /**
+     * Check if the line widget has image with underline
+     * @private
+     * @param {LineWidget} lineWidget input line widget to check if it has image with underline
+     * @param {boolean} enableTrackChanges accepts a boolean value to check if track changes is enabled
+     * @returns {boolean} weather line widget has image with underline or not
+     */
+    /* eslint-disable  */
+    public static containsUnderlinedImage(lineWidget: LineWidget, enableTrackChanges: boolean): boolean {
+        let isLineHasText: boolean  = false;
+        let isImageHasUnderline: boolean  = false;
+        for (let i: number = 0; i < lineWidget.children.length; i++) {
+            const elementBox: ElementBox = lineWidget.children[i] as ElementBox;
+            if (!isLineHasText) {
+                if (elementBox instanceof TextElementBox || elementBox instanceof ListTextElementBox || elementBox instanceof FieldElementBox) {
+                    isLineHasText = true;
+                } else if (elementBox instanceof ImageElementBox) {
+                    // Check if the image has underline or track changes insertion
+                    isImageHasUnderline = (enableTrackChanges && elementBox.getAllRevision().length > 0 && elementBox.getRevision(0).revisionType === 'Insertion')
+                        || (elementBox.characterFormat && elementBox.characterFormat.underline !== 'None');
+                }
+            }
+        }
+        return !isLineHasText && isImageHasUnderline;
     }
     /**
      * Check given string is a valid either roman or arabic number
@@ -1349,16 +1374,27 @@ export class HelperMethods {
 export class Point {
     private xIn: number = 0;
     private yIn: number = 0;
-
+    /**
+     * @private
+     */
     public get x(): number {
         return this.xIn;
     }
+    /**
+     * @private
+     */
     public set x(value: number) {
         this.xIn = value;
     }
+    /**
+     * @private
+     */    
     public get y(): number {
         return this.yIn;
     }
+    /**
+     * @private
+     */    
     public set y(value: number) {
         this.yIn = value;
     }
@@ -1367,6 +1403,9 @@ export class Point {
         this.xIn = xPosition;
         this.yIn = yPosition;
     }
+    /**
+     * @private
+     */    
     public copy(point: Point): void {
         this.xIn = point.xIn;
         this.yIn = point.yIn;
@@ -1375,6 +1414,7 @@ export class Point {
      * Destroys the internal objects maintained.
      *
      * @returns {void}
+     * @private
      */
     public destroy(): void {
         this.xIn = undefined;

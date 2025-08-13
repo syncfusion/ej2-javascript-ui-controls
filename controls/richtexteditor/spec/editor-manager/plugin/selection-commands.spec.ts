@@ -2587,3 +2587,29 @@ describe('EJ2-971467: Cannot Clear Background Color of White Space After Applyin
         destroy(rteObj);
     });
 });
+
+describe('EJ2-944794: Page becomes unresponsive when removing inline code in the RichTextEditor', () => {
+    var innerValue = '<pre class="skip-highlight-pre-element highlight hightlight-theme tab null"><code class="null hljs language-xml"><span class="hljs-meta">&lt;!DOCTYPE <span class="hljs-keyword">html</span>&gt;</span>\n                <span class="hljs-tag">&lt;<span class="hljs-name">html</span>&gt;</span>\n                <span class="hljs-tag">&lt;<span class="hljs-name">body</span>&gt;</span>\n                \n                <span class="hljs-tag">&lt;<span class="hljs-name">h1</span>&gt;</span>My First Heading<span class="hljs-tag">&lt;/<span class="hljs-name">h1</span>&gt;</span>\n                \n                <span class="hljs-tag">&lt;<span class="hljs-name">p</span>&gt;</span>My first paragraph.<span class="hljs-tag">&lt;/<span class="hljs-name">p</span>&gt;</span>\n                \n                <span class="hljs-tag">&lt;/<span class="hljs-name">body</span>&gt;</span>\n                <span class="hljs-tag">&lt;/<span class="hljs-name">html</span>&gt;</span></code></pre><div>ergergre gr eg re g r g&nbsp; re g r g reg</div>';
+    var rteObj: any;
+    beforeAll(function (done) {
+        rteObj = renderRTE({
+            value: innerValue,
+            toolbarSettings: {
+                items: ['InlineCode']
+            }
+        });
+        done();
+    });
+    afterAll(function (done) {
+        destroy(rteObj);
+        done();
+    });
+    it('Rich Text Editor works properly when removing inline code, and the page no longer becomes unresponsive', function (done) {
+        const divElem: Element = rteObj.inputElement.lastChild;
+        const codeElem: Element = rteObj.inputElement.querySelector('code');
+        rteObj.formatter.editorManager.nodeSelection.setSelectionText(document, codeElem.firstChild, divElem, 0, divElem.childNodes.length);
+        SelectionCommands.applyFormat(document, 'inlinecode', rteObj.inputElement, 'PRE');
+        expect(rteObj.inputElement.innerHTML).toEqual(`<pre class="skip-highlight-pre-element highlight hightlight-theme tab null"><span class="hljs-meta">&lt;!DOCTYPE <span class="hljs-keyword">html</span>&gt;</span>\n                <span class="hljs-tag">&lt;<span class="hljs-name">html</span>&gt;</span>\n                <span class="hljs-tag">&lt;<span class="hljs-name">body</span>&gt;</span>\n                \n                <span class="hljs-tag">&lt;<span class="hljs-name">h1</span>&gt;</span>My First Heading<span class="hljs-tag">&lt;/<span class="hljs-name">h1</span>&gt;</span>\n                \n                <span class="hljs-tag">&lt;<span class="hljs-name">p</span>&gt;</span>My first paragraph.<span class="hljs-tag">&lt;/<span class="hljs-name">p</span>&gt;</span>\n                \n                <span class="hljs-tag">&lt;/<span class="hljs-name">body</span>&gt;</span>\n                <span class="hljs-tag">&lt;/<span class="hljs-name">html</span>&gt;</span></pre><div>ergergre gr eg re g r g&nbsp; re g r g reg</div>`);
+        done();
+    });
+});

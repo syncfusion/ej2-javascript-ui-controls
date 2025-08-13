@@ -1056,11 +1056,14 @@ describe('Pivotview Public properties null or undefined value testing', () => {
             pivotGridObj1.enablePaging = null;
             pivotGridObj1.dataBind();
         });
-        it('enablePaging - public property-1', () => {
-            expect(pivotGridObj1.enablePaging).toBe(null);
-            // Test with undefined value
-            pivotGridObj1.enablePaging = undefined;
-            pivotGridObj1.dataBind();
+        it('enablePaging - public property-1', (done: Function) => {
+            setTimeout(() => {
+                expect(pivotGridObj1.enablePaging).toBe(null);
+                // Test with undefined value
+                pivotGridObj1.enablePaging = undefined;
+                pivotGridObj1.dataBind();
+                done();
+            }, 1000);
         });
         it('enablePaging - public property-2', () => {
             expect(pivotGridObj1.enablePaging).toBe(undefined);
@@ -1081,16 +1084,22 @@ describe('Pivotview Public properties null or undefined value testing', () => {
             expect(pivotGridObj1.enablePersistence).toBe(undefined);
         });
         // Test case for the enableRtl Type public property.
-        it('enableRtl - public property', () => {
+        it('enableRtl - public property', (done: Function) => {
             // Test with null value
-            pivotGridObj1.enableRtl = null;
-            pivotGridObj1.dataBind();
+            setTimeout(() => {
+                pivotGridObj1.enableRtl = null;
+                pivotGridObj1.dataBind();
+                done();
+            }, 1000);
         });
-        it('enableRtl - public property-1', () => {
-            expect(pivotGridObj1.enableRtl).toBe(null);
-            // Test with undefined value
-            pivotGridObj1.enableRtl = undefined;
-            pivotGridObj1.dataBind();
+        it('enableRtl - public property-1', (done: Function) => {
+            setTimeout(() => {
+                expect(pivotGridObj1.enableRtl).toBe(null);
+                // Test with undefined value
+                pivotGridObj1.enableRtl = undefined;
+                pivotGridObj1.dataBind();
+                done();
+            }, 1000);
         });
         it('enableRtl - public property-2', () => {
             expect(pivotGridObj1.enableRtl).toBe(undefined);
@@ -1258,17 +1267,20 @@ describe('Pivotview Public properties null or undefined value testing', () => {
             pivotGridObj2.appendTo('#PivotGrid');
         });
         // Test case for the chartsettings background  public property
-        it('chartsettings background public property', () => {
-            pivotGridObj2.chartSettings.background = null;
-            pivotGridObj2.chartSettings.accumulationSelectionMode = null;
-            pivotGridObj2.chartSettings.border.color = null;
-            pivotGridObj2.chartSettings.border.dashArray = null;
-            pivotGridObj2.chartSettings.border.width = null;
-            pivotGridObj2.chartSettings.chartArea.background = null;
-            pivotGridObj2.chartSettings.chartArea.backgroundImage = null;
-            pivotGridObj2.chartSettings.chartArea.opacity = null;
-            pivotGridObj2.chartSettings.chartArea.width = null;
-            pivotGridObj2.dataBind();
+        it('chartsettings background public property', (done: Function) => {
+            setTimeout(() => {
+                pivotGridObj2.chartSettings.background = null;
+                pivotGridObj2.chartSettings.accumulationSelectionMode = null;
+                pivotGridObj2.chartSettings.border.color = null;
+                pivotGridObj2.chartSettings.border.dashArray = null;
+                pivotGridObj2.chartSettings.border.width = null;
+                pivotGridObj2.chartSettings.chartArea.background = null;
+                pivotGridObj2.chartSettings.chartArea.backgroundImage = null;
+                pivotGridObj2.chartSettings.chartArea.opacity = null;
+                pivotGridObj2.chartSettings.chartArea.width = null;
+                pivotGridObj2.dataBind();
+                done();
+            }, 1000);
         });
         it('chartsettings background public property-1', () => {
             expect(pivotGridObj2.chartSettings.background).toBe(null);

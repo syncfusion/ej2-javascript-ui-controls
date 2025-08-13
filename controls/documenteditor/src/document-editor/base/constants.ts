@@ -83,3 +83,9 @@ export const documentLoadFailedEvent: string = 'documentLoadFailed';
  * @hidden
  */
 export const fileMenuItemClickEvent: string = 'fileMenuItemClick';
+/**
+ * Triggered before paste operation is executed
+ *
+ * @hidden
+ */
+export const beforePaste: string = 'beforePaste';

@@ -314,6 +314,7 @@ export class Layout {
      * Releases un-managed and - optionally - managed resources.
      *
      * @returns {void}
+     * @private
      */
     public destroy(): void {
         this.documentHelper = undefined;
@@ -2287,6 +2288,9 @@ export class Layout {
                     nextLine.paragraph.destroy();
                 } else {
                     nextLine.paragraph.childWidgets.splice(nextLine.paragraph.childWidgets.indexOf(nextLine), 1);
+                    if (this.documentHelper.selection && this.documentHelper.selection.selectedWidgets.containsKey(nextLine) && nextLine.indexInOwner < 0) {
+                        this.documentHelper.selection.selectedWidgets.remove(nextLine);
+                    }
                 }
                 nextLine = line.nextLine;
             }
@@ -4141,6 +4145,7 @@ export class Layout {
     /**
      * Set the checkbox font size
      * @returns {void}
+     * @private
      */
     public setCheckBoxFontSize(formFieldData: CheckBoxFormField, format: WCharacterFormat): void {
         if (formFieldData.sizeType !== 'Auto') {
@@ -4880,10 +4885,14 @@ export class Layout {
         if (this.documentHelper.textHelper.isUnicodeText(text, element.scriptType) && element.scriptType === 3 && text.length - 1 === text.indexOf(' ')) {
             isSplitWordByWord = false;
         }
+        if (this.documentHelper.textHelper.isUnicodeText(text, element.scriptType) && this.documentHelper.compatibilityMode === 'Word2013' && element.paragraph.paragraphFormat.textAlignment !== 'Justify') {
+            isSplitByWord = false;
+        }
         if (width <= this.viewer.clientActiveArea.width) {
             //Fits the text in current line.
             this.addElementToLine(paragraph, element);
-        } else if (isSplitByWord && (index > 0 || (text.indexOf(' ') !== -1 && isSplitWordByWord) || text.indexOf('-') !== -1) ) {
+
+        } else if (isSplitByWord && (index > 0 || (text.indexOf(' ') !== -1 && isSplitWordByWord) || text.indexOf('-') !== -1)) {
             this.splitByWord(lineWidget, paragraph, element, text, width, characterFormat);
         } else {
             this.splitByCharacter(lineWidget, element, text, width, characterFormat);
@@ -5523,6 +5532,11 @@ export class Layout {
                     this.maxBaseline = this.maxTextBaseline;
                 }
             }
+        }
+        if (HelperMethods.containsUnderlinedImage(line, this.viewer.owner.enableTrackChanges)) {
+            let measurement: TextSizeInfo = this.documentHelper.textHelper.measureText('a', line.paragraph.characterFormat);
+            this.maxTextHeight = measurement.Height;
+            this.maxTextBaseline = measurement.BaselineOffset;
         }
     }
     /**
@@ -9908,6 +9922,9 @@ export class Layout {
                     if (floatingElementLength > 0 || (floatingElementLength === 0 && isNullOrUndefined(this.documentHelper.blockToShift)
                         && isNextBlockToShift)) {
                         this.documentHelper.blockToShift = block;
+                    }
+                    else if (isNullOrUndefined(this.documentHelper.blockToShift) && nextBlock.nextRenderedWidget && (nextBlock.nextRenderedWidget.containerWidget === nextBlock.containerWidget) && viewer.owner.isShiftingEnabled && HelperMethods.round(nextBlock.nextRenderedWidget.y, 2) !== HelperMethods.round(nextBlock.y + nextBlock.height, 2)) {
+                        this.documentHelper.blockToShift = nextBlock;
                     }
                 }
                 break;

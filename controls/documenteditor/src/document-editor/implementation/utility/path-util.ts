@@ -561,6 +561,7 @@ export interface PathSegment {
 }
 /**
  * Interface for a class Point
+ * @private
  */
 export interface PointModel {
 

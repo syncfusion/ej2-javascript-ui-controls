@@ -49,11 +49,39 @@ export class InsertMethods {
      */
     public static unwrap(node: Node | HTMLElement): Node[] {
         const parent: Node = node.parentNode;
+        const selection: Selection = node.ownerDocument.defaultView.getSelection();
+        let start: Node = null;
+        let startOffset: number = 0;
+        let end: Node = null;
+        let endOffset: number = 0;
+        let range: Range;
+        // Save selection endpoints
+        if (selection && selection.rangeCount) {
+            range = selection.getRangeAt(0);
+            start = range.startContainer;
+            startOffset = range.startOffset;
+            end = range.endContainer;
+            endOffset = range.endOffset;
+        }
+        // Move children out of wrapper
         const child: Node[] = [];
         for (; node.firstChild; null) {
             child.push(parent.insertBefore(node.firstChild, node));
         }
         parent.removeChild(node);
+        // Restore selection, inline mapping if node was removed
+        if (selection && start && end && child.length > 0) {
+            // Map start to first child if it pointed to the unwrapped node
+            if (start === node)
+            { start = child[Math.min(startOffset, child.length - 1)]; startOffset = 0; }
+            // Map end to last child if it pointed to the unwrapped node
+            if (end === node)
+            { end = child[Math.min(endOffset, child.length - 1)]; endOffset = 0; }
+            selection.removeAllRanges();
+            range.setStart(start, startOffset);
+            range.setEnd(end, endOffset);
+            selection.addRange(range);
+        }
         return child;
     }
 

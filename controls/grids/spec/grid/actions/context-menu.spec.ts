@@ -850,7 +850,7 @@ describe('context menu module', () => {
                 dataSource: [],
                 allowPaging: true,
                 contextMenuItems: ['AutoFitAll', 'AutoFit', { separator: true, target: '.e-headercell', iconCss: '', text: '', id: 'headerSep1' },
-                    'Group', 'Ungroup',{ separator: true, target: '.e-headercell', iconCss: '', text: '', id: 'headerSep1' }, , 'Edit', 'Delete', 'Save', 'Cancel',
+                    'Group', 'Ungroup',{ separator: true, target: '.e-headercell', iconCss: '', text: '', id: 'headerSep1' }, ,'Edit', 'Delete', 'Save', 'Cancel',
                     { separator: true, target: '.e-row', iconCss: '', text: '', id: 'contentSep1' }, 'PdfExport', 'ExcelExport', 'CsvExport', 'SortAscending', 'SortDescending',
                     'FirstPage', 'PrevPage', { separator: true, target: '.e-gridpager', iconCss: '', text: '', id: 'pagerSep1' }, 'LastPage', 'NextPage', 'Copy'
                 ],

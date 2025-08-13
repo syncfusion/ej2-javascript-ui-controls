@@ -34,7 +34,9 @@ import {
     ContentControlInfo,
     CommentProperties, Comment, breakCodeProperty,
     nsidProperty,
-    customXmlProperty
+    customXmlProperty,
+    BeforePasteEventArgs,
+    beforePaste
 } from '../../base/index';
 import { SelectionCharacterFormat, SelectionParagraphFormat } from '../index';
 import { Action } from '../../index';
@@ -57,7 +59,8 @@ import {
     VerticalAlignment,
     HorizontalOrigin,
     HorizontalAlignment,
-    ContentControlWidgetType
+    ContentControlWidgetType,
+    PasteType
 } from '../../base/types';
 import { DocumentEditor } from '../../document-editor';
 import { showSpinner, hideSpinner, Dialog } from '@syncfusion/ej2-popups';
@@ -114,6 +117,7 @@ export class Editor {
     private isInsertingText: boolean = false;
     private isInternalPaste: boolean = false;
     private guid: string;
+    private type: string = null;
     /**
      * @private
      */
@@ -247,6 +251,14 @@ export class Editor {
     * @private
     */
     public isPasteContentCheck: boolean = false;
+    /**
+     * @private
+     */
+    public isDeleteTrackedContent: boolean = false;
+    /**
+     * @private
+     */
+    public isSelectionBasedonEndRevision: boolean = false;
 
     private animationTimer: number;
     private pageRefFields: PageRefFields = {};
@@ -4612,7 +4624,7 @@ export class Editor {
             return;
         }
         if (revisionType === 'Deletion' && !this.editorHistory.isUndoing && !isPaste) {
-            let editPostion: string = this.selection.editPosition;
+            let editPosition: string = this.selection.editPosition;
             let start: TextPosition = this.selection.start.clone();
             let end: TextPosition = this.selection.end.clone();
             this.documentHelper.layout.clearListElementBox(widget);
@@ -4647,11 +4659,19 @@ export class Editor {
                 if (isAssOrder) {
                     canRemovePara = this.handleDeleteParaMark(widget);
                 }               
-                if (canRemovePara && widget.isEmpty()) {
-                    this.removeBlock(widget);
+                if (canRemovePara) {
+                    if (widget.isEmpty()) {
+                        this.removeBlock(widget);
+                    } else {
+                        // Update the editPosition before the block will be combined
+                        if (this.editorHistory && !isNullOrUndefined(this.editorHistory.currentBaseHistoryInfo) && this.editorHistory.currentBaseHistoryInfo.action === 'Delete') {
+                            editPosition = this.selection.getHierarchicalIndex(widget, this.documentHelper.selection.getLineLength(widget.lastChild as LineWidget).toString());
+                        }
+                        this.deleteParagraphMark(widget, this.selection, 0, false, true, true);
+                    }
                 }
             }
-            this.selection.editPosition = editPostion;
+            this.selection.editPosition = editPosition;
             this.selection.start.setPositionInternal(start);
             this.selection.end.setPositionInternal(end);
             // let textPosition: TextPosition = this.selection.getTextPosBasedOnLogicalIndex(editPostion);
@@ -6295,6 +6315,30 @@ export class Editor {
         }
         this.reLayout(selection, false);
     }
+    
+    /**
+     * Triggers the beforePaste event.
+     * 
+     * @param {string} sfdt - The SFDT content to be pasted.
+     * @param {PasteType} pasteType - Type of content being pasted.
+     * @returns {boolean} Returns true if paste operation should continue, false if canceled.
+     * @private
+     */
+    private triggerBeforePasteEvent(pasteContent: string, pasteType: PasteType): BeforePasteEventArgs {
+        if (!isNullOrUndefined(this.owner) && !isNullOrUndefined(this.owner.beforePaste)) {
+            // Create event args object
+            const eventArgs: BeforePasteEventArgs = {
+                cancel: false,
+                pasteContent: pasteContent,
+                pasteType: pasteType
+            };
+            // Trigger event
+            this.owner.trigger(beforePaste, eventArgs);
+            // Return false if canceled to prevent paste operation
+            return eventArgs;
+        }
+        return undefined;
+    }
     //Paste Implementation starts
     /**
      * Paste copied clipboard content on Paste event
@@ -6337,6 +6381,7 @@ export class Editor {
             }
             if (sfdtContent !== '') {
                 this.isInternalPaste = true;
+                this.type = '.sfdt';
                 this.pasteFormattedContent({ data: JSON.parse(sfdtContent) });
                 this.isInternalPaste = false;
             } else if (rtfContent !== '') {
@@ -6346,7 +6391,9 @@ export class Editor {
                 this.pasteAjax(htmlContent, '.html');
             } else if (textContent !== null && textContent !== '') {
                 this.selection.currentPasteAction = 'TextOnly';
-                this.pasteContents(textContent);
+                this.type = '.text';
+                let data: any = textContent;
+                this.beforePasteEvent(data, this.type);
                 this.applyPasteOptions(this.currentPasteOptions, true);
                 this.copiedContent = undefined;
                 this.documentHelper.editableDiv.innerHTML = '';
@@ -6395,6 +6442,7 @@ export class Editor {
             content: content,
             type: type
         };
+        this.type = type;
         let editor: any = this;
         this.pasteRequestHandler = new XmlHttpRequestHandler();
         this.owner.documentHelper.viewerContainer.focus();
@@ -6414,6 +6462,18 @@ export class Editor {
             this.pasteRequestHandler.send(formObject, httprequestEventArgs);
         }
     }
+    private getPasteTypeFromFileExtension(fileExtension: string): PasteType {
+        switch (fileExtension) {
+            case '.html':
+                return 'Html';
+            case '.rtf':
+                return 'Rtf';
+            case '.sfdt':
+                return 'Sfdt';
+            default:
+                return 'Text';
+        }
+    }
     /**
      * @private
      * @returns {void}
@@ -6422,7 +6482,8 @@ export class Editor {
         if (this.isPasteListUpdated) {
             this.isPasteListUpdated = false;
         }
-        this.pasteContents(isNullOrUndefined(result.data) ? this.copiedTextContent : HelperMethods.getSfdtDocument(result.data));
+        let data: any = result.data == null ? this.copiedTextContent : result.data instanceof Object ? JSON.stringify(result.data) : result.data;
+        this.beforePasteEvent(data, this.type);
         if (this.currentPasteOptions !== 'KeepSourceFormatting') {
             this.applyPasteOptions(this.currentPasteOptions);
         }
@@ -6436,6 +6497,28 @@ export class Editor {
                 this.isPasteContentCheck = false;
             }
         }, 0);
+    }
+    private beforePasteEvent(data: any, type: any){
+        let eventArgs: BeforePasteEventArgs = this.triggerBeforePasteEvent(isNullOrUndefined(data) ? this.copiedTextContent : data, this.getPasteTypeFromFileExtension(type));
+        if (eventArgs && eventArgs.cancel) {
+            hideSpinner(this.owner.element);
+            return;
+        }
+        if (eventArgs) {
+            if (isNullOrUndefined(eventArgs.pasteContent)) {
+                alert("Provide valid paste content");
+            }
+            else {
+                data = eventArgs.pasteContent;
+            }
+        }
+        try {
+            // Parse the SFDT content and perform paste if it's valid; otherwise, fallback to plain text paste.
+            const parsedData = JSON.parse(data);
+            this.pasteContents(HelperMethods.getSfdtDocument(parsedData));
+        } catch {
+            this.pasteContents(isNullOrUndefined(data) ? this.copiedTextContent : data);
+        }
     }
     private onPasteFailure(result: any): void {
         this.owner.fireServiceFailure(result);
@@ -8008,9 +8091,8 @@ export class Editor {
             owner = owner.combineWidget(this.owner.viewer);
         }
         //remove old table revisions if it is present.
-        this.constructRevisionsForTable(table, false);
         if (!skipRemoving) {
-            this.removeBlock(table, true);
+            this.removeBlock(table, true, false, false, true);
         }
         this.removeRevisionFromTable(newTable);
         if (owner instanceof TableCellWidget) {
@@ -8360,6 +8442,7 @@ export class Editor {
         let lineWidget: LineWidget = undefined;
         let insertIndex: number = 0;
         let begin: boolean = undefined;
+        let isCopyParaFormat: boolean = undefined;
         let paragraphInfo: ParagraphInfo = this.selection.getParagraphInfo(selection.start);
         let isTrackingEnabled: boolean = this.owner.enableTrackChanges;
         let curInline: ElementBox = undefined;
@@ -8377,6 +8460,10 @@ export class Editor {
             lineIndex = paragraph.childWidgets.indexOf(curInline.line);
             insertIndex = curInline.indexInOwner;
             lineWidget = curInline.line;
+            let nextNode: ElementBox = curInline.nextNode;
+            if (this.isPaste && curInline instanceof ContentControl && curInline.type == 0 && !isNullOrUndefined(nextNode) && nextNode instanceof ContentControl && nextNode.type == 1) {
+                isCopyParaFormat = true;
+            }
             if (indexInInline === curInline.length) { // Add new Element in current 
                 insertIndex++;
                 begin = false;
@@ -8433,8 +8520,9 @@ export class Editor {
                 this.pasteFootNoteType = (element[i] as FootnoteElementBox).footnoteType;
                 isElementHasEndNote = true;
             }
+            
         }
-        if ((!this.isPaste) && paragraphFormat && (isNullOrUndefined(paragraph.paragraphFormat.listFormat.list) ||
+        if ((!this.isPaste || isCopyParaFormat) && paragraphFormat && (isNullOrUndefined(paragraph.paragraphFormat.listFormat.list) ||
             (!isNullOrUndefined(paragraph.paragraphFormat.listFormat) && paragraph.paragraphFormat.listFormat.listId === -1))) {
             paragraph.paragraphFormat.copyFormat(paragraphFormat);
         }
@@ -14862,7 +14950,7 @@ export class Editor {
         return true;
     }
 
-    private deleteSelectedContent(paragraph: ParagraphWidget, selection: Selection, start: TextPosition, end: TextPosition, editAction: number, isFromDeleteTrackedContent?: boolean): void {
+    private deleteSelectedContent(paragraph: ParagraphWidget, selection: Selection, start: TextPosition, end: TextPosition, editAction: number): void {
         //Handled special behaviour for content control start and end should not delete.
         let isParaMark: boolean = end.offset === this.selection.getLineLength(end.currentWidget) + 1;
         if (start.isAtParagraphStart && (isParaMark || end.isAtParagraphEnd)) {
@@ -14931,29 +15019,25 @@ export class Editor {
             this.deleteSelectedContent(end.paragraph, selection, start, end, editAction);
             return;
         }
-        let isTableDelete: boolean = false;
-        if (start.paragraph.isInsideTable && this.editorHistory && this.editorHistory.isUndoing && this.editorHistory.currentBaseHistoryInfo && this.editorHistory.currentBaseHistoryInfo.action === 'InsertTable') {
-            isTableDelete = true;
-        }
-        let isDeletecell: boolean = false;
+        let isDeleteCell: boolean = false;
         
-        if (!isNullOrUndefined(this.editorHistory) && !isNullOrUndefined(this.editorHistory.currentBaseHistoryInfo) && (this.editorHistory.currentBaseHistoryInfo.action === 'BackSpace' ||  this.editorHistory.currentBaseHistoryInfo.action === 'DeleteCells' 
-            || this.editorHistory.currentBaseHistoryInfo.action === 'RemoveRowTrack' || this.editorHistory.currentBaseHistoryInfo.action === 'Accept Change' 
-            || this.editorHistory.currentBaseHistoryInfo.action === 'Reject Change')) {
-            isDeletecell = true;
+        if (!isNullOrUndefined(this.editorHistory) && !isNullOrUndefined(this.editorHistory.currentBaseHistoryInfo) && (this.editorHistory.currentBaseHistoryInfo.action === 'BackSpace' || this.editorHistory.currentBaseHistoryInfo.action === 'DeleteCells'
+            || this.editorHistory.currentBaseHistoryInfo.action === 'Accept Change' || this.editorHistory.currentBaseHistoryInfo.action === 'Reject Change'
+            || (this.editorHistory.currentBaseHistoryInfo.action === 'RemoveRowTrack' && !this.editorHistory.currentBaseHistoryInfo.isClearCell) || (start.paragraph.isInsideTable && this.editorHistory.isUndoing && this.editorHistory.currentBaseHistoryInfo.action === 'InsertTable'))) {
+            isDeleteCell = true;
         }
         //  Selection start in cell.
         if (end.paragraph.isInsideTable && (!start.paragraph.isInsideTable
             || (start.paragraph.associatedCell && !start.paragraph.associatedCell.equals(end.paragraph.associatedCell))
-            || (selection.isCellSelected(end.paragraph.associatedCell, start, end) && isDeletecell) || isTableDelete)) {
+            || (selection.isCellSelected(end.paragraph.associatedCell, start, end)))) {
             end.paragraph.associatedCell.ownerTable.combineWidget(this.owner.viewer);
-            this.deleteTableCell(end.paragraph.associatedCell, selection, start, end, editAction, isDeletecell);
+            this.deleteTableCell(end.paragraph.associatedCell, selection, start, end, editAction, isDeleteCell);
         } else {
             let shiftPara: BlockWidget = undefined;
             if (this.owner.viewer instanceof PageLayoutViewer && paragraph.bodyWidget.sectionFormat.numberOfColumns > 1 && paragraph === paragraph.bodyWidget.lastChild && !isNullOrUndefined(paragraph.bodyWidget.nextRenderedWidget) && paragraph.bodyWidget.index !== paragraph.bodyWidget.nextRenderedWidget.index && paragraph.bodyWidget.page === (paragraph.bodyWidget.nextRenderedWidget as BodyWidget).page) {
                 shiftPara = paragraph.nextRenderedWidget as BlockWidget;
             }
-            this.deletePara(paragraph, start, end, editAction, isFromDeleteTrackedContent);
+            this.deletePara(paragraph, start, end, editAction);
             if (this.delBlockContinue && this.delBlock) {
                 if (this.delSection) {
                     let bodyWidget: BodyWidget = paragraph.bodyWidget instanceof BodyWidget ? paragraph.bodyWidget : undefined;
@@ -15034,7 +15118,7 @@ export class Editor {
                 }
 
             } else {
-                this.removeBlock(table);
+                this.removeBlock(table, false, false, false, true);
             }
             this.selection.selectParagraphInternal(paragraph, true);
             if (this.checkIsNotRedoing() || isNullOrUndefined(this.editorHistory)) {
@@ -15425,7 +15509,7 @@ export class Editor {
         }
         return paragraph;
     }
-    private deletePara(paragraph: ParagraphWidget, start: TextPosition, end: TextPosition, editAction: number, isFromDeleteTrackedContent?: boolean): void {
+    private deletePara(paragraph: ParagraphWidget, start: TextPosition, end: TextPosition, editAction: number): void {
         paragraph = paragraph.combineWidget(this.owner.viewer) as ParagraphWidget;
         let selection: Selection = this.documentHelper.selection;
         let paragraphStart: number = selection.getStartOffset(paragraph);
@@ -15548,7 +15632,7 @@ export class Editor {
                 if (this.owner.enableTrackChanges && !this.skipTracking() && this.editorHistory.currentBaseHistoryInfo.action !== 'TOC' && this.editorHistory.currentBaseHistoryInfo.action !== 'Reject Change' && this.editorHistory.currentBaseHistoryInfo.action !== 'InsertHyperlink') {
                     // As per MS Word behavior: If the next widget is a table, and both the selection start and end are within the same paragraph,
                     // and the selection includes only the paragraph mark at the end, then no action should be taken (similar to MS Word's behavior).
-                    if (!isFromDeleteTrackedContent && end.paragraph === paragraph && paragraph.nextRenderedWidget instanceof TableWidget
+                    if (!this.isSelectionBasedonEndRevision && end.paragraph === paragraph && paragraph.nextRenderedWidget instanceof TableWidget
                         && end.currentWidget === paragraph.lastChild && startOffset === lastLinelength && endOffset === lastLinelength + 1) {
                         // As per ms word behaviour, restrict the history preservation for this use case.
                         this.editorHistory.currentBaseHistoryInfo = undefined;
@@ -15592,7 +15676,7 @@ export class Editor {
                                 }
                             }
                         }
-                        this.insertParagraphPaste(paragraph, currentParagraph, start, end, isCombineNextParagraph, editAction, isCombineLastBlock);
+                        this.insertParagraphPaste(paragraph, currentParagraph, start, end, this.isDeleteTrackedContent ? false : isCombineNextParagraph, editAction, isCombineLastBlock);
                         this.removeRevisionForBlock(paragraph, false, true);
                         if (!isNullOrUndefined(this.owner.editorHistory) && !isNullOrUndefined(this.owner.editorHistory.currentBaseHistoryInfo) && this.owner.editorHistory.currentBaseHistoryInfo.action === 'Paste' && this.owner.editorHistory.historyInfoStack.length > 0 && this.owner.editorHistory.historyInfoStack[0].action === 'DragAndDropContent') {
                             this.addRemovedNodes(paragraph.clone());
@@ -15610,7 +15694,7 @@ export class Editor {
             }
         } else {
             // As per ms word behaviour, if the next widget is a table, then only remove the inlines.
-            if (!isFromDeleteTrackedContent && end.paragraph === paragraph && !paragraph.isEmpty() && paragraph.nextRenderedWidget instanceof TableWidget && !isAcceptOrReject && !this.isRemoteAction && !isNullOrUndefined(this.editorHistory) && !isNullOrUndefined(this.editorHistory.currentBaseHistoryInfo) && this.editorHistory.currentBaseHistoryInfo.action !== 'Enter') {
+            if (!this.isSelectionBasedonEndRevision && end.paragraph === paragraph && !paragraph.isEmpty() && paragraph.nextRenderedWidget instanceof TableWidget && !isAcceptOrReject && !this.isRemoteAction && !isNullOrUndefined(this.editorHistory) && !isNullOrUndefined(this.editorHistory.currentBaseHistoryInfo) && this.editorHistory.currentBaseHistoryInfo.action !== 'Enter') {
                 //In collaborative editing due to selection of para mark then length will be extra one.
                 if (this.owner.enableCollaborativeEditing && this.selection.getLineLength(endLineWidget) + 1 == endOffset && this.editorHistory && this.editorHistory.currentBaseHistoryInfo) {
                     this.editorHistory.currentBaseHistoryInfo.endIndex -= 1;
@@ -15627,7 +15711,6 @@ export class Editor {
                 let newParagraph: ParagraphWidget = undefined;
                 let previousBlock: BlockWidget = paragraph.previousWidget as BlockWidget;
                 let prevParagraph: ParagraphWidget = (previousBlock instanceof ParagraphWidget) ? previousBlock : undefined;
-                let nextWidget: BlockWidget = paragraph.nextRenderedWidget as BlockWidget;
                 if (editAction < 4) {
                     let skipParaMarkdeletion: boolean = false;
                     const isLastParagraph = (paragraph == this.getLastParaForBodywidgetCollection(paragraph));
@@ -15638,8 +15721,8 @@ export class Editor {
                     if (this.owner.enableTrackChanges && !this.skipTracking() && this.editorHistory.currentBaseHistoryInfo && this.editorHistory.currentBaseHistoryInfo.action !== 'TOC' && this.editorHistory.currentBaseHistoryInfo.action !== 'InsertHyperlink') {
                         //Here we need to check only the paramark is going to be deleted or not, so the thid parameter(checkOnlyIfParaMarkCanBeRemoved) was passed as true. Because, the revisions will be removed or inserted in the insertRevisionForBlock method.
                         let canRemoveParaMark: boolean = this.handleDeleteParaMark(paragraph, false, true);
-                        if (canRemoveParaMark && !isLastParagraph && !paragraph.isInsideTable && nextWidget instanceof ParagraphWidget && paragraph.bodyWidget.sectionIndex !== nextWidget.bodyWidget.sectionIndex) {
-                            this.deleteSection(selection, paragraph.bodyWidget, nextWidget.bodyWidget, editAction);
+                        if (canRemoveParaMark && !isLastParagraph && !paragraph.isInsideTable && paragraph.nextRenderedWidget instanceof ParagraphWidget && paragraph.bodyWidget.sectionIndex !== paragraph.nextRenderedWidget.bodyWidget.sectionIndex) {
+                            this.deleteSection(selection, paragraph.bodyWidget, paragraph.nextRenderedWidget.bodyWidget, editAction);
                         }
                         this.insertRevisionForBlock(paragraph, 'Deletion', undefined, undefined, undefined, isRemoveInline);
                         if (start.paragraph !== paragraph && !isNullOrUndefined(block)) {
@@ -15699,18 +15782,16 @@ export class Editor {
                         let offset: number;
                         if (paragraph.indexInOwner > -1) {
                             if (this.editorHistory && !isNullOrUndefined(this.editorHistory.currentBaseHistoryInfo) && this.editorHistory.currentBaseHistoryInfo.action === 'Delete') {
-                                if (this.owner.enableTrackChanges) {
-                                    if (isLastParagraph || (!isNullOrUndefined(nextWidget) && nextWidget instanceof TableWidget)) {
-                                        if (!isNullOrUndefined(paragraph.containerWidget)) {
-                                            offset = this.selection.getParagraphLength(paragraph);
-                                            selection.editPosition = this.selection.getHierarchicalIndex(paragraph, offset.toString());
-                                        }
+                                if (isLastParagraph || (!isNullOrUndefined(paragraph.nextRenderedWidget) && paragraph.nextRenderedWidget instanceof TableWidget)) {
+                                    if (!isNullOrUndefined(paragraph.containerWidget)) {
+                                        offset = this.selection.getParagraphLength(paragraph);
+                                        selection.editPosition = this.selection.getHierarchicalIndex(paragraph, offset.toString());
                                     }
-                                    else {
-                                        if (!isNullOrUndefined(nextWidget) && nextWidget instanceof ParagraphWidget) {
-                                            offset = this.selection.getStartOffset(nextWidget);
-                                            selection.editPosition = this.selection.getHierarchicalIndex(nextWidget, offset.toString());
-                                        }
+                                }
+                                else {
+                                    if (!isNullOrUndefined(paragraph.nextRenderedWidget) && paragraph.nextRenderedWidget instanceof ParagraphWidget) {
+                                        offset = this.selection.getStartOffset(paragraph.nextRenderedWidget);
+                                        selection.editPosition = this.selection.getHierarchicalIndex(paragraph.nextRenderedWidget, offset.toString());
                                     }
                                 }
                             }
@@ -15926,10 +16007,9 @@ export class Editor {
                 }
             }
             for (let i: number = bookmarks.length - 1; i >= 0; i--) {
-                this.removedBookmarkElements.push(bookmarks[i]);
-                // if (this.removedBookmarkElements.indexOf(bookmarks[i]) === -1) {
-                //     this.removedBookmarkElements.push(bookmarks[i]);
-                // }
+                if (this.removedBookmarkElements.indexOf(bookmarks[i]) === -1) {
+                    this.removedBookmarkElements.push(bookmarks[i]);
+                }
             }
         }
         //Inserts new paragraph in the current text position.
@@ -15997,7 +16077,7 @@ export class Editor {
      * @private
      * @returns {void}
      */
-    public removeBlock(block: BlockWidget, isSkipShifting?: boolean, skipElementRemoval?: boolean, isSelectionInsideTable?: boolean): void {
+    public removeBlock(block: BlockWidget, isSkipShifting?: boolean, skipElementRemoval?: boolean, isSelectionInsideTable?: boolean, isRemoveRevision?: boolean): void {
         let index: number;
         let blockCollection: IWidget[];
         let containerWidget: Widget;
@@ -16012,7 +16092,9 @@ export class Editor {
         if (block.isInsideTable) {
             containerWidget = block.associatedCell;
             this.checkToCombineRevisionsInPane(block);
-            //this.checkAndRemoveRevisionFromBlock(block, block instanceof TableWidget);
+            if (isRemoveRevision) {
+                this.checkAndRemoveRevisionFromBlock(block);
+            }
             index = block.associatedCell.childWidgets.indexOf(block);
             blockCollection = block.associatedCell.childWidgets;
             this.updateNextBlocksIndex(block, false);
@@ -16022,7 +16104,9 @@ export class Editor {
         } else {
             containerWidget = block.containerWidget;
             this.checkToCombineRevisionsInPane(block);
-            this.checkAndRemoveRevisionFromBlock(block);
+            if (isRemoveRevision) {
+                this.checkAndRemoveRevisionFromBlock(block);
+            }
             index = containerWidget.childWidgets.indexOf(block);
             blockCollection = containerWidget.childWidgets;
             this.updateNextBlocksIndex(block, false);
@@ -16040,7 +16124,7 @@ export class Editor {
         let nextBlock: BlockWidget = block.nextRenderedWidget as BlockWidget;
         if (previousBlock instanceof ParagraphWidget && nextBlock instanceof ParagraphWidget) {
             let previousBlockCharacterFormat: WCharacterFormat = previousBlock.characterFormat;
-            let nextBlockFirstElement: ElementBox = !isNullOrUndefined(nextBlock.firstChild) ? (nextBlock.firstChild as LineWidget).children[0] : undefined;
+            let nextBlockFirstElement: ElementBox | WCharacterFormat = !isNullOrUndefined(nextBlock.firstChild) ? !isNullOrUndefined((nextBlock.firstChild as LineWidget).children[0]) ? (nextBlock.firstChild as LineWidget).children[0] : nextBlock.characterFormat : undefined;
             if (!isNullOrUndefined(previousBlockCharacterFormat) && !isNullOrUndefined(nextBlockFirstElement)) {
                 let previousBlockRevisions: Revision[] = previousBlockCharacterFormat.getAllRevision();
                 let nextBlockRevisions: Revision[] = nextBlockFirstElement.getAllRevision();
@@ -16055,25 +16139,14 @@ export class Editor {
         }
     }
     private checkAndRemoveRevisionFromBlock(block: BlockWidget) {
-        for (let i: number = 0; i < block.childWidgets.length; i++) {
-            let isSkipTracking: boolean;
-            if (!this.isPasteRevertAction()) {
-                isSkipTracking = this.skipTracking();
-            }
-            if (block.childWidgets[i] instanceof TableRowWidget) {
+        if (block instanceof TableWidget) {
+            for (let i: number = 0; i < block.childWidgets.length; i++) {
                 let row: TableRowWidget = block.childWidgets[i] as TableRowWidget;
                 this.addRemovedRevisionInfo(row.rowFormat);
                 this.removeRevisionsInRow(row, true, true);
             }
-            if (block.childWidgets[i] instanceof LineWidget) {
-                let line: LineWidget = block.childWidgets[i] as LineWidget;
-                for (let j: number = 0; j < line.children.length; j++) {
-                    let element: ElementBox = line.children[j];
-                    if (element instanceof FootnoteElementBox && !this.selection.isEmpty) {
-                        this.removeFootnote(element);
-                    }
-                }
-            }
+        } else if (block instanceof ParagraphWidget) {
+            this.removeRevisionForBlock(block, false, true);
         }
     }
     private removePrevParaMarkRevision(currentBlock: BlockWidget, isFromDelete?: boolean, addRemovedIDs?: boolean): void {
@@ -16486,7 +16559,7 @@ export class Editor {
         }
     }
 
-    private deleteTableCell(cellAdv: TableCellWidget, selection: Selection, start: TextPosition, end: TextPosition, editAction: number, isDeletecell?: boolean): void {
+    private deleteTableCell(cellAdv: TableCellWidget, selection: Selection, start: TextPosition, end: TextPosition, editAction: number, isDeleteCell?: boolean): void {
         let deletePreviousBlock: boolean = !(start.paragraph.isInsideTable && cellAdv.ownerTable.contains(start.paragraph.associatedCell));
         let previousBlock: BlockWidget = cellAdv.ownerTable.previousRenderedWidget as BlockWidget;
         if (start.paragraph.isInsideTable) {
@@ -16497,17 +16570,20 @@ export class Editor {
                 if (selection.containsCell(containerCell, start.paragraph.associatedCell)) {
                     //Selection end is in container cell.
                     if (selection.isCellSelected(containerCell, start, end)) {
-                        //Container cell is completely selected.
-                        this.updateEditPosition(containerCell, selection);
-                        if (editAction === 1 || isDeletecell) {
+                        if (isDeleteCell) {
+                            //Container cell is completely selected.
+                            this.updateEditPosition(containerCell, selection);
                             //Specifically handled for backspace. Delete selected cell in current table.
                             this.deleteCellsInTable(cellAdv.ownerRow.ownerTable, selection, start, end, editAction);
                         } else {
                             //Delete contents within table cell or Copy contents within table cell to clipboard.
-                            let isCellCleared: boolean = this.deleteCell(containerCell, selection, editAction, true);
+                            let isCellCleared: boolean = this.clearCell(containerCell, selection, editAction, start, end);
                             if (!isCellCleared && editAction !== 2 && this.editorHistory) {
                                 this.editorHistory.currentBaseHistoryInfo = undefined;
                             } else if (isCellCleared) {
+                                if (this.editorHistory && this.editorHistory.currentBaseHistoryInfo && !this.editorHistory.currentBaseHistoryInfo.isClearCell) {
+                                    this.editorHistory.currentBaseHistoryInfo.isClearCell = true;
+                                }
                                 this.documentHelper.layout.reLayoutTable(containerCell.ownerRow.ownerTable);
                             }
                         }
@@ -16534,7 +16610,7 @@ export class Editor {
                         this.editorHistory.currentBaseHistoryInfo.action === 'Accept Change' || this.editorHistory.currentBaseHistoryInfo.action === 'Reject Change';
                     if (editAction === 2 && !isAcceptOrReject) {
                         //Delete contents within table cell.
-                        this.deleteCell(cellAdv, selection, 2, false);
+                        this.deleteCell(cellAdv, selection, 2);
                     } else {
                         deletePreviousBlock = false;
                         //Delete other selected cells in current table.
@@ -16599,14 +16675,7 @@ export class Editor {
             action = this.editorHistory.currentBaseHistoryInfo.action;
             isDeleteCells = this.editorHistory.currentBaseHistoryInfo.action === 'BackSpace' || this.editorHistory.currentBaseHistoryInfo.action === 'DeleteCells' || isAcceptOrReject || this.editorHistory.currentBaseHistoryInfo.action === 'InsertTable' || this.editorHistory.currentBaseHistoryInfo.action === 'RemoveRowTrack' || (isNullOrUndefined(startCell.ownerRow.previousWidget)
                     && isNullOrUndefined(endCell.ownerRow.nextWidget) && this.editorHistory.currentBaseHistoryInfo.action === 'Cut');
-            // let isCellSelected: boolean = false;
-            // if (this.editorHistory.currentBaseHistoryInfo.action === 'RemoveRowTrack' && start.paragraph.isInsideTable && end.paragraph.isInsideTable &&
-            //     this.selection.isCellSelected(startCell, start, end) && startCell === endCell) {
-            //     isCellSelected = true;
-            // }
-            // if (!isCellSelected) {
             clonedTable = this.cloneTableToHistoryInfo(table, table === parentTable);
-            // }
             if (this.editorHistory.isRedoing && this.editorHistory.currentBaseHistoryInfo.action === 'RemoveRowTrack') {
                 for (let i: number = table.childWidgets.length - 1; i >= 0; i--) {
                     let row: TableRowWidget = table.childWidgets[i] as TableRowWidget;
@@ -16618,15 +16687,11 @@ export class Editor {
                 }
             }
             if (this.editorHistory.currentBaseHistoryInfo.action === 'RemoveRowTrack') {
-                // if (isCellSelected) {
-                //     this.deleteBlock(startCell.lastChild as BlockWidget, this.selection, start, end, editAction);
-                // }
                 return;
             }
             this.editorHistory.currentBaseHistoryInfo.action = isDeleteCells ? 'DeleteCells' : 'ClearCells';
             selection.owner.isLayoutEnabled = false;
         }
-        //let cells: TableCellWidget[] = [];
         if (this.owner.enableTrackChanges && !this.skipTracking() && !isAcceptOrReject) {
             let isOkButtonClick: boolean = false;
             if (!isRowSelected) {
@@ -16642,7 +16707,7 @@ export class Editor {
                         okButton: {
                             text: 'Ok', click: (): void => {
                                 isOkButtonClick = true;
-                                this.onConfirmedTableCellsDeletion(table, selection, startRowIndex, endRowIndex, startColumnIndex, endColumnIndex, isDeleteCells, editAction, isRowSelected, action)
+                                this.onConfirmedTableCellsDeletion(table, selection, start, end, startRowIndex, endRowIndex, startColumnIndex, endColumnIndex, isDeleteCells, editAction, isRowSelected, action)
                             }
                         },
                         closeOnEscape: true, position: { X: 'center', Y: 'center' },
@@ -16659,15 +16724,15 @@ export class Editor {
                     this.trackDeletedContentInTableCell(table, selection, start, end, editAction, startRowIndex, endRowIndex, startColumnIndex, endColumnIndex);
                 }
             } else {
-                if (editAction === 0 && trackDeletedContent) {
+                if (editAction !== 1 && trackDeletedContent) {
                     this.trackDeletedContentInTableCell(table, selection, start, end, editAction, startRowIndex, endRowIndex, startColumnIndex, endColumnIndex);
                 } else {
-                    this.onConfirmedTableCellsDeletion(table, selection, startRowIndex, endRowIndex, startColumnIndex, endColumnIndex, isDeleteCells, editAction, isRowSelected, action);
+                    this.onConfirmedTableCellsDeletion(table, selection, start, end, startRowIndex, endRowIndex, startColumnIndex, endColumnIndex, isDeleteCells, editAction, isRowSelected, action);
                 }
             }
         } else {
 
-            this.onConfirmedTableCellsDeletion(table, selection, startRowIndex, endRowIndex, startColumnIndex, endColumnIndex, isDeleteCells, editAction, isRowSelected, action, isAcceptOrReject);
+            this.onConfirmedTableCellsDeletion(table, selection, start, end, startRowIndex, endRowIndex, startColumnIndex, endColumnIndex, isDeleteCells, editAction, isRowSelected, action, isAcceptOrReject);
         }
     }
     private removeDeletedCellRevision(row: TableRowWidget, isAddRemovedId?: boolean, startColumnIndex?: number, endColumnIndex?: number): any {
@@ -16913,7 +16978,7 @@ export class Editor {
         this.documentHelper.layout.reLayoutTable(table);
     }
     
-    private onConfirmedTableCellsDeletion(table: TableWidget, selection: Selection, startRowIndex: number, endRowIndex: number, startColumnIndex: number, endColumnIndex: number, isDeleteCells: boolean, editAction: number, isRowSelected: boolean, action: Action, isAcceptOrReject?: boolean): any {
+    private onConfirmedTableCellsDeletion(table: TableWidget, selection: Selection, start: TextPosition, end: TextPosition, startRowIndex: number, endRowIndex: number, startColumnIndex: number, endColumnIndex: number, isDeleteCells: boolean, editAction: number, isRowSelected: boolean, action: Action, isAcceptOrReject?: boolean): any {
         for (let i: number = table.childWidgets.length - 1; i >= 0; i--) {
             let row: TableRowWidget = table.childWidgets[i] as TableRowWidget;
             let canRemoveRow: boolean = false;
@@ -16922,13 +16987,13 @@ export class Editor {
                     if (isRowSelected) {
                         canRemoveRow = this.trackRowDeletion(row, false);
                         if (canRemoveRow) {
-                            this.onConfirmedCellDeletion(row, selection, startRowIndex, endRowIndex, startColumnIndex, endColumnIndex, isDeleteCells, editAction, isRowSelected);
+                            this.onConfirmedCellDeletion(row, selection, start, end, startRowIndex, endRowIndex, startColumnIndex, endColumnIndex, isDeleteCells, editAction, isRowSelected);
                         }
                     } else {
-                        this.onConfirmedCellDeletion(row, selection, startRowIndex, endRowIndex, startColumnIndex, endColumnIndex, isDeleteCells, editAction, isRowSelected);
+                        this.onConfirmedCellDeletion(row, selection, start, end, startRowIndex, endRowIndex, startColumnIndex, endColumnIndex, isDeleteCells, editAction, isRowSelected);
                     }
                 } else {
-                    this.onConfirmedCellDeletion(row, selection, startRowIndex, endRowIndex, startColumnIndex, endColumnIndex, isDeleteCells, editAction, isRowSelected);
+                    this.onConfirmedCellDeletion(row, selection, start, end, startRowIndex, endRowIndex, startColumnIndex, endColumnIndex, isDeleteCells, editAction, isRowSelected);
                 }
             }
             if (canRemoveRow || row.childWidgets.length === 0) {
@@ -16971,9 +17036,8 @@ export class Editor {
     /**
      * @private
      */
-    public onConfirmedCellDeletion(row: TableRowWidget, selection: Selection, startRowIndex: number, endRowIndex: number, startColumnIndex: number, endColumnIndex: number, isDeleteCells: boolean, editAction: number, isRowSelected: boolean): void {
+    public onConfirmedCellDeletion(row: TableRowWidget, selection: Selection, start: TextPosition, end: TextPosition, startRowIndex: number, endRowIndex: number, startColumnIndex: number, endColumnIndex: number, isDeleteCells: boolean, editAction: number, isRowSelected: boolean): void {
         let isStarted: boolean = false;
-        let isCellCleared: boolean = false;
         //If the current action is ClearCells, then the row revisions will not be deleted.
         if (this.editorHistory && this.editorHistory.currentBaseHistoryInfo && this.editorHistory.currentBaseHistoryInfo.action === "ClearCells") {
             isRowSelected = false;
@@ -17025,7 +17089,7 @@ export class Editor {
                     row.childWidgets.splice(j, 1);
                     j--;
                 } else if (editAction < 4) {
-                    isCellCleared = this.deleteCell(cell, selection, editAction, false);
+                    this.deleteCell(cell, selection, editAction);
                 }
             }
         }
@@ -17082,11 +17146,11 @@ export class Editor {
         }
         return false;
     }
-    private deleteCell(cell: TableCellWidget, selection: Selection, editAction: number, copyChildToClipboard: boolean): boolean {
+    private deleteCell(cell: TableCellWidget, selection: Selection, editAction: number): void {
         //Checks whether this is last paragraph of owner textbody.
         let block: BlockWidget = cell.childWidgets[0] as BlockWidget;
         if (cell.childWidgets.length === 1 && block instanceof ParagraphWidget && (block as ParagraphWidget).isEmpty()) {
-            return false;
+            return;
         }
         const totalLength: number = cell.childWidgets.length - 1;
         for (let i: number = cell.childWidgets.length - 1; i > -1; i--) {
@@ -17116,6 +17180,8 @@ export class Editor {
                         }
                     } else if (!paragraph.isEmpty()) {
                         this.removeInlines(paragraph, paragraph.firstChild as LineWidget, 0, paragraph.lastChild as LineWidget, (paragraph.lastChild as LineWidget).getEndOffset(), editAction);
+                        // Recombine cell widget due to relayout after inline removal.
+                        cell = cell.combineWidget(this.owner.viewer) as TableCellWidget;
                     }
                     continue;
                 }
@@ -17130,17 +17196,32 @@ export class Editor {
                 }
             }
         }
-        return true;
     }
-    private paragrapghBookmarkCollection(block: ParagraphWidget, existingBookmark: ElementBox[]): ElementBox[] {
-        let bookmarkCol: Dictionary<string, BookmarkElementBox> = this.documentHelper.bookmarks;
-        for (let i: number = 0; i < bookmarkCol.length; i++) {
-            let bookmark: BookmarkElementBox = this.documentHelper.bookmarks.get(bookmarkCol.keys[i]);
-            if (bookmark.paragraph === block) {
-                existingBookmark.push(bookmark);
+    private clearCell(cell: TableCellWidget, selection: Selection, editAction: number, start: TextPosition, end: TextPosition): boolean {
+        //Checks whether this is last paragraph of owner textbody.
+        let block: BlockWidget = cell.childWidgets[0] as BlockWidget;
+        if (cell.childWidgets.length === 1 && block instanceof ParagraphWidget && (block as ParagraphWidget).isEmpty()) {
+            return false;
+        }
+        const totalLength: number = cell.childWidgets.length - 1;
+        for (let i: number = cell.childWidgets.length - 1; i > -1; i--) {
+            block = cell.childWidgets[i] as BlockWidget;
+            if (editAction < 4) {
+                //Checks whether this is last paragraph of owner textbody.
+                if (block instanceof ParagraphWidget && i === totalLength) {
+                    if (!block.isEmpty()) {
+                        this.removeInlines(block, block.firstChild as LineWidget, 0, block.lastChild as LineWidget, (block.lastChild as LineWidget).getEndOffset(), editAction);
+                        // Recombine cell widget due to relayout after inline removal.
+                        cell = cell.combineWidget(this.owner.viewer) as TableCellWidget;
+                    }
+                    continue;
+                }
+                // Tracking is handled within the table cell.
+                this.deleteBlock(block, selection, start, end, editAction);
+                return true;
             }
         }
-        return existingBookmark;
+        return true;
     }
     private deleteContainer(cell: TableCellWidget, selection: Selection, start: TextPosition, end: TextPosition, editAction: number): void {
         let ownerTable: TableWidget = cell.ownerTable;
@@ -17301,7 +17382,7 @@ export class Editor {
 
     private deleteContent(table: TableWidget, selection: Selection, editAction: number): void {
         if (editAction < 4) {
-            this.removeBlock(table);
+            this.removeBlock(table, false, false, false, true);
             this.addRemovedNodes(table);
         }
     }
@@ -17314,7 +17395,7 @@ export class Editor {
     private checkClearCells(selection: Selection): boolean {
 
         return this.editorHistory && this.editorHistory.currentBaseHistoryInfo && this.editorHistory.currentBaseHistoryInfo.action !== 'ClearCells';
-}
+    }
     private isEndInAdjacentTable(paragraph: ParagraphWidget, endParagraph: ParagraphWidget): boolean {
         let table: TableWidget = this.getOwnerTable(false);
         if (!isNullOrUndefined(table) && isNullOrUndefined(table.containerWidget)) {
@@ -17642,7 +17723,38 @@ export class Editor {
                 if (!this.owner.enableTrackChanges || this.owner.enableTrackChanges && this.skipTracking()) {
                     if (!(this.editorHistory && (this.editorHistory.isUndoing || this.editorHistory.isRedoing))) {
                         if (inline instanceof BookmarkElementBox) {
-                            this.removedBookmarkElements.push(inline);
+                            if (this.removedBookmarkElements.indexOf(inline) === -1) {
+                                this.removedBookmarkElements.push(inline);
+                            }
+                            // The following logic has been added to include the bookmark reference element in the removedBookmarkElements collection when the element exists within the selection.
+                            if (inline.reference.paragraph !== inline.paragraph && this.selection.start.paragraph !== this.selection.end.paragraph 
+                                && !this.selection.start.paragraph.isInsideTable && !this.selection.end.paragraph.isInsideTable) {
+                                let startPosition: TextPosition = this.selection.start;
+                                let endPosition: TextPosition = this.selection.end;
+                                if (!this.selection.isForward) {
+                                    startPosition = this.selection.end;
+                                    endPosition = this.selection.start;
+                                }
+                                if (inline.reference.bookmarkType === 0) {
+                                    const offset: number = inline.reference.line.getOffset(inline.reference, 0);
+                                    const bookmarkStartPosition: TextPosition = new TextPosition(this.owner);
+                                    bookmarkStartPosition.setPositionParagraph(inline.reference.line, offset);
+                                    if (startPosition.isExistBefore(bookmarkStartPosition) || startPosition.isAtSamePosition(bookmarkStartPosition)) {
+                                        if (this.removedBookmarkElements.indexOf(inline.reference) === -1) {
+                                            this.removedBookmarkElements.push(inline.reference);
+                                        }
+                                    }
+                                } else if (inline.reference.bookmarkType === 1) {
+                                    const offset: number = inline.reference.line.getOffset(inline.reference, 1);
+                                    const bookmarkEndPosition: TextPosition = new TextPosition(this.owner);
+                                    bookmarkEndPosition.setPositionParagraph(inline.reference.line, offset);
+                                    if (endPosition.isExistAfter(bookmarkEndPosition) || endPosition.isAtSamePosition(bookmarkEndPosition)) {
+                                        if (this.removedBookmarkElements.indexOf(inline.reference) === -1) {
+                                            this.removedBookmarkElements.push(inline.reference);
+                                        }
+                                    }
+                                }
+                            }
                         }
                     }
                     if (inline instanceof BookmarkElementBox) {
@@ -19099,8 +19211,8 @@ export class Editor {
      * @param {boolean} isBackSpace - Specifies is backspace.
      * @returns {boolean}
      */
-    public deleteSelectedContents(selection: Selection, isBackSpace: boolean, isFromDeleteTrackedContent?: boolean): boolean {
-        let skipBackSpace: boolean = this.deleteSelectedContentInternal(selection, isBackSpace, selection.start, selection.end, isFromDeleteTrackedContent);
+    public deleteSelectedContents(selection: Selection, isBackSpace: boolean): boolean {
+        let skipBackSpace: boolean = this.deleteSelectedContentInternal(selection, isBackSpace, selection.start, selection.end);
         let textPosition: TextPosition = selection.getTextPosBasedOnLogicalIndex(selection.editPosition);
         selection.selectContent(textPosition, true);
         return skipBackSpace;
@@ -20049,10 +20161,12 @@ export class Editor {
             } else {
                 this.updateCursorForInsertRevision(currentElement, indexInInline, endOffset);
             }
-            if (!this.isElementAddedToNewPara(newParagraph, spittedSpan)) {
-                this.addRemovedNodes(spittedSpan.clone());
+            if (spittedSpan.text !== '') {
+                if (!this.isElementAddedToNewPara(newParagraph, spittedSpan)) {
+                    this.addRemovedNodes(spittedSpan.clone());
+                }
+                this.insertInlineInternal(spittedSpan, 'Deletion');
             }
-            this.insertInlineInternal(spittedSpan, 'Deletion');
         }
     }
     private handleDeleteBySplitting(elementBox: ElementBox, indexInInline: number, endOffset: number, newParagraph?: ParagraphWidget): void {
@@ -20678,7 +20792,7 @@ export class Editor {
         }
     }
 
-    private deleteParagraphMark(paragraph: ParagraphWidget, selection: Selection, editAction: number, handleParaMark?: boolean, isCombineLastBlock?: boolean): void {
+    private deleteParagraphMark(paragraph: ParagraphWidget, selection: Selection, editAction: number, handleParaMark?: boolean, isCombineLastBlock?: boolean, skipToAddHistory?: boolean): void {
         if (isNullOrUndefined(paragraph.containerWidget)) {
             return;
         }
@@ -20767,7 +20881,7 @@ export class Editor {
                     }
                     this.documentHelper.layout.reLayoutParagraph(paragraph, 0, 0);
                     this.removeBlock(nextParagraph);
-                    if (this.editorHistory && this.editorHistory.currentBaseHistoryInfo.action !== "Insert") {
+                    if (this.editorHistory && this.editorHistory.currentBaseHistoryInfo.action !== "Insert" && !skipToAddHistory) {
                         // if (!isNullOrUndefined(this.editorHistory) && !isNullOrUndefined(this.editorHistory.currentHistoryInfo) && this.editorHistory.currentHistoryInfo.action == 'Accept All') {
                         //     this.removeRevisionForBlock(nextParagraph, undefined, false, true);
                         // }
@@ -20893,7 +21007,7 @@ export class Editor {
      * deleteSelectedContentInternal
      * @private
      */
-    public deleteSelectedContentInternal(selection: Selection, isBackSpace: boolean, startPosition: TextPosition, endPosition: TextPosition, isFromDeleteTrackedContent?: boolean): boolean {
+    public deleteSelectedContentInternal(selection: Selection, isBackSpace: boolean, startPosition: TextPosition, endPosition: TextPosition): boolean {
         let startPos: TextPosition = startPosition;
         let endPos: TextPosition = endPosition;
         if (!startPosition.isExistBefore(endPosition)) {
@@ -20924,7 +21038,7 @@ export class Editor {
                 this.editorHistory.currentBaseHistoryInfo.insertPosition = selection.editPosition;
             }
             const editAction: number = (isBackSpace ? 1 : 0);
-            this.deleteSelectedContent(endPos.paragraph, selection, startPos, endPos, editAction, isFromDeleteTrackedContent);
+            this.deleteSelectedContent(endPos.paragraph, selection, startPos, endPos, editAction);
         }
         return skipBackSpace;
     }
@@ -25626,6 +25740,9 @@ export interface TabPositionInfo {
     fPosition: number;
     position: number;
 }
+/**
+ * @private
+ */
 
 export interface ShapeProperties{
     /**

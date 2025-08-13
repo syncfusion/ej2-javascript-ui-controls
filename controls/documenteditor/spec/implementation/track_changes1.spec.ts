@@ -1,6 +1,6 @@
 import { DocumentEditor } from '../../src/document-editor/document-editor';
 import { createElement } from '@syncfusion/ej2-base';
-import { Editor } from '../../src/index';
+import { Editor, ElementBox, LineWidget, ParagraphWidget, TableCellWidget, TableRowWidget, TableWidget } from '../../src/index';
 import { TestHelper } from '../test-helper.spec';
 import { Selection } from '../../src/index';
 import { EditorHistory } from '../../src/document-editor/implementation/editor-history/editor-history';
@@ -43,6 +43,78 @@ describe('907861-Track changes Bug', () => {
     });
    
 });
-
-
+describe('Track changes - tracking the cell of the nested table', () => {
+    let container: DocumentEditor;
+    beforeAll(() => {
+        document.body.innerHTML = '';
+        let ele: HTMLElement = createElement('div', { id: 'container' });
+        document.body.appendChild(ele);
+        DocumentEditor.Inject(Editor, Selection, EditorHistory, SfdtExport);
+        container = new DocumentEditor({ enableEditor: true, isReadOnly: false, enableEditorHistory: true, enableSfdtExport: true, enableSelection: true });
+        (container.documentHelper as any).containerCanvasIn = TestHelper.containerCanvas;
+        (container.documentHelper as any).selectionCanvasIn = TestHelper.selectionCanvas;
+        (container.documentHelper.render as any).pageCanvasIn = TestHelper.pageCanvas;
+        (container.documentHelper.render as any).selectionCanvasIn = TestHelper.pageSelectionCanvas;
+        container.appendTo('#container');
+    });
+    afterAll((done): void => {
+        container.destroy();
+        document.body.removeChild(document.getElementById('container'));
+        container = undefined;
+        document.body.innerHTML = '';
+        setTimeout(function () {
+            done();
+        }, 1000);
+    });
+    it('tracking the cell of the nested table', () => {
+        console.log('tracking the cell of the nested table');
+        container.openBlank();
+        container.editor.insertTable(2,2);
+        container.editor.insertText("Helloworld");
+        container.selection.select('0;0;0;0;0;0', '0;0;0;0;0;0');
+        container.editor.insertTable(2,2);
+        container.enableTrackChanges = true;
+        container.selection.select('0;0;0;0;0;0;0;0;0', '0;0;0;0;1;11');
+        container.editor.delete();
+        expect(container.revisions.length).toBe(2);
+    });
+});
+describe('Track changes - nested table cell deletion redo issue', () => {
+    let container: DocumentEditor;
+    beforeAll(() => {
+        document.body.innerHTML = '';
+        let ele: HTMLElement = createElement('div', { id: 'container' });
+        document.body.appendChild(ele);
+        DocumentEditor.Inject(Editor, Selection, EditorHistory, SfdtExport);
+        container = new DocumentEditor({ enableEditor: true, isReadOnly: false, enableEditorHistory: true, enableSfdtExport: true, enableSelection: true });
+        (container.documentHelper as any).containerCanvasIn = TestHelper.containerCanvas;
+        (container.documentHelper as any).selectionCanvasIn = TestHelper.selectionCanvas;
+        (container.documentHelper.render as any).pageCanvasIn = TestHelper.pageCanvas;
+        (container.documentHelper.render as any).selectionCanvasIn = TestHelper.pageSelectionCanvas;
+        container.appendTo('#container');
+    });
+    afterAll((done): void => {
+        container.destroy();
+        document.body.removeChild(document.getElementById('container'));
+        container = undefined;
+        document.body.innerHTML = '';
+        setTimeout(function () {
+            done();
+        }, 1000);
+    });
+    it('nested table cell deletion redo issue', () => {
+        console.log('nested table cell deletion redo issue');
+        container.openBlank();
+        container.editor.insertTable(2,2);
+        container.editor.insertText("Helloworld");
+        container.selection.select('0;0;0;0;0;0', '0;0;0;0;0;0');
+        container.editor.insertTable(2,2);
+        container.enableTrackChanges = true;
+        container.selection.select('0;0;0;0;0;0;0;0;0', '0;0;0;0;1;11');
+        container.editor.delete();
+        container.editorHistory.undo();
+        container.editorHistory.redo();
+        expect((((((((container.documentHelper.pages[0].bodyWidgets[0].childWidgets[0] as TableWidget).childWidgets[0] as TableRowWidget).childWidgets[0] as TableCellWidget).childWidgets[1] as ParagraphWidget).childWidgets[0] as LineWidget).children) as ElementBox[]).length).toBe(1);
+    });
+});
 

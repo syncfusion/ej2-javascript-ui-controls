@@ -110,11 +110,10 @@ export class FormFields {
                         const font: any = currentData['Font'];
                         if (this.pdfViewer.formDesigner) {
                             if (parseFloat(currentData['PageIndex']) === pageIndex) {
-                                let fontFamily: string;
+                                const fontFamily: string = font && font.Name;
                                 let fontStyle: string;
                                 let fontSize: number;
                                 if (!isNullOrUndefined(font) && font.Height) {
-                                    fontFamily = font.Name;
                                     if (font.Italic) {
                                         fontStyle = 'Italic';
                                     }

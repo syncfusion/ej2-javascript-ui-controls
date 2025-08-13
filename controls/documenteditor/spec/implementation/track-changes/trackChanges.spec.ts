@@ -1714,3 +1714,284 @@ describe('Track changes - ParaMark Revision', () => {
         expect((container.documentHelper.pages[0].bodyWidgets[0].childWidgets[0] as ParagraphWidget).characterFormat.revisionLength).toBe(0);
     });
 });
+describe('Track changes - Reject on Bookmark', () => {
+    let container: DocumentEditor;
+    beforeAll(() => {
+        document.body.innerHTML = '';
+        let ele: HTMLElement = createElement('div', { id: 'container' });
+        document.body.appendChild(ele);
+        DocumentEditor.Inject(Editor, Selection, EditorHistory, SfdtExport);
+        container = new DocumentEditor({ enableEditor: true, isReadOnly: false, enableEditorHistory: true, enableSfdtExport: true, enableSelection: true });
+        (container.documentHelper as any).containerCanvasIn = TestHelper.containerCanvas;
+        (container.documentHelper as any).selectionCanvasIn = TestHelper.selectionCanvas;
+        (container.documentHelper.render as any).pageCanvasIn = TestHelper.pageCanvas;
+        (container.documentHelper.render as any).selectionCanvasIn = TestHelper.pageSelectionCanvas;
+        container.appendTo('#container');
+    });
+    afterAll((done): void => {
+        container.destroy();
+        document.body.removeChild(document.getElementById('container'));
+        container = undefined;
+        document.body.innerHTML = '';
+        setTimeout(function () {
+            done();
+        }, 1000);
+    });
+    it('Track changes - Reject on Bookmark', function () {
+        console.log('Track changes - Reject on Bookmark');
+        container.openBlank();
+        container.enableTrackChanges = true;
+        container.editor.insertText("Hello");
+        container.editor.onEnter();
+        container.editor.insertText("world");
+        container.selection.select('0;0;0', '0;1;6');
+        container.editor.insertBookmark('b1');
+        container.revisions.get(0).reject();
+        expect(((container.selection.start.paragraph.childWidgets[0]) as LineWidget).children.length).toBe(0);
+    });
+});
+
+describe('Track changes - Select para mark only, select next paragraph partially and delete', () => {
+    let container: DocumentEditor;
+    beforeAll(() => {
+        document.body.innerHTML = '';
+        let ele: HTMLElement = createElement('div', { id: 'container' });
+        document.body.appendChild(ele);
+        DocumentEditor.Inject(Editor, Selection, EditorHistory, SfdtExport);
+        container = new DocumentEditor({ enableEditor: true, isReadOnly: false, enableEditorHistory: true, enableSfdtExport: true, enableSelection: true });
+        (container.documentHelper as any).containerCanvasIn = TestHelper.containerCanvas;
+        (container.documentHelper as any).selectionCanvasIn = TestHelper.selectionCanvas;
+        (container.documentHelper.render as any).pageCanvasIn = TestHelper.pageCanvas;
+        (container.documentHelper.render as any).selectionCanvasIn = TestHelper.pageSelectionCanvas;
+        container.appendTo('#container');
+    });
+    afterAll((done): void => {
+        container.destroy();
+        document.body.removeChild(document.getElementById('container'));
+        container = undefined;
+        document.body.innerHTML = '';
+        setTimeout(function () {
+            done();
+        }, 1000);
+    });
+    it('Track changes - Select para mark only, select next paragraph partially and delete - Undo / Redo', function () {
+        console.log('Track changes - Select para mark only, select next paragraph partially and delete - Undo / Redo');
+        container.openBlank();
+        container.enableTrackChanges = true;
+        container.currentUser = 'Syncfusion';
+        container.editor.insertText("Hello");
+        container.currentUser = 'DocumentEditor';
+        container.editor.onEnter();
+        container.editor.insertText("World");
+        container.currentUser = 'Syncfusion';
+        container.selection.select('0;0;5', '0;1;2');
+        container.editor.delete();
+        expect(container.documentHelper.pages[0].bodyWidgets[0].childWidgets.length).toBe(2);
+        container.editorHistoryModule.undo();
+        expect(container.documentHelper.pages[0].bodyWidgets[0].childWidgets.length).toBe(2);
+        container.editorHistoryModule.redo();
+        expect(container.documentHelper.pages[0].bodyWidgets[0].childWidgets.length).toBe(2);
+    });
+
+    it('Track changes - Select para mark only, select next paragraph partially and delete - Accept and Undo / Redo', function () {
+        console.log('Track changes - Select para mark only, select next paragraph partially and delete - Accept and Undo / Redo');
+        container.openBlank();
+        container.enableTrackChanges = true;
+        container.currentUser = 'Syncfusion';
+        container.editor.insertText("Hello");
+        container.currentUser = 'DocumentEditor';
+        container.editor.onEnter();
+        container.editor.insertText("World");
+        container.currentUser = 'Syncfusion';
+        container.selection.select('0;0;5', '0;1;2');
+        container.editor.delete();
+        expect(container.documentHelper.pages[0].bodyWidgets[0].childWidgets.length).toBe(2);
+        container.revisions.revisions[2].accept();
+        expect(container.documentHelper.pages[0].bodyWidgets[0].childWidgets.length).toBe(1);
+        container.editorHistoryModule.undo();
+        expect(container.documentHelper.pages[0].bodyWidgets[0].childWidgets.length).toBe(2);
+        container.editorHistoryModule.redo();
+        expect(container.documentHelper.pages[0].bodyWidgets[0].childWidgets.length).toBe(1);
+    });
+    it('Track changes - Select para mark only, select next paragraph partially and delete - Reject and Undo / Redo', function () {
+        console.log('Track changes - Select para mark only, select next paragraph partially and delete - Reject and Undo / Redo');
+        container.openBlank();
+        container.enableTrackChanges = true;
+        container.currentUser = 'Syncfusion';
+        container.editor.insertText("Hello");
+        container.currentUser = 'DocumentEditor';
+        container.editor.onEnter();
+        container.editor.insertText("World");
+        container.currentUser = 'Syncfusion';
+        container.selection.select('0;0;5', '0;1;2');
+        container.editor.delete();
+        expect(container.documentHelper.pages[0].bodyWidgets[0].childWidgets.length).toBe(2);
+        container.revisions.revisions[2].reject();
+        expect(container.documentHelper.pages[0].bodyWidgets[0].childWidgets.length).toBe(2);
+        container.editorHistoryModule.undo();
+        expect(container.documentHelper.pages[0].bodyWidgets[0].childWidgets.length).toBe(2);
+        container.editorHistoryModule.redo();
+        expect(container.documentHelper.pages[0].bodyWidgets[0].childWidgets.length).toBe(2);
+    });
+
+    it('Track changes - Select para mark only, select next paragraph partially and delete - Undo / Redo, Accept and Undo / Redo', function () {
+        console.log('Track changes - Select para mark only, select next paragraph partially and delete - Undo / Redo, Accept and Undo / Redo');
+        container.openBlank();
+        container.enableTrackChanges = true;
+        container.currentUser = 'Syncfusion';
+        container.editor.insertText("Hello");
+        container.currentUser = 'DocumentEditor';
+        container.editor.onEnter();
+        container.editor.insertText("World");
+        container.currentUser = 'Syncfusion';
+        container.selection.select('0;0;5', '0;1;2');
+        container.editor.delete();
+        expect(container.documentHelper.pages[0].bodyWidgets[0].childWidgets.length).toBe(2);
+        container.editorHistoryModule.undo();
+        expect(container.documentHelper.pages[0].bodyWidgets[0].childWidgets.length).toBe(2);
+        container.editorHistoryModule.redo();
+        expect(container.documentHelper.pages[0].bodyWidgets[0].childWidgets.length).toBe(2);
+        container.revisions.revisions[2].accept();
+        expect(container.documentHelper.pages[0].bodyWidgets[0].childWidgets.length).toBe(1);
+        container.editorHistoryModule.undo();
+        expect(container.documentHelper.pages[0].bodyWidgets[0].childWidgets.length).toBe(2);
+        container.editorHistoryModule.redo();
+        expect(container.documentHelper.pages[0].bodyWidgets[0].childWidgets.length).toBe(1);
+    });
+    it('Track changes - Select para mark only, select next paragraph partially and delete - Undo / Redo, Reject and Undo / Redo', function () {
+        console.log('Track changes - Select para mark only, select next paragraph partially and delete - Undo / Redo, Reject and Undo / Redo');
+        container.openBlank();
+        container.enableTrackChanges = true;
+        container.currentUser = 'Syncfusion';
+        container.editor.insertText("Hello");
+        container.currentUser = 'DocumentEditor';
+        container.editor.onEnter();
+        container.editor.insertText("World");
+        container.currentUser = 'Syncfusion';
+        container.selection.select('0;0;5', '0;1;2');
+        container.editor.delete();
+        expect(container.documentHelper.pages[0].bodyWidgets[0].childWidgets.length).toBe(2);
+        container.editorHistoryModule.undo();
+        expect(container.documentHelper.pages[0].bodyWidgets[0].childWidgets.length).toBe(2);
+        container.editorHistoryModule.redo();
+        expect(container.documentHelper.pages[0].bodyWidgets[0].childWidgets.length).toBe(2);
+        container.revisions.revisions[2].reject();
+        expect(container.documentHelper.pages[0].bodyWidgets[0].childWidgets.length).toBe(2);
+        container.editorHistoryModule.undo();
+        expect(container.documentHelper.pages[0].bodyWidgets[0].childWidgets.length).toBe(2);
+        container.editorHistoryModule.redo();
+        expect(container.documentHelper.pages[0].bodyWidgets[0].childWidgets.length).toBe(2);
+    });
+});
+
+describe('Track changes - Select first para mark and next paragraph partially', () => {
+    let container: DocumentEditor;
+    beforeAll(() => {
+        document.body.innerHTML = '';
+        let ele: HTMLElement = createElement('div', { id: 'container' });
+        document.body.appendChild(ele);
+        DocumentEditor.Inject(Editor, Selection, EditorHistory, SfdtExport);
+        container = new DocumentEditor({ enableEditor: true, isReadOnly: false, enableEditorHistory: true, enableSfdtExport: true, enableSelection: true });
+        (container.documentHelper as any).containerCanvasIn = TestHelper.containerCanvas;
+        (container.documentHelper as any).selectionCanvasIn = TestHelper.selectionCanvas;
+        (container.documentHelper.render as any).pageCanvasIn = TestHelper.pageCanvas;
+        (container.documentHelper.render as any).selectionCanvasIn = TestHelper.pageSelectionCanvas;
+        container.appendTo('#container');
+    });
+    afterAll((done): void => {
+        container.destroy();
+        document.body.removeChild(document.getElementById('container'));
+        container = undefined;
+        document.body.innerHTML = '';
+        setTimeout(function () {
+            done();
+        }, 1000);
+    });
+    it('Track changes - Select first para partially and next para mark alone - Undo / Redo', function () {
+        console.log('Track changes - Select first para partially and next para mark alone - Undo / Redo');
+        container.openBlank();
+        container.editor.insertText("Hello");
+        container.editor.onEnter();
+        container.editor.onEnter();
+        container.enableTrackChanges = true;
+        container.selection.select('0;0;2', '0;1;1');
+        container.editor.delete();
+        expect(container.revisions.revisions.length).toBe(1);
+        container.editorHistory.undo();
+        expect(container.revisions.revisions.length).toBe(0);
+        container.editorHistory.redo();
+        expect(container.revisions.revisions.length).toBe(1);
+    });
+
+    it('Track changes - Select first para partially and next para mark alone - Accept and Undo / Redo', function () {
+        console.log('Track changes - Select first para partially and next para mark alone - Accept and Undo / Redo');
+        container.openBlank();
+        container.editor.insertText("Hello");
+        container.editor.onEnter();
+        container.editor.onEnter();
+        container.enableTrackChanges = true;
+        container.selection.select('0;0;2', '0;1;1');
+        container.editor.delete();
+        expect(container.revisions.revisions.length).toBe(1);
+        container.revisions.revisions[0].accept();
+        expect(container.revisions.revisions.length).toBe(0);
+        container.editorHistory.undo();
+        expect(container.revisions.revisions.length).toBe(1);
+        container.editorHistory.redo();
+        expect(container.revisions.revisions.length).toBe(0);
+    });
+
+    it('Track changes - Select first para partially and next para mark alone - Reject and Undo / Redo', function () {
+        console.log('Track changes - Select first para partially and next para mark alone - Reject and Undo / Redo');
+        container.openBlank();
+        container.editor.insertText("Hello");
+        container.editor.onEnter();
+        container.editor.onEnter();
+        container.enableTrackChanges = true;
+        container.selection.select('0;0;2', '0;1;1');
+        container.editor.delete();
+        expect(container.revisions.revisions.length).toBe(1);
+        container.revisions.revisions[0].reject();
+        expect(container.revisions.revisions.length).toBe(0);
+        container.editorHistory.undo();
+        expect(container.revisions.revisions.length).toBe(1);
+        container.editorHistory.redo();
+        expect(container.revisions.revisions.length).toBe(0);
+    });
+
+    it('Track changes - Select first para partially and next para mark alone - Undo / Redo, Accept and Undo / Redo', function () {
+        console.log('Track changes - Select first para partially and next para mark alone - Undo / Redo, Accept and Undo / Redo');
+        container.openBlank();
+        container.editor.insertText("Hello");
+        container.editor.onEnter();
+        container.editor.onEnter();
+        container.enableTrackChanges = true;
+        container.selection.select('0;0;2', '0;1;1');
+        container.editor.delete();
+        expect(container.revisions.revisions.length).toBe(1);
+        container.revisions.revisions[0].accept();
+        expect(container.revisions.revisions.length).toBe(0);
+        container.editorHistory.undo();
+        expect(container.revisions.revisions.length).toBe(1);
+        container.editorHistory.redo();
+        expect(container.revisions.revisions.length).toBe(0);
+    });
+
+    it('Track changes - Select first para partially and next para mark alone - Undo / Redo, Reject and Undo / Redo', function () {
+        console.log('Track changes - Select first para partially and next para mark alone - Undo / Redo, Reject and Undo / Redo');
+        container.openBlank();
+        container.editor.insertText("Hello");
+        container.editor.onEnter();
+        container.editor.onEnter();
+        container.enableTrackChanges = true;
+        container.selection.select('0;0;2', '0;1;1');
+        container.editor.delete();
+        expect(container.revisions.revisions.length).toBe(1);
+        container.revisions.revisions[0].reject();
+        expect(container.revisions.revisions.length).toBe(0);
+        container.editorHistory.undo();
+        expect(container.revisions.revisions.length).toBe(1);
+        container.editorHistory.redo();
+        expect(container.revisions.revisions.length).toBe(0);
+    });
+});

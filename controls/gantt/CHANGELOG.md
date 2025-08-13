@@ -2,6 +2,16 @@
 
 ## [Unreleased]
 
+## 30.2.5 (2025-08-13)
+
+### GanttChart
+
+#### Bug fixes
+
+- `#I750331` - Fixed an issue where label customization using the `pdfQueryTaskbarInfo` event was not working properly.
+- `#I745469` - Resolved a white space issue that occurred while scrolling up and down at the bottom of the Tree Grid side.
+- `#I750677` - Fixed an issue where the filter item template was not functioning correctly in the Angular platform.
+
 ## 30.2.4 (2025-08-07)
 
 ### GanttChart

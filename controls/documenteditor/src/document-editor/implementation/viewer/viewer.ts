@@ -811,6 +811,7 @@ export class DocumentHelper {
      * Gets the current rendering page.
      *
      * @returns {Page} - Returns current rendering page.
+     * @private
      */
     public get currentRenderingPage(): Page {
         if (this.pages.length === 0) {
@@ -1307,7 +1308,7 @@ export class DocumentHelper {
             const eventArgs: BeforePaneSwitchEventArgs = { type: 'comment' };
             this.owner.trigger(beforePaneSwitchEvent, eventArgs);
         }
-        if (!show && this.owner.showComments) {
+        if (!show && this.owner.showComments && this.owner.documentHelper.comments.length != 0) {
             this.owner.commentReviewPane.reviewTab.hideTab(0, false);
             this.owner.commentReviewPane.showHidePane(true, 'Comments');
         } else {
@@ -2389,7 +2390,9 @@ export class DocumentHelper {
                         }
                         if (this.isDragStarted && this.isLeftButtonPressed(event)) {
                             this.autoScrollOnSelection(cursorPoint);
-                            this.selection.updateTextPosition(widget, touchPoint);
+                            if (!isNullOrUndefined(widget)) {
+                                this.selection.updateTextPosition(widget, touchPoint);
+                            }
                         }
                     }
                 }
@@ -2416,7 +2419,9 @@ export class DocumentHelper {
                 setTimeout(() => {
                     const touchPoint: Point = this.owner.viewer.findFocusedPage(cursorPoint, !this.owner.enableHeaderAndFooter);
                     const widget: LineWidget = this.getLineWidget(touchPoint);
-                    this.selection.updateTextPosition(widget, touchPoint);
+                    if (!isNullOrUndefined(widget)) {
+                        this.selection.updateTextPosition(widget, touchPoint);
+                    }
                 }, 200);
             }, 200);
         } else if (cursorPoint.y > (this.viewerContainer.offsetHeight - 70)) {
@@ -2427,7 +2432,9 @@ export class DocumentHelper {
                 setTimeout(() => {
                     const touchPoint: Point = this.owner.viewer.findFocusedPage(cursorPoint, !this.owner.enableHeaderAndFooter);
                     const widget: LineWidget = this.getLineWidget(touchPoint);
-                    this.selection.updateTextPosition(widget, touchPoint);
+                    if (!isNullOrUndefined(widget)) {
+                        this.selection.updateTextPosition(widget, touchPoint);
+                    }
                 }, 200);
             }, 200);
         }
@@ -4381,6 +4388,7 @@ export class DocumentHelper {
      * Destroys the internal objects maintained for control.
      * 
      * @returns {void}
+     * @private
      */
     public destroy(): void {
         if (!isNullOrUndefined(this.owner)) {
@@ -6509,7 +6517,7 @@ export abstract class LayoutViewer {
      */
     public abstract updateScrollBars(): void;
     /**
-     * private
+     * @private
      */
     public abstract scrollToPage(pageIndex: number): void;
     /**

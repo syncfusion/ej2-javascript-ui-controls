@@ -2,6 +2,14 @@
 
 ## [Unreleased]
 
+## 30.2.5 (2025-08-13)
+
+### Grid
+
+#### Bug Fixes
+
+- `#I755713` - The issue where column resizing caused a script error due to the absence of defined widths for hidden columns has been resolved.
+
 ## 30.2.4 (2025-08-07)
 
 ### Grid

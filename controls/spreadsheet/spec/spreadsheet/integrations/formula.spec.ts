@@ -15712,7 +15712,7 @@ describe('Spreadsheet formula module ->', () => {
                 helper.invoke('selectRange', ['B2:B3']);
                 expect(helper.getElement('#' + helper.id + '_aggregate').textContent).toBe('Sum: 7/27/2128');
                 helper.invoke('selectRange', ['C2:C3']);
-                expect(helper.getElement('#' + helper.id + '_aggregate').textContent).toBe('Sum: 5:31:12 PM');
+                expect(helper.getElement('#' + helper.id + '_aggregate').textContent).toBe('Sum: 5:31:04 PM');
                 helper.invoke('selectRange', ['A2:A3']);
                 expect(helper.getElement('#' + helper.id + '_aggregate').textContent).toBe('Count: 2');
                 helper.invoke('selectRange', ['D2:D3']);
@@ -25382,6 +25382,62 @@ describe('Spreadsheet formula module ->', () => {
                 expect(helper.getInstance().sheets[0].rows[2].cells[1].value).toBeUndefined;
                 done();
             });
+        });
+    });
+    describe('Aggegrate formula Not displayed the values correctly ->', () => {
+        beforeAll((done: Function) => {
+            helper.initializeSpreadsheet({ sheets: [{ ranges: [{ dataSource: defaultData }] }] }, done);
+        });
+        afterAll(() => {
+            helper.invoke('destroy');
+        });
+        it('Aggregate valus should be displayed fully for formatted cells', (done: Function) => {
+            helper.edit('I2', '0.967896589');
+            helper.edit('I3', '0.967896598');
+            helper.edit('I4', '0.967896889');
+            helper.edit('I5', '0.967896599');
+            helper.invoke('selectRange', ['I2:I5']);
+            helper.getElement('#' + helper.id + '_number_format').click();
+            helper.getElement('#' + helper.id + '_Text').click();
+            setTimeout(() => {
+                let aggregateBtn: HTMLElement = helper.getElement(`#${helper.id}_aggregate`);
+                expect(aggregateBtn).not.toBeNull();
+                expect(aggregateBtn.textContent).toBe('Sum: 3.871586675');
+                helper.click('#' + helper.id + '_aggregate');
+                let Element: NodeListOf<HTMLElement> = document.querySelectorAll("#spreadsheet_aggregate-popup li");
+                expect(Element[0].textContent).toBe('Count: 4');
+                expect(Element[1].textContent).toBe('Sum: 3.871586675');
+                expect(Element[2].textContent).toBe('Avg: 0.96789666875');
+                expect(Element[3].textContent).toBe('Min: 0.967896589');
+                expect(Element[4].textContent).toBe('Max: 0.967896889');
+                done();
+            });
+        });
+    });
+    describe('EJ2-971975 ->', () => {
+        beforeAll((done: Function) => {
+            helper.initializeSpreadsheet({ activeSheetIndex: 0, sheets: [{ ranges: [{ dataSource: defaultData }] },{},{},{},{},{},{},{},{},{},{},{},{},{},{},{},{},{},{},{},{},{ name: 'IF', rows: [{ index: 4, cells: [{ value: 'Sandals & Floaters'}, { value: '50'}]}]},{},{}] }, done);
+        });
+        afterAll(() => {
+            helper.invoke('destroy');
+        });
+        it('Check sheet reference with more than 20 sheets->', (done: Function) => {
+            helper.edit('I1', '=Sheet20!A5');
+            expect(helper.invoke('getCell', [0, 8]).textContent).toBe('0');
+            expect(JSON.stringify(helper.getInstance().sheets[0].rows[0].cells[8])).toBe('{"value":"0","formula":"=Sheet20!A5"}');
+            helper.edit('I2', '=Sheet21!C16');
+            expect(helper.invoke('getCell', [1, 8]).textContent).toBe('0');
+            expect(JSON.stringify(helper.getInstance().sheets[0].rows[1].cells[8])).toBe('{"value":"0","formula":"=Sheet21!C16"}');
+            done();
+        });
+        it('Check sheet reference with the sheet name as IF->', (done: Function) => {
+            helper.edit('I3', '=IF!A5');
+            expect(helper.invoke('getCell', [2, 8]).textContent).toBe('Sandals & Floaters');
+            expect(JSON.stringify(helper.getInstance().sheets[0].rows[2].cells[8])).toBe('{"value":"Sandals & Floaters","formula":"=IF!A5"}');
+            helper.edit('I4', '=IF!B5');
+            expect(helper.invoke('getCell', [3, 8]).textContent).toBe('50');
+            expect(JSON.stringify(helper.getInstance().sheets[0].rows[3].cells[8])).toBe('{"value":"50","formula":"=IF!B5"}');
+            done();
         });
     });
 

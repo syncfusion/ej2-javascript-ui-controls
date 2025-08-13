@@ -101,7 +101,7 @@ export class HtmlEditor {
     }
     private onKeyUp(e: NotifyArgs): void {
         const args: KeyboardEvent = e.args as KeyboardEvent;
-        const restrictKeys: number[] = [8, 9, 13, 17, 18, 20, 27, 37, 38, 39, 40, 44, 45, 46, 91,
+        const restrictKeys: number[] = [8, 9, 13, 17, 18, 20, 27, 36, 37, 38, 39, 40, 44, 45, 46, 91,
             112, 113, 114, 115, 116, 117, 118, 119, 120, 121, 122, 123];
         const range: Range = this.parent.getRange();
         const regEx: RegExp = new RegExp('\u200B', 'g');

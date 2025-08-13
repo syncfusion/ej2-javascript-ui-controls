@@ -162,6 +162,15 @@ export class FreehandDrawing {
         case 'resetFreehandDrawSelectedId':
             this.fhdSelID = null;
             break;
+        case 'getFHDSelected':
+            args.value['obj']['isSelected'] = (this.parent.pointColl[this.fhdSelIdx] && this.parent.pointColl[this.fhdSelIdx].isSelected) ? this.parent.pointColl[this.fhdSelIdx].isSelected : false;
+            break;
+        case 'resetFHDIdx':
+            this.fhdHovIdx = this.fhdSelID = this.fhdSelIdx = null;
+            break;
+        case 'getHighestOrder':
+            this.getHighestOrder();
+            break;
         case 'getTempFreeHandDrawEditingStyles':
             args.value['obj']['tempFreeHandDrawEditingStyles'] = this.tempFHDStyles;
             break;
@@ -320,10 +329,11 @@ export class FreehandDrawing {
         parent.notify('freehand-draw', { prop: 'getSelPointColl', onPropertyChange: false, value: {obj: selPointCollObj }});
         prevObj.selPointColl = extend([], selPointCollObj['selPointColl'], [], true) as Point[];
         const fhCnt: number = parent.freehandCounter;
-        const order: number = parent.objColl.length + parent.freehandCounter + 1;
+        const penIndex: number = this.getHighestOrder();
+        const order: number = parent.objColl.length + penIndex + 1;
         parent.pointColl[fhCnt as number] = { points: extend([], parent.points), strokeColor: parent.activeObj.strokeSettings.strokeColor,
             strokeWidth: this.penStrokeWidth, flipState: parent.transform.currFlipState,
-            id: 'pen_' + (this.currFHDIdx + 1), order: order};
+            id: 'pen_' + (penIndex + 1), order: order};
         parent.points = []; this.dummyPoints = [];
         this.selPointColl[fhCnt as number] = { points: extend([], this.selPoints) };
         this.selPoints = []; this.pointCounter = 0;
@@ -336,7 +346,7 @@ export class FreehandDrawing {
                     previousCropObj: prevCropObj, previousText: null,
                     currentText: null, previousFilter: null, isCircleCrop: null}});
         }
-        const shapeSettings: ShapeSettings = {id: 'pen_' + (this.currFHDIdx + 1), type: ShapeType.FreehandDraw,
+        const shapeSettings: ShapeSettings = {id: 'pen_' + (penIndex + 1), type: ShapeType.FreehandDraw,
             startX: this.freehandDownPoint.x, startY: this.freehandDownPoint.y,
             strokeColor: parent.activeObj.strokeSettings.strokeColor, strokeWidth: this.penStrokeWidth,
             points: parent.pointColl[this.currFHDIdx].points, index: order };
@@ -344,6 +354,18 @@ export class FreehandDrawing {
             currentShapeSettings: shapeSettings};
         this.triggerShapeChanging(shapeChangingArgs);
         this.currFHDIdx++;
+    }
+
+    private getHighestOrder(): number {
+        const parent: ImageEditor = this.parent;
+        let index: number = 0;
+        for (let i: number = 0; i < parent.pointColl.length; i++) {
+            const value: number = parseInt(parent.pointColl[i as number].id.split('_')[1], 10);
+            if (index < value) {
+                index = value;
+            }
+        }
+        return index;
     }
 
     private freehandMoveHandler(e: MouseEvent & TouchEvent): void {
@@ -689,6 +711,7 @@ export class FreehandDrawing {
                 }
             }
             parent.freehandCounter -= 1; this.fhdHovIdx = this.fhdSelIdx = null;
+            this.currFHDIdx--;
             parent.notify('selection', {prop: 'resetFreehandDrawVariables'});
             parent.notify('draw', {prop: 'render-image', value: {isMouseWheel: null } });
             parent.notify('toolbar', { prop: 'refresh-main-toolbar', onPropertyChange: false});

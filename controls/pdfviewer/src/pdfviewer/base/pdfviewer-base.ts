@@ -11165,6 +11165,31 @@ export class PdfViewerBase {
                 } else {
                     this.eventArgs.isTouchMode = false;
                 }
+                const object: any = this.eventArgs.source;
+                if (object && object.shapeAnnotationType === 'Rectangle' && object.bounds && object.wrapper &&
+                    object.wrapper.children[0] && (object.bounds.height === 0 && object.wrapper.height === 0)) {
+                    object.bounds.height = 1;
+                    object.properties.bounds.height = 1;
+                    object.wrapper.bounds.height = 1;
+                    object.wrapper.actualSize.height = 1;
+                    object.wrapper.desiredSize.height = 1;
+                    object.wrapper.height = 1;
+                    object.wrapper.children[0].height = 1;
+                    object.wrapper.children[0].bounds.height = 1;
+                    object.wrapper.children[0].desiredSize.height = 1;
+                }
+                if (object && object.shapeAnnotationType === 'Rectangle' && object.bounds && object.wrapper &&
+                    object.wrapper.children[0] && (object.bounds.width === 0 && object.wrapper.width === 0)) {
+                    object.bounds.width = 1;
+                    object.properties.bounds.width = 1;
+                    object.wrapper.bounds.width = 1;
+                    object.wrapper.actualSize.width = 1;
+                    object.wrapper.desiredSize.width = 1;
+                    object.wrapper.width = 1;
+                    object.wrapper.children[0].width = 1;
+                    object.wrapper.children[0].bounds.width = 1;
+                    object.wrapper.children[0].desiredSize.width = 1;
+                }
                 this.tool.mouseUp(this.eventArgs);
                 this.isAnnotationMouseDown = false;
                 this.isFormFieldMouseDown = false;
@@ -12253,19 +12278,23 @@ export class PdfViewerBase {
                         }
                     }
                 }
-                const pageList: number[] = this.renderedPagesList;
-                keyList.forEach((key: any) => {
-                    const annotationsData: any = PdfViewerBase.sessionStorageManager.getItem(key);
-                    if (annotationsData) {
-                        const annotations: any = JSON.parse(annotationsData);
-                        const renderedAnnotations: any = annotations.filter((annotation: any): any =>
-                            pageList.indexOf(annotation.pageIndex) > -1
-                        );
-                        if (renderedAnnotations.length === 0) {
-                            PdfViewerBase.sessionStorageManager.removeItem(key);
-                        }
-                        else {
-                            PdfViewerBase.sessionStorageManager.setItem(key, JSON.stringify(renderedAnnotations));
+                const renderedKeys: any = Object.keys(proxy.pdfViewer.nameTable);
+                keyList.forEach((key: string) => {
+                    if (!key.includes('textMarkup')) {
+                        const annotationsData: any = PdfViewerBase.sessionStorageManager.getItem(key);
+                        if (annotationsData) {
+                            const annotations: any = JSON.parse(annotationsData);
+                            for (let i: number = 0; i < annotations.length; i++) {
+                                const pageAnnotations: any = annotations[parseInt(i.toString(), 10)];
+                                pageAnnotations.annotations = pageAnnotations.annotations.filter((annotation: any) =>
+                                    renderedKeys.includes(annotation.id));
+                            }
+                            if (annotations.length === 0) {
+                                PdfViewerBase.sessionStorageManager.removeItem(key);
+                            }
+                            else {
+                                PdfViewerBase.sessionStorageManager.setItem(key, JSON.stringify(annotations));
+                            }
                         }
                     }
                 });

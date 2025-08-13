@@ -178,6 +178,9 @@
                 padding-top: 7.5px;
                 padding-bottom: 7.5px;
               }
+              @if $skin-name == 'Material3' {
+                padding: 8px 16px;
+              }
             }
           }
         }
@@ -394,7 +397,7 @@
         padding: 8px 13px;
       }
       @if $skin-name == 'highcontrast' {
-        padding: 2px 17px;
+        padding: 2px 15px;
       }
     }
 

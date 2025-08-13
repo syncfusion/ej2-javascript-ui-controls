@@ -3063,7 +3063,7 @@ export class DropDownList extends DropDownBase implements IInput {
                 popupEle.setAttribute( 'aria-label', this.element.id );
                 popupEle.setAttribute( 'role', 'dialog' );
                 const searchBox: InputObject = this.setSearchBox(popupEle);
-                this.listContainerHeight = this.allowFiltering && this.getModuleName() === 'dropdownlist' && Browser.isDevice ?
+                this.listContainerHeight = this.allowFiltering && this.getModuleName() === 'dropdownlist' && Browser.isDevice && this.isDeviceFullScreen ?
                     formatUnit(Math.round(window.outerHeight).toString() + 'px') : formatUnit(this.popupHeight);
                 if (this.headerTemplate) {
                     this.setHeaderTemplate(popupEle);

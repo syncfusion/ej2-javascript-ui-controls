@@ -450,7 +450,16 @@ export class ToolbarModule {
 
     private reset(): void {
         const parent: ImageEditor = this.parent;
-        this.toolbarHeight = 46; parent.prevCurrSelectionPoint = null;
+        if (isNullOrUndefined(parent.toolbar) || (parent.toolbar && parent.toolbar.length > 0) || parent.toolbarTemplate) {
+            if (parent.toolbarTemplate) {
+                this.toolbarHeight = (parent.element.querySelector('#' + parent.element.id + '_toolbarArea') as HTMLElement).clientHeight;
+            } else {
+                this.toolbarHeight = 46;
+            }
+        } else {
+            this.toolbarHeight = 0;
+        }
+        parent.prevCurrSelectionPoint = null;
         this.zoomBtnHold = null; this.currToolbar = ''; parent.cxtTbarHeight = null;
         this.currentToolbar = 'main'; this.selFhdColor = '#42a5f5'; parent.currentFilter = '';
         this.preventZoomBtn = parent.isCropToolbar = this.preventEnableDisableUr = this.isFrameToolbar = false;

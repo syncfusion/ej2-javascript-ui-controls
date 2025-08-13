@@ -2217,7 +2217,7 @@ private calculatePathBounds(data: string): Rect {
                 }
             }
         }
-        return height - 2 * lineHeight;
+        return HelperMethods.containsUnderlinedImage(lineWidget, this.viewer.owner.enableTrackChanges) ? height + 2 * lineHeight : height - 2 * lineHeight;
     }
     private renderListTextElementBox(elementBox: ListTextElementBox, left: number, top: number, underlineY: number): void {
         let topMargin: number = elementBox.margin.top;
@@ -2853,11 +2853,11 @@ private calculatePathBounds(data: string): Rect {
         if (!isNullOrUndefined(revisionInfo)) {
             underline = (revisionInfo.type === 'MoveTo') ? 'Double' : 'Single';
         }
-        if (underline === 'Double') {
+        if (!(elementBox instanceof ImageElementBox) && underline === 'Double') {
             y -= lineHeight;
         }
         if (elementBox instanceof ImageElementBox) {
-            underlineHeight = 0.9;
+            lineHeight = underlineHeight = 0.9;
         }
         while (lineCount < (underline === 'Double' ? 2 : 1)) {
             lineCount++;
@@ -3033,10 +3033,10 @@ private calculatePathBounds(data: string): Rect {
             this.renderStrikeThrough(elementBox, left, top, 'SingleStrike', color, 'Normal', currentRevision);
         }
         currentRevision = this.getRevisionType(revisionInfo, true);
-
-        if (!isNullOrUndefined(currentRevision) && (currentRevision.type === 'Insertion' || currentRevision.type === 'MoveTo')) {
+        let format: WCharacterFormat = elementBox.characterFormat;
+        if (elementBox.textWrappingStyle === 'Inline' && format.underline !== 'None' && !isNullOrUndefined(format.underline) || (!isNullOrUndefined(currentRevision) && (currentRevision.type === 'Insertion' || currentRevision.type === 'MoveTo'))) {
             let y: number = this.getUnderlineYPosition(elementBox.line);
-            this.renderUnderline(elementBox, left, top, y, color, 'Single', 'Normal');
+            this.renderUnderline(elementBox, left, top, y, color, format.underline, format.baselineAlignment);
         }
         this.documentHelper.owner.picturePositionY = this.getScaledValue(top + topMargin, 2);
         if (!isNullOrUndefined(this.documentHelper.selection) && this.documentHelper.selection.checkContentControlLocked() &&  this.documentHelper.selection.start.currentWidget === elementBox.line) {

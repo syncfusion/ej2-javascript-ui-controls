@@ -94,7 +94,7 @@ export class CommandColumnRenderer extends CellRenderer implements ICellRenderer
         }
         this.setAttributes(<HTMLElement>node, cell, attributes);
         if ((!this.parent.enableVirtualization && (this.parent.isEdit && (!this.parent.editSettings.showAddNewRow ||
-            (this.parent.editSettings.showAddNewRow && (!this.parent.element.querySelector('.e-editedrow')))))) || isVirtualEdit) {
+            (this.parent.editSettings.showAddNewRow && (!this.parent.element.querySelector('.e-editedrow')))))) || (isVirtualEdit && this.parent.enableVirtualization)) {
             addClass([].slice.call(node.getElementsByClassName('e-edit-delete')), 'e-hide');
             removeClass([].slice.call(node.getElementsByClassName('e-save-cancel')), 'e-hide');
         } else {

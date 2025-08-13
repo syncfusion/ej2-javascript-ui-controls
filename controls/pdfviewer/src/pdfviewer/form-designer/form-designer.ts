@@ -6991,7 +6991,19 @@ export class FormDesigner {
         const formatdropdownContainer: HTMLElement = createElement('input', { className: 'e-pv-properties-format-font-family-prop' });
         fontFamilyDropdownContainer.appendChild(formatdropdownContainer);
         fontItemsContainer.appendChild(fontFamilyDropdownContainer);
-        this.formFieldFontFamily = new DropDownList({ dataSource: fontFamilyItems, value: this.getFontFamily(selectedItem.fontFamily) ? selectedItem.fontFamily : 'Helvetica', cssClass: 'e-pv-properties-formfield-fontfamily' }, formatdropdownContainer);
+        let textFont: any;
+        if (this.pdfViewer.pdfRenderer) {
+            textFont = this.pdfViewer.pdfRenderer.FallbackFontCollection;
+        }
+        const isDefaultFont: boolean = this.getFontFamily(selectedItem.fontFamily);
+        if (!isDefaultFont && !isNullOrUndefined(textFont) && Object.keys(textFont).length > 0) {
+            fontFamilyItems.push(selectedItem.fontFamily);
+        }
+        let fontFamily: string;
+        if (fontFamilyItems.indexOf(selectedItem.fontFamily) !== -1) {
+            fontFamily = selectedItem.fontFamily;
+        }
+        this.formFieldFontFamily = new DropDownList({ dataSource: fontFamilyItems, value: fontFamily || 'Helvetica', cssClass: 'e-pv-properties-formfield-fontfamily' }, formatdropdownContainer);
         this.setToolTip(this.pdfViewer.localeObj.getConstant('Font family'), fontFamilyDropdownContainer);
         const fontSizeContainer: HTMLElement = createElement('div', { className: 'e-pv-properties-font-size-container' });
         const fontSizeDropdownContainer: HTMLElement = createElement('input', { className: 'e-pv-properties-format-font-family-prop' });

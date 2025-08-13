@@ -58,7 +58,10 @@ export function measureText(text: string, font: FontModel): Size {
     htmlObject.style.whiteSpace = 'nowrap';
     // For bootstrap line height issue
     htmlObject.style.lineHeight = 'normal';
-    return new Size(htmlObject.clientWidth, htmlObject.clientHeight);
+    const clientWidth: number = htmlObject.clientWidth;
+    const clientHeight: number = htmlObject.clientHeight;
+    removeMeasureElement();
+    return new Size(clientWidth, clientHeight);
 }
 
 /** @private */
@@ -1380,10 +1383,15 @@ export class ToggleVisibility {
  */
 export function colorNameToHex(color: string): string {
     color = color === 'transparent' ? 'white' : color;
-    const element : HTMLElement = document.getElementById('heatmapmeasuretext');
+    let element: HTMLElement = document.getElementById('heatmapmeasuretext');
+    if (element === null) {
+        element = createElement('text', { id: 'heatmapmeasuretext' });
+        document.body.appendChild(element);
+    }
     element.style.color = color;
     color = window.getComputedStyle(element).color;
     const isRGBValue: string[] = color.replace(/[()RGBrgba ]/g, '').split(',');
+    removeMeasureElement();
     return convertToHexCode(
         new RgbColor(parseInt(isRGBValue[0], 10), parseInt(isRGBValue[1], 10), parseInt(isRGBValue[2], 10))
     );

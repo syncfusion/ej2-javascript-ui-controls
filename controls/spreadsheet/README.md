@@ -1,3 +1,5 @@
+[![coverage](http://ej2.syncfusion.com/badges/ej2-spreadsheet/coverage.svg)](http://ej2.syncfusion.com/badges/ej2-spreadsheet)
+
 # JavaScript Spreadsheet Control
 
 The [JavaScript Spreadsheet](https://www.syncfusion.com/javascript-ui-controls/js-spreadsheet?utm_source=npm&utm_medium=listing&utm_campaign=javascript-spreadsheet-npm) is an user interactive control to organize and analyze data in tabular format with configuration options for customization. It will load data by importing an Excel/CSV file or from local and remote data sources such as JSON, RESTful services, OData services, and more. The populated data can be exported as Excel with xlsx, xls, CSV and PDF formats.

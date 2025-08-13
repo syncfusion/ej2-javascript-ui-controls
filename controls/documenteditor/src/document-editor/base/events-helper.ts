@@ -1,4 +1,4 @@
-import { CommentAction, HyperlinkType, ServerActionType, RevisionType, RevisionActionType, ContentControlType } from './types';
+import { CommentAction, HyperlinkType, ServerActionType, RevisionType, RevisionActionType, ContentControlType, PasteType } from './types';
 import { DocumentEditor } from '../document-editor';
 import { DocumentEditorContainer } from '../../document-editor-container';
 import { Operation, Revision } from '../implementation';
@@ -574,4 +574,26 @@ export interface DocumentLoadFailedEventArgs {
      * Specifies whether to hide the pop-up that appears when opening fails.
      */
     hideOpenFailedPopup?: boolean
+}
+/**
+ * Defines the Before paste event args.
+ */
+export interface BeforePasteEventArgs {
+    /**
+     * Gets or sets a value indicating whether to cancel the paste operation.
+     * Set to true to prevent the default paste behavior.
+     * @default false
+     * @returns {boolean}
+     */
+    cancel: boolean;
+    /**
+     * Gets or sets the content to be pasted.
+     * This can be modified before pasting into the document.
+     * For text paste type, you will get the text content; otherwise, you will get sfdt content.
+     */
+    pasteContent: string;
+    /**
+     * Gets or sets the format type of the content being pasted.
+     */
+    pasteType: PasteType;
 }

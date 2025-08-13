@@ -496,8 +496,7 @@ export class FormFieldsBase {
 
     private setFontFromKeys(text: any, field: PdfTextBoxField | PdfComboBoxField | PdfListBoxField,
                             textFont: { [key: string]: any }, fontSize: number, hasUnicode: boolean, fontStyle: PdfFontStyle): void {
-        const font: PdfTrueTypeFont = PdfViewerUtils.tryGetFontFromKeys(textFont,
-                                                                        text.toString(), fontSize, fontStyle);
+        const font: PdfTrueTypeFont = PdfViewerUtils.tryGetFontFromKeys(textFont, text.toString(), fontSize, fontStyle);
         if (!isNullOrUndefined(font)) {
             field.font = font;
             field.setAppearance(true);
@@ -520,7 +519,8 @@ export class FormFieldsBase {
     private setFontAppearance(text: string, fontFamily: string, fontSize: number,
                               field: PdfTextBoxField | PdfComboBoxField | PdfListBoxField, textFont: any,
                               hasUnicode: boolean, fontStyle: PdfFontStyle): void {
-        if (!isNullOrUndefined(textFont) && Object.keys(textFont).length > 0) {
+        const defaultFonts: string[] = ['Helvetica', 'Times New Roman', 'Courier', 'Symbol', 'ZapfDingbats'];
+        if (!isNullOrUndefined(textFont) && Object.keys(textFont).length > 0 && defaultFonts.indexOf(fontFamily) === -1) {
             const fontKey: any = PdfViewerUtils.getFontKey(textFont, fontFamily.toLowerCase());
             if (!isNullOrUndefined(fontKey)) {
                 let fontStream: any = textFont[`${fontKey}`];
@@ -857,7 +857,7 @@ export class FormFieldsBase {
             const bound: any = { x: fieldBounds.X, y: fieldBounds.Y, width: fieldBounds.Width, height: fieldBounds.Height };
             const radioButtonItem: PdfRadioButtonListItem = new PdfRadioButtonListItem(radioButtonName, bound, page);
             if (!isFieldRotated) {
-                radioButtonItem.rotationAngle = this.GetRotateAngle(page.rotation);
+                radioButtonItem.rotate = this.getFormfieldRotation(page.rotation);
             }
             if (radiobuttonItem.isReadonly) {
                 isReadOnly = true;
@@ -1385,13 +1385,16 @@ export class FormFieldsBase {
         return (value * 96 / 72);
     }
 
-    private fontConvert(font: PdfFont): any {
+    private fontConvert(font: PdfFont, field: any): any {
+        const fontKey: string = field.itemAt(0) && field.itemAt(0)._obtainFontDetails() && field.itemAt(0)._obtainFontDetails().name;
+        const fontFamily: string = this.getFontFamilyString((font as PdfStandardFont).fontFamily,
+                                                            this.formFieldLoadedDocument.form, fontKey).toString();
         return {
             Bold: font.isBold,
-            FontFamily: this.getFontFamilyString((font as PdfStandardFont).fontFamily),
+            FontFamily: fontFamily,
             Height: font.height,
             Italic: font.isItalic,
-            Name: this.getFontFamilyString((font as PdfStandardFont).fontFamily).toString(),
+            Name: fontFamily,
             Size: font.size,
             Strikeout: font.isStrikeout,
             Underline: font.isUnderline,
@@ -1541,9 +1544,9 @@ export class FormFieldsBase {
         formFields.Visible = textBox.visibility;
         formFields.InsertSpaces = textBox.insertSpaces;
         if (!isNullOrUndefined(font)){
-            formFields.Font = this.fontConvert(font);
+            formFields.Font = this.fontConvert(font, textBox);
         }else{
-            formFields.Font = this.fontConvert(textBox.font);
+            formFields.Font = this.fontConvert(textBox.font, textBox);
         }
         if (textBox._dictionary.has('FontStyle')){
             const fontStyle: any = textBox._dictionary.get('FontStyle');
@@ -1576,7 +1579,7 @@ export class FormFieldsBase {
         formFields.Name = 'DropDown';
         formFields.ToolTip = comboBoxField.toolTip;
         formFields.FieldName = comboBoxField.name;
-        formFields.Font = this.fontConvert(comboBoxField.font);
+        formFields.Font = this.fontConvert(comboBoxField.font, comboBoxField);
         formFields.IsAutoSize = comboBoxField._isAutoFontSize;
         formFields.Selected = comboBoxField.editable;
         if (comboBoxField._dictionary.has('FontStyle')) {
@@ -1696,6 +1699,7 @@ export class FormFieldsBase {
             formFields.IsTransparent = true;
         }
         formFields.RotationAngle = this.GetRotateAngle(chkField.page.rotation);
+        formFields.Rotation = chkField.rotationAngle;
         formFields.IsReadonly = chkField.readOnly;
         formFields.IsRequired = chkField.required;
         formFields.Visible = chkField.visibility;
@@ -1734,7 +1738,7 @@ export class FormFieldsBase {
                 formFields.SelectedList.push(selectedIndex as number);
             }
         }
-        formFields.Font = this.fontConvert(listBoxField.font);
+        formFields.Font = this.fontConvert(listBoxField.font, listBoxField);
         if (listBoxField._dictionary.has('FontStyle')) {
             const fontStyle: number = listBoxField._dictionary.get('FontStyle');
             formFields.Font = this.parseFontStyle(fontStyle, formFields.Font);
@@ -2268,7 +2272,7 @@ export class FormFieldsBase {
         }
     }
 
-    private getFontFamilyString(fontFamily: PdfFontFamily): string {
+    private getFontFamilyString(fontFamily: PdfFontFamily, form?: PdfForm, fontKey?: string): string {
         switch (fontFamily) {
         case PdfFontFamily.helvetica:
             return 'Helvetica';
@@ -2281,6 +2285,28 @@ export class FormFieldsBase {
         case PdfFontFamily.zapfDingbats:
             return 'ZapfDingbats';
         default:
+            if (form && form._dictionary.has('DR')) {
+                let baseFontName: string;
+                const resources: any = form._dictionary.get('DR');
+                if (resources && resources.has('Font')) {
+                    const fontResources: any = resources.get('Font');
+                    if (fontResources && fontResources.has(fontKey)) {
+                        const fontDictionary: any = fontResources.get(fontKey);
+                        if (fontDictionary && fontDictionary.has('BaseFont')) {
+                            baseFontName = fontDictionary.get('BaseFont').name;
+                            if (baseFontName.indexOf('+') !== -1) {
+                                baseFontName = baseFontName.substring(
+                                    baseFontName.indexOf('+') + 1
+                                );
+                            }
+                            if (baseFontName.endsWith('-Regular')) {
+                                baseFontName = baseFontName.slice(0, -8);
+                            }
+                            return baseFontName;
+                        }
+                    }
+                }
+            }
             return 'Helvetica';
         }
     }

@@ -1482,6 +1482,9 @@ export class Selection {
             if (endX > destLeft + destWidth) {endX = destLeft + destWidth; }
             if (endY > destTop + destHeight) {endY = destTop + destHeight; }
         }
+        if (actPoint.width < 0 && actPoint.height < 0 && this.isCropSelection) {
+            isLimiting = true;
+        }
         if (parent.transform.straighten !== 0) {
             const obj: Object = {isIntersect: null, arr: null };
             parent.notify('draw', { prop: 'updateImgCanvasPoints', onPropertyChange: false });
@@ -2125,7 +2128,7 @@ export class Selection {
                     width = x - actPoint.endX; height = y - actPoint.endY;
                     scale = Math.max(width, height);
                     const newScale: Point = this.getScaleRatio(scale);
-                    actPoint.endX += newScale.x; actPoint.endY += newScale.x;
+                    actPoint.endX += newScale.x; actPoint.endY += newScale.y;
                     if (actPoint.endX > (destLeft + destWidth) ||
                         actPoint.endY > (destTop + destHeight)) {
                         actPoint.endX -= newScale.x; actPoint.endY -= newScale.y;

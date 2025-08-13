@@ -5,7 +5,7 @@ import { EmitType, L10n, select } from '@syncfusion/ej2-base';
 import { createElement, remove } from '@syncfusion/ej2-base';
 import { Grid } from '../../../src/grid/base/grid';
 import { Column } from '../../../src/grid/models/column';
-import { data } from '../base/datasource.spec';
+import { data, employeeData } from '../base/datasource.spec';
 import { CommandColumn } from '../../../src/grid/actions/command-column';
 import { Group } from '../../../src/grid/actions/group';
 import { Sort } from '../../../src/grid/actions/sort';
@@ -1062,6 +1062,68 @@ describe('Command Column ', () => {
         afterAll(function () {
             destroy(gridObj);
             gridObj = actionBegin = null;
+        });
+    });
+
+    describe('EJ2-972607 - Command Column Icon is not reset after canceling parent row in Hierarchy Grid =>', () => {
+        let grid: Grid;
+        let actionBegin: (e?: Object) => void;
+        let actionComplete: (e?: Object) => void;
+        beforeAll((done: Function) => {
+            grid = createGrid({
+                dataSource: employeeData,
+                editSettings: { allowAdding: true, allowDeleting: true, allowEditing: true, allowEditOnDblClick: false },
+                allowPaging: true,
+                height: 270,
+                pageSettings: { pageCount: 5 },
+                columns: [
+                    { field: 'EmployeeID', headerText: 'Employee ID', textAlign: 'Right', isPrimaryKey: true, width: 125 },
+                    { field: 'FirstName', headerText: 'Name', width: 125 },
+                    { field: 'City', headerText: 'City', width: 110 },
+                    {
+                        commands: [
+                            { type: 'Edit', buttonOption: { iconCss: 'e-icons e-edit', cssClass: 'e-flat' } },
+                            { type: 'Delete', buttonOption: { iconCss: 'e-icons e-delete', cssClass: 'e-flat' } },
+                            { type: 'Save', buttonOption: { iconCss: 'e-icons e-update', cssClass: 'e-flat' } },
+                            { type: 'Cancel', buttonOption: { iconCss: 'e-icons e-cancel-icon', cssClass: 'e-flat' } }
+                        ],
+                        headerText: 'Command Column'
+                    }
+                ],
+                childGrid: {
+                    dataSource: data,
+                    queryString: 'EmployeeID',
+                    allowPaging: true,
+                    columns: [
+                        { field: 'OrderID', headerText: 'Order ID', isPrimaryKey: true, textAlign: 'Right', width: 120 },
+                        { field: 'ShipCity', headerText: 'Ship City', width: 120 },
+                        { field: 'Freight', headerText: 'Freight', width: 120 },
+                        { field: 'ShipName', headerText: 'Ship Name', width: 150 }
+                    ]
+                },
+                actionBegin: actionBegin,
+                actionComplete: actionComplete,
+            }, done);
+        });
+
+        it('Command column icon class correctly reset after canceling edit in parent grid', (done: Function) => {
+            grid.actionComplete = (args) => {
+                if (args.requestType === 'beginEdit') {
+                    expect(grid.getRows()[0].querySelector('.e-unboundcelldiv').children[0].classList.contains('e-hide')).toBeTruthy();
+                    (<any>grid).commandColumnModule.commandClickHandler({ target: grid.getRows()[0].querySelector('.e-unboundcelldiv').children[3] });
+                }
+                if (args.requestType === 'cancel') {
+                    expect(grid.getRows()[0].querySelector('.e-unboundcelldiv').children[0].classList.contains('e-hide')).toBeFalsy();
+                    done();
+                }
+            };
+            (<any>grid).detailRowModule.expand(grid.getRows()[0].querySelector('.e-detailrowcollapse'));
+            (<any>grid).commandColumnModule.commandClickHandler({ target: grid.getRows()[0].querySelector('.e-unboundcelldiv').children[0] });
+        });
+
+        afterAll(() => {
+            destroy(grid);
+            grid = actionBegin = actionComplete = null;
         });
     });
 });

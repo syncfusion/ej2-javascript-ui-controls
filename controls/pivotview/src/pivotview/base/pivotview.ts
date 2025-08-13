@@ -3782,6 +3782,10 @@ export class PivotView extends Component<HTMLElement> implements INotifyProperty
                         if (this.grid) {
                             this.grid.destroy();
                             this.grid = undefined;
+                            const gridElement: HTMLElement = select('#' + this.element.id + '_grid', this.element);
+                            if (gridElement !== null) {
+                                remove(gridElement);
+                            }
                         }
                         if (!this.pivotChartModule) {
                             this.pivotChartModule = new PivotChart(this);

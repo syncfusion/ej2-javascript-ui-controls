@@ -226,6 +226,7 @@ export const metaFileImageStringProperty: string[] = ['metaFileImageString', 'mt
 export const lengthProperty: string[] = ['length', 'l'];
 export const isInlineImageProperty: string[] = ['isInlineImage', 'inimg'];
 export const isMetaFileProperty: string[] = ['isMetaFile', 'imf'];
+export const hasImageReferenceProperty: string[] = ['hasImageReference', 'hir'];
 export const topProperty: string[] = ['top', 'tp'];
 export const bottomProperty: string[] = ['bottom', 'bt'];
 export const rightProperty: string[] = ['right', 'rg'];

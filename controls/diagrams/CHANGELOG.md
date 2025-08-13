@@ -2,6 +2,14 @@
 
 ## [Unreleased]
 
+## 30.2.5 (2025-08-13)
+
+### Diagram
+
+#### Bug Fixes
+
+- `#I743248` - CollectionChange now supports diagram item deletion via the delete key, with the action marked as Keyboard Delete.
+
 ## 30.2.4 (2025-08-07)
 
 ### Diagram

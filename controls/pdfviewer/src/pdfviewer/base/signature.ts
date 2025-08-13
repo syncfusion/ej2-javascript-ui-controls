@@ -2403,7 +2403,7 @@ export class Signature {
                         };
                     }
                 }
-                if (annot.shapeAnnotationType === 'SignatureText') {
+                if (annot.shapeAnnotationType === 'SignatureText' && this.isAddAnnotationProgramatically) {
                     const textWidth: number = this.pdfViewerBase.getTextWidth(annot.data, annot.fontSize, annot.fontFamily);
                     let widthRatio: number = 1;
                     if (textWidth > annot.bounds.width) {

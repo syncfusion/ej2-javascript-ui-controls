@@ -94,7 +94,7 @@ export class Export {
             if (lowerCaseType === 'svg') {
                 this.toSVGImg(fileName);
             } else {
-                this.toBlobFn(fileName, lowerCaseType, imgQuality);
+                this.toBlobFn(fileName, lowerCaseType, observableSaveArgs.imageQuality || imgQuality);
             }
             const saved: SaveEventArgs = { fileName: fileName ? fileName : imageName, fileType: type as FileType};
             parent.trigger('saved', saved);

@@ -12,9 +12,9 @@ import { ViewChangeEventArgs, RequestNavigateEventArgs, ContainerContentChangeEv
 import { createSpinner } from '@syncfusion/ej2-popups';
 import { ContainerServerActionSettingsModel, DocumentEditorModel, DocumentEditorSettingsModel, DocumentSettingsModel, FormFieldSettingsModel } from '../document-editor/document-editor-model';
 import { CharacterFormatProperties, ParagraphFormatProperties, SectionFormatProperties } from '../document-editor/implementation';
-import { CustomToolbarItemModel, TrackChangeEventArgs, AutoResizeEventArgs, ContentChangeEventArgs } from '../document-editor/base/events-helper';
+import { CustomToolbarItemModel, TrackChangeEventArgs, AutoResizeEventArgs, ContentChangeEventArgs, BeforePasteEventArgs } from '../document-editor/base/events-helper';
 import { ClickEventArgs, MenuItemModel } from '@syncfusion/ej2-navigations';
-import { beforeAutoResize, internalAutoResize, internalZoomFactorChange, beforeCommentActionEvent, commentDeleteEvent, contentChangeEvent, trackChangeEvent, beforePaneSwitchEvent, serviceFailureEvent, documentChangeEvent, selectionChangeEvent, customContextMenuSelectEvent, customContextMenuBeforeOpenEvent, internalviewChangeEvent, beforeXmlHttpRequestSend, protectionTypeChangeEvent, internalDocumentEditorSettingsChange, internalStyleCollectionChange, revisionActionEvent, trackChanges, internalOptionPaneChange } from '../document-editor/base/constants';
+import { beforeAutoResize, internalAutoResize, internalZoomFactorChange, beforeCommentActionEvent, commentDeleteEvent, contentChangeEvent, trackChangeEvent, beforePaneSwitchEvent, serviceFailureEvent, documentChangeEvent, selectionChangeEvent, customContextMenuSelectEvent, customContextMenuBeforeOpenEvent, internalviewChangeEvent, beforeXmlHttpRequestSend, protectionTypeChangeEvent, internalDocumentEditorSettingsChange, internalStyleCollectionChange, revisionActionEvent, trackChanges, internalOptionPaneChange, beforePaste } from '../document-editor/base/constants';
 import { HelperMethods } from '../index';
 import { SanitizeHtmlHelper } from '@syncfusion/ej2-base';
 import { DialogUtility } from '@syncfusion/ej2-popups';
@@ -199,6 +199,14 @@ export class DocumentEditorContainer extends Component<HTMLElement> implements I
     public destroyed: EmitType<Object>;
     /* eslint-enable */
 
+    /**
+     * This event is triggered before content is pasted in Document Editor.
+     *
+     * @event
+     * @returns {void}
+     */
+    @Event()
+    public beforePaste: EmitType<BeforePasteEventArgs>;
     /**
      * Triggers whenever the content changes in the document editor container.
      *
@@ -999,6 +1007,7 @@ export class DocumentEditorContainer extends Component<HTMLElement> implements I
             selectionChange: this.onSelectionChange.bind(this),
             contentChange: this.onContentChange.bind(this),
             documentChange: this.onDocumentChange.bind(this),
+            beforePaste: this.onBeforePaste.bind(this),
             requestNavigate: this.onRequestNavigate.bind(this),
             viewChange: this.onViewChange.bind(this),
             customContextMenuSelect: this.onCustomContextMenuSelect.bind(this),
@@ -1118,6 +1127,9 @@ export class DocumentEditorContainer extends Component<HTMLElement> implements I
     }
     private onCommentAction(args: CommentActionEventArgs): void {
         this.trigger(beforeCommentActionEvent, args);
+    }
+    private onBeforePaste(args: BeforePasteEventArgs): void {
+        this.trigger(beforePaste, args)
     }
     private onTrackChange(args: TrackChangeEventArgs): void {
         this.trigger(trackChangeEvent, args);

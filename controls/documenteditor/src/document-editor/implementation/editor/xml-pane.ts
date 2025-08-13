@@ -8,6 +8,7 @@ import { Dialog, DialogUtility } from '@syncfusion/ej2-popups';
 
 /**
  * xml Pane class.
+ * @private
  */
 export class XmlPane {
 
@@ -541,6 +542,7 @@ export class XmlPane {
     /**
     * To handle File Selection.
     * @returns {void}
+    * @private
     */
     public handleFileSelect = () => {
         const input = document.createElement('input');

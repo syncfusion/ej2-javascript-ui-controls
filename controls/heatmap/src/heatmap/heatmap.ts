@@ -505,6 +505,15 @@ export class HeatMap extends Component<HTMLElement> implements INotifyPropertyCh
 
     private initPrivateVariable(): void {
         this.rendering = true;
+        if (this.element.id === '') {
+            let collection: number = document.getElementsByClassName('e-heatmap').length;
+            let elementid: string = '_' + collection;
+            while (document.getElementById(elementid)) {
+                collection++;
+                elementid = 'heatmap_' + collection;
+            }
+            this.element.id = 'heatmap_' + collection;
+        }
         this.renderer = new SvgRenderer(this.element.id);
         this.canvasRenderer = new CanvasRenderer(this.element.id);
         this.secondaryCanvasRenderer = new CanvasRenderer(this.element.id + '_secondary');

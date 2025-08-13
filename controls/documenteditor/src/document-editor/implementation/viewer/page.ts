@@ -4635,7 +4635,8 @@ export class LineWidget implements IWidget {
     */
     public skipClipImage: boolean = false;
     /**
-     * Rendered elements contains reordered element for RTL layout 
+     * Rendered elements contains reordered element for RTL layout
+     * @private
      */
     get renderedElements(): ElementBox[] {
         if (!isNullOrUndefined(this.layoutedElements)) {
@@ -7459,6 +7460,10 @@ export class ImageElementBox extends ShapeBase {
      * @private
      */
     public isCompressed: boolean = false;
+    /**
+     * @private
+     */
+    public hasImageReference: boolean;
     /**
      * @private
      */

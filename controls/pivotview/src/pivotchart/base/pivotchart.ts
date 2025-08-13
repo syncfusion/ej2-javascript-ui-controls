@@ -14,7 +14,7 @@ import { IAxisLabelRenderEventArgs, ScrollBar, Zoom, IResizeEventArgs, TooltipSe
 import { ZoomSettingsModel, ParetoSeries, Export, Crosshair, MultiLevelLabelsModel, MultiLevelLabel } from '@syncfusion/ej2-charts';
 import { ColumnModel, IPointEventArgs, IMultiLevelLabelClickEventArgs, LegendSettingsModel, BubbleSeries } from '@syncfusion/ej2-charts';
 import { AccumulationDataLabel, AccumulationSeriesModel, getSeriesColor } from '@syncfusion/ej2-charts';
-import { createElement, remove, isNullOrUndefined, select } from '@syncfusion/ej2-base';
+import { createElement, remove, isNullOrUndefined, select, getInstance } from '@syncfusion/ej2-base';
 import { ChartSettingsModel, PivotSeriesModel } from '../../pivotview/model/chartsettings-model';
 import { PivotView } from '../../pivotview/base/pivotview';
 import { RowHeaderPositionGrouping, ChartSeriesType, ChartSeriesCreatedEventArgs, RowHeaderLevelGrouping, ChartLabelInfo } from '../../common';
@@ -2035,6 +2035,11 @@ export class PivotChart {
         if (this.parent && this.parent.chart && !this.parent.chart.isDestroyed) {
             this.parent.chart.destroy();
             this.parent.chart = null;
+        } else if (this.parent && !this.parent.chart) {
+            const emptyChartElement: HTMLElement = select('#' + this.parent.element.id + '_chart', this.parent.element);
+            const chartInstance: Chart = getInstance(emptyChartElement, Chart) as Chart;
+            chartInstance.destroy();
+            remove(emptyChartElement);
         }
         if (this.chartElement) {
             if (this.chartElement.parentNode) {

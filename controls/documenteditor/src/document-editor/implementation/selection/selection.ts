@@ -581,7 +581,21 @@ export class Selection {
         }
         return false;
     }
-    /** 
+    /**
+     *  Determines whether the current selection is within a field.
+     *
+     * @param includeFieldStart - Optional. If true, includes the field start in the selection check. Default is false.
+     * @param includeFieldEnd - Optional. If true, includes the field end in the selection check. Default is false.
+     *
+     * @returns Returns true if the selection is within a field, false otherwise.
+     */
+    public isSelectionInField(includeFieldStart: boolean = false, includeFieldEnd: boolean = false): boolean {
+        if (!isNullOrUndefined(this.getHyperlinkField(true, includeFieldStart, includeFieldEnd, true))) {
+            return true;
+        }
+        return false;
+    }
+    /**
      * Gets the field information for the selected field. 
      * 
      * @returns { FieldInfo } Returns `FieldInfo` if selection is in field, otherwise `undefined` 
@@ -2815,7 +2829,8 @@ export class Selection {
         if (shiftKey) {
             this.documentHelper.skipScrollToPosition = true;
         }
-        if (isSameScrollTop) {
+        setTimeout(() => {
+            if (isSameScrollTop) {
             if (!shiftKey) {
                 if (isPageDown)
                     this.moveToDocumentEnd();
@@ -2833,9 +2848,10 @@ export class Selection {
                 this.end.setPositionForLineWidget(position.currentWidget, position.offset);
                 this.fireSelectionChanged(true);
             }
-        } else {
-            this.select({ x: offsetX, y: offsetY, extend: shiftKey });
-        }
+            } else {
+                this.select({ x: offsetX, y: offsetY, extend: shiftKey });
+            }
+        }, 100);
     }
     // returns current field in FormFill mode
     private getFormFieldInFormFillMode(): FieldElementBox {
@@ -4745,16 +4761,16 @@ export class Selection {
      * @private
      * @returns {boolean}
      */
-    public isExistBeforeInline(currentInline: ElementBox, inline: ElementBox): boolean {
+    public isExistBeforeInline(currentInline: ElementBox, inline: ElementBox, isIncludeFieldStart?: boolean, isIncludeField?: boolean): boolean {
         if (currentInline.line === inline.line) {
             const fieldBegin: FieldElementBox = inline instanceof FieldElementBox ? inline : inline.nextNode as FieldElementBox;
             const offset: number = this.isForward ? this.start.offset : this.end.offset;
-            if (fieldBegin instanceof FieldElementBox && fieldBegin.fieldType === 0 && !(inline instanceof BookmarkElementBox) && (inline instanceof FieldElementBox || offset === inline.line.getOffset(inline, inline.length))) {
-                return currentInline.line.children.indexOf(currentInline) >=
-                    inline.line.children.indexOf(inline);
-            } else {
-                return currentInline.line.children.indexOf(currentInline) <=
-                    inline.line.children.indexOf(inline);
+            const isSelectionBegin: boolean = (fieldBegin instanceof FieldElementBox && fieldBegin.fieldType === 0 && (inline instanceof FieldElementBox || offset === inline.line.getOffset(inline, inline.length)));
+            if (((isIncludeField && isIncludeFieldStart) || (!isIncludeField && !(inline instanceof BookmarkElementBox))) && isSelectionBegin) {
+                return currentInline.line.children.indexOf(currentInline) >= inline.line.children.indexOf(inline);
+            }
+            else {
+                return currentInline.line.children.indexOf(currentInline) <= inline.line.children.indexOf(inline);
             }
         }
         if (currentInline.line.paragraph === inline.line.paragraph) {
@@ -4783,14 +4799,17 @@ export class Selection {
      * @private
      * @returns {boolean}
      */
-    public isExistAfterInline(currentInline: ElementBox, inline: ElementBox, isRetrieve?: boolean): boolean {
+    public isExistAfterInline(currentInline: ElementBox, inline: ElementBox, isRetrieve?: boolean, isIncludeFieldEnd?: boolean, isIncludeField?: boolean): boolean {
         if (currentInline.line === inline.line) {
             let selection: Selection = this.documentHelper.selection;
+            const isSelectionEnd: boolean = (isIncludeField && (currentInline instanceof BookmarkElementBox ||
+                (currentInline instanceof FieldElementBox && currentInline.fieldType === 1)));
             if (isRetrieve) {
-                if (currentInline instanceof FieldElementBox && currentInline.fieldType === 1 && this.isEmpty) {
+                if (((isSelectionEnd && !isIncludeFieldEnd) || (!isIncludeField && currentInline instanceof FieldElementBox && currentInline.fieldType === 1)) && this.isEmpty) {
                     return currentInline.line.children.indexOf(currentInline) >
                         inline.line.children.indexOf(inline);
-                } else {
+                }
+                else {
                     return currentInline.line.children.indexOf(currentInline) >=
                         inline.line.children.indexOf(inline);
                 }
@@ -6119,7 +6138,7 @@ export class Selection {
     public isCellSelected(cell: TableCellWidget, startPosition: TextPosition, endPosition: TextPosition, skipParaMark?: boolean): boolean {
         const lastParagraph: ParagraphWidget = this.getLastParagraph(cell as TableCellWidget) as ParagraphWidget;
 
-        const isAtCellEnd: boolean = lastParagraph === endPosition.paragraph && endPosition.offset === this.getLineLength((lastParagraph.lastChild as LineWidget)) + (!skipParaMark ? 1 : 0);
+        const isAtCellEnd: boolean = lastParagraph === endPosition.paragraph && lastParagraph.lastChild === endPosition.currentWidget && endPosition.offset === this.getLineLength((lastParagraph.lastChild as LineWidget)) + (!skipParaMark ? 1 : 0);
 
         return isAtCellEnd || (!this.containsCell(cell, startPosition.paragraph.associatedCell) ||
             !this.containsCell(cell, endPosition.paragraph.associatedCell));
@@ -9203,7 +9222,7 @@ export class Selection {
                 //         fieldInline = fieldInline.nextNode as ElementBox;
                 //     } while (!(fieldInline instanceof FieldElementBox));
                 // }
-                if (inline instanceof TextElementBox || inline instanceof FieldElementBox) {
+                if (inline instanceof TextElementBox && inline.text !== '' || inline instanceof FieldElementBox) {
                     this.characterFormat.combineFormat(inline.characterFormat, this.documentHelper.textHelper.getFontNameToRender((inline as TextElementBox).scriptType, inline.characterFormat));
                 }
                 if (isNullOrUndefined(inline) || endOffset <= count + inline.length) {
@@ -9327,7 +9346,7 @@ export class Selection {
             let linewidget: LineWidget = paragraph.childWidgets[i] as LineWidget;
             for (let j: number = 0; j < linewidget.children.length; j++) {
                 let element: ElementBox = linewidget.children[j];
-                if (!(element instanceof ImageElementBox || element instanceof GroupShapeElementBox || element instanceof FieldElementBox || element instanceof ListTextElementBox)) {
+                if (!(element instanceof ImageElementBox || element instanceof GroupShapeElementBox || element instanceof FieldElementBox || element instanceof ListTextElementBox || element instanceof ContentControl || element instanceof TextElementBox && element.text === '')) {
                     selection.characterFormat.combineFormat(element.characterFormat);
                 }
             }
@@ -9986,7 +10005,7 @@ export class Selection {
      * Return field if paragraph contain hyperlink field
      * @private
      */
-    public getHyperlinkField(isRetrieve?: boolean): FieldElementBox {
+    public getHyperlinkField(isRetrieve?: boolean, isIncludeFieldStart?: boolean, isIncludeFieldEnd?: boolean, isIncludeField?: boolean): FieldElementBox {
         if (isNullOrUndefined(this.end)) {
             return undefined;
         }
@@ -10010,7 +10029,7 @@ export class Selection {
             field = undefined;
         } else {
             let paragraph: ParagraphWidget = inline.line.paragraph;
-            field = this.getHyperLinkFieldInternal(paragraph, inline, checkedFields, isRetrieve, false);
+            field = this.getHyperLinkFieldInternal(paragraph, inline, checkedFields, isRetrieve, false, isIncludeFieldStart, isIncludeFieldEnd, isIncludeField);
         }
         checkedFields = [];
         return field;
@@ -10050,7 +10069,7 @@ export class Selection {
      * @private
      */
 
-    public getHyperLinkFieldInternal(paragraph: Widget, inline: ElementBox, fields: FieldElementBox[], isRetrieve: boolean, checkFormField: boolean): FieldElementBox {
+    public getHyperLinkFieldInternal(paragraph: Widget, inline: ElementBox, fields: FieldElementBox[], isRetrieve: boolean, checkFormField: boolean, isIncludeFieldStart?: boolean, isIncludeFieldEnd?: boolean, isIncludeField?: boolean): FieldElementBox {
         for (let i: number = 0; i < this.documentHelper.fields.length; i++) {
             if (fields.indexOf(this.documentHelper.fields[i]) !== -1 || isNullOrUndefined(this.documentHelper.fields[i].fieldSeparator)) {
                 continue;
@@ -10065,7 +10084,7 @@ export class Selection {
                 fieldEnd = fieldBegin.nextNode.reference;
             }
 
-            let isInline: boolean = (this.inlineIsInFieldResult(fieldBegin, fieldEnd, fieldBegin.fieldSeparator, inline, isRetrieve) || this.isImageField());
+            let isInline: boolean = (this.inlineIsInFieldResult(fieldBegin, fieldEnd, fieldBegin.fieldSeparator, inline, isRetrieve, isIncludeFieldStart, isIncludeFieldEnd, isIncludeField) || this.isImageField());
             if ((isRetrieve || (!isRetrieve && fieldCode.match('hyperlink '))) && isInline) {
                 return this.documentHelper.fields[i];
             }
@@ -10141,10 +10160,10 @@ export class Selection {
      * @private
      */
 
-    public inlineIsInFieldResult(fieldBegin: FieldElementBox, fieldEnd: ElementBox, fieldSeparator: FieldElementBox, inline: ElementBox, isRetrieve?: boolean): boolean {
+    public inlineIsInFieldResult(fieldBegin: FieldElementBox, fieldEnd: ElementBox, fieldSeparator: FieldElementBox, inline: ElementBox, isRetrieve?: boolean, isIncludeFieldStart?: boolean, isIncludeFieldEnd?: boolean, isIncludeField?: boolean): boolean {
         if (!isNullOrUndefined(fieldEnd) && !isNullOrUndefined(fieldSeparator)) {
-            if (this.isExistBeforeInline(fieldSeparator, inline)) {
-                return this.isExistAfterInline(fieldEnd, inline, isRetrieve);
+            if (this.isExistBeforeInline(fieldSeparator, inline, isIncludeFieldStart, isIncludeField)) {
+                return this.isExistAfterInline(fieldEnd, inline, isRetrieve, isIncludeFieldEnd, isIncludeField);
             }
         }
         return false;
@@ -11485,6 +11504,7 @@ export class Selection {
      * @param columnFirst Specify start index of column to find cells.
      * @param columnLast Specify end index of column to find cells.
      * @param bookmark Specify the bookmark element.
+     * @private
      */
     public getCellsToSelect(table: TableWidget, columnFirst: number, columnLast: number, bookmark: BookmarkElementBox): TableCellWidget[] {
         let rows: TableRowWidget[] = table.childWidgets as TableRowWidget[];

@@ -52,7 +52,7 @@ import { DatePickerDialog } from './implementation/dialogs/datepicker-dialog';
 import { ContentControlPropertiesDialog } from './implementation/dialogs/content-control-properties-dialog';
 import { PicContentControlDialog } from './implementation/dialogs/pic-contentControl-dialog';
 import { DialogUtility, hideSpinner, showSpinner } from '@syncfusion/ej2-popups';
-import { Comment, ContentControlFillEventArgs, DocumentLoadFailedEventArgs } from './base/events-helper';
+import { BeforePasteEventArgs, Comment, ContentControlFillEventArgs, DocumentLoadFailedEventArgs } from './base/events-helper';
 import { FieldSettingsModel } from '@syncfusion/ej2-dropdowns';
 /**
  * The `DocumentEditorSettings` module is used to provide the customize property of Document Editor.
@@ -1167,6 +1167,14 @@ export class DocumentEditor extends Component<HTMLElement> implements INotifyPro
     @Event()
     public beforeFormFieldFill: EmitType<FormFieldFillEventArgs>;
     /**
+     * This event is triggered before content is pasted in Document Editor.
+     *
+     * @event
+     * @returns {void}
+     */
+    @Event()
+    public beforePaste: EmitType<BeforePasteEventArgs>;
+    /**
      * @private
      */
     public beforeContentControlFill: EmitType<ContentControlFillEventArgs>;
@@ -1392,6 +1400,7 @@ export class DocumentEditor extends Component<HTMLElement> implements INotifyPro
      * Gets the spell check dialog object of the document editor.
      *
      * @returns {SpellCheckDialog} Returns the spell check dialog object.
+     * @private
      */
     public get spellCheckDialog(): SpellCheckDialog {
         if (!this.spellCheckDialogModule) {
@@ -3999,9 +4008,12 @@ export class DocumentEditor extends Component<HTMLElement> implements INotifyPro
     /**
      * Exports the content control values.
      *
+     * @param {boolean} isExportRichTextData - Optional flag to export the rich text content control data as Sfdt.
      * @returns {ContentControlInfo[]} The array of content control data.
      */
-    public exportContentControlData(): ContentControlInfo[] {
+    public exportContentControlData(isExportRichTextData?: boolean): ContentControlInfo[] {
+        const start: TextPosition = this.selection.start.clone();
+        const end: TextPosition = this.selection.end.clone();
         this.selection.contentControleditRegionHighlighters.clear();
         this.selection.onHighlightContentControl();
         const data: ContentControlInfo[] = [];
@@ -4029,11 +4041,22 @@ export class DocumentEditor extends Component<HTMLElement> implements INotifyPro
                 } else if (contentControl.contentControlProperties.type === 'ComboBox' || contentControl.contentControlProperties.type === 'DropDownList') {
                     contentControlData.value = this.getContentControlValue(element as TextElementBox);
                 } else {
-                    contentControlData.value = this.getContentControlValueForText(contentControl);
+                    this.selection.selectContentControlInternal(contentControl);
+                    if (isExportRichTextData && contentControl.contentControlProperties.type === 'RichText') {
+                        let sfdtString: string = '';
+                        sfdtString = this.selection.sfdt;
+                        sfdtString = sfdtString === undefined ? '' : sfdtString;
+                        contentControlData.value = sfdtString;
+                    } else {
+                        contentControlData.value = this.getContentControlValueForText(contentControl);
+                    }
                 }
 
                 data.push(contentControlData);
             }
+        }
+        if (isExportRichTextData && !isNullOrUndefined(properties)) {
+            this.selection.selectRange(start, end);
         }
         return data;
     }

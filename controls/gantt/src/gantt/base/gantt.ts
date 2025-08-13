@@ -2247,7 +2247,8 @@ export class Gantt extends Component<HTMLElement>
         if (
             this.taskFields &&
             this.taskFields.constraintDate &&
-            this.taskFields.constraintType
+            this.taskFields.constraintType &&
+            !this.updateOffsetOnTaskbarEdit
         ) {
             this.updateOffsetOnTaskbarEdit = false;
         }

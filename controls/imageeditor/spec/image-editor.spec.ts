@@ -9751,6 +9751,31 @@ describe('ImageEditor', () => {
                 done();
             }, 150);
         });
+
+        it('Coverage improvement in Freehand draw delete', (done) => {
+            imageEditor = new ImageEditor({
+                height: '450px',
+            }, '#image-editor');
+            imageEditor.open('https://www.shutterstock.com/image-photo/linked-together-life-cropped-shot-600w-2149264221.jpg');
+            setTimeout(() => {
+                let points = [
+                    { x: 710.0539748224719, y: 25.105363438047213, ratioX: 0.8839387453519381, ratioY: 0.05938697025693696, time: 1674043575063 },
+                    { x: 713.9229403397133, y: 25.105363438047213, ratioX: 0.8993233607365535, ratioY: 0.05938697025693696, time: 1674043575090 },
+                    { x: 719.0815610293685, y: 25.105363438047213, ratioX: 0.919836181249374, ratioY: 0.05938697025693696, time: 1674043575106 },
+                    { x: 723.380411604081, y: 25.105363438047213, ratioX: 0.9369301983433911, ratioY: 0.05938697025693696, time: 1674043575123 },
+                    { x: 729.3988024086788, y: 24.675478380575946, ratioX: 0.960861822275015, ratioY: 0.05708811968222432, time: 1674043575139 },
+                    { x: 733.6976529833914, y: 24.675478380575946, ratioX: 0.9779558393690321, ratioY: 0.05708811968222432, time: 1674043575156 }
+                ];
+                imageEditor.freehandDraw(true);
+                imageEditor.notify('freehand-draw', { prop: 'freehandRedraw', value: { context: imageEditor.lowerCanvas.getContext('2d'), points: points } });
+                imageEditor.apply();
+                imageEditor.notify('freehand-draw', { prop: 'getHighestOrder' });
+                imageEditor.selectShape('pen_1');
+                imageEditor.deleteShape('pen_1');
+                imageEditor.notify('freehand-draw', { prop: 'resetFHDIdx' });
+                done();
+            }, 100);
+        });
    });
 
    describe('Image File Restrict', () => {

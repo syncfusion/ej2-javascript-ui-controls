@@ -1606,6 +1606,7 @@ export type FormattingExceptions = 'Bold' | 'Italic' | 'FontSize' | 'FontFamily'
 
 /**
  * Specifies the Content Control Widget type
+ * @private
  */
 export type ContentControlWidgetType = 'Block' | 'Inline' | 'Row' | 'Cell';
 /**
@@ -2803,3 +2804,12 @@ export type FileMenuItemType =
      * Print file operation.
      */
     'Print';
+
+/**
+ * Defines the supported paste type.
+ */
+export type PasteType =
+    'Html' |
+    'Rtf' |
+    'Text' |
+    'Sfdt';

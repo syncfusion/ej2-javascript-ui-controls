@@ -519,6 +519,9 @@ export class CommentReviewPane {
         }
         if (!isNullOrUndefined(this.reviewTab)) {
             this.reviewTab.destroy();
+            if (this.owner && !isNullOrUndefined(localStorage.getItem('tab' + this.owner.element.id + 'Review_Tab'))) {
+                localStorage.removeItem('tab' + this.owner.element.id + 'Review_Tab');
+            }
         }
         this.reviewTab = undefined;
         if (!isNullOrUndefined(this.confirmDialog)) {

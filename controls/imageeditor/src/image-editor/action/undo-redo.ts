@@ -358,6 +358,12 @@ export class UndoRedo {
                 parent.initialAdjustmentValue = this.lowerContext.filter;
                 parent.notify('filter', { prop: 'setBevelFilter', onPropertyChange: false, value: { bevelFilter: this.lowerContext.filter }});
                 const editCompleteArgs: object = {action: this.getUndoRedoAction(obj.operation) };
+                let isSelected: boolean;
+                if (obj.operation === 'freehanddraw' || obj.operation === 'freehand-draw') {
+                    const object: Object = { isSelected: null };
+                    parent.notify('freehand-draw', { prop: 'getFHDSelected', onPropertyChange: false, value: { obj: object } });
+                    isSelected = object['isSelected'];
+                }
                 switch (obj.operation) {
                 case 'shapeTransform':
                 case 'brightness':
@@ -385,6 +391,10 @@ export class UndoRedo {
                     this.updateFreehandDraw(obj.previousPointColl, obj.previousSelPointColl);
                     parent.notify('freehand-draw', {prop: 'setCurrentFreehandDrawIndex',
                         value: {value: parent.pointColl.length}});
+                    if (isSelected) {
+                        parent.notify('freehand-draw', { prop: 'resetFHDIdx' });
+                        parent.notify('selection', { prop: 'resetFreehandDrawVariables' });
+                    }
                     break;
                 case 'freehanddrawCustomized':
                     this.updateFreehandDrawCustomized(obj.previousObjColl, obj.previousPointColl);

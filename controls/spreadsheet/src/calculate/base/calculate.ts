@@ -3322,11 +3322,7 @@ export class Calculate extends Base<HTMLElement> implements INotifyPropertyChang
                 arr.sort();
             });
             this.sortedSheetNames = arr;
-            this.sortedSheetNames.sort();
-            if (this.sortedSheetNames.length > 9 && this.sortedSheetNames[0].includes('1') && this.sortedSheetNames[1].includes('10')) {
-                this.sortedSheetNames.splice(this.sortedSheetNames.indexOf('2'), 0, this.sortedSheetNames[0]);
-                this.sortedSheetNames.splice(0, 1);
-            }
+            this.sortedSheetNames.sort((a: string, b: string) => b.length - a.length);
         }
         return this.sortedSheetNames;
     }

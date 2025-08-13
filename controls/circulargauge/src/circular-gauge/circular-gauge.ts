@@ -1039,6 +1039,7 @@ export class CircularGauge extends Component<HTMLElement> implements INotifyProp
         element.style.msUserSelect = 'none';
         element.style.webkitUserSelect = 'none';
         element.style.position = 'relative';
+        element.style.overflow = 'hidden';
     }
 
     /**

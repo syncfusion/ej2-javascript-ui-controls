@@ -150,14 +150,6 @@ export class SelectionCommands {
             }
             isCursor = isTableSelect ? false : range.collapsed;
             let isSubSup: boolean = false;
-            let formattedCount: number = 0;
-            for (let index: number = 0; index < nodes.length; index++) {
-                const existingFormatNode: Node | null = isFormatted.getFormattedNode(nodes[index as number], format, endNode);
-                if (existingFormatNode || nodes[index as number].nodeName === 'BR') {
-                    formattedCount++;
-                }
-            }
-            const shouldApplyRemoval: boolean = formattedCount === nodes.length;
             for (let index: number = 0; index < nodes.length; index++) {
                 let formatNode: Node = isFormatted.getFormattedNode(nodes[index as number], format, endNode);
                 if (formatNode === null) {
@@ -189,7 +181,7 @@ export class SelectionCommands {
                         endNode,
                         domNode);
                 }
-                if (formatNode === null && !shouldApplyRemoval) {
+                if (formatNode === null) {
                     nodes[index as number] = this.insertFormat(
                         docElement,
                         nodes,
@@ -526,11 +518,10 @@ export class SelectionCommands {
                     nodeTraverseCondition = nodeTraverse.parentElement.tagName.toLocaleLowerCase()
                     === (formatNode as HTMLElement).tagName.toLocaleLowerCase();
                 }
-                if (nodeTraverse.parentElement && nodeTraverseCondition &&
-                    (nodeTraverse.parentElement.childElementCount > 1 || range.startOffset > 1)) {
+                if (nodeTraverse.parentElement && nodeTraverseCondition && nodeTraverse.parentElement.childElementCount > 0) {
                     if (textNode.parentElement && textNode.parentElement.tagName.toLocaleLowerCase()
                         === (formatNode as HTMLElement).tagName.toLocaleLowerCase()) {
-                        if ((range.startOffset === range.endOffset) && textNode.nodeType !== 1 &&
+                        if ((range.startContainer === range.endContainer) && textNode.nodeType !== 1 &&
                         !isNOU(textNode.textContent) && textNode.parentElement.childElementCount > 1) {
                             range.setStart(textNode, 0);
                             range.setEnd(textNode, textNode.textContent.length);

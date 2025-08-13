@@ -2,6 +2,16 @@
 
 ## [Unreleased]
 
+## 30.2.5 (2025-08-13)
+
+### RichTextEditor
+
+#### Bug Fixes
+
+- `#I698253` - Now, the Rich Text Editor works properly when removing inline code, and the page no longer becomes unresponsive.
+
+- `#I752891` - Now, the Rich Text Editor works properly when pressing the Home and End keys after inserting a mention.
+
 ## 30.2.4 (2025-08-07)
 
 ### RichTextEditor

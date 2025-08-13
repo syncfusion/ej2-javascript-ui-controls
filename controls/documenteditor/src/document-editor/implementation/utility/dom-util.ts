@@ -40,6 +40,7 @@ export class RulerHelper {
     private isDraggingIndents4: boolean = false;
     private isDraggingForTab: boolean = false;
     private isDraggingVertical: boolean = false;
+    private isHorizontalScroll: boolean = false;
     private currentTabStop: WTabStop = undefined;
     private currrentParagraph: ParagraphWidget;
     private tabIndex: number = 0;
@@ -337,7 +338,16 @@ export class RulerHelper {
         this.documentEditor.showDialog('PageSetup');
     }
     private onHRulerMouseDown(e: MouseEvent): void {
+        const divRect: DOMRect = this.hRuler.getBoundingClientRect() as DOMRect;
+        const leftMargin: number = this.documentEditor.selectionModule.end.paragraph.bodyWidget.sectionFormat.leftMargin
+            * this.documentEditor.zoomFactor;
+        const rightMargin: number = (HelperMethods.convertPixelToPoint(divRect.width) -
+        this.documentEditor.selectionModule.end.paragraph.bodyWidget.sectionFormat.rightMargin * this.documentEditor.zoomFactor);
+        let pixelValue: number = Math.round(e.clientX - divRect.left);
+        let mouseXRelativeToDiv: number = HelperMethods.convertPixelToPoint(pixelValue);
+        this.updateHRulerCursor(leftMargin, rightMargin, mouseXRelativeToDiv, e.clientX);
         if (this.resizerEnabled && !this.documentEditor.isTableMarkerDragging) {
+            this.isHorizontalScroll = true;
             this.isDraggingRender = true;
             if (this.documentEditor.selectionModule.end.paragraph.bodyWidget.sectionFormat.columns.length > 0) {
                 if (this.isLeftMultiColumn) {
@@ -347,7 +357,6 @@ export class RulerHelper {
                         + this.multiColumnElement.getBoundingClientRect().width;
                 }
             }
-            const divRect: DOMRect = this.hRuler.getBoundingClientRect() as DOMRect;
             this.renderInitialValue = HelperMethods.convertPixelToPoint(Math.round(e.clientX - divRect.left));
             this.currentScrollLeft = this.hRuler.scrollLeft;
             const rightIndent: HTMLElement = document.getElementById(this.documentEditor.element.id + '_rightIndent');
@@ -361,7 +370,6 @@ export class RulerHelper {
             lineSvg.style.left = indicatorLineValue + 'px';
             lineSvg.style.display = 'block';
         }
-        const divRect: DOMRect  = this.hRuler.getBoundingClientRect() as DOMRect;
 
         if (divRect.y + (divRect.height / 2) <= e.clientY) {
             this.mouseDownTabValue = e.clientX - this.hRuler.getBoundingClientRect().left;
@@ -456,6 +464,7 @@ export class RulerHelper {
 
     private onRularMouseUp(e: MouseEvent): void {
         if (this.isDraggingRender && !this.documentEditor.isTableMarkerDragging && !this.isDraggingVertical) {
+            this.isHorizontalScroll = false;
             const divRect: DOMRect = this.hRuler.getBoundingClientRect() as DOMRect;
             const mouseXRelativeToDiv: number = this.finalmouseXRelativeToDiv; // HelperMethods.convertPixelToPoint(Math.round(e.clientX - divRect.left));
             // const currentLeftMargin = documentEditor.hRuler.startMargin * documentEditor.zoomFactor;
@@ -580,8 +589,11 @@ export class RulerHelper {
             }
             const currentBottomMargin: number = (HelperMethods.convertPixelToPoint(divRect.height) -
                 (this.documentEditor.selectionModule.end.paragraph.bodyWidget.sectionFormat.bottomMargin * this.documentEditor.zoomFactor));
-            this.resizeVRulerMargins(this.isTopRulerMargin, this.initialYValue, this.currentScrollTop,
-                                     currentBottomMargin, this.vRuler, mouseXRelativeToDiv, this.documentEditor);
+            if (this.isDraggingVertical) {
+                this.resizeVRulerMargins(this.isTopRulerMargin, this.initialYValue, this.currentScrollTop,
+                    currentBottomMargin, this.vRuler, mouseXRelativeToDiv, this.documentEditor);
+            }
+           
 
             const startValue: number = this.documentEditor.documentHelper.currentPage.boundingRectangle.y * this.documentEditor.zoomFactor;
             const indicatorLineValue: number = startValue + pixelValue; // + 15;
@@ -1501,6 +1513,66 @@ export class RulerHelper {
 
         }
     }
+    private updateHRulerCursor(leftMargin: number, rightMargin: number, mouseXRelativeToDiv: number, clientX: number): void {
+        if (!this.isDraggingRender) {
+            if (this.documentEditor.isOnIndent) {
+                this.setDefaultCursor();
+                this.resizerEnabled = false;
+            } else if ((leftMargin - 3 <= mouseXRelativeToDiv) && (leftMargin + 3 >= mouseXRelativeToDiv)) {
+                if (this.documentEditor.layoutType === 'Pages') {
+                    this.setResizeCursor(this.locale.getConstant('Left Margin'));
+                    this.resizerEnabled = true;
+                    this.isLeftRulerMargin = true;
+                }
+            } else if ((rightMargin - 3 <= mouseXRelativeToDiv) && (rightMargin + 3 >= mouseXRelativeToDiv)) {
+                if (this.documentEditor.layoutType === 'Pages') {
+                    this.setResizeCursor(this.locale.getConstant('Right Margin'));
+                    this.resizerEnabled = true;
+                    this.isLeftRulerMargin = false;
+                }
+            } else if (this.documentEditor.selectionModule.end.paragraph.bodyWidget.sectionFormat.columns.length > 0) {
+                const columns: WColumnFormat[] = this.documentEditor.selectionModule.end.paragraph.bodyWidget.sectionFormat.columns;
+                if (this.documentEditor.layoutType === 'Pages') {
+                    for (let i: number = 1; i <= columns.length; i++) {
+                        const rulerMarginDiv: HTMLElement = document.getElementById(this.documentEditor.element.id + '_hRuler_Margin' + i);
+                        const marginLeft: number = rulerMarginDiv.getBoundingClientRect().left;
+                        const width: number = rulerMarginDiv.getBoundingClientRect().width;
+                        if ((marginLeft - 3 <= clientX) && (marginLeft + 3 >= clientX)) {
+                            this.setResizeCursor(this.locale.getConstant('Left Margin'));
+                            this.multiColumnElement = rulerMarginDiv;
+                            this.isLeftMultiColumn = true;
+                            this.resizerEnabled = true;
+                            break;
+                        } else if ((marginLeft + width - 3 <= clientX) && (marginLeft + width + 3 >= clientX)) {
+                            this.setResizeCursor(this.locale.getConstant('Right Margin'));
+                            this.multiColumnElement = rulerMarginDiv;
+                            this.isRightMultiColumn = true;
+                            this.resizerEnabled = true;
+                            break;
+                        } else {
+                            this.setDefaultCursor();
+                            this.isLeftMultiColumn = false;
+                            this.isRightMultiColumn = false;
+                            this.resizerEnabled = false;
+                        }
+                    }
+                }
+            } else {
+                this.setDefaultCursor();
+                this.resizerEnabled = false;
+            }
+        }
+    }
+    private setResizeCursor(title: string): void {
+        this.hRuler.style.cursor = 'e-resize';
+        this.hRuler.setAttribute('title', title);
+    }
+    private setDefaultCursor(): void {
+        this.hRuler.style.cursor = 'default';
+        if (this.hRuler.hasAttribute('title')) {
+            this.hRuler.removeAttribute('title');
+        }
+    }
     public onHorizontalRulerMouseMoved(e: MouseEvent): void {
         if (this.documentEditor.isDestroyed || !this.documentEditor.documentEditorSettings.showRuler) {
             return;
@@ -1512,68 +1584,7 @@ export class RulerHelper {
         this.documentEditor.selectionModule.end.paragraph.bodyWidget.sectionFormat.rightMargin * this.documentEditor.zoomFactor);
         let pixelValue: number = Math.round(e.clientX - divRect.left);
         let mouseXRelativeToDiv: number = HelperMethods.convertPixelToPoint(pixelValue);
-        if (!this.isDraggingRender) {
-            if (this.documentEditor.isOnIndent) {
-                this.hRuler.style.cursor = 'default';
-                if (this.hRuler.hasAttribute('title')) {
-                    this.hRuler.removeAttribute('title');
-                }
-                this.resizerEnabled = false;
-            } else if (((leftMargin - 3) <= mouseXRelativeToDiv) && ((leftMargin + 3) >= mouseXRelativeToDiv)) {
-                if (this.documentEditor.layoutType === 'Pages') {
-                    this.hRuler.style.cursor = 'e-resize';
-                    this.hRuler.setAttribute('title', this.locale.getConstant('Left Margin'));
-                    this.resizerEnabled = true;
-                    this.isLeftRulerMargin = true;
-                }
-            } else if ((((rightMargin - 3) <= mouseXRelativeToDiv) && ((rightMargin + 3) >= mouseXRelativeToDiv))) {
-                if (this.documentEditor.layoutType === 'Pages') {
-                    this.hRuler.style.cursor = 'e-resize';
-                    this.hRuler.setAttribute('title', this.locale.getConstant('Right Margin'));
-                    this.resizerEnabled = true;
-                    this.isLeftRulerMargin = false;
-                }
-            } else if (this.documentEditor.selectionModule.end.paragraph.bodyWidget.sectionFormat.columns.length > 0) {
-                const columns: WColumnFormat[] = this.documentEditor.selectionModule.end.paragraph.bodyWidget.sectionFormat.columns;
-                if (this.documentEditor.layoutType === 'Pages') {
-                    for (let i: number = 1; i <= columns.length; i++) {
-                        const rulerMarginDiv: HTMLElement = document.getElementById(this.documentEditor.element.id + '_hRuler_Margin' + i);
-                        const maginLeft: number = rulerMarginDiv.getBoundingClientRect().left;
-                        const width: number = rulerMarginDiv.getBoundingClientRect().width;
-                        if (((maginLeft - 3) <= e.clientX) && ((maginLeft + 3) >= e.clientX)) {
-                            this.hRuler.style.cursor = 'e-resize';
-                            this.multiColumnElement = rulerMarginDiv;
-                            this.hRuler.setAttribute('title', this.locale.getConstant('Left Margin'));
-                            this.isLeftMultiColumn = true;
-                            this.resizerEnabled = true;
-                            break;
-                        } else if (((maginLeft + width - 3) <= e.clientX) && ((maginLeft + width + 3) >= e.clientX)) {
-                            this.hRuler.style.cursor = 'e-resize';
-                            this.multiColumnElement = rulerMarginDiv;
-                            this.hRuler.setAttribute('title', this.locale.getConstant('Right Margin'));
-                            this.isRightMultiColumn = true;
-                            this.resizerEnabled = true;
-                            break;
-                        } else {
-                            this.hRuler.style.cursor = 'default';
-                            if (this.hRuler.hasAttribute('title')) {
-                                this.hRuler.removeAttribute('title');
-                            }
-                            this.isLeftMultiColumn = false;
-                            this.isRightMultiColumn = false;
-                            this.resizerEnabled = false;
-                        }
-                    }
-                }
-            }
-            else {
-                this.hRuler.style.cursor = 'default';
-                if (this.hRuler.hasAttribute('title')) {
-                    this.hRuler.removeAttribute('title');
-                }
-                this.resizerEnabled = false;
-            }
-        }
+        this.updateHRulerCursor(leftMargin, rightMargin, mouseXRelativeToDiv, e.clientX);
         if (this.isDraggingRender) {
             const rulerZeroPoint: number = HelperMethods.convertPointToPixel(
                 1584 - this.documentEditor.selectionModule.sectionFormat.leftMargin) * this.documentEditor.zoomFactor;
@@ -1615,7 +1626,8 @@ export class RulerHelper {
             const currentRightMargin: number = (HelperMethods.convertPixelToPoint(divRect.width)
                 - (this.documentEditor.selectionModule.end.paragraph.bodyWidget.sectionFormat.rightMargin
                     * this.documentEditor.zoomFactor));
-            if (this.documentEditor.selectionModule.end.paragraph.bodyWidget.sectionFormat.numberOfColumns <= 1) {
+                /* eslint-disable-next-line max-len */
+            if (this.documentEditor.selectionModule.end.paragraph.bodyWidget.sectionFormat.numberOfColumns <= 1 && this.isHorizontalScroll) {
                 /* eslint-disable-next-line max-len */
                 this.resizeRulerMargins(this.isLeftRulerMargin, this.renderInitialValue, this.currentScrollLeft, currentRightMargin, this.hRuler, mouseXRelativeToDiv, true, this.documentEditor);
             }

@@ -195,6 +195,9 @@ export class VirtualScroll {
                     isListUpdated = false;
                 }
                 else if (this.parent.viewPortInfo.startIndex !== 0) {
+                    if (this.parent.dataSource instanceof DataManager) {
+                        this.parent.setCurrentView = false;
+                    }
                     this.parent.updateVirtualReOrderList(true);
                     const oldUlElement: HTMLElement = this.parent.list.querySelector('.e-list-parent' + ':not(.e-reorder)');
                     if (oldUlElement) {

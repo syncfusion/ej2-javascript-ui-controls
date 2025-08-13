@@ -342,8 +342,12 @@ export class MsWordPaste {
         base64Sources: { [key: string]: string | boolean }[],
         imageNames: string[]
     ): void {
+        // 1. http://, https://
+        // 2. www.
+        // 3. blob:
+        // 4. data:image/...;base64,...
         // eslint-disable-next-line
-        const linkRegex: RegExp = new RegExp(/([^\S]|^)(((https?\:\/\/)|(www\.)|(blob\:))(\S+))/gi);
+        const linkRegex: RegExp = new RegExp(/([^\S]|^)(((https?\:\/\/)|(www\.)|(blob\:))|(data:image\/[a-zA-Z]+;base64,[\w+/=]+)(\S+))/gi);
         const imageElements: NodeListOf<HTMLImageElement> = clipboardDataElement.querySelectorAll('img:not(.e-rte-image-unsupported)');
         for (let i: number = 0; i < imageElements.length; i++) {
             const currentImage: HTMLImageElement = imageElements[i as number];

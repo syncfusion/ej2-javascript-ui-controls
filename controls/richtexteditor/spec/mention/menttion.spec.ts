@@ -286,4 +286,42 @@ describe('Mention integration tests', () => {
             }, 200);
         });
     });
+    
+    describe('972844: Cursor gets stuck when pressing Home and End keys after inserting a mention in RichTextEditor.', () => {
+        let editor: RichTextEditor;
+        beforeAll(() => {
+            editor = renderRTE({
+                value: '<p><span contenteditable="false" class="e-mention-chip"><a href="mailto:james@gmail.com" title="james@gmail.com">@Andrew James</a></span>​</p>'
+            });
+            setupMention(editor, false);
+        });
+        afterAll(() => {
+            destroyMention();
+            destroy(editor);
+        });
+        it ('Rich Text Editor works properly when pressing the Home and End keys after inserting a mention.', (done:DoneFn) => {
+            editor.focusIn();
+            const elem: HTMLElement = editor.inputElement.querySelector('p');
+            setCursorPoint(elem, 0);
+            var HOME_EVENT_INIT = {
+                "key": "Home",
+                "keyCode": 36,
+                "which": 36,
+                "code": "Home",
+                "location": 0,
+                "altKey": false,
+                "ctrlKey": false,
+                "metaKey": false,
+                "shiftKey": true,
+                "repeat": false
+            };
+            const homeKeyDownEvent: KeyboardEvent = new KeyboardEvent('keydown', HOME_EVENT_INIT);
+            editor.inputElement.dispatchEvent(homeKeyDownEvent);
+            const homwKeyUpEvent: KeyboardEvent = new KeyboardEvent('keyup', HOME_EVENT_INIT);
+            editor.inputElement.dispatchEvent(homwKeyUpEvent);
+            const range: Range = editor.inputElement.ownerDocument.getSelection().getRangeAt(0);
+            expect((range.startContainer as Element).innerHTML).toBe(`<span contenteditable="false" class="e-mention-chip"><a href="mailto:james@gmail.com" title="james@gmail.com">@Andrew James</a></span>​`);
+            done();
+        });
+    });
 });

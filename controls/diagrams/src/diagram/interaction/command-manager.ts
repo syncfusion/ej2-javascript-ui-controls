@@ -1175,6 +1175,7 @@ export class CommandHandler {
             this.startGroupAction();
             for (const item of selectedItems) {
                 if (this.diagram.nameTable[item.id]) {
+                    this.diagram.itemType = 'Clipboard';
                     this.diagram.remove(item);
                 }
             }
@@ -1577,6 +1578,7 @@ export class CommandHandler {
         const cloneObject: Object = clone(connector);
         this.translateObject(cloneObject as Connector);
         (cloneObject as Node).zIndex = Number.MIN_VALUE;
+        this.diagram.itemType = 'Clipboard';
         const newConnector: Node | Connector = this.diagram.add(cloneObject);
         if (!this.diagram.isServerUpdate) {
             this.selectObjects([newConnector], multiSelect);

@@ -921,7 +921,12 @@ export class AccumulationChart extends Component<HTMLElement> implements INotify
         this.setCulture();
         this.animateSeries = true;
         if (this.element.id === '') {
-            const collection: number = document.getElementsByClassName('e-accumulationchart').length;
+            let collection: number = document.getElementsByClassName('e-accumulationchart').length;
+            let elementid: string = 'acc_chart_' + this.chartid + '_' + collection;
+            while (document.getElementById(elementid)) {
+                collection++;
+                elementid = 'acc_chart_' + this.chartid + '_' + collection;
+            }
             this.element.id = 'acc_chart_' + this.chartid + '_' + collection;
         }
         this.wireEvents();

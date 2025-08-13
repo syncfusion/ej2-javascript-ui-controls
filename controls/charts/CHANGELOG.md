@@ -2,7 +2,21 @@
 
 ## [Unreleased]
 
-## 30.2.4 (2025-08-07)
+## 30.2.5 (2025-08-13)
+
+### Accumulation Chart
+
+#### Bug Fixes
+
+- `#F69009` - The accumulation chart now correctly assigns the ID for rendering.
+
+### Chart
+
+#### Bug Fixes
+
+- `#F69147` - Highlighting functionality is now working correctly for marker-enabled scatter series.
+
+## 30.1.42 (2025-07-29)
 
 ### Accumulation Chart
 

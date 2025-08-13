@@ -1219,12 +1219,14 @@ export class WorkbookFormula {
         const activeIndex: number[] = getRangeIndexes(sheet.activeCell);
         cell = getCell(activeIndex[0], activeIndex[1], sheet, false, true);
         aggregateValues.forEach((aggregateVal: number) => {
-            let calcValue: string = this.toFixed(aggregateVal.toString());
-            if (cell.format) {
+            let calcValue: string = aggregateVal.toString();
+            if (cell.format && cell.format !== 'General') {
                 const eventArgs: NumberFormatArgs = { formattedText: calcValue, value: calcValue, format: cell.format,
                     cell: { value: calcValue, format: cell.format } };
                 this.parent.notify(getFormattedCellObject, eventArgs);
                 calcValue = eventArgs.formattedText;
+            } else {
+                calcValue = this.toFixed(calcValue);
             }
             formatedValues.push(calcValue);
         });

@@ -2,6 +2,15 @@
 
 ## [Unreleased]
 
+## 30.2.5 (2025-08-13)
+
+### HeatMap
+
+#### Bug fixes
+
+- `#F69008` - Now, a unique ID is generated for each heatmap when multiple heatmap are rendered.
+- `#F69017` - Now, the scroll does not appear when the axis label trim tooltip is triggered on the heatmap.
+
 ## 30.2.4 (2025-08-07)
 
 ### HeatMap

@@ -5174,7 +5174,8 @@ export class Diagram extends Component<HTMLElement> implements INotifyPropertyCh
     }
 
     private removeCommand(): void {
-        this.itemType = 'Clipboard';
+        // 968828 : update diagramAction for delete an element by delete key
+        this.itemType = 'KeyboardDelete';
         this.remove();
     }
     /**

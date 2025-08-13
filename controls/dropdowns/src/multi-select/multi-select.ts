@@ -1305,7 +1305,7 @@ export class MultiSelect extends DropDownBase implements IInput {
         }
         const isContainsValue: boolean = valuecheck.some((item: string | number | boolean | object) => item !== null);
         if (valuecheck.length > 0 && this.dataSource instanceof DataManager && !isNullOrUndefined(this.value)
-        && this.listData != null && isContainsValue) {
+        && this.listData != null && (!this.enableVirtualization || (this.enableVirtualization && this.valueTemplate)) && isContainsValue) {
             this.isaddNonPresentItems = true;
             this.addNonPresentItems(valuecheck, this.ulElement, this.listData);
             this.isaddNonPresentItems = false;
@@ -6304,7 +6304,8 @@ export class MultiSelect extends DropDownBase implements IInput {
             }
             const isContainsValue: boolean = valuecheck.some((item: string | number | boolean | object) => item !== null);
             if (prop === 'value' && valuecheck.length > 0 && this.dataSource instanceof DataManager && !isNullOrUndefined(this.value)
-                && this.listData != null && isContainsValue) {
+                && this.listData != null && (!this.enableVirtualization || (this.enableVirtualization && this.valueTemplate))
+                && isContainsValue) {
                 this.mainData = null;
                 this.setDynValue = true;
                 this.isaddNonPresentItems = true;

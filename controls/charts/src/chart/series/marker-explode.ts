@@ -102,7 +102,7 @@ export class MarkerExplode extends ChartData {
             );
             data.lierIndex = this.lierIndex;
             if (
-                data.point && explodeSeries && ((!previous || (previous.point !== data.point)) ||
+                data.point && ((!previous || (previous.point !== data.point)) || explodeSeries ||
                     (previous && previous.lierIndex > 3 && previous.lierIndex !== this.lierIndex))
             ) {
                 (<PointData[]>this.currentPoints).push(data);
@@ -148,7 +148,7 @@ export class MarkerExplode extends ChartData {
         const length: number = this.previousPoints.length;
         if (this.currentPoints.length > 0 || (length > 0 && chart.tooltip.shared)) {
             if (length === 0 || chart.isPointMouseDown || (length > 0 && (this.currentPoints.length === 0 ||
-                (this.previousPoints[0].point !== this.currentPoints[0].point)))) {
+                (this.previousPoints[0].point !== this.currentPoints[0].point))) || explodeSeries) {
                 if (length > 0) {
                     for (const previousPoint of this.previousPoints) {
                         if (!isNullOrUndefined(previousPoint)) {
@@ -400,7 +400,7 @@ export class MarkerExplode extends ChartData {
                 if (elements[0]) { elements[0].remove(); }
             }
             for (let i: number = trackballElements.length - 1; i >= 0; i--) {
-                if (!series.marker.visible || trackballElements[i as number] && trackballElements[i as number].id[trackballElements[i as number].id.length - 1] === '0') {
+                if (!series.marker.visible || trackballElements[i as number] && trackballElements[i as number].id[trackballElements[i as number].id.length - 1] === '0' || series.type === 'Scatter') {
                     remove(trackballElements[i as number]);
                 }
             }

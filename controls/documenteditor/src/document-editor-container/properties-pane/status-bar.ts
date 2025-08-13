@@ -71,7 +71,7 @@ export class StatusBar {
                 this.updatePageNumber();
             }
         }
-        if (e.which > 64) {
+        if (e.shiftKey || (e.which > 64 && !(95 < e.which && e.which < 106))) {
             e.preventDefault();
         }
     }

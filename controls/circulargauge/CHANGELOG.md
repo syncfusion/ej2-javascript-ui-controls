@@ -4,6 +4,14 @@
 
 ## [Unreleased]
 
+## 30.2.5 (2025-08-13)
+
+### Circular Gauge
+
+#### Bug Fixes
+
+- `#I750239` - Now, the scroll does not appear when setting overflow to auto in the Circular Gauge component.
+
 ## 25.1.35 (2024-03-15)
 
 ### Circular Gauge

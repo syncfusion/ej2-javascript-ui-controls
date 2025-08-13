@@ -912,7 +912,9 @@ export class Resize implements IAction {
             }
             let columnWidth: number = 0;
             const minMaxCols: Column[] = this.parent.getColumns().filter((col: Column) => {
-                columnWidth += parseInt(col.width.toString(), 10);
+                if (col.visible) {
+                    columnWidth += parseInt(col.width.toString(), 10);
+                }
                 return col.visible && (col.maxWidth || col.minWidth);
             });
             if (this.parent.resizeSettings.mode === 'Auto' && minMaxCols.length && columnWidth < this.parentElementWidth) {
