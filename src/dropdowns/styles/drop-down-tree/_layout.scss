@@ -1,0 +1,952 @@
+@mixin ddt-rotate($position) {
+  transform: rotate($position);
+  transition: transform 300ms ease;
+}
+
+@mixin position($position, $right){
+  position: $position;
+  right: $right;
+}
+
+@mixin close-style($font-size, $height, $width) {
+  font-size: $font-size;
+  height: $height;
+  width: $width;
+}
+
+@mixin min-style($min-height, $min-width, $font-size, $line-height) {
+  min-height: $min-height;
+  min-width: $min-width;
+  line-height: $line-height;
+  &::before {
+    font-size: $font-size;
+    @if ($ddt-skin-name == 'fluent2') {
+      padding: 3px;
+    }
+  }
+}
+
+@mixin icon-style($bottom, $right) {
+  bottom: $bottom;
+  right: $right;
+}
+
+@mixin chip-last($margin-right, $max-width) {
+  .e-chips-wrapper .e-chips:last-child {
+    margin-right: $margin-right;
+    max-width: $max-width;
+  }
+}
+
+@mixin chip-last-margin($margin-right, $margin-left) {
+  .e-chips-wrapper .e-chips:last-child {
+    margin-right: $margin-right;
+    margin-left: $margin-left;
+  }
+}
+
+@include export-module('dropdowntree-layout') {
+
+  .e-ddt {
+    cursor: pointer;
+    outline: none;
+
+    .e-ddt-icon::before {
+      @include ddt-rotate(0deg);
+    }
+
+    &.e-icon-anim {
+      @if $ddt-skin-name == 'Material3' {
+        .e-ddt-icon {
+          background: $ddt-dd-icon-bg;
+          border-radius: $ddt-dd-icon-radius;
+        }
+      }
+
+      .e-ddt-icon::before {
+        @include ddt-rotate(180deg);
+      }
+    }
+
+    .e-ddt-hidden {
+      border: 0;
+      height: 0;
+      visibility: hidden;
+      width: 0;
+    }
+
+    &.e-input-group.e-control-wrapper,
+    &.e-float-input.e-control-wrapper {
+      .e-clear-icon {
+        box-sizing: content-box;
+        @if $ddt-skin-name != 'tailwind' and $ddt-skin-name != 'bootstrap5' and $ddt-skin-name != 'bootstrap5.3' and $ddt-skin-name != 'FluentUI' and $ddt-skin-name != 'Material3' and $ddt-skin-name != 'tailwind3' {
+          min-height: $ddt-close-icon-min-height;
+        }
+        @if $ddt-skin-name == 'Material3' {
+          margin: $ddt-dd-icon-margin;
+        }
+        @if $ddt-skin-name == 'FluentUI' {
+          min-height: $ddt-dd-icon-width;
+        }
+        @if $ddt-skin-name == 'fluent2' {
+          min-width: $ddt-close-icon-min-height;
+          margin: 5px 3px 5px 6px;
+          align-items: center;
+          &::before {
+            font-size: 14px;
+            padding: 3px;
+          }
+        }
+      }
+
+      .e-input-group-icon.e-ddt-icon {
+        border: 0;
+
+        @if $ddt-skin-name == 'bootstrap4' {
+          font-size: 8px;
+        }
+        @else if $ddt-skin-name == 'bootstrap5' {
+          font-size: 20px;
+        }
+        @else if $ddt-skin-name == 'fluent2' {
+          font-size: 14px;
+          margin: 5px 9px 5px 3px;
+          padding: 0;
+          min-height: 20px;
+          min-width: 20px;
+        }
+
+        @if $ddt-skin-name == 'Material3' {
+          font-size: $ddt-chip-icon-line-height;
+          margin: $ddt-dd-icon-margin;
+          line-height: $ddt-chip-icon-line-height;
+        }
+      }
+
+      .e-icon-hide {
+        display: none;
+      }
+
+      &.e-show-chip,
+      &.e-show-text  {
+        .e-clear-icon {
+          @if $ddt-skin-name == 'tailwind3' {
+            bottom: 0;
+          }
+          @else {
+            bottom: $ddt-close-icon-bottom;
+          }
+          @include position(absolute, 0);
+          @if $ddt-skin-name == 'Material3' {
+            margin: 0;
+          }
+        }
+
+        &.e-show-dd-icon .e-clear-icon {
+          @if $ddt-skin-name == 'tailwind' {
+            right: 28px;
+          }
+          @else {
+            right: $ddt-dd-icon-width;
+          }
+          @if $ddt-skin-name == 'FluentUI' or $ddt-skin-name == 'fluent2' {
+            bottom: 0;
+          }
+        }
+
+        .e-ddt-icon {
+          @if $ddt-skin-name != 'FluentUI' {
+            bottom: $ddt-dd-icon-bottom;
+          }
+          @include position(absolute, 0);
+        }
+
+        &.e-input-focus input.e-dropdowntree.e-chip-input,
+        input.e-dropdowntree.e-chip-input {
+          padding-left: 0;
+          padding-right: 0;
+        }
+      }
+
+      &.e-valid-input:hover:not(.e-disabled) .e-clear-icon {
+        display: flex;
+      }
+    }
+
+    .e-chips-wrapper {
+      width: 100%;
+      @if ($ddt-skin-name =='tailwind3') {
+        margin: 2px 0 2px 6px;
+      }
+    }
+
+    &.e-show-chip {
+
+      .e-chips-close {
+        @if $ddt-skin-name != 'bootstrap5' and $ddt-skin-name != 'Material3' and $ddt-skin-name != 'bootstrap5.3' {
+          @include min-style($ddt-chip-close-height, $ddt-chip-close-width, $ddt-chip-close-font, $ddt-chip-icon-line-height);
+        }
+        @else {
+          @include min-style($ddt-chip-close-height, $ddt-chip-close-width, $ddt-chip-close-font, null);
+        }
+        text-align: center;
+
+        &::before {
+          @if $ddt-skin-name != 'bootstrap5' and $ddt-skin-name != 'material' and $ddt-skin-name != 'material-dark' and $ddt-skin-name != 'Material3' and $ddt-skin-name != 'bootstrap5.3' and $ddt-skin-name != 'bootstrap5.3-dark' {
+            vertical-align: middle;
+          }
+        }
+      }
+
+      .e-chips {
+        align-items: center;
+        @if $theme-name =='fluent2-highcontrast' {
+          border-radius: 4px;
+        }
+        @else {
+          border-radius: $ddt-chip-radius;
+        }
+        box-sizing: border-box;
+        display: inline-flex;
+        float: left;
+        height: $ddt-chip-height;
+        margin: $ddt-chip-margin;
+        max-width: $ddt-chip-width;
+        overflow: hidden;
+        padding: $ddt-chip-padding;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+
+        @if ($ddt-skin-name == 'tailwind3') {
+          border: 1px solid $border-light;
+        }
+
+        & > .e-chipcontent {
+          max-width: 100%;
+          overflow: hidden;
+          padding: $ddt-chip-content-padding;
+          text-indent: 0;
+          text-overflow: ellipsis;
+          white-space: nowrap;
+
+          @if $ddt-skin-name == 'fabric' or $ddt-skin-name == 'fabric-dark' or $ddt-skin-name == 'highcontrast' or $ddt-skin-name == 'highcontrast-light' {
+            line-height: $ddt-chip-text-line-height;
+          }
+          @if ($ddt-skin-name == 'tailwind3') {
+            font-size: 12px;
+            line-height: 16px;
+            font-weight: 500;
+          }
+        }
+      }
+
+      .e-ddt-icon {
+        @if $ddt-skin-name == 'FluentUI' {
+          bottom: 0;
+        }
+      }
+    }
+
+    @if $ddt-skin-name == 'material' or $ddt-skin-name == 'material-dark' {
+      &.e-outline {
+        .e-overflow {
+          &.e-show-text {
+            padding: 10px 12px 9px;
+          }
+
+          &.e-total-count {
+            padding: $ddt-outline-padding;
+          }
+        }
+
+        &.e-input-group.e-control-wrapper,
+        &.e-float-input.e-control-wrapper {
+          &.e-show-dd-icon .e-clear-icon {
+            right: 30px;
+          }
+
+          &:not(.e-show-chip) {
+            &.e-show-dd-icon.e-input-focus .e-clear-icon  {
+              min-height: 20px;
+            }
+          }
+        }
+
+        &.e-show-chip {
+          .e-overflow,
+          .e-chips-wrapper {
+            padding: $ddt-outline-chip-padding;
+          }
+        }
+      }
+
+      &.e-filled {
+        &.e-float-input.e-control-wrapper {
+          .e-overflow {
+            &.e-show-text {
+              line-height: 21px;
+              padding: 14px 2px 5px 0;
+            }
+
+            .e-remain {
+              &.e-wrap-count {
+                padding-top: 10px;
+              }
+            }
+          }
+
+          &:not(.e-show-chip) {
+            .e-ddt-icon,
+            &.e-show-dd-icon .e-clear-icon {
+              padding-top: 8px;
+            }
+          }
+
+          &.e-show-chip,
+          &.e-show-text {
+            .e-ddt-icon {
+              @include icon-style(6px, 10px);
+            }
+  
+            .e-clear-icon {
+              @include icon-style(5px, 38px);
+            }
+  
+            &:not(.e-show-dd-icon) .e-clear-icon {
+              @include icon-style(9px, 10px);
+            }
+          }
+
+          &.e-show-chip {
+            .e-chips-wrapper,
+            .e-overflow {
+              padding-top: 8px;
+  
+              .e-chips {
+                height: 18px;
+
+                > .e-chipcontent {
+                  font-size: 12px;
+                  padding: 0 4px 0 0;
+                }
+              }
+
+              .e-chips-close::before  {
+                @include close-style(12px, 12px, 12px);
+              }
+            }
+          }
+        }
+
+        .e-chips-wrapper,
+        .e-overflow {
+          .e-chips {
+            margin-top: 8px;
+            padding: 0 8px;
+          }
+        }
+
+        &.e-input-group.e-control-wrapper:not(.e-float-input) {
+          .e-overflow {
+            &.e-show-text {
+              line-height: 39px;
+              padding: 0;
+            }
+
+            .e-remain {
+              &.e-wrap-count {
+                line-height: 39px;
+                padding-top: 0;
+              }
+            }
+          }
+
+          &.e-show-chip {
+            .e-chips-wrapper,
+            .e-overflow {
+              .e-chips {
+                height: 28px;
+                margin-top: 8px;
+                padding: 0 8px;
+
+                > .e-chipcontent {
+                  font-size: 13px;
+                  padding: 0 8px 0 0;
+                }
+              }
+
+              .e-chips-close::before  {
+                @include close-style(14px, 12px, 12px);
+              }
+            }
+          }
+
+          &.e-show-dd-icon.e-show-text,
+          &.e-show-dd-icon.e-show-chip {
+            .e-ddt-icon {
+              @include icon-style(10px, 10px);
+            }
+          }
+
+          .e-clear-icon {
+            @include icon-style(9px, 38px);
+          }
+
+          &:not(.e-show-dd-icon) .e-clear-icon {
+            @include icon-style(9px, 10px);
+          }
+        }
+      }
+    }
+
+    .e-overflow {
+      white-space: nowrap;
+
+      &.e-show-text {
+        padding: $ddt-delim-padding;
+        @if $ddt-skin-name == 'tailwind' {
+          line-height: 22px;
+
+          .e-remain {
+            padding-left: 8px;
+          }
+        }
+        @if $ddt-skin-name == 'bootstrap5' or  $ddt-skin-name == 'FluentUI' {
+          line-height: 30px;
+        }
+
+        &.e-input-value:not(.e-icon-hide) {
+          display: inline-grid;
+        }
+      }
+
+      &.e-total-count {
+        box-sizing: border-box;
+        display: inline-block;
+        overflow: hidden;
+        text-overflow: ellipsis;
+
+        .e-remain {
+          @if $ddt-skin-name == 'bootstrap5' or $ddt-skin-name == 'FluentUI' {
+            line-height: 30px;
+          }
+          @else {
+            padding: $ddt-rtl-remains-padding;
+          }
+        }
+      }
+
+      &.e-wrap-count {
+        @if $ddt-skin-name != 'bootstrap5' and $ddt-skin-name != 'bootstrap5.3' and $ddt-skin-name != 'bootstrap5.3-dark' and $ddt-skin-name != 'tailwind3' {
+          padding-top: $ddt-remains-count-padding-top;
+        }
+      }
+
+      .e-remain {
+        cursor: pointer;
+        display: inline-block;
+        font-size: $ddt-chip-font-size;
+        padding: $ddt-remains-padding;
+        @if $ddt-skin-name == 'fluent2' {
+          line-height: $ddt-remains-line-height;
+        }
+
+        &.e-wrap-count {
+          @if $ddt-skin-name == 'bootstrap5' or $ddt-skin-name == 'bootstrap5.3' or $ddt-skin-name == 'tailwind3' {
+            padding: $ddt-overflow-count-padding;
+          }
+          @else if $ddt-skin-name == 'FluentUI' {
+            line-height: 30px;
+          }
+          @else {
+            padding-top: $ddt-overflow-count-padding-top;
+          }
+        }
+      }
+    }
+
+    &.e-show-chip {
+      .e-overflow {
+        &.e-total-count {
+          .e-remain {
+            padding: $ddt-delim-padding;
+          }
+        }
+        @if $ddt-skin-name == 'FluentUI' {
+          .e-remain.e-wrap-count {
+            padding-left: 4px;
+          }
+        }
+      }
+    }
+
+    &.e-show-dd-icon {
+      @include chip-last($ddt-dd-icon-width, $ddt-chip-ddi-width);
+    }
+
+    &.e-show-clear {
+      @include chip-last($ddt-close-icon-width, $ddt-chip-ci-width);
+    }
+
+    &.e-show-clear.e-show-dd-icon {
+      @include chip-last($ddt-last-chip-right-margin, $ddt-chip-ddi-ci-width);
+    }
+
+    input[readonly],
+    .e-dropdowntree,
+    input[readonly].e-input {
+      pointer-events: none;
+
+      &.e-chip-input {
+        width: 0;
+        visibility: hidden;
+      }
+    }
+
+    &.e-popup {
+      @if $skin-name != 'material' and $skin-name != 'FluentUI' and $skin-name != 'Material3' {
+        border: 1px solid $ddt-popup-border-color;
+      }
+      @if $ddt-skin-name == 'tailwind' or $ddt-skin-name == 'bootstrap5' or $ddt-skin-name == 'tailwind3' {
+        margin-top: 4px;
+      }
+      @else if $skin-name == 'Material3' {
+        margin-top: 2px;
+      }
+      @else if $skin-name == 'fluent2' {
+        margin-top: 1px;
+      }
+      @if $skin-name == 'bootstrap4' or $skin-name == 'Material3' or $ddt-skin-name == 'tailwind' or $ddt-skin-name == 'bootstrap5' or $skin-name == 'FluentUI' or $skin-name == 'fluent2' or $ddt-skin-name == 'tailwind3' {
+        border-radius: $ddt-popup-radius;
+      }
+      box-shadow: $ddt-box-shadow;
+      position: absolute;
+      
+      .e-active .e-checkbox-wrapper {
+        .e-frame:not(.e-check):not(.e-stop) {
+          @if $ddt-skin-name == 'bootstrap5' {
+            background-color: $ddt-readonly-input-bg-color;
+          }
+        }
+      }
+
+      .e-checkbox-wrapper {
+        .e-frame:not(.e-check):not(.e-stop) {
+          @if $ddt-skin-name == 'bootstrap5' {
+            background-color: transparent;
+          }
+        }
+      }
+
+      .e-selectall-parent {
+        border-bottom: 1px solid;
+        cursor: pointer;
+        display: block;
+        @if $ddt-skin-name != 'tailwind' and $ddt-skin-name != 'FluentUI' {
+          line-height: $ddt-select-all-height;
+        }
+        overflow: hidden;
+        position: relative;
+        text-indent: $ddt-select-all-text-indent;
+        white-space: nowrap;
+        width: 100%;
+        @if $ddt-skin-name == 'tailwind' or $ddt-skin-name == 'bootstrap5' or $ddt-skin-name == 'FluentUI' or $ddt-skin-name == 'fluent2' or $ddt-skin-name == 'Material3' {
+          padding: $ddt-select-all-padding;
+        }
+
+        &.e-hide-selectall {
+          display: none;
+        }
+
+        .e-checkbox-wrapper {
+          position: relative;
+          text-indent: 0;
+          bottom: $ddt-select-all-checkbox-bottom;
+
+          .e-frame {
+            @if $ddt-skin-name == 'tailwind' or $ddt-skin-name == 'bootstrap5' or $ddt-skin-name == 'FluentUI' {
+              margin-top: -3px;
+            }
+          }
+        }
+
+        .e-all-text {
+          font-family: inherit;
+          font-size: $ddt-select-all-font-size;
+          margin: $ddt-select-all-checkbox-margin;
+          @if $ddt-skin-name == 'tailwind' {
+            line-height: $ddt-select-all-height;
+          }
+        }
+      }
+
+      .e-filter-wrap {
+        border-top-width: $ddt-filter-top-border;
+        display: block;
+        padding: $ddt-filter-padding;
+        @if $ddt-skin-name == 'tailwind' or $ddt-skin-name == 'FluentUI' {
+          border-bottom: $ddt-filter-border;
+        }
+        @else {
+          border: $ddt-filter-border;
+        }
+
+        @if $ddt-skin-name == 'fabric' or $ddt-skin-name == 'fabric-dark' or $ddt-skin-name == 'highcontrast' or $ddt-skin-name == 'highcontrast-light' {
+          border-left-width: 0;
+          border-right-width: 0;
+        }
+        @if $ddt-skin-name == 'bootstrap-dark' or $ddt-skin-name == 'bootstrap' {
+          border-bottom: $ddt-filter-border-bottom-color;
+        }
+        @if $ddt-skin-name == 'bootstrap4' {
+          background: $ddt-filter-bg;
+        }
+
+        .e-input,
+        .e-input:focus {
+          @if $ddt-skin-name != 'tailwind' and $ddt-skin-name != 'bootstrap5' and $ddt-skin-name != 'bootstrap5.3' and $ddt-skin-name != 'tailwind3' {
+            padding: $ddt-list-filter-text-indent;
+          }
+        }
+
+        .e-input-group {
+          margin-bottom: 0;
+  
+          @if $ddt-skin-name == 'tailwind' {
+            border: 1px solid $border;
+            border-radius: 4px;
+          }
+  
+          @if $ddt-skin-name == 'bootstrap4' {
+            background: $ddt-filter-bg;
+          }
+  
+          .e-clear-icon {
+            @if $ddt-skin-name == 'material' or $ddt-skin-name == 'material-dark' {
+              margin: 6px 6px 5px;
+              min-height: 12px;
+              min-width: 12px;
+              padding: 6px;
+            }
+          }
+
+          &:not(.e-disabled):not(.e-float-icon-left)::before,
+          &:not(.e-disabled):not(.e-float-icon-left)::after,
+          &.e-control-wrapper:not(.e-disabled):not(.e-float-icon-left)::before,
+          &.e-control-wrapper:not(.e-disabled):not(.e-float-icon-left)::after {
+            @if $ddt-skin-name == 'material' {
+              bottom: -1px;
+              height: 1px;
+            }
+          }
+        }
+      }
+
+      .e-popup-content {
+        overflow: auto;
+        position: relative;
+
+        .e-ddt-nodata {
+          display: none;
+        }
+
+        &.e-no-data {
+          cursor: default;
+          font-family: inherit;
+          font-size: 14px;
+          text-align: center;
+          @if $ddt-skin-name == 'tailwind' {
+            padding: 8px 16px;
+          }
+          @else if $ddt-skin-name == 'bootstrap5' {
+            padding: 7px 16px;
+          }
+          @else {
+            padding: 14px 16px;
+          }
+
+          .e-treeview {
+            display: none;
+          }
+
+          .e-ddt-nodata {
+            display: block;
+            @if $ddt-skin-name == 'tailwind' or $ddt-skin-name == 'bootstrap5'or $ddt-skin-name == 'FluentUI'  {
+              line-height: 22px;
+            }
+          }
+        }
+      }
+
+      .e-treeview {
+        display: inline-table;
+        width: 100%;
+        @if $ddt-skin-name == 'tailwind3' {
+          border: none;
+        }
+
+        .e-list-item {
+          @if $ddt-skin-name != 'fluent2' {
+            padding: 0;
+
+            .e-ul {
+              margin: 0;
+              padding: 0 0 0 14px;
+            }
+          }
+        }
+
+        .e-fullrow {
+          @if $ddt-skin-name == 'highcontrast' or $ddt-skin-name == 'highcontrast-light' {
+            border-width: 2px;
+          }
+          @if $ddt-skin-name != 'tailwind' and $ddt-skin-name != 'bootstrap5' and $ddt-skin-name != 'bootstrap5.3' and $ddt-skin-name != 'Material3' and $ddt-skin-name != 'fluent2' and $ddt-skin-name != 'tailwind3' {
+            height: $ddt-treeview-fullrow-height;
+          }
+        }
+
+        & > .e-ul {
+          overflow: hidden;
+          @if $ddt-skin-name != 'FluentUI' and $ddt-skin-name != 'Material3' and $ddt-skin-name != 'fluent2' {
+            padding: $ddt-treeview-padding;
+          }
+        }
+
+        &.e-fullrow-wrap .e-text-content {
+          @if $ddt-skin-name != 'tailwind' and $ddt-skin-name != 'bootstrap5' and $ddt-skin-name != 'bootstrap5.3' and $ddt-skin-name != 'FluentUI' and $ddt-skin-name != 'Material3' and $ddt-skin-name != 'fluent2' and $ddt-skin-name != 'tailwind3' {
+            padding-bottom: $ddt-treeview-content-padding-top;
+            padding-top: $ddt-treeview-content-padding-bottom;
+          }
+        }
+      }
+
+      .e-ddt-footer,
+      .e-ddt-header {
+        cursor: default;
+      }
+    }
+
+    &.e-rtl {
+      &.e-show-chip {
+        .e-chips {
+          float: right;
+          @if $ddt-skin-name == 'tailwind' or $ddt-skin-name == 'bootstrap5' {
+            & > .e-chipcontent {
+              padding: $ddt-rtl-chip-content-padding;
+            }
+          }
+        }
+      }
+
+      &.e-show-chip,
+      &.e-show-text {
+        .e-overflow {
+          .e-remain {
+            padding: $ddt-rtl-remains-padding;
+
+            &.e-wrap-count {
+              @if $ddt-skin-name == 'bootstrap5' {
+                padding-top: 5px;
+              }
+              @else {
+                padding-top: $ddt-remains-count-padding-top;
+              }
+            }
+          }
+
+          &.e-wrap-count {
+            @include position(absolute, auto);
+          }
+        }
+      }
+
+      &.e-show-text {
+        .e-overflow {
+          &.e-total-count {
+            .e-remain {
+              padding: $ddt-remains-padding;
+            }
+          }
+        }
+      }
+
+      &.e-show-text {
+        .e-overflow {
+          &.e-wrap-count {
+            .e-remain {
+              @if $ddt-skin-name == 'tailwind' {
+                padding-right: 8px;
+              }
+            }
+          }
+        }
+      }
+
+      &.e-show-chip {
+        .e-overflow {
+          &.e-total-count {
+            .e-remain {
+              padding: $ddt-delim-padding;
+            }
+          }
+        }
+      }
+
+      @if $ddt-skin-name == 'material' or $ddt-skin-name == 'material-dark' {
+        &.e-outline {
+          &.e-input-group.e-control-wrapper,
+          &.e-float-input.e-control-wrapper {
+            &.e-show-dd-icon .e-clear-icon,
+            &.e-show-dd-icon.e-show-text .e-clear-icon,
+            &.e-show-dd-icon.e-show-chip .e-clear-icon {
+              left: 30px;
+            }
+          }
+        }
+
+        &.e-filled {
+          &.e-float-input.e-control-wrapper {
+            .e-overflow {
+              &.e-show-text {
+                padding: 14px 0 5px 2px;
+              }
+            }
+          }
+
+          &.e-float-input.e-control-wrapper.e-show-chip,
+          &.e-float-input.e-control-wrapper.e-show-text {
+            .e-ddt-icon {
+              left: 10px;
+              right: auto;
+            }
+
+            &.e-show-dd-icon .e-clear-icon {
+              left: 38px;
+              right: auto;
+            }
+
+            &:not(.e-show-dd-icon) .e-clear-icon {
+              left: 10px;
+              right: auto;
+            }
+          }
+
+          &.e-float-input.e-control-wrapper.e-show-chip {
+            .e-chips-wrapper,
+            .e-overflow {
+              .e-chips > .e-chipcontent {
+                padding: 0 0 0 4px;
+              }
+            }
+          }
+
+          &.e-input-group.e-control-wrapper:not(.e-float-input) {
+            &.e-show-chip {
+              .e-chips-wrapper,
+              .e-overflow {
+                .e-chips > .e-chipcontent {
+                  padding: 0 0 0 8px;
+                }
+              }
+            }
+
+            &.e-show-dd-icon.e-show-text,
+            &.e-show-dd-icon.e-show-chip {
+              .e-ddt-icon {
+                left: 10px;
+                right: auto;
+              }
+            }
+
+            &.e-show-dd-icon .e-clear-icon {
+              left: 38px;
+              right: auto;
+            }
+
+            &:not(.e-show-dd-icon) .e-clear-icon {
+              left: 10px;
+              right: auto;
+            }
+          }
+        }
+      }
+
+      &.e-show-dd-icon {
+        @if $ddt-skin-name == 'tailwind' or $ddt-skin-name == 'bootstrap5' or $ddt-skin-name == 'FluentUI' {
+          @include chip-last-margin(4px, 18px);
+        }
+        @else {
+          @include chip-last-margin(1px, $ddt-dd-icon-width);
+        }
+      }
+
+      &.e-show-clear {
+        @if $ddt-skin-name == 'tailwind' or $ddt-skin-name == 'bootstrap5' or $ddt-skin-name == 'FluentUI' {
+          @include chip-last-margin(4px, 18px);
+        }
+        @else {
+          @include chip-last-margin(1px, $ddt-close-icon-width);
+        }
+      }
+
+      &.e-show-clear.e-show-dd-icon {
+        @if $ddt-skin-name == 'tailwind' or $ddt-skin-name == 'bootstrap5' or $ddt-skin-name == 'FluentUI' {
+          @include chip-last-margin(4px, $ddt-last-chip-right-margin);
+        }
+        @else {
+          @include chip-last-margin(1px, $ddt-last-chip-right-margin);
+        }
+      }
+
+      &.e-input-group.e-control-wrapper,
+      &.e-float-input.e-control-wrapper {
+
+        &.e-show-chip,
+        &.e-show-text  {
+
+          .e-clear-icon,
+          .e-ddt-icon {
+            left: 0;
+            right: auto;
+          }
+
+          &.e-show-dd-icon .e-clear-icon {
+            @if $ddt-skin-name == 'tailwind' {
+              left: 28px;
+            }
+            @else {
+              left: $ddt-dd-icon-width;
+            }
+          }
+        }
+      }
+
+      &.e-popup {
+        .e-treeview .e-list-item .e-ul {
+          padding: 0 14px 0 0;
+        }
+
+        .e-selectall-parent {
+          text-indent: $ddt-rtl-select-all-text-indent;
+          .e-all-text {
+            margin: $ddt-rtl-select-all-checkbox-margin;
+          }
+        }
+      }
+    }
+    
+    &.e-float-input {
+      @if $ddt-skin-name !='Material3' and $ddt-skin-name !='material' and $ddt-skin-name !='material-dark' and $ddt-skin-name !='fluent2' {
+        &.e-control-wrapper.e-input-group {
+          .e-float-text.e-label-top {
+            top: 15px;
+          }
+        }
+      }
+    }
+  }
+
+  .e-ddt-icon-hide {
+    display: none;
+  }
+}
