@@ -1,0 +1,71 @@
+{
+	"name": "@syncfusion/ej2-schedule",
+	"version": "30.2.4",
+	"author": "Syncfusion Inc.",
+	"license": "SEE LICENSE IN license",
+	"main": "./dist/ej2-schedule.umd.min.js",
+	"module": "./index.js",
+	"es2015": "./dist/es6/ej2-schedule.es5.js",
+	"dependencies": {
+		"@syncfusion/ej2-base": "*",
+		"@syncfusion/ej2-buttons": "*",
+		"@syncfusion/ej2-calendars": "*",
+		"@syncfusion/ej2-data": "*",
+		"@syncfusion/ej2-dropdowns": "*",
+		"@syncfusion/ej2-excel-export": "*",
+		"@syncfusion/ej2-inputs": "*",
+		"@syncfusion/ej2-lists": "*",
+		"@syncfusion/ej2-navigations": "*",
+		"@syncfusion/ej2-popups": "*",
+		"@types/requirejs": "^2.1.37",
+		"markdown-spellcheck": "^1.3.1"
+	},
+	"devDependencies": {
+		"@syncfusion/ej2-staging": "^1.0.1",
+		"@types/chai": "^3.4.28",
+		"@types/es6-promise": "0.0.28",
+		"@types/jasmine": "2.8.9",
+		"@types/jasmine-ajax": "^3.1.27",
+		"es6-promise": "^3.2.1",
+		"gulp": "^3.9.1",
+		"gulp-sass": "^3.1.0",
+		"gulp-typescript": "^3.1.6",
+		"requirejs": "^2.3.3",
+		"typescript": "2.3.4",
+		"canteen": "^1.0.5",
+		"jasmine-ajax": "^3.3.1",
+		"jasmine-core": "^2.6.1",
+		"karma": "6.4.2",
+		"karma-chrome-launcher": "^2.2.0",
+		"karma-generic-preprocessor": "^1.1.0",
+		"karma-htmlfile-reporter": "^0.3.5",
+		"karma-jasmine": "^1.1.0",
+		"karma-jasmine-ajax": "^0.1.13",
+		"karma-requirejs": "^1.1.0",
+		"nedb": "^1.8.0",
+		"simple-odata-server": "^0.3.1"
+	},
+	"description": "Flexible scheduling library with more built-in features and enhanced customization options similar to outlook and google calendar, allowing the users to plan and manage their appointments with efficient data-binding support.",
+	"keywords": [
+		"ej2",
+		"syncfusion",
+		"JavaScript",
+		"TypeScript",
+		"schedule",
+		"scheduler",
+		"events-calendar",
+		"events-scheduler",
+		"appointment-calendar",
+		"appointments-planner",
+		"resources-scheduler"
+	],
+	"repository": {
+		"type": "git",
+		"url": "https://github.com/syncfusion/ej2-javascript-ui-controls.git"
+	},
+	"scripts": {
+		"build": "gulp build",
+		"test": "gulp test"
+	},
+	"typings": "index.d.ts"
+}
