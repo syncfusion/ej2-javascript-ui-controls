@@ -32,7 +32,7 @@ export class CellMergeRender<T> {
         let visible: number = 0;
         let spannedCell: Cell<Column>;
         if (row.index > 0) {
-            const rowsObject: Row<Column>[] = this.parent.getRowsObject();
+            const rowsObject: Row<Column>[] = this.parent.getRowsObject().filter((row: Row<Column>) => row.isDataRow);
             const cells: Cell<Column>[] = this.parent.groupSettings.columns.length > 0 &&
                 !rowsObject[row.index - 1].isDataRow ? rowsObject[row.index].cells : rowsObject[row.index - 1].cells;
             const targetCell: Cell<T> = row.cells[parseInt(i.toString(), 10)];

@@ -485,8 +485,8 @@ export class ContextMenu implements IAction {
                             this.parent.editModule.getBatchChanges()[literals.addedRecords].length ||
                             this.parent.editModule.getBatchChanges()[literals.deletedRecords].length) && (key === 'Save' || key === 'Cancel')) {
                         continue;
-                    } else if (isNullOrUndefined(args.parentItem) && args.event
-                        && !this.ensureTarget(args.event.target as HTMLElement, dItem.target)) {
+                    } else if (isNullOrUndefined(args.parentItem) && args.event &&
+                        !isNullOrUndefined(dItem) && !this.ensureTarget(args.event.target as HTMLElement, dItem.target)) {
                         this.hiddenItems.push(item.text);
                     }
                 } else if ((item as ContextMenuItemModel).target && args.event &&
@@ -866,7 +866,7 @@ export class ContextMenu implements IAction {
     private getColumn(e: Event): Column {
         const cell: HTMLElement = <HTMLElement>closest(<HTMLElement>e.target, 'th.e-headercell');
         if (cell) {
-            const uid: string = cell.querySelector('.e-headercelldiv, .e-stackedheadercelldiv').getAttribute('e-mappinguid');
+            const uid: string = cell.querySelector('.e-headercelldiv, .e-stackedheadercelldiv').getAttribute('data-mappinguid');
             return this.parent.getColumnByUid(uid);
         } else {
             const ele: Column = (this.parent.getRowInfo(e.target as Element).column) as Column;

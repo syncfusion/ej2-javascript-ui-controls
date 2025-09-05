@@ -698,8 +698,21 @@ export interface DataSourceSettingsModel {
     providerType?: ProviderType;
 
     /**
-     * Allows to set the URL as string type, which helps to identify the service endpoint where the data are processed and retrieved to render the pivot table and field list.
-     * > It is applicable only for OLAP data source.
+     * Service endpoint URL used by the data source to process requests and retrieve data
+     * for rendering the Pivot Table and Field List.
+     *
+     * @remarks
+     * Applies to both the server-side pivot engine and OLAP data sources.
+     * Provide a fully qualified HTTP or HTTPS URL.
+     *
+     * @example
+     * ```ts
+     * const options = {
+     *   dataSourceSettings: {
+     *     url: 'https://services.syncfusion.com/js/production/api/pivot/post'
+     *   }
+     * };
+     * ```
      */
     url?: string;
 

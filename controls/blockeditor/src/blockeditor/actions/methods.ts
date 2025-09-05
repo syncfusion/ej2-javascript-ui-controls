@@ -1,8 +1,9 @@
 import { Browser, detach, print as printWindow } from '@syncfusion/ej2-base';
-import { BlockEditor, BuiltInToolbar } from '../base/index';
-import { BlockModel, StyleModel, ToolbarItem, ToolbarItemModel } from '../models/index';
-import { deepClone, getBlockContentElement, getBlockIndexById, getBlockModelById, getSelectionRange, isListTypeBlock, sanitizeBlock, setCursorPosition, setSelectionRange } from '../utils/index';
+import { BlockEditor, BlockType, BuiltInToolbar } from '../base/index';
+import { BlockModel, ChecklistProps, StyleModel, ToolbarItemModel } from '../models/index';
+import { getBlockContentElement, getBlockModelById, getSelectedRange, isListTypeBlock, sanitizeBlock, setCursorPosition, setSelectionRange } from '../utils/index';
 import { getBlockDataAsHTML } from '../utils/html-parser';
+import * as constants from '../base/constant';
 
 export class BlockEditorMethods {
     protected editor: BlockEditor;
@@ -11,25 +12,27 @@ export class BlockEditorMethods {
         this.editor = editor;
     }
 
-    public addBlock(block: BlockModel, targetId?: string, isAfter?: boolean): HTMLElement {
-        return this.editor.blockAction.addNewBlock({
-            block: block,
+    public addBlock(block: BlockModel, targetId?: string, isAfter?: boolean, preventUIUpdate?: boolean): HTMLElement {
+        const populatedBlock: BlockModel[] = this.editor.stateManager.populateBlockProperties([block]);
+        return this.editor.blockCommandManager.addNewBlock({
+            block: populatedBlock[0],
             targetBlock: this.editor.blockWrapper.querySelector(`#${targetId}`),
-            isAfter: isAfter
+            isAfter: isAfter,
+            preventUIUpdate: preventUIUpdate
         });
     }
 
     public removeBlock(blockId: string): void {
         const blockElement: HTMLElement = this.editor.blockWrapper.querySelector(`#${blockId}`);
-        this.editor.blockAction.deleteBlock({ blockElement: blockElement, isMethod: true, isUndoRedoAction: false });
+        this.editor.blockCommandManager.deleteBlock({ blockElement: blockElement, isMethod: true, isUndoRedoAction: false });
     }
 
     public getBlock(blockId: string): BlockModel | null {
-        return getBlockModelById(blockId, this.editor.blocksInternal);
+        return getBlockModelById(blockId, this.editor.getEditorBlocks());
     }
 
     public moveBlock(fromBlockId: string, toBlockId: string): void {
-        this.editor.blockAction.moveBlock({
+        this.editor.blockCommandManager.moveBlock({
             fromBlockIds: [fromBlockId],
             toBlockId: toBlockId,
             isInteracted: false
@@ -37,51 +40,48 @@ export class BlockEditorMethods {
     }
 
     public updateBlock(blockId: string, properties: Partial<BlockModel>): boolean {
+        if (!blockId || !properties) { return false; }
         const block: BlockModel = this.getBlock(blockId);
-        if (block) {
-            const indexToUpdate: number = getBlockIndexById(blockId, this.editor.blocksInternal);
-            const oldBlockElement: HTMLElement = this.editor.blockWrapper.querySelector(`#${blockId}`);
-            // Update only the received properties and leave the rest as is.
-            const clonedBlock: BlockModel = deepClone(sanitizeBlock(block));
-            const newBlock: BlockModel = { ...clonedBlock, ...properties };
-            const parentBlock: BlockModel = getBlockModelById(newBlock.parentId, this.editor.blocksInternal);
-            /* eslint-disable @typescript-eslint/no-explicit-any */
-            const prevOnChange: boolean = (this.editor as any).isProtectedOnChange;
-            (this.editor as any).isProtectedOnChange = true;
-            if (parentBlock) {
-                const parentIndex: number = getBlockIndexById(parentBlock.id, this.editor.blocksInternal);
-                parentBlock.children.splice(indexToUpdate, 1, newBlock);
-                // eslint-disable-next-line @typescript-eslint/no-explicit-any
-                (this.editor.blocks[parseInt(parentIndex.toString(), 10)] as any).setProperties({ children: parentBlock.children }, true);
-            }
-            else {
-                this.editor.blocksInternal.splice(indexToUpdate, 1, newBlock);
-            }
-            (this.editor as any).isProtectedOnChange = prevOnChange;
-            /* eslint-enable @typescript-eslint/no-explicit-any */
-            this.editor.blockAction.updatePropChangesToModel();
 
-            const updatedBlockModel: BlockModel = getBlockModelById(blockId, this.editor.blocksInternal);
-            const newBlockElement: HTMLElement = this.editor.blockAction.createBlockElement(updatedBlockModel);
-            if (parentBlock) {
-                const parentBlockElement: HTMLElement = this.editor.blockWrapper.querySelector(`#${parentBlock.id}`);
-                const selector: string = parentBlock.type === 'Callout' ? '.e-callout-content' : '.e-toggle-content';
-                const wrapper: HTMLElement = parentBlockElement.querySelector(selector);
-                wrapper.insertBefore(newBlockElement, oldBlockElement);
-            }
-            else {
-                this.editor.blockWrapper.insertBefore(
-                    newBlockElement,
-                    this.editor.blockWrapper.children[parseInt(indexToUpdate.toString(), 10)]
-                );
-            }
-            detach(oldBlockElement);
-            if (isListTypeBlock(updatedBlockModel.type)) {
-                this.editor.listBlockAction.recalculateMarkersForListItems();
-            }
-            return true;
+        if (!block) { return false; }
+
+        const prevOnChange: boolean = this.editor.isProtectedOnChange;
+        this.editor.isProtectedOnChange = true;
+
+        /* Model Updates */
+        this.editor.blockService.updateBlock(blockId, properties);
+
+        this.editor.isProtectedOnChange = prevOnChange;
+        this.editor.stateManager.updatePropChangesToModel();
+
+        /* UI Updates */
+        const updatedBlockModel: BlockModel = this.getBlock(blockId);
+        const oldBlockElement: HTMLElement = this.editor.getBlockElementById(blockId);
+        const newBlockElement: HTMLElement = this.editor.blockRendererManager.createBlockElement(updatedBlockModel);
+        const parentBlock: BlockModel = getBlockModelById(updatedBlockModel.parentId, this.editor.getEditorBlocks());
+        let wrapper: HTMLElement = this.editor.blockWrapper;
+        if (parentBlock) {
+            const parentBlockElement: HTMLElement = this.editor.getBlockElementById(parentBlock.id);
+            const selector: string = parentBlock.type === BlockType.Callout
+                ? '.' + constants.CALLOUT_CONTENT_CLS
+                : '.' + constants.TOGGLE_CONTENT_CLS;
+            wrapper = parentBlockElement.querySelector(selector);
         }
-        return false;
+
+        wrapper.insertBefore(newBlockElement, oldBlockElement);
+        detach(oldBlockElement);
+
+        if (isListTypeBlock(updatedBlockModel.type)) {
+            this.editor.listBlockAction.recalculateMarkersForListItems();
+            if (block.type === BlockType.Checklist) {
+                if (this.editor.blockRendererManager.listRenderer) {
+                    this.editor.blockRendererManager.listRenderer.toggleCheckedState(
+                        updatedBlockModel, (updatedBlockModel.props as ChecklistProps).isChecked
+                    );
+                }
+            }
+        }
+        return true;
     }
 
     public executeToolbarAction(command: BuiltInToolbar, value?: string): void {
@@ -112,21 +112,22 @@ export class BlockEditorMethods {
         if (!range || !this.editor.currentFocusedBlock) { return null; }
 
         const selectedBlocks: BlockModel[] = [];
-        const callout: HTMLElement = this.editor.currentFocusedBlock.closest('.e-callout-block') as HTMLElement;
-        const toggle: HTMLElement = this.editor.currentFocusedBlock.closest('.e-toggle-block') as HTMLElement;
-        let blockElements: NodeListOf<HTMLElement> = this.editor.blockWrapper.querySelectorAll('.e-block');
+        const editorBlocks: BlockModel[] = this.editor.getEditorBlocks();
+        const callout: HTMLElement = this.editor.currentFocusedBlock.closest('.' + constants.CALLOUT_BLOCK_CLS) as HTMLElement;
+        const toggle: HTMLElement = this.editor.currentFocusedBlock.closest('.' + constants.TOGGLE_BLOCK_CLS) as HTMLElement;
+        let blockElements: NodeListOf<HTMLElement> = this.editor.blockWrapper.querySelectorAll('.' + constants.BLOCK_CLS);
         if (callout) {
-            blockElements = callout.querySelectorAll('.e-block');
+            blockElements = callout.querySelectorAll('.' + constants.BLOCK_CLS);
         }
         else if (toggle) {
-            blockElements = toggle.querySelectorAll('.e-block');
+            blockElements = toggle.querySelectorAll('.' + constants.BLOCK_CLS);
         }
         blockElements.forEach((blockElement: HTMLElement) => {
             const blockRange: Range = document.createRange();
             blockRange.selectNodeContents(blockElement);
 
             if (range.intersectsNode(blockElement)) {
-                const block: BlockModel = getBlockModelById(blockElement.id, this.editor.blocksInternal);
+                const block: BlockModel = getBlockModelById(blockElement.id, editorBlocks);
                 if (block) { selectedBlocks.push(block); }
             }
         });
@@ -135,7 +136,7 @@ export class BlockEditorMethods {
     }
 
     public getRange(): Range | null {
-        return getSelectionRange();
+        return getSelectedRange();
     }
 
     public selectRange(range: Range): void {
@@ -180,7 +181,7 @@ export class BlockEditorMethods {
     }
 
     public enableDisableToolbarItems(itemId: string | string[], enable: boolean): void {
-        const toolbarPopup: HTMLElement = document.querySelector('.e-blockeditor-inline-toolbar-popup');
+        const toolbarPopup: HTMLElement = document.querySelector('.' + constants.INLINE_TBAR_POPUP_CLS);
 
         const ids: string[] = typeof itemId === 'string' ? [itemId] : itemId;
 
@@ -205,20 +206,126 @@ export class BlockEditorMethods {
 
     public getDataAsJson(blockId?: string): any {
         if (blockId) {
-            const block: BlockModel = getBlockModelById(blockId, this.editor.blocksInternal);
+            const block: BlockModel = getBlockModelById(blockId, this.editor.getEditorBlocks());
             return block ? sanitizeBlock(block) : null;
         } else {
-            return this.editor.blocksInternal.map((block: BlockModel) => sanitizeBlock(block));
+            return this.editor.getEditorBlocks().map((block: BlockModel) => sanitizeBlock(block));
         }
     }
 
     public getDataAsHtml(blockId?: string): string {
         if (blockId) {
-            const block: BlockModel = getBlockModelById(blockId, this.editor.blocksInternal);
+            const block: BlockModel = getBlockModelById(blockId, this.editor.getEditorBlocks());
             return block ? getBlockDataAsHTML([block]) : null;
         } else {
-            return getBlockDataAsHTML(this.editor.blocksInternal);
+            return getBlockDataAsHTML(this.editor.getEditorBlocks());
         }
+    }
+
+    public renderBlocksFromJson(
+        json: object | string,
+        replace: boolean,
+        targetBlockId: string
+    ): boolean {
+        try {
+            const blocksJson: object | BlockModel[] = typeof json === 'string' ? JSON.parse(json as string) : json;
+
+            const blocks: BlockModel[] = this.extractBlocks(blocksJson);
+
+            const sanitizedBlocks: BlockModel[] = blocks.map((block: BlockModel) => sanitizeBlock(block));
+            this.editor.stateManager.populateUniqueIds(sanitizedBlocks);
+
+            if (replace) {
+                return this.replaceAllBlocks(sanitizedBlocks);
+            } else {
+                return this.insertBlocksAtPosition(sanitizedBlocks, targetBlockId);
+            }
+        } catch (e) {
+            console.error('Error rendering blocks from JSON:', e);
+            return false;
+        }
+    }
+
+    private extractBlocks(blocksJson: object | BlockModel[]): BlockModel[] {
+        let blocks: BlockModel[] = [];
+
+        if (Array.isArray(blocksJson)) {
+            blocks = blocksJson;
+        }
+        else if (blocksJson && typeof blocksJson === 'object') {
+            if (Array.isArray((blocksJson as any).blocks)) {
+                blocks = (blocksJson as any).blocks;
+            }
+            else {
+                // Try to convert single object to block if it looks like a block
+                if ((blocksJson as any).type) {
+                    blocks = [blocksJson as BlockModel];
+                }
+            }
+        }
+        return blocks;
+    }
+
+    /**
+     * Replaces all blocks in the editor with the provided blocks.
+     *
+     * @param {BlockModel[]} blocks - The blocks to render
+     * @returns {boolean} - True if operation was successful, false otherwise
+     * @private
+     */
+    private replaceAllBlocks(blocks: BlockModel[]): boolean {
+        this.editor.setEditorBlocks([]);
+        this.editor.blockWrapper.innerHTML = '';
+        if (blocks.length === 0) {
+            this.editor.blockCommandManager.createDefaultEmptyBlock(true);
+            return true;
+        }
+        this.editor.setEditorBlocks(blocks);
+        this.editor.stateManager.updatePropChangesToModel();
+        this.editor.renderBlocks(this.editor.getEditorBlocks());
+        return true;
+    }
+
+    /**
+     * Inserts blocks at a specific position in the editor.
+     *
+     * @param {BlockModel[]} blocks - The blocks to insert
+     * @param {string} targetBlockId - ID of the block to insert after, uses focused block if not provided
+     * @returns {boolean} - True if operation was successful, false otherwise
+     * @private
+     */
+    private insertBlocksAtPosition(blocks: BlockModel[], targetBlockId?: string): boolean {
+        if (blocks.length === 0) {
+            return false;
+        }
+
+        let insertionPointId: string = targetBlockId;
+
+        if (!insertionPointId) {
+            if (this.editor.currentFocusedBlock) {
+                insertionPointId = this.editor.currentFocusedBlock.id;
+            } else {
+                insertionPointId = this.editor.getEditorBlocks()[this.editor.getEditorBlocks().length - 1].id;
+                const blockElement: HTMLElement = this.editor.getBlockElementById(insertionPointId);
+                this.editor.setFocusToBlock(blockElement);
+            }
+        }
+
+        let lastInsertedElement: HTMLElement;
+
+        for (let i: number = 0; i < blocks.length; i++) {
+            const block: BlockModel = blocks[i as number];
+            const targetId: string = i === 0 ? insertionPointId : lastInsertedElement.id;
+            lastInsertedElement = this.addBlock(block, targetId, true);
+        }
+
+        if (lastInsertedElement) {
+            const contentElement: HTMLElement = getBlockContentElement(lastInsertedElement);
+            this.editor.setFocusToBlock(lastInsertedElement);
+            setCursorPosition(contentElement, contentElement.innerText.length);
+        }
+
+        return true;
     }
 
     public print(): void {

@@ -1,17 +1,56 @@
-import { BlockAction } from '../../actions/index';
 import { BlockEditor } from '../../base/index';
-import { BlockModel } from '../../models/index';
-import { generateUniqueId, getBlockContentElement, getBlockIndexById, createBaseSvg, createSvgElement } from '../../utils/index';
-import { appendDocumentNodes } from './block-utils';
-
+import { BlockModel, CalloutProps } from '../../models/index';
+import { createBaseSvg, createSvgElement } from '../../utils/index';
+import { BlockFactory } from '../../services/index';
+import * as constants from '../../base/constant';
 
 export class CalloutRenderer {
     private editor: BlockEditor;
-    private parent: BlockAction;
 
-    constructor(editor: BlockEditor, parent: BlockAction) {
+    constructor(editor: BlockEditor) {
         this.editor = editor;
-        this.parent = parent;
+    }
+
+    /**
+     * Renders a initial level callout block
+     *
+     * @param {BlockModel} block - The block model containing data.
+     * @param {HTMLElement} blockElement - The block container element.
+     * @returns {HTMLElement} - The rendered callout block element.
+     * @hidden
+     */
+    public renderCallout(block: BlockModel, blockElement: HTMLElement): HTMLElement {
+        blockElement.classList.add(constants.CALLOUT_BLOCK_CLS);
+        const calloutWrapper: HTMLElement = this.editor.createElement('div', {
+            className: 'e-callout-wrapper',
+            attrs: { contenteditable: 'true' }
+        });
+        const iconContainer: HTMLElement = this.editor.createElement('div', {
+            className: 'e-callout-icon',
+            attrs: { contenteditable: 'false' }
+        });
+        iconContainer.appendChild(this.renderCalloutIcon());
+        const contentContainer: HTMLElement = this.editor.createElement('div', {
+            className: 'e-callout-content',
+            attrs: { contenteditable: 'true' }
+        });
+        const props: CalloutProps = block.props as CalloutProps;
+        if (!props.children || (props.children && props.children.length === 0)) {
+            if (!props.children) { props.children = []; }
+
+            props.children[0] = BlockFactory.createParagraphBlock({
+                parentId: block.id,
+                content: [BlockFactory.createTextContent()]
+            });
+        }
+        props.children.forEach((childBlock: BlockModel) => {
+            const childBlockElement: HTMLElement = this.editor.blockRendererManager.createBlockElement(childBlock);
+            contentContainer.appendChild(childBlockElement);
+        });
+        calloutWrapper.appendChild(iconContainer);
+        calloutWrapper.appendChild(contentContainer);
+
+        return calloutWrapper;
     }
 
     private renderCalloutIcon(): SVGSVGElement {
@@ -52,58 +91,5 @@ export class CalloutRenderer {
         );
 
         return svg;
-    }
-
-    /**
-     * Renders a initial level callout block
-     *
-     * @param {BlockModel} block - The block model containing data.
-     * @param {HTMLElement} blockElement - The block container element.
-     * @param {boolean} isTransform - Indicates if the block is being transformed.
-     * @returns {HTMLElement} - The rendered callout block element.
-     */
-    public renderCallout(block: BlockModel, blockElement: HTMLElement, isTransform?: boolean): HTMLElement {
-        blockElement.classList.add('e-callout-block');
-        const calloutWrapper: HTMLElement = this.editor.createElement('div', {
-            className: 'e-callout-wrapper',
-            attrs: { contenteditable: 'true' }
-        });
-        const iconContainer: HTMLElement = this.editor.createElement('div', {
-            className: 'e-callout-icon',
-            attrs: { contenteditable: 'false' }
-        });
-        iconContainer.appendChild(this.renderCalloutIcon());
-        const contentContainer: HTMLElement = this.editor.createElement('div', {
-            className: 'e-callout-content',
-            attrs: { contenteditable: 'true' }
-        });
-        if (block.children && block.children.length === 0) {
-            /* eslint-disable @typescript-eslint/no-explicit-any */
-            const prevOnChange: boolean = (this.editor as any).isProtectedOnChange;
-            (this.editor as any).isProtectedOnChange = true;
-            block.children[0] = {
-                id: generateUniqueId('block'),
-                parentId: block.id,
-                type: 'Paragraph',
-                indent: 0
-            };
-            (this.editor as any).isProtectedOnChange = prevOnChange;
-            const parentIndex: number = getBlockIndexById(block.id, this.editor.blocksInternal);
-            (this.editor.blocks[parseInt(parentIndex.toString(), 10)] as any).setProperties({ children: block.children }, true);
-            /* eslint-enable @typescript-eslint/no-explicit-any */
-            this.editor.blockAction.updatePropChangesToModel();
-        }
-        block.children.forEach((childBlock: BlockModel) => {
-            const childBlockElement: HTMLElement = this.editor.blockAction.createBlockElement(childBlock);
-            contentContainer.appendChild(childBlockElement);
-        });
-        calloutWrapper.appendChild(iconContainer);
-        calloutWrapper.appendChild(contentContainer);
-
-        if (isTransform) {
-            appendDocumentNodes(blockElement, calloutWrapper, getBlockContentElement(blockElement));
-        }
-
-        return calloutWrapper;
     }
 }

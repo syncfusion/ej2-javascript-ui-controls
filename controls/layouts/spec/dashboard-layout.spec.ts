@@ -299,7 +299,7 @@ describe('GridLayout', () => {
             expect(gridLayOut.element.querySelector('#first').style.width).toEqual('248.8px');
             expect(gridLayOut.element.querySelector('#second').style.width).toEqual('756.4px');
             expect(gridLayOut.element.querySelector('#fifth').style.width).toEqual('502.6px');
-            (document.querySelectorAll('#container')[1] as HTMLElement).style.width = '800px';
+            (document.querySelectorAll('#container')[1] as HTMLElement).style.width = "800px";
             gridLayOut.refresh();
             expect(gridLayOut.element.querySelector('#first').style.width).not.toEqual('248px');
             expect(gridLayOut.element.querySelector('#second').style.width).not.toEqual('754px');

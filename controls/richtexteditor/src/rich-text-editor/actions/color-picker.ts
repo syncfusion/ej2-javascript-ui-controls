@@ -11,13 +11,14 @@ import { IRichTextEditor, ICssClassArgs, IRenderer } from '../base/interface';
 import { IColorPickerRenderArgs, IToolsItems, IColorPickerModel } from '../../common/interface';
 import { ServiceLocator } from '../services/service-locator';
 import { RendererFactory } from '../services/renderer-factory';
-import { DropDownButton } from '@syncfusion/ej2-splitbuttons';
 /**
  * `Color Picker` module is used to handle ColorPicker actions.
  */
 export class ColorPickerInput {
     private fontColorPicker: ColorPicker;
     private backgroundColorPicker: ColorPicker;
+    private borderColorPicker: ColorPicker;
+    private tableBackgroundColorPicker: ColorPicker;
     protected parent: IRichTextEditor;
     protected locator: ServiceLocator;
     protected toolbarRenderer: IRenderer;
@@ -44,11 +45,12 @@ export class ColorPickerInput {
      * renderColorPickerInput method
      *
      * @param {IColorPickerRenderArgs} args - specify the arguments.
+     * @param {HTMLElement} targetElement - specify the target element.
      * @returns {void}
      * @hidden
      * @deprecated
      */
-    public renderColorPickerInput(args: IColorPickerRenderArgs): void {
+    public renderColorPickerInput(args: IColorPickerRenderArgs, targetElement?: HTMLElement): void {
         this.initializeInstance();
         const suffixID: string = args.containerType;
         const tbElement: HTMLElement = args.container;
@@ -92,6 +94,46 @@ export class ColorPickerInput {
                     this.backgroundColorPicker = this.toolbarRenderer.renderColorPicker(options, 'backgroundcolor', args.containerType);
                     break;
                 }
+                case 'bordercolor': {
+                    let bdrColor: string = targetElement.style.borderColor;
+                    if (bdrColor.match(/\d+/g)) {
+                        const hex: string = '#' + bdrColor.match(/\d+/g).slice(0, 3).map((n: string) => {
+                            const h: string = parseInt(n, 10).toString(16);
+                            return h.length === 1 ? '0' + h : h;
+                        }).join('');
+                        bdrColor = hex;
+                    }
+                    options = {
+                        cssClass: classes.CLS_RTE_ELEMENTS + ' ' + classes.CLS_DROPDOWN + ' ' + classes.CLS_BORDERCOLOR_COLORPICKER + this.parent.getCssClass(true),
+                        value: bdrColor ? bdrColor : this.tools[item.toLocaleLowerCase() as ToolbarItems].value,
+                        command: this.tools[item.toLocaleLowerCase() as ToolbarItems].command,
+                        subCommand: this.tools[item.toLocaleLowerCase() as ToolbarItems].subCommand,
+                        element: tbElement,
+                        target: (targetID)
+                    } as IColorPickerModel;
+                    this.borderColorPicker = this.toolbarRenderer.renderColorPicker(options, 'bordercolor', args.containerType);
+                    break;
+                }
+                case 'tablebackgroundcolor': {
+                    let bgColor: string = targetElement.style.backgroundColor;
+                    if (bgColor.match(/\d+/g)) {
+                        const hex: string = '#' + bgColor.match(/\d+/g).slice(0, 3).map((n: string) => {
+                            const h: string = parseInt(n, 10).toString(16);
+                            return h.length === 1 ? '0' + h : h;
+                        }).join('');
+                        bgColor = hex;
+                    }
+                    options = {
+                        cssClass: classes.CLS_RTE_ELEMENTS + ' ' + classes.CLS_DROPDOWN + ' ' + classes.CLS_TABLE_BGCOLOR_COLORPICKER + this.parent.getCssClass(true),
+                        value: bgColor ? bgColor : this.tools[item.toLocaleLowerCase() as ToolbarItems].value,
+                        command: this.tools[item.toLocaleLowerCase() as ToolbarItems].command,
+                        subCommand: this.tools[item.toLocaleLowerCase() as ToolbarItems].subCommand,
+                        element: tbElement,
+                        target: (targetID)
+                    } as IColorPickerModel;
+                    this.tableBackgroundColorPicker = this.toolbarRenderer.renderColorPicker(options, 'tablebackgroundcolor', args.containerType);
+                    break;
+                }
                 }
             }
         });
@@ -105,6 +147,8 @@ export class ColorPickerInput {
         this.destroyColorPicker();
         this.fontColorPicker = null;
         this.backgroundColorPicker = null;
+        this.borderColorPicker = null;
+        this.tableBackgroundColorPicker = null;
         this.tools = {};
     }
 
@@ -122,6 +166,12 @@ export class ColorPickerInput {
         if (this.backgroundColorPicker && !this.backgroundColorPicker.isDestroyed) {
             this.backgroundColorPicker.destroy();
         }
+        if (this.borderColorPicker && !this.borderColorPicker.isDestroyed) {
+            this.borderColorPicker.destroy();
+        }
+        if (this.tableBackgroundColorPicker && !this.tableBackgroundColorPicker.isDestroyed) {
+            this.tableBackgroundColorPicker.destroy();
+        }
     }
 
     private setRtl(args: { [key: string]: Object }): void {
@@ -131,11 +181,19 @@ export class ColorPickerInput {
         if (this.backgroundColorPicker) {
             this.backgroundColorPicker.setProperties({ enableRtl: args.enableRtl });
         }
+        if (this.borderColorPicker) {
+            this.borderColorPicker.setProperties({ enableRtl: args.enableRtl });
+        }
+        if (this.tableBackgroundColorPicker) {
+            this.tableBackgroundColorPicker.setProperties({ enableRtl: args.enableRtl });
+        }
     }
 
     private setCssClass(e: ICssClassArgs): void {
         this.updateCss(this.fontColorPicker, e);
         this.updateCss(this.backgroundColorPicker, e);
+        this.updateCss(this.borderColorPicker, e);
+        this.updateCss(this.tableBackgroundColorPicker, e);
     }
 
     private updateCss(colorPickerObj: ColorPicker, e: ICssClassArgs): void {

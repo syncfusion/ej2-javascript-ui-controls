@@ -1,4 +1,4 @@
-import { IUndoRedoSelection, IUndoRedoState } from '../base/interface';
+import { IUndoRedoSelectionState, IUndoRedoState } from '../base/interface';
 import { getParentBlock } from './block';
 
 /**
@@ -6,7 +6,7 @@ import { getParentBlock } from './block';
  *
  * @returns {Range | null} The start and end indices of the selection range, or null if no selection is active.
  */
-export function getSelectionRange(): Range | null {
+export function getSelectedRange(): Range | null {
     const selection: Selection | null = window.getSelection();
     if (selection && selection.rangeCount > 0) {
         return selection.getRangeAt(0);
@@ -108,10 +108,10 @@ export function getTextOffset(node: Node, within: HTMLElement): number {
 /**
  * Captures the current selection state, including the start and end blocks and offsets.
  *
- * @returns {IUndoRedoSelection | null} The selection state or null if no selection is active.
+ * @returns {IUndoRedoSelectionState | null} The selection state or null if no selection is active.
  */
-export function captureSelectionState(): IUndoRedoSelection | null {
-    const range: Range | null = getSelectionRange();
+export function captureSelectionState(): IUndoRedoSelectionState | null {
+    const range: Range | null = getSelectedRange();
     if (!range) {
         return null;
     }

@@ -1,37 +1,17 @@
 /**
- * Is formatted or not.
+ * Helper class to check whether a node has particular format or not
  *
  * @hidden
  */
 export class FormattingHelper {
-    // Get Formatted Node
-    public static inlineTags: string[] = [
-        'a',
-        'abbr',
-        'acronym',
-        'b',
-        'bdo',
-        'big',
-        'cite',
-        'code',
-        'dfn',
-        'em',
-        'font',
-        'i',
-        'kbd',
-        'label',
-        'q',
-        'samp',
-        'small',
-        'span',
-        'strong',
-        'sub',
-        'sup',
-        'tt',
-        'u',
-        'var',
-        'del'
-    ];
+    private static validBoldTags: Set<string> = new Set(['strong', 'b']);
+    private static validItalicTags: Set<string> = new Set(['em', 'i']);
+    private static validUnderlineTags: Set<string> = new Set(['u']);
+    private static validStrikethroughTags: Set<string> = new Set(['del', 'strike', 's']);
+    private static validSuperscriptTags: Set<string> = new Set(['sup']);
+    private static validSubscriptTags: Set<string> = new Set(['sub']);
+    private static inlineTagsSet: Set<string> = new Set(['a', 'abbr', 'acronym', 'b', 'bdo', 'big', 'cite', 'code', 'dfn', 'em',
+        'font', 'i', 'kbd', 'label', 'q', 'samp', 'small', 'span', 'strong', 'sub', 'sup', 'tt', 'u', 'var', 'del']);
 
     /**
      * isBold method
@@ -41,19 +21,14 @@ export class FormattingHelper {
      * @hidden
      */
     public static isBold(node : Node): boolean {
-        const validTags : string[] = ['strong', 'b'];
-        if (validTags.indexOf(node.nodeName.toLowerCase()) !== -1 ) {
+        const nodeName: string = node.nodeName.toLowerCase();
+        if (this.validBoldTags.has(nodeName)) {
             return true;
-        } else if (this.inlineTags.indexOf(node.nodeName.toLowerCase()) !== -1 && (node as HTMLElement).style) {
+        } else if (this.inlineTagsSet.has(nodeName) && (node as HTMLElement).style) {
             const fontWeight: string = (node as HTMLElement).style.fontWeight;
-            if (fontWeight &&
-                (fontWeight === 'bold' || parseInt(fontWeight.toString(), 10) >= 600)) {
-                return true;
-            }
-            else { return false; }
-        } else {
-            return false;
+            return fontWeight && (fontWeight === 'bold' || parseInt(fontWeight, 10) >= 600);
         }
+        return false;
     }
 
     /**
@@ -63,16 +38,15 @@ export class FormattingHelper {
      * @returns {boolean} - returns the boolean value
      * @hidden
      */
-    public static isItalic(node : Node): boolean {
-        const validTags : string[] = ['em', 'i'];
-        if (validTags.indexOf(node.nodeName.toLowerCase()) !== -1 ) {
+    public static isItalic(node: Node): boolean {
+        const nodeName: string = node.nodeName.toLowerCase();
+        if (this.validItalicTags.has(nodeName)) {
             return true;
-        } else if (this.inlineTags.indexOf(node.nodeName.toLowerCase()) !== -1 &&
-        (node as HTMLElement).style && (node as HTMLElement).style.fontStyle === 'italic') {
-            return true;
-        } else {
-            return false;
         }
+        if (this.inlineTagsSet.has(nodeName) && (node as HTMLElement).style) {
+            return (node as HTMLElement).style.fontStyle === 'italic';
+        }
+        return false;
     }
 
     /**
@@ -82,19 +56,16 @@ export class FormattingHelper {
      * @returns {boolean} - returns the boolean value
      * @hidden
      */
-    public static isUnderline(node : Node): boolean {
-        const validTags : string[] = ['u'];
-        if (validTags.indexOf(node.nodeName.toLowerCase()) !== -1 ) {
+    public static isUnderline(node: Node): boolean {
+        const nodeName: string = node.nodeName.toLowerCase();
+        if (this.validUnderlineTags.has(nodeName)) {
             return true;
-        /* eslint-disable */
-        } else if (this.inlineTags.indexOf(node.nodeName.toLowerCase()) !== -1 &&
-        (node as HTMLElement).style && ((node as HTMLElement).style.textDecoration === 'underline' ||
-        ((node as HTMLElement).style as any).textDecorationLine === 'underline')) {
-        /* eslint-enable */
-            return true;
-        } else {
-            return false;
         }
+        if (this.inlineTagsSet.has(nodeName) && (node as HTMLElement).style) {
+            const style: CSSStyleDeclaration = (node as HTMLElement).style;
+            return style.textDecoration === 'underline' || (style as any).textDecorationLine === 'underline';
+        }
+        return false;
     }
 
     /**
@@ -104,19 +75,16 @@ export class FormattingHelper {
      * @returns {boolean} - returns the boolean value
      * @hidden
      */
-    public static isStrikethrough(node : Node): boolean {
-        const validTags: string[] = ['del', 'strike', 's'];
-        if (validTags.indexOf(node.nodeName.toLowerCase()) !== -1 ) {
+    public static isStrikethrough(node: Node): boolean {
+        const nodeName: string = node.nodeName.toLowerCase();
+        if (this.validStrikethroughTags.has(nodeName)) {
             return true;
-        /* eslint-disable */
-        } else if (this.inlineTags.indexOf(node.nodeName.toLowerCase()) !== -1 &&
-        (node as HTMLElement).style && ((node as HTMLElement).style.textDecoration === 'line-through' ||
-        ((node as HTMLElement).style as any).textDecorationLine === 'line-through')) {
-        /* eslint-enable */
-            return true;
-        } else {
-            return false;
         }
+        if (this.inlineTagsSet.has(nodeName) && (node as HTMLElement).style) {
+            const style: CSSStyleDeclaration = (node as HTMLElement).style;
+            return style.textDecoration === 'line-through' || (style as any).textDecorationLine === 'line-through';
+        }
+        return false;
     }
 
     /**
@@ -127,12 +95,7 @@ export class FormattingHelper {
      * @hidden
      */
     public static isSuperscript(node : Node): boolean {
-        const validTags : string[] = ['sup'];
-        if (validTags.indexOf(node.nodeName.toLowerCase()) !== -1 ) {
-            return true;
-        } else {
-            return false;
-        }
+        return this.validSuperscriptTags.has(node.nodeName.toLowerCase());
     }
 
     /**
@@ -143,31 +106,22 @@ export class FormattingHelper {
      * @hidden
      */
     public static isSubscript(node : Node): boolean {
-        const validTags : string[] = ['sub'];
-        if (validTags.indexOf(node.nodeName.toLowerCase()) !== -1 ) {
-            return true;
-        } else {
-            return false;
-        }
+        return this.validSubscriptTags.has(node.nodeName.toLowerCase());
     }
 
     public static getFontColor(node : Node): string {
-        const color: string = (node as HTMLElement).style && (node as HTMLElement).style.color;
-        if (FormattingHelper.inlineTags.indexOf(node.nodeName.toLowerCase()) !== -1 &&
-        color !== null && color !== '' && color !== undefined ) {
-            return color;
-        } else {
-            return '';
-        }
+        return this.getStyleProperty(node, 'color');
     }
 
     public static getBackgroundColor(node : Node): string {
-        const bgColor: string = (node as HTMLElement).style && (node as HTMLElement).style.backgroundColor;
-        if (FormattingHelper.inlineTags.indexOf(node.nodeName.toLowerCase()) !== -1 &&
-        bgColor !== null && bgColor !== '' && bgColor !== undefined ) {
-            return bgColor;
-        } else {
-            return '';
+        return this.getStyleProperty(node, 'backgroundColor');
+    }
+
+    private static getStyleProperty(node: Node, property: 'color' | 'backgroundColor'): string {
+        const nodeName: string = node.nodeName.toLowerCase();
+        if (this.inlineTagsSet.has(nodeName) && (node as HTMLElement).style) {
+            return (node as HTMLElement).style[property as any] || '';
         }
+        return '';
     }
 }

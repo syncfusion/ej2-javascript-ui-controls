@@ -1300,7 +1300,8 @@ export class Workbook extends Component<HTMLElement> implements INotifyPropertyC
                 needBlobData: false,
                 cancel: false,
                 autoDetectFormat: false,
-                pdfLayoutSettings: { fitSheetOnOnePage: false, orientation: 'Portrait' }
+                pdfLayoutSettings: { fitSheetOnOnePage: false, orientation: 'Portrait' },
+                jsonConfig: jsonConfig
             };
             this.trigger('beforeSave', eventArgs);
             this.notify(beginAction, { eventArgs: eventArgs, action: 'beforeSave' });
@@ -1309,7 +1310,8 @@ export class Workbook extends Component<HTMLElement> implements INotifyPropertyC
                     events.beginSave, {
                         saveSettings: eventArgs, isFullPost: eventArgs.isFullPost, needBlobData: eventArgs.needBlobData,
                         customParams: eventArgs.customParams, pdfLayoutSettings: eventArgs.pdfLayoutSettings,
-                        jsonConfig: jsonConfig });
+                        jsonConfig: eventArgs.jsonConfig
+                    });
             }
         }
     }
@@ -1492,7 +1494,8 @@ export class Workbook extends Component<HTMLElement> implements INotifyPropertyC
         }
         const cell: CellModel = getCell(range[0], range[1], sheet, false, true);
         if (cell.validation || checkColumnValidation(sheet.columns[range[1]], range[0], range[1])) {
-            const value: string = cell.value ? cell.value : '';
+            const value: string = (cell.value || <unknown>cell.value === 0) ? cell.value.toString() :
+                cell.hyperlink ? (typeof cell.hyperlink === 'string' ? cell.hyperlink : (cell.hyperlink.address || '')) : '';
             const validEventArgs: CheckCellValidArgs = { value, range, sheetIdx, td: null, isValid: true };
             this.notify(events.isValidation, validEventArgs);
             return validEventArgs.isValid;

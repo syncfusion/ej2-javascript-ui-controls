@@ -15,7 +15,7 @@ export class CodeBlockPlugin {
     /**
      * Constructor for creating the Code Block plugin
      *
-     * @param {EditorManager} parent - specifies the parent element
+     * @param {IEditorModel} parent - specifies the parent element
      * @hidden
      * @deprecated
      */
@@ -1145,7 +1145,7 @@ export class CodeBlockPlugin {
     /* Converts a code block back to normal text with appropriate formatting */
     private revertCodeBlockToNormalText(range: Range, enterAction: string): void {
         this.setCursorMarkers(range);
-        const blockNodes: Node[] = this.getBlockNodes(enterAction);
+        const blockNodes: Node[] = this.getBlockNodes();
         const revertElements: Node[] = [];
         for (let i: number = 0; i < blockNodes.length; i++) {
             const node: Node = blockNodes[i as number];
@@ -1163,7 +1163,7 @@ export class CodeBlockPlugin {
     /* Creates a new code block from the current selection */
     private createNewCodeBlock(range: Range, e: IHtmlItem): void {
         this.setCursorMarkers(range);
-        const blockNodes: Node[] = this.getBlockNodes(e.enterAction);
+        const blockNodes: Node[] = this.getBlockNodes();
         const items: ICodeBlockItem = (e.item as ICodeBlockItem);
         const { hasTableNodes, itemList } = this.checkTableElementInsideSelection(blockNodes);
         if (this.isRangeInsideTable(range) || hasTableNodes) {
@@ -1255,7 +1255,7 @@ export class CodeBlockPlugin {
         return multiCellsSelected;
     }
     /* Identifies block nodes that should be included in code block operations */
-    private getBlockNodes(enterAction: string): Node[] {
+    private getBlockNodes(): Node[] {
         const node: Node[] = this.getTextAndBrNodes();
         return node;
     }

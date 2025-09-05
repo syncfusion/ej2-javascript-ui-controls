@@ -1,5 +1,5 @@
-import { NotifyPropertyChanges, Property, INotifyPropertyChanged, getUniqueID, isNullOrUndefined as isNOU, EventHandler, L10n } from '@syncfusion/ej2-base';import { Internationalization, ChildProperty, Collection, removeClass, Event, EmitType, BaseEventArgs, Complex } from '@syncfusion/ej2-base';import { InterActiveChatBase, ToolbarSettings, ToolbarItemClickedEventArgs, TextState, ToolbarItem } from '../interactive-chat-base/interactive-chat-base';import { ToolbarItemModel, ToolbarSettingsModel } from '../interactive-chat-base/interactive-chat-base-model';import { ClickEventArgs, ItemModel, Toolbar } from '@syncfusion/ej2-navigations';import { createSpinner, showSpinner, hideSpinner } from '@syncfusion/ej2-popups';import { Fab } from '@syncfusion/ej2-buttons';import { DropDownButton, MenuEventArgs } from '@syncfusion/ej2-splitbuttons';
-import {MessageToolbarItemClickedEventArgs,MessageSendEventArgs,TypingEventArgs} from "./chat-ui";
+import { NotifyPropertyChanges, Property, INotifyPropertyChanged, getUniqueID, isNullOrUndefined as isNOU, EventHandler, L10n } from '@syncfusion/ej2-base';import { Internationalization, ChildProperty, Collection, removeClass, Event, EmitType, BaseEventArgs, Complex } from '@syncfusion/ej2-base';import { InterActiveChatBase, ToolbarSettings, ToolbarItemClickedEventArgs, TextState, ToolbarItem } from '../interactive-chat-base/interactive-chat-base';import { ToolbarItemModel, ToolbarSettingsModel } from '../interactive-chat-base/interactive-chat-base-model';import { ClickEventArgs, ItemModel, Toolbar } from '@syncfusion/ej2-navigations';import { createSpinner, showSpinner, hideSpinner } from '@syncfusion/ej2-popups';import { Fab } from '@syncfusion/ej2-buttons';import { DropDownButton, MenuEventArgs } from '@syncfusion/ej2-splitbuttons';import { FieldSettingsModel, Mention, SelectEventArgs } from '@syncfusion/ej2-dropdowns';import { SanitizeHtmlHelper } from '@syncfusion/ej2-base';
+import {MessageToolbarItemClickedEventArgs,MessageSendEventArgs,TypingEventArgs,MentionSelectEventArgs} from "./chat-ui";
 import {InterActiveChatBaseModel} from "../interactive-chat-base/interactive-chat-base-model";
 
 /**
@@ -102,7 +102,7 @@ export interface UserModel {
 export interface MessageToolbarSettingsModel {
 
     /**
-     * Specifies the width of the response toolbar in the Chat UI component.
+     * Specifies the width of the message toolbar in the Chat UI component.
      * Represents the width of the toolbar, which can be defined using various CSS units and values such as 'auto', '100%', or pixel-based measurements.
      *
      * @type {string}
@@ -112,7 +112,7 @@ export interface MessageToolbarSettingsModel {
     width?: string | number;
 
     /**
-     * Specifies the collection of toolbar items in the response toolbar of the Chat UI component.
+     * Specifies the collection of toolbar items in the message toolbar of the Chat UI component.
      * Represents an array of items that are rendered in the toolbar, allowing for customization and interaction within the response section.
      *
      * @type {ToolbarItemModel[]}
@@ -121,7 +121,7 @@ export interface MessageToolbarSettingsModel {
     items?: ToolbarItemModel[];
 
     /**
-     * Event raised when a toolbar item is clicked in the response toolbar of the Chat UI component.
+     * Event raised when a toolbar item is clicked in the message toolbar of the Chat UI component.
      *
      * @event itemClicked
      */
@@ -151,12 +151,39 @@ export interface MessageReplyModel {
     text?: string;
 
     /**
-     * Represents the id of the message sent by a user in the Chat UI component.
+     * Represents the mentioned Users of the message sent by the replied user in the Chat UI component.
+     *
+     * @type {UserModel[]}
+     * @default []
+     */
+    mentionUsers?: UserModel[];
+
+    /**
+     * Represents the id of the message sent by the replied user in the Chat UI component.
      *
      * @type {string}
      * @default ''
      */
     messageID?: string;
+
+    /**
+     * Specifies the timestamp of when the replied message was sent.
+     * This property holds a `Date` object that represents the exact time the message was created, providing context to the conversation flow.
+     *
+     * @type {Date}
+     * @default ''
+     */
+    timestamp?: Date;
+
+    /**
+     * Specifies the format of the timestamp for displaying the reply message's sending time.
+     * If empty, the format is determined by the application's culture settings.
+     * Supports format strings like 'dd/MM/yyyy hh:mm'.
+     *
+     * @type {string}
+     * @default ''
+     */
+    timestampFormat?: string;
 
 }
 
@@ -219,7 +246,7 @@ export interface MessageModel {
 
     /**
      * Specifies whether the message is pinned.
-     * When set to true, the message will be visually highlighted and can be displayed in a pinned messages section.
+     * When set to true, the message will be visually highlighted and can appear in the pinned messages section.
      *
      * @type {boolean}
      * @default false
@@ -228,7 +255,7 @@ export interface MessageModel {
 
     /**
      * Specifies the reference to the original message when this message is a reply.
-     * Contains the MessageModel of the message being replied to.
+     * Contains the `MessageReplyModel` of the message being replied to.
      *
      * @default null
      */
@@ -242,6 +269,16 @@ export interface MessageModel {
      * @default false
      */
     isForwarded?: boolean;
+
+    /**
+     * Represents an array of users mentioned in the message.
+     * This field contains the list of users referenced via the @mention feature in the message text, populated when mentions are selected from the suggestion popup.
+     * The field is optional and defaults to an empty array if no mentions are included in the message.
+     *
+     * @type {UserModel[]}
+     * @default []
+     */
+    mentionUsers?: UserModel[];
 
 }
 
@@ -413,6 +450,26 @@ export interface ChatUIModel extends InterActiveChatBaseModel{
     loadOnDemand?: boolean;
 
     /**
+     * Specifies the list of users available for mention in the chat UI.
+     * This property defines an array of user objects that populate the @mention suggestion popup when the mention trigger character is typed.
+     * When typing the `mentionTriggerChar` (e.g., '@') followed by characters filters this list to show matching users.
+     *
+     * @type {UserModel[]}
+     * @default null
+     * @aspType List<ChatUIUser>
+     */
+    mentionUsers?: UserModel[];
+
+    /**
+     * Specifies the character that triggers the @mention suggestion popup in the chat input.
+     * The trigger character must be a single character, such as '@' or '#', and is case-sensitive in the input.
+     *
+     * @type {string}
+     * @default '@'
+     */
+    mentionTriggerChar?: string;
+
+    /**
      * Specifies the template for rendering suggestion items in the Chat UI component.
      * Defines the content or layout used to render suggestion items, and can be either a string or a function.
      * The template context includes the index and suggestion text.
@@ -521,5 +578,14 @@ export interface ChatUIModel extends InterActiveChatBaseModel{
      * @event userTyping
      */
     userTyping?: EmitType<TypingEventArgs>;
+
+    /**
+     * Triggered when a user selects a mention from the suggestion popup in the chat UI.
+     * This event provides details about the selected user and the current message text, allowing developers to handle mention-related logic, such as custom notifications or validation.
+     * The `cancel` property in the event arguments can be set to `true` to prevent the default behavior of inserting the mention into the input field.
+     *
+     * @event mentionSelect
+     */
+    mentionSelect?: EmitType<MentionSelectEventArgs>;
 
 }

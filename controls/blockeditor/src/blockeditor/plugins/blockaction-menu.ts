@@ -1,9 +1,9 @@
 import { detach, isNullOrUndefined } from '@syncfusion/ej2-base';
 import { Popup, Tooltip } from '@syncfusion/ej2-popups';
 import { Menu, MenuEventArgs } from '@syncfusion/ej2-navigations';
-import { BlockActionItemModel, BlockActionMenuSettingsModel, BlockModel } from '../models/index';
-import { getBlockIndexById, getBlockModelById, isChildrenTypeBlock, isListTypeBlock } from '../utils/block';
-import { IPopupRenderOptions } from '../base/interface';
+import { BaseChildrenProp, BlockActionItemModel, BlockActionMenuSettingsModel, BlockModel } from '../models/index';
+import { getBlockIndexById, getBlockModelById, isListTypeBlock } from '../utils/block';
+import { IPopupRenderOptions, BlockPositionInfo } from '../base/interface';
 import { getBlockActionsMenuItems } from '../utils/data';
 import { BlockEditor } from '../base/blockeditor';
 import { BlockActionMenuOpenEventArgs, BlockActionMenuCloseEventArgs, BlockActionItemClickEventArgs } from '../base/eventargs';
@@ -11,7 +11,7 @@ import { BlockEditorModel } from '../base/index';
 import { events } from '../base/constant';
 import { getNormalizedKey } from '../utils/common';
 import { sanitizeBlockActionItems } from '../utils/transform';
-
+import * as constants from '../base/constant';
 
 /**
  * `BlockActionMenuModule` is used to handle the block action menu in the BlockEditor.
@@ -25,10 +25,12 @@ export class BlockActionMenuModule {
     public popupObj: Popup;
     private blockActionTooltip: Tooltip;
     private menuElement: HTMLUListElement;
+    private shortcutMap: Map<string, BlockActionItemModel> = new Map();
 
     constructor(editor: BlockEditor) {
         this.editor = editor;
         this.init();
+        this.buildShortcutMap();
         this.addEventListeners();
         this.bindTooltip();
     }
@@ -36,37 +38,24 @@ export class BlockActionMenuModule {
     private addEventListeners(): void {
         this.editor.on(events.moduleChanged, this.onPropertyChanged, this);
         this.editor.on(events.keydown, this.onKeyDown, this);
-        this.editor.on('rtl-changed', this.applyRtlSettings, this);
+        this.editor.on(events.rtlChanged, this.applyRtlSettings, this);
         this.editor.on(events.destroy, this.destroy, this);
     }
 
     private removeEventListeners(): void {
         this.editor.off(events.moduleChanged, this.onPropertyChanged);
         this.editor.off(events.keydown, this.onKeyDown);
-        this.editor.off('rtl-changed', this.applyRtlSettings);
+        this.editor.off(events.rtlChanged, this.applyRtlSettings);
         this.editor.off(events.destroy, this.destroy);
     }
 
     private init(): void {
-        let items: BlockActionItemModel[];
-        if (this.editor.blockActionsMenu.items.length > 0) {
-            items = sanitizeBlockActionItems(this.editor.blockActionsMenu.items);
-        }
-        else {
-            items = getBlockActionsMenuItems();
-            /* eslint-disable @typescript-eslint/no-explicit-any */
-            const prevOnChange: boolean = (this.editor as any).isProtectedOnChange;
-            (this.editor as any).isProtectedOnChange = true;
-            this.editor.blockActionsMenu.items = items;
-            (this.editor as any).isProtectedOnChange = prevOnChange;
-            /* eslint-enable @typescript-eslint/no-explicit-any */
-        }
         this.menuElement = this.editor.createElement('ul', {
-            className: 'e-blockeditor-blockaction-menubar',
+            className: constants.BLOCKACTION_MENUBAR_CLS,
             styles: 'width: 100%'
         });
         const popupElement: HTMLElement = this.editor.createElement('div', {
-            className: 'e-blockeditor-blockaction-popup'
+            className: constants.BLOCKACTION_POPUP_CLS
         });
         document.body.appendChild(this.menuElement);
         document.body.appendChild(popupElement);
@@ -85,7 +74,7 @@ export class BlockActionMenuModule {
             '</div>';
         this.menuObj = this.editor.menubarRenderer.renderMenubar({
             element: this.menuElement,
-            items: items,
+            items: this.getActionItems(),
             template: itemTemplate,
             orientation: 'Vertical',
             fields: { text: 'label', iconCss: 'iconCss' },
@@ -100,11 +89,31 @@ export class BlockActionMenuModule {
         this.popupObj = this.editor.popupRenderer.renderPopup(args);
     }
 
+    private getActionItems(): BlockActionItemModel[] {
+        const actionItems: BlockActionItemModel[] = this.editor.blockActionsMenu.items.length > 0
+            ? sanitizeBlockActionItems(this.editor.blockActionsMenu.items)
+            : getBlockActionsMenuItems();
+
+        if (this.editor.blockActionsMenu.items.length <= 0) {
+            const prevOnChange: boolean = this.editor.isProtectedOnChange;
+            this.editor.isProtectedOnChange = true;
+            this.editor.blockActionsMenu.items = actionItems;
+            this.editor.isProtectedOnChange = prevOnChange;
+        }
+        return actionItems;
+    }
+
+    private buildShortcutMap(): void {
+        this.shortcutMap.clear();
+        this.editor.blockActionsMenu.items.forEach((item: BlockActionItemModel) => {
+            this.shortcutMap.set(item.shortcut.toLowerCase(), item);
+        });
+    }
+
     private onKeyDown(e: KeyboardEvent): void {
         const normalizedKey: string = getNormalizedKey(e);
         if (!normalizedKey) { return; }
-        const actionItem: BlockActionItemModel = this.editor.blockActionsMenu.items.find((item: BlockActionItemModel) =>
-            item.shortcut.toLowerCase() === normalizedKey);
+        const actionItem: BlockActionItemModel = this.shortcutMap.get(normalizedKey);
         if (actionItem) {
             e.preventDefault();
             this.handleBlockActions(actionItem, this.editor.currentFocusedBlock, e);
@@ -117,11 +126,11 @@ export class BlockActionMenuModule {
     private bindTooltip(): void {
         if (!this.editor.blockActionsMenu.enableTooltip) { return; }
         this.blockActionTooltip = this.editor.tooltipRenderer.renderTooltip({
-            cssClass: 'e-blockeditor-blockaction-tooltip',
+            cssClass: constants.BLOCKACTION_TOOLTIP_CLS,
             position: 'RightCenter',
             target: '.e-menu-item',
             windowCollision: true,
-            element: (document.querySelector('.e-blockeditor-blockaction-popup') as HTMLElement)
+            element: (document.querySelector('.' + constants.BLOCKACTION_POPUP_CLS) as HTMLElement)
         });
     }
 
@@ -134,6 +143,14 @@ export class BlockActionMenuModule {
         }
     }
 
+    /**
+     * Toggles the block action popup based on the provided flag.
+     *
+     * @param {boolean} shouldHide - Flag indicating whether to hide or show the popup.
+     * @param {Event} e - Optional event object.
+     * @returns {void}
+     * @hidden
+     */
     public toggleBlockActionPopup(shouldHide: boolean, e?: Event): void {
         if (this.popupObj) {
             if (shouldHide) {
@@ -174,75 +191,71 @@ export class BlockActionMenuModule {
     }
 
     private getParentBlock(parentId: string): BlockModel {
-        const parentBlock: BlockModel = getBlockModelById(parentId, this.editor.blocksInternal);
-        return parentBlock;
+        return getBlockModelById(parentId, this.editor.getEditorBlocks());
     }
 
     private isFirstChildBlock(block: BlockModel, parentBlock: BlockModel): boolean {
-        return (parentBlock.children.length > 0 && parentBlock.children[0].id === block.id);
+        const children: BlockModel[] = (parentBlock.props as BaseChildrenProp).children;
+        return (children.length > 0 && children[0].id === block.id);
     }
 
     private isLastChildBlock(block: BlockModel, parentBlock: BlockModel): boolean {
-        const children: BlockModel[] = parentBlock.children;
-        return (parentBlock.children.length > 0 && children[children.length - 1].id === block.id);
+        const children: BlockModel[] = (parentBlock.props as BaseChildrenProp).children;
+        return (children.length > 0 && children[children.length - 1].id === block.id);
+    }
+
+    private toggleMenuItemClass(itemId: string, disable: boolean): void {
+        const listElement: HTMLElement = this.popupObj.element.querySelector(`#${itemId}`);
+        if (listElement) {
+            listElement.classList.toggle(constants.DISABLED_CLS, disable);
+        }
+    }
+
+    private getBlockPositionInfo(blockElement: HTMLElement): BlockPositionInfo {
+        const allBlocks: BlockModel[] = this.editor.getEditorBlocks();
+        const currentBlock: BlockModel = getBlockModelById(blockElement.id, allBlocks);
+        const currentBlockParent: BlockModel = this.getParentBlock(currentBlock.parentId);
+        const currentBlockIndex: number = getBlockIndexById(blockElement.id, allBlocks);
+        const isFirstBlock: boolean = currentBlockIndex === 0;
+        const isLastBlock: boolean = currentBlockIndex === (currentBlockParent
+            ? (currentBlockParent.props as BaseChildrenProp).children.length - 1
+            : allBlocks.length - 1);
+        const hasOnlyOneBlock: boolean = allBlocks.length === 1;
+        return { currentBlock, currentBlockParent, isFirstBlock, isLastBlock, hasOnlyOneBlock };
     }
 
     private toggleDisabledItems(blockElement: HTMLElement): void {
         if (!blockElement) { return; }
-        const blockId: string = blockElement.id;
         const selectedBlocks: BlockModel[] = this.editor.getSelectedBlocks();
 
-        // For multiple selection, disable all items
         if (selectedBlocks && selectedBlocks.length > 1) {
-            this.editor.blockActionsMenu.items.forEach((item: BlockActionItemModel) => {
-                const listElement: HTMLElement = this.popupObj.element.querySelector('#' + item.id);
-                if (listElement) {
-                    listElement.classList.add('e-disabled');
-                }
-            });
+            for (const item of this.editor.blockActionsMenu.items) {
+                this.toggleMenuItemClass(item.id, true);
+            }
             return;
         }
 
-        const allBlocks: BlockModel[] = this.editor.blocksInternal;
-        const currentBlock: BlockModel = getBlockModelById(blockId, allBlocks);
-        const currentBlockParent: BlockModel = this.getParentBlock(currentBlock.parentId);
-        const currentBlockIndex: number = getBlockIndexById(blockId, allBlocks);
+        const { currentBlock, currentBlockParent, isFirstBlock, isLastBlock, hasOnlyOneBlock
+        }: BlockPositionInfo = this.getBlockPositionInfo(blockElement);
 
-        const isFirstBlock: boolean = currentBlockIndex === 0;
-        const isLastBlock: boolean = currentBlockIndex === (currentBlockParent
-            ? currentBlockParent.children.length - 1
-            : allBlocks.length - 1);
-        const hasOnlyOneBlock: boolean = allBlocks.length === 1;
-
-        this.editor.blockActionsMenu.items.forEach((item: BlockActionItemModel) => {
-            const listElement: HTMLElement = this.popupObj.element.querySelector('#' + item.id);
-
+        for (const item of this.editor.blockActionsMenu.items) {
             let disable: boolean = item.disabled;
-
             switch (item.id) {
             case 'moveup':
                 disable = hasOnlyOneBlock || isFirstBlock;
-
-                // Case 1: children block, and it's the first among its siblings
                 if (currentBlockParent && this.isFirstChildBlock(currentBlock, currentBlockParent)) {
                     disable = true;
                 }
                 break;
-
             case 'movedown':
                 disable = hasOnlyOneBlock || isLastBlock;
-
-                // Case 1: children block, and it's the last among its siblings
                 if (currentBlockParent && this.isLastChildBlock(currentBlock, currentBlockParent)) {
                     disable = true;
                 }
                 break;
             }
-
-            if (listElement) {
-                listElement.classList.toggle('e-disabled', disable);
-            }
-        });
+            this.toggleMenuItemClass(item.id, disable);
+        }
     }
 
     private handleBlockActionMenuSelect(args: MenuEventArgs): void {
@@ -268,26 +281,26 @@ export class BlockActionMenuModule {
         let toBlockModel: BlockModel;
         switch (selectedItem) {
         case 'duplicate':
-            this.editor.blockAction.duplicateBlock(blockElement);
+            this.editor.blockCommandManager.duplicateBlock(blockElement);
             break;
         case 'delete': {
             const adjacentBlock: HTMLElement = (blockElement.nextElementSibling || blockElement.previousElementSibling) as HTMLElement;
             if (adjacentBlock) {
-                this.editor.blockAction.setFocusAndUIForNewBlock(adjacentBlock);
+                this.editor.blockRendererManager.setFocusAndUIForNewBlock(adjacentBlock);
             }
-            this.editor.blockAction.deleteBlock({ blockElement: blockElement });
-            this.editor.blockAction.createDefaultEmptyBlock(true);
+            this.editor.blockCommandManager.deleteBlock({ blockElement: blockElement });
+            this.editor.blockCommandManager.createDefaultEmptyBlock(true);
             break;
         }
         case 'moveup':
         case 'movedown': {
             this.toggleDisabledItems(blockElement);
-            const isDisabled: boolean = this.isItemDisabled(item.id);
-            if (!blockElement || isDisabled) { return; }
+            if (!blockElement || this.isItemDisabled(item.id)) { return; }
+
             toBlockElement = (selectedItem === 'moveup' ? blockElement.previousElementSibling : blockElement.nextElementSibling) as HTMLElement;
             if (toBlockElement) {
-                toBlockModel = getBlockModelById(toBlockElement.id, this.editor.blocksInternal);
-                this.editor.blockAction.moveBlock({
+                toBlockModel = getBlockModelById(toBlockElement.id, this.editor.getEditorBlocks());
+                this.editor.blockCommandManager.moveBlock({
                     fromBlockIds: [blockElement.id],
                     toBlockId: toBlockElement.id
                 });
@@ -295,7 +308,8 @@ export class BlockActionMenuModule {
             break;
         }
         }
-        const currentBlockModel: BlockModel = getBlockModelById(blockElement.id, this.editor.blocksInternal);
+
+        const currentBlockModel: BlockModel = getBlockModelById(blockElement.id, this.editor.getEditorBlocks());
         if ((currentBlockModel && isListTypeBlock(currentBlockModel.type)) || (toBlockModel && isListTypeBlock(toBlockModel.type))) {
             this.editor.listBlockAction.recalculateMarkersForListItems();
         }
@@ -304,9 +318,15 @@ export class BlockActionMenuModule {
 
     private isItemDisabled(itemId: string): boolean {
         const listElement: HTMLElement = this.popupObj.element.querySelector('#' + itemId);
-        return listElement && listElement.classList.contains('e-disabled');
+        return listElement && listElement.classList.contains(constants.DISABLED_CLS);
     }
 
+    /**
+     * Checks whether the block action popup is opened or not.
+     *
+     * @returns {boolean} - Returns true if the block action popup is opened, otherwise false.
+     * @hidden
+     */
     public isPopupOpen(): boolean {
         return this.isPopupOpened;
     }
@@ -322,10 +342,12 @@ export class BlockActionMenuModule {
     }
 
     public destroy(): void {
+        this.removeEventListeners();
         if (this.menuObj) {
             this.menuObj.destroy();
             detach(this.menuElement);
             this.menuObj = null;
+            this.menuElement = null;
         }
         if (this.popupObj) {
             this.popupObj.destroy();
@@ -336,7 +358,8 @@ export class BlockActionMenuModule {
             this.blockActionTooltip.destroy();
             this.blockActionTooltip = null;
         }
-        this.removeEventListeners();
+        this.shortcutMap = null;
+        this.editor = null;
     }
 
     /**
@@ -346,7 +369,6 @@ export class BlockActionMenuModule {
      * @returns {void}
      * @hidden
      */
-    /* eslint-disable */
     protected onPropertyChanged(e: { [key: string]: BlockEditorModel }): void {
         if (e.module !== this.getModuleName()) {
             return;
@@ -377,6 +399,5 @@ export class BlockActionMenuModule {
             }
         }
     }
-    /* eslint-enable */
 
 }

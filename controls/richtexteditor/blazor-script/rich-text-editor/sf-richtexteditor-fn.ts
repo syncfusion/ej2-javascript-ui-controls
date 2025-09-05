@@ -26,32 +26,33 @@ import { MarkdownFormatter } from './formatter/markdown-formatter';
 import { FormatPainter } from './actions/format-painter';
 import { KeyboardEvents, KeyboardEventArgs } from './actions/keyboard';
 import { ExecCommandCallBack } from './actions/execute-command-callback';
-import { BeforeInputEvent, IHtmlKeyboardEvent, IHtmlUndoRedoData } from '../src/editor-manager/base/interface';
-import { ToolbarClickEventArgs, FocusBlurEventArgs, FormatModel, AdditionalSanitizeAttributes } from './interfaces';
+import { BeforeInputEvent, IHtmlKeyboardEvent, IHtmlUndoRedoData } from '../editor-scripts/editor-manager/base/interface';
+import { ToolbarClickEventArgs, FocusBlurEventArgs, FormatModel, AdditionalSanitizeAttributes, ImportWordSettingsModel } from './interfaces';
 import { LinkFormModel, IFormatter, FormatterMode, ToolsItem } from './interfaces';
 import { getEditValue, decode, dispatchEvent, hasClass, setAttributes, executeGroup, getDefaultValue } from './util';
-import { cleanHTMLString, scrollToCursor, getStructuredHtml } from '../src/common/util';
-import { IFrameSettingsModel } from '../src/models/iframe-settings-model';
-import { InlineModeModel } from '../src/models/inline-mode-model';
-import { ImageSettingsModel, AudioSettingsModel, VideoSettingsModel, PasteCleanupSettingsModel, QuickToolbarSettingsModel, ToolbarSettingsModel, FormatPainterSettingsModel, CodeBlockSettingsModel } from '../src/models/toolbar-settings-model';
-import { FontFamilyModel, FontSizeModel, FontColorModel, BackgroundColorModel, TableSettingsModel } from '../src/models/toolbar-settings-model';
-import { IImageCommandsArgs, ITableCommandsArgs, ExecuteCommandOption, StatusArgs, CleanupResizeElemArgs, ICodeBlockLanguageModel } from '../src/common/interface';
-import { PrintEventArgs, IExecutionGroup, NotifyArgs, ILinkCommandsArgs, MetaTag } from '../src/common/interface';
-import { CommandName } from '../src/common/enum';
-import { IDropDownClickArgs, IToolsItems, ActionCompleteEventArgs, IDropDownItemModel, IAudioCommandsArgs, IVideoCommandsArgs, ICodeBlockCommandsArgs } from '../src/common/interface';
+import { cleanHTMLString, scrollToCursor, getStructuredHtml, alignmentHtml } from '../editor-scripts/common/util';
+import { IFrameSettingsModel } from '../editor-scripts/models/iframe-settings-model';
+import { InlineModeModel } from '../editor-scripts/models/inline-mode-model';
+import { ImageSettingsModel, AudioSettingsModel, VideoSettingsModel, PasteCleanupSettingsModel, QuickToolbarSettingsModel, ToolbarSettingsModel, FormatPainterSettingsModel, CodeBlockSettingsModel } from '../editor-scripts/models/toolbar-settings-model';
+import { FontFamilyModel, FontSizeModel, FontColorModel, BackgroundColorModel, TableSettingsModel } from '../editor-scripts/models/toolbar-settings-model';
+import { IImageCommandsArgs, ITableCommandsArgs, ExecuteCommandOption, StatusArgs, CleanupResizeElemArgs, ICodeBlockLanguageModel, IListCommandArgs, IToolbarItems } from '../editor-scripts/common/interface';
+import { PrintEventArgs, IExecutionGroup, NotifyArgs, ILinkCommandsArgs, MetaTag } from '../editor-scripts/common/interface';
+import { CommandName } from '../editor-scripts/common/enum';
+import { IDropDownClickArgs, IToolsItems, ActionCompleteEventArgs, IDropDownItemModel, IAudioCommandsArgs, IVideoCommandsArgs, ICodeBlockCommandsArgs } from '../editor-scripts/common/interface';
 import { IBaseQuickToolbar } from './interfaces';
-import { IAdvanceListItem, ICodeBlockItem, IToolbarStatus, EditTableModel } from '../src/common/interface';
+import { IAdvanceListItem, ICodeBlockItem, IToolbarStatus, EditTableModel, SelectionChangedEventArgs } from '../editor-scripts/common/interface';
 import { HtmlToolbarStatus } from './actions/html-toolbar-status';
-import { ToolbarStatus } from '../src/editor-manager';
-import { mentionRestrictKeys } from '../src/common/config';
-import { cleanupInternalElements, removeSelectionClassStates, resetContentEditableElements } from '../src/common/util';
-import { CustomUserAgentData } from '../src/common/user-agent';
-import { ToolbarType } from '../src/common/enum';
-import * as CONSTANT from '../src/common/constant';
-import { MarkdownUndoRedoData } from '../src/markdown-parser/base/interface';
-import { NodeSelection } from '../src/selection/selection';
+import { ToolbarStatus } from '../editor-scripts/editor-manager';
+import { mentionRestrictKeys } from '../editor-scripts/common/config';
+import { cleanupInternalElements, removeSelectionClassStates, resetContentEditableElements } from '../editor-scripts/common/util';
+import { CustomUserAgentData } from '../editor-scripts/common/user-agent';
+import { ToolbarType } from '../editor-scripts/common/enum';
+import * as CONSTANT from '../editor-scripts/common/constant';
+import { MarkdownUndoRedoData } from '../editor-scripts/markdown-parser/base/interface';
+import { NodeSelection } from '../editor-scripts/selection/selection';
 import { CodeBlock } from './actions/code-block';
-import { IFRAME_EDITOR_DARK_THEME_STYLES, IFRAME_EDITOR_LIGHT_THEME_STYLES, IFRAME_EDITOR_STYLES } from '../src/common/editor-styles';
+import { IFRAME_EDITOR_DARK_THEME_STYLES, IFRAME_EDITOR_LIGHT_THEME_STYLES, IFRAME_EDITOR_STYLES } from '../editor-scripts/common/editor-styles';
+import { ImportWord } from './renderer/word-module';
 
 
 /**
@@ -109,6 +110,8 @@ export class SfRichTextEditor {
     public pasteCleanupSettings: PasteCleanupSettingsModel;
     public formatPainterSettings: FormatPainterSettingsModel;
     public codeBlockSettings: CodeBlockSettingsModel;
+    private mutationObserver: MutationObserver;
+    public importWordValue: ImportWordSettingsModel = {};
 
     /**
      * First immediate container from the Rich Text Editor Root element.
@@ -156,7 +159,13 @@ export class SfRichTextEditor {
     public onMediaUploadSuccessEnabled: boolean = false;
     public beforePasteCleanupEnabled: boolean = false;
     public afterPasteCleanupEnabled: boolean = false;
+    public selectionChangedEnabled: boolean = false;
     private isPlainPaste: boolean = false;
+    private hasContentChanged: boolean = false;
+    private isSelecting: boolean = false;
+    private isSelectionStartInRTE: boolean = false;
+    private selectionTimeout: number;
+    private previousRange: Range | null;
     //#endregion
 
     //#region HtmlElement variables
@@ -208,6 +217,7 @@ export class SfRichTextEditor {
     public userAgentData: CustomUserAgentData;
     public formatPainterModule: FormatPainter;
     public codeBlockModule: CodeBlock;
+    public wordModule: ImportWord;
 
     private onLoadHandler: () => void;
     private onClickBoundfn: () => void;
@@ -275,6 +285,9 @@ export class SfRichTextEditor {
         if (this.editorMode === 'HTML') {
             this.enterKeyModule = new EnterKeyAction(this);
             this.codeBlockModule = new CodeBlock(this);
+        }
+        if (this.editorMode === 'HTML') {
+            this.wordModule = new ImportWord(this);
         }
     }
     public initialize(): void {
@@ -466,9 +479,6 @@ export class SfRichTextEditor {
         if (this.height === 'auto') {
             iframe.contentDocument.body.style.overflowY = 'hidden';
         }
-        if (this.enableRtl) {
-            iframe.contentDocument.body.setAttribute('class', 'e-rtl');
-        }
         if (!isNOU(iframe.contentDocument.head) && (this.iframeSettings.metaTags as Array<MetaTag>).length > 0) {
             const head: HTMLHeadElement = iframe.contentDocument.head;
             const metaData: Array<MetaTag> = this.iframeSettings.metaTags;
@@ -557,26 +567,26 @@ export class SfRichTextEditor {
     }
     private getUpdatedValue(): string {
         let value: string;
-        if (!isNOU(this.tableModule) && this.tableModule.tableObj) {
-            this.tableModule.tableObj.removeResizeElement();
-        }
         const getTextArea: HTMLInputElement = this.element.querySelector('.' + classes.CLS_RTE_SOURCE_CODE_TXTAREA);
         if (this.editorMode === 'HTML') {
             const inputContent: string = this.getInputInnerHtml();
             value = (inputContent === getDefaultValue(this)) ? null : this.enableHtmlEncode ?
-                this.encode(decode(inputContent)) : inputContent;
+                this.encode(decode(this.removeResizeElement(inputContent))) : inputContent;
             if (this.enableHtmlSanitizer && !isNOU(value) && /&(amp;)*((times)|(divide)|(ne))/.test(this.value)) {
                 value = value.replace(/&(amp;)*(times|divide|ne)/g, '&amp;amp;$2');
             }
             if (!isNOU(getTextArea) && this.rootContainer.classList.contains('e-source-code-enabled')) {
                 const textAreaValue: string = this.enableHtmlSanitizer ? this.htmlEditorModule.sanitizeHelper(
                     getTextArea.value) : getTextArea.value;
-                value = /&(amp;)*((times)|(divide)|(ne))/.test(textAreaValue) ? textAreaValue.replace(/&(amp;)*(times|divide|ne)/g, '&amp;amp;$2') : textAreaValue;
+                value = cleanHTMLString((/&(amp;)*((times)|(divide)|(ne))/.test(textAreaValue) ? textAreaValue.replace(/&(amp;)*(times|divide|ne)/g, '&amp;amp;$2') : textAreaValue), this.element);
             }
             value = cleanupInternalElements(value, this.editorMode);
         } else {
             value = (this.inputElement as HTMLTextAreaElement).value === '' ? null :
                 (this.inputElement as HTMLTextAreaElement).value;
+        }
+        if (value != null && !this.enableHtmlEncode) {
+            value = this.removeResizeElement(value);
         }
         return value;
     }
@@ -624,6 +634,9 @@ export class SfRichTextEditor {
             commandName = 'insertHTML';
         }
         value = this.htmlPurifier(commandName, value);
+        let internalValue: string | HTMLElement | ILinkCommandsArgs |
+        IImageCommandsArgs | ITableCommandsArgs | FormatPainterSettingsModel |
+        ICodeBlockCommandsArgs | IListCommandArgs;
         if (this.editorMode === 'HTML') {
             const range: Range = this.getRange();
             if (this.iframeSettings.enable) {
@@ -641,8 +654,12 @@ export class SfRichTextEditor {
                 this.formatter.saveData();
             }
         }
+        internalValue = value;
         if (tool.command === 'CodeBlock' && !isNOU(value)) {
             (value as ICodeBlockItem).action = 'createCodeBlock';
+        }
+        if ((tool.subCommand === 'NumberFormatList' || tool.subCommand === 'BulletFormatList')) {
+            internalValue = { listStyle: value, type: tool.subCommand };
         }
         this.formatter.editorManager.execCommand(
             tool.command,
@@ -650,7 +667,7 @@ export class SfRichTextEditor {
             null,
             null,
             (value ? value : tool.value),
-            (value ? value : tool.value)
+            (internalValue ? internalValue : (tool.value === 'UL' || tool.value === 'OL') ? null : tool.value)
         );
         scrollToCursor(this.getDocument(), this.inputElement);
         if (option && option.undo) {
@@ -907,7 +924,7 @@ export class SfRichTextEditor {
             setAttributes(this.iframeSettings.attributes, this, true, false);
         }
         if (this.iframeSettings.enable && this.enableRtl) {
-            this.inputElement.setAttribute('class', 'e-rtl');
+            this.inputElement.classList.add('e-rtl');
         } else if (this.iframeSettings.enable && !this.enableRtl) {
             if (this.inputElement.hasAttribute('class')) {
                 if (this.inputElement.classList.contains('e-rtl')) {
@@ -1166,6 +1183,18 @@ export class SfRichTextEditor {
                 this.inputElement.setAttribute('placeholder', this.placeholder);
             }
         }
+        if (this.placeholder && this.iframeSettings.enable && this.inputElement) {
+            if (this.inputElement.textContent.length === 0 && this.inputElement.childNodes.length < 2 && !isNOU(this.inputElement.firstChild) && (this.inputElement.firstChild.nodeName === 'BR' ||
+                ((this.inputElement.firstChild.nodeName === 'P' || this.inputElement.firstChild.nodeName === 'DIV') && !isNOU(this.inputElement.firstChild.firstChild) &&
+                    this.inputElement.firstChild.firstChild.nodeName === 'BR'))) {
+                addClass([this.inputElement], 'e-rte-placeholder');
+                this.inputElement.setAttribute('placeholder', this.placeholder);
+                EventHandler.add(this.inputElement as HTMLElement, 'input', this.setPlaceHolder, this);
+            } else {
+                removeClass([this.inputElement], 'e-rte-placeholder');
+                EventHandler.remove(this.inputElement as HTMLElement, 'input', this.setPlaceHolder);
+            }
+        }
     }
     private replaceEntities(value: string): string {
         if (this.editorMode !== 'HTML' || isNOU(value) || !/&(amp;)*((times)|(divide)|(ne))/.test(value)) {
@@ -1197,7 +1226,7 @@ export class SfRichTextEditor {
         const getTextArea: HTMLInputElement = this.element.querySelector('.' + classes.CLS_RTE_SOURCE_CODE_TXTAREA);
         if (value) {
             if (!isNOU(getTextArea) && this.rootContainer.classList.contains('e-source-code-enabled')) {
-                getTextArea.value = rtevalue;
+                getTextArea.value = alignmentHtml(rtevalue);
             }
             if (this.valueContainer) {
                 this.valueContainer.value = containerValue === '' ? '' : (this.enableHtmlEncode) ? rtevalue : value;
@@ -1290,9 +1319,9 @@ export class SfRichTextEditor {
     public toolbarCreated(): void {
         if (this.userAgentData.isSafari()) {
             setTimeout((): void => {
-                const extendedToolbarElement: HTMLElement = this.getToolbarElement() ? this.getToolbarElement().querySelector('.e-expended-nav') : null;
+                const extendedToolbarElement: HTMLElement = this.getToolbarElement() ? this.getToolbarElement().querySelector('#' + this.id + '_toolbar_nav') : null;
                 if (extendedToolbarElement) {
-                    if (this.toolbarSettings.type === 'Expand') {
+                    if (this.toolbarSettings.type === 'Expand' || this.toolbarSettings.type === 'Popup') {
                         EventHandler.add(extendedToolbarElement, 'mousedown', this.extendedToolbarMouseDownHandler, this);
                         EventHandler.add(extendedToolbarElement, 'click', this.extendedToolbarClickHandler, this);
                     } else {
@@ -1300,7 +1329,7 @@ export class SfRichTextEditor {
                         EventHandler.remove(extendedToolbarElement, 'click', this.extendedToolbarClickHandler);
                     }
                 }
-            }, 5);
+            }, 40);
         }
     }
     private extendedToolbarMouseDownHandler(): void {
@@ -1421,7 +1450,7 @@ export class SfRichTextEditor {
                         if (currentListStyle === (args.element.firstElementChild.childNodes[index as number] as HTMLElement).innerHTML.split(' ').join('').toLocaleLowerCase()) {
                             addClass([args.element.firstElementChild.childNodes[index as number]] as Element[], 'e-active');
                             break;
-                        } else if (currentListStyle === '' && ((args.element.childNodes[index as number] as HTMLElement).innerHTML === 'Number' || (args.element.childNodes[index as number] as HTMLElement).innerHTML === 'Disc') ) {
+                        } else if (currentListStyle === '' && ((args.element.firstElementChild.childNodes[index as number] as HTMLElement).innerHTML === 'Number' || (args.element.firstElementChild.childNodes[index as number] as HTMLElement).innerHTML === 'Disc') ) {
                             addClass([args.element.firstElementChild.childNodes[index as number]] as Element[], 'e-active');
                             break;
                         }
@@ -1892,17 +1921,66 @@ export class SfRichTextEditor {
     public beforeSlashMenuApply(): void {
         this.formatter.editorManager.beforeSlashMenuApplyFormat();
     }
+    public showWordDialog(): void {
+        this.wordModule.showDialog(true);
+    }
+    public slashMenuToolbarRefresh(): void {
+        this.observer.notify(events.toolbarRefresh, {});
+    }
     public destroy(): void {
         this.unWireEvents();
         this.observer.notify(events.destroy, {});
         //eslint-disable-next-line @typescript-eslint/no-explicit-any
         (window as any).sfBlazor.disposeWindowsInstance(this.dataId);
+        this.isSelecting = false;
+        this.selectionTimeout = null;
+        this.previousRange = null;
+        if (!isNOU(this.timeInterval)) {
+            clearInterval(this.timeInterval);
+            this.timeInterval = null;
+        }
     }
     //#endregion
     //#region Event binding and unbinding function
     private wireEvents(): void {
         this.element.addEventListener('focusin', this.onFocusHandler, true);
         this.element.addEventListener('focusout', this.onBlurHandler, true);
+        if (this.editorMode === 'HTML') {
+            this.mutationObserver = new MutationObserver((mutations: MutationRecord[]) => {
+                if (mutations.length > 0 && !this.isFocusOut) {
+                    if (this.checkContentChanged(mutations)) {
+                        this.hasContentChanged = true;
+                        // Only set up interval for non-autoSaveOnIdle mode
+                        if (!this.autoSaveOnIdle && !isNOU(this.saveInterval) && this.saveInterval > 0) {
+                            if (isNOU(this.timeInterval)) {
+                                this.timeInterval = setInterval(() => {
+                                    if (this.hasContentChanged) {
+                                        this.updateValueOnIdle();
+                                        this.hasContentChanged = false; // Reset after saving
+                                    } else {
+                                        clearInterval(this.timeInterval);
+                                        this.timeInterval = null;
+                                    }
+                                }, this.saveInterval);
+                            }
+                        }
+                    } else {
+                        // If no changes detected and there's an active interval, clear it
+                        if (!this.autoSaveOnIdle && !isNOU(this.timeInterval)) {
+                            clearInterval(this.timeInterval);
+                            this.timeInterval = null;
+                        }
+                    }
+                }
+            });
+            this.mutationObserver.observe(this.inputElement, {
+                attributes: true,
+                childList: true,
+                subtree: true,
+                characterData: true,
+                attributeOldValue: true
+            });
+        }
         this.observer.on(events.contentChanged, this.contentChanged, this);
         this.observer.on(events.modelChanged, this.refresh, this);
         this.wireResizeEvents();
@@ -1915,6 +1993,31 @@ export class SfRichTextEditor {
         }
         if (this.readonly && this.enabled) { return; }
         this.bindEvents();
+    }
+    private checkContentChanged(mutations: MutationRecord[]): boolean {
+        return mutations.some((mutation: MutationRecord) => {
+            // Check for text content changes
+            if (mutation.type === 'characterData') {
+                return true;
+            }
+            // Check for added or removed nodes
+            if (mutation.type === 'childList' &&
+                (mutation.addedNodes.length > 0 || mutation.removedNodes.length > 0)) {
+                return true;
+            }
+            // Check for relevant attribute changes (if needed)
+            if (mutation.type === 'attributes') {
+                const target: Node = mutation.target as HTMLElement;
+                if ((target as HTMLElement).isContentEditable && this.inputElement === target) {
+                    return false;
+                }
+                const attributeName: string = mutation.attributeName;
+                const currentValue: string = (target as HTMLElement).getAttribute(attributeName);
+                const previousValue: string = mutation.oldValue;
+                return previousValue !== currentValue;
+            }
+            return false;
+        });
     }
     private wireResizeEvents(): void {
         if (this.enableResize) {
@@ -1955,6 +2058,10 @@ export class SfRichTextEditor {
             EventHandler.add(this.getPanel(), 'load', this.iframeLoadHandler, this);
         }
         this.wireScrollElementsEvents();
+        //Handle selectionchange to update selection state
+        EventHandler.add(this.inputElement.ownerDocument, 'selectionchange', this.selectionChangeHandler, this);
+        //Handle mouseup (document-wide to capture outside RTE release)
+        EventHandler.add(this.inputElement.ownerDocument, 'mouseup', this.mouseUpHandlerForSelection , this);
     }
     private clickHandler(e: MouseEvent): void {
         if (e.target && (e.target as Element).nodeName === 'A' && !e.ctrlKey) {
@@ -1981,6 +2088,10 @@ export class SfRichTextEditor {
     private unWireEvents(): void {
         this.element.removeEventListener('focusin', this.onFocusHandler, true);
         this.element.removeEventListener('focusout', this.onBlurHandler, true);
+        if (this.mutationObserver) {
+            this.mutationObserver.disconnect();
+            this.mutationObserver = null;
+        }
         this.observer.off(events.contentChanged, this.contentChanged);
         this.unWireResizeEvents();
         this.observer.off(events.updateTbItemsStatus, this.updateStatus);
@@ -2038,6 +2149,10 @@ export class SfRichTextEditor {
                 EventHandler.remove(extendedToolbarElement, 'click', this.extendedToolbarClickHandler);
             }
         }
+        //Handle selectionchange to update selection state
+        EventHandler.remove(this.inputElement.ownerDocument, 'selectionchange', this.selectionChangeHandler);
+        //Handle mouseup (document-wide to capture outside RTE release)
+        EventHandler.remove(this.inputElement.ownerDocument, 'mouseup', this.mouseUpHandlerForSelection);
     }
     private unWireContextEvent(): void {
         EventHandler.remove(this.inputElement, 'contextmenu', this.contextHandler);
@@ -2085,7 +2200,7 @@ export class SfRichTextEditor {
             this.preventDefaultResize(e, false);
             const args: FocusBlurEventArgs = { isInteracted: Object.keys(e).length === 0 ? false : true };
             if (this.focusEnabled) { this.dotNetRef.invokeMethodAsync('FocusEvent', args); }
-            if (!isNOU(this.saveInterval) && this.saveInterval > 0 && !this.autoSaveOnIdle) {
+            if (!isNOU(this.saveInterval) && this.saveInterval > 0 && !this.autoSaveOnIdle && isNOU(this.timeInterval) && this.editorMode === 'Markdown') {
                 this.timeInterval = setInterval(this.updateValueOnIdle.bind(this), this.saveInterval);
             }
             EventHandler.add(document, 'mousedown', this.onDocumentClick, this);
@@ -2139,6 +2254,7 @@ export class SfRichTextEditor {
             this.isRTE = true;
         }
         if (!this.readonly && this.getCurrentFocus(e) === 'outside') { this.resetToolbarTabIndex(); }
+        this.previousRange = null;
     }
     private resizeHandler(eventArgs: Event, ignoreRefresh: boolean): void {
         let isExpand: boolean = false;
@@ -2185,6 +2301,21 @@ export class SfRichTextEditor {
         this.autoResize();
     }
     private mouseUp(e: MouseEvent | TouchEvent): void {
+        this.isSelectionStartInRTE = false;
+        if (this.isSelectionCollapsed()) {
+            const selection: Selection = this.getDocument().getSelection();
+            const range: Range = selection && selection.rangeCount !== 0 && selection.getRangeAt(0);
+            this.previousRange = range && range.cloneRange();
+        }
+        const target: HTMLElement = e.target as HTMLElement;
+        const mediaTags: string[] = ['IMG', 'VIDEO', 'AUDIO', 'TABLE', 'TH', 'TD', 'TR', 'TBODY'];
+        const isNotMediaElement: boolean = !(target && mediaTags.indexOf(target.tagName) !== -1 || (target.nodeName !== '#text' &&
+            (target.closest('.e-audio-wrap') || target.closest('.e-video-wrap'))));
+        if (isNotMediaElement && this.editorMode === 'HTML' && !(Browser.isDevice)) {
+            if (!this.isSelectionInRTE()) {
+                return;
+            }
+        }
         if (this.quickToolbarSettings.showOnRightClick && Browser.isDevice) {
             const target: Element = e.target as Element;
             const closestTable: Element = closest(target, 'table');
@@ -2195,8 +2326,13 @@ export class SfRichTextEditor {
         }
         this.notifyMouseUp(e);
         this.updateUndoRedoStack(e);
+        if (this.isSelectionInRTE()) {
+            this.triggerOnSelectionChange();
+            this.isSelecting = false;
+        }
     }
     private mouseDownHandler(e: MouseEvent | TouchEvent): void {
+        this.isSelectionStartInRTE = true;
         const touch: Touch = <Touch>((e as TouchEvent).touches ? (e as TouchEvent).changedTouches[0] : e);
         addClass([this.element], [classes.CLS_FOCUS]);
         this.preventDefaultResize(e as MouseEvent, false);
@@ -2243,6 +2379,7 @@ export class SfRichTextEditor {
         }
     }
     public keyDown(e: KeyboardEvent): void {
+        this.isSelectionStartInRTE = true;
         const isMacDev: boolean = navigator.userAgent.indexOf('Mac') !== -1;
         if (((e.ctrlKey || (e.metaKey && isMacDev)) && e.shiftKey && e.keyCode === 86) ||
             (e.metaKey && isMacDev && e.altKey && e.shiftKey && e.keyCode === 86)) {
@@ -2356,7 +2493,8 @@ export class SfRichTextEditor {
             if (!isNOU(this.formatPainterModule)) {
                 FormatPainterEscapeAction = this.formatPainterModule.previousAction === 'escape';
             }
-            if (!FormatPainterEscapeAction && allowInsideCodeBlock && !isCodeBlockEnter) {
+            const isUndoRedoAction: boolean = (e as KeyboardEventArgs).action === 'undo' || (e as KeyboardEventArgs).action === 'redo';
+            if ((!FormatPainterEscapeAction || isUndoRedoAction) && allowInsideCodeBlock && !isCodeBlockEnter) {
                 if (this.editorMode === 'HTML' && ((e as KeyboardEventArgs).action === 'increase-fontsize' || (e as KeyboardEventArgs).action === 'decrease-fontsize')) {
                     this.observer.notify(events.onHandleFontsizeChange, { member: 'onHandleFontsizeChange', args: e });
                 } else {
@@ -2394,15 +2532,11 @@ export class SfRichTextEditor {
             }
         }
         if (!isNOU(this.placeholder)) {
-            if ((!isNOU(this.placeHolderContainer)) && (this.inputElement.textContent.length !== 1)) {
-                this.placeHolderContainer.classList.remove('e-placeholder-enabled');
-            } else {
-                this.setPlaceHolder();
-            }
+            this.setPlaceHolder();
         }
         this.observer.notify(events.afterKeyDown, { member: 'afterKeyDown', args: e });
         this.autoResize();
-        if (!isNOU(e) && !isNOU(e.code) && (e.code === 'Backspace' || e.code === 'Delete')) {
+        if (this.editorMode === 'HTML' && !isNOU(e) && !isNOU(e.code) && (e.code === 'Backspace' || e.code === 'Delete')) {
             const range: Range = this.getDocument().getSelection().getRangeAt(0);
             const div: HTMLElement = document.createElement('div');
             div.appendChild(range.cloneContents());
@@ -2416,6 +2550,12 @@ export class SfRichTextEditor {
         if (e.metaKey && e.key === 'Backspace' && this.autoSaveOnIdle) {
             this.keyUp(e);
         }
+        if (this.editorMode === 'HTML') {
+            const selection: Selection = this.getDocument().getSelection();
+            const range: Range = selection && selection.getRangeAt(0);
+            this.previousRange = range && range.cloneRange();
+        }
+
     }
 
     private editorKeyDown(e: IHtmlKeyboardEvent): void {
@@ -2426,6 +2566,10 @@ export class SfRichTextEditor {
         case 'cut':
             this.onCut(e.event);
             break;
+        case 'print':
+            e.event.preventDefault();
+            this.print();
+            break;
         }
         if (e.callBack && (e.event.action === 'copy' || e.event.action === 'cut' || e.event.action === 'delete')) {
             e.callBack({
@@ -2433,6 +2577,35 @@ export class SfRichTextEditor {
                 editorMode: 'HTML',
                 event: e.event
             });
+        }
+    }
+    // Clear selection timeout for keyup event triggering
+    private clearSelectionTimeout(): void {
+        if (this.selectionTimeout) {
+            clearTimeout(this.selectionTimeout);
+            this.selectionTimeout = null;
+        }
+    }
+
+    // Triggers the onSelectionchange event
+    private triggerOnSelectionChange(): void {
+        const selection: Selection | null = this.getDocument().getSelection();
+        const currentRange: Range = selection && selection.getRangeAt(0);
+        if (!this.isSelectionCollapsed()) {
+            const isSamerange: boolean = this.previousRange &&
+                (this.previousRange.startContainer === currentRange.startContainer
+                    && this.previousRange.endContainer === currentRange.endContainer
+                    && this.previousRange.startOffset === currentRange.startOffset
+                    && this.previousRange.endOffset === currentRange.endOffset);
+            if (!isSamerange) {
+                const selectionArgs: SelectionChangedEventArgs = {
+                    selectedContent: this.getSelectedHtml()
+                };
+                if (this.selectionChangedEnabled) {
+                    this.dotNetRef.invokeMethodAsync('SelectionChanged', selectionArgs);
+                }
+                this.previousRange = currentRange.cloneRange();
+            }
         }
     }
     private keyUp(e: KeyboardEvent): void {
@@ -2497,6 +2670,17 @@ export class SfRichTextEditor {
             }
         }
         this.autoResize();
+        if (this.editorMode === 'HTML') {
+            //Clears the selectionTimeout and triggers the onSelectionChange event.
+            this.clearSelectionTimeout();
+            this.selectionTimeout = window.setTimeout(() => {
+                if (this.isSelecting) {
+                    this.triggerOnSelectionChange();
+                    this.isSelecting = false;
+                    this.isSelectionStartInRTE = false;
+                }
+            }, 600);
+        }
     }
     /*
      * Updates the undo/redo stack based on user interactions like mouse up or key up events.
@@ -2749,6 +2933,17 @@ export class SfRichTextEditor {
                 }
                 this.setIframeSettings();
                 break;
+            case 'enableRtl':
+                if (this.iframeSettings.enable && this.enableRtl) {
+                    this.inputElement.classList.add('e-rtl');
+                } else if (this.iframeSettings.enable && !this.enableRtl) {
+                    if (this.inputElement.hasAttribute('class')) {
+                        if (this.inputElement.classList.contains('e-rtl')) {
+                            this.inputElement.classList.remove('e-rtl');
+                        }
+                    }
+                }
+                break;
             case 'quickToolbarSettings':
                 if (this.quickToolbarSettings.enable) {
                     if (isNOU(this.quickToolbarModule)) { this.quickToolbarModule = new QuickToolbar(this); }
@@ -2790,6 +2985,8 @@ export class SfRichTextEditor {
         this.autoResize();
         if (this.formatter) {
             this.formatter.editorManager.observer.notify(events.bindOnEnd, {});
+            this.observer.notify(events.updateProperty, {});
+
         }
     }
     //#endregion
@@ -2883,5 +3080,78 @@ export class SfRichTextEditor {
 
     public closePopup(): void {
         this.tableModule.closePopup();
+    }
+
+    // Utility to check if selection is within RTE
+    private isSelectionInRTE(): boolean {
+        const selection: Selection = this.getDocument().getSelection();
+        if (selection.rangeCount > 0) {
+            const range: Range = selection.getRangeAt(0);
+            if (range && (this.inputElement.contains(range.startContainer) &&
+                this.inputElement.contains(range.endContainer))) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    // EventHandler for selectionchange event
+    private selectionChangeHandler(event: Event): void {
+        if (this.isSelectionInRTE() && !this.isSelectionCollapsed() && this.isSelectionStartInRTE) {
+            this.isSelecting = true;
+        }
+    }
+
+    // Checks the selection is within RTE
+    private isMouseUpOutOfRTE(event: Event): boolean {
+        const isTargetDocument: boolean = event.target && ((event.target as HTMLElement).nodeName === 'HTML' || (event.target as HTMLElement).nodeName === '#document');
+        const isTargetNotRteElements: boolean = !(event.target && (event.target as HTMLElement).nodeName !== '#text' &&
+            (event.target as HTMLElement).nodeName !== '#document' && (event.target as HTMLElement).nodeName !== 'HTML' &&
+            ((event.target as HTMLElement).closest('.e-rte-elements') || (event.target as HTMLElement).closest('.e-rte-toolbar')));
+        if (isTargetDocument || (!this.inputElement.contains(event.target as HTMLElement) && isTargetNotRteElements)) {
+            return true;
+        }
+        return false;
+    }
+
+    // EventHandler for mouseup event
+    private mouseUpHandlerForSelection(event: MouseEvent): void {
+        if (this.isSelecting && this.isMouseUpOutOfRTE(event)) {
+            this.endSelection(event);
+        }
+        this.isSelectionStartInRTE = false;
+    }
+
+    // End selection and trigger onTextSelection
+    private endSelection(e: MouseEvent | KeyboardEvent): void {
+        this.handleSelectionChange(e);
+        this.isSelecting = false;
+    }
+
+    // Checks range is collapsed or not
+    private isSelectionCollapsed(): boolean {
+        const selection: Selection = this.getDocument().getSelection();
+        const range: Range = selection && selection.rangeCount !== 0 && selection.getRangeAt(0);
+        return (range.startContainer === range.endContainer &&
+            range.startOffset === range.endOffset);
+    }
+
+    // Handles selection changes and updates toolbar and quick toolbar based on user interaction
+    private handleSelectionChange(e: MouseEvent | KeyboardEvent): void {
+        // If selection was made and mouseup occurred (even outside the RTE), trigger quick toolbars
+        if (this.inlineMode.enable === true) {
+            this.observer.notify(events.selectionChangeMouseUp, { args: e });
+        }
+        // Determine if quick toolbar should be rendered based on settings and event type
+        const shouldRenderQuickToolbar: boolean | (string | IToolbarItems)[] = (!this.inlineMode.enable && this.quickToolbarSettings && (this.quickToolbarSettings.text || (this.quickToolbarSettings.link && e.type === 'mouseup')));
+        // Render quick toolbar and notify selectionChangeMouseUp for quicktoolbar functionalities
+        if (shouldRenderQuickToolbar) {
+            this.observer.notify(events.selectionChangeMouseUp, { args: e });
+        }
+        // Update the toolbar to reflect current selection state
+        if (!(this.quickToolbarModule.linkQTBar && this.quickToolbarModule.linkQTBar.element && this.quickToolbarModule.linkQTBar.element.classList.contains('e-popup-open'))) {
+            this.observer.notify(events.toolbarRefresh, { args: e });
+        }
+        this.triggerOnSelectionChange();
     }
 }

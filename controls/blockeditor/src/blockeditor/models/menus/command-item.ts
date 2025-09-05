@@ -15,7 +15,7 @@ export class CommandItem  extends ChildProperty<CommandItem> {
      * @default 'Template'
      */
     @Property('Template')
-    public type: BlockType;
+    public type: string | BlockType;
 
     /**
      * Specifies the unique identifier of the command item.

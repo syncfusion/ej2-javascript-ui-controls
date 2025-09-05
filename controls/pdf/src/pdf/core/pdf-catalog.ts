@@ -164,7 +164,7 @@ export class _PdfCatalog {
         if (!parent || !parent.has('Kids')) {
             return null;
         }
-        let kids: any = parent.getRaw('Kids'); // eslint-disable-line
+        let kids: any = parent.getRaw('Kids');
         if (kids instanceof _PdfReference) {
             kids = this._crossReference._fetch(kids);
         }
@@ -189,8 +189,8 @@ export class _PdfCatalog {
         if (nextIndex < 0 || nextIndex >= kids.length) {
             return null;
         }
-        const nextKid: any = kids[nextIndex]; // eslint-disable-line
-        const nextDict: any = nextKid instanceof _PdfReference ? this._crossReference._fetch(nextKid) : nextKid; // eslint-disable-line
+        const nextKid: any = kids[nextIndex];
+        const nextDict: any = nextKid instanceof _PdfReference ? this._crossReference._fetch(nextKid) : nextKid;
         if (!(nextDict instanceof _PdfDictionary)) {
             throw new FormatError('Invalid page dictionary type.');
         }
@@ -202,7 +202,7 @@ export class _PdfCatalog {
     private _traverseFromRoot(pageIndex: number): { dictionary: _PdfDictionary, reference: _PdfReference } {
         const nodesToVisit: _PdfDictionary[] = [this._topPagesDictionary];
         const visitedNodes: _PdfReferenceSet = new _PdfReferenceSet();
-        const pagesRef: any = this._catalogDictionary.getRaw('Pages'); // eslint-disable-line
+        const pagesRef: any = this._catalogDictionary.getRaw('Pages');
         if (pagesRef && pagesRef instanceof _PdfReference) {
             visitedNodes.put(pagesRef);
         }
@@ -213,7 +213,7 @@ export class _PdfCatalog {
         while (nodesToVisit.length > 0) {
             const currentNode: _PdfDictionary = nodesToVisit.pop();
             if (currentNode && currentNode instanceof _PdfReference) {
-                const count: any = pageKidsCountCache.get(currentNode); // eslint-disable-line
+                const count: any = pageKidsCountCache.get(currentNode);
                 if (count >= 0 && currentPageIndex + count <= pageIndex) {
                     currentPageIndex += count;
                     continue;
@@ -222,9 +222,9 @@ export class _PdfCatalog {
                     throw new FormatError('Pages tree contains circular reference.');
                 }
                 visitedNodes.put(currentNode);
-                const obj: any = xref._fetch(currentNode); // eslint-disable-line
+                const obj: any = xref._fetch(currentNode);
                 if (obj && obj instanceof _PdfDictionary) {
-                    let type: any = obj.getRaw('Type'); // eslint-disable-line
+                    let type: any = obj.getRaw('Type');
                     if (type instanceof _PdfReference) {
                         type = xref._fetch(type);
                     }
@@ -250,7 +250,7 @@ export class _PdfCatalog {
                 throw new FormatError('Page dictionary kid reference points to wrong type of object.');
             }
             const { objId } = currentNode;
-            let count: any = currentNode.get('Count'); // eslint-disable-line
+            let count: any = currentNode.get('Count');
             if (count instanceof _PdfReference) {
                 count = xref._fetch(count);
             }
@@ -263,12 +263,12 @@ export class _PdfCatalog {
                     continue;
                 }
             }
-            let kids: any = currentNode.getRaw('Kids'); // eslint-disable-line
+            let kids: any = currentNode.getRaw('Kids');
             if (kids instanceof _PdfReference) {
                 kids = xref._fetch(kids);
             }
             if (!Array.isArray(kids)) {
-                let type: any = currentNode.getRaw('Type'); // eslint-disable-line
+                let type: any = currentNode.getRaw('Type');
                 if (type instanceof _PdfReference) {
                     type = xref._fetch(type);
                 }

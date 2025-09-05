@@ -6,7 +6,7 @@ import { Grid, Resize, ColumnModel, Column, ExcelExport, PdfExport, ContextMenu,
 import { PdfHeaderQueryCellInfoEventArgs, ExcelQueryCellInfoEventArgs, PdfQueryCellInfoEventArgs } from '@syncfusion/ej2-grids';
 import { ExcelHeaderQueryCellInfoEventArgs, HeaderCellInfoEventArgs, Selection, RowDeselectEventArgs } from '@syncfusion/ej2-grids';
 import { CellDeselectEventArgs, CellSelectingEventArgs, ExcelExportCompleteArgs } from '@syncfusion/ej2-grids';
-import { createElement, setStyleAttribute, remove, isNullOrUndefined, EventHandler, getElement, closest, append } from '@syncfusion/ej2-base';
+import { createElement, setStyleAttribute, remove, isNullOrUndefined, EventHandler, getElement, closest, append, formatUnit } from '@syncfusion/ej2-base';
 import { addClass, removeClass, SanitizeHtmlHelper, select, selectAll } from '@syncfusion/ej2-base';
 import * as cls from '../../common/base/css-constant';
 import * as events from '../../common/base/constant';
@@ -78,8 +78,8 @@ export class Render {
      */
     constructor(parent: PivotView) {
         this.parent = parent;
-        this.resColWidth = (this.parent.showGroupingBar && this.parent.groupingBarModule) ? (this.parent.isAdaptive ? 180 : 250) :
-            (this.parent.isAdaptive ? 140 : 200);
+        this.resColWidth = !this.parent.isTabular ? (this.parent.showGroupingBar && this.parent.groupingBarModule
+            ? (this.parent.isAdaptive ? 180 : 250) : (this.parent.isAdaptive ? 140 : 200)) : 150;
         this.engine = this.parent.dataType === 'olap' ? this.parent.olapEngineModule : this.parent.engineModule;
         this.gridSettings = this.parent.gridSettings;
         this.formatList = this.getFormatList();
@@ -450,6 +450,16 @@ export class Render {
             if (this.parent.enableVirtualization) {
                 this.parent.onContentReady();
             }
+        }
+        if (this.parent.isTabular) {
+            const rowHeader: NodeListOf<HTMLElement> = this.parent.element.querySelectorAll('.' + cls.HEADERCELL + '.' + cls.FREEZED_CELL);
+            const isRtl: boolean = this.parent.enableRtl;
+            rowHeader.forEach((el: HTMLElement, index: number) => {
+                const isLast: boolean = index === rowHeader.length - 1;
+                if (!isNullOrUndefined(el) && (!isRtl || (isRtl && !isLast))) {
+                    el.style.setProperty('border-left-width', '0px');
+                }
+            });
         }
         this.parent.notify(events.contentReady, {});
     }
@@ -1031,7 +1041,7 @@ export class Render {
                     `${(args.column.customAttributes.cell as IAxisSet).valueSort.levelName}`;
             this.parent.resizeInfo[column as string] = Number(args.column.width.toString().split('px')[0]);
         }
-        if (this.parent.enableVirtualization && args.column.field === '0.formattedText') {
+        if (!this.parent.isTabular && this.parent.enableVirtualization && args.column.field === '0.formattedText') {
             if (this.parent.dataSourceSettings.values.length > 1
                 && !isNullOrUndefined((this.parent.grid.columns[this.parent.grid.columns.length - 1] as ColumnModel).columns)) {
                 const gridColumns: string[] | ColumnModel[] | Column[] =
@@ -1042,9 +1052,11 @@ export class Render {
                     this.parent.gridSettings.columnWidth;
             }
             this.parent.layoutRefresh();
-            this.parent.grid.headerModule.refreshUI();
         }
         this.setGroupWidth(args);
+        if (this.parent.showGroupingBar && this.parent.groupingBarModule) {
+            this.setValuePanelWidth();
+        }
         this.calculateGridHeight(true);
         this.parent.grid.hideScroll();
     }
@@ -1061,38 +1073,53 @@ export class Render {
     }
 
     private setGroupWidth(args: ResizeArgs): void {
-        if (this.parent.enableVirtualization && args.column.field === '0.formattedText') {
-            if (this.parent.showGroupingBar && this.parent.groupingBarModule && this.parent.element.querySelector('.' + cls.GROUPING_BAR_CLASS) && Number(args.column.width.toString().split('px')[0]) < 250) {
-                args.cancel = true;
-            }
-            // else {
-            //     (this.parent.element.querySelector('.e-frozenscrollbar') as HTMLElement).style.width = args.column.width.toString().split('px')[0] + 'px';
-            // }
-        }
+        // if (this.parent.enableVirtualization && args.column.field === '0.formattedText') {
+        //     if (this.parent.showGroupingBar && this.parent.groupingBarModule && this.parent.element.querySelector('.' + cls.GROUPING_BAR_CLASS) && Number(args.column.width.toString().split('px')[0]) < 95) {
+        //         args.cancel = true;
+        //     }
+        //     // else {
+        //     //     (this.parent.element.querySelector('.e-frozenscrollbar') as HTMLElement).style.width = args.column.width.toString().split('px')[0] + 'px';
+        //     // }
+        // }
         if (this.parent.showGroupingBar && this.parent.groupingBarModule &&
             this.parent.element.querySelector('.' + cls.GROUPING_BAR_CLASS)) {
             this.parent.groupingBarModule.refreshUI();
-            if ((this.parent.element.querySelector('.e-group-row') as HTMLElement).offsetWidth < 245 && !this.parent.firstColWidth) {
-                args.cancel = true;
-                const gridColumn: Column[] = this.parent.grid.columns as Column[];
-                if (gridColumn && gridColumn.length > 0) {
-                    gridColumn[0].width = this.resColWidth;
+            const pos: number = this.parent.isTabular && args.column.index <= this.parent.engineModule.rowMaxLevel ? args.column.index : 0;
+            this.setFirstColumnWidth(pos, args);
+            if (this.parent.isTabular) {
+                if (args.column.index <= this.parent.engineModule.rowMaxLevel) {
+                    (this.parent.element.querySelectorAll('.e-group-rows')[pos as number] as HTMLElement).style.width =
+                        (this.parent.element.querySelectorAll('.e-group-row')[pos as number] as HTMLElement).offsetWidth - 6 + 'px';
                 }
-                this.parent.element.querySelector('.' + cls.HEADERCONTENT).querySelector('col').style.width = (this.resColWidth + 'px');
-                this.parent.element.querySelector('.' + cls.CONTENT_CLASS).querySelector('col').style.width = (this.resColWidth + 'px');
+                let valuePanelWidth: number = 0;
+                if (this.parent.engineModule.rowMaxLevel > 0) {
+                    for (let i: number = 0; i < this.parent.engineModule.rowMaxLevel + 1; i++) {
+                        if (!isNullOrUndefined(this.parent.element.querySelectorAll('.e-group-row')[i as number])) {
+                            valuePanelWidth += (this.parent.element.querySelectorAll('.e-group-row')[i as number] as HTMLElement).offsetWidth;
+                        }
+                    }
+                } else {
+                    valuePanelWidth = (this.parent.element.querySelector('.e-group-row') as HTMLElement).offsetWidth;
+                }
+                (this.parent.element.querySelector('.e-group-values') as HTMLElement).style.width = valuePanelWidth + 'px';
+            } else {
+                (this.parent.element.querySelector('.e-group-values') as HTMLElement).style.width =
+                    (this.parent.element.querySelector('.e-group-row') as HTMLElement).offsetWidth + 'px';
+                const valuePanelWidth: number = (this.parent.element.querySelector('.e-group-row') as HTMLElement).offsetWidth;
+                (this.parent.element.querySelector('.e-group-values') as HTMLElement).style.width = valuePanelWidth + 'px';
             }
-            (this.parent.element.querySelector('.e-group-rows') as HTMLElement).style.height = 'auto';
-            (this.parent.element.querySelector('.e-group-values') as HTMLElement).style.width =
-                (this.parent.element.querySelector('.e-group-row') as HTMLElement).offsetWidth + 'px';
             const firstRowHeight: number = (this.parent.element.querySelector('.' + cls.HEADERCONTENT) as HTMLElement).offsetHeight;
             (this.parent.element.querySelector('.e-group-rows') as HTMLElement).style.height = firstRowHeight + 'px';
         }
         if (args.cancel) {
-            const column: string = args.column.field === '0.formattedText' ? '0.formattedText' :
-                (args.column.customAttributes.cell as IAxisSet).valueSort.levelName as string;
+            const column: string = this.parent.isTabular ?
+                (args.column.index < this.parent.engineModule.rowMaxLevel + 1) ? `${args.column.index}.formattedText` :
+                    `${(args.column.customAttributes.cell as IAxisSet).valueSort.levelName}` :
+                args.column.field === '0.formattedText' ? '0.formattedText' :
+                    `${(args.column.customAttributes.cell as IAxisSet).valueSort.levelName}`;
             this.parent.resizeInfo[column as string] = Number(args.column.width.toString().split('px')[0]);
             if (this.parent.enableVirtualization) {
-                this.parent.layoutRefresh();
+                // this.parent.layoutRefresh();
             }
         }
         if (this.parent.enableVirtualization) {
@@ -1101,6 +1128,39 @@ export class Render {
         this.parent.trigger(args.e.type === 'touchend' || args.e.type === 'mouseup' ? events.resizeStop : events.resizing, args);
     }
 
+    private setFirstColumnWidth(pos: number, args: ResizeArgs): void {
+        if ((this.parent.element.querySelectorAll('.e-group-row')[pos as number] as HTMLElement).offsetWidth < 95 && !this.parent.firstColWidth) {
+            args.cancel = true;
+            const gridColumn: Column[] = this.parent.grid.columns as Column[];
+            if (gridColumn && gridColumn.length > 0) {
+                gridColumn[pos as number].width = 100;
+            }
+            this.parent.element.querySelector('.' + cls.HEADERCONTENT).querySelectorAll('col')[pos as number].style.width = (100 + 'px');
+            this.parent.element.querySelector('.' + cls.CONTENT_CLASS).querySelectorAll('col')[pos as number].style.width = (100 + 'px');
+            this.setValuePanelWidth();
+        }
+    }
+
+    /** @hidden */
+
+    public setValuePanelWidth(): void {
+        const valuePanel: HTMLElement = this.parent.element.getElementsByClassName(cls.GROUP_VALUE_CLASS + ' ' +
+            cls.VALUE_AXIS_CLASS)[0] as HTMLElement;
+        if (!isNullOrUndefined(valuePanel)) {
+            valuePanel.querySelectorAll('.e-pvt-btn-div').forEach((element: HTMLElement) => {
+                element.style.width = valuePanel.offsetWidth < 250 ? '100%' : 'auto';
+            });
+            const filterPanel: HTMLElement = this.parent.element.getElementsByClassName(cls.GROUP_FILTER_CLASS + ' ' +
+                cls.FILTER_AXIS_CLASS)[0] as HTMLElement;
+            const columnPanel: HTMLElement = this.parent.element.getElementsByClassName(cls.GROUP_COLUMN_CLASS + ' ' +
+                cls.COLUMN_AXIS_CLASS)[0] as HTMLElement;
+            const rightPanelHeight: number = (valuePanel.offsetHeight / 2);
+            if (rightPanelHeight > columnPanel.offsetHeight) {
+                setStyleAttribute(filterPanel, { height: formatUnit(rightPanelHeight) });
+                setStyleAttribute(columnPanel, { height: formatUnit(rightPanelHeight + 2) });
+            }
+        }
+    }
     /** @hidden */
 
     public selected(): void {
@@ -1647,12 +1707,8 @@ export class Render {
         } else {
             if (this.parent.isTabular) {
                 const colIndex: number = args.cell && args.cell.column && args.cell.column.index;
-                const colSpan: number = this.parent.engineModule.rowMaxLevel + 1;
-                if (colIndex === 0) {
-                    args.node.setAttribute('colspan', colSpan.toString());
-                    args.node.classList.add(cls.FREEZE_LEFT_BORDER);
-                } else if (this.parent.engineModule.rowMaxLevel >= colIndex) {
-                    (args.node as HTMLElement).style.display = 'none';
+                if (colIndex !== 0 && this.parent.engineModule.rowMaxLevel >= colIndex) {
+                    ((args.node as HTMLElement).querySelector('.e-headercelldiv')as HTMLElement).style.display = 'none';
                 }
             }
         }
@@ -1782,7 +1838,7 @@ export class Render {
 
     public calculateColWidth(colCount: number): number {
         if (!isNullOrUndefined(this.parent.resizedValue)) {
-            this.parent.resizedValue = (this.parent.showGroupingBar && this.parent.resizedValue < 250) ? 250 : this.parent.resizedValue;
+            this.parent.resizedValue = (this.parent.showGroupingBar && this.parent.resizedValue < 100) ? 100 : this.parent.resizedValue;
         }
         this.resColWidth = !isNullOrUndefined(this.parent.resizedValue) ? this.parent.resizedValue : this.resColWidth;
         const offsetWidth: number = this.calculateGridWidth() as number;
@@ -1813,7 +1869,7 @@ export class Render {
 
     public resizeColWidth(colCount: number): number {
         if (!isNullOrUndefined(this.parent.resizedValue)) {
-            this.parent.resizedValue = (this.parent.showGroupingBar && this.parent.resizedValue < 250) ? 250 : this.parent.resizedValue;
+            this.parent.resizedValue = (this.parent.showGroupingBar && this.parent.resizedValue < 100) ? 100 : this.parent.resizedValue;
         }
         this.resColWidth = !isNullOrUndefined(this.parent.resizedValue) ? this.parent.resizedValue : this.resColWidth;
         let parWidth: number = isNaN(this.parent.width as number) ? (this.parent.width.toString().indexOf('%') > -1 ?
@@ -2033,23 +2089,22 @@ export class Render {
             } while (headerCnt > 0);
             if (this.parent.isTabular ) {
                 for (let n: number = 0; n < this.parent.engineModule.rowMaxLevel + 1; n++) {
-                    if (this.parent.showGroupingBar && !this.parent.isAdaptive) {
-                        const groupRowElement: HTMLDivElement = this.parent.element.querySelector('.' + cls.GROUP_ROW);
-                        const buttonDivs: NodeListOf<HTMLElement> = groupRowElement.querySelectorAll('.e-pvt-btn-div');
+                    const groupRowElement: NodeListOf<HTMLElement> = this.parent.element.querySelectorAll('.' + cls.GROUP_ROW);
+                    if (this.parent.showGroupingBar && !this.parent.isAdaptive && !isNullOrUndefined(groupRowElement[n as number])) {
+                        const buttonDivs: NodeListOf<HTMLElement> = groupRowElement[n as number].querySelectorAll('.e-pvt-btn-div');
                         let rowHeaderWidth: number = 0;
-                        if (this.parent.engineModule.rowMaxLevel !== buttonDivs.length - 1 && n === this.parent.engineModule.rowMaxLevel) {
-                            rowHeaderWidth = this.getTotalColumnWidth(buttonDivs, n);
+                        if (this.parent.engineModule.rowMaxLevel !== buttonDivs.length - 1 && this.parent.engineModule.rowMaxLevel !== 0
+                            && n === this.parent.engineModule.rowMaxLevel) {
+                            rowHeaderWidth = this.getTotalColumnWidth(buttonDivs);
                         } else {
-                            if (groupRowElement.querySelectorAll('.e-pvt-btn-div').length === 1) {
-                                rowHeaderWidth = 250;
+                            if (this.parent.engineModule.rowMaxLevel === 0) {
+                                rowHeaderWidth = this.parent.resizedValue ? this.parent.resizedValue : 250;
                             } else {
-                                if ((this.parent.element.getBoundingClientRect().width * 0.8) <= this.getTotalColumnWidth(buttonDivs, 0)) {
+                                if ((this.parent.element.getBoundingClientRect().width * 0.8) <= this.getTotalColumnWidth(buttonDivs)) {
                                     rowHeaderWidth = this.gridSettings.columnWidth;
                                 } else {
-                                    const buttonWidth: number = groupRowElement.querySelectorAll('.e-pvt-btn-div')[n as number].getBoundingClientRect().width
-                                     < this.parent.gridSettings.columnWidth ? this.parent.gridSettings.columnWidth :
-                                        groupRowElement.querySelectorAll('.e-pvt-btn-div')[n as number].getBoundingClientRect().width;
-                                    rowHeaderWidth = buttonWidth + 6;
+                                    const buttonWidth: number = this.parent.resizedValue ? this.parent.resizedValue : 150;
+                                    rowHeaderWidth = buttonWidth;
                                 }
                             }
                         }
@@ -2088,23 +2143,19 @@ export class Render {
     /** @hidden */
 
     public setSavedWidth(column: string, width: number): number {
-        if (column === '0.formattedText' && !isNullOrUndefined(this.parent.resizedValue)) {
-            width = this.parent.resizedValue;
-        } else {
-            if (this.parent.isTabular && this.parent.element.querySelector('.' + cls.ROW_CLASS).querySelector('.' + cls.ROWCELL) &&
+        if (this.parent.isTabular && this.parent.element.querySelector('.' + cls.ROW_CLASS).querySelector('.' + cls.ROWCELL) &&
             this.parent.showGroupingBar && column === '0.formattedText' && this.parent.dataSourceSettings.values.length === 0) {
-                let rowHeaderWidth: number = 0;
-                const buttonDivs: NodeListOf<HTMLElement> = this.parent.element.querySelector('.' + cls.GROUP_ROW)
-                    .querySelectorAll('.e-pvt-btn-div');
-                if (buttonDivs.length > 1) {
-                    for (let i: number = 0; i < buttonDivs.length; i++) {
-                        rowHeaderWidth += buttonDivs[i as number].getBoundingClientRect().width + 6;
-                    }
-                    width = rowHeaderWidth;
+            let rowHeaderWidth: number = 0;
+            const buttonDivs: NodeListOf<HTMLElement> = this.parent.element.querySelector('.' + cls.GROUP_ROW)
+                .querySelectorAll('.e-pvt-btn-div');
+            if (buttonDivs.length > 1) {
+                for (let i: number = 0; i < buttonDivs.length; i++) {
+                    rowHeaderWidth += buttonDivs[i as number].getBoundingClientRect().width + 6;
                 }
+                width = rowHeaderWidth;
             }
-            width = this.parent.resizeInfo[column as string] ? this.parent.resizeInfo[column as string] : width;
         }
+        width = this.parent.resizeInfo[column as string] ? this.parent.resizeInfo[column as string] : width;
         return width;
     }
 
@@ -2440,12 +2491,11 @@ export class Render {
         };
     }
 
-    private getTotalColumnWidth(buttonDivs: NodeListOf<HTMLElement>, n: number): number {
+    private getTotalColumnWidth(buttonDivs: NodeListOf<HTMLElement>): number {
         let totalColumnWidth: number = 0;
-        for (let i: number = n; i < buttonDivs.length; i++) {
-            const buttonWidth: number = buttonDivs[i as number].getBoundingClientRect().width < this.parent.gridSettings.columnWidth ?
-                this.parent.gridSettings.columnWidth : buttonDivs[i as number].getBoundingClientRect().width;
-            totalColumnWidth += buttonWidth + 6;
+        for (let i: number = 0; i < buttonDivs.length; i++) {
+            const buttonWidth: number = this.parent.resizedValue ? this.parent.resizedValue : 150;
+            totalColumnWidth += buttonWidth;
         }
         return totalColumnWidth;
     }

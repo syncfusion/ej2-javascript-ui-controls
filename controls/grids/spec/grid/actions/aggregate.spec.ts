@@ -1525,8 +1525,8 @@ describe('Aggregates Functionality testing', () => {
         });
 
         it('checking index and mapping uid of the column', () => {
-            expect(grid.getFooterContent().querySelector('.e-summarycell').getAttribute('index')).toBe('0');
-            expect(grid.getFooterContent().querySelector('.e-summarycell').hasAttribute('e-mappinguid')).toBeTruthy();
+            expect(grid.getFooterContent().querySelector('.e-summarycell').getAttribute('data-index')).toBe('0');
+            expect(grid.getFooterContent().querySelector('.e-summarycell').hasAttribute('data-mappinguid')).toBeTruthy();
         });
 
         it('Remove padding when using hideScroll in Footer content', () => {

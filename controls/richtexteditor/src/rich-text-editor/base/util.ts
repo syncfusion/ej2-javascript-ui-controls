@@ -2,7 +2,7 @@
  * Defines util methods used by Rich Text Editor.
  */
 import { isNullOrUndefined as isNOU, addClass, removeClass, L10n, selectAll, createElement, isNullOrUndefined } from '@syncfusion/ej2-base';
-import { Browser, detach, SanitizeHtmlHelper, extend } from '@syncfusion/ej2-base';
+import { detach, SanitizeHtmlHelper, extend } from '@syncfusion/ej2-base';
 import * as classes from '../base/classes';
 import * as CONSTANT from '../base/constant';
 import * as model from '../models/items';
@@ -153,7 +153,7 @@ export function setToolbarStatus(e: ISetToolbarStatusArgs, isPopToolbar: boolean
         for (let j: number = 0; j < e.tbItems.length; j++) {
             const item: string = e.tbItems[j as number].subCommand;
             const itemStr: string = item && item.toLocaleLowerCase();
-            if (item && (itemStr === key) || (item === 'UL' && key === 'unorderedlist') || (item === 'OL' && key === 'orderedlist') || (item === 'CodeBlock' && key === 'isCodeBlock') ||
+            if (item && (itemStr === key) || (item === 'UL' && key === 'unorderedlist') || (item === 'OL' && key === 'orderedlist') || (item === 'CodeBlock' && key === 'isCodeBlock') || (item === 'Checklist' && key === 'isCheckList') ||
                 (itemStr === 'pre' && key === 'insertcode') || (item === 'NumberFormatList' && key === 'numberFormatList' ||
                     item === 'BulletFormatList' && key === 'bulletFormatList')) {
                 if (typeof data[`${key}`] === 'boolean') {
@@ -264,6 +264,7 @@ export function getCollection(items: string | string[]): string[] {
  * @returns {void}
  * @hidden
  */
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 export function updateDropdownContent(dropDown: any, htmlString: string): void {
     const styleMatch: RegExpMatchArray | null = htmlString.match(/style="([^"]*)"/);
     let styleValue: string = '';
@@ -489,7 +490,7 @@ export function formatRTEContent(value: string, rteObj?: IRichTextEditor): strin
                 previousParent = insertElem;
                 isPreviousInlineElem = true;
             } else if (tempNode.firstChild.nodeName === '#text' && (tempNode.firstChild.textContent === '\n' ||
-                (tempNode.firstChild.textContent.indexOf('\n') >= 0 && tempNode.firstChild.textContent.trim() === '') || isEmptySpace)) {
+                (tempNode.firstChild.textContent.indexOf('\n') >= 0 && tempNode.firstChild.textContent.trim() === '') || isEmptySpace) && (isNOU(rteObj.sourceCodeModule) || (!isNOU(rteObj.sourceCodeModule)))) {
                 detach(tempNode.firstChild);
             } else {
                 resultElm.appendChild(tempNode.firstChild);

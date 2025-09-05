@@ -934,14 +934,15 @@ export class PdfRenderer {
                         pdfLoadedBookmark.destination : pdfLoadedBookmark.namedDestination ?
                             pdfLoadedBookmark.namedDestination.destination ? pdfLoadedBookmark.namedDestination.destination : null : null;
                     parentBookmarkDestination.X = !isNullOrUndefined(bookmarkDestination) ? bookmarkDestination.location[0] : 0;
-                    parentBookmarkDestination.PageIndex = !isNullOrUndefined(bookmarkDestination) ? bookmarkDestination.pageIndex : 0;
+                    parentBookmarkDestination.PageIndex = !isNullOrUndefined(bookmarkDestination) ?
+                        (!isNullOrUndefined(bookmarkDestination.pageIndex) ? bookmarkDestination.pageIndex : 0) : 0;
                     parentBookmarkDestination.Zoom = !isNullOrUndefined(bookmarkDestination) ? bookmarkDestination.zoom : 0;
                     const parentBookmark: BookmarkBase = new BookmarkBase();
                     parentBookmark.Id = ++this.id;
                     parentBookmark.Title = pdfLoadedBookmark.title;
                     parentBookmark.Child = [];
                     parentBookmark.FileName = !isNullOrUndefined((pdfLoadedBookmark as any).action) ? (pdfLoadedBookmark as any).action.toString() : '';
-                    if (!isNullOrUndefined(bookmarkDestination)) {
+                    if (!isNullOrUndefined(bookmarkDestination) && !isNullOrUndefined(bookmarkDestination.page)) {
                         if (bookmarkDestination.page.rotation === PdfRotationAngle.angle90) {
                             parentBookmarkDestination.Y = this.convertPointToPixel(bookmarkDestination.page.size[0]) -
                                 this.convertPointToPixel(Math.abs(bookmarkDestination.location[1]));

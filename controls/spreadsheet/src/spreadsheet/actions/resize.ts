@@ -785,10 +785,22 @@ export class Resize {
             }
             this.setColWidth(idx, this.parent.getViewportIndex(idx, true), (this.parent.enableRtl ?
                 (this.event.clientX - e.clientX) : (e.clientX - this.event.clientX)) + curWidth, curWidth);
+            const frozenRowCount: number = this.parent.frozenRowCount(sheet);
+            if (frozenRowCount > 0) {
+                this.reapplyFormats(sheet, idx, getCellIndexes(sheet.topLeftCell)[0], frozenRowCount - 1);
+            }
+            this.reapplyFormats(sheet, idx, this.parent.viewport.topIndex + frozenRowCount, this.parent.viewport.bottomIndex);
         }
-        if (cell && cell.format && cell.format.includes('*')) {
-            this.parent.notify(getFormattedCellObject, <NumberFormatArgs>{ value: cell.value, format: cell.format, cell: cell,
-                formattedText: cell.value, rowIndex: activeCell[0], colIndex: activeCell[1] });
+    }
+
+    private reapplyFormats(sheet: SheetModel, colIdx: number, rowIdx: number, endRowIdx: number): void {
+        for (rowIdx; rowIdx <= endRowIdx; rowIdx++) {
+            const cell: CellModel = getCell(rowIdx, colIdx, sheet, false, true);
+            if (cell.format && cell.format.includes('*')) {
+                this.parent.notify(getFormattedCellObject, <NumberFormatArgs>{ value: cell.value, format: cell.format, cell: cell,
+                    formattedText: cell.value, rowIndex: rowIdx, colIndex: colIdx
+                });
+            }
         }
     }
 

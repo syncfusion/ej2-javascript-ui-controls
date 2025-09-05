@@ -1995,7 +1995,6 @@ client side. Customer easy to edit the contents and get the HTML content for
             }, 100);
         });
     });
-
     describe(' ActionComplete event triggered twice when replace the inserted image using quicktoolbar - ', () => {
         let rteObj: RichTextEditor;
         let controlId: string;

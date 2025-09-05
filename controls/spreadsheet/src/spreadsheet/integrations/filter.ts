@@ -10,11 +10,11 @@ import { getData, Workbook, getTypeFromFormat, getCell, getCellIndexes, getRange
 import { SheetModel, sortImport, clear, getColIndex, SortCollectionModel, setRow, ExtendedRowModel, hideShow } from '../../workbook/index';
 import { beginAction, FilterOptions, BeforeFilterEventArgs, FilterEventArgs, ClearOptions, getValueFromFormat } from '../../workbook/index';
 import { isFilterHidden, isNumber, DateFormatCheckArgs, checkDateFormat, isDateTime, dateToInt, getFormatFromType } from '../../workbook/index';
-import { getComponent, EventHandler, isUndefined, isNullOrUndefined, Browser, KeyboardEventArgs, removeClass, IntlBase, cldrData, defaultCurrencyCode, getNumberDependable } from '@syncfusion/ej2-base';
+import { getComponent, EventHandler, isUndefined, isNullOrUndefined, Browser, KeyboardEventArgs, removeClass, IntlBase, cldrData, getNumberDependable, defaultCurrencyCode } from '@syncfusion/ej2-base';
 import { L10n, detach, classList, getNumericObject } from '@syncfusion/ej2-base';
 import { Internationalization } from '@syncfusion/ej2-base';
 import { Dialog } from '../services';
-import { refreshFilterCellsOnResize, ICellRenderer, updateWrapCell } from '../common/index';
+import { refreshFilterCellsOnResize, ICellRenderer, updateWrapCell, isTouchStart } from '../common/index';
 import { IFilterArgs, PredicateModel, ExcelFilterBase, beforeFltrcMenuOpen, CheckBoxFilterBase, getUid } from '@syncfusion/ej2-grids';
 import { filterCmenuSelect, filterCboxValue, filterDialogCreated, filterDialogClose, createCboxWithWrap } from '@syncfusion/ej2-grids';
 import { parentsUntil, toogleCheckbox, fltrPrevent, customFilterOpen } from '@syncfusion/ej2-grids';
@@ -770,6 +770,9 @@ export class Filter {
         }
         const target: HTMLElement = e.target as HTMLElement;
         if (target.classList.contains('e-filter-icon') || target.classList.contains('e-filter-btn')) {
+            if (Browser.isDevice && isTouchStart(e)) {
+                e.preventDefault();
+            }
             if (this.isPopupOpened()) {
                 this.closeDialog();
             }
@@ -1726,6 +1729,12 @@ export class Filter {
                 let left: number = (cellOff.right - parentOff.left) - popupOff.width;
                 if (left < 0) { // Left collision wrt spreadsheet left
                     left = cellOff.left - parentOff.left;
+                }
+                if (Browser.isDevice) {
+                    const overflow: number = (left + popupOff.width) - parentOff.width;
+                    if (overflow > 0) {
+                        left -= overflow;
+                    }
                 }
                 filterPopup.style.left = `${left * this.parent.viewport.scaleX}px`;
                 filterPopup.style.top = '0px';

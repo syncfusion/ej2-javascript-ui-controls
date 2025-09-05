@@ -196,8 +196,12 @@ export class SpreadsheetImage {
             }
         }
         const currCell: CellModel = getCell(indexes[0], indexes[1], sheet);
-        if (!currCell.image[currCell.image.length - 1].id) {
-            currCell.image[currCell.image.length - 1].id = imgData.id;
+        for (let i: number = 0; i < currCell.image.length; i++) {
+            const image: ImageModel = currCell.image[i as number];
+            if (!image.id) {
+                image.id = imgData.id;
+                break;
+            }
         }
         if (!args.isUndoRedo && args.isPublic) {
             eventArgs = { requestType: 'insertImage', range: sheet.name + '!' + range, imageHeight: args.options.height ?

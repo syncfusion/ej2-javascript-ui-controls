@@ -1,8 +1,9 @@
 import { detach } from '@syncfusion/ej2-base';
-import { BlockModel, Content, ContentModel } from '../models/index';
+import { BaseChildrenProp, BlockModel, Content, ContentModel } from '../models/index';
 import { BlockType } from '../base/enums';
-import { getSelectionRange } from './selection';
+import { getSelectedRange } from './selection';
 import { findClosestParent } from './dom';
+import * as constants from '../base/constant';
 
 /**
  * Finds a block by its ID.
@@ -19,8 +20,9 @@ export function getBlockModelById(blockId: string, blocks: BlockModel[]): BlockM
         if (block.id === blockId) {
             return block;
         }
-        if (block.children && block.children.length > 0) {
-            const childBlock: BlockModel = getBlockModelById(blockId, block.children);
+        const props: BaseChildrenProp = block.props as BaseChildrenProp;
+        if (props && props.children && props.children.length > 0) {
+            const childBlock: BlockModel = getBlockModelById(blockId, props.children);
             if (childBlock) {
                 return childBlock;
             }
@@ -34,7 +36,7 @@ export function getBlockModelById(blockId: string, blocks: BlockModel[]): BlockM
  *
  * @param {string} id - The id of the block element.
  * @param {BlockModel[]} blocks - The list of blocks.
- * @returns {number} The index of the block element in the blocksInternal array, or -1 if not found.
+ * @returns {number} The index of the block element in the blocks array, or -1 if not found.
  */
 export function getBlockIndexById(id: string, blocks: BlockModel[]): number {
     if (blocks.length === 0 || !id) {
@@ -44,7 +46,7 @@ export function getBlockIndexById(id: string, blocks: BlockModel[]): number {
     if (blockModel && blockModel.parentId && blockModel.parentId !== '') {
         const parentBlock: BlockModel = getBlockModelById(blockModel.parentId, blocks);
         if (parentBlock) {
-            return parentBlock.children.indexOf(blockModel);
+            return (parentBlock.props as BaseChildrenProp).children.indexOf(blockModel);
         }
     }
     return blocks.indexOf(blockModel);
@@ -61,7 +63,7 @@ export function getBlockIndexById(id: string, blocks: BlockModel[]): number {
  */
 export function getContentModelById(contentId: string, contents: ContentModel[]): ContentModel | null {
     for (const content of contents) {
-        if (content.id === contentId || content.dataId === contentId) {
+        if (content.id === contentId) {
             return content;
         }
     }
@@ -103,9 +105,9 @@ export function getAdjacentBlock(currentBlock: HTMLElement, direction: string): 
     if (adjacentBlock instanceof HTMLElement && adjacentBlock.classList.contains('e-block')) {
         return adjacentBlock;
     }
-    const calloutBlock: HTMLElement | null = findClosestParent(currentBlock, '.e-callout-block');
+    const calloutBlock: HTMLElement | null = findClosestParent(currentBlock, '.' + constants.CALLOUT_BLOCK_CLS);
     if (calloutBlock) {
-        const calloutContent: HTMLElement = calloutBlock.querySelector('.e-callout-content');
+        const calloutContent: HTMLElement = calloutBlock.querySelector('.' + constants.CALLOUT_CONTENT_CLS);
         if (direction === 'previous' && currentBlock === calloutContent.firstElementChild) {
             return calloutBlock.previousElementSibling as HTMLElement;
         }
@@ -124,24 +126,23 @@ export function getAdjacentBlock(currentBlock: HTMLElement, direction: string): 
  */
 export function getBlockContentElement(blockElement: HTMLElement): HTMLElement | null {
     if (!blockElement) { return null; }
-    if (blockElement.getAttribute('data-block-type').startsWith('Toggle')) {
-        return blockElement.querySelector('.e-toggle-header').querySelector('.e-block-content') as HTMLElement;
+    if (blockElement.getAttribute('data-block-type').startsWith('Collapsible')) {
+        return blockElement.querySelector('.e-toggle-header').querySelector('.' + constants.CONTENT_CLS) as HTMLElement;
     }
-    return blockElement.querySelector('.e-block-content') as HTMLElement;
+    return blockElement.querySelector('.' + constants.CONTENT_CLS) as HTMLElement;
 }
 
 /**
  * Returns the content element such as span, strong, or chip element by ID or data attribute.
  *
- * @param {ContentModel} content - The Content model.
+ * @param {ContentModel} contentId - The id of the content.
  * @param {HTMLElement} wrapper - The wrapper element to search within.
  * @returns {HTMLElement} The matched content element, or null if not found.
  */
-export function getContentElementBasedOnId(content: ContentModel, wrapper: HTMLElement): HTMLElement {
-    if (!wrapper || !content) { return null; }
+export function getContentElementBasedOnId(contentId: string, wrapper: HTMLElement): HTMLElement {
+    if (!wrapper || !contentId) { return null; }
 
-    return wrapper.querySelector(`#${content.id}`) ||
-        (content.dataId !== '' ? wrapper.querySelector(`#${content.dataId}`) : null);
+    return wrapper.querySelector(`#${contentId}`);
 }
 
 /**
@@ -151,17 +152,17 @@ export function getContentElementBasedOnId(content: ContentModel, wrapper: HTMLE
  * @returns {boolean} - Returns true if the block is a list type block, otherwise false.
  */
 export function isListTypeBlock(blockType: string | BlockType): boolean {
-    return blockType === BlockType.BulletList || blockType === BlockType.NumberedList || blockType === BlockType.CheckList;
+    return blockType === BlockType.BulletList || blockType === BlockType.NumberedList || blockType === BlockType.Checklist;
 }
 
 /**
- * Specifies whether the given block is a toggle type block.
+ * Specifies whether the given block is a children type block.
  *
  * @param {string | BlockType} blockType - The type of the block.
- * @returns {boolean} - Returns true if the block is a toggle type block, otherwise false.
+ * @returns {boolean} - Returns true if the block is a children type block, otherwise false.
  */
 export function isChildrenTypeBlock(blockType: string | BlockType): boolean {
-    return blockType === BlockType.Callout || (blockType && blockType.toString().startsWith('Toggle'));
+    return blockType === BlockType.Callout || (blockType && blockType.toString().startsWith('Collapsible'));
 }
 
 /**
@@ -185,6 +186,19 @@ export function isNonContentEditableBlock(blockType: string | BlockType): boolea
 }
 
 /**
+ * Specifies whether the cursor is at edge of the block.(start or end)
+ *
+ * @param {HTMLElement} contentElement - The content element to check.
+ * @param {boolean} isStart - Specifies whether to check for start or end of the block.
+ * @returns {boolean} - Returns true if the cursor is at edge of the block, otherwise false.
+ */
+export function isCursorAtEdge(contentElement: HTMLElement, isStart: boolean): boolean {
+    const isCursorAtStart: boolean = isAtStartOfBlock(contentElement);
+    const isCursorAtEnd: boolean = isAtEndOfBlock(contentElement);
+    return isStart ? isCursorAtStart : isCursorAtEnd;
+}
+
+/**
  * Returns true if the current selection is at the start of the block.
  *
  * @param {HTMLElement} element - The block element to check.
@@ -192,7 +206,7 @@ export function isNonContentEditableBlock(blockType: string | BlockType): boolea
  */
 export function isAtStartOfBlock(element: HTMLElement): boolean {
     if (!element) { return false; }
-    const range: Range = getSelectionRange();
+    const range: Range = getSelectedRange();
     const walker: TreeWalker = document.createTreeWalker(element, NodeFilter.SHOW_TEXT, null);
     const firstTextNode: Node = walker.nextNode();
     const startContainer: HTMLElement | Node = normalizeBlockIntoContentElement(range.startContainer);
@@ -212,7 +226,7 @@ export function isAtStartOfBlock(element: HTMLElement): boolean {
  */
 export function isAtEndOfBlock(element: HTMLElement): boolean {
     if (!element) { return false; }
-    const range: Range = getSelectionRange();
+    const range: Range = getSelectedRange();
     const walker: TreeWalker = document.createTreeWalker(element, NodeFilter.SHOW_TEXT, null);
     let lastTextNode: Node = null;
     let totalLength: number = 0;
@@ -238,7 +252,7 @@ export function isAtEndOfBlock(element: HTMLElement): boolean {
  */
 export function normalizeBlockIntoContentElement(blockElement: HTMLElement | Node): HTMLElement | Node {
     if (blockElement instanceof HTMLElement && blockElement.classList.contains('e-block')) {
-        return blockElement.querySelector('.e-block-content');
+        return blockElement.querySelector('.' + constants.CONTENT_CLS);
     }
     return blockElement;
 }
@@ -251,9 +265,7 @@ export function normalizeBlockIntoContentElement(blockElement: HTMLElement | Nod
  *
  */
 export function removeEmptyTextNodes(element: HTMLElement | Node): void {
-    const childNodes: ChildNode[] = Array.from(element.childNodes);
-
-    childNodes.forEach((node: Node) => {
+    Array.from(element.childNodes).forEach((node: Node) => {
         if (node.nodeType === Node.TEXT_NODE && !node.textContent.trim()) {
             detach(node);
         }
@@ -271,8 +283,20 @@ export function getClosestContentElementInDocument(node: Node): HTMLElement {
 }
 
 export function cleanCheckmarkElement(blockElement: HTMLElement): void {
-    const checkmarkElement: HTMLElement = blockElement.querySelector('span.e-checkmark');
+    const checkmarkElement: HTMLElement = blockElement.querySelector('.e-checkmark-container');
     if (checkmarkElement) {
         detach(checkmarkElement);
     }
+}
+
+export function isEmptyString(id: string): boolean {
+    return !id || id.trim() === '';
+}
+
+export function isChildrenProp(block: BlockModel): boolean {
+    return block.props && 'children' in block.props;
+}
+
+export function isStyleProp(block: BlockModel): boolean {
+    return block.props && 'styles' in block.props;
 }

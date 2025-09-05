@@ -13,7 +13,7 @@ import { ItemModel as TlbItemModel } from '@syncfusion/ej2-navigations';
 import { SelectingEventArgs } from '@syncfusion/ej2-navigations';
 import { ColorPicker, ColorPickerEventArgs, PaletteTileEventArgs } from '@syncfusion/ej2-inputs';
 import { ListView, SelectEventArgs, SelectedItem } from '@syncfusion/ej2-lists';
-import { extend, L10n, isNullOrUndefined, getComponent, closest, detach, selectAll, select, EventHandler, createElement } from '@syncfusion/ej2-base';
+import { extend, L10n, isNullOrUndefined, getComponent, closest, detach, selectAll, select, EventHandler, createElement, Browser } from '@syncfusion/ej2-base';
 import { attributes } from '@syncfusion/ej2-base';
 import { SheetModel, getCellIndexes, CellModel, getFormatFromType, getTypeFromFormat, getColumn } from '../../workbook/index';
 import { DropDownButton, OpenCloseMenuEventArgs, SplitButton, ClickEventArgs as BtnClickEventArgs } from '@syncfusion/ej2-splitbuttons';
@@ -726,7 +726,9 @@ export class Ribbon {
                     args.element, chartMenu.items, (this.parent.serviceLocator.getService(locale) as L10n).getConstant('Chart'));
                 EventHandler.add(ul, 'keydown', this.closeDropdownPopup, [this, chartDdb]);
             },
-            open: (): void => focus(ul),
+            open: (args: OpenCloseMenuEventArgs): void => {
+                this.openHandler(args.element, ul);
+            },
             beforeClose: (args: BeforeOpenCloseMenuEventArgs): void => {
                 if (args.event && closest(args.event.target as Element, '.' + menuClass)) {
                     args.cancel = true;
@@ -997,7 +999,9 @@ export class Ribbon {
                 this.tBarDdbBeforeOpen(args.element, addChartMenu.items);
                 EventHandler.add(ul, 'keydown', this.closeDropdownPopup, [this, this.addChartDdb]);
             },
-            open: (): void => focus(ul),
+            open: (args: OpenCloseMenuEventArgs): void => {
+                this.openHandler(args.element, ul);
+            },
             beforeClose: (args: BeforeOpenCloseMenuEventArgs): void => {
                 if (args.event && closest(args.event.target as Element, '.e-addchart-menu')) {
                     args.cancel = true;
@@ -1169,7 +1173,9 @@ export class Ribbon {
                     args.element, cfMenu.items, (this.parent.serviceLocator.getService(locale) as L10n).getConstant('ConditionalFormatting'));
                 EventHandler.add(ul, 'keydown', this.closeDropdownPopup, [this, this.cfDdb]);
             },
-            open: (): void => focus(ul),
+            open: (args: OpenCloseMenuEventArgs): void => {
+                this.openHandler(args.element, ul);
+            },
             beforeClose: (args: BeforeOpenCloseMenuEventArgs): void => {
                 if (args.event && closest(args.event.target as Element, '.e-cf-menu')) {
                     args.cancel = true;
@@ -3318,6 +3324,24 @@ export class Ribbon {
             break;
         }
     }
+
+    private openHandler(element: HTMLElement, ul: HTMLElement): void {
+        if (Browser.isDevice && ul) {
+            const wrapper: HTMLElement = element.parentElement as HTMLElement;
+            const wrapperRect: ClientRect = wrapper.getBoundingClientRect();
+            const wrapperBottom: number = wrapperRect.bottom;
+            const viewportHeight: number = window.innerHeight;
+            if (wrapperBottom > viewportHeight) {
+                const visibleDropdownHeight: number = wrapperRect.height - (wrapperBottom - viewportHeight);
+                if (visibleDropdownHeight > 70) {
+                    ul.style.height = `${visibleDropdownHeight}px`;
+                    ul.style.overflowY = 'auto';
+                }
+            }
+        }
+        focus(ul);
+    }
+
     private addEventListener(): void {
         this.parent.on(ribbon, this.ribbonOperation, this);
         this.parent.on(enableToolbarItems, this.enableToolbarItems, this);

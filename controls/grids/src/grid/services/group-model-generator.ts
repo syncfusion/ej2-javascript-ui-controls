@@ -232,7 +232,7 @@ export class GroupModelGenerator extends RowModelGenerator implements IModelGene
     public generateDataRows(data: Object[], indent: number, childID?: number, tIndex?: number, parentUid?: string): Row<Column>[] {
         const rows: Row<Column>[] = []; const indexes: number[] = this.parent.getColumnIndexesInView();
         for (let i: number = 0, len: number = data.length; i < len; i++ , tIndex++) {
-            rows[parseInt(i.toString(), 10)] = this.generateRow(data[parseInt(i.toString(), 10)], this.index, i ? undefined : 'e-firstchildrow', indent, childID, tIndex, parentUid);
+            rows[parseInt(i.toString(), 10)] = this.generateRow(data[parseInt(i.toString(), 10)], this.index, i ? undefined : 'e-firstchildrow', indent, childID, tIndex, parentUid, i);
             for (let j: number = 0; j < indent; j++) {
                 if (this.parent.enableColumnVirtualization && indexes.indexOf(indent) === -1) { continue; }
                 rows[parseInt(i.toString(), 10)].cells.unshift(this.generateIndentCell());

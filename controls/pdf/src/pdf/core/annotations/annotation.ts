@@ -2,7 +2,7 @@ import { _PdfCrossReference } from './../pdf-cross-reference';
 import { PdfPage, PdfDestination, _PdfDestinationHelper } from './../pdf-page';
 import { _PdfDictionary, _PdfName, _PdfReference } from './../pdf-primitives';
 import { PdfFormFieldVisibility, _PdfCheckFieldState, PdfAnnotationFlag, PdfBorderStyle, PdfHighlightMode, PdfLineCaptionType, PdfLineEndingStyle, PdfLineIntent, PdfRotationAngle, PdfTextAlignment , PdfBorderEffectStyle, PdfMeasurementUnit, _PdfGraphicsUnit, PdfCircleMeasurementType, PdfRubberStampAnnotationIcon, PdfCheckBoxStyle, PdfTextMarkupAnnotationType, PdfPopupIcon, PdfAnnotationState, PdfAnnotationStateModel, PdfAttachmentIcon, PdfAnnotationIntent, _PdfAnnotationType, PdfBlendMode, PdfDashStyle, PdfLineCap, PathPointType, _PdfColorSpace} from './../enumerator';
-import { _checkField, _removeDuplicateReference, _updateVisibility, _checkComment, _checkReview, _mapAnnotationStateModel, _mapAnnotationState, _decode, _setMatrix, _convertToColor, _findPage, _getItemValue, _areNotEqual, _calculateBounds, _parseColor, _mapHighlightMode, _reverseMapHighlightMode, _getUpdatedBounds, _mapBorderStyle, _mapLineEndingStyle, _reverseMapEndingStyle, _toRectangle, _mapBorderEffectStyle, _getStateTemplate, _mapMeasurementUnit, _mapGraphicsUnit, _stringToStyle, _styleToString, _mapMarkupAnnotationType, _reverseMarkupAnnotationType, _reverseMapAnnotationState, _reverseMapAnnotationStateModel, _mapPopupIcon, _mapRubberStampIcon, _mapAttachmentIcon, _mapAnnotationIntent, _reverseMapPdfFontStyle, _fromRectangle, _getNewGuidString, _getFontStyle, _mapFont, _checkInkPoints, _updateBounds, _isNullOrUndefined, Rectangle, _obtainFontDetails} from './../utils';
+import { _checkField, _removeDuplicateReference, _updateVisibility, _checkComment, _checkReview, _mapAnnotationStateModel, _mapAnnotationState, _decode, _setMatrix, _convertToColor, _findPage, _getItemValue, _areNotEqual, _calculateBounds, _parseColor, _mapHighlightMode, _reverseMapHighlightMode, _getUpdatedBounds, _mapBorderStyle, _mapLineEndingStyle, _reverseMapEndingStyle, _toRectangle, _mapBorderEffectStyle, _getStateTemplate, _mapMeasurementUnit, _mapGraphicsUnit, _stringToStyle, _styleToString, _mapMarkupAnnotationType, _reverseMarkupAnnotationType, _reverseMapAnnotationState, _reverseMapAnnotationStateModel, _mapPopupIcon, _mapRubberStampIcon, _mapAttachmentIcon, _mapAnnotationIntent, _reverseMapPdfFontStyle, _fromRectangle, _getNewGuidString, _getFontStyle, _mapFont, _checkInkPoints, _updateBounds, _isNullOrUndefined, Rectangle, _obtainFontDetails, _areArrayEqual} from './../utils';
 import { PdfField, PdfTextBoxField, PdfRadioButtonListField, _PdfDefaultAppearance, PdfListBoxField, PdfCheckBoxField, PdfComboBoxField } from './../form/field';
 import { PdfTemplate } from './../graphics/pdf-template';
 import { _TextRenderingMode, PdfBrush, PdfGraphics, PdfPen, PdfGraphicsState, _PdfTransformationMatrix, _PdfUnitConvertor } from './../graphics/pdf-graphics';
@@ -10433,8 +10433,9 @@ export class PdfRubberStampAnnotation extends PdfComment {
             if (this._dictionary.has('AP')) {
                 const dictionary: _PdfDictionary = this._dictionary.get('AP');
                 if (dictionary && dictionary.has('N')) {
+                    const ref: _PdfReference = dictionary.getRaw('N');
                     const appearanceStream: _PdfBaseStream = dictionary.get('N');
-                    if (appearanceStream) {
+                    if (ref && appearanceStream) {
                         template = new PdfTemplate();
                         template._isExported = true;
                         const templateDictionary: _PdfDictionary = appearanceStream.dictionary;
@@ -10452,9 +10453,20 @@ export class PdfRubberStampAnnotation extends PdfComment {
                                 template._size = [rectangle[2], rectangle[3]];
                                 template._templateOriginalSize = [rect.width, rect.height];
                             }
-                        } else if (bounds) {
+                        } else if (bounds && (bounds[2] === this.bounds.width && bounds[3] === this.bounds.height) || _areArrayEqual(this._dictionary.get('Rect'), bounds)) {
                             templateDictionary.update('Matrix', [1, 0, 0, 1, -bounds[0], -bounds[1]]);
                             template._size = [bounds[2], bounds[3]];
+                        } else {
+                            const identityMatrix: number[] = [1, 0, 0, 1, 0, 0];
+                            const templateSize: number[] = this._getTransformMatrix(this._dictionary.get('Rect'), bounds, identityMatrix);
+                            if (this.bounds.width === templateSize[0] && this.bounds.height === templateSize[3]) {
+                                templateDictionary.update('Matrix', [templateSize[0], 0, 0, templateSize[3], 0, 0]);
+                                template._size = [templateSize[0], templateSize[3]];
+                                this._crossReference._cacheMap.set(ref, appearanceStream);
+                            } else {
+                                templateDictionary.update('Matrix', [1, 0, 0, 1, -bounds[0], -bounds[1]]);
+                                template._size = [bounds[2], bounds[3]];
+                            }
                         }
                         template._exportStream(dictionary, this._crossReference);
                     }
@@ -10503,6 +10515,32 @@ export class PdfRubberStampAnnotation extends PdfComment {
         } else {
             this._appearanceTemplate = this._createRubberStampAppearance();
         }
+    }
+    _getTransformMatrix(rect: number[], bbox: number[], matrix: number[]): number[] {
+        const [minX, minY, maxX, maxY] = this._getAxialAlignedBoundingBox(bbox, matrix);
+        if (minX === maxX || minY === maxY) {
+            return [1, 0, 0, 1, rect[0], rect[1]];
+        }
+        const xRatio: number = (rect[2] - rect[0]) / (maxX - minX);
+        const yRatio: number = (rect[3] - rect[1]) / (maxY - minY);
+        return [xRatio, 0, 0, yRatio, rect[0] - minX * xRatio, rect[1] - minY * yRatio];
+    }
+    _getAxialAlignedBoundingBox(r: number[], m: number[]): number[] {
+        const p1: number[] = this._applyTransform(r, m);
+        const p2: number[] = this._applyTransform(r.slice(2, 4), m);
+        const p3: number[] = this._applyTransform([r[0], r[3]], m);
+        const p4: number[] = this._applyTransform([r[2], r[1]], m);
+        return [
+            Math.min(p1[0], p2[0], p3[0], p4[0]),
+            Math.min(p1[1], p2[1], p3[1], p4[1]),
+            Math.max(p1[0], p2[0], p3[0], p4[0]),
+            Math.max(p1[1], p2[1], p3[1], p4[1])
+        ];
+    }
+    _applyTransform(p: number[], m: number[]): number[] {
+        const xt: number = p[0] * m[0] + p[1] * m[2] + m[4];
+        const yt: number = p[0] * m[1] + p[1] * m[3] + m[5];
+        return [xt, yt];
     }
     _transformBBox(bBoxValue: { x: number, y: number, width: number, height: number }, matrix: number[]): number[] {
         const xCoordinate: number[] = [];

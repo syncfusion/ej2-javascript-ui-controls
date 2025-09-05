@@ -10,6 +10,7 @@
 	"typings": "index.d.ts",
 	"dependencies": {
 		"@syncfusion/ej2-base": "*",
+		"@syncfusion/ej2-dropdowns": "*",
 		"@syncfusion/ej2-inputs": "*",
 		"@syncfusion/ej2-navigations": "*",
 		"@syncfusion/ej2-notifications": "*",

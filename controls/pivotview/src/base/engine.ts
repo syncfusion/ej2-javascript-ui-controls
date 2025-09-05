@@ -2542,6 +2542,9 @@ export class PivotEngine {
         this.frameDrillObject(drilledItem);
         const headersInfo: IHeadersInfo = this.getHeadersInfo(drilledItem.fieldName, drilledItem.axis);
         this.performDrillOperation(headersInfo.headers, drilledItem, headersInfo.fields, headersInfo.position, 0);
+        if (this.customProperties.isTabularLayout && drilledItem.action === 'up' && headersInfo.axis === 'row') {
+            this.rowMaxLevel = this.getMaxLevel(headersInfo.headers);
+        }
         this.headerCollection.rowHeadersCount = this.rowCount; this.headerCollection.columnHeadersCount = this.columnCount;
         if (headersInfo.axis === 'row') {
             this.headerCollection.rowHeaders = headersInfo.headers;
@@ -2549,6 +2552,34 @@ export class PivotEngine {
             this.headerCollection.columnHeaders = headersInfo.headers;
         }
         this.updateEngine();
+    }
+    /**
+     * Computes the maximum nested members depth.
+     *
+     * @param {IAxisSet[]} headers - Row members.
+     * @returns {number} Returns the maxLevel of header
+     */
+    private getMaxLevel(headers: IAxisSet[]): number {
+        /**
+         * Recursively traverses members to find max depth.
+         *
+         * @param {IAxisSet[]} members - The current level of members.
+         * @param {number} currentLevel - The current depth during traversal.
+         * @returns {number} Returns the rowMaxLevel.
+         */
+        function traverse(members: IAxisSet[], currentLevel: number): number {
+            let maxLevel: number = currentLevel;
+            for (const member of members) {
+                if (member.members.length > 0) {
+                    const childLevel: number = traverse(member.members, currentLevel + 1);
+                    if (childLevel > maxLevel) {
+                        maxLevel = childLevel;
+                    }
+                }
+            }
+            return maxLevel;
+        }
+        return traverse(headers, 0);
     }
     /**
      * It performs to update the engine by sorting data.

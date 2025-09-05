@@ -272,7 +272,7 @@ export class CheckBoxFilterBase {
     protected getAndSetChkElem(options: IFilterArgs): HTMLElement {
         this.dlg = this.parent.createElement('div', {
             id: this.id + this.options.type + '_excelDlg',
-            attrs : { uid: this.options.column.uid},
+            attrs : { 'data-uid': this.options.column.uid},
             className: 'e-checkboxfilter e-filter-popup'
         });
 
@@ -581,7 +581,7 @@ export class CheckBoxFilterBase {
             }
             if ((this.options.type === 'date' || this.options.type === 'dateonly' || this.options.type === 'datetime') && check.length) {
                 length = check.length - 1;
-                val = this.values[parentsUntil(check[parseInt(length.toString(), 10)], 'e-ftrchk').getAttribute('uid')];
+                val = this.values[parentsUntil(check[parseInt(length.toString(), 10)], 'e-ftrchk').getAttribute('data-uid')];
                 if (isNullOrUndefined(val) && isNotEqual) {
                     coll.push({
                         field: defaults.field, matchCase: defaults.matchCase, operator: 'equal',
@@ -631,7 +631,7 @@ export class CheckBoxFilterBase {
         let fObj: PredicateModel;
         let coll: PredicateModel[] = [];
         for (let i: number = 0; i < checkBoxChecked.length; i++) {
-            value = this.values[parentsUntil(checkBoxChecked[parseInt(i.toString(), 10)], 'e-ftrchk').getAttribute('uid')];
+            value = this.values[parentsUntil(checkBoxChecked[parseInt(i.toString(), 10)], 'e-ftrchk').getAttribute('data-uid')];
             fObj = extend({}, { value: value }, defaults) as {
                 field: string, predicate: string, operator: string, matchCase: boolean, ignoreAccent: boolean, value: string
             };
@@ -1464,7 +1464,7 @@ export class CheckBoxFilterBase {
                         matchCase?: boolean, ignoreAccent?: boolean } = { field: this.options.field, predicate: pred, uid: this.options.uid,
                         operator: optr, type: this.options.type, matchCase: caseSen, ignoreAccent: this.options.ignoreAccent
                     };
-                    const value: string = this.values[parentsUntil(input, 'e-ftrchk').getAttribute('uid')];
+                    const value: string = this.values[parentsUntil(input, 'e-ftrchk').getAttribute('data-uid')];
                     this.updateInfiniteManualSelectPred(defaults, value);
                     if (this.infiniteRenderMod && !this.options.isRemote && this.options.parentTotalDataCount
                         && this.infiniteUnloadParentExistPred.length) {

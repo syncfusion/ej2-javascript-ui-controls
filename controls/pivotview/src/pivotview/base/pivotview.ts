@@ -923,31 +923,9 @@ export class PivotView extends Component<HTMLElement> implements INotifyProperty
     @Complex<HyperlinkSettingsModel>({}, HyperlinkSettings)
     public hyperlinkSettings: HyperlinkSettingsModel;
 
+
     /**
-     * Configures paging settings to split large datasets into smaller pages for display when `enablePaging` is enabled.
-     * This property customizes page size and current page for row and column axes using the `PageSettings` class, which includes:
-     * - `columnPageSize`: Total columns per page (default: 5, must be a positive integer).
-     * - `rowPageSize`: Total rows per page (default: 5, must be a positive integer).
-     * - `currentColumnPage`: Current column page displayed (default: 1, must be a positive integer).
-     * - `currentRowPage`: Current row page displayed (default: 1, must be a positive integer).
-     *
-     * @example
-     * ```typescript
-     * // Initialize PivotView with paging enabled and custom page settings
-     * // Note: Ensure page sizes and current pages are positive integers to avoid errors
-     *
-     * const pivotObj = new PivotView({
-     *   enablePaging: true,
-     *   pageSettings: {
-     *     rowPageSize: 10,
-     *     columnPageSize: 5,
-     *     currentColumnPage: 1,
-     *     currentRowPage: 1
-     *   }
-     * });
-     * pivotObj.appendTo('#PivotView');
-     * ```
-     * @see PageSettings
+     * Allows to set the page information to display the pivot table with specific page during paging and virtual scrolling.
      */
     @Complex<PageSettingsModel>({}, PageSettings)
     public pageSettings: PageSettingsModel;
@@ -5204,7 +5182,8 @@ export class PivotView extends Component<HTMLElement> implements INotifyProperty
             }
             if (this.showGroupingBar) {
                 if (this.groupingBarModule && this.element.querySelector('.' + cls.GROUPING_BAR_CLASS)) {
-                    this.groupingBarModule.setGridRowWidth();
+                    this.groupingBarModule.appendToElement();
+                    this.renderModule.setValuePanelWidth();
                 }
                 if (this.actionObj.fieldInfo && this.actionObj.fieldInfo.fieldName) {
                     const pivotButton: HTMLElement = this.pivotButtonModule.parentElement.querySelector(`[data-uid="${this.actionObj.fieldInfo.fieldName}"]`);
@@ -5599,8 +5578,8 @@ export class PivotView extends Component<HTMLElement> implements INotifyProperty
             const isRowHeaderElement: boolean = ele && (!isNullOrUndefined(ele.closest('.' + 'e-row'))
                 || ele.classList.contains('e-rowsheader'));
             try {
-                if (ele && ((isColumnHeaderElement || isRowHeaderElement) && !this.allowGrouping && this.dataType !== 'olap' &&
-                    this.dataSourceSettings.mode !== 'Server') || ((this.allowGrouping || this.dataType === 'olap' ||
+                if (ele && ((isColumnHeaderElement || isRowHeaderElement) && this.dataType !== 'olap' &&
+                    this.dataSourceSettings.mode !== 'Server') || ((this.dataType === 'olap' ||
                         this.dataSourceSettings.mode === 'Server') && ((isColumnHeaderElement &&
                             this.dataSourceSettings.valueAxis === 'column' && !ele.classList.contains(cls.FREEZED_CELL))
                                 || (isRowHeaderElement && this.dataSourceSettings.valueAxis === 'row')))
@@ -5771,11 +5750,11 @@ export class PivotView extends Component<HTMLElement> implements INotifyProperty
                 } else {
                     const levelName: string = column.field === '0.formattedText' ? '' :
                         (column.customAttributes ? (column.customAttributes.cell as IAxisSet).valueSort.levelName as string : '');
+                    const colField: string = isNullOrUndefined(column.customAttributes) && column.headerText === '' ? column.field : levelName;
                     column.allowReordering = this.pivotColumns[this.posCount].allowReordering;
                     column.allowResizing = this.pivotColumns[this.posCount].allowResizing;
                     column.autoFit = this.pivotColumns[this.posCount].autoFit;
-                    const calcWidth: number = this.renderModule.setSavedWidth(column.field === '0.formattedText' ? column.field :
-                        levelName, Number(this.pivotColumns[this.posCount].width));
+                    const calcWidth: number = this.renderModule.setSavedWidth(colField, Number(this.pivotColumns[this.posCount].width));
                     if (!column.autoFit) {
                         if (column.width !== 'auto') {
                             column.width = calcWidth;
@@ -6504,6 +6483,30 @@ export class PivotView extends Component<HTMLElement> implements INotifyProperty
         this.trigger(events.onHeadersSort, args);
         return args;
     }
+    /**
+     * Triggers the `beforeServiceInvoke` event with the provided service object.
+     *
+     * @param {BeforeServiceInvokeEventArgs} args - Object containing details about the current service invocation,
+     * such as action and data source settings.
+     * @returns {BeforeServiceInvokeEventArgs} The processed event arguments after triggering the event.
+     * @hidden
+     */
+    public getBeforeServiceInvoke(args: BeforeServiceInvokeEventArgs): BeforeServiceInvokeEventArgs {
+        this.trigger(events.beforeServiceInvoke, args);
+        return args;
+    }
+
+    /**
+     * Triggers the `afterServiceInvoke` event after a service request completes.
+     *
+     * @param {AfterServiceInvokeEventArgs} response - Arguments from the service invocation, used to extract the action and response details.
+     * @returns {AfterServiceInvokeEventArgs} The processed event arguments after triggering the event.
+     * @hidden
+     */
+    public getAfterServiceInvoke(response: AfterServiceInvokeEventArgs): AfterServiceInvokeEventArgs {
+        this.trigger(events.afterServiceInvoke, response);
+        return response;
+    }
 
     /**
      * De-Register the internal events.
@@ -6621,7 +6624,7 @@ export class PivotView extends Component<HTMLElement> implements INotifyProperty
 
     private createStyleSheet(): StyleSheet {
         const style: HTMLStyleElement = document.createElement('style');
-        style.appendChild(document.createTextNode(''));
+        style.textContent = '';
         document.head.appendChild(style);
         return style.sheet;
     }

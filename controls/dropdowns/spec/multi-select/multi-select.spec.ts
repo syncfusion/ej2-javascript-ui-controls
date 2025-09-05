@@ -4598,7 +4598,7 @@ describe('MultiSelect', () => {
         });
     });
 
-    xdescribe('itemCreated fields event', () => {
+    describe('itemCreated fields event', () => {
         let mouseEventArgs: any = { which: 3, button: 2, preventDefault: function () { }, target: null };
         let dropDowns: any;
         let e: any = { preventDefault: function () { }, target: null };

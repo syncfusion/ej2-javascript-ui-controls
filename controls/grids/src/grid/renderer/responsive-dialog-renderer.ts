@@ -194,8 +194,8 @@ export class ResponsiveDialogRenderer implements IAction {
                         continue;
                     }
                     const cDiv: HTMLElement = gObj.createElement('div', { className: 'e-responsivecoldiv' });
-                    cDiv.setAttribute('data-e-mappingname', cols[parseInt(i.toString(), 10)].field);
-                    cDiv.setAttribute('data-e-mappinguid', cols[parseInt(i.toString(), 10)].uid);
+                    cDiv.setAttribute('data-mappingname', cols[parseInt(i.toString(), 10)].field);
+                    cDiv.setAttribute('data-mappinguid', cols[parseInt(i.toString(), 10)].uid);
                     const span: HTMLElement = gObj.createElement('span', { innerHTML: cols[parseInt(i.toString(), 10)].headerText, className: 'e-res-header-text' });
                     cDiv.appendChild(span);
                     this.customColumnDiv.appendChild(cDiv);
@@ -223,7 +223,7 @@ export class ResponsiveDialogRenderer implements IAction {
                     if (isFilter && filteredCols.indexOf(cols[parseInt(i.toString(), 10)].field) > -1) {
                         const divIcon: HTMLElement = gObj.createElement('div', { className: 'e-icons e-res-icon e-filtersetdiv' });
                         const iconSpan: HTMLElement = gObj.createElement('span', { className: 'e-icons e-res-icon e-filterset' });
-                        iconSpan.setAttribute('colType', cols[parseInt(i.toString(), 10)].type);
+                        iconSpan.setAttribute('data-coltype', cols[parseInt(i.toString(), 10)].type);
                         divIcon.appendChild(iconSpan);
                         cDiv.appendChild(divIcon);
                     }
@@ -245,7 +245,7 @@ export class ResponsiveDialogRenderer implements IAction {
     private sortButtonClickHandler(target: Element): void {
         if (target) {
             const columndiv: Element = parentsUntil(target as Element, 'e-responsivecoldiv');
-            const field: string = columndiv.getAttribute('data-e-mappingname');
+            const field: string = columndiv.getAttribute('data-mappingname');
             if (!this.parent.allowMultiSorting) {
                 this.sortPredicate = []; this.sortedCols = []; this.isSortApplied = false;
                 this.resetSortButtons(target);
@@ -331,8 +331,8 @@ export class ResponsiveDialogRenderer implements IAction {
         if (this.action !== ResponsiveDialogAction.isFilter) { return; }
         if (gObj.filterSettings.type !== 'FilterBar') {
             if (target.classList.contains('e-responsivecoldiv') || target.parentElement.classList.contains('e-responsivecoldiv')) {
-                let field: string = target.getAttribute('data-e-mappingname');
-                if (!field) { field = target.parentElement.getAttribute('data-e-mappingname'); }
+                let field: string = target.getAttribute('data-mappingname');
+                if (!field) { field = target.parentElement.getAttribute('data-mappingname'); }
                 if (field) {
                     const col: Column = gObj.getColumnByField(field);
                     this.isRowResponsive = true;
@@ -341,7 +341,7 @@ export class ResponsiveDialogRenderer implements IAction {
             } else if (target.classList.contains('e-filterset') || target.parentElement.classList.contains('e-filtersetdiv')) {
                 const colDiv: Element = parentsUntil(target, 'e-responsivecoldiv');
                 if (colDiv) {
-                    const field: string = colDiv.getAttribute('data-e-mappingname');
+                    const field: string = colDiv.getAttribute('data-mappingname');
                     const col: Column = gObj.getColumnByField(field);
                     if (col.filter.type === 'Menu' || (!col.filter.type && gObj.filterSettings.type === 'Menu')) {
                         this.isDialogClose = true;

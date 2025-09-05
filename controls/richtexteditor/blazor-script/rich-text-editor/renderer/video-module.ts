@@ -1,8 +1,8 @@
 import { addClass, Browser, closest, createElement, detach, EventHandler, formatUnit, isNullOrUndefined as isNOU, KeyboardEventArgs, removeClass } from '../../../base'; /*externalscript*/
 import { ClickEventArgs } from '../../../navigations/src'; /*externalscript*/
-import { isIDevice } from '../../src/common/util';
-import { IDropDownItemModel, IShowPopupArgs, IToolbarItemModel, IVideoCommandsArgs, NotifyArgs, OffsetPosition, ResizeArgs, DialogCloseEventArgs } from '../../src/common/interface';
-import { NodeSelection } from '../../src/selection/selection';
+import { isIDevice } from '../../editor-scripts/common/util';
+import { IDropDownItemModel, IShowPopupArgs, IToolbarItemModel, IVideoCommandsArgs, NotifyArgs, OffsetPosition, ResizeArgs, DialogCloseEventArgs } from '../../editor-scripts/common/interface';
+import { NodeSelection } from '../../editor-scripts/selection/selection';
 import { QuickToolbar } from '../actions/quick-toolbar';
 import * as classes from '../classes';
 import { CLS_RTE_VID_BOX_MARK } from '../classes';
@@ -10,8 +10,8 @@ import * as events from '../constant';
 import { IImageNotifyArgs, IShowVideoDialog, MediaDeletedEventArgs } from '../interfaces';
 import { SfRichTextEditor } from '../sf-richtexteditor-fn';
 import { dispatchEvent, parseHtml } from '../util';
-import { convertToBlob } from '../../src/common/util';
-import { VideoCommand } from '../../src/editor-manager/plugin/video';
+import { convertToBlob } from '../../editor-scripts/common/util';
+import { VideoCommand } from '../../editor-scripts/editor-manager/plugin/video';
 
 /**
  * `Video` module is used to handle video actions.
@@ -593,7 +593,7 @@ export class Video {
             height = 'auto';
         }
         const obj: IShowVideoDialog = {
-            mode: 'Dimension', width: width, height: height, maxWidth: this.getMaxWidth() as number
+            mode: 'Dimension', width: width, height: height, maxWidth: parseFloat(this.getMaxWidth() as string)
         };
         this.parent.dotNetRef.invokeMethodAsync(events.showVideoDialog, obj);
     }
@@ -965,7 +965,7 @@ export class Video {
                 ((selectNodeEle[0].nextSibling as HTMLElement).className === 'e-video-wrap' || this.isEmbedVidElem(selectNodeEle[0].nextSibling as HTMLElement))) ||
                 (originalEvent.keyCode === 8 && (selectNodeEle[0].previousSibling as HTMLElement) &&
                 ((selectNodeEle[0].previousSibling as HTMLElement).className === 'e-video-wrap' || this.isEmbedVidElem(selectNodeEle[0].previousSibling as HTMLElement)))) &&
-                selectNodeEle.length <= 2) {
+                selectNodeEle.length <= 2 && selectNodeEle[0].nodeName !== '#text') {
                 originalEvent.preventDefault();
                 const event: IImageNotifyArgs = {
                     selectNode: selectNodeEle, selection: save, selectParent: selectParentEle,

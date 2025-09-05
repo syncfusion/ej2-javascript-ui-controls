@@ -968,14 +968,14 @@ describe('RTE CR issues ', () => {
             let elem: HTMLElement = createElement('span', {
                 id: 'imagePaste', innerHTML: '<img src="https://cdn.syncfusion.com/content/images/company-logos/Syncfusion_Logo_Image.png" alt="Image result for syncfusion" class="e-resize e-img-focus">'
             });
-            (pasteCleanupObj as any).imageFormatting(keyBoardEvent, {elements: [elem.firstElementChild]});
+            (pasteCleanupObj as any).imageFormatting(keyBoardEvent, { elements: [elem.firstElementChild] });
             setTimeout(() => {
                 let pastedElm: any = (rteObj as any).inputElement.innerHTML;
                 expect(rteObj.inputElement.children[0].children[0].tagName.toLowerCase() === 'img').toBe(true);
                 let expected: boolean = false;
                 let expectedElem: string = `<p><img src="https://cdn.syncfusion.com/content/images/company-logos/Syncfusion_Logo_Image.png" alt="Image result for syncfusion" class="e-resize e-img-focus e-rte-image e-imginline">&nbsp;21</p>`;
                 if (pastedElm === expectedElem) {
-                expected = true;
+                    expected = true;
                 }
                 expect(expected).toBe(true);
                 let image: HTMLElement = createElement("IMG");
@@ -991,7 +991,6 @@ describe('RTE CR issues ', () => {
             }, 100);
         });
     });
-    
 
     describe('936824 - The Shift + Tab behavior needs to be changed when enableTabKey is enabled in RichTextEditor', () => {
         let rteObj: RichTextEditor;
@@ -2429,7 +2428,7 @@ describe('RTE CR issues ', () => {
             sourceCodeButton.click();
             const sourceCodeTextarea = rteObj.element.querySelector('.e-rte-srctextarea') as HTMLTextAreaElement;
             expect(sourceCodeTextarea).not.toBe(null);
-            expect(sourceCodeTextarea.value).toBe('<p>abc</p><p>afaf<img src="mir" class="e-rte-image e-imginline"></p>');
+            expect(sourceCodeTextarea.value).toBe('<p>abc</p>\n<p>afaf<img src="mir" class="e-rte-image e-imginline"/></p>');
             done();
         });
         afterAll(() => {

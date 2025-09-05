@@ -6,7 +6,7 @@ export * from './heading';
 export * from './list';
 export * from './quote';
 export * from './callout';
-export * from './toggle';
+export * from './collapsible';
 export * from './common';
 export * from './code';
 export * from './image';

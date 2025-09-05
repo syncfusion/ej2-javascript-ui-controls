@@ -1,6 +1,6 @@
-import { getRangeIndexes, ChartModel, getSwapRange, getRangeAddress, addDPRValue, ExtendedChartModel } from '../common/index';
+import { getRangeIndexes, ChartModel, getSwapRange, getRangeAddress, addDPRValue, ExtendedChartModel, ExtendedSheet } from '../common/index';
 import { SheetModel, setCell, getSheetIndex, Workbook, CellModel, getCell, getSheetIndexFromId } from '../base/index';
-import { setChart, initiateChart, deleteChartColl, refreshChartSize, focusChartBorder, getChartRowIdxFromClientY, getChartColIdxFromClientX, refreshChartCellOnInit } from '../common/event';
+import { setChart, initiateChart, deleteChartColl, refreshChartSize, focusChartBorder, getChartRowIdxFromClientY, getChartColIdxFromClientX, refreshChartCellOnInit, importModelUpdate } from '../common/event';
 import { closest, isNullOrUndefined, getComponent, isUndefined, getUniqueID } from '@syncfusion/ej2-base';
 
 /**
@@ -24,6 +24,7 @@ export class WorkbookChart {
         this.parent.on(deleteChartColl, this.deleteChartColl, this);
         this.parent.on(refreshChartSize, this.refreshChartSize, this);
         this.parent.on(focusChartBorder, this.focusChartBorder, this);
+        this.parent.on(importModelUpdate, this.updateChartsFromSheet, this);
     }
 
     private removeEventListener(): void {
@@ -32,6 +33,7 @@ export class WorkbookChart {
             this.parent.off(deleteChartColl, this.deleteChartColl);
             this.parent.off(refreshChartSize, this.refreshChartSize);
             this.parent.off(focusChartBorder, this.focusChartBorder);
+            this.parent.off(importModelUpdate, this.updateChartsFromSheet);
         }
     }
 
@@ -203,6 +205,31 @@ export class WorkbookChart {
                 this.parent.chartColl.splice(idx, 1);
             }
         }
+    }
+
+    private updateChartsFromSheet(): void {
+        this.parent.sheets.forEach((sheet: ExtendedSheet) => {
+            if (sheet.chartColl) {
+                sheet.chartColl.forEach((chartModel: ExtendedChartModel) => {
+                    if (isNullOrUndefined(chartModel.id)) {
+                        chartModel.id = getUniqueID('e_spreadsheet_chart');
+                    }
+                    const indexes: number[] = chartModel.address;
+                    const cell: CellModel = getCell(indexes[0], indexes[1], sheet, true);
+                    if (cell) {
+                        if (!cell.chart) {
+                            cell.chart = [];
+                        }
+                        cell.chart.push(chartModel);
+                    } else {
+                        setCell(indexes[0], indexes[1], sheet, { chart: [chartModel] });
+                    }
+                    if (this.parent.chartColl.every((chartobj: ChartModel) => chartobj.id !== chartModel.id)) {
+                        this.parent.chartColl.push(chartModel);
+                    }
+                });
+            }
+        });
     }
 
     /**

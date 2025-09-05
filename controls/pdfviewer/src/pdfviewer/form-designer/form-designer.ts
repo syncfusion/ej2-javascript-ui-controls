@@ -1613,11 +1613,13 @@ export class FormDesigner {
         if (!isPrint) {
             element.appendChild(spanElement);
         }
+        this.updateSignatureSettings(this.pdfViewer.initialFieldSettings, this.isInitialField);
         this.updateSignInitialFieldProperties(signatureField, signatureField.isInitialField,
                                               this.pdfViewer.isFormDesignerToolbarVisible, this.isSetFormFieldMode);
         if (!isNullOrUndefined(signatureField.tooltip) && signatureField.tooltip !== '') {
             this.setToolTip(signatureField.tooltip, element.firstElementChild);
         }
+        this.updateSignatureSettings(this.pdfViewer.signatureFieldSettings, this.isInitialField);
         this.updateSignatureFieldProperties(signatureField, element, isPrint);
         return element;
     }
@@ -1737,6 +1739,7 @@ export class FormDesigner {
         select.style.width = '100%';
         select.style.height = '100%';
         select.style.position = 'absolute';
+        this.updateDropDownFieldSettings(this.pdfViewer.DropdownFieldSettings);
         this.updateDropdownFieldSettingsProperties(drawingObject, this.pdfViewer.isFormDesignerToolbarVisible, this.isSetFormFieldMode);
         const dropDownChildren: ItemModel[] = drawingObject.options ? drawingObject.options : [];
         this.updateDropdownListProperties(drawingObject, select, isPrint);
@@ -1787,6 +1790,7 @@ export class FormDesigner {
         select.style.height = '100%';
         select.style.position = 'absolute';
         select.multiple = true;
+        this.updateListBoxFieldSettings(this.pdfViewer.listBoxFieldSettings);
         this.updatelistBoxFieldSettingsProperties(drawingObject, this.pdfViewer.isFormDesignerToolbarVisible, this.isSetFormFieldMode);
         const dropDownChildren: ItemModel[] = drawingObject.options ? drawingObject.options : [];
         this.updateListBoxProperties(drawingObject, select, isPrint);
@@ -1835,6 +1839,7 @@ export class FormDesigner {
         inputElement.id = drawingObject.id;
         inputElement.setAttribute('aria-label', this.pdfViewer.element.id + 'formfilldesigner');
         inputElement.style.position = 'absolute';
+        this.updateTextFieldSettings(this.pdfViewer.textFieldSettings);
         if (formFieldAnnotationType === 'Textbox') {
             if (drawingObject.isMultiline) {
                 textArea = this.createTextAreaElement(inputElement.id);
@@ -1916,6 +1921,7 @@ export class FormDesigner {
             inputElement.style.margin = '0px';
             inputElement.style.width = bounds.width + 'px';
             inputElement.style.height = bounds.height + 'px';
+            this.updateCheckBoxFieldSettings(this.pdfViewer.checkBoxFieldSettings);
             if (!isPrint) {
                 this.updateCheckBoxFieldSettingsProperties(drawingObject, this.pdfViewer.isFormDesignerToolbarVisible,
                                                            this.isSetFormFieldMode);
@@ -1940,6 +1946,7 @@ export class FormDesigner {
             inputElement.addEventListener('focus', this.focusFormFields.bind(this));
             inputElement.addEventListener('blur', this.blurFormFields.bind(this));
             inputElement.addEventListener('change', this.getTextboxValue.bind(this));
+            this.updatePasswordFieldSettings(this.pdfViewer.passwordFieldSettings);
             this.updatePasswordFieldSettingProperties(drawingObject, this.pdfViewer.isFormDesignerToolbarVisible, this.isSetFormFieldMode);
             this.updatePasswordFieldProperties(drawingObject, inputElement, isPrint);
         } else {
@@ -1989,6 +1996,7 @@ export class FormDesigner {
             inputElement.addEventListener('blur', this.blurFormFields.bind(this));
             inputElement.style.width = bounds.width + 'px';
             inputElement.style.height = bounds.height + 'px';
+            this.updateRadioButtonFieldSettings(this.pdfViewer.radioButtonFieldSettings);
             this.updateRadioButtonFieldSettingProperties(drawingObject, this.pdfViewer.isFormDesignerToolbarVisible,
                                                          this.isSetFormFieldMode);
             this.updateRadioButtonProperties(drawingObject, inputElement, labelElement);
@@ -7879,10 +7887,12 @@ export class FormDesigner {
     private updateTextFieldSettingProperties(drawingObject: PdfFormFieldBaseModel, isFormDesignerToolbarVisible: boolean,
                                              isSetFormFieldMode: boolean): void {
         const textFieldSettings: any = this.pdfViewer.textFieldSettings;
-        if (!isNullOrUndefined(textFieldSettings.isReadOnly) && this.textFieldPropertyChanged.isReadOnlyChanged) {
+        if (!isNullOrUndefined(textFieldSettings.isReadOnly) && this.textFieldPropertyChanged.isReadOnlyChanged &&
+        textFieldSettings.isReadOnly !== false) {
             drawingObject.isReadonly = textFieldSettings.isReadOnly;
         }
-        if (!isNullOrUndefined(textFieldSettings.isRequired) && this.textFieldPropertyChanged.isRequiredChanged) {
+        if (!isNullOrUndefined(textFieldSettings.isRequired) && this.textFieldPropertyChanged.isRequiredChanged &&
+        textFieldSettings.isRequired !== false) {
             drawingObject.isRequired = textFieldSettings.isRequired;
         }
         if (textFieldSettings.value && this.textFieldPropertyChanged.isValueChanged) {
@@ -7926,19 +7936,23 @@ export class FormDesigner {
         if ((textFieldSettings.thickness && textFieldSettings.thickness !== 1) && this.textFieldPropertyChanged.isThicknessChanged) {
             drawingObject.thickness = textFieldSettings.thickness;
         }
-        if (textFieldSettings.maxLength && this.textFieldPropertyChanged.isMaxLengthChanged) {
+        if (textFieldSettings.maxLength && this.textFieldPropertyChanged.isMaxLengthChanged &&
+            textFieldSettings.maxLength !== 0) {
             drawingObject.maxLength = textFieldSettings.maxLength;
         }
-        if (textFieldSettings.visibility && this.textFieldPropertyChanged.isVisibilityChanged) {
+        if (textFieldSettings.visibility && this.textFieldPropertyChanged.isVisibilityChanged &&
+            textFieldSettings.visibility !== 'visible') {
             drawingObject.visibility = textFieldSettings.visibility;
         }
         if (!isNullOrUndefined(textFieldSettings.isPrint) && this.textFieldPropertyChanged.isPrintChanged) {
             drawingObject.isPrint = textFieldSettings.isPrint;
         }
-        if (!isNullOrUndefined(textFieldSettings.isMultiline) && this.textFieldPropertyChanged.isMultilineChanged) {
+        if (!isNullOrUndefined(textFieldSettings.isMultiline) && this.textFieldPropertyChanged.isMultilineChanged &&
+        textFieldSettings.isMultiline !== false) {
             drawingObject.isMultiline = textFieldSettings.isMultiline;
         }
-        if (!isNullOrUndefined(textFieldSettings.customData) && this.textFieldPropertyChanged.isCustomDataChanged) {
+        if (!isNullOrUndefined(textFieldSettings.customData) && this.textFieldPropertyChanged.isCustomDataChanged &&
+        textFieldSettings.customData !== '') {
             drawingObject.customData = textFieldSettings.customData;
         }
     }
@@ -7946,10 +7960,12 @@ export class FormDesigner {
     private updatePasswordFieldSettingProperties(drawingObject: PdfFormFieldBaseModel,
                                                  isFormDesignerToolbarVisible: boolean, isSetFormFieldMode: boolean): void {
         const passwordFieldSettings: any = this.pdfViewer.passwordFieldSettings;
-        if (!isNullOrUndefined(passwordFieldSettings.isReadOnly) && this.passwordFieldPropertyChanged.isReadOnlyChanged) {
+        if (!isNullOrUndefined(passwordFieldSettings.isReadOnly) && this.passwordFieldPropertyChanged.isReadOnlyChanged &&
+        passwordFieldSettings.isReadOnly !== false) {
             drawingObject.isReadonly = passwordFieldSettings.isReadOnly;
         }
-        if (!isNullOrUndefined(passwordFieldSettings.isRequired) && this.passwordFieldPropertyChanged.isRequiredChanged) {
+        if (!isNullOrUndefined(passwordFieldSettings.isRequired) && this.passwordFieldPropertyChanged.isRequiredChanged &&
+        passwordFieldSettings.isRequired !== false) {
             drawingObject.isRequired = passwordFieldSettings.isRequired;
         }
         if (passwordFieldSettings.value && this.passwordFieldPropertyChanged.isValueChanged) {
@@ -7993,16 +8009,19 @@ export class FormDesigner {
         this.passwordFieldPropertyChanged.isThicknessChanged) {
             drawingObject.thickness = passwordFieldSettings.thickness;
         }
-        if (passwordFieldSettings.maxLength && this.passwordFieldPropertyChanged.isMaxLengthChanged) {
+        if (passwordFieldSettings.maxLength && this.passwordFieldPropertyChanged.isMaxLengthChanged &&
+            passwordFieldSettings.maxLength !== 0) {
             drawingObject.maxLength = passwordFieldSettings.maxLength;
         }
-        if (passwordFieldSettings.visibility && this.passwordFieldPropertyChanged.isVisibilityChanged) {
+        if (passwordFieldSettings.visibility && this.passwordFieldPropertyChanged.isVisibilityChanged &&
+            passwordFieldSettings.visibility !== 'visible') {
             drawingObject.visibility = passwordFieldSettings.visibility;
         }
         if (!isNullOrUndefined(passwordFieldSettings.isPrint) && this.passwordFieldPropertyChanged.isPrintChanged) {
             drawingObject.isPrint = passwordFieldSettings.isPrint;
         }
-        if (!isNullOrUndefined(passwordFieldSettings.customData) && this.passwordFieldPropertyChanged.isCustomDataChanged) {
+        if (!isNullOrUndefined(passwordFieldSettings.customData) && this.passwordFieldPropertyChanged.isCustomDataChanged &&
+        passwordFieldSettings.customData !== '') {
             drawingObject.customData = passwordFieldSettings.customData;
         }
     }
@@ -8010,10 +8029,12 @@ export class FormDesigner {
     private updateCheckBoxFieldSettingsProperties(drawingObject: PdfFormFieldBaseModel,
                                                   isFormDesignerToolbarVisible: boolean, isSetFormFieldMode: boolean): void {
         const checkBoxFieldSettings: any = this.pdfViewer.checkBoxFieldSettings;
-        if (!isNullOrUndefined(checkBoxFieldSettings.isReadOnly) && this.checkBoxFieldPropertyChanged.isReadOnlyChanged) {
+        if (!isNullOrUndefined(checkBoxFieldSettings.isReadOnly) && this.checkBoxFieldPropertyChanged.isReadOnlyChanged &&
+        checkBoxFieldSettings.isReadOnly !== false) {
             drawingObject.isReadonly = checkBoxFieldSettings.isReadOnly;
         }
-        if (!isNullOrUndefined(checkBoxFieldSettings.isRequired) && this.checkBoxFieldPropertyChanged.isRequiredChanged) {
+        if (!isNullOrUndefined(checkBoxFieldSettings.isRequired) && this.checkBoxFieldPropertyChanged.isRequiredChanged &&
+        checkBoxFieldSettings.isRequired !== false) {
             drawingObject.isRequired = checkBoxFieldSettings.isRequired;
         }
         if (checkBoxFieldSettings.value && this.checkBoxFieldPropertyChanged.isValueChanged) {
@@ -8038,16 +8059,19 @@ export class FormDesigner {
         this.checkBoxFieldPropertyChanged.isThicknessChanged) {
             drawingObject.thickness = checkBoxFieldSettings.thickness;
         }
-        if (checkBoxFieldSettings.visibility && this.checkBoxFieldPropertyChanged.isVisibilityChanged) {
+        if (checkBoxFieldSettings.visibility && this.checkBoxFieldPropertyChanged.isVisibilityChanged &&
+            checkBoxFieldSettings.visibility !== 'visible') {
             drawingObject.visibility = checkBoxFieldSettings.visibility;
         }
         if (!isNullOrUndefined(checkBoxFieldSettings.isPrint) && this.checkBoxFieldPropertyChanged.isPrintChanged) {
             drawingObject.isPrint = checkBoxFieldSettings.isPrint;
         }
-        if (!isNullOrUndefined(checkBoxFieldSettings.isChecked) && this.checkBoxFieldPropertyChanged.isCheckedChanged) {
+        if (!isNullOrUndefined(checkBoxFieldSettings.isChecked) && this.checkBoxFieldPropertyChanged.isCheckedChanged &&
+        checkBoxFieldSettings.isChecked !== false) {
             drawingObject.isChecked = checkBoxFieldSettings.isChecked;
         }
-        if (!isNullOrUndefined(checkBoxFieldSettings.customData) && this.checkBoxFieldPropertyChanged.isCustomDataChanged) {
+        if (!isNullOrUndefined(checkBoxFieldSettings.customData) && this.checkBoxFieldPropertyChanged.isCustomDataChanged &&
+        checkBoxFieldSettings.customData !== '') {
             drawingObject.customData = checkBoxFieldSettings.customData;
         }
     }
@@ -8055,10 +8079,12 @@ export class FormDesigner {
     private updateRadioButtonFieldSettingProperties(drawingObject: PdfFormFieldBaseModel,
                                                     isFormDesignerToolbarVisible: boolean, isSetFormFieldMode: boolean): void {
         const radioButtonFieldSettings: any = this.pdfViewer.radioButtonFieldSettings;
-        if (!isNullOrUndefined(radioButtonFieldSettings.isReadOnly) && this.radioButtonFieldPropertyChanged.isReadOnlyChanged) {
+        if (!isNullOrUndefined(radioButtonFieldSettings.isReadOnly) && this.radioButtonFieldPropertyChanged.isReadOnlyChanged &&
+        radioButtonFieldSettings.isReadOnly !== false) {
             drawingObject.isReadonly = radioButtonFieldSettings.isReadOnly;
         }
-        if (!isNullOrUndefined(radioButtonFieldSettings.isRequired) && this.radioButtonFieldPropertyChanged.isRequiredChanged) {
+        if (!isNullOrUndefined(radioButtonFieldSettings.isRequired) && this.radioButtonFieldPropertyChanged.isRequiredChanged &&
+        radioButtonFieldSettings.isRequired !== false) {
             drawingObject.isRequired = radioButtonFieldSettings.isRequired;
         }
         if (radioButtonFieldSettings.value && this.radioButtonFieldPropertyChanged.isValueChanged) {
@@ -8086,16 +8112,19 @@ export class FormDesigner {
         this.radioButtonFieldPropertyChanged.isThicknessChanged) {
             drawingObject.thickness = radioButtonFieldSettings.thickness;
         }
-        if (radioButtonFieldSettings.visibility && this.radioButtonFieldPropertyChanged.isVisibilityChanged) {
+        if (radioButtonFieldSettings.visibility && this.radioButtonFieldPropertyChanged.isVisibilityChanged &&
+            radioButtonFieldSettings.visibility !== 'visible') {
             drawingObject.visibility = radioButtonFieldSettings.visibility;
         }
         if (!isNullOrUndefined(radioButtonFieldSettings.isPrint) && this.radioButtonFieldPropertyChanged.isPrintChanged) {
             drawingObject.isPrint = radioButtonFieldSettings.isPrint;
         }
-        if (!isNullOrUndefined(radioButtonFieldSettings.isSelected) && this.radioButtonFieldPropertyChanged.isSelectedChanged) {
+        if (!isNullOrUndefined(radioButtonFieldSettings.isSelected) && this.radioButtonFieldPropertyChanged.isSelectedChanged &&
+        radioButtonFieldSettings.isSelected !== false) {
             drawingObject.isSelected = radioButtonFieldSettings.isSelected;
         }
-        if (!isNullOrUndefined(radioButtonFieldSettings.customData) && this.radioButtonFieldPropertyChanged.isCustomDataChanged) {
+        if (!isNullOrUndefined(radioButtonFieldSettings.customData) && this.radioButtonFieldPropertyChanged.isCustomDataChanged &&
+        radioButtonFieldSettings.customData !== '') {
             drawingObject.customData = radioButtonFieldSettings.customData;
         }
     }
@@ -8103,10 +8132,12 @@ export class FormDesigner {
     private updateDropdownFieldSettingsProperties(drawingObject: PdfFormFieldBaseModel,
                                                   isFormDesignerToolbarVisible: boolean, isSetFormFieldMode: boolean): void {
         const dropdownFieldSettings: any = this.pdfViewer.DropdownFieldSettings;
-        if (!isNullOrUndefined(dropdownFieldSettings.isReadOnly) && this.dropdownFieldPropertyChanged.isReadOnlyChanged) {
+        if (!isNullOrUndefined(dropdownFieldSettings.isReadOnly) && this.dropdownFieldPropertyChanged.isReadOnlyChanged &&
+        dropdownFieldSettings.isReadOnly !== false) {
             drawingObject.isReadonly = dropdownFieldSettings.isReadOnly;
         }
-        if (!isNullOrUndefined(dropdownFieldSettings.isRequired) && this.dropdownFieldPropertyChanged.isRequiredChanged) {
+        if (!isNullOrUndefined(dropdownFieldSettings.isRequired) && this.dropdownFieldPropertyChanged.isRequiredChanged &&
+        dropdownFieldSettings.isRequired !== false) {
             drawingObject.isRequired = dropdownFieldSettings.isRequired;
         }
         if ((dropdownFieldSettings.backgroundColor && dropdownFieldSettings.backgroundColor !== 'white') && this.dropdownFieldPropertyChanged.isBackgroundColorChanged) {
@@ -8146,17 +8177,24 @@ export class FormDesigner {
         if ((dropdownFieldSettings && dropdownFieldSettings.thickness !== 1) && this.dropdownFieldPropertyChanged.isThicknessChanged) {
             drawingObject.thickness = dropdownFieldSettings.thickness;
         }
-        if (dropdownFieldSettings.visibility && this.dropdownFieldPropertyChanged.isVisibilityChanged) {
+        if (dropdownFieldSettings.visibility && this.dropdownFieldPropertyChanged.isVisibilityChanged &&
+            dropdownFieldSettings.visibility !== 'visible') {
             drawingObject.visibility = dropdownFieldSettings.visibility;
         }
         if (!isNullOrUndefined(dropdownFieldSettings.isPrint) && this.dropdownFieldPropertyChanged.isPrintChanged) {
             drawingObject.isPrint = dropdownFieldSettings.isPrint;
         }
-        if (dropdownFieldSettings.options && this.dropdownFieldPropertyChanged.isOptionChanged) {
-            drawingObject.options = drawingObject.options && drawingObject.options.length > 0 ?
-                drawingObject.options : dropdownFieldSettings.options;
+        if (dropdownFieldSettings.options && dropdownFieldSettings.options.length > 0) {
+            if (isNullOrUndefined(drawingObject.selectedIndex)) {
+                drawingObject.selectedIndex = [0];
+            }
+            if (this.dropdownFieldPropertyChanged.isOptionChanged) {
+                drawingObject.options = drawingObject.options && drawingObject.options.length > 0 ?
+                    drawingObject.options : dropdownFieldSettings.options;
+            }
         }
-        if (!isNullOrUndefined(dropdownFieldSettings.customData) && this.dropdownFieldPropertyChanged.isCustomDataChanged) {
+        if (!isNullOrUndefined(dropdownFieldSettings.customData) && this.dropdownFieldPropertyChanged.isCustomDataChanged &&
+        dropdownFieldSettings.customData !== '') {
             drawingObject.customData = dropdownFieldSettings.customData;
         }
     }
@@ -8164,10 +8202,12 @@ export class FormDesigner {
     private updatelistBoxFieldSettingsProperties(drawingObject: PdfFormFieldBaseModel,
                                                  isFormDesignerToolbarVisible: boolean, isSetFormFieldMode: boolean): void {
         const listBoxFieldSettings: any = this.pdfViewer.listBoxFieldSettings;
-        if (!isNullOrUndefined(listBoxFieldSettings.isReadOnly) && this.listBoxFieldPropertyChanged.isReadOnlyChanged) {
+        if (!isNullOrUndefined(listBoxFieldSettings.isReadOnly) && this.listBoxFieldPropertyChanged.isReadOnlyChanged &&
+        listBoxFieldSettings.isReadOnly !== false) {
             drawingObject.isReadonly = listBoxFieldSettings.isReadOnly;
         }
-        if (!isNullOrUndefined(listBoxFieldSettings.isRequired) && this.listBoxFieldPropertyChanged.isRequiredChanged) {
+        if (!isNullOrUndefined(listBoxFieldSettings.isRequired) && this.listBoxFieldPropertyChanged.isRequiredChanged &&
+        listBoxFieldSettings.isRequired !== false) {
             drawingObject.isRequired = listBoxFieldSettings.isRequired;
         }
         if ((listBoxFieldSettings.backgroundColor && listBoxFieldSettings.backgroundColor !== 'white') && this.listBoxFieldPropertyChanged.isBackgroundColorChanged) {
@@ -8207,17 +8247,24 @@ export class FormDesigner {
         this.listBoxFieldPropertyChanged.isThicknessChanged) {
             drawingObject.thickness = listBoxFieldSettings.thickness;
         }
-        if (listBoxFieldSettings.visibility && this.listBoxFieldPropertyChanged.isVisibilityChanged) {
+        if (listBoxFieldSettings.visibility && this.listBoxFieldPropertyChanged.isVisibilityChanged &&
+            listBoxFieldSettings.visibility !== 'visible') {
             drawingObject.visibility = listBoxFieldSettings.visibility;
         }
         if (!isNullOrUndefined(listBoxFieldSettings.isPrint) && this.listBoxFieldPropertyChanged.isPrintChanged) {
             drawingObject.isPrint = listBoxFieldSettings.isPrint;
         }
-        if (listBoxFieldSettings.options && this.listBoxFieldPropertyChanged.isOptionChanged) {
-            drawingObject.options = drawingObject.options && drawingObject.options.length > 0 ?
-                drawingObject.options : listBoxFieldSettings.options;
+        if (listBoxFieldSettings.options && listBoxFieldSettings.options.length > 0) {
+            if (isNullOrUndefined(drawingObject.selectedIndex)) {
+                drawingObject.selectedIndex = [0];
+            }
+            if (this.listBoxFieldPropertyChanged.isOptionChanged) {
+                drawingObject.options = drawingObject.options && drawingObject.options.length > 0 ?
+                    drawingObject.options : listBoxFieldSettings.options;
+            }
         }
-        if (!isNullOrUndefined(listBoxFieldSettings.customData) && this.listBoxFieldPropertyChanged.isCustomDataChanged) {
+        if (!isNullOrUndefined(listBoxFieldSettings.customData) && this.listBoxFieldPropertyChanged.isCustomDataChanged &&
+        listBoxFieldSettings.customData !== '') {
             drawingObject.customData = listBoxFieldSettings.customData;
         }
     }
@@ -8227,15 +8274,17 @@ export class FormDesigner {
         const initialFieldSettings: any = this.pdfViewer.initialFieldSettings;
         const signatureFieldSettings: any = this.pdfViewer.signatureFieldSettings;
         if (isInitialField) {
-            if (!isNullOrUndefined(initialFieldSettings.isReadOnly) && this.initialFieldPropertyChanged.isReadOnlyChanged) {
+            if (!isNullOrUndefined(initialFieldSettings.isReadOnly) && this.initialFieldPropertyChanged.isReadOnlyChanged &&
+            initialFieldSettings.isReadOnly !== false) {
                 signatureField.isReadonly = initialFieldSettings.isReadOnly;
             }
             if (!isNullOrUndefined(initialFieldSettings.isRequired) &&
-            this.initialFieldPropertyChanged.isRequiredChanged && !this.pdfViewer.magnificationModule.isFormFieldPageZoomed) {
+            this.initialFieldPropertyChanged.isRequiredChanged && !this.pdfViewer.magnificationModule.isFormFieldPageZoomed &&
+            initialFieldSettings.isRequired !== false) {
                 signatureField.isRequired = initialFieldSettings.isRequired;
             }
             if (initialFieldSettings.visibility && this.initialFieldPropertyChanged.isVisibilityChanged &&
-                !this.pdfViewer.magnificationModule.isFormFieldPageZoomed) {
+                !this.pdfViewer.magnificationModule.isFormFieldPageZoomed && initialFieldSettings.visibility !== 'visible') {
                 signatureField.visibility = initialFieldSettings.visibility;
             }
             if (initialFieldSettings.tooltip && this.initialFieldPropertyChanged.isTooltipChanged &&
@@ -8256,20 +8305,23 @@ export class FormDesigner {
             this.initialFieldPropertyChanged.isPrintChanged && !this.pdfViewer.magnificationModule.isFormFieldPageZoomed) {
                 signatureField.isPrint = initialFieldSettings.isPrint;
             }
-            if (!isNullOrUndefined(initialFieldSettings.customData) && this.initialFieldPropertyChanged.isCustomDataChanged) {
+            if (!isNullOrUndefined(initialFieldSettings.customData) && this.initialFieldPropertyChanged.isCustomDataChanged &&
+            initialFieldSettings.customData !== '') {
                 signatureField.customData = initialFieldSettings.customData;
             }
         }
         else {
-            if (!isNullOrUndefined(signatureFieldSettings.isReadOnly) && this.signatureFieldPropertyChanged.isReadOnlyChanged) {
+            if (!isNullOrUndefined(signatureFieldSettings.isReadOnly) && this.signatureFieldPropertyChanged.isReadOnlyChanged &&
+            signatureFieldSettings.isReadOnly !== false) {
                 signatureField.isReadonly = signatureFieldSettings.isReadOnly;
             }
             if (!isNullOrUndefined(signatureFieldSettings.isRequired) &&
-            this.signatureFieldPropertyChanged.isRequiredChanged && !this.pdfViewer.magnificationModule.isFormFieldPageZoomed) {
+            this.signatureFieldPropertyChanged.isRequiredChanged && !this.pdfViewer.magnificationModule.isFormFieldPageZoomed &&
+            signatureFieldSettings.isRequired !== false) {
                 signatureField.isRequired = signatureFieldSettings.isRequired;
             }
             if (signatureFieldSettings.visibility && this.signatureFieldPropertyChanged.isVisibilityChanged &&
-                !this.pdfViewer.magnificationModule.isFormFieldPageZoomed) {
+                !this.pdfViewer.magnificationModule.isFormFieldPageZoomed && signatureFieldSettings.visibility !== 'visible') {
                 signatureField.visibility = signatureFieldSettings.visibility;
             }
             if (signatureFieldSettings.tooltip && this.signatureFieldPropertyChanged.isTooltipChanged &&
@@ -8290,7 +8342,8 @@ export class FormDesigner {
             !this.pdfViewer.magnificationModule.isFormFieldPageZoomed) {
                 signatureField.isPrint = signatureFieldSettings.isPrint;
             }
-            if (!isNullOrUndefined(signatureFieldSettings.customData) && this.signatureFieldPropertyChanged.isCustomDataChanged) {
+            if (!isNullOrUndefined(signatureFieldSettings.customData) && this.signatureFieldPropertyChanged.isCustomDataChanged &&
+            signatureFieldSettings.customData !== '') {
                 signatureField.customData = signatureFieldSettings.customData;
             }
         }

@@ -1,11 +1,12 @@
 import { BlockEditor } from '../base/blockeditor';
 import { EventHandler, isNullOrUndefined as isNOU } from '@syncfusion/ej2-base';
-import { getAdjacentBlock, getBlockIndexById, getBlockModelById, isListTypeBlock } from '../utils/block';
+import { getAdjacentBlock, getBlockContentElement, getBlockIndexById, getBlockModelById, isListTypeBlock } from '../utils/block';
 import { cleanupElement } from '../utils/common';
 import { BlockModel } from '../models/index';
 import { BlockDragEventArgs, BlockDropEventArgs } from '../base/eventargs';
-import { events } from '../base/constant';
-import { getSelectionRange } from '../utils/selection';
+import { getSelectedRange } from '../utils/selection';
+import * as constants from '../base/constant';
+import { BlockType } from '../base/enums';
 
 /**
  * Drag and Drop module is used to perform block reordering actions.
@@ -25,7 +26,7 @@ export class DragAndDropAction {
         this.editor = editor;
     }
 
-    wireDragEvents(): void {
+    public wireDragEvents(): void {
         EventHandler.add(this.editor.element, 'dragover', this.updateCurrentDroppingTarget, this);
         EventHandler.add(this.editor.element, 'dragenter', this.preventNoDropIcon, this);
         if (!isNOU(this.editor.floatingIconContainer)) {
@@ -38,7 +39,7 @@ export class DragAndDropAction {
         }
     }
 
-    unwireDragEvents(): void {
+    public unwireDragEvents(): void {
         EventHandler.remove(this.editor.element, 'dragover', this.updateCurrentDroppingTarget);
         EventHandler.remove(this.editor.element, 'dragenter', this.preventNoDropIcon);
         if (!isNOU(this.editor.floatingIconContainer)) {
@@ -50,14 +51,16 @@ export class DragAndDropAction {
             }
         }
     }
+
     private preventNoDropIcon(e: DragEvent): void {
         e.preventDefault();
     }
+
     private updateCurrentDroppingTarget(e: DragEvent): void {
         e.preventDefault();
         const elementsAtPoint: Element[] = document.elementsFromPoint(e.clientX, e.clientY);
         const innerMostElement: HTMLElement | null = elementsAtPoint[0] as HTMLElement;
-        const closestBlock: HTMLElement | null = innerMostElement.closest('.e-block') as HTMLElement;
+        const closestBlock: HTMLElement | null = innerMostElement.closest('.' + constants.BLOCK_CLS) as HTMLElement;
         if (innerMostElement && closestBlock) {
             this.currentDropTarget = closestBlock;
         }
@@ -69,12 +72,10 @@ export class DragAndDropAction {
     private handleDragMove(e: DragEvent): void {
         if (isNOU(this.editor.currentHoveredBlock)) { return; }
         this.isDragCompleted = false;
-        const dragIndex: number = getBlockIndexById(this.editor.currentHoveredBlock.id, this.editor.blocksInternal);
-        const dropIndex: number = this.currentDropTarget ? getBlockIndexById(this.currentDropTarget.id, this.editor.blocksInternal) : -1;
-        const draggedBlock: BlockModel | null = getBlockModelById(this.editor.currentHoveredBlock.id, this.editor.blocksInternal);
+        const dropIndex: number = this.currentDropTarget ? getBlockIndexById(this.currentDropTarget.id, this.editor.getEditorBlocks()) : -1;
         const eventArgs: BlockDragEventArgs = {
             blocks: this.draggedBlocks,
-            fromIndex: this.draggedBlocks.map((block: BlockModel) => getBlockIndexById(block.id, this.editor.blocksInternal)),
+            fromIndex: this.draggedBlocks.map((block: BlockModel) => getBlockIndexById(block.id, this.editor.getEditorBlocks())),
             dropIndex: dropIndex,
             event: e,
             target: this.currentDropTarget,
@@ -82,10 +83,10 @@ export class DragAndDropAction {
         };
         this.editor.trigger('blockDrag', eventArgs, (dragEventArgs: BlockDragEventArgs) => {
             if (this.dragClone) {
-                const editorRect: DOMRect | ClientRect = this.editor.element.getBoundingClientRect();
+                const editorRect: DOMRect = this.editor.element.getBoundingClientRect() as DOMRect;
                 this.editor.floatingIconContainer.style.display = 'flex';
                 const dragIcon: HTMLElement = this.editor.floatingIconContainer.querySelector('.e-block-drag-icon') as HTMLElement;
-                const dragIconRect: DOMRect | ClientRect = dragIcon.getBoundingClientRect();
+                const dragIconRect: DOMRect = dragIcon.getBoundingClientRect() as DOMRect;
                 this.editor.floatingIconContainer.style.display = 'none';
                 this.dragClone.style.opacity = '0.7';
                 const scrollTop: number = this.editor.element.scrollTop;
@@ -119,35 +120,30 @@ export class DragAndDropAction {
             }
         });
     }
+
     private handleDragStart(e: DragEvent): void {
         this.isDragCompleted = false;
         this.isDragMoveCancelled = false;
-        const target: HTMLElement = e.target as HTMLElement;
-        if (!target.classList.contains('e-block-drag-icon') || !this.editor.currentHoveredBlock) {
+        const editorBlocks: BlockModel[] = this.editor.getEditorBlocks();
+        if (!(e.target as HTMLElement).classList.contains('e-block-drag-icon') || !this.editor.currentHoveredBlock) {
             return;
         }
         let selectedBlocks: BlockModel[] = [];
-        const range: Range = getSelectionRange();
-        const draggedElements: HTMLElement[] = [];
+        const range: Range = getSelectedRange();
         if (range && range.toString().trim().length > 0) {
             selectedBlocks = this.editor.getSelectedBlocks();
         }
         else {
-            // fallback to the current hovered block
-            const blockModel: BlockModel = getBlockModelById(this.editor.currentHoveredBlock.id, this.editor.blocksInternal);
+            const blockModel: BlockModel = getBlockModelById(this.editor.currentHoveredBlock.id, editorBlocks);
             if (blockModel) {
                 selectedBlocks.push(blockModel);
             }
         }
         this.draggedBlocks = selectedBlocks;
-        const blockElement: HTMLElement = this.editor.currentHoveredBlock;
-        const dragIndex: number = getBlockIndexById(this.editor.currentHoveredBlock.id, this.editor.blocksInternal);
-        const dropIndex: number = this.currentDropTarget ? getBlockIndexById(this.currentDropTarget.id, this.editor.blocksInternal) : -1;
-        const draggedBlock: BlockModel | null = getBlockModelById(this.editor.currentHoveredBlock.id, this.editor.blocksInternal);
         const eventArgs: BlockDragEventArgs = {
             blocks: this.draggedBlocks,
-            fromIndex: this.draggedBlocks.map((block: BlockModel) => getBlockIndexById(block.id, this.editor.blocksInternal)),
-            dropIndex: dropIndex,
+            fromIndex: this.draggedBlocks.map((block: BlockModel) => getBlockIndexById(block.id, editorBlocks)),
+            dropIndex: this.currentDropTarget ? getBlockIndexById(this.currentDropTarget.id, editorBlocks) : -1,
             event: e,
             target: this.currentDropTarget,
             cancel: false
@@ -162,11 +158,11 @@ export class DragAndDropAction {
             this.dragClone.style.opacity = '0';
             this.dragClone.style.pointerEvents = 'none';
             this.dragClone.classList.add('dragging-clone');
+
             for (const block of selectedBlocks) {
                 const blockElement: HTMLElement = document.getElementById(block.id);
                 if (blockElement) {
-                    const clone: HTMLElement = blockElement.cloneNode(true) as HTMLElement;
-                    this.dragClone.appendChild(clone);
+                    this.dragClone.appendChild(blockElement.cloneNode(true));
                 }
             }
             this.editor.blockWrapper.appendChild(this.dragClone);
@@ -176,6 +172,7 @@ export class DragAndDropAction {
             e.dataTransfer.setDragImage(transparentImage, 0, 0);
         });
     }
+
     private handleDragStop(e: MouseEvent): void {
         if (isNOU(this.editor.currentHoveredBlock)) { return; }
         if (this.isDragMoveCancelled) {
@@ -183,17 +180,17 @@ export class DragAndDropAction {
             cleanupElement(this.dropIndicator);
             return;
         }
+
         e.preventDefault();
         this.isDragCompleted = true;
         let currentIndicatorBlock: HTMLElement | null;
         if (this.dropIndicator) {
-            currentIndicatorBlock = this.dropIndicator.closest('.e-block') as HTMLElement;
+            currentIndicatorBlock = this.dropIndicator.closest('.' + constants.BLOCK_CLS) as HTMLElement;
         }
         let dropTarget: HTMLElement | null;
         if (currentIndicatorBlock) {
-            const indicatorRect: DOMRect | ClientRect = currentIndicatorBlock.getBoundingClientRect();
-            const hoveredBlockRect: DOMRect | ClientRect = this.editor.currentHoveredBlock.getBoundingClientRect();
-            const isMovingDown: boolean = hoveredBlockRect.top < indicatorRect.top;
+            const hoveredBlockRect: DOMRect = this.editor.currentHoveredBlock.getBoundingClientRect() as DOMRect;
+            const isMovingDown: boolean = hoveredBlockRect.top < currentIndicatorBlock.getBoundingClientRect().top;
             if (!this.isIndicatorAtTop && !isMovingDown) {
                 dropTarget = getAdjacentBlock(currentIndicatorBlock, 'next');
                 if (isNOU(dropTarget)) {
@@ -204,31 +201,31 @@ export class DragAndDropAction {
                 dropTarget = currentIndicatorBlock;
             }
         }
-        const dragIndex: number = getBlockIndexById(this.editor.currentHoveredBlock.id, this.editor.blocksInternal);
-        const dropIndex: number = dropTarget ? getBlockIndexById(dropTarget.id, this.editor.blocksInternal) : -1;
-        const draggedBlock: BlockModel | null = getBlockModelById(this.editor.currentHoveredBlock.id, this.editor.blocksInternal);
         const eventArgs: BlockDropEventArgs = {
             blocks: this.draggedBlocks.map((block: BlockModel) => block),
-            fromIndex: this.draggedBlocks.map((block: BlockModel) => getBlockIndexById(block.id, this.editor.blocksInternal)),
-            dropIndex: dropIndex,
+            fromIndex: this.draggedBlocks.map((block: BlockModel) => getBlockIndexById(block.id, this.editor.getEditorBlocks())),
+            dropIndex: dropTarget ? getBlockIndexById(dropTarget.id, this.editor.getEditorBlocks()) : -1,
             event: e,
             target: dropTarget
         };
         this.editor.trigger('blockDrop', eventArgs);
         cleanupElement(this.dragClone);
         cleanupElement(this.dropIndicator);
+
         if (dropTarget && dropTarget !== this.editor.currentHoveredBlock) {
             this.reorderBlocks(this.draggedBlocks, dropTarget);
             this.editor.listBlockAction.recalculateMarkersForListItems();
         }
         this.draggedBlocks = [];
     }
+
     private reorderBlocks(draggedBlocks: BlockModel[], dropTarget: HTMLElement): void {
-        this.editor.blockAction.moveBlock({
+        this.editor.blockCommandManager.moveBlock({
             fromBlockIds: draggedBlocks.map((block: BlockModel) => block.id),
             toBlockId: dropTarget.id
         });
     }
+
     private updateDropIndicator(): void {
         if (
             this.isDragCompleted ||
@@ -243,12 +240,12 @@ export class DragAndDropAction {
             this.dropIndicator = document.createElement('div');
             this.dropIndicator.classList.add('drop-indicator');
         }
-        const hoverdBlockRect: DOMRect | ClientRect = this.editor.currentHoveredBlock.getBoundingClientRect();
-        const dropTargetRect: DOMRect | ClientRect = this.currentDropTarget.getBoundingClientRect();
+        const hoverdBlockRect: DOMRect = this.editor.currentHoveredBlock.getBoundingClientRect() as DOMRect;
+        const dropTargetRect: DOMRect = this.currentDropTarget.getBoundingClientRect() as DOMRect;
         const middleY: number = dropTargetRect.top + (dropTargetRect.height / 2);
-        let draggedBlockRect: DOMRect | ClientRect;
+        let draggedBlockRect: DOMRect;
         if (this.dragClone) {
-            draggedBlockRect = this.dragClone.children[0].getBoundingClientRect();
+            draggedBlockRect = this.dragClone.children[0].getBoundingClientRect() as DOMRect;
         }
         if (isNOU(draggedBlockRect) || isNOU(hoverdBlockRect)) { return; }
         if (hoverdBlockRect.top > draggedBlockRect.top) {
@@ -257,52 +254,50 @@ export class DragAndDropAction {
         else {
             this.handleDraggingBelow(middleY, draggedBlockRect);
         }
-        const currentIndicatorBlock: HTMLElement = this.dropIndicator.closest('.e-block') as HTMLElement;
+        const currentIndicatorBlock: HTMLElement = this.dropIndicator.closest('.' + constants.BLOCK_CLS) as HTMLElement;
         if (!currentIndicatorBlock) { return; }
-        const indicatorBlockModel: BlockModel = getBlockModelById(currentIndicatorBlock.id, this.editor.blocksInternal);
-        const specialTypes: string[] = ['Divider', 'ToggleParagraph', 'ToggleHeading1', 'ToggleHeading2', 'ToggleHeading3',
-            'ToggleHeading4', 'Callout', 'Table', 'Image', 'Code'];
+        const indicatorBlockModel: BlockModel = getBlockModelById(currentIndicatorBlock.id, this.editor.getEditorBlocks());
+        const specialTypes: string[] = [BlockType.Divider, BlockType.CollapsibleParagraph, BlockType.CollapsibleHeading, BlockType.Callout, 'Table', BlockType.Image, BlockType.Code];
         const isSpecialType: boolean = (specialTypes.indexOf(indicatorBlockModel.type) > -1);
+
         if (isSpecialType) {
             (this.dropIndicator as HTMLElement).style.left = '46px';
             return;
         }
-        const blockContent: HTMLElement = currentIndicatorBlock.querySelector('.e-block-content') as HTMLElement;
+        const blockContent: HTMLElement = getBlockContentElement(currentIndicatorBlock) as HTMLElement;
         if (!blockContent) { return; }
 
-        const blockRect: DOMRect | ClientRect = currentIndicatorBlock.getBoundingClientRect();
-        const contentRect: DOMRect | ClientRect = blockContent.getBoundingClientRect();
-        const leftOffset: number = contentRect.left - blockRect.left;
+        const leftOffset: number = blockContent.getBoundingClientRect().left - currentIndicatorBlock.getBoundingClientRect().left;
         (this.dropIndicator as HTMLElement).style.left = `${leftOffset}px`;
     }
-    private handleDraggingAbove(middleY: number, draggedBlockRect: DOMRect | ClientRect): void {
+
+    private handleDraggingAbove(middleY: number, draggedBlockRect: DOMRect): void {
         if (draggedBlockRect && draggedBlockRect.top < middleY) {
             const adjecentBLockEle: HTMLElement = this.currentDropTarget.previousElementSibling as HTMLElement;
             if (adjecentBLockEle) {
-                const isIndicatorAdded: boolean = this.checkAndInsertIndicatorInListBlock(adjecentBLockEle, true);
-                if (!isIndicatorAdded) {
+                if (!this.checkAndInsertIndicatorInListBlock(adjecentBLockEle, true)) {
                     adjecentBLockEle.appendChild(this.dropIndicator);
                 }
                 this.isIndicatorAtTop = false;
             }
             else {
-                const isIndicatorAdded: boolean = this.checkAndInsertIndicatorInListBlock(this.currentDropTarget, false);
-                if (!isIndicatorAdded) {
+                if (!this.checkAndInsertIndicatorInListBlock(this.currentDropTarget, false)) {
                     this.currentDropTarget.prepend(this.dropIndicator);
                 }
                 this.isIndicatorAtTop = true;
             }
         }
     }
-    private handleDraggingBelow(middleY: number, draggedBlockRect: DOMRect | ClientRect): void {
+
+    private handleDraggingBelow(middleY: number, draggedBlockRect: DOMRect): void {
         if (draggedBlockRect && draggedBlockRect.top > middleY) {
-            const isIndicatorAdded: boolean = this.checkAndInsertIndicatorInListBlock(this.currentDropTarget, true);
-            if (!isIndicatorAdded) {
+            if (!this.checkAndInsertIndicatorInListBlock(this.currentDropTarget, true)) {
                 this.currentDropTarget.appendChild(this.dropIndicator);
             }
             this.isIndicatorAtTop = false;
         }
     }
+
     private checkAndInsertIndicatorInListBlock(element: HTMLElement, isAfter: boolean): boolean {
         if (isListTypeBlock(element.getAttribute('data-block-type'))) {
             const listItem: HTMLElement | null = element.querySelector('li');
@@ -313,8 +308,8 @@ export class DragAndDropAction {
         }
         return false;
     }
+
     public destroy(): void {
         this.unwireDragEvents();
-        this.editor = null;
     }
 }

@@ -534,6 +534,9 @@ export function updateCell(context: Workbook, sheet: SheetModel, prop: CellUpdat
             if (cell.formattedText) {
                 delete cell.formattedText;
             }
+            if (args.cell && args.cell.style) {
+                cleanEmptyBorderProperties(cell.style);
+            }
             const evtArgs: { [key: string]: string | boolean | number[] | number | BeforeActionData } = {
                 action: 'updateCellValue',
                 address: [args.rowIndex, args.colIndex], sheetIndex: getSheetIndex(context, sheet.name), value:
@@ -574,9 +577,35 @@ export function updateCell(context: Workbook, sheet: SheetModel, prop: CellUpdat
             }
         } else {
             setCell(args.rowIndex, args.colIndex, sheet, args.cell, !prop.pvtExtend);
+            if (args.cell && args.cell.style) {
+                const cell: CellModel = getCell(args.rowIndex, args.colIndex, sheet, false, true);
+                cleanEmptyBorderProperties(cell.style);
+            }
         }
     }
     return args.cancel;
+}
+
+/**
+ * Removes empty border properties from cell style
+ *
+ * @param {CellStyleModel} style - The cell style object to clean
+ * @returns {void}
+ * @hidden
+ */
+function cleanEmptyBorderProperties(style: CellStyleModel): void {
+    if (style.border === '') {
+        delete style.border;
+        delete style.borderTop;
+        delete style.borderBottom;
+        delete style.borderLeft;
+        delete style.borderRight;
+    } else {
+        if (style.borderTop === '') { delete style.borderTop; }
+        if (style.borderBottom === '') { delete style.borderBottom; }
+        if (style.borderLeft === '') { delete style.borderLeft; }
+        if (style.borderRight === '') { delete style.borderRight; }
+    }
 }
 
 /**

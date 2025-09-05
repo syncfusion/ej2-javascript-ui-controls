@@ -1,12 +1,12 @@
 import { addClass, Browser, closest, createElement, detach, EventHandler, isNullOrUndefined as isNOU, KeyboardEventArgs, removeClass, select } from '../../../base'; /*externalscript*/
 import { FileInfo } from '../../../inputs/src'; /*externalscript*/
 import { ClickEventArgs } from '../../../navigations/src'; /*externalscript*/
-import { ImageOrTableCursor } from '../../src/common';
-import { imageResizeFactor } from '../../src/common/config';
-import { IImageResizeFactor, ImageDimension } from '../../src/common/interface';
-import { isIDevice } from '../../src/common/util';
-import { ActionBeginEventArgs, IDropDownItemModel, IImageCommandsArgs, ImageDragEvent, IShowPopupArgs, IToolbarItemModel, NotifyArgs, OffsetPosition, ResizeArgs, DialogCloseEventArgs } from '../../src/common/interface';
-import { NodeSelection } from '../../src/selection/selection';
+import { ImageOrTableCursor } from '../../editor-scripts/common';
+import { imageResizeFactor } from '../../editor-scripts/common/config';
+import { IImageResizeFactor, ImageDimension } from '../../editor-scripts/common/interface';
+import { isIDevice } from '../../editor-scripts/common/util';
+import { ActionBeginEventArgs, IDropDownItemModel, IImageCommandsArgs, ImageDragEvent, IShowPopupArgs, IToolbarItemModel, NotifyArgs, OffsetPosition, ResizeArgs, DialogCloseEventArgs } from '../../editor-scripts/common/interface';
+import { NodeSelection } from '../../editor-scripts/selection/selection';
 import { QuickToolbar } from '../actions/quick-toolbar';
 import * as classes from '../classes';
 import { CLS_RTE_IMG_BOX_MARK } from '../classes';
@@ -14,8 +14,8 @@ import * as events from '../constant';
 import { AfterImageDeleteEventArgs, IImageNotifyArgs, IShowImageDialog } from '../interfaces';
 import { SfRichTextEditor } from '../sf-richtexteditor-fn';
 import { dispatchEvent, parseHtml } from '../util';
-import { convertToBlob } from '../../src/common/util';
-import { ImageCommand } from '../../src/editor-manager/plugin/image';
+import { convertToBlob } from '../../editor-scripts/common/util';
+import { ImageCommand } from '../../editor-scripts/editor-manager/plugin/image';
 
 /**
  * `Image` module is used to handle image actions.

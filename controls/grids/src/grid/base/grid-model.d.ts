@@ -1055,6 +1055,24 @@ export interface GridModel extends ComponentModel{
     allowReordering?: boolean;
 
     /**
+     * Enables or disables row spanning for adjacent cells with similar data.
+     * When enabled, the grid merges adjacent cells with identical data between rows into a single cell, spanning multiple rows to improve readability.
+     * {% codeBlock src='grid/enableRowSpan/index.md' %}{% endcodeBlock %}
+     *
+     * @default false
+     */
+    enableRowSpan?: boolean;
+
+    /**
+     * Enables or disables column spanning for adjacent cells with similar data.
+     * When enabled, the grid merges adjacent cells with identical data between columns into a single cell, spanning multiple columns to enhance data presentation.
+     * {% codeBlock src='grid/enableColumnSpan/index.md' %}{% endcodeBlock %}
+     *
+     * @default false
+     */
+    enableColumnSpan?: boolean;
+
+    /**
      * If `allowResizing` is set to true, Grid columns can be resized.
      * {% codeBlock src='grid/allowResizing/index.md' %}{% endcodeBlock %}
      *
@@ -1281,7 +1299,7 @@ export interface GridModel extends ComponentModel{
      * If the `dataSource` is an existing [`DataManager`](https://ej2.syncfusion.com/documentation/api/data/dataManager/),
      *  the Grid will not initialize a new one.
      *
-     * > Check the available [`Adaptors`](../../data/adaptors/) to customize the data operation.
+     * > Check the available [`Adaptors`](https://ej2.syncfusion.com/documentation/data/adaptors) to customize the data operation.
      * {% codeBlock src='grid/dataSource/index.md' %}{% endcodeBlock %}
      *
      * @default []

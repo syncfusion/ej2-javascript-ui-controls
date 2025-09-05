@@ -1,6 +1,6 @@
 // utils/dom-utils.ts
 import { createElement } from '@syncfusion/ej2-base';
-import { ContentModel } from '../models/index';
+import { BaseStylesProp, ContentModel, LinkContentProps, StyleModel } from '../models/index';
 import { ContentType, LinkData } from '../base/index';
 
 /**
@@ -23,8 +23,8 @@ export function findClosestParent(element: Node | HTMLElement, selector: string)
  * @param {HTMLElement} element - The element to get the position for
  * @returns {DOMRect} The element's position and dimensions
  */
-export function getElementRect(element: HTMLElement): ClientRect | DOMRect {
-    return element.getBoundingClientRect();
+export function getElementRect(element: HTMLElement): DOMRect {
+    return element.getBoundingClientRect() as DOMRect;
 }
 
 /**
@@ -58,8 +58,10 @@ export function createFormattingElement(
     const isCodeType: boolean = content.type === ContentType.Code;
 
     // Apply styles based on recorded style order
-    if (content.stylesApplied.length) {
-        for (const styleType of content.stylesApplied) {
+    const styles: Partial<Record<keyof StyleModel, string | boolean>> = (content.props as BaseStylesProp).styles || {};
+    const keys: string[] = Object.keys(styles);
+    if (keys.length > 0) {
+        for (const styleType of keys) {
             switch (styleType) {
             case 'bold':
                 formattedElement = wrapNodeWithTag(formattedElement, 'strong');
@@ -85,7 +87,7 @@ export function createFormattingElement(
             case 'lowercase':
             case 'custom':
                 // es-lint-disable-next-line  @typescript-eslint/no-explicit-any
-                formattedElement = wrapNodeWithSpan(formattedElement, styleType, (content.styles as any)[`${styleType}`]);
+                formattedElement = wrapNodeWithSpan(formattedElement, styleType, (styles as any)[styleType as any]);
                 break;
             }
         }
@@ -97,16 +99,17 @@ export function createFormattingElement(
     }
     if (isLinkType) {
         const linkData: LinkData = value as LinkData;
+        const props: LinkContentProps = content.props as LinkContentProps;
         formattedElement = wrapNodeWithTag(
             formattedElement,
             (linkData && linkData.shouldRemoveLink) ? 'span' : 'a'
         );
         if (linkData && !linkData.shouldRemoveLink) {
-            (formattedElement as HTMLAnchorElement).href = content.linkSettings.url;
-            (formattedElement as HTMLAnchorElement).target = content.linkSettings.openInNewWindow ? '_blank' : '_self';
+            (formattedElement as HTMLAnchorElement).href = props.url;
+            (formattedElement as HTMLAnchorElement).target = props.openInNewWindow ? '_blank' : '_self';
             (formattedElement as HTMLAnchorElement).title = linkData.title
                 ? linkData.title
-                : content.linkSettings.url;
+                : props.url;
         }
     }
     if (isCodeType) {

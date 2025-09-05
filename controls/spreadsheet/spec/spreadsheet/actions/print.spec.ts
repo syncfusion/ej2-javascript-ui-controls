@@ -1047,6 +1047,23 @@ describe('Auto fill ->', () => {
             expect(displayLines.length).toBe(4);
             done();
         });
+        it('EJ2-916589-  Alt+Enter, the text is not properly seen in the print preview option', (done: Function) => {
+            const spreadsheet: any = helper.getInstance();
+            const workbookStyle: CellStyleModel = spreadsheet.cellStyle;
+            let colWidth: number = getDPRValue(64 - 5, true); // Column width - (Border size and Padding space inside a cell).
+            let style: CellStyleModel = { textAlign: 'right' };
+            let displayLines: string[] = spreadsheet.printModule.wrapText('100.32\n----------\n201.01', colWidth, style, workbookStyle);
+            expect(JSON.stringify(displayLines)).toBe('["100.32 ","---------- ","201.01"]');
+            colWidth = getDPRValue(67 - 5, true);
+            style = { fontSize: '8pt', textAlign: 'right' };
+            displayLines = spreadsheet.printModule.wrapText('100.32\n\n201.01', colWidth, style, workbookStyle);
+            expect(JSON.stringify(displayLines)).toBe('["100.32 ","","201.01"]');
+            colWidth = getDPRValue(70 - 5, true);
+            style = { textAlign: 'right' };
+            displayLines = spreadsheet.printModule.wrapText('100.32 -- 201.01', colWidth, style, workbookStyle);
+            expect(JSON.stringify(displayLines)).toBe('["100.32 -- ","201.01"]');
+            done();
+        });
 
         async function wait(ms: number): Promise<void> {
             return new Promise(resolve => setTimeout(resolve, ms));

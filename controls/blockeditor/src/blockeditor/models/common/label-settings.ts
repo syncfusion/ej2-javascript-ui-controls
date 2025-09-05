@@ -21,7 +21,7 @@ export class LabelSettings extends ChildProperty<LabelSettings> {
     /**
      * Specifies the trigger character for labels.
      * This property defines the character that triggers the label popup to open.
-     * By default, the trigger character is set to '$'.
+     * By default, the trigger character is set to $
      *
      * @default '$'
      */

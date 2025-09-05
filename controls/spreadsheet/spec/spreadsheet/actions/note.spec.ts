@@ -276,5 +276,23 @@ describe('Note ->', () => {
             expect(spreadsheet.element.getElementsByClassName('e-addNoteIndicator').length).toBe(1);
             done();
         });
+        it('EJ2-904673-Note container is not opened in the Arabic culture', (done: Function) => {
+            helper.setModel('enableRtl', true);
+            setTimeout((): void => {
+                expect(helper.hasClass('e-rtl', document.getElementById(helper.id))).toBe(true);
+                helper.invoke('addDataValidation', [{ type: 'List', value1: '1,2,3' }, 'C1']);
+                expect(JSON.stringify(helper.getInstance().sheets[0].rows[0].cells[2].validation)).toBe('{"type":"List","value1":"1,2,3"}');
+                helper.invoke('selectRange', ['A1:H1']);
+                helper.invoke('applyFilter');
+                expect(helper.invoke('getCell', [0, 2]).querySelector('.e-filter-iconbtn')).not.toBeNull();
+                helper.invoke('updateCell', [{ notes: 'Spreadsheet' }, 'C1']);
+                let td: HTMLElement = helper.invoke('getCell', [0, 2]);
+                let coords = td.getBoundingClientRect();
+                helper.triggerMouseAction('mousedown', { x: coords.left + 3, y: coords.top + 2 }, null, td);
+                helper.triggerMouseAction('mouseup', { x: coords.left + 3, y: coords.top + 2 }, document, td);
+                expect(helper.getInstance().sheets[0].rows[0].cells[2].notes).toBe('Spreadsheet');
+                done();
+            });
+        });
     });
 });

@@ -1498,6 +1498,10 @@ export class DropDownTree extends Component<HTMLElement> implements INotifyPrope
 
     /* Handles touch events specifically for iOS devices */
     private handleIosTouch(e: TouchEvent): void {
+        const target: HTMLElement = e.target as HTMLElement;
+        if (target && target.classList.contains('e-clear-icon')) {
+            return;
+        }
         e.preventDefault();
         this.dropDownClick(e);
     }
@@ -2553,6 +2557,7 @@ export class DropDownTree extends Component<HTMLElement> implements INotifyPrope
         }
         this.popupObj.resolveCollision();
     }
+
     private removeFocus(focusedElement: HTMLElement, oldFocusedElement: HTMLElement): void {
         if (oldFocusedElement && oldFocusedElement !== focusedElement) {
             oldFocusedElement.setAttribute('tabindex', '-1');
@@ -3254,11 +3259,15 @@ export class DropDownTree extends Component<HTMLElement> implements INotifyPrope
         if (!this.valueTemplate) {
             return null;
         }
-        if (this.valueTemplateContainer) {
+        if ((this as any).isReact && !isNOU(this.valueTemplateContainer)) {
+            detach(this.valueTemplateContainer);
+            this.valueTemplateContainer = null;
+        } else if (this.valueTemplateContainer) {
             while (this.valueTemplateContainer.firstChild) {
                 this.valueTemplateContainer.removeChild(this.valueTemplateContainer.firstChild);
             }
-        } else {
+        }
+        if (isNOU(this.valueTemplateContainer)) {
             this.valueTemplateContainer = this.createElement('span', { className: OVERFLOW_VIEW + ' ' + SHOW_TEXT + ' ' + 'e-input-value' + ' ' + HIDEICON });
         }
         this.inputWrapper.insertBefore(this.valueTemplateContainer, this.inputEle);

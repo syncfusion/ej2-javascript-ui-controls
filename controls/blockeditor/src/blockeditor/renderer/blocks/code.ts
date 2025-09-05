@@ -1,77 +1,71 @@
 import { ChangeEventArgs, DropDownList } from '@syncfusion/ej2-dropdowns';
-import { BlockAction } from '../../actions/index';
-import { BlockEditor, ContentType, BlockType } from '../../base/index';
-import { BlockModel, ContentModel } from '../../models/index';
-import { setCursorPosition, getSelectionRange, setSelectionRange } from '../../utils/selection';
-import { CodeSettingsModel, CodeLanguageModel } from '../../models/block/index';
+import { BlockEditor, BlockType } from '../../base/index';
+import { BlockModel } from '../../models/index';
+import { setCursorPosition, getSelectedRange } from '../../utils/selection';
+import { CodeLanguageModel, CodeProps } from '../../models/block/index';
 import { getLanguageItems } from '../../utils/data';
-import { appendDocumentNodes } from './block-utils';
-import { getBlockContentElement, getBlockModelById, getParentBlock } from '../../utils/block';
-import { generateUniqueId, getNormalizedKey } from '../../utils/common';
+import { getBlockModelById, getParentBlock } from '../../utils/block';
+import { getNormalizedKey } from '../../utils/common';
 import { events } from '../../base/constant';
+import { BlockFactory } from '../../services/index';
 
 export class CodeRenderer {
     private editor: BlockEditor;
-    private parent: BlockAction;
     private ctrlAPressed: boolean = false;
     private readonly INDENT_SIZE: number = 4;
 
-    constructor(editor: BlockEditor, parent: BlockAction) {
+    constructor(editor: BlockEditor) {
         this.editor = editor;
-        this.parent = parent;
         this.addEventListeners();
     }
 
     private addEventListeners(): void {
-        this.editor.on('keydown', this.handleCodeBlockKeydown, this);
-        this.editor.on('input', this.handleCodeBlockInput, this);
-        this.editor.on('locale-changed', this.handleLocaleChange, this);
+        this.editor.on(events.keydown, this.handleKeyDownActions, this);
+        this.editor.on(events.input, this.handleCodeBlockInput, this);
+        this.editor.on(events.localeChanged, this.handleLocaleChange, this);
         this.editor.on(events.destroy, this.destroy, this);
     }
 
     private removeEventListeners(): void {
-        this.editor.off('keydown', this.handleCodeBlockKeydown);
-        this.editor.off('input', this.handleCodeBlockInput);
-        this.editor.off('locale-changed', this.handleLocaleChange);
+        this.editor.off(events.keydown, this.handleKeyDownActions);
+        this.editor.off(events.input, this.handleCodeBlockInput);
+        this.editor.off(events.localeChanged, this.handleLocaleChange);
         this.editor.off(events.destroy, this.destroy);
     }
 
-    public renderCodeBlock(block: BlockModel, blockElement: HTMLElement, isTransform?: boolean): HTMLElement {
-        const codeContainer: HTMLElement = this.editor.createElement('div', {
-            className: 'e-code-block-container'
-        });
-
-        const toolbar: HTMLElement = this.editor.createElement('div', {
-            className: 'e-code-block-toolbar',
-            attrs: { contenteditable: 'false' }
-        });
+    /**
+     * Renders a code block
+     *
+     * @param {BlockModel} block - The block model containing data.
+     * @returns {HTMLElement} - The rendered code block element.
+     * @hidden
+     */
+    public renderCodeBlock(block: BlockModel): HTMLElement {
+        const codeBlockSettings: CodeProps = block.props as CodeProps;
+        const { container, preElement, codeElement } = this.createCodeContainer(block, codeBlockSettings);
+        const { toolbar, copyButton } = this.createCodeToolbar();
 
         const languageSelector: HTMLElement = this.editor.createElement('input', {
             className: 'e-code-block-languages'
         });
+        toolbar.appendChild(languageSelector);
 
-        const codeBlockSettings: CodeSettingsModel = block.codeSettings;
-        const languageDataSource: CodeLanguageModel[] = getLanguageItems();
+        const ddbList: DropDownList = this.initializeLanguageSelector(codeBlockSettings, preElement);
 
-        if (codeBlockSettings.languages.length === 0) {
-            const prevOnChange: boolean = (this.editor as any).isProtectedOnChange;
-            (this.editor as any).isProtectedOnChange = true;
-            codeBlockSettings.languages = languageDataSource;
-            (this.editor as any).isProtectedOnChange = prevOnChange;
-        }
+        toolbar.appendChild(copyButton);
+        ddbList.appendTo(languageSelector);
 
-        const dropDownList: DropDownList = new DropDownList({
-            dataSource: codeBlockSettings.languages as { [key: string]: Object; }[],
-            fields: { text: 'label', value: 'language' },
-            value: codeBlockSettings.defaultLanguage,
-            change: (e: ChangeEventArgs) => {
-                const newLanguage: string = e.value as string;
-                const preElement: HTMLElement = codeContainer.querySelector('pre');
-                if (preElement) {
-                    preElement.className = `e-code-block language-${newLanguage}`;
-                    codeBlockSettings.defaultLanguage = newLanguage;
-                }
-            }
+        container.appendChild(toolbar);
+        container.appendChild(preElement);
+
+        setCursorPosition(codeElement.lastChild as HTMLElement, 0);
+        return container;
+    }
+
+    private createCodeToolbar(): { toolbar: HTMLElement; copyButton: HTMLElement } {
+        const toolbar: HTMLElement = this.editor.createElement('div', {
+            className: 'e-code-block-toolbar',
+            attrs: { contenteditable: 'false' }
         });
 
         const copyButton: HTMLElement = this.editor.createElement('button', {
@@ -85,7 +79,7 @@ export class CodeRenderer {
         });
 
         copyButton.addEventListener('click', () => {
-            const codeElement: HTMLElement = codeContainer.querySelector('code');
+            const codeElement: HTMLElement = toolbar.closest('.e-code-block-container').querySelector('code');
             if (codeElement) {
                 const codeText: string = codeElement.textContent;
                 // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -106,41 +100,56 @@ export class CodeRenderer {
             }
         });
 
-        toolbar.appendChild(languageSelector);
-        toolbar.appendChild(copyButton);
-        dropDownList.appendTo(languageSelector);
+        return { toolbar, copyButton };
+    }
 
-        const preElement: HTMLElement = this.editor.createElement('pre', {
-            className: `e-code-block language-${codeBlockSettings.defaultLanguage}`
-        });
+    private initializeLanguageSelector(
+        codeBlockSettings: CodeProps,
+        preElement: HTMLElement
+    ): DropDownList {
+        const languageDataSource: CodeLanguageModel[] = getLanguageItems();
+        if (codeBlockSettings.languages.length === 0) {
+            codeBlockSettings.languages = languageDataSource;
+        }
 
-        const codeElement: HTMLElement = this.editor.createElement('code', {
-            className: 'e-code-content e-block-content',
-            innerHTML: block.content && block.content.length > 0 && block.content[0].content ?
-                block.content[0].content : '<br>',
-            attrs: {
-                contenteditable: 'true'
+        const dropDownList: DropDownList = new DropDownList({
+            dataSource: codeBlockSettings.languages as { [key: string]: Object }[],
+            fields: { text: 'label', value: 'language' },
+            value: codeBlockSettings.defaultLanguage,
+            change: (e: ChangeEventArgs) => {
+                const newLanguage: string = e.value as string;
+                if (preElement) {
+                    preElement.className = `e-code-block language-${newLanguage}`;
+                    codeBlockSettings.defaultLanguage = newLanguage;
+                }
             }
         });
 
-        preElement.appendChild(codeElement);
-
-        codeContainer.appendChild(toolbar);
-        codeContainer.appendChild(preElement);
-
-        if (isTransform) {
-            appendDocumentNodes(blockElement, codeContainer, getBlockContentElement(blockElement));
-        }
-
-        setCursorPosition(codeElement.lastChild as HTMLElement, 0);
-
-        return codeContainer;
+        return dropDownList;
     }
 
-    private handleCodeBlockKeydown(e: KeyboardEvent): void {
+    private createCodeContainer(
+        block: BlockModel,
+        codeBlockSettings: CodeProps
+    ): { container: HTMLElement; preElement: HTMLElement; codeElement: HTMLElement } {
+        const container: HTMLElement = this.editor.createElement('div', { className: 'e-code-block-container' });
+        const preElement: HTMLElement = this.editor.createElement('pre', {
+            className: `e-code-block language-${codeBlockSettings.defaultLanguage}`
+        });
+        const codeElement: HTMLElement = this.editor.createElement('code', {
+            className: 'e-code-content e-block-content',
+            innerHTML: block.content && block.content.length > 0 && block.content[0].content ? block.content[0].content : '<br>',
+            attrs: { contenteditable: 'true' }
+        });
+        preElement.appendChild(codeElement);
+        return { container, preElement, codeElement };
+    }
+
+    private handleKeyDownActions(e: KeyboardEvent): void {
         const codeElement: HTMLElement = this.editor.currentFocusedBlock.querySelector('code');
-        const block: BlockModel = getBlockModelById(this.editor.currentFocusedBlock.id, this.editor.blocksInternal);
+        const block: BlockModel = getBlockModelById(this.editor.currentFocusedBlock.id, this.editor.getEditorBlocks());
         if (!codeElement || (block && block.type !== BlockType.Code)) { return; }
+
         const normalizedKey: string = getNormalizedKey(e);
         if (normalizedKey === 'ctrl+a') {
             this.handleCtrlASelection(e, codeElement);
@@ -165,22 +174,27 @@ export class CodeRenderer {
     private handleEnterKey(e: KeyboardEvent, codeElement: HTMLElement, block: BlockModel): void {
         e.preventDefault();
 
-        const cursorPosition: number = this.getCursorPosition(codeElement);
-        if (this.shouldExitCodeBlock(codeElement)) {
+        const action: { shouldExit: boolean; indentation: string } = this.determineEnterAction(codeElement);
+        if (action.shouldExit) {
             this.exitCodeBlock(codeElement, block);
             return;
         }
 
-        const currentIndentation: string = this.getCurrentLineIndentation(codeElement, cursorPosition);
         const afterTwoBr: boolean = this.isAfterTwoBrTags();
+        this.insertTextAtCursor(!afterTwoBr, action.indentation);
+    }
 
-        this.insertTextAtCursor(!afterTwoBr, currentIndentation);
+    private determineEnterAction(codeElement: HTMLElement): { shouldExit: boolean; indentation: string } {
+        const cursorPosition: number = this.getCursorPosition(codeElement);
+        const indentation: string = this.getCurrentLineIndentation(codeElement, cursorPosition);
+        const shouldExit: boolean = this.shouldExitCodeBlock(codeElement);
+        return { shouldExit, indentation };
     }
 
     private handleDeletion(e: KeyboardEvent, codeElement: HTMLElement, block: BlockModel, isDeleteKey: boolean): void {
         const cursorPosition: number = this.getCursorPosition(codeElement);
         const textContent: string = codeElement.textContent;
-        const range: Range = getSelectionRange();
+        const range: Range = getSelectedRange();
         const shouldPreventDefault: boolean = isDeleteKey
             ? (cursorPosition >= textContent.length)
             : (cursorPosition === 0 || textContent.length === 0);
@@ -208,10 +222,10 @@ export class CodeRenderer {
 
     private handleCodeBlockInput(e: Event): void {
         const codeElement: HTMLElement = this.editor.currentFocusedBlock.querySelector('code');
-        const block: BlockModel = getBlockModelById(this.editor.currentFocusedBlock.id, this.editor.blocksInternal);
+        const block: BlockModel = getBlockModelById(this.editor.currentFocusedBlock.id, this.editor.getEditorBlocks());
         if (!codeElement || block.type !== BlockType.Code) { return; }
-        const textContent: string = codeElement.textContent || '';
 
+        const textContent: string = codeElement.textContent || '';
         if (!textContent.trim() && codeElement.innerHTML !== '<br>') {
             codeElement.innerHTML = '<br>';
         }
@@ -243,8 +257,6 @@ export class CodeRenderer {
         if (!selection.rangeCount) { return; }
 
         const range: Range = selection.getRangeAt(0);
-        // range.deleteContents();
-
         const brElement: Text = this.editor.createElement('br');
         range.insertNode(brElement);
         if (isDoubleBr) {
@@ -280,11 +292,9 @@ export class CodeRenderer {
         const range: Range = selection.getRangeAt(0);
         const container: Node = range.startContainer;
 
-        // Check if we're after two consecutive <br> elements
         let node: Node = container;
         let brCount: number = 0;
 
-        // Walk backwards to count consecutive <br> tags
         while (node && brCount < 2) {
             if (node.nodeType === Node.ELEMENT_NODE && (node as HTMLElement).tagName === 'BR') {
                 brCount++;
@@ -293,12 +303,10 @@ export class CodeRenderer {
             }
             node = node.previousSibling;
         }
-
         return brCount >= 2;
     }
 
     private shouldExitCodeBlock(element: HTMLElement): boolean {
-        // Count consecutive <br> tags at the end of content
         const children: NodeList = element.childNodes;
         let brCount: number = 0;
 
@@ -310,7 +318,6 @@ export class CodeRenderer {
                 break;
             }
         }
-
         return brCount >= 3;
     }
 
@@ -319,20 +326,11 @@ export class CodeRenderer {
         setTimeout(() => {
             const nextSibling: HTMLElement = blockElement.nextElementSibling as HTMLElement;
             if (nextSibling) {
-                this.editor.blockAction.setFocusAndUIForNewBlock(nextSibling);
+                this.editor.blockRendererManager.setFocusAndUIForNewBlock(nextSibling);
             }
             else {
-                const newBlock: BlockModel = {
-                    id: generateUniqueId('block'),
-                    type: BlockType.Paragraph,
-                    indent: 0,
-                    content: [{
-                        id: generateUniqueId('content'),
-                        type: ContentType.Text,
-                        content: ''
-                    }]
-                };
-                this.editor.blockAction.addNewBlock({ block: newBlock, targetBlock: blockElement });
+                const newBlock: BlockModel = BlockFactory.createParagraphBlock();
+                this.editor.blockCommandManager.addNewBlock({ block: newBlock, targetBlock: blockElement });
             }
         });
     }
@@ -348,18 +346,14 @@ export class CodeRenderer {
     private removeIndentation(element: HTMLElement): void {
         const cursorPosition: number = this.getCursorPosition(element);
         const textContent: string = element.textContent;
-
         const beforeCursor: string = textContent.substring(0, cursorPosition);
         const lastNewlineIndex: number = beforeCursor.lastIndexOf('\n');
         const lineStart: number = lastNewlineIndex + 1;
         const currentLine: string = textContent.substring(lineStart, cursorPosition);
-
         const spacesToRemove: number = Math.min(this.INDENT_SIZE, currentLine.match(/^ */)[0].length);
 
         if (spacesToRemove > 0) {
-            const newText: string = textContent.substring(0, lineStart) +
-                textContent.substring(lineStart + spacesToRemove);
-            element.textContent = newText;
+            element.textContent = textContent.substring(0, lineStart) + textContent.substring(lineStart + spacesToRemove);
             setCursorPosition(element, cursorPosition - spacesToRemove);
         }
     }
@@ -367,7 +361,6 @@ export class CodeRenderer {
     private selectEntireCodeBlock(element: HTMLElement): void {
         const range: Range = document.createRange();
         range.selectNodeContents(element);
-
         const selection: Selection = window.getSelection();
         selection.removeAllRanges();
         selection.addRange(range);
@@ -375,32 +368,25 @@ export class CodeRenderer {
 
     private updateBlockModel(codeElement: HTMLElement, block: BlockModel): void {
         const textContent: string = codeElement.textContent || '';
-
-        /* eslint-disable @typescript-eslint/no-explicit-any */
-        const prevOnChange: boolean = (this.editor as any).isProtectedOnChange;
-        (this.editor as any).isProtectedOnChange = true;
+        const prevOnChange: boolean = this.editor.isProtectedOnChange;
+        this.editor.isProtectedOnChange = true;
         if (!block.content || block.content.length === 0) {
-            block.content = [{
-                id: generateUniqueId('content'),
-                type: ContentType.Text,
-                content: textContent
-            }];
-            this.parent.updatePropChangesToModel();
+            block.content = [BlockFactory.createTextContent({ content: textContent })];
+            this.editor.stateManager.updatePropChangesToModel();
         } else {
             block.content[0].content = textContent;
         }
-        (this.editor as any).isProtectedOnChange = prevOnChange;
-        /* eslint-enable @typescript-eslint/no-explicit-any */
+        this.editor.isProtectedOnChange = prevOnChange;
     }
 
     private handleLocaleChange(): void {
         const codeBlocks: NodeListOf<HTMLElement> = this.editor.element.querySelectorAll('.e-code-block-container');
-        codeBlocks.forEach((codeBlock: HTMLElement): void => {
+        for (const codeBlock of Array.from(codeBlocks)) {
             const copyButton: HTMLElement = codeBlock.querySelector('.e-code-block-copy-button');
             if (copyButton) {
                 copyButton.setAttribute('title', this.editor.l10n.getConstant('codeCopyTooltip'));
             }
-        });
+        }
     }
 
     public destroy(): void {

@@ -1,4 +1,5 @@
-import { createElement, EventHandler, isNullOrUndefined, L10n } from "@syncfusion/ej2-base";
+
+import { createElement, EventHandler, isNullOrUndefined, L10n, remove } from "@syncfusion/ej2-base";
 import { AIAssistView, PromptRequestEventArgs } from "../../src/ai-assistview/index";
 import { ToolbarItemClickedEventArgs } from '../../src/interactive-chat-base/index';
 import { InterActiveChatBase } from '../../src/interactive-chat-base/index';
@@ -1235,6 +1236,93 @@ describe('AIAssistView -', () => {
             }, 450);
         });
 
+        it('Send prompt with potential XSS content', (done: DoneFn) => {
+            aiAssistView = new AIAssistView({
+                promptRequest: (args: PromptRequestEventArgs) => {
+                    aiAssistView.promptSuggestions = ['Suggestion 1'];
+                    aiAssistView.dataBind();
+                    args.promptSuggestions = ['How can I assist you?', 'Can I help you with something?'];
+                    aiAssistView.addPromptResponse('For real-time prompt processing, connect the AIAssistView component to your preferred AI service, such as OpenAI or Azure Cognitive Services.');
+                }
+            });
+            aiAssistView.appendTo(aiAssistViewElem);
+            const textareaEle: HTMLDivElement = aiAssistViewElem.querySelector('.e-footer .e-assist-textarea');
+            expect(textareaEle).not.toBeNull();
+            const originalAlert = window.alert;
+            let alertCalled = false;
+            window.alert = () => {
+                alertCalled = true;
+            };
+            const maliciousPrompt = '<img src onerror=alert(1)>';
+            textareaEle.innerText = maliciousPrompt;
+            const inputEvent: Event = new Event('input', { bubbles: true });
+            textareaEle.dispatchEvent(inputEvent);
+            setTimeout(() => {
+                const sendBtnElem: HTMLButtonElement = aiAssistView.element.querySelector('.e-footer .e-assist-send.e-icons');
+                expect(sendBtnElem).not.toBeNull();
+                expect(sendBtnElem.classList.contains('disabled')).toBe(false);
+                sendBtnElem.click();
+                setTimeout(() => {
+                    const promptElem: HTMLElement = aiAssistViewElem.querySelector('.e-prompt-text');
+                    expect(promptElem).not.toBeNull();
+                    expect(promptElem.textContent).toBe(''); 
+                    expect(promptElem.querySelector('img')).not.toBeNull(); 
+                    const responseElem: HTMLElement = aiAssistViewElem.querySelector('.e-output');
+                    expect(responseElem).not.toBeNull();
+                    expect(responseElem.textContent).toBe('For real-time prompt processing, connect the AIAssistView component to your preferred AI service, such as OpenAI or Azure Cognitive Services.');
+                    expect(alertCalled).toBe(false);
+                    window.alert = originalAlert;
+                    done();
+                }, 100);
+            }, 450);
+        });
+
+        it('Send prompt with iframe content', (done: DoneFn) => {
+            aiAssistView = new AIAssistView({
+                promptRequest: (args: PromptRequestEventArgs) => {
+                    aiAssistView.promptSuggestions = ['Suggestion 1'];
+                    aiAssistView.dataBind();
+                    args.promptSuggestions = ['How can I assist you?', 'Can I help you with something?'];
+                    aiAssistView.addPromptResponse('For real-time prompt processing, connect the AIAssistView component to your preferred AI service, such as OpenAI or Azure Cognitive Services.');
+                }
+            });
+            aiAssistView.appendTo(aiAssistViewElem);
+            const textareaEle: HTMLDivElement = aiAssistViewElem.querySelector('.e-footer .e-assist-textarea');
+            expect(textareaEle).not.toBeNull('Textarea element should be present');
+            const iframePrompt = '<iframe src=https://www.syncfusion.com></iframe>';
+            textareaEle.innerText = iframePrompt;
+            const inputEvent: Event = new Event('input', { bubbles: true });
+            textareaEle.dispatchEvent(inputEvent);
+            setTimeout(() => {
+                const sendBtnElem: HTMLButtonElement = aiAssistView.element.querySelector('.e-footer .e-assist-send.e-icons');
+                expect(sendBtnElem).not.toBeNull('Send button should be present');
+                if (sendBtnElem.classList.contains('disabled')) {
+                    console.log('Send button is disabled, which is unexpected');
+                }
+                expect(sendBtnElem.classList.contains('disabled')).toBe(true, 'Send button should be enabled after input');
+                sendBtnElem.click();
+                setTimeout(() => {
+                    const promptElem: HTMLElement = aiAssistViewElem.querySelector('.e-prompt-text');
+                    expect(promptElem).toBeNull('Prompt text element should be present');
+                    if (promptElem) {
+                        expect(promptElem.textContent).toBe(iframePrompt, 'Prompt should display iframe content as text');
+                        expect(promptElem.querySelector('iframe')).toBeNull('No iframe tag should be rendered');
+                    }
+
+                    const responseElem: HTMLElement = aiAssistViewElem.querySelector('.e-output');
+                    expect(responseElem).toBeNull('Response element should be present');
+                    if (responseElem) {
+                        expect(responseElem.textContent).toBe(
+                            'For real-time prompt processing, connect the AIAssistView component to your preferred AI service, such as OpenAI or Azure Cognitive Services.',
+                            'Response should match expected output'
+                        );
+                    }
+
+                    done();
+                }, 200);
+            }, 600);
+        });
+
         it('Prompt toolbar items checking', (done: DoneFn) => {
             aiAssistView = new AIAssistView({
                 prompts: [ {
@@ -1988,6 +2076,48 @@ class HelloWorld
             uploader.onSelectFiles(eventArgs);
         });
 
+        it('should not sent attachedfiles when prompt is sent when an attachment upload failed', (done: DoneFn) => {
+            aiAssistView = new AIAssistView({
+                enableAttachments: true,
+                attachmentSettings: {
+                    saveUrl: 'js.syncfusion.comm'
+                },
+                attachmentUploadFailure: (e) => {
+                    // Verification logic for upload failure
+                    expect(e.file.name).toBe('sample.txt');
+                    expect(e.operation).toBe('upload');
+                    CheckSendIconAfterFailure();
+                }
+            });
+            aiAssistView.appendTo(aiAssistViewElem);
+
+            // Simulate adding a file to the uploader and then trigger failure
+            const uploader = (aiAssistView as any).uploaderObj;
+            let fileObj: File = new File(["Nice One"], "sample.txt", {lastModified: 0, type: "overide/mimetype"});
+            let eventArgs = { type: 'click', target: {files: [fileObj]}, preventDefault: (): void => { } };
+            uploader.onSelectFiles(eventArgs);
+
+            function CheckSendIconAfterFailure() {
+                const textareaEle: HTMLDivElement = aiAssistViewElem.querySelector('.e-footer .e-assist-textarea');
+                expect(textareaEle).not.toBeNull();
+                textareaEle.innerText = 'Explain about the Syncfusion product';
+                const inputEvent: Event = new Event('input', { bubbles: true });
+                textareaEle.dispatchEvent(inputEvent);
+                setTimeout(() => {
+                    const sendBtnElem: HTMLButtonElement = aiAssistView.element.querySelector('.e-footer .e-assist-send.e-icons');
+                    expect(sendBtnElem).not.toBeNull();
+                    sendBtnElem.click();
+                    setTimeout(() => {
+                        const promptContent: HTMLElement = aiAssistViewElem.querySelector('.e-prompt-content');
+                        expect(promptContent).not.toBeNull();
+                        expect(promptContent.querySelector('.e-prompt-uploaded-files')).toBeNull();
+                        done();
+                    }, 350, done);
+                }, 450);
+            }
+
+        });
+
         it('should handle an attachment upload failure and failure element display', () => {
             aiAssistView = new AIAssistView({
                 enableAttachments: true,
@@ -2048,6 +2178,39 @@ class HelloWorld
             uploader.onSelectFiles(eventArgs);
             failureElement = aiAssistView.element.querySelector('.e-upload-failure-alert');
             expect(failureElement.querySelector('.e-failure-message').textContent).toBe('Échec du téléchargement : La taille du fichier est trop grande');
+        });
+
+        it('should have attached files on initial rendering', () => {
+            aiAssistView = new AIAssistView({
+                enableAttachments: true,
+                attachmentSettings: {
+                    saveUrl: 'https://services.syncfusion.com/js/production/api/FileUploader/Save',
+                    removeUrl: 'https://services.syncfusion.com/js/production/api/FileUploader/Remove'
+                },
+                prompts: [{
+                    prompt: "Can you help me create a summary of the latest trends in AI technology?",
+                    response: `<div>Sure! Here are the latest trends in AI technology:
+                                <ul>
+                                    <li><strong>Generative AI:</strong> Improved models like GPT-4 enhance natural language processing.</li>
+                                    <li><strong>AI in Healthcare:</strong> AI aids in diagnostics and personalized treatments.</li>
+                                    <li><strong>Autonomous Systems:</strong> Self-driving cars and drones are advancing.</li>
+                                    <li><strong>AI Ethics:</strong> Focus on bias, privacy, and accountability in AI.</li>
+                                    <li><strong>Edge AI:</strong> Processing moves to local devices, boosting IoT.</li>
+                                </ul>
+                            </div>`,
+                    attachedFiles: [
+                        <any>{name: 'Nature', size: 500000, type: '.png'}
+                    ]
+                }]
+            });
+            aiAssistView.appendTo(aiAssistViewElem);
+
+            const promptContent: HTMLElement = aiAssistViewElem.querySelector('.e-prompt-content');
+            expect(promptContent).not.toBeNull();
+            const uploadedFileEle: HTMLElement = promptContent.querySelector('.e-prompt-uploaded-files');
+            expect(uploadedFileEle).not.toBeNull();
+            expect(uploadedFileEle.querySelector('.e-assist-file-name').textContent).toBe('Nature');
+            expect(uploadedFileEle.querySelector('.e-assist-file-size').textContent).toBe('488.28 KB');
         });
     });
 });

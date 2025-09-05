@@ -1,4 +1,3 @@
-import { EditorManager } from './../base/editor-manager';
 import { NodeSelection } from './../../selection/index';
 import { IHtmlSubCommands } from './../base/interface';
 import * as EVENTS from './../../common/constant';

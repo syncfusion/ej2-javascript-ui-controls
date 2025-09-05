@@ -5,7 +5,7 @@ import { L10n, isNullOrUndefined, closest } from '@syncfusion/ej2-base';
 import { Dialog } from '../services';
 import { SheetModel } from '../../workbook/base/sheet-model';
 import { getRangeIndexes, getCellIndexes, getRangeAddress } from '../../workbook/common/address';
-import { CellModel, HyperlinkModel, BeforeHyperlinkArgs, AfterHyperlinkArgs, getTypeFromFormat, getCell, CellStyleModel, isReadOnlyCells, checkIsFormula } from '../../workbook/index';
+import { CellModel, HyperlinkModel, BeforeHyperlinkArgs, AfterHyperlinkArgs, getCell, CellStyleModel, isReadOnlyCells, checkIsFormula } from '../../workbook/index';
 import { beforeHyperlinkClick, afterHyperlinkClick, refreshRibbonIcons, deleteHyperlink, beginAction } from '../../workbook/common/event';
 import { isCellReference, DefineNameModel, updateCell, isImported } from '../../workbook/index';
 import { Tab, TreeView } from '@syncfusion/ej2-navigations';
@@ -523,7 +523,7 @@ export class SpreadsheetHyperlink {
             } else if (address.includes('=') || address.includes('!')) {
                 hyperEle.setAttribute('ref', address);
             }
-            if (getTypeFromFormat(cell.format) === 'Accounting') {
+            if (cell.format && cell.format.includes('*')) {
                 hyperEle.innerHTML = td.innerHTML;
             } else {
                 hyperEle.innerText = td.innerText !== '' ? td.innerText : address;

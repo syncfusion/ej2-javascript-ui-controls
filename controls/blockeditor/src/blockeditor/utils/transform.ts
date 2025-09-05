@@ -1,5 +1,8 @@
-import { BlockActionItemModel, BlockModel, CodeLanguageModel, CodeSettingsModel, CommandItemModel, ContentModel, ContextMenuItemModel, ImageSettingsModel, LabelItemModel, LinkSettingsModel, StyleModel, ToolbarItemModel } from '../models/index';
+import { BlockActionItemModel, BlockModel, CommandItemModel, ContentModel, ContextMenuItemModel, ImageProps, LabelItemModel, StyleModel, ToolbarItemModel } from '../models/index';
 import { ItemModel } from '@syncfusion/ej2-navigations';
+import { isEmptyString } from './block';
+import { isNullOrUndefined } from '@syncfusion/ej2-base';
+import { BlockType } from '../base/enums';
 
 /**
  * Transforms an array of ToolbarItemModel objects into an array of ItemModel objects.
@@ -68,84 +71,29 @@ export function sanitizeContextMenuItems(items: ContextMenuItemModel[]): Context
     }));
 }
 
-/* eslint-disable @typescript-eslint/no-explicit-any */
-export function sanitizeContent(content: ContentModel[]): any[] {
-    return content.map((item: ContentModel) => ({
-        id: item.id,
-        type: item.type,
-        content: item.content,
-        styles: item.styles ? sanitizeStyles(item.styles) : item.styles,
-        linkSettings: item.linkSettings ? sanitizeLinkSettings(item.linkSettings) : item.linkSettings,
-        stylesApplied: item.stylesApplied
-    }));
+export function sanitizeContents(content: ContentModel[]): any[] {
+    return content.map(sanitizeContent);
 }
 
-export function sanitizeStyles(styles: StyleModel): any {
+export function sanitizeContent(content: ContentModel): ContentModel {
     return {
-        bold: styles.bold || false,
-        italic: styles.italic || false,
-        underline: styles.underline || false,
-        strikethrough: styles.strikethrough || false,
-        subscript: styles.subscript || false,
-        superscript: styles.superscript || false,
-        uppercase: styles.uppercase || false,
-        lowercase: styles.lowercase || false,
-        color: styles.color || '',
-        bgColor: styles.bgColor || '',
-        custom: styles.custom || ''
-    };
-}
-
-export function sanitizeLinkSettings(linkSettings: LinkSettingsModel): any {
-    return {
-        url: linkSettings.url,
-        openInNewWindow: linkSettings.openInNewWindow
-    };
-}
-
-export function sanitizeImageSettings(imageSettings: ImageSettingsModel): any {
-    return {
-        saveFormat: imageSettings.saveFormat,
-        src: imageSettings.src,
-        allowedTypes: imageSettings.allowedTypes,
-        width: imageSettings.width,
-        height: imageSettings.height,
-        minWidth: imageSettings.minWidth,
-        maxWidth: imageSettings.maxWidth,
-        minHeight: imageSettings.minHeight,
-        maxHeight: imageSettings.maxHeight,
-        altText: imageSettings.altText,
-        cssClass: imageSettings.cssClass,
-        readOnly: imageSettings.readOnly
-    };
-}
-
-export function sanitizeCodeSettings(codeSettings: CodeSettingsModel): any {
-    return {
-        defaultLanguage: codeSettings.defaultLanguage,
-        languages: codeSettings.languages && codeSettings.languages.length > 0
-            ? codeSettings.languages.map((language: CodeLanguageModel) => ({
-                language: language.language,
-                label: language.label
-            })) : []
+        id: content.id,
+        ...( !isEmptyString(content.type) ? { type: content.type } : {} ),
+        ...( !isEmptyString(content.content) ? { content: content.content } : {} ),
+        props: content.props
     };
 }
 
 export function sanitizeBlock(block: BlockModel): any {
     return {
         id: block.id,
-        parentId: block.parentId,
-        placeholder: block.placeholder,
-        type: block.type,
-        content: (block.content && block.content.length > 0) ? sanitizeContent(block.content) : [],
-        indent: block.indent,
-        isExpanded: block.isExpanded,
-        isChecked: block.isChecked,
-        cssClass: block.cssClass,
-        template: block.template,
-        children: (block.children && block.children.length > 0) ? block.children.map((child: BlockModel) => sanitizeBlock(child)) : [],
-        codeSettings: block.codeSettings ? sanitizeCodeSettings(block.codeSettings) : null,
-        imageSettings: block.imageSettings ? sanitizeImageSettings(block.imageSettings) : null
+        ...( !isEmptyString(block.type) ? { type: block.type } : {} ),
+        content: (block.content && block.content.length > 0) ? sanitizeContents(block.content) : [],
+        props: block.props,
+        ...( (isNullOrUndefined(block.indent)) ? {} : { indent: block.indent }),
+        ...( !isEmptyString(block.parentId) ? { parentId: block.parentId } : {} ),
+        ...( !isEmptyString(block.cssClass) ? { cssClass: block.cssClass } : {} ),
+        ...( !block.template ? {} : { template: block.template })
     };
 }
 /* eslint-enable @typescript-eslint/no-explicit-any */

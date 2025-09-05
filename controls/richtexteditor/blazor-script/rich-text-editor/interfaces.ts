@@ -6,12 +6,12 @@ import { Image } from './renderer/image-module';
 import { Audio } from './renderer/audio-module';
 import { Video } from './renderer/video-module';
 import { Table } from './renderer/table-module';
-import { IColorPickerModel, IDropDownModel, ISplitButtonModel, IToolbarStatus } from '../src/common/interface';
+import { IColorPickerModel, IDropDownModel, ISplitButtonModel, IToolbarStatus } from '../editor-scripts/common/interface';
 import { SfRichTextEditor } from './sf-richtexteditor-fn';
-import { MDSelectionFormats } from '../src/markdown-parser/plugin/md-selection-formats';
-import { IEditorModel, IDropDownItemModel } from '../src/common/interface';
-import { IToolbarItemModel, IImageCommandsArgs, IAudioCommandsArgs, IVideoCommandsArgs, ITouchData } from '../src/common/interface';
-import { NodeSelection } from '../src/selection/selection';
+import { MDSelectionFormats } from '../editor-scripts/markdown-parser/plugin/md-selection-formats';
+import { IEditorModel, IDropDownItemModel } from '../editor-scripts/common/interface';
+import { IToolbarItemModel, IImageCommandsArgs, IAudioCommandsArgs, IVideoCommandsArgs, ITouchData } from '../editor-scripts/common/interface';
+import { NodeSelection } from '../editor-scripts/selection/selection';
 import { Popup } from '../../popups/src'; /*externalscript*/
 import { ColorPicker } from '../../inputs/src'; /*externalscript*/
 /**
@@ -306,4 +306,14 @@ export interface ImageOrTableCursor {
 export interface AdditionalSanitizeAttributes {
     attribute: string;
     selector: string;
+}
+
+/**
+ * Provides information about Word document import settings.
+ */
+export interface ImportWordSettingsModel {
+    /** Specifies the service URL for Word document upload */
+    serviceUrl?: string;
+    /** Specifies the maximum file size allowed for Word document uploads */
+    maxFileSize?: number;
 }

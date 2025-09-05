@@ -1,7 +1,6 @@
 /**
  * Renderers export
  */
-export * from './block';
 export * from './clipboard';
 export * from './formatting';
 export * from './list-block';

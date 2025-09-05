@@ -21,14 +21,18 @@ describe('Callout Blocks', () => {
             document.body.appendChild(editorElement);
             const blocks: BlockModel[] = [
                 {
-                    id: 'callout', type: BlockType.Callout, children: [
-                        {
-                            id: 'callout-block-1', type: BlockType.Heading1, content: [{ id: 'callout-content-1', type: ContentType.Text, content: 'Callout item 1' }],
-                        },
-                        {
-                            id: 'callout-block-2', type: BlockType.Paragraph, content: [{ id: 'callout-content-2', type: ContentType.Text, content: 'Callout item 2' }],
-                        }
-                    ]
+                    id: 'callout', type: BlockType.Callout,
+                    props: {
+                        children: [
+                            {
+                                id: 'callout-block-1', type: BlockType.Heading, props: { level: 1 },
+                                content: [{ id: 'callout-content-1', type: ContentType.Text, content: 'Callout item 1' }],
+                            },
+                            {
+                                id: 'callout-block-2', type: BlockType.Paragraph, content: [{ id: 'callout-content-2', type: ContentType.Text, content: 'Callout item 2' }],
+                            }
+                        ]
+                    }
                 }
             ];
             editor = createEditor({ blocks: blocks });

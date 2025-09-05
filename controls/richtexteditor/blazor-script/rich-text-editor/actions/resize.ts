@@ -1,7 +1,7 @@
 import { EventHandler, Browser, isNullOrUndefined, detach, createElement } from '../../../base'; /*externalscript*/
 import * as events from '../constant';
 import { SfRichTextEditor } from '../sf-richtexteditor-fn';
-import { ResizeArgs } from '../../src/common/interface';
+import { ResizeArgs } from '../../editor-scripts/common/interface';
 import { CLS_RTE_RES_EAST, CLS_RTE_RES_HANDLE, CLS_RTE_RES_CNT, CLS_ICONS, CLS_RTE_RES_WEST, CLS_TB_FLOAT } from '../classes';
 
 /**

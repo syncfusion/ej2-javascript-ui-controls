@@ -248,6 +248,11 @@ export interface BeforeCloseEventArgs {
      * Returns whether the dialog, is closed by "close icon", "overlayClick", "escape" and "user action"
      */
     closedBy?: string
+    /**
+     * Gets or sets a value indicating Whether to prevent focus from returning to the previously active element after dialog closure.
+     * @default false
+     */
+    preventFocus?: boolean
 }
 
 /**
@@ -1171,7 +1176,7 @@ export class Dialog extends Component<HTMLElement> implements INotifyPropertyCha
                 });
             },
             // eslint-disable-next-line
-            close: (event: Event) => {
+             close: (event: Event) => {
                 if (this.isModal) {
                     addClass([this.dlgOverlay], 'e-fade');
                 }
@@ -1184,7 +1189,9 @@ export class Dialog extends Component<HTMLElement> implements INotifyPropertyCha
                 if (!isNullOrUndefined(activeEle) && !isNullOrUndefined((activeEle).blur)) {
                     activeEle.blur();
                 }
-                if (!isNullOrUndefined(this.storeActiveElement) && !isNullOrUndefined(this.storeActiveElement.focus)) {
+                if (!isNullOrUndefined(this.storeActiveElement) && !isNullOrUndefined(this.storeActiveElement.focus)
+                // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                && !(this.closeArgs as any).preventFocus) {
                     this.storeActiveElement.focus();
                 }
             }
@@ -2099,6 +2106,9 @@ export class Dialog extends Component<HTMLElement> implements INotifyPropertyCha
                     if (this.enableResize && this.boundWindowResizeHandler == null && !this.initialRender) {
                         this.wireWindowResizeEvent();
                     }
+                    if (this.allowDragging && (!isNullOrUndefined(this.headerContent))) {
+                        this.refreshPosition();
+                    }
                     this.storeActiveElement = <HTMLElement>document.activeElement;
                     this.element.tabIndex = -1;
                     if (this.isModal && (!isNullOrUndefined(this.dlgOverlay))) {
@@ -2183,13 +2193,15 @@ export class Dialog extends Component<HTMLElement> implements INotifyPropertyCha
                 isInteracted: event ? true : false,
                 element: this.element,
                 container: this.isModal ? this.dlgContainer : this.element,
-                event: event } : {
+                event: event,
+                preventFocus: false } : {
                 cancel: false,
                 isInteracted: event ? true : false,
                 element: this.element,
                 target: this.target,
                 container: this.isModal ? this.dlgContainer : this.element,
                 event: event,
+                preventFocus: false,
                 closedBy: this.dlgClosedBy
             };
             this.closeArgs = eventArgs;

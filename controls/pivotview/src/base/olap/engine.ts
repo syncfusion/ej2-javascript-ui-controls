@@ -6,7 +6,7 @@ import { IAxisSet, IGridValues, IPivotValues, IFilter, ICustomProperties, IValue
 import { IFormatSettings, IMatrix2D } from '../engine';
 import * as cls from '../../common/base/css-constant';
 import { Sorting, SummaryTypes } from '../types';
-import { ExportPageSize, HeadersSortEventArgs } from '../../common/base/interface';
+import { AfterServiceInvokeEventArgs, BeforeServiceInvokeEventArgs, ExportPageSize, HeadersSortEventArgs } from '../../common/base/interface';
 
 /**
  * OlapEngine is used to manipulate the olap or Multi-Dimensional data as pivoting values.
@@ -126,6 +126,7 @@ export class OlapEngine {
     private clonedValTuple: Element[] = [];
     private clonedColumnTuple: Element[] = [];
     private clonedRowTuple: Element[] = [];
+    private requestHeaders: { [key: string]: string } = {};
 
     ///////////////////////////////////////////////////////////////////////////////////////////////////////////////
     /** @hidden */
@@ -158,6 +159,8 @@ export class OlapEngine {
     public errorInfo: string | Error;
     /** @hidden */
     public colDepth: number = 0;
+    /** @hidden */
+    public levelUniqueName: { [key: string]: string } = {};
     private totalCollection: ITotCollection[] = [];
     private parentObjCollection: IParentObjCollection = {};
     private colMeasures: { [key: string]: Element };
@@ -175,11 +178,17 @@ export class OlapEngine {
     private sortObject: { [key: string]: string } = {};
     private isColDrill: boolean = false;
     private getHeaderSortInfo: Function;
+    private getBeforeSeviceInvoke: Function;
+    private getAfterSeviceInvoke: Function;
     ///////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-    public renderEngine(dataSourceSettings?: IDataOptions, customProperties?: IOlapCustomProperties, onHeadersSort?: Function): void {
+    public renderEngine(
+        dataSourceSettings?: IDataOptions, customProperties?: IOlapCustomProperties, onHeadersSort?: Function,
+        beforeServiceInvoke?: Function, afterServiceInvoke?: Function): void {
         this.isEmptyData = false;
         this.getHeaderSortInfo = onHeadersSort;
+        this.getBeforeSeviceInvoke = beforeServiceInvoke;
+        this.getAfterSeviceInvoke = afterServiceInvoke;
         this.mdxQuery = '';
         this.isMeasureAvail = false;
         this.allowMemberFilter = false;
@@ -570,6 +579,7 @@ export class OlapEngine {
         this.colMeasurePos = undefined;
         this.rowMeasurePos = undefined;
         this.rowStartPos = -1;
+        this.levelUniqueName = {};
     }
     private performEngine(columnTuples: Element[], rowTuples: Element[], valCollection: Element[]): void {
         this.totalCollection = [];
@@ -2467,6 +2477,7 @@ export class OlapEngine {
                 members: membersInfo && membersInfo.length > 0 ? membersInfo : sortMembers,
                 IsOrderChanged: false
             };
+            this.levelUniqueName[fieldName as string] = sortDetails.levelName;
             if (membersInfo && membersInfo.length > 0) {
                 PivotUtil.applyCustomSort(sortDetails, headers, 'string', false, true);
             }
@@ -2528,6 +2539,7 @@ export class OlapEngine {
                 members: membersInfo && membersInfo.length > 0 ? membersInfo : keys,
                 IsOrderChanged: false
             };
+            this.levelUniqueName[header as string] = sortDetails.levelName;
             if (membersInfo && membersInfo.length > 0) {
                 this.applyCustomSort(keys, sortDetails);
             }
@@ -4526,34 +4538,64 @@ export class OlapEngine {
                 dataType: 'xml',
                 type: type,
                 beforeSend: this.beforeSend.bind(this),
-                onSuccess: (args: string | Object, request: Ajax) => {
-                    const parser: DOMParser = new DOMParser();
-                    // parsing string type result as XML
-                    const xmlDoc: Document = parser.parseFromString(args as string, 'text/xml');
-                    const body: Element = xmlDoc.querySelector('Body');
-                    if (!body.querySelector('OlapInfo')) {
-                        if (!body.querySelector('DiscoverResponse')) {
-                            // For catalog, calc fields
-                            if (body.querySelector('Fault') && body.querySelector('Fault').querySelector('faultstring')) {
-                                this.errorInfo = body.querySelector('Fault').querySelector('faultstring').innerHTML;
-                            } else if (body.querySelector('return') && body.querySelector('return').querySelector('Error')) {
-                                this.errorInfo = body.querySelector('return').querySelector('Error').getAttribute('Description');
-                            }
-                        }
-                    }
-                    success(xmlDoc, request, customArgs);
-                },
+                onSuccess: this.onSuccess.bind(this, success, customArgs),
                 onFailure: (e: string) => {
                     this.errorInfo = e;
                 }
             }
         );
+        const params: BeforeServiceInvokeEventArgs = {
+            dataSourceSettings: (customArgs as { [Key: string]: Object }).dataSourceSettings,
+            action: (customArgs as { [Key: string]: string }).action,
+            customProperties: {},
+            internalProperties: {
+                headers: {
+                    'Content-Type': 'text/xml'
+                },
+                requestType: 'string',
+                data: data
+            }
+        };
+        if (this.getBeforeSeviceInvoke) {
+            this.getBeforeSeviceInvoke(params);
+        }
+        this.requestHeaders = (params.internalProperties as { [key: string]: string }).headers as {} || {};
         ajax.send();
     }
+    private onSuccess(success: Function, customArgs: Object, args: string | Object, request: Ajax): void {
+        const parser: DOMParser = new DOMParser();
+        const xmlDoc: Document = parser.parseFromString(args as string, 'text/xml');
+        const body: Element = xmlDoc.querySelector('Body');
+
+        if (!body.querySelector('OlapInfo')) {
+            if (!body.querySelector('DiscoverResponse')) {
+                // For catalog, calc fields
+                if (body.querySelector('Fault') && body.querySelector('Fault').querySelector('faultstring')) {
+                    this.errorInfo = body.querySelector('Fault').querySelector('faultstring').innerHTML;
+                } else if (body.querySelector('return') && body.querySelector('return').querySelector('Error')) {
+                    this.errorInfo = body.querySelector('return').querySelector('Error').getAttribute('Description');
+                }
+            }
+        }
+        if (this.getAfterSeviceInvoke) {
+            const params: AfterServiceInvokeEventArgs = {
+                action: (customArgs as { [key: string]: string }).action,
+                response: args as string
+            };
+            this.getAfterSeviceInvoke(params);
+        }
+        success(xmlDoc, request, customArgs );
+    }
+
     private beforeSend(args: string | Object): void {
         if (this.dataSourceSettings.authentication.userName && this.dataSourceSettings.authentication.password) {
             (args as { httpRequest: XMLHttpRequest }).httpRequest.setRequestHeader('Authorization', 'Basic ' + btoa(this.dataSourceSettings.authentication.userName +
                 ':' + this.dataSourceSettings.authentication.password));
+        }
+        for (const key in this.requestHeaders) {
+            if (Object.prototype.hasOwnProperty.call(this.requestHeaders, key)) {
+                (args as { httpRequest: XMLHttpRequest }).httpRequest.setRequestHeader(key, this.requestHeaders[key as string]);
+            }
         }
     }
     private getSoapMsg(dataSourceSettings: IDataOptions, query: string): string {

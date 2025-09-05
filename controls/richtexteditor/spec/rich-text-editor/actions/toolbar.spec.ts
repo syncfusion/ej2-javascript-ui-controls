@@ -2065,8 +2065,8 @@ describe("Toolbar - Actions Module", () => {
         });
 
         it("Check style", (done) => {
-            expect((rteObj.element.querySelector('[title="Print"]') as HTMLElement).style.pointerEvents).toBe('');
-            rteObj.element.querySelector('[title="Print"]').click();
+            expect((rteObj.element.querySelector('[title="Print (Ctrl+P)"]') as HTMLElement).style.pointerEvents).toBe('');
+            rteObj.element.querySelector('[title="Print (Ctrl+P)"]').click();
             setTimeout(() => {
                 expect(clickEventSpy).toHaveBeenCalled();
                 done();

@@ -736,7 +736,7 @@ describe('Formats plugin', () => {
             let start: HTMLElement = elem.querySelector('#listPre');
             editorObj.nodeSelection.setCursorPoint(document, start.childNodes[0] as Element, 4);
             (editorObj as any).editorKeyDown(keyBoardEvent);
-            expect(elem.querySelectorAll('br').length === 0).toBe(true);
+            expect(elem.querySelectorAll('br').length === 1).toBe(true);
         });
         afterAll(() => {
             detach(elem);

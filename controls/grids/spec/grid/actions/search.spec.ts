@@ -94,7 +94,7 @@ describe('Search module=>', () => {
         it('goToPage testing for search', (done: Function) => {
             actionComplete = (args: any): void => {
                 if (args.requestType == 'paging') {
-                    expect(gridObj.getPager().getElementsByClassName('e-active')[0].getAttribute('index')).toBe('2');
+                    expect(gridObj.getPager().getElementsByClassName('e-active')[0].getAttribute('data-index')).toBe('2');
                     gridObj.actionComplete = null;
                     done();
                 }

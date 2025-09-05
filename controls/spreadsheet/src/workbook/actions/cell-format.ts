@@ -1,4 +1,4 @@
-import { CellStyleModel, getRangeIndexes, setCellFormat, applyCellFormat, activeCellChanged, SetCellFormatArgs, isReadOnly, isReadOnlyCells, mergedRange, MergeArgs, setMerge, updateMergeBorder } from '../common/index';
+import { CellStyleModel, getRangeIndexes, setCellFormat, applyCellFormat, activeCellChanged, SetCellFormatArgs, isReadOnly, isReadOnlyCells, workbookReadonlyAlert, mergedRange, MergeArgs, setMerge, updateMergeBorder } from '../common/index';
 import { CellFormatArgs, getSwapRange, TextDecoration, textDecorationUpdate, ClearOptions, BeforeCellFormatArgs } from '../common/index';
 import { CellStyleExtendedModel, BorderType, clear, getIndexesFromAddress, activeCellMergedRange, deleteHyperlink } from '../common/index';
 import { SheetModel, Workbook, getSheetIndex, isHiddenRow, getSheet, getCell, CellModel, setCell, updateCFModel, getColumn, ColumnModel, RowModel } from '../index';
@@ -39,7 +39,7 @@ export class WorkbookCellFormat {
                 ranges = [rng as number[]];
             }
         }
-        if (ranges.some((rng: string | number[]): boolean => isReadOnlyCells(
+        if (ranges.some((rng: string | number[]) => isReadOnlyCells(
             this.parent, typeof rng === 'string' ? getSwapRange(getRangeIndexes(rng)) : rng, args.onActionUpdate))) {
             return;
         }
@@ -349,7 +349,7 @@ export class WorkbookCellFormat {
         if (eventArgs.range !== rng) {
             ranges = eventArgs.range.split(' ');
         }
-        const value: TextDecoration = <TextDecoration>args.style.textDecoration.toLowerCase();
+        const value: TextDecoration = <TextDecoration>eventArgs.style.textDecoration.toLowerCase();
         let changedValue: TextDecoration = value;
         const activeCellIndexes: number[] = getRangeIndexes(sheet.activeCell);
         let cellValue: string = this.parent.getCellStyleValue(['textDecoration'], activeCellIndexes).textDecoration.toLowerCase();

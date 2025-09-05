@@ -11,6 +11,13 @@ export class ToolbarRenderer {
         this.editor = editor;
     }
 
+    /**
+     * Renders the toolbar with the specified options.
+     *
+     * @param {IToolbarRenderOptions} args - The options for rendering the toolbar.
+     * @returns {Toolbar} - The rendered toolbar instance.
+     * @hidden
+     */
     renderToolbar(args: IToolbarRenderOptions): Toolbar {
         this.element = typeof args.element === 'string'
             ? this.editor.element.querySelector(args.element)
@@ -32,5 +39,9 @@ export class ToolbarRenderer {
 
     private handleInlineToolbarItemClick(args: ClickEventArgs): void {
         this.editor.notify(events.inlineToolbarItemClick, args);
+    }
+
+    public destroy(): void {
+        this.element = null;
     }
 }

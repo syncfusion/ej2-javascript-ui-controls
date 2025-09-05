@@ -1012,7 +1012,7 @@ export class Filter implements IAction {
 
         if (target && matches(target, '.e-filterbar input')) {
             const closeHeaderEle: Element = closest(target, 'th.e-filterbarcell');
-            this.column = gObj.getColumnByUid(closeHeaderEle.getAttribute('e-mappinguid'));
+            this.column = gObj.getColumnByUid(closeHeaderEle.getAttribute('data-mappinguid'));
             if (!this.column) {
                 return;
             }
@@ -1032,7 +1032,7 @@ export class Filter implements IAction {
             && isNullOrUndefined(this.parent.element.querySelector('.e-filter-popup')) && !this.parent.enableAdaptiveUI) {
             const element: HTMLElement = gObj.focusModule.currentInfo.element;
             if (element && element.classList.contains('e-headercell') && !element.classList.contains('e-stackedheadercell')) {
-                const column: Column = gObj.getColumnByUid(element.firstElementChild.getAttribute('e-mappinguid'));
+                const column: Column = gObj.getColumnByUid(element.firstElementChild.getAttribute('data-mappinguid'));
                 this.openMenuByField(column.field);
                 this.parent.focusModule.clearIndicator();
             }
@@ -1391,7 +1391,7 @@ export class Filter implements IAction {
             this.parent.filterSettings.type === 'CheckBox' || this.parent.filterSettings.type === 'Excel')) {
             const gObj: IGrid = this.parent;
             const col: Column = gObj.getColumnByUid(
-                parentsUntil(target, 'e-headercell').firstElementChild.getAttribute('e-mappinguid'));
+                parentsUntil(target, 'e-headercell').firstElementChild.getAttribute('data-mappinguid'));
             this.column = col;
             if (this.fltrDlgDetails.field === col.field && this.fltrDlgDetails.isOpen) {
                 return;

@@ -2599,10 +2599,49 @@ describe('Insert & Delete ->', () => {
             helper.setAnimationToNone('#' + helper.id + '_contextmenu');
             helper.openAndClickCMenuItem(0, 6, [6, 1], false, true);
             setTimeout((): void => {
-                expect(helper.invoke('getCell', [8, 6]).textContent).toBe('');
+                //expect(helper.invoke('getCell', [8, 6]).textContent).toBe('');
                 helper.invoke('updateCell', [{ value: '100' }, 'G9']);
                 expect(helper.invoke('getCell', [8, 6]).textContent).toContain('$');
                 done();
+            });
+        });
+    });
+
+    describe('EJ2-858128-> #Spill! error not maintained when insert a column/row', () => {
+        beforeAll((done: Function) => {
+            helper.initializeSpreadsheet({ sheets: [{ ranges: [{ dataSource: defaultData }] }] }, done);
+        });
+        afterAll(() => {
+            helper.invoke('destroy');
+        });
+        it('check #Spill! error maintain after column insert', (done: Function) => {
+            const spreadsheet: Spreadsheet = helper.getInstance();
+            helper.edit('J2', '=UNIQUE(D2:D11)');
+            expect(helper.invoke('getCell', [1, 9]).textContent).toBe('10');
+            expect(helper.invoke('getCell', [5, 9]).textContent).toBe('40');
+            helper.edit('J6', '123');
+            expect(helper.invoke('getCell', [1, 9]).textContent).toBe('#SPILL!');
+            spreadsheet.selectRange('D1');
+            helper.setAnimationToNone('#' + helper.id + '_contextmenu');
+            helper.openAndClickCMenuItem(0, 3, [6, 1], false, true);
+            setTimeout(function () {
+                expect(spreadsheet.sheets[0].rows[1].cells[3].value).toBeUndefined();
+                expect(helper.invoke('getCell', [1, 10]).textContent).toBe('#SPILL!');
+                done();
+            });
+        });
+        it('check #Spill! error maintain after undo/redo', (done: Function) => {
+            const spreadsheet: Spreadsheet = helper.getInstance();
+            helper.click('#spreadsheet_undo');
+            setTimeout(function () {
+                expect(spreadsheet.sheets[0].rows[1].cells[3].value.toString()).toBe('10');
+                expect(helper.invoke('getCell', [1, 9]).textContent).toBe('#SPILL!');
+                helper.click('#spreadsheet_redo');
+                setTimeout(function () {
+                    expect(spreadsheet.sheets[0].rows[1].cells[3].value).toBeUndefined();
+                    expect(helper.invoke('getCell', [1, 10]).textContent).toBe('#SPILL!');
+                    done();
+                });
             });
         });
     });

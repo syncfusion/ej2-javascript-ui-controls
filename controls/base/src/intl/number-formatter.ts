@@ -264,7 +264,13 @@ export class NumberFormat {
                             break;
                         }
                     }
-                    fValue = temp[0] + '.' + decimalPart;
+                    // removes the dot and trailing zero
+                    const decimalSeparator: string = (dOptions).numberMapper.numberSymbols[mapper[3]] || '.';
+                    if (decimalPart === '') {
+                        fValue = temp[0];
+                    } else {
+                        fValue = temp[0] + decimalSeparator + decimalPart;
+                    }
                 }
             }
             if (curData.type === 'scientific') {

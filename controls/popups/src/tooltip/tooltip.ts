@@ -1373,7 +1373,10 @@ export class Tooltip extends Component<HTMLElement> implements INotifyPropertyCh
             if (opensOn === 'Focus') {
                 this.wireFocusEvents();
             }
-            if (opensOn === 'Click') {
+            if (opensOn === 'Click' && (Browser.isIos7 || Browser.isIos )) {
+                EventHandler.add(this.element, 'mousedown', this.targetClick, this);
+            }
+            if (opensOn === 'Click' && !(Browser.isIos7 || Browser.isIos )) {
                 EventHandler.add(this.element, Browser.touchStartEvent, this.targetClick, this);
             }
             if (opensOn === 'Hover') {

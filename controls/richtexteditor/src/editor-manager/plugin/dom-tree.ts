@@ -1,3 +1,5 @@
+import { isNullOrUndefined } from '@syncfusion/ej2-base';
+
 /**
  *  DOMTreeMethods - A `TreeWalkder` API implementation to get the block and text nodes in the selection.
  */
@@ -245,5 +247,94 @@ export class DOMMethods {
             }
         }
         return parent;
+    }
+    /**
+     * Finds the nearest parent `<li>` element of a given node until the search reaches the editable element.
+     *
+     * @private
+     * @param {Node | null} node - The starting node from which to search for the parent `<li>` element.
+     * @returns {HTMLLIElement | null} - The nearest parent `<li>` element if found, otherwise `null`.
+     */
+    private findParentLiElementUntilEditable(node: Node | null): HTMLLIElement | null {
+        let currentNode: Node | null = node;
+        while (currentNode && currentNode !== this.editableElement) {
+            if (currentNode.nodeType === Node.ELEMENT_NODE) {
+                const element: HTMLElement = currentNode as HTMLElement;
+                if (element.tagName === 'LI') {
+                    return element as HTMLLIElement;
+                }
+            }
+            currentNode = currentNode.parentNode;
+        }
+        return null;
+    }
+    /**
+     * Retrieves all `<li>` elements that are part of the current selection range.
+     * This includes `<li>` elements that are fully or partially selected.
+     *
+     * @private
+     * @returns {HTMLLIElement[]} - An array of selected `<li>` elements.
+     */
+    private getSelectedLiElements(): HTMLLIElement[] {
+        const selection: Selection = this.currentDocument.getSelection();
+        const range: Range = selection.getRangeAt(0);
+        const nodeInRange: (rng: Range, node: Node) => boolean = (rng: Range, node: Node): boolean => {
+            const nodeRange: Range = rng.cloneRange();
+            nodeRange.selectNodeContents(node);
+            return (
+                rng.compareBoundaryPoints(Range.END_TO_START, nodeRange) < 0 &&
+                rng.compareBoundaryPoints(Range.START_TO_END, nodeRange) > 0
+            );
+        };
+        const walker: TreeWalker = this.currentDocument.createTreeWalker(
+            range.commonAncestorContainer,
+            NodeFilter.SHOW_ALL,
+            {
+                acceptNode: (node: Node) =>
+                    nodeInRange(range, node)
+                        ? NodeFilter.FILTER_ACCEPT
+                        : NodeFilter.FILTER_REJECT
+            }
+        );
+        const liElements: Set<HTMLLIElement> = new Set();
+        const startLi: HTMLLIElement = this.findParentLiElementUntilEditable(walker.currentNode);
+        if (startLi) {
+            liElements.add(startLi);
+        }
+        while (walker.nextNode()) {
+            const li: HTMLLIElement = this.findParentLiElementUntilEditable(walker.currentNode);
+            if (li) {
+                liElements.add(li);
+            }
+        }
+        return Array.from(liElements);
+    }
+    /**
+     * Retrieves all `<li>` elements within the current selection range,
+     * including nested `<li>` elements if they are fully or partially selected.
+     *
+     * @public
+     * @returns {HTMLElement[]} - An array of `<li>` elements found within the selection range.
+     */
+    public getLiElementsInRange(): HTMLElement[] {
+        const liElements: HTMLElement[] = [];
+        const blockNodes: HTMLElement[] = this.getSelectedLiElements();
+        for (let i: number = 0; i < blockNodes.length; i++) {
+            const li: HTMLLIElement = this.findParentLiElementUntilEditable(blockNodes[i as number]);
+            if (li && li.querySelectorAll('li').length > 0) {
+                const selection: Selection = this.currentDocument.getSelection();
+                const range: Range = selection.getRangeAt(0);
+                const liList: NodeListOf<HTMLLIElement> = li.querySelectorAll('li');
+                liList.forEach((li: HTMLLIElement) => {
+                    if (range.intersectsNode(li) && liElements.indexOf(li) === -1) {
+                        liElements.push(li);
+                    }
+                });
+            }
+            if (!isNullOrUndefined(li) && liElements.indexOf(li) === -1) {
+                liElements.push(li);
+            }
+        }
+        return liElements;
     }
 }

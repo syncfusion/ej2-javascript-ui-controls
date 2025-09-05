@@ -318,8 +318,8 @@ describe('Resize module', () => {
             let columns: Column[] = gridObj.getColumns();
             for (let ele of [].slice.apply(gridObj.getHeaderTable().querySelectorAll('th.e-headercell'))) {
                 for (let column of columns) {
-                    if (ele.querySelector('[e-mappinguid]') &&
-                        ele.querySelector('[e-mappinguid]').getAttribute('e-mappinguid') === column.uid && column.visible) {
+                    if (ele.querySelector('[data-mappinguid]') &&
+                        ele.querySelector('[data-mappinguid]').getAttribute('data-mappinguid') === column.uid && column.visible) {
                         expect(column.width === ele.getBoundingClientRect().width);
                         break;
                     }

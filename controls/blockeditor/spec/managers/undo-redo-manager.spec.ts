@@ -1,6 +1,6 @@
 import { createElement, remove } from '@syncfusion/ej2-base';
-import { BlockModel } from '../../src/blockeditor/models';
-import { BlockEditor, BlockType, ContentType, setCursorPosition, getBlockContentElement, BuiltInToolbar } from '../../src/index';
+import { BaseChildrenProp, BaseStylesProp, BlockModel } from '../../src/blockeditor/models';
+import { BlockEditor, BlockType, ContentType, setCursorPosition, getBlockContentElement } from '../../src/index';
 import { createEditor } from '../common/util.spec';
 
 describe('Undo Redo Manager:', () => {
@@ -44,36 +44,40 @@ describe('Undo Redo Manager:', () => {
                 { id: 'paragraph2', type: BlockType.Paragraph, content: [{ id: 'paragraph2-content', type: ContentType.Text, content: 'Hello world 2' }] },
                 {
                     id: 'calloutblock',
-                    type: 'Callout',
-                    children: [
-                        {
-                            id: 'calloutchild1',
-                            type: 'Paragraph',
-                            content: [{ id: 'callout-child1-content', type: ContentType.Text, content: 'Callout child 1' }]
-                        },
-                        {
-                            id: 'calloutchild2',
-                            type: 'Paragraph',
-                            content: [{ id: 'callout-child2-content', type: ContentType.Text, content: 'Callout child 2' }]
-                        }
-                    ]
+                    type: BlockType.Callout,
+                    props: {
+                        children: [
+                            {
+                                id: 'calloutchild1',
+                                type: BlockType.Paragraph,
+                                content: [{ id: 'callout-child1-content', type: ContentType.Text, content: 'Callout child 1' }]
+                            },
+                            {
+                                id: 'calloutchild2',
+                                type: BlockType.Paragraph,
+                                content: [{ id: 'callout-child2-content', type: ContentType.Text, content: 'Callout child 2' }]
+                            }
+                        ]
+                    }
                 },
                 {
                     id: 'toggleblock',
-                    type: BlockType.ToggleParagraph,
+                    type: BlockType.CollapsibleParagraph,
                     content: [{ id: 'toggle-content-1', type: ContentType.Text, content: 'Click here to expand' }],
-                    children: [
-                        {
-                            id: 'togglechild1',
-                            type: BlockType.CheckList,
-                            content: [{ type: ContentType.Text, content: 'Todo' }]
-                        },
-                        {
-                            id: 'togglechild2',
-                            type: BlockType.Paragraph,
-                            content: [{ type: ContentType.Text, content: 'Toggle child 2' }]
-                        }
-                    ]
+                    props: {
+                        children: [
+                            {
+                                id: 'togglechild1',
+                                type: BlockType.Checklist,
+                                content: [{ type: ContentType.Text, content: 'Todo' }]
+                            },
+                            {
+                                id: 'togglechild2',
+                                type: BlockType.Paragraph,
+                                content: [{ type: ContentType.Text, content: 'Toggle child 2' }]
+                            }
+                        ]
+                    }
                 },
                 { id: 'paragraph3', type: BlockType.Paragraph, content: [{ id: 'paragraph3-content', type: ContentType.Text, content: 'Hello world 3' }] },
             ];
@@ -108,7 +112,7 @@ describe('Undo Redo Manager:', () => {
 
                 // Last character should be bold now
                 expect(contentElement.querySelector('strong')).not.toBeNull();
-                expect(editor.blocks[0].content[1].styles.bold).toBe(true);
+                expect((editor.blocks[0].content[1].props as BaseStylesProp).styles.bold).toBe(true);
                 
                 triggerUndo(editorElement);
                 expect(contentElement.querySelector('strong')).toBeNull();
@@ -116,7 +120,7 @@ describe('Undo Redo Manager:', () => {
 
                 triggerRedo(editorElement);
                 expect(contentElement.querySelector('strong')).not.toBeNull();
-                expect(editor.blocks[0].content[1].styles.bold).toBe(true);
+                expect((editor.blocks[0].content[1].props as BaseStylesProp).styles.bold).toBe(true);
                 done();
             }, 100);
         });
@@ -124,12 +128,12 @@ describe('Undo Redo Manager:', () => {
         it('move blocks within callout type - undo redo', () => {
             const blockElement = editorElement.querySelector('#calloutchild2') as HTMLElement;
             editor.setFocusToBlock(blockElement);
-            editor.blockAction.moveBlock({
+            editor.blockCommandManager.moveBlock({
                 fromBlockIds: ['calloutchild2'], toBlockId: 'calloutchild1'
             });
-            expect(editor.blocks[2].children.length).toBe(2);
-            expect(editor.blocks[2].children[0].id).toBe('calloutchild2');
-            expect(editor.blocks[2].children[1].id).toBe('calloutchild1');
+            expect((editor.blocks[2].props as BaseChildrenProp).children.length).toBe(2);
+            expect((editor.blocks[2].props as BaseChildrenProp).children[0].id).toBe('calloutchild2');
+            expect((editor.blocks[2].props as BaseChildrenProp).children[1].id).toBe('calloutchild1');
 
             triggerUndo(editorElement);
             // expect(editor.blocks[2].children.length).toBe(2);
@@ -193,24 +197,24 @@ describe('Undo Redo Manager:', () => {
             const contentElement = blockElement.querySelector('.e-block-content') as HTMLElement;
             editor.setFocusToBlock(blockElement);
             contentElement.textContent = '';
-            editor.updateContentOnUserTyping(blockElement);
+            editor.stateManager.updateContentOnUserTyping(blockElement);
             setCursorPosition(contentElement, 0);
             // Mock file blob for paste
             const imageBlob = new Blob(['fake-image-data'], { type: 'image/png' });
                         
-            editor.blockAction.imageRenderer.handleFilePaste(imageBlob).then(() => {
+            editor.blockRendererManager.imageRenderer.handleFilePaste(imageBlob).then(() => {
                 setTimeout(() => {
                     // Should transform the empty paragraph to image
-                    expect(editor.blocks[0].type).toBe('Image');
+                    expect(editor.blocks[0].type).toBe(BlockType.Image);
                     expect(editorElement.querySelector('.e-image-block')).not.toBeNull();
 
                     triggerUndo(editorElement);
-                    expect(editor.blocks[0].type).toBe('Paragraph');
+                    expect(editor.blocks[0].type).toBe(BlockType.Paragraph);
                     expect(editorElement.querySelector('.e-image-block')).toBeNull();
 
                     triggerRedo(editorElement);
                     setTimeout(() => {
-                        expect(editor.blocks[0].type).toBe('Image');
+                        expect(editor.blocks[0].type).toBe(BlockType.Image);
                         expect(editorElement.querySelector('.e-image-block')).not.toBeNull();
 
                         done();
@@ -219,43 +223,40 @@ describe('Undo Redo Manager:', () => {
             })
         });
 
-        it('Partial deletion inside callout type - Undo redo', (done) => {
-            setTimeout(() => {
-                const range = document.createRange();
-                const selection = document.getSelection();
-                const startBlockElement = editorElement.querySelector('#calloutchild1') as HTMLElement;
-                const startNode = startBlockElement.querySelector('.e-block-content').firstChild;
-                const startOffset = 8;
-                const endBlockElement = editorElement.querySelector('#calloutchild2') as HTMLElement;
-                const endNode = endBlockElement.querySelector('.e-block-content').firstChild;
-                const endOffset = 8;
+        it('Partial deletion inside callout type - Undo redo', () => {
+            const range = document.createRange();
+            const selection = document.getSelection();
+            const startBlockElement = editorElement.querySelector('#calloutchild1') as HTMLElement;
+            const startNode = startBlockElement.querySelector('.e-block-content').firstChild;
+            const startOffset = 8;
+            const endBlockElement = editorElement.querySelector('#calloutchild2') as HTMLElement;
+            const endNode = endBlockElement.querySelector('.e-block-content').firstChild;
+            const endOffset = 8;
 
-                range.setStart(startNode, startOffset);
-                range.setEnd(endNode, endOffset);
-                selection.removeAllRanges();
-                selection.addRange(range);
+            range.setStart(startNode, startOffset);
+            range.setEnd(endNode, endOffset);
+            selection.removeAllRanges();
+            selection.addRange(range);
 
-                editor.setFocusToBlock(startBlockElement);
+            editor.setFocusToBlock(startBlockElement);
 
-                editor.element.dispatchEvent(new KeyboardEvent('keydown', { key: 'Backspace', code: 'Backspace', bubbles: true }));
-                expect(editor.blocks[2].children.length).toBe(1);
-                expect(editor.blocks[2].children[0].type).toBe(BlockType.Paragraph);
-                expect(editor.blocks[2].children[0].content.length).toBe(1);
-                expect(editor.blocks[2].children[0].content[0].content).toBe('Callout child 2');
-                expect(getBlockContentElement(startBlockElement).childNodes[0].textContent).toBe('Callout child 2');
+            editor.element.dispatchEvent(new KeyboardEvent('keydown', { key: 'Backspace', code: 'Backspace', bubbles: true }));
+            expect((editor.blocks[2].props as BaseChildrenProp).children.length).toBe(1);
+            expect((editor.blocks[2].props as BaseChildrenProp).children[0].type).toBe(BlockType.Paragraph);
+            expect((editor.blocks[2].props as BaseChildrenProp).children[0].content.length).toBe(1);
+            expect((editor.blocks[2].props as BaseChildrenProp).children[0].content[0].content).toBe('Callout child 2');
+            expect(getBlockContentElement(startBlockElement).childNodes[0].textContent).toBe('Callout child 2');
 
-                triggerUndo(editorElement);
-                expect(editor.blocks[2].children.length).toBe(2);
-                expect(editorElement.querySelector('#calloutblock').querySelectorAll('.e-block').length).toBe(2);
+            triggerUndo(editorElement);
+            expect((editor.blocks[2].props as BaseChildrenProp).children.length).toBe(2);
+            expect(editorElement.querySelector('#calloutblock').querySelectorAll('.e-block').length).toBe(2);
 
-                triggerRedo(editorElement);
-                expect(editor.blocks[2].children.length).toBe(1);
-                expect(editor.blocks[2].children[0].type).toBe(BlockType.Paragraph);
-                expect(editor.blocks[2].children[0].content.length).toBe(1);
-                expect(editor.blocks[2].children[0].content[0].content).toBe('Callout child 2');
-                expect(getBlockContentElement(startBlockElement).childNodes[0].textContent).toBe('Callout child 2');
-                done();
-            }, 200);
+            triggerRedo(editorElement);
+            expect((editor.blocks[2].props as BaseChildrenProp).children.length).toBe(1);
+            expect((editor.blocks[2].props as BaseChildrenProp).children[0].type).toBe(BlockType.Paragraph);
+            expect((editor.blocks[2].props as BaseChildrenProp).children[0].content.length).toBe(1);
+            expect((editor.blocks[2].props as BaseChildrenProp).children[0].content[0].content).toBe('Callout child 2');
+            expect(getBlockContentElement(startBlockElement).childNodes[0].textContent).toBe('Callout child 2');
         });
         
     });
@@ -272,14 +273,14 @@ describe('Undo Redo Manager:', () => {
                 { id: 'paragraph2', type: BlockType.BulletList, content: [{ id: 'paragraph2-content', type: ContentType.Text, content: 'Paragraph 2' }] },
                 { id: 'paragraph3', type: BlockType.Paragraph,
                     content: [
-                        { id: 'bold', type: ContentType.Text, content: 'Bold', styles: { bold: true } },
-                        { id: 'italic', type: ContentType.Text, content: 'Italic', styles: { italic: true } },
+                        { id: 'bold', type: ContentType.Text, content: 'Bold', props: { styles: { bold: true } } },
+                        { id: 'italic', type: ContentType.Text, content: 'Italic', props: { styles: { italic: true } } },
                     ]
                 },
                 { id: 'paragraph4', type: BlockType.Paragraph,
                     content: [
-                        { id: 'underline', type: ContentType.Text, content: 'Underline', styles: { underline: true } },
-                        { id: 'strikethrough', type: ContentType.Text, content: 'Strikethrough', styles: { strikethrough: true } },
+                        { id: 'underline', type: ContentType.Text, content: 'Underline', props: { styles: { underline: true } } },
+                        { id: 'strikethrough', type: ContentType.Text, content: 'Strikethrough', props: { styles: { strikethrough: true } } },
                     ]
                 },
             ];
@@ -296,9 +297,9 @@ describe('Undo Redo Manager:', () => {
         });
 
         it('should handle null values properly', () => {
-            expect((editor.undoRedoAction as any).restorePartialDeletion({ data: { deletedBlocks: [] }})).toBeUndefined();
+            expect((editor.undoRedoAction.undoRedoManager as any).restorePartialDeletion({ data: { deletedBlocks: [] }})).toBeUndefined();
 
-            expect((editor.undoRedoAction as any).createBlock({})).toBeUndefined();
+            expect((editor.undoRedoAction.undoRedoManager as any).createBlock({})).toBeUndefined();
         });
         
     });

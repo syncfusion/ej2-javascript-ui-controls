@@ -1,8 +1,8 @@
 import { addClass, detach, EventHandler, L10n, isNullOrUndefined, KeyboardEventArgs, Ajax, MouseEventArgs } from '@syncfusion/ej2-base';
 import { Browser, closest, removeClass, isNullOrUndefined as isNOU } from '@syncfusion/ej2-base';
-import { AfterMediaDeleteEventArgs, SlashMenuItemSelectArgs, IQuickToolbar, IRenderer} from '../base/interface';
+import { AfterMediaDeleteEventArgs, SlashMenuItemSelectArgs, IQuickToolbar, IRenderer } from '../base/interface';
 import { IRichTextEditor, IImageNotifyArgs } from '../base/interface';
-import { IDropDownItemModel, IToolbarItemModel, NotifyArgs, IShowPopupArgs, IAudioCommandsArgs } from '../../common/interface';
+import { IDropDownItemModel, IToolbarItemModel, NotifyArgs, IShowPopupArgs, IAudioCommandsArgs, MediaDropEventArgs, ActionBeginEventArgs } from '../../common/interface';
 import * as events from '../base/constant';
 import * as classes from '../base/classes';
 import { CLS_AUD_FOCUS } from '../../common/constant';
@@ -10,7 +10,7 @@ import { ServiceLocator } from '../services/service-locator';
 import { NodeSelection } from '../../selection/selection';
 import { Uploader, SelectedEventArgs, MetaData, FileInfo, BeforeUploadEventArgs } from '@syncfusion/ej2-inputs';
 import { RemovingEventArgs, UploadingEventArgs, ProgressEventArgs } from '@syncfusion/ej2-inputs';
-import { Dialog, DialogModel } from '@syncfusion/ej2-popups';
+import { Dialog, DialogModel, Popup } from '@syncfusion/ej2-popups';
 import { Button } from '@syncfusion/ej2-buttons';
 import { RendererFactory } from '../services/renderer-factory';
 import { ClickEventArgs } from '@syncfusion/ej2-navigations';
@@ -19,6 +19,7 @@ import { dispatchEvent, hasClass } from '../base/util';
 import { DialogRenderer } from './dialog-renderer';
 import { isIDevice, convertToBlob} from '../../common/util';
 import { AudioCommand } from '../../editor-manager/plugin/audio';
+import { PopupUploader } from './popup-uploader-renderer';
 /**
  * `Audio` module is used to handle audio actions.
  */
@@ -28,6 +29,8 @@ export class Audio {
     private parent: IRichTextEditor;
     public dialogObj: Dialog;
     public uploadObj: Uploader;
+    private popupObj: Popup;
+    public popupUploaderObj: PopupUploader;
     private button: Button
     private i10n: L10n;
     private inputUrl: HTMLElement;
@@ -45,6 +48,11 @@ export class Audio {
     private showPopupTime: number;
     private isDestroyed: boolean;
     private docClick: EventListenerOrEventListenerObject
+    private drop: EventListenerOrEventListenerObject;
+    private drag: EventListenerOrEventListenerObject;
+    private enter: EventListenerOrEventListenerObject;
+    private audioDragPopupTime: number;
+    private showAudioQTbarTime: number;
 
     private constructor(parent?: IRichTextEditor, serviceLocator?: ServiceLocator) {
         this.parent = parent;
@@ -52,6 +60,7 @@ export class Audio {
         this.i10n = serviceLocator.getService<L10n>('rteLocale');
         this.rendererFactory = serviceLocator.getService<RendererFactory>('rendererFactory');
         this.dialogRenderObj = serviceLocator.getService<DialogRenderer>('dialogRenderObject');
+        this.popupUploaderObj = serviceLocator.getService<PopupUploader>('popupUploaderObject');
         this.addEventListener();
         this.docClick = this.onDocumentClick.bind(this);
         this.isDestroyed = false;
@@ -60,6 +69,15 @@ export class Audio {
     protected addEventListener(): void {
         if (this.parent.isDestroyed) {
             return;
+        }
+        if (!this.drop) {
+            this.drop = this.dragDrop.bind(this);
+        }
+        if (!this.drag) {
+            this.drag = this.dragOver.bind(this);
+        }
+        if (!this.enter) {
+            this.enter = this.dragEnter.bind(this);
         }
         this.parent.on(events.keyDown, this.onKeyDown, this);
         this.parent.on(events.keyUp, this.onKeyUp, this);
@@ -94,6 +112,11 @@ export class Audio {
         this.parent.off(events.insertCompleted, this.showAudioQuickToolbar);
         this.parent.off(events.destroy, this.destroy);
         this.parent.off(events.iframeMouseDown, this.closeDialog);
+        const dropElement: HTMLElement | Document = this.parent.iframeSettings.enable ? this.parent.inputElement.ownerDocument
+            : this.parent.inputElement;
+        dropElement.removeEventListener('drop', this.drop, true);
+        dropElement.removeEventListener('dragenter', this.enter, true);
+        dropElement.removeEventListener('dragover', this.drag, true);
         if (!isNullOrUndefined(this.contentModule)) {
             EventHandler.remove(this.parent.contentModule.getEditPanel(), Browser.touchStartEvent, this.touchStart);
             EventHandler.remove(this.contentModule.getEditPanel(), Browser.touchEndEvent, this.audioClick);
@@ -110,6 +133,11 @@ export class Audio {
 
     private afterRender(): void {
         this.contentModule = this.rendererFactory.getRenderer(RenderType.Content);
+        const dropElement: HTMLElement | Document = this.parent.iframeSettings.enable ?
+            this.parent.inputElement.ownerDocument : this.parent.inputElement;
+        dropElement.addEventListener('drop', this.drop, true);
+        dropElement.addEventListener('dragenter', this.enter, true);
+        dropElement.addEventListener('dragover', this.drag, true);
         EventHandler.add(this.parent.contentModule.getEditPanel(), Browser.touchStartEvent, this.touchStart, this);
         EventHandler.add(this.contentModule.getEditPanel(), Browser.touchEndEvent, this.audioClick, this);
         (this.parent.element.ownerDocument as Document).addEventListener('mousedown', this.docClick);
@@ -236,7 +264,7 @@ export class Audio {
                 this.isAudioElem(selectNodeEle[0].nextSibling as HTMLElement)) ||
                 (originalEvent.keyCode === 8 && (selectNodeEle[0].previousSibling as HTMLElement) &&
                 this.isAudioElem(selectNodeEle[0].previousSibling as HTMLElement))) &&
-                selectNodeEle.length <= 2) {
+                selectNodeEle.length <= 2 && (selectNodeEle[0] as HTMLElement).nodeName !== '#text') {
                 if (!isNullOrUndefined(this.parent.formatter.editorManager.nodeSelection))
                 {save = this.parent.formatter.editorManager.nodeSelection.save(range, this.parent.contentModule.getDocument()); }
                 originalEvent.preventDefault();
@@ -260,7 +288,9 @@ export class Audio {
         case 'delete':
             for (let i: number = 0; i < this.deletedAudio.length; i++) {
                 const src: string = (this.deletedAudio[i as number] as HTMLAudioElement).src;
-                this.audioRemovePost(src as string);
+                if (!isNullOrUndefined(src) && src !== '') {
+                    this.audioRemovePost(src as string);
+                }
             }
             if (this.parent.editorMode !== 'Markdown') {
                 if (range.startContainer.nodeType === 3) {
@@ -455,10 +485,10 @@ export class Audio {
             }
             /* eslint-enable */
         }
-        if (this.contentModule.getEditPanel().querySelector('.' + CLS_AUD_FOCUS)) {
-            if (!this.isAudioElem(e.target as HTMLElement) && !isNOU(this.audEle)) {
+        if (!this.isAudioElem(target)) {
+            if (!isNOU(this.audEle) && this.audEle.style.outline !== '') {
                 this.audEle.style.outline = '';
-            } else if (!isNOU(this.prevSelectedAudEle) && this.prevSelectedAudEle !== target) {
+            } else if (!isNOU(this.prevSelectedAudEle) && this.prevSelectedAudEle.style.outline !== '') {
                 this.prevSelectedAudEle.style.outline = '';
             }
         }
@@ -520,28 +550,28 @@ export class Audio {
             return;
         }
         const args: MouseEvent = e.args as MouseEvent;
+        const target: HTMLElement = args.target as HTMLElement;
         const showOnRightClick: boolean = this.parent.quickToolbarSettings.showOnRightClick;
         if (args.which === 2 || (showOnRightClick && args.which === 1) || (!showOnRightClick && args.which === 3)) {
-            if ((showOnRightClick && args.which === 1) && !isNullOrUndefined((args.target as HTMLElement)) &&
-                this.isAudioElem(args.target as HTMLElement)) {
+            if ((showOnRightClick && args.which === 1) && !isNullOrUndefined((target as HTMLElement)) &&
+                this.isAudioElem(target as HTMLElement)) {
                 this.parent.formatter.editorManager.nodeSelection.Clear(this.contentModule.getDocument());
                 this.parent.formatter.editorManager.nodeSelection.setSelectionContents(
-                    this.contentModule.getDocument(), args.target as Node);
+                    this.contentModule.getDocument(), target as Node);
+            }
+            if (this.isAudioElem(target) && target.querySelector('audio')) {
+                target.querySelector('audio').style.outline = '2px solid #4a90e2';
             }
             return;
         }
         if (this.parent.editorMode === 'HTML' && this.parent.quickToolbarModule && this.parent.quickToolbarModule.audioQTBar) {
             this.quickToolObj = this.parent.quickToolbarModule;
-            const target: HTMLElement = args.target as HTMLElement;
             this.contentModule = this.rendererFactory.getRenderer(RenderType.Content);
             if (this.isAudioElem(target) && this.parent.quickToolbarModule) {
                 this.parent.formatter.editorManager.nodeSelection.Clear(this.contentModule.getDocument());
                 this.parent.formatter.editorManager.nodeSelection.setSelectionContents(this.contentModule.getDocument(), target);
                 if (isIDevice()) {
                     this.parent.notify(events.selectionSave, e);
-                }
-                if (target.querySelector('audio')) {
-                    target.querySelector('audio').style.outline = '2px solid #4a90e2';
                 }
                 this.showAudioQuickToolbar({ args: args, type: 'Audios', elements: [args.target as Element] } as IShowPopupArgs);
             } else {
@@ -575,6 +605,7 @@ export class Audio {
             const audioElem: HTMLElement = target.tagName === 'AUDIO' ? target : target.querySelector('audio');
             addClass([audioElem], [CLS_AUD_FOCUS]);
             audioElem.style.outline = '2px solid #4a90e2';
+            this.audEle = audioElem as HTMLAudioElement;
         }
         if (this.parent.quickToolbarModule.audioQTBar) {
             if (e.isNotify) {
@@ -582,7 +613,7 @@ export class Audio {
                     this.parent.formatter.editorManager.nodeSelection.Clear(this.contentModule.getDocument());
                     this.parent.formatter.editorManager.nodeSelection.setSelectionContents(this.contentModule.getDocument(), target);
                     this.quickToolObj.audioQTBar.showPopup(target as Element, e.args as MouseEvent);
-                }, 400);
+                }, this.parent.element.dataset.rteUnitTesting === 'true' ? 0 : 400);
             } else {
                 this.quickToolObj.audioQTBar.showPopup(target as Element, e.args as MouseEvent);
             }
@@ -651,6 +682,7 @@ export class Audio {
             locale: this.parent.locale,
             showCloseIcon: true, closeOnEscape: true, width: (Browser.isDevice) ? '290px' : '340px',
             isModal: (Browser.isDevice as boolean),
+            position: { X: 'center', Y: (Browser.isDevice) ? 'center' : 'top' },
             buttons: [{
                 click: this.insertAudioUrl.bind(selectObj),
                 buttonModel: { content: audioInsert, cssClass: 'e-flat e-insertAudio', isPrimary: true, disabled: true }
@@ -785,7 +817,6 @@ export class Audio {
         uploadParentEle.appendChild(uploadEle);
         let fileName: string;
         let selectArgs: SelectedEventArgs;
-        let filesData: FileInfo[];
         this.uploadObj = new Uploader({
             asyncSettings: { saveUrl: this.parent.insertAudioSettings.saveUrl, removeUrl: this.parent.insertAudioSettings.removeUrl },
             dropArea: span, multiple: false, enableRtl: this.parent.enableRtl,
@@ -794,7 +825,6 @@ export class Audio {
             selected: (e: SelectedEventArgs) => {
                 proxy.isAudioUploaded = true;
                 selectArgs = e;
-                filesData = e.filesData;
                 this.parent.trigger(events.fileSelected, selectArgs, (selectArgs: SelectedEventArgs) => {
                     if (!selectArgs.cancel) {
                         if (isNOU(selectArgs.filesData[0])) {
@@ -878,6 +908,248 @@ export class Audio {
     private fileSelect(): boolean {
         this.dialogObj.element.getElementsByClassName('e-file-select-wrap')[0].querySelector('button').click();
         return false;
+    }
+
+    private dragEnter(e?: DragEvent): void {
+        e.dataTransfer.dropEffect = 'copy';
+        e.preventDefault();
+    }
+
+    private dragOver(e?: DragEvent): void | boolean {
+        if ((Browser.info.name === 'edge' && e.dataTransfer.items[0].type.split('/')[0].indexOf('audio') > -1) ||
+            (Browser.isIE && e.dataTransfer.types[0] === 'Files')) {
+            e.preventDefault();
+        } else {
+            return true;
+        }
+    }
+
+    /**
+     * Used to set range When drop an audio
+     *
+     * @param {MediaDropEventArgs} args - specifies the audio arguments.
+     * @returns {void}
+     */
+    private dragDrop(args: MediaDropEventArgs): void {
+        this.parent.trigger(events.beforeMediaDrop, args, (e: MediaDropEventArgs) => {
+            const isAudioOrFileDrop: boolean = e.dataTransfer.files.length > 0;
+            if (!e.cancel && isAudioOrFileDrop) {
+                if (closest((e.target as HTMLElement), '#' + this.parent.getID() + '_toolbar') ||
+                    this.parent.inputElement.contentEditable === 'false') {
+                    e.preventDefault();
+                    return;
+                }
+                e.preventDefault();
+                let range: Range;
+                if (this.contentModule.getDocument().caretRangeFromPoint) {
+                    range = this.contentModule.getDocument().caretRangeFromPoint(e.clientX, e.clientY);
+                } else if ((e.rangeParent)) {
+                    range = this.contentModule.getDocument().createRange();
+                    range.setStart(e.rangeParent, e.rangeOffset);
+                } else {
+                    range = this.getDropRange(e.clientX, e.clientY);
+                }
+                this.parent.notify(events.selectRange, { range: range });
+                const uploadArea: HTMLElement = this.parent.element.querySelector('.' + classes.CLS_DROPAREA) as HTMLElement;
+                if (uploadArea) {
+                    return;
+                }
+                this.insertDragAudio(e as DragEvent);
+            } else {
+                if (isAudioOrFileDrop) {
+                    e.preventDefault();
+                }
+            }
+        });
+    }
+
+    /**
+     * Used to calculate range on internet explorer
+     *
+     * @param {number} x - specifies the x range.
+     * @param {number} y - specifies the y range.
+     * @returns {void}
+     */
+    private getDropRange(x: number, y: number): Range {
+        const startRange: Range = this.contentModule.getDocument().createRange();
+        this.parent.formatter.editorManager.nodeSelection.setRange(this.contentModule.getDocument(), startRange);
+        const elem: Element = this.contentModule.getDocument().elementFromPoint(x, y);
+        const startNode: Node = (elem.childNodes.length > 0 ? elem.childNodes[0] : elem);
+        let startCharIndexCharacter: number = 0;
+        if ((this.parent.inputElement.firstChild as HTMLElement).innerHTML === '<br>') {
+            startRange.setStart(startNode, startCharIndexCharacter);
+            startRange.setEnd(startNode, startCharIndexCharacter);
+        } else {
+            let rangeRect: ClientRect;
+            do {
+                startCharIndexCharacter++;
+                startRange.setStart(startNode, startCharIndexCharacter);
+                startRange.setEnd(startNode, startCharIndexCharacter + 1);
+                rangeRect = startRange.getBoundingClientRect();
+            } while (rangeRect.left < x && startCharIndexCharacter < (startNode as Text).length - 1);
+        }
+        return startRange;
+    }
+
+    private insertDragAudio(e: DragEvent): void {
+        e.preventDefault();
+        const activePopupElement: HTMLElement = this.parent.element.querySelector('' + classes.CLS_POPUP_OPEN);
+        this.parent.notify(events.drop, { args: e });
+        if (activePopupElement) {
+            activePopupElement.classList.add(classes.CLS_HIDE);
+        }
+
+        const actionBeginArgs: ActionBeginEventArgs = {
+            requestType: 'Audios',
+            name: 'AudioDragAndDrop',
+            cancel: false,
+            originalEvent: e
+        };
+
+        if (e.dataTransfer.files.length > 0) { // For external audio drag and drop
+            if (e.dataTransfer.files.length > 1) {
+                return;
+            }
+            const audioFiles: FileList = e.dataTransfer.files;
+            const fileName: string = audioFiles[0].name;
+            const audioType: string = fileName.substring(fileName.lastIndexOf('.')).toLowerCase();
+            const allowedTypes: string[] = this.parent.insertAudioSettings.allowedTypes;
+            for (let i: number = 0; i < allowedTypes.length; i++) {
+                if (audioType.toLowerCase() === allowedTypes[i as number].toLowerCase()) {
+                    if (this.parent.insertAudioSettings.saveUrl) {
+                        this.onSelect(e);
+                    } else {
+                        this.parent.trigger(events.actionBegin, actionBeginArgs, (actionBeginArgs: ActionBeginEventArgs) => {
+                            if (!actionBeginArgs.cancel) {
+                                const args: NotifyArgs = { args: e, text: '', file: audioFiles[0] };
+                                e.preventDefault();
+                                this.audioPaste(args);
+                            } else {
+                                actionBeginArgs.originalEvent.preventDefault();
+                            }
+                        });
+                    }
+                }
+            }
+        }
+    }
+
+    private onSelect(args: DragEvent): void {
+        const range: Range = this.parent.formatter.editorManager.nodeSelection.getRange(this.parent.contentModule.getDocument());
+        const selection: NodeSelection = this.parent.formatter.editorManager.nodeSelection.save(
+            range, this.parent.contentModule.getDocument());
+
+        const file: File = args.dataTransfer.files[0];
+
+        const audioCommand: IAudioCommandsArgs = {
+            cssClass: (this.parent.insertAudioSettings.layoutOption === 'Inline' ? classes.CLS_AUDIOINLINE : classes.CLS_AUDIOBREAK),
+            url: this.parent.insertAudioSettings.path + file.name,
+            selection: selection,
+            fileName: file.name.replace(/\.[a-zA-Z0-9]+$/, '')
+        };
+
+        const actionBeginArgs: ActionBeginEventArgs = {
+            requestType: 'Audios',
+            name: 'AudioDragAndDrop',
+            cancel: false,
+            originalEvent: args,
+            itemCollection: audioCommand
+        };
+
+        this.parent.trigger(events.actionBegin, actionBeginArgs, (actionBeginArgs: ActionBeginEventArgs) => {
+            if (!actionBeginArgs.cancel) {
+                // Use formatter to create properly wrapped audio
+                this.parent.formatter.process(
+                    this.parent,
+                    { item: { command: 'Audios', subCommand: 'Audio' } },
+                    args,
+                    actionBeginArgs.itemCollection
+                );
+
+                // Find the inserted audio
+                const audioElement: HTMLAudioElement = this.parent.contentModule.getEditPanel().querySelector('audio:last-of-type');
+                if (audioElement) {
+                    audioElement.style.opacity = '0.5';
+
+                    // Set up upload for the drag-dropped audio
+                    this.uploadMethod(args, audioElement);
+                }
+            } else {
+                actionBeginArgs.originalEvent.preventDefault();
+            }
+        });
+    }
+
+
+    /**
+     * Rendering uploader and popup for drag and drop
+     *
+     * @param {DragEvent} dragEvent - specifies the event.
+     * @param {HTMLAudioElement} audioElement - specifies the element.
+     * @returns {void}
+     */
+    private uploadMethod(dragEvent: DragEvent, audioElement: HTMLAudioElement): void {
+        this.popupObj = this.popupUploaderObj.renderPopup('Audios', audioElement);
+        const range: Range = this.parent.formatter.editorManager.nodeSelection.getRange(this.parent.contentModule.getDocument());
+        const timeOut: number = dragEvent.dataTransfer.files[0].size > 1000000 ? 300 : 100;
+        this.audioDragPopupTime = setTimeout(() => {
+            this.popupUploaderObj.refreshPopup(audioElement);
+        }, timeOut);
+        this.uploadObj = this.popupUploaderObj.createUploader('Audios', dragEvent, audioElement, this.popupObj.element.childNodes[0] as HTMLElement);
+        (this.popupObj.element.querySelector('.e-rte-dialog-upload .e-file-select-wrap') as HTMLElement).style.display = 'none';
+        range.selectNodeContents(audioElement);
+        this.parent.formatter.editorManager.nodeSelection.setRange(this.contentModule.getDocument(), range);
+    }
+
+    private audioPaste(args: NotifyArgs): void {
+        if (args.text.length === 0 && !isNOU((args as NotifyArgs).file)) {
+            // eslint-disable-next-line
+            const proxy: Audio = this;
+            const reader: FileReader = new FileReader();
+            (args.args as KeyboardEvent).preventDefault();
+            reader.addEventListener('load', (e: MouseEvent) => {
+                const file: File = (args as NotifyArgs).file as File;
+                const url: string = this.parent.insertAudioSettings.saveFormat === 'Base64' || !isNOU(args.callBack) ?
+                    reader.result as string : URL.createObjectURL(convertToBlob(reader.result as string));
+                const audioCommandArgs: IAudioCommandsArgs = {
+                    cssClass: (proxy.parent.insertAudioSettings.layoutOption === 'Inline' ?
+                        classes.CLS_AUDIOINLINE : classes.CLS_AUDIOBREAK),
+                    url: url,
+                    fileName: file.name
+                };
+                if (!isNOU(args.callBack)) {
+                    args.callBack(audioCommandArgs);
+                    return;
+                } else {
+                    proxy.parent.formatter.process(
+                        proxy.parent,
+                        { item: { command: 'Audios', subCommand: 'Audio' } },
+                        args.args,
+                        audioCommandArgs
+                    );
+                    this.showPopupToolBar(args, audioCommandArgs);
+                }
+            });
+            reader.readAsDataURL((args as NotifyArgs).file);
+        }
+    }
+
+    private showPopupToolBar(e: NotifyArgs, url: IAudioCommandsArgs): void {
+        const audioSrc: string = 'audio[src="' + url.url + '"]';
+        const audioElement: Element = this.parent.inputElement.querySelector(audioSrc);
+        this.parent.quickToolbarModule.createQTBar('Audio', 'MultiRow', this.parent.quickToolbarSettings.audio, RenderType.AudioToolbar);
+        const args: IShowPopupArgs = {
+            args: e.args as MouseEvent,
+            type: 'Audios',
+            isNotify: undefined,
+            elements: audioElement
+        };
+        if (audioElement) {
+            this.showAudioQTbarTime = setTimeout(() => {
+                this.showAudioQuickToolbar(args);
+            }, 0);
+        }
+
     }
 
     // eslint-disable-next-line

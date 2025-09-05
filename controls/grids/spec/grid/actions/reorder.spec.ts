@@ -161,7 +161,7 @@ describe('Reorder module', () => {
             };
             gridObj.dataBound = dataBound;
             gridObj.dataBind();
-            let dropClone = createElement('div', { attrs: { 'e-mappinguid': gridObj.getUidByColumnField('OrderID') } });
+            let dropClone = createElement('div', { attrs: { 'data-mappinguid': gridObj.getUidByColumnField('OrderID') } });
             document.body.appendChild(dropClone);
             (gridObj.renderModule as any).headerRenderer.draggable.currentStateTarget = gridObj.getColumnHeaderByField('OrderID');
             (gridObj.headerModule as any).helper({ target: gridObj.getHeaderTable().querySelector('tr'), sender: { clientX: 10, clientY: 10, target: gridObj.getColumnHeaderByField('OrderID') } });
@@ -363,7 +363,7 @@ describe('Reorder module', () => {
             };
             gridObj.dataBound = dataBound;
             gridObj.dataBind();
-            let dropClone = createElement('div', { attrs: { 'e-mappinguid': gridObj.getUidByColumnField('OrderID') } });
+            let dropClone = createElement('div', { attrs: { 'data-mappinguid': gridObj.getUidByColumnField('OrderID') } });
             document.body.appendChild(dropClone);
             (gridObj.renderModule as any).headerRenderer.draggable.currentStateTarget = gridObj.getColumnHeaderByField('OrderID');
             (gridObj.headerModule as any).helper({ target: gridObj.getHeaderTable().querySelector('tr'), sender: { clientX: 10, clientY: 10, target: gridObj.getColumnHeaderByField('OrderID') } });
@@ -501,7 +501,7 @@ describe('Reorder module', () => {
         });
         
         it('EJ2-69396-visible false setting column reorder issue', () => {
-            const dropClone: HTMLElement = createElement('div', { attrs: { 'e-mappinguid': gridObj.getUidByColumnField('Extension') } });
+            const dropClone: HTMLElement = createElement('div', { attrs: { 'data-mappinguid': gridObj.getUidByColumnField('Extension') } });
             document.body.appendChild(dropClone);
             (gridObj.renderModule as any).headerRenderer.draggable.currentStateTarget = gridObj.getColumnHeaderByField('Extension');
             (gridObj.headerModule as any).helper({ target: gridObj.getHeaderTable().querySelector('tr'), sender: { clientX: 10, clientY: 10, target: gridObj.getColumnHeaderByField('Extension') } });
@@ -528,7 +528,7 @@ describe('Reorder module', () => {
             gridObj.showHider.hide('Extension', 'field');
             gridObj.showHider.hide('HomePhone', 'field');
             gridObj.dataBind();
-            let dropClone = createElement('div', { attrs: { 'e-mappinguid': gridObj.getUidByColumnField('LastName') } });
+            let dropClone = createElement('div', { attrs: { 'data-mappinguid': gridObj.getUidByColumnField('LastName') } });
             document.body.appendChild(dropClone);
             (gridObj.renderModule as any).headerRenderer.draggable.currentStateTarget = gridObj.getColumnHeaderByField('LastName');
             (gridObj.headerModule as any).helper({ target: gridObj.getHeaderTable().querySelector('tr'), sender: { clientX: 10, clientY: 10, target: gridObj.getColumnHeaderByField('LastName') } });
@@ -555,7 +555,7 @@ describe('Reorder module', () => {
             gridObj.showHider.hide('HireDate', 'field');
             let srcHeaderCell: Element = document.querySelectorAll('.e-headercell')[1];
             let destHeaderCell: Element = document.querySelectorAll('.e-headercell')[0];           
-            let dropClone = createElement('div', { attrs: { 'e-mappinguid': (srcHeaderCell.lastChild as Element).getAttribute('e-mappinguid') } });
+            let dropClone = createElement('div', { attrs: { 'data-mappinguid': (srcHeaderCell.lastChild as Element).getAttribute('data-mappinguid') } });
             document.body.appendChild(dropClone);
             (gridObj.renderModule as any).headerRenderer.draggable.currentStateTarget = srcHeaderCell;
             (gridObj.headerModule as any).helper({ target: gridObj.getHeaderTable().querySelector('tr'), sender: { clientX: 10, clientY: 10, target: srcHeaderCell } });
@@ -621,7 +621,7 @@ describe('Reorder module', () => {
             const headers: NodeListOf<HTMLElement> = gridObj.getHeaderContent().querySelectorAll('.e-headercell');
             const srcHeaderCell: HTMLElement = headers[1];
             const destHeaderCell: HTMLElement = headers[2];
-            const dropClone: HTMLElement = createElement('div', { attrs: { 'e-mappinguid': (srcHeaderCell.lastChild as Element).getAttribute('e-mappinguid') } });
+            const dropClone: HTMLElement = createElement('div', { attrs: { 'data-mappinguid': (srcHeaderCell.lastChild as Element).getAttribute('data-mappinguid') } });
             document.body.appendChild(dropClone);
             (gridObj.renderModule as any).headerRenderer.draggable.currentStateTarget = srcHeaderCell;
             (gridObj.headerModule as any).helper({ target: gridObj.getHeaderTable().querySelector('tr'), sender: { clientX: 10, clientY: 10, target: srcHeaderCell } });
@@ -745,7 +745,7 @@ describe('Reorder module', () => {
     //         let srcStackedHeaderColumn: Column = gridObj.getStackedHeaderColumnByHeaderText('HeaderWithHidden', gridObj.columns as Column[]);
     //         let srcHeaderCell: Element = document.querySelector('.e-movableheader').querySelectorAll('.e-headercell')[3];
     //         let destHeaderCell: Element = document.querySelector('.e-movableheader').querySelectorAll('.e-headercell')[2];           
-    //         let dropClone = createElement('div', { attrs: { 'e-mappinguid': (srcHeaderCell.lastChild as Element).getAttribute('e-mappinguid') } });
+    //         let dropClone = createElement('div', { attrs: { 'data-mappinguid': (srcHeaderCell.lastChild as Element).getAttribute('data-mappinguid') } });
     //         const headercellWidth: number = document.querySelector('.e-movableheader').querySelector('.e-headercell').clientWidth;
     //         const contentRowcellWidth: number = document.querySelector('.e-movablecontent').querySelector('.e-rowcell').clientWidth;
     //         const headerColgroup: Element = document.querySelector('.e-movableheader').querySelector('colgroup');
@@ -1093,7 +1093,7 @@ describe('Reorder module', () => {
 
         it('Reorder file -  headerDrop coverage', () => {
             (gridObj.reorderModule as any).element = gridObj.element.querySelector('.e-headercell');
-            (gridObj.reorderModule as any).element.firstElementChild.removeAttribute('e-mappinguid');
+            (gridObj.reorderModule as any).element.firstElementChild.removeAttribute('data-mappinguid');
             (gridObj.reorderModule as any).headerDrop({ target: gridObj.element.querySelectorAll('.e-headercell')[1] });
         });  
 

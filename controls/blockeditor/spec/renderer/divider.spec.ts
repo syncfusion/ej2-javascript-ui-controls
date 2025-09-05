@@ -1,5 +1,5 @@
 import { createElement, remove } from "@syncfusion/ej2-base";
-import { BlockEditor, BlockModel, BlockType, ContentType } from "../../src/index";
+import { BlockEditor, BlockModel, BlockType } from "../../src/index";
 import { createEditor } from "../common/util.spec";
 
 describe('Divider Block', () => {
@@ -39,6 +39,16 @@ describe('Divider Block', () => {
                 expect(blockElement).not.toBeNull();
                 const contentElement = blockElement.querySelector('hr');
                 expect(contentElement).not.toBeNull();
+            });
+
+            it('should add selected class on click', (done) => {
+                const blockElement = editorElement.querySelector('.e-block') as HTMLElement;
+                expect(blockElement).not.toBeNull();
+                blockElement.click();
+                setTimeout(() => {
+                    expect(blockElement.classList).toContain('e-divider-selected');
+                    done();
+                }, 200);
             });
         });
 });

@@ -126,7 +126,7 @@ export class ChartExport {
         if (!isCanvas) {
             svgObject.setAttribute('width', width + '');
             svgObject.setAttribute('height', height + '');
-            svgObject.setAttribute('style', 'background-color: ' + backgroundColor + ';');
+            (svgObject as HTMLElement).style.backgroundColor = backgroundColor;
         }
         return {
             'width': width,
@@ -145,6 +145,9 @@ export class ChartExport {
         const margin: PdfMargins = pdfDocument.pageSettings.margins;
         const chartWidth: number = (width + margin.left + margin.right);
         pdfDocument.pageSettings.size = new SizeF(chartWidth, documentHeight);
+        if (isNullOrUndefined(this.exportProperties)) {
+            this.exportProperties = {};
+        }
         const fileName: string = this.exportProperties.fileName ? this.exportProperties.fileName :
             (!isNullOrUndefined(pdfExportProperties) && !isNullOrUndefined(pdfExportProperties.fileName)) ?
                 pdfExportProperties.fileName : 'default';

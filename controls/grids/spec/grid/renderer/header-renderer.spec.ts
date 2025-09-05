@@ -239,7 +239,7 @@ describe('EJ2-6660-Header template', () => {
             gridObj = null;
         });
     });
-
+    
     describe('EJ2-962883-The cursor does not turns into hand cursor when grouping is disabled for a column', () => {
         let gridObj: Grid;
         beforeAll((done: Function) => {

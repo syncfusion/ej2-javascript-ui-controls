@@ -67,12 +67,8 @@
       }
       ul .e-menu-item .e-caret {
         margin-right: 24px;
-        @if $grid-xlfl-skin == 'fluent2' or $grid-xlfl-skin == 'fluent2-dark' or $grid-xlfl-skin == 'bootstrap5' {
-          line-height: 36px;
-          padding: 0;
-        }
-        @if $grid-xlfl-skin == 'tailwind3' or $grid-xlfl-skin == 'tailwind3-dark' {
-          line-height: 40px;
+        @if $grid-xlfl-skin == 'fluent2' or $grid-xlfl-skin == 'fluent2-dark' or $grid-xlfl-skin == 'bootstrap5' or $grid-xlfl-skin == 'bootstrap5-dark' or $grid-xlfl-skin == 'bootstrap4'or $grid-xlfl-skin == 'tailwind' or $grid-xlfl-skin == 'tailwind3' or $grid-xlfl-skin == 'tailwind3-dark' {
+          line-height: $grid-xlfl-li-height;
           padding: 0;
         }
       }

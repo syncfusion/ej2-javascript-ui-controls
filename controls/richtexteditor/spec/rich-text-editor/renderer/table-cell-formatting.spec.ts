@@ -53,6 +53,27 @@ describe('Table cell formatting ', () => {
         });
     });
 
+    describe('Bug 966882: Class attribute is not removed, after all the class names removed the selected cell in table', () => {
+        let editor: RichTextEditor;
+        beforeAll(() => {
+            editor = renderRTE({
+                value: `<table class="e-rte-table" style="width: 100%; min-width: 0px;"><tbody><tr><td style="width: 50%;">Span&nbsp;<br><strong>Bold </strong><br><em>Italic <br></em></td><td style="width: 50%;"><p>Paragraph 1</p><p>Paragraph 2</p><p>Paragraph 3</p></td></tr><tr><td style="width: 50%;"><br></td><td style="width: 50%;"><ol><li>List 1</li><li>List 2</li></ol></td></tr><tr><td>span<br><p>Paragraph</p></td><td><div>The Rich Text Editor</div></td></tr></tbody></table><p><br></p>`
+            });
+        });
+        afterAll(() => {
+            destroy(editor);
+        });
+        it(' select and deselect the cell class attribute should be removed', () => {
+            editor.focusIn();
+            const table: HTMLTableElement = editor.inputElement.querySelector('table');
+            selectTableCell(table, 0, 0);
+            const selectedCell = table.querySelector('.e-cell-select');
+            expect(selectedCell.hasAttribute('class')).toBe(true);
+            selectTableCell(table, 0, 1);
+            expect(selectedCell.hasAttribute('class')).toBe(false);
+        });
+    });
+
     describe('Table Cell select format testing -  Testing integration with Formsts plugin', () => {
         let editor: RichTextEditor;
         beforeAll((done: DoneFn) => {
@@ -145,7 +166,7 @@ describe('Table cell formatting ', () => {
             const backspaceUpEvent: KeyboardEvent = new KeyboardEvent('keyup', BACKSPACE_EVENT_INIT);
             editor.inputElement.dispatchEvent(backspaceUpEvent);
             expect(editor.inputElement.querySelectorAll('.e-cell-select').length).toBe(1);
-            expect((table.rows[0].cells[1].getAttribute('class'))).toBe('');
+            expect((table.rows[0].cells[1].getAttribute('class'))).toBe(null);
         });
         it('Space should remove the class name.', () => {
             editor.focusIn();
@@ -155,7 +176,7 @@ describe('Table cell formatting ', () => {
             const backspaceDownEvent: KeyboardEvent = new KeyboardEvent('keydown', SPACE_EVENT_INIT);
             editor.inputElement.dispatchEvent(backspaceDownEvent);
             expect(editor.inputElement.querySelectorAll('.e-cell-select').length).toBe(0);
-            expect((table.rows[0].cells[1].getAttribute('class'))).toBe('');
+            expect((table.rows[0].cells[1].getAttribute('class'))).toBe(null);
             expect((table.rows[0].cells[0].innerHTML.charCodeAt(0))).toBe(8203);
         });
     });

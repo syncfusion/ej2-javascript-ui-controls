@@ -1245,6 +1245,42 @@ describe('excel Export =>', () => {
             gridObj = null;
         });
     });
+
+    describe('959908: Need to improve the incorrect usage of html attributes in markup of DataGrid', () => {
+        let gridObj: Grid;
+        beforeAll((done: Function) => {
+            gridObj = createGrid(
+                {
+                    dataSource: data,
+                    allowExcelExport: true,
+                    allowPaging: true,
+                    columns: [
+                        { field: 'OrderID', headerText: 'Order ID', textAlign: 'Center', width: '120px' },
+                        {
+                            field: 'CustomerID', headerText: 'Customer ID', headerTextAlign: 'Right',
+                            textAlign: 'Right', width: '150'
+                        },
+                        {
+                            field: 'EmployeeID', headerText: 'Employee ID', headerTextAlign: 'Right',
+                            textAlign: 'Right', width: '150'
+                        },
+                        { field: 'OrderDate', headerText: 'Order Date', textAlign: 'Right', width: 135, format: { type:'date', format:'dd/MM/yyyy' }, minWidth: 10 },
+                        { field: 'Freight', headerText: 'Freight($)', textAlign: 'Right', width: 120, format: 'C2', minWidth: 10 },
+                        { field: 'ShipCountry', headerText: 'Ship Country', width: 140 }
+                    ],
+                }, done);
+        });
+    
+        it('For code coverage', (done) => {
+            (<any>gridObj.excelExportModule).parseStyles(gridObj, gridObj.columns[3], {}, null);
+            done();
+        });
+        
+        afterAll(() => {
+            destroy(gridObj);
+            gridObj = null;
+        });
+    });
 });
 
 // /**

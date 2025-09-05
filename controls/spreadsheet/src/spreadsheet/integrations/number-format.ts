@@ -37,6 +37,10 @@ export class NumberFormat {
             if (iconSetSpan) {
                 cellWidth -= iconSetSpan.getBoundingClientRect().width;
             }
+            const filterButton: HTMLDivElement = cellElem.querySelector('.e-filter-btn');
+            if (filterButton) {
+                cellWidth -= filterButton.getBoundingClientRect().width;
+            }
             if (args.updateFillSize) {
                 repeatCharSpan = cellElem.querySelector('.e-fill');
                 if (!repeatCharSpan || !repeatCharSpan.textContent) {
@@ -53,32 +57,81 @@ export class NumberFormat {
                 }
             } else {
                 const noteIndicator: HTMLElement = cellElem.querySelector('.e-addNoteIndicator');
-                cellElem.innerText = '';
+                let container: HTMLElement = cellElem.querySelector('.e-hyperlink');
+                let isCellElem: boolean; let cfCurSpan: HTMLElement;
+                let isDataBar: boolean;
+                if (!container) {
+                    container = cellElem.querySelector('.e-databar-value');
+                    if (container) {
+                        isDataBar = true;
+                    }
+                }
+                if (container) {
+                    cfCurSpan = cellElem.querySelector('.e-cf-currency') as HTMLElement;
+                } else {
+                    container = cellElem.querySelector('.e-wrap-content');
+                    if (!container) {
+                        container = cellElem;
+                        isCellElem = !!filterButton;
+                    }
+                }
+                container.innerText = '';
                 if (args.beforeFillText) {
-                    const beforeSpan: HTMLElement = this.parent.createElement(
-                        'span', { className: 'e-fill-before', styles: `float: ${this.parent.enableRtl ? 'right' : 'left'}` });
-                    beforeSpan.innerText = args.beforeFillText;
-                    cellElem.appendChild(beforeSpan);
+                    if (cfCurSpan) {
+                        cfCurSpan.innerText = args.beforeFillText;
+                    } else {
+                        const beforeSpan: HTMLElement = this.parent.createElement(
+                            'span', { className: 'e-fill-before', styles: `float: ${this.parent.enableRtl ? 'right' : 'left'}` });
+                        beforeSpan.innerText = args.beforeFillText;
+                        container.appendChild(beforeSpan);
+                    }
                     cellWidth -= getTextWidth(args.beforeFillText, args.cell.style, this.parent.cellStyle);
                 }
                 repeatCharSpan = this.parent.createElement('span', { className: 'e-fill' });
-                cellElem.appendChild(repeatCharSpan);
+                if (isDataBar) {
+                    const dataBarEle: HTMLElement = cellElem.querySelector('.e-cf-databar');
+                    const repeatSpan: HTMLElement = dataBarEle.querySelector('.e-fill');
+                    if (repeatSpan) {
+                        repeatSpan.remove();
+                    }
+                    dataBarEle.insertBefore(repeatCharSpan, container);
+                } else {
+                    container.appendChild(repeatCharSpan);
+                }
                 if (args.afterFillText) {
                     const textSpan: HTMLElement = this.parent.createElement('span', { className: 'e-fill-sec' });
                     textSpan.innerText = args.afterFillText;
-                    cellElem.appendChild(textSpan);
+                    container.appendChild(textSpan);
                     cellWidth -= getTextWidth(args.afterFillText, args.cell.style, this.parent.cellStyle);
                 }
                 if (iconSetSpan) {
-                    cellElem.insertBefore(iconSetSpan, cellElem.childNodes[0]);
+                    const wrapCnt: HTMLElement = cellElem.querySelector('.e-wrap-content');
+                    if (wrapCnt) {
+                        wrapCnt.insertBefore(iconSetSpan, wrapCnt.childNodes[0]);
+                    } else {
+                        cellElem.insertBefore(iconSetSpan, cellElem.childNodes[0]);
+                    }
+                }
+                if (isCellElem) {
+                    cellElem.insertBefore(filterButton, cellElem.firstChild);
                 }
                 if (noteIndicator) {
-                    cellElem.appendChild(noteIndicator);
+                    container.appendChild(noteIndicator);
                 }
             }
             const repeatCharWidth: number = getTextWidth(args.repeatChar, args.cell.style, this.parent.cellStyle);
             const repeatCount: number = parseInt((cellWidth / repeatCharWidth).toString(), 10);
-            args.formattedText = repeatCount > 0 ? args.repeatChar.repeat(repeatCount) : '';
+            if (repeatCount > 0) {
+                args.formattedText = args.repeatChar.repeat(repeatCount);
+                if (repeatCount > 1 && !args.formattedText.startsWith('#')) {
+                    const totalRepeatWidth: number = getTextWidth(args.formattedText, args.cell.style, this.parent.cellStyle);
+                    const leftoverSpace: number = cellWidth - totalRepeatWidth;
+                    const letterSpacing: number = leftoverSpace / (repeatCount - 1);
+                    repeatCharSpan.style.letterSpacing = `${letterSpacing}px`;
+                }
+            } else {
+                args.formattedText = '';
+            }
             repeatCharSpan.textContent = args.formattedText;
         }
     }

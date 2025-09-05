@@ -2,7 +2,7 @@
 /// <reference path='../../workbook/base/workbook-model.d.ts'/>
 import { Property, NotifyPropertyChanges, INotifyPropertyChanged, ModuleDeclaration, Event, isUndefined, attributes } from '@syncfusion/ej2-base';
 import { addClass, removeClass, EmitType, Complex, formatUnit, L10n, isNullOrUndefined, Browser } from '@syncfusion/ej2-base';
-import { detach, select, closest, setStyleAttribute, EventHandler, getComponent } from '@syncfusion/ej2-base';
+import { detach, select, closest, setStyleAttribute, EventHandler } from '@syncfusion/ej2-base';
 import { MenuItemModel, BeforeOpenCloseMenuEventArgs, ItemModel } from '@syncfusion/ej2-navigations';
 import { mouseDown, spreadsheetDestroyed, keyUp, BeforeOpenEventArgs, clearViewer, refreshSheetTabs, positionAutoFillElement, readonlyAlert, deInitProperties, UndoRedoEventArgs, isColumnRange, isRowRange, findDlg } from '../common/index';
 import { performUndoRedo, overlay, DialogBeforeOpenEventArgs, createImageElement, deleteImage, removeHyperlink } from '../common/index';
@@ -37,7 +37,7 @@ import { setRowHeight, getRowsHeight, getColumnWidth, getRowHeight, getCell, set
 import { getRangeIndexes, getIndexesFromAddress, getCellIndexes, WorkbookNumberFormat, WorkbookFormula } from '../../workbook/index';
 import { Ribbon, FormulaBar, SheetTabs, Open, ContextMenu, Save, NumberFormat, Formula } from '../integrations/index';
 import { Sort, Filter, SpreadsheetImage, SpreadsheetChart } from '../integrations/index';
-import { isNumber, getColumn, getRow, WorkbookFilter, refreshInsertDelete, InsertDeleteEventArgs, RangeModel } from '../../workbook/index';
+import { getColumn, getRow, WorkbookFilter, refreshInsertDelete, InsertDeleteEventArgs, RangeModel } from '../../workbook/index';
 import { PredicateModel, fltrPrevent } from '@syncfusion/ej2-grids';
 import { RibbonItemModel } from '../../ribbon/index';
 import { DataValidation, spreadsheetCreated, showAggregate } from './../index';
@@ -2297,70 +2297,24 @@ export class Spreadsheet extends Workbook implements INotifyPropertyChanged {
                         detach(spanFillSecElem);
                     }
                 }
-                const spanElem: Element = select('#' + this.element.id + '_currency', td);
-                if (spanElem) {
-                    detach(spanElem);
-                }
-                if (args.type === 'Accounting' && isNumber(args.value) && args.result.includes(args.curSymbol)) {
-                    let curSymbol: string; let result: string; let setVal: boolean;
-                    if (args.result.trim().endsWith(args.curSymbol)) {
-                        result = args.result;
-                    } else {
-                        curSymbol = args.result.includes(' ' + args.curSymbol) ? ' ' + args.curSymbol : args.curSymbol;
-                        result = args.result.split(curSymbol).join('');
-                    }
-                    const dataBarVal: HTMLElement = td.querySelector('.e-databar-value');
-                    const iconSetSpan: HTMLElement = td.querySelector('.e-iconsetspan');
-                    let tdContainer: Element = td;
-                    let nodeElement: HTMLElement;
-                    if (td.children.length > 0 && td.children[td.childElementCount - 1].className.indexOf('e-addNoteIndicator') > -1) {
-                        nodeElement = document.getElementsByClassName('e-addNoteIndicator')[0] as HTMLElement;
-                    }
-                    if (dataBarVal) {
-                        this.refreshNode(dataBarVal, { result: result });
-                        tdContainer = td.querySelector('.e-cf-databar') || td;
-                    } else if (td.querySelector('a')) {
-                        td.querySelector('a').textContent = result;
-                    } else {
-                        setVal = true;
-                        (td as HTMLElement).innerText = '';
-                    }
-                    if (iconSetSpan) {
-                        td.insertBefore(iconSetSpan, td.firstElementChild);
-                    }
-                    if (curSymbol) {
-                        const curr: HTMLElement = this.createElement('span', { id: this.element.id + '_currency', styles: 'float: left' });
-                        curr.innerText = curSymbol;
-                        tdContainer.appendChild(curr);
-                        if (!isNullOrUndefined(nodeElement)) {
-                            tdContainer.appendChild(nodeElement);
-                        }
-                    }
-                    if (setVal) {
-                        td.innerHTML += result;
-                    }
-                    td.classList.add('e-right-align');
-                    return;
+                let alignClass: string;
+                if (args.result && (args.result.toLowerCase() === 'true' || args.result.toLowerCase() === 'false')) {
+                    args.result = args.result.toUpperCase();
+                    alignClass = 'e-center-align';
+                    args.isRightAlign = true; // Re-use this to center align the cell.
                 } else {
-                    let alignClass: string;
-                    if (args.result && (args.result.toLowerCase() === 'true' || args.result.toLowerCase() === 'false')) {
-                        args.result = args.result.toUpperCase();
-                        alignClass = 'e-center-align';
-                        args.isRightAlign = true; // Re-use this to center align the cell.
-                    } else {
-                        alignClass = 'e-right-align';
+                    alignClass = 'e-right-align';
+                }
+                value = args.result;
+                if (!this.allowWrap) {
+                    if (value.toString().includes('\n')) {
+                        value = value.replace(/\n/g, '');
                     }
-                    value = args.result;
-                    if (!this.allowWrap) {
-                        if (value.toString().includes('\n')) {
-                            value = value.replace(/\n/g, '');
-                        }
-                    }
-                    if (args.isRightAlign) {
-                        td.classList.add(alignClass);
-                    } else {
-                        td.classList.remove(alignClass);
-                    }
+                }
+                if (args.isRightAlign) {
+                    td.classList.add(alignClass);
+                } else {
+                    td.classList.remove(alignClass);
                 }
             }
             value = !isNullOrUndefined(value) ? value : '';
@@ -3023,68 +2977,15 @@ export class Spreadsheet extends Workbook implements INotifyPropertyChanged {
         super.onPropertyChanged(newProp, oldProp);
         let sheetTabsRefreshed: boolean;
         for (const prop of Object.keys(newProp)) {
-            let header: HTMLElement;
             let addBtn: HTMLButtonElement;
-            const sheet: SheetModel = this.getActiveSheet();
-            const horizontalScroll: HTMLElement = this.getScrollElement();
             switch (prop) {
             case 'enableRtl':
-                if (newProp.locale || newProp.currencyCode) {
-                    break;
-                }
-                header = this.getColumnHeaderContent();
-                if (header) { header = header.parentElement; }
-                if (!header) { break; }
-                if (newProp.enableRtl) {
-                    header.style.marginRight = '';
-                    this.element.classList.add('e-rtl');
-                    document.getElementById(this.element.id + '_sheet_panel').classList.add('e-rtl');
-                } else {
-                    header.style.marginLeft = '';
+                if (!newProp.enableRtl) {
                     this.element.classList.remove('e-rtl');
-                    document.getElementById(this.element.id + '_sheet_panel').classList.remove('e-rtl');
                 }
-                if (this.allowScrolling) {
-                    this.scrollModule.setPadding(true);
+                if (!(newProp.locale || newProp.currencyCode)) {
+                    this.refresh();
                 }
-                if (this.allowAutoFill) {
-                    const autofillEle: HTMLElement = this.element.querySelector('.e-dragfill-ddb') as HTMLElement;
-                    if (autofillEle) {
-                        const autofillDdb: { enableRtl: boolean, dataBind: Function } = getComponent(autofillEle, 'dropdown-btn');
-                        if (autofillDdb) {
-                            autofillDdb.enableRtl = newProp.enableRtl;
-                            autofillDdb.dataBind();
-                        }
-                    }
-                }
-                this.sheetModule.setPanelWidth(sheet, this.getRowHeaderContent(), true);
-                if (this.allowImage || this.allowChart) {
-                    const overlays: HTMLCollectionOf<Element> = this.element.getElementsByClassName('e-ss-overlay');
-                    let chart: { destroy: Function }; let overlay: HTMLElement; let chartEle: HTMLElement;
-                    for (let idx: number = 0, overlayLen: number = overlays.length - 1; idx <= overlayLen; idx++) {
-                        overlay = <HTMLElement>overlays[0];
-                        if (overlay.classList.contains('e-datavisualization-chart')) {
-                            chartEle = overlay.querySelector('.e-accumulationchart');
-                            if (chartEle) {
-                                chart = getComponent(chartEle, 'accumulationchart');
-                            } else {
-                                chartEle = overlay.querySelector('.e-chart');
-                                chart = chartEle && getComponent(chartEle, 'chart');
-                            }
-                            if (chart) {
-                                chart.destroy();
-                            }
-                        }
-                        detach(overlay);
-                        if (idx === overlayLen) {
-                            this.notify(updateView, {});
-                        }
-                    }
-                }
-                if (horizontalScroll) {
-                    horizontalScroll.scrollLeft = 0;
-                }
-                this.selectRange(sheet.selectedRange);
                 break;
             case 'cssClass':
                 if (oldProp.cssClass) { removeClass([this.element], oldProp.cssClass.split(' ')); }

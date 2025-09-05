@@ -115,6 +115,7 @@ export class RowRenderer<T> implements IRowRenderer<T> {
         if (row.isDataRow) {
             row.isSelected = selIndex.indexOf(row.index) > -1 || value;
         }
+        let currentViewData: Object[] = this.parent.currentViewData;
         if (row.isDataRow && this.parent.isCheckBoxSelection
             && this.parent.checkAllRows === 'Check' && (this.parent.enableVirtualization || this.parent.enableInfiniteScrolling)) {
             row.isSelected = true;
@@ -134,7 +135,7 @@ export class RowRenderer<T> implements IRowRenderer<T> {
             cell.isColumnSelected = (<{ isSelected?: boolean }>cell.column).isSelected;
             const cellRenderer: ICellRenderer<T> = cellRendererFact.getCellRenderer(row.cells[parseInt(i.toString(), 10)].cellType
                 || CellType.Data);
-            const attrs: {} = { 'index': !isNullOrUndefined(row.index) ? row.index.toString() : '' };
+            const attrs: {} = { 'data-index': !isNullOrUndefined(row.index) ? row.index.toString() : '' };
             if (row.isExpand && row.cells[parseInt(i.toString(), 10)].cellType === CellType.DetailExpand) {
                 attrs['class'] = this.parent.isPrinting ? 'e-detailrowcollapse' : 'e-detailrowexpand';
             }
@@ -177,9 +178,70 @@ export class RowRenderer<T> implements IRowRenderer<T> {
                                 requestType: this.parent.requestTypeAction
                             }));
                     }
+                    const isNotSpanable: boolean = this.parent.enableVirtualization || this.parent.enableColumnVirtualization
+                    || this.parent.enableInfiniteScrolling || (this.parent.allowGrouping
+                    && this.parent.groupSettings.columns.length && this.parent.groupSettings.enableLazyLoading);
+                    if (!isNotSpanable) {
+                        const field: string = 'field';
+                        const dateTypes: string[] = ['date', 'datetime', 'dateonly'];
+                        if (row.isDataRow && this.parent.enableColumnSpan && (<{ enableColumnSpan?: boolean }>cell.column).enableColumnSpan
+                            && !cell.isSpanned && cell.visible && !cell.isTemplate && row.data[cell.column[`${field}`]] !== '' && !cell.isForeignKey) {
+                            let colspan: number = 1;
+                            let cellValue: Date | number | string | null | undefined =
+                            (<{ getValue?: Function }>cellRenderer).getValue(cell.column[`${field}`], row.data, cell.column);
+                            if (dateTypes.indexOf((<{ type?: string }>cell.column).type) !== -1 && !isNullOrUndefined(cellValue)
+                                && cellValue instanceof Date) {
+                                cellValue = cellValue.getTime();
+                            }
+                            for (let j: number = i; j < row.cells.length - 1; j++) {
+                                const nextCell: Cell<T> = row.cells[parseInt(j.toString(), 10) + 1];
+                                let nextCellValue: Date | number | string | null | undefined =
+                                (<{ getValue?: Function }>cellRenderer).getValue(nextCell.column[`${field}`], row.data, nextCell.column);
+                                if (dateTypes.indexOf((<{ type?: string }>nextCell.column).type) !== -1 && !isNullOrUndefined(nextCellValue)
+                                    && nextCellValue instanceof Date) {
+                                    nextCellValue = nextCellValue.getTime();
+                                }
+                                if (cellValue === nextCellValue && nextCell.visible
+                                    && (<{ enableColumnSpan?: boolean }>nextCell.column).enableColumnSpan && !nextCell.isForeignKey) {
+                                    colspan++;
+                                } else {
+                                    break;
+                                }
+                            }
+                            cellArgs.colSpan = colspan;
+                        }
+                        if (row.isDataRow && this.parent.enableRowSpan && (<{ enableRowSpan?: boolean }>cell.column).enableRowSpan
+                        && !cell.isSpanned && !cell.isTemplate && cell.visible && row.data[cell.column[`${field}`]] !== '' && !cell.isForeignKey) {
+                            const nxtRowIndex: number = this.parent.groupSettings.columns.length ? row.groupDataIndex : row.index;
+                            if (row.isDataRow && this.parent.groupSettings.columns.length && !isNullOrUndefined(row.parentUid)) {
+                                currentViewData = (<{ items?: Object[] }>this.parent.getRowObjectFromUID(row.parentUid).data).items;
+                            }
+                            let rowspan: number = 1;
+                            let cellValue: Date | number | string | null | undefined =
+                            (<{ getValue?: Function }>cellRenderer).getValue(cell.column[`${field}`], row.data, cell.column);
+                            if (dateTypes.indexOf((<{ type?: string }>cell.column).type) !== -1 && !isNullOrUndefined(cellValue)
+                                && cellValue instanceof Date) {
+                                cellValue = cellValue.getTime();
+                            }
+                            for (let j: number = nxtRowIndex + 1; j < currentViewData.length; j++) {
+                                let nextRowCellValue: Date | number | string | null | undefined =
+                                (<{ getValue?: Function }>cellRenderer).getValue(cell.column[`${field}`], currentViewData[parseInt(j.toString(), 10)], cell.column);
+                                if (dateTypes.indexOf((<{ type?: string }>cell.column).type) !== -1 && !isNullOrUndefined(nextRowCellValue)
+                                    && nextRowCellValue instanceof Date) {
+                                    nextRowCellValue = nextRowCellValue.getTime();
+                                }
+                                if (cellValue === nextRowCellValue) {
+                                    rowspan++;
+                                } else {
+                                    break;
+                                }
+                            }
+                            cellArgs.rowSpan = rowspan;
+                        }
+                    }
                     let isRowSpanned: boolean = false;
                     if (row.index > 0 && (this.isSpan || (this.parent.isSpan && isEdit))) {
-                        const rowsObject: Row<Column>[] = this.parent.getRowsObject();
+                        const rowsObject: Row<Column>[] = this.parent.getRowsObject().filter((row: Row<Column>) => row.isDataRow);
                         const prevRowCells: Cell<Column>[] = this.parent.groupSettings.columns.length > 0 &&
                             !rowsObject[row.index - 1].isDataRow ? rowsObject[row.index].cells : rowsObject[row.index - 1].cells;
                         const uid: string = 'uid';
@@ -189,7 +251,7 @@ export class RowRenderer<T> implements IRowRenderer<T> {
                     }
                     if ((cellArgs.rowSpan > 1 || cellArgs.colSpan > 1)) {
                         this.resetrowSpanvalue(this.parent.frozenRows > row.index ? this.parent.frozenRows :
-                            this.parent.currentViewData.length, cellArgs, row.index);
+                            currentViewData.length, cellArgs, row.index);
                         if (cellArgs.column.visible === false) {
                             cellArgs.colSpan = 1;
                         } else {
@@ -254,7 +316,7 @@ export class RowRenderer<T> implements IRowRenderer<T> {
                 if (this.isSpan) {
                     const rowsObject: Row<Column>[] = this.parent.getRowsObject();
                     const isRtl: boolean = this.parent.enableRtl;
-                    if (rowsObject[row.index - 1]) {
+                    if (rowsObject[row.index - 1] && rowsObject[row.index - 1].isDataRow) {
                         const prevRowCells: Cell<Column>[] = rowsObject[row.index - 1].cells;
                         const prevRowCell: Cell<Column> = prevRowCells[i - 1];
                         const currentRowCell: Cell<Column> = prevRowCells[parseInt(i.toString(), 10)];
@@ -282,7 +344,7 @@ export class RowRenderer<T> implements IRowRenderer<T> {
                         }
                     }
                 }
-                if (cellArgs.rowSpan > 1 && this.parent.currentViewData.length - row.index === cellArgs.rowSpan) {
+                if (cellArgs.rowSpan > 1 && currentViewData.length - row.index === cellArgs.rowSpan) {
                     td.classList.add('e-row-span-lastrowcell');
                 }
                 if (!row.cells[parseInt(i.toString(), 10)].isSpanned) {

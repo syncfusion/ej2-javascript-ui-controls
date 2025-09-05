@@ -144,6 +144,34 @@ describe('Internationalization', () => {
         });
     });
 
+    describe('Check custom format "#.#" for decimal trimming logic', () => {
+        let numIntl: Internationalization = new Internationalization();
+        it('should format 10.000 as "10" (no fractional part)', () => {
+            let result: string = numIntl.formatNumber(10.000, { format: '#.#' });
+            expect(result).toBe('10');
+        });
+
+        it('should format 10.005 as "10" (fraction rounds to 0 and is removed)', () => {
+            let result: string = numIntl.formatNumber(10.005, { format: '#.#' });
+            expect(result).toBe('10');
+        });
+
+        it('should format 10.499 as "10.5" (rounded up)', () => {
+            let result: string = numIntl.formatNumber(10.499, { format: '#.#' });
+            expect(result).toBe('10.5');
+        });
+
+        it('formats large number with decimals', () => {
+            let result = numIntl.formatNumber(999999.999, { format: '#.#' });
+            expect(result).toBe('1000000');
+        });
+
+        afterAll(() => {
+            setCulture('en-US');
+            setCurrencyCode('USD');
+        });
+    });
+
     describe('Number Fromatting with local culture set', () => {
         let numIntl: Internationalization = new Internationalization('ja');
         it('numberformatter using the getNumberFormatter and currency code set in option', () => {

@@ -1,8 +1,8 @@
 import { Mention, PopupEventArgs } from '@syncfusion/ej2-dropdowns';
 import { BlockEditor } from '../../base/index';
 import { IMentionRenderOptions, IUndoRedoState, RangePath } from '../../base/interface';
-import { getSelectionRange } from '../../utils/selection';
-import { getBlockContentElement, getBlockModelById } from '../../utils/block';
+import { getSelectedRange } from '../../utils/selection';
+import { getBlockModelById } from '../../utils/block';
 import { BlockModel, ContentModel } from '../../models/index';
 import { NodeSelection } from '../../plugins/index';
 
@@ -60,9 +60,17 @@ export class MentionRenderer {
         }, args.element);
     }
 
-    cleanMentionArtifacts(element: HTMLElement, isRemoveChip?: boolean): void {
+    /**
+     * Cleans the artifacts of mention control in BlockEditor such as mention chip and zero width space.
+     *
+     * @param {HTMLElement} element - specifies the element.
+     * @param {boolean} isRemoveChip - specifies whether to remove the mention chip
+     * @returns {void}
+     * @hidden
+     */
+    public cleanMentionArtifacts(element: HTMLElement, isRemoveChip?: boolean): void {
         if (element) {
-            const range: Range = getSelectionRange();
+            const range: Range = getSelectedRange();
             if (!range) { return; }
             const rangeParent: HTMLElement = range.startContainer.nodeType === Node.TEXT_NODE
                 ? range.startContainer.parentElement
@@ -82,19 +90,28 @@ export class MentionRenderer {
         }
     }
 
+    /**
+     * Removes the mention query keys from the block model.
+     * When triggering command such as '/' or the filter queries, this function effectively cleans it in the block model
+     *
+     * @param {string} mentionChar - specifies the mention character.
+     * @param {boolean} isUndoRedoAction - specifies whether the action is undo/redo action.
+     * @returns {void}
+     * @hidden
+     */
     public removeMentionQueryKeysFromModel(mentionChar: string, isUndoRedoAction?: boolean): void {
         const rangePath: RangePath = this.nodeSelection.getStoredBackupRange();
-        if (!rangePath || (rangePath && (!rangePath.startContainer || !rangePath.endContainer))) { return; }
-        const { startContainer, startOffset, endOffset, parentElement }: RangePath = rangePath;
-        const rangeParent: HTMLElement = startContainer.nodeType === Node.TEXT_NODE
-            ? parentElement
-            : (startContainer as HTMLElement);
+        if ((!rangePath || isUndoRedoAction) ||
+            (rangePath && (!rangePath.startContainer || !rangePath.endContainer))) {
+            return;
+        }
+        const { startOffset, endOffset, parentElement }: RangePath = rangePath;
         const blockEl: HTMLElement = this.editor.currentFocusedBlock as HTMLElement;
-        const block: BlockModel = getBlockModelById(blockEl.id, this.editor.blocksInternal);
+        const block: BlockModel = getBlockModelById(blockEl.id, this.editor.getEditorBlocks());
 
         if (!block || !block.content || block.content.length === 0) { return; }
 
-        const affectedContent: ContentModel = block.content.find((c: ContentModel) => c.id === rangeParent.id);
+        const affectedContent: ContentModel = block.content.find((c: ContentModel) => c.id === parentElement.id);
         if (!affectedContent) { return; }
         const text: string = affectedContent.content;
         if (startOffset === endOffset) {
@@ -103,9 +120,8 @@ export class MentionRenderer {
                 start--;
             }
             // Adjust -1 to the start to remove the mention char as well.
-            /* eslint-disable @typescript-eslint/no-explicit-any */
-            const prevOnChange: boolean = (this.editor as any).isProtectedOnChange;
-            (this.editor as any).isProtectedOnChange = true;
+            const prevOnChange: boolean = this.editor.isProtectedOnChange;
+            this.editor.isProtectedOnChange = true;
             affectedContent.content = text.slice(0, start - 1) + text.slice(endOffset);
 
             //Remove contentchanged action triggered by typing '/'
@@ -113,10 +129,9 @@ export class MentionRenderer {
             if (!isUndoRedoAction) {
                 stack.pop();
             }
-            (this.editor as any).isProtectedOnChange = prevOnChange;
-            /* eslint-enable @typescript-eslint/no-explicit-any */
+            this.editor.isProtectedOnChange = prevOnChange;
         }
-        this.editor.blockAction.updatePropChangesToModel();
+        this.editor.stateManager.updatePropChangesToModel();
     }
 
     public destroy(): void {

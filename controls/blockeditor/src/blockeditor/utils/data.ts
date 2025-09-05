@@ -3,20 +3,40 @@ import { BlockType, BuiltInToolbar } from '../base/enums';
 import { CodeLanguageModel } from '../models/block/index';
 
 /**
+ * Checks if the current operating system is macOS.
+ *
+ * @returns {boolean} - Returns `true` if the operating system is macOS, otherwise `false`.
+ */
+export function isMacOS(): boolean {
+    const userAgent: string = navigator.userAgent;
+    return userAgent.indexOf('Mac OS') !== -1;
+}
+
+/**
+ * Returns the modifier key based on the platform (Ctrl for non-macOS, Cmd for macOS).
+ *
+ * @returns {string} - Returns 'Cmd' for macOS, 'Ctrl' otherwise.
+ */
+export function getModifierKey(): string {
+    return isMacOS() ? 'Cmd' : 'Ctrl';
+}
+
+/**
  * Returns the command menu items.
  *
  * @returns {CommandItemModel[]} - Returns the command menu items.
  */
 export function getCommandMenuItems(): CommandItemModel[] {
+    const modifier: string = getModifierKey();
     const blockCommandOptions: CommandItemModel[] = [
         {
             id: 'checklist-command',
-            type: BlockType.CheckList,
+            type: BlockType.Checklist,
             groupHeader: 'General',
             label: 'Checklist',
             tooltip: 'Create a checklist',
             iconCss: 'e-icons e-check-box',
-            shortcut: 'Ctrl+Shift+7'
+            shortcut: `${modifier}+Shift+7`
         },
         {
             id: 'bullet-list-command',
@@ -25,7 +45,7 @@ export function getCommandMenuItems(): CommandItemModel[] {
             label: 'Bullet List',
             tooltip: 'Create a bullet list',
             iconCss: 'e-icons e-list-unordered',
-            shortcut: 'Ctrl+Shift+8'
+            shortcut: `${modifier}+Shift+8`
         },
         {
             id: 'numbered-list-command',
@@ -34,7 +54,7 @@ export function getCommandMenuItems(): CommandItemModel[] {
             label: 'Numbered List',
             tooltip: 'Create a numbered list',
             iconCss: 'e-icons e-list-ordered',
-            shortcut: 'Ctrl+Shift+9'
+            shortcut: `${modifier}+Shift+9`
         },
         {
             id: 'divider-command',
@@ -43,7 +63,7 @@ export function getCommandMenuItems(): CommandItemModel[] {
             label: 'Divider',
             tooltip: 'Add a horizontal line',
             iconCss: 'e-icons e-be-divider',
-            shortcut: 'Ctrl+Shift+-'
+            shortcut: `${modifier}+Shift+-`
         },
         {
             id: 'callout-command',
@@ -52,7 +72,7 @@ export function getCommandMenuItems(): CommandItemModel[] {
             label: 'Callout',
             tooltip: 'Add a callout block',
             iconCss: 'e-icons e-be-callout',
-            shortcut: 'Ctrl+Alt+C'
+            shortcut: `${modifier}+Alt+C`
         },
         {
             id: 'code-command',
@@ -61,7 +81,7 @@ export function getCommandMenuItems(): CommandItemModel[] {
             label: 'Code',
             tooltip: 'Insert a code block',
             iconCss: 'e-icons e-insert-code',
-            shortcut: 'Ctrl+Alt+K'
+            shortcut: `${modifier}+Alt+K`
         },
         {
             id: 'image-command',
@@ -70,7 +90,7 @@ export function getCommandMenuItems(): CommandItemModel[] {
             label: 'Image',
             tooltip: 'Insert a image block',
             iconCss: 'e-icons e-image',
-            shortcut: 'Ctrl+Alt+/'
+            shortcut: `${modifier}+Alt+/`
         },
         {
             id: 'paragraph-command',
@@ -79,88 +99,88 @@ export function getCommandMenuItems(): CommandItemModel[] {
             label: 'Paragraph',
             tooltip: 'Add a paragraph',
             iconCss: 'e-icons e-be-paragraph',
-            shortcut: 'Ctrl+Alt+P'
+            shortcut: `${modifier}+Alt+P`
         },
         {
             id: 'heading1-command',
-            type: BlockType.Heading1,
+            type: BlockType.Heading,
             groupHeader: 'Text Styles',
             label: 'Heading 1',
             tooltip: 'Page title or main heading',
             iconCss: 'e-icons e-be-h1',
-            shortcut: 'Ctrl+Alt+1'
+            shortcut: `${modifier}+Alt+1`
         },
         {
             id: 'heading2-command',
-            type: BlockType.Heading2,
+            type: BlockType.Heading,
             groupHeader: 'Text Styles',
             label: 'Heading 2',
             tooltip: 'Section heading',
             iconCss: 'e-icons e-be-h2',
-            shortcut: 'Ctrl+Alt+2'
+            shortcut: `${modifier}+Alt+2`
         },
         {
             id: 'heading3-command',
-            type: BlockType.Heading3,
+            type: BlockType.Heading,
             groupHeader: 'Text Styles',
             label: 'Heading 3',
             tooltip: 'Subsection heading',
             iconCss: 'e-icons e-be-h3',
-            shortcut: 'Ctrl+Alt+3'
+            shortcut: `${modifier}+Alt+3`
         },
         {
             id: 'heading4-command',
-            type: BlockType.Heading4,
+            type: BlockType.Heading,
             groupHeader: 'Text Styles',
             label: 'Heading 4',
             tooltip: 'Smaller heading for nested content',
             iconCss: 'e-icons e-be-h4',
-            shortcut: 'Ctrl+Alt+4'
+            shortcut: `${modifier}+Alt+4`
         },
         {
-            id: 'toggle-paragraph-command',
-            type: BlockType.ToggleParagraph,
+            id: 'collapsible-paragraph-command',
+            type: BlockType.CollapsibleParagraph,
             groupHeader: 'Text Styles',
-            label: 'Toggle Paragraph',
-            tooltip: 'Add a toggle paragraph block',
+            label: 'Collapsible Paragraph',
+            tooltip: 'Add a collapsible paragraph block',
             iconCss: 'e-icons e-be-toggle-paragraph',
-            shortcut: 'Ctrl+Alt+5'
+            shortcut: `${modifier}+Alt+5`
         },
         {
-            id: 'toggle-heading1-command',
-            type: BlockType.ToggleHeading1,
+            id: 'collapsible-heading1-command',
+            type: BlockType.CollapsibleHeading,
             groupHeader: 'Text Styles',
-            label: 'Toggle Heading 1',
-            tooltip: 'Add a toggle heading1 block',
+            label: 'Collapsible Heading 1',
+            tooltip: 'Add a collapsible heading1 block',
             iconCss: 'e-icons e-be-toggle-h1',
-            shortcut: 'Ctrl+Alt+6'
+            shortcut: `${modifier}+Alt+6`
         },
         {
-            id: 'toggle-heading2-command',
-            type: BlockType.ToggleHeading2,
+            id: 'collapsible-heading2-command',
+            type: BlockType.CollapsibleHeading,
             groupHeader: 'Text Styles',
-            label: 'Toggle Heading 2',
-            tooltip: 'Add a toggle heading2 block',
+            label: 'Collapsible Heading 2',
+            tooltip: 'Add a collapsible heading2 block',
             iconCss: 'e-icons e-be-toggle-h2',
-            shortcut: 'Ctrl+Alt+7'
+            shortcut: `${modifier}+Alt+7`
         },
         {
-            id: 'toggle-heading3-command',
-            type: BlockType.ToggleHeading3,
+            id: 'collapsible-heading3-command',
+            type: BlockType.CollapsibleHeading,
             groupHeader: 'Text Styles',
-            label: 'Toggle Heading 3',
-            tooltip: 'Add a toggle heading3 block',
+            label: 'Collapsible Heading 3',
+            tooltip: 'Add a collapsible heading3 block',
             iconCss: 'e-icons e-be-toggle-h3',
-            shortcut: 'Ctrl+Alt+8'
+            shortcut: `${modifier}+Alt+8`
         },
         {
-            id: 'toggle-heading4-command',
-            type: BlockType.ToggleHeading4,
+            id: 'collapsible-heading4-command',
+            type: BlockType.CollapsibleHeading,
             groupHeader: 'Text Styles',
-            label: 'Toggle Heading 4',
-            tooltip: 'Add a toggle heading4 block',
+            label: 'Collapsible Heading 4',
+            tooltip: 'Add a collapsible heading4 block',
             iconCss: 'e-icons e-be-toggle-h4',
-            shortcut: 'Ctrl+Alt+9'
+            shortcut: `${modifier}+Alt+9`
         },
         {
             id: 'quote-command',
@@ -169,7 +189,7 @@ export function getCommandMenuItems(): CommandItemModel[] {
             label: 'Quote',
             tooltip: 'Insert a quote block',
             iconCss: 'e-icons e-blockquote',
-            shortcut: 'Ctrl+Alt+Q'
+            shortcut: `${modifier}+Alt+Q`
         }
     ];
     return blockCommandOptions;
@@ -197,18 +217,19 @@ export function getLabelMenuItems(): LabelItemModel[] {
  * @returns {ContextMenuItemModel[]} - Returns the context menu items.
  */
 export function getContextMenuItems(): ContextMenuItemModel[] {
+    const modifier: string = getModifierKey();
     return [
-        { id: 'undo', text: 'Undo', iconCss: 'e-icons e-undo', shortcut: 'Ctrl+Z' },
-        { id: 'redo', text: 'Redo', iconCss: 'e-icons e-redo', shortcut: 'Ctrl+Y' },
+        { id: 'undo', text: 'Undo', iconCss: 'e-icons e-undo', shortcut: `${modifier}+Z` },
+        { id: 'redo', text: 'Redo', iconCss: 'e-icons e-redo', shortcut: `${modifier}+Y` },
         { separator: true },
-        { id: 'cut', text: 'Cut', iconCss: 'e-icons e-cut', shortcut: 'Ctrl+X' },
-        { id: 'copy', text: 'Copy', iconCss: 'e-icons e-copy', shortcut: 'Ctrl+C' },
-        { id: 'paste', text: 'Paste', iconCss: 'e-icons e-paste', shortcut: 'Ctrl+V' },
+        { id: 'cut', text: 'Cut', iconCss: 'e-icons e-cut', shortcut: `${modifier}+X` },
+        { id: 'copy', text: 'Copy', iconCss: 'e-icons e-copy', shortcut: `${modifier}+C` },
+        { id: 'paste', text: 'Paste', iconCss: 'e-icons e-paste', shortcut: `${modifier}+V` },
         { separator: true },
-        { id: 'increaseindent', text: 'Increase Indent', iconCss: 'e-icons e-increase-indent', shortcut: 'Ctrl+]' },
-        { id: 'decreaseindent', text: 'Decrease Indent', iconCss: 'e-icons e-decrease-indent', shortcut: 'Ctrl+[' },
+        { id: 'increaseindent', text: 'Increase Indent', iconCss: 'e-icons e-increase-indent', shortcut: `${modifier}+]` },
+        { id: 'decreaseindent', text: 'Decrease Indent', iconCss: 'e-icons e-decrease-indent', shortcut: `${modifier}+[` },
         { separator: true },
-        { id: 'link', text: 'Link', iconCss: 'e-icons e-comment-show', shortcut: 'Ctrl+K' }
+        { id: 'link', text: 'Link', iconCss: 'e-icons e-comment-show', shortcut: `${modifier}+K` }
     ];
 }
 
@@ -218,11 +239,12 @@ export function getContextMenuItems(): ContextMenuItemModel[] {
  * @returns {BlockActionItemModel[]} - Returns the block action menu items.
  */
 export function getBlockActionsMenuItems(): BlockActionItemModel[] {
+    const modifier: string = getModifierKey();
     return [
-        { id: 'duplicate', label: 'Duplicate', iconCss: 'e-icons e-duplicate', tooltip: 'Duplicates a block', shortcut: 'Ctrl+D' },
-        { id: 'delete', label: 'Delete', iconCss: 'e-icons e-trash', tooltip: 'Deletes a block', shortcut: 'Ctrl+Shift+D' },
-        { id: 'moveup', label: 'Move Up', iconCss: 'e-icons e-arrow-up', tooltip: 'Moves a block up', shortcut: 'Ctrl+Shift+Up' },
-        { id: 'movedown', label: 'Move Down', iconCss: 'e-icons e-arrow-down', tooltip: 'Moves a block down', shortcut: 'Ctrl+Shift+Down' }
+        { id: 'duplicate', label: 'Duplicate', iconCss: 'e-icons e-duplicate', tooltip: 'Duplicates a block', shortcut: `${modifier}+D` },
+        { id: 'delete', label: 'Delete', iconCss: 'e-icons e-trash', tooltip: 'Deletes a block', shortcut: `${modifier}+Shift+D` },
+        { id: 'moveup', label: 'Move Up', iconCss: 'e-icons e-arrow-up', tooltip: 'Moves a block up', shortcut: `${modifier}+Shift+Up` },
+        { id: 'movedown', label: 'Move Down', iconCss: 'e-icons e-arrow-down', tooltip: 'Moves a block down', shortcut: `${modifier}+Shift+Down` }
     ];
 }
 

@@ -1291,7 +1291,7 @@ export class WorkbookFormula {
         formulaSheet?: SheetModel): void {
         let ref: string; let pVal: string; let index: number[]; let updated: boolean; let isRangeFormula: boolean;
         const containAlphabetAndDigit: RegExp = new RegExp(/^(?=.*[a-zA-Z])(?=.*\d)/g); let isValidCellReference: boolean; let isFullColumn: boolean;
-        if (cell.formula && cell.formula.includes('UNIQUE') && row !== undefined) {
+        if (cell.formula && cell.formula.includes('UNIQUE') && cell.value !== '#SPILL!' && row !== undefined) {
             this.clearUniqueRange(row, col, formulaSheet || args.sheet);
         }
         const getAddress: () => string = (): string => {
@@ -1351,7 +1351,8 @@ export class WorkbookFormula {
             if (cell.formula !== newFormula) {
                 cell.formula = newFormula;
 
-                if (!(this.parent.calculationMode === 'Manual' && (args.isInsert || args.isDelete))) {
+                if (!(this.parent.calculationMode === 'Manual' && (args.isInsert || args.isDelete)) &&
+                    !(cell.formula.includes('UNIQUE') && cell.value === '#SPILL!')) {
                     cell.value = null;
                 }
             }

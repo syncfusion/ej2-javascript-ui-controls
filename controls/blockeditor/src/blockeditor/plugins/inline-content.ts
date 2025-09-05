@@ -1,17 +1,16 @@
 import { attributes, detach } from '@syncfusion/ej2-base';
-import { BlockEditor, ContentType, IInlineContentInsertionArgs } from '../base/index';
+import { BlockEditor, ContentType, IInlineContentInsertionOptions, IMentionRenderOptions } from '../base/index';
 import { BlockModel, ContentModel, LabelItemModel, UserModel } from '../models/index';
-import { deepClone, generateUniqueId, getAccessibleTextColor, getBlockIndexById, getBlockModelById, removeEmptyTextNodes, sanitizeContent, setCursorPosition } from '../utils/index';
-
-interface IProcessedNodes {
-    fragment: DocumentFragment
-    content: ContentModel[]
-}
+import { isolateModel, generateUniqueId, getAccessibleTextColor, getAutoAvatarColor, getBlockModelById, getLabelMentionDisplayTemplate, getLabelMenuItems, getSelectedRange, getUserInitials, getUserMentionDisplayTemplate, removeEmptyTextNodes, sanitizeContent, sanitizeLabelItems, setCursorPosition } from '../utils/index';
+import { Mention, MentionChangeEventArgs, PopupEventArgs } from '@syncfusion/ej2-dropdowns';
+import * as constants from '../base/constant';
+import { BlockFactory } from '../services/block-factory';
+import { events } from '../base/constant';
 
 export class InlineContentInsertionModule {
     private editor: BlockEditor;
-    private currentArgs: IInlineContentInsertionArgs;
-    private readonly formattedNodeTags: string[] = ['STRONG', 'SPAN', 'EM', 'U', 'S', 'SUB', 'SUP', 'A'];
+    public userMenuObj: Mention;
+    public labelMenuObj: Mention;
 
     constructor(editor: BlockEditor) {
         this.editor = editor;
@@ -19,29 +18,101 @@ export class InlineContentInsertionModule {
     }
 
     private addEventListeners(): void {
-        this.editor.on('inline-content-inserted', this.handleInsertion, this);
-        this.editor.on('destroy', this.destroy, this);
+        this.editor.on(events.destroy, this.destroy, this);
     }
 
     private removeEventListeners(): void {
-        this.editor.off('inline-content-inserted', this.handleInsertion);
-        this.editor.off('destroy', this.destroy);
+        this.editor.off(events.destroy, this.destroy);
     }
 
-    private handleInsertion(args: IInlineContentInsertionArgs): void {
-        this.currentArgs = args;
-        this.handleInlineContentInsertion();
+    /**
+     * Initializes the user mention module.
+     *
+     * @returns {void}
+     * @hidden
+     */
+    public initializeUserMention(): void {
+        const mentionDataSource: UserModel[] = this.editor.users.map((user: UserModel) => ({
+            id: user.id,
+            user: user.user.trim(),
+            avatarUrl: user.avatarUrl,
+            avatarBgColor: user.avatarBgColor || getAutoAvatarColor(user.id),
+            initials: getUserInitials(user.user)
+        }));
+
+        const mentionArgs: IMentionRenderOptions = {
+            element: this.editor.blockWrapper,
+            itemTemplate: '<div class="e-user-mention-item-template"><div class="em-avatar" style="background-color: ${avatarBgColor};">${if(avatarUrl)} <img src="${avatarUrl}" alt="${user}" class="em-img" /> ${else} <div class="em-initial">${initials}</div> ${/if} </div><div class="em-content"><div class="em-text">${user}</div></div></div>',
+            displayTemplate: getUserMentionDisplayTemplate(),
+            dataSource: mentionDataSource,
+            popupWidth: '200px',
+            cssClass: 'e-blockeditor-user-menu e-blockeditor-mention-menu',
+            fields: { text: 'user', value: 'id' },
+            change: this.handleInlineContentInsertion.bind(this),
+            beforeOpen: (args: PopupEventArgs) => {
+                args.cancel = this.editor.users.length === 0;
+            }
+        };
+        this.userMenuObj = this.editor.mentionRenderer.renderMention(mentionArgs);
     }
 
-    private handleInlineContentInsertion(): void {
-        const { range, contentType, blockElement }: IInlineContentInsertionArgs = this.currentArgs;
+    /**
+     * Initializes the label mention module.
+     *
+     * @returns {void}
+     * @hidden
+     */
+    public initializeLabelContent(): void {
+        let items: LabelItemModel[];
+        if (this.editor.labelSettings.labelItems.length > 0) {
+            items = sanitizeLabelItems(this.editor.labelSettings.labelItems);
+        }
+        else {
+            items = getLabelMenuItems();
+            const prevOnChange: boolean = this.editor.isProtectedOnChange;
+            this.editor.isProtectedOnChange = true;
+            this.editor.labelSettings.labelItems = items;
+            this.editor.isProtectedOnChange = prevOnChange;
+        }
+
+        const mentionArgs: IMentionRenderOptions = {
+            element: this.editor.blockWrapper,
+            mentionChar: this.editor.labelSettings.triggerChar,
+            itemTemplate: '<div class="e-label-mention-item-template"><div class="em-avatar" style="background-color: ${labelColor};"> </div><div class="em-content"><span class="em-icon ${iconCss}"></span><div class="em-text">${text}</div></div></div>',
+            displayTemplate: getLabelMentionDisplayTemplate(),
+            dataSource: items,
+            popupWidth: '200px',
+            cssClass: 'e-blockeditor-label-menu e-blockeditor-mention-menu',
+            fields: { text: 'text', value: 'id', groupBy: 'groupHeader', iconCss: 'iconCss' },
+            change: this.handleInlineContentInsertion.bind(this)
+        };
+        this.labelMenuObj = this.editor.mentionRenderer.renderMention(mentionArgs);
+    }
+
+    private handleInlineContentInsertion(args: MentionChangeEventArgs): void {
+        args.e.preventDefault();
+        args.e.stopPropagation();
+        this.editor.mentionRenderer.cleanMentionArtifacts(this.editor.currentFocusedBlock);
+        const contentType: string = (args.value.toString().indexOf('e-user-mention-item-template')) > 0 ? ContentType.Mention : ContentType.Label;
+        const mentionChar: string = contentType === ContentType.Mention ? '@' : this.editor.labelSettings.triggerChar;
+        this.editor.mentionRenderer.removeMentionQueryKeysFromModel(mentionChar);
+        const options: IInlineContentInsertionOptions = {
+            block: getBlockModelById(this.editor.currentFocusedBlock.id, this.editor.getEditorBlocks()),
+            blockElement: this.editor.currentFocusedBlock,
+            range: getSelectedRange().cloneRange(),
+            contentType: contentType,
+            itemData: args.itemData
+        };
+        this.processInsertion(options);
+    }
+
+    private processInsertion(options: IInlineContentInsertionOptions): void {
+        const { range, contentType, blockElement }: IInlineContentInsertionOptions = options;
         if (!range || !blockElement) { return; }
 
         const rangeParent: HTMLElement = this.getRangeParent(range);
-
         const insertedNode: HTMLElement = this.findInsertedNode(contentType, rangeParent);
-
-        this.splitAndReorganizeContent(insertedNode, contentType, rangeParent);
+        this.splitAndReorganizeContent(insertedNode, contentType, rangeParent, options);
     }
 
     private getRangeParent(range: Range): HTMLElement {
@@ -50,187 +121,112 @@ export class InlineContentInsertionModule {
             : (range.startContainer as HTMLElement);
     }
 
-    private findInsertedNode(contentType: ContentType, rangeParent: HTMLElement): HTMLElement | null {
+    private findInsertedNode(contentType: string | ContentType, rangeParent: HTMLElement): HTMLElement | null {
         const contentClassMap: { [key: string]: string } = {
             [ContentType.Mention]: 'e-mention-chip',
             [ContentType.Label]: 'e-mention-chip'
         };
-
         return rangeParent.querySelector(`.${contentClassMap[`${contentType}`]}`) as HTMLElement;
     }
 
-    private splitAndReorganizeContent(insertedNode: HTMLElement, contentType: ContentType, rangeParent: HTMLElement): void {
-        const { block }: IInlineContentInsertionArgs = this.currentArgs;
-        const blockIndex: number = getBlockIndexById(block.id, this.editor.blocksInternal);
-
-        const blockContentElement: HTMLElement = rangeParent.closest('.e-block-content') as HTMLElement;
-        if (!blockContentElement) { return; }
+    private splitAndReorganizeContent(
+        insertedNode: HTMLElement,
+        contentType: string | ContentType,
+        rangeParent: HTMLElement,
+        options: IInlineContentInsertionOptions
+    ): void {
+        const { block }: IInlineContentInsertionOptions = options;
+        const blockContentElement: HTMLElement = rangeParent.closest('.' + constants.CONTENT_CLS) as HTMLElement;
+        if (!blockContentElement) { return null; }
 
         const nodesToProcess: Node[] = Array.from(rangeParent.childNodes);
         const insertionIndex: number = nodesToProcess.indexOf(insertedNode);
-        if (insertionIndex === -1) { return; }
+        if (insertionIndex === -1) { return null; }
 
         const affectingContent: ContentModel = block.content.find((content: ContentModel) => content.id === rangeParent.id);
-        if (!affectingContent) { return; }
+        if (!affectingContent) { return null; }
 
-        const isPlainTextBlock: boolean = this.isPlainTextBlock(rangeParent, block);
-        const shouldCreateFreshFormatting: boolean = isPlainTextBlock &&
-            (this.isInsertedElementOnlyChild(rangeParent, insertedNode) || this.hasTextSiblings(insertedNode));
-        const beforeNodes: Node[] = nodesToProcess.slice(0, insertionIndex);
-        const afterNodes: Node[] = nodesToProcess.slice(insertionIndex + 1);
-
-        const beforeEntity: IProcessedNodes = this.processNodes(
-            beforeNodes,
-            rangeParent,
-            affectingContent,
-            shouldCreateFreshFormatting
+        const beforeContents: ContentModel[] = this.processContents(
+            nodesToProcess.slice(0, insertionIndex), affectingContent
+        );
+        const insertedContent: ContentModel = this.createInlineContentModel(insertedNode, contentType, options);
+        const afterContents: ContentModel[] = this.processContents(
+            nodesToProcess.slice(insertionIndex + 1), affectingContent, true
         );
 
-        const insertedContent: ContentModel = this.createInlineContentModel(insertedNode, contentType);
-
-        const afterEntity: IProcessedNodes = this.processNodes(
-            afterNodes,
-            rangeParent,
-            affectingContent,
-            shouldCreateFreshFormatting,
-            true // Generate new IDs for after nodes
-        );
-
-        const newFragment: DocumentFragment = document.createDocumentFragment();
-        if (beforeEntity.fragment.childNodes.length) {
-            newFragment.appendChild(beforeEntity.fragment);
-        }
-
-        if (this.currentArgs.contentType === ContentType.Mention) {
-            const user: UserModel = this.currentArgs.itemData as UserModel;
-            const wrapper: HTMLElement = this.editor.createElement('div', {
-                id: insertedContent.dataId,
-                className: 'e-mention-chip e-user-chip',
-                innerHTML: insertedNode.innerHTML,
-                attrs: {
-                    'data-user-id': user.id,
-                    contenteditable: 'false'
-                }
-            });
-            newFragment.appendChild(wrapper);
-            detach(insertedNode);
-        }
-        else if (this.currentArgs.contentType === ContentType.Label) {
-            const labelItem: LabelItemModel = this.currentArgs.itemData as LabelItemModel;
-            attributes(insertedNode, {
-                id: insertedContent.dataId,
-                class: 'e-mention-chip e-label-chip',
-                style: `background: ${labelItem.labelColor};color: ${getAccessibleTextColor(labelItem.labelColor)};`,
-                'data-label-id': labelItem.id
-            });
-            newFragment.appendChild(insertedNode);
-        }
-
-        if (afterEntity.fragment.childNodes.length) {
-            newFragment.appendChild(afterEntity.fragment);
-        }
-
-        if (shouldCreateFreshFormatting) {
-            blockContentElement.appendChild(newFragment);
-        } else {
-            blockContentElement.insertBefore(newFragment, rangeParent);
-            rangeParent.remove();
-        }
-        removeEmptyTextNodes(blockContentElement);
         const affectingIndex: number = block.content.indexOf(affectingContent);
-        const newContentModels: ContentModel[] = [...beforeEntity.content, insertedContent, ...afterEntity.content];
-        /* eslint-disable @typescript-eslint/no-explicit-any */
-        const prevOnChange: boolean = (this.editor as any).isProtectedOnChange;
-        (this.editor as any).isProtectedOnChange = true;
+        const newContentModels: ContentModel[] = [...beforeContents, insertedContent, ...afterContents];
+        const prevOnChange: boolean = this.editor.isProtectedOnChange;
+        this.editor.isProtectedOnChange = true;
         block.content.splice(affectingIndex, 1, ...newContentModels);
-        const parentBlock: BlockModel = getBlockModelById(block.parentId, this.editor.blocksInternal);
-        if (parentBlock) {
-            (parentBlock.children[blockIndex as number] as any).setProperties({ content: block.content }, true);
-        }
-        else {
-            (this.editor.blocksInternal[blockIndex as number] as any).setProperties({ content: block.content }, true);
-        }
-        (this.editor as any).isProtectedOnChange = prevOnChange;
-        /* eslint-enable @typescript-eslint/no-explicit-any */
-        this.editor.blockAction.updatePropChangesToModel();
-        const nextSibling: HTMLElement = insertedNode.nextElementSibling as HTMLElement;
+
+        this.editor.blockService.updateContent(block.id, block.content);
+
+        this.editor.isProtectedOnChange = prevOnChange;
+        this.editor.stateManager.updatePropChangesToModel();
+
+        this.editor.blockRendererManager.reRenderBlockContent(block);
+
+        const nextSibling: HTMLElement = blockContentElement.querySelector('#' + insertedContent.id).nextElementSibling as HTMLElement;
         if (nextSibling) {
             setCursorPosition(nextSibling, 0);
         }
     }
 
-    private processNodes(
+    private processContents(
         nodes: Node[],
-        parentElement: HTMLElement,
         baseContentModel: ContentModel,
-        freshFormatting: boolean,
         generateNewIds: boolean = false
-    ): IProcessedNodes {
-        const fragment: DocumentFragment = document.createDocumentFragment();
+    ): ContentModel[] {
         const contentModels: ContentModel[] = [];
 
         nodes.forEach((node: Node) => {
             if (node.nodeType === Node.TEXT_NODE && node.textContent !== '') {
-                const [newContent]: ContentModel[] = deepClone(sanitizeContent([baseContentModel]));
-                newContent.id = generateNewIds ? generateUniqueId('content') : newContent.id;
+                const newContent: ContentModel = isolateModel(sanitizeContent(baseContentModel));
+                newContent.id = generateNewIds ? generateUniqueId(constants.CONTENT_ID_PREFIX) : newContent.id;
                 newContent.content = node.textContent;
 
-                if (freshFormatting) {
-                    const span: HTMLElement = document.createElement('span');
-                    span.textContent = newContent.content;
-                    span.id = newContent.id;
-                    fragment.appendChild(span);
-                } else {
-                    const clone: HTMLElement = parentElement.cloneNode(true) as HTMLElement;
-                    clone.textContent = node.textContent;
-                    clone.id = newContent.id;
-                    fragment.appendChild(clone);
-                }
-
                 contentModels.push(newContent);
-                parentElement.removeChild(node);
-            } else if (node.nodeType === Node.ELEMENT_NODE) {
-                fragment.appendChild(node.cloneNode(true));
-                parentElement.removeChild(node);
             }
         });
 
-        return { fragment, content: contentModels };
+        return contentModels;
     }
 
-    private isPlainTextBlock(element: HTMLElement, block: BlockModel): boolean {
-        return (
-            this.formattedNodeTags.indexOf(element.tagName) === -1 &&
-            block.content.length === 1
-        );
-    }
+    private createInlineContentModel(
+        element: HTMLElement,
+        contentType: string | ContentType,
+        options: IInlineContentInsertionOptions
+    ): ContentModel {
+        const user: UserModel = options.itemData as UserModel;
+        const labelItem: LabelItemModel = options.itemData as LabelItemModel;
 
-    private isInsertedElementOnlyChild(parent: HTMLElement, insertedElement: HTMLElement): boolean {
-        return parent.childElementCount === 1 && parent.firstChild === insertedElement;
-    }
-
-    private hasTextSiblings(node: Node): boolean {
-        return (
-            (node.previousSibling && node.previousSibling.nodeType === Node.TEXT_NODE) ||
-            (node.nextSibling && node.nextSibling.nodeType === Node.TEXT_NODE)
-        );
-    }
-
-    private createInlineContentModel(element: HTMLElement, contentType: ContentType): ContentModel {
-        const user: UserModel = this.currentArgs.itemData as UserModel;
-        const labelItem: LabelItemModel = this.currentArgs.itemData as LabelItemModel;
-
-        const contentID: string = contentType === ContentType.Mention ? user.id : labelItem.id;
         const contentValue: string = contentType === ContentType.Mention ? user.user : element.innerText;
-        return {
-            id: contentID,
-            type: contentType,
-            content: contentValue,
-            dataId: generateUniqueId(contentID)
-        };
+        let newContent: ContentModel;
+        if (contentType === ContentType.Mention) {
+            newContent = BlockFactory.createMentionContent({ content: contentValue }, { userId: user.id });
+        }
+        else if (contentType === ContentType.Label) {
+            newContent = BlockFactory.createLabelContent({ content: contentValue }, { labelId: labelItem.id });
+        }
+        return newContent;
     }
 
+    /**
+     * Destroys the inline content module.
+     *
+     * @returns {void}
+     */
     public destroy(): void {
+        if (this.userMenuObj) {
+            this.userMenuObj.destroy();
+        }
+        if (this.labelMenuObj) {
+            this.labelMenuObj.destroy();
+        }
         this.removeEventListeners();
+        this.editor = null;
+        this.userMenuObj = null;
+        this.labelMenuObj = null;
     }
 }

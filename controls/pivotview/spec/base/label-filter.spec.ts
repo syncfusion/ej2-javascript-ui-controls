@@ -224,7 +224,6 @@ describe('Label Filtering', () => {
                     { name: 'product', type: 'Custom', customGroups: [{ groupName: 'Four wheelers', items: ['Car', 'Tempo', 'Van'] }, { groupName: 'Airways', items: ['Jet', 'Flight'] }] }
                     ]
                 },
-                enableValueSorting: true,
                 dataBound: dataBound,
                 showGroupingBar: true,
                 showFieldList: true,
@@ -353,7 +352,6 @@ describe('Label Filtering', () => {
                     values: [{ name: 'balance', caption: 'Balance($)' }, { name: 'quantity' }],
                     columns: [{ name: 'age', caption: 'Category' }]
                 },
-                enableValueSorting: true,
                 dataBound: dataBound,
                 showGroupingBar: true,
                 showFieldList: true,

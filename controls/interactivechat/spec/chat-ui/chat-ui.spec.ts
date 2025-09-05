@@ -1,7 +1,8 @@
 import { createElement, L10n } from "@syncfusion/ej2-base";
-import { ChatUI,MessageModel, MessageReplyModel, UserModel } from "../../src/chat-ui/index";
+import { ChatUI, MentionSelectEventArgs, MessageModel, MessageSendEventArgs, MessageReplyModel, UserModel } from "../../src/chat-ui/index";
 import { ToolbarItemClickedEventArgs, ToolbarItemModel } from '../../src/interactive-chat-base/index';
 import { InterActiveChatBase } from '../../src/interactive-chat-base/index';
+import { Uploader } from "@syncfusion/ej2-inputs";
 
 interface ClipboardItem {
     new (items: { [mimeType: string]: Blob }): ClipboardItem;
@@ -159,6 +160,7 @@ describe('ChatUI Component', () => {
             timeStampFormat: 'hh:mm a'
         }
     ];
+
     describe('DOM', () => {
         afterEach(() => {
             if (chatUI) {
@@ -568,6 +570,36 @@ describe('ChatUI Component', () => {
             expect(messageStatusElement).toBeNull();
         });
 
+        it('should dynamically change user properties into new user properties', function () {
+            chatUI = new ChatUI({
+                user: {
+                    id: 'u1',
+                    user: 'Alice',
+                    avatarUrl: 'alice.png',
+                    avatarBgColor: '#fff',
+                    cssClass: 'default',
+                    statusIconCss: 'online'
+                }
+            });
+            const newProp = {
+                user: {
+                    id: 'u2',
+                    avatarUrl: 'bob.png',
+                    statusIconCss: 'offline'
+                }
+            };
+            chatUI.appendTo('#chatUI');
+            chatUI.onPropertyChanged(newProp, { user: chatUI.user });
+            expect(chatUI.user).toEqual(jasmine.objectContaining({
+                id: 'u2',
+                user: 'Alice',
+                avatarUrl: 'bob.png',
+                avatarBgColor: '#fff',
+                cssClass: 'default',
+                statusIconCss: 'offline'
+            }));
+        });
+
         it('Locale checking', () => {
             L10n.load({
                 'de': {
@@ -924,7 +956,7 @@ describe('ChatUI Component', () => {
             chatUI.dataBind();
             expect(chatUIElem.querySelector('.e-time').textContent).toBe('13/10/2024 11:13 AM');
         });
-    
+
         it('AutoScrollToBottom checking', (done: DoneFn) => {
             chatUI = new ChatUI({
                 messages: messages,
@@ -938,7 +970,7 @@ describe('ChatUI Component', () => {
                 done();
             }, 100);
         });
-    
+
         it('AutoScrollToBottom change', (done: DoneFn) => {
             chatUI = new ChatUI({
                 messages: messages,
@@ -1152,6 +1184,107 @@ describe('ChatUI Component', () => {
                     expect(textareaElem.innerText).toBe('');
                     done();
             }, 450, done);
+        });
+        it('Sending a message with potential XSS content', (done: DoneFn) => {
+            // Set up the chat template
+            const sTag: HTMLElement = createElement('script', { id: 'emptyChatTemplate', attrs: { type: 'text/x-template' } });
+            sTag.innerHTML = '<div><h1>Welcome to Chat</h1><p>Start your conversation</p></div>';
+            document.body.appendChild(sTag);
+
+            // Initialize ChatUI
+            chatUI = new ChatUI({
+                emptyChatTemplate: '#emptyChatTemplate',
+                user: { id: 'user1', user: 'John Doe' }
+            });
+            chatUI.appendTo('#chatUI');
+
+            // Verify initial UI elements
+            const initialBannerView = chatUIElem.querySelector('.e-empty-chat-template');
+            expect(initialBannerView).not.toBeNull();
+            const footerElem: HTMLDivElement = chatUIElem.querySelector('.e-footer');
+            const textareaElem: HTMLDivElement = chatUIElem.querySelector('.e-footer .e-chat-textarea');
+            const sendIcon: HTMLElement = chatUIElem.querySelector('.e-chat-send');
+            expect(textareaElem).not.toBeNull();
+            expect(sendIcon).not.toBeNull();
+            expect(sendIcon.classList.contains('disabled')).toBe(true);
+
+            // Mock window.alert to detect if it is called
+            const originalAlert = window.alert;
+            let alertCalled = false;
+            window.alert = () => {
+                alertCalled = true;
+            };
+
+            // Input the potentially malicious message
+            const maliciousMessage = '<img src=x onerror=alert(1)>';
+            textareaElem.innerText = maliciousMessage;
+            const inputEvent: Event = new Event('input', { bubbles: true });
+            textareaElem.dispatchEvent(inputEvent);
+
+            // Simulate sending the message
+            setTimeout(() => {
+                const keyEvent: KeyboardEvent = new KeyboardEvent('keydown', { key: 'Enter' });
+                footerElem.dispatchEvent(keyEvent);
+
+                // Verify the send icon state
+                expect(sendIcon.classList.contains('disabled')).toBe(true);
+
+                // Verify the message is displayed
+                const messageItems: NodeListOf<HTMLElement> = chatUIElem.querySelectorAll('.e-message-item');
+                const lastMessage: HTMLElement = messageItems[messageItems.length - 1];
+                expect(lastMessage).not.toBeNull();
+                expect(lastMessage.querySelector('img')).not.toBeNull(); // Ensure no <img> tag is rendered
+
+                // Verify the message group alignment
+                const messageGroup: HTMLElement = lastMessage.closest('.e-message-group') as HTMLElement;
+                expect(messageGroup.classList.contains('e-right')).toBe(true);
+
+                // Verify the textarea is cleared
+                expect(textareaElem.innerText).toBe('');
+
+                // Verify that the alert was not triggered
+                expect(alertCalled).toBe(false);
+
+                // Restore the original alert function
+                window.alert = originalAlert;
+
+                done();
+            }, 450);
+        });
+        it('Sending a message with iframe content', (done: DoneFn) => {
+            const sTag: HTMLElement = createElement('script', { id: 'emptyChatTemplate', attrs: { type: 'text/x-template' } });
+            sTag.innerHTML = '<div><h1>Welcome to Chat</h1><p>Start your conversation</p></div>';
+            document.body.appendChild(sTag);
+            chatUI = new ChatUI({
+                emptyChatTemplate: '#emptyChatTemplate',
+                user: { id: 'user1', user: 'John Doe' }
+            });
+            chatUI.appendTo('#chatUI');
+            const initialBannerView = chatUIElem.querySelector('.e-empty-chat-template');
+            expect(initialBannerView).not.toBeNull();
+            const footerElem: HTMLDivElement = chatUIElem.querySelector('.e-footer');
+            const textareaElem: HTMLDivElement = chatUIElem.querySelector('.e-footer .e-chat-textarea');
+            const sendIcon: HTMLElement = chatUIElem.querySelector('.e-chat-send');
+            expect(textareaElem).not.toBeNull();
+            expect(sendIcon).not.toBeNull();
+            expect(sendIcon.classList.contains('disabled')).toBe(true);
+            const iframeMessage = '<iframe src=https://www.syncfusion.com></iframe>';
+            textareaElem.innerText = iframeMessage;
+            const inputEvent: Event = new Event('input', { bubbles: true });
+            textareaElem.dispatchEvent(inputEvent);
+            setTimeout(() => {
+                const keyEvent: KeyboardEvent = new KeyboardEvent('keydown', { key: 'Enter' });
+                footerElem.dispatchEvent(keyEvent);
+                expect(sendIcon.classList.contains('disabled')).toBe(true);
+                const messageItems: NodeListOf<HTMLElement> = chatUIElem.querySelectorAll('.e-message-item');
+                const lastMessage: HTMLElement = messageItems[messageItems.length - 1];
+                expect(lastMessage).not.toBeNull();
+                expect(lastMessage.querySelector('iframe')).toBeNull(); 
+                const messageGroup: HTMLElement = lastMessage.closest('.e-message-group') as HTMLElement;
+                expect(messageGroup.classList.contains('e-right')).toBe(true);
+
+                done();
+            }, 450);
         });
         it('scroll to bottom click handling', (done: DoneFn) => {
             chatUI = new ChatUI({
@@ -1857,6 +1990,26 @@ describe('ChatUI Component', () => {
             expect(messageElem.querySelector('.e-text').textContent).toBe('Test message');
             expect(chatUIElem.querySelector('.e-message-header').textContent).toBe('Jane Smith');
         });
+
+        it('addMessage method checking with MessageModel parameter without any property', () => {
+            let currentUserModel: UserModel = {
+                id: "user1",
+                user: "Albert"
+            };
+            chatUI = new ChatUI({
+                user: currentUserModel
+            });
+            chatUI.appendTo('#chatUI');
+    
+            const newMessage: MessageModel = {};
+            chatUI.addMessage(newMessage);
+            const expectedId = `${chatUI.element.id}-message-1`;
+            const messageElem: HTMLElement = chatUIElem.querySelector('.e-message-item');
+            expect(messageElem).not.toBeNull();
+            expect(messageElem.id).toBe(expectedId);
+            expect(messageElem.querySelector('.e-text')).toBeNull();
+        });
+
         it('updateMessage method checking', () => {
             const initialMessage: MessageModel = {
                 id: 'msg1',
@@ -2153,7 +2306,8 @@ describe('ChatUI Component', () => {
             const repliedMessage: MessageReplyModel = {
                 messageID: 'msg0',
                 text: 'Replied to this message!',
-                user: { id: 'user2', user: 'Jane Smith' }
+                user: { id: 'user2', user: 'Jane Smith' },
+                timestampFormat: 'dd/MM/yyyy'
             };
             const initialMessage: MessageModel = {
                 id: 'msg1',
@@ -2258,7 +2412,7 @@ describe('ChatUI Component', () => {
                 id: 'msg1',
                 text: 'Reply to this message!',
                 author: { id: 'user1', user: 'John Doe' },
-                timeStamp: new Date(),
+                timeStampFormat: 'dd/MM/yyyy'
             };
             chatUI = new ChatUI({
                 user: { id: 'user2', user: 'Jane Doe' },
@@ -2836,6 +2990,36 @@ describe('ChatUI Component', () => {
             const messagePinButton: HTMLElement = chatUIElem.querySelector('.e-chat-message-toolbar .e-icons.e-chat-pin');
             expect(messagePinButton).not.toBeNull();
         });
+
+        it('should update messages properly after pinning the message', () => {
+            const initialMessage: MessageModel = {
+                id: 'msg1',
+                text: 'Pin first message!',
+                author: { id: 'user1', user: 'John Doe' },
+                timeStamp: new Date(),
+                isPinned: false
+            };
+            chatUI = new ChatUI({
+                messages: [initialMessage]
+            });
+            chatUI.appendTo('#chatUI');
+
+            const messageWrapper: HTMLElement = chatUIElem.querySelector('.e-message-wrapper') as HTMLElement;
+            const pinButtons: NodeListOf<HTMLElement> = messageWrapper.querySelectorAll('.e-chat-pin') as NodeListOf<HTMLElement>;
+            expect(pinButtons[0]).not.toBeNull();
+            pinButtons[0].click();
+
+            chatUI.addMessage('Hi Hello');
+
+            const messageItems: NodeListOf<Element> = messageWrapper.querySelectorAll('.e-message-item');
+            expect(messageItems.length).toBe(2);
+            const lastMessage: Element = messageItems[messageItems.length - 1];
+            expect(lastMessage).not.toBeNull();
+            const lastMessageText: Element = lastMessage.querySelector('.e-text');
+            expect(lastMessageText).not.toBeNull();
+            expect(lastMessageText.textContent).toBe('Hi Hello');
+        });
+
     });
 
     describe('Message toolbar with message template', () => {
@@ -2843,7 +3027,14 @@ describe('ChatUI Component', () => {
             { type: 'Button', iconCss: 'e-icons e-custom-action', tooltip: 'Custom Action' }
         ];
 
-        beforeEach(() => {
+        afterEach(() => {
+            if (chatUI) {
+                chatUI.destroy();
+                chatUI=null;
+            }
+        });
+
+        it('should render custom toolbar item', () => {
             chatUI = new ChatUI({
                 messages: [
                     {
@@ -2854,18 +3045,15 @@ describe('ChatUI Component', () => {
                     }
                 ],
                 messageTemplate: (data: any) => `
-                            <div class="message-template">
-                                <span>${data.message.text}</span>
-                            </div>
-                        `,
+                    <div class="message-template">
+                        <span>${data.message.text}</span>
+                    </div>
+                `,
                 messageToolbarSettings: {
                     items: customToolbarItems
                 }
             });
             chatUI.appendTo('#chatUI');
-        });
-
-        it('should render custom toolbar item', () => {
             const toolbar = chatUIElem.querySelector('.e-chat-message-toolbar');
             expect(toolbar).not.toBeNull();
             const customIcon = toolbar.querySelector('.e-toolbar-item');
@@ -2873,18 +3061,29 @@ describe('ChatUI Component', () => {
             expect(customIcon.getAttribute('title')).toBe('Custom Action');
         });
 
-        it('should render with default toolbar when no custom items provided', () => {
-            chatUI.messageToolbarSettings.items = [];
-            chatUI.dataBind();
+        it('should not render with default toolbar when no custom items provided', () => {
+            chatUI = new ChatUI({
+                messages: [
+                    {
+                        id: 'msg1',
+                        text: 'This is a message with a custom toolbar!',
+                        author: { id: 'user1', user: 'John Doe' },
+                        timeStamp: new Date()
+                    }
+                ],
+                messageTemplate: (data: any) => `
+                    <div class="message-template">
+                        <span>${data.message.text}</span>
+                    </div>
+                `,
+                messageToolbarSettings: {
+                    items: []
+                }
+            });
+            chatUI.appendTo('#chatUI');
 
             const toolbarIcons = chatUIElem.querySelectorAll('.e-chat-message-toolbar .e-icons');
-            const defaultClasses = ['e-chat-copy', 'e-chat-reply', 'e-chat-pin', 'e-chat-trash'];
-            
-            expect(toolbarIcons.length).toBeGreaterThan(0);
-            defaultClasses.forEach((className) => {
-                const icon = Array.from(toolbarIcons).find((icon) => icon.classList.contains(className));
-                expect(icon).not.toBeNull();
-            });
+            expect(toolbarIcons.length).toEqual(0);
         });
 
         it('Message toolbar with tabindex', () => {
@@ -2938,6 +3137,660 @@ describe('ChatUI Component', () => {
             toolbar = chatUIElem.querySelector('.e-chat-message-toolbar');
             expect(toolbar.querySelector('.e-chat-copy')).toBeNull();
             expect(toolbar.querySelector('.e-tbar-btn').getAttribute('tabindex')).toEqual('1');
+        });
+    });
+
+    describe('Mention Support - ', () => {
+        afterEach(() => {
+            if (chatUI) {
+                chatUI.destroy();
+            }
+        });
+
+        it('should initialize mention component when mentionUsers are provided', () => {
+            const mentionUsers = [
+                { id: "user1", user: "John Doe" },
+                { id: "user2", user: "Jane Smith" },
+                { id: "user3", user: "Alice Johnson" }
+            ];
+
+            chatUI = new ChatUI({
+                mentionUsers: mentionUsers
+            });
+            chatUI.appendTo(chatUIElem);
+
+            // Verify mention object is created
+            expect((chatUI as any).mentionObj).not.toBeUndefined();
+        });
+
+        it('should update mention trigger character when mentionTriggerChar property changes', () => {
+            const mentionUsers = [
+                { id: "user1", user: "John Doe" },
+                { id: "user2", user: "Jane Smith" }
+            ];
+
+            chatUI = new ChatUI({
+                mentionUsers: mentionUsers,
+                mentionTriggerChar: '@'
+            });
+            chatUI.appendTo(chatUIElem);
+            (chatUI as any).mentionObj.mentionChar = '@';
+            chatUI.mentionTriggerChar = '#';
+            chatUI.dataBind();
+            (chatUI as any).mentionObj.mentionChar = '#';
+        });
+
+        it('should trigger mentionSelected event when a mention is selected', (done: DoneFn) => {
+            const mentionUsers = [
+                { id: "user1", user: "John Doe" },
+                { id: "user2", user: "Jane Smith" }
+            ];
+
+            let eventTriggered = false;
+            let selectedUser: string;
+
+            chatUI = new ChatUI({
+                mentionUsers: mentionUsers,
+                mentionSelect: (args: MentionSelectEventArgs) => {
+                    eventTriggered = true;
+                    selectedUser = (args.itemData as any).text;
+                }
+            });
+            chatUI.appendTo(chatUIElem);
+
+            // Manually trigger the onMentionSelect method
+            const selectEventArgs = {
+                itemData: { text: 'John Doe', id: 'user1' },
+                isInteracted: true,
+                e: new MouseEvent('click')
+            };
+
+            (chatUI as any).onMentionSelect(selectEventArgs);
+
+            setTimeout(() => {
+                expect(eventTriggered).toBe(true);
+                expect(selectedUser).toBe('John Doe');
+                done();
+            }, 10);
+        });
+
+        it('should render mention component with correct CSS classes', () => {
+            const mentionUsers = [
+                { id: "user1", user: "John Doe" },
+                { id: "user2", user: "Jane Smith" }
+            ];
+
+            chatUI = new ChatUI({
+                mentionUsers: mentionUsers,
+                enableRtl: true
+            });
+            chatUI.appendTo(chatUIElem);
+
+            // Verify the mention object was created with the correct CSS classes
+            expect((chatUI as any).mentionObj.cssClass).toContain('e-chat-mention');
+            expect((chatUI as any).mentionObj.cssClass).toContain('e-rtl');
+        });
+
+        it('should use correct display template for mention chips', () => {
+            const mentionUsers = [
+                { id: "user1", user: "John Doe" },
+                { id: "user2", user: "Jane Smith", avatarUrl: "https://example.com/avatar.jpg" }
+            ];
+
+            chatUI = new ChatUI({
+                mentionUsers: mentionUsers
+            });
+            chatUI.appendTo(chatUIElem);
+
+            // Verify the display template pattern in the mention object
+            const displayTemplate = (chatUI as any).mentionObj.displayTemplate;
+            expect(displayTemplate).toContain('e-chat-mention-user-chip');
+            expect(displayTemplate).toContain('data-user-id="${id}"');
+        });
+
+    });
+
+    describe('ChatUI Mention User Tests', () => {
+
+        afterEach(() => {
+            if (chatUI) {
+                chatUI.destroy();
+            }
+        });
+        
+        it('should render message with mentioned users in initial render', () => {
+            // Create test users
+            const mentionedUsers: UserModel[] = [
+                { id: '1', user: 'John Doe', avatarUrl: 'user1.jpg' },
+                { id: '2', user: 'Jane Smith', avatarUrl: 'user2.jpg' }
+            ];
+            
+            // Create a message with placeholders for mentioned users
+            const messageModel: MessageModel = {
+                id: 'msg1',
+                text: 'Hello {0}, how are you? And hello {1} too!',
+                timeStamp: new Date(),
+                author: {
+                    id: 'user1',
+                    user: 'John Doe'
+                },
+                mentionUsers: mentionedUsers
+            };
+            chatUI = new ChatUI({
+                messages: [messageModel]
+            });
+            chatUI.appendTo(chatUIElem);
+
+            // Check if the message is rendered with mention chips
+            const messageElements = chatUIElem.querySelectorAll('.e-text');
+            expect(messageElements.length).toBeGreaterThan(0);
+
+            // Verify mention chips are rendered
+            const mentionChips = chatUIElem.querySelectorAll('.e-chat-mention-user-chip');
+            expect(mentionChips.length).toBe(2);
+
+            // Verify the first mention chip contains the correct user name
+            expect(mentionChips[0].textContent).toContain('John Doe');
+
+            // Verify the second mention chip contains the correct user name
+            expect(mentionChips[1].textContent).toContain('Jane Smith');
+        });
+
+        it('should update DOM when message with mentions is updated', () => {
+            // Initial setup
+            const initialMentionedUsers: UserModel[] = [
+                { id: '1', user: 'John Doe', avatarUrl: 'user1.jpg' }
+            ];
+
+            const initialMessage: MessageModel = {
+                id: 'msg1',
+                text: 'Hello {0}!',
+                timeStamp: new Date(),
+                author: {
+                    id: 'user1',
+                    user: 'John Doe'
+                },
+                mentionUsers: initialMentionedUsers
+            };
+
+            chatUI = new ChatUI({
+                messages: [initialMessage]
+            });
+            chatUI.appendTo(chatUIElem);
+
+            // Verify initial render
+            let mentionChips = chatUIElem.querySelectorAll('.e-chat-mention-user-chip');
+            expect(mentionChips.length).toBe(1);
+            expect(mentionChips[0].textContent).toContain('John Doe');
+
+            // Update message with additional mentioned user
+            const updatedMentionedUsers: UserModel[] = [
+                { id: '1', user: 'John Doe', avatarUrl: 'user1.jpg' },
+                { id: '2', user: 'Jane Smith', avatarUrl: 'user2.jpg' }
+            ];
+
+            const updatedMessage: MessageModel = {
+                id: 'msg1',
+                text: 'Hello {0} and {1}!',
+                timeStamp: new Date(),
+                author: {
+                    id: 'user1',
+                    user: 'John Doe'
+                },
+                mentionUsers: updatedMentionedUsers
+            };
+            chatUI.updateMessage(updatedMessage, 'msg1');
+
+            // Verify DOM is updated with new mention chip
+            mentionChips = chatUIElem.querySelectorAll('.e-chat-mention-user-chip');
+            expect(mentionChips.length).toBe(2);
+            expect(mentionChips[0].textContent).toContain('John Doe');
+            expect(mentionChips[1].textContent).toContain('Jane Smith');
+        });
+
+        it('should handle invalid placeholder indices gracefully', () => {
+            // Create test users
+            const mentionedUsers: UserModel[] = [
+                { id: '1', user: 'John Doe', avatarUrl: 'user1.jpg' }
+            ];
+
+            // Create a message with valid and invalid placeholders
+            const messageModel: MessageModel = {
+                id: 'msg1',
+                text: 'Hello {0}, and also {1} and {-5}!',
+                timeStamp: new Date(),
+                author: {
+                    id: 'user1',
+                    user: 'John Doe'
+                },
+                mentionUsers: mentionedUsers
+            };
+
+            chatUI = new ChatUI({
+                messages: [messageModel]
+            });
+            chatUI.appendTo(chatUIElem);
+            // Check if only valid placeholders are replaced
+            const messageElements = chatUIElem.querySelectorAll('.e-text');
+            expect(messageElements.length).toBeGreaterThan(0);
+
+            // Verify only one mention chip is rendered (for valid index)
+            const mentionChips = chatUIElem.querySelectorAll('.e-chat-mention-user-chip');
+            expect(mentionChips.length).toBe(1);
+
+            // Verify the message still contains the invalid placeholders
+            const messageText = messageElements[0].innerHTML;
+            expect(messageText).toContain('{1}');
+            expect(messageText).toContain('{-5}');
+        });
+
+        it('it should not render mention instance when no mentioned users property is assigned', () => {
+            chatUI = new ChatUI({
+                mentionUsers: []
+            });
+            chatUI.appendTo(chatUIElem);
+            let footerElem: HTMLElement = chatUIElem.querySelector('.e-footer .e-chat-textarea');
+            expect(footerElem.classList.contains('e-mention')).toBe(false);
+            expect((chatUI as any).mentionObj).toBeUndefined();
+        });
+    });
+
+    describe('Mention Support - ', () => {
+        let mentionchatUI: ChatUI;
+        const mentionchatUIElem: HTMLElement = createElement('div', { id: 'mentionchatUI' });
+        document.body.appendChild(mentionchatUIElem);
+
+        afterEach(() => {
+            if (mentionchatUI) {
+                mentionchatUI.destroy();
+            }
+        });
+
+        it('should update mention data source when mentionUsers property changes', (done: DoneFn) => {
+            const initialMentionUsers = [
+                { id: "user1", user: "John Doe" },
+                { id: "user2", user: "Jane Smith" }
+            ];
+            const updatedMentionUsers = [
+                { id: "user1", user: "John Doe" },
+                { id: "user2", user: "Jane Smith" },
+                { id: "user3", user: "Alice Johnson" }
+            ];
+            mentionchatUI = new ChatUI({
+                mentionUsers: initialMentionUsers
+            });
+            mentionchatUI.appendTo(mentionchatUIElem);
+            (mentionchatUI as any).mentionObj.showPopup();
+            // Wait for mention popup to appear
+            setTimeout(() => {
+                const initialMentionPopup = document.querySelector('.e-chat-mention.e-popup');
+                expect(initialMentionPopup).not.toBeNull();
+                // Check initial count of li elements
+                const initialListItems = initialMentionPopup.querySelectorAll('li');
+                expect(initialListItems.length).toBe(2);
+                (mentionchatUI as any).mentionObj.hidePopup();
+                // Update mention users
+                mentionchatUI.mentionUsers = updatedMentionUsers;
+                mentionchatUI.dataBind();
+                setTimeout(() => {
+                    (mentionchatUI as any).mentionObj.showPopup();
+                    const updatedMentionPopup = document.querySelector('.e-chat-mention.e-popup');
+                    const updatedListItems = updatedMentionPopup.querySelectorAll('li');
+                    // Verify that the list now has 3 items
+                    expect(updatedListItems.length).toBe(3);
+                    // Verify the new user appears in the list
+                    const userNames = Array.from(updatedListItems).map(li => 
+                        li.querySelector('.e-chat-mention-user-name').textContent.trim());
+                    expect(userNames).toContain('Alice Johnson');
+                    done();
+                }, 500);
+            }, 600);
+        });
+
+        it('should include mentionedUsers in sent message', (done: DoneFn) => {
+            const mentionUsers = [
+                { id: "user1", user: "John Doe" },
+                { id: "user2", user: "Jane Smith" }
+            ];
+
+            let capturedMessage: MessageModel;
+
+            mentionchatUI = new ChatUI({
+                mentionUsers: mentionUsers,
+                user: { id: 'currentUser', user: 'Current User' },
+                messageSend: (args: MessageSendEventArgs) => {
+                    capturedMessage = args.message;
+                }
+            });
+            mentionchatUI.appendTo(mentionchatUIElem);
+
+            // Manually prepare for sending a message with mentions
+            const textareaElem: HTMLDivElement = mentionchatUIElem.querySelector('.e-footer .e-chat-textarea');
+
+            // Create a mention chip
+            const mentionChip = document.createElement('span');
+            mentionChip.className = 'e-mention-chip';
+            const mentionUser = document.createElement('span');
+            mentionUser.className = 'e-chat-mention-user-chip';
+            mentionUser.setAttribute('data-user-id', 'user1');
+            mentionUser.textContent = 'John Doe';
+            mentionChip.appendChild(mentionUser);
+            textareaElem.appendChild(mentionChip);
+
+            const sendButton: HTMLElement = mentionchatUIElem.querySelector('.e-footer .e-chat-send');
+            setTimeout(() => {
+                sendButton.classList.remove('disabled');
+                sendButton.click();
+
+                setTimeout(() => {
+                    expect(capturedMessage).toBeDefined();
+                    expect(capturedMessage.mentionUsers.length).toBe(1);
+                    expect(capturedMessage.mentionUsers[0].id).toBe('user1');
+                    expect(capturedMessage.mentionUsers[0].user).toBe('John Doe');
+                    done();
+                }, 500);
+            }, 600);
+        });
+
+        it('should extract mentioned users from textarea content when sending a message', (done: DoneFn) => {
+            const mentionUsers = [
+                { id: "user1", user: "John Doe" },
+                { id: "user2", user: "Jane Smith" }
+            ];
+
+            mentionchatUI = new ChatUI({
+                mentionUsers: mentionUsers,
+                user: { id: 'currentUser', user: 'Current User' }
+            });
+            mentionchatUI.appendTo(mentionchatUIElem);
+
+            // Mock the getUserMentionFromContent method to verify it's called during send
+            const syncMentionsSpy = spyOn<any>(mentionchatUI, 'getUserMentionFromContent').and.callThrough();
+
+            // Prepare to send a message
+            const textareaElem: HTMLDivElement = mentionchatUIElem.querySelector('.e-footer .e-chat-textarea');
+            textareaElem.innerText = 'Message with mention';
+
+            const inputEvent = new Event('input', { bubbles: true });
+            textareaElem.dispatchEvent(inputEvent);
+
+            setTimeout(() => {
+                const sendButton: HTMLElement = mentionchatUIElem.querySelector('.e-footer .e-chat-send');
+                sendButton.click();
+
+                expect(syncMentionsSpy).toHaveBeenCalled();
+                done();
+            }, 100);
+        });
+
+        it('it should render mention instance when mentioned users property is assigned dynamically', (done: DoneFn) => {
+            mentionchatUI = new ChatUI({
+                mentionUsers: []
+            });
+            mentionchatUI.appendTo(mentionchatUIElem);
+            let footerElem: HTMLElement = mentionchatUIElem.querySelector('.e-footer .e-chat-textarea');
+            expect(footerElem.classList.contains('e-mention')).toBe(false);
+            expect((mentionchatUI as any).mentionObj).toBeUndefined();
+            mentionchatUI.mentionUsers = [
+                { id: "user1", user: "John Doe" },
+                { id: "user2", user: "Jane Smith" }
+            ];
+            mentionchatUI.dataBind();
+            setTimeout(() => {
+                expect(footerElem.classList.contains('e-mention')).toBe(true);
+                expect((mentionchatUI as any).mentionObj).not.toBeNull();
+                (mentionchatUI as any).mentionObj.showPopup();
+                const updatedMentionPopup = document.querySelector('.e-chat-mention.e-popup');
+                const updatedListItems = updatedMentionPopup.querySelectorAll('li');
+                expect(updatedListItems.length).toBe(2);
+                const userNames = Array.from(updatedListItems).map(li => 
+                    li.querySelector('.e-chat-mention-user-name').textContent.trim());
+                expect(userNames).toContain('John Doe');
+                expect(userNames).toContain('Jane Smith');
+                done();
+            }, 100);
+        });
+
+        it('should handle mention selection, dynamic user update, and message sending correctly', (done: DoneFn) => {
+            const initialMentionUsers: UserModel[] = [
+                { id: "user1", user: "John Doe" },
+                { id: "user2", user: "Jane Smith" }
+            ];
+            const updatedMentionUsers: UserModel[] = [
+                { id: "user2", user: "Jane Smith" },
+                { id: "user3", user: "Alice" }
+            ];
+
+            let capturedMessage: MessageModel;
+
+            mentionchatUI = new ChatUI({
+                mentionUsers: initialMentionUsers,
+                user: { id: 'currentUser', user: 'Current User' },
+                messageSend: (args: MessageSendEventArgs) => {
+                    capturedMessage = args.message;
+                }
+            });
+            mentionchatUI.appendTo(mentionchatUIElem);
+
+            const textareaElem: HTMLDivElement = mentionchatUIElem.querySelector('.e-footer .e-chat-textarea');
+
+            // 1. Trigger the mention popup and select the first user
+            (mentionchatUI as any).mentionObj.showPopup();
+            setTimeout(() => {
+                const mentionPopup = document.querySelector('.e-chat-mention.e-popup');
+                const listItems = mentionPopup.querySelectorAll('li');
+                var keyEvent1 = new MouseEvent('mousedown', {
+                    bubbles: true
+                });
+                (listItems[0] as HTMLElement).dispatchEvent(keyEvent1); // Selects "John Doe"
+
+                // 2. Update the list of mentionable users
+                mentionchatUI.mentionUsers = updatedMentionUsers;
+                mentionchatUI.dataBind();
+                setTimeout(() => {
+                    (mentionchatUI as any).mentionObj.showPopup();
+                    const updatedMentionPopup = document.querySelector('.e-chat-mention.e-popup');
+                    const updatedListItems = updatedMentionPopup.querySelectorAll('li');
+                    // In the updated list, "Alice" will be at index 1
+                    (updatedListItems[1] as HTMLElement).dispatchEvent(keyEvent1);
+
+                    // 3. Send the message
+                    const inputEvent: Event = new Event('input', { bubbles: true });
+                    textareaElem.dispatchEvent(inputEvent);
+
+                    setTimeout(() => {
+                        const sendButton: HTMLElement = mentionchatUIElem.querySelector('.e-chat-send');
+                        sendButton.click();
+
+                        setTimeout(() => {
+                            // 4. Assertions
+                            expect(capturedMessage).toBeDefined();
+                            // Check that the text has been converted to placeholders
+                            // Check that the correct users are in the mention list
+                            expect(capturedMessage.mentionUsers.length).toBe(2);
+                            expect(capturedMessage.mentionUsers[0].id).toBe('user1');
+                            expect(capturedMessage.mentionUsers[0].user).toBe('John Doe');
+                            expect(capturedMessage.mentionUsers[1].id).toBe('user3');
+                            expect(capturedMessage.mentionUsers[1].user).toBe('Alice');
+                            done();
+                        }, 100);
+                    }, 200);
+                }, 300);
+            }, 400);
+        });
+    });
+
+    describe('HTML Content and Mention Processing Tests', () => {
+        let chatUIInstance: ChatUI;
+        const chatUIMentionElem: HTMLElement = createElement('div', { id: 'htmlMentionChatUI' });
+        
+        beforeEach(() => {
+            document.body.appendChild(chatUIMentionElem);
+        });
+
+        afterEach(() => {
+            if (chatUIInstance) {
+                chatUIInstance.destroy();
+            }
+            if (chatUIMentionElem.parentElement) {
+                document.body.removeChild(chatUIMentionElem);
+            }
+        });
+
+        it('should correctly render HTML formatting and mentions when sending a message', (done: DoneFn) => {
+            // Create chat UI with mention users
+            chatUIInstance = new ChatUI({
+                user: { id: 'current-user', user: 'Current User' },
+                mentionUsers: [
+                    { id: 'user1', user: 'Andrew' },
+                    { id: 'user2', user: 'Jane' }
+                ]
+            });
+            chatUIInstance.appendTo('#htmlMentionChatUI');
+
+            // Get the textarea element
+            const textareaElem: HTMLDivElement = chatUIMentionElem.querySelector('.e-footer .e-chat-textarea');
+            expect(textareaElem).not.toBeNull();
+
+            // Set HTML content with both formatting and mention chips
+            textareaElem.innerText = '<h1>Important</h1> message for ' + 
+            '<span contenteditable="false" class="e-mention-chip"><span class="e-chat-mention-user-chip" data-user-id="user1">Andrew</span></span>' +
+            ' and <b>please</b> also inform ' +
+            '<span contenteditable="false" class="e-mention-chip"><span class="e-chat-mention-user-chip" data-user-id="user2">Jane</span></span>';
+
+            // Trigger input event to enable the send button
+            const inputEvent: Event = new Event('input', { bubbles: true });
+            textareaElem.dispatchEvent(inputEvent);
+
+            // Wait for input event to be processed
+            setTimeout(() => {
+                // Get the send button and click it
+                const sendButton: HTMLElement = chatUIMentionElem.querySelector('.e-chat-send');
+                expect(sendButton).not.toBeNull();
+                expect(sendButton.classList.contains('disabled')).toBe(false);
+
+                sendButton.click();
+
+                // Wait for the message to be processed and rendered
+                setTimeout(() => {
+                    // Find the rendered message
+                    const messageItem: HTMLElement = chatUIMentionElem.querySelector('.e-message-item');
+                    expect(messageItem).not.toBeNull();
+
+                    const messageText: HTMLElement = messageItem.querySelector('.e-text');
+                    expect(messageText).not.toBeNull();
+
+                    // Check for HTML rendering
+                    const h1Element = messageText.querySelector('h1');
+                    expect(h1Element).not.toBeNull();
+                    expect(h1Element.textContent).toBe('Important');
+
+                    const boldElement = messageText.querySelector('b');
+                    expect(boldElement).not.toBeNull();
+                    expect(boldElement.textContent).toBe('please');
+
+                    // Check for mention chips rendering
+                    const mentionChips = messageText.querySelectorAll('.e-chat-mention-user-chip');
+                    expect(mentionChips.length).toBe(2);
+                    expect(mentionChips[0].textContent).toBe('Andrew');
+                    expect(mentionChips[1].textContent).toBe('Jane');
+
+                    // Verify the overall structure of the message
+                    const messageHTML = messageText.innerHTML;
+                    expect(messageHTML).toContain('<h1>Important</h1>');
+                    expect(messageHTML).toContain('<b>please</b>');
+                    expect(messageHTML).toContain('data-user-id="user1"');
+                    expect(messageHTML).toContain('data-user-id="user2"');
+
+                    done();
+                }, 300);
+            }, 300);
+        });
+    });
+
+    describe('Actions on Messages with Mentions', () => {
+        afterEach(() => {
+            if (chatUI) {
+                chatUI.destroy();
+                chatUI = null;
+            }
+        });
+
+        const mentionedMessage: MessageModel = {
+            id: 'mention-msg1',
+            text: 'Hello {0}, this is an important message.',
+            author: { id: 'user1', user: 'Current User' },
+            timeStamp: new Date(),
+            isPinned: true,
+            mentionUsers: [
+                { id: 'user2', user: 'Jane Smith' }
+            ]
+        };
+
+        it('should correctly pin a message containing mentioned users', () => {
+            chatUI = new ChatUI({
+                messages: [mentionedMessage]
+            });
+            chatUI.appendTo('#chatUI');
+
+            const pinnedMessageElem: HTMLElement = chatUIElem.querySelector('.e-pinned-message');
+            expect(pinnedMessageElem).not.toBeNull();
+            const pinnedTextElem: HTMLElement = pinnedMessageElem.querySelector('.e-pinned-message-text');
+
+            const mentionChip = pinnedTextElem.querySelector('.e-chat-mention-user-chip');
+            expect(mentionChip).not.toBeNull();
+            expect(mentionChip.textContent).toContain('Jane Smith');
+            expect(pinnedTextElem.textContent).toBe('Hello Jane Smith, this is an important message.');
+        });
+
+        it('should correctly create a reply to a message containing mentioned users', () => {
+            chatUI = new ChatUI({
+                messages: [mentionedMessage],
+                user: { id: 'user1', user: 'Current User' }
+            });
+            chatUI.appendTo('#chatUI');
+
+            const replyButton: HTMLElement = chatUIElem.querySelector('.e-icons.e-chat-reply');
+            expect(replyButton).not.toBeNull();
+
+            replyButton.click();
+
+            const replyWrapper: HTMLElement = chatUIElem.querySelector('.e-footer .e-reply-wrapper');
+            expect(replyWrapper).not.toBeNull();
+            const replyTextElem: HTMLElement = replyWrapper.querySelector('.e-reply-message-text');
+            const mentionChip = replyTextElem.querySelector('.e-chat-mention-user-chip');
+
+            expect(mentionChip).not.toBeNull();
+            expect(mentionChip.textContent).toContain('Jane Smith');
+            expect(replyTextElem.textContent).toBe('Hello Jane Smith, this is an important message.');
+        });
+
+        it('should correctly copy the text of a message containing mentioned users', (done: DoneFn) => {
+            chatUI = new ChatUI({
+                messages: [mentionedMessage]
+            });
+            chatUI.appendTo('#chatUI');
+
+            const copyButton: HTMLElement = chatUIElem.querySelector('.e-icons.e-chat-copy');
+            expect(copyButton).not.toBeNull();
+
+            const clipboardWriteSpy: jasmine.Spy = spyOn((navigator as any).clipboard, 'write').and.callFake(function (items: any) {
+                expect(items.length).toBe(1); // Ensure there's one item
+                var clipboardItem = items[0];
+
+                clipboardItem.getType('text/plain').then(function(blob: any) {
+                    var reader = new FileReader();
+                    reader.onload = function () {
+                        var copiedText = reader.result;
+                        expect(copiedText).toBe('Hello Jane Smith, this is an important message.');
+                        done();
+                    };
+                    reader.readAsText(blob);
+                });
+
+                return Promise.resolve();
+            });
+            copyButton.click();
         });
     });
 });

@@ -2352,6 +2352,12 @@ describe('PDF Export', () => {
             });
             pivotGridObj.appendTo('#PivotGrid');
         });
+        it('Time out', function (done) {
+            setTimeout(function () {
+                expect(1).toBe(1);
+                done();
+            }, 1000);
+        });
         it('Export ensuring for row axis.', (done: Function) => {
             pivotGridObj.pdfExport();
             setTimeout(() => {
@@ -2367,6 +2373,12 @@ describe('PDF Export', () => {
                     values: [{ name: 'value' }],
                     valueAxis: 'column'
                 }
+                expect(1).toBe(1);
+                done();
+            }, 1000);
+        });
+        it('Time out', function (done) {
+            setTimeout(function () {
                 expect(1).toBe(1);
                 done();
             }, 1000);

@@ -2,20 +2,6 @@
 
 ## [Unreleased]
 
-## 30.2.7 (2025-08-26)
-
-### Chat UI
-
-#### Bug Fixes
-
-- `#I741845` - Now the issue with empty chat template not re-rendered when all the messages are dynamically cleared has been resolved.
-
-- `#I742746` - Now the issue with message toolbar not rendered when the `messageTemplate` is configured has been resolved.
-
-- `#I746116` - Now the issue with `tabIndex` property not being updated properly for the header toolbar items in the ChatUI has been resolved.
-
-- `#I746122` - Now the issue with DropDownButton disappearing after drag, when configured the headerToolbar template inside Rnd component has been resolved in the Chat UI.
-
 ## 29.1.33 (2025-03-25)
 
 ### Chat UI

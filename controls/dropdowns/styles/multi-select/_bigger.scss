@@ -1046,7 +1046,7 @@
 
   .e-bigger .e-multi-select-wrapper .e-chips .e-chips-close::before {
     @if $skin-name == 'bootstrap4' {
-      font-size: 12px;
+      font-size: 18px;
       top: $ddl-bigger-close-top;
     }
   }
@@ -1054,7 +1054,7 @@
   .e-bigger .e-multi-select-wrapper .e-chips .e-chips-close::before,
   .e-bigger.e-multi-select-wrapper .e-chips .e-chips-close::before {
     @if $skin-name == 'bootstrap4' {
-      top: 1px;
+      top: 5px;
     }
   }
 

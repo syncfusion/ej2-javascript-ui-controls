@@ -141,7 +141,7 @@ export class Resize implements IAction {
         let indentWidth: number = 0;
         const uid: string = id ? id : this.parent.getUidByColumnField(fName);
         const columnIndex: number = this.parent.getNormalizedColumnIndex(uid);
-        const headerTextClone: Element = (<HTMLElement>headerTable.querySelector('[e-mappinguid="' + uid + '"]').parentElement.cloneNode(true));
+        const headerTextClone: Element = (<HTMLElement>headerTable.querySelector('[data-mappinguid="' + uid + '"]').parentElement.cloneNode(true));
         const contentTextClone: HTMLTableCellElement[] = this.getCellElementsByColumnIndex(columnIndex);
         let footerTextClone: NodeListOf<Element>;
         const columnIndexByField: number = this.parent.getColumnIndexByField(fName);
@@ -549,7 +549,7 @@ export class Resize implements IAction {
             const node: HTMLTableCellElement = th[parseInt(i.toString(), 10)];
             let column: Column;
             if (node.classList.contains('e-summarycell')) {
-                const uid: string = node.getAttribute('e-mappinguid');
+                const uid: string = node.getAttribute('data-mappinguid');
                 column = this.parent.getColumnByUid(uid);
             } else {
                 const index: number = parseInt(node.getAttribute('aria-colindex'), 10) - 1;
@@ -718,11 +718,11 @@ export class Resize implements IAction {
                         if (this.parent.getContent().querySelectorAll('.e-summaryrow').length) {
                             const summaryRows: HTMLElement[] = [].slice.call(this.parent.getContent().querySelectorAll('.e-summaryrow'));
                             summaryRows.filter((row: HTMLElement) => {
-                                summarycell.push(row.querySelector('[e-mappinguid="' + column.uid + '"]'));
+                                summarycell.push(row.querySelector('[data-mappinguid="' + column.uid + '"]'));
                             });
                         }
                         summarycell = summarycell.concat(
-                            [].slice.call(this.parent.getFooterContent().querySelectorAll('[e-mappinguid="' + column.uid + '"]')));
+                            [].slice.call(this.parent.getFooterContent().querySelectorAll('[data-mappinguid="' + column.uid + '"]')));
                     }
                     if (node.classList.contains('e-fixedfreeze')) {
                         if (this.parent.getVisibleFrozenLeftCount()) {
@@ -800,11 +800,11 @@ export class Resize implements IAction {
                         if (this.parent.getContent().querySelectorAll('.e-summaryrow').length) {
                             const summaryRows: HTMLElement[] = [].slice.call(this.parent.getContent().querySelectorAll('.e-summaryrow'));
                             summaryRows.filter((row: HTMLElement) => {
-                                summarycell.push(row.querySelector('[e-mappinguid="' + column.uid + '"]'));
+                                summarycell.push(row.querySelector('[data-mappinguid="' + column.uid + '"]'));
                             });
                         }
                         summarycell = summarycell.concat([].slice.call(
-                            this.parent.getFooterContent().querySelectorAll('[e-mappinguid="' + column.uid + '"]')));
+                            this.parent.getFooterContent().querySelectorAll('[data-mappinguid="' + column.uid + '"]')));
                     }
                     if (node.classList.contains('e-fixedfreeze')) {
                         width = this.parent.getFrozenMode() === 'Right' && this.parent.isRowDragable() ? 30 : 0;
@@ -857,8 +857,8 @@ export class Resize implements IAction {
     }
 
     private getParticularCol(node?: HTMLElement): Column {
-        const uid: string = node.classList.contains('e-filterbarcell') ? node.getAttribute('e-mappinguid') :
-            node.querySelector('[e-mappinguid]').getAttribute('e-mappinguid');
+        const uid: string = node.classList.contains('e-filterbarcell') ? node.getAttribute('data-mappinguid') :
+            node.querySelector('[data-mappinguid]').getAttribute('data-mappinguid');
         return this.parent.getColumnByUid(uid);
     }
 
@@ -1075,8 +1075,8 @@ export class Resize implements IAction {
         const columns: Column[] = this.parent.getColumns();
         for (const ele of [].slice.apply(this.parent.getHeaderContent().querySelectorAll('th.e-headercell'))) {
             for (const column of columns) {
-                if (ele.querySelector('[e-mappinguid]') &&
-                    ele.querySelector('[e-mappinguid]').getAttribute('e-mappinguid') === column.uid && column.visible) {
+                if (ele.querySelector('[data-mappinguid]') &&
+                    ele.querySelector('[data-mappinguid]').getAttribute('data-mappinguid') === column.uid && column.visible) {
                     column.width = ele.getBoundingClientRect().width;
                     break;
                 }
@@ -1107,7 +1107,7 @@ export class Resize implements IAction {
     private getTargetColumn(e: PointerEvent | TouchEvent): Column {
         let cell: HTMLElement = <HTMLElement>closest(<HTMLElement>e.target, resizeClassList.header);
         cell = cell.querySelector('.e-headercelldiv') || cell.querySelector('.e-stackedheadercelldiv');
-        const uid: string = cell.getAttribute('e-mappinguid');
+        const uid: string = cell.getAttribute('data-mappinguid');
         return this.parent.getColumnByUid(uid);
     }
 

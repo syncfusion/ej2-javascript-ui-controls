@@ -661,6 +661,11 @@ export const beforeImageDrop: string = 'beforeImageDrop';
  * @hidden
  * @deprecated
  */
+export const beforeMediaDrop: string = 'beforeMediaDrop';
+/**
+ * @hidden
+ * @deprecated
+ */
 export const dynamicModule: string = 'dynamicModule';
 /**
  * @hidden
@@ -1009,3 +1014,8 @@ export const onHandleFontsizeChange: string = 'onHandleFontsizeChange';
  * @deprecated
  */
 export const preventQuickToolbarClose: string = 'preventQuickToolbarClose';
+/**
+ * @hidden
+ * @deprecated
+ */
+export const selectionChanged: string = 'selectionChanged';

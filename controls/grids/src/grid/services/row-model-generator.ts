@@ -59,7 +59,8 @@ export class RowModelGenerator implements IModelGenerator<Column> {
     }
 
     protected generateRow(
-        data: Object, index: number, cssClass?: string, indent?: number, pid?: number, tIndex?: number, parentUid?: string): Row<Column> {
+        data: Object, index: number, cssClass?: string, indent?: number, pid?: number, tIndex?: number, parentUid?: string,
+        groupDataIndex?: number): Row<Column> {
         const options: IRow<Column> = {};
         options.foreignKeyData = {};
         options.uid = getUid('grid-row');
@@ -70,6 +71,9 @@ export class RowModelGenerator implements IModelGenerator<Column> {
         options.isDataRow = true;
         options.parentGid = pid;
         options.parentUid = parentUid;
+        if (this.parent.allowGrouping && this.parent.groupSettings.columns.length) {
+            options.groupDataIndex = groupDataIndex;
+        }
         if (this.parent.isPrinting) {
             if (this.parent.hierarchyPrintMode === 'All') {
                 options.isExpand = true;

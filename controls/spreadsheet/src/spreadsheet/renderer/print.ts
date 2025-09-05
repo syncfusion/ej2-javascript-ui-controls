@@ -499,20 +499,23 @@ export class Print {
                                     printInstance.rowHeaderRect(context, currentX, currentY[k as number], cellWidth, cellHeight,
                                                                 backgroundColor);
                                 }
-                                if (cell.style && (cellWidth > 0 || cellHeight > 0) && (cell.style.borderBottom || cell.style.borderTop
-                                    || cell.style.borderLeft || cell.style.borderRight && ((isNullOrUndefined(cell.rowSpan) &&
-                                    isNullOrUndefined(cell.colSpan)) || (!isNullOrUndefined(cell.rowSpan) && cell.rowSpan > 0) ||
-                                    (!isNullOrUndefined(cell.colSpan) && cell.colSpan > 0)))) {
-                                    printInstance.drawBorder(context, cell.style, currentX,
-                                                             (currentY[k as number] <= 0 ? 2 : currentY[k as number]),
-                                                             cellWidth, cellHeight);
-                                }
                             }
                             const currentWidth: number = (cellWidthSpan <= 0 ? cellWidth : (cellWidth ||
                                 (sheet.columns[k as number] && sheet.columns[k as number].width) || this.defaultCellWidth));
                             if (printOptions.allowGridLines) {
                                 style.borderRight = k === end && allowColumnAndRow ? undefined : '1px solid black';
+                                style.borderBottom = '1px solid black';
+                                style.borderTop = '1px solid black';
+                                style.borderLeft = '1px solid black';
                                 printInstance.drawBorder(context, style, currentX, currentY[k as number], currentWidth, cellHeight);
+                            }
+                            if (cell && cell.style && (cellWidth > 0 || cellHeight > 0) && (cell.style.borderBottom || cell.style.borderTop
+                                    || cell.style.borderLeft || cell.style.borderRight && ((isNullOrUndefined(cell.rowSpan) &&
+                                    isNullOrUndefined(cell.colSpan)) || (!isNullOrUndefined(cell.rowSpan) && cell.rowSpan > 0) ||
+                                    (!isNullOrUndefined(cell.colSpan) && cell.colSpan > 0)))) {
+                                printInstance.drawBorder(context, cell.style, currentX,
+                                                         (currentY[k as number] <= 0 ? 2 : currentY[k as number]),
+                                                         cellWidth, cellHeight);
                             }
                             currentX += currentWidth;
                             let currentYValue: number = 0;
@@ -1144,7 +1147,17 @@ export class Print {
         const displayText: string[] = [];
         let width: number; let splitTextArr: string[]; let lWidth: number; let cWidth: number; let prevChars: string;
         let prevWidth: number = 0;
-        const textArr: string[] = text.toString().split(' ');
+        let textArr: string[] = [];
+        text = text.toString();
+        if (text.includes('\n')) {
+            const textArr1: string[] = text.split('\n');
+            textArr1.forEach((line: string) => {
+                textArr.push(...line.split(' ').filter((word: string) => word !== ''), '\n');
+            });
+            textArr.pop();
+        } else {
+            textArr = text.split(' ');
+        }
         const spaceWidth: number = getTextWidth(' ', style, parentStyle, true);
         let hypenWidth: number; let lines: number; let lineText: string = '';
         const calculateCount: (txt: string) => void = (txt: string): void => {
@@ -1181,6 +1194,12 @@ export class Print {
         };
         textArr.forEach((txt: string, textIdx: number) => {
             lWidth = 0; cWidth = 0; prevChars = '';
+            if (txt === '\n') {
+                displayText.push(lineText);
+                lineText = '';
+                prevWidth = 0;
+                return;
+            }
             width = getTextWidth(txt, style, parentStyle, true);
             lines = getDPRValue(prevWidth + width, true) / colwidth;
             if (lines > 1) {

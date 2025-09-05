@@ -35,6 +35,7 @@ export class QuickToolbar implements IQuickToolbar {
     public debounceTimeout: number = 1000;
     public isDestroyed: boolean;
     private escapeKeyPressed: boolean = false;
+    private showInlineQTBarTimeOut: number | null;
 
     public constructor(parent?: IRichTextEditor, locator?: ServiceLocator) {
         this.parent = parent;
@@ -361,7 +362,20 @@ export class QuickToolbar implements IQuickToolbar {
                     if ((args.ctrlKey && args.keyCode === 65) || (args.shiftKey && (args.keyCode === 33 || args.keyCode === 34 ||
                         args.keyCode === 35 || args.keyCode === 36 || args.keyCode === 37 || args.keyCode === 38 ||
                         args.keyCode === 39 || args.keyCode === 40))) {
-                        this.showInlineQTBar(this.offsetX, this.offsetY, args.target as HTMLElement, e.args as KeyboardEvent);
+                        if (this.showInlineQTBarTimeOut) {
+                            clearTimeout(this.showInlineQTBarTimeOut);
+                            this.showInlineQTBarTimeOut = null;
+                        }
+                        const isRteUnitTesting: boolean = (this.parent.element && this.parent.element.dataset && this.parent.element.dataset.rteUnitTesting === 'true');
+                        if (isRteUnitTesting) {
+                            this.showInlineQTBar(this.offsetX, this.offsetY, (e.args as KeyboardEvent).target as HTMLElement,
+                                                 e.args as KeyboardEvent);
+                        } else {
+                            this.showInlineQTBarTimeOut = window.setTimeout(() => {
+                                this.showInlineQTBar(this.offsetX, this.offsetY, (e.args as KeyboardEvent).target as HTMLElement,
+                                                     e.args as KeyboardEvent);
+                            }, 600);
+                        }
                     }
                 }
                 return;
@@ -729,7 +743,8 @@ export class QuickToolbar implements IQuickToolbar {
                 const target: HTMLElement = quickToolbar.previousTarget as HTMLElement;
                 quickToolbar.showPopup(target, e);
                 // update previous status
-                if (this.parent.quickToolbarSettings.text) {
+                if (this.parent.quickToolbarSettings.text || (this.parent.quickToolbarModule.inlineQTBar &&
+                    this.parent.quickToolbarModule.inlineQTBar.isRendered)) {
                     const previousStatus: IToolbarStatus = quickToolbar.getPreviousStatus();
                     if (previousStatus) {
                         quickToolbar.updateStatus(previousStatus);

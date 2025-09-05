@@ -1,8 +1,8 @@
-import { Component, Observer, L10n, KeyboardEventArgs, EmitType } from '@syncfusion/ej2-base';
+import { Component, L10n } from '@syncfusion/ej2-base';
 import { ItemModel, OverflowMode } from '@syncfusion/ej2-navigations';
 import { ItemModel as DropDownItemModel, DropDownButton, SplitButton } from '@syncfusion/ej2-splitbuttons';
 import { RenderType } from './enum';
-import { ToolbarType, ImageInputSource, CommandName, DialogType, ColorModeType } from '../../common/enum';
+import { ToolbarType, CommandName, DialogType, ColorModeType } from '../../common/enum';
 import { Toolbar } from '../actions/toolbar';
 import { UndoRedoManager } from '../../editor-manager/plugin/undo';
 import { ClickEventArgs } from '@syncfusion/ej2-navigations';
@@ -10,43 +10,34 @@ import { BaseToolbar } from '../actions/base-toolbar';
 import { BaseQuickToolbar } from '../actions/base-quick-toolbar';
 import { NodeSelection } from '../../selection/selection';
 import { EditorMode, EnterKey, ShiftEnterKey } from './../../common/types';
-import { MarkdownSelection } from './../../markdown-parser/plugin/markdown-selection';
 import { ToolbarSettingsModel, IFrameSettingsModel, ImageSettingsModel, AudioSettingsModel, VideoSettingsModel, TableSettingsModel, FormatPainterSettingsModel, ImportWordModel, ExportWordModel, ExportPdfModel, CodeBlockSettingsModel } from '../../models/models';
 import { QuickToolbarSettingsModel, InlineModeModel, PasteCleanupSettingsModel, EmojiSettingsModel } from '../../models/models';
 import { FileManagerSettingsModel } from '../models/models';
 import { Count } from '../actions/count';
-import { ColorPicker, ColorPickerEventArgs, ColorPickerModel, FileInfo } from '@syncfusion/ej2-inputs';
-import { Link } from '../renderer/link-module';
+import { ColorPicker, FileInfo } from '@syncfusion/ej2-inputs';
 import { Image } from '../renderer/image-module';
 import { Audio } from '../renderer/audio-module';
 import { Video } from '../renderer/video-module';
 import { Table } from '../renderer/table-module';
 import { ServiceLocator } from '../services/service-locator';
-import { UndoRedoCommands } from '../../markdown-parser/plugin/undo';
 import { MDSelectionFormats } from '../../markdown-parser/plugin/md-selection-formats';
 import { QuickToolbar } from '../actions/quick-toolbar';
 import { HtmlEditor } from '../actions/html-editor';
 import { MarkdownEditor } from '../actions/markdown-editor';
 import { FullScreen } from '../actions/full-screen';
 import { DropDownButtons } from '../actions/dropdown-buttons';
-import { IColorPickerModel, IDropDownItemModel, IDropDownModel, IEditorModel, IExecutionGroup, IFormatPainter, IImageCommandsArgs, ISplitButtonModel, IToolbarItemModel, IToolbarItems, IToolbarStatus, ResponseEventArgs, IListDropDownModel, ISlashMenuItem, ICodeBlockCommandsArgs } from '../../common/interface';
+import { IColorPickerModel, IDropDownItemModel, IDropDownModel, IEditorModel, IExecutionGroup, IFormatPainter, ISplitButtonModel, IToolbarItemModel, IToolbarItems, IToolbarStatus, ResponseEventArgs, IListDropDownModel, ISlashMenuItem, ICodeBlockCommandsArgs } from '../../common/interface';
 import { KeyboardEvents } from '../actions/keyboard';
 import { ViewSource } from '../renderer/view-source';
 import { PasteCleanup } from '../actions/paste-clean-up';
 import { Popup } from '@syncfusion/ej2-popups';
 import { Resize } from '../actions/resize';
 import { FileManager } from '../actions/file-manager';
-import { NodeCutter, DOMNode, IFormatPainterEditor, TableCommand, LinkCommand, ImageCommand, AudioCommand, VideoCommand, EmojiPickerAction, FormatPainterActions } from '../../editor-manager';
 import { EnterKeyAction } from '../actions/enter-key';
 import { EmojiPicker } from '../actions/emoji-picker';
 import { SlashMenuSettingsModel } from '../../models';
-import { DOMMethods } from '../../editor-manager/plugin/dom-tree';
 import { CustomUserAgentData } from '../../common/user-agent';
-import { MDTable, MDLink } from '../../markdown-parser';
 import { CodeBlock } from '../actions/code-block';
-import { CodeBlockPlugin } from '../../editor-manager/plugin/code-block';
-import { PasteCleanupAction } from '../../editor-manager/plugin/paste-clean-up-action';
-import { PasteCleanupSettings } from '../../models/toolbar-settings';
 
 /**
  * Specifies Rich Text Editor interfaces.
@@ -275,6 +266,7 @@ export interface IRichTextEditor extends Component<HTMLElement> {
     slashMenuSettings: SlashMenuSettingsModel
     showDialog(type: DialogType): void
     scrollParentElements: HTMLElement[]
+    getSelectedHtml(): string
 }
 
 export interface IQuickToolbar {
@@ -913,6 +905,23 @@ export const executeGroup: { [key: string]: IExecutionGroup } = {
     'insertCodeBlock': {
         command: 'CodeBlock',
         subCommand: 'CodeBlock'
+    },
+    'numberFormatListNone': {
+        command: 'Lists',
+        subCommand: 'NumberFormatList',
+        value: 'none'
+    },
+    'numberFormatList': {
+        command: 'Lists',
+        subCommand: 'NumberFormatList'
+    },
+    'bulletFormatList': {
+        command: 'Lists',
+        subCommand: 'BulletFormatList'
+    },
+    'checklist': {
+        command: 'Checklist',
+        subCommand: 'Checklist'
     }
 };
 

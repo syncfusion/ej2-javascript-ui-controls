@@ -433,7 +433,7 @@ export class FormulaBar {
             this.parent.notify(formulaOperation, eventArgs); isOpen = <boolean>eventArgs.isFormulaEdit;
             this.parent.notify(editOperation, args);
         }
-        if (isOpen || args.editedValue === '') {
+        if (args.editedValue === '') {
             if (!this.parent.element.querySelector('.e-spreadsheet-function-dlg')) {
                 if (args.editedValue === '') { this.parent.notify(editOperation, { action: 'refreshEditor', value: '=' }); }
                 const formulaDescription: HTMLElement = this.parent.createElement(

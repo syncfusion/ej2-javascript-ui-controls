@@ -41,6 +41,11 @@
         }
       }
     }
+    .e-contextmenu-container ul .e-menu-item.e-menu-item .e-caret {
+      @if $grid-xlfl-skin == 'bootstrap4'or $grid-xlfl-skin == 'bootstrap5' or $grid-xlfl-skin == 'bootstrap5-dark' $grid-xlfl-skin == 'tailwind3' or $grid-xlfl-skin == 'tailwind3-dark' or $grid-xlfl-skin == 'tailwind3' or  $grid-xlfl-skin == 'tailwind3-dark' {
+        line-height: $grid-bigger-xlfl-li-height;
+      }
+    }
   }
 
   .e-bigger #{&}.e-xlflmenu.e-rtl {

@@ -20,6 +20,9 @@
       @if $skin-name == 'Material3' {
         line-height: 40px;
       }
+      @if $skin-name == 'material' or $skin-name == 'material-dark' {
+        line-height: 36px;
+      }
     }
 
     & .e-dlg-content {
@@ -38,7 +41,7 @@
     }
 
     & .e-dlg-header-content .e-btn.e-dlg-closeicon-btn {
-      @if $skin-name != 'bootstrap5' and $skin-name != 'bootstrap5.3' and $skin-name != 'tailwind3' {
+      @if $skin-name != 'bootstrap5' and $skin-name != 'bootstrap5.3' and $skin-name != 'tailwind3' and $skin-name != 'material' and $skin-name != 'material-dark' {
         bottom: $dialog-bigger-close-button-bottom;
         left: $dialog-bigger-close-button-left;
       }
@@ -47,7 +50,7 @@
       @if $skin-name == 'FluentUI' or $skin-name == 'fluent2' {
         padding: $dialog-bigger-header-btn-padding;
       }
-      @if $skin-name == 'Material3' {
+      @if $skin-name == 'Material3' or $skin-name == 'material' or $skin-name == 'material-dark' {
         padding: $zero-value;
       }
       @if $skin-name == 'highcontrast' {

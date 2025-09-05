@@ -3,7 +3,7 @@ import { addClass, removeClass } from '../../base'; /*externalscript*/
 import * as classes from './classes';
 import { SfRichTextEditor } from './sf-richtexteditor-fn';
 import { ISetToolbarStatusArgs, ToolsItem } from './interfaces';
-import { BeforeSanitizeHtmlArgs, IDropDownItemModel, IExecutionGroup, SanitizeRemoveAttrs } from '../src/common/interface';
+import { BeforeSanitizeHtmlArgs, IDropDownItemModel, IExecutionGroup, SanitizeRemoveAttrs } from '../editor-scripts/common/interface';
 
 /**
  * Util functions
@@ -190,6 +190,14 @@ export const executeGroup: { [key: string]: IExecutionGroup } = {
     'insertCodeBlock': {
         command: 'CodeBlock',
         subCommand: 'CodeBlock'
+    },
+    'numberFormatList': {
+        command: 'Lists',
+        subCommand: 'NumberFormatList'
+    },
+    'bulletFormatList': {
+        command: 'Lists',
+        subCommand: 'BulletFormatList'
     }
 };
 
@@ -405,7 +413,7 @@ export function updateTextNode(value: string, rteObj: SfRichTextEditor): string 
                 previousParent = insertElem;
                 isPreviousInlineElem = true;
             } else if (tempNode.firstChild.nodeName === '#text' && (tempNode.firstChild.textContent === '\n' ||
-            (tempNode.firstChild.textContent.indexOf('\n') >= 0 && tempNode.firstChild.textContent.trim() === '') || isEmptySpace)) {
+            (tempNode.firstChild.textContent.indexOf('\n') >= 0 && tempNode.firstChild.textContent.trim() === '') || isEmptySpace) && (isNOU(rteObj.viewSourceModule) || (!isNOU(rteObj.viewSourceModule)))) {
                 detach(tempNode.firstChild);
             } else {
                 resultElm.appendChild(tempNode.firstChild);
@@ -564,7 +572,7 @@ export function setToolbarStatus(e: ISetToolbarStatusArgs, isPopToolbar: boolean
                             e.parent.fontFamily.default;
                         name = (isNOU(result) ? fontNameContent : result);
                         dropdownBtnText = e.tbElements[j as number].querySelector('.e-rte-dropdown-btn-text') as HTMLElement;
-                        dropdownBtnText.innerText = (name === 'Default' ? 'Font Name' : name);
+                        dropdownBtnText.innerText = (name === e.parent.localeData.default ? e.parent.localeData.fontFamily : name);
                         dropdownBtnText.parentElement.style.width = e.parent.fontFamily.width;
                         break;
                     case 'fontsize':
@@ -574,7 +582,7 @@ export function setToolbarStatus(e: ISetToolbarStatusArgs, isPopToolbar: boolean
                         result = value === 'empty' ? '' : getDropDownValue(
                             fontSizeItems, (value === '' ? fontSizeContent.replace(/\s/g, '') : value), 'value', 'text');
                         dropdownBtnText = e.tbElements[j as number].querySelector('.e-rte-dropdown-btn-text') as HTMLElement;
-                        dropdownBtnText.innerText = (getFormattedFontSize(result) === 'Default' ? 'Font Size' : getFormattedFontSize(result));
+                        dropdownBtnText.innerText = (getFormattedFontSize(result) === e.parent.localeData.default ? e.parent.localeData.fontSize : getFormattedFontSize(result));
                         dropdownBtnText.parentElement.style.width = e.parent.fontSize.width;
                         break;
                     case 'bulletFormatList':

@@ -1,6 +1,6 @@
 import { createElement, remove } from '@syncfusion/ej2-base';
 import { BlockType, ContentType } from '../../src/blockeditor/base/enums';
-import { BlockModel } from '../../src/blockeditor/models';
+import { BaseChildrenProp, BaseStylesProp, BlockModel, HeadingProps } from '../../src/blockeditor/models';
 import { BlockEditor, setSelectionRange, getBlockContentElement, setCursorPosition } from '../../src/index';
 import { createEditor } from '../common/util.spec';
 
@@ -48,7 +48,7 @@ describe('UndoRedo', () => {
 
             const paragraph = editorElement.querySelector('#paragraph-content1');
             paragraph.textContent = 'Updated content';
-            editor.updateContentOnUserTyping((paragraph.closest('.e-block') as HTMLElement));
+            editor.stateManager.updateContentOnUserTyping((paragraph.closest('.e-block') as HTMLElement));
             
             setTimeout(() => {
                 editor.setFocusToBlock(paragraph.closest('.e-block') as HTMLElement);
@@ -72,7 +72,7 @@ describe('UndoRedo', () => {
 
             const paragraph = editorElement.querySelector('#paragraph-content1');
             paragraph.textContent = 'Updated content';
-            editor.updateContentOnUserTyping((paragraph.closest('.e-block') as HTMLElement));
+            editor.stateManager.updateContentOnUserTyping((paragraph.closest('.e-block') as HTMLElement));
             
             setTimeout(() => {
                 editor.setFocusToBlock(paragraph.closest('.e-block') as HTMLElement);
@@ -218,11 +218,11 @@ describe('UndoRedo', () => {
             const blocks: BlockModel[] = [
                 { id: 'block1', type: BlockType.Paragraph, content: [{ id: 'paragraph-content1', type: ContentType.Text, content: 'Block 1 content' }] },
                 {
-                    id: 'callout', type: BlockType.Callout, children: [
+                    id: 'callout', type: BlockType.Callout, props: { children: [
                         {
                             id: 'callout-block-1', type: BlockType.Paragraph, content: [{ id: 'callout-content-1', type: ContentType.Text, content: 'Callout item 1' }],
                         }
-                    ]
+                    ]}
                 }
             ];
     
@@ -252,13 +252,13 @@ describe('UndoRedo', () => {
                 expect(contentElement.childElementCount).toBe(2);
                 expect(contentElement.querySelector('strong').textContent).toBe('Block ');
                 expect(contentElement.querySelector('span').textContent).toBe('1 content');
-                expect(editor.blocks[0].content[0].styles.bold).toBe(true);
+                expect((editor.blocks[0].content[0].props as BaseStylesProp).styles.bold).toBe(true);
                 const undoEvent: KeyboardEvent = new KeyboardEvent('keydown', { key: 'z', ctrlKey: true, code: 'KeyZ' });
                 editorElement.dispatchEvent(undoEvent);
                 // check updated block content after undo action
                 expect(contentElement.childElementCount).toBe(0);
                 expect(contentElement.textContent).toBe('Block 1 content');
-                expect(editor.blocks[0].content[0].styles.bold).toBe(false);
+                expect((editor.blocks[0].content[0].props as BaseStylesProp).styles.bold).toBeUndefined();
                 done();
             }, 10);
         });
@@ -274,13 +274,13 @@ describe('UndoRedo', () => {
                 expect(contentElement.childElementCount).toBe(2);
                 expect(contentElement.querySelector('strong').textContent).toBe('Block ');
                 expect(contentElement.querySelector('span').textContent).toBe('1 content');
-                expect(editor.blocks[0].content[0].styles.bold).toBe(true);
+                expect((editor.blocks[0].content[0].props as BaseStylesProp).styles.bold).toBe(true);
                 const undoEvent: KeyboardEvent = new KeyboardEvent('keydown', { key: 'z', ctrlKey: true, code: 'KeyZ' });
                 editorElement.dispatchEvent(undoEvent);
                 // check updated block content after undo action
                 expect(contentElement.childElementCount).toBe(0);
                 expect(contentElement.textContent).toBe('Block 1 content');
-                expect(editor.blocks[0].content[0].styles.bold).toBe(false);
+                expect((editor.blocks[0].content[0].props as BaseStylesProp).styles.bold).toBeUndefined();
 
                 const redoEvent: KeyboardEvent = new KeyboardEvent('keydown', { key: 'y', ctrlKey: true, code: 'KeyY' });
                 editorElement.dispatchEvent(redoEvent);
@@ -288,7 +288,7 @@ describe('UndoRedo', () => {
                 expect(contentElement.childElementCount).toBe(2);
                 expect(contentElement.querySelector('strong').textContent).toBe('Block ');
                 expect(contentElement.querySelector('span').textContent).toBe('1 content');
-                expect(editor.blocks[0].content[0].styles.bold).toBe(true);
+                expect((editor.blocks[0].content[0].props as BaseStylesProp).styles.bold).toBe(true);
                 done();
             }, 10);
         });
@@ -304,13 +304,13 @@ describe('UndoRedo', () => {
                 expect(contentElement.childElementCount).toBe(2);
                 expect(contentElement.querySelector('strong').textContent).toBe('Callout ');
                 expect(contentElement.querySelector('span').textContent).toBe('item 1');
-                expect(editor.blocks[1].children[0].content[0].styles.bold).toBe(true);
+                expect(((editor.blocks[1].props as BaseChildrenProp).children[0].content[0].props as BaseStylesProp).styles.bold).toBe(true);
                 const undoEvent: KeyboardEvent = new KeyboardEvent('keydown', { key: 'z', ctrlKey: true, code: 'KeyZ' });
                 editorElement.dispatchEvent(undoEvent);
                 // check updated block content after undo action
                 expect(contentElement.childElementCount).toBe(0);
                 expect(contentElement.textContent).toBe('Callout item 1');
-                expect(editor.blocks[1].children[0].content[0].styles.bold).toBe(false);
+                expect(((editor.blocks[1].props as BaseChildrenProp).children[0].content[0].props as BaseStylesProp).styles.bold).toBeUndefined();
                 done();
             }, 10);
         });
@@ -326,20 +326,20 @@ describe('UndoRedo', () => {
                 expect(contentElement.childElementCount).toBe(2);
                 expect(contentElement.querySelector('strong').textContent).toBe('Callout ');
                 expect(contentElement.querySelector('span').textContent).toBe('item 1');
-                expect(editor.blocks[1].children[0].content[0].styles.bold).toBe(true);
+                expect(((editor.blocks[1].props as BaseChildrenProp).children[0].content[0].props as BaseStylesProp).styles.bold).toBe(true);
                 const undoEvent: KeyboardEvent = new KeyboardEvent('keydown', { key: 'z', ctrlKey: true, code: 'KeyZ' });
                 editorElement.dispatchEvent(undoEvent);
                 // check updated block content after undo action
                 expect(contentElement.childElementCount).toBe(0);
                 expect(contentElement.textContent).toBe('Callout item 1');
-                expect(editor.blocks[1].children[0].content[0].styles.bold).toBe(false);
+                expect(((editor.blocks[1].props as BaseChildrenProp).children[0].content[0].props as BaseStylesProp).styles.bold).toBeUndefined();
 
                 const redoEvent: KeyboardEvent = new KeyboardEvent('keydown', { key: 'y', ctrlKey: true, code: 'KeyY' });
                 editorElement.dispatchEvent(redoEvent);
                 expect(contentElement.childElementCount).toBe(2);
                 expect(contentElement.querySelector('strong').textContent).toBe('Callout ');
                 expect(contentElement.querySelector('span').textContent).toBe('item 1');
-                expect(editor.blocks[1].children[0].content[0].styles.bold).toBe(true);
+                expect(((editor.blocks[1].props as BaseChildrenProp).children[0].content[0].props as BaseStylesProp).styles.bold).toBe(true);
                 done();
             }, 10);
         });
@@ -374,7 +374,7 @@ describe('UndoRedo', () => {
             const initialBlockCount = editor.blocks.length;
             expect(initialBlockCount).toBe(2);
 
-            const newBlock = {
+            const newBlock: BlockModel= {
                 id: 'block3',
                 type: BlockType.Paragraph,
                 content: [
@@ -409,7 +409,7 @@ describe('UndoRedo', () => {
             const initialBlockCount = editor.blocks.length;
             expect(initialBlockCount).toBe(2);
 
-            const newBlock = {
+            const newBlock: BlockModel= {
                 id: 'block3',
                 type: BlockType.Paragraph,
                 content: [
@@ -456,7 +456,7 @@ describe('UndoRedo', () => {
             const initialBlockCount = editor.blocks.length;
             expect(initialBlockCount).toBe(2);
 
-            const newBlock1 = {
+            const newBlock1: BlockModel= {
                 id: 'block3',
                 type: BlockType.Paragraph,
                 content: [
@@ -466,7 +466,7 @@ describe('UndoRedo', () => {
             
             setTimeout(() => {
                 editor.blockEditorMethods.addBlock(newBlock1, 'block2', true);
-                const newBlock2 = {
+                const newBlock2: BlockModel = {
                     id: 'block4',
                     type: BlockType.Paragraph,
                     content: [
@@ -512,7 +512,7 @@ describe('UndoRedo', () => {
             expect(initialBlockCount).toBe(2);
 
             // Add block3
-            const newBlock1 = {
+            const newBlock1: BlockModel= {
                 id: 'block3',
                 type: BlockType.Paragraph,
                 content: [
@@ -522,7 +522,7 @@ describe('UndoRedo', () => {
             
             setTimeout(() => {
                 editor.blockEditorMethods.addBlock(newBlock1, 'block2', true);
-                const newBlock2 = {
+                const newBlock2: BlockModel = {
                     id: 'block4',
                     type: BlockType.Paragraph,
                     content: [
@@ -810,7 +810,7 @@ describe('UndoRedo', () => {
             const initialBlockCount = editor.blocks.length;
             expect(initialBlockCount).toBe(4);
             setTimeout(() => {
-                editor.blockAction.moveBlock({
+                editor.blockCommandManager.moveBlock({
                     fromBlockIds: ['block1'],
                     toBlockId: 'block2'
                 });
@@ -845,7 +845,7 @@ describe('UndoRedo', () => {
             expect(initialBlockCount).toBe(4);
 
             setTimeout(() => {
-                editor.blockAction.moveBlock({
+                editor.blockCommandManager.moveBlock({
                     fromBlockIds: ['block1'],
                     toBlockId: 'block2'
                 });
@@ -901,7 +901,7 @@ describe('UndoRedo', () => {
             expect(initialBlockCount).toBe(4);
             
             setTimeout(() => {
-                editor.blockAction.moveBlock({
+                editor.blockCommandManager.moveBlock({
                     fromBlockIds: ['block1', 'block2'],
                     toBlockId: 'block3'
                 });
@@ -937,7 +937,7 @@ describe('UndoRedo', () => {
             expect(initialBlockCount).toBe(4);
             
             setTimeout(() => {
-                editor.blockAction.moveBlock({
+                editor.blockCommandManager.moveBlock({
                     fromBlockIds: ['block1', 'block2'],
                     toBlockId: 'block3'
                 });
@@ -1019,24 +1019,24 @@ describe('UndoRedo', () => {
             setCursorPosition(contentElement, 0);
             contentElement.textContent = '/' + contentElement.textContent;
             setCursorPosition(contentElement, 1);
+            editor.stateManager.updateContentOnUserTyping(blockElement);
             editorElement.querySelector('.e-mention.e-editable-element').dispatchEvent(new KeyboardEvent('keyup', { key: '/', code: 'Slash', bubbles: true }));
+            const slashCommandElement = document.querySelector('.e-popup.e-blockeditor-command-menu') as HTMLElement;
+            expect(slashCommandElement).not.toBeNull();
+            // click heading li element inside the popup
+            const headingElement = slashCommandElement.querySelector('li[data-value="Heading 1"]') as HTMLElement;
+            expect(headingElement).not.toBeNull();
+            headingElement.dispatchEvent(new MouseEvent('mousedown', { bubbles: true }));
+            expect(editor.blocks[0].type).toBe(BlockType.Heading);
+            expect((editor.blocks[0].props as HeadingProps).level).toBe(1);
             setTimeout(() => {
-                const slashCommandElement = document.querySelector('.e-popup.e-blockeditor-command-menu') as HTMLElement;
-                expect(slashCommandElement).not.toBeNull();
-                // click heading li element inside the popup
-                const headingElement = slashCommandElement.querySelector('li[data-value="Heading 1"]') as HTMLElement;
-                expect(headingElement).not.toBeNull();
-                headingElement.dispatchEvent(new MouseEvent('mousedown', { bubbles: true }));
-                expect(editor.blocks[0].type).toBe(BlockType.Heading1);
-                setTimeout(() => {
-                    expect(blockElement.querySelector('h1').textContent).toBe('Hello world');
-                    const undoEvent = new KeyboardEvent('keydown', { key: 'z', ctrlKey: true, code: 'KeyZ' });
-                    editorElement.dispatchEvent(undoEvent);
-                    expect(editor.blocks[0].type).toBe(BlockType.Paragraph);
-                    expect(blockElement.querySelector('p').textContent).toBe('Hello world');
-                    done();
-                }, 200)
-            }, 1000);
+                expect(document.getElementById('block1').querySelector('h1').textContent).toBe('Hello world');
+                const undoEvent = new KeyboardEvent('keydown', { key: 'z', ctrlKey: true, code: 'KeyZ' });
+                editorElement.dispatchEvent(undoEvent);
+                expect(editor.blocks[0].type).toBe(BlockType.Paragraph);
+                expect(document.getElementById('block1').querySelector('p').textContent).toBe('Hello world');
+                done();
+            }, 200)
         });
 
         it('transforming block paragraph to heading -> Redo', (done) => {
@@ -1046,27 +1046,28 @@ describe('UndoRedo', () => {
             setCursorPosition(contentElement, 0);
             contentElement.textContent = '/' + contentElement.textContent;
             setCursorPosition(contentElement, 1);
+            editor.stateManager.updateContentOnUserTyping(blockElement);
             editorElement.querySelector('.e-mention.e-editable-element').dispatchEvent(new KeyboardEvent('keyup', { key: '/', code: 'Slash', bubbles: true }));
+            const slashCommandElement = document.querySelector('.e-popup.e-blockeditor-command-menu') as HTMLElement;
+            expect(slashCommandElement).not.toBeNull();
+            // click heading li element inside the popup
+            const headingElement = slashCommandElement.querySelector('li[data-value="Heading 1"]') as HTMLElement;
+            expect(headingElement).not.toBeNull();
+            headingElement.dispatchEvent(new MouseEvent('mousedown', { bubbles: true }));
+            expect(editor.blocks[0].type).toBe(BlockType.Heading);
+            expect((editor.blocks[0].props as HeadingProps).level).toBe(1);
             setTimeout(() => {
-                const slashCommandElement = document.querySelector('.e-popup.e-blockeditor-command-menu') as HTMLElement;
-                expect(slashCommandElement).not.toBeNull();
-                // click heading li element inside the popup
-                const headingElement = slashCommandElement.querySelector('li[data-value="Heading 1"]') as HTMLElement;
-                expect(headingElement).not.toBeNull();
-                headingElement.dispatchEvent(new MouseEvent('mousedown', { bubbles: true }));
-                expect(editor.blocks[0].type).toBe(BlockType.Heading1);
-                setTimeout(() => {
-                    expect(blockElement.querySelector('h1').textContent).toBe('Hello world');
-                    const undoEvent = new KeyboardEvent('keydown', { key: 'z', ctrlKey: true, code: 'KeyZ' });
-                    editorElement.dispatchEvent(undoEvent);
-                    expect(editor.blocks[0].type).toBe(BlockType.Paragraph);
-                    expect(blockElement.querySelector('p').textContent).toBe('Hello world');
-                    const redoEvent = new KeyboardEvent('keydown', { key: 'y', ctrlKey: true, code: 'KeyY' });
-                    editorElement.dispatchEvent(redoEvent);
-                    expect(editor.blocks[0].type).toBe(BlockType.Heading1);
-                    done();
-                }, 200)
-            }, 1000);
+                expect(editorElement.querySelector('.e-block').querySelector('h1').textContent).toBe('Hello world');
+                const undoEvent = new KeyboardEvent('keydown', { key: 'z', ctrlKey: true, code: 'KeyZ' });
+                editorElement.dispatchEvent(undoEvent);
+                expect(editor.blocks[0].type).toBe(BlockType.Paragraph);
+                expect(editorElement.querySelector('.e-block').querySelector('p').textContent).toBe('Hello world');
+                const redoEvent = new KeyboardEvent('keydown', { key: 'y', ctrlKey: true, code: 'KeyY' });
+                editorElement.dispatchEvent(redoEvent);
+                expect(editor.blocks[0].type).toBe(BlockType.Heading);
+                expect((editor.blocks[0].props as HeadingProps).level).toBe(1);
+                done();
+            }, 200)
         });
 
         it('transforming block into specialType -> Undo', (done) => {
@@ -1089,39 +1090,37 @@ describe('UndoRedo', () => {
                 setCursorPosition(newContentElement, 0);
                 newContentElement.textContent = '/' + newContentElement.textContent;
                 setCursorPosition(newContentElement, 1);
-                editor.updateContentOnUserTyping(transFormBlockElement);
+                editor.stateManager.updateContentOnUserTyping(transFormBlockElement);
                 editorElement.querySelector('.e-mention.e-editable-element').dispatchEvent(new KeyboardEvent('keyup', { key: '/', code: 'Slash', bubbles: true }));
+                const slashCommandElement = document.querySelector('.e-popup.e-blockeditor-command-menu') as HTMLElement;
+                expect(slashCommandElement).not.toBeNull();
+                // click heading li element inside the popup
+                const dividerEle = slashCommandElement.querySelector('li[data-value="Divider"]') as HTMLElement;
+                expect(dividerEle).not.toBeNull();
+                dividerEle.dispatchEvent(new MouseEvent('mousedown', { bubbles: true }));
+                expect(editor.blocks.length).toBe(3);
+                expect(editor.blocks[0].type).toBe(BlockType.Paragraph);
+                expect(editor.blocks[1].type).toBe(BlockType.Divider);
+                expect(editor.blocks[2].type).toBe(BlockType.Paragraph);
                 setTimeout(() => {
-                    const slashCommandElement = document.querySelector('.e-popup.e-blockeditor-command-menu') as HTMLElement;
-                    expect(slashCommandElement).not.toBeNull();
-                    // click heading li element inside the popup
-                    const dividerEle = slashCommandElement.querySelector('li[data-value="Divider"]') as HTMLElement;
-                    expect(dividerEle).not.toBeNull();
-                    dividerEle.dispatchEvent(new MouseEvent('mousedown', { bubbles: true }));
-                    expect(editor.blocks.length).toBe(3);
+                    // undo to remove the last added empty paragraph block
+                    const undoEvent = new KeyboardEvent('keydown', { key: 'z', ctrlKey: true, code: 'KeyZ' });
+                    editorElement.dispatchEvent(undoEvent);
+                    expect(editor.blocks.length).toBe(2);
                     expect(editor.blocks[0].type).toBe(BlockType.Paragraph);
                     expect(editor.blocks[1].type).toBe(BlockType.Divider);
-                    expect(editor.blocks[2].type).toBe(BlockType.Paragraph);
-                    setTimeout(() => {
-                        // undo to remove the last added empty paragraph block
-                        const undoEvent = new KeyboardEvent('keydown', { key: 'z', ctrlKey: true, code: 'KeyZ' });
-                        editorElement.dispatchEvent(undoEvent);
-                        expect(editor.blocks.length).toBe(2);
-                        expect(editor.blocks[0].type).toBe(BlockType.Paragraph);
-                        expect(editor.blocks[1].type).toBe(BlockType.Divider);
-                        // undo to transform divider into paragraph block
-                        editorElement.dispatchEvent(undoEvent);
-                        expect(editor.blocks.length).toBe(2);
-                        expect(editor.blocks[0].type).toBe(BlockType.Paragraph);
-                        expect(editor.blocks[1].type).toBe(BlockType.Paragraph);
-                        // undo to remove the new block added
-                        editorElement.dispatchEvent(undoEvent);
-                        expect(editor.blocks.length).toBe(1);
-                        expect(editor.blocks[0].type).toBe(BlockType.Paragraph);
-                        done();
-                    }, 200)
-                }, 1000);
-            }, 100);
+                    // undo to transform divider into paragraph block
+                    editorElement.dispatchEvent(undoEvent);
+                    expect(editor.blocks.length).toBe(2);
+                    expect(editor.blocks[0].type).toBe(BlockType.Paragraph);
+                    expect(editor.blocks[1].type).toBe(BlockType.Paragraph);
+                    // undo to remove the new block added
+                    editorElement.dispatchEvent(undoEvent);
+                    expect(editor.blocks.length).toBe(1);
+                    expect(editor.blocks[0].type).toBe(BlockType.Paragraph);
+                    done();
+                }, 200)
+            }, 10);
         });
 
         it('transforming block into specialType -> redo', (done) => {
@@ -1144,59 +1143,57 @@ describe('UndoRedo', () => {
                 setCursorPosition(newContentElement, 0);
                 newContentElement.textContent = '/' + newContentElement.textContent;
                 setCursorPosition(newContentElement, 1);
-                editor.updateContentOnUserTyping(transFormBlockElement);
+                editor.stateManager.updateContentOnUserTyping(transFormBlockElement);
                 editorElement.querySelector('.e-mention.e-editable-element').dispatchEvent(new KeyboardEvent('keyup', { key: '/', code: 'Slash', bubbles: true }));
+                const slashCommandElement = document.querySelector('.e-popup.e-blockeditor-command-menu') as HTMLElement;
+                expect(slashCommandElement).not.toBeNull();
+                // click heading li element inside the popup
+                const dividerEle = slashCommandElement.querySelector('li[data-value="Divider"]') as HTMLElement;
+                expect(dividerEle).not.toBeNull();
+                dividerEle.dispatchEvent(new MouseEvent('mousedown', { bubbles: true }));
+                expect(editor.blocks.length).toBe(3);
+                expect(editor.blocks[0].type).toBe(BlockType.Paragraph);
+                expect(editor.blocks[1].type).toBe(BlockType.Divider);
+                expect(editor.blocks[2].type).toBe(BlockType.Paragraph);
                 setTimeout(() => {
-                    const slashCommandElement = document.querySelector('.e-popup.e-blockeditor-command-menu') as HTMLElement;
-                    expect(slashCommandElement).not.toBeNull();
-                    // click heading li element inside the popup
-                    const dividerEle = slashCommandElement.querySelector('li[data-value="Divider"]') as HTMLElement;
-                    expect(dividerEle).not.toBeNull();
-                    dividerEle.dispatchEvent(new MouseEvent('mousedown', { bubbles: true }));
+                    // undo to remove the last added empty paragraph block
+                    const undoEvent = new KeyboardEvent('keydown', { key: 'z', ctrlKey: true, code: 'KeyZ' });
+                    editorElement.dispatchEvent(undoEvent);
+                    expect(editor.blocks.length).toBe(2);
+                    expect(editor.blocks[0].type).toBe(BlockType.Paragraph);
+                    expect(editor.blocks[1].type).toBe(BlockType.Divider);
+                    // undo to transform divider into paragraph block
+                    editorElement.dispatchEvent(undoEvent);
+                    expect(editor.blocks.length).toBe(2);
+                    expect(editor.blocks[0].type).toBe(BlockType.Paragraph);
+                    expect(editor.blocks[1].type).toBe(BlockType.Paragraph);
+                    // undo to remove the new block added
+                    editorElement.dispatchEvent(undoEvent);
+                    expect(editor.blocks.length).toBe(1);
+                    expect(editor.blocks[0].type).toBe(BlockType.Paragraph);
+
+                    // Redo to remove the last added empty paragraph block
+                    const redoEvent = new KeyboardEvent('keydown', { key: 'y', ctrlKey: true, code: 'KeyY' });
+                    editorElement.dispatchEvent(redoEvent);
+                    expect(editor.blocks.length).toBe(2);
+                    expect(editor.blocks[0].type).toBe(BlockType.Paragraph);
+                    expect(editor.blocks[1].type).toBe(BlockType.Paragraph);
+
+                    // Redo to transform paragraph into divider block
+                    editorElement.dispatchEvent(redoEvent);
+                    expect(editor.blocks.length).toBe(2);
+                    expect(editor.blocks[0].type).toBe(BlockType.Paragraph);
+                    expect(editor.blocks[1].type).toBe(BlockType.Divider);
+
+                    // Redo to add a new paragraph block
+                    editorElement.dispatchEvent(redoEvent);
                     expect(editor.blocks.length).toBe(3);
                     expect(editor.blocks[0].type).toBe(BlockType.Paragraph);
                     expect(editor.blocks[1].type).toBe(BlockType.Divider);
                     expect(editor.blocks[2].type).toBe(BlockType.Paragraph);
-                    setTimeout(() => {
-                        // undo to remove the last added empty paragraph block
-                        const undoEvent = new KeyboardEvent('keydown', { key: 'z', ctrlKey: true, code: 'KeyZ' });
-                        editorElement.dispatchEvent(undoEvent);
-                        expect(editor.blocks.length).toBe(2);
-                        expect(editor.blocks[0].type).toBe(BlockType.Paragraph);
-                        expect(editor.blocks[1].type).toBe(BlockType.Divider);
-                        // undo to transform divider into paragraph block
-                        editorElement.dispatchEvent(undoEvent);
-                        expect(editor.blocks.length).toBe(2);
-                        expect(editor.blocks[0].type).toBe(BlockType.Paragraph);
-                        expect(editor.blocks[1].type).toBe(BlockType.Paragraph);
-                        // undo to remove the new block added
-                        editorElement.dispatchEvent(undoEvent);
-                        expect(editor.blocks.length).toBe(1);
-                        expect(editor.blocks[0].type).toBe(BlockType.Paragraph);
-
-                        // Redo to remove the last added empty paragraph block
-                        const redoEvent = new KeyboardEvent('keydown', { key: 'y', ctrlKey: true, code: 'KeyY' });
-                        editorElement.dispatchEvent(redoEvent);
-                        expect(editor.blocks.length).toBe(2);
-                        expect(editor.blocks[0].type).toBe(BlockType.Paragraph);
-                        expect(editor.blocks[1].type).toBe(BlockType.Paragraph);
-
-                        // Redo to transform paragraph into divider block
-                        editorElement.dispatchEvent(redoEvent);
-                        expect(editor.blocks.length).toBe(2);
-                        expect(editor.blocks[0].type).toBe(BlockType.Paragraph);
-                        expect(editor.blocks[1].type).toBe(BlockType.Divider);
-
-                        // Redo to add a new paragraph block
-                        editorElement.dispatchEvent(redoEvent);
-                        expect(editor.blocks.length).toBe(3);
-                        expect(editor.blocks[0].type).toBe(BlockType.Paragraph);
-                        expect(editor.blocks[1].type).toBe(BlockType.Divider);
-                        expect(editor.blocks[2].type).toBe(BlockType.Paragraph);
-                        done();
-                    }, 200)
-                }, 1000);
-            }, 100);
+                    done();
+                }, 200)
+            }, 10);
         });
     });
 
@@ -1348,16 +1345,16 @@ describe('UndoRedo', () => {
                         id: 'block1',
                         type: BlockType.Paragraph,
                         content: [
-                            { id: 'bold', type: ContentType.Text, content: 'Boldedtext', styles: { bold: true } },
-                            { id: 'italic', type: ContentType.Text, content: 'Italictext', styles: { italic: true } },
-                            { id: 'underline', type: ContentType.Text, content: 'Underlinedtext', styles: { underline: true } }
+                            { id: 'bold', type: ContentType.Text, content: 'Boldedtext', props: { styles: { bold: true } } },
+                            { id: 'italic', type: ContentType.Text, content: 'Italictext', props: { styles: { italic: true } } },
+                            { id: 'underline', type: ContentType.Text, content: 'Underlinedtext', props: { styles: { underline: true } } }
                         ]
                     },
                     {
                         id: 'block2',
                         type: BlockType.Paragraph,
                         content: [
-                            { id: 'test', type: ContentType.Text, content: 'TestContent', styles: { bold: true } }
+                            { id: 'test', type: ContentType.Text, content: 'TestContent', props: { styles: { bold: true } } }
                         ]
                     }
                 ]
@@ -1399,9 +1396,9 @@ describe('UndoRedo', () => {
                 expect(editor.blocks[1].content.length).toBe(initialLength + 3);
                 expect(editor.blocks[1].content[0].content).toBe('Test');
                 expect(editor.blocks[1].content[1].content).toBe('Italictext');
-                expect(editor.blocks[1].content[1].styles.italic).toBe(true);
+                expect((editor.blocks[1].content[1].props as BaseStylesProp).styles.italic).toBe(true);
                 expect(editor.blocks[1].content[2].content).toBe('Underl');
-                expect(editor.blocks[1].content[2].styles.underline).toBe(true);
+                expect((editor.blocks[1].content[2].props as BaseStylesProp).styles.underline).toBe(true);
                 expect(editor.blocks[1].content[3].content).toBe('Content');
                 expect(contentElement.childNodes.length).toBe(4);
                 expect(contentElement.childNodes[1].textContent).toBe('Italictext');
@@ -1420,9 +1417,9 @@ describe('UndoRedo', () => {
                 expect(editor.blocks[1].content.length).toBe(initialLength + 3);
                 expect(editor.blocks[1].content[0].content).toBe('Test');
                 expect(editor.blocks[1].content[1].content).toBe('Italictext');
-                expect(editor.blocks[1].content[1].styles.italic).toBe(true);
+                expect((editor.blocks[1].content[1].props as BaseStylesProp).styles.italic).toBe(true);
                 expect(editor.blocks[1].content[2].content).toBe('Underl');
-                expect(editor.blocks[1].content[2].styles.underline).toBe(true);
+                expect((editor.blocks[1].content[2].props as BaseStylesProp).styles.underline).toBe(true);
                 expect(editor.blocks[1].content[3].content).toBe('Content');
                 expect(contentElement.childNodes.length).toBe(4);
                 expect(contentElement.childNodes[1].textContent).toBe('Italictext');
@@ -1585,7 +1582,7 @@ describe('UndoRedo', () => {
 
             const contentElement = getBlockContentElement(blockElement);
             contentElement.textContent = '';
-            editor.updateContentOnUserTyping(blockElement);
+            editor.stateManager.updateContentOnUserTyping(blockElement);
             setCursorPosition(contentElement, 0);
 
             editor.clipboardAction.handlePaste(createMockClipboardEvent('paste', mockClipboard));
@@ -1632,19 +1629,19 @@ describe('UndoRedo', () => {
             const blocks: BlockModel[] = [
                 { id: 'paragraph', type: BlockType.Paragraph, content: [
                     { id: 'p-content', type: ContentType.Text, content: 'Paragraph ' },
-                    { id: 'bolded-content', type: ContentType.Text, content: 'content', styles: { bold: true } },
+                    { id: 'bolded-content', type: ContentType.Text, content: 'content', props: { styles: { bold: true } } },
                 ] },
-                { id: 'heading', type: BlockType.Heading3, content: [
+                { id: 'heading', type: BlockType.Heading, props: { level: 3  }, content: [
                     { id: 'h-content', type: ContentType.Text, content: 'Heading ' },
-                    { id: 'italic-content', type: ContentType.Text, content: 'content', styles: { italic: true } },
+                    { id: 'italic-content', type: ContentType.Text, content: 'content', props: { styles: { italic: true } } },
                 ] },
                 { id: 'bullet-list', type: BlockType.BulletList, content: [
                     { id: 'bullet-list-content', type: ContentType.Text, content: 'Bullet list ' },
-                    { id: 'underline-content', type: ContentType.Text, content: 'content', styles: { underline: true } },
+                    { id: 'underline-content', type: ContentType.Text, content: 'content', props: { styles: { underline: true } } },
                 ] },
                 { id: 'quote', type: BlockType.Quote, content: [
                     { id: 'q-content', type: ContentType.Text, content: 'Quote ' },
-                    { id: 'strike-content', type: ContentType.Text, content: 'content', styles: { strikethrough: true } },
+                    { id: 'strike-content', type: ContentType.Text, content: 'content', props: { styles: { strikethrough: true } } },
                 ] }
             ];
             editor = createEditor({ blocks: blocks });
@@ -1704,7 +1701,7 @@ describe('UndoRedo', () => {
             expect(editor.blocks[0].content.length).toBe(2);
             expect(editor.blocks[0].content[0].content).toBe('Paragraph');
             expect(editor.blocks[0].content[1].content).toBe('content');
-            expect(editor.blocks[0].content[1].styles.strikethrough).toBe(true);
+            expect((editor.blocks[0].content[1].props as BaseStylesProp).styles.strikethrough).toBe(true);
             expect(getBlockContentElement(startBlockElement).childElementCount).toBe(2);
             expect(getBlockContentElement(startBlockElement).children[0].textContent).toBe('Paragraph');
             expect(getBlockContentElement(startBlockElement).children[1].textContent).toBe('content');
@@ -1723,7 +1720,7 @@ describe('UndoRedo', () => {
             expect(editor.blocks[0].content.length).toBe(2);
             expect(editor.blocks[0].content[0].content).toBe('Paragraph');
             expect(editor.blocks[0].content[1].content).toBe('content');
-            expect(editor.blocks[0].content[1].styles.strikethrough).toBe(true);
+            expect((editor.blocks[0].content[1].props as BaseStylesProp).styles.strikethrough).toBe(true);
             expect(getBlockContentElement(startBlockElement).childElementCount).toBe(2);
             expect(getBlockContentElement(startBlockElement).children[0].textContent).toBe('Paragraph');
             expect(getBlockContentElement(startBlockElement).children[1].textContent).toBe('content');
@@ -1757,7 +1754,7 @@ describe('UndoRedo', () => {
             const blockElement = editorElement.querySelector('#block2') as HTMLElement;
             editor.setFocusToBlock(blockElement);
 
-            editor.blockAction.handleBlockIndentation({
+            editor.blockCommandManager.handleBlockIndentation({
                 blockIDs: [blockElement.id],
                 shouldDecrease: false
             });
@@ -1800,7 +1797,7 @@ describe('UndoRedo', () => {
             editorElement.dispatchEvent(new KeyboardEvent('keydown', { key: 'Enter', shiftKey: true, code: 'Enter' }));
 
             //Record second action - first action should be shifted out of the stack
-            editor.blockAction.handleBlockIndentation({
+            editor.blockCommandManager.handleBlockIndentation({
                 blockIDs: [blockElement.id],
                 shouldDecrease: false
             });

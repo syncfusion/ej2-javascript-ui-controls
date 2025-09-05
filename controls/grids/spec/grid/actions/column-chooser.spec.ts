@@ -1226,4 +1226,81 @@ describe('Column chooser module', () => {
         });
     });
 
+    describe('972219: Customizing the orders of the column in the column chooser', () => {
+        let gridObj: Grid;
+        let beforeOpenColumnChooser: (args: any) => void;
+        beforeAll((done: Function) => {
+            gridObj = createGrid(
+                {
+                    dataSource: [],
+                    allowPaging: true,
+                    showColumnChooser: true,
+                    toolbar: ['ColumnChooser'],
+                    columns: [
+                        { field: 'OrderID', headerText: 'Order ID', width: 130, textAlign: 'Right' },
+                        { field: 'OrderDate', headerText: 'Order Date', width: 130, format: 'yMd', textAlign: 'Right' },
+                        { field: 'Freight', width: 120, format: 'C2', textAlign: 'Right' },
+                        { field: 'ShippedDate', headerText: 'Shipped Date', width: 140, format: 'yMd', textAlign: 'Right' },
+                        { field: 'ShipCountry', visible: false, headerText: 'Ship Country', width: 150 },
+                    ],
+                    beforeOpenColumnChooser: beforeOpenColumnChooser
+                }, done);
+        });
+
+        it('Coverage Improvement for selectedColumns', (done: Function) => {
+            beforeOpenColumnChooser = (args): void => {
+                args.selectedColumns = ['OrderID', 'Freight', 'ShipCountry'];
+            };
+            gridObj.beforeOpenColumnChooser = beforeOpenColumnChooser;
+            gridObj.columnChooserModule.openColumnChooser();
+            expect((gridObj.columnChooserModule as any).selectedColumnModels.length).toBe(3);
+            (<HTMLElement>document.querySelector('.e-cc_okbtn')).click();
+            done();
+        });
+
+        it('Coverage Improvement for selectedColumns with toolbar click', (done: Function) => {
+            beforeOpenColumnChooser = (args): void => {
+                args.selectedColumns = ['OrderID', 'Freight'];
+            };
+            gridObj.beforeOpenColumnChooser = beforeOpenColumnChooser;
+            select('#' + gridObj.element.id + '_columnchooser', gridObj.toolbarModule.getToolbar()).click();
+            expect((gridObj.columnChooserModule as any).selectedColumnModels.length).toBe(2);
+            (<HTMLElement>document.querySelector('.e-cc_okbtn')).click();
+            done();
+        });
+
+        it('Coverage Improvement for Descending', (done: Function) => {
+            beforeOpenColumnChooser = (args): void => {
+                args.sortDirection = 'Descending'
+            };
+            gridObj.beforeOpenColumnChooser = beforeOpenColumnChooser;
+            gridObj.columnChooserModule.openColumnChooser();
+            expect((<HTMLElement>document.querySelectorAll('.e-label')[1]).innerText).toBe('Shipped Date');
+            (<HTMLElement>document.querySelector('.e-cc_okbtn')).click();
+            done();
+        });
+        
+        it('Coverage Improvement for Ascending', (done: Function) => {
+            beforeOpenColumnChooser = (args): void => {
+                args.sortDirection = 'Ascending'
+            };
+            gridObj.beforeOpenColumnChooser = beforeOpenColumnChooser;
+            gridObj.columnChooserModule.openColumnChooser();
+            expect((<HTMLElement>document.querySelectorAll('.e-label')[1]).innerText).toBe('Freight');
+            (<HTMLElement>document.querySelector('.e-cc_okbtn')).click();
+            done();
+        });
+
+        it('Coverage Improvement', (done: Function) => {
+            (gridObj.columnChooserModule as any).infiniteRenderMode = true;
+            (gridObj.columnChooserModule as any).updateSelectAll();
+            done();
+        });
+
+        afterAll(() => {
+            (<any>gridObj).columnChooserModule.destroy();
+            destroy(gridObj);
+            gridObj = null;
+        });
+    });
 });

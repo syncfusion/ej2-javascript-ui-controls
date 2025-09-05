@@ -2,86 +2,29 @@
 
 ## [Unreleased]
 
-## 30.2.7 (2025-08-26)
+## 31.1.17 (2025-09-05)
 
 ### Grid
 
-#### Bug Fixes
+#### Features
 
-- `#I752626` - Fixed an issue where the command column icon remained unchanged after the edit action for a parent row in the hierarchy grid was cancelled.
-- `#I750491` - Fixed a misalignment issue with indent header cells when grouping a column with stacked headers.
+- The Grid now supports merging cells with matching data using `enableRowSpan` and `enableColumnSpan`. This feature enhances data visualization by automatically combining cells across rows or columns.
+- `#I619033` - The Grid allows reordering the column chooser list with the `beforeColumnChooserOpen` event. You can sort or set a custom column sequence for a better experience.
 
-## 30.2.5 (2025-08-13)
+#### Breaking Changes
 
-### Grid
+- `#I728489` - Improved accessibility in Grid by updating attribute naming conventions. The following attributes have been changed to align with standard HTML `data-` attributes:
 
-#### Bug Fixes
-
-- `#I755713` - The issue where column resizing caused a script error due to the absence of defined widths for hidden columns has been resolved.
-
-## 30.2.4 (2025-08-07)
-
-### Grid
-
-#### Bug Fixes
-
-- `#I747642` - The issue where the `ResizeStop` event failed to trigger during rapid column resizing has been resolved.
-
-## 30.1.42 (2025-07-29)
-
-### Grid
-
-#### Bug Fixes
-
-- `#I747642` - The issue where the `ResizeStop` event did not return the updated column width when resizing was performed via `double-click` has been resolved.
-- `#I743762` - The issue causing misalignment of aggregate cells in PDF exports when using Aggregates in combination with `detailTemplate` in the Grid has been resolved.
-- `#I745882` - The issue where the `aria-label` attribute as `undefined` during inline editing when using the `editTemplate` feature has been resolved.
-- `#I746481` - The accessibility issue related to the `aria-label` on the group drag icon has been resolved.
-
-### Grid
-
-#### Bug Fixes
-
-- `#I747365` - Resolved a script error that occurred when clicking the `Select All` checkbox while both `ColumnVirtualization` and infinite scrolling were enabled.
-- `#I747475` - Fixed a script error that appeared when expanding grouped records in Lazy Load Grouping with the `URLAdaptor`.
-- `I7443387` - Fixed an issue where the `show/hide` columns feature failed to work when using Lazy Load Grouping with `virtualization`.
-
-## 30.1.40 (2025-07-15)
-
-### Grid
-
-#### Bug Fixes
-
-- `#I744173` - Resolved an issue where the `ColumnChooser` could not be opened after the Filter dialog was opened.
-- `#I743131` - Resolved an issue where filtering a string column with an empty string in local data shows no records.
-- `#FB68522` - Fixed an issue where focus incorrectly shifted to the grid toolbar when all toolbar items were disabled.
-- `#I737920` - Fixed an issue where the group caption aggregate was missing for the first numeric column during server-side Excel export.
-
-## 30.1.39 (2025-07-08)
-
-### Grid
-
-#### Bug Fixes
-
-- `#I738274` - The issue where checkbox selection toggled incorrectly in mobile view when row drag functionality was enabled has been resolved.
-- `#I737866` - The problem of checkbox selection failing to function after grid refresh when virtual scrolling was enabled has been addressed and resolved.
-- `#I736751` - The issue where column formatting was not applied during horizontal scrolling in column `virtualization` has been rectified.
-- `#I738941` - A script error that occurred upon pressing Enter after modifying the `datasource` in a grid with a detail template has been resolved.
-- `#I739229` - The problem of frozen columns disappearing during rapid horizontal scrolling has been fixed.
-- `#I737749` - The issue of the horizontal scrollbar being absent when the grid height was set to 100% with `virtualization` and frozen columns enabled has been resolved.
-
-## 30.1.38 (2025-07-02)
-
-### Grid
-
-#### Bug Fixes
-
-- `#I731295` - A script error encountered during the editing process, specifically when the multiline attribute is set to true within `editParams`, has been successfully resolved.
-- `#I734380` - The issue where the cursor does not change to a hand icon when grouping was disabled for a column has been resolved.
-- `#I731049` - The issue where column resizing did not work properly when the resize mode was set to `auto` and a column had a `minWidth` has been resolved.
-- `#FB68201` - Fixed an issue where middleware was not triggered during CRUD operations.
-
-## 30.1.37 (2025-06-25)
+| Before                   | After                   |
+|--------------------------|-------------------------|
+| `ej-mappingname`         | `data-mappingname`      |
+| `ej-mappingvalue`        | `data-mappingvalue`     |
+| `e-mappingguid`          | `data-mappinguid`       |
+| `uid`                    | `data-uid`              |
+| `colType`                | `data-coltype`          |
+| `Index`                  | `data-index`            |
+| `data-e-mappingguid`     | `data-mappinguid`       |
+| `data-e-mappingname`     | `data-mappingname`      |
 
 ### Grid
 

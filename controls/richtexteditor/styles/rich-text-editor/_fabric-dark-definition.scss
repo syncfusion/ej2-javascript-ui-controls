@@ -28,6 +28,7 @@ $rte-quick-item-hover-border-color: transparent !default;
 $rte-quick-item-active-border-color: transparent !default;
 $rte-content-padding: 16px !default;
 $rte-table-popup-padding: 10px !default;
+$rte-table-popup-min-height: 160px !default;
 $rte-table-popup-border: 1px solid $neutral-light !default;
 $rte-qt-item-btn-line-height: 32px;
 
@@ -120,6 +121,7 @@ $rte-table-border-color: $neutral-tertiary !default;
 $rte-table-alternate-color: $neutral-lighter-alt !default;
 $rte-table-header-bg: $neutral-lighter !default;
 $rte-table-multicell-select-bg-color: rgba($theme-primary, .14) !default;
+$rte-insert-icon-color: $theme-primary !default;
 $rte-big-formatlists-dropdown-line-height: 1;
 
 $rte-insert-dialog-label-padding-top: 20px !default;
@@ -128,6 +130,7 @@ $rte-big-quick-tbar-item-min-height: 50px !default;
 $rte-big-quick-tbar-item-min-width: 50px !default;
 $rte-content-font-size: 14px !default;
 $rte-big-content-font-size: 16px !default;
+$rte-big-dialog-min-height: 324px !default;
 $rte-dropdown-caret-icon-size: 12px !default;
 $rte-big-dropdown-caret-icon-size: 12px !default;
 $rte-toolbar-icon-size: 16px !default;
@@ -144,7 +147,6 @@ $rte-resize-handler-position: 0;
 $rte-default-character-count-opacity: .6;
 
 $rte-big-color-list-span-common-padding-left-right: 0;
-$rte-placeholder-padding: 16px !default;
 
 $rte-img-dlg-max-height: 431px !default;
 $rte-img-alt-dlg-max-height: 431px !default;
@@ -256,5 +258,11 @@ $rte-format-painter-cursor: url('data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMzIiI
 
 $rte-popup-padding: 0 3px !default;
 $rte-popup-item-padding: 1px 1px !default;
+
+$rte-checklist-checked-bg-color: $theme-primary !default;
+$rte-checklist-checked-border-color: 1px solid $theme-primary !default;
+$rte-checklist-checked-checkmark-color: $theme-primary-font !default;
+$rte-checklist-checkbox-border: 1px solid rgba(218, 218, 218, 1);
+$rte-checklist-checkbox-border-radius: 0;
 
 //enddefault

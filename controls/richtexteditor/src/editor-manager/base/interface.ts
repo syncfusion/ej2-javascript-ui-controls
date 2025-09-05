@@ -2,6 +2,7 @@ import { NodeSelection } from './../../selection/index';
 import { KeyboardEventArgs } from '@syncfusion/ej2-base';
 import { IHtmlFormatterCallBack, IAdvanceListItem } from '../../common/interface';
 import { IFormatPainterActionValue } from './enum';
+
 /**
  * Specifies  Command models interfaces.
  *
@@ -47,7 +48,7 @@ export interface IHtmlSubCommands {
     /**
      * Specifies the originalEvent.
      */
-    event?: MouseEvent
+    event?: MouseEvent | KeyboardEventArgs
     /**
      * Specifies the iframe element selector.
      */

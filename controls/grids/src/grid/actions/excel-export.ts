@@ -883,8 +883,8 @@ export class ExcelExport {
                 const eCell: any = {};
                 // eslint-disable-next-line @typescript-eslint/no-explicit-any
                 let columnsDetails: any = {};
-                if (!isNullOrUndefined(cell.attributes.index)) {
-                    columnsDetails = this.parent.getColumnByIndex(cell.attributes.index as number);
+                if (!isNullOrUndefined(cell.attributes['data-index'])) {
+                    columnsDetails = this.parent.getColumnByIndex(cell.attributes['data-index'] as number);
                 }
                 if (cell.cellType === CellType.DetailFooterIntent || columnsDetails.type === 'checkbox' || columnsDetails.commands) {
                     continue;

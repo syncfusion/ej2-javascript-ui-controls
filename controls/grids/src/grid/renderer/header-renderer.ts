@@ -59,13 +59,13 @@ export class HeaderRender implements IRenderer {
             if (element.querySelector('.e-stackedheadercelldiv')) {
                 col = gObj.getStackedHeaderColumnByHeaderText((headercelldiv as HTMLElement).innerText.trim(), <Column[]>gObj.columns);
             } else {
-                col = gObj.getColumnByUid(headercelldiv.getAttribute('e-mappinguid'));
+                col = gObj.getColumnByUid(headercelldiv.getAttribute('data-mappinguid'));
             }
             this.column = col;
             if (this.column.lockColumn) {
                 return false;
             }
-            visualElement.setAttribute('e-mappinguid', this.column.uid);
+            visualElement.setAttribute('data-mappinguid', this.column.uid);
         }
         if (col && !isNullOrUndefined(col.headerTemplate)) {
             if (!isNullOrUndefined(col.headerTemplate)) {
@@ -125,7 +125,7 @@ export class HeaderRender implements IRenderer {
         (gObj.element.querySelector('.e-gridpopup') as HTMLElement).style.display = 'none';
         if ((!parentsUntil(e.target, 'e-headercell') && !parentsUntil(e.target, 'e-groupdroparea')) ||
             (!gObj.allowReordering && parentsUntil(e.target, 'e-headercell')) ||
-            (!e.helper.getAttribute('e-mappinguid') && parentsUntil(e.target, 'e-groupdroparea'))) {
+            (!e.helper.getAttribute('data-mappinguid') && parentsUntil(e.target, 'e-groupdroparea'))) {
             remove(e.helper);
             cancel = true;
         }
@@ -133,7 +133,7 @@ export class HeaderRender implements IRenderer {
     }
     private drop: Function = (e: DropEventArgs) => {
         const gObj: IGrid = this.parent;
-        const uid: string = e.droppedElement.getAttribute('e-mappinguid');
+        const uid: string = e.droppedElement.getAttribute('data-mappinguid');
         const closest: Element = getClosest(e.target, '.e-grid');
         remove(e.droppedElement);
         if (closest && closest.getAttribute('id') !== gObj.element.getAttribute('id') ||
@@ -321,10 +321,10 @@ export class HeaderRender implements IRenderer {
         }
         this.updateColGroup(colGroup);
         tbody.appendChild(rowBody);
+        table.appendChild(this.caption);
         table.appendChild(this.setColGroup(colGroup));
         table.appendChild(thead);
         table.appendChild(tbody);
-        table.appendChild(this.caption);
         return table;
     }
 
@@ -420,7 +420,9 @@ export class HeaderRender implements IRenderer {
                 for (let c: number = 0, len: number = gObj.groupSettings.columns.length; c < len; c++) {
                     if (this.parent.enableColumnVirtualization && indexes.indexOf(c) === -1) { continue; }
                     const indentCell: Cell<Column> = this.generateCell({} as Column, CellType.HeaderIndent);
-                    indentCell.rowSpan = rowSpan;
+                    if (this.colDepth > 1) {
+                        indentCell.rowSpan = rowSpan;
+                    }
                     rows[parseInt(i.toString(), 10)].cells.push(indentCell);
                 }
             }
@@ -428,12 +430,16 @@ export class HeaderRender implements IRenderer {
                 const args: object = {};
                 this.parent.notify(events.detailIndentCellInfo, args);
                 const indentCell: Cell<Column> = this.generateCell(args as Column, CellType.DetailHeader);
-                indentCell.rowSpan = rowSpan;
+                if (this.colDepth > 1) {
+                    indentCell.rowSpan = rowSpan;
+                }
                 rows[parseInt(i.toString(), 10)].cells.push(indentCell);
             }
             if (gObj.isRowDragable() && this.parent.getFrozenMode() !== 'Right') {
                 const indentCell: Cell<Column> = this.generateCell({} as Column, CellType.RowDragHIcon);
-                indentCell.rowSpan = rowSpan;
+                if (this.colDepth > 1) {
+                    indentCell.rowSpan = rowSpan;
+                }
                 rows[parseInt(i.toString(), 10)].cells.push(indentCell);
             }
         }
@@ -615,14 +621,14 @@ export class HeaderRender implements IRenderer {
                 (table.querySelector('.e-addedrow')).classList.add('e-addrow-removed');
                 this.parent.isAddNewRow = true;
             }
-            table.removeChild(table.firstChild);
-            table.removeChild(table.childNodes[0]);
+            table.removeChild(table.childNodes[1]);
+            table.removeChild(table.childNodes[1]);
             const colGroup: Element = this.parent.createElement(literals.colGroup);
             const findHeaderRow: { thead: Element, rows: Row<Column>[] } = this.createHeaderContent(tableName);
             this.rows = findHeaderRow.rows;
-            table.insertBefore(findHeaderRow.thead, table.firstChild);
+            table.insertBefore(findHeaderRow.thead, table.childNodes[1]);
             this.updateColGroup(colGroup);
-            table.insertBefore(this.setColGroup(colGroup), table.firstChild);
+            table.insertBefore(this.setColGroup(colGroup), table.childNodes[1]);
             this.appendContent(table);
             this.parent.notify(events.colGroupRefresh, {});
             this.widthService.setWidthToColumns();

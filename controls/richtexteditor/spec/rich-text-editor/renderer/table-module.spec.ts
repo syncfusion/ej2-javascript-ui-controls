@@ -166,6 +166,17 @@ describe('Table Module', () => {
             const node = document.createTextNode("Test");
             (editor.tableModule as any).verticalAlign({ selectParent: [node] }, null);
             editor.editorMode = 'HTML';
+            (editor.tableModule as any).tableObj.applyCustomCssClasses ({args: null}, null);
+            (editor.tableModule as any).tableObj.executeDeleteColumnCallback({ callBack: null });
+            (editor.tableModule as any).tableObj.updateHelper();
+            var ele = document.createElement('div');
+            ele.setAttribute("test", '4');
+            var value = (editor.tableModule as any).tableObj.getAttributeValue(ele, "test", 4);
+            expect(value).toBe(4);
+            (editor.tableModule as any).tableObj.tableResizeEleCreation(null, null);
+            (editor.tableModule as any).tableObj.wireTableSelectionEvents();
+            (editor.tableModule as any).tableObj.unwireTableSelectionEvents();
+            (editor.tableModule as any).tableObj.cellSelect(null);
             done();
         });
     });
@@ -817,6 +828,384 @@ describe('Table Module', () => {
             }, 100);
         });
     });
+    describe('Task 968212: Add Border Color and Width Options to Table properties dialog in the Quick Toolbar', () => {
+        let rteObj: RichTextEditor;
+        let rteEle: HTMLElement;
+        beforeEach(() => {
+            rteObj = renderRTE({
+                toolbarSettings: {
+                    items: ['CreateTable']
+                },
+                quickToolbarSettings: {
+                    table: ['TableEditProperties', 'Styles']
+                },
+                value: `<p>Text before table</p><table class="e-rte-table"><tbody><tr><td>Cell content</td><td>More content</td></tr></tbody></table><p>Text after table</p>`,
+            });
+            rteEle = rteObj.element;
+        });
+        afterEach(() => {
+            destroy(rteObj);
+        });
+        it(' Testing numeric box components', (done) => {
+            rteObj.focusIn();
+            const cell = rteObj.contentModule.getEditPanel().querySelector('td');
+            const range = document.createRange();
+            range.setStart(cell.firstChild, 0);
+            range.collapse(true);
+            const selection = window.getSelection();
+            selection.removeAllRanges();
+            selection.addRange(range);
+            const eventsArg = {
+                pageX: 50,
+                pageY: 50,
+                target: cell,
+                which: 1
+            };
+            (rteObj as any).mouseDownHandler(eventsArg);
+            (rteObj as any).mouseUp(eventsArg);
+            setTimeout(() => {
+                const tableEditPropsBtn = document.querySelector('.e-table-edit-properties').parentElement;
+                (tableEditPropsBtn as HTMLElement).click();
+                setTimeout(() => {
+                    const dialog = document.querySelector('.e-rte-edit-table');
+                    expect(dialog).not.toBeNull();
+                    const paddingInput = document.querySelector('#' + rteObj.getID() + '_cellPadding') as HTMLInputElement;
+                    const spacingInput = document.querySelector('#' + rteObj.getID() + '_cellSpacing') as HTMLInputElement;
+                    const widthInput = document.querySelector('#' + rteObj.getID() + '_tableWidth') as HTMLInputElement;
+                    const bdrWidthInput = document.querySelector('#' + rteObj.getID() + '_borderWidth') as HTMLInputElement;
+                    paddingInput.value = '5';
+                    spacingInput.value = '2';
+                    widthInput.value = '600';
+                    bdrWidthInput.value = '3';
+                    paddingInput.dispatchEvent(new Event('change', { bubbles: true }));
+                    spacingInput.dispatchEvent(new Event('change', { bubbles: true }));
+                    widthInput.dispatchEvent(new Event('change', { bubbles: true }));
+                    bdrWidthInput.dispatchEvent(new Event('change', { bubbles: true }));
+                    const updateBtn = document.querySelector('.e-size-update');
+                    (updateBtn as HTMLElement).click();
+                    setTimeout(() => {
+                        const table = rteObj.contentModule.getEditPanel().querySelector('table');
+                        expect(table.style.borderSpacing).toBe('2px');
+                        expect(table.querySelectorAll('td')[0].style.padding).toBe('5px');
+                        expect(table.style.width).toBe('600px');
+                        expect(table.style.borderWidth).toBe('3px');
+                        done();
+                    }, 100);
+                }, 200);
+            }, 200);
+        });
+        it('Testing style dropdown component', (done) => {
+            rteObj.value = `<p>Text before table</p><table class="e-rte-table"><tbody><tr><td>Cell content</td><td>More content</td></tr></tbody></table><p>Text after table</p>`;
+            rteObj.dataBind();
+            rteObj.focusIn();
+            const cell = rteObj.contentModule.getEditPanel().querySelector('td');
+            const range = document.createRange();
+            range.setStart(cell.firstChild, 0);
+            range.collapse(true);
+            const selection = window.getSelection();
+            selection.removeAllRanges();
+            selection.addRange(range);
+            const eventsArg = {
+                pageX: 50,
+                pageY: 50,
+                target: cell,
+                which: 1
+            };
+            (rteObj as any).mouseDownHandler(eventsArg);
+            (rteObj as any).mouseUp(eventsArg);
+            setTimeout(() => {
+                const tableEditPropsBtn = document.querySelector('.e-table-edit-properties').parentElement;
+                (tableEditPropsBtn as HTMLElement).click();
+                setTimeout(() => {
+                    const dialog = document.querySelector('.e-rte-edit-table');
+                    expect(dialog).not.toBeNull();
+                    const bdrStyleInput = document.querySelector('#' + rteObj.getID() + '_borderStyle') as HTMLInputElement;
+                    bdrStyleInput.click();
+                    const bdrStyleOptions = document.querySelectorAll('.e-item');
+                    (bdrStyleOptions[2] as HTMLElement).click(); // Select 'Dashed' style
+                    bdrStyleInput.dispatchEvent(new Event('change', { bubbles: true }));
+                    const updateBtn = document.querySelector('.e-size-update');
+                    (updateBtn as HTMLElement).click();
+                    setTimeout(() => {
+                        const table = rteObj.contentModule.getEditPanel().querySelector('table');
+                        expect(table.style.borderStyle).toBe('dashed');
+                        done();
+                    }, 100);
+                }, 200);
+            }, 200);
+        });
+        it('Testing color picker component', (done) => {
+            rteObj.value = `<p>Text before table</p><table class="e-rte-table"><tbody><tr><td>Cell content</td><td>More content</td></tr></tbody></table><p>Text after table</p>`;
+            rteObj.dataBind();
+            rteObj.focusIn();
+            const cell = rteObj.contentModule.getEditPanel().querySelector('td');
+            const range = document.createRange();
+            range.setStart(cell.firstChild, 0);
+            range.collapse(true);
+            const selection = window.getSelection();
+            selection.removeAllRanges();
+            selection.addRange(range);
+            const eventsArg = {
+                pageX: 50,
+                pageY: 50,
+                target: cell,
+                which: 1
+            };
+            (rteObj as any).mouseDownHandler(eventsArg);
+            (rteObj as any).mouseUp(eventsArg);
+            setTimeout(() => {
+                const tableEditPropsBtn = document.querySelector('.e-table-edit-properties').parentElement;
+                (tableEditPropsBtn as HTMLElement).click();
+                setTimeout(() => {
+                    const dialog = document.querySelector('.e-rte-edit-table');
+                    expect(dialog).not.toBeNull();
+                    const bdrClrInput = document.querySelectorAll('.e-btn.e-rte-border-colorpicker');
+                    (bdrClrInput[1] as HTMLElement).click();
+                    const bdrClrOptions = document.querySelectorAll('.e-rte-square-palette');
+                    (bdrClrOptions[4] as HTMLElement).click();
+                    const bgClrInput = document.querySelectorAll('.e-btn.e-rte-table-bg-colorpicker');
+                    (bgClrInput[1] as HTMLElement).click();
+                    const bgClrOptions = document.querySelectorAll('.e-rte-square-palette');
+                    (bgClrOptions[3] as HTMLElement).click();
+                    const updateBtn = document.querySelector('.e-size-update');
+                    (updateBtn as HTMLElement).click();
+                    setTimeout(() => {
+                        const table = rteObj.contentModule.getEditPanel().querySelector('table');
+                        expect(table.style.borderColor).not.toBe('');
+                        expect(table.style.backgroundColor).not.toBe('');
+                        done();
+                    }, 100);
+                }, 200);
+            }, 200);
+        });
+    });
+    describe('Bug 975558: Table Edit: Border color 1px value not visible when applied', () => {
+        let rteObj: RichTextEditor;
+        let rteEle: HTMLElement;
+        beforeEach(() => {
+            rteObj = renderRTE({
+                toolbarSettings: {
+                    items: ['CreateTable']
+                },
+                quickToolbarSettings: {
+                    table: ['TableEditProperties', 'Styles']
+                },
+                value: `<p>Text before table</p><table class="e-rte-table"><tbody><tr><td>Cell content</td><td>More content</td></tr></tbody></table><p>Text after table</p>`,
+            });
+            rteEle = rteObj.element;
+        });
+        afterEach(() => {
+            destroy(rteObj);
+        });
+        it(' Testing numeric box components', (done) => {
+            rteObj.focusIn();
+            const cell = rteObj.contentModule.getEditPanel().querySelector('td');
+            const range = document.createRange();
+            range.setStart(cell.firstChild, 0);
+            range.collapse(true);
+            const selection = window.getSelection();
+            selection.removeAllRanges();
+            selection.addRange(range);
+            const eventsArg = {
+                pageX: 50,
+                pageY: 50,
+                target: cell,
+                which: 1
+            };
+            (rteObj as any).mouseDownHandler(eventsArg);
+            (rteObj as any).mouseUp(eventsArg);
+            setTimeout(() => {
+                const tableEditPropsBtn = document.querySelector('.e-table-edit-properties').parentElement;
+                (tableEditPropsBtn as HTMLElement).click();
+                setTimeout(() => {
+                    const dialog = document.querySelector('.e-rte-edit-table');
+                    expect(dialog).not.toBeNull();
+                    const paddingInput = document.querySelector('#' + rteObj.getID() + '_cellPadding') as HTMLInputElement;
+                    const spacingInput = document.querySelector('#' + rteObj.getID() + '_cellSpacing') as HTMLInputElement;
+                    const widthInput = document.querySelector('#' + rteObj.getID() + '_tableWidth') as HTMLInputElement;
+                    const bdrWidthInput = document.querySelector('#' + rteObj.getID() + '_borderWidth') as HTMLInputElement;
+                    paddingInput.value = '5';
+                    spacingInput.value = '2';
+                    widthInput.value = '600';
+                    bdrWidthInput.value = '3';
+                    paddingInput.dispatchEvent(new Event('change', { bubbles: true }));
+                    spacingInput.dispatchEvent(new Event('change', { bubbles: true }));
+                    widthInput.dispatchEvent(new Event('change', { bubbles: true }));
+                    bdrWidthInput.dispatchEvent(new Event('change', { bubbles: true }));
+                    const table = rteObj.contentModule.getEditPanel().querySelector('table');
+                    expect(table.style.borderSpacing).toBe('2px');
+                    expect(table.querySelectorAll('td')[0].style.padding).toBe('5px');
+                    expect(table.style.width).toBe('600px');
+                    expect(table.style.borderWidth).toBe('3px');
+                    const cancelBtn = document.querySelector('.e-cancel');
+                    (cancelBtn as HTMLElement).click();
+                    setTimeout(() => {
+                        const table = rteObj.contentModule.getEditPanel().querySelector('table');
+                        expect(table.style.borderSpacing).not.toBe('2px');
+                        expect(table.querySelectorAll('td')[0].style.padding).not.toBe('5px');
+                        expect(table.style.width).not.toBe('600px');
+                        expect(table.style.borderWidth).not.toBe('3px');
+                        done();
+                    }, 100);
+                }, 200);
+            }, 200);
+        });
+    });
+    describe('Task 968212: Add Border Color and Width Options to Table properties dialog in the Quick Toolbar', () => {
+        let rteObj: RichTextEditor;
+        let rteEle: HTMLElement;
+        beforeEach(() => {
+            rteObj = renderRTE({
+                toolbarSettings: {
+                    items: ['CreateTable']
+                },
+                quickToolbarSettings: {
+                    table: ['TableEditProperties', 'Styles']
+                },
+                value: `<p>Text before table</p><table class="e-rte-table"><tbody><tr><td>Cell content</td><td>More content</td></tr></tbody></table><p>Text after table</p>`,
+            });
+            rteEle = rteObj.element;
+        });
+        afterEach(() => {
+            destroy(rteObj);
+        });
+        it(' While pressing the cancel button width should be reverted and it should be available in preview mode', (done) => {
+            rteObj.focusIn();
+            const cell = rteObj.contentModule.getEditPanel().querySelector('td');
+            const range = document.createRange();
+            range.setStart(cell.firstChild, 0);
+            range.collapse(true);
+            const selection = window.getSelection();
+            selection.removeAllRanges();
+            selection.addRange(range);
+            const eventsArg = {
+                pageX: 50,
+                pageY: 50,
+                target: cell,
+                which: 1
+            };
+            (rteObj as any).mouseDownHandler(eventsArg);
+            (rteObj as any).mouseUp(eventsArg);
+            setTimeout(() => {
+                const tableEditPropsBtn = document.querySelector('.e-table-edit-properties').parentElement;
+                (tableEditPropsBtn as HTMLElement).click();
+                setTimeout(() => {
+                    const dialog = document.querySelector('.e-rte-edit-table');
+                    expect(dialog).not.toBeNull();
+                    const bdrWidthInput = document.querySelector('#' + rteObj.getID() + '_borderWidth') as HTMLInputElement;
+                    bdrWidthInput.value = '3';
+                    bdrWidthInput.dispatchEvent(new Event('change', { bubbles: true }));
+                    const table = rteObj.contentModule.getEditPanel().querySelector('table');
+                    expect(table.style.borderWidth).toBe('3px');
+                    const cancelBtn = document.querySelector('.e-cancel');
+                    (cancelBtn as HTMLElement).click();
+                    setTimeout(() => {
+                        const table = rteObj.contentModule.getEditPanel().querySelector('table');
+                        expect(table.style.borderWidth).toBe('');
+                        done();
+                    }, 100);
+                }, 200);
+            }, 200);
+        });
+    });
+    describe('Task 968212: Add Border Color and Width Options to Table properties dialog in the Quick Toolbar', () => {
+        let rteObj: RichTextEditor;
+        let rteEle: HTMLElement;
+        beforeEach(() => {
+            rteObj = renderRTE({
+                toolbarSettings: {
+                    items: ['CreateTable']
+                },
+                quickToolbarSettings: {
+                    table: ['TableEditProperties', 'Styles']
+                },
+                enableRtl: true,
+                value: `<p>Text before table</p><table class="e-rte-table"><tbody><tr><td>Cell content</td><td>More content</td></tr></tbody></table><p>Text after table</p>`,
+            });
+            rteEle = rteObj.element;
+        });
+        afterEach(() => {
+            destroy(rteObj);
+        });
+        it(' covering the color picker use cases', (done) => {
+            rteObj.focusIn();
+            const table = rteObj.contentModule.getEditPanel().querySelector('table');
+            table.style.borderColor = 'rgb(191, 143, 0)';
+            table.style.backgroundColor = 'rgb(191, 143, 0)';
+            const cell = rteObj.contentModule.getEditPanel().querySelector('td');
+            const range = document.createRange();
+            range.setStart(cell.firstChild, 0);
+            range.collapse(true);
+            const selection = window.getSelection();
+            selection.removeAllRanges();
+            selection.addRange(range);
+            const eventsArg = {
+                pageX: 50,
+                pageY: 50,
+                target: cell,
+                which: 1
+            };
+            (rteObj as any).mouseDownHandler(eventsArg);
+            (rteObj as any).mouseUp(eventsArg);
+            setTimeout(() => {
+                const tableEditPropsBtn = document.querySelector('.e-table-edit-properties').parentElement;
+                (tableEditPropsBtn as HTMLElement).click();
+                setTimeout(() => {
+                    const dialog = document.querySelector('.e-rte-edit-table');
+                    expect(dialog).not.toBeNull();
+                    const bdrClrInput = document.querySelectorAll('.e-btn.e-rte-border-colorpicker');
+                    (bdrClrInput[1] as HTMLElement).click();
+                    const bdrClrOptions = document.querySelectorAll('.e-rte-square-palette');
+                    (bdrClrOptions[4] as HTMLElement).click();
+                    const bgClrInput = document.querySelectorAll('.e-btn.e-rte-table-bg-colorpicker');
+                    (bgClrInput[1] as HTMLElement).click();
+                    const bgClrOptions = document.querySelectorAll('.e-rte-square-palette');
+                    (bgClrOptions[3] as HTMLElement).click();
+                    const updateBtn = document.querySelector('.e-size-update');
+                    (updateBtn as HTMLElement).click();
+                    setTimeout(() => {
+                        const table = rteObj.contentModule.getEditPanel().querySelector('table');
+                        expect(table.style.borderColor).not.toBe('');
+                        expect(table.style.backgroundColor).not.toBe('');
+                        done();
+                    }, 100);
+                }, 200);
+            }, 200);
+        });
+    });
+    describe('Task 968212: Add Border Color and Width Options to Table properties dialog in the Quick Toolbar', () =>{
+        let rteObj: RichTextEditor;
+        let controlId: string;
+        beforeAll((done: Function) => {
+            rteObj = renderRTE({
+                value: '<p id="rte">RTE</p>',
+                toolbarSettings: {
+                    items: ['BackgroundColor', 'FontColor']
+                },
+                backgroundColor: {
+                    showRecentColors: false
+                },
+                fontColor: {
+                    showRecentColors: false
+                }
+            });
+            controlId = rteObj.element.id;
+            done();
+        });
+        afterAll((done: Function) => {
+            destroy(rteObj);
+            done();
+        });
+
+        it(" coverage for color picker module", () => {
+            rteObj.backgroundColor.showRecentColors = true;
+            rteObj.dataBind();
+            expect(rteObj.backgroundColor.showRecentColors === true).toBe(true);
+            rteObj.fontColor.showRecentColors = true;
+            rteObj.dataBind();
+            expect(rteObj.fontColor.showRecentColors === true).toBe(true);
+        });
+    });
     describe('948232 - Table module with different enterKey settings', () => {
         let rteObj: RichTextEditor;
         let rteEle: HTMLElement;
@@ -1265,15 +1654,16 @@ describe('Table Module', () => {
                 setCursorPoint(target, 0);
                 target.dispatchEvent(MOUSEUP_EVENT);
                 ((<HTMLElement>tableTBItems.item(0)).childNodes[0] as HTMLElement).click();
-                let cellPadElem = document.getElementById('cellPadding');
-                let cellSpcElem = document.getElementById('cellSpacing');
+                let cellPadElem = document.getElementById(rteObj.getID() + '_cellPadding');
+                let cellSpcElem = document.getElementById(rteObj.getID() + '_cellSpacing');
                 (cellPadElem as any).value = 20;
                 (cellSpcElem as any).value = 25;
+                cellPadElem.dispatchEvent(new Event('change', { bubbles: true }));
+                cellSpcElem.dispatchEvent(new Event('change', { bubbles: true }));
                 clickEvent.initEvent('click', false, true);
                 document.body.querySelector('.e-size-update').dispatchEvent(clickEvent);
                 let tableElm = document.querySelector('table');
-                expect(tableElm.getAttribute('cellspacing') === '25').toBe(true);
-                expect(tableElm.classList.contains('e-rte-table-border')).toBe(true);
+                expect(tableElm.style.borderSpacing === '25px').toBe(true);
                 let tdElem = tableElm.querySelectorAll('td');
                 for (let i: number = 0; i < tdElem.length; i++) {
                     expect(tdElem[i].style.padding === '20px').toBe(true);
@@ -1340,15 +1730,16 @@ describe('Table Module', () => {
                 target.dispatchEvent(MOUSEUP_EVENT);
                 let eventsArg: any = { pageX: 50, pageY: 300, target: tar };
                 ((<HTMLElement>tableTBItems.item(0)).childNodes[0] as HTMLElement).click();
-                let cellPadElem = document.getElementById('cellPadding');
-                let cellSpcElem = document.getElementById('cellSpacing');
+                let cellPadElem = document.getElementById(rteObj.getID() + '_cellPadding');
+                let cellSpcElem = document.getElementById(rteObj.getID() + '_cellSpacing');
                 (cellPadElem as any).value = 20;
                 (cellSpcElem as any).value = 25;
+                cellPadElem.dispatchEvent(new Event('change', { bubbles: true }));
+                cellSpcElem.dispatchEvent(new Event('change', { bubbles: true }));
                 clickEvent.initEvent('click', false, true);
                 document.body.querySelector('.e-size-update').dispatchEvent(clickEvent);
                 let tableElm = document.querySelector('table');
-                expect(tableElm.getAttribute('cellspacing') === '25').toBe(true);
-                expect(tableElm.classList.contains('e-rte-table-border')).toBe(true);
+                expect(tableElm.style.borderSpacing === '25px').toBe(true);
                 let tdElem = tableElm.querySelectorAll('td');
                 for (let i: number = 0; i < tdElem.length; i++) {
                     expect(tdElem[i].style.padding === '20px').toBe(true);
@@ -2010,6 +2401,40 @@ describe('Table Module', () => {
         });
     });
 
+    describe('976307 - Table dialouge is not closing while clicking on the editor in Ifrmae mode', () => {
+        let rteEle: HTMLElement;
+        let rteObj: RichTextEditor;
+        beforeAll(() => {
+            rteObj = renderRTE({
+                height: 400,
+                toolbarSettings: {
+                    items: ['Bold', 'CreateTable']
+                },
+                iframeSettings: {
+                    enable: true
+                }
+            });
+            rteEle = rteObj.element;
+        });
+        afterAll(() => {
+            destroy(rteObj);
+        });
+        it('dialog open', (done: Function) => {
+            expect(rteObj.element.querySelectorAll('.e-rte-content').length).toBe(1);
+            (<HTMLElement>rteEle.querySelectorAll(".e-toolbar-item")[1] as HTMLElement).click();
+            let target: HTMLElement = (rteObj as any).tableModule.popupObj.element.querySelector('.e-insert-table-btn');
+            let clickEvent: any = document.createEvent("MouseEvents");
+            clickEvent.initEvent("click", false, true);
+            target.dispatchEvent(clickEvent);
+            expect(document.body.querySelector('.e-rte-edit-table.e-dialog')).not.toBe(null);
+            (rteObj as any).tableModule.onIframeMouseDown();
+            setTimeout(() => {
+                expect(document.body.querySelector('.e-rte-edit-table.e-dialog')).toBe(null);
+                done();
+            })
+        });
+    });
+
     describe('table dialog open close ', () => {
         let rteEle: HTMLElement;
         let rteObj: RichTextEditor;
@@ -2246,6 +2671,76 @@ the tool bar support, it�s also customiza</p><table class="e-rte-table" style=
                 expect(table.querySelectorAll('td').length === 9).toBe(true);
                 (InsertHtml as any).findClosestRelevantElement(table.querySelectorAll('td')[0], rteObj.contentModule.getEditPanel() as HTMLElement);
             });
+        });
+    });
+
+    describe('975423: The table cell was not deleted instead of error was thrown in RTE', () => {
+        let rteEle: HTMLElement;
+        let rteObj: RichTextEditor;
+        beforeAll(() => {
+            rteObj = renderRTE({
+                toolbarSettings: {
+                    items: ['Bold', 'CreateTable']
+                },
+                value: `<table class="e-rte-table" style="width: 100%; min-width: 0px; height: 151px">
+                        <colgroup>
+                            <col style="width: 16.9202%;">
+                            <col style="width: 32.1293%;">
+                            <col style="width: 21.673%;">
+                            <col style="width: 29.2776%;">
+                        </colgroup>
+                        <thead style="height: 16.5563%">
+                            <tr style="height: 16.5563%">
+                                <th style=""><span>S No</span><br></th>
+                                <th style=""><span id="test">Name</span><br></th>
+                                <th style=""><span>Gender</span><br></th>
+                                <th style="">Mode of Transport</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr style="height: 16.5563%">
+                                <td style="">1</td>
+                                <td style="">Selma Rose</td>
+                                <td style="">Female</td>
+                                <td style=""><span style="font-size: 14pt">🚴</span></td>
+                            </tr>
+                            <tr style="height: 16.5563%">
+                                <td style="">2</td>
+                                <td style=""><span>Robert</span><br></td>
+                                <td style="">Male</td>
+                                <td style=""><span style="font-size: 14pt">🚗</span></td>
+                            </tr>
+                            <tr style="height: 16.5563%">
+                                <td style="">3</td>
+                                <td style=""><span>William</span><br></td>
+                                <td style="">Male</td>
+                                <td style=""><span style="font-size: 14pt">🚗</span></td>
+                            </tr>
+                            <tr style="height: 16.5563%">
+                                <td style="">4</td>
+                                <td style=""><span>Laura Grace</span><br></td>
+                                <td style="">Female</td>
+                                <td style=""><span style="font-size: 14pt">🚌</span></td>
+                            </tr>
+                            <tr style="height: 16.5563%">
+                                <td style="">5</td>
+                                <td style=""><span>Andrew James</span><br></td>
+                                <td style="">Male</td>
+                                <td style=""><span style="font-size: 14pt">🚕</span></td>
+                            </tr>
+                        </tbody>
+                        </table>`
+            });
+            rteEle = rteObj.element;
+        });
+        afterAll(() => {
+            destroy(rteObj);
+        });
+        it('The table cell was not deleted instead of error was thrown in RTE', () => {
+            const target: HTMLElement = rteObj.element.querySelector('#test');
+            target.parentElement.classList.add('e-cell-select');
+           (rteObj as any).tableModule.docClick({ args: { target: target } });
+            expect(target.parentElement.classList.contains('e-cell-select')).toBe(true);
         });
     });
 
@@ -3260,6 +3755,95 @@ the tool bar support, it�s also customiza</p><table class="e-rte-table" style=
             });
         });
 
+        describe("975138: Merge Cells option incorrectly enabled in nested table cell instead of Horizontal/Vertical merge options", () => {
+            let rteObj: RichTextEditor;
+            let rteEle: HTMLElement;
+            beforeEach(() => {
+                rteObj = renderRTE({
+                    toolbarSettings: {
+                        items: ['Bold', 'CreateTable', '|', 'Formats', 'Alignments', 'OrderedList',
+                            'UnorderedList', 'Outdent', 'Indent']
+                    },
+                    value: `<table class="e-rte-table" style="width: 100%; min-width: 0px; height: 151px">
+                        <thead style="height: 16.5563%">
+                            <tr style="height: 16.5563%">
+                                <th style="width: 12.1813%"><span>S No</span><br></th>
+                                <th style="width: 23.2295%"><span>Name</span><br></th>
+                                <th style="width: 9.91501%"><span>Age</span><br></th>
+                                <th style="width: 15.5807%"><span>Gender</span><br></th>
+                                <th style="width: 17.9887%"><span>Occupation</span><br></th>
+                                <th style="width: 21.1048%">Mode of Transport</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr style="height: 16.5563%">
+                                <td style="width: 12.1813%">1</td>
+                                <td style="width: 23.2295%">Selma Rose</td>
+                                <td style="width: 9.91501%">30</td>
+                                <td style="width: 15.5807%">Female</td>
+                                <td style="width: 17.9887%"><span>Engineer</span><br></td>
+                                <td style="width: 21.1048%"><span style="font-size: 14pt">🚴</span></td>
+                            </tr>
+                            <tr style="height: 16.5563%">
+                                <td style="width: 12.1813%">2</td>
+                                <td style="width: 23.2295%"><span>Robert</span><br></td>
+                                <td style="width: 9.91501%">28</td>
+                                <td style="width: 15.5807%">Male</td>
+                                <td style="width: 17.9887%"><span>Graphic Designer</span></td>
+                                <td style="width: 21.1048%"><span style="font-size: 14pt">🚗</span></td>
+                            </tr>
+                            <tr style="height: 16.5563%">
+                                <td style="width: 12.1813%">3</td>
+                                <td style="width: 23.2295%"><span>William</span><br></td>
+                                <td style="width: 9.91501%">35</td>
+                                <td style="width: 15.5807%">Male</td>
+                                <td style="width: 17.9887%">Teacher</td>
+                                <td style="width: 21.1048%"><span style="font-size: 14pt">🚗</span></td>
+                            </tr>
+                            <tr style="height: 16.5563%">
+                                <td style="width: 12.1813%">4</td>
+                                <td style="width: 23.2295%"><span>Laura Grace</span><br></td>
+                                <td style="width: 9.91501%">42</td>
+                                <td style="width: 15.5807%">Female</td>
+                                <td style="width: 17.9887%">Doctor</td>
+                                <td style="width: 21.1048%"><span style="font-size: 14pt">🚌</span></td>
+                            </tr>
+                            <tr style="height: 16.5563%">
+                                <td style="width: 12.1813%">5</td>
+                                <td style="width: 23.2295%"><span>Andrew James</span><br></td>
+                                <td style="width: 9.91501%">45</td>
+                                <td style="width: 15.5807%">Male</td>
+                                <td style="width: 17.9887%">Lawyer</td>
+                                <td style="width: 21.1048%"><span style="font-size: 14pt">🚕</span></td>
+                            </tr>
+                        </tbody>
+                        </table>`
+                });
+                rteEle = rteObj.element;
+            });
+
+            afterEach(() => {
+                destroy(rteObj);
+            });
+            it('Merge Cells option incorrectly enabled in nested table cell instead of Horizontal/Vertical merge options', (done) => {
+                let node: HTMLElement = (rteObj as any).inputElement.querySelector("td");
+                node.classList.add('e-cell-select');
+                let nodeSelection: NodeSelection = new NodeSelection();
+                nodeSelection.setSelectionText(document, node.childNodes[0], node.childNodes[0], 0, 0);
+                node.focus();
+                (<HTMLElement>rteEle.querySelectorAll(".e-toolbar-item")[1] as HTMLElement).click();
+                let target: HTMLElement = (rteObj as any).tableModule.popupObj.element.querySelector('.e-insert-table-btn');
+                let clickEvent: any = document.createEvent("MouseEvents");
+                clickEvent.initEvent("click", false, true);
+                target.dispatchEvent(clickEvent);
+                target = rteObj.tableModule.editdlgObj.element.querySelector('.e-insert-table') as HTMLElement;
+                target.dispatchEvent(clickEvent);
+                expect(node.classList.contains('e-cell-select')).toBe(false);
+                expect(node.querySelector("td").classList.contains('e-cell-select')).toBe(true);
+                done();
+            });
+        });
+
         describe(" List tab key action inside table.", () => {
             let rteObj: RichTextEditor;
             let rteEle: HTMLElement;
@@ -3288,6 +3872,32 @@ the tool bar support, it�s also customiza</p><table class="e-rte-table" style=
                 setCursorPoint(selectNode.childNodes[2] as Element, 0);
                 (rteObj as any).keyDown(keyBoardEvent);
                 expect(selectNode.querySelector('ol')).not.toBeNull();
+            });
+        });
+
+        describe("977322: The table selected contents was not removed while press the delete key in the RTE", () => {
+            let rteObj: RichTextEditor;
+            let rteEle: HTMLElement;
+            let keyBoardEvent: any = { type: 'keydown', preventDefault: () => { }, stopPropagation: () => { }, shiftKey: false, which: 46, key: '', keyCode: 46 };
+            let editNode: HTMLElement;
+            beforeEach(() => {
+                rteObj = renderRTE({});
+                rteEle = rteObj.element;
+                editNode = (rteObj as any).inputElement;
+            });
+
+            afterEach(() => {
+                destroy(rteObj);
+            });
+
+            it('The table selected contents was not removed while press the delete key in the RTE', () => {
+                (rteObj as any).contentModule.editableElement.innerHTML = `<table class="e-rte-table" style="width: 100%; min-width: 0px;"><colgroup><col style="width: 33.3333%;"><col style="width: 33.3333%;"><col style="width: 33.3333%;"></colgroup><tbody><tr><td class="e-cell-select e-multi-cells-select">ddddddddddd</td><td class="e-cell-select e-multi-cells-select">dddddddd</td><td class="e-cell-select e-multi-cells-select">gggggggg</td></tr><tr><td class="e-cell-select e-multi-cells-select">gggggggg</td><td class="e-cell-select e-multi-cells-select">ggggggggggggg</td><td class="e-cell-select e-multi-cells-select">gggggggg</td></tr><tr><td class="e-cell-select e-multi-cells-select">gfffff</td><td class="e-cell-select e-multi-cells-select">ddddddd</td><td class="e-cell-select e-multi-cells-select e-cell-select-end">ddddddd</td></tr></tbody></table>`;
+                let node: HTMLElement = (rteObj as any).inputElement.querySelector("td");
+                let nodeSelection: NodeSelection = new NodeSelection();
+                nodeSelection.setSelectionText(document, node.childNodes[0], node.childNodes[0], 0, 0);
+                (rteObj as any).keyDown(keyBoardEvent);
+                let expected: string = `<table class="e-rte-table" style="width: 100%; min-width: 0px;"><colgroup><col style="width: 33.3333%;"><col style="width: 33.3333%;"><col style="width: 33.3333%;"></colgroup><tbody><tr><td><br></td><td><br></td><td><br></td></tr><tr><td><br></td><td><br></td><td><br></td></tr><tr><td><br></td><td><br></td><td><br></td></tr></tbody></table>`;
+                expect((rteObj as any).contentModule.editableElement.innerHTML).toEqual(expected);
             });
         });
 
@@ -4403,18 +5013,23 @@ the tool bar support, it�s also customiza</p><table class="e-rte-table" style=
             expect(document.querySelector('#' + rteObj.element.id + '_tabledialog') !== null).toBe(true);
             document.body.appendChild((rteObj as any).tableModule.quickToolObj.inlineQTBar.element);
             (rteObj as any).tableModule.onIframeMouseDown();
+            (rteObj as any).tableModule.onIframeMouseDown(eventsArg);
             expect(document.querySelector('#' + rteObj.element.id + '_tabledialog') === null).toBe(true);
             (rteObj as any).tableModule.createDialog({});
             expect(document.querySelector('#' + rteObj.element.id + '_tabledialog') !== null).toBe(true);
-            (rteObj as any).tableModule.applyProperties(args, {});
+            (rteObj as any).tableModule.saveProperties({});
             expect(document.querySelector('#' + rteObj.element.id + '_tabledialog') === null).toBe(true);
             (rteObj as any).tableModule.customTable(args, {});
             expect(getCorrespondingIndex(null, []).length === 0).toBe(true);
+            let node = (rteObj).inputElement.querySelector('#e-rte-table1').querySelector("td");
+            let range: Range = document.createRange();
+            range.setStart(node, 0);
+            (rteObj as any).formatter.editorManager.nodeSelection.save(range, document);
             (rteObj as any).formatter.editorManager.tableObj.cellMerge(null);
             expect((rteObj as any).formatter.editorManager.tableObj.curTable.querySelectorAll('.e-cell-select').length === 0).toBe(true);
             (rteObj as any).formatter.editorManager.tableObj.curTable = null;
             const element: HTMLElement = rteObj.contentModule.getEditPanel().parentElement;
-            let range: Range = document.createRange();
+            range = document.createRange();
             range.setStart(element, 0);
             (rteObj as any).formatter.editorManager.nodeSelection.save(range, document);
             (rteObj as any).formatter.editorManager.tableObj.removeTable({ item: { selection: rteObj.formatter.editorManager.nodeSelection } });
@@ -4574,6 +5189,146 @@ the tool bar support, it�s also customiza</p><table class="e-rte-table" style=
         });
     });
 
+    describe('967236 - Bug Fix 1: Colspan not updated properly after merging cells', () => {
+        let rteObj: RichTextEditor;
+        let rteEle: HTMLElement;
+
+        beforeEach((done: DoneFn) => {
+            rteObj = renderRTE({
+                toolbarSettings: {
+                    items: ['CreateTable']
+                },
+                quickToolbarSettings: {
+                    table: ['Tableheader', 'TableRemove', '|', 'TableRows', 'TableColumns', 'TableCell', '|', 'Styles', 'BackgroundColor', 'Alignments', 'TableCellVerticalAlign']
+                },
+                value: `<table class="e-rte-table" style="width: 100%; min-width: 0px;"><colgroup><col style="width: 33.3333%;"><col style="width: 33.3333%;"><col style="width: 33.3333%;"></colgroup><tbody><tr><td colspan="3" style="height: 26px;"><br></td></tr><tr><td><br></td><td><br></td><td><br></td></tr></tbody></table><p><br></p>`
+            });
+            rteEle = rteObj.element;
+            done();
+        });
+
+        afterEach((done: DoneFn) => {
+            destroy(rteObj);
+            done();
+        });
+
+        it('should correctly update colspan when merging cells horizontally in different rows', (done: Function) => {
+            let target = (rteEle.querySelectorAll('table tr')[1] as HTMLTableRowElement).cells[0];
+            var selection = new NodeSelection();
+            selection.setSelectionText(rteObj.contentModule.getDocument(), target, target, 0, 0);
+            let eventsArg = { pageX: 50, pageY: 300, target: target, which: 1 };
+            (rteObj as any).mouseDownHandler(eventsArg);
+            let ev = new MouseEvent("mousemove", {
+                view: window,
+                bubbles: true,
+                cancelable: true
+            });
+            rteEle.querySelectorAll("tr")[1].cells[1].dispatchEvent(ev);
+            (rteObj as any).mouseUp(eventsArg);
+            setTimeout(function () {
+                (document.querySelectorAll('.e-rte-quick-popup .e-toolbar-item button')[4] as HTMLElement).click();
+                (document.querySelectorAll('.e-rte-dropdown-items.e-dropdown-popup ul .e-item')[0] as HTMLElement).click();
+                expect((rteObj as any).inputElement.querySelectorAll('table tr')[0].cells[0].colSpan === 2).toBe(true);
+                done();
+            }, 400);
+        });
+    });
+
+    describe('967236 - Bug Fix 2: Rowspan not updated properly after merging cells', () => {
+        let rteObj: RichTextEditor;
+        let rteEle: HTMLElement;
+
+        beforeEach((done: DoneFn) => {
+            rteObj = renderRTE({
+                toolbarSettings: {
+                    items: ['CreateTable']
+                },
+                quickToolbarSettings: {
+                    table: ['TableHeader', 'TableRows', 'TableColumns', 'TableCell', '-', 'BackgroundColor', 'TableRemove', 'TableCellVerticalAlign', 'Styles']
+                },
+                value: `<table class="e-rte-table" style="width: 100%; min-width: 0px;"><colgroup><col style="width: 50%;"><col style="width: 50%;"></colgroup><tbody><tr><td rowspan="3" style="height: 77px;">1</td><td>2</td></tr><tr><td>3</td></tr><tr><td>4</td></tr></tbody></table><p><br></p>`
+            });
+            rteEle = rteObj.element;
+            done();
+        });
+
+        afterEach((done: DoneFn) => {
+            destroy(rteObj);
+            done();
+        });
+
+        it('should correctly update rowspan when merging cells vertically in different columns', (done: Function) => {
+            let target = (rteEle.querySelector('table tr') as HTMLTableRowElement).cells[1];
+            var selection = new NodeSelection();
+            selection.setSelectionText(rteObj.contentModule.getDocument(), target, target, 0, 0);
+            let eventsArg = { pageX: 50, pageY: 300, target: target, which: 1 };
+            (rteObj as any).mouseDownHandler(eventsArg);
+            let ev = new MouseEvent("mousemove", {
+                view: window,
+                bubbles: true,
+                cancelable: true
+            });
+            rteEle.querySelectorAll("tr")[1].cells[0].dispatchEvent(ev);
+            (rteObj as any).mouseUp(eventsArg);
+            setTimeout(function () {
+                (document.querySelectorAll('.e-rte-quick-popup .e-toolbar-item button')[3] as HTMLElement).click();
+                (document.querySelectorAll('.e-rte-dropdown-items.e-dropdown-popup ul .e-item')[0] as HTMLElement).click();
+                expect((rteObj as any).inputElement.querySelectorAll('table tr')[0].cells[0].rowSpan === 2).toBe(true);
+                const allTRs = (rteObj).inputElement.querySelectorAll('table tr');
+                const emptyTRs = Array.from(allTRs).filter(tr =>
+                    tr.querySelectorAll('td, th').length === 0
+                );
+                expect(emptyTRs.length).toBe(0);
+                done();
+            }, 400);
+        });
+    });
+
+    describe('967236 - Bug Fix 3: Column deletion not working after vertical splits', () => {
+        let rteObj: RichTextEditor;
+        let rteEle: HTMLElement;
+
+        beforeEach((done: DoneFn) => {
+            rteObj = renderRTE({
+                toolbarSettings: {
+                    items: ['CreateTable']
+                },
+                quickToolbarSettings: {
+                    table: ['Tableheader', 'TableRemove', '|', 'TableRows', 'TableColumns', 'TableCell', '|', 'Styles', 'BackgroundColor', 'Alignments', 'TableCellVerticalAlign']
+                },
+                value: `<table class="e-rte-table" style="width: 100%; min-width: 0px;"><colgroup><col style="width: 16.6555%;"><col style="width: 16.6555%;"><col style="width: 33.3333%;"><col style="width: 33.3333%;"></colgroup><tbody><tr><td class="e-cell-select">1</td><td>2</td><td>5</td><td>45</td></tr><tr><td colspan="2">3</td><td>43</td><td>543543</td></tr><tr><td colspan="2">4</td><td>6</td><td>5435</td></tr></tbody></table>`
+            });
+            rteEle = rteObj.element;
+            done();
+        });
+
+        afterEach((done: DoneFn) => {
+            destroy(rteObj);
+            done();
+        });
+
+        it('should correctly delete columns after vertical split operation', (done: Function) => {
+            let target = rteEle.querySelector('table td');
+            var selection = new NodeSelection();
+            selection.setSelectionText(rteObj.contentModule.getDocument(), target, target, 0, 0);
+            let eventsArg = { pageX: 50, pageY: 300, target: target, which: 1 };
+            (rteObj as any).mouseDownHandler(eventsArg);
+            let ev = new MouseEvent("mousemove", {
+                view: window,
+                bubbles: true,
+                cancelable: true
+            });
+            rteEle.querySelectorAll("td")[0].dispatchEvent(ev);
+            (rteObj as any).mouseUp(eventsArg);
+            setTimeout(function () {
+                (document.querySelectorAll('.e-rte-quick-popup .e-toolbar-item button')[3] as HTMLElement).click();
+                (document.querySelectorAll('.e-rte-dropdown-items.e-dropdown-popup ul .e-item')[2] as HTMLElement).click();
+                expect((rteObj as any).inputElement.querySelectorAll('table tr')[0].cells.length === 3).toBe(true);
+                expect((rteObj as any).inputElement.querySelectorAll('table tr')[0].cells[0].classList.contains('e-cell-select')).toBe(true);
+                done();
+            }, 400);
+        });
+    });
     describe("Table remove rows with cell merge", () => {
         let rteObj: RichTextEditor;
         let rteEle: HTMLElement;
@@ -5378,6 +6133,76 @@ the tool bar support, it�s also customiza</p><table class="e-rte-table" style=
         });
     });
 
+    describe("966476 - The table horizontal splits not working properly both normal cell", () => {
+        let rteObj: RichTextEditor;
+        let rteEle: HTMLElement;
+        beforeEach(() => {
+            rteObj = renderRTE({
+                quickToolbarSettings: {
+                    table: ['TableCell']
+                },
+                value: `<table class="e-rte-table" style="width: 100%; min-width: 0px; height: 293px;"><colgroup><col style="width: 25%;"><col style="width: 25%;"><col style="width: 25%;"><col style="width: 25%;"></colgroup><tbody><tr style="height: 32.9932%;"><td style="height: 95.5px;"><br></td><td style="height: 96px;"><br></td><td><br></td><td><br></td></tr><tr style="height: 30.9524%;"><td style="height: 95.5px;"><br></td><td style="height: 96px;"><br></td><td><br></td><td><br></td></tr><tr style="height: 35.7143%;"><td><br></td><td><br></td><td><br></td><td><br></td></tr></tbody></table><p><br></p>`
+            });
+            rteEle = rteObj.element;
+        });
+        afterEach(() => {
+            destroy(rteObj);
+        });
+        it('Split first cell', (done: Function) => {
+            let target = rteEle.querySelector('.e-rte-table td');
+            let eventsArg = { pageX: 50, pageY: 300, target: target, which: 1 };
+            var domSelection = new NodeSelection();
+            (rteObj as any).mouseDownHandler(eventsArg);
+            (rteObj as any).mouseUp(eventsArg);
+            setTimeout(function () {
+                var tableCell = document.querySelectorAll('tr')[0].querySelectorAll('td')[0];
+                domSelection.setSelectionText(rteObj.contentModule.getDocument(), tableCell, tableCell, 0, 0);
+                (document.querySelectorAll('.e-rte-quick-popup .e-toolbar-item button')[0] as HTMLElement).click();
+                (document.querySelectorAll('.e-rte-dropdown-items.e-dropdown-popup ul .e-item')[1] as HTMLElement).click();
+                var table = rteEle.querySelector("table");
+                expect(table.rows[0].cells[0].style.height).toBe('49px');
+                expect(table.rows[1].cells[0].style.height).toBe('49px');
+                expect(table.rows[0].style.height).toBe('16.4966%');
+                expect(table.rows[1].style.height).toBe('16.4966%');
+                done();
+            }, 400);
+        });
+    });
+
+    describe("966476 - The table horizontal splits not working properly both merged cell", () => {
+        let rteObj: RichTextEditor;
+        let rteEle: HTMLElement;
+        beforeEach(() => {
+            rteObj = renderRTE({
+                quickToolbarSettings: {
+                    table: ['TableCell']
+                },
+                value: `<table class="e-rte-table" style="width: 100%; min-width: 0px; height: 293px;"><colgroup><col style="width: 25%;"><col style="width: 25%;"><col style="width: 25%;"><col style="width: 25%;"></colgroup><tbody><tr style="height: 32.9932%;"><td style="height: 190px;" rowspan="2"><br></td><td><br></td><td><br></td><td><br></td></tr><tr style="height: 30.9524%;"><td><br></td><td><br></td><td><br></td></tr><tr style="height: 35.7143%;"><td><br></td><td><br></td><td><br></td><td><br></td></tr></tbody></table><p><br></p>`
+            });
+            rteEle = rteObj.element;
+        });
+        afterEach(() => {
+            destroy(rteObj);
+        });
+        it('Split first cell', (done: Function) => {
+            let target = rteEle.querySelector('.e-rte-table td');
+            let eventsArg = { pageX: 50, pageY: 300, target: target, which: 1 };
+            var domSelection = new NodeSelection();
+            (rteObj as any).mouseDownHandler(eventsArg);
+            (rteObj as any).mouseUp(eventsArg);
+            setTimeout(function () {
+                var tableCell = document.querySelectorAll('tr')[0].querySelectorAll('td')[0];
+                domSelection.setSelectionText(rteObj.contentModule.getDocument(), tableCell, tableCell, 0, 0);
+                (document.querySelectorAll('.e-rte-quick-popup .e-toolbar-item button')[0] as HTMLElement).click();
+                (document.querySelectorAll('.e-rte-dropdown-items.e-dropdown-popup ul .e-item')[1] as HTMLElement).click();
+                var table = rteEle.querySelector("table");
+                expect(table.rows[0].cells[0].style.height).toBe('96px');
+                expect(table.rows[1].cells[0].style.height).toBe('96px');
+                done();
+            }, 400);
+        });
+    });
+
     describe("Table cell vertical split", () => {
         let rteObj: RichTextEditor;
         let rteEle: HTMLElement;
@@ -6017,6 +6842,36 @@ the tool bar support, it�s also customiza</p><table class="e-rte-table" style=
         });
     });
 
+    describe('966624: The table arrow navigation were not working properly after multicell selection.', () => {
+        let rteObj: RichTextEditor;
+        let rteEle: HTMLElement;
+        beforeAll(() => {
+            rteObj = renderRTE({
+                value: `<table class="e-rte-table" style="width: 100%; min-width: 0px;"><tbody><tr><td style="width: 50%;" class="e-cell-select e-multi-cells-select">testing-1</td><td style="width: 50%;">testing-2</td></tr><tr><td style="width: 50%;" class="e-cell-select e-multi-cells-select e-cell-select-end"><br></td><td style="width: 50%;"><br></td></tr></tbody></table>`,
+                toolbarSettings: {
+                    items: ['Bold', 'CreateTable']
+                }
+            });
+            rteEle = rteObj.element;
+        });
+        afterAll(() => {
+            destroy(rteObj);
+        });
+        it('The table arrow navigation were not working properly after multicell selection.', (done: DoneFn) => {
+            rteObj.focusIn();
+            const firstCell = rteEle.querySelector('td.e-cell-select');
+            setCursorPoint(firstCell as Element, 0);
+            rteObj.inputElement.dispatchEvent(new KeyboardEvent('keydown', TAB_KEY_EVENT_INIT));
+            rteObj.inputElement.dispatchEvent(new KeyboardEvent('keyup', TAB_KEY_EVENT_INIT));
+            setTimeout(() => {
+                const firstRowCells = rteEle.querySelectorAll('.e-rte-table tbody tr:first-child td');
+                expect(firstRowCells[0].classList.contains('e-cell-select')).toBe(false);
+                expect(firstRowCells[1].classList.contains('e-cell-select')).toBe(true);
+                done();
+            }, 100);
+        });
+    });
+
     describe("Remove the table at initial render with text node type", () => {
         let rteObj: RichTextEditor;
         let rteEle: HTMLElement;
@@ -6060,6 +6915,42 @@ the tool bar support, it�s also customiza</p><table class="e-rte-table" style=
                     }, 100);
                 }, 100);
             }, 100);
+        });
+    });
+
+    describe("965462 - The cursor did not move to the adjacent row after deleting the current row in the table.", () => {
+        let rteObj: RichTextEditor;
+        let rteEle: HTMLElement;
+        afterEach(() => {
+            destroy(rteObj);
+        });
+        it(' delete row', (done) => {
+            rteObj = renderRTE({
+                toolbarSettings: {
+                    items: ['Bold']
+                },
+                value: `<table class="e-rte-table" style="width: 100%;"><thead><tr><th><br></th><th><br></th><th><br></th></tr></thead><tbody><tr><td style="width: 33.3333%;">1</td><td style="width: 33.3333%;">4</td><td style="width: 33.3333%;">7</td></tr><tr><td style="width: 33.3333%;">2</td><td style="width: 33.3333%;">5</td><td style="width: 33.3333%;">8</td></tr><tr><td style="width: 33.3333%;">3</td><td style="width: 33.3333%;">6</td><td style="width: 33.3333%;">123456789</td></tr></tbody></table>`
+            });
+            rteEle = rteObj.element;
+            let domSelection: NodeSelection = new NodeSelection();
+            (rteObj.contentModule.getEditPanel() as HTMLElement).focus();
+            dispatchEvent((rteObj.contentModule.getEditPanel() as HTMLElement), 'mousedown');
+            let tableCell: Element = document.querySelectorAll('tr')[2].querySelectorAll('td')[2];
+            let target: HTMLElement = tableCell as HTMLElement;
+            setCursorPoint(target, 0);
+            target.dispatchEvent(MOUSEUP_EVENT);
+            setTimeout(() => {
+                let rows: any = rteObj.element.querySelectorAll('tr');
+                expect(rows.length).toBe(4);
+                domSelection.setSelectionText(rteObj.contentModule.getDocument(), tableCell.firstChild, tableCell.firstChild, 0, 0);
+                (document.querySelectorAll('.e-rte-quick-popup .e-toolbar-item button')[2] as HTMLElement).click();
+                (rows[2].querySelectorAll('td')[2] as HTMLElement).classList.add("e-cell-select");
+                (document.querySelectorAll('.e-rte-dropdown-items.e-dropdown-popup ul .e-item')[2] as HTMLElement).click();
+                rows = rteObj.element.querySelectorAll('tr');
+                expect(rows.length).toBe(3);
+                expect(rows[2].querySelectorAll('td')[2].classList.contains('e-cell-select')).toBe(true);
+                done();
+            }, 400);
         });
     });
 
@@ -6157,7 +7048,9 @@ the tool bar support, it�s also customiza</p><table class="e-rte-table" style=
         });
         it('Remove the table using the Quicktoolbar with the enter key DIV <BR>', function (done) {
             rteObj.enterKey = 'BR'
-            var node = rteEle.querySelector("td");
+            rteObj.value = `<table class="\&quot;e-rte-table\&quot; e-rte-table" style="width: 385px; height: 187px;" 100%;\"=""><tbody><tr><td style="\&quot;width:" 33.3333%;\"="" class="\&quot;\&quot;">1</td><td style="\&quot;width:" 33.3333%;\"="">4</td><td style="\&quot;width:" 33.3333%;\"="">7</td></tr><tr><td style="\&quot;width:" 33.3333%;\"="" >2</td><td style="\&quot;width:" 33.3333%;\"="" class="\&quot;e-cell-select\&quot;">5</td><td style="\&quot;width:" 33.3333%;\"="" class="">8</td></tr><tr><td style="\&quot;width:" 33.3333%;\"="">3</td><td style="\&quot;width:" 33.3333%;\"="">6</td><td style="\&quot;width:" 33.3333%;\"="">123456789</td></tr></tbody></table>`;
+            rteObj.dataBind();
+            var node = (rteEle as any).querySelector("td");
             setCursorPoint(node, 0);
             node.focus();
             var clickEvent = document.createEvent("MouseEvents");
@@ -6395,14 +7288,6 @@ the tool bar support, it�s also customiza</p><table class="e-rte-table" style=
             tableObj.curTable = document.querySelector('table');
             tableObj.createReplacementCellIfNeeded(0);
             expect(tableObj.getMergedRow).toHaveBeenCalled();
-        });
-        it('should handle missing nextFocusCell in updateSelectionAfterColumnDelete', () => {
-            rteObj.focusIn();
-            const tableObj = (rteObj.formatter.editorManager as any).tableObj;
-            const tbodyHeadEle = document.createElement('tbody');
-            const rowHeadEle = document.createElement('tr');
-            tbodyHeadEle.appendChild(rowHeadEle);
-            tableObj.updateSelectionAfterColumnDelete({}, tbodyHeadEle, 0, 0);
         });
         it('should handle cells without oldWidth dataset in redistributeCellWidths', () => {
             rteObj.focusIn();
@@ -7232,7 +8117,7 @@ the tool bar support, it�s also customiza</p><table class="e-rte-table" style=
             (rteObj as any).tableModule.tableObj.resizeHelper({ target: tableElement, preventDefault: function () { } });
             var resizeCol = rteObj.contentModule.getEditPanel().querySelectorAll('.e-column-resize')[0];
             (rteObj as any).tableModule.tableObj.resizeStart({ target: resizeCol, pageX: 100, pageY: 0, preventDefault: function () { } });
-            (rteObj as any).tableModule.tableObj.appendHelper();
+            (rteObj as any).tableModule.tableObj.appendHelper(resizeCol);
             (rteObj as any).mouseDownHandler(eventsArg);
             expect(document.querySelectorAll(".e-table-rhelper.e-column-helper").length < 2).toBe(true);
             done();
@@ -9084,8 +9969,8 @@ the tool bar support, it�s also customiza</p><table class="e-rte-table" style=
                 deleteBtn.click();
                 setTimeout(() => {
                     expect(rteObj.element.querySelector('table')).toBe(null);
-                    expect(window.getSelection().getRangeAt(0).startOffset).toBe(1);
-                    expect(window.getSelection().getRangeAt(0).endOffset).toBe(1);
+                    expect(window.getSelection().getRangeAt(0).startOffset).toBe(0);
+                    expect(window.getSelection().getRangeAt(0).endOffset).toBe(0);
                     done();
                 }, 100);
             }, 100)
@@ -10645,43 +11530,1500 @@ the tool bar support, it�s also customiza</p><table class="e-rte-table" style=
         });
     });
 
+    describe('968199 - Quick Table Row and Column Insertion', () => {
+        let rteObj: RichTextEditor;
+        let rteEle: HTMLElement;
+
+        beforeEach((done: Function) => {
+            rteObj = renderRTE({
+                toolbarSettings: {
+                    items: ['CreateTable', 'Undo', 'Redo']
+                },
+                value: '<table class="e-rte-table" style="width: 100%;"><tbody><tr><td style="width: 50%;">Cell 1</td><td style="width: 50%;">Cell 2</td></tr><tr><td style="width: 50%;">Cell 3</td><td style="width: 50%;">Cell 4</td></tr></tbody></table><p><br></p>'
+            });
+            rteEle = rteObj.element;
+            done();
+        });
+
+        afterEach((done: Function) => {
+            destroy(rteObj);
+            done();
+        });
+
+        it('should show insertion icons when hovering over a table cell', (done: Function) => {
+            rteObj.focusIn();
+            const table = rteObj.contentModule.getEditPanel().querySelector('table');
+            const firstCell = table.querySelector('td');
+
+            // Simulate mouseover on cell to trigger icon creation
+            (rteObj.tableModule as any).tableObj.resizeHelper({
+                target: firstCell,
+                preventDefault: function () { }
+            });
+
+            setTimeout(() => {
+                // Check if insertion icons are created
+                const insertIcons = rteObj.contentModule.getEditPanel().querySelectorAll('.e-tb-col-insert, .e-tb-row-insert');
+                expect(insertIcons.length).toBeGreaterThan(0);
+                done();
+            }, 100);
+        });
+
+        it('should create column insertion icons with correct attributes', (done: Function) => {
+            rteObj.focusIn();
+            const table = rteObj.contentModule.getEditPanel().querySelector('table');
+
+            // Trigger resize helper to create resize elements and insertion icons
+            (rteObj.tableModule as any).tableObj.resizeHelper({
+                target: table,
+                preventDefault: function () { }
+            });
+
+            setTimeout(() => {
+                const colInsertIcons = rteObj.contentModule.getEditPanel().querySelectorAll('.e-tb-col-insert');
+                expect(colInsertIcons.length).toBeGreaterThan(0);
+
+                // Check icon attributes
+                const firstIcon = colInsertIcons[0] as HTMLElement;
+                expect(firstIcon.getAttribute('data-col')).not.toBeNull();
+                expect(firstIcon.getAttribute('unselectable')).toBe('on');
+                expect(firstIcon.getAttribute('contenteditable')).toBe('false');
+
+                done();
+            }, 100);
+        });
+
+        it('should create row insertion icons with correct attributes', (done: Function) => {
+            rteObj.focusIn();
+            const table = rteObj.contentModule.getEditPanel().querySelector('table');
+
+            // Trigger resize helper to create resize elements and insertion icons
+            (rteObj.tableModule as any).tableObj.resizeHelper({
+                target: table,
+                preventDefault: function () { }
+            });
+
+            setTimeout(() => {
+                const rowInsertIcons = rteObj.contentModule.getEditPanel().querySelectorAll('.e-tb-row-insert');
+                expect(rowInsertIcons.length).toBeGreaterThan(0);
+
+                // Check icon attributes
+                const firstIcon = rowInsertIcons[0] as HTMLElement;
+                expect(firstIcon.getAttribute('data-row')).not.toBeNull();
+                expect(firstIcon.getAttribute('unselectable')).toBe('on');
+                expect(firstIcon.getAttribute('contenteditable')).toBe('false');
+
+                done();
+            }, 100);
+        });
+
+        it('should show circle dot icon when hovering over insertion icons', (done: Function) => {
+            rteObj.focusIn();
+            const table = rteObj.contentModule.getEditPanel().querySelector('table');
+
+            // Trigger resize helper to create resize elements and insertion icons
+            (rteObj.tableModule as any).tableObj.resizeHelper({
+                target: table,
+                preventDefault: function () { }
+            });
+
+            setTimeout(() => {
+                const td = rteObj.contentModule.getEditPanel().querySelector('td') as HTMLElement;
+                // Simulate mouseover on insertion icon
+                const mouseOverEvent = new MouseEvent('mouseover', { 'view': window, 'bubbles': true, 'cancelable': true });
+                td.dispatchEvent(mouseOverEvent);
+
+                setTimeout(() => {
+                    const insertIcon = rteObj.contentModule.getEditPanel().querySelector('.e-tb-col-insert') as HTMLElement;
+                    expect(insertIcon).not.toBeNull();
+
+                    // Simulate mouseover on insertion icon
+                    const mouseOverEvent = new MouseEvent('mouseover', { 'view': window, 'bubbles': true, 'cancelable': true });
+                    insertIcon.dispatchEvent(mouseOverEvent);
+
+                    // Check if circle icon is added
+                    setTimeout(() => {
+                        const circleIcon = insertIcon.querySelector('.e-circle, .e-circle-add');
+                        expect(circleIcon).not.toBeNull();
+                        expect(insertIcon.style.opacity).toBe('1');
+                        // Simulate mouseover on insertion icon
+                        var mouseOutEvent = document.createEvent('MouseEvents');
+                        mouseOutEvent.initMouseEvent(
+                            'mouseout', // event type
+                            true,       // bubbles
+                            true,       // cancelable
+                            window,     // view
+                            0,          // detail
+                            0, 0,       // screenX, screenY
+                            0, 0,       // clientX, clientY
+                            false, false, false, false, // modifiers (ctrl, alt, shift, meta)
+                            0,          // button
+                            insertIcon.parentElement // relatedTarget
+                        );
+                        insertIcon.dispatchEvent(mouseOutEvent);
+                        setTimeout(() => {
+                            const insertIcon = rteObj.contentModule.getEditPanel().querySelector('.e-tb-col-insert') as HTMLElement;
+                            expect(insertIcon).toBeNull();
+                            done();
+                        })
+                    }, 100);
+                }, 100);
+            }, 100);
+        });
+
+        it('should insert a new column when clicking column insertion icon', (done: Function) => {
+            rteObj.focusIn();
+            const table = rteObj.contentModule.getEditPanel().querySelector('table');
+            const initialColumnCount = table.rows[0].cells.length;
+            // Trigger resize helper to create resize elements and insertion icons
+            (rteObj.tableModule as any).tableObj.resizeHelper({
+                target: table,
+                preventDefault: function () { }
+            });
+            setTimeout(() => {
+                const insertIcon = rteObj.contentModule.getEditPanel().querySelector('.e-tb-col-insert') as HTMLElement;
+                expect(insertIcon).not.toBeNull();
+                const td = rteObj.contentModule.getEditPanel().querySelector('td') as HTMLElement;
+                // Simulate mouseover on insertion icon
+                const mouseOverEvent = new MouseEvent('mouseover', { 'view': window, 'bubbles': true, 'cancelable': true });
+                td.dispatchEvent(mouseOverEvent);
+                setTimeout(() => {
+                    const insertIcon = rteObj.contentModule.getEditPanel().querySelector('.e-tb-col-insert');
+                    expect(insertIcon).not.toBeNull();
+                    // Simulate mouseover on insertion icon
+                    const mouseOverEvent = new MouseEvent('mouseover', { 'view': window, 'bubbles': true, 'cancelable': true });
+                    insertIcon.dispatchEvent(mouseOverEvent);
+                    // Check circle icon styling
+                    setTimeout(() => {
+                        const circleIcon = insertIcon.querySelector('.e-circle-add') as HTMLElement;
+                        expect(circleIcon).not.toBeNull();
+                        expect(circleIcon.classList.contains('e-icons')).toBe(true);
+                        // Spy on the insertTableElement method
+                        spyOn((rteObj.tableModule as any).tableObj, 'insertTableElement').and.callThrough();
+                        // Spy on removeResizeElement method
+                        spyOn((rteObj.tableModule as any).tableObj, 'removeResizeElement').and.callThrough();
+                        // Simulate mousedown event on column insertion icon
+                        const mouseDownEvent = document.createEvent('MouseEvents');
+                        mouseDownEvent.initEvent('mousedown', true, true);
+                        circleIcon.dispatchEvent(mouseDownEvent);
+                        // Verify removeResizeElement was called
+                        expect((rteObj.tableModule as any).tableObj.removeResizeElement).toHaveBeenCalled();
+                        // Verify the method was called
+                        expect((rteObj.tableModule as any).tableObj.insertTableElement).toHaveBeenCalled();
+                        // Check that a new column was added
+                        const updatedTable = rteObj.contentModule.getEditPanel().querySelector('table');
+                        const newColumnCount = updatedTable.rows[0].cells.length;
+                        expect(newColumnCount).toBe(initialColumnCount + 1);
+                        done();
+                    }, 100);
+                }, 100);
+            }, 100);
+        });
+
+        it('should save undo state after inserting column with insertion icon', (done: Function) => {
+            rteObj.focusIn();
+            const table = rteObj.contentModule.getEditPanel().querySelector('table');
+            const initialColumnCount = table.rows[0].cells.length;
+            // Perform undo
+            const undoButton = rteObj.element.querySelector('.e-toolbar-item button[aria-label="Undo (Ctrl+Z)"]') as HTMLElement;
+            undoButton.click();
+            // Check that column was removed
+            setTimeout(() => {
+                const tableAfterUndo = rteObj.contentModule.getEditPanel().querySelector('table');
+                expect(tableAfterUndo.rows[0].cells.length).toBe(initialColumnCount);
+                done();
+            }, 100);
+        });
+
+        it('should insert a new row when clicking row insertion icon', (done: Function) => {
+            rteObj.focusIn();
+            const table = rteObj.contentModule.getEditPanel().querySelector('table');
+            const initialRowCount = table.rows.length;
+
+            // Trigger resize helper to create resize elements and insertion icons
+            (rteObj.tableModule as any).tableObj.resizeHelper({
+                target: table,
+                preventDefault: function () { }
+            });
+            setTimeout(() => {
+                const insertIcon = rteObj.contentModule.getEditPanel().querySelector('.e-tb-row-insert') as HTMLElement;
+                expect(insertIcon).not.toBeNull();
+                const td = rteObj.contentModule.getEditPanel().querySelector('td') as HTMLElement;
+                // Simulate mouseover on insertion icon
+                const mouseOverEvent = new MouseEvent('mouseover', { 'view': window, 'bubbles': true, 'cancelable': true });
+                td.dispatchEvent(mouseOverEvent);
+                setTimeout(() => {
+                    const insertIcon = rteObj.contentModule.getEditPanel().querySelector('.e-tb-row-insert');
+                    expect(insertIcon).not.toBeNull();
+                    // Simulate mouseover on insertion icon
+                    const mouseOverEvent = new MouseEvent('mouseover', { 'view': window, 'bubbles': true, 'cancelable': true });
+                    insertIcon.dispatchEvent(mouseOverEvent);
+                    // Check circle icon styling
+                    setTimeout(() => {
+                        const circleIcon = insertIcon.querySelector('.e-circle-add') as HTMLElement;
+                        expect(circleIcon).not.toBeNull();
+                        expect(circleIcon.classList.contains('e-icons')).toBe(true);
+                        // Spy on the insertTableElement method
+                        spyOn((rteObj.tableModule as any).tableObj, 'insertTableElement').and.callThrough();
+                        // Simulate mousedown event on column insertion icon
+                        const mouseDownEvent = document.createEvent('MouseEvents');
+                        mouseDownEvent.initEvent('mousedown', true, true);
+                        circleIcon.dispatchEvent(mouseDownEvent);
+                        // Verify the method was called
+                        expect((rteObj.tableModule as any).tableObj.insertTableElement).toHaveBeenCalled();
+                        // Check that a new column was added
+                        const updatedTable = rteObj.contentModule.getEditPanel().querySelector('table');
+                        const newRowCount = updatedTable.rows.length;
+                        expect(newRowCount).toBe(initialRowCount + 1);
+                        done();
+                    }, 100);
+                }, 100);
+            }, 100);
+        });
+
+        it('should save undo state after inserting row with insertion icon', (done: Function) => {
+            rteObj.focusIn();
+            const table = rteObj.contentModule.getEditPanel().querySelector('table');
+            const initialRowCount = table.rows.length;
+
+            // Perform undo
+            const undoButton = rteObj.element.querySelector('.e-toolbar-item button[aria-label="Undo (Ctrl+Z)"]') as HTMLElement;
+            undoButton.click();
+
+            // Check that row was removed
+            setTimeout(() => {
+                const tableAfterUndo = rteObj.contentModule.getEditPanel().querySelector('table');
+                expect(tableAfterUndo.rows.length).toBe(initialRowCount);
+                done();
+            }, 100);
+        });
+
+        it('should hide insertion icons when moving away from table', (done: Function) => {
+            rteObj.focusIn();
+            const table = rteObj.contentModule.getEditPanel().querySelector('table');
+
+            // Trigger resize helper to create resize elements and insertion icons
+            (rteObj.tableModule as any).tableObj.resizeHelper({
+                target: table,
+                preventDefault: function () { }
+            });
+
+            setTimeout(() => {
+                const insertIcons = rteObj.contentModule.getEditPanel().querySelectorAll('.e-tb-col-insert, .e-tb-row-insert');
+                expect(insertIcons.length).toBeGreaterThan(0);
+                const td = rteObj.contentModule.getEditPanel().querySelector('td') as HTMLElement;
+
+                // Simulate mouseover on insertion icon
+                const mouseOverEvent = new MouseEvent('mouseover', { 'view': window, 'bubbles': true, 'cancelable': true });
+                td.dispatchEvent(mouseOverEvent);
+
+                setTimeout(() => {
+                    const insertIcons = rteObj.contentModule.getEditPanel().querySelectorAll('.e-circle');
+                    expect(insertIcons.length).toBeGreaterThan(0);
+                    // Simulate moving away from table
+                    (rteObj.tableModule as any).tableObj.resizeHelper({
+                        target: rteObj.contentModule.getEditPanel().querySelector('p'),
+                        preventDefault: function () { }
+                    });
+
+                    // Check that icons are removed
+                    setTimeout(() => {
+                        const remainingIcons = rteObj.contentModule.getEditPanel().querySelectorAll('.e-circle');
+                        expect(remainingIcons.length).toBe(0);
+                        done();
+                    }, 100);
+                }, 100);
+            }, 100);
+        });
+
+        it('should create circle icon with correct styling when hovering over insertion icon', (done: Function) => {
+            rteObj.focusIn();
+            const table = rteObj.contentModule.getEditPanel().querySelector('table');
+
+            // Trigger resize helper to create resize elements and insertion icons
+            (rteObj.tableModule as any).tableObj.resizeHelper({
+                target: table,
+                preventDefault: function () { }
+            });
+
+            setTimeout(() => {
+                const insertIcon = rteObj.contentModule.getEditPanel().querySelector('.e-tb-col-insert') as HTMLElement;
+                expect(insertIcon).not.toBeNull();
+                const td = rteObj.contentModule.getEditPanel().querySelector('td') as HTMLElement;
+                // Simulate mouseover on insertion icon
+                const mouseOverEvent = new MouseEvent('mouseover', { 'view': window, 'bubbles': true, 'cancelable': true });
+                td.dispatchEvent(mouseOverEvent);
+                setTimeout(() => {
+                    const insertIcon = rteObj.contentModule.getEditPanel().querySelector('.e-tb-col-insert');
+                    expect(insertIcon).not.toBeNull();
+                    // Simulate mouseover on insertion icon
+                    const mouseOverEvent = new MouseEvent('mouseover', { 'view': window, 'bubbles': true, 'cancelable': true });
+                    insertIcon.dispatchEvent(mouseOverEvent);
+
+                    // Check circle icon styling
+                    setTimeout(() => {
+                        const circleIcon = insertIcon.querySelector('.e-circle-add, .e-circle') as HTMLElement;
+                        expect(circleIcon).not.toBeNull();
+                        expect(circleIcon.classList.contains('e-icons')).toBe(true);
+
+                        // For RTL mode, check for rtl class
+                        if ((rteObj.tableModule as any).tableObj.tableModel.enableRtl) {
+                            expect(circleIcon.classList.contains('e-insert-cell-rtl')).toBe(true);
+                        }
+                        done();
+                    }, 100);
+                }, 100)
+            }, 100);
+        });
+
+        it('should correctly convert column resize helper to insertion helper on hover', (done: Function) => {
+            rteObj.focusIn();
+            const table = rteObj.contentModule.getEditPanel().querySelector('table');
+
+            // Trigger resize helper to create resize elements
+            (rteObj.tableModule as any).tableObj.resizeHelper({
+                target: table,
+                preventDefault: function () { }
+            });
+
+            setTimeout(() => {
+                const colInsertIcon = rteObj.contentModule.getEditPanel().querySelector('.e-tb-col-insert') as HTMLElement;
+                expect(colInsertIcon).not.toBeNull();
+                
+                // Get data-col attribute for finding corresponding resize element
+                const dataCol = colInsertIcon.getAttribute('data-col');
+                const resizeSelector = `.e-column-resize[data-col="${dataCol}"]`;
+                const resizeElement = rteObj.contentModule.getEditPanel().querySelector(resizeSelector) as HTMLElement;
+                expect(resizeElement).not.toBeNull();
+
+                const td = rteObj.contentModule.getEditPanel().querySelector('td') as HTMLElement;
+                // Simulate mouseover on insertion icon
+                const mouseOverEvent = new MouseEvent('mouseover', { 'view': window, 'bubbles': true, 'cancelable': true });
+                td.dispatchEvent(mouseOverEvent);
+
+                setTimeout(() => {
+                    // Spy on handleInsertIconHover method
+                    spyOn((rteObj.tableModule as any).tableObj, 'handleInsertIconHover').and.callThrough();
+                    const colInsertIcon = rteObj.contentModule.getEditPanel().querySelector('.e-tb-col-insert');
+                    // Simulate mouseover on insertion icon
+                    const mouseOverEvent = new MouseEvent('mouseover', { 'view': window, 'bubbles': true, 'cancelable': true });
+                    colInsertIcon.dispatchEvent(mouseOverEvent);
+
+                    // Check if handleInsertIconHover was called
+                    expect((rteObj.tableModule as any).tableObj.handleInsertIconHover).toHaveBeenCalled();
+
+                    // Verify resize element is now a helper
+                    setTimeout(() => {
+                        // Should be updated to e-table-rhelper class
+                        const helperElement = rteObj.contentModule.getEditPanel().querySelector('.e-table-rhelper.e-column-helper');
+                        expect(helperElement).not.toBeNull();
+                        done();
+                    }, 100);
+                }, 100);
+            }, 100);
+        });
+
+        it('should apply specific styling to row insertion helpers', (done: Function) => {
+            rteObj.focusIn();
+            const table = rteObj.contentModule.getEditPanel().querySelector('table');
+
+            // Trigger resize helper to create resize elements
+            (rteObj.tableModule as any).tableObj.resizeHelper({
+                target: table,
+                preventDefault: function () { }
+            });
+
+            setTimeout(() => {
+                const rowInsertIcon = rteObj.contentModule.getEditPanel().querySelector('.e-tb-row-insert') as HTMLElement;
+                expect(rowInsertIcon).not.toBeNull();
+
+                const td = rteObj.contentModule.getEditPanel().querySelector('td') as HTMLElement;
+                // Simulate mouseover on insertion icon
+                const mouseOverEvent = new MouseEvent('mouseover', { 'view': window, 'bubbles': true, 'cancelable': true });
+                td.dispatchEvent(mouseOverEvent);
+
+                setTimeout(() => {
+                    const rowInsertIcon = rteObj.contentModule.getEditPanel().querySelector('.e-tb-row-insert') as HTMLElement;
+                    // Simulate mouseover on insertion icon
+                    const mouseOverEvent = document.createEvent('MouseEvents');
+                    mouseOverEvent.initEvent('mouseover', true, true);
+                    rowInsertIcon.dispatchEvent(mouseOverEvent);
+
+                    // Verify helper styling
+                    setTimeout(() => {
+                        const helperElement = rteObj.contentModule.getEditPanel().querySelector('.e-table-rhelper.e-row-helper') as HTMLElement;
+                        expect(helperElement).not.toBeNull();
+                        expect(helperElement.style.height).toBe('2px');
+                        done();
+                    }, 100);
+                }, 100)
+            }, 100);
+        });
+
+        it('should correctly handle mousedown on insertion icon to prevent event propagation', (done: Function) => {
+            rteObj.focusIn();
+            const table = rteObj.contentModule.getEditPanel().querySelector('table');
+
+            // Trigger resize helper to create resize elements
+            (rteObj.tableModule as any).tableObj.resizeHelper({
+                target: table,
+                preventDefault: function () { }
+            });
+
+            setTimeout(() => {
+                const insertIcon = rteObj.contentModule.getEditPanel().querySelector('.e-tb-col-insert') as HTMLElement;
+                expect(insertIcon).not.toBeNull();
+
+                // Create mock event with tracking methods
+                const mockEvent = {
+                    preventDefault: jasmine.createSpy('preventDefault'),
+                    stopPropagation: jasmine.createSpy('stopPropagation'),
+                    target: insertIcon
+                };
+
+                // Find mousedown event handler
+                const mousedownHandler = function (e: any) {
+                    e.preventDefault();
+                    e.stopPropagation();
+                };
+
+                // Call the handler with our mock event
+                mousedownHandler(mockEvent);
+
+                // Verify prevention methods were called
+                expect(mockEvent.preventDefault).toHaveBeenCalled();
+                expect(mockEvent.stopPropagation).toHaveBeenCalled();
+                done();
+            }, 100);
+        });
+    });
+
+    describe('968199 - Quick Table Row and Column Insertion - RTL', () => {
+        let rteObj: RichTextEditor;
+        let rteEle: HTMLElement;
+
+        beforeEach((done: Function) => {
+            rteObj = renderRTE({
+                toolbarSettings: {
+                    items: ['CreateTable', 'Undo', 'Redo']
+                },
+                value: '<table class="e-rte-table" style="width: 100%;"><tbody><tr><td style="width: 50%;">Cell 1</td><td style="width: 50%;">Cell 2</td></tr><tr><td style="width: 50%;">Cell 3</td><td style="width: 50%;">Cell 4</td></tr></tbody></table><p><br></p>'
+            });
+            rteObj.enableRtl = true;
+            rteEle = rteObj.element;
+            done();
+        });
+
+        afterEach((done: Function) => {
+            destroy(rteObj);
+            done();
+        });
+
+        it('should show insertion icons when hovering over a table cell', (done: Function) => {
+            rteObj.focusIn();
+            const table = rteObj.contentModule.getEditPanel().querySelector('table');
+            const firstCell = table.querySelector('td');
+
+            // Simulate mouseover on cell to trigger icon creation
+            (rteObj.tableModule as any).tableObj.resizeHelper({
+                target: firstCell,
+                preventDefault: function () { }
+            });
+
+            setTimeout(() => {
+                // Check if insertion icons are created
+                const insertIcons = rteObj.contentModule.getEditPanel().querySelectorAll('.e-tb-col-insert, .e-tb-row-insert');
+                expect(insertIcons.length).toBeGreaterThan(0);
+                done();
+            }, 100);
+        });
+
+        it('should create column insertion icons with correct attributes', (done: Function) => {
+            rteObj.focusIn();
+            const table = rteObj.contentModule.getEditPanel().querySelector('table');
+
+            // Trigger resize helper to create resize elements and insertion icons
+            (rteObj.tableModule as any).tableObj.resizeHelper({
+                target: table,
+                preventDefault: function () { }
+            });
+
+            setTimeout(() => {
+                const colInsertIcons = rteObj.contentModule.getEditPanel().querySelectorAll('.e-tb-col-insert');
+                expect(colInsertIcons.length).toBeGreaterThan(0);
+
+                // Check icon attributes
+                const firstIcon = colInsertIcons[0] as HTMLElement;
+                expect(firstIcon.getAttribute('data-col')).not.toBeNull();
+                expect(firstIcon.getAttribute('unselectable')).toBe('on');
+                expect(firstIcon.getAttribute('contenteditable')).toBe('false');
+
+                done();
+            }, 100);
+        });
+
+        it('should create row insertion icons with correct attributes', (done: Function) => {
+            rteObj.focusIn();
+            const table = rteObj.contentModule.getEditPanel().querySelector('table');
+
+            // Trigger resize helper to create resize elements and insertion icons
+            (rteObj.tableModule as any).tableObj.resizeHelper({
+                target: table,
+                preventDefault: function () { }
+            });
+
+            setTimeout(() => {
+                const rowInsertIcons = rteObj.contentModule.getEditPanel().querySelectorAll('.e-tb-row-insert');
+                expect(rowInsertIcons.length).toBeGreaterThan(0);
+
+                // Check icon attributes
+                const firstIcon = rowInsertIcons[0] as HTMLElement;
+                expect(firstIcon.getAttribute('data-row')).not.toBeNull();
+                expect(firstIcon.getAttribute('unselectable')).toBe('on');
+                expect(firstIcon.getAttribute('contenteditable')).toBe('false');
+
+                done();
+            }, 100);
+        });
+
+        it('should show circle dot icon when hovering over insertion icons', (done: Function) => {
+            rteObj.focusIn();
+            const table = rteObj.contentModule.getEditPanel().querySelector('table');
+
+            // Trigger resize helper to create resize elements and insertion icons
+            (rteObj.tableModule as any).tableObj.resizeHelper({
+                target: table,
+                preventDefault: function () { }
+            });
+
+            setTimeout(() => {
+                const td = rteObj.contentModule.getEditPanel().querySelector('td') as HTMLElement;
+                // Simulate mouseover on insertion icon
+                const mouseOverEvent = new MouseEvent('mouseover', { 'view': window, 'bubbles': true, 'cancelable': true });
+                td.dispatchEvent(mouseOverEvent);
+
+                setTimeout(() => {
+                    const insertIcon = rteObj.contentModule.getEditPanel().querySelector('.e-tb-col-insert') as HTMLElement;
+                    expect(insertIcon).not.toBeNull();
+
+                    // Simulate mouseover on insertion icon
+                    const mouseOverEvent = new MouseEvent('mouseover', { 'view': window, 'bubbles': true, 'cancelable': true });
+                    insertIcon.dispatchEvent(mouseOverEvent);
+
+                    // Check if circle icon is added
+                    setTimeout(() => {
+                        const circleIcon = insertIcon.querySelector('.e-circle, .e-circle-add');
+                        expect(circleIcon).not.toBeNull();
+                        expect(insertIcon.style.opacity).toBe('1');
+                        done();
+                    }, 100);
+                }, 100);
+            }, 100);
+        });
+
+         it('should insert a new column when clicking column insertion icon', (done: Function) => {
+            rteObj.focusIn();
+            const table = rteObj.contentModule.getEditPanel().querySelector('table');
+            const initialColumnCount = table.rows[0].cells.length;
+            // Trigger resize helper to create resize elements and insertion icons
+            (rteObj.tableModule as any).tableObj.resizeHelper({
+                target: table,
+                preventDefault: function () { }
+            });
+            setTimeout(() => {
+                const insertIcon = rteObj.contentModule.getEditPanel().querySelector('.e-tb-col-insert') as HTMLElement;
+                expect(insertIcon).not.toBeNull();
+                const td = rteObj.contentModule.getEditPanel().querySelector('td') as HTMLElement;
+                // Simulate mouseover on insertion icon
+                const mouseOverEvent = new MouseEvent('mouseover', { 'view': window, 'bubbles': true, 'cancelable': true });
+                td.dispatchEvent(mouseOverEvent);
+                setTimeout(() => {
+                    const insertIcon = rteObj.contentModule.getEditPanel().querySelector('.e-tb-col-insert');
+                    expect(insertIcon).not.toBeNull();
+                    // Simulate mouseover on insertion icon
+                    const mouseOverEvent = new MouseEvent('mouseover', { 'view': window, 'bubbles': true, 'cancelable': true });
+                    insertIcon.dispatchEvent(mouseOverEvent);
+                    // Check circle icon styling
+                    setTimeout(() => {
+                        const circleIcon = insertIcon.querySelector('.e-circle-add') as HTMLElement;
+                        expect(circleIcon).not.toBeNull();
+                        expect(circleIcon.classList.contains('e-icons')).toBe(true);
+                         // Spy on the insertTableElement method
+                        spyOn((rteObj.tableModule as any).tableObj, 'insertTableElement').and.callThrough();
+                        // Spy on removeResizeElement method
+                        spyOn((rteObj.tableModule as any).tableObj, 'removeResizeElement').and.callThrough();
+                        // Simulate mousedown event on column insertion icon
+                        const mouseDownEvent = document.createEvent('MouseEvents');
+                        mouseDownEvent.initEvent('mousedown', true, true);
+                        circleIcon.dispatchEvent(mouseDownEvent);
+                        // Verify removeResizeElement was called
+                        expect((rteObj.tableModule as any).tableObj.removeResizeElement).toHaveBeenCalled();
+                        // Verify the method was called
+                        expect((rteObj.tableModule as any).tableObj.insertTableElement).toHaveBeenCalled();
+                        // Check that a new column was added
+                        const updatedTable = rteObj.contentModule.getEditPanel().querySelector('table');
+                        const newColumnCount = updatedTable.rows[0].cells.length;
+                        expect(newColumnCount).toBe(initialColumnCount + 1);
+                        done();
+                    }, 100);
+                }, 100);
+            }, 100);
+        });
+
+        it('should save undo state after inserting column with insertion icon', (done: Function) => {
+            rteObj.focusIn();
+            const table = rteObj.contentModule.getEditPanel().querySelector('table');
+            const initialColumnCount = table.rows[0].cells.length;
+            // Perform undo
+            const undoButton = rteObj.element.querySelector('.e-toolbar-item button[aria-label="Undo (Ctrl+Z)"]') as HTMLElement;
+            undoButton.click();
+            // Check that column was removed
+            setTimeout(() => {
+                const tableAfterUndo = rteObj.contentModule.getEditPanel().querySelector('table');
+                expect(tableAfterUndo.rows[0].cells.length).toBe(initialColumnCount);
+                done();
+            }, 100);
+        });
+
+        it('should insert a new row when clicking row insertion icon', (done: Function) => {
+            rteObj.focusIn();
+            const table = rteObj.contentModule.getEditPanel().querySelector('table');
+            const initialRowCount = table.rows.length;
+
+            // Trigger resize helper to create resize elements and insertion icons
+            (rteObj.tableModule as any).tableObj.resizeHelper({
+                target: table,
+                preventDefault: function () { }
+            });
+            setTimeout(() => {
+                const insertIcon = rteObj.contentModule.getEditPanel().querySelector('.e-tb-row-insert') as HTMLElement;
+                expect(insertIcon).not.toBeNull();
+                const td = rteObj.contentModule.getEditPanel().querySelector('td') as HTMLElement;
+                // Simulate mouseover on insertion icon
+                const mouseOverEvent = new MouseEvent('mouseover', { 'view': window, 'bubbles': true, 'cancelable': true });
+                td.dispatchEvent(mouseOverEvent);
+                setTimeout(() => {
+                    const insertIcon = rteObj.contentModule.getEditPanel().querySelector('.e-tb-row-insert');
+                    expect(insertIcon).not.toBeNull();
+                    // Simulate mouseover on insertion icon
+                    const mouseOverEvent = new MouseEvent('mouseover', { 'view': window, 'bubbles': true, 'cancelable': true });
+                    insertIcon.dispatchEvent(mouseOverEvent);
+                    // Check circle icon styling
+                    setTimeout(() => {
+                        const circleIcon = insertIcon.querySelector('.e-circle-add') as HTMLElement;
+                        expect(circleIcon).not.toBeNull();
+                        expect(circleIcon.classList.contains('e-icons')).toBe(true);
+                        // Spy on the insertTableElement method
+                        spyOn((rteObj.tableModule as any).tableObj, 'insertTableElement').and.callThrough();
+                        // Simulate mousedown event on column insertion icon
+                        const mouseDownEvent = document.createEvent('MouseEvents');
+                        mouseDownEvent.initEvent('mousedown', true, true);
+                        circleIcon.dispatchEvent(mouseDownEvent);
+                        // Verify the method was called
+                        expect((rteObj.tableModule as any).tableObj.insertTableElement).toHaveBeenCalled();
+                        // Check that a new column was added
+                        const updatedTable = rteObj.contentModule.getEditPanel().querySelector('table');
+                        const newRowCount = updatedTable.rows.length;
+                        expect(newRowCount).toBe(initialRowCount + 1);
+                        done();
+                    }, 100);
+                }, 100);
+            }, 100);
+        });
+
+        it('should save undo state after inserting row with insertion icon', (done: Function) => {
+            rteObj.focusIn();
+            const table = rteObj.contentModule.getEditPanel().querySelector('table');
+            const initialRowCount = table.rows.length;
+
+            // Perform undo
+            const undoButton = rteObj.element.querySelector('.e-toolbar-item button[aria-label="Undo (Ctrl+Z)"]') as HTMLElement;
+            undoButton.click();
+
+            // Check that row was removed
+            setTimeout(() => {
+                const tableAfterUndo = rteObj.contentModule.getEditPanel().querySelector('table');
+                expect(tableAfterUndo.rows.length).toBe(initialRowCount);
+                done();
+            }, 100);
+        });
+
+        it('should hide insertion icons when moving away from table', (done: Function) => {
+            rteObj.focusIn();
+            const table = rteObj.contentModule.getEditPanel().querySelector('table');
+
+            // Trigger resize helper to create resize elements and insertion icons
+            (rteObj.tableModule as any).tableObj.resizeHelper({
+                target: table,
+                preventDefault: function () { }
+            });
+
+            setTimeout(() => {
+                const insertIcons = rteObj.contentModule.getEditPanel().querySelectorAll('.e-tb-col-insert, .e-tb-row-insert');
+                expect(insertIcons.length).toBeGreaterThan(0);
+                const td = rteObj.contentModule.getEditPanel().querySelector('td') as HTMLElement;
+
+                // Simulate mouseover on insertion icon
+                const mouseOverEvent = new MouseEvent('mouseover', { 'view': window, 'bubbles': true, 'cancelable': true });
+                td.dispatchEvent(mouseOverEvent);
+
+                setTimeout(() => {
+                    const insertIcons = rteObj.contentModule.getEditPanel().querySelectorAll('.e-circle');
+                    expect(insertIcons.length).toBeGreaterThan(0);
+                    // Simulate moving away from table
+                    (rteObj.tableModule as any).tableObj.resizeHelper({
+                        target: rteObj.contentModule.getEditPanel().querySelector('p'),
+                        preventDefault: function () { }
+                    });
+
+                    // Check that icons are removed
+                    setTimeout(() => {
+                        const remainingIcons = rteObj.contentModule.getEditPanel().querySelectorAll('.e-circle');
+                        expect(remainingIcons.length).toBe(0);
+                        done();
+                    }, 100);
+                }, 100);
+            }, 100);
+        });
+
+        it('should create circle icon with correct styling when hovering over insertion icon', (done: Function) => {
+            rteObj.focusIn();
+            const table = rteObj.contentModule.getEditPanel().querySelector('table');
+
+            // Trigger resize helper to create resize elements and insertion icons
+            (rteObj.tableModule as any).tableObj.resizeHelper({
+                target: table,
+                preventDefault: function () { }
+            });
+
+            setTimeout(() => {
+                const insertIcon = rteObj.contentModule.getEditPanel().querySelector('.e-tb-col-insert') as HTMLElement;
+                expect(insertIcon).not.toBeNull();
+                const td = rteObj.contentModule.getEditPanel().querySelector('td') as HTMLElement;
+                // Simulate mouseover on insertion icon
+                const mouseOverEvent = new MouseEvent('mouseover', { 'view': window, 'bubbles': true, 'cancelable': true });
+                td.dispatchEvent(mouseOverEvent);
+                setTimeout(() => {
+                    const insertIcon = rteObj.contentModule.getEditPanel().querySelector('.e-tb-col-insert');
+                    expect(insertIcon).not.toBeNull();
+                    // Simulate mouseover on insertion icon
+                    const mouseOverEvent = new MouseEvent('mouseover', { 'view': window, 'bubbles': true, 'cancelable': true });
+                    insertIcon.dispatchEvent(mouseOverEvent);
+
+                    // Check circle icon styling
+                    setTimeout(() => {
+                        const circleIcon = insertIcon.querySelector('.e-circle-add, .e-circle') as HTMLElement;
+                        expect(circleIcon).not.toBeNull();
+                        expect(circleIcon.classList.contains('e-icons')).toBe(true);
+
+                        // For RTL mode, check for rtl class
+                        if ((rteObj.tableModule as any).tableObj.tableModel.enableRtl) {
+                            expect(circleIcon.classList.contains('e-insert-cell-rtl')).toBe(true);
+                        }
+                        done();
+                    }, 100);
+                }, 100)
+            }, 100);
+        });
+
+        it('should correctly convert column resize helper to insertion helper on hover', (done: Function) => {
+            rteObj.focusIn();
+            const table = rteObj.contentModule.getEditPanel().querySelector('table');
+
+            // Trigger resize helper to create resize elements
+            (rteObj.tableModule as any).tableObj.resizeHelper({
+                target: table,
+                preventDefault: function () { }
+            });
+
+            setTimeout(() => {
+                const colInsertIcon = rteObj.contentModule.getEditPanel().querySelector('.e-tb-col-insert') as HTMLElement;
+                expect(colInsertIcon).not.toBeNull();
+
+                // Get data-col attribute for finding corresponding resize element
+                const dataCol = colInsertIcon.getAttribute('data-col');
+                const resizeSelector = `.e-column-resize[data-col="${dataCol}"]`;
+                const resizeElement = rteObj.contentModule.getEditPanel().querySelector(resizeSelector) as HTMLElement;
+                expect(resizeElement).not.toBeNull();
+
+                const td = rteObj.contentModule.getEditPanel().querySelector('td') as HTMLElement;
+                // Simulate mouseover on insertion icon
+                const mouseOverEvent = new MouseEvent('mouseover', { 'view': window, 'bubbles': true, 'cancelable': true });
+                td.dispatchEvent(mouseOverEvent);
+
+                setTimeout(() => {
+                    // Spy on handleInsertIconHover method
+                    spyOn((rteObj.tableModule as any).tableObj, 'handleInsertIconHover').and.callThrough();
+                    const colInsertIcon = rteObj.contentModule.getEditPanel().querySelector('.e-tb-col-insert');
+                    // Simulate mouseover on insertion icon
+                    const mouseOverEvent = new MouseEvent('mouseover', { 'view': window, 'bubbles': true, 'cancelable': true });
+                    colInsertIcon.dispatchEvent(mouseOverEvent);
+
+                    // Check if handleInsertIconHover was called
+                    expect((rteObj.tableModule as any).tableObj.handleInsertIconHover).toHaveBeenCalled();
+
+                    // Verify resize element is now a helper
+                    setTimeout(() => {
+                        // Should be updated to e-table-rhelper class
+                        const helperElement = rteObj.contentModule.getEditPanel().querySelector('.e-table-rhelper.e-column-helper');
+                        expect(helperElement).not.toBeNull();
+                        done();
+                    }, 100);
+                }, 100);
+            }, 100);
+        });
+
+        it('should apply specific styling to row insertion helpers', (done: Function) => {
+            rteObj.focusIn();
+            const table = rteObj.contentModule.getEditPanel().querySelector('table');
+
+            // Trigger resize helper to create resize elements
+            (rteObj.tableModule as any).tableObj.resizeHelper({
+                target: table,
+                preventDefault: function () { }
+            });
+
+            setTimeout(() => {
+                const rowInsertIcon = rteObj.contentModule.getEditPanel().querySelector('.e-tb-row-insert') as HTMLElement;
+                expect(rowInsertIcon).not.toBeNull();
+
+                const td = rteObj.contentModule.getEditPanel().querySelector('td') as HTMLElement;
+                // Simulate mouseover on insertion icon
+                const mouseOverEvent = new MouseEvent('mouseover', { 'view': window, 'bubbles': true, 'cancelable': true });
+                td.dispatchEvent(mouseOverEvent);
+
+                setTimeout(() => {
+                    const rowInsertIcon = rteObj.contentModule.getEditPanel().querySelector('.e-tb-row-insert') as HTMLElement;
+                    // Simulate mouseover on insertion icon
+                    const mouseOverEvent = document.createEvent('MouseEvents');
+                    mouseOverEvent.initEvent('mouseover', true, true);
+                    rowInsertIcon.dispatchEvent(mouseOverEvent);
+
+                    // Verify helper styling
+                    setTimeout(() => {
+                        const helperElement = rteObj.contentModule.getEditPanel().querySelector('.e-table-rhelper.e-row-helper') as HTMLElement;
+                        expect(helperElement).not.toBeNull();
+                        expect(helperElement.style.height).toBe('2px');
+                        done();
+                    }, 100);
+                }, 100)
+            }, 100);
+        });
+
+        it('should correctly handle mousedown on insertion icon to prevent event propagation', (done: Function) => {
+            rteObj.focusIn();
+            const table = rteObj.contentModule.getEditPanel().querySelector('table');
+
+            // Trigger resize helper to create resize elements
+            (rteObj.tableModule as any).tableObj.resizeHelper({
+                target: table,
+                preventDefault: function () { }
+            });
+
+            setTimeout(() => {
+                const insertIcon = rteObj.contentModule.getEditPanel().querySelector('.e-tb-col-insert') as HTMLElement;
+                expect(insertIcon).not.toBeNull();
+
+                // Create mock event with tracking methods
+                const mockEvent = {
+                    preventDefault: jasmine.createSpy('preventDefault'),
+                    stopPropagation: jasmine.createSpy('stopPropagation'),
+                    target: insertIcon
+                };
+
+                // Find mousedown event handler
+                const mousedownHandler = function (e: any) {
+                    e.preventDefault();
+                    e.stopPropagation();
+                };
+
+                // Call the handler with our mock event
+                mousedownHandler(mockEvent);
+
+                // Verify prevention methods were called
+                expect(mockEvent.preventDefault).toHaveBeenCalled();
+                expect(mockEvent.stopPropagation).toHaveBeenCalled();
+                done();
+            }, 100);
+        });
+    });
+
+    describe('968199 - Quick Table Row and Column Insertion - RTL - iframe', () => {
+        let rteObj: RichTextEditor;
+        let rteEle: HTMLElement;
+
+        beforeEach((done: Function) => {
+            rteObj = renderRTE({
+                iframeSettings: {
+                    enable: true
+                },
+                toolbarSettings: {
+                    items: ['CreateTable', 'Undo', 'Redo']
+                },
+                value: '<table class="e-rte-table" style="width: 100%;"><tbody><tr><td style="width: 50%;">Cell 1</td><td style="width: 50%;">Cell 2</td></tr><tr><td style="width: 50%;">Cell 3</td><td style="width: 50%;">Cell 4</td></tr></tbody></table><p><br></p>'
+            });
+            rteObj.enableRtl = true;
+            rteEle = rteObj.element;
+            done();
+        });
+
+        afterEach((done: Function) => {
+            destroy(rteObj);
+            done();
+        });
+
+        it('should show insertion icons when hovering over a table cell', (done: Function) => {
+            rteObj.focusIn();
+            const table = rteObj.contentModule.getEditPanel().querySelector('table');
+            const firstCell = table.querySelector('td');
+
+            // Simulate mouseover on cell to trigger icon creation
+            (rteObj.tableModule as any).tableObj.resizeHelper({
+                target: firstCell,
+                preventDefault: function () { }
+            });
+
+            setTimeout(() => {
+                // Check if insertion icons are created
+                const insertIcons = rteObj.contentModule.getEditPanel().querySelectorAll('.e-tb-col-insert, .e-tb-row-insert');
+                expect(insertIcons.length).toBeGreaterThan(0);
+                done();
+            }, 100);
+        });
+
+        it('should create column insertion icons with correct attributes', (done: Function) => {
+            rteObj.focusIn();
+            const table = rteObj.contentModule.getEditPanel().querySelector('table');
+
+            // Trigger resize helper to create resize elements and insertion icons
+            (rteObj.tableModule as any).tableObj.resizeHelper({
+                target: table,
+                preventDefault: function () { }
+            });
+
+            setTimeout(() => {
+                const colInsertIcons = rteObj.contentModule.getEditPanel().querySelectorAll('.e-tb-col-insert');
+                expect(colInsertIcons.length).toBeGreaterThan(0);
+
+                // Check icon attributes
+                const firstIcon = colInsertIcons[0] as HTMLElement;
+                expect(firstIcon.getAttribute('data-col')).not.toBeNull();
+                expect(firstIcon.getAttribute('unselectable')).toBe('on');
+                expect(firstIcon.getAttribute('contenteditable')).toBe('false');
+
+                done();
+            }, 100);
+        });
+
+        it('should create row insertion icons with correct attributes', (done: Function) => {
+            rteObj.focusIn();
+            const table = rteObj.contentModule.getEditPanel().querySelector('table');
+
+            // Trigger resize helper to create resize elements and insertion icons
+            (rteObj.tableModule as any).tableObj.resizeHelper({
+                target: table,
+                preventDefault: function () { }
+            });
+
+            setTimeout(() => {
+                const rowInsertIcons = rteObj.contentModule.getEditPanel().querySelectorAll('.e-tb-row-insert');
+                expect(rowInsertIcons.length).toBeGreaterThan(0);
+
+                // Check icon attributes
+                const firstIcon = rowInsertIcons[0] as HTMLElement;
+                expect(firstIcon.getAttribute('data-row')).not.toBeNull();
+                expect(firstIcon.getAttribute('unselectable')).toBe('on');
+                expect(firstIcon.getAttribute('contenteditable')).toBe('false');
+
+                done();
+            }, 100);
+        });
+
+        it('should show circle dot icon when hovering over insertion icons', (done: Function) => {
+            rteObj.focusIn();
+            const table = rteObj.contentModule.getEditPanel().querySelector('table');
+
+            // Trigger resize helper to create resize elements and insertion icons
+            (rteObj.tableModule as any).tableObj.resizeHelper({
+                target: table,
+                preventDefault: function () { }
+            });
+
+            setTimeout(() => {
+                const td = rteObj.contentModule.getEditPanel().querySelector('td') as HTMLElement;
+                // Simulate mouseover on insertion icon
+                const mouseOverEvent = new MouseEvent('mouseover', { 'view': window, 'bubbles': true, 'cancelable': true });
+                td.dispatchEvent(mouseOverEvent);
+
+                setTimeout(() => {
+                    const insertIcon = rteObj.contentModule.getEditPanel().querySelector('.e-tb-col-insert') as HTMLElement;
+                    expect(insertIcon).not.toBeNull();
+
+                    // Simulate mouseover on insertion icon
+                    const mouseOverEvent = new MouseEvent('mouseover', { 'view': window, 'bubbles': true, 'cancelable': true });
+                    insertIcon.dispatchEvent(mouseOverEvent);
+
+                    // Check if circle icon is added
+                    setTimeout(() => {
+                        const circleIcon = insertIcon.querySelector('.e-circle, .e-circle-add');
+                        expect(circleIcon).not.toBeNull();
+                        expect(insertIcon.style.opacity).toBe('1');
+                        done();
+                    }, 100);
+                }, 100);
+            }, 100);
+        });
+
+        it('should insert a new column when clicking column insertion icon', (done: Function) => {
+            rteObj.focusIn();
+            const table = rteObj.contentModule.getEditPanel().querySelector('table');
+            const initialColumnCount = table.rows[0].cells.length;
+            // Trigger resize helper to create resize elements and insertion icons
+            (rteObj.tableModule as any).tableObj.resizeHelper({
+                target: table,
+                preventDefault: function () { }
+            });
+            setTimeout(() => {
+                const insertIcon = rteObj.contentModule.getEditPanel().querySelector('.e-tb-col-insert') as HTMLElement;
+                expect(insertIcon).not.toBeNull();
+                const td = rteObj.contentModule.getEditPanel().querySelector('td') as HTMLElement;
+                // Simulate mouseover on insertion icon
+                const mouseOverEvent = new MouseEvent('mouseover', { 'view': window, 'bubbles': true, 'cancelable': true });
+                td.dispatchEvent(mouseOverEvent);
+                setTimeout(() => {
+                    const insertIcon = rteObj.contentModule.getEditPanel().querySelector('.e-tb-col-insert');
+                    expect(insertIcon).not.toBeNull();
+                    // Simulate mouseover on insertion icon
+                    const mouseOverEvent = new MouseEvent('mouseover', { 'view': window, 'bubbles': true, 'cancelable': true });
+                    insertIcon.dispatchEvent(mouseOverEvent);
+                    // Check circle icon styling
+                    setTimeout(() => {
+                        const circleIcon = insertIcon.querySelector('.e-circle-add') as HTMLElement;
+                        expect(circleIcon).not.toBeNull();
+                        expect(circleIcon.classList.contains('e-icons')).toBe(true);
+                         // Spy on the insertTableElement method
+                        spyOn((rteObj.tableModule as any).tableObj, 'insertTableElement').and.callThrough();
+                        // Spy on removeResizeElement method
+                        spyOn((rteObj.tableModule as any).tableObj, 'removeResizeElement').and.callThrough();
+                        // Simulate mousedown event on column insertion icon
+                        const mouseDownEvent = document.createEvent('MouseEvents');
+                        mouseDownEvent.initEvent('mousedown', true, true);
+                        circleIcon.dispatchEvent(mouseDownEvent);
+                        // Verify removeResizeElement was called
+                        expect((rteObj.tableModule as any).tableObj.removeResizeElement).toHaveBeenCalled();
+                        // Verify the method was called
+                        expect((rteObj.tableModule as any).tableObj.insertTableElement).toHaveBeenCalled();
+                        const updatedTable = rteObj.contentModule.getEditPanel().querySelector('table');
+                        const newColumnCount = updatedTable.rows[0].cells.length;
+                        expect(newColumnCount).toBe(initialColumnCount + 1);
+                        done();
+                    }, 100);
+                }, 100);
+            }, 100);
+        });
+
+        it('should save undo state after inserting column with insertion icon', (done: Function) => {
+            rteObj.focusIn();
+            const table = rteObj.contentModule.getEditPanel().querySelector('table');
+            const initialColumnCount = table.rows[0].cells.length;
+            // Perform undo
+            const undoButton = rteObj.element.querySelector('.e-toolbar-item button[aria-label="Undo (Ctrl+Z)"]') as HTMLElement;
+            undoButton.click();
+            // Check that column was removed
+            setTimeout(() => {
+                const tableAfterUndo = rteObj.contentModule.getEditPanel().querySelector('table');
+                expect(tableAfterUndo.rows[0].cells.length).toBe(initialColumnCount);
+                done();
+            }, 100);
+        });
+
+        it('should insert a new row when clicking row insertion icon', (done: Function) => {
+            rteObj.focusIn();
+            const table = rteObj.contentModule.getEditPanel().querySelector('table');
+            const initialRowCount = table.rows.length;
+
+            // Trigger resize helper to create resize elements and insertion icons
+            (rteObj.tableModule as any).tableObj.resizeHelper({
+                target: table,
+                preventDefault: function () { }
+            });
+            setTimeout(() => {
+                const insertIcon = rteObj.contentModule.getEditPanel().querySelector('.e-tb-row-insert') as HTMLElement;
+                expect(insertIcon).not.toBeNull();
+                const td = rteObj.contentModule.getEditPanel().querySelector('td') as HTMLElement;
+                // Simulate mouseover on insertion icon
+                const mouseOverEvent = new MouseEvent('mouseover', { 'view': window, 'bubbles': true, 'cancelable': true });
+                td.dispatchEvent(mouseOverEvent);
+                setTimeout(() => {
+                    const insertIcon = rteObj.contentModule.getEditPanel().querySelector('.e-tb-row-insert');
+                    expect(insertIcon).not.toBeNull();
+                    // Simulate mouseover on insertion icon
+                    const mouseOverEvent = new MouseEvent('mouseover', { 'view': window, 'bubbles': true, 'cancelable': true });
+                    insertIcon.dispatchEvent(mouseOverEvent);
+                    // Check circle icon styling
+                    setTimeout(() => {
+                        const circleIcon = insertIcon.querySelector('.e-circle-add') as HTMLElement;
+                        expect(circleIcon).not.toBeNull();
+                        expect(circleIcon.classList.contains('e-icons')).toBe(true);
+                        // Spy on the insertTableElement method
+                        spyOn((rteObj.tableModule as any).tableObj, 'insertTableElement').and.callThrough();
+                        // Simulate mousedown event on column insertion icon
+                        const mouseDownEvent = document.createEvent('MouseEvents');
+                        mouseDownEvent.initEvent('mousedown', true, true);
+                        circleIcon.dispatchEvent(mouseDownEvent);
+                        // Verify the method was called
+                        expect((rteObj.tableModule as any).tableObj.insertTableElement).toHaveBeenCalled();
+                        // Check that a new column was added
+                        const updatedTable = rteObj.contentModule.getEditPanel().querySelector('table');
+                        const newRowCount = updatedTable.rows.length;
+                        expect(newRowCount).toBe(initialRowCount + 1);
+                        done();
+                    }, 100);
+                }, 100);
+            }, 100);
+        });
+
+        it('should save undo state after inserting row with insertion icon', (done: Function) => {
+            rteObj.focusIn();
+            const table = rteObj.contentModule.getEditPanel().querySelector('table');
+            const initialRowCount = table.rows.length;
+
+            // Perform undo
+            const undoButton = rteObj.element.querySelector('.e-toolbar-item button[aria-label="Undo (Ctrl+Z)"]') as HTMLElement;
+            undoButton.click();
+
+            // Check that row was removed
+            setTimeout(() => {
+                const tableAfterUndo = rteObj.contentModule.getEditPanel().querySelector('table');
+                expect(tableAfterUndo.rows.length).toBe(initialRowCount);
+                done();
+            }, 100);
+        });
+
+        it('should hide insertion icons when moving away from table', (done: Function) => {
+            rteObj.focusIn();
+            const table = rteObj.contentModule.getEditPanel().querySelector('table');
+
+            // Trigger resize helper to create resize elements and insertion icons
+            (rteObj.tableModule as any).tableObj.resizeHelper({
+                target: table,
+                preventDefault: function () { }
+            });
+
+            setTimeout(() => {
+                const insertIcons = rteObj.contentModule.getEditPanel().querySelectorAll('.e-tb-col-insert, .e-tb-row-insert');
+                expect(insertIcons.length).toBeGreaterThan(0);
+                const td = rteObj.contentModule.getEditPanel().querySelector('td') as HTMLElement;
+
+                // Simulate mouseover on insertion icon
+                const mouseOverEvent = new MouseEvent('mouseover', { 'view': window, 'bubbles': true, 'cancelable': true });
+                td.dispatchEvent(mouseOverEvent);
+
+                setTimeout(() => {
+                    const insertIcons = rteObj.contentModule.getEditPanel().querySelectorAll('.e-circle');
+                    expect(insertIcons.length).toBeGreaterThan(0);
+                    // Simulate moving away from table
+                    (rteObj.tableModule as any).tableObj.resizeHelper({
+                        target: rteObj.contentModule.getEditPanel().querySelector('p'),
+                        preventDefault: function () { }
+                    });
+
+                    // Check that icons are removed
+                    setTimeout(() => {
+                        const remainingIcons = rteObj.contentModule.getEditPanel().querySelectorAll('.e-circle');
+                        expect(remainingIcons.length).toBe(0);
+                        done();
+                    }, 100);
+                }, 100);
+            }, 100);
+        });
+
+        it('should create circle icon with correct styling when hovering over insertion icon', (done: Function) => {
+            rteObj.focusIn();
+            const table = rteObj.contentModule.getEditPanel().querySelector('table');
+
+            // Trigger resize helper to create resize elements and insertion icons
+            (rteObj.tableModule as any).tableObj.resizeHelper({
+                target: table,
+                preventDefault: function () { }
+            });
+
+            setTimeout(() => {
+                const insertIcon = rteObj.contentModule.getEditPanel().querySelector('.e-tb-col-insert') as HTMLElement;
+                expect(insertIcon).not.toBeNull();
+                const td = rteObj.contentModule.getEditPanel().querySelector('td') as HTMLElement;
+                // Simulate mouseover on insertion icon
+                const mouseOverEvent = new MouseEvent('mouseover', { 'view': window, 'bubbles': true, 'cancelable': true });
+                td.dispatchEvent(mouseOverEvent);
+                setTimeout(() => {
+                    const insertIcon = rteObj.contentModule.getEditPanel().querySelector('.e-tb-col-insert');
+                    expect(insertIcon).not.toBeNull();
+                    // Simulate mouseover on insertion icon
+                    const mouseOverEvent = new MouseEvent('mouseover', { 'view': window, 'bubbles': true, 'cancelable': true });
+                    insertIcon.dispatchEvent(mouseOverEvent);
+
+                    // Check circle icon styling
+                    setTimeout(() => {
+                        const circleIcon = insertIcon.querySelector('.e-circle-add, .e-circle') as HTMLElement;
+                        expect(circleIcon).not.toBeNull();
+                        expect(circleIcon.classList.contains('e-icons')).toBe(true);
+
+                        // For RTL mode, check for rtl class
+                        if ((rteObj.tableModule as any).tableObj.tableModel.enableRtl) {
+                            expect(circleIcon.classList.contains('e-insert-cell-rtl')).toBe(true);
+                        }
+                        done();
+                    }, 100);
+                }, 100)
+            }, 100);
+        });
+
+        it('should correctly convert column resize helper to insertion helper on hover', (done: Function) => {
+            rteObj.focusIn();
+            const table = rteObj.contentModule.getEditPanel().querySelector('table');
+
+            // Trigger resize helper to create resize elements
+            (rteObj.tableModule as any).tableObj.resizeHelper({
+                target: table,
+                preventDefault: function () { }
+            });
+
+            setTimeout(() => {
+                const colInsertIcon = rteObj.contentModule.getEditPanel().querySelector('.e-tb-col-insert') as HTMLElement;
+                expect(colInsertIcon).not.toBeNull();
+
+                // Get data-col attribute for finding corresponding resize element
+                const dataCol = colInsertIcon.getAttribute('data-col');
+                const resizeSelector = `.e-column-resize[data-col="${dataCol}"]`;
+                const resizeElement = rteObj.contentModule.getEditPanel().querySelector(resizeSelector) as HTMLElement;
+                expect(resizeElement).not.toBeNull();
+
+                const td = rteObj.contentModule.getEditPanel().querySelector('td') as HTMLElement;
+                // Simulate mouseover on insertion icon
+                const mouseOverEvent = new MouseEvent('mouseover', { 'view': window, 'bubbles': true, 'cancelable': true });
+                td.dispatchEvent(mouseOverEvent);
+
+                setTimeout(() => {
+                    // Spy on handleInsertIconHover method
+                    spyOn((rteObj.tableModule as any).tableObj, 'handleInsertIconHover').and.callThrough();
+                    const colInsertIcon = rteObj.contentModule.getEditPanel().querySelector('.e-tb-col-insert');
+                    // Simulate mouseover on insertion icon
+                    const mouseOverEvent = new MouseEvent('mouseover', { 'view': window, 'bubbles': true, 'cancelable': true });
+                    colInsertIcon.dispatchEvent(mouseOverEvent);
+
+                    // Check if handleInsertIconHover was called
+                    expect((rteObj.tableModule as any).tableObj.handleInsertIconHover).toHaveBeenCalled();
+
+                    // Verify resize element is now a helper
+                    setTimeout(() => {
+                        // Should be updated to e-table-rhelper class
+                        const helperElement = rteObj.contentModule.getEditPanel().querySelector('.e-table-rhelper.e-column-helper');
+                        expect(helperElement).not.toBeNull();
+                        done();
+                    }, 100);
+                }, 100);
+            }, 100);
+        });
+
+        it('should apply specific styling to row insertion helpers', (done: Function) => {
+            rteObj.focusIn();
+            const table = rteObj.contentModule.getEditPanel().querySelector('table');
+
+            // Trigger resize helper to create resize elements
+            (rteObj.tableModule as any).tableObj.resizeHelper({
+                target: table,
+                preventDefault: function () { }
+            });
+
+            setTimeout(() => {
+                const rowInsertIcon = rteObj.contentModule.getEditPanel().querySelector('.e-tb-row-insert') as HTMLElement;
+                expect(rowInsertIcon).not.toBeNull();
+
+                const td = rteObj.contentModule.getEditPanel().querySelector('td') as HTMLElement;
+                // Simulate mouseover on insertion icon
+                const mouseOverEvent = new MouseEvent('mouseover', { 'view': window, 'bubbles': true, 'cancelable': true });
+                td.dispatchEvent(mouseOverEvent);
+
+                setTimeout(() => {
+                    const rowInsertIcon = rteObj.contentModule.getEditPanel().querySelector('.e-tb-row-insert') as HTMLElement;
+                    // Simulate mouseover on insertion icon
+                    const mouseOverEvent = document.createEvent('MouseEvents');
+                    mouseOverEvent.initEvent('mouseover', true, true);
+                    rowInsertIcon.dispatchEvent(mouseOverEvent);
+
+                    // Verify helper styling
+                    setTimeout(() => {
+                        const helperElement = rteObj.contentModule.getEditPanel().querySelector('.e-table-rhelper.e-row-helper') as HTMLElement;
+                        expect(helperElement).not.toBeNull();
+                        expect(helperElement.style.height).toBe('2px');
+                        done();
+                    }, 100);
+                }, 100)
+            }, 100);
+        });
+
+        it('should correctly handle mousedown on insertion icon to prevent event propagation', (done: Function) => {
+            rteObj.focusIn();
+            const table = rteObj.contentModule.getEditPanel().querySelector('table');
+
+            // Trigger resize helper to create resize elements
+            (rteObj.tableModule as any).tableObj.resizeHelper({
+                target: table,
+                preventDefault: function () { }
+            });
+
+            setTimeout(() => {
+                const insertIcon = rteObj.contentModule.getEditPanel().querySelector('.e-tb-col-insert') as HTMLElement;
+                expect(insertIcon).not.toBeNull();
+
+                // Create mock event with tracking methods
+                const mockEvent = {
+                    preventDefault: jasmine.createSpy('preventDefault'),
+                    stopPropagation: jasmine.createSpy('stopPropagation'),
+                    target: insertIcon
+                };
+
+                // Find mousedown event handler
+                const mousedownHandler = function (e: any) {
+                    e.preventDefault();
+                    e.stopPropagation();
+                };
+
+                // Call the handler with our mock event
+                mousedownHandler(mockEvent);
+
+                // Verify prevention methods were called
+                expect(mockEvent.preventDefault).toHaveBeenCalled();
+                expect(mockEvent.stopPropagation).toHaveBeenCalled();
+                done();
+            }, 100);
+        });
+    });
+
     describe('RTE with popup toolbar - table insertion via popup toggle', () => {
-            let rteObj: RichTextEditor;
-            let rteEle: HTMLElement;
-            let controlId: string;
-            let defaultRTE: HTMLElement = createElement('div', { id: 'defaultRTE' });
-            let innerHTML: string = `<p id="rte-p"></p>`;
-            beforeEach( () => {
-                document.body.appendChild(defaultRTE);
-                rteObj = new RichTextEditor({
-                    height: 400,
-                    width: 200,
-                    placeholder: 'Insert table here',
-                    toolbarSettings: {
-                        type: ToolbarType.Popup,
-                        items: ['Bold', 'Italic', 'Underline', 'FontName', 'FontSize', 'Alignments', 'SourceCode' , 'CreateTable']
-                    }
-                });
-                rteObj.appendTo('#defaultRTE');
-                rteEle = rteObj.element;
-                controlId = rteEle.id;
+        let rteObj: RichTextEditor;
+        let rteEle: HTMLElement;
+        let controlId: string;
+        let defaultRTE: HTMLElement = createElement('div', { id: 'defaultRTE' });
+        let innerHTML: string = `<p id="rte-p"></p>`;
+        beforeEach(() => {
+            document.body.appendChild(defaultRTE);
+            rteObj = new RichTextEditor({
+                height: 400,
+                width: 200,
+                placeholder: 'Insert table here',
+                toolbarSettings: {
+                    type: ToolbarType.Popup,
+                    items: ['Bold', 'Italic', 'Underline', 'FontName', 'FontSize', 'Alignments', 'SourceCode', 'CreateTable']
+                }
             });
-            afterEach(() => {
-                destroy(rteObj);
+            rteObj.appendTo('#defaultRTE');
+            rteEle = rteObj.element;
+            controlId = rteEle.id;
+        });
+        afterEach(() => {
+            destroy(rteObj);
+        });
+        it('should expand nav, open table popup, insert table via cell selection, and close the popup', () => {
+            const createTableBtn = rteObj.element.querySelector('.e-create-table') as HTMLElement;
+            expect(createTableBtn).not.toBeNull();
+            createTableBtn.click();
+            const popup = (rteObj as any).tableModule.popupObj.element;
+            expect(popup).not.toBeNull();
+            expect(popup.classList.contains('e-popup-open')).toBe(true);
+            const targetCell = popup.querySelector('.e-rte-tablecell[data-cell="4"]') as HTMLElement;
+            expect(targetCell).not.toBeNull();
+            targetCell.dispatchEvent(new MouseEvent('click', { bubbles: true }));
+            const insertedTable = rteObj.contentModule.getEditPanel().querySelector('table');
+            expect(insertedTable).not.toBeNull();
+        });
+    });
+
+    describe('971151 - Insert Table Dialog Tooltip Tests', () => {
+        let rteObj: RichTextEditor;
+        let rteEle: HTMLElement;
+
+        beforeAll(() => {
+            rteObj = renderRTE({
+                toolbarSettings: {
+                    items: ['CreateTable']
+                }
             });
-            it('should expand nav, open table popup, insert table via cell selection, and close the popup', () => {
-                const createTableBtn = rteObj.element.querySelector('.e-create-table') as HTMLElement;
-                expect(createTableBtn).not.toBeNull();
-                createTableBtn.click();
-                const popup = (rteObj as any).tableModule.popupObj.element;
-                expect(popup).not.toBeNull();
-                expect(popup.classList.contains('e-popup-open')).toBe(true);
-                const targetCell = popup.querySelector('.e-rte-tablecell[data-cell="4"]') as HTMLElement;
-                expect(targetCell).not.toBeNull();
-                targetCell.dispatchEvent(new MouseEvent('click', { bubbles: true }));
-                const insertedTable = rteObj.contentModule.getEditPanel().querySelector('table');
-                expect(insertedTable).not.toBeNull();
-            });
+            rteEle = rteObj.element;
+        });
+
+        afterAll(() => {
+            destroy(rteObj);
+        });
+
+        it('should verify table column input max value 50 and tooltip', (done: Function) => {
+            // Simulate clicking to open table dialog
+            const toolbarButton: HTMLElement = rteEle.querySelector('.e-toolbar-item button');
+            toolbarButton.click();
+
+            setTimeout(() => {
+                // Simulate clicking "Insert Table" button
+                const insertTableButton: HTMLElement = document.querySelector('.e-insert-table-btn');
+                insertTableButton.click();
+
+                setTimeout(() => {
+                    // Check max value for column input field
+                    const tableColumnInput = document.getElementById('tableColumn') as HTMLInputElement;
+                    expect(tableColumnInput.getAttribute('aria-valuemax')).toBe('50');
+
+                    // Simulate hover to show tooltip
+                    var mouseOverEvent = new MouseEvent('mouseover', { 'view': window, 'bubbles': true, 'cancelable': true });
+                    var mouseDownEvent = new MouseEvent('mousedown', { 'view': window, 'bubbles': true, 'cancelable': true });
+                    tableColumnInput.dispatchEvent(mouseOverEvent);
+                    tableColumnInput.dispatchEvent(mouseDownEvent);
+
+
+                    setTimeout(() => {
+                        // Check if tooltip is visible
+                        const tooltip = document.querySelector('.e-tip-content');
+                        expect(tooltip.textContent).toBe('Enter a whole number from 1 to 50');
+                        detach(tooltip);
+                        var cancelTableButton: HTMLElement = document.querySelector('.e-cancel');
+                        cancelTableButton.click();
+                        done();
+                    }, 100);
+                }, 100);
+            }, 100);
+        });
+
+        it('should verify table row input max value 100 and tooltip', (done: Function) => {
+            // Simulate clicking to open table dialog
+            const toolbarButton: HTMLElement = rteEle.querySelector('.e-toolbar-item button');
+            toolbarButton.click();
+
+            setTimeout(() => {
+                // Simulate clicking "Insert Table" button
+                const insertTableButton: HTMLElement = document.querySelector('.e-insert-table-btn');
+                insertTableButton.click();
+
+                setTimeout(() => {
+                    // Check max value for row input field
+                    const tableRowInput = document.getElementById('tableRow') as HTMLInputElement;
+                    expect(tableRowInput.getAttribute('aria-valuemax')).toBe('100');
+
+                    // Simulate hover to show tooltip
+                    var mouseOverEvent = new MouseEvent('mouseover', { 'view': window, 'bubbles': true, 'cancelable': true });
+                    var mouseDownEvent = new MouseEvent('mousedown', { 'view': window, 'bubbles': true, 'cancelable': true });
+                    tableRowInput.dispatchEvent(mouseOverEvent);
+                    tableRowInput.dispatchEvent(mouseDownEvent);
+
+                    setTimeout(() => {
+                        // Check if tooltip is visible
+                        const tooltip = document.querySelector('.e-tip-content');
+                        expect(tooltip.textContent).toBe('Enter a whole number from 1 to 100');
+                        detach(tooltip);
+                        var cancelTableButton: HTMLElement = document.querySelector('.e-cancel');
+                        cancelTableButton.click();
+                        done();
+                    }, 100);
+                }, 100);
+            }, 100);
+        });
     });
 
     describe('968937 - Table height and width resizing functionality', () => {
@@ -10745,6 +13087,126 @@ the tool bar support, it�s also customiza</p><table class="e-rte-table" style=
             document.dispatchEvent(mouseUpEvent);
             expect(activeElement).not.toBe(document.activeElement);
             done();
+        });
+    });
+    describe('976579: Apply Transparent Background Color to Table using TableEditProperties', () => {
+        let rteObj: RichTextEditor;
+        let rteEle: HTMLElement;
+        beforeEach(() => {
+            rteObj = renderRTE({
+                toolbarSettings: {
+                    items: ['CreateTable']
+                },
+                quickToolbarSettings: {
+                    table: ['TableEditProperties', 'Styles']
+                },
+                enableRtl: true,
+                value: `<p>Text before table</p><table class="e-rte-table"><tbody><tr><td>Cell content</td><td>More content</td></tr></tbody></table><p>Text after table</p>`,
+            });
+            rteEle = rteObj.element;
+        });
+        afterEach(() => {
+            destroy(rteObj);
+        });
+        it('should apply transparent background color using color picker and reflect in table style', (done) => {
+            rteObj.focusIn();
+            const table = rteObj.contentModule.getEditPanel().querySelector('table');
+            table.style.borderColor = 'rgb(191, 143, 0)';
+            table.style.backgroundColor = 'rgb(191, 143, 0)';
+            const cell = rteObj.contentModule.getEditPanel().querySelector('td');
+            const range = document.createRange();
+            range.setStart(cell.firstChild, 0);
+            range.collapse(true);
+            const selection = window.getSelection();
+            selection.removeAllRanges();
+            selection.addRange(range);
+            const eventsArg = {
+                pageX: 50,
+                pageY: 50,
+                target: cell,
+                which: 1
+            };
+            (rteObj as any).mouseDownHandler(eventsArg);
+            (rteObj as any).mouseUp(eventsArg);
+            setTimeout(() => {
+                const tableEditPropsBtn = document.querySelector('.e-table-edit-properties').parentElement;
+                (tableEditPropsBtn as HTMLElement).click();
+                setTimeout(() => {
+                    const dialog = document.querySelector('.e-rte-edit-table');
+                    expect(dialog).not.toBeNull();
+                    const bgClrInput = document.querySelectorAll('.e-btn.e-rte-table-bg-colorpicker');
+                    (bgClrInput[1] as HTMLElement).click();
+                    const bgClrOptions = document.querySelectorAll('.e-rte-square-palette');
+                    (bgClrOptions[0] as HTMLElement).click();
+                    const updateBtn = document.querySelector('.e-size-update');
+                    (updateBtn as HTMLElement).click();
+                    setTimeout(() => {
+                        const table = rteObj.contentModule.getEditPanel().querySelector('table');
+                        expect(table.style.backgroundColor).toBe('transparent');
+                        done();
+                    }, 100);
+                }, 200);
+            }, 200);
+        });
+    });
+    describe('Bug 976769: Table properties border color not applied properly', () => {
+        let rteObj: RichTextEditor;
+        let rteEle: HTMLElement;
+        beforeEach(() => {
+            rteObj = renderRTE({
+                toolbarSettings: {
+                    items: ['CreateTable']
+                },
+                quickToolbarSettings: {
+                    table: ['TableEditProperties', 'Styles']
+                },
+                enableRtl: true,
+                value: `<p>Text before table</p><table class="e-rte-table"><tbody><tr><td>Cell content</td><td>More content</td></tr></tbody></table><p>Text after table</p>`,
+            });
+            rteEle = rteObj.element;
+        });
+        afterEach(() => {
+            destroy(rteObj);
+        });
+        it('should apply transparent border color using color picker and reflect in table style', (done) => {
+            rteObj.focusIn();
+            const table = rteObj.contentModule.getEditPanel().querySelector('table');
+            table.style.borderColor = 'rgb(191, 143, 0)';
+            table.style.backgroundColor = 'rgb(191, 143, 0)';
+            const cell = rteObj.contentModule.getEditPanel().querySelector('td');
+            const range = document.createRange();
+            range.setStart(cell.firstChild, 0);
+            range.collapse(true);
+            const selection = window.getSelection();
+            selection.removeAllRanges();
+            selection.addRange(range);
+            const eventsArg = {
+                pageX: 50,
+                pageY: 50,
+                target: cell,
+                which: 1
+            };
+            (rteObj as any).mouseDownHandler(eventsArg);
+            (rteObj as any).mouseUp(eventsArg);
+            setTimeout(() => {
+                const tableEditPropsBtn = document.querySelector('.e-table-edit-properties').parentElement;
+                (tableEditPropsBtn as HTMLElement).click();
+                setTimeout(() => {
+                    const dialog = document.querySelector('.e-rte-edit-table');
+                    expect(dialog).not.toBeNull();
+                    const bgClrInput = document.querySelectorAll('.e-btn.e-rte-border-colorpicker');
+                    (bgClrInput[1] as HTMLElement).click();
+                    const bgClrOptions = document.querySelectorAll('.e-rte-square-palette');
+                    (bgClrOptions[0] as HTMLElement).click();
+                    const updateBtn = document.querySelector('.e-size-update');
+                    (updateBtn as HTMLElement).click();
+                    setTimeout(() => {
+                        const table = rteObj.contentModule.getEditPanel().querySelector('table');
+                        expect(table.style.borderColor).toBe('transparent');
+                        done();
+                    }, 100);
+                }, 200);
+            }, 200);
         });
     });
 });

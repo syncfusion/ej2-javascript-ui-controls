@@ -42,21 +42,23 @@
       &.e-list-block {
 
         /* Checklist Block */
-        &[data-block-type = 'CheckList'] {
-          .e-checkmark {
-            border-color: $be-checklist-marker-border-color;
+        &[data-block-type = 'Checklist'] {
+          .e-checkmark-border {
+            stroke: $be-checklist-marker-border-color;
+          }
 
-            /* Ripple element */
-            &::before {
-              background: $be-checklist-marker-checked-bg-color;
-            }
+          .e-checkmark-bg {
+            fill: $be-checklist-marker-checked-bg-color;
+            stroke: $be-checklist-marker-checked-border-color;
+          }
+
+          .e-checkmark-color {
+            fill: $be-checklist-marker-checked-color;
           }
 
           &:has(.e-checked) {
-            .e-checkmark {
-              background: $be-checklist-marker-checked-bg-color;
-              border-color: $be-checklist-marker-checked-border-color;
-              color: $be-checklist-marker-checked-color;
+            .e-checkmark-border {
+              stroke: $be-checklist-marker-checked-border-color;
             }
 
             li {
@@ -173,6 +175,21 @@
     /* ======== Image Block Styles ======== */
     .e-image-block {
       &.e-image-focus,
+      &:hover {
+        outline: 2px solid $be-table-cell-focus-color;
+      }
+    }
+
+    /* ======== Audio Block Styles ======== */
+    .e-audio-block {
+      &:hover {
+        outline: 2px solid $be-table-cell-focus-color;
+      }
+    }
+
+    /* ======== Video Block Styles ======== */
+    .e-video-block {
+      &.e-video-focus,
       &:hover {
         outline: 2px solid $be-table-cell-focus-color;
       }

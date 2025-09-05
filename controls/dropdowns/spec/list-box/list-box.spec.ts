@@ -1919,7 +1919,6 @@ describe('ListBox', () => {
             expect(Array.isArray(changeArgs)).toBe(true);
         });
     });
-
     describe('ListBox coverage test ', () => {
         let listObjc: any;
         let element: HTMLElement;
@@ -1938,7 +1937,6 @@ describe('ListBox', () => {
             (<any>listObjc).ulElement = null ;
             (<any>listObjc).allowDragAndDrop = false ;
             (<any>listObjc).initDraggable();
-
         });
     });
 });

@@ -5,8 +5,8 @@ import * as classes from '../classes';
 import { SfRichTextEditor } from '../sf-richtexteditor-fn';
 import { MarkdownToolbarStatus } from './markdown-toolbar-status';
 import { MarkdownFormatter } from '../formatter/markdown-formatter';
-import { IToolbarItemModel, NotifyArgs } from '../../src/common/interface';
-import { MarkdownSelection } from '../../src/markdown-parser/plugin/markdown-selection';
+import { IToolbarItemModel, NotifyArgs } from '../../editor-scripts/common/interface';
+import { MarkdownSelection } from '../../editor-scripts/markdown-parser/plugin/markdown-selection';
 
 /**
  * `MarkdownEditor` module is used to markdown editor

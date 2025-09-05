@@ -2,12 +2,12 @@ import { Browser, selectAll, addClass, removeClass, select, closest, EventHandle
 import { KeyboardEventArgs, setStyleAttribute, isNullOrUndefined as isNOU } from '../../../base'; /*externalscript*/
 import * as events from '../constant';
 import * as classes from '../classes';
-import { isIDevice } from '../../src/common/util';
+import { isIDevice } from '../../editor-scripts/common/util';
 import { setToolbarStatus } from '../util';
 import { SfRichTextEditor } from '../sf-richtexteditor-fn';
-import { IToolbarStatus } from '../../src/common/interface';
+import { IToolbarStatus } from '../../editor-scripts/common/interface';
 import { ISetToolbarStatusArgs } from '../interfaces';
-import { ToolbarType } from '../../src/common/enum';
+import { ToolbarType } from '../../editor-scripts/common/enum';
 import { BeforeOpenCloseMenuEventArgs } from '../../../splitbuttons/src'; /*externalscript*/
 
 /**

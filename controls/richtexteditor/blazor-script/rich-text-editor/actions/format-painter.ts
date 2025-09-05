@@ -1,11 +1,11 @@
 import { addClass, isNullOrUndefined as isNOU, KeyboardEventArgs, removeClass } from '../../../base'; /*externalscript*/
-import { ActionBeginEventArgs, IExecutionGroup, IFormatPainter, IFormatPainterArgs, IToolbarItemModel, NotifyArgs, ToolbarClickEventArgs } from '../../src/common/interface';
+import { ActionBeginEventArgs, IExecutionGroup, IFormatPainter, IFormatPainterArgs, IToolbarItemModel, NotifyArgs, ToolbarClickEventArgs } from '../../editor-scripts/common/interface';
 import * as events from '../constant';
 import { ClickEventArgs } from '../../../buttons/src'; /*externalscript*/
 import { SfRichTextEditor } from '../sf-richtexteditor-fn';
 import { ItemModel } from '../../../splitbuttons/src'; /*externalscript*/
-import { QuickToolbarSettingsModel } from '../../src/models';
-import { FormatPainterActions } from '../../src/editor-manager/plugin/format-painter-actions';
+import { QuickToolbarSettingsModel } from '../../editor-scripts/models';
+import { FormatPainterActions } from '../../editor-scripts/editor-manager/plugin/format-painter-actions';
 
 /* Format Painter Tool implementation for the Rich Text Editor */
 export class FormatPainter implements IFormatPainter {

@@ -651,6 +651,26 @@
         }
       }
     }
+
+    & .e-findtool-dlg.e-device .e-dlg-header-content .e-input-group {
+      width: 150px;
+    }
+
+    & .e-find-dlg.e-dialog.e-device .e-dlg-content {
+      @if $skin-name =='FluentUI' {
+        .e-findnreplace-exactmatchcheckbox {
+          padding-left: 3px;
+        }
+        .e-findnreplace-casecheckbox {
+          padding-top: 12px;
+        }
+      }
+      @if $skin-name =='fluent2' {
+        .e-findnreplace-exactmatchcheckbox {
+          margin-left: 0;
+        }
+      }
+    }
   }
 
   .e-bigger.e-dropdown-popup,

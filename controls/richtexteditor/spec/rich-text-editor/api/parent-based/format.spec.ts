@@ -681,7 +681,7 @@ describe('RTE PARENT BASED - formats - ', () => {
                 (popup.querySelectorAll('.e-item')[2] as HTMLElement).click();
                 rteObj.showSourceCode();
                 let textArea: HTMLTextAreaElement = rteObj.element.querySelector('.e-rte-srctextarea');
-                expect(textArea.value === '<blockquote><p><span id="rte">RTE</span></p></blockquote>').toBe(true);
+                expect(textArea.value === '<blockquote>\n   <p><span id="rte">RTE</span></p>\n</blockquote>').toBe(true);
             });
             it(' Test - apply the "H1" format to selected node', () => {
                 let pEle: HTMLElement = rteObj.element.querySelector('#rte');

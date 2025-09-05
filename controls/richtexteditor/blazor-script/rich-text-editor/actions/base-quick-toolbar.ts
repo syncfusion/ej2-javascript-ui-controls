@@ -3,17 +3,17 @@ import { removeClass, Browser } from '../../../base'; /*externalscript*/
 import { CollisionType, Popup, PopupModel } from '../../../popups/src'; /*externalscript*/
 import * as constant from '../constant';
 import * as classes from '../classes';
-import { IToolbarStatus } from '../../src/common/interface';
+import { IToolbarStatus } from '../../editor-scripts/common/interface';
 import { ISetToolbarStatusArgs } from '../interfaces';
 import { setToolbarStatus } from '../util';
-import { isIDevice } from '../../src/common/util';
+import { isIDevice } from '../../editor-scripts/common/util';
 import { SfRichTextEditor } from '../sf-richtexteditor-fn';
 import { QuickPopupRenderer } from '../renderer/quick-popup-renderer';
-import { BeforeQuickToolbarOpenArgs } from '../../src/common/interface';
+import { BeforeQuickToolbarOpenArgs } from '../../editor-scripts/common/interface';
 import { IBaseQuickToolbar } from '../interfaces';
 import { QuickToolbar } from './quick-toolbar';
-import { QuickToolbarCollision, QuickToolbarType, SelectionDirection, TriggerType, TipPointerPosition } from '../../src/common/types';
-import { QuickToolbarOffsetParam } from '../../src/common/interface';
+import { QuickToolbarCollision, QuickToolbarType, SelectionDirection, TriggerType, TipPointerPosition } from '../../editor-scripts/common/types';
+import { QuickToolbarOffsetParam } from '../../editor-scripts/common/interface';
 
 /**
  * `Quick toolbar` module is used to handle Quick toolbar actions.
@@ -808,7 +808,11 @@ export class BaseQuickToolbar implements IBaseQuickToolbar {
             case 'Hidden':
             case 'ParentElement':
             case 'ScrollableContainer':
-                spaceBelow = scrollParentRect.bottom - (args.iframeRect.top + blockRect.bottom);
+                if (!isScrollParentElemInputElem && collision === 'ParentElement') {
+                    spaceBelow = args.iframeRect.bottom -  (args.iframeRect.top + blockRect.bottom);
+                } else {
+                    spaceBelow = scrollParentRect.bottom - (args.iframeRect.top + blockRect.bottom);
+                }
                 break;
             case 'ViewPort':
                 spaceBelow = window.innerHeight - (args.iframeRect.top + blockRect.bottom);

@@ -1,4 +1,4 @@
-import { Menu, MenuItemModel, MenuEventArgs, ContextMenu } from '@syncfusion/ej2-navigations';
+import { Menu, ContextMenu } from '@syncfusion/ej2-navigations';
 import { BlockEditor } from '../../base/index';
 import { IMenubarRenderOptions } from '../../base/interface';
 

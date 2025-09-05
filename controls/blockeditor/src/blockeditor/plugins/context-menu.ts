@@ -3,13 +3,14 @@ import { BlockModel, ContextMenuItemModel, ContextMenuSettingsModel } from '../m
 import { getContextMenuItems } from '../utils/data';
 import { BlockEditor } from '../base/blockeditor';
 import { ContextMenuBeforeOpenEventArgs, ContextMenuBeforeCloseEventArgs, ContextMenuOpenEventArgs, ContextMenuItemClickEventArgs, ContextMenuCloseEventArgs } from '../base/eventargs';
-import { BlockEditorModel } from '../base/index';
+import { BlockEditorModel, BlockType } from '../base/index';
 import { events } from '../base/constant';
 import { detach, isNullOrUndefined } from '@syncfusion/ej2-base';
 import { getNormalizedKey } from '../utils/common';
 import { getAdjacentBlock, getBlockModelById } from '../utils/block';
-import { getSelectionRange } from '../utils/selection';
+import { getSelectedRange } from '../utils/selection';
 import { sanitizeContextMenuItems } from '../utils/transform';
+import * as constants from '../base/constant';
 
 /**
  * `ContextMenuModule` is used to handle the context menu actions in the BlockEditor.
@@ -21,11 +22,15 @@ export class ContextMenuModule {
     public contextMenuObj: ContextMenu;
     private isPopupOpened: boolean = false;
     private menuElement: HTMLUListElement;
+    private isClipboardEmptyCache: boolean = true;
+    private shortcutMap: Map<string, ContextMenuItemModel> = new Map();
 
     constructor(editor: BlockEditor) {
         this.editor = editor;
         this.init();
+        this.buildShortcutMap();
         this.addEventListeners();
+        this.updateClipboardCacheState();
     }
 
     private addEventListeners(): void {
@@ -41,21 +46,8 @@ export class ContextMenuModule {
     }
 
     private init(): void {
-        let items: ContextMenuItemModel[];
-        if (this.editor.contextMenu.items.length > 0) {
-            items = sanitizeContextMenuItems(this.editor.contextMenu.items);
-        }
-        else {
-            items = getContextMenuItems();
-            /* eslint-disable @typescript-eslint/no-explicit-any */
-            const prevOnChange: boolean = (this.editor as any).isProtectedOnChange;
-            (this.editor as any).isProtectedOnChange = true;
-            this.editor.contextMenu.items = items;
-            (this.editor as any).isProtectedOnChange = prevOnChange;
-            /* eslint-enable @typescript-eslint/no-explicit-any */
-        }
         this.menuElement = this.editor.createElement('ul', {
-            className: 'e-blockeditor-contextmenu'
+            className: constants.BLOCKEDITOR_CONTEXTMENU_CLS
         });
         document.body.appendChild(this.menuElement);
         const itemTemplate: string =
@@ -73,7 +65,7 @@ export class ContextMenuModule {
         this.contextMenuObj = this.editor.menubarRenderer.renderContextMenu({
             target: '#' + this.editor.element.id,
             element: this.menuElement,
-            items: items,
+            items: this.getMenuItems(),
             showItemOnClick: this.editor.contextMenu.showItemOnClick,
             itemTemplate: itemTemplate,
             fields: { text: 'text', iconCss: 'iconCss', itemId: 'id' },
@@ -85,11 +77,31 @@ export class ContextMenuModule {
         });
     }
 
+    private getMenuItems(): ContextMenuItemModel[] {
+        const menuItems: ContextMenuItemModel[] = this.editor.contextMenu.items.length > 0
+            ? sanitizeContextMenuItems(this.editor.contextMenu.items)
+            : getContextMenuItems();
+
+        if (this.editor.contextMenu.items.length <= 0) {
+            const prevOnChange: boolean = this.editor.isProtectedOnChange;
+            this.editor.isProtectedOnChange = true;
+            this.editor.contextMenu.items = menuItems;
+            this.editor.isProtectedOnChange = prevOnChange;
+        }
+        return menuItems;
+    }
+
+    private buildShortcutMap(): void {
+        this.shortcutMap.clear();
+        this.editor.contextMenu.items.forEach((item: ContextMenuItemModel) => {
+            this.shortcutMap.set(item.shortcut.toLowerCase(), item);
+        });
+    }
+
     private onKeyDown(e: KeyboardEvent): void {
         const normalizedKey: string = getNormalizedKey(e);
         if (!normalizedKey) { return; }
-        const menuItem: ContextMenuItemModel = this.editor.contextMenu.items.find((item: ContextMenuItemModel) =>
-            item.shortcut.toLowerCase() === normalizedKey);
+        const menuItem: ContextMenuItemModel = this.shortcutMap.get(normalizedKey);
         if (menuItem && menuItem.id !== 'cut' && menuItem.id !== 'copy' && menuItem.id !== 'paste') {
             e.preventDefault();
             this.handleContextMenuActions(menuItem, e);
@@ -175,6 +187,13 @@ export class ContextMenuModule {
         this.handleContextMenuActions(args.item, args.event);
     }
 
+    private handleIndentationAction(shouldDecrease: boolean): void {
+        this.editor.blockCommandManager.handleBlockIndentation({
+            blockIDs: this.editor.getSelectedBlocks().map((block: BlockModel) => block.id),
+            shouldDecrease
+        });
+    }
+
     private handleContextMenuActions(menuItem: ContextMenuItemModel, e: Event): void {
         const prop: string = menuItem.id.toLowerCase();
         switch (prop) {
@@ -193,56 +212,68 @@ export class ContextMenuModule {
         case 'paste':
             this.editor.clipboardAction.handleContextPaste();
             break;
-        case 'increaseindent':
-        case 'decreaseindent': {
-            const shouldDecrease: boolean = prop === 'decreaseindent';
-            const selectedBlocks: BlockModel[] = this.editor.getSelectedBlocks();
-            const blockIDs: string[] = selectedBlocks.map((block: BlockModel) => block.id);
-            this.editor.blockAction.handleBlockIndentation({
-                blockIDs,
-                shouldDecrease
-            });
-            break;
-        }
         case 'link':
             this.editor.linkModule.showLinkPopup(e as KeyboardEvent);
             break;
+        case 'increaseindent':
+        case 'decreaseindent':
+            this.handleIndentationAction(prop === 'decreaseindent');
+            break;
+        }
+    }
+
+    private enableMenuItems(itemIds: string[], enable: boolean): void {
+        if (this.contextMenuObj) {
+            this.contextMenuObj.enableItems(itemIds, enable, true);
         }
     }
 
     private toggleDisabledItems(): void {
-        const blockElement: HTMLElement = this.editor.currentFocusedBlock;
-        const range: Range = getSelectionRange();
-        if (!range || !blockElement) { return; }
-        const notAllowedTypes: string[] = ['Image', 'Code'];
-        const blockModel: BlockModel = getBlockModelById(blockElement.id, this.editor.blocksInternal);
+        if (!getSelectedRange() || !this.editor.currentFocusedBlock) { return; }
+        const blockModel: BlockModel = getBlockModelById(this.editor.currentFocusedBlock.id, this.editor.getEditorBlocks());
+        const notAllowedTypes: string[] = [BlockType.Image, BlockType.Code];
         const isNotAllowedType: boolean = notAllowedTypes.indexOf(blockModel.type) !== -1;
-        const previousBlockElement: HTMLElement = getAdjacentBlock(blockElement, 'previous');
+        const previousBlockElement: HTMLElement = getAdjacentBlock(this.editor.currentFocusedBlock, 'previous');
         const previousBlockModel: BlockModel = previousBlockElement
-            ? getBlockModelById(previousBlockElement.id, this.editor.blocksInternal)
+            ? getBlockModelById(previousBlockElement.id, this.editor.getEditorBlocks())
             : null;
         const canIndent: boolean = (!previousBlockModel ||
             (previousBlockModel && blockModel.indent <= previousBlockModel.indent) && !isNotAllowedType);
         const canOutdent: boolean = blockModel.indent > 0 && !isNotAllowedType;
-        const isSelection: boolean = range.toString().trim().length > 0;
+        const isSelection: boolean = getSelectedRange().toString().trim().length > 0;
         const canAllowLink: boolean = isSelection && !isNotAllowedType;
 
-        this.contextMenuObj.enableItems(['increaseindent'], canIndent, true);
-        this.contextMenuObj.enableItems(['decreaseindent'], canOutdent, true);
-        this.contextMenuObj.enableItems(['undo'], this.editor.undoRedoAction.canUndo(), true);
-        this.contextMenuObj.enableItems(['redo'], this.editor.undoRedoAction.canRedo(), true);
-        this.contextMenuObj.enableItems(['link'], canAllowLink, true);
-        this.contextMenuObj.enableItems(['cut'], isSelection, true);
-        this.contextMenuObj.enableItems(['copy'], isSelection, true);
-        this.editor.clipboardAction.isClipboardEmpty().then((isEmpty: boolean) => {
-            if (this.contextMenuObj) {
-                this.contextMenuObj.enableItems(['paste'], !isEmpty, true);
-            }
-        });
+        this.enableMenuItems(['increaseindent'], canIndent);
+        this.enableMenuItems(['decreaseindent'], canOutdent);
+        this.enableMenuItems(['undo'], this.editor.undoRedoAction.canUndo());
+        this.enableMenuItems(['redo'], this.editor.undoRedoAction.canRedo());
+        this.enableMenuItems(['link'], canAllowLink);
+        this.enableMenuItems(['cut'], isSelection);
+        this.enableMenuItems(['copy'], isSelection);
+        this.enableMenuItems(['paste'], !this.isClipboardEmptyCache);
     }
 
+    /**
+     * Checks whether the context menu is opened or not.
+     *
+     * @returns {boolean} - Returns true if the context menu is opened, otherwise false.
+     * @hidden
+     */
     public isPopupOpen(): boolean {
         return this.isPopupOpened;
+    }
+
+    /**
+     * Updates the cached clipboard state asynchronously.
+     *
+     * @returns {void}
+     */
+    public updateClipboardCacheState(): void {
+        this.editor.clipboardAction.isClipboardEmpty().then((isEmpty: boolean) => {
+            this.isClipboardEmptyCache = isEmpty;
+        }).catch(() => {
+            this.isClipboardEmptyCache = false;
+        });
     }
 
     /**
@@ -255,6 +286,11 @@ export class ContextMenuModule {
         return 'contextMenu';
     }
 
+    /**
+     * Destroys the ContextMenu module.
+     *
+     * @returns {void}
+     */
     public destroy(): void {
         if (this.contextMenuObj) {
             this.contextMenuObj.destroy();
@@ -262,6 +298,7 @@ export class ContextMenuModule {
             detach(this.menuElement);
             this.menuElement = null;
         }
+        this.shortcutMap = null;
         this.removeEventListeners();
     }
 
@@ -272,7 +309,6 @@ export class ContextMenuModule {
      * @returns {void}
      * @hidden
      */
-    /* eslint-disable */
     protected onPropertyChanged(e: { [key: string]: BlockEditorModel }): void {
         if (e.module !== this.getModuleName()) {
             return;
@@ -299,6 +335,5 @@ export class ContextMenuModule {
             }
         }
     }
-    /* eslint-enable */
 
 }

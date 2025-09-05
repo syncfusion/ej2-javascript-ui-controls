@@ -1996,6 +1996,18 @@ describe('Conditional formatting ->', () => {
             expect(helper.invoke('getCell', [6, 3]).children[0].classList).toContain('e-3arrows-1');
             done();
         });
+        it('EJ2-923136 - Less than conditional formatting not applied for string', (done: Function) => {
+            helper.invoke('conditionalFormat', [{ type: 'LessThan', cFColor: 'RedFT', value: 'Sync', range: 'H2' }]);
+            expect(helper.invoke('getCell', [1, 7]).style.backgroundColor).toContain('rgb(255, 199, 206)');
+            helper.invoke('conditionalFormat', [{ type: 'LessThan', cFColor: 'RedFT', value: 'Fusion', range: 'I1' }]);
+            expect(helper.invoke('getCell', [0, 8]).style.backgroundColor).toContain('rgb(255, 199, 206)');
+            helper.invoke('conditionalFormat', [{ type: 'LessThan', cFColor: 'RedFT', value: '1', range: 'I2' }]);
+            expect(helper.invoke('getCell', [1, 8]).style.backgroundColor).toContain('rgb(255, 199, 206)');
+            helper.invoke('conditionalFormat', [{ type: 'LessThan', cFColor: 'RedFT', value: '11:00:00', range: 'G1' }]);
+            helper.invoke('conditionalFormat', [{ type: 'LessThan', cFColor: 'RedFT', value: 'Syncfusion', range: 'H1' }]);
+            expect(helper.invoke('getCell', [0, 7]).style.backgroundColor).toContain('rgb(255, 199, 206)');
+            done();
+        });
     });
     
     describe(' Check cf apply for text ->', () => {
@@ -2859,35 +2871,37 @@ describe('Conditional formatting ->', () => {
         });
         it('EJ2-876151 - Incorrect Data Bar Position in RTL Mode with Conditional Formatting', (done: Function) => {
             helper.setModel('enableRtl', true);
-            helper.invoke('conditionalFormat', [{ type: 'GreenDataBar', range: 'H2:H4' }]);
-            const cell1 = helper.invoke('getCell', [1, 7]);
-            expect(cell1.getElementsByClassName('e-databar')[1].style.width).toBe('20%');
-            expect(cell1.getElementsByClassName('e-databar')[1].style.height).toBe('17px');
-            expect(cell1.getElementsByClassName('e-databar')[1].style.backgroundColor).toBe('rgb(99, 190, 123)');
-            expect(cell1.getElementsByClassName('e-databar')[1].style.right).toBe('0px');
-            helper.edit('H5', '-1');
-            helper.edit('H6', '-2');
-            helper.edit('H7', '-3');
-            helper.invoke('conditionalFormat', [{ type: 'GreenDataBar', range: 'H5:H7' }]);
-            const cell2 = helper.invoke('getCell', [4, 7]);
-            expect(cell2.getElementsByClassName('e-databar')[1].style.width).toBe('34%');
-            expect(cell2.getElementsByClassName('e-databar')[1].style.height).toBe('17px');
-            expect(cell2.getElementsByClassName('e-databar')[1].style.backgroundColor).toBe('rgb(248, 105, 107)');
-            expect(cell2.getElementsByClassName('e-databar')[1].style.right).toBe('0px');
-            helper.edit('H8', '-144');
-            helper.edit('H9', '-166');
-            helper.invoke('conditionalFormat', [{ type: 'GreenDataBar', range: 'H8:H11' }]);
-            const cell3 = helper.invoke('getCell', [8, 7]);
-            const cell4 = helper.invoke('getCell', [9, 7]);
-            expect(cell3.getElementsByClassName('e-databar')[0].style.width).toBe('50%');
-            expect(cell3.getElementsByClassName('e-databar')[0].style.height).toBe('17px');
-            expect(cell3.getElementsByClassName('e-databar')[0].style.backgroundColor).toBe('rgb(248, 105, 107)');
-            expect(cell3.getElementsByClassName('e-databar')[0].style.right).toBe('0px');
-            expect(cell4.getElementsByClassName('e-databar')[1].style.width).toBe('50%');
-            expect(cell4.getElementsByClassName('e-databar')[1].style.height).toBe('17px');
-            expect(cell4.getElementsByClassName('e-databar')[1].style.backgroundColor).toBe('rgb(99, 190, 123)');
-            expect(cell4.getElementsByClassName('e-databar')[1].style.right).toBe('50%');
-            done();
+            setTimeout((): void => {
+                helper.invoke('conditionalFormat', [{ type: 'GreenDataBar', range: 'H2:H4' }]);
+                const cell1 = helper.invoke('getCell', [1, 7]);
+                expect(cell1.getElementsByClassName('e-databar')[1].style.width).toBe('20%');
+                expect(cell1.getElementsByClassName('e-databar')[1].style.height).toBe('17px');
+                expect(cell1.getElementsByClassName('e-databar')[1].style.backgroundColor).toBe('rgb(99, 190, 123)');
+                expect(cell1.getElementsByClassName('e-databar')[1].style.right).toBe('0px');
+                helper.edit('H5', '-1');
+                helper.edit('H6', '-2');
+                helper.edit('H7', '-3');
+                helper.invoke('conditionalFormat', [{ type: 'GreenDataBar', range: 'H5:H7' }]);
+                const cell2 = helper.invoke('getCell', [4, 7]);
+                expect(cell2.getElementsByClassName('e-databar')[1].style.width).toBe('34%');
+                expect(cell2.getElementsByClassName('e-databar')[1].style.height).toBe('17px');
+                expect(cell2.getElementsByClassName('e-databar')[1].style.backgroundColor).toBe('rgb(248, 105, 107)');
+                expect(cell2.getElementsByClassName('e-databar')[1].style.right).toBe('0px');
+                helper.edit('H8', '-144');
+                helper.edit('H9', '-166');
+                helper.invoke('conditionalFormat', [{ type: 'GreenDataBar', range: 'H8:H11' }]);
+                const cell3 = helper.invoke('getCell', [8, 7]);
+                const cell4 = helper.invoke('getCell', [9, 7]);
+                expect(cell3.getElementsByClassName('e-databar')[0].style.width).toBe('50%');
+                expect(cell3.getElementsByClassName('e-databar')[0].style.height).toBe('17px');
+                expect(cell3.getElementsByClassName('e-databar')[0].style.backgroundColor).toBe('rgb(248, 105, 107)');
+                expect(cell3.getElementsByClassName('e-databar')[0].style.right).toBe('0px');
+                expect(cell4.getElementsByClassName('e-databar')[1].style.width).toBe('50%');
+                expect(cell4.getElementsByClassName('e-databar')[1].style.height).toBe('17px');
+                expect(cell4.getElementsByClassName('e-databar')[1].style.backgroundColor).toBe('rgb(99, 190, 123)');
+                expect(cell4.getElementsByClassName('e-databar')[1].style.right).toBe('50%');
+                done();
+            });
         });
     });
 
@@ -3634,6 +3648,73 @@ describe('Conditional formatting ->', () => {
             expect(beforeConditionalFormatCalled).toBeTruthy();
             expect(beforeConditionalFormatArgs).toBe('{"conditionalFormat":{"type":"GreaterThan","cFColor":"RedFT","value":"10","range":"D2:D11"},"cell":{"value":50},"element":{},"apply":true,"address":"D11","name":"beforeConditionalFormat"}');
             spreadsheet.beforeConditionalFormat = undefined;
+            done();
+        });
+    });
+    describe('EJ2-970855 -> Red font color is applied for the range C11:X11 in imported file ->', () => {
+        beforeAll((done: Function) => {
+            helper.initializeSpreadsheet({ sheets: [{ ranges: [{ dataSource: defaultData }] }] }, done);
+        });
+        afterAll(() => {
+            helper.invoke('destroy');
+        });
+        it('Red font should not be applied for the range with special characters', (done: Function) => {
+            helper.edit('I11', '&123');
+            helper.edit('J11', '#sdfb');
+            helper.edit('K11', '!sd');
+            helper.edit('L11', '-89');
+            helper.edit('M11', 'abcd');
+            helper.invoke('selectRange', ['C11:X11']);
+            helper.invoke('conditionalFormat', [{ type: 'LessThan', cFColor: 'RedFT', value: '0', range: 'C11:X11' }]);
+            expect(helper.invoke('getCell', [10, 11]).style.color).toBe('rgb(156, 0, 85)');
+            expect(helper.invoke('getCell', [10, 11]).style.backgroundColor).toBe('rgb(255, 199, 206)');
+            expect(helper.invoke('getCell', [9, 11]).style.color).not.toBe('rgb(156, 0, 85)');
+            expect(helper.invoke('getCell', [9, 11]).style.backgroundColor).not.toBe('rgb(255, 199, 206)');
+            expect(helper.invoke('getCell', [8, 11]).style.color).not.toBe('rgb(156, 0, 85)');
+            expect(helper.invoke('getCell', [8, 11]).style.backgroundColor).not.toBe('rgb(255, 199, 206)');
+            expect(helper.invoke('getCell', [7, 11]).style.color).not.toBe('rgb(156, 0, 85)');
+            expect(helper.invoke('getCell', [7, 11]).style.backgroundColor).not.toBe('rgb(255, 199, 206)');
+            expect(helper.invoke('getCell', [11, 11]).style.color).not.toBe('rgb(156, 0, 85)');
+            expect(helper.invoke('getCell', [11, 11]).style.backgroundColor).not.toBe('rgb(255, 199, 206)');
+            done();
+        });
+    });
+    describe('EJ2- 972192: Icon Set Duplication and Script Error on Hyperlinked Accounting-Formatted Cell -> ', () => {
+        beforeAll((done: Function) => {
+            helper.initializeSpreadsheet({ sheets: [{ ranges: [{ dataSource: defaultData }] }] }, done);
+        });
+        afterAll(() => {
+            helper.invoke('destroy');
+        });
+        it('Icon Set should not get duplicated on setting hyperlink to the cell', (done: Function) => {
+            const spreadsheet: Spreadsheet = helper.getInstance();
+            helper.invoke('numberFormat', ['_($* #,##0.00_);_($* (#,##0.00);_($* "-"??_);_(@_)', 'H2:H11']);
+            helper.invoke('conditionalFormat', [{ type: 'ThreeTrafficLights1', range: 'H2:H11', cFColor: 'RedFT', value: '' }]);
+            helper.invoke('addHyperlink', ['www.google.com', 'H2:H11']);
+            expect(helper.invoke('getCell', [1, 7]).children[0].classList).toContain('e-icon');
+            expect(helper.invoke('getCell', [1, 7]).children[1].classList).toContain('e-hyperlink');
+            done();
+        });
+        it('Script error should not occur while adding wrap to Accounting formatted cell', (done: Function) => {
+            const spreadsheet: Spreadsheet = helper.getInstance();
+            spreadsheet.setRowHeight('75', 1, 0);
+            spreadsheet.wrap('H2:H11');
+            setTimeout(() => {
+                expect(spreadsheet.sheets[0].rows[1].height).toBe(75);
+                let wrapCnt: HTMLElement = helper.invoke('getCell', [1, 7]).children[0];
+                expect(wrapCnt.classList).toContain('e-wrap-content');
+                expect(wrapCnt.children[0].classList).toContain('e-icon');
+                done();
+            });
+        });
+        it('Clear CF should not affect Accounting Format', (done: Function) => {
+            helper.invoke('clearConditionalFormat', ['H2:H11']);
+            let wrapCnt: HTMLElement = helper.invoke('getCell', [1, 7]).querySelector('.e-wrap-content');
+            expect(wrapCnt.children[0].classList).toContain('e-hyperlink');
+            let hyperlinkElement: HTMLElement = wrapCnt.firstChild as HTMLElement;
+            expect(hyperlinkElement.children[0].classList).toContain('e-fill-before');
+            expect(hyperlinkElement.children[1].classList).toContain('e-fill');
+            expect(hyperlinkElement.children[2].classList).toContain('e-fill-sec');
             done();
         });
     });

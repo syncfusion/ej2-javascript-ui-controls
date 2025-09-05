@@ -1,4 +1,4 @@
-import { createElement, closest, detach, Browser, isNullOrUndefined as isNOU, KeyboardEventArgs, EventHandler, addClass } from '@syncfusion/ej2-base';
+import { createElement, closest, detach, Browser, isNullOrUndefined as isNOU, KeyboardEventArgs, EventHandler, addClass, removeClass } from '@syncfusion/ej2-base';
 import * as CONSTANT from './../base/constant';
 import { IHtmlItem, IHtmlSubCommands } from './../base/interface';
 import { InsertHtml } from './inserthtml';
@@ -7,7 +7,7 @@ import * as EVENTS from '../../common/constant';
 import { ClickEventArgs } from '@syncfusion/ej2-navigations';
 import { CLS_TABLE_MULTI_CELL, CLS_TABLE_SEL, CLS_TABLE_SEL_END } from '../../common/constant';
 import { NodeSelection } from '../../selection';
-import { IEditorModel, ITableModel, NotifyArgs, OffsetPosition, ResizeArgs, ITableNotifyArgs } from '../../common/interface';
+import { IEditorModel, ITableModel, NotifyArgs, OffsetPosition, ResizeArgs, ITableNotifyArgs, IItemCollectionArgs } from '../../common/interface';
 import { TABLE_SELECTION_STATE_ALLOWED_ACTIONKEYS } from '../../common/config';
 import { TablePasting } from './table-pasting';
 import { IFrameSettingsModel } from '../../models';
@@ -48,7 +48,7 @@ export class TableCommand {
      *
      * @param {IEditorModel} parent - specifies the parent element
      * @param {ITableModel} tableModel - specifies the table model instance
-     * @param {IFrameSettings} iframeSettings - specifies the table model instance
+     * @param {IFrameSettingsModel} iframeSettings - specifies the table model instance
      * @hidden
      * @deprecated
      */
@@ -127,9 +127,11 @@ export class TableCommand {
             const tableHtml: string = cleanupInternalElements(copyTable.outerHTML, this.tableModel.editorMode);
             try {
                 const htmlBlob: Blob = new Blob([tableHtml], { type: 'text/html' });
+                // eslint-disable-next-line @typescript-eslint/no-explicit-any
                 const clipboardItem: any = new (window as any).ClipboardItem({
                     'text/html': htmlBlob
                 });
+                // eslint-disable-next-line @typescript-eslint/no-explicit-any
                 (navigator as any).clipboard.write([clipboardItem as any]);
             } catch (e) {
                 console.error('Clipboard API not supported in this browser');
@@ -154,8 +156,10 @@ export class TableCommand {
      * preserving their original row and column positions. All non-selected
      * rows and cells are removed. If `isCut` is true, the original cell content
      * is cleared by replacing it with a <br>.
+     *
+     * @hidden
      */
-    private extractSelectedTable(originalTable: HTMLTableElement, isCut: boolean): HTMLTableElement | null {
+    public extractSelectedTable(originalTable: HTMLTableElement, isCut: boolean): HTMLTableElement | null {
         const selectedCells: NodeListOf<HTMLTableCellElement> = originalTable.querySelectorAll('.e-cell-select.e-multi-cells-select');
         if (!selectedCells || selectedCells.length === 0) {
             return null;
@@ -336,6 +340,14 @@ export class TableCommand {
         if (table.classList.contains('ignore-table')) {
             removeClassWithAttr([table], ['ignore-table']);
         }
+        const offsetParent: HTMLElement = this.getOffsetParent(table, this.tableModel.getDocument()) as HTMLElement;
+        if (offsetParent) {
+            const isNestedTable: boolean = offsetParent && (offsetParent.nodeName === 'TD' || offsetParent.nodeName === 'TH');
+            const isMultiCell: boolean = (offsetParent.classList && offsetParent.classList.contains('e-multi-cells-select')) ? true : false;
+            if (isNestedTable && !isMultiCell) {
+                removeClassWithAttr([offsetParent as Element], ['e-cell-select']);
+            }
+        }
         table.querySelector('td').classList.add('e-cell-select');
         if (e.callBack) {
             e.callBack({
@@ -429,12 +441,13 @@ export class TableCommand {
     private insertRow(e: IHtmlItem): void {
         const isBelow: boolean = e.item.subCommand === 'InsertRowBefore' ? false : true;
         this.curTable = closest(this.parent.nodeSelection.range.startContainer.parentElement, 'table') as HTMLTableElement;
+        let focusedCell: HTMLElement | null = null;
         if (this.curTable.querySelectorAll('.e-cell-select').length === 0) {
-            this.addRowWithoutCellSelection();
+            focusedCell = this.addRowWithoutCellSelection();
         } else {
-            this.addRowWithCellSelection(e, isBelow);
+            focusedCell = this.addRowWithCellSelection(e, isBelow);
         }
-        this.updateSelectionAfterRowInsertion(e);
+        this.updateSelectionAfterRowInsertion(focusedCell, e);
         this.executeCallback(e);
     }
 
@@ -442,17 +455,19 @@ export class TableCommand {
      * Adds a new row when no cell is specifically selected.
      * Clones the last row and appends it to the table.
      */
-    private addRowWithoutCellSelection(): void {
+    private addRowWithoutCellSelection(): HTMLTableCellElement | null {
         const lastRow: Element = this.curTable.rows[this.curTable.rows.length - 1];
         const cloneRow: Node = lastRow.cloneNode(true);
         (cloneRow as HTMLElement).removeAttribute('rowspan');
         this.insertAfter(cloneRow as HTMLElement, lastRow);
+        const cells: HTMLCollectionOf<HTMLTableCellElement> = (cloneRow as HTMLTableRowElement).cells;
+        return cells && cells.length > 0 ? cells[0] : null;
     }
 
     /*
      * Adds a new row when a cell is selected, handling rowspan adjustments.
      */
-    private addRowWithCellSelection(e: IHtmlItem, isBelow: boolean): void {
+    private addRowWithCellSelection(e: IHtmlItem, isBelow: boolean): HTMLTableCellElement | null {
         const allCells: HTMLElement[][] = getCorrespondingColumns(this.curTable);
         const minMaxIndex: MinMax = this.getSelectedCellMinMaxIndex(allCells);
         const minVal: number = isBelow ? minMaxIndex.endRow : minMaxIndex.startRow;
@@ -460,6 +475,8 @@ export class TableCommand {
         const isHeaderSelect: boolean = this.curTable.querySelectorAll('th.e-cell-select').length > 0;
         this.createCellsForNewRow(allCells, minVal, isBelow, isHeaderSelect, newRow);
         this.insertNewRowAtPosition(e, isBelow, isHeaderSelect, minVal, newRow);
+        const cells: HTMLCollectionOf<HTMLTableCellElement> = (newRow as HTMLTableRowElement).cells;
+        return cells && cells.length > 0 && minMaxIndex.endColumn < cells.length ? cells[minMaxIndex.endColumn] : null;
     }
 
     /*
@@ -588,14 +605,28 @@ export class TableCommand {
     /*
      * Updates the selection after row insertion.
      */
-    private updateSelectionAfterRowInsertion(e: IHtmlItem): void {
+    private updateSelectionAfterRowInsertion(cell: HTMLElement, e: IHtmlItem): void {
+        if (!cell) {
+            return;
+        }
+        this.clearTableSelections();
+        addClass([cell], CLS_TABLE_SEL);
         e.item.selection.setSelectionText(
             this.tableModel.getDocument(),
-            e.item.selection.range.startContainer,
-            e.item.selection.range.startContainer,
+            cell,
+            cell,
             0,
             0
         );
+    }
+
+    /*
+     * Clears selection state on table cells.
+     */
+    private clearTableSelections(): void {
+        const selectedElements: NodeListOf<HTMLElement> = this.tableModel.getEditPanel().querySelectorAll('.e-cell-select');
+        removeClassWithAttr(selectedElements, CLS_TABLE_SEL);
+        this.removeTableSelection();
     }
 
     /*
@@ -625,16 +656,20 @@ export class TableCommand {
         const curRow: HTMLElement = closest(selectedCell, 'tr') as HTMLElement;
         const allRows: HTMLCollectionOf<HTMLTableRowElement> = (closest(curRow, 'table') as HTMLTableElement).rows;
         const colIndex: number = Array.prototype.slice.call(curRow.querySelectorAll(':scope > td, :scope > th')).indexOf(selectedCell);
-        this.prepareTableForColumnInsertion(e, curRow);
-        this.insertCellsInAllRows(e, allRows, colIndex);
-        this.finalizeColumnInsertion(e, selectedCell);
+        const currentTabElm: Element = closest(curRow, 'table');
+        this.prepareTableForColumnInsertion(e, currentTabElm as HTMLElement);
+        this.insertCellsInAllRows(e, allRows, colIndex, currentTabElm as HTMLElement);
+        const currentCellIndex: number = e.item.subCommand === 'InsertColumnRight' ? colIndex + 1 : colIndex;
+        const focusedCell: HTMLElement = ((curRow as HTMLTableRowElement).cells[currentCellIndex as number]) as HTMLElement;
+        this.clearTableSelections();
+        addClass([focusedCell], CLS_TABLE_SEL);
+        this.finalizeColumnInsertion(e, focusedCell);
     }
 
     /*
      * Prepares the table for column insertion by calculating and storing widths.
      */
-    private prepareTableForColumnInsertion(e: IHtmlItem, curRow: HTMLElement): void {
-        const currentTabElm: Element = closest(curRow, 'table');
+    private prepareTableForColumnInsertion(e: IHtmlItem, currentTabElm: HTMLElement): void {
         const thTdElm: NodeListOf<HTMLElement> = currentTabElm.querySelectorAll('th,td');
 
         for (let i: number = 0; i < thTdElm.length; i++) {
@@ -650,9 +685,9 @@ export class TableCommand {
     /*
      * Inserts new cells in all rows at the specified column index.
      */
-    private insertCellsInAllRows(e: IHtmlItem, allRows: HTMLCollectionOf<HTMLTableRowElement>, colIndex: number): void {
+    private insertCellsInAllRows(e: IHtmlItem, allRows: HTMLCollectionOf<HTMLTableRowElement>, colIndex: number,
+                                 currentTabElm: HTMLElement): void {
         // Get current table to calculate proper column width
-        const currentTabElm: Element = closest(allRows[0], 'table');
         const thTdElm: NodeListOf<HTMLElement> = currentTabElm.querySelectorAll('th,td');
         const currentCellCount: number = allRows[0].querySelectorAll(':scope > td, :scope > th').length;
         const currentWidth: number = parseInt(e.item.width as string, 10) / (currentCellCount + 1);
@@ -895,18 +930,14 @@ export class TableCommand {
         if (selectedCell.nodeType === 3) {
             selectedCell = closest(selectedCell.parentElement, 'td,th') as HTMLElement;
         }
-        const tBodyHeadEle: Element = closest(selectedCell, selectedCell.tagName === 'TH' ? 'thead' : 'tbody');
-        const rowIndex: number = tBodyHeadEle &&
-            Array.prototype.indexOf.call(tBodyHeadEle.childNodes, selectedCell.parentNode);
         this.curTable = closest(selectedCell, 'table') as HTMLTableElement;
-
         // If only one column remains, remove the entire table
         const curRow: HTMLTableRowElement = closest(selectedCell, 'tr') as HTMLTableRowElement;
         if (curRow.querySelectorAll('th,td').length === 1) {
             this.removeEntireTable(e);
         } else {
             insertColGroupWithSizes(this.curTable);
-            const selectedMinMaxIndex: MinMax = this.removeSelectedColumns(e, tBodyHeadEle, rowIndex);
+            const selectedMinMaxIndex: MinMax = this.removeSelectedColumns(e);
             // Update colgroup structure after deletion
             this.updateColgroupAfterColumnDeletion(this.curTable, selectedMinMaxIndex.startColumn, selectedMinMaxIndex.endColumn);
         }
@@ -958,7 +989,7 @@ export class TableCommand {
     /*
      * Removes selected columns, handling colspan adjustments.
      */
-    private removeSelectedColumns(e: IHtmlItem, tBodyHeadEle: Element, rowIndex: number): MinMax {
+    private removeSelectedColumns(e: IHtmlItem): MinMax {
         let deleteIndex: number = -1;
         const allCells: HTMLElement[][] = getCorrespondingColumns(this.curTable);
         const selectedMinMaxIndex: MinMax = this.getSelectedCellMinMaxIndex(allCells);
@@ -969,10 +1000,16 @@ export class TableCommand {
             const currentRow: HTMLElement[] = allCells[i as number];
             for (let j: number = 0; j < currentRow.length; j++) {
                 const currentCell: HTMLElement = currentRow[j as number];
+                // Skip cells that have already been processed
+                if (currentCell.dataset.processed === 'true') {
+                    continue;
+                }
                 const currentCellIndex: number[] = getCorrespondingIndex(currentCell, allCells);
                 const colSpanVal: number = parseInt(currentCell.getAttribute('colspan'), 10) || 1;
 
                 if (this.isCellAffectedByDeletedColumns(currentCellIndex[1], colSpanVal, minCol, maxCol)) {
+                    // Mark as processed
+                    currentCell.dataset.processed = 'true';
                     if (colSpanVal > 1) {
                         this.adjustColspan(currentCell, colSpanVal);
                     } else {
@@ -983,9 +1020,19 @@ export class TableCommand {
                 }
             }
         }
-
-        this.updateSelectionAfterColumnDelete(e, tBodyHeadEle, rowIndex, deleteIndex);
+        this.cleanupProcessedCells();
+        this.updateSelectionAfterColumnDelete(e, selectedMinMaxIndex.startRow, deleteIndex);
         return selectedMinMaxIndex;
+    }
+
+    /*
+     * Cleanup method to remove processing flags from cells
+     */
+    private cleanupProcessedCells(): void {
+        const allTableCells: NodeListOf<Element> = this.curTable.querySelectorAll('td, th');
+        Array.from(allTableCells).forEach((cell: HTMLElement) => {
+            delete cell.dataset.processed;
+        });
     }
 
     /*
@@ -1028,18 +1075,16 @@ export class TableCommand {
      */
     private updateSelectionAfterColumnDelete(
         e: IHtmlItem,
-        tBodyHeadEle: Element,
         rowIndex: number,
         deleteIndex: number
     ): void {
         if (deleteIndex > -1) {
-            const rowHeadEle: Element = tBodyHeadEle && tBodyHeadEle.children[rowIndex as number];
-            const cellIndex: number = deleteIndex <= (rowHeadEle && rowHeadEle.children.length - 1)
+            const rowHeadEle: Element = this.curTable && this.curTable.rows[rowIndex as number];
+            const cellIndex: number = deleteIndex <= (rowHeadEle && this.curTable.rows[rowIndex as number].cells.length - 1)
                 ? deleteIndex
                 : deleteIndex - 1;
 
-            const nextFocusCell: HTMLElement = rowHeadEle &&
-                rowHeadEle.children[cellIndex as number] as HTMLElement;
+            const nextFocusCell: HTMLElement = this.curTable.rows[rowIndex as number].cells[cellIndex as number] as HTMLElement;
 
             if (nextFocusCell) {
                 e.item.selection.setSelectionText(
@@ -1189,8 +1234,8 @@ export class TableCommand {
     private restoreFocusAfterRowDeletion(e: IHtmlItem, deleteIndex: number, colIndex: number): void {
         // Find a suitable row element (either at same index or previous one)
         const focusTrEle: Element = !isNOU(this.curTable.rows[deleteIndex as number])
-            ? this.curTable.querySelectorAll('tbody tr')[deleteIndex as number]
-            : this.curTable.querySelectorAll('tbody tr')[deleteIndex - 1];
+            ? this.curTable.rows[deleteIndex as number]
+            : this.curTable.rows[deleteIndex - 1];
 
         // Find a suitable cell in that row
         const nextFocusCell: HTMLElement = focusTrEle &&
@@ -1241,12 +1286,39 @@ export class TableCommand {
         selectedCell = (selectedCell.nodeType === 3) ? selectedCell.parentNode : selectedCell;
         const selectedTable: HTMLElement = closest(selectedCell.parentElement, 'table') as HTMLElement;
         if (selectedTable) {
+            const elementNextSibling: Node = selectedTable.nextSibling;
             detach(selectedTable);
             e.item.selection.restore();
+            this.focusAfterTableDeletion(elementNextSibling);
         }
         this.executeCallback(e);
     }
-
+    /*
+     * Manages cursor positioning after a table has been deleted
+     * Finds the first content node in the next sibling and positions the cursor appropriately
+     */
+    private focusAfterTableDeletion(elementNextSibling: Node | null): void {
+        if (!elementNextSibling) {
+            return;
+        }
+        const firstPosition: { node: Node; position: number } =
+            this.parent.nodeSelection.findFirstContentNode(elementNextSibling);
+        if (!firstPosition || !firstPosition.node) {
+            return;
+        }
+        if (firstPosition.node.nodeName === 'BR') {
+            const newRange: Range = this.parent.editableElement.ownerDocument.createRange();
+            newRange.setStartBefore(firstPosition.node);
+            newRange.setEndBefore(firstPosition.node);
+            this.parent.nodeSelection.setRange(this.parent.currentDocument, newRange);
+        } else {
+            this.parent.nodeSelection.setCursorPoint(
+                this.parent.currentDocument,
+                firstPosition.node as Element,
+                0
+            );
+        }
+    }
     /*
      * Toggles table header (THEAD) on or off in the selected table.
      * If the table doesn't have a header, one will be created.
@@ -1373,9 +1445,7 @@ export class TableCommand {
      * rowspan/colspan attributes appropriately.
      */
     private cellMerge(e: IHtmlItem): void {
-        if (isNOU(this.curTable)) {
-            this.curTable = closest(this.parent.nodeSelection.range.startContainer.parentElement, 'table') as HTMLTableElement;
-        }
+        this.curTable = closest(this.parent.nodeSelection.range.startContainer.parentElement, 'table') as HTMLTableElement;
         const selectedCells: NodeListOf<Element> = this.curTable.querySelectorAll('.e-cell-select');
         if (selectedCells.length < 2) {
             return;
@@ -1461,14 +1531,18 @@ export class TableCommand {
      * Removes the other cells after merge and cleans up empty rows.
      */
     private cleanupAfterMerge(selectedCells: NodeListOf<Element>): void {
+        const rowsToDelete: HTMLElement[] = [];
         for (let i: number = 1; i < selectedCells.length; i++) {
-            detach(selectedCells[i as number]);
+            rowsToDelete.push(selectedCells[i as number] as HTMLElement);
         }
+        rowsToDelete.forEach((cell: HTMLElement) => detach(cell));
+        const rowsToRemove: HTMLElement[] = [];
         for (let i: number = 0; i < this.curTable.rows.length; i++) {
             if (this.curTable.rows[i as number].innerHTML.trim() === '') {
-                detach(this.curTable.rows[i as number]);
+                rowsToRemove.push(this.curTable.rows[i as number]);
             }
         }
+        rowsToRemove.forEach((row: HTMLElement) => detach(row));
         removeClassWithAttr(this.curTable.querySelectorAll('table td, table th'), 'e-multi-cells-select');
         removeClassWithAttr(this.curTable.querySelectorAll('table td, table th'), 'e-cell-select-end');
     }
@@ -1699,13 +1773,21 @@ export class TableCommand {
     ): void {
         for (let rowIndex: number = min; rowIndex <= max; rowIndex++) {
             for (let colIndex: number = firstIndex; colIndex <= length; colIndex++) {
-                const spanCount: number = parseInt(elements[rowIndex as number][colIndex as number].getAttribute(attr), 10) || 1;
-                if (this.shouldUpdateCellAttribute(elements, rowIndex, colIndex, min, firstIndex, spanCount)) {
-                    const newSpanValue: number = spanCount - index;
-                    this.updateSpanAttribute(elements[rowIndex as number][colIndex as number], attr, newSpanValue);
+                if (elements[rowIndex as number][colIndex as number]) {
+                    // Skip cells that have already been processed
+                    if (elements[rowIndex as number][colIndex as number].dataset.processed === 'true') {
+                        continue;
+                    }
+                    const spanCount: number = parseInt(elements[rowIndex as number][colIndex as number].getAttribute(attr), 10) || 1;
+                    if (this.shouldUpdateCellAttribute(elements, rowIndex, colIndex, min, firstIndex, spanCount)) {
+                        const newSpanValue: number = spanCount - index;
+                        this.updateSpanAttribute(elements[rowIndex as number][colIndex as number], attr, newSpanValue);
+                        elements[rowIndex as number][colIndex as number].dataset.processed = 'true';
+                    }
                 }
             }
         }
+        this.cleanupProcessedCells();
     }
 
     /*
@@ -1869,6 +1951,12 @@ export class TableCommand {
     ): void {
         const topHalfRowspan: number = Math.ceil(currentRowspan / 2);
         const bottomHalfRowspan: number = currentRowspan - topHalfRowspan;
+        if (this.activeCell.style && this.activeCell.style.height) {
+            const originalCellHeight: number = this.activeCell.offsetHeight;
+            const cellHeight: number = originalCellHeight / currentRowspan;
+            this.activeCell.style.height = (cellHeight * topHalfRowspan) + 'px';
+            newCell.style.height = (cellHeight * bottomHalfRowspan) + 'px';
+        }
         this.updateRowspanAttributes(this.activeCell, newCell, topHalfRowspan, bottomHalfRowspan);
         const avgRowIndex: number = activeCellIndex[0] + topHalfRowspan;
         const insertionColIndex: number = this.findInsertionColumnIndex(correspondingCells, avgRowIndex, activeCellIndex[1]);
@@ -1950,10 +2038,20 @@ export class TableCommand {
         correspondingCells: HTMLElement[][],
         newCell: HTMLElement
     ): void {
+        if (this.activeCell.style && this.activeCell.style.height) {
+            const cellHeight: number = this.activeCell.offsetHeight / 2;
+            this.activeCell.style.height = cellHeight + 'px';
+            newCell.style.height = cellHeight + 'px';
+        }
         const newRow: HTMLElement = createElement('tr');
         newRow.appendChild(newCell);
         const selectedRow: HTMLElement[] = correspondingCells[activeCellIndex[0]];
         this.adjustRowspansInRow(selectedRow);
+        if ((this.activeCell.parentNode as HTMLElement).style && (this.activeCell.parentNode as HTMLElement).style.height) {
+            const rowHeight: number = parseFloat((this.activeCell.parentNode as HTMLElement).style.height) / 2;
+            newRow.style.height = rowHeight + '%';
+            (this.activeCell.parentNode as HTMLElement).style.height = rowHeight + '%';
+        }
         (this.activeCell.parentNode as HTMLElement).insertAdjacentElement('afterend', newRow);
     }
 
@@ -2639,14 +2737,8 @@ export class TableCommand {
         }
         const offset: OffsetPosition = elem.getBoundingClientRect();
         const doc: Document = elem.ownerDocument;
-        let offsetParent: Node = elem.offsetParent || doc.documentElement;
+        let offsetParent: Node = this.getOffsetParent(elem, doc);
         let isNestedTable: boolean = false;
-        // Traverse up to find non-static positioned parent
-        while (offsetParent &&
-            (offsetParent === doc.body || offsetParent === doc.documentElement) &&
-            (<HTMLElement>offsetParent).style.position === 'static') {
-            offsetParent = offsetParent.parentNode;
-        }
         // Check for nested table inside TD
         if (offsetParent && offsetParent.nodeName === 'TD' && elem.nodeName === 'TABLE') {
             offsetParent = closest(offsetParent, '.e-rte-content');
@@ -2659,10 +2751,10 @@ export class TableCommand {
         // Adjust position if it's a nested table
         if (isNestedTable) {
             isNestedTable = false;
-            const scrollTop: number = (this.tableModel.getEditPanel()
-                && this.tableModel.getEditPanel().scrollTop) || 0;
-            const scrollLeft: number = (this.tableModel.getEditPanel()
-                && this.tableModel.getEditPanel().scrollLeft) || 0;
+            const scrollElement: HTMLElement = this.iframeSettings.enable ?
+                doc.documentElement : this.tableModel.getEditPanel() as HTMLElement;
+            const scrollTop: number = (scrollElement && scrollElement.scrollTop) || 0;
+            const scrollLeft: number = (scrollElement && scrollElement.scrollLeft) || 0;
             const topValue: number = (scrollTop > 0 ? (scrollTop + offset.top) - parentOffset.top : offset.top - parentOffset.top);
             const leftValue: number = (scrollLeft > 0 ? (scrollLeft + offset.left) - parentOffset.left : offset.left - parentOffset.left);
             return { top: topValue, left: leftValue };
@@ -2679,6 +2771,23 @@ export class TableCommand {
         } else {
             return { top: elem.offsetTop, left: elem.offsetLeft };
         }
+    }
+
+    /*
+     * Finds the appropriate offset parent for an element.
+     * Traverses up the DOM tree to find a non-static positioned parent.
+     */
+    private getOffsetParent(elem: HTMLElement, doc: Document): Node {
+        let offsetParent: Node = elem.offsetParent || doc.documentElement;
+
+        // Traverse up to find non-static positioned parent
+        while (offsetParent &&
+            (offsetParent === doc.body || offsetParent === doc.documentElement) &&
+            (<HTMLElement>offsetParent).style.position === 'static') {
+            offsetParent = offsetParent.parentNode;
+        }
+
+        return offsetParent;
     }
 
     /*
@@ -2819,47 +2928,46 @@ export class TableCommand {
             this.colIndex = dataCol;
             this.columnEle = this.calMaxCol(this.curTable)[this.colIndex] as HTMLTableDataCellElement;
         }
-        this.appendHelper();
+        this.appendHelper(target);
     }
 
     /*
      * Appends a helper element to visualize the resize operation.
      */
-    private appendHelper(): void {
+    private appendHelper(target: HTMLElement): void {
         const cssClass: string = 'e-table-rhelper' + this.tableModel.getCssClass(true);
         this.helper = createElement('div', { className: cssClass });
         if (Browser.isDevice) {
             this.helper.classList.add('e-reicon');
         }
         this.tableModel.getEditPanel().appendChild(this.helper);
-        this.setHelperHeight();
+        this.setHelperHeight(target);
+        this.hideRowColumnAddIcons(target);
     }
 
     /*
      * Sets the position and size of the helper element based on the resize type (column or row).
      */
-    private setHelperHeight(): void {
-        const pos: OffsetPosition = this.calcPos(this.curTable);
+    private setHelperHeight(target: HTMLElement): void {
         // Check if resize button state and helper are available
         if (this.resizeBtnStat && this.resizeBtnStat.column) {
             this.helper.classList.add('e-column-helper');
-            const tableHeight: string = getComputedStyle(this.curTable).height;
-            const columnLeft: number = pos.left + this.calcPos(this.columnEle).left;
-            const offset: number = (this.currentColumnResize === 'last') ? this.columnEle.offsetWidth : 0;
-            const leftPosition: number = columnLeft + offset - 1;
+            const tableHeight: string = target.style.height;
+            const columnLeft: number = parseFloat(target.style.left) + 0.5;
+            const top: string = target.style.top;
             (this.helper as HTMLElement).style.cssText =
                 'height: ' + tableHeight + '; ' +
-                'top: ' + pos.top + 'px; ' +
-                'left: ' + leftPosition + 'px;';
+                'top: ' + top + '; ' +
+                'left: ' + columnLeft + 'px;';
         } else {
             this.helper.classList.add('e-row-helper');
-            const tableWidth: string = getComputedStyle(this.curTable).width;
-            const rowTop: number = this.calcPos(this.rowEle).top + pos.top + (this.rowEle as HTMLElement).offsetHeight - 1;
-            const rowLeft: number = this.calcPos(this.rowEle).left + pos.left;
+            const tableWidth: string = target.style.width;
+            const rowTop: number = parseFloat(target.style.top) - 0.5;
+            const rowLeft: string = target.style.left;
             (this.helper as HTMLElement).style.cssText =
                 'width: ' + tableWidth + '; ' +
                 'top: ' + rowTop + 'px; ' +
-                'left: ' + rowLeft + 'px;';
+                'left: ' + rowLeft + ';';
         }
     }
 
@@ -2870,11 +2978,13 @@ export class TableCommand {
         if (!this.helper) {
             return;
         }
-        const pos: OffsetPosition = this.calcPos(this.curTable);
+        let pos: OffsetPosition = this.calcPos(this.curTable);
+        pos = this.adjustPositionForScrollbar(pos, this.curTable);
         // Check if the current operation is a column resize
         if (this.resizeBtnStat && this.resizeBtnStat.column) {
-            const columnLeft: number = pos.left + this.calcPos(this.columnEle as HTMLElement).left;
-            const offset: number = (this.currentColumnResize === 'last') ? this.columnEle.offsetWidth : 0;
+            const columnLeft: number = pos.left + this.calcPos(this.columnEle as HTMLElement).left +
+                (this.tableModel.enableRtl ? this.columnEle.getBoundingClientRect().width : 0);
+            const offset: number = (this.currentColumnResize === 'last' && !this.tableModel.enableRtl) ? this.columnEle.offsetWidth : 0;
             const left: number = columnLeft + offset - 1;
             this.helper.style.left = left + 'px';
             this.helper.style.height = this.curTable.offsetHeight + 'px';
@@ -2882,6 +2992,7 @@ export class TableCommand {
             // Handle row resize
             const rowTop: number = this.calcPos(this.rowEle).top + pos.top + (this.rowEle as HTMLElement).offsetHeight - 1;
             this.helper.style.top = rowTop + 'px';
+            this.helper.style.width = this.curTable.offsetWidth + 'px';
         }
     }
 
@@ -2893,7 +3004,7 @@ export class TableCommand {
         const dataRow: number = parseInt(dataRowAttr, 10);
         this.rowEle = this.curTable.rows[dataRow as number] as HTMLTableRowElement;
         this.resizeBtnStat.row = true;
-        this.appendHelper();
+        this.appendHelper(target);
     }
 
     /**
@@ -2945,8 +3056,13 @@ export class TableCommand {
             this.removeHelper(e as MouseEvent);
             this.cancelResizeAction();
         }
-        if (!isResizing &&
-            (target.nodeName === 'TABLE' || target.nodeName === 'TD' || target.nodeName === 'TH')) {
+        if (!this.isTableNode(target)) {
+            const closestCell: Element = closest(target, 'td, th');
+            if (closestCell) {
+                target = closestCell as HTMLElement;
+            }
+        }
+        if (!isResizing && this.isTableNode(target)) {
             if (closestTable && editPanel.contains(closestTable) &&
                 (target.nodeName === 'TD' || target.nodeName === 'TH')) {
                 this.curTable = closestTable as HTMLTableElement;
@@ -2955,6 +3071,135 @@ export class TableCommand {
             }
             this.removeResizeElement();
             this.tableResizeEleCreation(this.curTable, e as PointerEvent);
+            this.handleRowColumnAddIcon(target, this.curTable);
+        } else {
+            this.hideRowColumnAddIcons(target);
+        }
+    }
+
+    /*
+     * Checks if the given DOM node is a table-related element.
+     * Specifically, it returns true if the node is a TABLE, TD, or TH element
+     */
+    private isTableNode(ele: HTMLElement): boolean {
+        return ele.nodeName === 'TABLE' || ele.nodeName === 'TD' || ele.nodeName === 'TH';
+    }
+
+    /*
+     * Handles the row/column add icon functionality.
+     */
+    private handleRowColumnAddIcon(target: HTMLElement, table: HTMLTableElement): void {
+        if (!target || target.nodeName === 'TABLE') {
+            return;
+        }
+
+        const rowSpan: number = this.getAttributeValue(target, 'rowspan', 1);
+        const colSpan: number = this.getAttributeValue(target, 'colspan', 1);
+        const allCells: HTMLElement[][] = getCorrespondingColumns(table);
+
+        const selectedCellPosition: number[] = getCorrespondingIndex(target, allCells);
+        if (selectedCellPosition.length < 2) {
+            return;
+        }
+
+        const rowIndex: number = selectedCellPosition[0] + (rowSpan - 1);
+        const cellIndex: number = selectedCellPosition[1];
+
+        if (rowIndex !== 0 && cellIndex !== 0) {
+            return;
+        }
+
+        this.updateRowInsertIcons(rowIndex, rowSpan);
+        this.updateColumnInsertIcons(cellIndex, colSpan);
+    }
+
+    /*
+     * Gets the numeric value of an attribute with a fallback default value.
+     */
+    private getAttributeValue(element: HTMLElement, attributeName: string, defaultValue: number): number {
+        if (!element.hasAttribute(attributeName)) {
+            return defaultValue;
+        }
+        const attrValue: string | null = element.getAttribute(attributeName);
+        return attrValue ? parseInt(attrValue, 10) : defaultValue;
+    }
+
+    /*
+     * Creates a dot icon element with specified classes.
+     */
+    private createIcon(className: string): HTMLElement {
+        const insertDotIcon: HTMLElement = createElement('span', {
+            attrs: {
+                'unselectable': 'on',
+                'contenteditable': 'false'
+            },
+            className: 'e-icons ' + className
+        });
+
+        return insertDotIcon;
+    }
+
+    /*
+     * Updates row insert icons for the selected cell.
+     */
+    private updateRowInsertIcons(rowIndex: number, rowSpan: number): void {
+        const editPanel: HTMLElement = this.tableModel.getEditPanel() as HTMLElement;
+
+        for (let index: number = 0; index <= rowSpan; index++) {
+            const selector: string = `.e-rte-table-resize.e-tb-row-insert[data-row="${rowIndex - index}"]`;
+            const rowInsertIcon: HTMLElement | null = editPanel.querySelector(selector);
+            this.updateInsertIcon(rowInsertIcon);
+        }
+    }
+
+    /*
+     * Updates column insert icons for the selected cell.
+     */
+    private updateColumnInsertIcons(cellIndex: number, colSpan: number): void {
+        const editPanel: HTMLElement = this.tableModel.getEditPanel() as HTMLElement;
+        for (let index: number = 0; index <= colSpan; index++) {
+            const selector: string = `.e-rte-table-resize.e-tb-col-insert[data-col="${cellIndex + index}"]`;
+            const colInsertIcon: HTMLElement | null = editPanel.querySelector(selector);
+            this.updateInsertIcon(colInsertIcon);
+        }
+    }
+
+    /*
+     * Updates an insert icon by adding a dot and setting opacity.
+     */
+    private updateInsertIcon(insertIcon: HTMLElement | null): void {
+        if (!insertIcon) {
+            return;
+        }
+        const className: string = this.tableModel.enableRtl ? 'e-circle e-insert-cell-rtl' : 'e-circle';
+        const insertDotIcon: HTMLElement = this.createIcon(className);
+        insertIcon.appendChild(insertDotIcon);
+        insertIcon.style.opacity = '1';
+    }
+
+    /*
+     * Hides the table resize icons by setting their opacity to 0.
+     */
+    private hideRowColumnAddIcons(target: HTMLElement): void {
+        if (!target || !target.classList || target.classList.contains('e-circle-add') || target.classList.contains('e-rte-table-resize') &&
+            !this.tableModel.getEditPanel().contains(this.helper)) {
+            return;
+        }
+
+        const editPanel: HTMLElement = this.tableModel.getEditPanel() as HTMLElement;
+        if (editPanel.querySelectorAll('.e-rte-table-resize .e-icons.e-circle-add').length > 0) {
+            this.removeResizeElement();
+        } else {
+            const allIconElements: NodeListOf<Element> = editPanel.querySelectorAll('.e-rte-table-resize .e-icons.e-circle');
+
+            allIconElements.forEach((element: Element): void => {
+                const parentElement: HTMLElement | null = element.parentElement as HTMLElement;
+
+                if (parentElement) {
+                    parentElement.style.opacity = '0';
+                    detach(element);
+                }
+            });
         }
     }
 
@@ -2976,6 +3221,7 @@ export class TableCommand {
                 rzBox.classList.remove('e-hide');
             }
             if (!Browser.isDevice) {
+                EventHandler.remove(this.tableModel.getEditPanel(), 'mouseover', this.resizeHelper);
                 EventHandler.add(this.tableModel.getEditPanel(), 'mouseover', this.resizeHelper, this);
             }
             this.removeResizeElement();
@@ -3030,14 +3276,29 @@ export class TableCommand {
      * @private
      */
     public removeResizeElement(): void {
-        const selector: string = '.e-column-resize, .e-row-resize, .e-table-box, .e-table-rhelper';
+        const selector: string = '.e-column-resize, .e-row-resize, .e-table-box, .e-table-rhelper, .e-tb-col-insert, .e-tb-row-insert';
         const editPanel: Element = this.tableModel.getEditPanel();
         const items: NodeListOf<Element> = editPanel.querySelectorAll(selector);
         if (items && items.length > 0) {
             for (let i: number = 0; i < items.length; i++) {
-                if (items[i as number]) {
+                const item: Element = items[i as number];
+                if (item) {
+                    if (item.classList && (item.classList.contains('e-tb-col-insert') || item.classList.contains('e-tb-row-insert'))) {
+                        const circleAdd: HTMLElement = item.querySelector('.e-circle-add');
+                        if (circleAdd) {
+                            EventHandler.remove(circleAdd, 'mousedown', this.handleIconMouseDown);
+                        }
+                        this.removeInsertIconEvents(item as HTMLElement);
+                    }
                     detach(items[i as number] as Element);
                 }
+            }
+        }
+        const lastChild: Node = this.parent.editableElement ? this.parent.editableElement.lastChild : null;
+        if (lastChild && lastChild.nodeName === 'P') {
+            removeClass([lastChild as HTMLElement], ['e-rte-last-paragraph']);
+            if ((lastChild as HTMLElement).classList.length === 0) {
+                (lastChild as HTMLElement).removeAttribute('class');
             }
         }
     }
@@ -3069,12 +3330,65 @@ export class TableCommand {
         this.tableModel.preventDefaultResize(e);
         const columns: HTMLTableDataCellElement[] = this.calMaxCol(this.curTable);
         const rows: HTMLElement[] = this.getTableRowsWithoutRowspan(table);
-        const height: number = parseInt(getComputedStyle(table).height, 10) || 0;
-        const width: number = parseInt(getComputedStyle(table).width, 10) || 0;
-        const pos: OffsetPosition = this.calcPos(table);
-        this.createColumnResizers(columns, height, pos);
-        this.createRowResizers(rows, table, width, pos);
+        const height: number = parseFloat(getComputedStyle(table).height) || 0;
+        const width: number = parseFloat(getComputedStyle(table).width) || 0;
+        const lastChild: Node = this.parent.editableElement ? this.parent.editableElement.lastChild : null;
+        // Applied a specific class to the last paragraph element in the editor to remove its bottom margin.
+        if (lastChild && lastChild.nodeName === 'P') {
+            addClass([lastChild as HTMLElement], ['e-rte-last-paragraph']);
+        }
+        let pos: OffsetPosition = this.calcPos(table);
+        pos = this.adjustPositionForScrollbar(pos, table);
+        const allCells: HTMLElement[][] = getCorrespondingColumns(table);
+        this.createColumnResizers(columns, height, pos, allCells);
+        this.createRowResizers(rows, table, width, pos, allCells);
         this.createResizeBox(columns.length, pos, width, height);
+    }
+
+    /*
+     * Adjusts position coordinates when scrollbars are present in the editor.
+     */
+    private adjustPositionForScrollbar(pos: OffsetPosition, table: HTMLTableElement): OffsetPosition {
+        if (!this.tableModel.enableRtl) {
+            return pos;
+        }
+
+        if (this.iframeSettings.enable) {
+            const doc: Document = this.tableModel.getDocument();
+            if (!doc || !doc.defaultView || !doc.body || !doc.body.id) {
+                return pos;
+            }
+            const offsetParent: Node = this.getOffsetParent(table, doc);
+            const isNestedTable: boolean = offsetParent && offsetParent.nodeName === 'TD' && table.nodeName === 'TABLE';
+
+            if (!isNestedTable) {
+                return pos;
+            }
+
+            const parentWindow: Window = doc.defaultView.parent && doc.defaultView.parent.window;
+            const parentDoc: Document = parentWindow && parentWindow.document;
+            const editorId: string = doc.body.id.replace('-edit', '');
+
+            if (parentDoc && editorId) {
+                const editorElement: HTMLElement = parentDoc.querySelector('#' + editorId) as HTMLElement;
+                if (editorElement) {
+                    const scrollbarWidth: number = editorElement.clientWidth - doc.body.clientWidth;
+                    if (scrollbarWidth > 0) {
+                        pos.left -= scrollbarWidth;
+                    }
+                }
+            }
+        } else {
+            const editableElement: HTMLElement = this.tableModel.getEditPanel() as HTMLElement;
+            if (editableElement) {
+                const scrollbarWidth: number = editableElement.offsetWidth - editableElement.clientWidth;
+                if (scrollbarWidth > 0 && this.tableModel.enableRtl) {
+                    pos.left -= scrollbarWidth;
+                }
+            }
+        }
+
+        return pos;
     }
 
     /*
@@ -3238,7 +3552,7 @@ export class TableCommand {
             }
             if (!isNOU(tableReBox)) {
                 tableReBox.style.cssText = 'top: ' + (this.calcPos(this.curTable).top + tableHeight - 4) +
-                    'px; left:' + (this.calcPos(this.curTable).left + tableWidth - 4) + 'px;';
+                    'px; left:' + (this.calcPos(this.curTable).left + (this.tableModel.enableRtl ? 0 : tableWidth) - 4) + 'px;';
             }
             this.updateHelper();
         } else if (this.resizeBtnStat.tableBox) {
@@ -3252,7 +3566,7 @@ export class TableCommand {
             if (!isNOU(tableReBox)) {
                 tableReBox.classList.add('e-rbox-select');
                 tableReBox.style.cssText = 'top: ' + (this.calcPos(this.curTable).top + parseInt(getComputedStyle(this.curTable).height, 10) - 4) +
-                    'px; left:' + (this.calcPos(this.curTable).left + tableWidth - 4) + 'px;';
+                    'px; left:' + (this.calcPos(this.curTable).left + (this.tableModel.enableRtl ? 0 : tableWidth) - 4) + 'px;';
             }
             if (this.curTable.closest('li')) {
                 widthCompare = this.curTable.closest('li').offsetWidth;
@@ -3302,47 +3616,349 @@ export class TableCommand {
     /*
      * Creates column resizer handles.
      */
-    private createColumnResizers(columns: HTMLTableDataCellElement[], height: number, pos: OffsetPosition): void {
+    private createColumnResizers(columns: HTMLTableDataCellElement[], height: number, pos: OffsetPosition,
+                                 allCells: HTMLElement[][]): void {
+        const isRTL: boolean = this.tableModel.enableRtl;
+        let leftOffset: number = pos.left;
+        if (isRTL) {
+            for (let i: number = 0; i < columns.length; i++) {
+                leftOffset = leftOffset + (columns[i as number] as HTMLTableDataCellElement).getBoundingClientRect().width;
+            }
+        }
         for (let i: number = 0; i <= columns.length; i++) {
             const colReEle: HTMLElement = createElement('span', {
                 attrs: { 'data-col': i.toString(), 'unselectable': 'on', 'contenteditable': 'false' }
             });
             colReEle.classList.add(EVENTS.CLS_RTE_TABLE_RESIZE, EVENTS.CLS_TB_COL_RES);
-            let colPos: number = 0;
-            if (i === columns.length) {
-                const prevCol: HTMLTableDataCellElement = columns[i - 1] as HTMLTableDataCellElement;
-                const isMultiCell: boolean = (prevCol && prevCol.classList && prevCol.classList.contains('e-multi-cells-select')) ? true : false;
-                const leftOffset: number = isMultiCell ? 0 : pos.left;
-                colPos = leftOffset + this.calcPos(prevCol).left + prevCol.offsetWidth - 2;
-            } else {
-                const curCol: HTMLTableDataCellElement = columns[i as number] as HTMLTableDataCellElement;
-                const isMultiCell: boolean = (curCol && curCol.classList && curCol.classList.contains('e-multi-cells-select')) ? true : false;
-                const leftOffset: number = isMultiCell ? 0 : pos.left;
-                colPos = leftOffset + this.calcPos(curCol).left - 2;
+            if (i !== 0) {
+                const curCol: HTMLTableDataCellElement = columns[i as number - 1] as HTMLTableDataCellElement;
+                leftOffset = leftOffset + (isRTL ? -curCol.getBoundingClientRect().width : curCol.getBoundingClientRect().width);
             }
-            colReEle.style.cssText = 'height:' + height + 'px;width:4px;top:' + pos.top + 'px;left:' + colPos + 'px;';
+            colReEle.style.cssText = 'height:' + height + 'px;width:4px;top:' + pos.top + 'px;left:' + (leftOffset - 1.5) + 'px;';
             this.tableModel.getEditPanel().appendChild(colReEle);
+
+            if (i !== 0 && (i === columns.length || allCells[0][i as number] !==  allCells[0][i - 1])) {
+                // Create insertion icon
+                this.createTableInsertIcon({
+                    index: i,
+                    top: pos.top,
+                    left: leftOffset,
+                    cellType: 'column',
+                    allCells,
+                    isRTL: isRTL
+                });
+            }
         }
+    }
+
+    /*
+     * Creates insertion icons for table columns or rows.
+     */
+    private createTableInsertIcon(config: InsertIconConfig): void {
+        const isColumn: boolean = config.cellType === 'column';
+        const dataAttr: string = isColumn ? 'data-col' : 'data-row';
+        const cssClass: string = isColumn ? EVENTS.CLS_TB_COL_INSERT : EVENTS.CLS_TB_ROW_INSERT;
+        const resizeClass: string = isColumn ? 'e-column-resize' : 'e-row-resize';
+        const helperClass: string = isColumn ? 'e-column-helper' : 'e-row-helper';
+        // Create the icon element
+        const insertIcon: HTMLElement = createElement('span', {
+            attrs: {
+                [dataAttr]: config.index.toString(),
+                'unselectable': 'on',
+                'contenteditable': 'false'
+            }
+        });
+        insertIcon.classList.add(EVENTS.CLS_RTE_TABLE_RESIZE, cssClass);
+        if (config.isRTL) {
+            insertIcon.classList.add('e-insert-cell-rtl');
+        }
+        // Set positioning based on type
+        const posLeft: number = isColumn ? config.left - 12.5 : config.left - 14.3;
+        const posTop: number = isColumn ? config.top - 14.3 : config.top - 11.5;
+        const posStyles: string = `left:${posLeft}px;top:${posTop}px;`;
+        insertIcon.style.cssText = insertIcon.style.cssText + posStyles;
+
+        this.attachInsertIconEvents(
+            insertIcon,
+            dataAttr,
+            resizeClass,
+            helperClass,
+            config.allCells,
+            config.isRTL
+        );
+    }
+
+    /*
+     * Attaches event handlers to the insert icon.
+     */
+    private attachInsertIconEvents(
+        insertIcon: HTMLElement,
+        dataAttr: string,
+        resizeClass: string,
+        helperClass: string,
+        allCells: HTMLElement[][],
+        isRTL: boolean
+    ): void {
+        EventHandler.add(insertIcon, 'mouseover', this.handleIconMouseOver.bind(this, insertIcon, dataAttr, resizeClass, helperClass, isRTL, allCells), this);
+        EventHandler.add(insertIcon, 'mouseout', this.handleIconMouseOut.bind(this, insertIcon), this);
+
+        const editPanel: Element = this.tableModel.getEditPanel();
+        if (editPanel) {
+            editPanel.appendChild(insertIcon);
+        }
+    }
+
+    /*
+    * Handles the mouseover event for insert icons
+    */
+    private handleIconMouseOver(
+        insertIcon: HTMLElement,
+        dataAttr: string,
+        resizeClass: string,
+        helperClass: string,
+        isRTL: boolean,
+        allCells: HTMLElement[][]
+    ): void {
+        const dotIconElement: HTMLElement | null = insertIcon.querySelector('.e-circle') as HTMLElement;
+
+        if (dotIconElement && dotIconElement.classList && dotIconElement.classList.contains('e-circle')) {
+            detach(dotIconElement);
+            insertIcon.style.cursor = this.isResizeBind ? 'pointer' : '';
+
+            if (this.isResizeBind) {
+                this.handleInsertIconHover(insertIcon, dataAttr, resizeClass, helperClass, isRTL, allCells);
+            }
+        }
+    }
+
+    /*
+     * Handles the mouseout event for insert icons
+     */
+    private handleIconMouseOut(
+        insertIcon: HTMLElement,
+        e: MouseEvent
+    ): void {
+        const relatedTarget: Node | null = e.relatedTarget as Node;
+
+        if (relatedTarget &&
+            !insertIcon.contains(relatedTarget) &&
+            insertIcon.style.opacity === '1') {
+            this.removeResizeElement();
+        }
+    }
+
+    /*
+     * Handles the mousedown event for insert icons
+     */
+    private handleIconMouseDown(
+        insertIcon: HTMLElement,
+        dataAttr: string,
+        allCells: HTMLElement[][],
+        e: MouseEvent
+    ): void {
+        if (!e || !this.parent || !this.parent.undoRedoManager) {
+            return;
+        }
+
+        e.preventDefault();
+        e.stopPropagation();
+
+        this.removeResizeElement();
+        this.parent.undoRedoManager.saveData();
+
+        const isColumn: boolean = dataAttr === 'data-col';
+        const attrValue: string | null = insertIcon.getAttribute(dataAttr);
+        const indexValue: number = attrValue ? parseInt(attrValue, 10) : -1;
+
+        if (indexValue < 0 || !allCells) {
+            return;
+        }
+
+        const cellType: string = isColumn ? 'column' : 'row';
+        this.insertTableElement(cellType, indexValue, allCells);
+    }
+
+    /*
+     * Removes all event handlers from an insert icon
+     */
+    private removeInsertIconEvents(insertIcon: HTMLElement): void {
+        if (insertIcon) {
+            EventHandler.remove(insertIcon, 'mouseover', this.handleIconMouseOver);
+            EventHandler.remove(insertIcon, 'mouseout', this.handleIconMouseOut);
+        }
+    }
+
+    /*
+     * Handles hover state changes for insertion icons
+     */
+    private handleInsertIconHover(
+        insertIcon: HTMLElement,
+        dataAttr: string,
+        resizeClass: string,
+        helperClass: string,
+        isRTL: boolean,
+        allCells: HTMLElement[][]
+    ): void {
+        const className: string = isRTL ? 'e-circle-add e-insert-cell-rtl' : 'e-circle-add';
+        const plusIcon: HTMLElement = this.createIcon(className);
+        EventHandler.add(plusIcon, 'mousedown', this.handleIconMouseDown.bind(this, insertIcon, dataAttr, allCells), this);
+        insertIcon.appendChild(plusIcon);
+        // Update icon styles
+        insertIcon.style.opacity = '1';
+
+        // Get the resize element
+        const attrValue: string = insertIcon.getAttribute(dataAttr);
+        const selectorClasses: string = `e-rte-table-resize.${resizeClass}`;
+        const selector: string = `span[${dataAttr}="${attrValue}"].${selectorClasses}`;
+
+        const editPanel: HTMLElement = this.tableModel.getEditPanel() as HTMLElement;
+        const resizeElement: HTMLElement | null = editPanel.querySelector(selector) as HTMLElement;
+        if (!resizeElement) {
+            return;
+        }
+
+        resizeElement.classList.add('e-table-rhelper', helperClass);
+        resizeElement.classList.remove('e-rte-table-resize', resizeClass);
+        resizeElement.style.backgroundColor = '';
+
+        if (dataAttr === 'data-row') {
+            this.applyRowResizeStyles(resizeElement, isRTL);
+        } else {
+            this.applyColumnResizeStyles(resizeElement);
+        }
+    }
+
+    /*
+     * Applies styles for row resize elements.
+     */
+    private applyRowResizeStyles(element: HTMLElement, isRTL: boolean): void {
+        element.style.height = '2px';
+
+        if (!isRTL) {
+            const currentWidth: number = this.parseNumericStyle(element.style.width);
+            element.style.width = (currentWidth - 0.5) + 'px';
+            const currentLeft: number = this.parseNumericStyle(element.style.left);
+            element.style.left = (currentLeft + 0.5) + 'px';
+        }
+
+        const currentTop: number = this.parseNumericStyle(element.style.top);
+        element.style.top = (currentTop + 1) + 'px';
+    }
+
+    /**
+     * Applies styles for column resize elements.
+     *
+     * @param {HTMLElement} element - The element to style.
+     * @returns {void}
+     */
+    private applyColumnResizeStyles(element: HTMLElement): void {
+        element.style.width = '2px';
+        const currentHeight: number = this.parseNumericStyle(element.style.height);
+        element.style.height = (currentHeight - 0.5) + 'px';
+
+        const currentTop: number = this.parseNumericStyle(element.style.top);
+        element.style.top = (currentTop + 0.5) + 'px';
+
+        const currentLeft: number = this.parseNumericStyle(element.style.left);
+        element.style.left = (currentLeft + 1) + 'px';
+    }
+
+    /*
+     * Safely parses a CSS numeric value.
+     */
+    private parseNumericStyle(value: string): number {
+        if (!value) {
+            return 0;
+        }
+
+        const parsed: number = parseFloat(value);
+        return isNaN(parsed) ? 0 : parsed;
+    }
+
+    /*
+     * Generic method to insert a row or column at a specified index.
+     */
+    private insertTableElement(cellType: string, index: number, allCells: HTMLElement[][]): void {
+        if (!this.curTable || index < 0) {
+            return;
+        }
+
+        let subCommand: string;
+        if (cellType === 'column') {
+            subCommand = 'InsertColumnLeft';
+            if (index === allCells[0].length) {
+                subCommand = 'InsertColumnRight';
+                index = index - 1;
+            }
+        } else { // row
+            subCommand = 'InsertRowAfter';
+        }
+
+        const docElement: Document = this.tableModel.getDocument();
+        const targetCell: Element = cellType === 'column' ? allCells[0][index as number] : allCells[index as number][0];
+        this.parent.nodeSelection.setCursorPoint(docElement, targetCell, 0);
+
+        if (cellType === 'row') {
+            this.clearTableSelections();
+            addClass([targetCell], CLS_TABLE_SEL);
+        }
+
+        const range: Range = this.parent.nodeSelection.getRange(docElement);
+        const selection: NodeSelection = this.parent.nodeSelection.save(range, docElement);
+
+        const event: IHtmlItem = {
+            item: {
+                selection: selection,
+                subCommand: subCommand,
+                width: this.tableModel.tableSettings.width
+            } as IItemCollectionArgs,
+            callBack: null,
+            subCommand: '',
+            value: '',
+            selector: ''
+        };
+
+        if (cellType === 'column') {
+            this.insertColumn(event);
+        } else {
+            this.insertRow(event);
+        }
+
+        this.parent.undoRedoManager.saveData();
+        this.tableModel.enableUndo();
     }
 
     /*
      * Creates row resizer handles.
      */
-    private createRowResizers(rows: Element[], table: HTMLTableElement, width: number, pos: OffsetPosition): void {
+    private createRowResizers(rows: HTMLElement[], table: HTMLTableElement, width: number, pos: OffsetPosition,
+                              allCells: HTMLElement[][]): void {
         for (let i: number = 0; i < rows.length; i++) {
             const row: Element = rows[i as number] as HTMLElement;
             const rowReEle: HTMLElement = createElement('span', {
                 attrs: { 'data-row': i.toString(), 'unselectable': 'on', 'contenteditable': 'false' }
             });
             rowReEle.classList.add(EVENTS.CLS_RTE_TABLE_RESIZE, EVENTS.CLS_TB_ROW_RES);
-            const hasCellSpacing: boolean = table.getAttribute('cellspacing') !== null && table.getAttribute('cellspacing') !== '';
+            const hasCellSpacing: boolean = !isNOU(table.getAttribute('cellspacing')) || table.getAttribute('cellspacing') !== '';
             const rowPosLeft: number = hasCellSpacing ? 0 : this.calcPos(row as HTMLElement).left;
             const isMultiCell: boolean = (row.classList && row.classList.contains('e-multi-cells-select')) ? true : false;
             const topPos: number = this.calcPos(row as HTMLElement).top + (isMultiCell ? 0 :
-                pos.top) + (row as HTMLElement).offsetHeight - 2;
+                pos.top) + (row as HTMLElement).getBoundingClientRect().height - 1.5;
             rowReEle.style.cssText = 'width:' + width + 'px;height:4px;top:' + topPos + 'px;left:' + (rowPosLeft + pos.left) + 'px; z-index: 2';
             rowReEle.style.cssText = 'width:' + width + 'px;height:4px;top:' + topPos + 'px;left:' + (rowPosLeft + pos.left) + 'px;';
             this.tableModel.getEditPanel().appendChild(rowReEle);
+
+            if ((i + 1) === rows.length || allCells[i as number][0] !== allCells[i + 1][0]) {
+                // Create insertion icon
+                this.createTableInsertIcon({
+                    index: i,
+                    top: topPos,
+                    left: this.tableModel.enableRtl ? (width + rowPosLeft + pos.left) : (rowPosLeft + pos.left),
+                    cellType: 'row',
+                    allCells,
+                    isRTL: this.tableModel.enableRtl
+                });
+            }
         }
     }
 
@@ -3354,6 +3970,7 @@ export class TableCommand {
             className: EVENTS.CLS_TB_BOX_RES + this.tableModel.getCssClass(true),
             attrs: { 'data-col': colCount.toString(), 'unselectable': 'on', 'contenteditable': 'false' }
         });
+        width = this.tableModel.enableRtl ? 0 : width;
         tableReBox.style.cssText = 'top:' + (pos.top + height - 4) + 'px;left:' + (pos.left + width - 4) + 'px;';
         if (Browser.isDevice) {
             tableReBox.classList.add('e-rmob');
@@ -3440,6 +4057,7 @@ export class TableCommand {
      */
     private clearSelectionState(element: HTMLElement): void {
         removeClassWithAttr([element], CLS_TABLE_SEL);
+        this.removeCellSelectClasses();
         this.removeTableSelection();
     }
 
@@ -3511,11 +4129,14 @@ export class TableCommand {
     public tabSelection(event: KeyboardEvent, selection: NodeSelection, ele: HTMLElement): void {
         this.cleanTableRows(ele);
         this.previousTableElement = ele;
-        if (this.shouldSkipTabNavigation(event, selection)) {
+        const hasInsideList: boolean = this.insideList(selection.range);
+        if (!hasInsideList) {
+            this.clearSelectionState(ele);
+        }
+        if (this.shouldSkipTabNavigation(event) || hasInsideList) {
             return;
         }
         event.preventDefault();
-        this.clearSelectionState(ele);
         // Forward navigation (Tab)
         if (!event.shiftKey && event.keyCode !== 37) {
             this.handleForwardTabNavigation(ele, selection, event);
@@ -3556,8 +4177,8 @@ export class TableCommand {
     /*
      * Determines if tab navigation should be skipped
      */
-    private shouldSkipTabNavigation(event: KeyboardEvent, selection: NodeSelection): boolean {
-        return (event.keyCode === 37 || event.keyCode === 39) || this.insideList(selection.range);
+    private shouldSkipTabNavigation(event: KeyboardEvent): boolean {
+        return (event.keyCode === 37 || event.keyCode === 39);
     }
 
     /*
@@ -4759,6 +5380,7 @@ export class TableCommand {
         }
         EventHandler.remove(this.curTable, 'mousemove', this.tableMouseMove);
         EventHandler.remove(this.tableModel.getDocument(), 'mouseup', this.tableMouseUp);
+        EventHandler.remove(this.tableModel.getDocument(), 'dragend', this.tableMouseUp);
         EventHandler.remove(this.curTable, 'mouseleave', this.tableMouseLeave);
     }
 
@@ -4893,6 +5515,7 @@ export class TableCommand {
         }
         EventHandler.add(this.curTable, 'mousemove', this.tableMouseMove, this);
         EventHandler.add(this.tableModel.getDocument(), 'mouseup', this.tableMouseUp, this);
+        EventHandler.add(this.tableModel.getDocument(), 'dragend', this.tableMouseUp, this);
         EventHandler.add(this.curTable, 'mouseleave', this.tableMouseLeave, this);
     }
 
@@ -4938,11 +5561,10 @@ export class TableCommand {
     /**
      * Handles mouse leave event on table cell to reset selection.
      *
-     * @param {MouseEvent} [e] - The mouse event.
      * @returns {void} - Does not return a value.
      * @public
      */
-    public tableCellLeave(e?: MouseEvent): void {
+    public tableCellLeave(): void {
         removeClassWithAttr(this.dlgDiv.querySelectorAll('.e-rte-tablecell'), 'e-active');
         const firstCell: Element = this.dlgDiv.querySelector('.e-rte-tablecell');
         if (firstCell) {
@@ -4974,7 +5596,7 @@ export class TableCommand {
             if (!isNOU(tableReBox)) {
                 const tablePosition: OffsetPosition = this.calcPos(this.curTable);
                 tableReBox.style.cssText = 'top: ' + (tablePosition.top + parseInt(getComputedStyle(this.curTable).height, 10) - 4) +
-                    'px; left:' + (tablePosition.left + parseInt(getComputedStyle(this.curTable).width, 10) - 4) + 'px;';
+                    'px; left:' + (tablePosition.left + (this.tableModel.enableRtl ? 0 : parseInt(getComputedStyle(this.curTable).width, 10)) - 4) + 'px;';
             }
         }
     }
@@ -5016,4 +5638,14 @@ class MinMax {
      * @type {number}
      */
     public endColumn: number;
+}
+
+/** Interface for table insertion icon configuration */
+interface InsertIconConfig {
+    index: number;
+    top: number;
+    left: number;
+    cellType: 'row' | 'column';
+    allCells: HTMLElement[][];
+    isRTL: boolean;
 }

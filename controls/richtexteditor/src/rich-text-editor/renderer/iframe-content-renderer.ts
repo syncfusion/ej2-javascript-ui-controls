@@ -87,7 +87,7 @@ export class IframeContentRender extends ContentRender {
         }
         body.id = this.parent.getID() + '_rte-edit-view';
         if (rteObj.enableRtl) {
-            (this.contentPanel as HTMLIFrameElement).contentDocument.body.setAttribute('class', 'e-rtl');
+            (this.contentPanel as HTMLIFrameElement).contentDocument.body.classList.add('e-rtl');
         }
         if (!isNOU(iframe.contentDocument.head) && this.parent.iframeSettings.metaTags.length > 0) {
             const head: HTMLHeadElement = iframe.contentDocument.head;

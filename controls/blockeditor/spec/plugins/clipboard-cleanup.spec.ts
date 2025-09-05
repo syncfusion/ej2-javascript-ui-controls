@@ -195,21 +195,21 @@ describe('Clipboard Cleanup Module', () => {
     describe('MS Word content detection', () => {
         it('should detect MS Word content from various patterns', () => {
             // Classic MS Word pattern
-            expect(cleanupModule.isFromMsWord('<p class="MsoNormal">Test</p>')).toBe(true);
+            expect((cleanupModule as any).isFromMsWord('<p class="MsoNormal">Test</p>')).toBe(true);
             
             // Style-based pattern
-            expect(cleanupModule.isFromMsWord('<p style="mso-list:l0 level1 lfo1">Test</p>')).toBe(true);
+            expect((cleanupModule as any).isFromMsWord('<p style="mso-list:l0 level1 lfo1">Test</p>')).toBe(true);
             
             // Office 365 patterns
-            expect(cleanupModule.isFromMsWord('<div class="OutlineElement">Test</div>')).toBe(true);
-            expect(cleanupModule.isFromMsWord('<div class="SCXW218690740">Test</div>')).toBe(true);
-            expect(cleanupModule.isFromMsWord('<div class="BCX0">Test</div>')).toBe(true);
-            expect(cleanupModule.isFromMsWord('<div class="TextRun">Test</div>')).toBe(true);
-            expect(cleanupModule.isFromMsWord('<div data-ccp-props="{&quot;201341983&quot;:0}">Test</div>')).toBe(true);
+            expect((cleanupModule as any).isFromMsWord('<div class="OutlineElement">Test</div>')).toBe(true);
+            expect((cleanupModule as any).isFromMsWord('<div class="SCXW218690740">Test</div>')).toBe(true);
+            expect((cleanupModule as any).isFromMsWord('<div class="BCX0">Test</div>')).toBe(true);
+            expect((cleanupModule as any).isFromMsWord('<div class="TextRun">Test</div>')).toBe(true);
+            expect((cleanupModule as any).isFromMsWord('<div data-ccp-props="{&quot;201341983&quot;:0}">Test</div>')).toBe(true);
             
             // Non-Word content
-            expect(cleanupModule.isFromMsWord('<p>Regular HTML</p>')).toBe(false);
-            expect(cleanupModule.isFromMsWord('<div class="google-docs">Google Doc</div>')).toBe(false);
+            expect((cleanupModule as any).isFromMsWord('<p>Regular HTML</p>')).toBe(false);
+            expect((cleanupModule as any).isFromMsWord('<div class="google-docs">Google Doc</div>')).toBe(false);
         });
     });
 
@@ -618,7 +618,7 @@ describe('Clipboard Cleanup Module', () => {
             expect(item).not.toBeNull();
             expect(item.hasAttribute('class')).toBe(true);
             expect(item.getAttribute('class')).toBe('MsoListParagraphCxSpFirst');
-            expect(item.getAttribute('style')).toBe('color:red');
+            expect(item.getAttribute('style')).toBe('color: red;');
             expect(item.textContent).toBe('Item 1');
         });
         
@@ -884,36 +884,6 @@ describe('Clipboard Cleanup Module', () => {
             expect(container.querySelector('ol')).not.toBeNull();
             const items = container.querySelectorAll('li');
             expect(items.length).toBe(2);
-        });
-    });
-
-    describe('splitBreakLine method', () => {
-        it('should convert line breaks to HTML paragraphs', () => {
-            const text = 'Line 1\n\nLine 2\n\nLine 3';
-            const result = (cleanupModule as any).splitBreakLine(text);
-            
-            // First line should not be wrapped in paragraph
-            expect(result.indexOf('Line 1')).toBe(0);
-            expect(result.indexOf('<p>Line 2</p>')).toBeGreaterThan(0);
-            expect(result.indexOf('<p>Line 3</p>')).toBeGreaterThan(0);
-            expect(result.match(/<p>/g).length).toBe(2); // Should have 2 paragraphs
-        });
-        
-        it('should convert single line breaks to <br> tags', () => {
-            const text = 'Line 1\nMore text\nAnother line';
-            const result = (cleanupModule as any).splitBreakLine(text);
-            
-            expect(result.indexOf('<br>')).toBeGreaterThan(0);
-            expect(result.match(/<br>/g).length).toBe(2); // Should have 2 <br> tags
-        });
-        
-        it('should ignore empty lines', () => {
-            const text = 'Line 1\n\n\n\nLine 2';
-            const result = (cleanupModule as any).splitBreakLine(text);
-            
-            expect(result.indexOf('Line 1')).toBe(0);
-            expect(result.indexOf('<p>Line 2</p>')).toBeGreaterThan(0);
-            expect(result.indexOf('<p></p>')).toBe(-1); // No empty paragraphs
         });
     });
 

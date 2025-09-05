@@ -2,36 +2,20 @@
 
 ## [Unreleased]
 
-## 30.1.42 (2025-07-29)
+## 31.1.17 (2025-09-05)
 
 ### Pivot Table
 
 #### Bug Fixes
 
-- `#I741630` - The fields in the pivot field list treeview will now be organized correctly according to the datasource order when the `defaultFieldListOrder` property is set to `None` during the `load` event in the pivot table.
-- `#I747426` - The pivot table will now export correctly as an Excel file when using the server-side engine.
+- `#I704835` - The `onHeaderSort` event will now correctly return the level name when filtering is applied in the pivot table.
+- `#I756525` - The popup field list will now close correctly without any script errors in the pivot table when the defer layout is enabled.
 
-## 30.1.40 (2025-07-15)
+#### Features
 
-### Pivot Table
-
-#### Bug Fixes
-
-- `#I740338` - The issue with sub-totals not rendering correctly when virtualization is enabled in the pivot table has been resolved.
-
-## 30.1.39 (2025-07-08)
-
-### Pivot Table
-
-#### Bug Fixes
-
-- `#I734750` - The pivot table will now be exported correctly as a PDF document when the tabular layout is enabled.
-- `#I734750` - The pivot table cells will now render correctly without any misalignment when the tabular layout is enabled.
-- The primary X-axis border can now be used to modify the multi-level labels border of the pivot chart.
-- Users can now choose to show or hide subtotals when exporting the pivot table to Excel pivot format.
-- The grouping bar buttons will now display correctly when virtualization is enabled in the pivot table.
-
-## 30.1.37 (2025-06-25)
+- Improved column width handling in the Pivot Table with the Grouping Bar enabled, ensuring better layout consistency and responsiveness. Additionally, button alignment during column resizing has been refined for both Compact and Tabular layouts, enhancing overall user experience and visual coherence. Explore the [demo](https://ej2.syncfusion.com/demos/#/tailwind3/pivot-table/classic-layout.html) here.
+- An option has been added to render the Field List TreeView in a hierarchical structure—similar to a folder view—within the server-side engine, aligning its behavior with the EJ2 client-side implementation. This enhancement improves usability and consistency across platforms. Explore the [demo](https://ej2.syncfusion.com/demos/#/tailwind3/pivot-table/server-side-aggregation.html) here.
+- Support has been introduced for passing custom properties to the OLAP server using the existing `beforeServiceInvoke` event, allowing developers to dynamically inject additional parameters before a service call. A new `afterServiceInvoke` event has also been added, which is triggered during the `onSuccess` phase of every service request, enabling post-processing or logging actions after a successful server response.
 
 ### Pivot Table
 

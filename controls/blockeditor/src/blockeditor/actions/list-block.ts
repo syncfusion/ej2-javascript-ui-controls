@@ -1,21 +1,23 @@
-// eslint-disable @typescript-eslint/no-explicit-any
-
 import { BlockEditor } from '../base/blockeditor';
 import { BlockType } from '../base/enums';
-import { getSelectionRange, setCursorPosition } from '../utils/selection';
-import { getBlockContentElement, getBlockIndexById, getBlockModelById, isListTypeBlock } from '../utils/block';
-import { BlockModel, ContentModel } from '../models/index';
-import { BlockAction } from './block';
-import { ISplitContent } from '../base/interface';
-import { generateUniqueId } from '../utils/common';
+import { getSelectedRange, setCursorPosition } from '../utils/selection';
+import { getBlockContentElement, getBlockModelById, isListTypeBlock } from '../utils/block';
+import { BlockModel } from '../models/index';
+import * as constants from '../base/constant';
 
 export class ListBlockAction {
     private editor: BlockEditor;
-    private blockAction: BlockAction;
+    private static readonly INDENT_STEP_SIZE: number = 20;
+    // Lookup table for Roman numerals 1–20
+    private static ROMANNUMERALLOOKUP: Record<number, string> = {
+        1: 'i', 2: 'ii', 3: 'iii', 4: 'iv', 5: 'v',
+        6: 'vi', 7: 'vii', 8: 'viii', 9: 'ix', 10: 'x',
+        11: 'xi', 12: 'xii', 13: 'xiii', 14: 'xiv', 15: 'xv',
+        16: 'xvi', 17: 'xvii', 18: 'xviii', 19: 'xix', 20: 'xx'
+    };
 
-    constructor(editor: BlockEditor, blockAction: BlockAction) {
+    constructor(editor: BlockEditor) {
         this.editor = editor;
-        this.blockAction = blockAction;
     }
 
     /**
@@ -23,25 +25,27 @@ export class ListBlockAction {
      *
      * @param {KeyboardEvent} event - The keyboard event.
      * @param {HTMLElement} blockElement - The block element.
-     * @returns {void}
+     * @returns {boolean} - Returns true if the event is handled.
      * @hidden
      */
-    public handleListKeyActions(event: KeyboardEvent, blockElement: HTMLElement): void {
-        const range: Range = getSelectionRange();
-        const blockModel: BlockModel = getBlockModelById(blockElement.id, this.editor.blocksInternal);
+    public handleListKeyActions(event: KeyboardEvent, blockElement: HTMLElement): boolean {
+        const range: Range = getSelectedRange();
+        const blockModel: BlockModel = getBlockModelById(blockElement.id, this.editor.getEditorBlocks());
+        let isActionProcessed: boolean = false;
 
         switch (event.key) {
         case 'Enter':
             this.handleEnterKey(event, blockElement, range, blockModel);
             this.editor.isEntireEditorSelected = false;
+            isActionProcessed = true;
             break;
         case 'Backspace':
             this.handleBackspaceKey(event, blockElement, range, blockModel);
             this.editor.isEntireEditorSelected = false;
-            break;
-        default:
+            isActionProcessed = true;
             break;
         }
+        return isActionProcessed;
     }
 
     /**
@@ -71,17 +75,17 @@ export class ListBlockAction {
         if (isListTrigger && event.key === ' ' && event.code === 'Space' && content.length === validLength) {
             event.preventDefault();
 
-            let listType: BlockType;
+            let listType: string;
             switch (content) {
             case '*':
             case '-':
-                listType = BlockType.BulletList;
+                listType = BlockType.BulletList.toString();
                 break;
             case '1.':
-                listType = BlockType.NumberedList;
+                listType = BlockType.NumberedList.toString();
                 break;
             case '[]':
-                listType = BlockType.CheckList;
+                listType = BlockType.Checklist.toString();
                 break;
             }
             this.transformBlockToList(blockElement, blockModel, listType);
@@ -90,23 +94,29 @@ export class ListBlockAction {
 
     private handleEnterKey(event: KeyboardEvent, blockElement: HTMLElement, range: Range, blockModel: BlockModel): void {
         event.preventDefault();
+
         const isEmpty: boolean = blockElement.textContent.trim() === '';
 
         if (isEmpty) {
             if (blockModel.indent > 0) {
-                const prevOnChange: boolean = (this.editor as any).isProtectedOnChange;
-                (this.editor as any).isProtectedOnChange = true;
-                blockModel.indent--;
-                (this.editor as any).isProtectedOnChange = prevOnChange;
-                this.blockAction.updateBlockIndentAttribute(blockElement, blockModel.indent);
-                this.blockAction.updatePropChangesToModel();
+                const prevOnChange: boolean = this.editor.isProtectedOnChange;
+                this.editor.isProtectedOnChange = true;
+
+                // Model update
+                this.editor.blockService.applyIndentation({
+                    blockId: blockModel.id,
+                    shouldDecrease: true
+                });
+
+                this.editor.isProtectedOnChange = prevOnChange;
+                this.editor.blockRendererManager.updateBlockIndentAttribute(blockElement, blockModel.indent);
                 this.recalculateMarkersForListItems();
             } else {
-                this.blockAction.transformBlockToParagraph(blockElement, blockModel);
+                this.editor.blockRendererManager.transformBlockToParagraph(blockElement, blockModel);
             }
         }
         else {
-            this.editor.splitAndCreateNewBlockAtCursor();
+            this.editor.blockCommandManager.splitAndCreateNewBlockAtCursor();
         }
     }
 
@@ -117,30 +127,27 @@ export class ListBlockAction {
         if (!isAtStart && !isEmpty) { return; }
         event.preventDefault();
 
-        this.blockAction.transformBlockToParagraph(blockElement, blockModel);
+        this.editor.blockRendererManager.transformBlockToParagraph(blockElement, blockModel);
         this.recalculateMarkersForListItems();
     }
 
-    private transformBlockToList(blockElement: HTMLElement, blockModel: BlockModel, listType: BlockType): void {
+    private transformBlockToList(blockElement: HTMLElement, blockModel: BlockModel, listType: string): void {
         if (blockModel.content.length > 0) {
-            const prevOnChange: boolean = (this.editor as any).isProtectedOnChange;
-            (this.editor as any).isProtectedOnChange = true;
+            const prevOnChange: boolean = this.editor.isProtectedOnChange;
+            this.editor.isProtectedOnChange = true;
             blockModel.content[0].content = '';
-            (this.editor as any).isProtectedOnChange = prevOnChange;
+            this.editor.isProtectedOnChange = prevOnChange;
         }
-        blockElement.innerText = '';
 
-        const newContentEle: HTMLElement = this.blockAction.transformBlock({
+        const newBlockElement: HTMLElement = this.editor.blockRendererManager.transformBlock({
             block: blockModel,
             blockElement: blockElement,
             newBlockType: listType
         });
-        blockElement.appendChild(newContentEle);
-        if (newContentEle) {
-            setCursorPosition(newContentEle, 0);
-        }
-        this.updateListItemMarkers(blockElement);
-        this.blockAction.updatePropChangesToModel();
+
+        const contentElement: HTMLElement = getBlockContentElement(newBlockElement);
+        setCursorPosition(contentElement, 0);
+        this.updateListItemMarkers(newBlockElement);
     }
 
     /**
@@ -151,10 +158,10 @@ export class ListBlockAction {
      * @hidden
      */
     public updateListItemMarkers(blockElement: HTMLElement): void {
-        const prevBlockType: string = blockElement.getAttribute('data-block-type');
+        const prevBlockType: BlockType | string = blockElement.getAttribute('data-block-type') as BlockType;
         const listItem: HTMLElement = blockElement.querySelector('li');
         const isNumbered: boolean = prevBlockType === BlockType.NumberedList;
-        const isChecklist: boolean = prevBlockType === BlockType.CheckList;
+        const isChecklist: boolean = prevBlockType === BlockType.Checklist;
 
         if (isChecklist) { return; }
         if (!isNumbered) {
@@ -171,19 +178,18 @@ export class ListBlockAction {
 
     private getNumberedListItemIndex(blockElement: HTMLElement): number {
         let index: number = 1;
-        const allBlocks: HTMLElement[] = this.getAllBlockElements();
+        const allBlocks: HTMLElement[] = this.getAllBlockElements(blockElement);
         const currentBlockIndex: number = allBlocks.indexOf(blockElement);
         if (currentBlockIndex < 0) { return index; }
         const currentIndentLevel: number = this.getIndentLevel(blockElement);
 
-
         // Count only blocks with same indent level and same type starting from current block
         for (let i: number = currentBlockIndex - 1; i >= 0; i--) {
-            const prevBlock: HTMLElement = allBlocks[parseInt(i.toString(), 10)];
-            const prevBlockType: string = prevBlock.getAttribute('data-block-type');
+            const prevBlock: HTMLElement = allBlocks[i as number];
+            const prevBlockType: BlockType = prevBlock.getAttribute('data-block-type') as BlockType;
             const prevIndentLevel: number = this.getIndentLevel(prevBlock);
 
-            if (prevBlockType !== 'NumberedList' || currentIndentLevel > prevIndentLevel) {
+            if (prevBlockType !== BlockType.NumberedList || currentIndentLevel > prevIndentLevel) {
                 break; // Stop when block type changes or indent level increases(new series)
             }
 
@@ -195,11 +201,17 @@ export class ListBlockAction {
     }
 
     private getIndentLevel(blockElement: HTMLElement): number {
-        return parseInt((blockElement.style.getPropertyValue('--block-indent')), 10) / 20; //20 is the per indent level
+        return parseInt((blockElement.style.getPropertyValue(constants.INDENT_KEY)), 10) / ListBlockAction.INDENT_STEP_SIZE;
     }
 
     private getListMarker(index: number, indentLevel: number): string {
         const getRomanNumeral: (num: number) => string = (num: number): string => {
+            // Use lookup table for numbers 1–20 (Improved efficiency)
+            if (num >= 1 && num <= 20) {
+                return ListBlockAction.ROMANNUMERALLOOKUP[num as number];
+            }
+
+            // Fallback algorithm for numbers >20
             const romanMap: [number, string][] = [
                 [1000, 'm'], [900, 'cm'], [500, 'd'], [400, 'cd'], [100, 'c'], [90, 'xc'],
                 [50, 'l'], [40, 'xl'], [10, 'x'], [9, 'ix'], [5, 'v'], [4, 'iv'], [1, 'i']
@@ -244,21 +256,68 @@ export class ListBlockAction {
      */
     public recalculateMarkersForListItems(): void {
         const allBlocks: HTMLElement[] = this.getAllBlockElements();
-        allBlocks.forEach((block: HTMLElement) => {
-            if (isListTypeBlock(block.getAttribute('data-block-type'))) {
-                this.updateListItemMarkers(block);
+        const indexByIndent: Map<number, number> = new Map();
+
+        for (const block of allBlocks) {
+            const blockType: string = block.getAttribute('data-block-type') as BlockType;
+            if (!isListTypeBlock(blockType) || blockType === BlockType.Checklist) {
+                continue;
             }
-        });
+
+            if (blockType === BlockType.BulletList) {
+                this.setBulletListMarker(block);
+                continue;
+            }
+
+            const indentLevel: number = this.getIndentLevel(block);
+            const prevBlockIndex: number = allBlocks.indexOf(block) - 1;
+            const prevBlock: HTMLElement = prevBlockIndex >= 0 ? allBlocks[prevBlockIndex as number] : null;
+            const prevBlockType: string = prevBlock ? prevBlock.getAttribute('data-block-type') : '';
+            const prevIndentLevel: number = prevBlock ? this.getIndentLevel(prevBlock) : -1;
+
+            // Reset counters for deeper levels when we encounter a shallower or equal level
+            if (prevBlock && (prevIndentLevel > indentLevel ||
+                (prevIndentLevel === indentLevel && prevBlockType !== BlockType.NumberedList))) {
+                for (const [level] of (indexByIndent as any)) {
+                    if (level > indentLevel) {
+                        indexByIndent.delete(level);
+                    }
+                }
+            }
+
+            if (prevBlockType !== BlockType.NumberedList || prevIndentLevel < indentLevel) {
+                indexByIndent.set(indentLevel, 1); // Start new sequence
+            } else {
+                // prevIndentLevel > indentLevel - returning to shallower level
+                const currentIndex: number = (indexByIndent.get(indentLevel) || 0) + 1;
+                indexByIndent.set(indentLevel, currentIndex);
+            }
+
+            const index: number = indexByIndent.get(indentLevel) || 1;
+            this.setNumberedListMarker(block, index, indentLevel);
+        }
     }
 
-    private getAllBlockElements(): HTMLElement[] {
-        const calloutBlock: HTMLElement = this.editor.currentFocusedBlock &&
-        this.editor.currentFocusedBlock.closest('.e-callout-block') as HTMLElement;
-        const toggleBlock: HTMLElement = this.editor.currentFocusedBlock &&
-        this.editor.currentFocusedBlock.closest('.e-toggle-block') as HTMLElement;
+    private setBulletListMarker(blockElement: HTMLElement): void {
+        const listItem: HTMLElement = blockElement.querySelector('li');
+        listItem.style.setProperty('list-style-type', '"• "');
+    }
+
+    private setNumberedListMarker(blockElement: HTMLElement, index: number, indent: number): void {
+        const listItem: HTMLElement = blockElement.querySelector('li');
+        const marker: string = this.getListMarker(index, indent);
+        listItem.style.setProperty('list-style-type', `"${marker} "`);
+    }
+
+    private getAllBlockElements(focusedBlock?: HTMLElement): HTMLElement[] {
+        const currentElement: HTMLElement = focusedBlock || this.editor.currentFocusedBlock;
+        const calloutBlock: HTMLElement = currentElement &&
+        currentElement.closest('.' + constants.CALLOUT_BLOCK_CLS) as HTMLElement;
+        const toggleBlock: HTMLElement = currentElement &&
+        currentElement.closest('.' + constants.TOGGLE_BLOCK_CLS) as HTMLElement;
         const nestedBlock: HTMLElement = calloutBlock ? calloutBlock : toggleBlock;
         const allBlocks: HTMLElement[] = nestedBlock
-            ? Array.from(nestedBlock.querySelectorAll('.e-block')) as HTMLElement[]
+            ? Array.from(nestedBlock.querySelectorAll('.' + constants.BLOCK_CLS)) as HTMLElement[]
             : Array.from(this.editor.blockWrapper.children) as HTMLElement[];
         return allBlocks;
     }

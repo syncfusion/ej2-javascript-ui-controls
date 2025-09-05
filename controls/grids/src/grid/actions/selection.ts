@@ -1539,7 +1539,7 @@ export class Selection implements IAction {
     private setScrollPosition(scrollElement: Element, direction: string, mouseEvent?: MouseEvent | TouchEvent): void {
         let rowIndex: number = -1; let columnIndex: number = -1;
         if (this.endAFCell || this.prevECIdxs) {
-            rowIndex = this.endAFCell ? parseInt(this.endAFCell.getAttribute('index'), 10) : this.prevECIdxs.rowIndex;
+            rowIndex = this.endAFCell ? parseInt(this.endAFCell.getAttribute('data-index'), 10) : this.prevECIdxs.rowIndex;
             columnIndex = this.endAFCell ? parseInt(this.endAFCell.getAttribute('aria-colindex'), 10) - 1 : this.prevECIdxs.cellIndex;
         }
         switch (direction) {
@@ -1548,7 +1548,7 @@ export class Selection implements IAction {
             if (this.isAutoFillSel && this.startAFCell && this.selectedRowCellIndexes.length &&
                     ((this.selectedRowCellIndexes.length === 1 && this.startAFCell !== this.startCell) ||
                         (this.selectedRowCellIndexes.length > 1 && this.startAFCell.getBoundingClientRect().top > 0))) {
-                rowIndex = parseInt(this.startAFCell.getAttribute('index'), 10);
+                rowIndex = parseInt(this.startAFCell.getAttribute('data-index'), 10);
             }
             rowIndex -= 1;
             if (this.parent.frozenRows) {rowIndex += this.parent.frozenRows + 1; }
@@ -1558,7 +1558,7 @@ export class Selection implements IAction {
             break;
         case 'down':
             if (this.isAutoFillSel && this.startAFCell && this.startAFCell !== this.startCell) {
-                rowIndex = parseInt(this.startAFCell.getAttribute('index'), 10);
+                rowIndex = parseInt(this.startAFCell.getAttribute('data-index'), 10);
             }
             if (rowIndex < this.parent.getRows().length - 1) {
                 rowIndex += 1;
@@ -1623,7 +1623,7 @@ export class Selection implements IAction {
             // eslint-disable-next-line @typescript-eslint/no-explicit-any
             const mouseEvent: any = { target: this.parent.getCellFromIndex(rowIndex, columnIndex) };
             if (this.isAutoFillSel && mouseEvent.target.classList.contains('e-cellselectionbackground') &&
-                ((direction === 'down' && parseInt(mouseEvent.target.getAttribute('index'), 10) === this.parent.getRows().length - 1) ||
+                ((direction === 'down' && parseInt(mouseEvent.target.getAttribute('data-index'), 10) === this.parent.getRows().length - 1) ||
                     (direction === 'right' && parseInt(mouseEvent.target.getAttribute('aria-colindex'), 10) - 1 === this.parent.columns.length - 1))) {
                 return;
             }
@@ -1672,12 +1672,12 @@ export class Selection implements IAction {
             filter((ele: HTMLElement) => ele.style.display === '');
         const isRtl: boolean = this.parent.enableRtl;
         if (cells.length) {
-            const firstRowIdx: string = cells[0].getAttribute('index');
+            const firstRowIdx: string = cells[0].getAttribute('data-index');
             const firstColIdx: string = cells[0].getAttribute('aria-colindex');
-            const lastRowIdx: string = cells[cells.length - 1].getAttribute('index');
+            const lastRowIdx: string = cells[cells.length - 1].getAttribute('data-index');
             const lastColIdx: string = cells[cells.length - 1].getAttribute('aria-colindex');
             for (let i: number = 0; i < cells.length; i++) {
-                if (cells[parseInt(i.toString(), 10)].getAttribute('index') === firstRowIdx && (width.length === 1 || (width.length === 3
+                if (cells[parseInt(i.toString(), 10)].getAttribute('data-index') === firstRowIdx && (width.length === 1 || (width.length === 3
                     && parseInt(width[0], 10) === 2 ) || (width.length === 4 && parseInt(width[0], 10) === 2))) {
                     cells[parseInt(i.toString(), 10)].classList.add('e-xlsel-top-border');
                 }
@@ -1686,7 +1686,7 @@ export class Selection implements IAction {
                     parseInt(width[3], 10) === 2)) || (isRtl && parseInt(width[1], 10) === 2))))) {
                     cells[parseInt(i.toString(), 10)].classList.add(isRtl ? 'e-xlsel-right-border' : 'e-xlsel-left-border');
                 }
-                if (cells[parseInt(i.toString(), 10)].getAttribute('index') === lastRowIdx && (width.length === 1 ||
+                if (cells[parseInt(i.toString(), 10)].getAttribute('data-index') === lastRowIdx && (width.length === 1 ||
                     (width.length === 3 && parseInt(width[2], 10) === 2 ) || (width.length === 4 && parseInt(width[2], 10) === 2))) {
                     cells[parseInt(i.toString(), 10)].classList.add('e-xlsel-bottom-border');
                 }
@@ -1698,12 +1698,12 @@ export class Selection implements IAction {
             }
         }
         if (fixedCells.length) {
-            const firstRowIdx: string = fixedCells[0].getAttribute('index');
+            const firstRowIdx: string = fixedCells[0].getAttribute('data-index');
             const firstColIdx: string = (parseInt(fixedCells[0].getAttribute('aria-colindex'), 10) - 1).toString();
-            const lastRowIdx: string = fixedCells[fixedCells.length - 1].getAttribute('index');
+            const lastRowIdx: string = fixedCells[fixedCells.length - 1].getAttribute('data-index');
             const lastColIdx: string = (parseInt(fixedCells[fixedCells.length - 1].getAttribute('aria-colindex'), 10) - 1).toString();
             for (let i: number = 0; i < fixedCells.length; i++) {
-                const idx: string = fixedCells[parseInt(i.toString(), 10)].getAttribute('index');
+                const idx: string = fixedCells[parseInt(i.toString(), 10)].getAttribute('data-index');
                 const colIdx: string = (parseInt(fixedCells[parseInt(i.toString(), 10)].getAttribute('aria-colindex'), 10) - 1).toString();
                 if (idx === firstRowIdx &&
                     ((!this.parent.getHeaderContent().querySelector('.e-cellselectionbackground.e-fixedfreeze')
@@ -2459,7 +2459,7 @@ export class Selection implements IAction {
             this.selectionSettings.cellSelectionMode.indexOf('Box') > -1 && !this.isRowType() && !this.isSingleSel()
             && this.selectedRowCellIndexes.length) {
             const index: number = parseInt(this.target.getAttribute(literals.ariaColIndex), 10) - 1;
-            const rindex: number = parseInt(this.target.getAttribute('index'), 10);
+            const rindex: number = parseInt(this.target.getAttribute('data-index'), 10);
             const rowIndex: number = this.selectedRowCellIndexes[this.selectedRowCellIndexes.length - 1].rowIndex;
             const cells: Element[] = this.getAutoFillCells(rowIndex, index).filter((ele: HTMLElement) => ele.style.display === '');
             const col: Column = this.parent.getColumnByIndex(index);
@@ -3590,7 +3590,7 @@ export class Selection implements IAction {
         this.updateAutoFillPosition();
         target = parentsUntil(target, literals.rowCell) as HTMLElement;
         if (this.parent.isReact && (target && !target.parentElement && target.classList.contains('e-rowcell'))) {
-            target = this.parent.getCellFromIndex(parseInt(target.getAttribute('index'), 10), parseInt(target.getAttribute('aria-colindex'), 10) - 1) as HTMLElement;
+            target = this.parent.getCellFromIndex(parseInt(target.getAttribute('data-index'), 10), parseInt(target.getAttribute('aria-colindex'), 10) - 1) as HTMLElement;
         }
         if (this.isRowDragSelected && isNullOrUndefined(target) && this.parent.allowRowDragAndDrop &&
             this.selectionSettings.persistSelection && this.checkSelectAllClicked) {
@@ -3629,7 +3629,7 @@ export class Selection implements IAction {
             }
         } else if ((e.target as HTMLTableCellElement).classList.contains('e-headercell') &&
             !(e.target as HTMLTableCellElement).classList.contains('e-stackedheadercell')) {
-            const uid: string = (e.target as HTMLTableCellElement).querySelector('.e-headercelldiv').getAttribute('e-mappinguid');
+            const uid: string = (e.target as HTMLTableCellElement).querySelector('.e-headercelldiv').getAttribute('data-mappinguid');
             this.headerSelectionHandler(this.parent.getColumnIndexByUid(uid));
         }
         this.isMultiCtrlRequest = false;
@@ -3862,7 +3862,7 @@ export class Selection implements IAction {
                 if (e.keyArgs.action === 'rightArrow' || e.keyArgs.action === 'leftArrow') {
                     return index;
                 }
-                uid = stackedHeader.getAttribute('e-mappinguid');
+                uid = stackedHeader.getAttribute('data-mappinguid');
                 const innerColumn: Column[] = this.getstackedColumns(this.parent.getColumnByUid(uid).columns as Column[]);
                 const lastIndex: number = this.parent.getColumnIndexByUid(innerColumn[innerColumn.length - 1].uid);
                 const firstIndex: number = this.parent.getColumnIndexByUid(innerColumn[0].uid);
@@ -3870,7 +3870,7 @@ export class Selection implements IAction {
             } else {
                 if (!isNullOrUndefined(e.element.querySelector('.e-headercelldiv'))) {
                     index = this.parent.getColumnIndexByUid((e.element as HTMLTableCellElement)
-                        .querySelector('.e-headercelldiv').getAttribute('e-mappinguid'));
+                        .querySelector('.e-headercelldiv').getAttribute('data-mappinguid'));
                 }
             }
         }

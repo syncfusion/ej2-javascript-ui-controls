@@ -3,14 +3,14 @@ import { KeyboardEventArgs, isNullOrUndefined as isNOU } from '../../../base'; /
 import { ClickEventArgs } from '../../../navigations/src'; /*externalscript*/
 import * as events from '../constant';
 import { dispatchEvent } from '../util';
-import { isIDevice } from '../../src/common/util';
+import { isIDevice } from '../../editor-scripts/common/util';
 import { QuickToolbar } from '../actions/quick-toolbar';
 import { NotifyArgs, LinkFormModel, IImageNotifyArgs } from '../interfaces';
 import { SfRichTextEditor } from '../sf-richtexteditor-fn';
-import { NodeSelection } from '../../src/selection/selection';
-import { LinkCommand } from '../../src/editor-manager/plugin/link';
-import { IDropDownItemModel, DialogCloseEventArgs } from '../../src/common/interface';
-import { IToolbarItemModel, IShowPopupArgs } from '../../src/common/interface';
+import { NodeSelection } from '../../editor-scripts/selection/selection';
+import { LinkCommand } from '../../editor-scripts/editor-manager/plugin/link';
+import { IDropDownItemModel, DialogCloseEventArgs } from '../../editor-scripts/common/interface';
+import { IToolbarItemModel, IShowPopupArgs } from '../../editor-scripts/common/interface';
 
 /**
  * `Link` module is used to handle undo actions.
@@ -36,6 +36,7 @@ export class Link {
         this.parent.observer.on(events.editAreaClick, this.editAreaClickHandler, this);
         this.parent.observer.on(events.insertCompleted, this.showLinkQuickToolbar, this);
         this.parent.observer.on(events.bindOnEnd, this.bindOnEnd, this);
+        this.parent.observer.on(events.selectionChangeMouseUp, this.editAreaClickHandler, this);
     }
     protected removeEventListener(): void {
         this.parent.observer.off(events.destroy, this.destroy);
@@ -47,6 +48,7 @@ export class Link {
         this.parent.observer.off(events.editAreaClick, this.editAreaClickHandler);
         this.parent.observer.off(events.insertCompleted, this.showLinkQuickToolbar);
         this.parent.observer.off(events.bindOnEnd, this.bindOnEnd);
+        this.parent.observer.off(events.selectionChangeMouseUp, this.editAreaClickHandler);
         EventHandler.remove(this.parent.element.ownerDocument, 'mousedown', this.onDocumentClick);
     }
     private bindOnEnd(): void {
@@ -266,6 +268,14 @@ export class Link {
         if (args.which === 2 || (showOnRightClick && args.which === 1) || (!showOnRightClick && args.which === 3)) { return; }
         if (this.parent.editorMode === 'HTML' && this.parent.quickToolbarModule) {
             let target: HTMLElement = args.target as HTMLElement;
+            const isTargetDocument: boolean = target && ((target as HTMLElement).nodeName === 'HTML' || (target as HTMLElement).nodeName === '#document');
+            const isTargetNotRteElements: boolean = !(target && (target as HTMLElement).nodeName !== '#text' &&
+                (target as HTMLElement).nodeName !== '#document' && (target as HTMLElement).nodeName !== 'HTML' &&
+                (target as HTMLElement).closest('.e-rte-elements'));
+            if (isTargetDocument || (!this.parent.inputElement.contains(target as HTMLElement) && isTargetNotRteElements)) {
+                const range: Range = this.parent.formatter.editorManager.nodeSelection.getRange(this.parent.getDocument());
+                target = range.commonAncestorContainer.parentElement;
+            }
             target = this.getAnchorNode([target]);
             if (target.nodeName === 'A' && (target.childNodes.length > 0 && target.childNodes[0].nodeName !== 'IMG') &&
                 ((e.args as MouseEvent).target as HTMLElement).nodeName !== 'IMG') {

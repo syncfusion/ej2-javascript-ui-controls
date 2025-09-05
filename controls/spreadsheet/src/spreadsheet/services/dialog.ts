@@ -71,6 +71,9 @@ export class Dialog {
         this.dialogInstance.createElement = this.parent.createElement;
         this.dialogInstance.appendTo(div);
         if (this.dialogInstance) {
+            if (this.parent.enableRtl && this.dialogInstance.isModal) {
+                this.dialogInstance.element.style.position = 'relative';
+            }
             this.dialogInstance.refreshPosition();
         }
     }

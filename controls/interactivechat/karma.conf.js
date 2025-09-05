@@ -24,6 +24,7 @@ module.exports = function (config) {
       "node_modules/@syncfusion/ej2-notifications/styles/material.css",
       "node_modules/@syncfusion/ej2-navigations/styles/material.css",
       "node_modules/@syncfusion/ej2-splitbuttons/styles/material.css",
+      "node_modules/@syncfusion/ej2-dropdowns/styles/material.css",
       
       "styles/material.css",
       
@@ -40,6 +41,7 @@ module.exports = function (config) {
       { pattern: "node_modules/@syncfusion/ej2-splitbuttons/**/*.js", included: false },
       { pattern: "node_modules/@syncfusion/ej2-notifications/**/*.js", included: false },
       { pattern: "node_modules/@syncfusion/ej2-navigations/**/*.js", included: false },
+      { pattern: "node_modules/@syncfusion/ej2-dropdowns/**/*.js", included: false },
       // Add dependent package's script files here
     ],
 

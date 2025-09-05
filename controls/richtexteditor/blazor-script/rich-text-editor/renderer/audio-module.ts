@@ -1,16 +1,16 @@
 import { addClass, Browser, closest, createElement, detach, EventHandler, isNullOrUndefined as isNOU, KeyboardEventArgs, removeClass } from '../../../base'; /*externalscript*/
 import { ClickEventArgs } from '../../../navigations/src'; /*externalscript*/
-import { isIDevice } from '../../src/common/util';
-import { IAudioCommandsArgs, IDropDownItemModel, IShowPopupArgs, IToolbarItemModel, NotifyArgs, DialogCloseEventArgs } from '../../src/common/interface';
-import { NodeSelection } from '../../src/selection/selection';
+import { isIDevice } from '../../editor-scripts/common/util';
+import { IAudioCommandsArgs, IDropDownItemModel, IShowPopupArgs, IToolbarItemModel, NotifyArgs, DialogCloseEventArgs } from '../../editor-scripts/common/interface';
+import { NodeSelection } from '../../editor-scripts/selection/selection';
 import { QuickToolbar } from '../actions/quick-toolbar';
 import * as classes from '../classes';
 import * as events from '../constant';
 import { IImageNotifyArgs, IShowAudioDialog, MediaDeletedEventArgs } from '../interfaces';
 import { SfRichTextEditor } from '../sf-richtexteditor-fn';
 import { dispatchEvent, parseHtml } from '../util';
-import { convertToBlob } from '../../src/common/util';
-import { AudioCommand } from '../../src/editor-manager/plugin/audio';
+import { convertToBlob } from '../../editor-scripts/common/util';
+import { AudioCommand } from '../../editor-scripts/editor-manager/plugin/audio';
 
 /**
  * `Audio` module is used to handle audio actions.
@@ -173,26 +173,26 @@ export class Audio {
             return;
         }
         const args: MouseEvent = e.args as MouseEvent;
+        const target: HTMLElement = args.target as HTMLElement;
         const showOnRightClick: boolean = this.parent.quickToolbarSettings.showOnRightClick as boolean;
         if (args.which === 2 || (showOnRightClick && args.which === 1) || (!showOnRightClick && args.which === 3)) {
-            if ((showOnRightClick && args.which === 1) && !isNOU((args.target as HTMLElement)) &&
-            this.isAudioElem(args.target as HTMLElement)) {
+            if ((showOnRightClick && args.which === 1) && !isNOU((target as HTMLElement)) &&
+            this.isAudioElem(target as HTMLElement)) {
                 this.parent.formatter.editorManager.nodeSelection.Clear(this.parent.getDocument());
                 this.parent.formatter.editorManager.nodeSelection.setSelectionContents(
-                    this.parent.getDocument(), args.target as Node);
+                    this.parent.getDocument(), target as Node);
+            }
+            if (this.isAudioElem(target) && target.querySelector('audio')) {
+                target.querySelector('audio').style.outline = '2px solid #4a90e2';
             }
             return;
         }
         if (this.parent.editorMode === 'HTML' && this.parent.quickToolbarModule) {
             this.quickToolObj = this.parent.quickToolbarModule;
-            const target: HTMLElement = args.target as HTMLElement;
             if (this.isAudioElem(target) && this.parent.quickToolbarModule) {
                 this.parent.formatter.editorManager.nodeSelection.Clear(this.parent.getDocument());
                 this.parent.formatter.editorManager.nodeSelection.setSelectionContents(this.parent.getDocument(), target);
                 if (isIDevice()) { this.parent.observer.notify(events.selectionSave, e); }
-                if (target.querySelector('audio')) {
-                    target.querySelector('audio').style.outline = '2px solid #4a90e2';
-                }
                 this.showAudioQuickToolbar({ args: args, type: 'Audios', elements: [args.target as Element] } as IShowPopupArgs);
             } else {
                 this.hideAudioQuickToolbar();
@@ -501,10 +501,10 @@ export class Audio {
                 if (Browser.isIE) { dispatchEvent(this.parent.element, 'focusout'); }
             }
         }
-        if (this.parent.getEditPanel().querySelector('.' + classes.CLS_AUD_FOCUS)) {
-            if (!this.isAudioElem(target) && !isNOU(this.audEle)) {
+        if (!this.isAudioElem(target)) {
+            if (!isNOU(this.audEle) && this.audEle.style.outline !== '') {
                 this.audEle.style.outline = '';
-            } else if (!isNOU(this.prevSelectedAudEle) && this.prevSelectedAudEle !== target) {
+            } else if (!isNOU(this.prevSelectedAudEle) && this.prevSelectedAudEle.style.outline !== '') {
                 this.prevSelectedAudEle.style.outline = '';
             }
         }
@@ -588,7 +588,7 @@ export class Audio {
                 this.isAudioElem(selectNodeEle[0].nextSibling as HTMLElement)) ||
                 (originalEvent.keyCode === 8 && (selectNodeEle[0].previousSibling as HTMLElement) &&
                 this.isAudioElem(selectNodeEle[0].previousSibling as HTMLElement))) &&
-                selectNodeEle.length <= 2) {
+                selectNodeEle.length <= 2 && selectNodeEle[0].nodeName !== '#text') {
                 originalEvent.preventDefault();
                 const event: IImageNotifyArgs = {
                     selectNode: selectNodeEle, selection: save, selectParent: selectParentEle,

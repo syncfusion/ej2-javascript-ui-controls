@@ -265,3 +265,14 @@
     }
   }
 }
+
+.e-popup-temp-close {
+  visibility: hidden;
+}
+
+.e-spreadsheet.sf-spreadsheet .e-spreadsheet-ribbon .e-tab-header
+{
+  @if $skin-name == 'bootstrap' or $skin-name == 'bootstrap4' {
+    margin-top: 0;
+  }
+}

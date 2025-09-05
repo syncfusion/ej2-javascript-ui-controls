@@ -11,6 +11,7 @@ import { HighlightCell, TopBottom, CFColor, ConditionalFormatModel, ApplyCFArgs,
 import { NumericTextBox } from '@syncfusion/ej2-inputs';
 import { calculateFormula, rowFillHandler, getTypeFromFormat, checkColumnValidation } from '../../workbook/index';
 import { BeforeOpenEventArgs } from '@syncfusion/ej2-popups';
+import { DataUtil } from '@syncfusion/ej2-data';
 
 /**
  * Represents Conditional Formatting support for Spreadsheet.
@@ -75,14 +76,15 @@ export class ConditionalFormatting {
             let cfEle: HTMLElement;
             ['.e-cf-databar', '.e-iconsetspan'].forEach((clsSelector: string): void => {
                 cfEle = td.querySelector(clsSelector);
-                const wrapElement: HTMLElement = td.querySelector('.e-wrap-content');
                 if (cfEle) {
-                    if (wrapElement) {
-                        wrapElement.removeChild(cfEle);
+                    cfEle.parentElement.removeChild(cfEle);
+                    if (cell && cell.format && cell.format.includes('*')) {
+                        this.parent.notify(
+                            getFormattedCellObject, <NumberFormatArgs>{ value: cell.value, format: cell.format, cell: cell,
+                                formattedText: cell.value, rowIndex: rIdx, colIndex: cIdx, td: td });
                     } else {
-                        td.removeChild(cfEle);
+                        td.textContent = this.parent.getDisplayText(cell);
                     }
-                    td.textContent = this.parent.getDisplayText(cell);
                     if (cell && cell.hyperlink) {
                         this.parent.notify(createHyperlinkElement, { cell: cell, style: cell.style, td: td, rowIdx: rIdx, colIdx: cIdx });
                     }
@@ -726,8 +728,7 @@ export class ConditionalFormatting {
                         updatedCFCellRef[`${rIdx}_${cIdx}_icons`] = true;
                         const cfIcon: HTMLElement = this.parent.createElement('span', { className: 'e-icon e-iconsetspan' });
                         const iconSetUpdated: boolean = this.applyIconSet(cellVal, cf, td, cfIcon, cellType);
-                        if (iconSetUpdated && cell && cell.format && cell.format.includes('*') &&
-                            getTypeFromFormat(cell.format) !== 'Accounting') {
+                        if (iconSetUpdated && cell && cell.format && cell.format.includes('*')) {
                             this.parent.notify(
                                 rowFillHandler, { cell: cell, cellEle: td, rowIdx: rIdx, colIdx: cIdx, updateFillSize: true,
                                     iconSetSpan: cfIcon });
@@ -835,16 +836,11 @@ export class ConditionalFormatting {
 
     private applyIconSet(val: string, cf: ConditionalFormat, cellEle: HTMLElement, cfIcon: HTMLElement, cellType: string): boolean {
         const iconSetExist: boolean = cellEle.classList.contains('e-iconset');
-        const wrapText: HTMLElement = cellEle.querySelector('.e-wrap-content');
         if (iconSetExist) {
             cellEle.classList.remove('e-iconset');
             const iconSpan: Element = cellEle.querySelector('.e-iconsetspan');
             if (iconSpan) {
-                if (wrapText) {
-                    wrapText.removeChild(iconSpan);
-                } else {
-                    cellEle.removeChild(iconSpan);
-                }
+                iconSpan.parentElement.removeChild(iconSpan);
             }
         }
         const value: number = isNumber(val) ? parseFloat(val) : NaN;
@@ -884,6 +880,7 @@ export class ConditionalFormatting {
             cfIcon.classList.add(cellEle.style.verticalAlign === 'top' ? 'e-cf-icon-top' : cellEle.style.verticalAlign === 'middle' ?
                 'e-cf-icon-middle' : 'e-cf-icon-end');
         }
+        const wrapText: HTMLElement = cellEle.querySelector('.e-wrap-content');
         if (wrapText) {
             wrapText.insertBefore(cfIcon, wrapText.firstChild);
         } else {
@@ -1009,7 +1006,7 @@ export class ConditionalFormatting {
         } else {
             rowHeight = getRowHeight(sheet, rIdx, true);
         }
-        const currencySpan: HTMLElement = td.querySelector('#' + this.parent.element.id + '_currency');
+        const currencySpan: HTMLElement = td.querySelector('.e-fill-before');
         databar.style.height = rowHeight - 1 + 'px';
         if (iconSetSpan) {
             iconSetSpan.style.height = rowHeight - 1 + 'px';
@@ -1082,7 +1079,7 @@ export class ConditionalFormatting {
         dataSpan.style.alignItems = td.style.verticalAlign === 'top' ? 'start' : td.style.verticalAlign === 'middle' ?
             'center' : 'end';
         dataSpan.style.textDecoration = td.style.textDecoration;
-        const curEle: HTMLElement = td.querySelector(`#${this.parent.element.id}_currency`);
+        const curEle: HTMLElement = td.querySelector('.e-fill-before.e-cf-currency');
         if (curEle) {
             databar.appendChild(curEle);
         }
@@ -1183,21 +1180,38 @@ export class ConditionalFormatting {
                 return cf.type === 'GreaterThan' ? parseFloat(value) > parseFloat(input.replace(txtRegx, '')) : parseFloat(value) <
                     parseFloat(input.replace(txtRegx, ''));
             } else {
-                const dateEventArgs: { [key: string]: string | number | boolean } = {
-                    value: input, rowIndex: 0, colIndex: 0, sheetIndex: 0,
-                    isDate: false, updatedVal: '', isTime: false
-                };
+                const dateEventArgs: { [key: string]: string | number | boolean } = { value: input, rowIndex: 0, colIndex: 0, sheetIndex: 0,
+                    isDate: false, updatedVal: '', isTime: false };
                 this.parent.notify(checkDateFormat, dateEventArgs);
                 if (dateEventArgs.isDate || dateEventArgs.isTime) {
                     cf.value = dateEventArgs.updatedVal.toString();
                     return cf.type === 'GreaterThan' ? Number(value) > Number(dateEventArgs.updatedVal) :
                         Number(value) < Number(dateEventArgs.updatedVal);
                 } else if (input) {
-                    return cf.type === 'GreaterThan' ? value.toLowerCase() > input.toLowerCase() : value.toLowerCase() < input.toLowerCase();
+                    if (cf.type === 'GreaterThan') {
+                        return value.toLowerCase() > input.toLowerCase();
+                    } else {
+                        if (!isNumber(input)) {
+                            return DataUtil.fnSort('ascending')(value, input.toLowerCase()) < 0;
+                        }
+                        return value.toLowerCase() < input.toLowerCase();
+                    }
                 }
             }
-        } else if (value === '' && Number(input) > 0 && cf.type === 'LessThan') {
-            return true;
+        } else if (cf.type === 'LessThan') {
+            if (value === '' && (!isNumber(input) || Number(input) > 0)) {
+                return true;
+            }
+            if (!isNumber(input)) {
+                const dateEventArgs: { [key: string]: string | number | boolean } = { value: input, rowIndex: 0, colIndex: 0, sheetIndex: 0,
+                    isDate: false, updatedVal: '', isTime: false };
+                this.parent.notify(checkDateFormat, dateEventArgs);
+                if (dateEventArgs.isDate || dateEventArgs.isTime) {
+                    cf.value = dateEventArgs.updatedVal.toString();
+                } else if (DataUtil.fnSort('ascending')(value.toLowerCase(), input.toLowerCase()) < 0) {
+                    return true;
+                }
+            }
         }
         return false;
     }

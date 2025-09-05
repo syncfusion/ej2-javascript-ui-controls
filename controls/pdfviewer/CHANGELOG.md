@@ -2,6 +2,27 @@
 
 ## [Unreleased]
 
+## 30.2.7 (2025-08-26)
+
+### PDF Viewer
+
+#### Bug Fixes
+
+- `#I756156` - Resolved an issue where the page became unresponsive when searching the provided line in the UI.
+- `#I755829` - Resolved an issue where the exception thrown when saving the customer provided document in server rendering mode.
+- `#I758341` , `#I758504` - Resolved an issue where the script error occurs when retrieving bookmarks in the customer provided document.
+
+## 30.2.6 (2025-08-19)
+
+### PDF Viewer
+
+#### Bug Fixes
+
+- `#I751541` - Resolved an issue where annotations were not displayed after saving and reloading the document when using multiple PDF viewers on a single page.
+- `#I754856` - Resolved an issue where the script error occurred when importing annotations with Unicode characters in server rendering mode.
+- `#I750256` - Resolved a script error that occurred when passing long text to the `findText` method.
+- `#I751635` - Resolved an issue where the last few characters were missing when programmatically highlighting multi-line sentences using the `findText`.
+
 ## 30.2.5 (2025-08-13)
 
 ### PDF Viewer

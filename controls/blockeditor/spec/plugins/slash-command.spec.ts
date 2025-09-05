@@ -1,7 +1,7 @@
 import { createElement, remove } from '@syncfusion/ej2-base';
 import { BlockEditor, BlockType, ContentType, getBlockContentElement, setCursorPosition } from '../../src/index';
 import { createEditor } from '../common/util.spec';
-import { BlockModel } from '../../src/blockeditor/models';
+import { BlockModel, CommandItemModel, HeadingProps } from '../../src/blockeditor/models';
 
 describe('Slash Command Module', () => {
     beforeAll(() => {
@@ -48,22 +48,24 @@ describe('Slash Command Module', () => {
             expect(blockElement).not.toBeNull();
             editor.setFocusToBlock(blockElement);
             const contentElement = getBlockContentElement(blockElement);
+            setCursorPosition(contentElement, 0);
             contentElement.textContent = '/' + contentElement.textContent;
             setCursorPosition(contentElement, 1);
+            editor.stateManager.updateContentOnUserTyping(blockElement);
             editorElement.querySelector('.e-mention.e-editable-element').dispatchEvent(new KeyboardEvent('keyup', { key: '/', code: 'Slash', bubbles: true }));
+            const slashCommandElement = document.querySelector('.e-popup.e-blockeditor-command-menu') as HTMLElement;
+            expect(slashCommandElement).not.toBeNull();
+            // click heading li element inside the popup
+            const headingElement = slashCommandElement.querySelector('li[data-value="Heading 1"]') as HTMLElement;
+            expect(headingElement).not.toBeNull();
+            headingElement.dispatchEvent(new MouseEvent('mousedown', { bubbles: true }));
+            expect(editor.blocks[0].type).toBe(BlockType.Heading);
+            expect((editor.blocks[0].props as HeadingProps).level).toBe(1);
             setTimeout(() => {
-                const slashCommandElement = document.querySelector('.e-popup.e-blockeditor-command-menu') as HTMLElement;
-                expect(slashCommandElement).not.toBeNull();
-                // click heading li element inside the popup
-                const headingElement = slashCommandElement.querySelector('li[data-value="Heading 1"]') as HTMLElement;
-                expect(headingElement).not.toBeNull();
-                headingElement.dispatchEvent(new MouseEvent('mousedown', { bubbles: true }));
-                expect(editor.blocks[0].type).toBe(BlockType.Heading1);
-                setTimeout(() => {
-                    expect(blockElement.querySelector('h1').textContent).toBe('Hello world');
-                    done();
-                }, 300);
-            }, 1000);
+                expect(editorElement.querySelector('.e-block').querySelector('h1').textContent).toBe('Hello world');
+                expect(editor.blocks[0].content[0].content).toBe('Hello world');
+                done();
+            }, 200);
         });
 
         it('transforming heading to quote', (done) => {
@@ -71,22 +73,23 @@ describe('Slash Command Module', () => {
             expect(blockElement).not.toBeNull();
             editor.setFocusToBlock(blockElement);
             const contentElement = getBlockContentElement(blockElement);
+            setCursorPosition(contentElement, 0);
             contentElement.textContent = '/' + contentElement.textContent;
             setCursorPosition(contentElement, 1);
+            editor.stateManager.updateContentOnUserTyping(blockElement);
             editorElement.querySelector('.e-mention.e-editable-element').dispatchEvent(new KeyboardEvent('keyup', { key: '/', code: 'Slash', bubbles: true }));
+            const slashCommandElement = document.querySelector('.e-popup.e-blockeditor-command-menu') as HTMLElement;
+            expect(slashCommandElement).not.toBeNull();
+            // click heading li element inside the popup
+            const quoteElement = slashCommandElement.querySelector('li[data-value="Quote"]') as HTMLElement;
+            expect(quoteElement).not.toBeNull();
+            quoteElement.dispatchEvent(new MouseEvent('mousedown', { bubbles: true }));
+            expect(editor.blocks[0].type).toBe(BlockType.Quote);
             setTimeout(() => {
-                const slashCommandElement = document.querySelector('.e-popup.e-blockeditor-command-menu') as HTMLElement;
-                expect(slashCommandElement).not.toBeNull();
-                // click heading li element inside the popup
-                const quoteElement = slashCommandElement.querySelector('li[data-value="Quote"]') as HTMLElement;
-                expect(quoteElement).not.toBeNull();
-                quoteElement.dispatchEvent(new MouseEvent('mousedown', { bubbles: true }));
-                expect(editor.blocks[0].type).toBe(BlockType.Quote);
-                setTimeout(() => {
-                    expect(blockElement.querySelector('blockquote').textContent).toBe('Hello world');
-                    done();
-                }, 300);
-            }, 1000);
+                expect(editorElement.querySelector('.e-block').querySelector('blockquote').textContent).toBe('Hello world');
+                expect(editor.blocks[0].content[0].content).toBe('Hello world');
+                done();
+            }, 200);
         });
 
         it('transforming quote to bullet list', (done) => {
@@ -94,33 +97,36 @@ describe('Slash Command Module', () => {
             expect(blockElement).not.toBeNull();
             editor.setFocusToBlock(blockElement);
             const contentElement = getBlockContentElement(blockElement);
+            setCursorPosition(contentElement, 0);
             contentElement.textContent = '/' + contentElement.textContent;
             setCursorPosition(contentElement, 1);
+            editor.stateManager.updateContentOnUserTyping(blockElement);
             editorElement.querySelector('.e-mention.e-editable-element').dispatchEvent(new KeyboardEvent('keyup', { key: '/', code: 'Slash', bubbles: true }));
+            const slashCommandElement = document.querySelector('.e-popup.e-blockeditor-command-menu') as HTMLElement;
+            expect(slashCommandElement).not.toBeNull();
+            // click heading li element inside the popup
+            const bulletListElement = slashCommandElement.querySelector('li[data-value="Bullet List"]') as HTMLElement;
+            expect(bulletListElement).not.toBeNull();
+            bulletListElement.dispatchEvent(new MouseEvent('mousedown', { bubbles: true }));
+            expect(editor.blocks[0].type).toBe(BlockType.BulletList);
             setTimeout(() => {
-                const slashCommandElement = document.querySelector('.e-popup.e-blockeditor-command-menu') as HTMLElement;
-                expect(slashCommandElement).not.toBeNull();
-                // click heading li element inside the popup
-                const bulletListElement = slashCommandElement.querySelector('li[data-value="Bullet List"]') as HTMLElement;
-                expect(bulletListElement).not.toBeNull();
-                bulletListElement.dispatchEvent(new MouseEvent('mousedown', { bubbles: true }));
-                expect(editor.blocks[0].type).toBe(BlockType.BulletList);
-                setTimeout(() => {
-                    expect(blockElement.querySelector('li').textContent).toBe('Hello world');
-                    done();
-                }, 300);
-            }, 1000);
+                expect(editorElement.querySelector('.e-block').querySelector('li').textContent).toBe('Hello world');
+                expect(editor.blocks[0].content[0].content).toBe('Hello world');
+                done();
+            }, 200);
         });
 
         it('transforming to divider when content is present', (done) => {
-            const blockElement = editorElement.querySelector('.e-block') as HTMLElement;
-            expect(blockElement).not.toBeNull();
-            editor.setFocusToBlock(blockElement);
-            const contentElement = getBlockContentElement(blockElement);
-            contentElement.textContent = 'Hello world /';
-            setCursorPosition(contentElement, contentElement.textContent.length);
-            editorElement.querySelector('.e-mention.e-editable-element').dispatchEvent(new KeyboardEvent('keyup', { key: '/', code: 'Slash', bubbles: true }));
             setTimeout(() => {
+                const blockElement = editorElement.querySelector('.e-block') as HTMLElement;
+                expect(blockElement).not.toBeNull();
+                editor.setFocusToBlock(blockElement);
+                const contentElement = getBlockContentElement(blockElement);
+                setCursorPosition(contentElement, 0);
+                contentElement.textContent = 'Hello world /';
+                setCursorPosition(contentElement, contentElement.textContent.length);
+                editor.stateManager.updateContentOnUserTyping(blockElement);
+                editorElement.querySelector('.e-mention.e-editable-element').dispatchEvent(new KeyboardEvent('keyup', { key: '/', code: 'Slash', bubbles: true }));
                 const slashCommandElement = document.querySelector('.e-popup.e-blockeditor-command-menu') as HTMLElement;
                 expect(slashCommandElement).not.toBeNull();
                 // click divider li element inside the popup
@@ -131,44 +137,56 @@ describe('Slash Command Module', () => {
                 expect(editor.blocks[0].type).toBe(BlockType.Paragraph);
                 expect(editor.blocks[1].type).toBe(BlockType.Divider);
                 setTimeout(() => {
-                    expect(blockElement.querySelector('p').textContent).toBe('Hello world ');
+                    expect(editorElement.querySelector('.e-block').querySelector('p').textContent).toBe('Hello world ');
                     expect(editorElement.querySelectorAll('.e-block').length).toBe(3);
                     expect(editorElement.querySelectorAll('.e-block')[1].querySelector('hr')).not.toBeNull();
+                    expect(editor.blocks[0].content[0].content).toBe('Hello world ');
+                    expect(editor.blocks[1].content.length).toBe(0);
+
+                    //Ensure focus is in next sibling of divider
+                    expect(editor.currentFocusedBlock.id).toBe(editor.blocks[2].id);
                     done();
                 }, 200);
-            }, 1000);
+            }, 100);
         });
 
         it('transforming to divider when content is empty', (done) => {
-            const blockElement = editorElement.querySelector('.e-block') as HTMLElement;
-            expect(blockElement).not.toBeNull();
-            editor.setFocusToBlock(blockElement);
-            const contentElement = getBlockContentElement(blockElement);
-            contentElement.textContent = '/';
-            setCursorPosition(contentElement, 1);
-            editorElement.querySelector('.e-mention.e-editable-element').dispatchEvent(new KeyboardEvent('keyup', { key: '/', code: 'Slash', bubbles: true }));
             setTimeout(() => {
+                const blockElement = editorElement.querySelector('.e-block') as HTMLElement;
+                expect(blockElement).not.toBeNull();
+                editor.setFocusToBlock(blockElement);
+                const contentElement = getBlockContentElement(blockElement);
+                setCursorPosition(contentElement, 0);
+                contentElement.textContent = '/';
+                setCursorPosition(contentElement, 1);
+                editor.stateManager.updateContentOnUserTyping(blockElement);
+                editorElement.querySelector('.e-mention.e-editable-element').dispatchEvent(new KeyboardEvent('keyup', { key: '/', code: 'Slash', bubbles: true }));
                 const slashCommandElement = document.querySelector('.e-popup.e-blockeditor-command-menu') as HTMLElement;
                 expect(slashCommandElement).not.toBeNull();
                 // click divider li element inside the popup
                 const dividerLiElement = slashCommandElement.querySelector('li[data-value="Divider"]') as HTMLElement;
                 expect(dividerLiElement).not.toBeNull();
                 dividerLiElement.dispatchEvent(new MouseEvent('mousedown', { bubbles: true }));
+                // Current bullet list block should be replaced with divider block since content is empty
+                expect(editor.blocks[0].type).toBe(BlockType.Divider);
+                expect(editor.blocks[1].type).toBe(BlockType.Paragraph);
                 setTimeout(() => {
-                    // Current bullet list block should be replaced with divider block since content is empty
-                    expect(editor.blocks[0].type).toBe(BlockType.Divider);
-                    expect(editor.blocks[1].type).toBe(BlockType.Paragraph);
-                    expect(blockElement.querySelector('p')).toBeNull();
+                    expect(editorElement.querySelector('.e-block').querySelector('p')).toBeNull();
                     expect(editorElement.querySelectorAll('.e-block').length).toBe(2);
                     expect(editorElement.querySelectorAll('.e-block')[0].querySelector('hr')).not.toBeNull();
                     expect(editorElement.querySelectorAll('.e-block')[1].querySelector('p')).not.toBeNull();
+
+                    expect(editor.blocks[0].content.length).toBe(0);
+
+                    //Ensure focus is in next sibling of divider
+                    expect(editor.currentFocusedBlock.id).toBe(editor.blocks[1].id);
                     done();
                 }, 200);
-            }, 1000);
+            }, 100);
         });
         
-        it('transforming to toggle when content is empty', (done) => {
-            const newBlock = {
+        it('transforming to collapsible when content is empty', (done) => {
+            const newBlock: BlockModel = {
                 id: 'paragraph2',
                 type: BlockType.Paragraph,
                 content: [
@@ -182,29 +200,29 @@ describe('Slash Command Module', () => {
                 expect(blockElement).not.toBeNull();
                 editor.setFocusToBlock(blockElement);
                 const contentElement = getBlockContentElement(blockElement);
+                setCursorPosition(contentElement, 0);
                 contentElement.textContent = '/';
                 setCursorPosition(contentElement, 1);
+                editor.stateManager.updateContentOnUserTyping(blockElement);
                 editorElement.querySelector('.e-mention.e-editable-element').dispatchEvent(new KeyboardEvent('keyup', { key: '/', code: 'Slash', bubbles: true }));
+                const slashCommandElement = document.querySelector('.e-popup.e-blockeditor-command-menu') as HTMLElement;
+                expect(slashCommandElement).not.toBeNull();
+                // click collapsible paragraph li element inside the popup
+                const collapsibleParaEle = slashCommandElement.querySelector('li[data-value="Collapsible Paragraph"]') as HTMLElement;
+                expect(collapsibleParaEle).not.toBeNull();
+                collapsibleParaEle.dispatchEvent(new MouseEvent('mousedown', { bubbles: true }));
+                // Current bullet list block should be replaced with CollapsibleParagraph block since content is empty
+                expect(editor.blocks[1].type).toBe(BlockType.CollapsibleParagraph);
+                expect(editor.blocks[2].type).toBe(BlockType.Paragraph);
                 setTimeout(() => {
-                    const slashCommandElement = document.querySelector('.e-popup.e-blockeditor-command-menu') as HTMLElement;
-                    expect(slashCommandElement).not.toBeNull();
-                    // click toggle paragraph li element inside the popup
-                    const toggleParaEle = slashCommandElement.querySelector('li[data-value="Toggle Paragraph"]') as HTMLElement;
-                    expect(toggleParaEle).not.toBeNull();
-                    toggleParaEle.dispatchEvent(new MouseEvent('mousedown', { bubbles: true }));
-                    // Current bullet list block should be replaced with toggleParagraph block since content is empty
-                    expect(editor.blocks[1].type).toBe(BlockType.ToggleParagraph);
-                    expect(editor.blocks[2].type).toBe(BlockType.Paragraph);
-                    setTimeout(() => {
-                        expect(blockElement.classList.contains('e-toggle-block')).toBe(true);
-                        done();
-                    }, 200);
-                }, 1000);
-            }, 100);
+                    expect(editorElement.querySelectorAll('.e-block')[1].classList.contains('e-toggle-block')).toBe(true);
+                    done();
+                }, 200);
+            });
         });
 
         it('transforming to callout when content is empty', (done) => {
-            const newBlock = {
+            const newBlock: BlockModel = {
                 id: 'paragraph2',
                 type: BlockType.Paragraph,
                 content: [
@@ -218,24 +236,24 @@ describe('Slash Command Module', () => {
                 expect(blockElement).not.toBeNull();
                 editor.setFocusToBlock(blockElement);
                 const contentElement = getBlockContentElement(blockElement);
+                setCursorPosition(contentElement, 0);
                 contentElement.textContent = '/';
                 setCursorPosition(contentElement, 1);
+                editor.stateManager.updateContentOnUserTyping(blockElement);
                 editorElement.querySelector('.e-mention.e-editable-element').dispatchEvent(new KeyboardEvent('keyup', { key: '/', code: 'Slash', bubbles: true }));
+                const slashCommandElement = document.querySelector('.e-popup.e-blockeditor-command-menu') as HTMLElement;
+                expect(slashCommandElement).not.toBeNull();
+                // click callout li element inside the popup
+                const calloutEle = slashCommandElement.querySelector('li[data-value="Callout"]') as HTMLElement;
+                expect(calloutEle).not.toBeNull();
+                calloutEle.dispatchEvent(new MouseEvent('mousedown', { bubbles: true }));
+                // Current bullet list block should be replaced with callout block since content is empty
+                expect(editor.blocks[1].type).toBe(BlockType.Callout);
+                expect(editor.blocks[2].type).toBe(BlockType.Paragraph);
                 setTimeout(() => {
-                    const slashCommandElement = document.querySelector('.e-popup.e-blockeditor-command-menu') as HTMLElement;
-                    expect(slashCommandElement).not.toBeNull();
-                    // click callout li element inside the popup
-                    const calloutEle = slashCommandElement.querySelector('li[data-value="Callout"]') as HTMLElement;
-                    expect(calloutEle).not.toBeNull();
-                    calloutEle.dispatchEvent(new MouseEvent('mousedown', { bubbles: true }));
-                    // Current bullet list block should be replaced with callout block since content is empty
-                    expect(editor.blocks[1].type).toBe(BlockType.Callout);
-                    expect(editor.blocks[2].type).toBe(BlockType.Paragraph);
-                    setTimeout(() => {
-                        expect(blockElement.classList.contains('e-callout-block')).toBe(true);
-                        done();
-                    }, 200);
-                }, 1000);
+                    expect(editorElement.querySelectorAll('.e-block')[1].classList.contains('e-callout-block')).toBe(true);
+                    done();
+                }, 200);
             });
         });
 
@@ -258,7 +276,8 @@ describe('Slash Command Module', () => {
             
             setTimeout(() => {
                 // Check if block has been transformed
-                expect(editor.blocks[0].type).toBe(BlockType.Heading1);
+                expect(editor.blocks[0].type).toBe(BlockType.Heading);
+                expect((editor.blocks[0].props as HeadingProps).level).toBe(1);
                 done();
             }, 100);
         });
@@ -271,6 +290,7 @@ describe('Slash Command Module', () => {
             const contentElement = getBlockContentElement(blockElement);
             contentElement.textContent = '/head';
             setCursorPosition(contentElement, contentElement.textContent.length);
+            editor.stateManager.updateContentOnUserTyping(blockElement);
             editorElement.querySelector('.e-mention.e-editable-element').dispatchEvent(new KeyboardEvent('keyup', { 
                 key: 'd', 
                 code: 'KeyD', 
@@ -301,6 +321,7 @@ describe('Slash Command Module', () => {
             editor.setFocusToBlock(blockElement);
             contentElement.textContent = '/';
             setCursorPosition(contentElement, 1);
+            editor.stateManager.updateContentOnUserTyping(blockElement);
             editorElement.querySelector('.e-mention.e-editable-element').dispatchEvent(new KeyboardEvent('keyup', { key: '/', code: 'Slash', bubbles: true }));
             
             setTimeout(() => {
@@ -337,6 +358,7 @@ describe('Slash Command Module', () => {
             const contentElement = getBlockContentElement(blockElement);
             contentElement.textContent = '/';
             setCursorPosition(contentElement, 1);
+            editor.stateManager.updateContentOnUserTyping(blockElement);
             editorElement.querySelector('.e-mention.e-editable-element').dispatchEvent(new KeyboardEvent('keyup', { 
                 key: '/', 
                 code: 'Slash', 
@@ -358,7 +380,7 @@ describe('Slash Command Module', () => {
         });
         
         it('should change commands when commandMenu.commands is updated', (done) => {
-            const customCommand = {
+            const customCommand: CommandItemModel = {
                 label: 'Custom Command',
                 type: BlockType.Paragraph,
                 iconCss: 'e-custom-icon',
@@ -372,6 +394,7 @@ describe('Slash Command Module', () => {
             const contentElement = getBlockContentElement(blockElement);
             contentElement.textContent = '/custom';
             setCursorPosition(contentElement, contentElement.textContent.length);
+            editor.stateManager.updateContentOnUserTyping(blockElement);
             editorElement.querySelector('.e-mention.e-editable-element').dispatchEvent(new KeyboardEvent('keyup', { 
                 key: 'm', 
                 code: 'KeyM', 
@@ -393,6 +416,7 @@ describe('Slash Command Module', () => {
             const contentElement = getBlockContentElement(blockElement);
             contentElement.textContent = '/';
             setCursorPosition(contentElement, 1);
+            editor.stateManager.updateContentOnUserTyping(blockElement);
             editorElement.querySelector('.e-mention.e-editable-element').dispatchEvent(new KeyboardEvent('keyup', { 
                 key: '/', 
                 code: 'Slash', 
@@ -429,6 +453,7 @@ describe('Slash Command Module', () => {
             setCursorPosition(contentElement, 0);
             contentElement.textContent = '/' + contentElement.textContent;
             setCursorPosition(contentElement, 1);
+            editor.stateManager.updateContentOnUserTyping(blockElement);
             editorElement.querySelector('.e-mention.e-editable-element').dispatchEvent(new KeyboardEvent('keyup', { key: '/', code: 'Slash', bubbles: true }));
         }
 
@@ -448,7 +473,7 @@ describe('Slash Command Module', () => {
                     commands: [
                         {
                             id: 'checklist-command',
-                            type: BlockType.CheckList,
+                            type: BlockType.Checklist,
                             groupHeader: 'General',
                             label: 'Checklist',
                             tooltip: 'Create a checklist',
@@ -529,12 +554,12 @@ describe('Slash Command Module', () => {
         });
 
         it('should handle null values properly', (done) => {
-            spyOn(editor, 'handleBlockTransformation').and.callThrough();
+            spyOn(editor.blockRendererManager, 'handleBlockTransformation').and.callThrough();
             (editor.slashCommandModule as any).transformBlocks({
                 type: null
             });
 
-            expect(editor.handleBlockTransformation).not.toHaveBeenCalled();
+            expect(editor.blockRendererManager.handleBlockTransformation).not.toHaveBeenCalled();
             done();
         });
 
@@ -624,7 +649,7 @@ describe('Slash Command Module', () => {
                 checklistItem.dispatchEvent(new MouseEvent('mousedown', { bubbles: true }));
                 
                 setTimeout(() => {
-                    expect(editor.blocks[0].type).toBe(BlockType.CheckList);
+                    expect(editor.blocks[0].type).toBe(BlockType.Checklist);
                     expect(itemClickedCalled).toBe(true);
                     
                     done();
@@ -694,7 +719,7 @@ describe('Slash Command Module', () => {
                     const popup = document.querySelector('.e-blockeditor-command-menu');
                     expect(popup).not.toBeNull();
                     expect(popup.querySelectorAll('li.e-list-item').length).toBe(1);
-                    expect(popup.querySelector('li.e-list-item').getAttribute('data-value')).toBe('Checklist');
+                    expect(popup.querySelector('li.e-list-item').getAttribute('data-value')).toBe(BlockType.Checklist.toString());
                     done();
                 }, 300);
             }, 200);
@@ -708,7 +733,7 @@ describe('Slash Command Module', () => {
             setCursorPosition(contentElement, 0);
             editor.slashCommandModule.showPopup();
             setTimeout(() => {
-                (editor.slashCommandModule as any).filterCommands('Checklist', 10, 10);
+                (editor.slashCommandModule as any).filterCommands(BlockType.Checklist, 10, 10);
                 setTimeout(() => {
                     const popup = document.querySelector('.e-blockeditor-command-menu');
                     expect(popup).toBeNull();

@@ -47,7 +47,7 @@ describe('Block utils', () => {
             const blockElement = editor.createElement('div', {
                 className: 'e-block',
                 id: quoteBlock.id,
-                attrs: { 'data-block-type': quoteBlock.type }
+                attrs: { 'data-block-type': quoteBlock.type.toString() }
             });
 
             const contentElement = editor.createElement('p', { id: 'quote-new-content' });

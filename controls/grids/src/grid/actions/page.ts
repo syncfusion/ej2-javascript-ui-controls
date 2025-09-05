@@ -106,30 +106,21 @@ export class Page implements IAction {
 
     private addAriaAttr(): void {
         if (!(this.pageSettings.template)) {
+            if (this.parent.getContentTable()) {
+                this.element.setAttribute('aria-controls', this.parent.getContentTable().id);
+            }
             const numericContainerNew: Element = this.parent.createElement('div', { className: 'e-numericcontainer' });
             const pagerContainer: Element = this.element.querySelector('.e-pagercontainer');
             const frag: DocumentFragment = document.createDocumentFragment();
             const numericContainer: Element = this.element.querySelector('.e-numericcontainer');
             const links: NodeList = numericContainer.querySelectorAll('a');
             for (let i: number = 0; i < links.length; i++) {
-                if (this.parent.getContentTable()) {
-                    (<Element>links[parseInt(i.toString(), 10)]).setAttribute('aria-owns', this.parent.getContentTable().id + ' ' + (i + 1));
-                } else {
-                    (<Element>links[parseInt(i.toString(), 10)]).setAttribute('aria-owns', this.parent.element.getAttribute('id') + '_content_table' + ' ' + (i + 1));
-                }
                 const numericContainerDiv: Element = this.parent.createElement('div');
                 numericContainerDiv.appendChild(links[parseInt(i.toString(), 10)]);
                 frag.appendChild(numericContainerDiv);
             }
             numericContainerNew.appendChild(frag);
             pagerContainer.replaceChild(numericContainerNew, numericContainer);
-            const classList: string[] = ['.e-mfirst', '.e-mprev', '.e-first', '.e-prev', '.e-next', '.e-last', '.e-mnext', '.e-mlast'];
-            for (let j: number = 0; j < classList.length; j++) {
-                const element: Element = this.element.querySelector(classList[parseInt(j.toString(), 10)]);
-                if (this.parent.getContentTable()) {
-                    element.setAttribute('aria-owns', this.parent.getContentTable().id + classList[parseInt(j.toString(), 10)].replace('.e-', ' '));
-                }
-            }
         }
     }
 

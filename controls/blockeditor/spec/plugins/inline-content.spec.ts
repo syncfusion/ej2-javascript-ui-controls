@@ -1,5 +1,5 @@
 import { createElement } from '@syncfusion/ej2-base';
-import { BlockEditor, BlockType, ContentType, ContextMenuItemModel, getBlockContentElement, getSelectionRange, setCursorPosition } from '../../src/index';
+import { BaseChildrenProp, BlockEditor, BlockType, ContentType, getBlockContentElement, getSelectedRange, LabelContentProps, MentionContentProps, setCursorPosition } from '../../src/index';
 import { createEditor } from '../common/util.spec';
 
 describe('Inline Content Module', () => {
@@ -36,22 +36,22 @@ describe('Inline Content Module', () => {
                                 id: 'boldText',
                                 type: ContentType.Text,
                                 content: 'Bolded @ text',
-                                styles: { bold: true }
+                                props: { styles: { bold: true } }
                             }
                         ]
                     },
                     {
                         id: 'callout',
                         type: BlockType.Callout,
-                        children: [
-                            {
+                        props: {
+                            children: [{
                                 id: 'callout-child',
                                 type: BlockType.Paragraph,
                                 content: [
                                     { id: 'callout-content', type: ContentType.Text, content: 'Hello $ world' },
                                 ]
-                            },
-                        ]
+                            }]
+                        }
                     }
                 ],
                 users: [
@@ -95,7 +95,7 @@ describe('Inline Content Module', () => {
 
                         expect(insertedNode.textContent).toBe('Priority: High');
                         expect(insertedNode.classList.contains('e-label-chip')).toBe(true);
-                        expect(insertedNode.getAttribute('data-label-id')).toBe(labelItem.id);
+                        expect(insertedNode.getAttribute('data-label-id')).toBe((editor.blocks[0].content[1].props as LabelContentProps).labelId);
 
                         expect(lastChild.textContent).toBe(' world');
 
@@ -135,7 +135,7 @@ describe('Inline Content Module', () => {
                         expect(insertedNode.querySelector('.em-initial').textContent).toBe('U1');
                         expect(insertedNode.querySelector('.em-content').textContent).toBe('User 1');
                         expect(insertedNode.classList.contains('e-user-chip')).toBe(true);
-                        expect(insertedNode.getAttribute('data-user-id')).toBe(user.id);
+                        expect(insertedNode.getAttribute('data-user-id')).toBe((editor.blocks[1].content[1].props as MentionContentProps).userId);
 
                         expect(lastChild.textContent).toBe(' text');
 
@@ -166,6 +166,7 @@ describe('Inline Content Module', () => {
                     editor.setFocusToBlock(blockElement);
                     setTimeout(() => {
                         const labelItem = editor.labelSettings.labelItems.find((item) => item.id === 'high');
+                        const children = (editor.blocks[2].props as BaseChildrenProp).children[0];
                         expect(contentElement.childElementCount).toBe(3);
                         const firstChild = contentElement.childNodes[0];
                         const insertedNode = (contentElement.childNodes[1] as HTMLElement);
@@ -175,14 +176,14 @@ describe('Inline Content Module', () => {
 
                         expect(insertedNode.textContent).toBe('Priority: High');
                         expect(insertedNode.classList.contains('e-label-chip')).toBe(true);
-                        expect(insertedNode.getAttribute('data-label-id')).toBe(labelItem.id);
+                        expect(insertedNode.getAttribute('data-label-id')).toBe((children.content[1].props as LabelContentProps).labelId);
 
                         expect(lastChild.textContent).toBe(' world');
 
-                        expect(editor.blocks[2].children[0].content[0].content).toBe('Hello ');
-                        expect(editor.blocks[2].children[0].content[1].content).toBe('Priority: High');
-                        expect(editor.blocks[2].children[0].content[1].type).toBe(ContentType.Label);
-                        expect(editor.blocks[2].children[0].content[2].content).toBe(' world');
+                        expect(children.content[0].content).toBe('Hello ');
+                        expect(children.content[1].content).toBe('Priority: High');
+                        expect(children.content[1].type).toBe(ContentType.Label);
+                        expect(children.content[2].content).toBe(' world');
                         done();
                     }, 500);
                 }, 500);
@@ -215,7 +216,7 @@ describe('Inline Content Module', () => {
                                 id: 'boldText',
                                 type: ContentType.Text,
                                 content: 'Bolded @ text',
-                                styles: { bold: true }
+                                props: { styles: { bold: true } }
                             }
                         ]
                     }
@@ -267,35 +268,18 @@ describe('Inline Content Module', () => {
             const contentElement = getBlockContentElement(blockElement) as HTMLElement;
             setCursorPosition(contentElement, 0);
 
-            const rangeParent = (editor.inlineContentInsertionModule as any).getRangeParent(getSelectionRange());
-            (editor.inlineContentInsertionModule as any).currentArgs = { block: editor.blocks[0] };
-            (editor.inlineContentInsertionModule as any).splitAndReorganizeContent(null, ContentType.Mention, rangeParent);
+            const rangeParent = (editor.inlineContentInsertionModule as any).getRangeParent(getSelectedRange());
+            (editor.inlineContentInsertionModule as any).splitAndReorganizeContent(null, ContentType.Mention, rangeParent, { block: editor.blocks[0] });
             
             rangeParent.id = 'fake';
-            (editor.inlineContentInsertionModule as any).splitAndReorganizeContent(contentElement.firstChild, ContentType.Mention, rangeParent);
+            (editor.inlineContentInsertionModule as any).splitAndReorganizeContent(contentElement.firstChild, ContentType.Mention, rangeParent, { block: editor.blocks[0] });
 
             contentElement.classList.remove('e-block-content');
-            (editor.inlineContentInsertionModule as any).splitAndReorganizeContent(contentElement.firstChild, ContentType.Mention, rangeParent);
+            (editor.inlineContentInsertionModule as any).splitAndReorganizeContent(contentElement.firstChild, ContentType.Mention, rangeParent, { block: editor.blocks[0] });
 
-            (editor.inlineContentInsertionModule as any).currentArgs.range = null;
-            (editor.inlineContentInsertionModule as any).handleInlineContentInsertion();
+            (editor.inlineContentInsertionModule as any).processInsertion({ range: null });
 
-            (editor.inlineContentInsertionModule as any).currentArgs.blockElement = null;
-            (editor.inlineContentInsertionModule as any).handleInlineContentInsertion();
-            done();
-        });
-
-        it('should find text siblings properly', (done) => {
-            // Create a element and append two text nodes in it
-            const element = document.createElement('div');
-            const textNode1 = document.createTextNode('Hello');
-            const textNode2 = document.createTextNode('World');
-            element.appendChild(textNode1);
-            element.appendChild(textNode2);
-
-            expect((editor.inlineContentInsertionModule as any).hasTextSiblings(textNode1)).toBe(true);
-            expect((editor.inlineContentInsertionModule as any).hasTextSiblings(textNode2)).toBe(true);
-            expect((editor.inlineContentInsertionModule as any).hasTextSiblings(element)).toBe(null);
+            (editor.inlineContentInsertionModule as any).processInsertion({ blockElement: null });
             done();
         });
 

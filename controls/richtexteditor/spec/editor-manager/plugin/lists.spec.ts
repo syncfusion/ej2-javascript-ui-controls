@@ -3,10 +3,10 @@
  */
 import { createElement, detach, isNullOrUndefined, selectAll, Browser } from '@syncfusion/ej2-base';
 import { EditorManager } from '../../../src/editor-manager/index';
-import { destroy, renderRTE, dispatchEvent } from '../../rich-text-editor/render.spec';
+import { destroy, renderRTE, dispatchEvent, setSelection } from '../../rich-text-editor/render.spec';
 import { RichTextEditor } from '../../../src';
 import { CustomUserAgentData } from '../../../src/common/user-agent';
-import { BACKSPACE_EVENT_INIT } from '../../constant.spec';
+import { BACKSPACE_EVENT_INIT, ENTERKEY_EVENT_INIT } from '../../constant.spec';
 
 function setCursorPoint(element: Element, point: number) {
     let range: Range = document.createRange();
@@ -2075,6 +2075,32 @@ describe ('left indent testing', () => {
             });
         });
 
+        describe('Bug 972655: List Structure Not Reverting Properly on Backspace with Heading Tag', () => {
+            let elem: HTMLElement;
+            let innerValue: string = `<div id="content-edit"><ul><li><h1 class="rte">Welcome to the Syncfusion Rich Text Editor</h1></li></ul></div>`;
+            beforeEach(() => {
+                elem = createElement('div', {
+                    id: 'dom-node', innerHTML: innerValue
+                });
+                document.body.appendChild(elem);
+                editorObj = new EditorManager({ document: document, editableElement: document.getElementById("content-edit") });
+                editNode = editorObj.editableElement as HTMLElement;
+            });
+            afterEach(() => {
+                detach(elem);
+            });
+
+            it(' Backspace key press at start of the list when blocknode is in list', () => {
+                startNode = editNode.querySelector('.rte');
+                setCursorPoint((startNode.childNodes[0] as Element), 0);
+                keyBoardEvent.event.shiftKey = false;
+                keyBoardEvent.action = 'backspace';
+                keyBoardEvent.event.which = 8;
+                (editorObj as any).editorKeyDown(keyBoardEvent);
+                expect(editNode.querySelectorAll('ul').length === 0).toBe(true);
+            });
+        });
+
         describe('Backspace key press at the start of the list when no content is previous to the list', () => {
             let elem: HTMLElement;
             let innerValue: string = `<div id="content-edit"><ol><li id="firstli">first</li><li>second</li><li>third﻿﻿<br></li></ol><div>`;
@@ -2333,8 +2359,7 @@ describe ('left indent testing', () => {
                 keyBoardEvent.action = 'enter';
                 keyBoardEvent.event.which = 13;
                 (editorObj as any).editorKeyDown(keyBoardEvent);
-                expect(editNode.innerHTML).toBe(`<ol><li>List<ol><li>item<hr><p class="focusNode">items</p></li></ol></li></ol>`
-                );
+                expect(editNode.innerHTML).toBe(`<ol><li>List<ol><li>item<hr></li><li><p class="focusNode">items</p></li></ol></li></ol>`);
             });
 
             afterAll(() => {
@@ -3187,7 +3212,7 @@ describe ('left indent testing', () => {
             (editorObj as any).editorKeyDown(keyBoardEvent);
             (editorObj as any).editorKeyDown(keyBoardEvent);
             (editorObj as any).editorKeyDown(keyBoardEvent);
-            expect(editNode.querySelector('#firstli')).toBe(null);
+            expect(editNode.querySelectorAll('#firstli').length === 6).toBe(true);
         });
 
         afterAll(() => {
@@ -3818,5 +3843,763 @@ describe('964856 - When selecting two list items and pressing the Backspace key,
             expect(editorObj.inputElement.innerHTML === '<ul> <li>The toolbar has multi-row, expandable, and scrollable modes. The Editor supports an inline toolbar, a floating toolbar, and custom toolbar items.</li> <li>Integration with Syncfusion<sup>®</sup> Mention control lets users tag other users. To learn more, check out the <a class="e-rte-anchor" href="https://ej2.syncfusion.com/documentation/rich-text-editor/mention-integration" title="Mention Documentation" aria-label="Open in new window">documentation</a> and <a class="e-rte-anchor" href="https://ej2.syncfusion.com/demos/#/material/rich-text-editor/mention-integration.html" title="Mention Demos" aria-label="Open in new window">demos</a>.</li> </ul><p><br></p>').toBe(true);
             done();
         }, 100);
+    });
+});
+
+describe('965805 - Incorrect Selection After Applying List to Multiple HR Tags and Text at last.', () => {
+    let editorObj: EditorManager;
+    let editNode: HTMLElement;
+    let elem: HTMLElement;
+
+    beforeAll(() => {
+        elem = createElement('div', {
+            id: 'dom-node', innerHTML: `<div id="content-edit" contenteditable="true">
+                <hr/>
+                <hr/>
+                <hr/>
+                <p>Some text here.</p>
+            </div>`
+        });
+        document.body.appendChild(elem);
+        editorObj = new EditorManager({ document: document, editableElement: document.getElementById('content-edit') });
+        editNode = editorObj.editableElement as HTMLElement;
+    });
+
+    afterAll(() => {
+        detach(elem);
+    });
+
+    it('should apply a list to hr elements and a paragraph', () => {
+        const startNode = editNode.firstElementChild;
+        const endNode = editNode.querySelector('p');
+        // Select all elements
+        editorObj.nodeSelection.setSelectionText(document, startNode, endNode, 0, 0);
+        // Apply ordered list
+        editorObj.execCommand("Lists", 'OL', null);
+        // Assertions
+        const listElement = editNode.querySelector('ol');
+        expect(listElement).not.toBeNull();
+        expect(listElement.querySelectorAll('li').length).toBe(4);
+        expect(listElement.querySelector('li').contains(editNode.querySelector('hr'))).toBe(true);
+        expect(listElement.querySelector('li').contains(editNode.querySelector('p'))).toBe(false);
+    });
+});
+describe('956982 - List item merge and incorrect cursor behavior after removing code block formatting in Rich Text Editor', () => {
+    let editorObj: RichTextEditor;
+    beforeAll(() => {
+        editorObj = renderRTE({
+            toolbarSettings: {
+                items: ['OrderedList', 'UnorderedList']
+            },
+            value: `<ul><li><p>Rich Text Editor 1</p><p class='start'>Rich Text Editor 2</p><p>Rich Text Editor 3</p><p>Rich Text Editor 4</p></li></ul>`
+        });
+    });
+    afterAll(() => {
+        destroy(editorObj);
+    });
+    it('Should split list item at cursor position when Enter is pressed within paragraph text', (done) => {
+        let startNode = editorObj.inputElement.querySelector('.start');
+        setCursorPoint(startNode.firstChild as Element, 5);
+        let keyBoardEvent: any = { type: 'keydown', preventDefault: () => { }, ctrlKey: false, key: 'enter', stopPropagation: () => { }, shiftKey: false, which: 13, action: 'enter' };
+        keyBoardEvent.keyCode = 13;
+        keyBoardEvent.code = 'Enter';
+        (editorObj as any).keyDown(keyBoardEvent);
+        setTimeout(() => {
+            expect(editorObj.inputElement.innerHTML === '<ul><li><p>Rich Text Editor 1</p><p class="start">Rich </p></li><li><p class="start">Text Editor 2</p><p>Rich Text Editor 3</p><p>Rich Text Editor 4</p></li></ul>').toBe(true);
+            done();
+        }, 50);
+    });
+    it('Should split list item at selected text range when Enter is pressed', (done) => {
+        editorObj.inputElement.innerHTML = `<ul><li><p>Rich Text Editor 1</p><p class='start'>Rich Text Editor 2</p><p>Rich Text Editor 3</p><p>Rich Text Editor 4</p></li></ul>`;
+        let startNode = editorObj.inputElement.querySelector('.start');
+        editorObj.formatter.editorManager.nodeSelection.setSelectionText(document, startNode.firstChild, startNode.firstChild, 3, 10);
+        let keyBoardEvent: any = { type: 'keydown', preventDefault: () => { }, ctrlKey: false, key: 'enter', stopPropagation: () => { }, shiftKey: false, which: 13, action: 'enter' };
+        keyBoardEvent.keyCode = 13;
+        keyBoardEvent.code = 'Enter';
+        (editorObj as any).keyDown(keyBoardEvent);
+        setTimeout(() => {
+            expect(editorObj.inputElement.innerHTML === `<ul><li><p>Rich Text Editor 1</p><p class="start">Ric</p></li><li><p class="start">Editor 2</p><p>Rich Text Editor 3</p><p>Rich Text Editor 4</p></li></ul>`).toBe(true);
+            done();
+        }, 50);
+    });
+    it('Should create an empty list item when Enter is pressed at end of list item', (done) => {
+        editorObj.inputElement.innerHTML = `<ol><li>Rich Text Editor</li></ol>`;
+        let startNode = editorObj.inputElement.querySelector('li');
+        setCursorPoint(startNode.firstChild as Element, startNode.firstChild.textContent.length);
+        let keyBoardEvent: any = { type: 'keydown', preventDefault: () => { }, ctrlKey: false, key: 'enter', stopPropagation: () => { }, shiftKey: false, which: 13, action: 'enter' };
+        keyBoardEvent.keyCode = 13;
+        keyBoardEvent.code = 'Enter';
+        (editorObj as any).keyDown(keyBoardEvent);
+        setTimeout(() => {
+            expect(editorObj.inputElement.innerHTML === `<ol><li>Rich Text Editor</li><li><br></li></ol>`).toBe(true);
+            done();
+        }, 50);
+    });
+    it('Should properly handle nested lists when splitting at parent list item', (done) => {
+        editorObj.inputElement.innerHTML = `<ol><li class="start">Rich Text Editor<ol><li>Text1</li><li>Text2</li></ol></li></ol>`;
+        let startNode = editorObj.inputElement.querySelector('.start');
+        setCursorPoint(startNode.firstChild as Element, startNode.firstChild.textContent.length);
+        let keyBoardEvent: any = { type: 'keydown', preventDefault: () => { }, ctrlKey: false, key: 'enter', stopPropagation: () => { }, shiftKey: false, which: 13, action: 'enter' };
+        keyBoardEvent.keyCode = 13;
+        keyBoardEvent.code = 'Enter';
+        (editorObj as any).keyDown(keyBoardEvent);
+        setTimeout(() => {
+            expect(editorObj.inputElement.innerHTML === `<ol><li class="start">Rich Text Editor</li><li class="start"><br><ol><li>Text1</li><li>Text2</li></ol></li></ol>`).toBe(true);
+            done();
+        }, 50);
+    });
+    it('Should preserve self-closing tags when splitting list items', (done) => {
+        editorObj.inputElement.innerHTML = `<ol><li class="start">Rich T<hr>ext Editor</li></ol>`;
+        let startNode = editorObj.inputElement.querySelector('.start');
+        setCursorPoint(startNode.firstChild as Element, 3);
+        let keyBoardEvent: any = { type: 'keydown', preventDefault: () => { }, ctrlKey: false, key: 'enter', stopPropagation: () => { }, shiftKey: false, which: 13, action: 'enter' };
+        keyBoardEvent.keyCode = 13;
+        keyBoardEvent.code = 'Enter';
+        (editorObj as any).keyDown(keyBoardEvent);
+        setTimeout(() => {
+            expect(editorObj.inputElement.innerHTML === `<ol><li class="start">Ric</li><li class="start">h T<hr>ext Editor</li></ol>`).toBe(true);
+            done();
+        }, 50);
+    });
+    it('Should not created a new list when press the enterkey in side the table', (done) => {
+        editorObj.inputElement.innerHTML = `<ol><li><p>Rich T</p><table class="e-rte-table" style="width: 100%; min-width: 0px;"><colgroup><col style="width: 33.3333%;"><col style="width: 33.3333%;"><col style="width: 33.3333%;"></colgroup><tbody><tr><td><br></td><td><br></td><td><br></td></tr><tr><td><br></td><td><br></td><td><br></td></tr><tr><td><br></td><td><br></td><td><br></td></tr></tbody></table><p>ext Editor</p></li></ol>`;
+        let startNode = editorObj.inputElement.querySelector('tr td');
+        setCursorPoint(startNode as Element, 0);
+        let keyBoardEvent: any = { type: 'keydown', preventDefault: () => { }, ctrlKey: false, key: 'enter', stopPropagation: () => { }, shiftKey: false, which: 13, action: 'enter' };
+        keyBoardEvent.keyCode = 13;
+        keyBoardEvent.code = 'Enter';
+        (editorObj as any).keyDown(keyBoardEvent);
+        setTimeout(() => {
+            expect(editorObj.inputElement.innerHTML === `<ol><li><p>Rich T</p><table class="e-rte-table" style="width: 100%; min-width: 0px;"><colgroup><col style="width: 33.3333%;"><col style="width: 33.3333%;"><col style="width: 33.3333%;"></colgroup><tbody><tr><td><br></td><td><br></td><td><br></td></tr><tr><td><br></td><td><br></td><td><br></td></tr><tr><td><br></td><td><br></td><td><br></td></tr></tbody></table><p>ext Editor</p></li></ol>`).toBe(true);
+            done();
+        }, 50);
+    });
+    it('969602 - Pressing Enter in a List Doesn’t Maintain Formatting', (done) => {
+        editorObj.inputElement.innerHTML = `<ol>
+   <li style="font-weight: bold;"><strong><span style="text-decoration: underline;"><span class='start' style="text-decoration: line-through;">rich</span></span></strong></li>
+   <li>text</li>
+</ol>`;
+        let startNode = editorObj.inputElement.querySelector('.start');
+        setCursorPoint(startNode.firstChild as Element, startNode.firstChild.textContent.length);
+        let keyBoardEvent: any = { type: 'keydown', preventDefault: () => { }, ctrlKey: false, key: 'enter', stopPropagation: () => { }, shiftKey: false, which: 13, action: 'enter' };
+        keyBoardEvent.keyCode = 13;
+        keyBoardEvent.code = 'Enter';
+        (editorObj as any).keyDown(keyBoardEvent);
+        setTimeout(() => {
+            expect(editorObj.inputElement.innerHTML === `<ol>
+   <li style="font-weight: bold;"><strong><span style="text-decoration: underline;"><span class="start" style="text-decoration: line-through;">rich</span></span></strong></li>
+   <li style="font-weight: bold;"><strong><span style="text-decoration: underline;"><span class="start" style="text-decoration: line-through;"><br></span></span></strong></li><li>text</li>
+</ol>`).toBe(true);
+            done();
+        }, 50);
+    });
+});
+
+describe('968282 : Implement NumberFormatList and BulletFormatList in executeCommand Method Cursor based', () => {
+    let rteObj: RichTextEditor;
+    let rteEle: HTMLElement;
+    
+        beforeAll((done: Function) => {
+            rteObj = renderRTE({
+                toolbarSettings: {
+                    items: ['BulletFormatList', 'NumberFormatList']
+                },
+                value: `<p id="pNode1">Sample</p>
+                <p id="pNode2">Sample</p>
+                <p id="pNode3">Sample</p>
+                <p id="pNode4">Sample</p>
+                <p id="createLink">CreateLinkSample</p>`
+            });
+            rteEle = rteObj.element;
+            done();
+        });
+    
+        afterAll((done: Function) => {
+            destroy(rteObj);
+            done();
+        });
+
+        // case for checking number list for executeCommand method.
+        it('Should check for list style number in exexuteCommand', () => {
+            let targetNode : HTMLElement = rteObj.inputElement.querySelector('#pNode1');
+            setCursorPoint(targetNode, 1);
+            rteObj.executeCommand("numberFormatList", "decimal", {undo : true} );
+            expect(targetNode.style.listStyleType === 'decimal').toBe(true);
+        });
+        // case for checking lower greek for executeCommand method.
+        it('Should check for list style lower greek in exexuteCommand', () => {
+            let targetNode : HTMLElement = rteObj.inputElement.querySelector('#pNode2');
+            setCursorPoint(targetNode, 1);
+            rteObj.executeCommand("numberFormatList", "lowerGreek", {undo : true} );
+            expect(targetNode.style.listStyleType === 'lower-greek').toBe(true);
+        });
+        // case for checking lower roman for executeCommand method.
+        it('Should check for list style lower roman in exexuteCommand', () => {
+            let targetNode : HTMLElement = rteObj.inputElement.querySelector('#pNode3');
+            setCursorPoint(targetNode, 1);
+            rteObj.executeCommand("numberFormatList", "lowerRoman", {undo : true} );
+            expect(targetNode.style.listStyleType === 'lower-roman').toBe(true);
+        });
+        // case for checking upper alpha for executeCommand method.
+        it('Should check for list style upper alpha in exexuteCommand', () => {
+            let targetNode : HTMLElement = rteObj.inputElement.querySelector('#pNode4');
+            setCursorPoint(targetNode, 1);
+            rteObj.executeCommand("numberFormatList", "upperAlpha", {undo : true} );
+            expect(targetNode.style.listStyleType === 'upper-alpha').toBe(true);
+        });
+        // case for checking lower alpha for executeCommand method.
+        it('Should check for list style lower alpha in exexuteCommand', () => {
+            let targetNode : HTMLElement = rteObj.inputElement.querySelector('#createLink');
+            setCursorPoint(targetNode, 1);
+            rteObj.executeCommand("numberFormatList", "lowerAlpha", {undo : true} );
+            expect(targetNode.style.listStyleType === 'lower-alpha').toBe(true);
+        });
+        // case for checking upper roman for executeCommand method.
+        it('Should check for list style upper roman in exexuteCommand', () => {
+            let targetNode : HTMLElement = rteObj.inputElement.querySelector('#createLink');
+            setCursorPoint(targetNode, 1);
+            rteObj.executeCommand("numberFormatList", "upperRoman", {undo : true} );
+            expect(targetNode.style.listStyleType === 'upper-roman').toBe(true);
+        });
+        // case for checking dic list for executeCommand method.
+        it('Should check for list style dic in exexuteCommand', () => {
+            let targetNode : HTMLElement = rteObj.inputElement.querySelector('#pNode1');
+            setCursorPoint(targetNode, 1);
+            rteObj.executeCommand("bulletFormatList", "disc", {undo: true});
+            expect(targetNode.style.listStyleType === 'disc').toBe(true);
+        });
+        // case for checking  circle for executeCommand method.
+        it('Should check for list style lower greek in exexuteCommand', () => {
+            let targetNode : HTMLElement = rteObj.inputElement.querySelector('#pNode2');
+            setCursorPoint(targetNode, 1);
+            rteObj.executeCommand("bulletFormatList", "circle", {undo: true});
+            expect(targetNode.style.listStyleType === 'circle').toBe(true);
+        });
+        // case for checking square for executeCommand method.
+        it('Should check for list style square in exexuteCommand', () => {
+            let targetNode : HTMLElement = rteObj.inputElement.querySelector('#pNode3');
+            setCursorPoint(targetNode, 1);
+            rteObj.executeCommand("bulletFormatList", "Square", {undo: true});
+            expect(targetNode.style.listStyleType === 'square').toBe(true);
+        });
+});
+
+describe('968282 : Implement NumberFormatList in executeCommand Method - Selection Based', () => {
+    let rteObj: RichTextEditor;
+    let rteEle: HTMLElement;
+    
+        beforeAll((done: Function) => {
+            rteObj = renderRTE({
+                toolbarSettings: {
+                    items: ['Undo']
+                },
+                value: `<p id="pNode1">Sample1</p>
+                        <p id="pNode2">Sample2</p>
+                        <p id="pNode3">Sample3</p>
+                        <p id="pNode4">Sample4</p>
+                        <p id="pNode5">Sample5</p>
+                        <p id="pNode6">Sample6</p>
+                        <p id="pNode7">Sample7</p>
+                        <p id="pNode8">Sample8</p>
+                        <p id="pNode9">Sample9</p>
+                        <p id="pNode10">Sample10</p>
+                        <p id="pNode11">Sample11</p>
+                        <p id="pNode12">Sample12</p>
+                        <p id="pNode13">Sample13</p>
+                        <p id="pNode14">Sample14</p>
+                        <p id="pNode15">Sample15</p>
+                        <p id="pNode16">Sample16</p>
+                        <p id="pNode17">Sample17</p>
+                        <p id="pNode18">Sample18</p>
+                        <p id="pNode19">Sample19</p>
+                        <p id="pNode20">Sample20</p>`
+            });
+            rteEle = rteObj.element;
+            done();
+        });
+    
+        afterAll((done: Function) => {
+            destroy(rteObj);
+            done();
+        });
+
+        // case for checking number list for executeCommand method.
+        it('Should check for list style number in exexuteCommand', () => {
+            let targetNodeOne : HTMLElement = rteObj.inputElement.querySelector('#pNode1');
+            let targetNodeTwo : HTMLElement = rteObj.inputElement.querySelector('#pNode2');
+            rteObj.formatter.editorManager.nodeSelection.setSelectionText(document, targetNodeOne, targetNodeTwo, 0, 0);
+            rteObj.executeCommand("numberFormatList", "decimal", {undo : true} );
+            expect(targetNodeTwo.style.listStyleType === 'decimal').toBe(true);
+            expect(document.querySelector('.e-toolbar-item').classList.contains('e-overlay')).toBe(false);
+            
+        });
+        // case for checking lower greek for executeCommand method.
+        it('Should check for list style lower greek in exexuteCommand', () => {
+            let targetNodeOne : HTMLElement = rteObj.inputElement.querySelector('#pNode3');
+            let targetNodeTwo : HTMLElement = rteObj.inputElement.querySelector('#pNode4');
+            rteObj.formatter.editorManager.nodeSelection.setSelectionText(document, targetNodeOne, targetNodeTwo, 0, 0);
+            rteObj.executeCommand("numberFormatList", "lowergreek", {undo : true} );
+            expect(targetNodeOne.style.listStyleType === 'lower-greek').toBe(true);
+            expect(document.querySelector('.e-toolbar-item').classList.contains('e-overlay')).toBe(false);
+        });
+        // case for checking lower roman for executeCommand method.
+        it('Should check for list style lower roman in exexuteCommand', () => {
+            let targetNodeOne : HTMLElement = rteObj.inputElement.querySelector('#pNode5');
+            let targetNodeTwo : HTMLElement = rteObj.inputElement.querySelector('#pNode6');
+            rteObj.formatter.editorManager.nodeSelection.setSelectionText(document, targetNodeOne, targetNodeTwo, 0, 0);
+            rteObj.executeCommand("numberFormatList", "lowerRoman", {undo : true} );
+            expect(targetNodeOne.style.listStyleType === 'lower-roman').toBe(true);
+            expect(document.querySelector('.e-toolbar-item').classList.contains('e-overlay')).toBe(false);
+        });
+        // case for checking upper alpha for executeCommand method.
+        it('Should check for list style upper alpha in exexuteCommand', () => {
+            let targetNodeOne : HTMLElement = rteObj.inputElement.querySelector('#pNode7');
+            let targetNodeTwo : HTMLElement = rteObj.inputElement.querySelector('#pNode8');
+            rteObj.formatter.editorManager.nodeSelection.setSelectionText(document, targetNodeOne, targetNodeTwo, 0, 0);
+            rteObj.executeCommand("numberFormatList", "upperAlpha", {undo : true} );
+            expect(targetNodeOne.style.listStyleType === 'upper-alpha').toBe(true);
+            expect(document.querySelector('.e-toolbar-item').classList.contains('e-overlay')).toBe(false);
+        });
+        // case for checking lower alpha for executeCommand method.
+        it('Should check for list style lower alpha in exexuteCommand', () => {
+            let targetNodeOne : HTMLElement = rteObj.inputElement.querySelector('#pNode9');
+            let targetNodeTwo : HTMLElement = rteObj.inputElement.querySelector('#pNode10');
+            rteObj.formatter.editorManager.nodeSelection.setSelectionText(document, targetNodeOne, targetNodeTwo, 0, 0);
+            rteObj.executeCommand("numberFormatList", "lowerAlpha", {undo : true} );
+            expect(targetNodeOne.style.listStyleType === 'lower-alpha').toBe(true);
+            expect(document.querySelector('.e-toolbar-item').classList.contains('e-overlay')).toBe(false);
+        });
+        // case for checking upper roman for executeCommand method.
+        it('Should check for list style upper roman in exexuteCommand', () => {
+            let targetNodeOne : HTMLElement = rteObj.inputElement.querySelector('#pNode11');
+            let targetNodeTwo : HTMLElement = rteObj.inputElement.querySelector('#pNode12');
+            rteObj.formatter.editorManager.nodeSelection.setSelectionText(document, targetNodeOne, targetNodeTwo, 0, 0);
+            rteObj.executeCommand("numberFormatList", "upperRoman", {undo : true} );
+            expect(targetNodeOne.style.listStyleType === 'upper-roman').toBe(true);
+            expect(document.querySelector('.e-toolbar-item').classList.contains('e-overlay')).toBe(false);
+        });
+        // case for checking dic list for executeCommand method.
+        it('Should check for list style dic in exexuteCommand', () => {
+            let targetNodeOne : HTMLElement = rteObj.inputElement.querySelector('#pNode13');
+            let targetNodeTwo : HTMLElement = rteObj.inputElement.querySelector('#pNode14');
+            rteObj.formatter.editorManager.nodeSelection.setSelectionText(document, targetNodeOne, targetNodeTwo, 0, 0);
+            rteObj.executeCommand("bulletFormatList", "disc", {undo: true});
+            expect(targetNodeTwo.style.listStyleType === 'disc').toBe(true);
+            expect(document.querySelector('.e-toolbar-item').classList.contains('e-overlay')).toBe(false);
+        });
+        // case for checking  circle for executeCommand method.
+        it('Should check for list style lower greek in exexuteCommand', () => {
+            let targetNodeOne : HTMLElement = rteObj.inputElement.querySelector('#pNode16');
+            let targetNodeTwo : HTMLElement = rteObj.inputElement.querySelector('#pNode17');
+            rteObj.formatter.editorManager.nodeSelection.setSelectionText(document, targetNodeOne, targetNodeTwo, 0, 0);
+            rteObj.executeCommand("bulletFormatList", "circle", {undo: true});
+            expect(targetNodeOne.style.listStyleType === 'circle').toBe(true);
+            expect(document.querySelector('.e-toolbar-item').classList.contains('e-overlay')).toBe(false);
+        });
+        // case for checking square for executeCommand method.
+        it('Should check for list style square in exexuteCommand', () => {
+            let targetNodeOne : HTMLElement = rteObj.inputElement.querySelector('#pNode18');
+            let targetNodeTwo : HTMLElement = rteObj.inputElement.querySelector('#pNode19');
+            rteObj.formatter.editorManager.nodeSelection.setSelectionText(document, targetNodeOne, targetNodeTwo, 0, 0);
+            rteObj.executeCommand("bulletFormatList", "Square", {undo: true});
+            expect(targetNodeTwo.style.listStyleType === 'square').toBe(true);
+            expect(document.querySelector('.e-toolbar-item').classList.contains('e-overlay')).toBe(false);
+        });
+        
+});
+
+describe('968282: Nested List Formatting with executeCommand', () => {
+    let rteObj: RichTextEditor;
+    let rteEle: HTMLElement;
+
+    beforeAll((done: Function) => {
+        rteObj = renderRTE({
+            toolbarSettings: {
+                items: ['Undo']
+            },
+            value: `
+                <ul id="list1">
+                    <li id="item1">Item 1
+                        <ul>
+                            <li id="item1-1">Subitem 1.1</li>
+                            <li id="item1-2">Subitem 1.2</li>
+                        </ul>
+                    </li>
+                    <li id="item2">Item 2</li>
+                </ul>
+                <ol id="list2">
+                    <li id="item3">Item 3
+                        <ol>
+                            <li id="item3-1">Subitem 3.1</li>
+                            <li id="item3-2">Subitem 3.2</li>
+                        </ol>
+                    </li>
+                    <li id="item4">Item 4</li>
+                </ol>`
+        });
+        rteEle = rteObj.element;
+        done();
+    });
+
+    afterAll((done: Function) => {
+        destroy(rteObj);
+        done();
+    });
+
+    it('Should apply disc style to nested unordered list', () => {
+        const targetNode: HTMLElement = rteObj.inputElement.querySelector('#item1-1');
+        setSelection(targetNode, 0, 0);
+        rteObj.executeCommand("bulletFormatList", "disc", {undo: true});
+        expect(targetNode.style.listStyleType).toBe('disc');
+    });
+
+    it('Should apply circle style to nested unordered list', () => {
+        const targetNode: HTMLElement = rteObj.inputElement.querySelector('#item1-1');
+        setCursorPoint(targetNode, 1);
+        rteObj.executeCommand("bulletFormatList", "circle", {undo: true});
+        expect(targetNode.style.listStyleType).toBe('circle');
+    });
+    it('Should apply square style to nested unordered list', () => {
+        const targetNode: HTMLElement = rteObj.inputElement.querySelector('#item1-1');
+        setCursorPoint(targetNode, 1);
+        rteObj.executeCommand("bulletFormatList", "Square", {undo: true});
+        expect(targetNode.style.listStyleType).toBe('square');
+    });
+
+    it('Should apply lower-roman style to nested ordered list', () => {
+        const targetNode : HTMLElement = rteObj.inputElement.querySelector('#item3-1');
+        setSelection(targetNode, 0, 0);
+        rteObj.executeCommand("numberFormatList", "lowerRoman", {undo : true} );
+        expect(targetNode.style.listStyleType).toBe('lower-roman');
+    });
+    it('Should apply number style to nested ordered list', () => {
+        const targetNode : HTMLElement = rteObj.inputElement.querySelector('#item3-1');
+        setCursorPoint(targetNode, 1);
+        rteObj.executeCommand("numberFormatList", "decimal", {undo : true} );
+        expect(targetNode.style.listStyleType).toBe('decimal');
+    });
+    it('Should apply lower alpha style to nested ordered list', () => {
+        const targetNode : HTMLElement = rteObj.inputElement.querySelector('#item3-1');
+        setCursorPoint(targetNode, 1);
+        rteObj.executeCommand("numberFormatList", "lowerAlpha", {undo : true} );
+        expect(targetNode.style.listStyleType).toBe('lower-alpha');
+    });
+    it('Should apply upper alpha style to nested ordered list', () => {
+        const targetNode : HTMLElement = rteObj.inputElement.querySelector('#item3-1');
+        setCursorPoint(targetNode, 1);
+        rteObj.executeCommand("numberFormatList", "upperAlpha", {undo : true} );
+        expect(targetNode.style.listStyleType).toBe('upper-alpha');
+    });
+    it('Should apply upper roman style to nested ordered list', () => {
+        const targetNode : HTMLElement = rteObj.inputElement.querySelector('#item3-1');
+        setCursorPoint(targetNode, 1);
+        rteObj.executeCommand("numberFormatList", "upperRoman", {undo : true} );
+        expect(targetNode.style.listStyleType).toBe('upper-roman');
+    });
+    it('Should apply lower greek style to nested ordered list', () => {
+        const targetNode : HTMLElement = rteObj.inputElement.querySelector('#item3-1');
+        setCursorPoint(targetNode, 1);
+        rteObj.executeCommand("numberFormatList", "lowerGreek", {undo : true} );
+        expect(targetNode.style.listStyleType).toBe('lower-greek');
+    });
+});
+
+describe('971240 - Implement Checklist Structure Updates via Toolbar.', () => {
+    let editorObj: RichTextEditor;
+    let keyBoardEvent: any = { type: 'keydown', preventDefault: () => { }, ctrlKey: true, key: 'backspace', stopPropagation: () => { }, shiftKey: false, which: 8 };
+    beforeAll(() => {
+        editorObj = renderRTE({
+            toolbarSettings: {
+                items: ['Checklist']
+            },
+            value: `<p id="start">Line 1</p><p id="end">Line 2</p>`
+        });
+    });
+    afterAll((done) => {
+        destroy(editorObj);
+        done();
+    });
+    it('should update the checklist when clicking the checklist icon', (done) => {
+        const start = editorObj.inputElement.querySelector('#start');
+        const end = editorObj.inputElement.querySelector('#end');
+        editorObj.formatter.editorManager.nodeSelection.setSelectionText(document, start.firstChild, end.firstChild, 0, 2);
+        editorObj.element.querySelectorAll(".e-toolbar .e-toolbar-item")[0].querySelectorAll('button')[0].click();
+        expect(editorObj.inputElement.querySelector('.e-rte-checklist') !== null).toBe(true);
+        done();
+    });
+    it('should toggle the checklist checked state when clicking the checkbox area.', (done) => {
+        editorObj.inputElement.innerHTML = `<ul class="e-rte-checklist"><li>Line 1</li></ul>`;
+        editorObj.enableRtl = false;
+        const li = document.querySelector('.e-rte-checklist li');
+        const mockEvent = {
+            clientX: 0,
+            target: li,
+            preventDefault: () => { },
+            stopPropagation: () => { }
+        };
+        li.getBoundingClientRect = (): DOMRect => ({
+            left: 50,
+            right: 200,
+            top: 0,
+            bottom: 0,
+            x: 50,
+            y: 0,
+            width: 150,
+            height: 0,
+            toJSON: () => { },
+        });
+        (editorObj as any).handleChecklistDocumentClick(mockEvent, li);
+        expect(li.classList.contains('e-rte-checklist-checked')).toBe(true);
+        (editorObj as any).handleChecklistDocumentClick(mockEvent, li);
+        expect(li.classList.contains('e-rte-checklist-checked')).toBe(false);
+        done();
+    });
+    it('should toggle checklist checked state properly when enableRtl is true', (done) => {
+        editorObj.inputElement.innerHTML = `<ul class="e-rte-checklist"><li>Line 1</li></ul>`;
+        editorObj.enableRtl = true;
+        const li = document.querySelector('.e-rte-checklist li')!;
+        li.getBoundingClientRect = (): DOMRect => ({
+            left: 50,
+            right: 200,
+            top: 0,
+            bottom: 0,
+            x: 50,
+            y: 0,
+            width: 150,
+            height: 0,
+            toJSON: () => { },
+        });
+        let mockEvent = {
+            clientX: 200,
+            target: li,
+            preventDefault: () => { },
+            stopPropagation: () => { }
+        } as unknown as MouseEvent;
+        (editorObj as any).handleChecklistDocumentClick(mockEvent, li);
+        expect(li.classList.contains('e-rte-checklist-checked')).toBe(false);
+        mockEvent = {
+            clientX: 201,
+            target: li,
+            preventDefault: () => { },
+            stopPropagation: () => { }
+        } as unknown as MouseEvent;
+        (editorObj as any).handleChecklistDocumentClick(mockEvent, li);
+        expect(li.classList.contains('e-rte-checklist-checked')).toBe(true);
+        mockEvent = {
+            clientX: 250,
+            target: li,
+            preventDefault: () => { },
+            stopPropagation: () => { }
+        } as unknown as MouseEvent;
+        (editorObj as any).handleChecklistDocumentClick(mockEvent, li);
+        expect(li.classList.contains('e-rte-checklist-checked')).toBe(false);
+        done();
+    });
+    it('should convert the ordered list to a checklist.', (done) => {
+        editorObj.inputElement.innerHTML = `<ol><li>Line1</li><li>Line2</li><li>Line3</li><li>Line4</li></ol>`;
+        const li = document.querySelector('li');
+        setCursorPoint(li.firstChild as Element, 0);
+        editorObj.element.querySelectorAll(".e-toolbar .e-toolbar-item")[0].querySelectorAll('button')[0].click();
+        expect(editorObj.inputElement.querySelectorAll('.e-rte-checklist').length === 1).toBe(true);
+        done();
+    });
+    it('should convert the unordered list to a checklist.', (done) => {
+        editorObj.inputElement.innerHTML = `<ul><li>Line1</li><li>Line2</li><li>Line3</li><li>Line4</li></ul>`;
+        const li = document.querySelector('li');
+        setCursorPoint(li.firstChild as Element, 0);
+        editorObj.element.querySelectorAll(".e-toolbar .e-toolbar-item")[0].querySelectorAll('button')[0].click();
+        expect(editorObj.inputElement.querySelectorAll('.e-rte-checklist').length === 1).toBe(true);
+        done();
+    });
+    it('should revert the checklist when a checklist range is selected and the checklist icon is clicked.', (done) => {
+        editorObj.inputElement.innerHTML = `<ul class="e-rte-checklist e-checklist-strikethrough"><li id='start'>Line2</li><li>Line3</li><li id='end'>Line4</li></ul>`;
+        const li = document.querySelector('li');
+        const start = editorObj.inputElement.querySelector('#start');
+        const end = editorObj.inputElement.querySelector('#end');
+        editorObj.formatter.editorManager.nodeSelection.setSelectionText(document, start.firstChild, end.firstChild, 0, 2);
+        editorObj.element.querySelectorAll(".e-toolbar .e-toolbar-item")[0].querySelectorAll('button')[0].click();
+        expect(editorObj.inputElement.querySelectorAll('.e-rte-checklist').length === 0).toBe(true);
+        done();
+    });
+    it('should revert the checklist when applied to an existing checklist', (done) => {
+        editorObj.inputElement.innerHTML = `<ul class="e-rte-checklist"><li id='start'>Line2</li><li>Line3</li><li id='end'>Line4</li></ul>`;
+        const start = editorObj.inputElement.querySelector('#start');
+        const end = editorObj.inputElement.querySelector('#end');
+        editorObj.formatter.editorManager.nodeSelection.setSelectionText(document, start.firstChild, end.firstChild, 0, 2);
+        editorObj.element.querySelectorAll(".e-toolbar .e-toolbar-item")[0].querySelectorAll('button')[0].click();
+        expect(editorObj.inputElement.querySelector('.e-rte-checklist') === null).toBe(true);
+        done();
+    });
+    it('Should update the checklist when using shortcut key - Ctrl+Shift+9', (done) => {
+        editorObj.inputElement.innerHTML = `<ol><li id='start'>Line2</li><li>Line3</li><li id='end'>Line4</li></ol>`;
+        const li = document.querySelector('li');
+        setCursorPoint(li.firstChild as Element, 0);
+        keyBoardEvent.code = 'Digit9';
+        keyBoardEvent.action = 'checklist';
+        keyBoardEvent.which = 57;
+        (editorObj as any).keyDown(keyBoardEvent);
+        expect(editorObj.inputElement.querySelector('.e-rte-checklist') !== null).toBe(true);
+        done();
+    });
+    it('Should update the checklist using and executeCommand', (done) => {
+        editorObj.inputElement.innerHTML = `<ol><li id='start'>Line2</li><li>Line3</li><li id='end'>Line4</li></ol>`;
+        const li = document.querySelector('li');
+        setCursorPoint(li.firstChild as Element, 0);
+        editorObj.executeCommand('checklist');
+        expect(editorObj.inputElement.querySelector('.e-rte-checklist') !== null).toBe(true);
+        done();
+    });
+});
+
+describe('975222 - Undo redo is not working with Checking of the list items.', () => {
+    let editorObj: RichTextEditor;
+    let keyBoardEvent: any = { type: 'keydown', preventDefault: () => { }, ctrlKey: true, key: 'backspace', stopPropagation: () => { }, shiftKey: false, which: 8 };
+    beforeAll(() => {
+        editorObj = renderRTE({
+            toolbarSettings: {
+                items: ['Checklist']
+            },
+            value: `<p id="start">Line 1</p><p id="end">Line 2</p>`
+        });
+    });
+    afterAll((done) => {
+        destroy(editorObj);
+        done();
+    });
+    it('Check that the list item maintains proper state after checking and unchecking', (done) => {
+        editorObj.inputElement.innerHTML = `<ul class="e-rte-checklist"><li>Line 1</li></ul>`;
+        const li = document.querySelector('.e-rte-checklist li');
+        setCursorPoint(li.firstChild as Element, 0);
+        const mockEvent = {
+            clientX: 0,
+            target: li,
+            preventDefault: () => { },
+            stopPropagation: () => { }
+        };
+        li.getBoundingClientRect = (): DOMRect => ({
+            left: 50,
+            right: 200,
+            top: 0,
+            bottom: 0,
+            x: 50,
+            y: 0,
+            width: 150,
+            height: 0,
+            toJSON: () => { },
+        });
+        (editorObj as any).handleChecklistDocumentClick(mockEvent, li);
+        expect(editorObj.formatter.editorManager.undoRedoManager.undoRedoStack.length === 1).toBe(true);
+        expect(li.classList.contains('e-rte-checklist-checked')).toBe(true);
+        (editorObj as any).handleChecklistDocumentClick(mockEvent, li);
+        expect(li.classList.contains('e-rte-checklist-checked')).toBe(false);
+        done();
+    });
+});
+
+describe('975503 - Unable to Create Table Inside List – Script Error Encountered', () => {
+    let editorObj: RichTextEditor;
+    let keyBoardEvent: any = { type: 'keydown', preventDefault: () => { }, ctrlKey: true, key: 'backspace', stopPropagation: () => { }, shiftKey: false, which: 8 };
+    beforeAll(() => {
+        editorObj = renderRTE({
+            toolbarSettings: {
+                items: ['Checklist']
+            },
+            value: `<p id="start">Line 1</p><p id="end">Line 2</p>`
+        });
+    });
+    afterAll((done) => {
+        destroy(editorObj);
+        done();
+    });
+    it('should place the cursor at the start of the LI element when pressing backspace', (done) => {
+        editorObj.inputElement.innerHTML = `<ul><li>Line 1</li></ul>`;
+        const li = document.querySelector('li');
+        setCursorPoint(li.firstChild as Element, li.firstChild.textContent.length);
+        const backspaceEvent: KeyboardEvent = new KeyboardEvent('keydown', ENTERKEY_EVENT_INIT);
+        editorObj.inputElement.dispatchEvent(backspaceEvent);
+        let range = window.getSelection().getRangeAt(0);
+        expect(range.startContainer.nodeName === 'LI').toBe(true);
+        expect(range.startOffset === 0 && range.endOffset === 0).toBe(true);
+        editorObj.inputElement.dispatchEvent(backspaceEvent);
+        range = window.getSelection().getRangeAt(0);
+        expect(range.startContainer.nodeName === 'P').toBe(true);
+        expect(range.startOffset === 0 && range.endOffset === 0).toBe(true);
+        done();
+    });
+});
+
+describe('975383: Shortcut to toggle Checklist is not working.', () => {
+    let editorObj: RichTextEditor;
+    let keyBoardEvent: any = { type: 'keydown', preventDefault: () => { }, ctrlKey: true, key: 'backspace', stopPropagation: () => { }, shiftKey: false, which: 8 };
+    beforeAll(() => {
+        editorObj = renderRTE({
+            toolbarSettings: {
+                items: ['Checklist']
+            },
+            value: `<p id="start">text</p><ul class="e-rte-checklist"><li>Text1<ul class="e-rte-checklist"><li>text2<ul class="e-rte-checklist"><li>text3</li></ul></li></ul></li><li>text4<ul class="e-rte-checklist"><li>text5</li></ul></li></ul><p id="end">text</p>`
+        });
+    });
+    afterAll((done) => {
+        ENTERKEY_EVENT_INIT.ctrlKey = false;
+        ENTERKEY_EVENT_INIT.metaKey = false;
+        destroy(editorObj);
+        done();
+    });
+    it('Should toggle the checklist when press the Ctrl+Enter', (done) => {
+        const start = editorObj.inputElement.querySelector('#start');
+        const end = editorObj.inputElement.querySelector('#end');
+        editorObj.formatter.editorManager.nodeSelection.setSelectionText(document, start.firstChild, end.firstChild, 0, 2);
+        ENTERKEY_EVENT_INIT.ctrlKey = true;
+        ENTERKEY_EVENT_INIT.metaKey = true;
+        const backspaceEvent: KeyboardEvent = new KeyboardEvent('keydown', ENTERKEY_EVENT_INIT);
+        editorObj.inputElement.dispatchEvent(backspaceEvent);
+        expect(editorObj.inputElement.querySelectorAll(".e-rte-checklist-checked").length === 5).toBe(true);
+        done();
+    });
+    it('Should not create a new list when press the ctrl+enter', (done) => {
+        editorObj.inputElement.innerHTML = `<ol><li>RichText Editor</li></ol>`;
+        const li = document.querySelector('li');
+        setCursorPoint(li.firstChild as Element, 3);
+        ENTERKEY_EVENT_INIT.ctrlKey = true;
+        ENTERKEY_EVENT_INIT.metaKey = true;
+        const backspaceEvent: KeyboardEvent = new KeyboardEvent('keydown', ENTERKEY_EVENT_INIT);
+        editorObj.inputElement.dispatchEvent(backspaceEvent);
+        expect(editorObj.inputElement.innerHTML === `<ol><li>RichText Editor</li></ol>`).toBe(true);
+        done();
+    });
+});
+
+describe('977557 - When pressing enter key at start position of list affects the DOM structure', () => {
+    let editorObj: RichTextEditor;
+    beforeAll(() => {
+        editorObj = renderRTE({
+            enterKey: 'DIV',
+            toolbarSettings: {
+                items: ['OrderedList', 'UnorderedList']
+            },
+            value: `<div class="startFocus">Line 1</div><div class="endFocus">Line 2</div>`
+        });
+    });
+    afterAll(() => {
+        destroy(editorObj);
+    });
+    it('configure enter key as DIV and pressing enter key at start and end position of list affects the DOM structure', (done) => {
+        let startNode = editorObj.inputElement.querySelector('.startFocus');
+        let endNode = editorObj.inputElement.querySelector('.endFocus');
+        editorObj.formatter.editorManager.nodeSelection.setSelectionText(document, startNode.firstChild, endNode.lastChild, 0, endNode.lastChild.textContent.length);
+        (editorObj.element.querySelectorAll(".e-toolbar .e-toolbar-item")[1] as HTMLElement).click();
+        expect(editorObj.inputElement.innerHTML === '<ul><li class="startfocus">Line 1</li><li class="endfocus">Line 2</li></ul>').toBe(true);
+        const ul = document.querySelector('ul');
+        setCursorPoint(ul.childNodes[0].firstChild as Element, 0);
+        let keyBoardEvent: any = { type: 'keydown', preventDefault: () => { }, stopPropagation: () => { }, shiftKey: false, which: 8 };
+        keyBoardEvent.code = 'Enter';
+        keyBoardEvent.action = 'enter';
+        keyBoardEvent.which = 13;
+        (editorObj as any).keyDown(keyBoardEvent);
+        expect(editorObj.inputElement.innerHTML === '<ul><li class="startfocus"><br></li><li class="startfocus">Line 1</li><li class="endfocus">Line 2</li></ul>').toBe(true);
+        setCursorPoint(ul.childNodes[2].lastChild as Element, ul.childNodes[2].lastChild.textContent.length);
+        (editorObj as any).keyDown(keyBoardEvent);
+        expect(editorObj.inputElement.innerHTML === '<ul><li class="startfocus"><br></li><li class="startfocus">Line 1</li><li class="endfocus">Line 2</li><li class="endfocus"><br></li></ul>').toBe(true);
+        done();
     });
 });

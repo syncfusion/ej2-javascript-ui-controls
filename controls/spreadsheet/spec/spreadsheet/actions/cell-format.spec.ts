@@ -150,7 +150,7 @@ describe('Cell Format ->', () => {
         });
     });
 
-    describe('967456 -  discontinuous range support for cell styles', () => {
+    describe('967456 - discontinuous range support for cell styles', () => {
         beforeAll((done: Function) => {
             helper.initializeSpreadsheet({ sheets: [{ ranges: [{ dataSource: defaultData }] }] }, done);
         });
@@ -2086,8 +2086,8 @@ describe('Cell Format ->', () => {
             expect(cell.style.borderBottom).toBe('1px solid rgb(0, 0, 0)');
             done();
         });
-        it('972614 - Text Decoration on Selected Range: Read-Only Cell Triggers Dialog Closure Issue', function (done) {
-            var spreadsheet = helper.getInstance();
+        it('972614 - Text Decoration on Selected Range: Read-Only Cell Triggers Dialog Closure Issue', (done: Function) => {
+            const spreadsheet: Spreadsheet = helper.getInstance();
             spreadsheet.setRangeReadOnly(true, 'C2:C6', spreadsheet.activeSheetIndex);
             expect(spreadsheet.sheets[0].rows[1].cells[2].isReadOnly).toBeTruthy();
             expect(spreadsheet.sheets[0].rows[5].cells[2].isReadOnly).toBeTruthy();
@@ -2095,12 +2095,12 @@ describe('Cell Format ->', () => {
             expect(helper.getElement('.e-readonly-alert-dlg.e-dialog')).toBeNull();
             helper.click('_font_color_picker .e-dropdown-btn');
             helper.click('.e-colorpicker-popup.e-popup-open span[aria-label="#ff0000ff"]');
-            setTimeout(function () {
-                var dialog = helper.getElement('.e-readonly-alert-dlg.e-dialog');
+            setTimeout(() => {
+                const dialog: HTMLElement = helper.getElement('.e-readonly-alert-dlg.e-dialog');
                 expect(dialog.querySelector('.e-dlg-content').textContent).toBe('You are trying to modify a cell that is in read-only mode. To make changes, please disable the read-only status.');
                 expect(helper.getElement('.e-readonly-alert-dlg.e-dialog')).not.toBeNull();
                 helper.setAnimationToNone('.e-readonly-alert-dlg.e-dialog');
-                dialog.querySelector('.e-dlg-closeicon-btn').click();
+                (dialog.querySelector('.e-dlg-closeicon-btn') as HTMLElement).click();
                 expect(helper.getElement('.e-readonly-alert-dlg.e-dialog')).toBeNull();
                 expect(spreadsheet.sheets[0].rows[0].cells[2].style).toBeUndefined();
                 expect(spreadsheet.sheets[0].rows[1].cells[2].style).toBeUndefined();
@@ -2142,6 +2142,46 @@ describe('Cell Format ->', () => {
             const cellF4 =helper.getInstance().sheets[0].rows[3].cells[5];
             expect(JSON.stringify(cellF4.validation)).toBe('{"type":"WholeNumber","operator":"LessThan","value1":"10","isHighlighted":true}');
             expect(helper.invoke('getCell',[3,5]).style.backgroundColor).toBe("");
+            done();
+        });
+    });
+    describe('EJ2-949190 ->', () => {
+        beforeAll((done: Function) => {
+            helper.initializeSpreadsheet({ sheets: [{ ranges: [{ dataSource: defaultData }] }] }, done);
+        });
+        afterAll(() => {
+            helper.invoke('destroy');
+        });
+        it('Border is not removed from cell model when clearing it using public methods with value change', (done: Function) => {
+            helper.invoke('setBorder', [{ border: '1px solid rgb(0, 0, 0)' }, 'D1:D6']);
+            helper.invoke('updateCell', [{ value: '30', style: { border: '' } }, 'D3']);
+            const cellD3 = helper.getInstance().sheets[0].rows[2].cells[3];
+            expect(cellD3.value).toBe(30);
+            expect(cellD3.style.border).toBeUndefined();
+            expect(cellD3.style.borderLeft).toBeUndefined();
+            expect(cellD3.style.borderBottom).toBeUndefined;
+            expect(cellD3.style.borderRight).toBeUndefined;
+            expect(cellD3.style.borderTop).toBeUndefined;
+            helper.invoke('updateCell', [{ value: 'text', style: { borderLeft: '' } }, 'D5']);
+            const cellD5 = helper.getInstance().sheets[0].rows[4].cells[3];
+            expect(cellD5.value).toBe('text');
+            expect(cellD5.style.borderLeft).toBeUndefined();
+            done();
+        });
+        it('Border is not removed from cell model when clearing it using public methods', (done: Function) => {
+            helper.invoke('setBorder', [{ border: '1px solid rgb(0, 0, 0)' }, 'B1:B6']);
+            helper.invoke('updateCell', [{ style: { border: '' } }, 'B3']);
+            const cellB3 = helper.getInstance().sheets[0].rows[2].cells[1];
+            expect(cellB3.style.border).toBeUndefined();
+            expect(cellB3.style.borderLeft).toBeUndefined();
+            expect(cellB3.style.borderBottom).toBeUndefined;
+            expect(cellB3.style.borderRight).toBeUndefined;
+            expect(cellB3.style.borderTop).toBeUndefined;
+            helper.invoke('updateCell', [{ style: { borderTop: '', borderBottom: '', borderRight: '' } }, 'B5']);
+            const cellB5 = helper.getInstance().sheets[0].rows[4].cells[1];
+            expect(cellB5.style.borderBottom).toBeUndefined;
+            expect(cellB5.style.borderRight).toBeUndefined;
+            expect(cellB5.style.borderTop).toBeUndefined;
             done();
         });
     });

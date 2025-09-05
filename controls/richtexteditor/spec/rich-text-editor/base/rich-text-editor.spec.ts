@@ -3,11 +3,11 @@
  */
 import { createElement, L10n, isNullOrUndefined, Browser, getUniqueID, detach } from '@syncfusion/ej2-base';
 import { RichTextEditor, HTMLFormatter, MarkdownFormatter, IQuickToolbar, QuickToolbar, dispatchEvent, PasteCleanup, HtmlEditor, Toolbar } from '../../../src/rich-text-editor/index';
-import { ITableCommandsArgs } from '../../../src/common/interface';
+import { ActionBeginEventArgs, ITableCommandsArgs } from '../../../src/common/interface';
 import { ToolbarType, DialogType } from '../../../src/common/enum';
 import { NodeSelection } from '../../../src/selection/index';
 import { setEditFrameFocus } from '../../../src/common/util';
-import { renderRTE, destroy, dispatchKeyEvent, setCursorPoint as setCursor, clickImage, clickVideo, currentBrowserUA, setSelection } from './../render.spec';
+import { renderRTE, destroy, dispatchKeyEvent, setCursorPoint as setCursor, clickImage, clickVideo, currentBrowserUA } from './../render.spec';
 import { ESCAPE_KEY_EVENT_INIT, SPACE_EVENT_INIT, TAB_KEY_EVENT_INIT, BACKSPACE_EVENT_INIT } from '../../constant.spec';
 
 function setCursorPoint(curDocument: Document, element: Element, point: number) {
@@ -355,6 +355,54 @@ describe('RTE Base module ', () => {
             setTimeout(() => {
                 expect((node as any).textContent.length).toBe(9);
                 done();
+            }, 100);
+        });
+        afterAll((done) => {
+            destroy(rteObj);
+            done();
+        });
+    });
+
+    describe('Bug 975481: Font Color Fails to Retain on New Line and Script Error Occurs After Multiple Enter Key Presses ', () => {
+        let rteObj: RichTextEditor;
+        let keyboardEventArg: any;
+        beforeAll((done: Function) => {
+                    rteObj = renderRTE({
+                        toolbarSettings: {
+                            items: ['FontColor']
+                        },
+                        value: `<h1>Testing 1</h1>`,
+                    });
+            keyboardEventArg = {
+                preventDefault: () => { },
+                stopPropagation: () => { },
+                altKey: false,
+                ctrlKey: false,
+                shiftKey: false,
+                char: '',
+                key: 'Enter',
+                charCode: 13,
+                keyCode: 13,
+                which: 13,
+                code: 'Enter',
+                action: 'enter',
+                type: 'keydown'
+            };
+                    done();
+                });
+        it(' pressing enter twice after selecting font color', (done: Function) => {
+            const node: any = (rteObj as any).inputElement.childNodes[0].firstChild;
+            setCursorPoint(document, node, 0);
+            (rteObj.element.querySelectorAll(".e-toolbar-item")[0] as HTMLElement).querySelector('button').click();
+            setTimeout(() => {
+                (<any>rteObj).keyDown(keyboardEventArg);
+                (<any>rteObj).keyUp(keyboardEventArgs);
+                (<any>rteObj).keyDown(keyboardEventArg);
+                (<any>rteObj).keyUp(keyboardEventArgs);
+                setTimeout(() => {
+                    expect((rteObj as any).inputElement.querySelectorAll('h1').length).toBe(3);
+                    done();
+                }, 100);
             }, 100);
         });
         afterAll((done) => {
@@ -1582,6 +1630,41 @@ describe('RTE Base module ', () => {
             });
         });
 
+        describe('Bug 978166: To give shortcut support for print in RTE', () => {
+            let rteObj: RichTextEditor;
+            let requestType: string;
+
+            beforeAll((done: Function) => {
+                rteObj = renderRTE({
+                    height: '200px',
+                    value: '<p>data</p><ol><li>manager</li></ol>',
+                    enableTabKey: true,
+                    toolbarSettings: {
+                        items: ['Print']
+                    },
+                    actionBegin: (e: ActionBeginEventArgs) => {
+                        requestType = e.requestType;
+                        e.cancel = true;
+                    }
+
+                });
+                done();
+            });
+            it(' checking shortcut key triggers the print action in RTE', function () {
+                rteObj.focusIn();
+                keyboardEventArgs.action = 'print';
+                keyboardEventArgs.ctrlKey = true;
+                keyboardEventArgs.keyCode = 80;
+                (<any>rteObj).keyDown(keyboardEventArgs);
+                expect(requestType === 'print').toBe(true);
+            });
+
+            afterAll((done: DoneFn) => {
+                destroy(rteObj);
+                done();
+            });
+        });
+
         describe('rte Iframe mode', () => {
             let rteObj: RichTextEditor;
             beforeAll(() => {
@@ -2113,7 +2196,7 @@ describe('RTE Base module ', () => {
                 });
 
                 it('with cancel is false', () => {
-                    expect(rteEle.querySelectorAll(".e-toolbar-item")[3].getAttribute("title")).toBe("Print");
+                    expect(rteEle.querySelectorAll(".e-toolbar-item")[3].getAttribute("title")).toBe("Print (Ctrl+P)");
                     let trgEle: HTMLElement = <HTMLElement>rteEle.querySelectorAll(".e-toolbar-item")[3];
                     trgEle.click();
                     expect(beforeCount).toBe(1);
@@ -2151,7 +2234,7 @@ describe('RTE Base module ', () => {
                 });
 
                 it('with cancel value as true', () => {
-                    expect(rteEle.querySelectorAll(".e-toolbar-item")[3].getAttribute("title")).toBe("Print");
+                    expect(rteEle.querySelectorAll(".e-toolbar-item")[3].getAttribute("title")).toBe("Print (Ctrl+P)");
                     let trgEle: HTMLElement = <HTMLElement>rteEle.querySelectorAll(".e-toolbar-item")[3];
                     trgEle.click();
                     expect(beforeCount).toBe(1);
@@ -7225,6 +7308,59 @@ describe('RTE Base module ', () => {
         });
     });
 
+    describe('969416: Verify saving the contents in editor only after content changes', () => {
+        let rteObj: RichTextEditor;
+        beforeAll(() => {
+            rteObj = renderRTE({
+                value: '<p>Test content</p>',
+            });
+            rteObj.saveInterval = 100;
+            rteObj.dataBind();
+        });
+        it('should not call updateValueOnIdle on initial focus', (done: Function) => {
+            const updateValueOnIdleSpy = spyOn<any>(rteObj, 'updateValueOnIdle');
+            rteObj.focusIn();
+            setTimeout(() => {
+                expect(updateValueOnIdleSpy).not.toHaveBeenCalled();
+                updateValueOnIdleSpy.calls.reset();
+                rteObj.focusIn();
+                setTimeout(() => {
+                    expect(updateValueOnIdleSpy).not.toHaveBeenCalled();
+                    done();
+                }, 300);
+            }, 300);
+        });
+        afterAll((done) => {
+            destroy(rteObj);
+            done();
+        });
+    });
+    describe('969416: Verify saving the contents in editor only after content changes', () => {
+        let rteObj: RichTextEditor;
+        beforeAll(() => {
+            rteObj = renderRTE({
+                value: '<p>Test content</p>',
+            });
+            rteObj.saveInterval = 100;
+            rteObj.dataBind();
+        });
+        it('should call updateValueOnIdle after applying bold formatting', (done: Function) => {
+            const updateValueOnIdleSpy = spyOn<any>(rteObj, 'updateValueOnIdle');
+            let node = rteObj.inputElement.querySelector('p').childNodes[0];
+            let sel = new NodeSelection().setSelectionText(document, node, node, 0, 4);
+            rteObj.executeCommand('bold');
+            setTimeout(() => {
+                expect(updateValueOnIdleSpy).toHaveBeenCalled();
+                done();
+            }, 400);
+        });
+        afterAll((done) => {
+            destroy(rteObj);
+            done();
+        });
+    });
+    
+
     describe('86573 - Mention list not inserts in the cursor position into the RichTextEditor', () => {
         let rteObj: RichTextEditor;
         let blurSpy: jasmine.Spy = jasmine.createSpy('onBlur');
@@ -7561,7 +7697,7 @@ describe('RTE Base module ', () => {
             });
             rteObj.appendTo('#rteTarget');
             let result = true;
-            const defaultValue: string[] = ['', '#000000', '#ffff00', '#00ff00', '#00ffff', '#0000ff', '#ff0000', '#000080', '#800080', '#996633', '#f2f2f2', '#808080', '#ffffcc', '#b3ffb3', '#ccffff', '#ccccff', '#ffcccc', '#ccccff', '#ff80ff', '#f2e6d9', '#d9d9d9', '#595959', '#ffff80', '#80ff80', '#b3ffff', '#8080ff', '#ff8080', '#8080ff', '#ff00ff', '#dfbf9f', '#bfbfbf', '#404040', '#ffff33', '#33ff33', '#33ffff', '#3333ff', '#ff3333', '#0000b3', '#b300b3', '#c68c53', '#a6a6a6', '#262626', '#e6e600', '#00b300', '#009999', '#000099', '#b30000', '#000066', '#660066', '#86592d', '#7f7f7f', '#0d0d0d', '#999900', '#006600', '#006666', '#000066', '#660000', '#00004d', '#4d004d', '#734d26']
+            const defaultValue: string[] = ['', '#000000', '#ffff00', '#00ff00', '#00ffff', '#0000ff', '#ff0000', '#000080', '#800080', '#996633', '#f2f2f2', '#808080', '#ffffcc', '#b3ffb3', '#ccffff', '#ccccfe', '#ffcccc', '#ccccff', '#ff80ff', '#f2e6d9', '#d9d9d9', '#595959', '#ffff80', '#80ff80', '#b3ffff', '#8080fe', '#ff8080', '#8080ff', '#ff00ff', '#dfbf9f', '#bfbfbf', '#404040', '#ffff33', '#33ff33', '#33ffff', '#3333ff', '#ff3333', '#0000b3', '#b300b3', '#c68c53', '#a6a6a6', '#262626', '#e6e600', '#00b300', '#009999', '#000099', '#b30000', '#000065', '#660066', '#86592d', '#7f7f7f', '#0d0d0d', '#999900', '#006600', '#006666', '#000066', '#660000', '#00004d', '#4d004d', '#734d26']
             rteObj.backgroundColor.colorCode.Custom.forEach((item, index) => {
                 if (item !== defaultValue[index]) {
                     result = false;
@@ -8883,6 +9019,75 @@ describe('RTE Base module ', () => {
         });
     });
 
+    describe('975644: Script Error on Opening Markdown Editor Overview Sample in React Platform.', () => {
+        let rteObj: RichTextEditor;
+        let changetriggered: boolean = false;
+        beforeAll(() => {
+            rteObj = renderRTE({
+                toolbarSettings: {
+                    items: ['FontName', 'FontSize', 'FontColor', 'BackgroundColor']
+                },
+                value: "<p>Testing</p>",
+                change: (args: any) => {
+                    changetriggered = true;
+                }
+            });
+            rteObj.saveInterval = 10;
+            rteObj.dataBind();
+        });
+        afterAll(() => {
+            destroy(rteObj);
+        });
+        it('Check the change event is not triggered for the initial render', (done: Function) => {
+            setTimeout(() => {
+                setTimeout(() => {
+                    expect(changetriggered).toBe(false);
+                    done();
+                })
+            }, 100);
+        });
+    });
+    describe('975644: change event is not triggerd for markdown', () => {
+        let rteObj: RichTextEditor;
+        let changetriggered: boolean = false;
+        beforeAll(() => {
+            rteObj = renderRTE({
+                toolbarSettings: {
+                    items: ['Undo', 'Redo', 'Bold']
+                },
+                value: `Rich Text Editor 1
+Rich Text Editor 2
+Rich Text Editor 3`,
+                editorMode: 'Markdown',
+                change: (args: any) => {
+                    changetriggered = true;
+                }
+            });
+            rteObj.saveInterval = 10;
+            rteObj.dataBind();
+        });
+        afterAll(() => {
+            destroy(rteObj);
+        });
+        it('Check the change event is triggered for the value change in the markdown editor', (done: Function) => {
+            setTimeout(() => {
+                setTimeout(() => {
+                    expect(changetriggered).toBe(false);
+                    let textArea = rteObj.inputElement;
+                    (rteObj as any).formatter.editorManager.markdownSelection.setSelection(textArea, 5, 5);
+                    (rteObj as any).mouseUp({ target: rteObj.inputElement, isTrusted: true });
+                    (rteObj as any).formatter.editorManager.markdownSelection.setSelection(textArea, 10, 15);
+                    (rteObj as any).mouseUp({ target: rteObj.inputElement, isTrusted: true });
+                    (rteObj as any).element.querySelectorAll(".e-rte-toolbar .e-toolbar-item button")[2].click();
+                    setTimeout(() => {
+                        expect(changetriggered).toBe(true);
+                        done();
+                    }, 100)
+                })
+            }, 100);
+        });
+    });
+
     describe('924321: Script Error Occurs When Closing Font Name Dropdown by Clicking Inside the RTE Editor.', () => {
         let rteObj: RichTextEditor;
         let elem: HTMLElement;
@@ -9508,284 +9713,4 @@ Rich Text Editor 3`
             expect(boldButton.classList.contains('e-active')).toBe(false);
         });
     });
-
-    describe('968971 - Inline toolbar doesnot show properly when selecting entire content in RichTextEditor', ()=>{
-        describe('968971 - Should check toolbar status while selection change event got triggered', () => {
-            let rteObj: RichTextEditor;
-            beforeAll(() => {
-                rteObj = renderRTE({
-                    value: `<p><strong>RichTextEditor</strong></p>`,
-                    toolbarSettings: {
-                        items: ['Bold']
-                    },
-                });
-            });
-            afterAll((done:Function) => {
-                destroy(rteObj);
-                done();
-            });
-            it('should check toolbar status get update when mouseup released outside rte', (done: Function) => {
-                rteObj.focusIn();
-                    const targetOne: HTMLElement = rteObj.element.querySelector('p');
-                    rteObj.inputElement.dispatchEvent(new Event('mousedown', { bubbles: true }));
-                    setSelection(targetOne, 0, 1);
-                    document.dispatchEvent(new Event('selectionchange', { bubbles: true }));
-                    document.dispatchEvent(new Event('mouseup', { bubbles: true }));
-                setTimeout(() => {
-                    expect(document.querySelector('.e-toolbar-item').classList.contains('e-active')).toBe(true);
-                    done();
-                }, 300);
-            });
-        });
-        describe('968971 -  Checking inline quicktoolbar', () => {
-            let rteObj: RichTextEditor;
-            beforeAll(() => {
-                rteObj = renderRTE({
-                    value: `<p><strong>RichTextEditor</strong></p>`,
-                    toolbarSettings: {
-                        items: ['Bold']
-                    },
-                    inlineMode: {
-                        enable: true,
-                        onSelection: true
-                    },
-                });
-            });
-            afterAll((done: Function) => {
-                destroy(rteObj);
-                done();
-            });
-            it('check with inlinequick tool bar', (done:Function) => {
-                rteObj.focusIn();
-                    const targetOne: HTMLElement = rteObj.element.querySelector('p');
-                    rteObj.inputElement.dispatchEvent(new Event('mousedown', { bubbles: true }));
-                    setSelection(targetOne, 0, 1);
-                    document.dispatchEvent(new Event('selectionchange', { bubbles: true }));
-                    document.dispatchEvent(new Event('mouseup', { bubbles: true }));
-                setTimeout(() => {
-                    expect(document.querySelector('.e-rte-inline-popup')).not.toBe(null);
-                    done();
-                }, 200);
-            });
-        });
-        describe('968971 -  Checking inline quicktoolbar with multiple node selection ', () => {
-            let rteObj: RichTextEditor;
-            beforeAll(() => {
-                rteObj = renderRTE({
-                    value: `<p><strong>RichTextEditor</strong></p>
-                    <h1>Syncfusion</h1>`,
-                    toolbarSettings: {
-                        items: ['Bold']
-                    },
-                    inlineMode: {
-                        enable: true,
-                        onSelection: true
-                    },
-                });
-            });
-            afterAll((done: Function) => {
-                destroy(rteObj);
-                done();
-            });
-            it('Check with inline quick toolbar for multiple node selection', (done: Function) => {
-                rteObj.focusIn();
-                const targetOne: HTMLElement = rteObj.element.querySelector('p');
-                const targetTwo: HTMLElement = rteObj.element.querySelector('h1');
-                rteObj.formatter.editorManager.nodeSelection.setSelectionText(document, targetOne, targetTwo, 0, 1);
-                document.dispatchEvent(new Event('selectionchange', { bubbles: true }));
-                document.dispatchEvent(new Event('mouseup', { bubbles: true }));
-                setTimeout(() => {
-                    expect(document.querySelector('.e-rte-inline-popup')).not.toBe(null);
-                    done();
-                }, 300);
-            });
-        });
-        describe('968971 -  Checking text quicktoolbar', () => {
-            let rteObj: RichTextEditor;
-            beforeAll(() => {
-                rteObj = renderRTE({
-                    value: `<p><strong>RichTextEditor</strong></p>`,
-                    toolbarSettings: {
-                        items: ['Bold']
-                    },
-                    quickToolbarSettings: {
-                        text: ['Formats', '|', 'Bold', 'Italic', 'Fontcolor', 'BackgroundColor', '|', 'CreateLink', 'Image', 'CreateTable', 'Blockquote', '|' , 'Unorderedlist', 'Orderedlist', 'Indent', 'Outdent'],
-                        showOnRightClick: true,
-                    },
-                });
-            });
-            afterAll((done: Function) => {
-                destroy(rteObj);
-                done();
-            });
-            it('Check with text quick tool bar', (done: Function) => {
-                rteObj.focusIn();
-                    const targetOne: HTMLElement = rteObj.element.querySelector('p');
-                    setSelection(targetOne, 0, 1);
-                    document.dispatchEvent(new Event('selectionchange', { bubbles: true }));
-                    document.dispatchEvent(new Event('mouseup', { bubbles: true }));
-                    setTimeout(() => {
-                        expect(document.querySelector('.e-rte-quick-popup')).not.toBe(null);
-                        done();
-                    }, 300);
-            });
-            it('Check with text quick toolbar status update', (done: Function) => {
-                rteObj.focusIn();
-                    const targetOne: HTMLElement = rteObj.element.querySelector('p');
-                    setSelection(targetOne, 0, 1);
-                    document.dispatchEvent(new Event('selectionchange', { bubbles: true }));
-                    document.dispatchEvent(new Event('mouseup', { bubbles: true }));
-                    setTimeout(() => {
-                        expect(document.querySelector('.e-rte-quick-popup')).not.toBe(null);
-                        expect(document.querySelector('.e-toolbar-item').classList.contains('e-active')).toBe(true);
-                        done();
-                    }, 300);
-            });
-        });
-        describe('968971 -  Checking text quicktoolbar with multiple selection', () => {
-            let rteObj: RichTextEditor;
-            beforeAll(() => {
-                rteObj = renderRTE({
-                    value: `<p><strong>RichTextEditor</strong></p> 
-                    <h1>Syncfusion</h1>`,
-                    toolbarSettings: {
-                        items: ['Bold']
-                    },
-                    quickToolbarSettings: {
-                        text: ['Formats', '|', 'Bold', 'Italic', 'Fontcolor', 'BackgroundColor', '|', 'CreateLink', 'Image', 'CreateTable', 'Blockquote', '|' , 'Unorderedlist', 'Orderedlist', 'Indent', 'Outdent'],
-                        showOnRightClick: true,
-                    },
-                });
-            });
-            afterAll((done:Function) => {
-                destroy(rteObj);
-                done();
-            });
-            it('Check with text quick tool bar with multiple node selection', (done:Function) => {
-                rteObj.focusIn();
-                const targetOne: HTMLElement = rteObj.element.querySelector('p');
-                const targetTwo: HTMLElement = rteObj.element.querySelector('h1');
-                rteObj.formatter.editorManager.nodeSelection.setSelectionText(document, targetOne, targetTwo, 0, 1);
-                document.dispatchEvent(new Event('selectionchange', { bubbles: true }));
-                document.dispatchEvent(new Event('mouseup', { bubbles: true }));
-                setTimeout(() => {
-                    expect(document.querySelector('.e-rte-quick-popup')).not.toBe(null);
-                    done();
-                }, 300);
-            });
-        });
-        describe('968971 -  Checking text quicktoolbar not opening when selecting the image', () => {
-            let rteObj: RichTextEditor;
-            beforeAll(() => {
-                rteObj = renderRTE({
-                    value: `<p><img alt="Sky with sun" src="https://cdn.syncfusion.com/ej2/richtexteditor-resources/RTE-Overview.png" style="width: 50%;" class="e-rte-image e-imginline"></p>`,
-                    toolbarSettings: {
-                        items: ['Bold']
-                    },
-                    quickToolbarSettings: {
-                        text: ['Formats', '|', 'Bold', 'Italic', 'Fontcolor', 'BackgroundColor', '|', 'CreateLink', 'Image', 'CreateTable', 'Blockquote', '|' , 'Unorderedlist', 'Orderedlist', 'Indent', 'Outdent'],
-                        showOnRightClick: true,
-                    },
-                });
-            });
-            afterAll((done:Function) => {
-                destroy(rteObj);
-                done();
-            });
-            it('Check with text quick tool bar with multiple node selection', (done: Function) => {
-                rteObj.focusIn();
-                const targetOne: HTMLElement = rteObj.element.querySelector('p');
-                setSelection(targetOne.firstChild, 0, 0);
-                document.dispatchEvent(new Event('selectionchange', { bubbles: true }));
-                document.dispatchEvent(new Event('mouseup', { bubbles: true }));
-                setTimeout(() => {
-                    expect(document.querySelector('.e-text-quicktoolbar')).toBe(null);
-                    done();
-                }, 300);
-            });
-        });
-        describe('968971 -  Checking text quicktoolbar not opening when selecting the table', () => {
-            let rteObj: RichTextEditor;
-            beforeAll(() => {
-                rteObj = renderRTE({
-                    value: `<table class="e-rte-table" style="width: 100%; min-width: 0px; height: 151px"> <thead style="height: 16.5563%"> <tr style="height: 16.5563%"> <th style="width: 12.1813%"><span>S No</span><br></th> <th style="width: 23.2295%"><span>Name</span><br></th> <th style="width: 9.91501%"><span>Age</span><br></th> <th style="width: 15.5807%"><span>Gender</span><br></th> <th style="width: 17.9887%"><span>Occupation</span><br></th> <th style="width: 21.1048%">Mode of Transport</th> </tr> </thead> <tbody> <tr style="height: 16.5563%"> <td style="width: 12.1813%">1</td> <td style="width: 23.2295%">Selma Rose</td> <td style="width: 9.91501%">30</td> <td style="width: 15.5807%">Female</td> <td style="width: 17.9887%"><span>Engineer</span><br></td> <td style="width: 21.1048%"><span style="font-size: 14pt">🚴</span></td> </tr> <tr style="height: 16.5563%"> <td style="width: 12.1813%">2</td> <td style="width: 23.2295%"><span>Robert</span><br></td> <td style="width: 9.91501%">28</td> <td style="width: 15.5807%" class="e-cell-select">Male</td> <td style="width: 17.9887%"><span>Graphic Designer</span></td> <td style="width: 21.1048%"><span style="font-size: 14pt">🚗</span></td> </tr>   </tbody></table>`,
-                    toolbarSettings: {
-                        items: ['Bold']
-                    },
-                    quickToolbarSettings: {
-                        text: ['Formats', '|', 'Bold', 'Italic', 'Fontcolor', 'BackgroundColor', '|', 'CreateLink', 'Image', 'CreateTable', 'Blockquote', '|' , 'Unorderedlist', 'Orderedlist', 'Indent', 'Outdent'],
-                        showOnRightClick: true,
-                    },
-                });
-            });
-            afterAll((done:Function) => {
-                destroy(rteObj);
-                done();
-            });
-            it('Check with text quick tool bar not opening when selecting with table', (done: Function) => {
-                rteObj.focusIn();
-                const targetOne: HTMLElement = rteObj.element.querySelector('table');
-                setSelection(targetOne.firstChild, 0, 0);
-                document.dispatchEvent(new Event('selectionchange', { bubbles: true }));
-                document.dispatchEvent(new Event('mouseup', { bubbles: true }));
-                setTimeout(() => {
-                    expect(document.querySelector('.e-text-quicktoolbar')).toBe(null);
-                    done();
-                }, 300);
-            });
-        });
-        describe('968971:  Checking text quicktoolbar duplication while scrolling', () => {
-            let rteObj: RichTextEditor;
-            beforeAll(() => {
-                rteObj = renderRTE({
-                    quickToolbarSettings: {
-                        text: ['Formats', 'FontName']
-                    },
-                    value: `<p>The Rich Text Editor, a WYSIWYG (what you see is what you get) editor, is a user interface that allows you to create, edit, and format rich text content. You can try out a demo of this editor here.</p>`
-                });
-            });
-            afterAll(() => {
-                destroy(rteObj);
-            });
-            it('should show single quick toolbar', (done : DoneFn)=> {
-                rteObj.focusIn();
-                const target: HTMLElement = rteObj.inputElement.querySelector('p');
-                setSelection(target.firstChild, 1, 2);
-                document.dispatchEvent(new Event('selectionchange', { bubbles: true }));
-                document.dispatchEvent(new Event('mouseup', { bubbles: true }));
-                rteObj.inputElement.parentElement.scrollTop = 130;
-                target.dispatchEvent(new Event('mouseup', { bubbles: true }));
-                rteObj.quickToolbarModule.textQTBar.showPopup(target, null)
-                setTimeout(() => {
-                    expect(document.querySelectorAll('.e-text-quicktoolbar').length == 1).toBe(true);
-                    done();
-                }, 300);
-            });
-        });
-        describe('968971:  Checking link quicktoolbar ', () => {
-            let rteObj: RichTextEditor;
-            beforeAll(() => {
-                rteObj = renderRTE({
-                    quickToolbarSettings: {
-                        link: ["Open", "Edit", "UnLink"],
-                    },
-                    value: `<a class="e-rte-anchor" href="https://ej2.syncfusion.com/demos/#/material/rich-text-editor/tools.html" title="https://ej2.syncfusion.com/demos/#/material/rich-text-editor/tools.html" aria-label="Open in new window" target="_blank">hyperlinks</a> `
-                });
-            });
-            afterAll(() => {
-                destroy(rteObj);
-            });
-            it('Check with link quick tool bar', (done: Function) => {
-                rteObj.focusIn();
-                    const targetOne: HTMLElement = rteObj.element.querySelector('a');
-                    setSelection(targetOne.firstChild, 0, 1);
-                    document.dispatchEvent(new Event('selectionchange', { bubbles: true }));
-                    document.dispatchEvent(new MouseEvent('mouseup', { bubbles: true, ctrlKey: false }));
-                    setTimeout(() => {
-                        expect(document.querySelector('.e-rte-quick-popup')).not.toBe(null);
-                        done();
-                    }, 300);
-            });
-        });
-    })
 });

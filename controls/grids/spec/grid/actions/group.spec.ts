@@ -2690,7 +2690,7 @@ describe('Code Coverage => ', () => {
                 sender: { target: dragGroupedElem }
             });
             const dropClone: HTMLElement = document.querySelector('.e-cloneproperties.e-dragclone.e-gdclone');
-            dropClone.setAttribute('e-mappinguid', gridObj.getColumns()[0].uid);
+            dropClone.setAttribute('data-mappinguid', gridObj.getColumns()[0].uid);
             (gridObj.groupModule as any).dragStop({
                 helper: dropClone,
                 target: createElement('div'),

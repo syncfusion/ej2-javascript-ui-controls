@@ -72,7 +72,7 @@ export class CellRenderer implements ICellRenderer<Column> {
             const isReactChild: boolean = this.parent.parentDetails && this.parent.parentDetails.parentInstObj &&
                 this.parent.parentDetails.parentInstObj.isReact;
             const isReactPrintGrid: boolean = this.parent.printGridParent && this.parent.printGridParent.isReact;
-            const literals: string[] = ['index'];
+            const literals: string[] = ['data-index'];
             const dummyData: Object = extendObjWithFn({}, data, { [foreignKeyData]: fData, column: cell.column });
             const templateID: string = this.parent.element.id + cell.column.uid;
             const str: string = 'isStringTemplate';
@@ -252,7 +252,7 @@ export class CellRenderer implements ICellRenderer<Column> {
             node.appendChild(checkWrap);
         }
         if (node.classList.contains('e-summarycell') && !(<{key?: string}>data).key) {
-            const uid: string = node.getAttribute('e-mappinguid');
+            const uid: string = node.getAttribute('data-mappinguid');
             column = this.parent.getColumnByUid(uid);
             node.setAttribute('aria-label', innerHtml + this.localizer.getConstant('ColumnHeader') + cell.column.headerText);
         }

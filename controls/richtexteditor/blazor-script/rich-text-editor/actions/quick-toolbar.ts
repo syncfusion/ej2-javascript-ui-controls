@@ -3,8 +3,8 @@ import * as events from '../constant';
 import { BaseQuickToolbar } from './base-quick-toolbar';
 import { SfRichTextEditor } from '../sf-richtexteditor-fn';
 import { scrollY, hasClass } from '../util';
-import { isIDevice } from '../../src/common/util';
-import { NotifyArgs } from '../../src/common/interface';
+import { isIDevice } from '../../editor-scripts/common/util';
+import { NotifyArgs } from '../../editor-scripts/common/interface';
 import { CLS_INLINE_POP, CLS_POPUP, CLS_RTE_HIDDEN, CLS_POPUP_CLOSE } from '../classes';
 
 /**
@@ -23,6 +23,7 @@ export class QuickToolbar {
     public tableQTBar: BaseQuickToolbar;
     public inlineQTBar: BaseQuickToolbar;
     public textQTBar: BaseQuickToolbar;
+    private showInlineQTBarTimeOut: number | null;
 
     constructor(parent?: SfRichTextEditor) {
         this.parent = parent;
@@ -128,6 +129,10 @@ export class QuickToolbar {
         }
     }
     public showInlineQTBar(target: HTMLElement, originalEvent?: MouseEvent | KeyboardEvent): void {
+        if (target.nodeName === 'HTML' || target.nodeName === '#document') {
+            const range: Range = this.parent.formatter.editorManager.nodeSelection.getRange(this.parent.getDocument());
+            target = range.commonAncestorContainer.parentElement;
+        }
         if (this.parent.readonly || !this.parent.inlineMode.enable) { return; }
         if (this.parent.inlineMode.enable && (!Browser.isDevice || isIDevice())) {
             const popupTarget: HTMLElement = document.querySelector('#' + this.parent.element.id + events.inlineQuickPopup);
@@ -288,7 +293,13 @@ export class QuickToolbar {
                     if ((args.ctrlKey && args.keyCode === 65) || (args.shiftKey && (args.keyCode === 33 || args.keyCode === 34 ||
                         args.keyCode === 35 || args.keyCode === 36 || args.keyCode === 37 || args.keyCode === 38 ||
                         args.keyCode === 39 || args.keyCode === 40))) {
-                        this.showInlineQTBar(args.target as HTMLElement, e.args as KeyboardEvent);
+                        if (this.showInlineQTBarTimeOut) {
+                            clearTimeout(this.showInlineQTBarTimeOut);
+                            this.showInlineQTBarTimeOut = null;
+                        }
+                        this.showInlineQTBarTimeOut = window.setTimeout(() => {
+                            this.showInlineQTBar(args.target as HTMLElement, e.args as KeyboardEvent);
+                        }, 600);
                     }
                 }
                 return;
@@ -333,6 +344,7 @@ export class QuickToolbar {
         this.parent.observer.on(events.destroy, this.destroy, this);
         this.parent.observer.on(events.keyDown, this.onKeyDown, this);
         this.parent.observer.on(events.windowResize, this.onWindowResize, this);
+        this.parent.observer.on(events.selectionChangeMouseUp, this.mouseUpHandler, this);
     }
     public removeEventListener(): void {
         EventHandler.remove(this.parent.getDocument(), 'selectionchange', this.selectionChangeHandler);
@@ -343,6 +355,7 @@ export class QuickToolbar {
         this.parent.observer.off(events.iframeMouseDown, this.onIframeMouseDown);
         this.parent.observer.off(events.keyDown, this.onKeyDown);
         this.parent.observer.off(events.windowResize, this.onWindowResize);
+        this.parent.observer.off(events.selectionChangeMouseUp, this.mouseUpHandler);
     }
     private wireInlineQTBarEvents(): void {
         this.parent.observer.on(events.mouseUp, this.mouseUpHandler, this);

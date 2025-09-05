@@ -1,6 +1,6 @@
 import { createElement, remove } from '@syncfusion/ej2-base';
-import { BlockModel } from '../../src/blockeditor/models';
-import { BlockEditor, BlockType, ContentType, setCursorPosition, getBlockContentElement, BuiltInToolbar, getSelectionRange } from '../../src/index';
+import { BaseChildrenProp, BlockModel, CollapsibleProps } from '../../src/blockeditor/models';
+import { BlockEditor, BlockType, ContentType, setCursorPosition, getSelectedRange } from '../../src/index';
 import { createEditor } from '../common/util.spec';
 
 describe('Event Manager:', () => {
@@ -30,28 +30,31 @@ describe('Event Manager:', () => {
                 { id: 'paragraph2', type: BlockType.Paragraph, content: [{ id: 'paragraph2-content', type: ContentType.Text, content: 'Hello world 2' }] },
                 {
                     id: 'calloutblock',
-                    type: 'Callout',
-                    children: [
+                    type: BlockType.Callout,
+                    props: {
+                        children: [
                         {
                             id: 'calloutchild1',
-                            type: 'Paragraph',
+                            type: BlockType.Paragraph,
                             content: [{ id: 'callout-child1-content', type: ContentType.Text, content: 'Callout child 1' }]
                         },
                         {
                             id: 'calloutchild2',
-                            type: 'Paragraph',
+                            type: BlockType.Paragraph,
                             content: [{ id: 'callout-child2-content', type: ContentType.Text, content: 'Callout child 2' }]
                         }
                     ]
+                    }
                 },
                 {
                     id: 'toggleblock',
-                    type: BlockType.ToggleParagraph,
+                    type: BlockType.CollapsibleParagraph,
                     content: [{ id: 'toggle-content-1', type: ContentType.Text, content: 'Click here to expand' }],
-                    children: [
+                    props: {
+                        children: [
                         {
                             id: 'togglechild1',
-                            type: BlockType.CheckList,
+                            type: BlockType.Checklist,
                             content: [{ type: ContentType.Text, content: 'Todo' }]
                         },
                         {
@@ -60,6 +63,7 @@ describe('Event Manager:', () => {
                             content: [{ type: ContentType.Text, content: 'Toggle child 2' }]
                         }
                     ]
+                    }
                 }
             ];
             editor = createEditor({ blocks: blocks });
@@ -145,15 +149,15 @@ describe('Event Manager:', () => {
 
             // On first enter, a new child block should be created
             editorElement.dispatchEvent(new KeyboardEvent('keydown', { key: 'Enter', code: 'Enter' }));
-            expect(editor.blocks[2].children.length).toBe(3);
+            expect((editor.blocks[2].props as BaseChildrenProp).children.length).toBe(3);
 
             // On second enter, the callout should be exited since the block is empty
             editorElement.dispatchEvent(new KeyboardEvent('keydown', { key: 'Enter', code: 'Enter' }));
-            expect(editor.blocks[2].children.length).toBe(2);
+            expect((editor.blocks[2].props as BaseChildrenProp).children.length).toBe(2);
             expect(editor.currentFocusedBlock.id).toBe(editor.blocks[3].id);
         });
 
-        it('should expand the toggle block on enter press when content is empty', () => {
+        it('should expand the collapsible block on enter press when content is empty', () => {
             const blockElement1 = editorElement.querySelector('#paragraph1') as HTMLElement;
             const contentElement1 = blockElement1.querySelector('.e-block-content') as HTMLElement;
             editor.setFocusToBlock(blockElement1);
@@ -161,7 +165,7 @@ describe('Event Manager:', () => {
 
             editor.addBlock({
                 id: 'newtoggle',
-                type: 'ToggleParagraph'
+                type: BlockType.CollapsibleParagraph
             }, 'paragraph1');
 
             const newBlockElement = editorElement.querySelector('#newtoggle') as HTMLElement;
@@ -170,15 +174,15 @@ describe('Event Manager:', () => {
             editor.setFocusToBlock(newBlockElement);
             setCursorPosition(newBlockContent, 0);
 
-            // On enter, the toggle block should be expanded and focus should be moved to children block
+            // On enter, the collapsible block should be expanded and focus should be moved to children block
             editorElement.dispatchEvent(new KeyboardEvent('keydown', { key: 'Enter', code: 'Enter' }));
-            expect(editor.blocks[1].isExpanded).toBe(true);
-            expect(editor.blocks[1].children.length).toBe(1);
-            expect(editor.currentFocusedBlock.id).toBe(editor.blocks[1].children[0].id);
+            expect((editor.blocks[1].props as CollapsibleProps).isExpanded).toBe(true);
+            expect((editor.blocks[1].props as BaseChildrenProp).children.length).toBe(1);
+            expect(editor.currentFocusedBlock.id).toBe((editor.blocks[1].props as BaseChildrenProp).children[0].id);
 
-            // On second enter, the toggle should be exited since the block is empty
+            // On second enter, the collapsible should be exited since the block is empty
             editorElement.dispatchEvent(new KeyboardEvent('keydown', { key: 'Enter', code: 'Enter' }));
-            expect(editor.blocks[1].children.length).toBe(1);
+            expect((editor.blocks[1].props as BaseChildrenProp).children.length).toBe(1);
             expect(editor.currentFocusedBlock.id).toBe(editor.blocks[2].id);
         });
 
@@ -188,7 +192,7 @@ describe('Event Manager:', () => {
             editor.setFocusToBlock(blockElement1);
             setCursorPosition(contentElement1, 5);
 
-            editor.blockAction.handleBlockIndentation({
+            editor.blockCommandManager.handleBlockIndentation({
                 blockIDs: ['paragraph1'],
                 shouldDecrease: false,
             });
@@ -216,14 +220,14 @@ describe('Event Manager:', () => {
                 { id: 'paragraph2', type: BlockType.BulletList, content: [{ id: 'paragraph2-content', type: ContentType.Text, content: 'Paragraph 2' }] },
                 { id: 'paragraph3', type: BlockType.Paragraph,
                     content: [
-                        { id: 'bold', type: ContentType.Text, content: 'Bold', styles: { bold: true } },
-                        { id: 'italic', type: ContentType.Text, content: 'Italic', styles: { italic: true } },
+                        { id: 'bold', type: ContentType.Text, content: 'Bold', props: { styles: { bold: true } } },
+                        { id: 'italic', type: ContentType.Text, content: 'Italic', props: { styles: { italic: true } } },
                     ]
                 },
                 { id: 'paragraph4', type: BlockType.Paragraph,
                     content: [
-                        { id: 'underline', type: ContentType.Text, content: 'Underline', styles: { underline: true } },
-                        { id: 'strikethrough', type: ContentType.Text, content: 'Strikethrough', styles: { strikethrough: true } },
+                        { id: 'underline', type: ContentType.Text, content: 'Underline', props: { styles: { underline: true } } },
+                        { id: 'strikethrough', type: ContentType.Text, content: 'Strikethrough', props: { styles: { strikethrough: true } } },
                     ]
                 },
             ];
@@ -245,13 +249,13 @@ describe('Event Manager:', () => {
             const contentElement1 = blockElement1.querySelector('.e-block-content') as HTMLElement;
             editor.setFocusToBlock(blockElement1);
             
-            expect((editor as any).handleEditorSelection()).toBeUndefined();
-            expect((editor as any).handleLineBreaksOnBlock(blockElement1)).toBeUndefined();
+            expect((editor.eventManager as any).handleEditorSelection()).toBeUndefined();
+            expect((editor.eventManager as any).handleLineBreaksOnBlock(blockElement1)).toBeUndefined();
             rangeSpy1.calls.reset();
 
             editor.readOnly = true;
-            expect((editor as any).handleMouseUpActions()).toBeUndefined();
-            expect((editor as any).handleMouseDownActions()).toBeUndefined();
+            expect((editor.eventManager as any).handleMouseUpActions()).toBeUndefined();
+            expect((editor.eventManager as any).handleMouseDownActions()).toBeUndefined();
             editor.readOnly = false;
 
             let isExecuted = false;
@@ -270,12 +274,12 @@ describe('Event Manager:', () => {
                 commonAncestorContainer: editorElement
             });
             spyOn(editor.inlineToolbarModule, 'hideInlineToolbar').and.callThrough();
-            expect((editor as any).handleTextSelection());
+            expect((editor.eventManager as any).handleTextSelection());
             expect(editor.inlineToolbarModule.hideInlineToolbar).toHaveBeenCalled();
 
             setCursorPosition(contentElement1, 0);
-            const range = getSelectionRange();
-            expect((editor as any).handleArrowKeyActions({ key: 'ArrowUp' }, range, blockElement1 )).toBeUndefined();
+            const range = getSelectedRange();
+            expect((editor.eventManager as any).handleArrowKeyActions({ key: 'ArrowUp' }, range, blockElement1 )).toBeUndefined();
 
             done();
         });

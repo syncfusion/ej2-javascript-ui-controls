@@ -1,9 +1,9 @@
 import { extend } from '../../../base'; /*externalscript*/
 import { Formatter } from './formatter';
-import { htmlKeyConfig } from '../../src/common/config';
-import { EditorManager } from '../../src/editor-manager/base/editor-manager';
-import { IEditorModel, IHtmlFormatterModel } from '../../src/common/interface';
-import { FormatPainterSettingsModel } from '../../src/models';
+import { htmlKeyConfig } from '../../editor-scripts/common/config';
+import { EditorManager } from '../../editor-scripts/editor-manager/base/editor-manager';
+import { IEditorModel, IHtmlFormatterModel } from '../../editor-scripts/common/interface';
+import { FormatPainterSettingsModel } from '../../editor-scripts/models';
 
 /**
  * HTML adapter

@@ -114,4 +114,11 @@
       @include bigger-tab-header-layout;
     }
   }
+  
+  .e-bigger .e-spreadsheet.sf-spreadsheet .e-ribbon .e-tab .e-tab-header .e-toolbar-item:not(.e-separator) .e-tab-wrap{
+    @if $skin-name == 'bootstrap' or $skin-name == 'bootstrap4'
+    {
+      height: auto;
+    }
+  }
 }

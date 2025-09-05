@@ -219,7 +219,6 @@ describe('Context Menu', () => {
                 expect(menuElement.querySelector('#cut').classList.contains('e-disabled')).toBe(true);
                 expect(menuElement.querySelector('#copy').classList.contains('e-disabled')).toBe(true);
 
-                expect(editor.clipboardAction.isClipboardEmpty).toHaveBeenCalled();
                 expect(menuElement.querySelector('#paste').classList.contains('e-disabled')).toBe(true);
                 //Select any range of text
                 editor.setSelection('content1', 2, 4);
@@ -264,6 +263,28 @@ describe('Context Menu', () => {
                 expect(menuElement.querySelector('#link').classList.contains('e-disabled')).toBe(false);
                 done();
             }, 200);
+        });
+
+        it('should enable paste options properly for copy action', (done) => {
+            spyOn(editor.clipboardAction, 'handleContextCopy').and.stub();
+            const blockElement = editor.element.querySelector('#paragraph2') as HTMLElement;
+            editor.setFocusToBlock(blockElement);
+            const menuElement = document.querySelector('.e-blockeditor-contextmenu') as HTMLElement;
+            expect(menuElement).not.toBeNull();
+
+            editor.setSelection('content2', 0, 4);
+
+            (editor.contextMenuModule as any).handleContextMenuActions({ id: 'copy' });
+            expect(editor.clipboardAction.handleContextCopy).toHaveBeenCalled();
+
+            setTimeout(() => {
+                editorElement.dispatchEvent(new MouseEvent('contextmenu', { bubbles: true, cancelable: true }));
+                setTimeout(() => {
+                    expect(menuElement.style.display).toBe('block');
+                    expect(menuElement.querySelector('#paste').classList.contains('e-disabled')).toBe(false);
+                    done();
+                }, 100);
+            }, 100);
         });
 
         it('should return when blockelement is null', function (done) {

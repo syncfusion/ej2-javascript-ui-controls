@@ -71,7 +71,7 @@ export class HeaderCellRenderer extends CellRenderer implements ICellRenderer<Co
         const innerDIV: HTMLDivElement = <HTMLDivElement>this.getGui();
         let hValueAccer: string;
         attributes(innerDIV, {
-            'e-mappinguid': column.uid,
+            'data-mappinguid': column.uid,
             'class': 'e-headercelldiv'
         });
         if (!isNullOrUndefined(column.headerValueAccessor)) {
@@ -105,7 +105,7 @@ export class HeaderCellRenderer extends CellRenderer implements ICellRenderer<Co
             (column.allowFiltering && !isNullOrUndefined(column.field)) &&
             !(this.parent.showColumnMenu && column.showColumnMenu)) {
             attributes(fltrMenuEle, {
-                'e-mappinguid': 'e-flmenu-' + column.uid
+                'data-mappinguid': 'e-flmenu-' + column.uid
             });
             elementDesc = elementDesc.length ? elementDesc + '. ' + this.localizer.getConstant('FilterDescription') : this.localizer.getConstant('FilterDescription');
             node.classList.add('e-fltr-icon');

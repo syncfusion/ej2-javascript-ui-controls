@@ -66,11 +66,17 @@
           @else if $ddt-skin-name == 'bootstrap4' {
             right: 33px;
           }
-          @else if $ddt-skin-name == 'bootstrap5' or $ddt-skin-name == 'bootstrap5.3' or $ddt-skin-name == 'FluentUI' or $ddt-skin-name == 'tailwind3' {
+          @else if $ddt-skin-name == 'bootstrap5' or $ddt-skin-name == 'FluentUI' or $ddt-skin-name == 'tailwind3' {
             @include icon-style(auto, 36px);
           }
-          @else if $ddt-skin-name != 'Material3' {
+          @else if $ddt-skin-name != 'Material3' and $ddt-skin-name != 'bootstrap5.3' and $ddt-skin-name != 'fluent2' {
             right: $ddt-dd-icon-bigger-width;
+          }
+          @else if $ddt-skin-name == 'fluent2' {
+            right: 30px;
+          }
+          @else if $ddt-skin-name == 'bootstrap5.3' {
+            @include icon-style(auto, 30px);
           }
           @if ($ddt-skin-name =='tailwind3') {
             bottom: 0;

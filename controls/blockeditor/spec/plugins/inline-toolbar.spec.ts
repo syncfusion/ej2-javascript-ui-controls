@@ -1,5 +1,5 @@
 import { createElement } from '@syncfusion/ej2-base';
-import { BlockEditor, BlockType, ContentType, BuiltInToolbar, getBlockContentElement, PopupRenderer, ToolbarRenderer, TooltipRenderer, getSelectionRange, setCursorPosition, ContentModel } from '../../src/index';
+import { BlockEditor, BlockType, ContentType, BuiltInToolbar, getBlockContentElement, PopupRenderer, ToolbarRenderer, TooltipRenderer, getSelectedRange, setCursorPosition, ContentModel, BaseStylesProp, Styles } from '../../src/index';
 import { createEditor } from '../common/util.spec';
 
 describe('Inline Toolbar Module', () => {
@@ -82,7 +82,7 @@ describe('Inline Toolbar Module', () => {
                         const contentElement = getBlockContentElement(blockElement);
                         expect(contentElement.querySelector('strong')).not.toBeNull();
                         expect(contentElement.querySelector('strong').textContent).toBe('Hello');
-                        expect(editor.blocks[0].content[0].styles.bold).toBe(true);
+                        expect((editor.blocks[0].content[0].props as BaseStylesProp).styles.bold).toBe(true);
                         
                         let itemClickedCalled = false;
                         editor.inlineToolbar.itemClicked = (args) => {
@@ -116,19 +116,19 @@ describe('Inline Toolbar Module', () => {
                                 id: 'content-1', 
                                 type: ContentType.Text, 
                                 content: 'Bold and italic ', 
-                                styles: { bold: true, italic: true } 
+                                props: { styles: { bold: true, italic: true }  }
                             },
                             { 
                                 id: 'content-2', 
                                 type: ContentType.Text, 
                                 content: 'Bold only ', 
-                                styles: { bold: true }
+                                props: { styles: { bold: true } }
                             },
                             { 
                                 id: 'content-3', 
                                 type: ContentType.Text, 
                                 content: 'No formatting', 
-                                styles: {}
+                                props: { styles: {} }
                             }
                         ]
                     }
@@ -575,7 +575,7 @@ describe('Inline Toolbar Module', () => {
                 editor.inlineToolbar.close = (args) => {
                     isClosed = true;
                 };
-                editor.inlineToolbarModule.showInlineToolbar(getSelectionRange());
+                editor.inlineToolbarModule.showInlineToolbar(getSelectedRange());
                 expect(isOpened).toBe(true);
 
                 setTimeout(() => {
@@ -596,7 +596,7 @@ describe('Inline Toolbar Module', () => {
                 editor.inlineToolbar.open = (args) => {
                     args.cancel = true;
                 },
-                editor.inlineToolbarModule.showInlineToolbar(getSelectionRange());
+                editor.inlineToolbarModule.showInlineToolbar(getSelectedRange());
                 expect(popup.classList.contains('e-popup-open')).toBe(false);
                 done();
             }, 200);
@@ -612,7 +612,7 @@ describe('Inline Toolbar Module', () => {
                 editor.inlineToolbar.close = (args) => {
                     args.cancel = true;
                 },
-                editor.inlineToolbarModule.showInlineToolbar(getSelectionRange());
+                editor.inlineToolbarModule.showInlineToolbar(getSelectedRange());
                 setTimeout(() => {
                     editor.inlineToolbarModule.hideInlineToolbar();
                     setTimeout(() => {
@@ -630,7 +630,7 @@ describe('Inline Toolbar Module', () => {
                 editor.setFocusToBlock(blockElement);
                 setCursorPosition(contentElement, 0);
                 editor.inlineToolbar.enable = false;
-                editor.inlineToolbarModule.showInlineToolbar(getSelectionRange())
+                editor.inlineToolbarModule.showInlineToolbar(getSelectedRange())
                 expect(document.querySelector('.e-blockeditor-inline-toolbar').classList.contains('e-popup-open')).toBe(false);
                 done();
             }, 200);
@@ -638,36 +638,47 @@ describe('Inline Toolbar Module', () => {
 
         it('should fetch common styles properly', () => {
             const contents: ContentModel[] = [{
-                styles: {
-                    bold: true,
-                    italic: true,
-                    underline: true,
-                    strikethrough: true,
-                    uppercase: true,
-                    lowercase: true,
-                    superscript: true,
-                    subscript: true
+                props: {
+                    styles: {
+                        bold: true,
+                        italic: true,
+                        underline: true,
+                        strikethrough: true,
+                        uppercase: true,
+                        lowercase: true,
+                        superscript: true,
+                        subscript: true
+                    }
                 }
             }, {
-                styles: {
-                    bold: true,
-                    italic: true,
-                    underline: true,
-                    strikethrough: true,
-                    uppercase: true,
-                    lowercase: true,
-                    superscript: true,
-                    subscript: true,
-                    color: '#000000',
-                    bgColor: '#ffffff',
-                    custom: '',
+                props: {
+                    styles: {
+                        bold: true,
+                        italic: true,
+                        underline: true,
+                        strikethrough: true,
+                        uppercase: true,
+                        lowercase: true,
+                        superscript: true,
+                        subscript: true,
+                        color: '#000000',
+                        bgColor: '#ffffff',
+                        custom: '',
+                    }
                 }
             }];
-            expect((editor.inlineToolbarModule as any).getCommonStyles(contents)).toEqual(
-                { bold: true, italic: true, underline: true, strikethrough: true,
-                    uppercase: true, lowercase: true, superscript: true, subscript: true,
-                    color: '', bgColor: '', custom: ''
-                });
+            const commonStyles: Styles = (editor.inlineToolbarModule as any).getCommonStyles(contents);
+            expect(commonStyles.bold).toBe(true);
+            expect(commonStyles.italic).toBe(true);
+            expect(commonStyles.underline).toBe(true);
+            expect(commonStyles.strikethrough).toBe(true);
+            expect(commonStyles.uppercase).toBe(true);
+            expect(commonStyles.lowercase).toBe(true);
+            expect(commonStyles.superscript).toBe(true);
+            expect(commonStyles.subscript).toBe(true);
+            expect(commonStyles.color).toBeUndefined();
+            expect(commonStyles.bgColor).toBeUndefined();
+            expect(commonStyles.custom).toBeUndefined();
         });
 
         it('should handle null values properly', (done) => {
@@ -685,19 +696,14 @@ describe('Inline Toolbar Module', () => {
 
                 //Set range as contentElement
                 setCursorPosition(contentElement, 0);
-                editor.blocks[0].content = null;
                 editor.inlineToolbarModule.toggleToolbarActiveState();
 
                 //Set range as contentElement
                 editor.nodeSelection.createRangeWithOffsets(blockElement, blockElement, 0, 0);
-                contentElement.remove();
                 editor.inlineToolbarModule.toggleToolbarActiveState();
 
                 document.querySelector('.e-blockeditor-inline-toolbar').remove();
-                (editor.inlineToolbarModule as any).initializeColorPickers();
-
-                document.querySelector('.e-blockeditor-inline-toolbar-popup').remove();
-                editor.inlineToolbarModule.toggleToolbarActiveState();
+                (editor.inlineToolbarModule as any).initializeColorPickerAndDropdown();
 
                 (editor.inlineToolbarModule as any).getCommonStyles([]);
                 done();

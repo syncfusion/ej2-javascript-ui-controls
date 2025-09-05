@@ -51,7 +51,7 @@ describe('Pager base module', () => {
         });
 
         it('current page testing', () => {
-            expect(pagerObj.element.querySelectorAll('.e-active')[0].getAttribute('index')).toBe('8');
+            expect(pagerObj.element.querySelectorAll('.e-active')[0].getAttribute('data-index')).toBe('8');
         });
 
         it('page count testing', () => {
@@ -259,16 +259,16 @@ describe('Pager base module', () => {
         });
 
         it('currentPage testing', () => {
-            expect(pagerObj.element.querySelectorAll('.e-active')[0].getAttribute('index')).toBe('8');
+            expect(pagerObj.element.querySelectorAll('.e-active')[0].getAttribute('data-index')).toBe('8');
             pagerObj.currentPage = 13;
             pagerObj.dataBind();
-            expect(pagerObj.element.querySelectorAll('.e-active')[0].getAttribute('index')).toBe('13');
+            expect(pagerObj.element.querySelectorAll('.e-active')[0].getAttribute('data-index')).toBe('13');
         });
 
         it('currentPage invalid value testing', () => {
             pagerObj.currentPage = -1;
             pagerObj.dataBind();
-            expect(pagerObj.element.querySelectorAll('.e-active')[0].getAttribute('index')).toBe('13');
+            expect(pagerObj.element.querySelectorAll('.e-active')[0].getAttribute('data-index')).toBe('13');
             pagerObj.currentPage = 13;
             pagerObj.dataBind();
         });

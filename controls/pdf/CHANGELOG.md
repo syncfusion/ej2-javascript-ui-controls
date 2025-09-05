@@ -2,6 +2,14 @@
 
 ## [Unreleased]
 
+## 31.1.17 (2025-09-05)
+
+### PDF Parser
+
+#### Bug Fixes
+
+- Fixed incorrect template sizing while exporting the stamp annotation appearance from a specific PDF document.
+
 ## 30.2.7 (2025-08-26)
 
 ### PDF Parser

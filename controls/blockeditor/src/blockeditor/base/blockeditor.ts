@@ -1,52 +1,35 @@
-import { Component, getUniqueID, INotifyPropertyChanged, NotifyPropertyChanges, Property, isNullOrUndefined as isNOU, formatUnit, Collection, EmitType, EventHandler, Complex, remove, Event, append, Observer, L10n, detach } from '@syncfusion/ej2-base';
-import { Mention, MentionChangeEventArgs, PopupEventArgs } from '@syncfusion/ej2-dropdowns';
-import { Popup, Tooltip } from '@syncfusion/ej2-popups';
-import { BeforeOpenCloseMenuEventArgs, ClickEventArgs, ContextMenu, ItemModel, MenuEventArgs, OpenCloseMenuEventArgs, Toolbar } from '@syncfusion/ej2-navigations';
-import { BlockModel, UserModel, CommandMenuSettingsModel, InlineToolbarSettingsModel, PasteSettingsModel, ToolbarItemModel, ContentModel, CommandItemModel, StyleModel, LabelItemModel, BlockActionMenuSettingsModel, ContextMenuSettingsModel, BlockActionItemModel, ContextMenuItemModel, LabelSettingsModel } from '../models/index';
+import { Component, getUniqueID, INotifyPropertyChanged, NotifyPropertyChanges, Property, isNullOrUndefined as isNOU, formatUnit, Collection, EmitType, Complex, remove, Event, append, L10n, addClass } from '@syncfusion/ej2-base';
+import { BlockModel, UserModel, CommandMenuSettingsModel, InlineToolbarSettingsModel, PasteSettingsModel, BlockActionMenuSettingsModel, ContextMenuSettingsModel, LabelSettingsModel, BasePlaceholderProp, HeadingProps } from '../models/index';
 import { BlockEditorModel } from './blockeditor-model';
 import { Block } from '../models/block/block';
 import { User } from '../models/common/user';
 import { CommandMenuSettings } from '../models/menus/command-menu-settings';
 import { InlineToolbarSettings } from '../models/menus/inline-toolbar-settings';
 import { ContextMenuSettings } from '../models/menus/context-menu-settings';
-import { BlockActionMenuSettings } from '../models/block/blockaction-menu-settings';
+import { BlockActionMenuSettings } from '../models/menus/blockaction-menu-settings';
 import { PasteSettings } from '../models/common/paste-settings';
 import { LabelSettings } from '../models/common/label-settings';
-import { FocusEventArgs, BlurEventArgs, BlockAddedEventArgs, BlockRemovedEventArgs, BlockMovedEventArgs, ContentChangedEventArgs, SelectionChangedEventArgs, UndoRedoEventArgs, BlockDragEventArgs, BlockDropEventArgs, KeyActionExecutedEventArgs, BeforePasteEventArgs, AfterPasteEventArgs, CommandMenuOpenEventArgs, CommandMenuCloseEventArgs, CommandItemClickedEventArgs, CommandQueryFilteringEventArgs, ToolbarOpenEventArgs, ToolbarCloseEventArgs, BlockActionMenuOpenEventArgs, BlockActionMenuCloseEventArgs, BlockActionItemClickEventArgs, ContextMenuBeforeOpenEventArgs, ContextMenuBeforeCloseEventArgs, ContextMenuOpenEventArgs, ContextMenuItemClickEventArgs, ContextMenuCloseEventArgs } from './eventargs';
-import { PopupRenderer, MentionRenderer, MenuBarRenderer, TooltipRenderer } from '../renderer/index';
-import { BlockAction, FormattingAction, ListBlockAction, DragAndDropAction, BlockEditorMethods, UndoRedoAction, ClipboardAction } from '../actions/index';
-import { cleanCheckmarkElement, getAdjacentBlock, getBlockContentElement, getBlockIndexById, getBlockModelById, getClosestContentElementInDocument, getParentBlock, isAtEndOfBlock, isAtStartOfBlock, isListTypeBlock, isNonContentEditableBlock, isChildrenTypeBlock, getContentElementBasedOnId } from '../utils/block';
-import { setCursorPosition, getSelectionRange, captureSelectionState, getPathFromBlock, getTextOffset } from '../utils/selection';
-import { sanitizeBlock, sanitizeContent, sanitizeLabelItems, sanitizeStyles, transformIntoToolbarItem } from '../utils/transform';
-import { IInlineContentInsertionArgs, IMentionRenderOptions, IPopupRenderOptions, ISplitContent, RangePath, IAddBlockArgs, IUndoRedoState, IUndoRedoSelection, ITransformBlockArgs } from './interface';
-import { deepClone, generateUniqueId, getAbsoluteOffset, getAutoAvatarColor, getNormalizedKey, getTemplateFunction, getUserInitials, isNodeAroundSpecialElements } from '../utils/common';
-import { getBlockActionsMenuItems, getCommandMenuItems, getContextMenuItems, getInlineToolbarItems, getLabelMentionDisplayTemplate, getLabelMenuItems, getUserMentionDisplayTemplate } from '../utils/data';
-import { BlockType, BuiltInToolbar, ContentType, DeletionType } from './enums';
-import { InlineContentInsertionModule, NodeSelection, SlashCommandModule, ContextMenuModule, BlockActionMenuModule, InlineToolbarModule, LinkModule, ClipboardCleanupModule } from '../plugins/index';
-import { clearBreakTags, createFormattingElement, findClosestParent, getElementRect, isElementEmpty, wrapNodeWithTag } from '../utils/dom';
+import { FocusEventArgs, BlurEventArgs, BlockAddedEventArgs, BlockRemovedEventArgs, BlockMovedEventArgs, ContentChangedEventArgs, SelectionChangedEventArgs, UndoRedoEventArgs, BlockDragEventArgs, BlockDropEventArgs, KeyActionExecutedEventArgs, BeforePasteEventArgs, AfterPasteEventArgs } from './eventargs';
+import { getBlockContentElement, getBlockModelById } from '../utils/block';
+import { IUndoRedoSelectionState } from './interface';
+import { getTemplateFunction } from '../utils/common';
+import { BlockType, BuiltInToolbar } from './enums';
+import { clearBreakTags, isElementEmpty } from '../utils/dom';
 import { decode, encode, sanitizeHelper } from '../utils/security';
 import { events } from './constant';
-import { getBlockDataAsHTML } from '../utils/html-parser';
+import * as constants from './constant';
+
+import { PopupRenderer, MentionRenderer, MenuBarRenderer, TooltipRenderer } from '../renderer/index';
+import { BlockRendererManager, BlockCommandManager, StateManager, FloatingIconManager, EventManager } from '../managers/index';
+import { FormattingAction, ListBlockAction, DragAndDropAction, BlockEditorMethods, UndoRedoAction, ClipboardAction } from '../actions/index';
+import { InlineContentInsertionModule, NodeSelection, SlashCommandModule, ContextMenuModule, BlockActionMenuModule, InlineToolbarModule, LinkModule } from '../plugins/index';
+import { BlockService } from '../services/index';
 
 /**
  * Represents the root class for the Block Editor component.
  * The `BlockEditor` is a rich text editor that provides functionality for creating, editing, and managing blocks of content.
  * Blocks can include paragraph, lists, toggles, and other block types, organized hierarchically.
  *
- * ```html
- * <div id='editor'></div>
- * <script>
- * var blockEditor = new BlockEditor({
- *   blocks: [
- *     {
- *       id: 'block-1',
- *       type: 'BlockType.Paragraph',
- *       content: [{ type: 'ContentType.Text' content: 'This is the first block.' }],
- *     },
- *   ]
- * });
- * </script>
- * ```
  **/
 @NotifyPropertyChanges
 export class BlockEditor extends Component<HTMLElement> implements INotifyPropertyChanged {
@@ -375,6 +358,26 @@ export class BlockEditor extends Component<HTMLElement> implements INotifyProper
     /** @hidden */
     public menubarRenderer: MenuBarRenderer;
 
+    /* Manager instances */
+    /** @hidden */
+    public blockRendererManager: BlockRendererManager;
+
+    /** @hidden */
+    public blockCommandManager: BlockCommandManager;
+
+    /** @hidden */
+    public stateManager: StateManager;
+
+    /** @hidden */
+    public floatingIconManager: FloatingIconManager;
+
+    /** @hidden */
+    public eventManager: EventManager;
+
+    /* Services */
+    /** @hidden */
+    public blockService: BlockService;
+
     /* Plugins */
     /** @hidden */
     public inlineContentInsertionModule: InlineContentInsertionModule;
@@ -386,17 +389,12 @@ export class BlockEditor extends Component<HTMLElement> implements INotifyProper
     public contextMenuModule: ContextMenuModule;
     /** @hidden */
     public blockActionMenuModule: BlockActionMenuModule;
-
     /** @hidden */
     public nodeSelection: NodeSelection;
-
     /** @hidden */
     public linkModule: LinkModule;
 
     /* Actions */
-    /** @hidden */
-    public blockAction: BlockAction;
-
     /** @hidden */
     public formattingAction: FormattingAction;
 
@@ -411,12 +409,6 @@ export class BlockEditor extends Component<HTMLElement> implements INotifyProper
 
     /** @hidden */
     public clipboardAction: ClipboardAction;
-
-    /* Objects */
-    private userMenuObj: Mention;
-    private labelMenuObj: Mention;
-    private addIconTooltip: Tooltip;
-    private dragIconTooltip: Tooltip;
 
     /* Variables */
     /** @hidden */
@@ -438,9 +430,6 @@ export class BlockEditor extends Component<HTMLElement> implements INotifyProper
     public blockWrapper: HTMLElement;
 
     /** @hidden */
-    public blocksInternal: BlockModel[];
-
-    /** @hidden */
     public keyCommandMap: Map<string, string>;
 
     private defaultKeyConfig: Record<string, string> = {
@@ -453,13 +442,16 @@ export class BlockEditor extends Component<HTMLElement> implements INotifyProper
     };
     /** @hidden */
     public l10n: L10n;
-    private updateTimer: ReturnType<typeof setTimeout>;
+    /** @hidden */
+    public updateTimer: ReturnType<typeof setTimeout>;
     /** @hidden */
     public isEntireEditorSelected: boolean
     /** @hidden */
     public undoRedoAction: UndoRedoAction;
     /** @hidden */
-    public previousSelection: IUndoRedoSelection | undefined = undefined;
+    public previousSelection: IUndoRedoSelectionState | undefined = undefined;
+    /** @hidden */
+    public isProtectedOnChange: boolean;
 
     /**
      * Constructor for creating the component
@@ -503,38 +495,70 @@ export class BlockEditor extends Component<HTMLElement> implements INotifyProper
      * @returns {string} - It returns the persisted data.
      */
     protected getPersistData(): string {
-        return this.addOnPersist([]);
+        return this.addOnPersist(['blocks']);
     }
 
+    /**
+     * Renders the editor component
+     *
+     * @returns {void}
+     */
     protected render(): void {
         this.initialize();
     }
 
+    /**
+     * Initializes the editor component
+     *
+     * @returns {void}
+     */
     private initialize(): void {
-        this.updateInternalValues();
         this.initializeLocale();
+        this.initializeServices();
+        // Initialize managers and engines
+        this.initializeManagers();
         this.intializeEngines();
+
+        // Initialize key bindings
         this.initializeKeyBindings();
+
+        // Set dimensions and styles
         this.setDimension();
         this.setCssClass();
-        this.updateEditorReadyOnlyState();
-        this.populateUniqueIds(this.blocksInternal);
-        this.renderBlockWrapper();
-        this.initializeMentionModules();
-        this.renderBlocks(this.blocksInternal);
+
+        this.stateManager.updateEditorReadyOnlyState();
+        // Update and process blocks
+        const populatedBlocks: BlockModel[] = this.stateManager.populateBlockProperties(this.getEditorBlocks());
+        this.setEditorBlocks(populatedBlocks);
+        this.stateManager.updatePropChangesToModel();
+        this.stateManager.populateUniqueIds(this.getEditorBlocks());
+
+        // Create floating icons and overlay containers
+        if (!this.floatingIconContainer) {
+            this.floatingIconManager.createFloatingIcons();
+        }
         if (!this.overlayContainer) {
             this.createOverlayContainer();
         }
-        if (!this.floatingIconContainer) {
-            this.createFloatingIcons();
-        }
+
+        // Render the blocks
+        this.renderBlockWrapper();
+        this.initializeMentionModules();
+        this.renderBlocks(this.getEditorBlocks());
+
+        // Wire events and apply RTL settings
         if (this.enableDragAndDrop) {
             this.dragAndDropAction.wireDragEvents();
         }
-        this.wireGlobalEvents();
+        this.eventManager.wireGlobalEvents();
         this.applyRtlSettings();
     }
 
+    /**
+     * Initializes locale values
+     *
+     * @returns {void}
+     */
     private initializeLocale(): void {
         this.l10n = new L10n(this.getModuleName(), {
             paragraph: 'Write something or ‘/’ for commands.',
@@ -542,14 +566,14 @@ export class BlockEditor extends Component<HTMLElement> implements INotifyProper
             heading2: 'Heading 2',
             heading3: 'Heading 3',
             heading4: 'Heading 4',
-            toggleParagraph: 'Toggle Paragraph',
-            toggleHeading1: 'Toggle Heading 1',
-            toggleHeading2: 'Toggle Heading 2',
-            toggleHeading3: 'Toggle Heading 3',
-            toggleHeading4: 'Toggle Heading 4',
+            collapsibleParagraph: 'Collapsible Paragraph',
+            collapsibleHeading1: 'Collapsible Heading 1',
+            collapsibleHeading2: 'Collapsible Heading 2',
+            collapsibleHeading3: 'Collapsible Heading 3',
+            collapsibleHeading4: 'Collapsible Heading 4',
             bulletList: 'Add item',
             numberedList: 'Add item',
-            checkList: 'Todo',
+            checklist: 'Todo',
             quote: 'Write a quote',
             callout: 'Write a callout',
             addIconTooltip: 'Click to insert below',
@@ -570,6 +594,33 @@ export class BlockEditor extends Component<HTMLElement> implements INotifyProper
         }, this.locale);
     }
 
+    /**
+     * Initializes all manager classes
+     *
+     * @returns {void}
+     */
+    private initializeManagers(): void {
+        this.blockRendererManager = new BlockRendererManager(this);
+        this.blockCommandManager = new BlockCommandManager(this);
+        this.stateManager = new StateManager(this);
+        this.floatingIconManager = new FloatingIconManager(this);
+        this.eventManager = new EventManager(this);
+    }
+
+    /**
+     * Initializes all services
+     *
+     * @returns {void}
+     */
+    private initializeServices(): void {
+        this.blockService = new BlockService(this.blocks);
+    }
+
+    /**
+     * Initializes all engines
+     *
+     * @returns {void}
+     */
     private intializeEngines(): void {
         this.blockEditorMethods = new BlockEditorMethods(this);
         this.nodeSelection = new NodeSelection(this);
@@ -577,9 +628,8 @@ export class BlockEditor extends Component<HTMLElement> implements INotifyProper
         this.menubarRenderer = new MenuBarRenderer(this);
         this.mentionRenderer = new MentionRenderer(this);
         this.tooltipRenderer = new TooltipRenderer(this);
-        this.blockAction = new BlockAction(this);
         this.formattingAction = new FormattingAction(this);
-        this.listBlockAction = new ListBlockAction(this, this.blockAction);
+        this.listBlockAction = new ListBlockAction(this);
         this.dragAndDropAction = new DragAndDropAction(this);
         this.undoRedoAction = new UndoRedoAction(this);
         this.clipboardAction = new ClipboardAction(this);
@@ -590,37 +640,53 @@ export class BlockEditor extends Component<HTMLElement> implements INotifyProper
         this.contextMenuModule = new ContextMenuModule(this);
     }
 
-    private updateInternalValues(): void {
-        this.blocksInternal = this.blocks.slice();
-    }
-
+    /**
+     * Sets the dimensions of the editor
+     *
+     * @returns {void}
+     */
     private setDimension(): void {
         this.element.style.width = !isNOU(this.width) ? formatUnit(this.width) : this.element.style.width;
         this.element.style.height = !isNOU(this.height) ? formatUnit(this.height) : this.element.style.height;
     }
 
+    /**
+     * Sets the CSS class on the editor
+     *
+     * @returns {void}
+     */
     private setCssClass(): void {
-        if (this.cssClass) { this.element.classList.add(this.cssClass); }
+        if (this.cssClass) { addClass([this.element], this.cssClass.trim().split(' ')); }
     }
 
+    /**
+     * Applies dynamic locale changes
+     *
+     * @returns {void}
+     */
     private updateLocale(): void {
         this.l10n.setLocale(this.locale);
         // Manually update placeholder for current focused block alone, rest will be updated on further focus
         if (this.currentFocusedBlock) {
             this.togglePlaceholder(this.currentFocusedBlock, true);
         }
-        this.UpdateFloatingIconTooltipContent();
-        this.notify('locale-changed', {});
+        this.floatingIconManager.updateFloatingIconTooltipContent();
+        this.notify(events.localeChanged, {});
     }
 
+    /**
+     * Applies RTL settings to the editor
+     *
+     * @returns {void}
+     */
     private applyRtlSettings(): void {
-        this.element.classList.toggle('e-rtl', this.enableRtl);
+        this.element.classList.toggle(constants.RTL_CLS, this.enableRtl);
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         const rtlTargets: any = [
-            this.userMenuObj,
-            this.labelMenuObj,
-            this.addIconTooltip,
-            this.dragIconTooltip,
+            this.inlineContentInsertionModule.userMenuObj,
+            this.inlineContentInsertionModule.labelMenuObj,
+            this.floatingIconManager.addIconTooltip,
+            this.floatingIconManager.dragIconTooltip,
             this.contextMenuModule.contextMenuObj
         ];
 
@@ -629,116 +695,24 @@ export class BlockEditor extends Component<HTMLElement> implements INotifyProper
                 target.enableRtl = this.enableRtl;
             }
         }
-        this.notify('rtl-changed', {});
+        this.notify(events.rtlChanged, {});
     }
 
-    private updateEditorReadyOnlyState(): void {
-        const defaultNonEditableElements: string[] = ['e-checkmark', 'e-callout-icon', 'e-toggle-icon', 'e-be-hr'];
-        let editableElements: HTMLElement[] = Array.from(this.element.querySelectorAll(`[contenteditable='${this.readOnly}']`));
-        editableElements = editableElements.filter((element: HTMLElement) => {
-            return !defaultNonEditableElements.some((className: string) => element.classList.contains(className));
-        });
-        editableElements.forEach((element: HTMLElement) => { element.contentEditable = (!this.readOnly).toString(); });
-    }
-
-    private wireGlobalEvents(): void {
-        EventHandler.add(document, 'selectionchange', this.handleEditorSelection, this);
-        EventHandler.add(document, 'scroll', this.handleScrollActions, this);
-        EventHandler.add(this.element, 'scroll', this.handleScrollActions, this);
-        EventHandler.add(document, 'click', this.handleDocumentClickActions, this);
-        EventHandler.add(document, 'mousemove', this.handleMouseMoveActions, this);
-        EventHandler.add(this.element, 'mouseup', this.handleMouseUpActions, this);
-        EventHandler.add(this.element, 'mousedown', this.handleMouseDownActions, this);
-        EventHandler.add(this.element, 'input', this.handleEditorInputActions, this);
-        EventHandler.add(this.element, 'keyup', this.handleKeyupActions, this);
-        EventHandler.add(this.element, 'keydown', this.handleKeydownActions, this);
-        EventHandler.add(this.element, 'click', this.handleEditorClickActions, this);
-        EventHandler.add(this.element, 'copy', this.clipboardActionHandler, this);
-        EventHandler.add(this.element, 'cut', this.clipboardActionHandler, this);
-        EventHandler.add(this.element, 'paste', this.clipboardActionHandler, this);
-        EventHandler.add(this.blockWrapper, 'focus', this.handleEditorFocusActions, this);
-        EventHandler.add(this.blockWrapper, 'blur', this.handleEditorBlurActions, this);
-    }
-
+    /**
+     * Creates the overlay container for popups and dialogs
+     *
+     * @returns {void}
+     */
     private createOverlayContainer(): void {
-        this.overlayContainer = this.createElement('div', { className: 'e-blockeditor-overlay-container' });
+        this.overlayContainer = this.createElement('div', { className: constants.OVERLAY_CONTAINER_CLS });
         this.element.appendChild(this.overlayContainer);
     }
 
-    // public getCurrentUser(): UserModel {
-    //     return this.users.find((user: UserModel) => user.id === this.currentUserId);
-    // }
-
-    public populateUniqueIds(blocks: BlockModel[], parentBlockId?: string): void {
-        /* eslint-disable */
-        const prevOnChange: boolean = (this as any).isProtectedOnChange;
-        (this as any).isProtectedOnChange = true;
-        blocks.forEach((block: BlockModel) => {
-            if (!block.id) { block.id = generateUniqueId('block'); }
-            if (parentBlockId) { block.parentId = parentBlockId; }
-            block.content && block.content.forEach((content: ContentModel) => {
-                if (!content.id) { content.id = generateUniqueId('content'); }
-                if (!content.stylesApplied) { content.stylesApplied = []; }
-                if (content.styles) {
-                    const styles: StyleModel = sanitizeStyles(content.styles);
-                    content.stylesApplied = Object.keys(styles).filter((style: string) => (content.styles as any)[`${style}`]);
-                }
-            });
-
-            // Recursively process child blocks
-            if (block.children && block.children.length > 0) {
-                this.populateUniqueIds(block.children, block.id);
-            }
-        });
-        (this as any).isProtectedOnChange = prevOnChange;
-        /* eslint-enable */
-    }
-
-    private checkIsEntireEditorSelected(): boolean {
-        const selection: Selection = this.nodeSelection.getSelection();
-        if (!selection || selection.rangeCount === 0) {
-            return false;
-        }
-        const range: Range = getSelectionRange();
-        if (!range) { return false; }
-        let firstBlockElement: HTMLElement = this.blockWrapper.firstElementChild as HTMLElement;
-        let lastBlockElement: HTMLElement = this.blockWrapper.lastElementChild as HTMLElement;
-        if (isChildrenTypeBlock(firstBlockElement.getAttribute('data-block-type'))) {
-            firstBlockElement = firstBlockElement.querySelector('.e-block') as HTMLElement;
-        }
-        if (isChildrenTypeBlock(lastBlockElement.getAttribute('data-block-type'))) {
-            lastBlockElement = lastBlockElement.querySelector('.e-block:last-child') as HTMLElement;
-        }
-        const firstBlockContent: HTMLElement = getBlockContentElement(this.blockWrapper.firstElementChild as HTMLElement);
-        const lastBlockContent: HTMLElement = getBlockContentElement(this.blockWrapper.lastElementChild as HTMLElement);
-        const startContainer: Node = range.startContainer;
-        const endContainer: Node = range.endContainer;
-        const isFirstBlockEmpty: boolean = firstBlockContent.textContent.trim() === '';
-        const isLastBlockEmpty: boolean = lastBlockContent.textContent.trim() === '';
-        const firstBlockStartNode: ChildNode = firstBlockContent.childNodes[0];
-        const lastBlockEndNode: ChildNode = lastBlockContent.childNodes[lastBlockContent.childNodes.length - 1];
-
-        // Selection performed using selectAll method
-        if (startContainer.nodeType === Node.ELEMENT_NODE && endContainer.nodeType === Node.ELEMENT_NODE &&
-            (startContainer as HTMLElement).classList.contains('e-block-container-wrapper') &&
-            (endContainer as HTMLElement).classList.contains('e-block-container-wrapper')) {
-            return true;
-        }
-
-        const isEqualsStartContainer: boolean = (
-            firstBlockStartNode && firstBlockStartNode.contains(startContainer) ||
-            isFirstBlockEmpty && firstBlockElement.contains(startContainer)
-        );
-        const isEqualsEndContainer: boolean = (
-            lastBlockEndNode && lastBlockEndNode.contains(endContainer) ||
-            isLastBlockEmpty && lastBlockElement.contains(endContainer)
-        );
-        return (isEqualsStartContainer &&
-            isEqualsEndContainer &&
-            range.startOffset === 0 &&
-            range.endOffset === endContainer.textContent.length);
-    }
-
+    /**
+     * Initializes the key bindings
+     *
+     * @returns {void}
+     */
     private initializeKeyBindings(): void {
         const config: { [key: string]: string } = { ...this.defaultKeyConfig, ...this.keyConfig };
         const map: Map<string, string> = new Map<string, string>();
@@ -752,1183 +726,46 @@ export class BlockEditor extends Component<HTMLElement> implements INotifyProper
         this.keyCommandMap = map;
     }
 
-    private handleEditorSelection(e: Event): void {
-        const range: Range = this.nodeSelection.getRange();
-        if (!range) { return; }
-        const isMoreThanSingleSelection: boolean = (range.startContainer !== range.endContainer || range.startOffset !== range.endOffset);
-        if (isMoreThanSingleSelection && this.element.contains(range.commonAncestorContainer)) {
-            this.isEntireEditorSelected = this.checkIsEntireEditorSelected();
-        }
-    }
-
-    private handleScrollActions(e: Event): void {
-        this.hideFloatingIcons();
-        if (this.linkModule) {
-            this.linkModule.hideLinkPopup();
-        }
-        if (this.blockActionMenuModule) {
-            this.blockActionMenuModule.toggleBlockActionPopup(true);
-        }
-        if (this.inlineToolbarModule) {
-            this.inlineToolbarModule.hideInlineToolbar(e);
-        }
-    }
-
-    private handleMouseMoveActions(e: MouseEvent): void {
-        const target: HTMLElement = e.target as HTMLElement;
-        const blockElement: HTMLElement = target.closest('.e-block') as HTMLElement;
-        if (this.contextMenuModule.isPopupOpen() ||
-            this.blockActionMenuModule.isPopupOpen()) {
-            return;
-        }
-        if (blockElement) {
-            if (blockElement !== this.currentHoveredBlock) {
-                if (this.currentHoveredBlock) {
-                    this.hideFloatingIcons();
-                }
-                this.currentHoveredBlock = blockElement;
-                this.showFloatingIcons(this.currentHoveredBlock);
-            }
-        }
-        else if (this.currentHoveredBlock) {
-            if (this.floatingIconContainer && !this.floatingIconContainer.contains(e.target as HTMLElement)) {
-                this.hideFloatingIcons();
-                this.currentHoveredBlock = null;
-            }
-        }
-    }
-
-    private handleEditorInputActions(e: Event): void {
-        this.notify('input', e);
-        if (this.isEntireEditorSelected) {
-            const allBlocks: BlockModel[] = this.blocksInternal.map((block: BlockModel) => deepClone(sanitizeBlock(block)));
-
-            this.setFocusToBlock(this.blockWrapper.firstElementChild as HTMLElement);
-            this.showFloatingIcons(this.currentFocusedBlock);
-            const prevOnChange: boolean = this.isProtectedOnChange;
-            this.isProtectedOnChange = true;
-            this.blocksInternal.splice(1);
-            this.blockAction.updatePropChangesToModel();
-            this.isProtectedOnChange = prevOnChange;
-            this.isEntireEditorSelected = false;
-
-            this.undoRedoAction.pushToUndoStack({
-                action: 'multipleBlocksDeleted',
-                oldBlockModel: this.blocksInternal[0],
-                data: {
-                    deletedBlocks: allBlocks,
-                    deletionType: DeletionType.Entire
-                }
-            });
-        }
-        if (this.inlineToolbarModule) {
-            this.inlineToolbarModule.hideInlineToolbar(e);
-        }
-        this.togglePlaceholder(this.currentFocusedBlock, true);
-        this.hideDragIconForEmptyBlock(this.currentFocusedBlock);
-        const blockContent: HTMLElement = getBlockContentElement(this.currentFocusedBlock);
-        if (blockContent && blockContent.textContent.length <= 1) {
-            this.showFloatingIcons(this.currentFocusedBlock);
-        }
-        this.filterSlashCommandOnUserInput();
-        /* Handling where user activates any formatting using keyboard(eg.ctrl+b) and starts typing */
-        if ((this.formattingAction.activeInlineFormats && this.formattingAction.activeInlineFormats.size > 0)
-            || this.formattingAction.lastRemovedFormat) {
-            const isFormattingPerformed: boolean = this.formattingAction.handleTypingWithActiveFormats();
-            if (isFormattingPerformed) { return; }
-        }
-        this.throttleContentUpdate(e);
-    }
-
-    private handleDocumentClickActions(e: MouseEvent): void {
-        // hide if the click is outside the editor and floating icon container
-        if (!this.element.contains(e.target as HTMLElement)
-            && (this.floatingIconContainer && !this.floatingIconContainer.contains(e.target as HTMLElement))) {
-            this.hideFloatingIcons();
-        }
-        this.isEntireEditorSelected = false;
-        this.notify('documentClick', e);
-        this.togglePopupsOnDocumentClick(e);
-    }
-
-    private handleEditorFocusActions(e: Event): void {
-        setTimeout(() => {
-            const range: Range = getSelectionRange();
-            if (!range || !this.currentFocusedBlock) { return; }
-            const eventArgs: FocusEventArgs = {
-                event: e,
-                blockId: this.currentFocusedBlock.id,
-                selectionRange: [range.startOffset, range.endOffset]
-            };
-            this.trigger('focus', eventArgs);
-        }, 200);
-    }
-
-    private handleEditorBlurActions(e: Event): void {
-        const eventArgs: BlurEventArgs = {
-            event: e,
-            blockId: this.currentFocusedBlock.id
-        };
-        this.trigger('blur', eventArgs);
-    }
-
-    private handleEditorClickActions(e: MouseEvent): void {
-        this.notify('editorClick', e);
-    }
-
-    private handleKeyupActions(e: KeyboardEvent): void {
-        this.notify('keyup', e);
-    }
-
-    private handleKeydownActions(e: KeyboardEvent): void {
-        this.previousSelection = captureSelectionState();
-        this.notify('keydown', e);
-        const commandPopupElement: HTMLElement = document.querySelector('.e-mention.e-popup.e-blockeditor-command-menu') as HTMLElement;
-        const userMentionPopupElement: HTMLElement = document.querySelector('.e-mention.e-popup.e-blockeditor-user-menu') as HTMLElement;
-        const labelMentionPopupElement: HTMLElement = document.querySelector('.e-mention.e-popup.e-blockeditor-label-menu') as HTMLElement;
-        const isArrowKeys: boolean = ['ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight'].indexOf(e.key) !== -1;
-        const isIndentingKeys: boolean = ['Tab', 'Shift'].indexOf(e.key) !== -1;
-        const isControlKey: boolean = e.ctrlKey || e.metaKey;
-        const isShiftKey: boolean = e.shiftKey;
-        const isEscapeKey: boolean = e.key === 'Escape';
-        const isLeftRightArrows: boolean = ['ArrowLeft', 'ArrowRight'].indexOf(e.key) !== -1;
-        const isUpDownArrows: boolean = ['ArrowUp', 'ArrowDown'].indexOf(e.key) !== -1;
-        const blockModel: BlockModel = getBlockModelById(this.currentFocusedBlock.id, this.blocksInternal);
-        if (!blockModel || (isControlKey && isUpDownArrows && isShiftKey)) {
-            return;
-        }
-        const selectedBlocks: BlockModel[] = this.getSelectedBlocks();
-        const isSelectiveDeletions: boolean = this.isEntireEditorSelected || (selectedBlocks && selectedBlocks.length > 1);
-        const notAllowedTypes: string[] = ['Code', 'Table', 'Image'];
-
-        if (isEscapeKey || (!isControlKey && isArrowKeys && !isShiftKey)) {
-            this.inlineToolbarModule.hideInlineToolbar(e);
-        }
-        else if ((isControlKey && isLeftRightArrows && isShiftKey)) {
-            const inlineTbarPopup: HTMLElement = document.querySelector('.e-blockeditor-inline-toolbar-popup');
-            const isInlineTbarOpen: boolean = inlineTbarPopup && inlineTbarPopup.classList.contains('e-popup-open');
-            if (!isInlineTbarOpen) {
-                setTimeout(() => {
-                    const range: Range = getSelectionRange();
-                    this.inlineToolbarModule.showInlineToolbar(range, e);
-                });
-            }
-        }
-
-        if (this.mentionRenderer.isPopupOpen ||
-            (commandPopupElement && commandPopupElement.classList.contains('e-popup-open')) ||
-            (userMentionPopupElement && userMentionPopupElement.classList.contains('e-popup-open')) ||
-            (labelMentionPopupElement && labelMentionPopupElement.classList.contains('e-popup-open')) ||
-            notAllowedTypes.indexOf(blockModel.type) !== -1) {
-            return;
-        }
-
-        this.listBlockAction.handleListTriggerKey(e, this.currentFocusedBlock, blockModel);
-        if (blockModel && isListTypeBlock(blockModel.type) && !isSelectiveDeletions) {
-            this.listBlockAction.handleListKeyActions(e, this.currentFocusedBlock);
-            if (!isArrowKeys && !isIndentingKeys) { return; }
-        }
-
-        this.handleBlockKeyActions(e);
-    }
-
-    private handleMouseUpActions(e: MouseEvent): void {
-        if (this.readOnly) { return; }
-        const blockElement: HTMLElement = (e.target as HTMLElement).closest('.e-block') as HTMLElement;
-        if (blockElement && (this.currentFocusedBlock !== blockElement)) {
-            this.togglePlaceholder(this.currentFocusedBlock, false);
-            this.setFocusToBlock(blockElement);
-            this.togglePlaceholder(this.currentFocusedBlock, true);
-            this.showFloatingIcons(this.currentFocusedBlock);
-        }
-        setTimeout(() => {
-            this.handleTextSelection(e);
-        });
-        this.notify('mouseup', e);
-    }
-
-    private handleMouseDownActions(e: MouseEvent): void {
-        this.isEntireEditorSelected = false;
-        if (this.readOnly) { return; }
-        const blockElement: HTMLElement = (e.target as HTMLElement).closest('.e-block') as HTMLElement;
-        if (blockElement && (this.currentFocusedBlock !== blockElement)) {
-            if (blockElement.innerText.length === 0) {
-                setCursorPosition(getBlockContentElement(blockElement), 0);
-            }
-        }
-    }
-
-    private throttleContentUpdate(e: Event): void {
-        clearTimeout(this.updateTimer);
-        this.updateTimer = setTimeout(() => {
-            const target: HTMLElement = this.currentFocusedBlock as HTMLElement;
-            this.updateContentOnUserTyping(target, e);
-        }, 100);
-    }
-
-    public updateContentOnUserTyping(blockElement: HTMLElement, e?: Event): void {
-        if (!blockElement) { return; }
-
-        const range: Range = getSelectionRange();
-
-        const block: BlockModel = getBlockModelById(blockElement.id, this.blocksInternal);
-        if (!block) { return; }
-
-        const blockIndex: number = getBlockIndexById(block.id, this.blocksInternal);
-        const previousBlock: BlockModel = deepClone(sanitizeBlock(block));
-        let contentElement: HTMLElement = getBlockContentElement(blockElement);
-        if (!contentElement) { return; }
-
-        const toggleBlock: HTMLElement = blockElement.closest('.e-toggle-block') as HTMLElement;
-        if (toggleBlock) {
-            const toggleHeader: HTMLElement = findClosestParent(range.startContainer, '.e-toggle-header');
-            if (toggleHeader) {
-                contentElement = toggleHeader.querySelector('.e-block-content');
-            }
-        }
-
-        const prevOnChange: boolean = this.isProtectedOnChange;
-        this.isProtectedOnChange = true;
-        if (!block.content || contentElement.childNodes.length === 0) {
-            block.content = [];
-        }
-        let previousContent: ContentModel;
-        let newContentId: string = '';
-        contentElement.childNodes.forEach((node: ChildNode) => {
-            if (node.nodeType === Node.TEXT_NODE) {
-                const text: string = node.textContent;
-                if (text) {
-                    if (block.content.length === 0) {
-                        block.content = [{ id: node.parentElement.id || generateUniqueId('content'), content: text }];
-                        contentElement.id = newContentId = block.content[0].id;
-                    } else {
-                        const isAroundSpecialElement: boolean = isNodeAroundSpecialElements(node);
-                        if (isAroundSpecialElement) {
-                            const clonedNode: Node = node.cloneNode(true);
-                            const index: number = Array.from(contentElement.childNodes).indexOf(node);
-                            block.content.splice(index, 0, {
-                                id: generateUniqueId('content'),
-                                content: text
-                            });
-                            this.blockAction.triggerWholeContentUpdate(block, block.content);
-                            const span: HTMLElement = wrapNodeWithTag(clonedNode, 'span');
-                            span.id = newContentId = block.content[parseInt(index.toString(), 10)].id;
-                            contentElement.insertBefore(span, node);
-                            contentElement.removeChild(node);
-                        }
-                        else {
-                            previousContent = block.content[0];
-                            block.content[0].content = text;
-                            newContentId = block.content[0].id;
-                        }
-                    }
-                }
-            } else if (node.nodeType === Node.ELEMENT_NODE) {
-                const element: HTMLElement = node as HTMLElement;
-                const text: string = element.innerText;
-                if (element.classList.contains('e-label-chip') || element.classList.contains('e-user-chip')) {
-                    return;
-                }
-                if (text || element.childNodes.length > 0) {
-                    const existingContent: ContentModel = block.content.find((c: ContentModel) => c.id === element.id);
-                    if (existingContent) {
-                        previousContent = existingContent;
-                        existingContent.content = text;
-                        newContentId = existingContent.id;
-                    } else {
-                        const newId: string = newContentId = element.id || generateUniqueId('content');
-                        block.content.push({ id: newId, content: text });
-                        this.blockAction.triggerWholeContentUpdate(block, block.content);
-                    }
-                }
-            }
-        });
-        if (block.type !== 'Code') {
-            this.cleanUpStaleContents(block, contentElement);
-        }
-        this.isProtectedOnChange = prevOnChange;
-        const clonedBlock: BlockModel = deepClone(sanitizeBlock(block));
-        this.notify('contentChanged', { oldBlockModel: previousBlock, updatedBlockModel: clonedBlock });
-        const eventArgs: ContentChangedEventArgs = {
-            event: e,
-            // user: this.getCurrentUser(),
-            previousContent: previousContent,
-            content: block.content.find((c: ContentModel) => c.id === newContentId)
-        };
-        this.trigger('contentChanged', eventArgs);
-    }
-
-    private cleanUpStaleContents(block: BlockModel, contentElement: HTMLElement): void {
-        const idAttributes: string [] = ['id', 'data-label-id', 'data-user-id'];
-        const domContentIds: Set<string> = new Set();
-
-        for (const node of Array.from(contentElement.childNodes)) {
-            if (node.nodeType === Node.ELEMENT_NODE) {
-                const el: HTMLElement = node as HTMLElement;
-
-                for (const attr of idAttributes) {
-                    const value: string | null = el.getAttribute(attr);
-                    if (value) {
-                        domContentIds.add(value);
-                    }
-                }
-            }
-            else if (node.nodeType === Node.TEXT_NODE) {
-                const parentEl: HTMLElement = node.parentElement;
-                if (parentEl) {
-                    domContentIds.add(parentEl.id);
-                }
-            }
-        }
-        const currentContent: ContentModel[] = block.content.filter((c: ContentModel) => domContentIds.has(c.id));
-        const contentRemoved: boolean = currentContent.length !== block.content.length;
-        if (contentRemoved) {
-            this.blockAction.triggerWholeContentUpdate(block, currentContent);
-        }
-    }
-
-    private filterSlashCommandOnUserInput(): void {
-        if (this.mentionRenderer.isPopupOpen &&
-            this.currentFocusedBlock &&
-            this.currentFocusedBlock.innerText &&
-            this.isPopupOpenedOnAddIconClick) {
-            const rect: DOMRect | ClientRect = getElementRect(this.currentFocusedBlock);
-            const xOffset: number = rect.left;
-            const yOffset: number = rect.top + this.currentFocusedBlock.offsetHeight;
-            this.slashCommandModule.filterCommands(this.currentFocusedBlock.innerText, xOffset, yOffset);
-        }
-    }
-
-    private renderBlockWrapper(): void {
-        this.blockWrapper = this.createElement('div', { className: 'e-block-container-wrapper' });
-        this.element.appendChild(this.blockWrapper);
-        this.blockAction.createDefaultEmptyBlock();
-    }
-
-    public reRenderBlockContent(block: BlockModel): void {
-        if (!block) { return; }
-        const blockElement: HTMLElement = this.getBlockElementById(block.id);
-        if (!blockElement) { return; }
-        const contentElement: HTMLElement = getBlockContentElement(blockElement);
-        if (!contentElement) { return; }
-
-        contentElement.innerHTML = '';
-        this.blockAction.contentRenderer.renderContent(block, contentElement);
-    }
-
-    public renderBlocks(blocks: BlockModel[]): void {
-        if (blocks.length <= 0) {
-            return;
-        }
-        let lastBlockElement: HTMLElement; // Track the last block for caret positioning
-
-        blocks.forEach((block: BlockModel) => {
-            const blockElement: HTMLElement = this.blockAction.createBlockElement(block);
-            this.insertBlockIntoDOM(blockElement);
-            this.togglePlaceholder(blockElement, false);
-            lastBlockElement = blockElement;
-            if (isListTypeBlock(block.type)) {
-                this.listBlockAction.updateListItemMarkers(blockElement);
-            }
-            if (isChildrenTypeBlock(block.type) && block.children.length > 0) {
-                block.children.forEach((childBlock: BlockModel) => {
-                    if (isListTypeBlock(childBlock.type)) {
-                        const childBlockElement: HTMLElement = blockElement.querySelector('#' + childBlock.id);
-                        this.listBlockAction.updateListItemMarkers(childBlockElement);
-                    }
-                });
-            }
-        });
-
-        if (lastBlockElement) {
-            if (lastBlockElement.classList.contains('e-callout-block')) {
-                lastBlockElement = lastBlockElement.querySelector('.e-callout-content').lastChild as HTMLElement;
-            }
-            // Wait for DOM updates and set focus and position the caret at the end
-            requestAnimationFrame(() => {
-                this.setFocusToBlock(lastBlockElement);
-                this.togglePlaceholder(this.currentFocusedBlock, true);
-                const position: number = lastBlockElement ? lastBlockElement.textContent.length : 0;
-                setCursorPosition(getBlockContentElement(lastBlockElement), position);
-                blocks.forEach((block: BlockModel) => {
-                    if (block.type === 'CheckList') {
-                        if (this.blockAction && this.blockAction.listRenderer) {
-                            this.blockAction.listRenderer.toggleCheckedState(block, block.isChecked);
-                        }
-                    }
-                });
-            });
-        }
-    }
-
-    private insertBlockIntoDOM(blockElement: HTMLElement, afterElement?: HTMLElement): void {
-        if (afterElement) {
-            this.blockWrapper.insertBefore(blockElement, afterElement.nextSibling);
-        } else {
-            this.blockWrapper.appendChild(blockElement);
-        }
-    }
-
+    /**
+     * Initializes mention modules for @ mentions and slash commands
+     *
+     * @returns {void}
+     */
     private initializeMentionModules(): void {
         this.slashCommandModule = new SlashCommandModule(this);
-        this.initializeUserMention();
-        this.initializeLabelContent();
+        this.inlineContentInsertionModule.initializeUserMention();
+        this.inlineContentInsertionModule.initializeLabelContent();
     }
 
-    private initializeUserMention(): void {
-        const mentionDataSource: UserModel[] = (this.users).map((user: UserModel) => {
-            const name: string = user.user.trim();
-            const initials: string = getUserInitials(name);
-            const bgColor: string = user.avatarBgColor || getAutoAvatarColor(user.id);
-            const avatarUrl: string = user.avatarUrl || '';
-
-            return {
-                id: user.id,
-                user: name,
-                avatarUrl: avatarUrl,
-                avatarBgColor: bgColor,
-                initials
-            };
-        });
-
-        const mentionArgs: IMentionRenderOptions = {
-            element: this.blockWrapper,
-            itemTemplate: '<div class="e-user-mention-item-template"><div class="em-avatar" style="background-color: ${avatarBgColor};">${if(avatarUrl)} <img src="${avatarUrl}" alt="${user}" class="em-img" /> ${else} <div class="em-initial">${initials}</div> ${/if} </div><div class="em-content"><div class="em-text">${user}</div></div></div>',
-            displayTemplate: getUserMentionDisplayTemplate(),
-            dataSource: mentionDataSource,
-            popupWidth: '200px',
-            cssClass: 'e-blockeditor-user-menu e-blockeditor-mention-menu',
-            fields: { text: 'user', value: 'id' },
-            change: this.handleInlineContentInsertion.bind(this),
-            beforeOpen: (args: PopupEventArgs) => {
-                args.cancel = this.users.length === 0;
-            }
-        };
-        this.userMenuObj = this.mentionRenderer.renderMention(mentionArgs);
+    /**
+     * Creates the block wrapper container
+     *
+     * @returns {void}
+     */
+    private renderBlockWrapper(): void {
+        this.blockWrapper = this.createElement('div', { className: constants.BLOCK_WRAPPER_CLS });
+        this.element.appendChild(this.blockWrapper);
+        this.blockCommandManager.createDefaultEmptyBlock();
     }
 
-    private initializeLabelContent(): void {
-        let items: LabelItemModel[];
-        if (this.labelSettings.labelItems.length > 0) {
-            items = sanitizeLabelItems(this.labelSettings.labelItems);
-        }
-        else {
-            items = getLabelMenuItems();
-            const prevOnChange: boolean = this.isProtectedOnChange;
-            this.isProtectedOnChange = true;
-            this.labelSettings.labelItems = items;
-            this.isProtectedOnChange = prevOnChange;
-        }
-
-        const mentionArgs: IMentionRenderOptions = {
-            element: this.blockWrapper,
-            mentionChar: this.labelSettings.triggerChar,
-            itemTemplate: '<div class="e-label-mention-item-template"><div class="em-avatar" style="background-color: ${labelColor};"> </div><div class="em-content"><span class="em-icon ${iconCss}"></span><div class="em-text">${text}</div></div></div>',
-            displayTemplate: getLabelMentionDisplayTemplate(),
-            dataSource: items,
-            popupWidth: '200px',
-            cssClass: 'e-blockeditor-label-menu e-blockeditor-mention-menu',
-            fields: { text: 'text', value: 'id', groupBy: 'groupHeader', iconCss: 'iconCss' },
-            change: this.handleInlineContentInsertion.bind(this)
-        };
-        this.labelMenuObj = this.mentionRenderer.renderMention(mentionArgs);
+    /**
+     * Renders blocks in the editor
+     *
+     * @param {BlockModel[]} blocks The blocks to render
+     * @returns {void}
+     * @hidden
+     */
+    public renderBlocks(blocks: BlockModel[]): void {
+        this.blockRendererManager.renderBlocks(blocks);
     }
 
-    private handleInlineContentInsertion(args: MentionChangeEventArgs): void {
-        args.e.preventDefault();
-        args.e.stopPropagation();
-        this.mentionRenderer.cleanMentionArtifacts(this.currentFocusedBlock);
-        const contentType: ContentType = (args.value.toString().indexOf('e-user-mention-item-template')) > 0 ? ContentType.Mention : ContentType.Label;
-        const mentionChar: string = contentType === ContentType.Mention ? '@' : this.labelSettings.triggerChar;
-        this.mentionRenderer.removeMentionQueryKeysFromModel(mentionChar);
-        const options: IInlineContentInsertionArgs = {
-            block: getBlockModelById(this.currentFocusedBlock.id, this.blocksInternal),
-            blockElement: this.currentFocusedBlock,
-            range: getSelectionRange().cloneRange(),
-            contentType: contentType,
-            itemData: args.itemData
-        };
-        this.notify('inline-content-inserted', options);
-    }
-
-    public handleBlockTransformation(args: ITransformBlockArgs): void {
-        const { block, blockElement, newBlockType, isUndoRedoAction } = args;
-        const rangePath: RangePath = this.mentionRenderer.nodeSelection.getStoredBackupRange();
-        this.mentionRenderer.cleanMentionArtifacts(blockElement, true);
-        cleanCheckmarkElement(blockElement);
-        this.mentionRenderer.removeMentionQueryKeysFromModel('/', args.isUndoRedoAction);
-        const specialTypes: string[] = ['Divider', 'ToggleParagraph', 'ToggleHeading1', 'ToggleHeading2', 'ToggleHeading3',
-            'ToggleHeading4', 'Callout', 'Table', 'Code'];
-        const isClosestCallout: HTMLElement = findClosestParent(blockElement, '.e-callout-block');
-        const isClosestToggle: HTMLElement = findClosestParent(blockElement, '.e-toggle-block');
-        let transformedElement: HTMLElement = blockElement;
-        const isSpecialType: boolean = (specialTypes.indexOf(newBlockType) > -1) || (specialTypes.indexOf(block.type) > -1);
-        if (isSpecialType && ((blockElement.textContent.length > 0) || (isClosestCallout || isClosestToggle))) {
-            transformedElement = this.blockAction.addNewBlock({
-                targetBlock: isClosestCallout ? isClosestCallout : isClosestToggle ? isClosestToggle : blockElement,
-                blockType: newBlockType
-            });
-        }
-        else {
-            this.blockAction.transformBlock({
-                block: block,
-                blockElement: blockElement,
-                newBlockType: newBlockType,
-                isUndoRedoAction: isUndoRedoAction
-            });
-        }
-        // Add a new paragraph block after the transformed block if it is a special type block.
-        if (isSpecialType && !isUndoRedoAction) {
-            const contentElement: HTMLElement = this.createElement('p', {
-                className: 'e-block-content',
-                innerHTML: '<br>', // Added to hide placeholder initially
-                attrs: {
-                    contenteditable: 'true'
-                }
-            });
-            this.blockAction.addNewBlock({
-                targetBlock: transformedElement,
-                blockType: 'Paragraph',
-                contentElement: contentElement,
-                preventUIUpdate: true
-            });
-        }
-        const contentElement: HTMLElement = getBlockContentElement(transformedElement);
-        this.togglePlaceholder(transformedElement, true);
-        if (transformedElement.getAttribute('data-block-type') === 'Callout') {
-            const firstChild: HTMLElement = transformedElement.querySelector('.e-block') as HTMLElement;
-            this.setFocusToBlock(firstChild);
-        }
-        if (rangePath && rangePath.endContainer && contentElement) {
-            const offset: number = getAbsoluteOffset(contentElement, rangePath.endContainer, rangePath.endOffset);
-            setCursorPosition(contentElement, offset);
-        }
-        const prevAdjacent: HTMLElement = getAdjacentBlock(transformedElement, 'previous');
-        this.listBlockAction.recalculateMarkersForListItems();
-        this.showFloatingIcons(transformedElement);
-        this.blockAction.updatePropChangesToModel();
-    }
-
-    private handleTextSelection(e: Event): void {
-        const range: Range = this.nodeSelection.getRange();
-        if (!range || range.toString().trim().length === 0) {
-            this.inlineToolbarModule.hideInlineToolbar(e);
-            return;
-        }
-        const previousRange: Range = this.nodeSelection.getStoredRange();
-        const selectionArgs: SelectionChangedEventArgs = {
-            event: e,
-            // user: this.users.find((user: UserModel) => user.id === this.currentUserId),
-            range: [range.startOffset, range.endOffset],
-            previousRange: previousRange ? [previousRange.startOffset, previousRange.endOffset] : null
-        };
-        this.trigger('selectionChanged', selectionArgs);
-        this.nodeSelection.storeCurrentRange();
-        const rect: DOMRect | ClientRect = range.getBoundingClientRect();
-
-        if (range && rect) {
-            const parentBlock: HTMLElement = getParentBlock(range.commonAncestorContainer as HTMLElement);
-            if (parentBlock && parentBlock.classList.contains('e-block')) {
-                this.inlineToolbarModule.showInlineToolbar(range, e);
-            } else {
-                this.inlineToolbarModule.hideInlineToolbar(e);
-            }
-        }
-    }
-
-    private togglePopupsOnDocumentClick(event: MouseEvent): void {
-        const inlineTbarPopup: HTMLElement = document.querySelector('.e-blockeditor-inline-toolbar-popup');
-        const blockActionPopup: HTMLElement = document.querySelector('.e-blockeditor-blockaction-popup');
-        const isInlineTbarOpen: boolean = inlineTbarPopup && inlineTbarPopup.classList.contains('e-popup-open');
-        const isBlockActionOpen: boolean = blockActionPopup && blockActionPopup.classList.contains('e-popup-open');
-        if (!this.inlineToolbarModule.popupObj.element.contains(event.target as Node) && isInlineTbarOpen) {
-            this.inlineToolbarModule.hideInlineToolbar(event);
-        }
-        if (!this.blockActionMenuModule.popupObj.element.contains(event.target as Node) && isBlockActionOpen) {
-            this.blockActionMenuModule.toggleBlockActionPopup(true, event);
-        }
-    }
-
-    private createFloatingIcons(): void {
-        this.floatingIconContainer = this.createElement('div', { className: 'e-floating-icons' });
-        const addIcon: HTMLElement = this.createElement('span', { className: 'e-floating-icon e-icons e-block-add-icon' });
-        EventHandler.add(addIcon, 'click', this.handleAddIconClick, this);
-        const dragIcon: HTMLElement = this.createElement('span', { className: 'e-floating-icon e-icons e-block-drag-icon', attrs: { draggable: 'true' } });
-        EventHandler.add(dragIcon, 'click', this.handleDragIconClick, this);
-        this.floatingIconContainer.appendChild(addIcon);
-        this.floatingIconContainer.appendChild(dragIcon);
-        this.floatingIconContainer.style.position = 'absolute';
-        this.floatingIconContainer.style.display = 'none';
-        this.floatingIconContainer.style.pointerEvents = 'none';
-        document.body.appendChild(this.floatingIconContainer);
-        this.renderFloatingIconTooltips();
-    }
-
-    private renderFloatingIconTooltips(): void {
-        this.addIconTooltip = this.tooltipRenderer.renderTooltip({
-            element: this.floatingIconContainer,
-            target: '.e-block-add-icon',
-            position: 'TopCenter',
-            showTipPointer: true,
-            windowCollision: true,
-            cssClass: 'e-be-floating-icon-tooltip',
-            content: this.getTooltipContent('add')
-        });
-
-        this.dragIconTooltip = this.tooltipRenderer.renderTooltip({
-            element: this.floatingIconContainer,
-            target: '.e-block-drag-icon',
-            position: 'TopCenter',
-            showTipPointer: true,
-            windowCollision: true,
-            cssClass: 'e-be-floating-icon-tooltip',
-            content: this.getTooltipContent('drag')
-        });
-    }
-
-    private getTooltipContent(iconType: 'add' | 'drag'): HTMLElement {
-        if (iconType === 'add') {
-            const bold: HTMLElement = document.createElement('b');
-            bold.textContent = this.l10n.getConstant('addIconTooltip');
-            return bold;
-        }
-
-        const container: HTMLElement = document.createElement('div');
-        container.innerHTML = `
-            <b>${this.l10n.getConstant('dragIconTooltipActionMenu')}</b><br>
-            <span>${this.l10n.getConstant('dragIconTooltip')}</span>
-        `;
-        return container;
-    }
-
-    private UpdateFloatingIconTooltipContent(): void {
-        if (this.addIconTooltip) {
-            this.addIconTooltip.content = this.getTooltipContent('add');
-            this.addIconTooltip.dataBind();
-        }
-        if (this.dragIconTooltip) {
-            this.dragIconTooltip.content = this.getTooltipContent('drag');
-            this.dragIconTooltip.dataBind();
-        }
-    }
-
-    private isFullyVisibleInEditor(blockElement: HTMLElement): boolean {
-        const editorRect: DOMRect | ClientRect = this.element.getBoundingClientRect();
-        const blockRect: DOMRect | ClientRect = blockElement.getBoundingClientRect();
-
-        return (
-            blockRect.top >= editorRect.top &&
-            blockRect.bottom <= editorRect.bottom
-        );
-    }
-
-    public showFloatingIcons(target: HTMLElement): void {
-        if (this.readOnly) { return; }
-        let blockElement: HTMLElement = target;
-        this.hideDragIconForEmptyBlock(blockElement);
-        const calloutContent: HTMLElement = blockElement.closest('.e-callout-content') as HTMLElement;
-        const isToggleBlock: boolean = blockElement.classList.contains('e-toggle-block');
-        if ((calloutContent && blockElement === calloutContent.firstElementChild) || !this.isFullyVisibleInEditor(blockElement)) {
-            // Do not show floating icons for the first child of a callout content block
-            this.hideFloatingIcons();
-            return;
-        }
-        this.floatingIconContainer.style.display = 'flex';
-        const floatingIconRect: DOMRect | ClientRect = this.floatingIconContainer.getBoundingClientRect();
-        const blockType: string = blockElement.getAttribute('data-block-type').toLowerCase();
-
-        blockElement = isToggleBlock ? blockElement.querySelector('.e-toggle-header') as HTMLElement : blockElement;
-        const rect: DOMRect | ClientRect = getElementRect(blockElement);
-        const styles: CSSStyleDeclaration = window.getComputedStyle(blockElement);
-        const marginTop: number = parseFloat(styles.marginTop) || 0;
-        const marginLeft: number = parseFloat(styles.marginLeft) || 0;
-        const paddingTop: number = parseFloat(styles.paddingTop) || 0;
-        const paddingLeft: number = parseFloat(styles.paddingLeft) || 0;
-        const additionalOffsetsForHeadings: number = (rect.height / 2 - (floatingIconRect.height / 2));
-        let topOffset: number = rect.top + window.scrollY + marginTop;
-        topOffset = ((blockType === 'heading1' || blockType.endsWith('heading1'))
-            || (blockType === 'heading2') || blockType.endsWith('heading2'))
-            ? (topOffset + additionalOffsetsForHeadings) : (topOffset + paddingTop);
-        const leftOffset: number = rect.left + window.scrollX - marginLeft;
-        const adjustedLeft: number = leftOffset + paddingLeft - (floatingIconRect.width + 5);
-        this.floatingIconContainer.style.top = `${topOffset}px`;
-        this.floatingIconContainer.style.left = `${adjustedLeft}px`;
-        this.floatingIconContainer.style.pointerEvents = 'auto';
-    }
-
-    private hideDragIconForEmptyBlock(target: HTMLElement): void {
-        const dragIcon: HTMLElement = this.floatingIconContainer.querySelector('.e-block-drag-icon') as HTMLElement;
-        dragIcon.style.display = 'flex';
-        const ignoredTypes: string[] = ['Code', 'Callout', 'Table', 'Divider', 'Toggle', 'Image'];
-        const blockType: string = target.getAttribute('data-block-type');
-        const isIgnoredtype: boolean = blockType && ignoredTypes.indexOf(blockType) !== -1;
-        const contentElement: HTMLElement = getBlockContentElement(target);
-        if (!isIgnoredtype && (contentElement && !contentElement.textContent)) {
-            dragIcon.style.display = 'none';
-        }
-    }
-
-    private hideFloatingIcons(): void {
-        this.floatingIconContainer.style.display = 'none';
-        this.currentHoveredBlock = null;
-    }
-
-    private handleDragIconClick(e: MouseEvent): void {
-        if (!this.blockActionsMenu.enable) { return; }
-        const block: HTMLElement = this.currentHoveredBlock;
-        const popupElement: HTMLElement = document.querySelector('.e-blockeditor-blockaction-popup');
-        const isPopupOpen: boolean = popupElement.classList.contains('e-popup-open');
-        this.popupRenderer.adjustPopupPositionRelativeToTarget(block, this.blockActionMenuModule.popupObj);
-        this.blockActionMenuModule.toggleBlockActionPopup(isPopupOpen, e);
-    }
-
-    private handleAddIconClick(): void {
-        let block: HTMLElement = this.currentHoveredBlock;
-        if ((this.currentHoveredBlock.innerText.length > 0) || (isNonContentEditableBlock(block.getAttribute('data-block-type')))) {
-            block = this.blockAction.addNewBlock({
-                targetBlock: this.currentHoveredBlock
-            });
-        }
-        else {
-            this.blockAction.setFocusAndUIForNewBlock(block);
-        }
-        if (this.slashCommandModule) {
-            this.isPopupOpenedOnAddIconClick = true;
-            this.slashCommandModule.showPopup();
-        }
-    }
-
-    private handleBlockKeyActions(event: KeyboardEvent): void {
-        const range: Range = getSelectionRange();
-        const blockElement: HTMLElement = this.currentFocusedBlock;
-        const blockModel: BlockModel = getBlockModelById(blockElement.id, this.blocksInternal);
-        const blockType: string = blockElement.getAttribute('data-block-type');
-        const contentElement: HTMLElement = getBlockContentElement(blockElement);
-        switch (event.key) {
-        case 'ArrowUp':
-        case 'ArrowDown':
-        case 'ArrowLeft':
-        case 'ArrowRight':
-            this.handleArrowKeyActions(event, range, blockElement);
-            this.isEntireEditorSelected = false;
-            break;
-        case 'Enter':
-            this.inlineToolbarModule.hideInlineToolbar();
-            if (event.shiftKey) {
-                this.handleLineBreaksOnBlock(blockElement);
-                event.preventDefault();
-            }
-            else {
-                this.handleEnterKeyAction(event);
-                this.isEntireEditorSelected = false;
-                event.preventDefault();
-            }
-            break;
-        case 'Backspace': {
-            this.inlineToolbarModule.hideInlineToolbar();
-            const isDeletionPerformed: boolean = this.handleSelectiveDeletions(event);
-            if (!isDeletionPerformed && (blockType === 'Divider' || isAtStartOfBlock(contentElement))) {
-                this.blockAction.deleteBlockAtCursor({ blockElement: this.currentFocusedBlock, mergeDirection: 'previous' });
-                this.isEntireEditorSelected = false;
-                event.preventDefault();
-            }
-            break;
-        }
-        case 'Delete': {
-            this.inlineToolbarModule.hideInlineToolbar();
-            const isDeletionPerformed: boolean = this.handleSelectiveDeletions(event);
-            if (!isDeletionPerformed && (blockType === 'Divider' || isAtEndOfBlock(contentElement))) {
-                this.blockAction.deleteBlockAtCursor({ blockElement: this.currentFocusedBlock, mergeDirection: 'next' });
-                this.isEntireEditorSelected = false;
-                event.preventDefault();
-            }
-            break;
-        }
-        case 'Tab':
-        case 'Shift+Tab': {
-            const selectedBlocks: BlockModel[] = this.getSelectedBlocks();
-            const blockIDs: string[] = selectedBlocks.map((block: BlockModel) => block.id);
-            this.blockAction.handleBlockIndentation({
-                blockIDs,
-                shouldDecrease: event.shiftKey
-            });
-            this.isEntireEditorSelected = false;
-            event.preventDefault();
-            break;
-        }
-        case 'Home':
-        case 'End': {
-            if (!event.shiftKey) {
-                this.handleHomeEndKeyActions(event, blockElement);
-            }
-            break;
-        }
-        }
-    }
-
-    private handleHomeEndKeyActions(event: KeyboardEvent, blockElement: HTMLElement): void {
-        const contentElement: HTMLElement = getBlockContentElement(blockElement);
-        const isHomeKey: boolean = event.key === 'Home';
-
-        setCursorPosition(contentElement, isHomeKey ? 0 : contentElement.textContent.length);
-    }
-
-    public handleSelectiveDeletions(event: KeyboardEvent): boolean {
-        const selectedBlocks: BlockModel[] = this.getSelectedBlocks();
-        this.isEntireEditorSelected = this.checkIsEntireEditorSelected();
-        if (this.isEntireEditorSelected) {
-            this.handleEntireBlockDeletion(event);
-            return true;
-        }
-        else if (selectedBlocks && selectedBlocks.length > 1) {
-            this.handleMultipleBlockDeletion(selectedBlocks, event.key === 'Backspace' ? 'previous' : 'next');
-            event.preventDefault();
-            return true;
-        }
-        return false;
-    }
-
-    private handleEntireBlockDeletion(event: KeyboardEvent): void {
-        const prevFocusedBlockid: string = this.currentFocusedBlock.id;
-        const allBlocks: BlockModel[] = this.blocksInternal.map((block: BlockModel) => deepClone(sanitizeBlock(block)));
-        this.blocksInternal = [];
-        const newlyInsertedBlock: BlockModel = this.blockAction.createDefaultEmptyBlock(true);
-
-        this.undoRedoAction.pushToUndoStack({
-            action: 'multipleBlocksDeleted',
-            oldBlockModel: newlyInsertedBlock,
-            data: {
-                deletedBlocks: allBlocks,
-                deletionType: DeletionType.Entire,
-                cursorBlockId: prevFocusedBlockid
-            }
-        });
-
-        this.isEntireEditorSelected = false;
-        event.preventDefault();
-    }
-
-    handleMultipleBlockDeletion(
-        selectedBlocks: BlockModel[],
-        direction: 'previous' | 'next' = 'previous',
-        isUndoRedoAction?: boolean
-    ): boolean {
-        const prevFocusedBlockid: string = this.currentFocusedBlock ? this.currentFocusedBlock.id : '';
-        const selectedClones: BlockModel[] = selectedBlocks.map((block: BlockModel) => deepClone(sanitizeBlock(block)));
-        const firstBlock: BlockModel = selectedBlocks[0];
-        const lastBlock: BlockModel = selectedBlocks[selectedBlocks.length - 1];
-        const firstBlockElement: HTMLElement = this.getBlockElementById(firstBlock.id);
-        const lastBlockElement: HTMLElement = this.getBlockElementById(lastBlock.id);
-        const range: Range = getSelectionRange();
-
-        if (!range || !firstBlockElement || !lastBlockElement) { return false; }
-
-        // 1. Delete all middle blocks
-        for (let i: number = 1; i < selectedBlocks.length - 1; i++) {
-            this.blockAction.deleteBlock(
-                {
-                    blockElement: this.getBlockElementById(selectedBlocks[parseInt(i.toString(), 10)].id),
-                    isUndoRedoAction: true
-                }
-            );
-        }
-
-        const firstBlockContent: HTMLElement = getBlockContentElement(firstBlockElement);
-        const firstSplit: ISplitContent = this.blockAction.splitContent(firstBlockContent, range.startContainer, range.startOffset);
-        this.updateAndCleanContentModels(firstBlock, firstSplit, 'keepBefore');
-
-        const lastBlockContent: HTMLElement = getBlockContentElement(lastBlockElement);
-        const lastSplit: ISplitContent = this.blockAction.splitContent(lastBlockContent, range.endContainer, range.endOffset);
-        this.updateAndCleanContentModels(lastBlock, lastSplit, 'keepAfter');
-
-        firstBlockContent.innerHTML = '';
-        firstBlockContent.appendChild(firstSplit.beforeFragment);
-        lastBlockContent.innerHTML = '';
-        lastBlockContent.appendChild(lastSplit.afterFragment);
-
-        this.blockAction.deleteBlockAtCursor({
-            blockElement: direction === 'previous' ? lastBlockElement : firstBlockElement,
-            mergeDirection: direction,
-            isUndoRedoAction: true
-        });
-
-        if (!isUndoRedoAction) {
-            this.undoRedoAction.pushToUndoStack({
-                action: 'multipleBlocksDeleted',
-                data: {
-                    deletedBlocks: selectedClones,
-                    deletionType: DeletionType.Partial,
-                    direction: direction,
-                    firstBlockIndex: getBlockIndexById(firstBlock.id, this.blocksInternal),
-                    cursorBlockId: prevFocusedBlockid
-                }
-            });
-        }
-
-        return true;
-    }
-
-    private updateAndCleanContentModels(
-        block: BlockModel,
-        splitContent: ISplitContent,
-        mode: 'keepBefore' | 'keepAfter'
-    ): void {
-        const newContentModels: ContentModel[] = [];
-        const beforeFragmentNodes: ChildNode[] = Array.from(splitContent.beforeFragment.childNodes);
-        const afterFragmentNodes: ChildNode[] = Array.from(splitContent.afterFragment.childNodes);
-        const blockElement: HTMLElement = this.getBlockElementById(block.id);
-
-        const range: Range = getSelectionRange();
-        const splitNode: Node = mode === 'keepBefore' ? range.startContainer : range.endContainer;
-        const splitOffset: number = mode === 'keepBefore' ? range.startOffset : range.endOffset;
-        const contentElementOfSplitNode: HTMLElement = getClosestContentElementInDocument(splitNode);
-        const isContentFoundInCollection: (element: Node, collection: ChildNode[]) => boolean =
-            (element: Node, collection: ChildNode[]) => {
-                return collection.some((node: Node) => {
-                    return (node.contains(element) || node === element || (node as HTMLElement).id === (element as HTMLElement).id);
-                });
-            };
-        const prevOnChange: boolean = this.isProtectedOnChange;
-        this.isProtectedOnChange = true;
-        block.content.forEach((content: ContentModel) => {
-            let isSplitted: boolean = false;
-            const contentEl: HTMLElement = getContentElementBasedOnId(content, blockElement);
-
-            const isCurrentContentIntersectsNode: boolean = range.intersectsNode(contentEl);
-            const isCurrentContentFoundInAfterNodes: boolean = isContentFoundInCollection(contentEl, afterFragmentNodes);
-            if (mode === 'keepBefore' && isCurrentContentFoundInAfterNodes && isCurrentContentIntersectsNode) {
-                return;
-            }
-            if (contentEl === contentElementOfSplitNode) {
-                content.content = mode === 'keepBefore'
-                    ? splitNode.textContent.substring(0, splitOffset)
-                    : (splitNode.textContent.substring(splitOffset) || '');
-                if (mode === 'keepAfter') {
-                    const splittedNodeId: string = afterFragmentNodes.length && (afterFragmentNodes[0].nodeType === Node.ELEMENT_NODE
-                        ? (afterFragmentNodes[0] as HTMLElement).id : content.id);
-                    content.id = splittedNodeId;
-                }
-                isSplitted = true;
-            }
-            const isCurrentContentFoundInBeforeNodes: boolean = isContentFoundInCollection(contentEl, beforeFragmentNodes);
-            if (!isSplitted && mode === 'keepAfter' && isCurrentContentFoundInBeforeNodes && isCurrentContentIntersectsNode) {
-                return;
-            }
-            if (content.content.trim()) {
-                newContentModels.push(content);
-            }
-        });
-        block.content = newContentModels;
-        this.isProtectedOnChange = prevOnChange;
-    }
-
-    private handleEnterKeyAction(event: KeyboardEvent): void {
-        const blockType: string = this.currentFocusedBlock.getAttribute('data-block-type');
-        const calloutBlock: HTMLElement = this.currentFocusedBlock.closest('.e-callout-block') as HTMLElement;
-        const toggleBlock: HTMLElement = this.currentFocusedBlock.closest('.e-toggle-block') as HTMLElement;
-        if (calloutBlock) {
-            this.handleChildrenBlockExit('.e-callout-block', '.e-callout-content');
-        }
-        else if (toggleBlock) {
-            const range: Range = getSelectionRange();
-            const blockModel: BlockModel = getBlockModelById(toggleBlock.id, this.blocksInternal);
-            const toggleHeader: HTMLElement = findClosestParent(range.startContainer, '.e-toggle-header');
-            const toggleContent: HTMLElement = toggleBlock.querySelector('.e-toggle-content');
-            if (toggleContent && toggleHeader && toggleContent.textContent === '') {
-                this.blockAction.toggleRenderer.updateToggleBlockExpansion(this.currentFocusedBlock, !blockModel.isExpanded);
-                setCursorPosition(toggleContent.querySelector('.e-block-content'), 0);
-                this.setFocusToBlock(this.currentFocusedBlock.querySelector('.e-block'));
-                return;
-            }
-            this.handleChildrenBlockExit('.e-toggle-block', '.e-toggle-content');
-        }
-        const isEmpty: boolean = this.currentFocusedBlock.textContent.trim() === '';
-        const blockModel: BlockModel = getBlockModelById(this.currentFocusedBlock.id, this.blocksInternal);
-        if (isEmpty && blockModel.indent > 0) {
-            blockModel.indent--;
-            this.blockAction.updateBlockIndentAttribute(this.currentFocusedBlock, blockModel.indent);
-            this.showFloatingIcons(this.currentFocusedBlock);
-            this.blockAction.updatePropChangesToModel();
-        }
-        else if (blockType !== BlockType.Code) {
-            this.splitAndCreateNewBlockAtCursor();
-        }
-    }
-
-    private handleLineBreaksOnBlock(blockElement: HTMLElement, isUndoRedoAction?: boolean): void {
-        const blockModel: BlockModel = getBlockModelById(blockElement.id, this.blocksInternal);
-        const oldContentClone: ContentModel[] = deepClone(sanitizeContent(blockModel.content));
-        const contentElement: HTMLElement = getBlockContentElement(blockElement);
-        const range: Range = this.nodeSelection.getRange();
-        if (!range) { return; }
-        const absoluteOffset: number = getAbsoluteOffset(contentElement, range.startContainer, range.startOffset);
-        // Find the affected content in range
-        const closestContentElement: HTMLElement = getClosestContentElementInDocument(range.startContainer);
-        const contentModel: ContentModel = blockModel.content.find((content: ContentModel) => {
-            return content.id === closestContentElement.id;
-        });
-
-        // Update the \n at correct place in the content model
-        contentModel.content = contentModel.content.substring(0, range.startOffset) + '\n' + contentModel.content.substring(range.startOffset);
-        this.reRenderBlockContent(blockModel);
-        setCursorPosition(contentElement, absoluteOffset + 1);
-        const newContentClone: ContentModel[] = deepClone(sanitizeContent(blockModel.content));
-        if (!isUndoRedoAction) {
-            this.undoRedoAction.pushToUndoStack({
-                action: 'lineBreakAdded',
-                oldContents: oldContentClone,
-                newContents: newContentClone,
-                data: {
-                    blockId: blockModel.id
-                }
-            });
-        }
-    }
-
-    private handleChildrenBlockExit(parentSelector: string, contentSelector: string, deleteDirection: 'previous' | 'next' = 'previous'): boolean {
-        const parentBlock: HTMLElement = (this.currentFocusedBlock.closest(parentSelector) as HTMLElement);
-        const contentElement: HTMLElement = parentBlock ? parentBlock.querySelector(contentSelector) : null;
-        if (parentBlock && contentElement &&
-            (this.currentFocusedBlock.textContent.trim() === '') &&
-            (contentElement.lastElementChild === this.currentFocusedBlock)) {
-            this.blockAction.deleteBlockAtCursor({ blockElement: this.currentFocusedBlock, mergeDirection: deleteDirection });
-            this.currentFocusedBlock = parentBlock;
-            return true;
-        }
-        return false;
-    }
-
-    private handleArrowKeyActions(event: KeyboardEvent, range: Range, blockElement: HTMLElement): void {
-        const blockContentLength: number = blockElement.textContent.length;
-        const key: string = event.key;
-        const isUp: boolean = key === 'ArrowUp';
-        const isDown: boolean = key === 'ArrowDown';
-        const isLeft: boolean = key === 'ArrowLeft';
-        const isRight: boolean = key === 'ArrowRight';
-        const isAtStart: boolean = range.startOffset === 0 && range.endOffset === 0;
-        const isAtEnd: boolean = range.startOffset === blockContentLength && range.endOffset === blockContentLength;
-        const adjacentBlock: HTMLElement = getAdjacentBlock(blockElement, (isUp || isLeft) ? 'previous' : 'next');
-        if (!adjacentBlock) { return; }
-        const isAdjacentEmpty: boolean = adjacentBlock.textContent.length === 0;
-        //Only prevent default behaviour when cursor at the ends, otherwise let the browser's default behaviour take over
-        const isMovingAdjacentBlock: boolean = (isAtStart && (isLeft)) || (isAtEnd && (isRight)) || ((isUp || isDown) && isAdjacentEmpty);
-        if (isMovingAdjacentBlock) {
-            event.preventDefault();
-            this.moveCursorToAdjacentBlock(adjacentBlock, key);
-        }
-        else {
-            setTimeout(() => {
-                if (!isMovingAdjacentBlock) {
-                    const range: Range = getSelectionRange();
-                    const currentBlock: HTMLElement = (range.startContainer.parentElement.closest('.e-block') as HTMLElement);
-                    if (currentBlock !== this.currentFocusedBlock) {
-                        this.togglePlaceholder(this.currentFocusedBlock, false);
-                        this.setFocusToBlock(currentBlock);
-                        this.showFloatingIcons(this.currentFocusedBlock);
-                    }
-                }
-            });
-        }
-    }
-
-    private moveCursorToAdjacentBlock(adjacentBlock: HTMLElement, key: string): void {
-        const isMovingLeft: boolean = key === 'ArrowLeft';
-        const targetPosition: number = isMovingLeft ? adjacentBlock.textContent.length : 0;
-        this.togglePlaceholder(this.currentFocusedBlock, false);
-        this.setFocusToBlock(adjacentBlock);
-        setCursorPosition(getBlockContentElement(adjacentBlock), targetPosition);
-        this.togglePlaceholder(this.currentFocusedBlock, true);
-        this.showFloatingIcons(this.currentFocusedBlock);
-    }
-
-    public splitAndCreateNewBlockAtCursor(args?: IAddBlockArgs): void {
-        const blockElement: HTMLElement = (args && args.isUndoRedoAction) ? args.targetBlock : this.currentFocusedBlock;
-        const blockModel: BlockModel = getBlockModelById(blockElement.id, this.blocksInternal);
-        const contentElement: HTMLElement = getBlockContentElement(blockElement);
-
-        // Split the block at the cursor position and get the before and after fragments
-        const splitContent: ISplitContent = this.blockAction.splitBlockAtCursor(blockElement, args);
-        const isTextNode: boolean =
-            isNOU(splitContent.beforeFragment.lastChild) ||
-            (splitContent.beforeFragment.lastChild.nodeType === Node.TEXT_NODE);
-        //Track beforeFragment's last child for new content model creation
-        const lastChild: HTMLElement = isTextNode ? contentElement : splitContent.beforeFragment.lastChild as HTMLElement;
-
-        //Update the current block with the before fragment content
-        contentElement.innerHTML = '';
-        if (splitContent.beforeFragment.textContent !== '') {
-            contentElement.appendChild(splitContent.beforeFragment);
-        }
-        const prevOnChange: boolean = this.isProtectedOnChange;
-        this.isProtectedOnChange = true;
-        //Before clearing current block model, store the after block content to create new block with it
-        const afterBlockContents: ContentModel[] = this.getContentModelForFragment(
-            splitContent.afterFragment,
-            blockModel,
-            lastChild
-        );
-        this.isProtectedOnChange = prevOnChange;
-        this.blockAction.updateContentChangesToModel(blockElement, contentElement);
-        const curBlockType: string = blockModel.type;
-        const isListType: boolean = isListTypeBlock(curBlockType);
-        //Create a new block with the after fragment content and insert it after the current block
-        if (isNOU(args)) {
-            this.blockAction.addNewBlock({
-                blockType: isListType ? curBlockType : BlockType.Paragraph,
-                targetBlock: blockElement,
-                contentElement: splitContent.afterFragment,
-                contentModel: afterBlockContents,
-                splitOffset: splitContent.splitOffset,
-                lastChild: lastChild
-            });
-        }
-        else if (args.isUndoRedoAction) {
-            this.blockAction.addNewBlock({
-                targetBlock: args.targetBlock,
-                blockType: args.blockType,
-                blockID: args.blockID,
-                contentModel: args.contentModel,
-                isUndoRedoAction: args.isUndoRedoAction,
-                contentElement: args.contentElement
-            });
-        }
-    }
-
-    public getContentModelForFragment(
-        fragment: DocumentFragment,
-        blockModel: BlockModel,
-        referenceNode: Node
-    ): ContentModel[] {
-        const newContents: ContentModel[] = [];
-        fragment.childNodes.forEach((node: Node) => {
-            if (node.nodeType === Node.ELEMENT_NODE && (node instanceof HTMLElement)) {
-                const content: ContentModel = blockModel.content.find((content: ContentModel) => content.id === node.id);
-                if (content) {
-                    content.content = node.textContent;
-                    newContents.push(content);
-                }
-                else {
-                    /*
-                    On Enter in middle of a formatted element, we clone the previous model,
-                    and reuse it to preserve formatting (e.g., split '<strong>Hello</strong>' into 'He' and 'llo').
-                    */
-                    const previousContent: ContentModel = blockModel.content.find((content: ContentModel) => {
-                        return content.id === (referenceNode as HTMLElement).id;
-                    });
-                    const [sanitizedContent]: ContentModel[] = sanitizeContent([previousContent]);
-                    const newContent: ContentModel = deepClone(sanitizedContent) as ContentModel;
-                    newContent.id = node.id;
-                    newContent.content = node.textContent;
-                    newContents.push(newContent);
-                }
-            }
-            else if (node.nodeType === Node.TEXT_NODE) {
-                newContents.push({ id: generateUniqueId('content'), content: node.textContent });
-            }
-        });
-        return newContents;
-    }
-
+    /**
+     * Sets focus to a block element
+     *
+     * @param {HTMLElement} block The block element to focus
+     * @returns {void}
+     * @hidden
+     */
     public setFocusToBlock(block: HTMLElement): void {
         if (block) {
             block.focus();
@@ -1936,19 +773,80 @@ export class BlockEditor extends Component<HTMLElement> implements INotifyProper
         }
     }
 
+    /**
+     * Fetches the editor blocks from service
+     *
+     * @returns {BlockModel[]} The editor blocks data
+     * @hidden
+     */
+    public getEditorBlocks(): BlockModel[] {
+        if (!this.blockService) { return []; }
+        return this.blockService.getBlocks();
+    }
+
+    /**
+     * Populates the editor blocks data with the given blocks
+     *
+     * @param {BlockModel[]} blocks The blocks to set for the editor
+     * @returns {void}
+     * @hidden
+     */
+    public setEditorBlocks(blocks: BlockModel[]): void {
+        if (!this.blockService) { return; }
+        this.blockService.setBlocks(blocks);
+    }
+
+    /**
+     * Gets a block element by ID
+     *
+     * @param {string} blockId The block ID
+     * @returns {HTMLElement | null} The block element or null if not found
+     * @hidden
+     */
+    public getBlockElementById(blockId: string): HTMLElement | null {
+        return this.blockWrapper.querySelector(`#${blockId}`);
+    }
+
+    /**
+     * Gets the current focused block model
+     *
+     * @returns {BlockModel | null} The current focused block model or null if no block is focused
+     * @hidden
+     */
+    public getCurrentFocusedBlockModel(): BlockModel {
+        if (!this.currentFocusedBlock) { return null; }
+        return getBlockModelById(this.currentFocusedBlock.id, this.getEditorBlocks());
+    }
+
+    /**
+     * Toggles the placeholder for a block element
+     *
+     * @param {HTMLElement} blockElement The block element
+     * @param {boolean} isFocused Whether the block is currently focused
+     * @returns {void}
+     * @hidden
+     */
     public togglePlaceholder(blockElement: HTMLElement, isFocused: boolean): void {
-        const blockModel: BlockModel = getBlockModelById(blockElement.id, this.blocksInternal);
-        if (!blockModel) { return; }
+        const blockModel: BlockModel = blockElement ? getBlockModelById(blockElement.id, this.getEditorBlocks()) : null;
+        if (!blockModel || (blockModel && !('placeholder' in blockModel.props))) { return; }
         const blockType: string = blockElement.getAttribute('data-block-type');
-        const placeholderValue: string = this.getPlaceholderValue(blockType, blockModel.placeholder);
+        const placeholderValue: string = this.getPlaceholderValue(blockModel);
         const contentEle: HTMLElement = getBlockContentElement(blockElement);
         const isEmptyContent: boolean = isElementEmpty(contentEle);
         contentEle.setAttribute('placeholder', isEmptyContent && isFocused ? placeholderValue : '');
-        if (isEmptyContent && blockType !== 'Code') {
+        if (isEmptyContent && blockType !== BlockType.Code) {
             clearBreakTags(contentEle);
         }
     }
 
+    /**
+     * Responsible for rendering the template for a block
+     *
+     * @param {BlockModel} block The block model
+     * @param {HTMLElement} templateElement The template element to render into
+     * @returns {void}
+     * @hidden
+     */
     public renderTemplate(block: BlockModel, templateElement: HTMLElement): void {
         const templateName: string = block.id + 'template';
         this.clearTemplate([templateName]);
@@ -1957,6 +855,13 @@ export class BlockEditor extends Component<HTMLElement> implements INotifyProper
         this.renderReactTemplates();
     }
 
+    /**
+     * Serializes the given value for HTML encoding and sanitization
+     *
+     * @param {string} value The value to serialize
+     * @returns {string} The serialized value
+     * @hidden
+     */
     public serializeValue(value: string): string {
         if (!isNOU(value)) {
             if (this.enableHtmlEncode) {
@@ -1972,14 +877,17 @@ export class BlockEditor extends Component<HTMLElement> implements INotifyProper
     /**
      * Gets the placeholder value for the given block element.
      *
-     * @param {BlockType | string} blockType - The type of the block.
-     * @param {string} blockPlaceholder - The placeholder value for the block.
+     * @param {BlockModel} block The block model to get placeholder for.
      * @returns {string} The placeholder value for the given block type.
      * @hidden
      */
-    public getPlaceholderValue(blockType: BlockType | string, blockPlaceholder: string): string {
-        if (blockPlaceholder && blockPlaceholder !== '') { return blockPlaceholder; }
-        const constant: string = blockType.charAt(0).toLowerCase() + blockType.slice(1);
+    public getPlaceholderValue(block: BlockModel): string {
+        const props: HeadingProps = block.props as HeadingProps;
+        if (props && props.placeholder && props.placeholder !== '') { return props.placeholder; }
+        let constant: string = block.type.charAt(0).toLowerCase() + block.type.slice(1);
+        if (block.type.endsWith(BlockType.Heading) && props && props.level) {
+            constant += props.level.toString();
+        }
         return this.l10n.getConstant(constant);
     }
 
@@ -2180,6 +1088,22 @@ export class BlockEditor extends Component<HTMLElement> implements INotifyProper
     }
 
     /**
+     * Renders blocks from JSON data, either replacing all existing content or inserting at cursor position.
+     *
+     * @param {object | string} json - The JSON data (object or string) containing block definitions
+     * @param {boolean} replace - Whether to replace all existing content (true) or insert at cursor (false). By default, it is set to false.
+     * @param {string} targetBlockId - ID of block to insert after (applicable only if replace is false).
+     * @returns {boolean} - True if operation was successful, false otherwise
+     */
+    public renderBlocksFromJson(
+        json: object | string,
+        replace: boolean = false,
+        targetBlockId?: string
+    ): boolean {
+        return this.blockEditorMethods.renderBlocksFromJson(json, replace, targetBlockId);
+    }
+
+    /**
      * Retrieves data from the editor as JSON.
      * If a block ID is provided, returns the data of that specific block; otherwise returns all content.
      *
@@ -2202,59 +1126,6 @@ export class BlockEditor extends Component<HTMLElement> implements INotifyProper
         return this.blockEditorMethods.getDataAsHtml(blockId);
     }
 
-    public getBlockElementById(blockId: string): HTMLElement | null {
-        return this.blockWrapper.querySelector(`#${blockId}`);
-    }
-
-    private clipboardActionHandler(e: KeyboardEvent): void {
-        let isActionExecuted: boolean = false;
-        const prop: string = e.type.toLowerCase();
-        switch (prop) {
-        case 'cut':
-            this.notify(events.cut, e);
-            isActionExecuted = true;
-            break;
-        case 'copy':
-            this.notify(events.copy, e);
-            isActionExecuted = true;
-            break;
-        case 'paste':
-            this.notify(events.paste, e);
-            isActionExecuted = true;
-            break;
-        }
-        if (isActionExecuted && this.keyActionExecuted) {
-            const normalizedKey: string = prop === 'cut' ? 'ctrl+x' : prop === 'copy' ? 'ctrl+c' : 'ctrl+v';
-            this.trigger('keyActionExecuted', {
-                keyCombination: normalizedKey, action: prop
-            });
-        }
-    }
-
-    public getCurrentFocusedBlockModel(): BlockModel {
-        if (!this.currentFocusedBlock) { return null; }
-        return getBlockModelById(this.currentFocusedBlock.id, this.blocksInternal);
-    }
-
-    private unWireGlobalEvents(): void {
-        EventHandler.remove(document, 'selectionchange', this.handleEditorSelection);
-        EventHandler.remove(document, 'scroll', this.handleScrollActions);
-        EventHandler.remove(this.element, 'scroll', this.handleScrollActions);
-        EventHandler.remove(document, 'click', this.handleDocumentClickActions);
-        EventHandler.remove(document, 'mousemove', this.handleMouseMoveActions);
-        EventHandler.remove(this.element, 'mouseup', this.handleMouseUpActions);
-        EventHandler.remove(this.element, 'mousedown', this.handleMouseDownActions);
-        EventHandler.remove(this.element, 'input', this.handleEditorInputActions);
-        EventHandler.remove(this.element, 'keydown', this.handleKeydownActions);
-        EventHandler.remove(this.element, 'click', this.handleEditorClickActions);
-        EventHandler.remove(this.element, 'copy', this.clipboardActionHandler);
-        EventHandler.remove(this.element, 'cut', this.clipboardActionHandler);
-        EventHandler.remove(this.element, 'paste', this.clipboardActionHandler);
-        EventHandler.remove(this.blockWrapper, 'focus', this.handleEditorFocusActions);
-        EventHandler.remove(this.blockWrapper, 'blur', this.handleEditorBlurActions);
-        EventHandler.remove((this.floatingIconContainer.firstChild as HTMLElement), 'click', this.handleAddIconClick);
-    }
-
     protected removeAndNullify(element: HTMLElement): void {
         if (element) {
             if (!isNOU(element.parentNode)) {
@@ -2262,17 +1133,6 @@ export class BlockEditor extends Component<HTMLElement> implements INotifyProper
             } else {
                 element.innerHTML = '';
             }
-        }
-    }
-
-    private destroyFloatingIconTooltips(): void {
-        if (this.addIconTooltip) {
-            this.tooltipRenderer.destroyTooltip(this.addIconTooltip);
-            this.addIconTooltip = null;
-        }
-        if (this.dragIconTooltip) {
-            this.tooltipRenderer.destroyTooltip(this.dragIconTooltip);
-            this.dragIconTooltip = null;
         }
     }
 
@@ -2296,7 +1156,7 @@ export class BlockEditor extends Component<HTMLElement> implements INotifyProper
         if (this.isDestroyed) {
             return;
         }
-        this.unWireGlobalEvents();
+        this.eventManager.unWireGlobalEvents();
         if (this.enableDragAndDrop) {
             this.dragAndDropAction.destroy();
         }
@@ -2321,28 +1181,24 @@ export class BlockEditor extends Component<HTMLElement> implements INotifyProper
         this.linkModule = null;
         this.nodeSelection = null;
 
-        this.blockAction = null;
         this.formattingAction = null;
         this.listBlockAction = null;
         this.blockEditorMethods = null;
 
-        this.blocksInternal = null;
+        this.blockCommandManager = null;
+        this.blockRendererManager = null;
+        this.floatingIconManager = null;
+        this.stateManager = null;
+        this.eventManager = null;
+
+        this.blockService = null;
+
         this.keyCommandMap = null;
         this.defaultKeyConfig = null;
         this.l10n = null;
-
-        if (this.userMenuObj) {
-            this.userMenuObj.destroy();
-        }
-        if (this.labelMenuObj) {
-            this.labelMenuObj.destroy();
-        }
-        this.destroyFloatingIconTooltips();
-        this.blockAction = null;
         this.dragAndDropAction = null;
         this.undoRedoAction = null;
         this.updateTimer = null;
-        this.blocksInternal = null;
         this.destroyBlockEditor();
         this.isRendered = false;
         super.destroy();
@@ -2376,7 +1232,7 @@ export class BlockEditor extends Component<HTMLElement> implements INotifyProper
                 this.applyRtlSettings();
                 break;
             case 'readOnly':
-                this.updateEditorReadyOnlyState();
+                this.stateManager.updateEditorReadyOnlyState();
                 break;
             case 'keyConfig':
                 this.initializeKeyBindings();
@@ -2405,7 +1261,7 @@ export class BlockEditor extends Component<HTMLElement> implements INotifyProper
                 this.notify(events.moduleChanged, { module: 'contextMenu', newProp: newProp, oldProp: oldProp });
                 break;
             case 'blocks':
-                this.blockAction.handleBlockPropertyChanges({ newProp: newProp, oldProp: oldProp });
+                this.stateManager.handleBlockPropertyChanges({ newProp: newProp, oldProp: oldProp });
                 break;
             }
         }

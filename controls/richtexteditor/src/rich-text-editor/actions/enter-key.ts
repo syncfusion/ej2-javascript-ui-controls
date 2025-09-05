@@ -248,15 +248,14 @@ export class EnterKeyAction {
                                     this.range.startContainer.textContent[this.range.startOffset].includes('\u200B') && this.range.startContainer.textContent[this.range.startOffset] === '\u200B' &&
                                     this.parent.inputElement.textContent[0] !== '\u200B'));
                                 const preventEnterkeyShiftKey: boolean = (this.range.startContainer.nodeName === '#text' || this.range.startContainer.nodeName === 'BR') && (this.range.startOffset === 0 && this.range.endOffset === 0) && this.range.startContainer.parentElement === this.parent.inputElement && this.parent.enterKey === 'BR' && shiftKey;
-                                // eslint-disable-next-line max-len
                                 if (!preventEnterkeyShiftKey && !preventZeroWithSpace && !fireFoxEnterAtMiddle && this.range.startContainer.nodeName !== 'HR' && ((this.range.startOffset === 0 && this.range.endOffset === 0) || isFocusedFirst) &&
                                     !(!isNOU(this.range.startContainer.previousSibling) &&
                                     (this.range.startContainer.previousSibling.nodeName === 'IMG' || this.range.startContainer.previousSibling.nodeName === 'BR'))) {
                                     let isNearBlockLengthZero: boolean;
                                     let newElem: Node;
-                                    if ( !isNOU( this.range.startContainer.childNodes) &&
+                                    if (!isNOU(this.range.startContainer.childNodes) && (this.range.startContainer as HTMLElement).nodeName !== '#text' &&
                                     (this.range.startContainer.textContent.length === 0 ||
-                                    ((this.range.startContainer  as HTMLElement).nodeName !== '#text' && !isNOU((this.range.startContainer  as HTMLElement).querySelector('.e-video-clickelem')) &&
+                                    (!isNOU((this.range.startContainer  as HTMLElement).querySelector('.e-video-clickelem')) &&
                                     (this.range.startContainer  as HTMLElement).querySelector('.e-video-clickelem').textContent.length === 0)) &&
                                     ((this.range.startContainer as HTMLElement).querySelectorAll('img, audio, video').length > 0 ||
                                     !isNOU((this.range.startContainer as HTMLElement).querySelector('.e-video-clickelem')) ||
@@ -392,7 +391,7 @@ export class EnterKeyAction {
                                                 this.parent.formatter.editorManager.domNode.insertAfter(insertElem, newElem as HTMLElement);
                                                 const isVideoInfocusElem: boolean = videoElem && focusElem.nodeType === Node.ELEMENT_NODE && (focusElem as HTMLElement).children.length === 1 && (focusElem.lastChild as HTMLElement).classList.contains('e-video-wrap');
                                                 if (!isNOU(focusElem) && focusElem !== newElem && newElem.previousSibling === focusElem &&
-                                                isVideoInfocusElem) {
+                                                    isVideoInfocusElem) {
                                                     detach(focusElem);
                                                 }
                                                 focusElem = newElem.nextSibling;
@@ -448,8 +447,31 @@ export class EnterKeyAction {
                                             this.parent.contentModule.getDocument(), (cursorTarget as Element), 0);
                                     }
                                 } else {
+                                    let previousSiblingBR: boolean = false;
+                                    let insertedZWSP: Node | null = null;
+                                    if (this.range.startContainer === this.range.endContainer) {
+                                        const cursorFocusNode: Node = this.getCursorNode(this.range);
+                                        if (cursorFocusNode && cursorFocusNode.parentNode) {
+                                            const cursorElement: Element = cursorFocusNode as Element;
+                                            const isPreviousSiblingBR: boolean = cursorElement.previousElementSibling && cursorElement.previousElementSibling.nodeName === 'BR';
+                                            const isCursorNodeBR: boolean = cursorFocusNode.nodeName === 'BR';
+                                            if (isPreviousSiblingBR || isCursorNodeBR) {
+                                                insertedZWSP = document.createTextNode('\u200B');
+                                                cursorFocusNode.parentNode.insertBefore(insertedZWSP, cursorFocusNode);
+                                                if (isCursorNodeBR && !cursorElement.previousElementSibling) {
+                                                    cursorFocusNode.parentNode.insertBefore(document.createElement('br'), insertedZWSP);
+                                                }
+                                                this.range.setStartAfter(insertedZWSP);
+                                                this.range.setEndBefore(cursorFocusNode);
+                                                previousSiblingBR = true;
+                                            }
+                                        }
+                                    }
                                     const newElem: Node = this.parent.formatter.editorManager.nodeCutter.SplitNode(
                                         this.range, (nearBlockNode as HTMLElement), true);
+                                    if (previousSiblingBR && insertedZWSP && insertedZWSP.parentNode && insertedZWSP.textContent === '\u200B') {
+                                        insertedZWSP.parentNode.removeChild(insertedZWSP);
+                                    }
                                     if (!isNOU(newElem.childNodes[0]) && newElem.childNodes[0].nodeName === '#text' &&
                                         newElem.childNodes[0].textContent.length === 0) {
                                         detach(newElem.childNodes[0]);
@@ -642,6 +664,18 @@ export class EnterKeyAction {
                 });
             }
         }
+    }
+    private getCursorNode(range: Range): Node | null {
+        const container: Node = range.startContainer;
+        const offset: number = range.startOffset;
+        if (container.nodeType === Node.TEXT_NODE) {
+            return container;
+        }
+        if (container.nodeType === Node.ELEMENT_NODE) {
+            const childNode: Node = container.childNodes[offset as number];
+            return childNode || container;
+        }
+        return null;
     }
     private getFirstTextNode(node: Node): Node | null {
         const treeWalker: TreeWalker = this.parent.contentModule.getDocument().createTreeWalker(

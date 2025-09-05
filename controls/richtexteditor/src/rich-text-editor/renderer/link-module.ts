@@ -200,8 +200,10 @@ export class Link {
             this.quickToolObj = this.parent.quickToolbarModule;
             let target: HTMLElement = args.target as HTMLElement;
             const isTargetDocument: boolean = target && ((target as HTMLElement).nodeName === 'HTML' || (target as HTMLElement).nodeName === '#document');
-            const isTargetRteElement: boolean = !(target && (target as HTMLElement).closest && (target as HTMLElement).closest('.e-rte-elements'));
-            if (isTargetDocument || (!this.parent.inputElement.contains(target as HTMLElement) && isTargetRteElement)) {
+            const isTargetNotRteElements: boolean = !(target && (target as HTMLElement).nodeName !== '#text' &&
+                (target as HTMLElement).nodeName !== '#document' && (target as HTMLElement).nodeName !== 'HTML' &&
+                (target as HTMLElement).closest('.e-rte-elements'));
+            if (isTargetDocument || (!this.parent.inputElement.contains(target as HTMLElement) && isTargetNotRteElements)) {
                 const range: Range = this.parent.formatter.editorManager.nodeSelection.getRange(this.parent.contentModule.getDocument());
                 target = range.commonAncestorContainer.parentElement;
             }
@@ -365,6 +367,7 @@ export class Link {
             enableRtl: this.parent.enableRtl,
             locale: this.parent.locale,
             showCloseIcon: true, closeOnEscape: true, width: (Browser.isDevice) ? '290px' : '310px',
+            position: { X: 'center', Y: (Browser.isDevice) ? 'center' : 'top' },
             isModal: (Browser.isDevice as boolean),
             buttons: [{
                 click: this.insertlink.bind(this, selectObj),
@@ -432,7 +435,6 @@ export class Link {
             elements.some((element: HTMLElement) => element && closest(element, 'a') !== null);
     }
 
-    // eslint-disable-next-line
     private insertlink(e: NotifyArgs): void {
         const linkEle: HTMLElement = this.dialogObj.element as HTMLElement;
         let linkUrl: string = (linkEle.querySelector('.e-rte-linkurl') as HTMLInputElement).value.trim();
@@ -603,7 +605,6 @@ export class Link {
         }
     }
 
-    // eslint-disable-next-line
     private cancelDialog(e: NotifyArgs): void {
         this.parent.isBlur = false;
         this.dialogObj.hide({ returnValue: true } as Event);

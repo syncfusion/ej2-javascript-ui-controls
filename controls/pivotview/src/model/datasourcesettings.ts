@@ -802,7 +802,7 @@ export class Authentication extends ChildProperty<Authentication> implements IAu
  * * `catalog`: Allows to set the database name of SSAS cube as string type that used to retrieve the data from the specified connection string. **Note: It is applicable only for OLAP data source.**
  * * `cube`: Allows you to set the SSAS cube name as string type that used to retrieve data for pivot table rendering. **Note: It is applicable only for OLAP data source.**
  * * `providerType`: Allows to set the provider type to identify the given connection is either Relational or SSAS to render the pivot table and field list.
- * * `url`: Allows to set the URL as string type, which helps to identify the service endpoint where the data are processed and retrieved to render the pivot table and field list. **Note: It is applicable only for OLAP data source.**
+ * * `url`: Allows to set the URL as string type, which helps to identify the service endpoint where the data are processed and retrieved to render the pivot table and field list.
  * * `localeIdentifier`: Allows you to set the specific culture code as number type to render pivot table with desired localization.
  * By default, the pivot table displays with culture code **1033**, which indicates "en-US" locale. **Note: It is applicable only for OLAP data source.**
  * * `dataSource`: Allows you to set the data source as JSON collection to the pivot report either from local or from remote server to the render the pivot that and field list.
@@ -888,8 +888,21 @@ export class DataSourceSettings extends ChildProperty<DataSourceSettings> implem
     public providerType: ProviderType;
 
     /**
-     * Allows to set the URL as string type, which helps to identify the service endpoint where the data are processed and retrieved to render the pivot table and field list.
-     * > It is applicable only for OLAP data source.
+     * Service endpoint URL used by the data source to process requests and retrieve data
+     * for rendering the Pivot Table and Field List.
+     *
+     * @remarks
+     * Applies to both the server-side pivot engine and OLAP data sources.
+     * Provide a fully qualified HTTP or HTTPS URL.
+     *
+     * @example
+     * ```ts
+     * const options = {
+     *   dataSourceSettings: {
+     *     url: 'https://services.syncfusion.com/js/production/api/pivot/post'
+     *   }
+     * };
+     * ```
      */
     @Property()
     public url: string;

@@ -5,8 +5,8 @@ export * from './inline-toolbar-settings';
 export * from './toolbar-item';
 export * from './context-menu-item';
 
-
-//Export models
+export * from './blockaction-menu-settings-model';
+export * from './blockaction-item-model';
 
 export * from './context-menu-settings-model';
 export * from './command-item-model';

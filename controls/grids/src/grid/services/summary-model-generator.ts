@@ -126,8 +126,8 @@ export class SummaryModelGenerator implements IModelGenerator<AggregateColumnMod
         //Get the summary column by display
         const sColumn: AggregateColumnModel = summaryRow.columns.filter(
             (scolumn: AggregateColumnModel) => scolumn.columnName === column.field)[0];
-        const attrs: { 'e-mappinguid': string, index: number, class?: string } = {
-            'e-mappinguid': column.uid, index: column.index
+        const attrs: { 'data-mappinguid': string, 'data-index': number, class?: string } = {
+            'data-mappinguid': column.uid, 'data-index': column.index
         };
 
         if (column.textAlign) {

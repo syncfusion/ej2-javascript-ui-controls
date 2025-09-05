@@ -82,7 +82,7 @@ describe('ShowHide module testing', () => {
         });
 
         // it('check colgroup->col visiblity', () => {
-        //     let col: HTMLTableColElement = <HTMLTableColElement>(<HTMLTableElement>grid.getHeaderTable()).children[0].children[0];
+        //     let col: HTMLTableColElement = <HTMLTableColElement>(<HTMLTableElement>grid.getHeaderTable()).children[1].children[0];
         //     expect(col.style.display).toBe('none');
         //     col = <HTMLTableColElement>(<HTMLTableElement>grid.getContentTable()).children[0].children[0];
         //     expect(col.style.display).toBe('none');
@@ -126,7 +126,7 @@ describe('ShowHide module testing', () => {
         });
 
         it('check colgroup->col visiblity', () => {
-            let col: HTMLTableColElement = <HTMLTableColElement>(<HTMLTableElement>grid.getHeaderTable()).children[0].children[0];
+            let col: HTMLTableColElement = <HTMLTableColElement>(<HTMLTableElement>grid.getHeaderTable()).children[1].children[0];
             expect(col.style.display).toBe('');
             col = <HTMLTableColElement>(<HTMLTableElement>grid.getContentTable()).children[0].children[0];
             expect(col.style.display).toBe('');
@@ -170,7 +170,7 @@ describe('ShowHide module testing', () => {
         });
 
         it('check colgroup->col visiblity', () => {
-            let col: HTMLTableColElement = <HTMLTableColElement>(<HTMLTableElement>grid.getHeaderTable()).children[0].children[0];
+            let col: HTMLTableColElement = <HTMLTableColElement>(<HTMLTableElement>grid.getHeaderTable()).children[1].children[0];
             expect(col.style.display).toBe('none');
             col = <HTMLTableColElement>(<HTMLTableElement>grid.getContentTable()).children[0].children[0];
             expect(col.style.display).toBe('none');
@@ -214,7 +214,7 @@ describe('ShowHide module testing', () => {
         });
 
         it('check colgroup->col visiblity', () => {
-            let col: HTMLTableColElement = <HTMLTableColElement>(<HTMLTableElement>grid.getHeaderTable()).children[0].children[0];
+            let col: HTMLTableColElement = <HTMLTableColElement>(<HTMLTableElement>grid.getHeaderTable()).children[1].children[0];
             expect(col.style.display).toBe('');
             col = <HTMLTableColElement>(<HTMLTableElement>grid.getContentTable()).children[0].children[0];
             expect(col.style.display).toBe('');
@@ -258,7 +258,7 @@ describe('ShowHide module testing', () => {
         });
 
         it('check colgroup->col visiblity', () => {
-            let col: HTMLTableColElement = <HTMLTableColElement>(<HTMLTableElement>grid.getHeaderTable()).children[0].children[0];
+            let col: HTMLTableColElement = <HTMLTableColElement>(<HTMLTableElement>grid.getHeaderTable()).children[1].children[0];
             expect(col.style.display).toBe('none');
             col = <HTMLTableColElement>(<HTMLTableElement>grid.getContentTable()).children[0].children[0];
             expect(col.style.display).toBe('none');
@@ -302,7 +302,7 @@ describe('ShowHide module testing', () => {
         });
 
         it('check colgroup->col visiblity', () => {
-            let col: HTMLTableColElement = <HTMLTableColElement>(<HTMLTableElement>grid.getHeaderTable()).children[0].children[0];
+            let col: HTMLTableColElement = <HTMLTableColElement>(<HTMLTableElement>grid.getHeaderTable()).children[1].children[0];
             expect(col.style.display).toBe('');
             col = <HTMLTableColElement>(<HTMLTableElement>grid.getContentTable()).children[0].children[0];
             expect(col.style.display).toBe('');
@@ -346,7 +346,7 @@ describe('ShowHide module testing', () => {
         });
 
         it('check colgroup->col visiblity', () => {
-            let col: HTMLTableColElement = <HTMLTableColElement>(<HTMLTableElement>grid.getHeaderTable()).children[0].children[0];
+            let col: HTMLTableColElement = <HTMLTableColElement>(<HTMLTableElement>grid.getHeaderTable()).children[1].children[0];
             expect(col.style.display).toBe('none');
             col = <HTMLTableColElement>(<HTMLTableElement>grid.getContentTable()).children[0].children[0];
             expect(col.style.display).toBe('none');
@@ -397,11 +397,11 @@ describe('ShowHide module testing', () => {
         });
 
         it('check colgroup->col visiblity', () => {
-            let col: HTMLTableColElement = <HTMLTableColElement>(<HTMLTableElement>grid.getHeaderTable()).children[0].children[0];
+            let col: HTMLTableColElement = <HTMLTableColElement>(<HTMLTableElement>grid.getHeaderTable()).children[1].children[0];
             expect(col.style.display).toBe('');
             col = <HTMLTableColElement>(<HTMLTableElement>grid.getContentTable()).children[0].children[0];
             expect(col.style.display).toBe('');
-            col = <HTMLTableColElement>(<HTMLTableElement>grid.getHeaderTable()).children[0].children[1];
+            col = <HTMLTableColElement>(<HTMLTableElement>grid.getHeaderTable()).children[1].children[1];
             expect(col.style.display).toBe('none');
             col = <HTMLTableColElement>(<HTMLTableElement>grid.getContentTable()).children[0].children[1];
             expect(col.style.display).toBe('none');
@@ -495,7 +495,7 @@ describe('ShowHide module testing', () => {
             expect(rows.cells[0].classList.contains('e-hide')).toBeTruthy();
             rows = ((gridObj.getContentTable() as any).tBodies[0] as HTMLTableElement).rows[0] as HTMLTableRowElement;
             expect(rows.cells[0].classList.contains('e-hide')).toBeTruthy();
-            let col: HTMLTableColElement = <HTMLTableColElement>(<HTMLTableElement>gridObj.getHeaderTable()).children[0].children[0];
+            let col: HTMLTableColElement = <HTMLTableColElement>(<HTMLTableElement>gridObj.getHeaderTable()).children[1].children[0];
             expect(col.style.display).toBe('none');
             col = <HTMLTableColElement>(<HTMLTableElement>gridObj.getContentTable()).children[0].children[0];
             expect(col.style.display).toBe('none');
@@ -506,7 +506,7 @@ describe('ShowHide module testing', () => {
                 expect(rows.cells[0].classList.contains('e-hide')).toBeFalsy();
                 rows = ((gridObj.getContentTable() as any).tBodies[0] as HTMLTableElement).rows[0] as HTMLTableRowElement;
                 expect(rows.cells[0].style.display).toBe('');
-                let col: HTMLTableColElement = <HTMLTableColElement>(<HTMLTableElement>gridObj.getHeaderTable()).children[0].children[0];
+                let col: HTMLTableColElement = <HTMLTableColElement>(<HTMLTableElement>gridObj.getHeaderTable()).children[1].children[0];
                 expect(col.style.display).toBe('');
                 col = <HTMLTableColElement>(<HTMLTableElement>gridObj.getContentTable()).children[0].children[0];
                 expect(col.style.display).toBe('');
@@ -521,7 +521,7 @@ describe('ShowHide module testing', () => {
                 expect(rows.cells[0].classList.contains('e-hide')).toBeTruthy();
                 rows = ((gridObj.getContentTable() as any).tBodies[0] as HTMLTableElement).rows[0] as HTMLTableRowElement;
                 expect(rows.cells[0].classList.contains('e-hide')).toBeTruthy();
-                let col: HTMLTableColElement = <HTMLTableColElement>(<HTMLTableElement>gridObj.getHeaderTable()).children[0].children[0];
+                let col: HTMLTableColElement = <HTMLTableColElement>(<HTMLTableElement>gridObj.getHeaderTable()).children[1].children[0];
                 expect(col.style.display).toBe('none');
                 col = <HTMLTableColElement>(<HTMLTableElement>gridObj.getContentTable()).children[0].children[0];
                 expect(col.style.display).toBe('none');
@@ -537,7 +537,7 @@ describe('ShowHide module testing', () => {
                 expect(rows.cells[0].classList.contains('e-hide')).toBeFalsy();
                 rows = ((gridObj.getContentTable() as any).tBodies[0] as HTMLTableElement).rows[0] as HTMLTableRowElement;
                 expect(rows.cells[0].style.display).toBe('');
-                let col: HTMLTableColElement = <HTMLTableColElement>(<HTMLTableElement>gridObj.getHeaderTable()).children[0].children[0];
+                let col: HTMLTableColElement = <HTMLTableColElement>(<HTMLTableElement>gridObj.getHeaderTable()).children[1].children[0];
                 expect(col.style.display).toBe('');
                 col = <HTMLTableColElement>(<HTMLTableElement>gridObj.getContentTable()).children[0].children[0];
                 expect(col.style.display).toBe('');
@@ -552,7 +552,7 @@ describe('ShowHide module testing', () => {
                 expect(rows.cells[2].classList.contains('e-hide')).toBeTruthy();
                 rows = ((gridObj.getContentTable() as any).tBodies[0] as HTMLTableElement).rows[0] as HTMLTableRowElement;
                 expect(rows.cells[2].classList.contains('e-hide')).toBeTruthy();
-                let col: HTMLTableColElement = <HTMLTableColElement>(<HTMLTableElement>gridObj.getHeaderTable()).children[0].children[2];
+                let col: HTMLTableColElement = <HTMLTableColElement>(<HTMLTableElement>gridObj.getHeaderTable()).children[1].children[2];
                 expect(col.style.display).toBe('none');
                 col = <HTMLTableColElement>(<HTMLTableElement>gridObj.getContentTable()).children[0].children[2];
                 expect(col.style.display).toBe('none');
@@ -567,7 +567,7 @@ describe('ShowHide module testing', () => {
                 expect(rows.cells[2].classList.contains('e-hide')).toBeFalsy();
                 rows = ((gridObj.getContentTable() as any).tBodies[0] as HTMLTableElement).rows[0] as HTMLTableRowElement;
                 expect(rows.cells[2].classList.contains('e-hide')).toBeFalsy();
-                let col: HTMLTableColElement = <HTMLTableColElement>(<HTMLTableElement>gridObj.getHeaderTable()).children[0].children[2];
+                let col: HTMLTableColElement = <HTMLTableColElement>(<HTMLTableElement>gridObj.getHeaderTable()).children[1].children[2];
                 expect(col.style.display).toBe('');
                 col = <HTMLTableColElement>(<HTMLTableElement>gridObj.getContentTable()).children[0].children[2];
                 expect(col.style.display).toBe('');
@@ -589,11 +589,11 @@ describe('ShowHide module testing', () => {
                 expect(rows.cells[1].classList.contains('e-hide')).toBeTruthy();
                 rows = ((gridObj.getContentTable() as any).tBodies[0] as HTMLTableElement).rows[1] as HTMLTableRowElement;
                 expect(rows.cells[1].classList.contains('e-hide')).toBeTruthy();
-                let col: HTMLTableColElement = <HTMLTableColElement>(<HTMLTableElement>gridObj.getHeaderTable()).children[0].children[2];
+                let col: HTMLTableColElement = <HTMLTableColElement>(<HTMLTableElement>gridObj.getHeaderTable()).children[1].children[2];
                 expect(col.style.display).toBe('');
                 col = <HTMLTableColElement>(<HTMLTableElement>gridObj.getContentTable()).children[0].children[2];
                 expect(col.style.display).toBe('');
-                col = <HTMLTableColElement>(<HTMLTableElement>gridObj.getHeaderTable()).children[0].children[1];
+                col = <HTMLTableColElement>(<HTMLTableElement>gridObj.getHeaderTable()).children[1].children[1];
                 expect(col.style.display).toBe('none');
                 col = <HTMLTableColElement>(<HTMLTableElement>gridObj.getContentTable()).children[0].children[1];
                 expect(col.style.display).toBe('none');
@@ -714,7 +714,7 @@ describe('ShowHide module testing', () => {
         });
 
         it('check colgroup->col visiblity', () => {
-            let col: HTMLTableColElement = <HTMLTableColElement>(<HTMLTableElement>grid.getHeaderTable()).children[0].children[1];
+            let col: HTMLTableColElement = <HTMLTableColElement>(<HTMLTableElement>grid.getHeaderTable()).children[1].children[1];
             expect(col.style.display).toBe('none');
             col = <HTMLTableColElement>(<HTMLTableElement>grid.getContentTable()).children[0].children[1];
             expect(col.style.display).toBe('none');
@@ -1077,7 +1077,7 @@ describe('ShowHide module testing', () => {
             destroy(gridObj);
         });
     });
-    
+
     describe('EJ2-968748 - Issue with dynamically hide columns after expanding the grouped data when using lazyloadgrouping and virtualization', () => {
         let gridObj: Grid;
         beforeAll((done: Function) => {

@@ -139,7 +139,8 @@ export function getDefaultHtmlTbStatus(): IToolbarStatus {
         insertcode: false,
         blockquote: false,
         inlinecode: false,
-        isCodeBlock: false
+        isCodeBlock: false,
+        isCheckList: false
     };
 }
 
@@ -275,7 +276,13 @@ export function scrollToCursor(
             if (window.innerHeight < cursorTop) {
                 finalFocusElement.scrollIntoView({ block: 'end', inline: 'nearest' });
             }
+            if (cursorTop > inputElement.getBoundingClientRect().height) {
+                finalFocusElement.scrollIntoView({ block: 'nearest', inline: 'nearest' });
+            }
         } else {
+            if (cursorTop > inputElement.getBoundingClientRect().height) {
+                finalFocusElement.scrollIntoView({ block: 'nearest', inline: 'nearest' });
+            }
             if (cursorBottom > rootRect.bottom) {
                 rootElement.querySelector('.e-rte-content').scrollTop += (cursorBottom - rootRect.bottom) + (hasMargin ? 20 : 0);
             }
@@ -324,7 +331,7 @@ export function insertItemsAtIndex<T>(oldArray: Array<T>, newArray: Array<T>, in
 export function removeClassWithAttr(elements: Element[] | NodeList, classes: string | string[]): Element[] | NodeList {
     removeClass(elements, classes);
     for (let i: number = 0; i < elements.length; i++) {
-        if ((elements[i as number] as Element).classList.length === 0 && (elements[i as number] as Element).getAttribute('class')) {
+        if ((elements[i as number] as Element).classList.length === 0 && (elements[i as number] as Element).hasAttribute('class')) {
             (elements[i as number] as Element).removeAttribute('class');
         }
     }
@@ -592,7 +599,7 @@ export function cleanupInternalElements(value: string, editorMode: string): stri
             valueElementWrapper.querySelectorAll('.e-img-inner').forEach((el: Element) => {
                 el.setAttribute('contenteditable', 'false');
             });
-            const item: NodeListOf<Element> = valueElementWrapper.querySelectorAll('.e-column-resize, .e-row-resize, .e-table-box, .e-table-rhelper, .e-img-resize, .e-vid-resize');
+            const item: NodeListOf<Element> = valueElementWrapper.querySelectorAll('.e-column-resize, .e-row-resize, .e-table-box, .e-table-rhelper, .e-img-resize, .e-vid-resize, .e-tb-row-insert, .e-tb-col-insert');
             if (item.length > 0) {
                 for (let i: number = 0; i < item.length; i++) {
                     detach(item[i as number]);
@@ -804,7 +811,6 @@ export function wrapTextAndInlineNodes(node: Node, parentElement: string): void 
         }
     }
 }
-
 /**
  *
  * Returns the next meaningful sibling of the given node.
@@ -982,4 +988,150 @@ export function convertToBlob(dataUrl: string): Blob {
         u8arr[n as number] = bstr.charCodeAt(n);
     }
     return new Blob([u8arr], { type: mime });
+}
+
+/**
+ * Escapes HTML characters in a string.
+ *
+ * @param {string} html - The HTML string to be escaped.
+ * @returns {string} The escaped HTML string.
+ */
+export function escaseHtml(html: string): string {
+    return html
+        .replace(/&/g, '&amp;')
+        .replace(/"/g, '&quot;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;');
+}
+
+/**
+ * Aligns HTML content by parsing it through the DOM parser and returning the structured HTML.
+ *
+ * @param {string} htmlString - The HTML string to be aligned.
+ * @returns {string} The aligned HTML string.
+ */
+export function alignmentHtml(htmlString: string): string {
+    const parser: DOMParser = new DOMParser();
+    const doc: Document = parser.parseFromString(htmlString, 'text/html');
+    const formatted: string = formatNode(doc.body, 0).trim();
+    return formatted;
+}
+
+/**
+ * Formats a DOM node with proper indentation for improved readability.
+ *
+ * @param {Node} node - The DOM node to format.
+ * @param {number} indentLevel - The current indentation level.
+ * @returns {string} The formatted node as a string with proper indentation.
+ */
+export function formatNode(node: Node, indentLevel: number): string {
+    // Block-level HTML tags
+    const blockTags: Set<string> = new Set([
+        'address', 'article', 'aside', 'blockquote', 'canvas', 'dd', 'div', 'dl', 'dt',
+        'fieldset', 'figcaption', 'figure', 'footer', 'form', 'h1', 'h2', 'h3', 'h4',
+        'h5', 'h6', 'header', 'hr', 'li', 'main', 'nav', 'noscript', 'ol', 'p', 'pre',
+        'section', 'table', 'tfoot', 'ul', 'thead', 'tbody', 'tr', 'th', 'td', 'colgroup'
+    ]);
+    // Self-closing HTML tags
+    const selfClosingTags: Set<string> = new Set([
+        'area', 'base', 'br', 'col', 'embed', 'hr', 'img', 'input', 'link', 'meta', 'source', 'track', 'wbr'
+    ]);
+    const indent: string = '   '.repeat(indentLevel);
+    let result: string = '';
+    // Recursively process child nodes
+    node.childNodes.forEach((child: Node) => {
+        if (child.nodeType === Node.TEXT_NODE) {
+            let text: string = child.textContent;
+            if (text.trim().length === 0) {
+                text = text.trim();
+            }
+            if (text) {
+                text = text.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+                result += text;
+            }
+
+        } else if (child.nodeType === Node.ELEMENT_NODE) {
+            const element: HTMLElement = child as HTMLElement;
+            const tagName: string = element.tagName.toLowerCase();
+            const attrs: string = Array.from(element.attributes)
+                .map((attr: Attr) => `${attr.name}="${escaseHtml(attr.value)}"`)
+                .join(' ');
+            const attrString: string = attrs ? ` ${attrs}` : '';
+            const openTag: string = attrs ? `<${tagName} ${attrs}>` : `<${tagName}>`;
+            const closeTag: string = `</${tagName}>`;
+
+            const isBlock: boolean = blockTags.has(tagName);
+            const isSelfClosing: boolean = selfClosingTags.has(tagName);
+            if (isSelfClosing) {
+                if (tagName === 'col') {
+                    if (result[result.length - 1] === '\n') {
+                        result += `${indent}<${tagName}${attrString}>\n`;
+                    }
+                    else {
+                        result += `\n${indent}<${tagName}${attrString}>\n`;
+                    }
+                } else {
+                    result += `<${tagName}${attrString}/>`;
+                }
+            } else if (isBlock) {
+                if (result[result.length - 1] === '\n') {
+                    result += `${indent}${openTag}`;
+                } else {
+                    result += `\n${indent}${openTag}`;
+                }
+                const inner: string = formatNode(child, indentLevel + 1);
+                if (inner) {
+                    result += `${inner}`;
+                }
+                if (result[result.length - 1] === '\n') {
+                    result += `${indent}${closeTag}\n`;
+                } else {
+                    result += `${closeTag}\n`;
+                }
+            } else {
+                result += `${openTag}${formatNode(child, 0)}${closeTag}`;
+            }
+        }
+    });
+    return result;
+}
+
+/**
+ * Opens a new window, injects the given element and styles, and triggers print.
+ *
+ * @param {Element} element - The element to clone and print.
+ * @param {Window} [printWindow] - Optional existing window, otherwise a new one is created.
+ * @returns {Window} - The print window instance.
+ */
+export function openPrintWindow(element: Element, printWindow ?: Window): Window {
+    const div: Element = element.ownerDocument.createElement('div');
+    const links: HTMLElement[] = [].slice.call(element.ownerDocument.getElementsByTagName('head')[0].querySelectorAll('base, link, style'));
+    const blinks: HTMLElement[] = [].slice.call(element.ownerDocument.getElementsByTagName('body')[0].querySelectorAll('link, style'));
+    if (blinks.length) {
+        for (let l: number = 0, len: number = blinks.length; l < len; l++) {
+            links.push(blinks[parseInt(l.toString(), 10)]);
+        }
+    }
+    let reference: string = '';
+    if (isNullOrUndefined(printWindow)) {
+        printWindow = window.open('', 'print', 'height=452,width=1024,tabbar=no');
+    }
+    div.appendChild(element.cloneNode(true) as Element);
+    for (let i: number = 0, len: number = links.length; i < len; i++) {
+        reference += links[parseInt(i.toString(), 10)].outerHTML;
+    }
+    printWindow.document.write('<!DOCTYPE html> <html><head>' + reference + '</head><body>' + div.innerHTML +
+        '<script> (function() { window.ready = true; })(); </script>' + '</body></html>');
+    printWindow.document.close();
+    printWindow.focus();
+    const interval: any = setInterval(
+        () => {
+            if ((<{ ready: Function } & Window>printWindow).ready) {
+                printWindow.print();
+                printWindow.close();
+                clearInterval(interval);
+            }
+        },
+        500);
+    return printWindow;
 }

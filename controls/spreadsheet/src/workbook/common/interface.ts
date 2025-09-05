@@ -134,6 +134,11 @@ export interface BeforeSaveEventArgs extends SaveOptions {
      * Automatically detects the number format for cells, if enabled.
      */
     autoDetectFormat?: boolean;
+
+    /**
+     * Defines the serialization options applied when the Spreadsheet is saved as an Excel file.
+     */
+    jsonConfig?: SerializationOptions;
 }
 
 /**
@@ -369,6 +374,7 @@ export interface ExtendedRange extends RangeModel {
 /** @hidden */
 export interface ExtendedImageModel extends ImageModel {
     preservePos?: boolean;
+    address?: number[];
 }
 
 /** @hidden */
@@ -405,6 +411,9 @@ export interface ExtendedSheet extends Sheet {
     lastReqIdx?: number[];
     isImportProtected?: boolean;
     validations?: ValidationModel[];
+    chartColl?: ChartModel[];
+    imageColl?: ImageModel[];
+    mergedCells?: MergedCellModel[];
 }
 
 /**
@@ -1186,12 +1195,49 @@ export interface WorkbookParseOptions {
      * If true, raw values are loaded without applying display formatting.
      */
     ignoreFormat?: boolean;
+
+    /**
+     * Indicates whether to ignore charts during file open.
+     * Skipping charts reduces memory usage and improves load time for files with chart objects.
+     */
+    ignoreChart?: boolean;
+
+    /**
+     * Indicates whether to ignore images during file open.
+     * Skipping images helps reduce the size of the JSON response and improves performance for image-heavy files.
+     */
+    ignoreImage?: boolean;
+
+    /**
+     * Indicates whether to ignore merged cells during file open.
+     * This can improve performance when merged cell information is not required.
+     */
+    ignoreMergedCell?: boolean;
+
+    /**
+     * Indicates whether to ignore formulas during file open.
+     * If true, formula cells are loaded with their last calculated values instead of parsing the formula expressions.
+     */
+    ignoreFormula?: boolean;
+
+    /**
+     * Indicates whether to ignore data validations during file open.
+     * Skipping validations can reduce parsing time and memory usage, especially in files with extensive validation rules.
+     */
+    ignoreValidation?: boolean;
+
+    /**
+     * Indicates whether to ignore conditional formatting during file open.
+     * Disabling conditional formatting improves performance and reduces memory usage for files with complex formatting rules.
+     */
+    ignoreConditionalFormat?: boolean;
 }
 
 /** @hidden */
 export interface ExtendedChartModel extends ChartModel {
     enableCanvas?: boolean;
     skipDateInterpolation?: boolean;
+    address?: number[];
 }
 
 /** @hidden */
@@ -1219,6 +1265,13 @@ interface LabelStyleModel {
 export interface ExtendedAxisModel extends AxisModel {
     majorTickLines?: MajorTickLinesModel;
     labelStyle?: LabelStyleModel;
+}
+
+/** @hidden */
+export interface MergedCellModel {
+    rowSpan?: number;
+    colSpan?: number;
+    address?: number[];
 }
 
 /** @hidden */

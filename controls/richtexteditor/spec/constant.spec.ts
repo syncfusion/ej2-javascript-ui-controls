@@ -192,6 +192,23 @@ export const INSRT_TABLE_EVENT_INIT: KeyboardEventInit = {
     repeat: false
 } as EventInit; 
 
+export const INSRT_AUD_EVENT_INIT: KeyboardEventInit = {
+    bubbles: true,
+    cancelable: true,
+    view: window,
+    key: "A",
+    keyCode: 65,
+    which: 65,
+    code: "KeyA",
+    location: 0,
+    altKey: false,
+    ctrlKey: true,
+    metaKey: false,
+    shiftKey: true,
+    repeat: false
+} as EventInit; 
+
+
 export const INSRT_LINK_EVENT_INIT: KeyboardEventInit = {
     bubbles: true,
     cancelable: true,

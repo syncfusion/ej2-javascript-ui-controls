@@ -109,13 +109,18 @@ export function normalizeRange(range: Range): Range {
 }
 
 /**
- * Function to deep clone an object or array. It also handles circular references.
+ * Creates an isolated copy of a model with independent references for all nested objects.
  *
- * @param {T} item - The item to clone.
- * @returns {T} - The cloned item.
+ * This function creates a new instance of a model where all nested objects (including props,
+ * styles, and other references) are also copied, preventing unintended modifications to the
+ * original model or shared references. Use this function when you need to manipulate a model
+ * without affecting other parts of the application that may reference the same object.
  *
+ * @template T The type of the model to isolate
+ * @param {T} item The original model to create an isolated copy from
+ * @returns {T} A new instance of the model with independent references
  */
-export function deepClone<T>(item: T): T {
+export function isolateModel<T>(item: T): T {
     /* eslint-disable @typescript-eslint/no-explicit-any */
     const seen: WeakMap<object, T> = new WeakMap<object, T>();
 
@@ -358,9 +363,7 @@ export function createSvgElement<K extends keyof SVGElementTagNameMap>(
     for (const key in attributes) {
         if (Object.prototype.hasOwnProperty.call(attributes, key)) {
             const value: string = attributes[`${key}`];
-            if (typeof value === 'string') {
-                element.setAttribute(key, value);
-            }
+            element.setAttribute(key, value);
         }
     }
 
@@ -371,6 +374,8 @@ export function createBaseSvg(viewBox: string = '0 0 24 24'): SVGSVGElement {
     return createSvgElement('svg', {
         xmlns: 'http://www.w3.org/2000/svg',
         viewBox,
-        fill: 'none'
+        fill: 'none',
+        width: '18',
+        height: '18'
     });
 }

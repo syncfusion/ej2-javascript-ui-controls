@@ -1,10 +1,10 @@
 import * as events from '../constant';
 import { SfRichTextEditor } from '../sf-richtexteditor-fn';
-import { IToolbarStatus } from '../../src/common/interface';
-import { getDefaultHtmlTbStatus } from '../../src/common/util';
-import { IDropDownItemModel } from '../../src/common/interface';
-import { ToolbarStatus } from '../../src/editor-manager/plugin/toolbar-status';
-import { IHtmlFormatterCallBack} from '../../src/common/interface';
+import { IToolbarStatus } from '../../editor-scripts/common/interface';
+import { getDefaultHtmlTbStatus } from '../../editor-scripts/common/util';
+import { IDropDownItemModel } from '../../editor-scripts/common/interface';
+import { ToolbarStatus } from '../../editor-scripts/editor-manager/plugin/toolbar-status';
+import { IHtmlFormatterCallBack} from '../../editor-scripts/common/interface';
 
 
 /**

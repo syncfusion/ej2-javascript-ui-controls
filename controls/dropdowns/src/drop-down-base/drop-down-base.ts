@@ -956,12 +956,14 @@ export class DropDownBase extends Component<HTMLElement> implements INotifyPrope
                 item = this.typeOfData(this.listData);
             }
             if (
+                !isNullOrUndefined(item.item) &&
                 typeof getValue((this.fields.value ? this.fields.value : 'value'), item.item as { [key: string]: Object }) === 'number' ||
                 item.typeof === 'number'
             ) {
                 return parseFloat(value);
             }
             if (
+                !isNullOrUndefined(item.item) &&
                 typeof getValue((this.fields.value ? this.fields.value : 'value'), item.item as { [key: string]: Object }) === 'boolean' ||
                 item.typeof === 'boolean'
             ) {
@@ -1902,7 +1904,7 @@ export class DropDownBase extends Component<HTMLElement> implements INotifyPrope
     }
 
     private updateGroupFixedHeader(element: HTMLElement, target: Element): void {
-        if (this.fixedHeaderElement) {
+        if (this.fixedHeaderElement && this.list && this.list.parentElement) {
             if (!isNullOrUndefined(element.innerHTML)) {
                 if (this.groupTemplate && this.isAngular && this.getModuleName() === 'multiselect') {
                     this.updateFixedGroupTemplateHader(element);
@@ -2665,7 +2667,13 @@ export class DropDownBase extends Component<HTMLElement> implements INotifyPrope
      */
     public destroy(): void {
         if (document){
-            EventHandler.remove(document, 'scroll', this.updateGroupFixedHeader);
+            if (this.fields && this.fields.groupBy) {
+                const elements: HTMLElement[] = this.getScrollableParent();
+                for (let i: number = 0; i < elements.length; i++) {
+                    const ele: HTMLElement = elements[i as number];
+                    EventHandler.remove(ele, 'scroll', this.updateGroupFixedHeader);
+                }
+            }
             if (document.body.contains(this.list)) {
                 EventHandler.remove(this.list, 'scroll', this.setFloatingHeader);
                 if (!isNullOrUndefined(this.rippleFun)) {

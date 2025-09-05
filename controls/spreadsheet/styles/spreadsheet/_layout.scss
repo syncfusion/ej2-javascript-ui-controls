@@ -46,6 +46,11 @@
         padding: 10px;
       }
 
+      .e-spreadsheet-function-dlg.e-dialog .e-dlg-content .e-formula-list {
+        @if $sheet-skin == 'Material3' {
+          overflow-y: visible !important; /* stylelint-disable-line declaration-no-important */
+        }
+      }
       .e-main-panel{
         height: calc(100% - 54px);
         overflow-y: scroll;
@@ -57,6 +62,21 @@
       }
       .e-scrollbar{
         height: 19px;
+      }
+
+      .e-ribbon .e-tab .e-tab-header .e-toolbar-item {
+        & .e-tab-wrap:focus .e-text-wrap,
+        &:not(.e-separator) .e-text-wrap {
+          @if $skin-name =='fabric' or $skin-name == 'fabric-dark' {
+            height: 33px;
+          }
+        }
+      }
+
+      .e-ribbon .e-tab .e-tab-header .e-toolbar-items .e-toolbar-item:nth-child(2) .e-tab-wrap {
+        @if $skin-name =='fabric' or $skin-name == 'fabric-dark' {
+          padding: 0;
+        }
       }
 
       .e-resize-helper{
@@ -81,7 +101,7 @@
                 z-index: 0;
               }
             }
-            
+
             & .e-toolbar-item {
               &.e-active .e-text-wrap::before {
                 @if $skin-name == 'tailwind3' {
@@ -150,7 +170,7 @@
                       font-size: 16px;
                     }
                   }
-      
+
                   &.e-fill-color {
                     font-size: $spreadsheet-cpicker-fill-color-font-size;
                     @if $skin-name == 'highcontrast'{
@@ -438,17 +458,17 @@
             border: none;
           }
         }
-      
+
         .e-protection-tab-content {
           & .e-protection-toggle-container {
             padding-top: $spreadsheet-protection-toggle-container-padding-top;
             padding-bottom: $spreadsheet-protection-toggle-container-padding-bottom;
           }
-      
+
           & .e-protection-password-field {
             padding-bottom: $spreadsheet-protection-password-field-padding-bottom;
           }
-      
+
           & .e-protection-password-field label {
             padding-bottom: $spreadsheet-protection-password-field-label-padding-bottom;
           }
@@ -457,7 +477,7 @@
             color: $spreadsheet-error-message-color;
             font-size: 12px;
           }
-      
+
           & .e-unlock-range-container {
             .e-unlock-range-field {
               padding-top: $spreadsheet-protection-unlock-range-field-padding-top;
@@ -470,22 +490,22 @@
                 }
               }
             }
-      
+
             .e-unlock-range-actions {
               padding: $spreadsheet-protection-unlock-range-action-padding;
             }
-      
+
             .e-unlock-text {
               padding-top: $spreadsheet-protection-unlock-text-padding-top;
               padding-bottom: $spreadsheet-protection-unlock-text-padding-bottom;
             }
-      
+
             .e-unlock-range-item {
               height: $spreadsheet-protection-unlock-range-item-height;
               padding-bottom: $spreadsheet-protection-unlock-range-item-padding-bottom;
               border-radius: $spreadsheet-protection-unlock-range-item-radius;
               background-color: $spreadsheet-protection-unlock-range-item-background-color;
-      
+
               .e-unlock-range-name {
                 font-family: $spreadsheet-protection-unlock-range-name-font-family;
                 font-size: $spreadsheet-protection-unlock-range-name-font-size;
@@ -493,7 +513,7 @@
                 line-height: $spreadsheet-protection-unlock-range-name-line-height;
                 color: $spreadsheet-protection-unlock-range-name-font-color;
               }
-      
+
               .e-unlock-range-value {
                 font-family: $spreadsheet-protection-unlock-range-value-font-family;
                 font-size: $spreadsheet-protection-unlock-range-value-font-size;
@@ -503,7 +523,7 @@
               }
             }
           }
-      
+
           & .e-sheet-options-container {
             .e-sheet-options-header {
               font-family: $spreadsheet-protection-sheet-option-font-family;
@@ -537,7 +557,7 @@
         }
       }
     }
-    
+
     & .e-protect-dlg.e-dialog {
       @if $skin-name != 'Material3' {
         height: $protect-dlg-height;
@@ -774,6 +794,15 @@
             }
           }
         }
+      }
+    }
+
+    & .e-dlg-container {
+      & .e-customsort-dlg.e-device .e-dlg-content .e-sort-listsection .e-input-group {
+        min-width: 170px;
+      }
+      & .e-custom-format-dlg.e-device .e-dlg-content {
+        display: block;
       }
     }
 
@@ -1164,6 +1193,10 @@
 
           &.e-right-align {
             text-align: right;
+          }
+
+          & .e-fill-before {
+            text-decoration: inherit;
           }
 
           & .e-hyperlink {
@@ -2142,7 +2175,7 @@
               margin-left: 5px;
             }
           }
-          
+
           & .e-addchart-icon {
             @if $skin-name != 'Material3' and $skin-name != 'fluent2' and $skin-name != 'tailwind3' {
               margin-right: -11px;
@@ -2447,7 +2480,7 @@
         @if $skin-name == 'fluent2' {
           font-size: $validation-dropdown-icon-size;
         }
-        @if $skin-name != 'material' {
+        @if $skin-name != 'material' and $skin-name !='material-dark' {
           height: $validation-list-icon-height;
           min-height: $validation-list-icon-min-height;
           min-width: $validation-list-icon-min-height;
@@ -2983,6 +3016,7 @@
           @if $skin-name == 'Material3' {
             padding-bottom: 8px;
             padding-top: 20px;
+            padding-right: 12px;
           }
           @else if $skin-name == 'fluent2' {
             margin-right: 8px;
@@ -3335,7 +3369,7 @@
         overflow-x: hidden;
         scrollbar-width: thin;
       }
-      
+
       .e-excelfilter.e-dialog .e-dlg-content {
         padding-right: 0;
       }
@@ -4408,6 +4442,10 @@
       & .e-hscroll-bar {
         margin-left: 0;
       }
+    }
+    .e-aggregate-list.e-flat {
+      overflow: hidden;
+      text-overflow: ellipsis;
     }
   }
 

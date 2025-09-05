@@ -89,7 +89,7 @@ export class CommandColumnRenderer extends CellRenderer implements ICellRenderer
             }
         } else {
             for (const command of cell.commands) {
-                node = this.renderButton(node, command, <number>attributes.index, command[`${uid}`]);
+                node = this.renderButton(node, command, <number>attributes['data-index'], command[`${uid}`]);
             }
         }
         this.setAttributes(<HTMLElement>node, cell, attributes);

@@ -82,6 +82,7 @@ export class InsertHtmlExec {
         const selectionRange: Range = this.getSelectionRange();
         const selection: NodeSelection = this.parent.nodeSelection;
         const parentNodes: Node[] = selection.getParentNodeCollection(selectionRange);
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         const anchor: any = (e.value as HTMLElement).querySelector('a');
         const anchorElement: HTMLElement = this.findAnchorElement(parentNodes);
         if (anchorElement && anchorElement.nodeName === 'A') {

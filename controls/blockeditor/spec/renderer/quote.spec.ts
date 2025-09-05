@@ -46,7 +46,7 @@ describe('Quote Block', () => {
             const paragraph = editorElement.querySelector('#quote-content');
             paragraph.textContent = 'Updated content';
             editor.setFocusToBlock(paragraph.closest('.e-block') as HTMLElement);
-            editor.updateContentOnUserTyping(paragraph.closest('.e-block') as HTMLElement);
+            editor.stateManager.updateContentOnUserTyping(paragraph.closest('.e-block') as HTMLElement);
             setTimeout(() => {
                 expect(editor.blocks[0].content[0].content).toBe('Updated content');
                 done();
@@ -57,7 +57,8 @@ describe('Quote Block', () => {
             const quoteBlock: BlockModel = {
                 id: 'quote-new',
                 type: BlockType.Quote,
-                content: [{ id: 'quote-new-content', type: ContentType.Text, content: 'New quote' }]
+                content: [{ id: 'quote-new-content', type: ContentType.Text, content: 'New quote' }],
+                props: { placeholder: 'Enter quotes here' }
             };
             
             // Create a document fragment as Node
@@ -72,7 +73,7 @@ describe('Quote Block', () => {
             });
             
             // Directly call the renderQuote method with the Node
-            const quoteElement = editor.blockAction.quoteRenderer.renderQuote(
+            const quoteElement = editor.blockRendererManager.quoteRenderer.renderQuote(
                 quoteBlock, 
                 blockElement,
                 docFragment
@@ -88,7 +89,8 @@ describe('Quote Block', () => {
             const quoteBlock: BlockModel = {
                 id: 'quote-multi',
                 type: BlockType.Quote,
-                content: [{ id: 'quote-multi-content', type: ContentType.Text, content: 'Multi-node quote' }]
+                content: [{ id: 'quote-multi-content', type: ContentType.Text, content: 'Multi-node quote' }],
+                props: { placeholder: 'Enter quotes here' }
             };
             
             // Create a document fragment with multiple nodes
@@ -109,7 +111,7 @@ describe('Quote Block', () => {
             });
             
             // Directly call the renderQuote method with the Node
-            const quoteElement = editor.blockAction.quoteRenderer.renderQuote(
+            const quoteElement = editor.blockRendererManager.quoteRenderer.renderQuote(
                 quoteBlock, 
                 blockElement,
                 docFragment
@@ -127,7 +129,8 @@ describe('Quote Block', () => {
             const quoteBlock: BlockModel = {
                 id: 'quote-empty',
                 type: BlockType.Quote,
-                content: [{ id: 'quote-empty-content', type: ContentType.Text, content: 'Empty node quote' }]
+                content: [{ id: 'quote-empty-content', type: ContentType.Text, content: 'Empty node quote' }],
+                props: { placeholder: 'Enter quotes here' }
             };
             
             // Create an empty document fragment
@@ -140,7 +143,7 @@ describe('Quote Block', () => {
             });
             
             // Directly call the renderQuote method with the empty Node
-            const quoteElement = editor.blockAction.quoteRenderer.renderQuote(
+            const quoteElement = editor.blockRendererManager.quoteRenderer.renderQuote(
                 quoteBlock, 
                 blockElement,
                 docFragment

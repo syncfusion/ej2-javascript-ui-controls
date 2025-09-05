@@ -306,6 +306,7 @@ export class EventBase {
             const membersInfo: string[] = fieldInfo && fieldInfo.membersOrder ? [...fieldInfo.membersOrder] as string[] : [];
             const sortDetails: HeadersSortEventArgs = {
                 fieldName: fieldName,
+                levelName: engineModule.levelUniqueName[fieldName as string],
                 sortOrder: order as Sorting,
                 members: membersInfo && membersInfo.length > 0 ? membersInfo : members,
                 IsOrderChanged: false

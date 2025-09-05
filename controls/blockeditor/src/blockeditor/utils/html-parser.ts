@@ -1,9 +1,10 @@
-import { BlockModel, ContentModel, LinkSettingsModel, StyleModel } from '../models/index';
-import { BlockType, ContentType } from '../base/enums';
-import { generateUniqueId } from './common';
+import { BaseChildrenProp, BaseStylesProp, BlockModel, ContentModel, HeadingProps, ImageProps,
+    LinkContentProps, StyleModel, Styles } from '../models/index';
 import { escapeHTML } from './security';
 import { FormattingHelper } from './isformatted';
 import { isNullOrUndefined } from '@syncfusion/ej2-base';
+import { BlockFactory } from '../services/index';
+import { BlockType, ContentType } from '../base/index';
 
 type ListStack = { type: 'ul' | 'ol'; items: string[]; indent: number }
 
@@ -29,13 +30,13 @@ export function convertHtmlElementToBlocks(container: HTMLElement, keepFormat: b
                 for (const li of children) {
                     if (li.tagName !== 'LI') { continue; }
 
-                    const block: BlockModel = {
-                        id: generateUniqueId('block'),
-                        type: isOrdered ? BlockType.NumberedList : BlockType.BulletList,
-                        content: convertInlineElementsToContentModels(li as HTMLElement, keepFormat),
-                        indent: indentLevel
-                    };
-                    blocks.push(block);
+                    blocks.push(
+                        BlockFactory.createBlockFromPartial({
+                            type: isOrdered ? BlockType.NumberedList : BlockType.BulletList,
+                            content: convertInlineElementsToContentModels(li as HTMLElement, keepFormat),
+                            indent: indentLevel
+                        })
+                    );
                     isBlockProcessed = true;
 
                     // Handle nested lists within <li>
@@ -48,53 +49,54 @@ export function convertHtmlElementToBlocks(container: HTMLElement, keepFormat: b
             }
             else if (tag.match(/^H[1-4]$/)) {
                 const level: number = parseInt(tag.substring(1), 10);
-                let blockType: BlockType;
 
-                switch (level) {
-                case 1: blockType = BlockType.Heading1; break;
-                case 2: blockType = BlockType.Heading2; break;
-                case 3: blockType = BlockType.Heading3; break;
-                case 4: blockType = BlockType.Heading4; break;
-                }
-
-                blocks.push(createBlockFromElement(element, blockType, keepFormat));
+                blocks.push(
+                    BlockFactory.createHeadingBlock(
+                        { content: convertInlineElementsToContentModels(element, keepFormat) },
+                        { level: level }
+                    )
+                );
                 isBlockProcessed = true;
             }
             else if (tag === 'BLOCKQUOTE') {
-                blocks.push(createBlockFromElement(element, BlockType.Quote, keepFormat));
+                blocks.push(
+                    BlockFactory.createQuoteBlock(
+                        { content: convertInlineElementsToContentModels(element, keepFormat) }
+                    )
+                );
                 isBlockProcessed = true;
             }
             else if (tag === 'HR') {
-                blocks.push({
-                    id: generateUniqueId('block'),
-                    type: BlockType.Divider
-                });
+                blocks.push(BlockFactory.createDividerBlock());
                 isBlockProcessed = true;
             }
             else if (tag === 'IMG') {
                 const img: HTMLImageElement = element as HTMLImageElement;
-                blocks.push({
-                    id: generateUniqueId('block'),
-                    type: BlockType.Image,
-                    imageSettings: {
-                        src: img.src,
-                        altText: img.alt
-                    }
-                });
+                blocks.push(
+                    BlockFactory.createImageBlock(
+                        {},
+                        {
+                            src: img.src,
+                            altText: img.alt
+                        }
+                    )
+                );
                 isBlockProcessed = true;
             }
             else if (tag === 'PRE' && element.querySelector('code')) {
-                blocks.push({
-                    id: generateUniqueId('block'),
-                    type: BlockType.Code,
-                    content: [
-                        { content: element.textContent, type: ContentType.Text }
-                    ]
-                });
+                blocks.push(
+                    BlockFactory.createCodeBlock(
+                        { content: [BlockFactory.createTextContent({ content: element.textContent })] }
+                    )
+                );
                 isBlockProcessed = true;
             }
             else if (tag === 'P') {
-                blocks.push(createBlockFromElement(element, BlockType.Paragraph, keepFormat));
+                blocks.push(
+                    BlockFactory.createParagraphBlock(
+                        { content: convertInlineElementsToContentModels(element, keepFormat) }
+                    )
+                );
                 isBlockProcessed = true;
             }
             else if (tag === 'TABLE') {
@@ -102,27 +104,30 @@ export function convertHtmlElementToBlocks(container: HTMLElement, keepFormat: b
                 const rows: NodeListOf<HTMLElement> = tablebody.querySelectorAll('tr') as NodeListOf<HTMLElement>;
                 if (rows.length > 0) {
                     rows.forEach((row: HTMLElement) => {
-                        blocks.push(createBlockFromElement(row, BlockType.Paragraph, keepFormat));
+                        blocks.push(
+                            BlockFactory.createParagraphBlock(
+                                { content: convertInlineElementsToContentModels(row, keepFormat) }
+                            )
+                        );
                     });
                 }
                 isBlockProcessed = true;
             }
             if ((tag === 'DIV') && !hasBlockElements(element)) {
-                blocks.push(createBlockFromElement(element, BlockType.Paragraph, keepFormat));
+                blocks.push(
+                    BlockFactory.createParagraphBlock(
+                        { content: convertInlineElementsToContentModels(element, keepFormat) }
+                    )
+                );
                 isBlockProcessed = true;
             }
         }
         else if (node.nodeType === Node.TEXT_NODE && node.textContent.trim() !== '') {
-            const block: BlockModel = {
-                id: generateUniqueId('block'),
-                type: BlockType.Paragraph,
-                content: [{
-                    id: generateUniqueId('content'),
-                    type: ContentType.Text,
-                    content: node.textContent.trim()
-                }]
-            };
-            blocks.push(block);
+            blocks.push(
+                BlockFactory.createParagraphBlock({
+                    content: [ BlockFactory.createTextContent({ content: node.textContent.trim() }) ]
+                })
+            );
             isBlockProcessed = true;
         }
 
@@ -151,38 +156,23 @@ export function convertHtmlElementToBlocks(container: HTMLElement, keepFormat: b
     return blocks;
 }
 
-export function createBlockFromElement(element: HTMLElement, blockType: BlockType, keepFormat: boolean): BlockModel {
-    const block: BlockModel = {
-        id: generateUniqueId('block'),
-        type: blockType,
-        content: []
-    };
-
-    block.content = convertInlineElementsToContentModels(element, keepFormat);
-    return block;
-}
-
 export function convertInlineElementsToContentModels(element: HTMLElement, keepFormat: boolean): ContentModel[] {
     const content: ContentModel[] = [];
     if (!keepFormat) {
         if (element.textContent !== '') {
-            return [{
-                id: generateUniqueId('content'),
-                type: ContentType.Text,
-                content: element.textContent
-            }];
+            return [BlockFactory.createTextContent({ content: element.textContent })];
         }
     }
 
-    const styleStack: StyleModel[] = [{}];
-    let currentLink: LinkSettingsModel;
+    const styleStack: Styles[] = [{} as any];
+    let linkProps: LinkContentProps;
 
     const processNode: (node: Node) => void = (node: Node) => {
         if (node.nodeType === Node.TEXT_NODE) {
             let text: string = node.textContent;
             text = text.replace(/\n/g, '');
             if (text !== '') {
-                content.push(createContentModel(text, styleStack[styleStack.length - 1], currentLink));
+                content.push(createContentModel(text, styleStack[styleStack.length - 1], linkProps));
             }
             return;
         }
@@ -194,28 +184,28 @@ export function convertInlineElementsToContentModels(element: HTMLElement, keepF
         }
 
         if (el.tagName === 'A') {
-            const prevLink: LinkSettingsModel = currentLink;
-            currentLink = {
+            const prevLink: LinkContentProps = linkProps;
+            linkProps = {
                 url: el.getAttribute('href') || '',
                 openInNewWindow: el.getAttribute('target') === '_blank'
             };
             processChildren(el);
-            currentLink = prevLink;
+            linkProps = prevLink;
             return;
         }
 
         if (el.tagName === 'CODE') {
-            content.push({
-                id: generateUniqueId('content'),
-                type: ContentType.Code,
-                content: el.textContent || '',
-                styles: styleStack[styleStack.length - 1]
-            });
+            content.push(
+                BlockFactory.createCodeContent(
+                    { content: el.textContent || '' },
+                    { styles: styleStack[styleStack.length - 1] }
+                )
+            );
             return;
         }
 
-        const newStyles: StyleModel = extractStylesFromElement(el, styleStack[styleStack.length - 1]);
-        if (Object.keys(newStyles).length > 0) {
+        const newStyles: Styles = extractStylesFromElement(el, styleStack[styleStack.length - 1]);
+        if (newStyles && Object.keys(newStyles).length > 0) {
             styleStack.push(newStyles);
             processChildren(el);
             styleStack.pop();
@@ -228,37 +218,38 @@ export function convertInlineElementsToContentModels(element: HTMLElement, keepF
         Array.from(parent.childNodes).forEach(processNode);
     };
 
-    const createContentModel: (text: string, styles: StyleModel, link: LinkSettingsModel) => ContentModel = (
+    type createContentFunction = (text: string, styles: Styles, link: LinkContentProps) => ContentModel;
+
+    const createContentModel: createContentFunction = (
         text: string,
-        styles: StyleModel,
-        link: LinkSettingsModel
+        styles: Styles,
+        link: LinkContentProps
     ): ContentModel => {
-        let content: ContentModel = {
-            id: generateUniqueId('content'),
-            type: ContentType.Text,
-            content: text,
-            styles: { ...styles },
-            stylesApplied: Object.keys(styles).filter((style: string) => (styles as any)[`${style}`])
-        };
         if (link) {
-            content = {
-                ...content,
-                type: ContentType.Link,
-                linkSettings: {
+            return BlockFactory.createLinkContent(
+                {
+                    content: text
+                },
+                {
+                    styles: { ...styles },
                     url: link.url,
                     openInNewWindow: link.openInNewWindow
                 }
-            };
+            );
         }
-        return content;
+
+        return BlockFactory.createTextContent({ content: text }, { styles: { ...styles } });
     };
 
     processChildren(element);
     return content;
 }
 
-export function extractStylesFromElement(element: HTMLElement, styles: StyleModel = {}): StyleModel {
-    const newStyles: StyleModel = { ...styles };
+export function extractStylesFromElement(
+    element: HTMLElement,
+    styles: Styles = {} as any
+): Styles {
+    const newStyles: Styles = { ...styles };
 
     const isBold: boolean = FormattingHelper.isBold(element);
     if (isBold) {
@@ -367,11 +358,12 @@ export function renderContentAsHTML(content: ContentModel[] = []): string {
             if (!item || !item.content) { return ''; }
 
             let text: string = escapeHTML(item.content);
-            if (item.styles) {
-                const styleOrder: string[] = ['bold', 'italic', 'underline', 'strikethrough', 'superscript',
-                    'subscript', 'uppercase', 'lowercase', 'color', 'bgColor', 'custom'];
-                for (const style of styleOrder) {
-                    if ((item.styles as any)[`${style}`]) {
+            const props: BaseStylesProp = item.props as BaseStylesProp;
+            const styles: Styles = (props && props.styles) ? props.styles : {};
+            const keys: string[] = Object.keys(styles);
+            if (keys.length > 0) {
+                for (const style of keys) {
+                    if (styles[style as keyof StyleModel]) {
                         switch (style.toLowerCase()) {
                         case 'bold': text = `<strong>${text}</strong>`; break;
                         case 'italic': text = `<em>${text}</em>`; break;
@@ -381,16 +373,17 @@ export function renderContentAsHTML(content: ContentModel[] = []): string {
                         case 'subscript': text = `<sub>${text}</sub>`; break;
                         case 'uppercase': text = `<span style="text-transform: uppercase;">${text}</span>`; break;
                         case 'lowercase': text = `<span style="text-transform: lowercase;">${text}</span>`; break;
-                        case 'color': text = `<span style="color: ${item.styles.color};">${text}</span>`; break;
-                        case 'bgcolor': text = `<span style="background-color: ${item.styles.bgColor};">${text}</span>`; break;
-                        case 'custom': text = `<span style="${item.styles.custom};">${text}</span>`; break;
+                        case 'color': text = `<span style="color: ${styles.color};">${text}</span>`; break;
+                        case 'bgcolor': text = `<span style="background-color: ${styles.bgColor};">${text}</span>`; break;
+                        case 'custom': text = `<span style="${styles.custom};">${text}</span>`; break;
                         }
                     }
                 }
             }
-            if (item.type === ContentType.Link && item.linkSettings && item.linkSettings.url) {
-                const target: string = item.linkSettings.openInNewWindow ? 'target="_blank"' : '';
-                text = `<a href="${escapeHTML(item.linkSettings.url)}" ${target}>${text}</a>`;
+            if (item.type === ContentType.Link && item.props) {
+                const props: LinkContentProps = item.props as LinkContentProps;
+                const target: string = props.openInNewWindow ? 'target="_blank"' : '';
+                text = `<a href="${escapeHTML(props.url)}" ${target}>${text}</a>`;
             }
             return text;
         }).join('');
@@ -399,38 +392,40 @@ export function renderContentAsHTML(content: ContentModel[] = []): string {
 export function renderBlockAsHTML(block: BlockModel): string {
     const contentHTML: string = renderContentAsHTML(block.content);
     switch (block.type.toLowerCase()) {
-    case 'heading1':
-    case 'heading2':
-    case 'heading3':
-    case 'heading4': {
-        const level: string = block.type.charAt(block.type.length - 1);
-        return `<h${level}>${contentHTML}</h${level}>`;
+    case 'heading': {
+        const level: number = (block.props as HeadingProps).level;
+        return renderElementWithWrapper(`h${level}`, contentHTML);
     }
     case 'paragraph':
-        return `<p>${contentHTML}</p>`;
+        return renderElementWithWrapper('p', contentHTML);
     case 'quote':
-        return `<blockquote>${contentHTML}</blockquote>`;
+        return renderElementWithWrapper('blockquote', contentHTML);
     case 'callout': {
-        const childrenHTML: string = block.children && block.children.map((child: BlockModel) => renderBlockAsHTML(child)).join('') || '';
-        return `<div class="callout">${childrenHTML}</div>`;
+        const children: BlockModel[] = (block.props as BaseChildrenProp).children;
+        const childrenHTML: string = children && children.map((child: BlockModel) => renderBlockAsHTML(child)).join('') || '';
+        return renderElementWithWrapper('div', childrenHTML, 'callout');
     }
     case 'divider':
         return '<hr />';
     case 'code':
         return `<pre><code>${block.content[0].content}</code></pre>`;
     case 'image': {
-        if (block.imageSettings && block.imageSettings.src === '') { return ''; }
-        return `<img src='${block.imageSettings.src}' alt='${block.imageSettings.altText}' />`;
+        const props: ImageProps = block.props as ImageProps;
+        if (props && props.src === '') { return ''; }
+        return `<img src='${props.src}' alt='${props.altText}' />`;
     }
-    case 'toggleparagraph':
-    case 'toggleheading1':
-    case 'toggleheading2':
-    case 'toggleheading3':
-    case 'toggleheading4': {
-        const childrenHTML: string = block.children && block.children.map((child: BlockModel) => renderBlockAsHTML(child)).join('') || '';
-        return `<div class="toggle">${contentHTML} ${childrenHTML}</div>`;
+    case 'collapsibleparagraph':
+    case 'collapsibleheading': {
+        const children: BlockModel[] = (block.props as BaseChildrenProp).children;
+        const childrenHTML: string = children && children.map((child: BlockModel) => renderBlockAsHTML(child)).join('') || '';
+        return renderElementWithWrapper('div', (contentHTML + ' ' + childrenHTML), 'collapsible');
     }
     default:
-        return `<div>${contentHTML}</div>`;
+        return renderElementWithWrapper('div', contentHTML);
     }
+}
+
+function renderElementWithWrapper(tagName: string, content: string, className?: string): string {
+    const classAttr: string = className ? ` class="${className}"` : '';
+    return `<${tagName}${classAttr}>${content}</${tagName}>`;
 }

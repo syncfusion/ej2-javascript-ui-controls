@@ -9,7 +9,7 @@ export interface CommandMenuSettingsModel {
      * Specifies the width of the command menu popup.
      * Accepts valid CSS width values such as px, %, auto, etc.
      *
-     * @default '250px'
+     * @default '280px'
      */
     popupWidth?: string;
 

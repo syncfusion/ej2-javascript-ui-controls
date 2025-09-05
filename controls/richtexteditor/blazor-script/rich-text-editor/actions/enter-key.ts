@@ -1,8 +1,8 @@
 import { isNullOrUndefined as isNOU, KeyboardEventArgs, detach, createElement, Browser } from '../../../base'; /*externalscript*/
 import * as events from '../constant';
 import { SfRichTextEditor } from '../sf-richtexteditor-fn';
-import { NotifyArgs, ActionBeginEventArgs } from '../../src/common/interface';
-import { ActionCompleteEventArgs } from '../../src/common/interface';
+import { NotifyArgs, ActionBeginEventArgs } from '../../editor-scripts/common/interface';
+import { ActionCompleteEventArgs } from '../../editor-scripts/common/interface';
 import { ImageOrTableCursor } from '../interfaces';
 /**
  * `EnterKey` module is used to handle enter key press actions.
@@ -270,7 +270,7 @@ export class EnterKeyAction {
                     let isNearBlockLengthZero: boolean;
                     let newElem: Node;
                     if (!isNOU( this.range.startContainer.childNodes) &&
-                    this.range.startContainer.textContent.length === 0 &&
+                    this.range.startContainer.textContent.length === 0 && (this.range.startContainer as HTMLElement).nodeName !== '#text' &&
                     ((this.range.startContainer as HTMLElement).querySelectorAll('img, audio, video').length > 0 ||
                     this.range.startContainer.nodeName === 'IMG' || this.range.startContainer.nodeName === 'TABLE' )) {
                         newElem = this.createInsertElement(shiftKey);
@@ -452,8 +452,31 @@ export class EnterKeyAction {
                             this.parent.getDocument(), (cursorTarget as Element), 0);
                     }
                 } else {
+                    let previousSiblingBR: boolean = false;
+                    let insertedZWSP: Node | null = null;
+                    if (this.range.startContainer === this.range.endContainer) {
+                        const cursorFocusNode: Node = this.getCursorNode(this.range);
+                        if (cursorFocusNode && cursorFocusNode.parentNode) {
+                            const cursorElement: Element = cursorFocusNode as Element;
+                            const isPreviousSiblingBR: boolean = cursorElement.previousElementSibling && cursorElement.previousElementSibling.nodeName === 'BR';
+                            const isCursorNodeBR: boolean = cursorFocusNode.nodeName === 'BR';
+                            if (isPreviousSiblingBR || isCursorNodeBR) {
+                                insertedZWSP = document.createTextNode('\u200B');
+                                cursorFocusNode.parentNode.insertBefore(insertedZWSP, cursorFocusNode);
+                                if (isCursorNodeBR && !cursorElement.previousElementSibling) {
+                                    cursorFocusNode.parentNode.insertBefore(document.createElement('br'), insertedZWSP);
+                                }
+                                this.range.setStartAfter(insertedZWSP);
+                                this.range.setEndBefore(cursorFocusNode);
+                                previousSiblingBR = true;
+                            }
+                        }
+                    }
                     const newElem: Node = this.parent.formatter.editorManager.nodeCutter.SplitNode(
                         this.range, (nearBlockNode as HTMLElement), true);
+                    if (previousSiblingBR && insertedZWSP && insertedZWSP.parentNode && insertedZWSP.textContent === '\u200B') {
+                        insertedZWSP.parentNode.removeChild(insertedZWSP);
+                    }
                     if (!isNOU(newElem.childNodes[0]) && newElem.childNodes[0].nodeName === '#text' &&
                         newElem.childNodes[0].textContent.length === 0) {
                         detach(newElem.childNodes[0]);
@@ -638,6 +661,18 @@ export class EnterKeyAction {
         if (this.parent.actionCompleteEnabled) {
             this.triggerActionComplete(e, shiftKey);
         }
+    }
+    private getCursorNode(range: Range): Node | null {
+        const container: Node = range.startContainer;
+        const offset: number = range.startOffset;
+        if (container.nodeType === Node.TEXT_NODE) {
+            return container;
+        }
+        if (container.nodeType === Node.ELEMENT_NODE) {
+            const childNode: Node = container.childNodes[offset as number];
+            return childNode || container;
+        }
+        return null;
     }
     private getFirstTextNode(node: Node): Node | null {
         const treeWalker: TreeWalker = this.parent.getDocument().createTreeWalker(

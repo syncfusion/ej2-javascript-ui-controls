@@ -1,7 +1,8 @@
 import { createElement, remove } from '@syncfusion/ej2-base';
-import { BlockModel } from '../../src/blockeditor/models';
+import { BaseChildrenProp, BlockModel } from '../../src/blockeditor/models';
 import { BlockEditor, BlockType, ContentType, setCursorPosition, getBlockContentElement, BuiltInToolbar } from '../../src/index';
 import { createEditor } from '../common/util.spec';
+import { BlockFactory } from '../../src/blockeditor/services/index';
 
 describe('Block Command Manager:', () => {
     beforeAll(() => {
@@ -24,36 +25,40 @@ describe('Block Command Manager:', () => {
                 { id: 'paragraph1', type: BlockType.Paragraph, content: [{ id: 'paragraph1-content', type: ContentType.Text, content: 'Hello world' }] },
                 {
                     id: 'calloutblock',
-                    type: 'Callout',
-                    children: [
-                        {
-                            id: 'calloutchild1',
-                            type: 'Paragraph',
-                            content: [{ id: 'callout-child1-content', type: ContentType.Text, content: 'Callout child 1' }]
-                        },
-                        {
-                            id: 'calloutchild2',
-                            type: 'Paragraph',
-                            content: [{ id: 'callout-child2-content', type: ContentType.Text, content: 'Callout child 2' }]
-                        }
-                    ]
+                    type: BlockType.Callout,
+                    props: {
+                        children: [
+                            {
+                                id: 'calloutchild1',
+                                type: BlockType.Paragraph,
+                                content: [{ id: 'callout-child1-content', type: ContentType.Text, content: 'Callout child 1' }]
+                            },
+                            {
+                                id: 'calloutchild2',
+                                type: BlockType.Paragraph,
+                                content: [{ id: 'callout-child2-content', type: ContentType.Text, content: 'Callout child 2' }]
+                            }
+                        ]
+                    }
                 },
                 {
                     id: 'toggleblock',
-                    type: BlockType.ToggleParagraph,
+                    type: BlockType.CollapsibleParagraph,
                     content: [{ id: 'toggle-content-1', type: ContentType.Text, content: 'Click here to expand' }],
-                    children: [
-                        {
-                            id: 'togglechild1',
-                            type: BlockType.CheckList,
-                            content: [{ type: ContentType.Text, content: 'Todo' }]
-                        },
-                        {
-                            id: 'togglechild2',
-                            type: BlockType.Paragraph,
-                            content: [{ type: ContentType.Text, content: 'Toggle child 2' }]
-                        }
-                    ]
+                    props: {
+                        children: [
+                            {
+                                id: 'togglechild1',
+                                type: BlockType.Checklist,
+                                content: [{ type: ContentType.Text, content: 'Todo' }]
+                            },
+                            {
+                                id: 'togglechild2',
+                                type: BlockType.Paragraph,
+                                content: [{ type: ContentType.Text, content: 'Toggle child 2' }]
+                            }
+                        ]
+                    }
                 },
                 { id: 'paragraph2', type: BlockType.Paragraph, content: [{ id: 'paragraph2-content', type: ContentType.Text, content: '' }] },
             ];
@@ -74,12 +79,12 @@ describe('Block Command Manager:', () => {
             const contentElement = blockElement.querySelector('.e-block-content') as HTMLElement;
             editor.setFocusToBlock(blockElement);
             setCursorPosition(contentElement, 0);
-            editor.blockAction.deleteBlockAtCursor({
+            editor.blockCommandManager.deleteBlockAtCursor({
                 blockElement: blockElement, mergeDirection: 'previous'
             });
-            const toggleBlock = editor.blocks.find(block => block.type === 'ToggleParagraph');
+            const toggleBlock = editor.blocks.find(block => block.type === BlockType.CollapsibleParagraph);
             expect(toggleBlock).toBeUndefined();
-            expect(editor.blocks[2].type).toBe('Paragraph');
+            expect(editor.blocks[2].type).toBe(BlockType.Paragraph);
         });
 
         it('single divider block in editor and deleting it should create paragraph block', () => {
@@ -93,7 +98,7 @@ describe('Block Command Manager:', () => {
             const blockElement = editorElement.querySelector('#divider') as HTMLElement;
             editor.setFocusToBlock(blockElement);
 
-            editor.blockAction.deleteBlockAtCursor({
+            editor.blockCommandManager.deleteBlockAtCursor({
                 blockElement, mergeDirection: 'previous'
             });
         });
@@ -102,11 +107,11 @@ describe('Block Command Manager:', () => {
             const blockElement = editorElement.querySelector('#calloutchild2') as HTMLElement;
             editor.setFocusToBlock(blockElement);
 
-            editor.blockAction.deleteBlock({
+            editor.blockCommandManager.deleteBlock({
                 blockElement, mergeDirection: 'previous'
             });
 
-            expect(editor.blocks[1].children.length).toBe(1);
+            expect((editor.blocks[1].props as BaseChildrenProp).children.length).toBe(1);
             expect(editorElement.querySelector('#calloutchild2')).toBeNull();
         });
 
@@ -114,55 +119,44 @@ describe('Block Command Manager:', () => {
             const blockElement = editorElement.querySelector('#calloutchild2') as HTMLElement;
             editor.setFocusToBlock(blockElement);
 
-            editor.blockAction.duplicateBlock(blockElement);
+            editor.blockCommandManager.duplicateBlock(blockElement);
 
-            expect(editor.blocks[1].children.length).toBe(3);
+            expect((editor.blocks[1].props as BaseChildrenProp).children.length).toBe(3);
         });
 
         it('moving a child block inside callout', function () {
             const blockElement = editorElement.querySelector('#calloutchild2') as HTMLElement;
             editor.setFocusToBlock(blockElement);
-            editor.blockAction.moveBlock({
+            editor.blockCommandManager.moveBlock({
                 fromBlockIds: ['calloutchild2'], toBlockId: 'calloutchild1'
             });
-            expect(editor.blocks[1].children.length).toBe(2);
-            expect(editor.blocks[1].children[0].id).toBe('calloutchild2');
-            expect(editor.blocks[1].children[1].id).toBe('calloutchild1');
+            expect((editor.blocks[1].props as BaseChildrenProp).children.length).toBe(2);
+            expect((editor.blocks[1].props as BaseChildrenProp).children[0].id).toBe('calloutchild2');
+            expect((editor.blocks[1].props as BaseChildrenProp).children[1].id).toBe('calloutchild1');
         });
 
         it('generateNewIdsForBlock should generate properly', () => {
             editor.blocks[0].content = [
-                { id: 'paragraph1-content', type: ContentType.Text, content: 'Hello world' },
-                { id: 'progress', type: ContentType.Label },
-                { id: 'user1', type: ContentType.Mention },
+                BlockFactory.createTextContent({ id: 'paragraph1-content', type: ContentType.Text, content: 'Hello world' }),
+                BlockFactory.createLabelContent({ id: 'progress', type: ContentType.Label }),
+                BlockFactory.createMentionContent({ id: 'user1', type: ContentType.Mention }),
             ];
-            editor.reRenderBlockContent(editor.blocks[0]);
-            const labelDataId = editor.blocks[0].content[1].dataId;
-            const mentionDataId = editor.blocks[0].content[2].dataId;
+            editor.blockRendererManager.reRenderBlockContent(editor.blocks[0]);
+            const labelId = editor.blocks[0].content[1].id;
+            const mentionId = editor.blocks[0].content[2].id;
             const firstBlockId = editor.blocks[0].id;
             const firstBlockContentId = editor.blocks[0].content[0].id;
-            const newBlock = editor.blockAction.generateNewIdsForBlock(editor.blocks[0]);
+            const newBlock = editor.blockService.generateNewIdsForBlock(editor.blocks[0]);
             expect(newBlock.id).not.toBe(firstBlockId);
             expect(newBlock.content[0].id).not.toBe(firstBlockContentId);
-            expect(newBlock.content[1].dataId).not.toBe(labelDataId);
-            expect(newBlock.content[2].dataId).not.toBe(mentionDataId);
+            expect(newBlock.content[1].id).not.toBe(labelId);
+            expect(newBlock.content[2].id).not.toBe(mentionId);
 
-            const child1Id = editor.blocks[1].children[0].id;
-            const child1ContentId = editor.blocks[1].children[0].content[0].id;
-            const newChildBlock = editor.blockAction.generateNewIdsForBlock(editor.blocks[1].children[0]);
+            const child1Id = (editor.blocks[1].props as BaseChildrenProp).children[0].id;
+            const child1ContentId = (editor.blocks[1].props as BaseChildrenProp).children[0].content[0].id;
+            const newChildBlock = editor.blockService.generateNewIdsForBlock((editor.blocks[1].props as BaseChildrenProp).children[0]);
             expect(newChildBlock.id).not.toBe(child1Id);
             expect(newChildBlock.content[0].id).not.toBe(child1ContentId);
-        });
-
-        it('triggerWholeContentUpdate should update content model properly', () => {
-            editor.blockAction.triggerWholeContentUpdate(
-                editor.blocks[1], []
-            );
-            expect(editor.blocks[1].content.length).toBe(0);
-            editor.blockAction.triggerWholeContentUpdate(
-                editor.blocks[1].children[0], []
-            );
-            expect(editor.blocks[1].children[0].content.length).toBe(0);
         });
         
     });
@@ -210,7 +204,7 @@ describe('Block Command Manager:', () => {
             const splitOffset = 5;
 
             // Execute
-            const result = editor.blockAction.splitContent(contentElement, splitNode, splitOffset);
+            const result = editor.blockCommandManager.splitContent(contentElement, splitNode, splitOffset);
 
             // Assert
             expect(fragmentToHTML(result.beforeFragment)).toBe('Hello');
@@ -224,7 +218,7 @@ describe('Block Command Manager:', () => {
             const splitOffset = 0; // Beginning of text
 
             // Execute
-            const result = editor.blockAction.splitContent(contentElement, splitNode, splitOffset);
+            const result = editor.blockCommandManager.splitContent(contentElement, splitNode, splitOffset);
             
             // Assert
             expect(fragmentToHTML(result.beforeFragment)).toBe('');
@@ -238,7 +232,7 @@ describe('Block Command Manager:', () => {
             const splitOffset = 11; // End of text
             
             // Execute
-            const result = editor.blockAction.splitContent(contentElement, splitNode, splitOffset);
+            const result = editor.blockCommandManager.splitContent(contentElement, splitNode, splitOffset);
             
             // Assert
             expect(fragmentToHTML(result.beforeFragment)).toBe('Hello World');
@@ -253,7 +247,7 @@ describe('Block Command Manager:', () => {
             const splitOffset = 5;
             
             // Execute
-            const result = editor.blockAction.splitContent(contentElement, splitNode, splitOffset);
+            const result = editor.blockCommandManager.splitContent(contentElement, splitNode, splitOffset);
             
             expect(((result.beforeFragment.childNodes[0] as HTMLElement).tagName)).toBe('STRONG');
             expect(((result.beforeFragment.childNodes[0] as HTMLElement).textContent)).toBe('Hello');
@@ -269,7 +263,7 @@ describe('Block Command Manager:', () => {
             const splitOffset = 3;
 
             // Execute
-            const result = editor.blockAction.splitContent(contentElement, splitNode, splitOffset);
+            const result = editor.blockCommandManager.splitContent(contentElement, splitNode, splitOffset);
             
             // Assert
             expect(result.beforeFragment.childNodes.length).toBe(2);
@@ -293,7 +287,7 @@ describe('Block Command Manager:', () => {
             const splitOffset = 3;
             
             // Execute
-            const result = editor.blockAction.splitContent(contentElement, splitNode, splitOffset);
+            const result = editor.blockCommandManager.splitContent(contentElement, splitNode, splitOffset);
             
             // Assert
             expect(result.beforeFragment.childNodes.length).toBe(2);
@@ -321,7 +315,7 @@ describe('Block Command Manager:', () => {
             const splitOffset = 0;
             
             // Execute
-            const result = editor.blockAction.splitContent(contentElement, splitNode, splitOffset);
+            const result = editor.blockCommandManager.splitContent(contentElement, splitNode, splitOffset);
             
             // Assert
             expect((result.beforeFragment.childNodes[0] as HTMLElement).tagName).toBe('SPAN');
@@ -340,7 +334,7 @@ describe('Block Command Manager:', () => {
             // No children
             
             // Execute
-            const result = editor.blockAction.splitContent(contentElement, contentElement, 0);
+            const result = editor.blockCommandManager.splitContent(contentElement, contentElement, 0);
             
             // Assert
             expect(fragmentToHTML(result.beforeFragment)).toBe('');
@@ -355,7 +349,7 @@ describe('Block Command Manager:', () => {
             const splitOffset = 3;
             
             // Execute
-            const result = editor.blockAction.splitContent(contentElement, splitNode, splitOffset);
+            const result = editor.blockCommandManager.splitContent(contentElement, splitNode, splitOffset);
             
             // Assert
             expect(fragmentToHTML(result.beforeFragment)).toContain('style="font-weight:bold;"');
@@ -376,7 +370,7 @@ describe('Block Command Manager:', () => {
             const splitOffset = 4;
             
             // Execute
-            const result = editor.blockAction.splitContent(contentElement, splitNode, splitOffset);
+            const result = editor.blockCommandManager.splitContent(contentElement, splitNode, splitOffset);
             
             // Assert
             expect(result.beforeFragment.childNodes.length).toBe(2);
@@ -410,14 +404,14 @@ describe('Block Command Manager:', () => {
                 { id: 'paragraph2', type: BlockType.BulletList, content: [{ id: 'paragraph2-content', type: ContentType.Text, content: 'Paragraph 2' }] },
                 { id: 'paragraph3', type: BlockType.Paragraph,
                     content: [
-                        { id: 'bold', type: ContentType.Text, content: 'Bold', styles: { bold: true } },
-                        { id: 'italic', type: ContentType.Text, content: 'Italic', styles: { italic: true } },
+                        { id: 'bold', type: ContentType.Text, content: 'Bold', props: { styles: { bold: true } } },
+                        { id: 'italic', type: ContentType.Text, content: 'Italic', props: { styles: { italic: true } } },
                     ]
                 },
                 { id: 'paragraph4', type: BlockType.Paragraph,
                     content: [
-                        { id: 'underline', type: ContentType.Text, content: 'Underline', styles: { underline: true } },
-                        { id: 'strikethrough', type: ContentType.Text, content: 'Strikethrough', styles: { strikethrough: true } },
+                        { id: 'underline', type: ContentType.Text, content: 'Underline', props: { styles: { underline: true } } },
+                        { id: 'strikethrough', type: ContentType.Text, content: 'Strikethrough', props: { styles: { strikethrough: true } } },
                     ]
                 },
             ];
@@ -441,10 +435,10 @@ describe('Block Command Manager:', () => {
             const contentElement2 = blockElement2.querySelector('.e-block-content') as HTMLElement;
 
             contentElement1.textContent = '';
-            editor.updateContentOnUserTyping(blockElement1);
+            editor.stateManager.updateContentOnUserTyping(blockElement1);
             editor.setFocusToBlock(blockElement2);
             setCursorPosition(contentElement2, 0);
-            editor.blockAction.deleteBlockAtCursor({
+            editor.blockCommandManager.deleteBlockAtCursor({
                 blockElement: blockElement2,
                 mergeDirection: 'previous'
             });
@@ -465,7 +459,7 @@ describe('Block Command Manager:', () => {
 
             editor.setFocusToBlock(blockElement2);
             setCursorPosition(contentElement2, 0);
-            editor.blockAction.deleteBlockAtCursor({
+            editor.blockCommandManager.deleteBlockAtCursor({
                 blockElement: blockElement2,
                 mergeDirection: 'previous'
             });
@@ -486,7 +480,7 @@ describe('Block Command Manager:', () => {
 
             editor.setFocusToBlock(blockElement2);
             setCursorPosition(contentElement2, 0);
-            editor.blockAction.deleteBlockAtCursor({
+            editor.blockCommandManager.deleteBlockAtCursor({
                 blockElement: blockElement2,
                 mergeDirection: 'previous'
             });
@@ -508,7 +502,7 @@ describe('Block Command Manager:', () => {
             const originalContent = editor.blocks[1].content.slice();
             //Merging empty content into a block with content
             editor.blocks[1].content = [];
-            (editor.blockAction as any).updateContentModelsAfterDeletion(
+            (editor.blockCommandManager as any).updateContentModelsForDeletion(
                 contentElement1, contentElement2,
                 editor.blocks[0], editor.blocks[1]
             );
@@ -518,7 +512,7 @@ describe('Block Command Manager:', () => {
             editor.blocks[1].content = originalContent;
             //Merging a block with content into a empty content
             editor.blocks[0].content = [];
-            (editor.blockAction as any).updateContentModelsAfterDeletion(
+            (editor.blockCommandManager as any).updateContentModelsForDeletion(
                 contentElement1, contentElement2,
                 editor.blocks[0], editor.blocks[1]
             );
@@ -552,7 +546,7 @@ describe('Block Command Manager:', () => {
             // Delete the divider block
             const dividerElement = editorElement.querySelector('.e-divider-block') as HTMLElement;
             editor.setFocusToBlock(dividerElement);
-            editor.blockAction.deleteBlockAtCursor({
+            editor.blockCommandManager.deleteBlockAtCursor({
                 blockElement: dividerElement,
                 mergeDirection: 'previous'
             });
@@ -564,42 +558,40 @@ describe('Block Command Manager:', () => {
         it('should handle null values properly', () => {
             const blockElement = editorElement.querySelector('#paragraph1') as HTMLElement;
             const contentElement = blockElement.querySelector('.e-block-content') as HTMLElement;
-            expect(editor.blockAction.addBulkBlocks({ blocks: []})).toBeUndefined();
+            expect(editor.blockCommandManager.addBulkBlocks({ blocks: []})).toBeUndefined();
 
-            expect(editor.blockAction.deleteBlock({ blockElement: null })).toBeUndefined();
+            expect(editor.blockCommandManager.deleteBlock({ blockElement: null })).toBeUndefined();
 
-            expect(editor.blockAction.deleteBlock({ blockElement: document.createElement('div') })).toBeUndefined();
+            expect(editor.blockCommandManager.deleteBlock({ blockElement: document.createElement('div') })).toBeUndefined();
 
-            expect(editor.blockAction.moveBlock({ fromBlockIds: [] })).toBeUndefined();
+            expect(editor.blockCommandManager.moveBlock({ fromBlockIds: [] })).toBeUndefined();
 
-            expect(editor.blockAction.moveBlock({ fromBlockIds: ['invalid'], toBlockId: 'invalid' })).toBeUndefined();
+            expect(editor.blockCommandManager.moveBlock({ fromBlockIds: ['invalid'], toBlockId: 'invalid' })).toBeUndefined();
 
-            expect(editor.blockAction.duplicateBlock(null, 'above')).toBeUndefined();
+            expect(editor.blockCommandManager.duplicateBlock(null, 'above')).toBeUndefined();
 
-            expect(editor.blockAction.duplicateBlock(document.createElement('div'))).toBeUndefined();
+            expect(editor.blockCommandManager.duplicateBlock(document.createElement('div'))).toBeUndefined();
 
-            expect(editor.blockAction.getIndexToAdjust(document.createElement('div'))).toBe(editor.blocks.length);
+            expect(editor.blockCommandManager.handleMultipleBlockDeletion([{ id: 'invalid' }, { id: 'invalid' }])).toBe(false);
 
-            expect(editor.handleMultipleBlockDeletion([{ id: 'invalid' }, { id: 'invalid' }])).toBe(false);
-
-            expect(editor.blockAction.splitBlockAtCursor(blockElement, { isUndoRedoAction: true, lastChild: null })).toBeNull();
+            expect(editor.blockCommandManager.splitBlockAtCursor(blockElement, { isUndoRedoAction: true, lastChild: null })).toBeNull();
 
             spyOn(editor.nodeSelection, 'getRange').and.returnValue({
                 startContainer: null,
             });
-            expect(editor.blockAction.splitBlockAtCursor(blockElement)).toBeNull();
+            expect(editor.blockCommandManager.splitBlockAtCursor(blockElement)).toBeNull();
 
             contentElement.remove();
-            expect(editor.blockAction.splitBlockAtCursor(blockElement)).toBeNull();
+            expect(editor.blockCommandManager.splitBlockAtCursor(blockElement)).toBeNull();
 
-            expect(editor.blockAction.deleteBlockAtCursor({ blockElement: null })).toBeUndefined();
-            expect(editor.blockAction.deleteBlockAtCursor({ blockElement: blockElement, mergeDirection: 'next' })).toBeUndefined();
+            expect(editor.blockCommandManager.deleteBlockAtCursor({ blockElement: null })).toBeUndefined();
+            expect(editor.blockCommandManager.deleteBlockAtCursor({ blockElement: blockElement, mergeDirection: 'next' })).toBeUndefined();
 
-            expect((editor.blockAction as any).transformToggleBlocksAsRegular(document.createElement('div'))).toBeUndefined();
+            expect((editor.blockCommandManager as any).transformToggleBlocksAsRegular(document.createElement('div'))).toBeUndefined();
 
             const prevFocused = editor.currentFocusedBlock;
             editor.currentFocusedBlock = null;
-            expect((editor.blockAction as any).adjustViewForFocusedBlock()).toBeUndefined();
+            expect((editor.blockCommandManager as any).adjustViewForFocusedBlock()).toBeUndefined();
             editor.currentFocusedBlock = prevFocused;
         });
         

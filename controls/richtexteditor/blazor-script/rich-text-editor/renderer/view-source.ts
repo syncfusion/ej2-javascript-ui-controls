@@ -1,14 +1,14 @@
 import { createElement, detach, EventHandler, isNullOrUndefined, KeyboardEventArgs, removeClass, selectAll } from '../../../base'; /*externalscript*/
 import { ClickEventArgs } from '../../../navigations/src'; /*externalscript*/
-import { IHtmlKeyboardEvent } from '../../src/editor-manager/base/interface';
-import { ActionBeginEventArgs, ActionCompleteEventArgs } from '../../src/common/interface';
+import { IHtmlKeyboardEvent } from '../../editor-scripts/editor-manager/base/interface';
+import { ActionBeginEventArgs, ActionCompleteEventArgs } from '../../editor-scripts/common/interface';
 import { KeyboardEvents } from '../actions/keyboard';
 import { CLS_ACTIVE, CLS_EXPAND_OPEN, CLS_RTE_SOURCE_CODE_TXTAREA, CLS_RTE_SRC_CONTENT, CLS_TB_ITEM } from '../classes';
 import * as events from '../constant';
 import { SfRichTextEditor } from '../sf-richtexteditor-fn';
 import { decode } from './../util';
-import { cleanupInternalElements, resetContentEditableElements} from '../../src/common/util';
-import { cleanHTMLString } from '../../src/common/util';
+import { alignmentHtml, cleanupInternalElements, resetContentEditableElements} from '../../editor-scripts/common/util';
+import { cleanHTMLString } from '../../editor-scripts/common/util';
 
 /**
  * Content module is used to render Rich Text Editor content
@@ -161,6 +161,7 @@ export class ViewSource {
                     this.previewElement.focus();
                     this.parent.inputElement.innerHTML = cleanupInternalElements(this.replaceAmpersand(
                         this.parent.inputElement.innerHTML), this.parent.editorMode);
+                    this.parent.updateValueData();
                     (this.parent.dotNetRef.invokeMethodAsync(
                         'ActionCompleteEvent', { requestType: 'SourceCode' }) as unknown as Promise<ActionCompleteEventArgs>).then((completeArgs: ActionCompleteEventArgs) => {
                         this.parent.invokeChangeEvent();

@@ -43,7 +43,7 @@ export class FilterCellRenderer extends CellRenderer implements ICellRenderer<Co
         let input: Element;
         const column: Column = cell.column;
         tr.appendChild(node);
-        node.setAttribute('e-mappinguid', column.uid);
+        node.setAttribute('data-mappinguid', column.uid);
         if (column.filterTemplate) {
             const fltrData: Object = {};
             if (data) { fltrData[column.field] = data[column.field]; }

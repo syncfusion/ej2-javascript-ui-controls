@@ -1,6 +1,10 @@
 import { createElement } from './dom';
-import { getValue, containerObject, setValue, isNullOrUndefined } from './util';
+import { getValue, containerObject, isNullOrUndefined } from './util';
 export const componentList: string[] = ['grid', 'pivotview', 'treegrid', 'spreadsheet', 'rangeNavigator', 'DocumentEditor', 'listbox', 'inplaceeditor', 'PdfViewer', 'richtexteditor', 'DashboardLayout', 'chart', 'stockChart', 'circulargauge', 'diagram', 'heatmap', 'lineargauge', 'maps', 'slider', 'smithchart', 'barcode', 'sparkline', 'treemap', 'bulletChart', 'kanban', 'daterangepicker', 'schedule', 'gantt', 'signature', 'query-builder', 'drop-down-tree', 'carousel', 'filemanager', 'uploader', 'accordion', 'tab', 'treeview'];
+
+export const pdfViewerSDKComponents: string[] = ['grid', 'chart', 'maps', 'schedule', 'gantt', 'richtexteditor', 'kanban', 'treegrid', 'filemanager', 'pivotview', 'diagram', 'blockeditor', 'spreadsheet', 'DocumentEditor'];
+export const spreadsheetEditorSDKComponents: string[] = ['maps', 'schedule', 'gantt', 'richtexteditor', 'kanban', 'treegrid', 'filemanager', 'pivotview', 'diagram', 'blockeditor', 'PdfViewer', 'DocumentEditor'];
+export const wordEditorSDKComponents: string[] = ['grid', 'chart', 'maps', 'schedule', 'gantt', 'richtexteditor', 'kanban', 'treegrid', 'filemanager', 'pivotview', 'diagram', 'blockeditor', 'PdfViewer', 'spreadsheet'];
 
 const bypassKey: number[] = [115, 121, 110, 99, 102, 117, 115, 105,
     111, 110, 46, 105, 115, 76, 105, 99, 86, 97, 108,
@@ -12,10 +16,11 @@ let accountURL: string;
  * @private
  */
 class LicenseValidator {
-    private isValidated: boolean = false;
     public isLicensed: boolean = true;
-    public version: string = '30';
+    public version: string = '31';
     public platform: RegExp = /JavaScript|ASPNET|ASPNETCORE|ASPNETMVC|FileFormats|essentialstudio/i;
+    public prefixRegex: RegExp = /essentialui|pdfviewersdk|spreadsheeteditorsdk|docxeditorsdk/i;
+    public incorrectPlatform: RegExp = /JavaScript|ASPNET|ASPNETCORE|ASPNETMVC|FileFormats/i;
     private errors: IErrorType = {
         noLicense: '<span>This application was built using a trial version of Syncfusion<sup>®</sup> Essential Studio<sup>®</sup>.' +
             ' To remove the license validation message permanently, a valid license key must be included.</span>',
@@ -23,13 +28,20 @@ class LicenseValidator {
             ' To remove the license validation message permanently, a valid license key must be included.</span>',
         versionMismatched: '<span>The included Syncfusion<sup>®</sup> license key is invalid.</span>',
         platformMismatched: '<span>The included Syncfusion<sup>®</sup> license key is invalid.</span>',
-        invalidKey: '<span>The included Syncfusion<sup>®</sup> license key is invalid.</span>'
+        invalidKey: '<span>The included Syncfusion<sup>®</sup> license key is invalid.</span>',
+        componentRestricted: '<span>The included Syncfusion<sup>®</sup> license key is invalid.</span>'
     };
-
+    private validatedPlatforms: string[] = [];
     public minVersion: number | null = null;
     constructor(key?: string) {
         this.manager.setKey(key);
     }
+
+    private allowedComponentsMap: { [key: string]: string[] } = {
+        'pdfviewersdk': pdfViewerSDKComponents,
+        'spreadsheeteditorsdk': spreadsheetEditorSDKComponents,
+        'docxeditorsdk': wordEditorSDKComponents
+    };
 
     /**
      * To manage licensing operation.
@@ -74,22 +86,62 @@ class LicenseValidator {
     /**
      * To validate the provided license key.
      *
+     * @param {string} component - The name of the component to validate.
      * @returns {boolean} ?
      */
-    public validate(): boolean {
+    public validate(component: string): boolean {
         const contentKey: number[] = [115, 121, 110, 99, 102, 117, 115, 105, 111, 110, 46,
             108, 105, 99, 101, 110, 115, 101, 67, 111, 110, 116, 101, 110, 116];
         const URLKey: number[] = [115, 121, 110, 99, 102, 117, 115, 105, 111, 110, 46,
             99, 108, 97, 105, 109, 65, 99, 99, 111, 117, 110, 116, 85, 82, 76];
-        if (!this.isValidated && (containerObject && !getValue(convertToChar(bypassKey), containerObject) && !getValue('Blazor', containerObject))) {
+        if ((containerObject && !getValue(convertToChar(bypassKey), containerObject) && !getValue('Blazor', containerObject))) {
             let validateMsg: string;
             let validateURL: string;
             if ((this.manager && this.manager.getKey()) || (this.npxManager && this.npxManager.getKey() !== 'npxKeyReplace')) {
                 const result: IValidator[] = this.getInfoFromKey();
                 if (result && result.length) {
+                    let componentRestrictedMsg: string | undefined;
                     for (const res of result) {
-                        if (!this.platform.test(res.platform) || res.invalidPlatform) {
+                        let hasError: boolean = false;
+                        if ((!this.platform.test(res.platform) && !this.prefixRegex.test(res.platform)) || res.invalidPlatform) {
                             validateMsg = this.errors.platformMismatched;
+                        }
+                        else if (this.incorrectPlatform.test(res.platform) && parseInt(res.version.split('.')[0], 10) > 30) {
+                            validateMsg = this.errors.platformMismatched;
+                        }
+                        else if (this.prefixRegex.test(res.platform) && parseInt(res.version.split('.')[0], 10) > 30) {
+                            const restrictionMsg: string | null = this.restrictComponent(component, res.platform);
+                            if (restrictionMsg) {
+                                componentRestrictedMsg = restrictionMsg;
+                                hasError = true;
+                            }
+                            else {
+                                componentRestrictedMsg = null;
+                            }
+                            if (((res.minVersion >= res.lastValue) && (res.minVersion !== res.lastValue)) ||
+                                (res.lastValue < parseInt(this.version, 10))) {
+                                validateMsg = this.errors.versionMismatched;
+                                validateMsg = validateMsg.replace('##LicenseVersion', res.version);
+                                validateMsg = validateMsg.replace('##Requireversion', this.version + '.x');
+                            }
+                            else {
+                                if (res.lastValue == null || isNaN(res.lastValue)) {
+                                    validateMsg = this.errors.versionMismatched;
+                                    validateMsg = validateMsg.replace('##LicenseVersion', res.version);
+                                    validateMsg = validateMsg.replace('##Requireversion', this.version + '.x');
+                                }
+                            }
+                            if (res.expiryDate) {
+                                const expDate: Date = new Date(res.expiryDate);
+                                const currDate: Date = new Date();
+                                if (expDate < currDate && expDate !== currDate) {
+                                    validateMsg = this.errors.trailExpired;
+                                    hasError = true;
+                                }
+                            }
+                            if (!validateMsg && !componentRestrictedMsg) {
+                                break;
+                            }
                         }
                         else {
                             if (((res.minVersion >= res.lastValue) && (res.minVersion !== res.lastValue)) ||
@@ -115,6 +167,12 @@ class LicenseValidator {
                                 }
                             }
                         }
+                        if (!hasError && this.prefixRegex.test(res.platform)) {
+                            this.validatedPlatforms.push(res.platform);
+                        }
+                    }
+                    if (!this.validatedPlatforms.length || componentRestrictedMsg) {
+                        validateMsg = validateMsg || componentRestrictedMsg;
                     }
                 } else {
                     validateMsg = this.errors.invalidKey;
@@ -129,8 +187,11 @@ class LicenseValidator {
                 }
             }
             if (validateMsg && typeof document !== 'undefined' && !isNullOrUndefined(document)) {
-                accountURL = (validateURL && validateURL !== '') ?  validateURL : 'https://www.syncfusion.com/account/claim-license-key?pl=SmF2YVNjcmlwdA==&vs=MzA=&utm_source=es_license_validation_banner&utm_medium=listing&utm_campaign=license-information';
+                let existingErrorDiv: HTMLElement | null = document.querySelector('div.syncfusion-license-error');
+                if (!existingErrorDiv) {
+                accountURL = (validateURL && validateURL !== '') ?  validateURL : 'https://www.syncfusion.com/account/claim-license-key?pl=SmF2YVNjcmlwdA==&vs=MzE=&utm_source=es_license_validation_banner&utm_medium=listing&utm_campaign=license-information';
                 const errorDiv: HTMLElement = createElement('div', {
+                    className: 'syncfusion-license-error',
                     innerHTML: `<img src='data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMjQiIGhlaWdodD0iMjQiIHZpZXdCb3g9IjAgMCAyNCAyNCIgZmlsbD0ibm9uZSIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj4KPGcgY2xpcC1wYXRoPSJ1cmwoI2NsaXAwXzE5OV80KSI+CjxwYXRoIGQ9Ik0xMiAyMUMxNi45NzA2IDIxIDIxIDE2Ljk3MDYgMjEgMTJDMjEgNy4wMjk0NCAxNi45NzA2IDMgMTIgM0M3LjAyOTQ0IDMgMyA3LjAyOTQ0IDMgMTJDMyAxNi45NzA2IDcuMDI5NDQgMjEgMTIgMjFaIiBzdHJva2U9IiM3MzczNzMiIHN0cm9rZS13aWR0aD0iMiIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiBzdHJva2UtbGluZWpvaW49InJvdW5kIi8+CjxwYXRoIGQ9Ik0xMS4yNSAxMS4yNUgxMlYxNi41SDEyLjc1IiBmaWxsPSIjNjE2MDYzIi8+CjxwYXRoIGQ9Ik0xMS4yNSAxMS4yNUgxMlYxNi41SDEyLjc1IiBzdHJva2U9IiM3MzczNzMiIHN0cm9rZS13aWR0aD0iMiIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiBzdHJva2UtbGluZWpvaW49InJvdW5kIi8+CjxwYXRoIGQ9Ik0xMS44MTI1IDlDMTIuNDMzOCA5IDEyLjkzNzUgOC40OTYzMiAxMi45Mzc1IDcuODc1QzEyLjkzNzUgNy4yNTM2OCAxMi40MzM4IDYuNzUgMTEuODEyNSA2Ljc1QzExLjE5MTIgNi43NSAxMC42ODc1IDcuMjUzNjggMTAuNjg3NSA3Ljg3NUMxMC42ODc1IDguNDk2MzIgMTEuMTkxMiA5IDExLjgxMjUgOVoiIGZpbGw9IiM3MzczNzMiLz4KPC9nPgo8ZGVmcz4KPGNsaXBQYXRoIGlkPSJjbGlwMF8xOTlfNCI+CjxyZWN0IHdpZHRoPSIyNCIgaGVpZ2h0PSIyNCIgZmlsbD0id2hpdGUiLz4KPC9jbGlwUGF0aD4KPC9kZWZzPgo8L3N2Zz4K' style="top: 6px;
                     position: absolute;
                     left: 16px;
@@ -151,12 +212,23 @@ class LicenseValidator {
                 border-radius: 8px;
                 font-family: Helvetica Neue, Helvetica, Arial;`);
                 document.body.appendChild(errorDiv);
+                }
                 this.isLicensed = false;
             }
-            this.isValidated = true;
-            setValue(convertToChar(bypassKey), this.isValidated, containerObject);
         }
         return this.isLicensed;
+    }
+
+    private restrictComponent(component: string, platform: string): string | null {
+        const ignoreList: string[] = ['DocumentEditor', 'spreadsheet', 'PdfViewer'];
+        if (platform === 'essentialui') {
+            return ignoreList.indexOf(component) === -1 ? null : this.errors.componentRestricted;
+        }
+        else {
+            // eslint-disable-next-line security/detect-object-injection
+            const allowedList: string[] = this.allowedComponentsMap[platform] || [];
+            return allowedList.indexOf(component) === -1 ? null : this.errors.componentRestricted;
+        }
     }
 
     private getDecryptedData(key: string): string {
@@ -213,7 +285,7 @@ class LicenseValidator {
                         buffr += String.fromCharCode(decryptedKey[parseInt(i.toString(), 10)]);
                     }
                 }
-                if (this.platform.test(buffr)) {
+                if (this.platform.test(buffr) || this.prefixRegex.test(buffr)) {
                     decryptedStr = buffr.split(';');
                     invalidPlatform = false;
                     // checked the length to verify the key in proper strucutre
@@ -267,11 +339,11 @@ export function registerLicense(key: string): void {
     licenseValidator = new LicenseValidator(key);
 }
 
-export const validateLicense: Function = (key?: string): boolean => {
+export const validateLicense: Function = (component: string, key?: string): boolean => {
     if (key) {
         registerLicense(key);
     }
-    return licenseValidator.validate();
+    return licenseValidator.validate(component);
 };
 
 export const getVersion: Function = (): string => {
@@ -419,6 +491,8 @@ font-weight: 500;">Sign In</a></div>
 };
 
 interface IValidator {
+    prefixRegex?: string;
+    incorrectPlatform?: string;
     version?: string;
     expiryDate?: string;
     platform?: string;
@@ -433,4 +507,5 @@ interface IErrorType {
     versionMismatched: string;
     platformMismatched: string;
     invalidKey: string;
+    componentRestricted: string;
 }

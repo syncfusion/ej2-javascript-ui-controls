@@ -859,4 +859,31 @@ describe('Paste CR issues ', ()=> {
             }, 100);
         });
     });
+    describe('976116 - Checklist Format Lost When Pasting Content into List -  CheckList', () => {
+        let editor: RichTextEditor;
+        beforeAll(() => {
+            editor = renderRTE({
+                value: `<ul><li>text1</li><li class='start'><br></li><li>text2</li><li>text3</li></ul>`,
+            });
+        });
+        afterAll((done) => {
+            destroy(editor);
+            done();
+        });
+        it('Should remove the checklist inline styles when pasting into an unordered list', (done: DoneFn) => {
+            editor.focusIn();
+            const cursor = editor.inputElement.querySelector('ul .start');
+            setCursorPoint(cursor, 0);
+            const pasteContent: string = `<meta charset='utf-8'><ul class="e-rte-checklist" style="box-sizing: border-box; list-style-type: disc; margin-bottom: 0px; color: rgb(51, 51, 51); font-family: Roboto, &quot;Segoe UI&quot;, GeezaPro, &quot;DejaVu Serif&quot;, &quot;sans-serif&quot;, -apple-system, &quot;system-ui&quot;; font-size: 14px; font-style: normal; font-variant-ligatures: normal; font-variant-caps: normal; font-weight: 400; letter-spacing: normal; orphans: 2; text-align: start; text-indent: 0px; text-transform: none; widows: 2; word-spacing: 0px; -webkit-text-stroke-width: 0px; white-space: normal; background-color: rgb(255, 255, 255); text-decoration-thickness: initial; text-decoration-style: initial; text-decoration-color: initial;"><li style="margin-bottom: 10px; list-style: none; position: relative;">rich1</li><li style="margin-bottom: 10px; list-style: none; position: relative;">rich2</li></ul>`;
+            const dataTransfer: DataTransfer = new DataTransfer();
+            dataTransfer.setData('text/html', pasteContent);
+            const pasteEvent: ClipboardEvent = new ClipboardEvent('paste', { clipboardData: dataTransfer } as ClipboardEventInit);
+            editor.onPaste(pasteEvent);
+            setTimeout(() => {
+                expect(editor.inputElement.querySelectorAll('li').length === 5).toBe(true);
+                expect(editor.inputElement.querySelectorAll('UL')[0].innerHTML === "<li>text1</li><li>rich1</li><li>rich2</li><li>text2</li><li>text3</li>").toBe(true);
+                done();
+            }, 100);
+        });
+    });
 }); // Add the tests above.

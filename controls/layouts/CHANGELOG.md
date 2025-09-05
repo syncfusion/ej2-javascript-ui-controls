@@ -2,14 +2,6 @@
 
 ## [Unreleased]
 
-## 30.2.7 (2025-08-26)
-
-### Splitter
-
-#### Bug Fixes
-
-- `#I737169` - The pane resizing issues with the Splitter component has been resolved.
-
 ## 25.1.35 (2024-03-15)
 
 ### Timeline

@@ -1,12 +1,13 @@
 import { Dialog } from '@syncfusion/ej2-popups';
 import { CheckBox } from '@syncfusion/ej2-buttons';
 import { BlockEditor, ExecCommandOptions, LinkData } from '../base/index';
-import { BlockModel, ContentModel } from '../models/index';
+import { BlockModel, ContentModel, LinkContentProps } from '../models/index';
 import { NodeSelection } from './index';
-import { denormalizeUrl, getBlockContentElement, getBlockModelById, getClosestContentElementInDocument, getContentModelById, getNormalizedKey, getSelectionRange, normalizeUrl } from '../utils/index';
+import { denormalizeUrl, getBlockContentElement, getBlockModelById, getClosestContentElementInDocument, getContentModelById, normalizeUrl } from '../utils/index';
 import { createFormattingElement, findClosestParent } from '../utils/dom';
 import { events } from '../base/constant';
 import { detach } from '@syncfusion/ej2-base';
+import * as constants from '../base/constant';
 
 /**
  * `LinkModule` module is used to handle hyperlinks in the block editor
@@ -32,20 +33,20 @@ export class LinkModule {
     }
 
     private addEventListeners(): void {
-        this.editor.on('editorClick', this.handleEditorClick, this);
-        this.editor.on('documentClick', this.handleDocumentClick, this);
-        this.editor.on('formatting-performed', this.formattingPerformed, this);
-        this.editor.on('locale-changed', this.updateLinkPopupLocale, this);
-        this.editor.on('rtl-changed', this.applyRtlSettings, this);
+        this.editor.on(events.editorClick, this.handleEditorClick, this);
+        this.editor.on(events.documentClick, this.handleDocumentClick, this);
+        this.editor.on(events.formattingPerformed, this.formattingPerformed, this);
+        this.editor.on(events.localeChanged, this.updateLinkPopupLocale, this);
+        this.editor.on(events.rtlChanged, this.applyRtlSettings, this);
         this.editor.on(events.destroy, this.destroy, this);
     }
 
     private removeEventListeners(): void {
-        this.editor.off('editorClick', this.handleEditorClick);
-        this.editor.off('documentClick', this.handleDocumentClick);
-        this.editor.off('formatting-performed', this.formattingPerformed);
-        this.editor.off('locale-changed', this.updateLinkPopupLocale);
-        this.editor.on('rtl-changed', this.applyRtlSettings, this);
+        this.editor.off(events.editorClick, this.handleEditorClick);
+        this.editor.off(events.documentClick, this.handleDocumentClick);
+        this.editor.off(events.formattingPerformed, this.formattingPerformed);
+        this.editor.off(events.localeChanged, this.updateLinkPopupLocale);
+        this.editor.off(events.rtlChanged, this.applyRtlSettings);
         this.editor.off(events.destroy, this.destroy);
     }
 
@@ -57,17 +58,11 @@ export class LinkModule {
      * @returns {void}
      */
     renderAnchor(content: ContentModel, contentElement: HTMLElement): void {
-        if (this.editor.enableAutoHttps) {
-            /* eslint-disable @typescript-eslint/no-explicit-any */
-            const prevOnChange: boolean = (this.editor as any).isProtectedOnChange;
-            (this.editor as any).isProtectedOnChange = true;
-            content.linkSettings.url = normalizeUrl(content.linkSettings.url);
-            (this.editor as any).isProtectedOnChange = prevOnChange;
-            /* eslint-enable @typescript-eslint/no-explicit-any */
-        }
+        const props: LinkContentProps = content.props as LinkContentProps;
+        props.url = this.editor.enableAutoHttps ? normalizeUrl(props.url) : props.url;
         const linkData: LinkData = {
-            url: content.linkSettings.url,
-            openInNewWindow: content.linkSettings.openInNewWindow,
+            url: props.url,
+            openInNewWindow: props.openInNewWindow,
             text: content.content
         };
         const formattedElement: HTMLElement = createFormattingElement(content, linkData);
@@ -75,9 +70,22 @@ export class LinkModule {
     }
 
     private createLinkPopup(): void {
-        this.popupElement = document.createElement('div');
-        this.popupElement.className = 'e-blockeditor-link-dialog';
-        document.body.appendChild(this.popupElement);
+        this.popupElement = this.createPopupElement();
+        this.linkPopup = this.initializeDialog();
+
+        this.updateTargetAndActionForPopup();
+        this.renderCheckBox();
+        this.bindPopupEvents();
+    }
+
+    private createPopupElement(): HTMLElement {
+        const element: HTMLElement = document.createElement('div');
+        element.className = 'e-blockeditor-link-dialog';
+        document.body.appendChild(element);
+        return element;
+    }
+
+    private initializeDialog(): Dialog {
         const footerTemplate: string = `<div class='e-be-link-footer'>
             <button type='button' tabindex='0' class='e-btn e-flat e-primary e-insert-link-btn'>${this.editor.l10n.getConstant('linkInsert')}</button>
             <button type='button' tabindex='0' class='e-btn e-flat e-remove-link-btn'>${this.editor.l10n.getConstant('linkRemove')}</button>
@@ -101,9 +109,9 @@ export class LinkModule {
             </div>
         </div>`;
         const headerTemplate: string = `<div class="e-be-link-header">${this.editor.l10n.getConstant('insertLink')}</div>`;
-        this.linkPopup = new Dialog({
+        return new Dialog({
             header: headerTemplate,
-            footerTemplate: footerTemplate,
+            footerTemplate,
             content: contentTemplate,
             showCloseIcon: true,
             closeOnEscape: true,
@@ -112,6 +120,9 @@ export class LinkModule {
             height: 'auto',
             visible: false
         }, this.popupElement);
+    }
+
+    private updateTargetAndActionForPopup(): void {
         // es-lint-disable @typescript-eslint/no-explicit-any
         if ((this.linkPopup as any).popupObj) {
             (this.linkPopup as any).popupObj.relateTo = this.editor.element;
@@ -119,8 +130,14 @@ export class LinkModule {
             (this.linkPopup as any).popupObj.dataBind();
         }
         // es-lint-enable @typescript-eslint/no-explicit-any
+    }
+
+    private renderCheckBox(): void {
         this.linkCheckBoxObj = new CheckBox({ label: this.editor.l10n.getConstant('linkOpenInNewWindow'), checked: true });
         this.linkCheckBoxObj.appendTo('#openInNewWindow');
+    }
+
+    private bindPopupEvents(): void {
         const insertButton: HTMLElement = this.popupElement.querySelector('.e-insert-link-btn');
         const removeButton: HTMLElement = this.popupElement.querySelector('.e-remove-link-btn');
         const cancelButton: HTMLElement = this.popupElement.querySelector('.e-cancel-link-btn');
@@ -129,22 +146,16 @@ export class LinkModule {
         cancelButton.addEventListener('click', () => this.hideLinkPopup());
         this.popupElement.addEventListener('keydown', (e: KeyboardEvent) => {
             const target: HTMLElement = e.target as HTMLElement;
-            const isInsert: boolean = target.classList.contains('e-insert-link-btn');
-            const isRemove: boolean = target.classList.contains('e-remove-link-btn');
-            const isCancel: boolean = target.classList.contains('e-cancel-link-btn');
             if (e.key === 'Enter') {
                 e.preventDefault();
-                if (isInsert) {
+                if (target.classList.contains('e-insert-link-btn')) {
                     this.handleLinkInsertDeletion(e);
-                }
-                else if (isRemove) {
+                } else if (target.classList.contains('e-remove-link-btn')) {
                     this.handleLinkInsertDeletion(e, true);
-                }
-                else if (isCancel) {
+                } else if (target.classList.contains('e-cancel-link-btn')) {
                     this.hideLinkPopup();
                 }
-            }
-            else if (e.key === 'Escape') {
+            } else if (e.key === 'Escape') {
                 e.preventDefault();
                 this.hideLinkPopup();
             }
@@ -153,30 +164,33 @@ export class LinkModule {
 
     private updateLinkPopupLocale(): void {
         if (!this.linkPopup || !this.popupElement) { return; }
-        // Update locale for the link popup
         this.linkPopup.locale = this.editor.locale;
         this.linkPopup.dataBind();
-        const header: HTMLElement = this.popupElement.querySelector('.e-be-link-header');
-        if (header) {
-            header.textContent = this.editor.l10n.getConstant('insertLink');
-        }
 
-        (this.popupElement.querySelector('.e-insert-link-btn') as HTMLElement).textContent = this.editor.l10n.getConstant('linkInsert');
-        (this.popupElement.querySelector('.e-remove-link-btn') as HTMLElement).textContent = this.editor.l10n.getConstant('linkRemove');
-        (this.popupElement.querySelector('.e-cancel-link-btn') as HTMLElement).textContent = this.editor.l10n.getConstant('linkCancel');
-
-        (this.popupElement.querySelector('label[for=\'linkText\']') as HTMLElement).textContent = this.editor.l10n.getConstant('linkText');
-        (this.popupElement.querySelector('#linkText') as HTMLInputElement).placeholder = this.editor.l10n.getConstant('linkTextPlaceholder');
-
-        (this.popupElement.querySelector('label[for=\'linkUrl\']') as HTMLElement).textContent = this.editor.l10n.getConstant('linkUrl');
-        (this.popupElement.querySelector('#linkUrl') as HTMLInputElement).placeholder = this.editor.l10n.getConstant('linkUrlPlaceholder');
-
-        (this.popupElement.querySelector('label[for=\'linkTitle\']') as HTMLElement).textContent = this.editor.l10n.getConstant('linkTitle');
-        (this.popupElement.querySelector('#linkTitle') as HTMLInputElement).placeholder = this.editor.l10n.getConstant('linkTitlePlaceholder');
+        this.updatePopupElementLocale('.e-be-link-header', 'insertLink');
+        this.updatePopupElementLocale('.e-insert-link-btn', 'linkInsert');
+        this.updatePopupElementLocale('.e-remove-link-btn', 'linkRemove');
+        this.updatePopupElementLocale('.e-cancel-link-btn', 'linkCancel');
+        this.updatePopupElementLocale('label[for="linkText"]', 'linkText');
+        this.updatePopupElementLocale('#linkText', 'linkText', 'linkTextPlaceholder');
+        this.updatePopupElementLocale('label[for="linkUrl"]', 'linkUrl');
+        this.updatePopupElementLocale('#linkUrl', 'linkUrl', 'linkUrlPlaceholder');
+        this.updatePopupElementLocale('label[for="linkTitle"]', 'linkTitle');
+        this.updatePopupElementLocale('#linkTitle', 'linkTitle', 'linkTitlePlaceholder');
 
         if (this.linkCheckBoxObj) {
             this.linkCheckBoxObj.label = this.editor.l10n.getConstant('linkOpenInNewWindow');
             this.linkCheckBoxObj.dataBind();
+        }
+    }
+
+    private updatePopupElementLocale(selector: string, textKey: string, placeholderKey?: string): void {
+        const element: HTMLElement = this.popupElement.querySelector(selector);
+        if (element) {
+            element.textContent = this.editor.l10n.getConstant(textKey);
+            if (placeholderKey && element instanceof HTMLInputElement) {
+                element.placeholder = this.editor.l10n.getConstant(placeholderKey);
+            }
         }
     }
 
@@ -215,44 +229,60 @@ export class LinkModule {
         }
     }
 
+    /**
+     * Shows the link popup dialog at cursor position
+     *
+     * @param {KeyboardEvent} e - Keyboard event that triggered the popup
+     * @returns {void}
+     * @hidden
+     */
     public showLinkPopup(e: KeyboardEvent): void {
         this.editor.inlineToolbarModule.hideInlineToolbar(e);
         const contentElement: HTMLElement = getBlockContentElement(this.editor.currentFocusedBlock);
         if (!contentElement) { return; }
-        this.selectionManager.saveSelection(contentElement);
 
+        this.selectionManager.saveSelection(contentElement);
         const position: { x: number, y: number } = this.selectionManager.getSelectionPosition();
         this.linkPopup.position = { X: position.x, Y: position.y };
         this.linkPopup.dataBind();
         this.linkPopup.show();
 
         setTimeout(() => {
-            //Collision calculation for popup
-            const range: Range = this.selectionManager.getStoredRange();
-            if (range) {
-                this.editor.popupRenderer.adjustPopupPositionRelativeToTarget(range, this.linkPopup);
+            if (this.selectionManager.getStoredRange()) {
+                this.editor.popupRenderer.adjustPopupPositionRelativeToTarget(this.selectionManager.getStoredRange(), this.linkPopup);
             }
-            const urlInput: HTMLInputElement = document.getElementById('linkUrl') as HTMLInputElement;
-            const textInput: HTMLInputElement = document.getElementById('linkText') as HTMLInputElement;
-            const titleInput: HTMLInputElement = document.getElementById('linkTitle') as HTMLInputElement;
-
-            if (!this.selectionManager.isCollapsed()) {
-                textInput.value = this.selectionManager.getSelectedText();
-            }
-
-            const linkInfo: LinkData = this.getLinkFromSelection();
-            if (linkInfo) {
-                textInput.value = linkInfo.text;
-                urlInput.value = linkInfo.url;
-                titleInput.value = linkInfo.title;
-                this.linkCheckBoxObj.checked = linkInfo.openInNewWindow;
-            }
+            this.populateInputFields();
         }, 10);
     }
 
+    private populateInputFields(): void {
+        const urlInput: HTMLInputElement = document.getElementById('linkUrl') as HTMLInputElement;
+        const textInput: HTMLInputElement = document.getElementById('linkText') as HTMLInputElement;
+        const titleInput: HTMLInputElement = document.getElementById('linkTitle') as HTMLInputElement;
+
+        if (!this.selectionManager.isCollapsed()) {
+            textInput.value = this.selectionManager.getSelectedText();
+        }
+
+        const linkInfo: LinkData | null = this.getLinkFromSelection();
+        if (linkInfo) {
+            textInput.value = linkInfo.text;
+            urlInput.value = linkInfo.url;
+            titleInput.value = linkInfo.title;
+            this.linkCheckBoxObj.checked = linkInfo.openInNewWindow;
+        }
+    }
+
+    /**
+     * Hides the link popup dialog and restores selection
+     *
+     * @returns {void}
+     * @hidden
+     */
     public hideLinkPopup(): void {
         const linkPopup: HTMLElement = document.querySelector('.e-blockeditor-link-dialog');
-        if (linkPopup.classList.contains('e-popup-close')) { return; }
+        if (linkPopup && linkPopup.classList.contains('e-popup-close')) { return; }
+
         this.clearInputValues();
         this.linkPopup.hide();
 
@@ -275,48 +305,33 @@ export class LinkModule {
     private handleLinkInsertDeletion(e: Event, isRemove?: boolean): void {
         const contentElement: HTMLElement = getBlockContentElement(this.editor.currentFocusedBlock);
         if (!contentElement) { return; }
+
         this.selectionManager.restoreSelection(contentElement);
         if (isRemove) {
-            this.editor.formattingAction.execCommand(
-                {
-                    subCommand: 'Link',
-                    value: { shouldRemoveLink: true }
-                }
-            );
+            this.editor.formattingAction.execCommand({ subCommand: 'Link', value: { shouldRemoveLink: true } });
             return;
         }
+
         const textInput: HTMLInputElement = document.getElementById('linkText') as HTMLInputElement;
         const urlInput: HTMLInputElement = document.getElementById('linkUrl') as HTMLInputElement;
         const titleInput: HTMLInputElement = document.getElementById('linkTitle') as HTMLInputElement;
 
-        const text: string = textInput.value;
-        let url: string = urlInput.value;
-        const title: string = titleInput.value;
-        const openInNewWindow: boolean = this.linkCheckBoxObj.checked;
+        const url: string = this.editor.enableAutoHttps ? normalizeUrl(urlInput.value) : urlInput.value;
         if (!url) {
             urlInput.focus();
             return;
         }
 
-        if (this.editor.enableAutoHttps) {
-            url = normalizeUrl(url);
-        }
-
-        const linkData: LinkData = { text, url, title, openInNewWindow };
-        this.editor.formattingAction.execCommand(
-            {
-                subCommand: 'Link',
-                value: linkData
-            }
-        );
+        this.editor.formattingAction.execCommand({
+            subCommand: 'Link',
+            value: { text: textInput.value, url, title: titleInput.value, openInNewWindow: this.linkCheckBoxObj.checked }
+        });
     }
 
     private handleLinkClick(link: HTMLAnchorElement): void {
         const url: string = link.getAttribute('href');
-        const target: string = link.getAttribute('target') || '_self';
-
         if (url) {
-            window.open(url, target);
+            window.open(url, link.getAttribute('target') || '_self');
         }
     }
 
@@ -336,13 +351,18 @@ export class LinkModule {
         return null;
     }
 
+    /**
+     * Automatically adds/removes https protocol from URLs based on settings
+     *
+     * @returns {void}
+     * @hidden
+     */
     public handleAutoHttps(): void {
         const linkElements: NodeListOf<HTMLAnchorElement> = this.editor.element.querySelectorAll('a');
-        for (let i: number = 0; i < linkElements.length; i++) {
-            const linkElement: HTMLAnchorElement = linkElements[parseInt(i.toString(), 10)];
-            const blockElement: HTMLElement = findClosestParent(linkElement, '.e-block');
+        for (const linkElement of Array.from(linkElements)) {
+            const blockElement: HTMLElement = findClosestParent(linkElement, '.' + constants.BLOCK_CLS);
             const contentElement: HTMLElement = getClosestContentElementInDocument(linkElement);
-            const blockModel: BlockModel = getBlockModelById(blockElement.id, this.editor.blocksInternal);
+            const blockModel: BlockModel = getBlockModelById(blockElement.id, this.editor.getEditorBlocks());
             const contentModel: ContentModel = getContentModelById(contentElement.id, blockModel.content);
 
             const url: string = linkElement.getAttribute('href');
@@ -350,10 +370,15 @@ export class LinkModule {
             const deNormalizedUrl: string = denormalizeUrl(url);
             linkElement.setAttribute('href', this.editor.enableAutoHttps ? normalizedUrl : deNormalizedUrl);
 
-            contentModel.linkSettings.url = this.editor.enableAutoHttps ? normalizedUrl : deNormalizedUrl;
+            (contentModel.props as LinkContentProps).url = this.editor.enableAutoHttps ? normalizedUrl : deNormalizedUrl;
         }
     }
 
+    /**
+     * Destroys the link module and cleans up resources
+     *
+     * @returns {void}
+     */
     public destroy(): void {
         if (this.linkPopup) {
             this.linkPopup.destroy();

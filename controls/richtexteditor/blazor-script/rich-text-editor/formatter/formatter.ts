@@ -1,15 +1,15 @@
 import { extend, isNullOrUndefined as isNOU, KeyboardEventArgs, Browser, closest } from '../../../base'; /*externalscript*/
 import * as eventConstant from '../constant';
 import { SfRichTextEditor } from '../sf-richtexteditor-fn';
-import { KEY_DOWN, KEY_UP } from '../../src/common/constant';
-import { NodeSelection } from '../../src/selection/selection';
-import { isIDevice } from '../../src/common/util';
+import { KEY_DOWN, KEY_UP } from '../../editor-scripts/common/constant';
+import { NodeSelection } from '../../editor-scripts/selection/selection';
+import { isIDevice } from '../../editor-scripts/common/util';
 import * as CONSTANT from '../constant';
-import { IHtmlUndoRedoData } from '../../src/editor-manager/base/interface';
-import { MarkdownUndoRedoData } from '../../src/markdown-parser/base/interface';
-import { IHtmlFormatterCallBack, IMarkdownFormatterCallBack, IUndoCallBack } from '../../src/common/interface';
-import { ActionBeginEventArgs, IDropDownItemModel, IShowPopupArgs, IVideoCommandsArgs } from '../../src/common/interface';
-import { IEditorModel, IItemCollectionArgs, ActionCompleteEventArgs } from '../../src/common/interface';
+import { IHtmlUndoRedoData } from '../../editor-scripts/editor-manager/base/interface';
+import { MarkdownUndoRedoData } from '../../editor-scripts/markdown-parser/base/interface';
+import { IHtmlFormatterCallBack, IMarkdownFormatterCallBack, IUndoCallBack } from '../../editor-scripts/common/interface';
+import { ActionBeginEventArgs, IDropDownItemModel, IShowPopupArgs, IVideoCommandsArgs } from '../../editor-scripts/common/interface';
+import { IEditorModel, IItemCollectionArgs, ActionCompleteEventArgs } from '../../editor-scripts/common/interface';
 
 /**
  * Formatter

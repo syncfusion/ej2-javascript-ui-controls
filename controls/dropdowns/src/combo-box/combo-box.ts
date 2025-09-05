@@ -432,7 +432,7 @@ export class ComboBox extends DropDownList {
                                 this.itemData = (e as ResultData).result[0];
                                 const dataItem: { [key: string]: string } = this.getItemData();
                                 const value: string | number | boolean | Object = this.allowObjectBinding ?
-                                    this.getDataByValue(dataItem.value) : dataItem.value;
+                                    this.itemData : dataItem.value;
                                 const valueFieldValue: string | number | boolean = this.allowObjectBinding &&
                                     !isNullOrUndefined(this.value) ? getValue((this.fields.value) ?
                                         this.fields.value : '', this.value) : this.value;
@@ -485,7 +485,7 @@ export class ComboBox extends DropDownList {
                 Input.setValue(this.text, this.inputElement, this.floatLabelType, this.showClearButton);
                 this.customValue();
             }
-        } else {
+        } else if (!isNullOrUndefined(this.activeIndex) && !isNullOrUndefined(this.liCollections[this.activeIndex])) {
             this.setSelection(this.liCollections[this.activeIndex], null);
         }
         this.setHiddenValue();

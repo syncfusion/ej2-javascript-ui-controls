@@ -1,4 +1,4 @@
-import { ChildProperty, Complex, Property } from '@syncfusion/ej2-base';import { StyleModel, LinkSettingsModel } from './index';import { LinkSettings } from './link-settings';import { Style } from './style';import { ContentType } from '../../base/enums';
+import { ChildProperty, Property } from '@syncfusion/ej2-base';import { ContentType } from '../../base/enums';import { ContentProperties } from './content-props';
 
 /**
  * Interface for a class Content
@@ -20,9 +20,11 @@ export interface ContentModel {
      * Defines the type of content for the block.
      * It can be text, link, code, mention, or label.
      *
-     * @default 'Text'
+     * @isenumeration true
+     * @default ContentType.Text
+     * @asptype ContentType
      */
-    type?: ContentType;
+    type?: ContentType | string;
 
     /**
      * Specifies the actual content of the block.
@@ -32,35 +34,12 @@ export interface ContentModel {
     content?: string;
 
     /**
-     * Specifies style attributes for the block.
-     * This property is an object of StyleModel instances defining text formatting options.
+     * Specifies the type specific properties for the content.
      *
-     * @default {}
+     * @default null
+     * @asptype object
+     * @aspDefaultValueIgnore
      */
-    styles?: StyleModel;
-
-    /**
-     * Specifies a hyperlink associated with the block.
-     * If the block represents a link, this property holds the URL.
-     *
-     * @default {}
-     */
-    linkSettings?: LinkSettingsModel;
-
-    /**
-     * @hidden
-     * Tracks the order of styles applied to the content.
-     *
-     * @default []
-     */
-    stylesApplied?: string[];
-
-    /**
-     * @hidden
-     * Internal data identifier for label or mention type.
-     *
-     * @default ''
-     */
-    dataId?: string;
+    props?: ContentProperties;
 
 }

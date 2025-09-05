@@ -2076,7 +2076,7 @@ describe('ComboBox', () => {
                 debounceDelay: 0,
                 filtering: function (e: FilteringEventArgs) {
                     let query = new Query();
-                    query = (e.text != "") ? query.where("text", "startswith", e.text, true).take(10) : query;
+                    query = (e.text != "") ? query.where("text", "startswith", e.text, true) : query;
                     e.updateData(data, query);
                 }
             });

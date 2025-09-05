@@ -1,4 +1,3 @@
-/* eslint-disable jsdoc/require-param */
 import { IRichTextEditor } from '../base/interface';
 import { IEditorModel, ActionBeginEventArgs, ICodeBlockLanguageModel, IToolbarItemModel, NotifyArgs, ToolbarClickEventArgs, IToolbarItems } from '../../common/interface';
 import * as events from '../base/constant';
@@ -331,7 +330,7 @@ export class CodeBlock {
     /* Handles edit area click events
      * Updates toolbar state based on cursor position
      */
-    private editAreaClickHandler(e: NotifyArgs): void {
+    private editAreaClickHandler(): void {
         this.disableToolbarItems();
     }
 

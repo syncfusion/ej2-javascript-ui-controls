@@ -1,7 +1,6 @@
 import { createElement, remove } from '@syncfusion/ej2-base';
-import { ClickEventArgs } from '@syncfusion/ej2-navigations';
-import { BlockModel } from '../../src/blockeditor/models';
-import { BlockEditor, BlockType, ContentType, setCursorPosition, setSelectionRange, getBlockContentElement, getSelectionRange } from '../../src/index';
+import { BaseStylesProp, BlockModel } from '../../src/blockeditor/models';
+import { BlockEditor, BlockType, ContentType, setCursorPosition, setSelectionRange, getBlockContentElement, getSelectedRange } from '../../src/index';
 import { createEditor } from '../common/util.spec';
 
 describe('Formatting Actions', () => {
@@ -70,7 +69,7 @@ describe('Formatting Actions', () => {
             expect(contentElement.childElementCount).toBe(2);
             expect(contentElement.querySelector('strong').textContent).toBe('Bold');
             expect(contentElement.querySelector('span').textContent).toBe('ItalicUnderlineStrikethrough');
-            expect(editor.blocks[0].content[0].styles.bold).toBe(true);
+            expect((editor.blocks[0].content[0].props as BaseStylesProp).styles.bold).toBe(true);
         });
 
         it('applying italic formatting', () => {
@@ -84,7 +83,7 @@ describe('Formatting Actions', () => {
             expect(contentElement.childElementCount).toBe(3);
             expect(contentElement.querySelector('em').textContent).toBe('Italic');
             expect(contentElement.querySelector('span').textContent).toBe('UnderlineStrikethrough');
-            expect(editor.blocks[0].content[1].styles.italic).toBe(true);
+            expect((editor.blocks[0].content[1].props as BaseStylesProp).styles.italic).toBe(true);
         });
 
         it('applying underline formatting', () => {
@@ -98,7 +97,7 @@ describe('Formatting Actions', () => {
             expect(contentElement.childElementCount).toBe(4);
             expect(contentElement.querySelector('u').textContent).toBe('Underline');
             expect(contentElement.querySelector('span').textContent).toBe('Strikethrough');
-            expect(editor.blocks[0].content[2].styles.underline).toBe(true);
+            expect((editor.blocks[0].content[2].props as BaseStylesProp).styles.underline).toBe(true);
         });
 
         it('applying strikethrough formatting', () => {
@@ -111,7 +110,7 @@ describe('Formatting Actions', () => {
             editor.formattingAction.execCommand({ command: 'strikethrough' });
             expect(contentElement.childElementCount).toBe(4);
             expect(contentElement.querySelector('s').textContent).toBe('Strikethrough');
-            expect(editor.blocks[0].content[3].styles.strikethrough).toBe(true);
+            expect((editor.blocks[0].content[3].props as BaseStylesProp).styles.strikethrough).toBe(true);
         });
 
         it('applying lowercase formatting', () => {
@@ -125,7 +124,7 @@ describe('Formatting Actions', () => {
             expect(contentElement.childElementCount).toBe(2);
             const textDecoration = (contentElement.querySelector(`#${editor.blocks[1].content[0].id}`) as HTMLElement).style.textTransform;
             expect(textDecoration).toBe('lowercase');
-            expect(editor.blocks[1].content[0].styles.lowercase).toBe(true);
+            expect((editor.blocks[1].content[0].props as BaseStylesProp).styles.lowercase).toBe(true);
         });
 
         it('applying uppercase formatting', () => {
@@ -139,7 +138,7 @@ describe('Formatting Actions', () => {
             expect(contentElement.childElementCount).toBe(3);
             const textDecoration = (contentElement.querySelector(`#${editor.blocks[1].content[1].id}`) as HTMLElement).style.textTransform;
             expect(textDecoration).toBe('uppercase');
-            expect(editor.blocks[1].content[1].styles.uppercase).toBe(true);
+            expect((editor.blocks[1].content[1].props as BaseStylesProp).styles.uppercase).toBe(true);
         });
 
         it('applying color formatting', () => {
@@ -153,7 +152,7 @@ describe('Formatting Actions', () => {
             expect(contentElement.childElementCount).toBe(4);
             const color = (contentElement.querySelector(`#${editor.blocks[1].content[2].id}`) as HTMLElement).style.color;
             expect(color).toBe('rgb(238, 0, 0)');
-            expect(editor.blocks[1].content[2].styles.color).toBe('#EE0000');
+            expect((editor.blocks[1].content[2].props as BaseStylesProp).styles.color).toBe('#EE0000');
         });
 
         it('removing the applied color formatting', () => {
@@ -169,7 +168,7 @@ describe('Formatting Actions', () => {
             expect(contentElement.childElementCount).toBe(4);
             const color = (contentElement.querySelector(`#${editor.blocks[1].content[2].id}`) as HTMLElement).style.color;
             expect(color).toBe('');
-            expect(editor.blocks[1].content[2].styles.color).toBe('');
+            expect((editor.blocks[1].content[2].props as BaseStylesProp).styles.color).toBeUndefined();
         });
 
         it('applying BgColor formatting', () => {
@@ -183,7 +182,7 @@ describe('Formatting Actions', () => {
             expect(contentElement.childElementCount).toBe(5);
             const bgColor = (contentElement.querySelector(`#${editor.blocks[1].content[3].id}`) as HTMLElement).style.backgroundColor;
             expect(bgColor).toBe('rgb(248, 248, 248)');
-            expect(editor.blocks[1].content[3].styles.bgColor).toBe('#F8F8F8');
+            expect((editor.blocks[1].content[3].props as BaseStylesProp).styles.bgColor).toBe('#F8F8F8');
         });
 
         it('applying custom formatting', () => {
@@ -197,7 +196,7 @@ describe('Formatting Actions', () => {
             expect(contentElement.childElementCount).toBe(5);
             const custom = (contentElement.querySelector(`#${editor.blocks[1].content[4].id}`) as HTMLElement).style.boxShadow;
             expect(custom).toBe('rgb(0, 0, 0) 0px 0px 10px');
-            expect(editor.blocks[1].content[4].styles.custom).toBe('box-shadow: 0 0 10px #000000;');
+            expect((editor.blocks[1].content[4].props as BaseStylesProp).styles.custom).toBe('box-shadow: 0 0 10px #000000;');
         });
 
         it('applying superscript formatting', () => {
@@ -210,7 +209,7 @@ describe('Formatting Actions', () => {
             editor.formattingAction.execCommand({ command: 'superscript' });
             expect(contentElement.childElementCount).toBe(2);
             expect(contentElement.querySelector('sup').textContent).toBe('Superscript');
-            expect(editor.blocks[2].content[0].styles.superscript).toBe(true);
+            expect((editor.blocks[2].content[0].props as BaseStylesProp).styles.superscript).toBe(true);
         });
 
         it('applying subscript formatting', () => {
@@ -223,7 +222,93 @@ describe('Formatting Actions', () => {
             editor.formattingAction.execCommand({ command: 'subscript' });
             expect(contentElement.childElementCount).toBe(2);
             expect(contentElement.querySelector('sub').textContent).toBe('Subscript');
-            expect(editor.blocks[2].content[1].styles.subscript).toBe(true);
+            expect((editor.blocks[2].content[1].props as BaseStylesProp).styles.subscript).toBe(true);
+        });
+    });
+
+    describe('Formatting with different content types', () => {
+        let editor: BlockEditor;
+        let editorElement: HTMLElement;
+
+        beforeEach(() => {
+            editorElement = createElement('div', { id: 'editor' });
+            document.body.appendChild(editorElement);
+            const blocks: BlockModel[] = [
+                {
+                    id: 'heading1',
+                    type: BlockType.Heading,
+                    content: [{
+                        type: ContentType.Link,
+                        content: 'Helloworld',
+                        props: {
+                            url: 'www.syncfusion.com'
+                        }
+                    }]
+                },
+                {
+                    id: 'quote',
+                    type: BlockType.Quote,
+                    content: [{
+                        type: ContentType.Code,
+                        content: 'Welcometext'
+                    }]
+                },
+            ];
+            editor = createEditor({ blocks: blocks });
+            editor.appendTo('#editor');
+        });
+
+        afterEach(() => {
+            if (editor) {
+                editor.destroy();
+                editor = undefined;
+            }
+            remove(editorElement);
+        });
+
+        it('applying bold to link content', () => {
+            const blockElement = editorElement.querySelector('#heading1') as HTMLElement;
+            expect(blockElement).not.toBeNull();
+            editor.setFocusToBlock(blockElement);
+            const contentElement = getBlockContentElement(blockElement);
+            setSelectionRange((contentElement.lastChild.lastChild as HTMLElement), 0, 5);
+            editor.formattingAction.execCommand({ command: 'bold' });
+            expect(contentElement.childElementCount).toBe(2);
+            expect(contentElement.querySelector('strong').textContent).toBe('Hello');
+            expect((editor.blocks[0].content[0].props as BaseStylesProp).styles.bold).toBe(true);
+        });
+
+        it('applying italic to code content', () => {
+            const blockElement = editorElement.querySelector('#quote') as HTMLElement;
+            expect(blockElement).not.toBeNull();
+            editor.setFocusToBlock(blockElement);
+            const contentElement = getBlockContentElement(blockElement);
+            setSelectionRange((contentElement.lastChild.lastChild as HTMLElement), 0, 7);
+            editor.formattingAction.execCommand({ command: 'italic' });
+            expect(contentElement.childElementCount).toBe(2);
+            expect(contentElement.querySelector('em').textContent).toBe('Welcome');
+            expect((editor.blocks[1].content[0].props as BaseStylesProp).styles.italic).toBe(true);
+        });
+
+        it('applying multiple formats to link content', () => {
+            const blockElement = editorElement.querySelector('#heading1') as HTMLElement;
+            expect(blockElement).not.toBeNull();
+            editor.setFocusToBlock(blockElement);
+            const contentElement = getBlockContentElement(blockElement);
+            setSelectionRange((contentElement.lastChild.lastChild as HTMLElement), 0, 5);
+            editor.formattingAction.execCommand({ command: 'bold' });
+            editor.formattingAction.execCommand({ command: 'italic' });
+            editor.formattingAction.execCommand({ command: 'strikethrough' });
+            editor.formattingAction.execCommand({ command: 'underline' });
+            expect(contentElement.childElementCount).toBe(2);
+            expect(contentElement.querySelector('strong')).not.toBeNull();
+            expect(contentElement.querySelector('em')).not.toBeNull();
+            expect(contentElement.querySelector('s')).not.toBeNull();
+            expect(contentElement.querySelector('u')).not.toBeNull();
+            expect((editor.blocks[0].content[0].props as BaseStylesProp).styles.bold).toBe(true);
+            expect((editor.blocks[0].content[0].props as BaseStylesProp).styles.italic).toBe(true);
+            expect((editor.blocks[0].content[0].props as BaseStylesProp).styles.strikethrough).toBe(true);
+            expect((editor.blocks[0].content[0].props as BaseStylesProp).styles.underline).toBe(true);
         });
     });
 
@@ -287,7 +372,7 @@ describe('Formatting Actions', () => {
                 setTimeout(() => {
                     // Last character should be bold now
                     expect(contentElement.querySelector('strong')).not.toBeNull();
-                    expect(editor.blocks[0].content[1].styles.bold).toBe(true);
+                    expect((editor.blocks[0].content[1].props as BaseStylesProp).styles.bold).toBe(true);
                     done();
                 }, 100);
             }, 100);
@@ -350,8 +435,8 @@ describe('Formatting Actions', () => {
                 setTimeout(() => {
                     // Last character should not be bold now
                     expect(contentElement.querySelector('strong')).not.toBeNull();
-                    expect(editor.blocks[0].content[1].styles.bold).toBe(true);
-                    expect(editor.blocks[0].content[2].styles.bold).toBe(false);
+                    expect((editor.blocks[0].content[1].props as BaseStylesProp).styles.bold).toBe(true);
+                    expect((editor.blocks[0].content[2].props as BaseStylesProp).styles.bold).toBeUndefined();
                     done();
                 }, 100);
             }, 100);
@@ -461,7 +546,7 @@ describe('Formatting Actions', () => {
             const originalContentElement = contentElement.cloneNode(true);
             
             //Spy the getSelection method on utils
-            const rangeSpy = jasmine.createSpy('getSelectionRange', getSelectionRange).and.returnValue(null);
+            const rangeSpy = jasmine.createSpy('getSelectedRange', getSelectedRange).and.returnValue(null);
             //Range test
             const data1 = (editor.formattingAction as any).handleFormatting();
             expect(data1).toBeUndefined();
@@ -491,12 +576,6 @@ describe('Formatting Actions', () => {
             editor.setSelection('paragraph-content', 2, 4);
             const data5 = editor.formattingAction.handleTypingWithActiveFormats();
             expect(data5).toBe(false);
-
-            // Invalid range
-            setCursorPosition(contentElement, 0);
-            editor.nodeSelection.createRangeWithOffsets(editorElement, editorElement, 0, 0);
-            const data6 = editor.formattingAction.handleTypingWithActiveFormats();
-            expect(data6).toBe(false);
 
             done();
         });
@@ -529,9 +608,9 @@ describe('Formatting Actions', () => {
             editor.addBlock({ 
                 id: 'paragraph-2', type: BlockType.Paragraph,
                 content: [
-                    { id: 'con-1', type: ContentType.Text, content: 'Hi', styles: { bold: true } },
+                    { id: 'con-1', type: ContentType.Text, content: 'Hi', props: { styles: { bold: true } }},
                     { id: 'con-2', type: ContentType.Text, content: 'Hello' },
-                    { id: 'con-3', type: ContentType.Text, content: 'World', styles: { italic: true } },
+                    { id: 'con-3', type: ContentType.Text, content: 'World', props: { styles: { italic: true } } },
             ]});
 
             const newBlockElement = editorElement.querySelector('#paragraph-2') as HTMLElement;
@@ -548,12 +627,11 @@ describe('Formatting Actions', () => {
             expect(newBlockContent.querySelector('strong').textContent).toBe('Hi');
             expect(newBlockContent.querySelector('u#con-2').textContent).toBe('Hello');
             expect(newBlockContent.querySelector('em').textContent).toBe('World');
-            expect(editor.blocks[1].content[0].styles.bold).toBe(true);
-            expect(editor.blocks[1].content[1].styles.underline).toBe(true);
-            expect(editor.blocks[1].content[2].styles.italic).toBe(true);
+            expect((editor.blocks[1].content[0].props as BaseStylesProp).styles.bold).toBe(true);
+            expect((editor.blocks[1].content[1].props as BaseStylesProp).styles.underline).toBe(true);
+            expect((editor.blocks[1].content[2].props as BaseStylesProp).styles.italic).toBe(true);
             done();
         });
-
         
     });
 });

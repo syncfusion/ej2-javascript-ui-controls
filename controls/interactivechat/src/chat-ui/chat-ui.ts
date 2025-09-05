@@ -9,6 +9,8 @@ import { ClickEventArgs, ItemModel, Toolbar } from '@syncfusion/ej2-navigations'
 import { createSpinner, showSpinner, hideSpinner } from '@syncfusion/ej2-popups';
 import { Fab } from '@syncfusion/ej2-buttons';
 import { DropDownButton, MenuEventArgs } from '@syncfusion/ej2-splitbuttons';
+import { FieldSettingsModel, Mention, SelectEventArgs } from '@syncfusion/ej2-dropdowns';
+import { SanitizeHtmlHelper } from '@syncfusion/ej2-base';
 
 export class MessageStatus extends ChildProperty<MessageStatus> {
     /**
@@ -106,11 +108,11 @@ export class User extends ChildProperty<User> {
 }
 
 /**
- * The MessageToolbarSettings property maps the list of the MessageToolbarSettings and binds the data to the output items.
+ * Configures the toolbar displayed on each message in the Chat UI component.
  */
 export class MessageToolbarSettings extends ChildProperty<MessageToolbarSettings> {
     /**
-     * Specifies the width of the response toolbar in the Chat UI component.
+     * Specifies the width of the message toolbar in the Chat UI component.
      * Represents the width of the toolbar, which can be defined using various CSS units and values such as 'auto', '100%', or pixel-based measurements.
      *
      * @type {string}
@@ -121,7 +123,7 @@ export class MessageToolbarSettings extends ChildProperty<MessageToolbarSettings
     public width: string | number;
 
     /**
-     * Specifies the collection of toolbar items in the response toolbar of the Chat UI component.
+     * Specifies the collection of toolbar items in the message toolbar of the Chat UI component.
      * Represents an array of items that are rendered in the toolbar, allowing for customization and interaction within the response section.
      *
      * @type {ToolbarItemModel[]}
@@ -131,7 +133,7 @@ export class MessageToolbarSettings extends ChildProperty<MessageToolbarSettings
     public items: ToolbarItemModel[];
 
     /**
-     * Event raised when a toolbar item is clicked in the response toolbar of the Chat UI component.
+     * Event raised when a toolbar item is clicked in the message toolbar of the Chat UI component.
      *
      * @event itemClicked
      */
@@ -163,13 +165,43 @@ export class MessageReply extends ChildProperty<MessageReply> {
     public text: string;
 
     /**
-     * Represents the id of the message sent by a user in the Chat UI component.
+     * Represents the mentioned Users of the message sent by the replied user in the Chat UI component.
+     *
+     * @type {UserModel[]}
+     * @default []
+     */
+    @Property([])
+    public mentionUsers: UserModel[];
+
+    /**
+     * Represents the id of the message sent by the replied user in the Chat UI component.
      *
      * @type {string}
      * @default ''
      */
     @Property('')
     public messageID: string;
+
+    /**
+     * Specifies the timestamp of when the replied message was sent.
+     * This property holds a `Date` object that represents the exact time the message was created, providing context to the conversation flow.
+     *
+     * @type {Date}
+     * @default ''
+     */
+    @Property('')
+    public timestamp: Date;
+
+    /**
+     * Specifies the format of the timestamp for displaying the reply message's sending time.
+     * If empty, the format is determined by the application's culture settings.
+     * Supports format strings like 'dd/MM/yyyy hh:mm'.
+     *
+     * @type {string}
+     * @default ''
+     */
+    @Property('')
+    public timestampFormat: string;
 }
 
 /**
@@ -236,7 +268,7 @@ export class Message extends ChildProperty<Message> {
 
     /**
      * Specifies whether the message is pinned.
-     * When set to true, the message will be visually highlighted and can be displayed in a pinned messages section.
+     * When set to true, the message will be visually highlighted and can appear in the pinned messages section.
      *
      * @type {boolean}
      * @default false
@@ -246,7 +278,7 @@ export class Message extends ChildProperty<Message> {
 
     /**
      * Specifies the reference to the original message when this message is a reply.
-     * Contains the MessageModel of the message being replied to.
+     * Contains the `MessageReplyModel` of the message being replied to.
      *
      * @default null
      */
@@ -262,6 +294,17 @@ export class Message extends ChildProperty<Message> {
      */
     @Property(false)
     public isForwarded: boolean;
+
+    /**
+     * Represents an array of users mentioned in the message.
+     * This field contains the list of users referenced via the @mention feature in the message text, populated when mentions are selected from the suggestion popup.
+     * The field is optional and defaults to an empty array if no mentions are included in the message.
+     *
+     * @type {UserModel[]}
+     * @default []
+     */
+    @Property([])
+    public mentionUsers: UserModel[];
 }
 
 export interface MessageSendEventArgs  extends BaseEventArgs {
@@ -325,6 +368,44 @@ export interface TypingEventArgs extends BaseEventArgs {
      *
      */
     isTyping?: boolean
+}
+
+export interface MentionSelectEventArgs extends BaseEventArgs {
+    /**
+     * Specifies whether the default mention insertion behavior should be canceled.
+     * Set to `true` to prevent the selected mention from being inserted into the chat input field, allowing custom handling of the mention selection.
+     *
+     * @type {boolean}
+     * @default false
+     */
+    cancel?: boolean
+
+    /**
+     * The native event that triggered the mention selection.
+     * This can be a mouse event (e.g., clicking a user in the suggestion popup), a keyboard event (e.g., pressing Enter to select), or a touch event (e.g., tapping on a mobile device).
+     * Provides access to low-level event details for advanced use cases, such as determining the input method or coordinates.
+     *
+     * @type {MouseEvent | KeyboardEvent | TouchEvent}
+     */
+    event?: MouseEvent | KeyboardEvent | TouchEvent
+
+    /**
+     * Indicates whether the mention selection was triggered by user interaction.
+     * Set to `true` if the selection resulted from a user action (e.g., mouse click, keyboard Enter, or touch tap), or `false` if triggered programmatically or by other means.
+     *
+     * @type {boolean}
+     * @default false
+     */
+    isInteracted?: boolean
+
+    /**
+     *  Returns the selected item data from the data source.
+     *  This property provides access to all fields and values of the currently selected item.
+     *
+     * @type {FieldSettingsModel}
+     * @default {}
+     */
+    itemData?: FieldSettingsModel
 }
 
 /**
@@ -555,6 +636,28 @@ export class ChatUI extends InterActiveChatBase implements INotifyPropertyChange
     public loadOnDemand: boolean;
 
     /**
+     * Specifies the list of users available for mention in the chat UI.
+     * This property defines an array of user objects that populate the @mention suggestion popup when the mention trigger character is typed.
+     * When typing the `mentionTriggerChar` (e.g., '@') followed by characters filters this list to show matching users.
+     *
+     * @type {UserModel[]}
+     * @default null
+     * @aspType List<ChatUIUser>
+     */
+    @Collection<UserModel>([], User)
+    public mentionUsers: UserModel[];
+
+    /**
+     * Specifies the character that triggers the @mention suggestion popup in the chat input.
+     * The trigger character must be a single character, such as '@' or '#', and is case-sensitive in the input.
+     *
+     * @type {string}
+     * @default '@'
+     */
+    @Property('@')
+    public mentionTriggerChar: string;
+
+    /**
      * Specifies the template for rendering suggestion items in the Chat UI component.
      * Defines the content or layout used to render suggestion items, and can be either a string or a function.
      * The template context includes the index and suggestion text.
@@ -674,6 +777,16 @@ export class ChatUI extends InterActiveChatBase implements INotifyPropertyChange
     @Event()
     public userTyping: EmitType<TypingEventArgs>;
 
+    /**
+     * Triggered when a user selects a mention from the suggestion popup in the chat UI.
+     * This event provides details about the selected user and the current message text, allowing developers to handle mention-related logic, such as custom notifications or validation.
+     * The `cancel` property in the event arguments can be set to `true` to prevent the default behavior of inserting the mention into the input field.
+     *
+     * @event mentionSelect
+     */
+    @Event()
+    public mentionSelect: EmitType<MentionSelectEventArgs>;
+
     /* Private variables */
     private l10n: L10n;
     private viewWrapper: HTMLElement;
@@ -691,6 +804,7 @@ export class ChatUI extends InterActiveChatBase implements INotifyPropertyChange
     private pinnedMessageWrapper: HTMLElement;
     private dropDownButton: DropDownButton;
     private lastPinnedToolbar: Toolbar;
+    private mentionObj: Mention;
 
     /**
      * Constructor for creating the component
@@ -769,8 +883,11 @@ export class ChatUI extends InterActiveChatBase implements INotifyPropertyChange
             twoUserTyping: '{0} and {1} are typing',
             threeUserTyping: '{0}, {1}, and {2} other are typing',
             multipleUsersTyping: '{0}, {1}, and {2} others are typing',
-            forwarded: 'Forwarded'
+            noRecordsTemplate: 'No records found',
+            forwarded: 'Forwarded',
+            send: 'Send'
         }, this.locale);
+        this.l10n.setLocale(this.locale);
     }
 
     private updateScrollPosition(isMethodCall: boolean, timeDelay: number): void {
@@ -962,7 +1079,7 @@ export class ChatUI extends InterActiveChatBase implements INotifyPropertyChange
         if (!eventArgs.cancel) {
             switch (args.item.prefixIcon){
             case 'e-icons e-chat-copy':
-                this.handleCopyAction(args, messageToolbar, message.text);
+                this.handleCopyAction(args, messageToolbar, message);
                 break;
             case 'e-icons e-chat-reply':
                 this.handleReplyAction(message);
@@ -979,10 +1096,10 @@ export class ChatUI extends InterActiveChatBase implements INotifyPropertyChange
     }
 
     private togglePin(message: MessageModel, args: ClickEventArgs, messageToolbar: Toolbar): void {
-        const prevOnChange: boolean = this.isProtectedOnChange;
-        this.isProtectedOnChange = true;
         const pinnedText: HTMLElement = this.pinnedMessageWrapper.querySelector('.e-pinned-message-text') as HTMLElement;
         const currentlyPinnedId: string = pinnedText.getAttribute('data-index') as string;
+        const prevOnChange: boolean = this.isProtectedOnChange;
+        this.isProtectedOnChange = true;
         if (message.isPinned) {
             message.isPinned = false;
         } else {
@@ -1050,8 +1167,10 @@ export class ChatUI extends InterActiveChatBase implements INotifyPropertyChange
         });
     }
 
-    private handleCopyAction(args: ClickEventArgs, messageToolbar: Toolbar, textToCopy: string): void {
-        this.getClipBoardContent(textToCopy);
+    private handleCopyAction(args: ClickEventArgs, messageToolbar: Toolbar, msg: MessageModel): void {
+        if (msg.text) {
+            this.getClipBoardContent(this.getMessageText(msg));
+        }
         // Provide feedback to user
         args.item.prefixIcon = 'e-icons e-chat-check';
         messageToolbar.dataBind();
@@ -1075,7 +1194,7 @@ export class ChatUI extends InterActiveChatBase implements INotifyPropertyChange
             if (userElement && textElement) {
                 userElement.textContent = message.author.user;
                 timeElement.textContent = this.showTimeStamp ? this.getFormattedTime(message.timeStamp, message.timeStampFormat) : '';
-                textElement.textContent = message.text;
+                textElement.innerHTML = this.getMessageText(message);
             }
         }
         if (this.editableTextarea) {
@@ -1089,11 +1208,20 @@ export class ChatUI extends InterActiveChatBase implements INotifyPropertyChange
             return null;
         }
         const replyWrapper: HTMLDivElement = this.createElement('div', { className: 'e-reply-wrapper' });
-        const formattedTime: string = this.getFormattedTime(message.timeStamp ? message.timeStamp : new Date(),
-                                                            message.timeStampFormat ? message.timeStampFormat : this.timeStampFormat);
+        let time: Date;
+        let timeStampFormat: string;
+        if (withClearIcon) {
+            time = message.timeStamp ? message.timeStamp : new Date();
+            timeStampFormat = message.timeStampFormat ? message.timeStampFormat : this.timeStampFormat;
+        }
+        else {
+            time = message.replyTo.timestamp ? message.replyTo.timestamp : new Date();
+            timeStampFormat = message.replyTo.timestampFormat ? message.replyTo.timestampFormat : this.timeStampFormat;
+        }
+        const formattedTime: string = this.getFormattedTime(time, timeStampFormat);
         const replyContent: HTMLDivElement = this.createElement('div', {
             className: 'e-reply-content',
-            innerHTML: `<span class='e-reply-message-text'>${withClearIcon ? message.text : message.replyTo.text}</span>`
+            innerHTML: `<span class='e-reply-message-text'>${withClearIcon ? this.getMessageText(message) : this.getMessageText(message.replyTo)}</span>`
         });
         const messageDetails: HTMLElement = this.createElement('div', {
             className: 'e-reply-message-details',
@@ -1158,7 +1286,7 @@ export class ChatUI extends InterActiveChatBase implements INotifyPropertyChange
             }
             this.togglePinnedIcon(messageToolbar);
             if (pinnedText) {
-                pinnedText.textContent = message.text;
+                pinnedText.innerHTML = this.getMessageText(message);
                 pinnedText.setAttribute('data-index', message.id);
             }
             this.pinnedMessageWrapper.style.display = 'flex';
@@ -1411,12 +1539,18 @@ export class ChatUI extends InterActiveChatBase implements INotifyPropertyChange
         this.appendChildren(userHeaderContainer, userHeader, timeSpan);
         this.insertBeforeChildren(messageGroup, userHeaderContainer);
     }
-    private createAvatarIcon(author: UserModel, isTypingUser: boolean): HTMLElement {
-        const userName: string = author.user.trim();
-        const nameParts: string[] = userName.split(' ');
+
+    private getInitials(name: string): string {
+        const nameParts: string[] = name.split(' ');
         const initials: string = nameParts.length > 1
             ? `${nameParts[0][0]}${nameParts[nameParts.length - 1][0]}`
-            : userName[0];
+            : name[0];
+        return initials;
+    }
+
+    private createAvatarIcon(author: UserModel, isTypingUser: boolean): HTMLElement {
+        const userName: string = author.user.trim();
+        const initials: string = this.getInitials(userName);
 
         const iconClassName: string = !isTypingUser ? 'e-message-icon' : 'e-user-icon';
         let avatarIcon: HTMLElement;
@@ -1498,7 +1632,6 @@ export class ChatUI extends InterActiveChatBase implements INotifyPropertyChange
 
     private renderForwardElement(msg: MessageModel, textElement: HTMLDivElement): void {
         if (msg.isForwarded) {
-            this.l10n.setLocale(this.locale);
             const forwardedIndicator: HTMLElement = this.createElement('div', {
                 className: 'e-forwarded-indicator'
             });
@@ -1512,6 +1645,48 @@ export class ChatUI extends InterActiveChatBase implements INotifyPropertyChange
         }
     }
 
+    private getMessageText(msg: MessageModel | MessageReplyModel): string {
+        const mentionedUsers: UserModel[] = msg.mentionUsers;
+        if (!isNOU(mentionedUsers) && mentionedUsers.length > 0) {
+            // Regular expression to find placeholders like {0}, {10}, {-1}
+            const placeholderRegex: RegExp = /\{(-?\d+)\}/g;
+            let messageText: string = msg.text;
+            let match: RegExpExecArray | null;
+
+            // Find all placeholders in the text
+            const placeholders: Array<{fullMatch: string, index: number}> = [];
+            // eslint-disable-next-line no-cond-assign
+            while ((match = placeholderRegex.exec(messageText)) !== null) {
+                placeholders.push({
+                    fullMatch: match[0],
+                    index: parseInt(match[1], 10)
+                });
+            }
+
+            // Replace placeholders with user names if the index exists in mentionedUsers
+            for (const placeholder of placeholders) {
+                const userIndex: number = placeholder.index;
+                // Check if there's a user at this index in the array
+                if (userIndex < mentionedUsers.length || (mentionedUsers.length + userIndex) < mentionedUsers.length) {
+                    const user: UserModel = mentionedUsers[parseInt(userIndex.toString(), 10)];
+                    if (user) {
+                        messageText = messageText.replace(placeholder.fullMatch, this.getMentionChipElement(user));
+                    }
+                }
+            }
+            return SanitizeHtmlHelper.sanitize(messageText);
+        }
+        return SanitizeHtmlHelper.sanitize(msg.text);
+    }
+
+    private getMentionChipElement(user: UserModel): string {
+        const mentionChip: HTMLElement = this.createElement('span', { className: 'e-mention-chip' });
+        const mentionDisplayEle: HTMLElement = this.createElement('span', {className: 'e-chat-mention-user-chip', innerHTML: user.user });
+        mentionDisplayEle.setAttribute('data-user-id', user.id);
+        mentionChip.append(mentionDisplayEle);
+        return mentionChip.outerHTML;
+    }
+
     private addGroupItems(msg: MessageModel, messageGroup: HTMLDivElement, isUserTimeStampRendered: boolean,
                           showStatus: boolean, index: number, loadOldChat: boolean): void {
         const messageItem : HTMLDivElement = this.createElement('div', { className: 'e-message-item', id: `${msg.id}`});
@@ -1521,9 +1696,11 @@ export class ChatUI extends InterActiveChatBase implements INotifyPropertyChange
         const messageContent: HTMLDivElement = this.createElement('div', { className: 'e-message-content' });
         const textElement: HTMLDivElement = this.createElement('div', {
             className: 'e-text',
-            innerHTML: msg.text
+            innerHTML: this.getMessageText(msg)
         });
-        messageContent.appendChild(textElement);
+        if (!isNOU(textElement) && textElement.innerHTML !== '') {
+            messageContent.appendChild(textElement);
+        }
         this.updateForwardAndReplyElement(msg, messageContent);
         if (this.messageTemplate) {
             this.getContextObject('messageTemplate', messageItem, index, msg);
@@ -1651,8 +1828,69 @@ export class ChatUI extends InterActiveChatBase implements INotifyPropertyChange
             this.renderFooterIcons(sendIconClass, false, '');
             this.refreshTextareaUI();
             this.pushToUndoStack(this.editableTextarea.innerText);
+            this.updateMentionObj();
         }
     }
+
+    private getMentionDataSource(mentionUsers: UserModel []): { [key: string]: Object; }[] {
+        const dataSource: { [key: string]: Object; }[] = mentionUsers.map((user: UserModel) => {
+            const name: string = user.user.trim();
+            const initials: string = this.getInitials(name);
+            return {
+                id: user.id,
+                user: name,
+                avatarUrl: user.avatarUrl || '',
+                avatarBgColor: user.avatarBgColor || '',
+                cssClass: user.cssClass || '',
+                statusIconCss: user.statusIconCss || '',
+                initials
+            };
+        });
+        return dataSource;
+    }
+
+    private initializeMention(): void {
+        // Map UserModel to format expected by Mention component
+        const dataSource: { [key: string]: Object; }[] = this.getMentionDataSource(this.mentionUsers);
+
+        let cssClass: string = 'e-chat-mention';
+        if (this.enableRtl) {
+            cssClass += ' e-rtl';
+        }
+
+        if (dataSource.length > 0) {
+            // Initialize Mention component
+            this.mentionObj = new Mention({
+                dataSource: dataSource,
+                cssClass: cssClass,
+                requireLeadingSpace: false,
+                suffixText: '&nbsp;',
+                noRecordsTemplate: this.l10n.getConstant('noRecordsTemplate'),
+                fields: { text: 'user' },
+                popupWidth: '250px',
+                popupHeight: '200px',
+                allowSpaces: true,
+                mentionChar: this.mentionTriggerChar,
+                displayTemplate: '<span class="e-chat-mention-user-chip" data-user-id="${id}">${user}</span>',
+                itemTemplate: '<div class="e-chat-mention-item-template"><span class="e-chat-mention-user-icon ${cssClass}" style="background-color: ${avatarBgColor};">${if(avatarUrl)} <img src="${avatarUrl}" alt="${user}" class="em-img" /> ${else}${initials}${/if} </span><div class="e-chat-mention-user-name">${user}</div></div>',
+                select: this.onMentionSelect.bind(this)
+            }, this.editableTextarea);
+        }
+    }
+
+    // Add method to handle mention selection
+    private onMentionSelect(args: SelectEventArgs): void {
+        const eventArgs: MentionSelectEventArgs = {
+            cancel: false,
+            event: args.e,
+            isInteracted: args.isInteracted,
+            itemData: args.itemData
+        };
+        this.trigger('mentionSelect', eventArgs);
+        args.cancel = eventArgs.cancel;
+        this.activateSendIcon(this.editableTextarea.innerText.length);
+    }
+
     private refreshTextareaUI(): void {
         this.updateHiddenTextarea(this.editableTextarea.innerText);
         this.activateSendIcon(this.editableTextarea.innerText.length);
@@ -1726,7 +1964,6 @@ export class ChatUI extends InterActiveChatBase implements INotifyPropertyChange
     }
     private updateUserText(): void {
         if (this.typingUsersTemplate) { return; }
-        this.l10n.setLocale(this.locale);
         const userNames: string[] = this.typingUsers.filter((user: UserModel) => user.user !== this.user.user)
             .map((user: UserModel) => user.user);
         const displayText: string = this.getTypingMessage(userNames);
@@ -1786,19 +2023,45 @@ export class ChatUI extends InterActiveChatBase implements INotifyPropertyChange
         this.updateEmptyChatTemplate();
     }
 
+    private getUserMentionFromContent(): UserModel[] {
+        const mentionChips: NodeListOf<Element> = this.editableTextarea.querySelectorAll('.e-chat-mention-user-chip');
+        const updatedMentionedUsers: UserModel[] = [];
+        mentionChips.forEach((chip: Element) => {
+            const userId: string = chip.getAttribute('data-user-id');
+            const mentionUser: UserModel = this.mentionUsers.find((user: UserModel) => user.id === userId);
+            if (mentionUser) {
+                updatedMentionedUsers.push(mentionUser);
+            }
+            else {
+                const mentionedUser: UserModel = {
+                    id: userId,
+                    user: chip.textContent
+                };
+                updatedMentionedUsers.push(mentionedUser);
+            }
+        });
+        return updatedMentionedUsers;
+    }
+
     private onSendIconClick(event: KeyboardEvent | Event): void {
         if (this.editableTextarea && !this.editableTextarea.innerText.trim()) {
             return;
         }
+
         const repliedTO: MessageReplyModel = this.currentReplyTo ? {
             user: this.currentReplyTo.author,
             text: this.currentReplyTo.text,
-            messageID: this.currentReplyTo.id
+            timestamp: this.currentReplyTo.timeStamp,
+            timestampFormat: this.currentReplyTo.timeStampFormat,
+            messageID: this.currentReplyTo.id,
+            mentionUsers: this.currentReplyTo.mentionUsers
         } : null;
+
         let newMessageObj: MessageModel = {
             id: `${this.element.id}-message-${this.messages.length + 1}`,
             author: this.user,
-            text: this.editableTextarea.innerText,
+            text: this.replaceMentionChipsWithPlaceholders(),
+            mentionUsers: this.getUserMentionFromContent(),
             replyTo: repliedTO
         };
         const prevOnChange: boolean = this.isProtectedOnChange;
@@ -1822,6 +2085,23 @@ export class ChatUI extends InterActiveChatBase implements INotifyPropertyChange
         if (this.suggestionsElement) { this.suggestionsElement.hidden = false; }
         // To prevent the issue where scrolling does not move to the bottom in the `messageTemplate` case on Angular and React platforms.
         this.updateScrollPosition(false, 5);
+    }
+
+    private replaceMentionChipsWithPlaceholders(): string {
+        if (!this.editableTextarea.innerHTML) {
+            return this.editableTextarea.innerHTML;
+        }
+        const tempEle: HTMLElement = this.createElement('div');
+        tempEle.innerHTML = this.editableTextarea.innerHTML;
+        const mentionChips: NodeListOf<Element> = tempEle.querySelectorAll('span.e-mention-chip');
+        let mentionIndex: number = 0;
+
+        mentionChips.forEach((chip: Element) => {
+            const placeholder: Text = document.createTextNode(`{${mentionIndex++}}`);
+            chip.replaceWith(placeholder);
+        });
+
+        return tempEle.textContent || '';
     }
 
     private clearReplyWrapper(): void {
@@ -1878,6 +2158,10 @@ export class ChatUI extends InterActiveChatBase implements INotifyPropertyChange
     }
     private keyHandler(event: KeyboardEvent, value: string): void {
         if (event.key === 'Enter' && !event.shiftKey) {
+            const mentionPopup: HTMLElement = document.querySelector('.e-chat-mention.e-mention');
+            if (mentionPopup && mentionPopup.classList.contains('e-popup-open')) {
+                return;
+            }
             switch (value) {
             case 'footer':
                 this.pushToUndoStack(this.editableTextarea.innerText);
@@ -1978,7 +2262,7 @@ export class ChatUI extends InterActiveChatBase implements INotifyPropertyChange
         if (messageContent && message.text) {
             const textElement: HTMLDivElement = messageItem.querySelector('.e-text') as HTMLDivElement;
             if (textElement) {
-                textElement.innerHTML = message.text;
+                textElement.innerHTML = this.getMessageText(message);
             }
             this.updateForwardAndReplyElement(message, messageContent);
         }
@@ -1998,6 +2282,21 @@ export class ChatUI extends InterActiveChatBase implements INotifyPropertyChange
         }
     }
 
+    private updateMentionObj(): void {
+        if (isNOU(this.mentionObj)) {
+            this.initializeMention();
+        }
+        else {
+            if (this.mentionUsers.length > 0) {
+                this.mentionObj.dataSource = this.getMentionDataSource(this.mentionUsers);
+            }
+            else {
+                this.destroyAndNullify(this.mentionObj);
+                this.mentionObj = null;
+            }
+        }
+    }
+
     private updateLocale(): void {
         // Updated locale for forward message text.
         this.l10n.setLocale(this.locale);
@@ -2008,6 +2307,10 @@ export class ChatUI extends InterActiveChatBase implements INotifyPropertyChange
                 forwardEle.querySelector('.e-forward-message').innerHTML = this.l10n.getConstant('forwarded');
             }
         });
+
+        if (this.mentionObj) {
+            this.mentionObj.noRecordsTemplate = this.l10n.getConstant('noRecordsTemplate');
+        }
 
         // Update locale for typing users text.
         if (!this.typingUsers || this.typingUsers.length === 0) {
@@ -2028,6 +2331,7 @@ export class ChatUI extends InterActiveChatBase implements INotifyPropertyChange
         EventHandler.remove(this.downArrowIcon.element, 'click', this.scrollBtnClick);
         EventHandler.remove(this.downArrowIcon.element, 'keydown', this.scrollBottomKeyHandler);
     }
+
     private destroyChatUI(): void {
         const properties: string [] = [
             'content',
@@ -2092,6 +2396,7 @@ export class ChatUI extends InterActiveChatBase implements INotifyPropertyChange
                 timeStamp: message.timeStamp || new Date(),
                 timeStampFormat: message.timeStampFormat || this.timeStampFormat,
                 status: message.status,
+                mentionUsers: message.mentionUsers || [],
                 isPinned: message.isPinned || false,
                 replyTo: message.replyTo,
                 isForwarded: message.isForwarded || false
@@ -2165,6 +2470,7 @@ export class ChatUI extends InterActiveChatBase implements INotifyPropertyChange
         this.destroyAndNullify(this.downArrowIcon);
         this.destroyAndNullify(this.toolbar);
         this.destroyAndNullify(this.dropDownButton);
+        this.destroyAndNullify(this.mentionObj);
         this.destroyChatUI();
         this.intl = null;
     }
@@ -2252,6 +2558,12 @@ export class ChatUI extends InterActiveChatBase implements INotifyPropertyChange
                 break;
             case 'currencyCode':
                 this.refresh();
+                break;
+            case 'mentionTriggerChar':
+                this.mentionObj.mentionChar = newProp.mentionTriggerChar;
+                break;
+            case 'mentionUsers':
+                this.updateMentionObj();
                 break;
             }
         }

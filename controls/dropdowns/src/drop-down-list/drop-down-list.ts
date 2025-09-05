@@ -38,6 +38,11 @@ export interface ChangeEventArgs extends SelectEventArgs {
      * Specifies the original event arguments.
      */
     event: MouseEvent | KeyboardEvent | TouchEvent
+    /**
+     * Illustrates whether the current action needs to be prevented or not.
+     * @deprecated
+     */
+    cancel?: boolean
 }
 
 export interface GeneratedData {
@@ -118,7 +123,6 @@ export class DropDownList extends DropDownBase implements IInput {
     private popupObj: Popup;
     private backIconElement: Element;
     private clearIconElement: Element;
-    private containerStyle: ClientRect;
     protected previousValue: string | number | boolean | object;
     protected activeIndex: number;
     protected filterInput: HTMLInputElement;
@@ -2777,7 +2781,7 @@ export class DropDownList extends DropDownBase implements IInput {
             this.isNotSearchList = false;
             return;
         }
-        if (this.getInitialData) {
+        if (this.getInitialData){
             if (this.itemTemplate && this.element.tagName === 'EJS-COMBOBOX' && this.allowFiltering) {
                 setTimeout(
                     () => {

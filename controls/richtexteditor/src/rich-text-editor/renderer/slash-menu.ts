@@ -6,7 +6,7 @@ import { defaultSlashMenuDataModel, injectibleSlashMenuDataModel, ISlashMenuMode
 import { NodeSelection } from '../../selection/selection';
 import { slashMenuCommandsKey } from '../models/default-locale';
 import * as events from '../base/constant';
-import { DialogType} from '../../common/enum';
+import { DialogType } from '../../common/enum';
 import { ICodeBlockLanguageModel, ISlashMenuItem} from '../../common/interface';
 import { CodeBlockSettingsModel } from '../../models/toolbar-settings-model';
 import { SlashMenuItems } from '../../common/types';

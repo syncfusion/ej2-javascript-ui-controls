@@ -63,6 +63,10 @@
     &.e-splitter-vertical {
       flex-direction: column;
 
+      &.e-reverse {
+        flex-direction: column-reverse;
+      }
+
       &.e-pane {
         &.e-scrollable {
           overflow: hidden;
@@ -329,6 +333,9 @@
         &:not(.e-resizable-split-bar) {
           margin: 3px 0 0;
         }
+      }
+      .e-navigate-arrow {
+        border-style: solid;
       }
     }
   }

@@ -74,7 +74,7 @@ export class ToolbarAction {
 			e.item.command === 'VideoLayoutOption' || e.item.command === 'Display' || e.item.command as string === 'Table'))) {
             const value: string = e.item.controlParent && this.parent.quickToolbarModule && this.parent.quickToolbarModule.tableQTBar
                 && this.parent.quickToolbarModule.tableQTBar.element.contains(e.item.controlParent.element) ? 'Table' : null;
-            if (e.item.command === 'Lists') {
+            if (e.item.command === 'Lists'  || e.item.command === 'Checklist') {
                 const listItem: IAdvanceListItem = {listStyle: e.item.value, listImage: e.item.listImage, type: e.item.subCommand};
                 this.parent.formatter.process(this.parent, e, e.originalEvent, listItem);
             } else if (e.item.command === 'CodeBlock') {

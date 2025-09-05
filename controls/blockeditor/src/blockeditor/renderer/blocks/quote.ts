@@ -1,16 +1,12 @@
-import { BlockAction } from '../../actions/index';
 import { BlockEditor } from '../../base/index';
-import { BlockModel } from '../../models/index';
+import { BasePlaceholderProp, BlockModel, QuoteProps } from '../../models/index';
 import { handleExistingContentElement } from './block-utils';
-
 
 export class QuoteRenderer {
     private editor: BlockEditor;
-    private parent: BlockAction;
 
-    constructor(editor: BlockEditor, parent: BlockAction) {
+    constructor(editor: BlockEditor) {
         this.editor = editor;
-        this.parent = parent;
     }
 
     /**
@@ -22,17 +18,19 @@ export class QuoteRenderer {
      * @returns {HTMLElement} - The created or updated element.
      */
     public renderQuote(block: BlockModel, blockElement: HTMLElement, existingContentElement?: HTMLElement | Node): HTMLElement {
+        const quoteProps: QuoteProps = block.props as QuoteProps;
+        quoteProps.placeholder = this.editor.getPlaceholderValue(block);
         const quoteElement: HTMLElement = this.editor.createElement('blockquote', {
             attrs: {
                 contenteditable: 'true',
-                placeholder: this.editor.getPlaceholderValue(block.type, block.placeholder)
+                placeholder: quoteProps.placeholder
             }
         });
         blockElement.classList.add('e-quote-block');
         if (existingContentElement) {
             handleExistingContentElement(block, blockElement, quoteElement, existingContentElement);
         } else {
-            this.parent.contentRenderer.renderContent(block, quoteElement);
+            this.editor.blockRendererManager.contentRenderer.renderContent(block, quoteElement);
         }
 
         return quoteElement;

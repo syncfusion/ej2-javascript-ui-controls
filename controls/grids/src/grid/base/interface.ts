@@ -89,6 +89,22 @@ export interface IGrid extends Component<HTMLElement> {
     enableHover?: boolean;
 
     /**
+     * Enables or disables row spanning for adjacent cells with similar data.
+     * When enabled, the grid merges adjacent cells with identical data between rows into a single cell, spanning multiple rows to improve readability.
+     *
+     * @default false
+     */
+    enableRowSpan?: boolean;
+
+    /**
+     * Enables or disables column spanning for adjacent cells with similar data.
+     * When enabled, the grid merges adjacent cells with identical data between columns into a single cell, spanning multiple columns to enhance data presentation.
+     *
+     * @default false
+     */
+    enableColumnSpan?: boolean;
+
+    /**
      * Specifies the allowKeyboard Navigation for the Grid.
      *
      * @default null
@@ -1252,6 +1268,7 @@ export interface IRow<T> {
     gSummary?: number;
     aggregatesCount?: number;
     tIndex?: number;
+    groupDataIndex?: number;
     collapseRows?: Object[];
     isSelected?: boolean;
 

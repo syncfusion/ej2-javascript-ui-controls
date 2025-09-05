@@ -932,7 +932,7 @@ describe('Filtering module => ', () => {
 
         it('current page testing', (done: Function) => {
             actionComplete = (args: any): any => {
-                expect(gridObj.getPager().getElementsByClassName('e-active')[0].getAttribute('index')).toBe('6');
+                expect(gridObj.getPager().getElementsByClassName('e-active')[0].getAttribute('data-index')).toBe('6');
                 done();
             };
             gridObj.actionComplete = actionComplete;

@@ -1712,7 +1712,6 @@ describe('Dropdown Tree with Filter', () => {
         }, 100);
     });
 });
-
 describe('Remote Data Filtering', () => {
     let ddtreeObj: DropDownTree;
     beforeEach((): void => {

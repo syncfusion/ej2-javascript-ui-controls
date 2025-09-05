@@ -1,13 +1,15 @@
 /**
  * Video module spec
  */
-import { Browser, isNullOrUndefined } from '@syncfusion/ej2-base';
+import { Browser, isNullOrUndefined, detach, createElement } from '@syncfusion/ej2-base';
 import { RichTextEditor, QuickToolbar, IQuickToolbar } from './../../../src/index';
 import { NodeSelection } from './../../../src/selection/index';
 import { DialogType } from "../../../src/common/enum";
 import { renderRTE, destroy, setCursorPoint, dispatchEvent, iPhoneUA, currentBrowserUA, setSelection } from "./../render.spec";
-import { BASIC_MOUSE_EVENT_INIT, DELETE_EVENT_INIT } from '../../constant.spec';
+import { BASIC_MOUSE_EVENT_INIT, DELETE_EVENT_INIT, BACKSPACE_EVENT_INIT } from '../../constant.spec';
 import { MACOS_USER_AGENT } from '../user-agent.spec';
+import * as classes from '../../../src/rich-text-editor/base/classes';
+import * as events from '../../../src/rich-text-editor/base/constant';
 
 function getQTBarModule(rteObj: RichTextEditor): QuickToolbar {
     return rteObj.quickToolbarModule;
@@ -711,7 +713,7 @@ client side. Customer easy to edit the contents and get the HTML content for
             let width = (rteObj.element.querySelector('.e-rte-video') as HTMLElement).offsetWidth;
             (<any>rteObj.videoModule).resizeBtnStat.botRight = true;
             (rteObj.videoModule as any).resizing({ target: resizeBot, pageX: 300 });
-            // expect(width).toEqual((rteObj.element.querySelector('.e-rte-video') as HTMLElement).offsetWidth);
+            //expect(width).toEqual((rteObj.element.querySelector('.e-rte-video') as HTMLElement).offsetWidth);
             (rteObj.videoModule as any).resizeEnd({ target: resizeBot });
             keyboardEventArgs.ctrlKey = true;
             keyboardEventArgs.keyCode = 90;
@@ -4488,6 +4490,7 @@ describe('962339: Script error and improper video selection removal after alignm
 
     xdescribe('Video quick toolbar - ', () => {
         let rteObj: RichTextEditor;
+        let controlId: string;
         beforeAll(() => {
             rteObj = renderRTE({
                 value: `<p><span class="e-video-wrap" contenteditable="false" title="mov_bbb.mp4"><video class="e-rte-video e-videoinline" controls=""><source src="https://www.w3schools.com/html/mov_bbb.mp4" type="video/mp4"></video></span><br></p>`,
@@ -4495,6 +4498,7 @@ describe('962339: Script error and improper video selection removal after alignm
                     enable: true
                 }
             });
+            controlId = rteObj.element.id;
         });
         afterAll(() => {
             destroy(rteObj);
@@ -4529,6 +4533,352 @@ describe('962339: Script error and improper video selection removal after alignm
                     done();
                 }, 300);
             }, 100);
+        });
+    });
+
+    describe('Backspace behavior after inserting text following an audio element', () => {
+        let rteEle: HTMLElement;
+        let rteObj: RichTextEditor;
+        let innerHTML1: string = `
+        <p>Testing</p>
+        <span class="e-video-wrap" contenteditable="false" title="mov_bbb.mp4">
+        <video class="e-rte-video e-videoinline" controls=""><source src="https://www.w3schools.com/html/mov_bbb.mp4" type="video/mp4">
+        </video>
+        </span>
+        <span class="text-node">Some text</span>`;
+        let keyBoardEvent: any = { type: 'keydown', preventDefault: () => { }, ctrlKey: true, key: 'backspace', stopPropagation: () => { }, shiftKey: false, which: 8 };
+        beforeAll(() => {
+            rteObj = renderRTE({
+                height: 400,
+                toolbarSettings: {
+                    items: ['Audio', 'Bold']
+                },
+                value: innerHTML1
+            });
+            rteEle = rteObj.element;
+        });
+        afterAll(() => {
+            destroy(rteObj);
+        });
+        it('Video backsapce action checking using backspace key', (done: Function) => {
+            let node: any = rteObj.inputElement.querySelector('.text-node').childNodes[0];
+            setCursorPoint(node, node.textContent.length);
+            const backspaceKeyDownEvent: KeyboardEvent = new KeyboardEvent('keydown', BACKSPACE_EVENT_INIT);
+            rteObj.inputElement.dispatchEvent(backspaceKeyDownEvent);
+            setTimeout(() => {
+                expect((rteObj as any).inputElement.querySelector('.text-node').textContent !== 'Sometext').toBe(true);
+                done();
+            }, 200);
+        });
+    });
+    describe('RTE Drag and Drop Video with paste restrictions', () => {
+        let rteObj: RichTextEditor;
+        let ele: HTMLElement;
+        let element: HTMLElement;
+        let videoSize: number;
+        let size: number;
+        let sizeInBytes: number;
+        beforeAll((done: Function) => {
+            element = createElement('form', {
+                id: "form-element", innerHTML:
+                    ` <div class="form-group">
+                    <textarea id="defaultRTE" name="defaultRTE" required maxlength="100" minlength="20" data-msg-containerid="dateError">
+                    </textarea>
+                    <div id="dateError"></div>
+                </div>
+                ` });
+            document.body.appendChild(element);
+            rteObj = new RichTextEditor({
+                insertVideoSettings: {
+                    saveUrl: 'http://aspnetmvc.syncfusion.com/services/api/uploadbox/Save',
+                },
+                value: `<div><p>First p node-0</p></div>`,
+                placeholder: 'Type something',
+                fileUploading: function (args) {
+                    expect(rteObj.toolbarModule.baseToolbar.toolbarObj.element.classList.contains('e-overlay')).toBe(true);
+                    videoSize = size;
+                    sizeInBytes = args.fileData.size;
+                    if (videoSize < sizeInBytes) {
+                        args.cancel = true;
+                    }
+                }
+            });
+            rteObj.appendTo('#defaultRTE');
+            done();
+        });
+        afterAll((done: Function) => {
+            destroy(rteObj);
+            detach(element);
+            detach(document.querySelector('.e-video-inline'));
+            done();
+        });
+        it(" Check video after drop", function (done: Function) {
+            let fileObj: File = new File(["Nice One"], "sample.mp4", { lastModified: 0, type: "video/mp4" });
+            let event: any = { clientX: 40, clientY: 294, target: rteObj.contentModule.getEditPanel(), dataTransfer: { files: [fileObj] }, preventDefault: function () { return; } };
+            (rteObj.videoModule as any).getDropRange(event.clientX, event.clientY);
+            (rteObj.videoModule as any).dragDrop(event);
+            ele = rteObj.element.getElementsByTagName('video')[0];
+            setTimeout(() => {
+                expect(rteObj.element.getElementsByTagName('video').length).toBe(1);
+                expect(ele.classList.contains('e-rte-video')).toBe(true);
+                expect(ele.classList.contains('e-video-inline')).toBe(true);
+                done();
+            }, 1000);
+        });
+    });
+    describe('Provide event to restrict the video insertion when drag and drop', () => {
+        let rteObj: RichTextEditor;
+        let ele: HTMLElement;
+        let element: HTMLElement;
+        beforeAll((done: Function) => {
+            element = createElement('form', {
+                id: "form-element", innerHTML:
+                    ` <div class="form-group">
+                <textarea id="defaultRTE" name="defaultRTE" required maxlength="100" minlength="20" data-msg-containerid="dateError">
+                </textarea>
+                <div id="dateError"></div>
+            </div>
+            ` });
+            document.body.appendChild(element);
+            rteObj = new RichTextEditor({
+                insertVideoSettings: {
+                    saveUrl: 'http://aspnetmvc.syncfusion.com/services/api/uploadbox/Save',
+                },
+                value: `<div><p>First p node-0</p></div>`,
+                placeholder: 'Type something',
+                beforeMediaDrop: beforeMediaDropFunc
+            });
+            function beforeMediaDropFunc(args: any): void {
+                args.cancel = true;
+            }
+            rteObj.appendTo('#defaultRTE');
+            done();
+        });
+        afterAll((done: Function) => {
+            destroy(rteObj);
+            detach(element);
+            detach(document.querySelector('.e-video-inline'))
+            done();
+        });
+        it(" videoDrop event args.cancel as `true` check", function () {
+            let fileObj: File = new File(["Nice One"], "sample.mp4", { lastModified: 0, type: "video/mp4" });
+            let event: any = { clientX: 40, clientY: 294, target: rteObj.contentModule.getEditPanel(), dataTransfer: { files: [fileObj] }, preventDefault: function () { return; } };
+            (rteObj.videoModule as any).getDropRange(event.clientX, event.clientY);
+            (rteObj.videoModule as any).dragDrop(event);
+            ele = rteObj.element.getElementsByTagName('video')[0];
+            expect(rteObj.element.getElementsByTagName('video').length).toBe(0);
+        });
+    });
+    describe('Video Module - External Drag and Drop', () => {
+        let rteObj: RichTextEditor;
+        let element: HTMLElement;
+        let actionCompleteCalled: boolean = false;
+
+        beforeAll((done: Function) => {
+            element = createElement('form', {
+                id: "form-element",
+                innerHTML: `<div class="form-group">
+            <textarea id="defaultRTE" name="defaultRTE"></textarea>
+        </div>`
+            });
+            document.body.appendChild(element);
+
+            rteObj = new RichTextEditor({
+                insertVideoSettings: {
+                    saveUrl: 'http://aspnetmvc.syncfusion.com/services/api/uploadbox/Save',
+                },
+                value: `<div><p>First p node-0</p></div>`,
+                placeholder: 'Type something',
+                actionComplete: function (args: any): void {
+                    actionCompleteCalled = true;
+                }
+            });
+
+            rteObj.appendTo('#defaultRTE');
+            done();
+        });
+
+        afterAll((done: Function) => {
+            destroy(rteObj);
+            detach(element);
+            done();
+        });
+
+        it("Should not insert videos when dropped on toolbar", function (done: Function) {
+            // Create a video file mock
+            let fileObj: File = new File(["Video content"], "sample.mp4", { lastModified: 0, type: "video/mp4" });
+
+            // Create drop event with external file targeting toolbar
+            let event: any = {
+                clientX: 40,
+                clientY: 20, // Position at toolbar
+                target: rteObj.element.querySelector('.e-toolbar'),
+                dataTransfer: { files: [fileObj] },
+                preventDefault: function () { return; }
+            };
+
+            // Count videos before drop
+            const initialCount = rteObj.inputElement.querySelectorAll('video').length;
+
+            // Call the drag drop handler
+            (rteObj.videoModule as any).dragDrop(event);
+
+            // Check that no additional video was inserted
+            setTimeout(() => {
+                expect(rteObj.inputElement.querySelectorAll('video').length).toBe(initialCount);
+                done();
+            }, 200);
+        });
+
+        it("Check video after drop with file size validation", function (done: Function) {
+            // Set up size validation in fileUploading event
+            let size = 7; // Small size to force validation failure
+            rteObj.fileUploading = function (args) {
+                if (size < args.fileData.size) {
+                    args.cancel = true;
+                }
+            };
+
+            // Create a video file mock
+            let fileObj: File = new File(["Video content that should be larger than size limit"], "sample.mp4", { lastModified: 0, type: "video/mp4" });
+
+            // Create drop event with external file
+            let event: any = {
+                clientX: 40,
+                clientY: 294,
+                target: rteObj.contentModule.getEditPanel(),
+                dataTransfer: { files: [fileObj] },
+                preventDefault: function () { return; }
+            };
+
+            // Count videos before drop
+            const initialCount = rteObj.inputElement.querySelectorAll('video').length;
+
+            // Call the drag drop handler
+            (rteObj.videoModule as any).dragDrop(event);
+
+            // Should reject the file due to size
+            setTimeout(() => {
+                expect(rteObj.inputElement.querySelectorAll('video').length).toBe(initialCount);
+                done();
+            }, 200);
+        });
+
+        it("Should handle rangeParent when caretRangeFromPoint is not available", function () {
+            let fileObj = new File(["Video content"], "sample.mp4", { type: "video/mp4" });
+
+            rteObj.beforeMediaDrop = null;
+
+            rteObj.inputElement.contentEditable = 'true';
+
+            // Create custom event with rangeParent
+            let event = {
+                clientX: 40,
+                clientY: 294,
+                target: rteObj.contentModule.getEditPanel(),
+                dataTransfer: { files: [fileObj] },
+                preventDefault: function () { },
+                rangeParent: rteObj.contentModule.getEditPanel().firstChild,
+                rangeOffset: 0
+            };
+
+            // Temporarily override caretRangeFromPoint
+            const originalMethod = rteObj.contentModule.getDocument().caretRangeFromPoint;
+            rteObj.contentModule.getDocument().caretRangeFromPoint = null;
+
+            // Set up trigger to execute callbacks immediately
+            const originalTrigger = rteObj.trigger;
+            spyOn(rteObj, 'trigger').and.callFake((eventName: any, args: any, callback: Function) => {
+                if (eventName === events.beforeMediaDrop && callback) {
+                    callback(args);
+                }
+                return originalTrigger.call(rteObj, eventName, args, callback);
+            });
+
+            // Set up the spy
+            const spy = spyOn(rteObj.contentModule.getDocument(), 'createRange').and.callThrough();
+
+            // Call the method
+            (rteObj.videoModule as any).dragDrop(event);
+
+            // Check if createRange was called
+            expect(spy).toHaveBeenCalled();
+
+            // Restore methods
+            rteObj.contentModule.getDocument().caretRangeFromPoint = originalMethod;
+        });
+
+        // Test for uploadArea existing
+        it("Should return early when uploadArea exists", function () {
+            let fileObj = new File(["Video content"], "sample.mp4", { type: "video/mp4" });
+
+            // Create a droparea element
+            const dropArea = document.createElement('div');
+            dropArea.className = classes.CLS_DROPAREA;
+            rteObj.element.appendChild(dropArea);
+
+            let event = {
+                clientX: 40,
+                clientY: 294,
+                target: rteObj.contentModule.getEditPanel(),
+                dataTransfer: { files: [fileObj] },
+                preventDefault: function () { }
+            };
+
+            const spy = spyOn(rteObj.videoModule as any, 'insertDragVideo');
+
+            (rteObj.videoModule as any).dragDrop(event);
+
+            expect(spy).not.toHaveBeenCalled();
+
+            // Clean up
+            rteObj.element.removeChild(dropArea);
+        });
+
+        // Test for non-video drop (isVideoOrFileDrop = false)
+        it("Should handle non-video drop", function () {
+            // Create event with empty files array
+            let event = {
+                clientX: 40,
+                clientY: 294,
+                target: rteObj.contentModule.getEditPanel(),
+                dataTransfer: { files: [] as File[] },
+                preventDefault: function () { }
+            };
+
+            const spy = spyOn(rteObj.videoModule as any, 'insertDragVideo');
+
+            (rteObj.videoModule as any).dragDrop(event);
+
+            expect(spy).not.toHaveBeenCalled();
+        });
+    });
+    describe('Checking resize icon when drag and drop', () => {
+        let rteObj: RichTextEditor;
+        beforeAll((done: Function) => {
+            rteObj = renderRTE({
+                insertVideoSettings: {
+                    resize: false
+                },
+                value: `<div><p>First p node-0</p></div>`,
+            });
+            done();
+        });
+        afterAll((done: Function) => {
+            destroy(rteObj);
+            done();
+        });
+        it('When resize is disabled checking after drag and drop if resize icon is present', function () {
+            let video: HTMLElement = createElement("VIDEO");
+            video.classList.add('e-rte-drag-video');
+            video.setAttribute('src', 'https://www.w3schools.com/html/mov_bbb.mp4');
+            let fileObj: File = new File(["Nice One"], "sample.mp4", { lastModified: 0, type: "video/mp4" });
+            rteObj.inputElement.appendChild(video);
+            let event: any = { clientX: 40, clientY: 294, dataTransfer: { files: [fileObj] }, preventDefault: function () { return; } };
+            rteObj.focusIn();
+            (rteObj.videoModule as any).insertDragVideo(event);
+            expect(rteObj.inputElement.querySelectorAll('video').length === 1).toBe(true);
+            expect(rteObj.inputElement.querySelectorAll('.e-rte-videoboxmark').length).toBe(0);
         });
     });
 });

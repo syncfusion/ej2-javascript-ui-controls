@@ -465,7 +465,12 @@ export class Selection {
                         this.touchEvt = e;
                         return;
                     }
-                    if (range) {
+                    const isMobileContextMenuTrigger: boolean = isTouchEnd(e) && this.isMobileContextMenuOpening(e);
+                    if (isMobileContextMenuTrigger) {
+                        if (Browser.isDevice && !Browser.isAndroid) {
+                            e.preventDefault();
+                        }
+                    } else if (range) {
                         this.selectRangeByIdx(range, e);
                     }
                     if (!this.isNoteTouch && e.type.indexOf('mouse') > -1 && isNoteAvailable) {
@@ -511,9 +516,9 @@ export class Selection {
         const clientX: number = getClientX(e); const clientY: number = getClientY(e);
         // remove math.min or handle top and left auto scroll
         let colIdx: number = this.isRowSelected ? sheet.colCount - 1 :
-            this.getColIdxFromClientX({ clientX: clientX, target: e.target as Element });
+            this.getColIdxFromClientX({ clientX: clientX, target: e.target as Element, mouseMove: true });
         let rowIdx: number = this.isColSelected ? sheet.rowCount - 1 :
-            this.getRowIdxFromClientY({ clientY: clientY, target: e.target as Element });
+            this.getRowIdxFromClientY({ clientY: clientY, target: e.target as Element, mouseMove: true });
         let prevIndex: number[];
         let rangeIndex: number[];
         if (e.ctrlKey) {
@@ -727,7 +732,8 @@ export class Selection {
         this.selectRangeByIdx(args.range, <MouseEvent>args, false, false, false, false, undefined, args.preventAnimation);
     }
 
-    private getColIdxFromClientX(e: { clientX: number, isImage?: boolean, target?: Element, size?: number, isFScroll?: boolean }): number {
+    private getColIdxFromClientX(
+        e: { clientX: number, isImage?: boolean, target?: Element, size?: number, isFScroll?: boolean, mouseMove?: boolean }): number {
         let width: number = 0;
         const sheet: SheetModel = this.parent.getActiveSheet();
         let left: number = 0;
@@ -751,6 +757,7 @@ export class Selection {
                 left += (this.getScrollLeft() / this.parent.viewport.scaleX);
             }
             if (sheet.frozenRows && left < 0 && sheet.showHeaders) {
+                if (e.mouseMove) { return 0; }
                 return -1;
             }
         }
@@ -775,8 +782,8 @@ export class Selection {
         }
     }
 
-    private getRowIdxFromClientY(
-        args: { clientY: number, isImage?: boolean, target?: Element, size?: number, isOverlay?: boolean }): number {
+    private getRowIdxFromClientY(args: { clientY: number, isImage?: boolean, target?: Element, size?: number, isOverlay?: boolean,
+        mouseMove?: boolean }): number {
         let height: number = 0;
         const sheet: SheetModel = this.parent.getActiveSheet();
         let top: number = 0;
@@ -790,6 +797,7 @@ export class Selection {
                 top += (this.parent.getMainContent().parentElement.scrollTop / this.parent.viewport.scaleY);
             }
             if (sheet.frozenColumns && top < 0 && sheet.showHeaders) {
+                if (args.mouseMove) { return 0; }
                 return -1;
             }
         }
@@ -1416,6 +1424,12 @@ export class Selection {
         // for (let idx: number = 0; idx < borderEleColl.length; idx++) {
         //     const td: HTMLElement = borderEleColl[idx] as HTMLElement;
         // }
+    }
+
+    /* Helper method to detect if the context menu is being triggered for mobile devices */
+    private isMobileContextMenuOpening(e: MouseEvent & TouchEvent): boolean {
+        const touchDuration: number = e.timeStamp - (this.touchEvt ? this.touchEvt.timeStamp : e.timeStamp);
+        return touchDuration > 500;
     }
 
     /**

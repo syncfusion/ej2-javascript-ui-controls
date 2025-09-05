@@ -392,7 +392,8 @@ export class DialogRenderer {
                 cssClass: this.parent.cssClass,
                 target: !isNullOrUndefined(this.parent.target) ? ((typeof this.parent.target) === 'string') ?
                     <HTMLElement>document.querySelector(<string>this.parent.target) : <HTMLElement>this.parent.target : document.body,
-                close: this.removeFieldListIcon.bind(this)
+                close: this.removeFieldListIcon.bind(this),
+                beforeOpen: this.beforeOpen.bind(this)
             });
             this.fieldListDialog.isStringTemplate = true;
             this.fieldListDialog.appendTo(fieldListWrappper);
@@ -401,6 +402,13 @@ export class DialogRenderer {
             this.renderDeferUpdateButtons(fieldListWrappper);
             setStyleAttribute(select('#' + fieldListWrappper.id + '_title', fieldListWrappper) as HTMLElement, { 'width': '100%' });
             fieldListWrappper.querySelector('.' + cls.TITLE_HEADER_CLASS).appendChild(this.createCalculatedButton());
+        }
+    }
+
+    private beforeOpen(): void {
+        if (this.parent.clonedFieldList && Object.keys(this.parent.clonedFieldList).length === 0 &&
+            (this.parent.isDeferLayoutUpdate || (this.parent.pivotGridModule && this.parent.pivotGridModule.pivotDeferLayoutUpdate))) {
+            this.parent.clonedFieldList = PivotUtil.getClonedFieldList(this.parent.pivotFieldList);
         }
     }
 

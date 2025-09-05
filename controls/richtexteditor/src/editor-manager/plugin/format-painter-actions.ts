@@ -3,7 +3,6 @@ import { CSSPropCollection, DeniedFormatsCollection, FormatPainterCollection, Fo
 import { NodeSelection } from '../../selection/selection';
 import * as EVENTS from '../../common/constant';
 import { SelectionCommands } from '../plugin';
-import { EditorManager } from '../base';
 import { IEditorModel } from '../../common/interface';
 
 export class FormatPainterActions implements IFormatPainterEditor{
@@ -548,11 +547,25 @@ export class FormatPainterActions implements IFormatPainterEditor{
                 } else {
                     (cloneListParentNode as HTMLElement).append(cloneParentNode);
                 }
-                // replace the older ol and ul with new ol and ul of clonelistparentnode
-                nodes[index as number].parentNode.parentNode.replaceChild(cloneListParentNode, nodes[index as number].parentNode);
+                let childNodesTextContent: string;
+                if (nodes[index as number].parentNode) {
+                    childNodesTextContent = Array.from(nodes[index as number].parentNode.childNodes).map((node: Node) => node.textContent.trim()).join('');
+                }
+                const nodesTextContent: string = Array.from(nodes).map((node: Node) => node.textContent.trim()).join('');
+                if (childNodesTextContent === nodesTextContent || (nodes[index as number].parentNode &&
+                    nodes[index as number].parentNode.textContent === cloneListParentNode.textContent)) {
+                    // replace the older ol and ul with new ol and ul of clonelistparentnode
+                    nodes[index as number].parentNode.parentNode.replaceChild(cloneListParentNode, nodes[index as number].parentNode);
+                } else {
+                    nodes[index as number].parentNode.replaceChild(cloneParentNode, nodes[index as number]);
+                }
             }
         } else {
-            (cloneListParentNode as HTMLElement).append(cloneParentNode);
+            if (cloneListParentNode.parentNode) {
+                (cloneListParentNode as HTMLElement).append(cloneParentNode);
+            } else {
+                nodes[index as number].parentNode.replaceChild(cloneParentNode, nodes[index as number]);
+            }
         }
         this.detachEmptyBlockNodes(nodes[index as number]);
     }

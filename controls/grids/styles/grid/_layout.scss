@@ -3758,6 +3758,9 @@
           padding-left: 20px;
         }
       }
+      .e-indentcell.e-hide-padding {
+        padding: 0;
+      }
 
       .e-dialog .e-gridform .e-table .e-rowcell {
         &.e-adaptive-align-left {

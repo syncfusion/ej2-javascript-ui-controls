@@ -38,12 +38,14 @@ $rte-font-arrow-touch-width: 20px !default;
 $rte-placeholder-line-height: $leading-normal !default;
 $rte-big-active-tb-item-btn-padding: 0 6px !default;
 $rte-table-popup-padding: 18px 18px 8px 22px !default;
+$rte-table-popup-min-height: 164px !default;
 $rte-table-popup-border: 1px solid $border-light !default;
 $rte-insert-dialog-label-padding-top: 12px !default;
 $rte-insert-dialog-label-padding-bottom: 3px !default;
 $rte-big-quick-tbar-item-min-height: 38px !default;
 $rte-big-quick-tbar-item-min-width: 38px !default;
 $rte-big-content-font-size: 16px !default;
+$rte-big-dialog-min-height: 324px !default;
 $rte-content-font-size:  $text-sm !default;
 $rte-dropdown-caret-icon-size: $text-xs !default;
 $rte-big-dropdown-caret-icon-size: $text-sm !default;
@@ -56,7 +58,6 @@ $rte-inline-tmp-min-width: 55px;
 $rte-inline-tmp-size-min-width: 66px;
 $rte-inline-tmp-color-min-width: 55px;
 $rte-big-color-list-span-common-padding-left-right: 0;
-$rte-placeholder-padding: 12px !default;
 $rte-default-character-count-opacity: 1;
 $rte-droparea-line-height: 10;
 $rte-droparea-browsebtn-height: 36px;
@@ -163,6 +164,7 @@ $rte-border-bottom-left-radius: 0;
 $rte-big-border-radius: 0;
 $rte-extended-toolbar-items-padding: 0;
 $rte-table-multicell-select-bg-color: rgba($primary-light, .18) !default;
+$rte-insert-icon-color: $brand-primary !default;
 $rte-default-btn-bg: $content-bg-color-alt2 !default;
 $rte-split-btn-border-radius: 8px !default;
 $rte-split-btn-height: 32px !default;
@@ -254,6 +256,12 @@ $rte-quick-toolbar-tip-pointer-content: $content-bg-color-alt2 !default;
 
 $rte-popup-padding: 0 8px !default;
 $rte-popup-item-padding: 4px 4px !default;
+
+$rte-checklist-checked-bg-color: $primary !default;
+$rte-checklist-checked-border-color: 1px solid var(--branding-brand-primary, rgba(126, 86, 216, 1)) !default;
+$rte-checklist-checked-checkmark-color: $white !default;
+$rte-checklist-checkbox-border: 1px solid var(--border-border-primary, rgba(208, 213, 221, 1));
+$rte-checklist-checkbox-border-radius: 4px;
 
 /* stylelint-disable */
 .e-rte-quick-popup {

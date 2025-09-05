@@ -2,7 +2,7 @@ import { detach, isNullOrUndefined, createElement } from '../../../base'; /*exte
 import * as events from '../constant';
 import { SfRichTextEditor } from '../sf-richtexteditor-fn';
 import { CLS_WARNING, CLS_ERROR, CLS_COUNT } from '../classes';
-import { ToolbarPosition } from '../../src/editor-manager/base/enum';
+import { ToolbarPosition } from '../../editor-scripts/editor-manager/base/enum';
 
 /**
  * `Count` module is used to handle Count actions.

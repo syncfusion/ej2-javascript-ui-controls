@@ -2448,28 +2448,6 @@ describe('EJ2-65633 - Enter key Press when audio and video is focused',() => {
     });
 });
 
-describe("EJ2-64561- When press the enter key while the cursor focused before video, the video gets duplicated", () => {
-    let rteObj : RichTextEditor;
-    beforeAll( () =>{
-        rteObj = renderRTE({
-            value : `<p><span class="e-video-wrap" contenteditable="false"><video controls="" class="e-rte-video e-video-inline"><source src="https://www.w3schools.com/tags/movie.mp4" type="video/mp4"></video></span><br></p>`
-        });
-    });
-    afterAll( () => {
-        destroy(rteObj);
-    });
-    it( 'Test for Enter key press before video' , () =>{
-        rteObj.focusIn();
-        let range: Range = new Range();
-        const contentElem : HTMLElement = document.body.querySelector('.e-content');
-        range.setStart( contentElem.firstElementChild,0 );
-        range.setEnd( contentElem.firstElementChild,0 );
-        rteObj.formatter.editorManager.nodeSelection.setRange(document, range);
-        (rteObj as any).keyDown(keyboardEventArgs);
-        const corrrectElemString : string = `<p><br></p><p><span class="e-video-wrap" contenteditable="false"><video controls="" class="e-rte-video e-video-inline"><source src="https://www.w3schools.com/tags/movie.mp4" type="video/mp4"></video></span><br></p>`;
-        expect(rteObj.inputElement.innerHTML === corrrectElemString ).toBe(true);
-    });
-});
 describe('Bug 970807: Video Element Gets Removed on Pressing Enter Key After Selection ', () => {
     let rteObj: RichTextEditor;
     let innerHTML: string = `<span class="e-video-wrap" style="display: block;"><span class="e-video-clickelem"><iframe src="https://www.youtube.com/embed/H55jAgs61Ps" width="560" height="315" loading="lazy" allowfullscreen="" allow="accelerometer; clipboard-write; encrypted-media; gyroscope; picture-in-picture" spellcheck="false" frameborder="0" class="e-rte-video e-video-center e-resize e-video-wrap"></iframe></span></span>`;
@@ -2497,6 +2475,29 @@ describe('Bug 970807: Video Element Gets Removed on Pressing Enter Key After Sel
         rteObj.formatter.editorManager.nodeSelection.setSelectionText(document, startNode, startNode, 0, 1);
         (rteObj as any).keyDown(keyboardEventArgs);
         expect(rteObj.inputElement.innerHTML === `<p><span class="e-video-wrap" style="display: block;"><span class="e-video-clickelem"><iframe src="https://www.youtube.com/embed/H55jAgs61Ps" width="560" height="315" loading="lazy" allowfullscreen="" allow="accelerometer; clipboard-write; encrypted-media; gyroscope; picture-in-picture" spellcheck="false" frameborder="0" class="e-rte-video e-video-center e-resize e-video-wrap">&ZeroWidthSpace;</iframe></span></span></p><p><br></p>`).toBe(true);
+    });
+});
+
+describe("EJ2-64561- When press the enter key while the cursor focused before video, the video gets duplicated", () => {
+    let rteObj : RichTextEditor;
+    beforeAll( () =>{
+        rteObj = renderRTE({
+            value : `<p><span class="e-video-wrap" contenteditable="false"><video controls="" class="e-rte-video e-video-inline"><source src="https://www.w3schools.com/tags/movie.mp4" type="video/mp4"></video></span><br></p>`
+        });
+    });
+    afterAll( () => {
+        destroy(rteObj);
+    });
+    it( 'Test for Enter key press before video' , () =>{
+        rteObj.focusIn();
+        let range: Range = new Range();
+        const contentElem : HTMLElement = document.body.querySelector('.e-content');
+        range.setStart( contentElem.firstElementChild,0 );
+        range.setEnd( contentElem.firstElementChild,0 );
+        rteObj.formatter.editorManager.nodeSelection.setRange(document, range);
+        (rteObj as any).keyDown(keyboardEventArgs);
+        const corrrectElemString : string = `<p><br></p><p><span class="e-video-wrap" contenteditable="false"><video controls="" class="e-rte-video e-video-inline"><source src="https://www.w3schools.com/tags/movie.mp4" type="video/mp4"></video></span><br></p>`;
+        expect(rteObj.inputElement.innerHTML === corrrectElemString ).toBe(true);
     });
 });
 describe("EJ2-64561- When press the enter key while the cursor focused before video, the video gets duplicated", () => {
@@ -3051,6 +3052,51 @@ describe('Handle Enter key press on HR element between headers', function () {
     });
 });
 
+describe('967217: Cursor position and scroll behavior with multiple line breaks in RichTextEditor', () => {
+    let rteObj: RichTextEditor;
+    
+    beforeAll(() => {
+        rteObj = renderRTE({
+            height: '200px',
+            value: '<p>Initial content</p>'
+        });
+    });
+    
+    afterAll(() => {
+        destroy(rteObj);
+    });
+    
+    it('should scroll to show cursor when pressing enter multiple times', (done: Function) => {
+        rteObj.focusIn();
+        let textNode: Element = rteObj.inputElement.querySelector('p').firstChild as Element;
+        rteObj.formatter.editorManager.nodeSelection.setCursorPoint(
+            document, 
+            textNode, 
+            textNode.textContent.length
+        );
+        const enterKeyEvent = new KeyboardEvent('keydown', ENTERKEY_EVENT_INIT);
+        rteObj.inputElement.dispatchEvent(enterKeyEvent);
+        setTimeout(() => {
+            rteObj.inputElement.dispatchEvent(enterKeyEvent);
+            setTimeout(() => {
+                rteObj.inputElement.dispatchEvent(enterKeyEvent);
+                setTimeout(() => {
+                    const selection = window.getSelection();
+                    const range = selection.getRangeAt(0);
+                    const cursorRect = range.getBoundingClientRect();
+                    const editableElem = rteObj.contentModule.getEditPanel() as HTMLElement;
+                    const containerRect = editableElem.getBoundingClientRect();
+                    const cursorTop = cursorRect.top - containerRect.top;
+                    const containerHeight = editableElem.clientHeight;
+                    debugger;
+                    expect(cursorTop).toBeLessThan(containerHeight);
+                    done();
+                }, 100);
+            }, 100);
+        }, 100);
+    });
+});
+
 describe('968970 - Enter key as BR breaks the content when pressing Enter in RichTextEditor', function () {
     let rteObj: RichTextEditor;
     keyboardEventArgs.shiftKey = false;
@@ -3091,5 +3137,35 @@ describe('969195 - Script error thrown when we press the Shift Enter key before 
         (<any>rteObj).keyDown(shiftkeyboarArgs);
         (<any>rteObj).keyDown(shiftkeyboarArgs);
         expect(rteObj.inputElement.innerHTML).toBe('<p style="font-family: Arial; font-size: 10pt;"> <span class="focusNode"><br></span></p><div style="font-family: Arial; font-size: 10pt"><br><br><span class="focusNode"><img alt="Sky with sun" src="https://cdn.syncfusion.com/ej2/richtexteditor-resources/RTE-Overview.png" width="309" style="min-width: 10px; min-height: 10px; width: 309px; height: 174px;" class="e-rte-image e-imginline" height="174"> </span><br> </div>');
+    });
+});
+
+describe('972091 - Enter key action not working properly when pressing the shift enter key', () => {
+    let rteObj: RichTextEditor;
+    keyboardEventArgs.shiftKey = false;
+    beforeAll((done: Function) => {
+        rteObj = renderRTE({
+            height: '200px',
+            enterKey: 'P',
+            value: `<p class="focusNode">The Rich Text Editor content</p>`
+        });
+        done();
+    });
+
+    it('Rich Text Editor Enter key action works properly after pressing the Shift + Enter keys action', function (): void {
+        rteObj.dataBind();
+        rteObj.focusIn();
+        const startNode: any = rteObj.inputElement.querySelector('.focusNode');
+        const sel: void = new NodeSelection().setSelectionText(
+            document, startNode.childNodes[0], startNode.childNodes[0], 0, 0);
+        (<any>rteObj).keyDown(shiftkeyboarArgs);
+        (<any>rteObj).keyDown(shiftkeyboarArgs);
+        (<any>rteObj).keyDown(shiftkeyboarArgs);
+        (<any>rteObj).keyDown(keyboardEventArgs);
+        expect(rteObj.inputElement.innerHTML === '<p class="focusNode"><br><br><br></p><p>The Rich Text Editor content</p>').toBe(true);
+    });
+
+    afterAll(() => {
+        destroy(rteObj);
     });
 });

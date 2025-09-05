@@ -1,5 +1,5 @@
 import { createElement } from '@syncfusion/ej2-base';
-import { BlockEditor, BlockType, ContentType, getBlockContentElement } from '../../src/index';
+import { BlockEditor, BlockType, ContentType, getBlockContentElement, LinkContentProps } from '../../src/index';
 import { createEditor } from '../common/util.spec';
 import { L10n } from '@syncfusion/ej2-base';
 
@@ -78,12 +78,12 @@ describe('Link Module', () => {
                     expect(editor.blocks[0].content[0].content).toBe('He');
                     expect(editor.blocks[0].content[1].content).toBe('llowor');
                     expect(editor.blocks[0].content[1].type).toBe(ContentType.Link);
-                    expect(editor.blocks[0].content[1].linkSettings.url).toContain('https://www.syncfusion.com');
-                    expect(editor.blocks[0].content[1].linkSettings.openInNewWindow).toBe(true);
+                    expect((editor.blocks[0].content[1].props as LinkContentProps).url).toContain('https://www.syncfusion.com');
+                    expect((editor.blocks[0].content[1].props as LinkContentProps).openInNewWindow).toBe(true);
                     expect(editor.blocks[0].content[2].content).toBe('ld');
 
                     done();
-                }, 300);
+                }, 400);
             }, 100);
         });
 
@@ -131,7 +131,7 @@ describe('Link Module', () => {
                         expect(editor.blocks[0].content[0].content).toBe('He');
                         expect(editor.blocks[0].content[1].content).toBe('llowor');
                         expect(editor.blocks[0].content[1].type).toBe(ContentType.Text);
-                        expect(editor.blocks[0].content[1].linkSettings.url).toBe('');
+                        expect((editor.blocks[0].content[1].props as LinkContentProps).url).toBeUndefined();
                         expect(editor.blocks[0].content[2].content).toBe('ld');
                         done();
                     }, 300);
@@ -191,19 +191,19 @@ describe('Link Module', () => {
             L10n.load({
                 'de': {
                     "blockeditor": {
-                            "paragraph": "Schreiben Sie etwas oder ‚/‘ für Befehle.",
+                        "paragraph": "Schreiben Sie etwas oder ‚/‘ für Befehle.",
                         "heading1": "Überschrift 1",
                         "heading2": "Überschrift 2",
                         "heading3": "Überschrift 3",
                         "heading4": "Überschrift 4",
-                        "toggleParagraph": "Umschaltbarer Absatz",
-                        "toggleHeading1": "Umschaltbare Überschrift 1",
-                        "toggleHeading2": "Umschaltbare Überschrift 2",
-                        "toggleHeading3": "Umschaltbare Überschrift 3",
-                        "toggleHeading4": "Umschaltbare Überschrift 4",
+                        "collapsibleParagraph": "zusammenklappbar Absatz",
+                        "collapsibleHeading1": "zusammenklappbar Überschrift 1",
+                        "collapsibleHeading2": "zusammenklappbar Überschrift 2",
+                        "collapsibleHeading3": "zusammenklappbar Überschrift 3",
+                        "collapsibleHeading4": "zusammenklappbar Überschrift 4",
                         "bulletList": "Element hinzufügen",
                         "numberedList": "Element hinzufügen",
-                        "checkList": "Zu erledigen",
+                        "checklist": "Zu erledigen",
                         "callout": "Schreiben Sie einen Hinweis",
                         "addIconTooltip": "Klicken Sie, um unten einzufügen",
                         "dragIconTooltipActionMenu": "Klicken Sie, um zu öffnen",
@@ -671,7 +671,7 @@ describe('Link Module', () => {
                         id: 'paragraph2',
                         type: BlockType.Paragraph,
                         content: [
-                            { id: 'linkContent', type: ContentType.Link, content: 'LinkText', linkSettings: {
+                            { id: 'linkContent', type: ContentType.Link, content: 'LinkText', props: {
                                 url: 'google.com'
                             }}
                         ]

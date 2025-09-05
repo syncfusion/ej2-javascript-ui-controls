@@ -130,124 +130,33 @@ export class PivotButton implements IAction {
                     }
                 }
             } else {
-                for (let i: number = 0, cnt: number = field.length; i < cnt; i++) {
-                    const elements: Element[] | NodeListOf<HTMLElement> = this.parent.getModuleName() === 'pivotfieldlist' ?
-                        [axisElement] : currentAxisElements;
-                    for (let j: number = 0; j < elements.length; j++) {
-                        const element: HTMLElement | Element = elements[j as number];
-                        if ((this.parent.olapEngineModule && (this.parent.olapEngineModule.fieldList[field[i as number].name] ||
-                            field[i as number].name === '[Measures]')) || this.parent.engineModule) {
-                            const isMeasureAvail: boolean = (this.parent.dataType === 'olap' && (field[i as number].name.toLowerCase() === '[measures]' || axis === 'values'));
-                            const isMeasureFieldsAvail: boolean = (this.parent.dataType === 'olap' && axis === 'values');
-                            if (!element.classList.contains(cls.GROUP_CHART_VALUE) && !element.classList.contains(cls.GROUP_CHART_COLUMN)) {
-                                const buttonWrapper: HTMLElement = createElement('div', {
-                                    className: cls.PIVOT_BUTTON_WRAPPER_CLASS + (i === 0 && axis !== 'all-fields' ? ' e-first-btn' : '') + ((this.parent as PivotView).isTabular ? (' ' + cls.TABULAR_PIVOT_BUTTON) : ''),
-                                    attrs: { 'data-tag': axis + ':' + field[i as number].name }
-                                });
-                                if ((this.parent as PivotView).isTabular) {
-                                    buttonWrapper.style.width = 'auto';
-                                }
-                                let buttonCaption: string = field[i as number].caption ? field[i as number].caption :
-                                    field[i as number].name;
-                                buttonCaption = this.parent.enableHtmlSanitizer ?
-                                    SanitizeHtmlHelper.sanitize(buttonCaption) : buttonCaption;
-                                const buttonElement: HTMLElement = createElement('div', {
-                                    id: this.parent.element.id + '_' + field[i as number].name, className: cls.PIVOT_BUTTON_CLASS + ' ' + field[i as number].name.replace(/[^A-Z0-9]/ig, '') + ((this.parent as PivotView).isTabular ? (' ' +  cls.TABULAR_ROW_BUTTON) : ''),
-                                    attrs: {
-                                        'data-uid': field[i as number].name,
-                                        'tabindex': (this.parent.getModuleName() === 'pivotview' && (this.parent as PivotView).grid && axis === 'rows' && !element.classList.contains(cls.GROUP_CHART_ROW)) ? '-1' : '0',
-                                        'isvalue': (i === valuePos || isMeasureAvail && !isMeasureFieldsAvail) ? 'true' : 'false',
-                                        'aria-disabled': 'false', 'aria-label': buttonCaption,
-                                        'data-type': (this.parent.dataType === 'olap' ? isMeasureFieldsAvail ? 'isMeasureFieldsAvail' : isMeasureAvail ? 'isMeasureAvail' : field[i as number].type : field[i as number].type),
-                                        'data-caption': buttonCaption,
-                                        'data-basefield': this.parent.enableHtmlSanitizer ? SanitizeHtmlHelper.sanitize(field[i as number].baseField) : field[i as number].baseField,
-                                        'data-baseitem': this.parent.enableHtmlSanitizer ? SanitizeHtmlHelper.sanitize(field[i as number].baseItem) : field[i as number].baseItem,
-                                        'role': 'button'
-                                    }
-                                });
-                                const dropIndicatorElement: Element = createElement('span', {
-                                    attrs: { 'tabindex': '-1', 'aria-disabled': 'false' },
-                                    className: cls.DROP_INDICATOR_CLASS
-                                });
-                                const dropLastIndicatorElement: Element = createElement('span', {
-                                    attrs: { 'tabindex': '-1', 'aria-disabled': 'false' },
-                                    className: cls.DROP_INDICATOR_CLASS + '-last'
-                                });
-                                const dragWrapper: HTMLElement = this.createButtonDragIcon(field[i as number], buttonElement);
-                                const contentElement: HTMLElement = this.createButtonText(field, i, axis, valuePos);
-                                buttonElement.appendChild(contentElement);
-                                if (axis !== 'all-fields') {
-                                    if (!isMeasureAvail && !field[i as number].isNamedSet && !field[i as number].isCalculatedField) {
-                                        if (['filters', 'values'].indexOf(axis) === -1 && valuePos !== i &&
-                                            !(this.parent.dataType === 'olap' && ((this.parent.getModuleName() === 'pivotview' &&
-                                                (this.parent as PivotView).enableVirtualization) || (this.parent.getModuleName() === 'pivotfieldlist' &&
-                                                    (this.parent as PivotFieldList).pivotGridModule !== undefined &&
-                                                    (this.parent as PivotFieldList).pivotGridModule.enableVirtualization)))) {
-                                            this.createSortOption(buttonElement, field[i as number].name, field[i as number]);
-                                        }
-                                        if (axis !== 'values' && valuePos !== i) {
-                                            this.createFilterOption(buttonElement, field[i as number].name, axis, field[i as number]);
-                                        }
-                                        if (axis === 'values') {
-                                            this.getTypeStatus(field, i, buttonElement);
-                                        }
-                                    }
-                                    if ((field[i as number].isCalculatedField || field[i as number].type === 'CalculatedField')) {
-                                        const calcElement: Element = createElement('span', {
-                                            attrs: { 'tabindex': '-1', 'aria-disabled': 'false', 'title': this.parent.localeObj.getConstant('editCalculatedField') },
-                                            className: cls.ICON + ' ' + cls.CALC_EDIT
-                                        });
-                                        if (this.parent.allowCalculatedField && this.parent.calculatedFieldModule &&
-                                            (field[i as number].showEditIcon || field[i as number].showEditIcon === undefined)) {
-                                            removeClass([calcElement], cls.ICON_DISABLE);
-                                        } else {
-                                            addClass([calcElement], cls.ICON_DISABLE);
-                                        }
-                                        buttonElement.appendChild(calcElement);
-                                    }
-                                    const removeElement: Element = createElement('span', {
-                                        attrs: { 'tabindex': '-1', 'aria-disabled': 'false', 'title': this.parent.localeObj.getConstant('remove') },
-                                        className: cls.ICON + ' ' + cls.REMOVE_CLASS
-                                    });
-                                    if (this.parent.getModuleName() === 'pivotview') {
-                                        if (((this.parent as PivotView).groupingBarSettings.showRemoveIcon &&
-                                            (field[i as number].showRemoveIcon || field[i as number].showRemoveIcon === undefined))) {
-                                            removeClass([removeElement], cls.ICON_DISABLE);
-                                        } else {
-                                            addClass([removeElement], cls.ICON_DISABLE);
-                                        }
-                                    } else {
-                                        if (field[i as number].showRemoveIcon || field[i as number].showRemoveIcon === undefined) {
-                                            removeClass([removeElement], cls.ICON_DISABLE);
-                                        } else {
-                                            addClass([removeElement], cls.ICON_DISABLE);
-                                        }
-                                    }
-                                    buttonElement.appendChild(removeElement);
-                                    buttonWrapper.appendChild(dropIndicatorElement);
-                                    buttonWrapper.appendChild(buttonElement);
-                                    buttonWrapper.appendChild(dropLastIndicatorElement);
-                                } else {
-                                    buttonWrapper.appendChild(dropIndicatorElement);
-                                    buttonWrapper.appendChild(buttonElement);
-                                }
-                                element.appendChild(buttonWrapper);
-                                const pivotButton: Button = new Button({
-                                    enableRtl: this.parent.enableRtl, locale: this.parent.locale,
-                                    enableHtmlSanitizer: this.parent.enableHtmlSanitizer, cssClass: this.parent.cssClass
-                                });
-                                pivotButton.isStringTemplate = true;
-                                pivotButton.appendTo(buttonElement);
-                                this.unWireEvent(buttonWrapper, i === valuePos && axis !== 'all-fields' ? 'values' : axis, isMeasureAvail);
-                                this.wireEvent(buttonWrapper, i === valuePos && axis !== 'all-fields' ? 'values' : axis, isMeasureAvail);
-                                if ((this.parent.getModuleName() === 'pivotview' && !this.parent.isAdaptive) ||
-                                    this.parent.getModuleName() === 'pivotfieldlist') {
-                                    this.createDraggable(field[i as number], this.parent.getModuleName() === 'pivotview' ? contentElement : dragWrapper);
-                                    (getInstance(buttonElement.querySelector('.' + cls.BUTTON_DRAGGABLE) as HTMLElement,
-                                                 Draggable) as Draggable).enableAutoScroll = false;
-                                }
-                            }
+                if ((!(this.parent as PivotView).isTabular) || ((this.parent as PivotView).isTabular && args.axis !== 'rows')) {
+                    for (let i: number = 0, cnt: number = field.length; i < cnt; i++) {
+                        const elements: Element[] | NodeListOf<HTMLElement> = this.parent.getModuleName() === 'pivotfieldlist' ?
+                            [axisElement] : currentAxisElements;
+                        for (let j: number = 0; j < elements.length; j++) {
+                            const element: HTMLElement | Element = elements[j as number];
+                            this.appendPivotButton(element, field, axis, valuePos, i, args);
                         }
+                    }
+                } else {
+                    for (let i: number = 0, cnt: number = field.length; i < cnt; i++) {
+                        const elements: Element[] | NodeListOf<HTMLElement> = this.parent.getModuleName() === 'pivotfieldlist' ?
+                            [axisElement] : currentAxisElements;
+                        const valueBtnExist: boolean = this.parent.dataSourceSettings.valueAxis === 'row' &&
+                            this.parent.dataSourceSettings.values.length > 0 && elements.length > 1;
+                        let elemIdx: number;
+                        if (valueBtnExist && showValuesButton) {
+                            elemIdx = (i === field.length - 1)
+                                ? elements.length - 1
+                                : i % (elements.length - 1);
+                        } else if (valueBtnExist && !showValuesButton) {
+                            elemIdx = i % (elements.length - 1);
+                        } else {
+                            elemIdx = i % elements.length;
+                        }
+                        const element: HTMLElement | Element = elements[elemIdx as number];
+                        this.appendPivotButton(element, field, axis, valuePos, i, args);
                     }
                 }
                 if (axis === 'values') {
@@ -376,6 +285,125 @@ export class PivotButton implements IAction {
         }
     }
 
+    private appendPivotButton(
+        element: HTMLElement | Element, field: IFieldOptions[], axis: string, valuePos: number, i: number, args: PivotButtonArgs
+    ): void {
+        if (!isNullOrUndefined(element) && ((this.parent.olapEngineModule &&
+            (this.parent.olapEngineModule.fieldList[field[i as number].name] || field[i as number].name === '[Measures]'))
+            || this.parent.engineModule)) {
+            const isMeasureAvail: boolean = (this.parent.dataType === 'olap' && (field[i as number].name.toLowerCase() === '[measures]' || axis === 'values'));
+            const isMeasureFieldsAvail: boolean = (this.parent.dataType === 'olap' && axis === 'values');
+            if (!element.classList.contains(cls.GROUP_CHART_VALUE) && !element.classList.contains(cls.GROUP_CHART_COLUMN)) {
+                const buttonWrapper: HTMLElement = createElement('div', {
+                    className: cls.PIVOT_BUTTON_WRAPPER_CLASS + (i === 0 && axis !== 'all-fields' ? ' e-first-btn' : '') + ((this.parent as PivotView).isTabular ? (' ' + cls.TABULAR_PIVOT_BUTTON) : ''),
+                    attrs: { 'data-tag': axis + ':' + field[i as number].name }
+                });
+                if ((this.parent as PivotView).isTabular) {
+                    buttonWrapper.style.width = args.axis === 'rows' ? '100%' : 'auto';
+                }
+                let buttonCaption: string = field[i as number].caption ? field[i as number].caption :
+                    field[i as number].name;
+                buttonCaption = this.parent.enableHtmlSanitizer ?
+                    SanitizeHtmlHelper.sanitize(buttonCaption) : buttonCaption;
+                const buttonElement: HTMLElement = createElement('div', {
+                    id: this.parent.element.id + '_' + field[i as number].name, className: cls.PIVOT_BUTTON_CLASS + ' ' + field[i as number].name.replace(/[^A-Z0-9]/ig, '') + ((this.parent as PivotView).isTabular ? (' ' + cls.TABULAR_ROW_BUTTON) : ''),
+                    attrs: {
+                        'data-uid': field[i as number].name,
+                        'tabindex': (this.parent.getModuleName() === 'pivotview' && (this.parent as PivotView).grid && axis === 'rows' && !element.classList.contains(cls.GROUP_CHART_ROW)) ? '-1' : '0',
+                        'isvalue': (i === valuePos || isMeasureAvail && !isMeasureFieldsAvail) ? 'true' : 'false',
+                        'aria-disabled': 'false', 'aria-label': buttonCaption,
+                        'data-type': (this.parent.dataType === 'olap' ? isMeasureFieldsAvail ? 'isMeasureFieldsAvail' : isMeasureAvail ? 'isMeasureAvail' : field[i as number].type : field[i as number].type),
+                        'data-caption': buttonCaption,
+                        'data-basefield': this.parent.enableHtmlSanitizer ? SanitizeHtmlHelper.sanitize(field[i as number].baseField) : field[i as number].baseField,
+                        'data-baseitem': this.parent.enableHtmlSanitizer ? SanitizeHtmlHelper.sanitize(field[i as number].baseItem) : field[i as number].baseItem,
+                        'role': 'button'
+                    }
+                });
+                const dropIndicatorElement: Element = createElement('span', {
+                    attrs: { 'tabindex': '-1', 'aria-disabled': 'false' },
+                    className: cls.DROP_INDICATOR_CLASS
+                });
+                const dropLastIndicatorElement: Element = createElement('span', {
+                    attrs: { 'tabindex': '-1', 'aria-disabled': 'false' },
+                    className: cls.DROP_INDICATOR_CLASS + '-last'
+                });
+                const dragWrapper: HTMLElement = this.createButtonDragIcon(field[i as number], buttonElement);
+                const contentElement: HTMLElement = this.createButtonText(field, i, axis, valuePos);
+                buttonElement.appendChild(contentElement);
+                if (axis !== 'all-fields') {
+                    if (!isMeasureAvail && !field[i as number].isNamedSet && !field[i as number].isCalculatedField) {
+                        if (['filters', 'values'].indexOf(axis) === -1 && valuePos !== i &&
+                            !(this.parent.dataType === 'olap' && ((this.parent.getModuleName() === 'pivotview' &&
+                                (this.parent as PivotView).enableVirtualization) || (this.parent.getModuleName() === 'pivotfieldlist' &&
+                                    (this.parent as PivotFieldList).pivotGridModule !== undefined &&
+                                    (this.parent as PivotFieldList).pivotGridModule.enableVirtualization)))) {
+                            this.createSortOption(buttonElement, field[i as number].name, field[i as number]);
+                        }
+                        if (axis !== 'values' && valuePos !== i) {
+                            this.createFilterOption(buttonElement, field[i as number].name, axis, field[i as number]);
+                        }
+                        if (axis === 'values') {
+                            this.getTypeStatus(field, i, buttonElement);
+                        }
+                    }
+                    if ((field[i as number].isCalculatedField || field[i as number].type === 'CalculatedField')) {
+                        const calcElement: Element = createElement('span', {
+                            attrs: { 'tabindex': '-1', 'aria-disabled': 'false', 'title': this.parent.localeObj.getConstant('editCalculatedField') },
+                            className: cls.ICON + ' ' + cls.CALC_EDIT
+                        });
+                        if (this.parent.allowCalculatedField && this.parent.calculatedFieldModule &&
+                            (field[i as number].showEditIcon || field[i as number].showEditIcon === undefined)) {
+                            removeClass([calcElement], cls.ICON_DISABLE);
+                        } else {
+                            addClass([calcElement], cls.ICON_DISABLE);
+                        }
+                        buttonElement.appendChild(calcElement);
+                    }
+                    const removeElement: Element = createElement('span', {
+                        attrs: { 'tabindex': '-1', 'aria-disabled': 'false', 'title': this.parent.localeObj.getConstant('remove') },
+                        className: cls.ICON + ' ' + cls.REMOVE_CLASS
+                    });
+                    if (this.parent.getModuleName() === 'pivotview') {
+                        if (((this.parent as PivotView).groupingBarSettings.showRemoveIcon &&
+                            (field[i as number].showRemoveIcon || field[i as number].showRemoveIcon === undefined))) {
+                            removeClass([removeElement], cls.ICON_DISABLE);
+                        } else {
+                            addClass([removeElement], cls.ICON_DISABLE);
+                        }
+                    } else {
+                        if (field[i as number].showRemoveIcon || field[i as number].showRemoveIcon === undefined) {
+                            removeClass([removeElement], cls.ICON_DISABLE);
+                        } else {
+                            addClass([removeElement], cls.ICON_DISABLE);
+                        }
+                    }
+                    buttonElement.appendChild(removeElement);
+                    buttonWrapper.appendChild(dropIndicatorElement);
+                    buttonWrapper.appendChild(buttonElement);
+                    buttonWrapper.appendChild(dropLastIndicatorElement);
+                } else {
+                    buttonWrapper.appendChild(dropIndicatorElement);
+                    buttonWrapper.appendChild(buttonElement);
+                }
+                element.appendChild(buttonWrapper);
+                const pivotButton: Button = new Button({
+                    enableRtl: this.parent.enableRtl, locale: this.parent.locale,
+                    enableHtmlSanitizer: this.parent.enableHtmlSanitizer, cssClass: this.parent.cssClass
+                });
+                pivotButton.isStringTemplate = true;
+                pivotButton.appendTo(buttonElement);
+                this.unWireEvent(buttonWrapper, i === valuePos && axis !== 'all-fields' ? 'values' : axis, isMeasureAvail);
+                this.wireEvent(buttonWrapper, i === valuePos && axis !== 'all-fields' ? 'values' : axis, isMeasureAvail);
+                if ((this.parent.getModuleName() === 'pivotview' && !this.parent.isAdaptive) ||
+                    this.parent.getModuleName() === 'pivotfieldlist') {
+                    this.createDraggable(field[i as number], this.parent.getModuleName() === 'pivotview' ? contentElement : dragWrapper);
+                    (getInstance(
+                        buttonElement.querySelector('.' + cls.BUTTON_DRAGGABLE) as HTMLElement, Draggable
+                    ) as Draggable).enableAutoScroll = false;
+                }
+            }
+        }
+    }
     private createButtonText(field: IFieldOptions[], i: number, axis: string, valuePos: number): HTMLElement {
         let aggregation: string;
         let filterMem: string;

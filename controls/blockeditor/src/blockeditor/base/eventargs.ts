@@ -1,4 +1,4 @@
-import { CommandItemModel, BlockModel, ToolbarItemModel, UserModel, BlockActionItemModel, ContentModel, ContextMenuItemModel } from '../models/index';
+import { CommandItemModel, BlockModel, ToolbarItemModel, BlockActionItemModel, ContentModel, ContextMenuItemModel } from '../models/index';
 
 
 /**

@@ -1,14 +1,15 @@
 import { ClickEventArgs, ItemModel, Toolbar } from '@syncfusion/ej2-navigations';
 import { DropDownButton } from '@syncfusion/ej2-splitbuttons';
-import { Popup, Tooltip, Position as TooltipPosition } from '@syncfusion/ej2-popups';
+import { Popup, Tooltip } from '@syncfusion/ej2-popups';
 import { ColorPicker, ColorPickerEventArgs } from '@syncfusion/ej2-inputs';
-import { BlockEditor, BlockEditorModel, BuiltInToolbar, IDropDownButtonArgs, IPopupRenderOptions, IToolbarRenderOptions, ToolbarCloseEventArgs, ToolbarItemClickedEventArgs, ToolbarOpenEventArgs } from '../base/index';
+import { BlockEditor, BlockEditorModel, BlockType, BuiltInToolbar, IDropDownRenderOptions, IToolbarRenderOptions, ToolbarCloseEventArgs, ToolbarItemClickedEventArgs, ToolbarOpenEventArgs } from '../base/index';
 import { ToolbarRenderer } from '../renderer/common/index';
-import { deepClone, getBlockContentElement, getBlockModelById, getInlineToolbarItems, getNormalizedKey, getParentBlock, getSelectionRange, normalizeRange, sanitizeContent, sanitizeStyles, transformIntoToolbarItem } from '../utils/index';
-import { BlockActionItemModel, BlockModel, ContentModel, InlineToolbarSettingsModel, StyleModel, ToolbarItemModel } from '../models/index';
+import { getBlockContentElement, getBlockModelById, getInlineToolbarItems, getNormalizedKey, getParentBlock, getSelectedRange, normalizeRange, transformIntoToolbarItem } from '../utils/index';
+import { BaseStylesProp, BlockModel, ContentModel, InlineToolbarSettingsModel, StyleModel, Styles, ToolbarItemModel } from '../models/index';
 import { events } from '../base/constant';
 import { detach, isNullOrUndefined } from '@syncfusion/ej2-base';
 import { findClosestParent } from '../utils/dom';
+import * as constants from '../base/constant';
 
 /**
  * InlineToolbarModule class is used to render the inline toolbar for the block editor.
@@ -18,7 +19,6 @@ import { findClosestParent } from '../utils/dom';
 export class InlineToolbarModule {
 
     private editor: BlockEditor;
-    private toolbar: Toolbar;
     private toolbarRenderer: ToolbarRenderer;
     private textColorDDB: DropDownButton;
     private bgColorDDB: DropDownButton;
@@ -46,8 +46,8 @@ export class InlineToolbarModule {
         this.editor.on(events.inlineToolbarBeforeOpen, this.handleInlineToolbarBeforeOpen, this);
         this.editor.on(events.formattingPerformed, this.toggleToolbarActiveState, this);
         this.editor.on(events.moduleChanged, this.onPropertyChanged, this);
-        this.editor.on('keydown', this.onKeydown, this);
-        this.editor.on('rtl-changed', this.applyRtlSettings, this);
+        this.editor.on(events.keydown, this.onKeydown, this);
+        this.editor.on(events.rtlChanged, this.applyRtlSettings, this);
         this.editor.on(events.destroy, this.destroy, this);
     }
 
@@ -57,58 +57,58 @@ export class InlineToolbarModule {
         this.editor.off(events.inlineToolbarBeforeOpen, this.handleInlineToolbarBeforeOpen);
         this.editor.off(events.formattingPerformed, this.toggleToolbarActiveState);
         this.editor.off(events.moduleChanged, this.onPropertyChanged);
-        this.editor.off('keydown', this.onKeydown);
-        this.editor.on('rtl-changed', this.applyRtlSettings);
+        this.editor.off(events.keydown, this.onKeydown);
+        this.editor.off(events.rtlChanged, this.applyRtlSettings);
         this.editor.off(events.destroy, this.destroy);
     }
 
     private init(): void {
-        let items: ToolbarItemModel[];
-        if (this.editor.inlineToolbar.items.length > 0) {
-            items = this.editor.inlineToolbar.items;
-        }
-        else {
-            items = getInlineToolbarItems();
-            /* eslint-disable @typescript-eslint/no-explicit-any */
-            const prevOnChange: boolean = (this.editor as any).isProtectedOnChange;
-            (this.editor as any).isProtectedOnChange = true;
-            this.editor.inlineToolbar.items = items;
-            (this.editor as any).isProtectedOnChange = prevOnChange;
-            /* eslint-enable @typescript-eslint/no-explicit-any */
-        }
-        const flatenedToolbarItems: ItemModel[] = transformIntoToolbarItem(items);
         this.toolbarEle = this.editor.createElement('div', {
-            className: 'e-blockeditor-inline-toolbar'
+            className: constants.BLOCKEDITOR_INLINETBAR_CLS
         });
         this.popupElement = this.editor.createElement('div', {
-            className: 'e-blockeditor-inline-toolbar-popup'
+            className: constants.INLINE_TBAR_POPUP_CLS
         });
         document.body.appendChild(this.toolbarEle);
         document.body.appendChild(this.popupElement);
 
         this.toolbarObj = this.renderToolbar({
             element: this.toolbarEle,
-            items: flatenedToolbarItems,
+            items: this.getToolbarItems(),
             width: this.editor.inlineToolbar.width,
             overflowMode: 'Extended',
             enablePersistence: this.editor.enablePersistence
         });
-        const args: IPopupRenderOptions = {
+        this.popupObj = this.editor.popupRenderer.renderPopup({
             element: this.popupElement,
             content: this.toolbarEle
-        };
-        this.popupObj = this.editor.popupRenderer.renderPopup(args);
+        });
+    }
+
+    private getToolbarItems(): ItemModel[] {
+        const tbarItems: ToolbarItemModel[] = this.editor.inlineToolbar.items.length > 0
+            ? this.editor.inlineToolbar.items
+            : getInlineToolbarItems();
+
+        if (this.editor.inlineToolbar.items.length <= 0) {
+            const prevOnChange: boolean = this.editor.isProtectedOnChange;
+            this.editor.isProtectedOnChange = true;
+            this.editor.inlineToolbar.items = tbarItems;
+            this.editor.isProtectedOnChange = prevOnChange;
+        }
+        return transformIntoToolbarItem(tbarItems);
     }
 
     private onKeydown(e: KeyboardEvent): void {
         const normalizedKey: string = getNormalizedKey(e);
         if (!normalizedKey) { return; }
+
         const command: string = this.editor.keyCommandMap.get(normalizedKey);
         const allowedCommands: string[] = ['bold', 'italic', 'underline', 'strikethrough'];
+
         if (allowedCommands.indexOf(command) !== -1) {
             e.preventDefault();
-            const selection: Selection = window.getSelection();
-            if (selection.isCollapsed) {
+            if (window.getSelection().isCollapsed) {
                 this.editor.formattingAction.toggleActiveFormats(command as keyof StyleModel);
             }
             else {
@@ -122,20 +122,30 @@ export class InlineToolbarModule {
 
     private bindTooltip(): void {
         if (!this.editor.inlineToolbar.enableTooltip) { return; }
+
         this.inlineToolbarTooltip = this.editor.tooltipRenderer.renderTooltip({
-            cssClass: 'e-blockeditor-inline-toolbar-tooltip',
+            cssClass: constants.INLINE_TBAR_TOOLTIP_CLS,
             position: 'TopCenter',
-            target: '.e-toolbar-item',
+            target: '.' + constants.TBAR_ITEM_CLS,
             windowCollision: true,
-            element: document.querySelector('.e-blockeditor-inline-toolbar-popup') as HTMLElement
+            element: document.querySelector('.' + constants.INLINE_TBAR_POPUP_CLS) as HTMLElement
         });
     }
 
+    /**
+     * Shows the inline toolbar at the current selection
+     *
+     * @param {Range} range - Selection range where the toolbar should appear
+     * @param {Event} event - Optional event that triggered the toolbar
+     * @returns {void}
+     * @hidden
+     */
     public showInlineToolbar(range: Range, event?: Event): void {
-        const notAllowedTypes: string[] = ['Code', 'Image'];
-        const blockElement: HTMLElement = findClosestParent(range.commonAncestorContainer, '.e-block');
+        const notAllowedTypes: string[] = [BlockType.Code, BlockType.Image];
+        const blockElement: HTMLElement = findClosestParent(range.commonAncestorContainer, '.' + constants.BLOCK_CLS);
         const blockType: string = blockElement.getAttribute('data-block-type');
         if (!this.editor.inlineToolbar.enable || (notAllowedTypes.indexOf(blockType) !== -1)) { return; }
+
         const eventArgs: ToolbarOpenEventArgs = {
             items: this.editor.inlineToolbar.items,
             event: event,
@@ -145,16 +155,25 @@ export class InlineToolbarModule {
             this.editor.inlineToolbar.open.call(this, eventArgs);
         }
         if (eventArgs.cancel) { return; }
+
         this.editor.notify(events.inlineToolbarBeforeOpen, event);
         this.editor.popupRenderer.adjustPopupPositionRelativeToTarget(range, this.popupObj);
+
         this.popupObj.show();
     }
 
+    /**
+     * Hides the inline toolbar
+     *
+     * @param {Event} e - Optional event that triggered hiding the toolbar
+     * @returns {void}
+     */
     public hideInlineToolbar(e?: Event): void {
-        const inlineTbarPopup: HTMLElement = document.querySelector('.e-blockeditor-inline-toolbar-popup');
+        const inlineTbarPopup: HTMLElement = document.querySelector('.' + constants.INLINE_TBAR_POPUP_CLS);
         if (inlineTbarPopup && !inlineTbarPopup.classList.contains('e-popup-open')) {
             return;
         }
+
         const eventArgs: ToolbarCloseEventArgs = {
             items: this.editor.inlineToolbar.items,
             event: e,
@@ -164,6 +183,7 @@ export class InlineToolbarModule {
             this.editor.inlineToolbar.close.call(this, eventArgs);
         }
         if (eventArgs.cancel) { return; }
+
         this.popupObj.hide();
     }
 
@@ -174,12 +194,16 @@ export class InlineToolbarModule {
      * @returns {Toolbar} The rendered toolbar instance.
      */
     renderToolbar(args: IToolbarRenderOptions): Toolbar {
-        this.toolbar = this.toolbarRenderer.renderToolbar(args);
-        return this.toolbar;
+        return this.toolbarRenderer.renderToolbar(args);
     }
 
     private handleInlineToolbarCreated(): void {
-        this.initializeColorPickers();
+        if (this.editor.inlineToolbar.items.find((item: ToolbarItemModel) => item.id === 'color')) {
+            this.initializeColorPickerAndDropdown('color');
+        }
+        if (this.editor.inlineToolbar.items.find((item: ToolbarItemModel) => item.id === 'bgColor')) {
+            this.initializeColorPickerAndDropdown('bgColor');
+        }
     }
 
     private handleInlineToolbarItemClick(args: ClickEventArgs): void {
@@ -210,96 +234,57 @@ export class InlineToolbarModule {
         this.toggleToolbarActiveState();
     }
 
+    /**
+     * Updates active state of toolbar buttons based on current selection formatting
+     *
+     * @returns {void}
+     * @hidden
+     */
     public toggleToolbarActiveState(): void {
-        const range: Range = getSelectionRange();
+        const range: Range = getSelectedRange();
         if (!range) { return; }
 
         const blockElement: HTMLElement = getParentBlock(range.startContainer);
         if (!blockElement) { return; }
 
-        const block: BlockModel = getBlockModelById(blockElement.id, this.editor.blocksInternal);
-        if (!block || !block.content) { return; }
-
+        const block: BlockModel = getBlockModelById(blockElement.id, this.editor.getEditorBlocks());
         const contentElement: HTMLElement = getBlockContentElement(blockElement);
-        if (!contentElement) { return; }
-
-        const toolbarEl: HTMLElement = document.querySelector('.e-blockeditor-inline-toolbar-popup');
-        if (!toolbarEl) { return; }
-
+        const toolbarEl: HTMLElement = document.querySelector('.' + constants.INLINE_TBAR_POPUP_CLS);
         const toolbarItems: NodeListOf<HTMLElement> = toolbarEl.querySelectorAll('.e-toolbar-item');
-
         toolbarItems.forEach((item: HTMLElement) => item.classList.remove('e-active'));
 
-        const normalizedRange: Range = normalizeRange(range);
+        const selectedContentModels: ContentModel[] = this.getSelectedContentModels(range, contentElement, block);
+        const commonStyles: Styles = this.getCommonStyles(selectedContentModels);
 
-        const selectedNodes: Node[] = this.getNodesInRange(normalizedRange, contentElement);
-        const selectedContentModels: ContentModel[] = [];
-
-        selectedNodes.forEach((node: Node) => {
-            const id: string = (node as HTMLElement).id;
-            const model: ContentModel = block.content.find((content: ContentModel) => content.id === id);
-            if (model) {
-                selectedContentModels.push(model);
-            }
-        });
-
-        if (!selectedContentModels.length) { return; }
-
-        const commonStyles: Partial<StyleModel> = this.getCommonStyles(selectedContentModels);
-
-        toolbarItems.forEach((item: HTMLElement) => {
+        for (const item of Array.from(toolbarItems)) {
             const command: BuiltInToolbar = item.getAttribute('data-command') as BuiltInToolbar;
+            this.toggleActiveState(item, command, commonStyles);
+        }
+    }
 
-            let isActive: boolean = false;
-            switch (command) {
-            case 'Bold':
-                isActive = commonStyles.bold === true;
-                break;
-            case 'Italic':
-                isActive = commonStyles.italic === true;
-                break;
-            case 'Underline':
-                isActive = commonStyles.underline === true;
-                break;
-            case 'Strikethrough':
-                isActive = commonStyles.strikethrough === true;
-                break;
-            case 'Superscript':
-                isActive = commonStyles.superscript === true;
-                break;
-            case 'Subscript':
-                isActive = commonStyles.subscript === true;
-                break;
-            case 'Uppercase':
-                isActive = commonStyles.uppercase === true;
-                break;
-            case 'Lowercase':
-                isActive = commonStyles.lowercase === true;
-                break;
-
-            case 'Color':
-            case 'BgColor': {
-                const type: 'color' | 'bgColor' = command === 'Color' ? 'color' : 'bgColor';
-                // es-lint-disable-next-line  @typescript-eslint/no-explicit-any
-                this.setColors(type, (commonStyles as any)[`${type}`]);
-                break;
-            }
-            }
-            item.classList.toggle('e-active', isActive);
-        });
+    private getSelectedContentModels(range: Range, contentElement: HTMLElement, block: BlockModel): ContentModel[] {
+        const selectedNodes: Node[] = this.getNodesInRange(normalizeRange(range), contentElement);
+        return block.content.filter((content: ContentModel) =>
+            selectedNodes.some((node: Node) => content.id === (node as HTMLElement).id)
+        );
     }
 
     private getNodesInRange(range: Range, container: HTMLElement): Node[] {
         const selectedNodes: Node[] = [];
-
         const walker: TreeWalker = document.createTreeWalker(
             container,
             NodeFilter.SHOW_ELEMENT,
             {
                 acceptNode: (node: Node) => {
-                    const nodeRange: Range = document.createRange();
-                    nodeRange.selectNodeContents(node);
-                    return range.intersectsNode(node) ? NodeFilter.FILTER_ACCEPT : NodeFilter.FILTER_REJECT;
+                    if (node.nodeType === Node.ELEMENT_NODE) {
+                        const nodeStart: number = range.comparePoint(node, 0);
+                        const nodeEnd: number = range.comparePoint(node, node.childNodes.length);
+
+                        if (nodeStart <= 0 && nodeEnd >= 0) {
+                            return NodeFilter.FILTER_ACCEPT;
+                        }
+                    }
+                    return NodeFilter.FILTER_REJECT;
                 }
             }
         );
@@ -310,62 +295,72 @@ export class InlineToolbarModule {
         return selectedNodes;
     }
 
-    private getCommonStyles(contentModels: ContentModel[]): Partial<StyleModel> {
-        if (!contentModels.length) { return{}; }
-
-        const commonStyles: Partial<StyleModel> = deepClone(sanitizeStyles(contentModels[0].styles));
-
-        for (let i: number = 1; i < contentModels.length; i++) {
-            const currentStyles: Partial<StyleModel> = contentModels[parseInt(i.toString(), 10)].styles;
-
-            commonStyles.bold = commonStyles.bold && currentStyles.bold;
-            commonStyles.italic = commonStyles.italic && currentStyles.italic;
-            commonStyles.underline = commonStyles.underline && currentStyles.underline;
-            commonStyles.strikethrough = commonStyles.strikethrough && currentStyles.strikethrough;
-            commonStyles.superscript = commonStyles.superscript && currentStyles.superscript;
-            commonStyles.subscript = commonStyles.subscript && currentStyles.subscript;
-            commonStyles.uppercase = commonStyles.uppercase && currentStyles.uppercase;
-            commonStyles.lowercase = commonStyles.lowercase && currentStyles.lowercase;
-
-            commonStyles.color = (commonStyles.color === currentStyles.color) ? commonStyles.color : '';
-            commonStyles.bgColor = (commonStyles.bgColor === currentStyles.bgColor) ? commonStyles.bgColor : '';
-
-            commonStyles.custom = (commonStyles.custom === currentStyles.custom) ? commonStyles.custom : '';
+    private toggleActiveState(item: HTMLElement, command: BuiltInToolbar, styles: Styles): void {
+        let isActive: boolean = false;
+        switch (command) {
+        case 'Bold': isActive = styles.bold === true; break;
+        case 'Italic': isActive = styles.italic === true; break;
+        case 'Underline': isActive = styles.underline === true; break;
+        case 'Strikethrough': isActive = styles.strikethrough === true; break;
+        case 'Superscript': isActive = styles.superscript === true; break;
+        case 'Subscript': isActive = styles.subscript === true; break;
+        case 'Uppercase': isActive = styles.uppercase === true; break;
+        case 'Lowercase': isActive = styles.lowercase === true; break;
+        case 'Color': this.setColors('color', (styles.color as string)); break;
+        case 'BgColor': this.setColors('bgColor', (styles.bgColor as string)); break;
         }
-
-        return commonStyles;
+        item.classList.toggle('e-active', isActive);
     }
 
-    private initializeColorPickers(): void {
-        const toolbarElement: HTMLElement = document.querySelector('.e-blockeditor-inline-toolbar');
-        if (!toolbarElement) { return; }
-        this.textPickerElement = this.editor.createElement('input', { attrs: { type: 'color' } });
-        this.textColorPicker = this.createColorPicker('color', this.textPickerElement);
-        const colorBtn: HTMLSpanElement = (toolbarElement.querySelector('#toolbar-color-dropdown') as HTMLSpanElement);
-
-        if (colorBtn) {
-            this.textColorDDB = this.createDropDown({
-                instance: {
-                    target: this.textColorPicker.element.closest('.e-colorpicker-wrapper')
-                },
-                element: colorBtn,
-                inlineClass: 'e-inline-color-icon',
-                type: 'color'
-            });
+    private getCommonStyles(contentModels: ContentModel[]): Styles {
+        if (!contentModels.length || !contentModels[0].props || !(contentModels[0].props as BaseStylesProp).styles) {
+            return {};
         }
 
-        this.bgPickerElement = this.editor.createElement('input', { attrs: { type: 'color' } });
-        this.bgColorPicker = this.createColorPicker('bgColor', this.bgPickerElement);
-        const bgColorBtn: HTMLSpanElement = (toolbarElement.querySelector('#toolbar-bgcolor-dropdown') as HTMLSpanElement);
-        if (bgColorBtn) {
-            this.bgColorDDB = this.createDropDown({
-                instance: {
-                    target: this.bgColorPicker.element.closest('.e-colorpicker-wrapper')
-                },
-                element: bgColorBtn,
-                inlineClass: 'e-inline-bgColor-icon',
-                type: 'bgColor'
+        const firstStyles: Styles = (contentModels[0].props as BaseStylesProp).styles;
+        const styleKeys: (keyof StyleModel)[] = Object.keys(firstStyles) as (keyof StyleModel)[];
+        const result: Styles = {};
+
+        for (const key of styleKeys) {
+            const firstValue: string | boolean = firstStyles[key as keyof StyleModel];
+            const isCommon: boolean = contentModels.every((model: ContentModel, i: number) => {
+                if (i === 0) { return true; }
+                const styles: Styles = (model.props as BaseStylesProp).styles || {};
+                return (styles as any)[key as any] === firstValue;
             });
+
+            if (isCommon) {
+                result[key as keyof StyleModel] = firstValue;
+            }
+        }
+
+        return result;
+    }
+
+    private initializeColorPickerAndDropdown(type: 'color' | 'bgColor'): void {
+        const toolbarElement: HTMLElement = document.querySelector('.' + constants.BLOCKEDITOR_INLINETBAR_CLS);
+        if (!toolbarElement) { return; }
+
+        const pickerElement: HTMLInputElement = this.editor.createElement('input', { attrs: { type: 'color' } });
+        const colorPicker: ColorPicker = this.createColorPicker(type, pickerElement);
+        const colorBtn: HTMLSpanElement = toolbarElement.querySelector(`#toolbar-${type.toLowerCase()}-dropdown`) as HTMLSpanElement;
+
+        if (colorBtn) {
+            const dropDown: DropDownButton = this.createDropDown({
+                instance: { target: colorPicker.element.closest('.e-colorpicker-wrapper') },
+                element: colorBtn,
+                inlineClass: `e-inline-${type}-icon`,
+                type
+            });
+            if (type === 'color') {
+                this.textPickerElement = pickerElement;
+                this.textColorPicker = colorPicker;
+                this.textColorDDB = dropDown;
+            } else {
+                this.bgPickerElement = pickerElement;
+                this.bgColorPicker = colorPicker;
+                this.bgColorDDB = dropDown;
+            }
         }
     }
 
@@ -389,7 +384,7 @@ export class InlineToolbarModule {
         return colorPicker;
     }
 
-    private createDropDown(args: IDropDownButtonArgs): DropDownButton {
+    private createDropDown(args: IDropDownRenderOptions): DropDownButton {
         const dropDown: DropDownButton = new DropDownButton({
             target: args.instance.target,
             cssClass: args.instance.cssClass,
@@ -408,7 +403,7 @@ export class InlineToolbarModule {
     }
 
     private setColors(type: 'color' | 'bgColor', value?: string ): void {
-        const toolbarElement: HTMLElement = document.querySelector('.e-blockeditor-inline-toolbar');
+        const toolbarElement: HTMLElement = document.querySelector('.' + constants.BLOCKEDITOR_INLINETBAR_CLS);
         const colorBtn: HTMLSpanElement = (toolbarElement.querySelector('#toolbar-color-dropdown') as HTMLSpanElement);
         const bgColorBtn: HTMLSpanElement = (toolbarElement.querySelector('#toolbar-bgcolor-dropdown') as HTMLSpanElement);
         const currentColor: string = value ? value : '#000000';
@@ -452,7 +447,13 @@ export class InlineToolbarModule {
         return 'inlineToolbar';
     }
 
+    /**
+     * Destroys the inline toolbar module and cleans up resources
+     *
+     * @returns {void}
+     */
     public destroy(): void {
+        this.removeEventListeners();
         if (this.toolbarObj) {
             this.toolbarObj.destroy();
             detach(this.toolbarEle);
@@ -484,20 +485,18 @@ export class InlineToolbarModule {
         if (this.inlineToolbarTooltip) {
             this.inlineToolbarTooltip.destroy();
         }
-        this.toolbar = null;
         this.toolbarRenderer = null;
         this.inlineToolbarTooltip = null;
-        this.removeEventListeners();
+        this.editor = null;
     }
 
     /**
-     * Called internally if any of the property value changed.
+     * Handles property changes to update the toolbar configuration
      *
      * @param {BlockEditorModel} e - specifies the element.
      * @returns {void}
      * @hidden
      */
-    /* eslint-disable */
     protected onPropertyChanged(e: { [key: string]: BlockEditorModel }): void {
         if (e.module !== this.getModuleName()) {
             return;
@@ -521,5 +520,4 @@ export class InlineToolbarModule {
             }
         }
     }
-    /* eslint-enable */
 }

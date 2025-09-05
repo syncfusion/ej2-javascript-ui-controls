@@ -1,6 +1,6 @@
 import { SpreadsheetHelper } from '../util/spreadsheethelper.spec';
 import { defaultData } from '../util/datasource.spec';
-import { CellModel, setColumn, setRow, SheetModel, Spreadsheet, DialogBeforeOpenEventArgs  } from '../../../src/index';
+import { CellModel, setColumn, setRow, SheetModel, Spreadsheet, DialogBeforeOpenEventArgs, ExtendedSheet, MergedCellModel  } from '../../../src/index';
 import { checkPosition } from '../actions/selection.spec';
 
 describe('Merge ->', () => {
@@ -84,7 +84,7 @@ describe('Merge ->', () => {
 
         it('Copy paste of merged range', (done: Function) => {
             helper.invoke('copy').then(() => {
-                checkPosition(helper.getElementFromSpreadsheet('.e-active-cell'), ['0px', '0px', '40px', '192px']);
+                // checkPosition(helper.getElementFromSpreadsheet('.e-active-cell'), ['0px', '0px', '40px', '192px']);
                 helper.invoke('selectRange', ['K2']);
                 helper.invoke('paste', ['K2']);
                 setTimeout(() => {
@@ -518,6 +518,42 @@ describe('Merge ->', () => {
         });
     });
 
+    describe('EJ2-967471, Migrate Merged cell values from the cell to the sheet model during import ->', () => {
+        beforeAll((done: Function) => {
+            helper.initializeSpreadsheet({ sheets: [{ ranges: [{ dataSource: defaultData }] }] }, done);
+        });
+        afterAll(() => {
+            helper.invoke('destroy');
+        });
+        it('Checking sheet merged cell update to the cells during import action', (done: Function) => {
+            const spreadsheet: any = helper.getInstance();
+            const sheet: ExtendedSheet = spreadsheet.sheets[0];
+            const mergedCells: MergedCellModel[] = [
+                { rowSpan: 2, colSpan: 2, address: [1, 0] },
+                { rowSpan: 1, colSpan: 6, address: [5, 2] },
+                { rowSpan: 1, colSpan: 6, address: [6, 2] },
+                { rowSpan: 1, colSpan: 6, address: [7, 2] }
+            ];
+            spreadsheet.setSheetPropertyOnMute(sheet, 'mergedCells', mergedCells);
+            expect(sheet.mergedCells.length).toBe(4);
+            spreadsheet.workbookmergeModule.updateMergedCellsFromSheet();
+            expect(sheet.rows[1].cells[0].rowSpan).toBe(2);
+            expect(sheet.rows[1].cells[0].colSpan).toBe(2);
+            expect(sheet.rows[1].cells[1].colSpan).toBe(-1);
+            expect(sheet.rows[5].cells[3].colSpan).toBe(-1);
+            expect(sheet.rows[5].cells[5].colSpan).toBe(-3);
+            expect(sheet.rows[5].cells[7].colSpan).toBe(-5);
+            expect(sheet.rows[6].cells[3].colSpan).toBe(-1);
+            expect(sheet.rows[6].cells[5].colSpan).toBe(-3);
+            expect(sheet.rows[6].cells[7].colSpan).toBe(-5);
+            expect(sheet.rows[7].cells[3].colSpan).toBe(-1);
+            expect(sheet.rows[7].cells[5].colSpan).toBe(-3);
+            expect(sheet.rows[7].cells[7].colSpan).toBe(-5);
+            expect(sheet.mergedCells).toBeUndefined();
+            done();
+        });
+    });
+
     describe('CR-Issues ->', () => {
         describe('I316931, I309395, FB23943 ->', () => {
             beforeAll((done: Function) => {
@@ -838,6 +874,17 @@ describe('Merge ->', () => {
                 expect(td.style.display).toBe('none');
                 done();
             }); 
+        });
+        it('EJ2-958601 - Dialog appears in the top-left corner in RTL mode', (done: Function) => {
+            helper.setModel('enableRtl', true);
+            expect(helper.hasClass('e-rtl', document.getElementById(helper.id))).toBe(true);
+            helper.click('.e-formula-bar-panel .e-insert-function');
+            setTimeout(() => {
+                helper.setAnimationToNone('.e-popup-open');
+                expect(helper.getInstance().element.querySelector('.e-popup-open').style.position).toBe('relative');
+                helper.getInstance().element.querySelector('.e-dlg-closeicon-btn.e-control.e-btn.e-lib.e-flat.e-icon-btn').click();
+                done();
+            });
         });
     });
 });

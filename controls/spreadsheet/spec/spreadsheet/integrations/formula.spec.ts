@@ -17374,7 +17374,7 @@ describe('Spreadsheet formula module ->', () => {
             expect(helper.invoke('getCell', [2, 12]).textContent).toBe('$12.00');
             helper.invoke('numberFormat', [getFormatFromType('Accounting'), 'M4']);
             helper.edit('M4', '=ROUNDUP(I3,1)');
-            expect(helper.invoke('getCell', [3, 12]).textContent).toBe(' $12.00 ');
+            expect(helper.invoke('getCell', [3, 12]).textContent).toBe(' $   12.00 ');
             helper.invoke('numberFormat', ['m/d/yyyy', 'M5']);
             helper.edit('M5', '=MOD(I3,1200)');
             expect(helper.invoke('getCell', [4, 12]).textContent).toBe('1/12/1900');
@@ -25394,7 +25394,7 @@ describe('Spreadsheet formula module ->', () => {
             });
         });
     });
-    describe('Aggegrate formula Not displayed the values correctly ->', () => {
+    describe('EJ2-974770: Aggegrate formula Not displayed the values correctly ->', () => {
         beforeAll((done: Function) => {
             helper.initializeSpreadsheet({ sheets: [{ ranges: [{ dataSource: defaultData }] }] }, done);
         });
@@ -25424,6 +25424,7 @@ describe('Spreadsheet formula module ->', () => {
             });
         });
     });
+
     describe('EJ2-971975 ->', () => {
         beforeAll((done: Function) => {
             helper.initializeSpreadsheet({ activeSheetIndex: 0, sheets: [{ ranges: [{ dataSource: defaultData }] },{},{},{},{},{},{},{},{},{},{},{},{},{},{},{},{},{},{},{},{},{ name: 'IF', rows: [{ index: 4, cells: [{ value: 'Sandals & Floaters'}, { value: '50'}]}]},{},{}] }, done);

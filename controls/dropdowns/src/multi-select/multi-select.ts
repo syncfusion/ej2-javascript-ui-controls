@@ -3185,7 +3185,7 @@ export class MultiSelect extends DropDownBase implements IInput {
     }
     private removeChipSelection(): void {
         if (this.chipCollectionWrapper) {
-            const selectedChips :  NodeListOf<Element> = <NodeListOf<HTMLElement>>
+            const selectedChips:  NodeListOf<Element>  = <NodeListOf<HTMLElement>>
             this.chipCollectionWrapper.querySelectorAll('span.' + CHIP + '.' + CHIP_SELECTED);
             if (selectedChips && selectedChips.length > 0)
             {
@@ -3704,7 +3704,7 @@ export class MultiSelect extends DropDownBase implements IInput {
         let itemData: { [key: string]: Object } | string | boolean | number = { text: value, value: value };
         const chip: HTMLElement = this.createElement('span', {
             className: CHIP,
-            attrs: { 'data-value': <string>value, 'title': data , 'role': 'option', 'aria-selected': 'true'}
+            attrs: { 'data-value': <string>value, 'title': data , 'role': 'option', 'aria-selected': 'true' }
         });
         let compiledString: Function;
         const chipContent: HTMLElement = this.createElement('span', { className: CHIP_CONTENT });
@@ -3923,7 +3923,7 @@ export class MultiSelect extends DropDownBase implements IInput {
                             const ulElement: HTMLElement = this.list.querySelector('ul');
                             if (ulElement) {
                                 if (!(this.mode !== 'CheckBox' && (this.allowFiltering || this.allowCustomValue) &&
-                                    (this.targetElement().trim() !== ''  || (this.targetElement() !== '' && this.allowCustomValue)))) {
+                                    (this.targetElement().trim() !== '' || (this.targetElement() !== '' && this.allowCustomValue)))) {
                                     this.mainList = ulElement.cloneNode ? (ulElement.cloneNode(true) as HTMLElement) : ulElement;
                                 }
                             }
@@ -3931,7 +3931,7 @@ export class MultiSelect extends DropDownBase implements IInput {
                         }
                         this.popupObj.wireScrollEvents();
                         if (!(this.mode !== 'CheckBox' && (this.allowFiltering || this.allowCustomValue) &&
-                            (this.targetElement().trim() !== ''  || (this.targetElement() !== '' && this.allowCustomValue))) && !this.enableVirtualization) {
+                            (this.targetElement().trim() !== '' || (this.targetElement() !== '' && this.allowCustomValue))) && !this.enableVirtualization) {
                             this.loadTemplate();
                             if (this.enableVirtualization && this.mode === 'CheckBox'){
                                 this.UpdateSkeleton();

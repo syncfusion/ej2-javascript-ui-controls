@@ -1,5 +1,4 @@
 import { createElement, isNullOrUndefined as isNOU, detach, closest, addClass, removeClass, select, Browser, formatUnit } from '@syncfusion/ej2-base';
-import { EditorManager } from './../base/editor-manager';
 import * as CONSTANT from './../base/constant';
 import * as classes from './../base/classes';
 import { IHtmlItem } from './../base/interface';

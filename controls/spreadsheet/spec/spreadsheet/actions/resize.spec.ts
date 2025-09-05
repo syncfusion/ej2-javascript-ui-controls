@@ -1502,4 +1502,37 @@ describe('Resize ->', () => {
             done();
         });
     });
+    describe('Accounting Format Column Resize Updates Only Active Cell, Ignores Others', () => {
+        beforeAll((done: Function) => {
+            helper.initializeSpreadsheet({ allowResizing: false, sheets: [{ ranges: [{ dataSource: defaultData }] }] }, done);
+        });
+        afterAll(() => {
+            helper.invoke('destroy');
+        });
+        it('Cell should maintain the size accordingly', (done: Function) => {
+            const spreadsheet: Spreadsheet = helper.getInstance();
+            helper.invoke('getCell', [2, 3]).click();
+            helper.invoke('numberFormat', ['_($* #,##0.00_);_($* (#,##0.00);_($* "-"??_);_(@_)', 'D2']);
+            helper.invoke('numberFormat', ['_($* #,##0.00_);_($* (#,##0.00);_($* "-"??_);_(@_)', 'D5']);
+            helper.invoke('numberFormat', ['_($* #,##0.00_);_($* (#,##0.00);_($* "-"??_);_(@_)', 'D8']);
+            helper.invoke('numberFormat', ['_($* #,##0.00_);_($* (#,##0.00);_($* "-"??_);_(@_)', 'D11']);
+            helper.invoke('cellFormat', [{ textDecoration: 'underline line-through' }, 'D2']);
+            helper.invoke('cellFormat', [{ textDecoration: 'underline line-through' }, 'D5']);
+            helper.invoke('cellFormat', [{ textDecoration: 'underline line-through' }, 'D8']);
+            helper.invoke('cellFormat', [{ textDecoration: 'underline line-through' }, 'D11']);
+            spreadsheet.setColWidth('120', 3, 0);
+            setTimeout(() => {
+                expect(spreadsheet.sheets[0].rows[1].cells[3].format).toBe('_($* #,##0.00_);_($* (#,##0.00);_($* "-"??_);_(@_)');
+                expect(spreadsheet.sheets[0].rows[4].cells[3].format).toBe('_($* #,##0.00_);_($* (#,##0.00);_($* "-"??_);_(@_)');
+                expect(spreadsheet.sheets[0].rows[7].cells[3].format).toBe('_($* #,##0.00_);_($* (#,##0.00);_($* "-"??_);_(@_)');
+                expect(spreadsheet.sheets[0].rows[10].cells[3].format).toBe('_($* #,##0.00_);_($* (#,##0.00);_($* "-"??_);_(@_)');
+                expect(spreadsheet.sheets[0].columns[3].width).toBe(120);
+                expect(helper.invoke('getCell', [1, 3]).style.textDecoration).toBe('underline line-through');
+                expect(helper.invoke('getCell', [4, 3]).style.textDecoration).toBe('underline line-through');
+                expect(helper.invoke('getCell', [7, 3]).style.textDecoration).toBe('underline line-through');
+                expect(helper.invoke('getCell', [10, 3]).style.textDecoration).toBe('underline line-through');
+                done();
+            });
+        });
+    });
 });

@@ -9,12 +9,12 @@ import {
 
 // Rich Text Editor interfaces
 import { IRichTextEditor, ICssClassArgs, IQuickToolbar, IRenderer } from '../base/interface';
-import { NotifyArgs, IDropDownItemModel, ResizeArgs, ITableArgs, IToolbarItemModel, ITableModel } from '../../common/interface';
+import { NotifyArgs, IDropDownItemModel, ResizeArgs, ITableArgs, IToolbarItemModel, ITableModel, SelectionChangedEventArgs, IColorPickerRenderArgs, IColorPickerEventArgs, ActionBeginEventArgs } from '../../common/interface';
 
 // UI components
-import { Dialog, Popup, DialogModel } from '@syncfusion/ej2-popups';
+import { Dialog, Popup, DialogModel, Tooltip, TooltipEventArgs } from '@syncfusion/ej2-popups';
 import { Button } from '@syncfusion/ej2-buttons';
-import { NumericTextBox } from '@syncfusion/ej2-inputs';
+import { ChangeEventArgs, NumericTextBox } from '@syncfusion/ej2-inputs';
 import { ClickEventArgs } from '@syncfusion/ej2-navigations';
 
 // Internal modules
@@ -28,6 +28,8 @@ import { RendererFactory } from '../services/renderer-factory';
 import { RenderType } from '../base/enum';
 import { TableCommand } from '../../editor-manager/plugin/table';
 import { DialogRenderer } from './dialog-renderer';
+import { ColorPickerInput } from '../actions/color-picker';
+import { DropDownButtons } from '../actions';
 
 // Utility functions
 import { dispatchEvent, parseHtml, hasClass } from '../base/util';
@@ -55,15 +57,26 @@ export class Table {
     private tableWidthNum: NumericTextBox;
     private tableCellPadding: NumericTextBox;
     private tableCellSpacing: NumericTextBox;
+    private tableBorderWidth: NumericTextBox;
+    private tableBorderColor: ColorPickerInput;
+    private tableBackgroundColor: ColorPickerInput;
+    private tableBorderStyle: DropDownButtons
+    private tableElement: HTMLElement;
+    private tableCellPaddingValue: string = '';
+    private tableStyles: { [key: string]: string } = {};
     private l10n: L10n;
     private dialogRenderObj: DialogRenderer;
     private isDestroyed: boolean;
     private createTablePopupBoundFn: () => void
+    private selectionTimeout: number;
 
     private constructor(parent?: IRichTextEditor, serviceLocator?: ServiceLocator) {
         this.parent = parent;
         this.rteID = parent.element.id;
         this.l10n = serviceLocator.getService<L10n>('rteLocale');
+        this.tableBorderStyle = new DropDownButtons(this.parent, serviceLocator);
+        this.tableBorderColor = new ColorPickerInput(this.parent, serviceLocator);
+        this.tableBackgroundColor = new ColorPickerInput(this.parent, serviceLocator);
         this.rendererFactory = serviceLocator.getService<RendererFactory>('rendererFactory');
         this.dialogRenderObj = serviceLocator.getService<DialogRenderer>('dialogRenderObject');
         this.addEventListener();
@@ -101,6 +114,7 @@ export class Table {
         // Toolbar and dropdown events
         this.parent.on(events.tableToolbarAction, this.onToolbarAction, this);
         this.parent.on(events.dropDownSelect, this.dropdownSelect, this);
+        this.parent.on(events.colorPickerChanged, this.tableColorHandler, this);
 
         // Keyboard and input events
         this.parent.on(events.keyDown, this.keyDown, this);
@@ -143,6 +157,7 @@ export class Table {
         // Toolbar and dropdown events
         this.parent.off(events.tableToolbarAction, this.onToolbarAction);
         this.parent.off(events.dropDownSelect, this.dropdownSelect);
+        this.parent.off(events.colorPickerChanged, this.tableColorHandler);
 
         // Keyboard and input events
         this.parent.off(events.keyDown, this.keyDown);
@@ -251,6 +266,11 @@ export class Table {
             // Method for Checks if the table quick toolbar is currently visible in the document.
             isTableQuickToolbarVisible: () => {
                 return this.isTableQuickToolbarVisible();
+            },
+
+            //Method for enableUndo
+            enableUndo: () => {
+                this.enableUndo();
             }
         };
         return tableModel;
@@ -269,13 +289,22 @@ export class Table {
      */
     private resizeStart(args: ResizeArgs): void {
         if (this.parent.contentModule.getDocument().activeElement !== this.parent.inputElement) {
-            this.parent.focusIn();
+            this.parent.inputElement.focus({ preventScroll: true });
         }
         this.parent.trigger(events.resizeStart, args, (resizeStartArgs: ResizeArgs) => {
             if (resizeStartArgs.cancel && this.tableObj) {
                 this.tableObj.cancelResizeAction();
             }
         });
+    }
+
+    /*
+     * enableUndo method
+     */
+    private enableUndo(): void {
+        if (this.parent.formatter) {
+            this.parent.formatter.enableUndo(this.parent);
+        }
     }
 
     /*
@@ -359,7 +388,8 @@ export class Table {
             this.rowTextBox,
             this.tableWidthNum,
             this.tableCellPadding,
-            this.tableCellSpacing
+            this.tableCellSpacing,
+            this.tableBorderWidth
         ];
         for (let i: number = 0; i < numericTextBoxObj.length; i++) {
             if (numericTextBoxObj[i as number]) {
@@ -378,6 +408,17 @@ export class Table {
      */
     private dropdownSelect(e: ClickEventArgs): void {
         const item: IDropDownItemModel = e.item as IDropDownItemModel;
+        if (item.command === 'BorderStyle') {
+            const actionBeginArgs: ActionBeginEventArgs = { cancel: false, requestType: 'BorderStyle' };
+            this.parent.trigger(events.actionBegin, actionBeginArgs, (actionBeginArgs: ActionBeginEventArgs) => {
+                if (!actionBeginArgs.cancel) {
+                    const borderDropDown: HTMLElement = this.parent.contentModule.getPanel().ownerDocument.getElementById(this.parent.getID() + '_borderStyle') as HTMLElement;
+                    (borderDropDown.firstChild as HTMLElement).innerHTML = '<span class="e-rte-dropdown-btn-text" >' + item.text + '</span>';
+                    this.tableElement.style.cssText += `border-style: ${item.subCommand.toLowerCase()};`;
+                    this.parent.trigger(events.actionComplete, { requestType: 'BorderStyle' });
+                }
+            });
+        }
         if (!document.body.contains(document.body.querySelector('.e-rte-quick-toolbar')) || item.command !== 'Table') {
             return;
         }
@@ -484,6 +525,30 @@ export class Table {
     }
 
     /*
+     * Invokes the OnSelectionChange Event
+     */
+    private selectionEventTriggers(): void {
+        const selection: Selection = this.parent.contentModule.getDocument().getSelection();
+        const range: Range = selection && selection.rangeCount !== 0 && selection.getRangeAt(0);
+        if (range) {
+            const rangeStartElement: HTMLElement = range.startContainer.nodeName === '#text' ? range.startContainer.parentElement : range.startContainer as HTMLElement;
+            if (rangeStartElement.closest('table')) {
+                const selectedCell: Element | null = rangeStartElement.closest('.e-multi-cells-select');
+                if (!isNullOrUndefined(selectedCell)) {
+                    const targetTable: HTMLTableElement = rangeStartElement.closest('table');
+                    const extractedTable: HTMLTableElement | null = this.tableObj.extractSelectedTable(targetTable, false);
+                    const selectionArgs: SelectionChangedEventArgs = {
+                        selectedContent: extractedTable ? extractedTable.outerHTML : null,
+                        selection: selection,
+                        editorMode: this.parent.editorMode
+                    };
+                    this.parent.trigger(events.selectionChanged, selectionArgs);
+                }
+            }
+        }
+    }
+
+    /*
      * Handles keyboard events after key up in tables.
      * This method identifies the current table cell element based on selection,
      * applies appropriate CSS classes, and manages selection state transitions
@@ -492,6 +557,18 @@ export class Table {
     private tableModulekeyUp(e: NotifyArgs): void {
         if (this.tableObj) {
             this.tableObj.tableModulekeyUp(e);
+        }
+        if (this.selectionTimeout) {
+            clearTimeout(this.selectionTimeout);
+            this.selectionTimeout = null;
+        }
+        const isRteUnitTesting: boolean = (this.parent.element && this.parent.element.dataset && this.parent.element.dataset.rteUnitTesting === 'true');
+        if (isRteUnitTesting) {
+            this.selectionEventTriggers();
+        } else {
+            this.selectionTimeout = window.setTimeout(() => {
+                this.selectionEventTriggers();
+            }, 600);
         }
     }
 
@@ -560,6 +637,27 @@ export class Table {
             this.removeTable(args.selection, args.args as ClickEventArgs);
             break;
         case 'TableEditProperties':
+            this.tableElement = (closest(args.selectParent[0], 'table') as HTMLElement);
+            if (this.tableElement) {
+                const style: CSSStyleDeclaration = this.tableElement.style;
+                this.tableCellPaddingValue = this.tableElement.querySelector('td') ?
+                    (this.tableElement.querySelector('td') as HTMLElement).style.padding : '';
+                this.tableStyles = {
+                    borderStyle: style.borderStyle,
+                    borderColor: style.borderColor,
+                    backgroundColor: style.backgroundColor,
+                    borderWidth: style.borderWidth,
+                    width: style.width,
+                    borderSpacing: style.borderSpacing,
+                    borderCollapse: style.borderCollapse
+                };
+                if (!this.tableElement.style.borderWidth) {
+                    this.tableElement.style.cssText += 'border-width: 1px;';
+                }
+                if (!this.tableElement.style.borderStyle) {
+                    this.tableElement.style.cssText += 'border-style: double;';
+                }
+            }
             this.editTable(args);
             break;
         }
@@ -650,6 +748,8 @@ export class Table {
                 this.hideTableQuickToolbar();
             }
         }
+        const args: MouseEvent = e.args as MouseEvent;
+        this.selectionEventTriggers();
     }
 
     /*
@@ -995,7 +1095,7 @@ export class Table {
             position: { X: 'left', Y: 'bottom' },
             enableRtl: this.parent.enableRtl,
             zIndex: 10001,
-            close: (event: { [key: string]: object }) => {
+            close: () => {
                 EventHandler.remove(btnEle, 'click', this.insertTableDialog);
                 this.dlgDiv.removeEventListener('keydown', this.createTablePopupBoundFn);
                 detach(btnEle);
@@ -1064,15 +1164,22 @@ export class Table {
     /*
      * Handles iframe mouse down events by hiding popups and cleaning up resize elements.
      */
-    private onIframeMouseDown(): void {
+    private onIframeMouseDown(e: MouseEvent): void {
         if (this.popupObj) {
             this.popupObj.hide();
         }
-        if (this.parent.inlineMode.enable && this.editdlgObj) {
+        if (this.editdlgObj) {
             this.editdlgObj.hide();
         }
         if (!isNOU(this.parent) && !isNOU(this.parent.contentModule) &&
             !isNOU(this.parent.contentModule.getEditPanel()) && this.tableObj) {
+            if (e && e.target) {
+                const currentTarget: HTMLElement = <HTMLElement>e.target;
+                const isReziseEle: boolean = currentTarget && currentTarget.classList && currentTarget.classList.contains('e-rte-table-resize');
+                if (isReziseEle) {
+                    return;
+                }
+            }
             this.tableObj.removeResizeElement();
         }
     }
@@ -1088,14 +1195,35 @@ export class Table {
             if (this.popupObj) {
                 this.popupObj.hide();
             }
-            if (this.editdlgObj) {
+            if (this.editdlgObj && !target.closest('.e-border-style-btn') && !target.closest('.e-rte-border-colorpicker') && !target.closest('.e-rte-table-bg-colorpicker')) {
+                if (this.editdlgObj.element.querySelector('.e-rte-edit-table-content')) {
+                    for (const property in this.tableStyles) {
+                        if (Object.prototype.hasOwnProperty.call(this.tableStyles, property)) {
+                            (this.tableElement.style as CSSStyleDeclaration)[property as any] = this.tableStyles[property as string];
+                        }
+                    }
+                    const tdElements: NodeListOf<HTMLTableCellElement> = this.tableElement.querySelectorAll('td,th');
+                    for (let i: number = 0; i < tdElements.length; i++) {
+                        if (this.tableCellPaddingValue) {
+                            tdElements[i as number].style.padding = this.tableCellPaddingValue;
+                        }
+                        else {
+                            tdElements[i as number].style.padding = '';
+                        }
+                    }
+                }
+                const colorPickerPopup: HTMLElement = this.parent.contentModule.getDocument().querySelector('.e-colorpicker-popup.e-popup-open');
+                if (colorPickerPopup) {
+                    colorPickerPopup.classList.remove('e-popup-open');
+                    colorPickerPopup.classList.add('e-popup-close');
+                }
                 this.parent.notify(events.documentClickClosedBy, { closedBy: 'outside click' });
                 this.editdlgObj.hide();
             }
             this.parent.isBlur = true;
             dispatchEvent(this.parent.element, 'focusout');
         }
-        const closestEle: Element = closest(target, 'td');
+        const closestEle: Element = closest(target, 'td') || closest(target, 'th');
         const isExist: boolean = closestEle && this.parent.contentModule.getEditPanel().contains(closestEle) ? true : false;
         if (target && target.tagName !== 'TD' && target.tagName !== 'TH' && !isExist &&
             closest(target, '.e-rte-quick-popup') === null && target.offsetParent &&
@@ -1151,20 +1279,20 @@ export class Table {
      * Opens a dialog to edit properties of an existing table.
      */
     private editTable(args: ITableArgs): void {
-        this.createDialog(args as ITableArgs);
+        this.createDialog();
         const editContent: HTMLElement = this.tableDlgContent(args);
         const update: string = this.l10n.getConstant('dialogUpdate');
         const cancel: string = this.l10n.getConstant('dialogCancel');
         const editHeader: string = this.l10n.getConstant('tableEditHeader');
         this.editdlgObj.setProperties({
-            height: 'initial', width: '290px', content: editContent, header: editHeader,
+            height: 'initial', width: '390px', content: editContent, header: editHeader,
             buttons: [{
-                click: this.applyProperties.bind(this, args),
+                click: this.saveProperties.bind(this),
                 buttonModel: { content: update, cssClass: 'e-flat e-size-update' + this.parent.getCssClass(true), isPrimary: true }
             },
             {
-                click: (e: MouseEvent) => {
-                    this.cancelDialog(e);
+                click: () => {
+                    this.cancelDialog(true);
                 },
                 buttonModel: { cssClass: 'e-flat e-cancel' + this.parent.getCssClass(true), content: cancel }
             }],
@@ -1183,7 +1311,7 @@ export class Table {
         if (proxy.popupObj) {
             proxy.popupObj.hide();
         }
-        proxy.createDialog(args);
+        proxy.createDialog();
         const dlgContent: HTMLElement = proxy.tableCellDlgContent();
         const insert: string = proxy.l10n.getConstant('dialogInsert');
         const cancel: string = proxy.l10n.getConstant('dialogCancel');
@@ -1195,8 +1323,8 @@ export class Table {
                 buttonModel: { content: insert, cssClass: 'e-flat e-insert-table' + ' ' + proxy.parent.cssClass, isPrimary: true }
             },
             {
-                click: (e: MouseEvent) => {
-                    proxy.cancelDialog(e);
+                click: () => {
+                    proxy.cancelDialog();
                 },
                 buttonModel: { cssClass: 'e-flat e-cancel' + ' ' + proxy.parent.cssClass, content: cancel }
             }]
@@ -1215,9 +1343,9 @@ export class Table {
         const tableColumn: string = this.l10n.getConstant('columns');
         const tableRow: string = this.l10n.getConstant('rows');
         const tableWrap: HTMLElement = this.parent.createElement('div', { className: 'e-cell-wrap' + this.parent.getCssClass(true) });
-        const content: string = '<div class="e-rte-field' + this.parent.getCssClass(true) + '"><input type="text" '
+        const content: string = '<div id="tableColumn-parent" class="e-rte-field' + this.parent.getCssClass(true) + '"><input type="text" '
             + ' data-role ="none" id="tableColumn" class="e-table-column' + this.parent.getCssClass(true) + '"/></div>'
-            + '<div class="e-rte-field' + this.parent.getCssClass(true) + '"><input type="text" data-role ="none" id="tableRow" class="e-table-row' + this.parent.getCssClass(true) + '" /></div>';
+            + '<div id="tableRow-parent" class="e-rte-field' + this.parent.getCssClass(true) + '"><input type="text" data-role ="none" id="tableRow" class="e-table-row' + this.parent.getCssClass(true) + '" /></div>';
         const contentElem: DocumentFragment = parseHtml(content);
         tableWrap.appendChild(contentElem);
         this.columnTextBox = new NumericTextBox({
@@ -1238,13 +1366,43 @@ export class Table {
             value: 3,
             placeholder: tableRow,
             floatLabelType: 'Auto',
-            max: 1000,
+            max: 100,
             enableRtl: this.parent.enableRtl, locale: this.parent.locale,
             cssClass: this.parent.getCssClass()
         });
         this.rowTextBox.isStringTemplate = true;
         this.rowTextBox.appendTo(tableWrap.querySelector('#tableRow') as HTMLElement);
+        if (this.parent.showTooltip) {
+            this.createTooltip(
+                ['tableRow-parent', 'tableColumn-parent'],
+                {
+                    'tableRow-parent': 'insertTableRowTitle',
+                    'tableColumn-parent': 'insertTableColumnTitle'
+                },
+                tableWrap
+            );
+        }
         return tableWrap;
+    }
+
+    private createTooltip(targetIds: string[], contentKeys: Record<string, string>, container: HTMLElement): void {
+        const tooltipTarget: string = targetIds.map((id: string) => `#${id}`).join(',');
+        const tooltip: Tooltip = new Tooltip({
+            target: tooltipTarget,
+            showTipPointer: true,
+            openDelay: 400,
+            opensOn: 'Hover',
+            cssClass: this.parent.getCssClass(),
+            windowCollision: true,
+            position: 'BottomCenter',
+            beforeRender: (args: TooltipEventArgs) => {
+                const targetId: string = args.target.id;
+                const contentKey: string = contentKeys[targetId as string] || '';
+                const tooltipText: string = this.l10n.getConstant(contentKey);
+                args.target.setAttribute('title', tooltipText);
+            }
+        });
+        tooltip.appendTo(container);
     }
 
     /*
@@ -1261,7 +1419,7 @@ export class Table {
     /*
      * Creates a dialog for table operations.
      */
-    private createDialog(args: ITableArgs | ClickEventArgs | MouseEvent): void {
+    private createDialog(): void {
         if (this.editdlgObj) {
             this.editdlgObj.hide({ returnValue: true } as Event);
             return;
@@ -1285,8 +1443,8 @@ export class Table {
                 buttonModel: { content: insert, cssClass: 'e-flat e-insert-table' + this.parent.getCssClass(true), isPrimary: true }
             },
             {
-                click: (e: MouseEvent) => {
-                    this.cancelDialog(e);
+                click: () => {
+                    this.cancelDialog();
                 },
                 buttonModel: { cssClass: 'e-flat e-cancel' + this.parent.getCssClass(true), content: cancel }
             }],
@@ -1294,6 +1452,22 @@ export class Table {
             animationSettings: { effect: 'None' },
             close: (event: { [key: string]: object }) => {
                 this.parent.isBlur = false;
+                if (this.editdlgObj.element.querySelector('.e-rte-edit-table-content') && (event.closedBy.toString() === 'escape' || event.closedBy.toString() === 'close icon')) {
+                    for (const property in this.tableStyles) {
+                        if (Object.prototype.hasOwnProperty.call(this.tableStyles, property)) {
+                            (this.tableElement.style as CSSStyleDeclaration)[property as any] = this.tableStyles[property as string];
+                        }
+                    }
+                    const tdElements: NodeListOf<HTMLTableCellElement> = this.tableElement.querySelectorAll('td,th');
+                    for (let i: number = 0; i < tdElements.length; i++) {
+                        if (this.tableCellPaddingValue) {
+                            tdElements[i as number].style.padding = this.tableCellPaddingValue;
+                        }
+                        else {
+                            tdElements[i as number].style.padding = '';
+                        }
+                    }
+                }
                 this.editdlgObj.destroy();
                 detach(this.editdlgObj.element);
                 this.dialogRenderObj.close(event);
@@ -1331,48 +1505,64 @@ export class Table {
     /*
      * Handles dialog cancellation and cleanup.
      */
-    private cancelDialog(e: MouseEvent): void {
+    private cancelDialog(isEditTable?: boolean): void {
+        if (isEditTable) {
+            for (const property in this.tableStyles) {
+                if (Object.prototype.hasOwnProperty.call(this.tableStyles, property)) {
+                    (this.tableElement.style as CSSStyleDeclaration)[property as any] = this.tableStyles[property as string];
+                }
+            }
+            const tdElements: NodeListOf<HTMLTableCellElement> = this.tableElement.querySelectorAll('td,th');
+            for (let i: number = 0; i < tdElements.length; i++) {
+                if (this.tableCellPaddingValue) {
+                    tdElements[i as number].style.padding = this.tableCellPaddingValue;
+                }
+                else {
+                    tdElements[i as number].style.padding = '';
+                }
+            }
+        }
         this.parent.isBlur = false;
         this.editdlgObj.hide({ returnValue: true } as Event);
     }
 
     /*
+     * Applies the table color properties from the dialog to the selected table.
+     */
+    private tableColorHandler(colorPickerArgs: IColorPickerEventArgs): void {
+        if (colorPickerArgs.item.subCommand === 'TableBackgroundColor') {
+            const actionBeginArgs: ActionBeginEventArgs = { cancel: false, requestType: 'TableBackgroundColor'};
+            this.parent.trigger(events.actionBegin, actionBeginArgs, (actionBeginArgs: ActionBeginEventArgs) => {
+                if (!actionBeginArgs.cancel) {
+                    if (colorPickerArgs.value === '') {
+                        colorPickerArgs.value = 'transparent';
+                    }
+                    this.tableElement.style.cssText += `background-color: ${colorPickerArgs.value};`;
+                    this.parent.trigger(events.actionComplete, { requestType: 'TableBackgroundColor' });
+                }
+            });
+        }
+        else if (colorPickerArgs.item.subCommand === 'BorderColor') {
+            const actionBeginArgs: ActionBeginEventArgs = { cancel: false, requestType: 'BorderColor' };
+            this.parent.trigger(events.actionBegin, actionBeginArgs, (actionBeginArgs: ActionBeginEventArgs) => {
+                if (!actionBeginArgs.cancel) {
+                    if (colorPickerArgs.value === '') {
+                        colorPickerArgs.value = 'transparent';
+                    }
+                    this.tableElement.style.cssText += `border-color: ${colorPickerArgs.value};`;
+                    this.parent.trigger(events.actionComplete, { requestType: 'BorderColor' });
+                }
+            });
+        }
+    }
+
+
+    /*
      * Applies the table properties from the dialog to the selected table.
      */
-    private applyProperties(args: ITableNotifyArgs, e: MouseEvent): void {
-        const dialogEle: Element = this.editdlgObj.element;
-        if (dialogEle && args && args.selectNode.length > 0 && args.selectNode[0]) {
-            const selectedElement: HTMLElement = (args.selectNode[0] && args.selectNode[0].nodeType === 3 ?
-                args.selectNode[0].parentNode : args.selectNode[0]) as HTMLElement;
-            const table: HTMLTableElement = selectedElement ? closest(selectedElement, 'table') as HTMLTableElement : null;
-            if (table) {
-                table.style.width = dialogEle.querySelector('.e-table-width') ? (dialogEle.querySelector('.e-table-width') as HTMLInputElement).value + 'px'
-                    : table.style.width;
-                if (dialogEle.querySelector('.e-cell-padding') && (dialogEle.querySelector('.e-cell-padding') as HTMLInputElement).value !== '') {
-                    const tdElm: NodeListOf<HTMLElement> = table.querySelectorAll('td');
-                    for (let i: number = 0; i < tdElm.length; i++) {
-                        let padVal: string = '';
-                        if (tdElm[i as number].style.padding === '') {
-                            padVal = (tdElm[i as number].getAttribute('style') ? tdElm[i as number].getAttribute('style') : '') + ' padding:' +
-                                (dialogEle.querySelector('.e-cell-padding') as HTMLInputElement).value + 'px;';
-                        } else {
-                            tdElm[i as number].style.padding = (dialogEle.querySelector('.e-cell-padding') as HTMLInputElement).value + 'px';
-                            padVal = tdElm[i as number].getAttribute('style');
-                        }
-                        tdElm[i as number].style.cssText = padVal;
-                    }
-                }
-                table.cellSpacing = dialogEle.querySelector('.e-cell-spacing') ? (dialogEle.querySelector('.e-cell-spacing') as HTMLInputElement).value
-                    : table.cellSpacing;
-                if (!isNOU(table.cellSpacing) && table.cellSpacing !== '0') {
-                    addClass([table], classes.CLS_TABLE_BORDER);
-                } else {
-                    removeClassWithAttr([table], classes.CLS_TABLE_BORDER);
-                }
-                this.parent.formatter.saveData();
-                this.editdlgObj.hide({ returnValue: true } as Event);
-            }
-        }
+    private saveProperties(): void {
+        this.parent.formatter.saveData();
+        this.editdlgObj.hide({ returnValue: true } as Event);
     }
 
     /*
@@ -1383,45 +1573,111 @@ export class Table {
         const tableWidth: string = this.l10n.getConstant('tableWidth');
         const cellPadding: string = this.l10n.getConstant('cellpadding');
         const cellSpacing: string = this.l10n.getConstant('cellspacing');
+        const borderWidth: string = this.l10n.getConstant('borderWidth');
+        const borderColor: string = this.l10n.getConstant('borderColor');
+        const borderLabel: string = this.l10n.getConstant('borderLabel');
+        const backgroundColor: string = this.l10n.getConstant('tableBackgroundColor');
+        const borderStyle: string = this.l10n.getConstant('borderStyle');
+        const borderWidthtooltip: string = this.l10n.getConstant('borderWidthTooltip');
+        const borderColortooltip: string = this.l10n.getConstant('borderColorTooltip');
+        const borderStyletooltip: string = this.l10n.getConstant('borderStyleTooltip');
         const tableWrap: HTMLElement = this.parent.createElement('div', { className: 'e-table-sizewrap' + this.parent.getCssClass(true) });
         const widthVal: string | number = closest(selectNode, 'table').getClientRects()[0].width;
-        const padVal: string | number = (closest(selectNode, 'td') as HTMLElement).style.padding;
-        const brdSpcVal: string | number = (closest(selectNode, 'table') as HTMLElement).getAttribute('cellspacing');
-        const content: string = '<div class="e-rte-field' + this.parent.getCssClass(true) + '"><input type="text" data-role ="none" id="tableWidth" class="e-table-width' + this.parent.getCssClass(true) + '" '
-            + ' /></div>' + '<div class="e-rte-field' + this.parent.getCssClass(true) + '"><input type="text" data-role ="none" id="cellPadding" class="e-cell-padding' + this.parent.getCssClass(true) + '" />'
-            + ' </div><div class="e-rte-field' + this.parent.getCssClass(true) + '"><input type="text" data-role ="none" id="cellSpacing" class="e-cell-spacing' + this.parent.getCssClass(true) + '" /></div>';
+        const padVal: string | number = closest(selectNode, 'td') ? (closest(selectNode, 'td') as HTMLElement).style.padding : (closest(selectNode, 'th') as HTMLElement).style.padding;
+        const brdSpcVal: string | number = (closest(selectNode, 'table') as HTMLElement).style.borderSpacing;
+        const borderWidthVal: string | number = (closest(selectNode, 'table') as HTMLElement).style.borderWidth;
+        const content: string = '<div class="e-rte-edit-table-content' + this.parent.getCssClass(true) + '"><div class="e-rte-edit-table-cell' + this.parent.getCssClass(true) + '"><div class="e-rte-edit-table-tablewidth' + this.parent.getCssClass(true) + '"><div class="e-rte-edit-table-widthlabel' + this.parent.getCssClass(true) + '"><label>' + tableWidth + '</label></div><div class="e-rte-edit-table-field' + this.parent.getCssClass(true) + '" title="' + tableWidth + '"><input type="text" data-role ="none" id="' + this.parent.getID() + '_tableWidth" class="e-table-width' + this.parent.getCssClass(true) + '" ' + ' /></div></div>'
+            + '<div class="e-rte-edit-table-bgcolor' + this.parent.getCssClass(true) + '"><div class="e-rte-edit-table-bgcolorlabel' + this.parent.getCssClass(true) + '"><label>' + backgroundColor + '</label></div><div class="e-rte-edit-table-field' + this.parent.getCssClass(true) + '" title="' + backgroundColor + '"><input type="color" data-role ="none" id="' + this.parent.getID() + '_backgroundColor" role="combobox" aria-label="Background Color Picker" data-testid="rte-bg-color-picker" class="e-background-color e-rte-bg-color-picker e-colorpicker' + this.parent.getCssClass(true) + '" /></div></div></div>'
+            + '<div class="e-rte-edit-table-cell e-rte-edit-table-element' + this.parent.getCssClass(true) + '"><div class="e-rte-edit-table-cellpadding' + this.parent.getCssClass(true) + '"><div class="e-rte-edit-table-cellpaddinglabel' + this.parent.getCssClass(true) + '"><label>' + cellPadding + '</label></div><div class="e-rte-edit-table-field' + this.parent.getCssClass(true) + '" title="' + cellPadding + '"><input type="text" data-role ="none" id="' + this.parent.getID() + '_cellPadding" class="e-cell-padding' + this.parent.getCssClass(true) + '" /></div></div><div class="e-rte-edit-table-cellspacing' + this.parent.getCssClass(true) + '"><div class="e-rte-edit-table-cellspacinglabel' + this.parent.getCssClass(true) + '"><label>' + cellSpacing + '</label></div><div class="e-rte-edit-table-field' + this.parent.getCssClass(true) + '" title="' + cellSpacing + '"><input type="text" data-role ="none" id="' + this.parent.getID() + '_cellSpacing" class="e-cell-spacing' + this.parent.getCssClass(true) + '" /></div></div></div>'
+            + '<div class="e-rte-edit-table-border e-rte-edit-table-element' + this.parent.getCssClass(true) + '"><div class="e-rte-edit-table-borderlabel' + this.parent.getCssClass(true) + '"><label>' + borderLabel + '</label></div>'
+            + '<div class="e-rte-edit-table-borderfields e-rte-edit-table-element' + this.parent.getCssClass(true) + '"><div class="e-rte-edit-table-borderwidth' + this.parent.getCssClass(true) + '"><div class="e-rte-edit-table-borderwidthlabel' + this.parent.getCssClass(true) + '"><label>' + borderWidth + '</label></div><div class="e-rte-edit-table-field' + this.parent.getCssClass(true) + '" title="' + borderWidthtooltip + '"><input type="text" data-role ="none" id="' + this.parent.getID() + '_borderWidth" role="spinbutton" aria-label="Border Width in pixels" min="0" max="10" step="0.5" value="1" data-testid="rte-border-width-numeric" class="e-border-width e-rte-border-width-numeric e-numerictextbox' + this.parent.getCssClass(true) + '" /></div></div>'
+            + '<div class="e-rte-edit-table-borderstyle' + this.parent.getCssClass(true) + '"><div class="e-rte-edit-table-borderstylelabel' + this.parent.getCssClass(true) + '"><label>' + borderStyle + '</label></div><div class="e-rte-edit-table-field' + this.parent.getCssClass(true) + '" title="' + borderStyletooltip + '"><button role="group" aria-label="Table Styles Configuration" data-testid="rte-styles-section" class="e-border-style e-rte-table-styles" tabindex="0" id="' + this.parent.getID() + '_borderStyle"></button></div></div>'
+            + '<div class="e-rte-edit-table-bordercolor' + this.parent.getCssClass(true) + '"><div class="e-rte-edit-table-borderwidthlabel' + this.parent.getCssClass(true) + '"><label>' + borderColor + '</label></div><div class="e-rte-edit-table-field' + this.parent.getCssClass(true) + '" title="' + borderColortooltip + '"><input type="color" data-role ="none" id="' + this.parent.getID() + '_borderColor" role="combobox" aria-label="Border Color Picker" data-testid="rte-border-color-picker" class="e-border-color e-rte-border-color-picker e-colorpicker' + this.parent.getCssClass(true) + '" /></div></div></div></div>'
+            + '</div>';
         const contentElem: DocumentFragment = parseHtml(content);
         tableWrap.appendChild(contentElem);
+        const styleContainer: HTMLElement = tableWrap.querySelector('.e-border-style');
+        const borderColorContainer: HTMLElement = tableWrap.querySelector('.e-border-color');
+        const bgColorContainer: HTMLElement = tableWrap.querySelector('.e-background-color');
         this.tableWidthNum = new NumericTextBox({
             format: 'n0',
             min: 0,
             value: widthVal,
-            placeholder: tableWidth,
             floatLabelType: 'Auto',
-            enableRtl: this.parent.enableRtl, locale: this.parent.locale
+            enableRtl: this.parent.enableRtl, locale: this.parent.locale,
+            cssClass: this.parent.getCssClass(),
+            change: (args: ChangeEventArgs): void => {
+                this.tableElement.style.cssText += `width: ${args.value}px;`;
+            }
         });
         this.tableWidthNum.isStringTemplate = true;
-        this.tableWidthNum.appendTo(tableWrap.querySelector('#tableWidth') as HTMLElement);
+        this.tableWidthNum.appendTo(tableWrap.querySelector('#' + this.parent.getID() + '_tableWidth') as HTMLElement);
         this.tableCellPadding = new NumericTextBox({
             format: 'n0',
             min: 0,
             value: padVal !== '' ? parseInt(padVal, 10) : 0,
-            placeholder: cellPadding,
             floatLabelType: 'Auto',
-            enableRtl: this.parent.enableRtl, locale: this.parent.locale
+            enableRtl: this.parent.enableRtl, locale: this.parent.locale,
+            cssClass: this.parent.getCssClass(),
+            change: (args: ChangeEventArgs): void => {
+                const tdElm: NodeListOf<HTMLElement> = this.tableElement.querySelectorAll('td,th');
+                for (let i: number = 0; i < tdElm.length; i++) {
+                    let padVal: string = '';
+                    if (tdElm[i as number].style.padding === '') {
+                        padVal = (tdElm[i as number].getAttribute('style') ? tdElm[i as number].getAttribute('style') : '') + ' padding:' +
+                            args.value + 'px;';
+                    } else {
+                        tdElm[i as number].style.padding = args.value + 'px';
+                        padVal = tdElm[i as number].getAttribute('style');
+                    }
+                    tdElm[i as number].style.cssText = padVal;
+                }
+            }
         });
         this.tableCellPadding.isStringTemplate = true;
-        this.tableCellPadding.appendTo(tableWrap.querySelector('#cellPadding') as HTMLElement);
+        this.tableCellPadding.appendTo(tableWrap.querySelector('#' + this.parent.getID() + '_cellPadding') as HTMLElement);
         this.tableCellSpacing = new NumericTextBox({
             format: 'n0',
             min: 0,
             value: brdSpcVal !== '' && !isNOU(brdSpcVal) ? parseInt(brdSpcVal, 10) : 0,
-            placeholder: cellSpacing,
             floatLabelType: 'Auto',
-            enableRtl: this.parent.enableRtl, locale: this.parent.locale
+            enableRtl: this.parent.enableRtl, locale: this.parent.locale,
+            cssClass: this.parent.getCssClass(),
+            change: (args: ChangeEventArgs): void => {
+                if (args.value > 0 && this.tableElement.style.borderCollapse !== 'separate') {
+                    // Remove any existing border-collapse declaration from cssText
+                    this.tableElement.style.cssText = this.tableElement.style.cssText.replace(/border-collapse\s*:\s*[^;]+;?/gi, '');
+                    // Append the new border-collapse value
+                    this.tableElement.style.cssText += 'border-collapse: separate;';
+                }
+                this.tableElement.style.cssText += `border-spacing: ${args.value}px;`;
+            }
         });
         this.tableCellSpacing.isStringTemplate = true;
-        this.tableCellSpacing.appendTo(tableWrap.querySelector('#cellSpacing') as HTMLElement);
+        this.tableCellSpacing.appendTo(tableWrap.querySelector('#' + this.parent.getID() + '_cellSpacing') as HTMLElement);
+        this.tableBorderWidth = new NumericTextBox({
+            format: 'n1',
+            min: 0,
+            max: 10,
+            step: 0.5,
+            value: borderWidthVal !== '' && !isNOU(borderWidthVal) ? parseInt(borderWidthVal, 10) : 1,
+            floatLabelType: 'Auto',
+            enableRtl: this.parent.enableRtl, locale: this.parent.locale,
+            cssClass: this.parent.getCssClass(),
+            change: (args: ChangeEventArgs): void => {
+                this.tableElement.style.cssText += `border-width: ${args.value}px;`;
+            }
+        });
+        this.tableBorderWidth.isStringTemplate = true;
+        this.tableBorderWidth.appendTo(tableWrap.querySelector('#' + this.parent.getID() + '_borderWidth') as HTMLElement);
+        this.tableBorderColor.renderColorPickerInput({ container: borderColorContainer, containerType: 'quick', items: ['bordercolor'] } as IColorPickerRenderArgs, closest(selectNode, 'table') as HTMLElement);
+        borderColorContainer.setAttribute('aria-label', 'Border Color Picker');
+        this.tableBackgroundColor.renderColorPickerInput({ container: bgColorContainer, containerType: 'quick', items: ['tablebackgroundcolor'] } as IColorPickerRenderArgs, closest(selectNode, 'table') as HTMLElement);
+        bgColorContainer.setAttribute('aria-label', 'Background Color Picker');
+        this.tableBorderStyle.renderDropDowns({ container: styleContainer, containerType: 'quick', items: ['borderstyle'] }, closest(selectNode, 'table') as HTMLElement);
+        styleContainer.setAttribute('aria-label', 'Table Styles Configuration');
+        styleContainer.setAttribute('tabindex', '0');
+
         return tableWrap;
     }
 
@@ -1459,6 +1715,22 @@ export class Table {
         if (this.createTableButton && !this.createTableButton.isDestroyed) {
             this.createTableButton.destroy();
             this.createTableButton = null;
+        }
+        if (this.tableBorderWidth && !this.tableBorderWidth.isDestroyed) {
+            this.tableBorderWidth.destroy();
+            this.tableBorderWidth = null;
+        }
+        if (this.tableBackgroundColor) {
+            this.tableBackgroundColor.destroyColorPicker();
+            this.tableBackgroundColor = null;
+        }
+        if (this.tableBorderColor) {
+            this.tableBorderColor.destroyColorPicker();
+            this.tableBorderColor = null;
+        }
+        if (this.tableBorderStyle) {
+            this.tableBorderStyle.destroyDropDowns();
+            this.tableBorderStyle = null;
         }
         this.createTablePopupBoundFn = null;
         this.isDestroyed = true;

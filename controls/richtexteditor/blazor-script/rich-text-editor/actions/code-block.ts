@@ -1,14 +1,14 @@
 /* eslint-disable jsdoc/require-param */
-import { ActionBeginEventArgs, ICodeBlockLanguageModel, IEditorModel, IToolbarItemModel, NotifyArgs, ToolbarClickEventArgs } from '../../src/common/interface';
+import { ActionBeginEventArgs, ICodeBlockLanguageModel, IEditorModel, IToolbarItemModel, NotifyArgs, ToolbarClickEventArgs } from '../../editor-scripts/common/interface';
 import * as events from '../constant';
 import { isNullOrUndefined as isNOU, KeyboardEventArgs } from '../../../base'; /*externalscript*/
 import { ClickEventArgs } from '../../../navigations/src'; /*externalscript*/
-import { CodeBlockSettingsModel } from '../../src/models';
-import { CodeBlockPosition } from   '../../src/editor-manager/base/interface';
-import { CodeBlockPlugin } from '../../src/editor-manager/plugin/code-block';
-import * as EVENTS from '../../src/common/constant';
+import { CodeBlockSettingsModel } from '../../editor-scripts/models';
+import { CodeBlockPosition } from   '../../editor-scripts/editor-manager/base/interface';
+import { CodeBlockPlugin } from '../../editor-scripts/editor-manager/plugin/code-block';
+import * as EVENTS from '../../editor-scripts/common/constant';
 import { SfRichTextEditor } from '../sf-richtexteditor-fn';
-import { IToolbarItems } from '../../src/common/interface';
+import { IToolbarItems } from '../../editor-scripts/common/interface';
 
 /**
  * Code Block module provides functionality for working with code blocks in the Rich Text Editor

@@ -242,7 +242,7 @@ export class ColumnMenu implements IAction {
         if (e.action === 'altDownArrow' && !this.parent.enableAdaptiveUI) {
             const element: HTMLElement = gObj.focusModule.currentInfo.element;
             if (element && element.classList.contains('e-headercell')) {
-                const column: Column = gObj.getColumnByUid(element.firstElementChild.getAttribute('e-mappinguid'));
+                const column: Column = gObj.getColumnByUid(element.firstElementChild.getAttribute('data-mappinguid'));
                 this.openColumnMenuByField(column.field);
             }
         }
@@ -602,7 +602,7 @@ export class ColumnMenu implements IAction {
 
     private getColumn(): Column {
         if (this.headerCell) {
-            const uid: string = this.headerCell.querySelector('.e-headercelldiv').getAttribute('e-mappinguid');
+            const uid: string = this.headerCell.querySelector('.e-headercelldiv').getAttribute('data-mappinguid');
             return this.parent.getColumnByUid(uid);
         }
         return null;

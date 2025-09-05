@@ -1,5 +1,5 @@
 import { createElement, remove } from "@syncfusion/ej2-base";
-import { BlockEditor, BlockModel, BlockType, ContentType } from "../../src/index";
+import { BlockEditor, BlockModel, BlockType, ChecklistProps, ContentType } from "../../src/index";
 import { createEditor } from "../common/util.spec";
 
 describe('List Blocks', () => {
@@ -25,7 +25,7 @@ describe('List Blocks', () => {
                 { id: 'numberedlist', type: BlockType.NumberedList, content: [{ id: 'numberedlist-content', type: ContentType.Text, content: 'Numbered item' }] },
                 { id: 'nested-nl', type: BlockType.NumberedList, indent: 1, content: [{ id: 'nested-nl-content', type: ContentType.Text, content: 'Nested Numbered item' }] },
                 { id: 'deepnested-nl', type: BlockType.NumberedList, indent: 2, content: [{ id: 'deepnested-nl-content', type: ContentType.Text, content: 'Deep Nested Numbered item' }] },
-                { id: 'checklist', type: BlockType.CheckList, content: [{ id: 'checklist-content', type: ContentType.Text, content: 'Checklist item' }] }
+                { id: 'checklist', type: BlockType.Checklist, content: [{ id: 'checklist-content', type: ContentType.Text, content: 'Checklist item' }] }
             ];
             editor = createEditor({ blocks: blocks });
             editor.appendTo('#editor');
@@ -65,14 +65,13 @@ describe('List Blocks', () => {
 
         it('should toggle the checklist properly', () => {
             const listBlock = editorElement.querySelector('#checklist');
-            const checkmark = listBlock.querySelector('.e-checkmark') as HTMLElement;
+            const checkmark = listBlock.querySelector('.e-checkmark-container') as HTMLElement;
             const liElement = listBlock.querySelector('li') as HTMLElement;
-            const model = editor.blocks[5];
-            expect(model.isChecked).toBe(false);
+            const props = (editor.blocks[5].props as ChecklistProps);
+            expect(props.isChecked).toBe(false);
 
             checkmark.click();
-            expect(model.isChecked).toBe(true);
-            expect(checkmark.classList.contains('e-checkmark-checked')).toBe(true);
+            expect(props.isChecked).toBe(true);
             expect(getComputedStyle(liElement).textDecoration).toContain('line-through');
         });
 
@@ -80,7 +79,7 @@ describe('List Blocks', () => {
             const bulletContent = editorElement.querySelector('#bulletlist-content') as HTMLElement;
             bulletContent.textContent = 'Updated bullet item';
             editor.setFocusToBlock(bulletContent.closest('.e-block') as HTMLElement);
-            editor.updateContentOnUserTyping(bulletContent.closest('.e-block') as HTMLElement);
+            editor.stateManager.updateContentOnUserTyping(bulletContent.closest('.e-block') as HTMLElement);
             setTimeout(() => {
                 expect(editor.blocks[0].content[0].content).toBe('Updated bullet item');
                 done();

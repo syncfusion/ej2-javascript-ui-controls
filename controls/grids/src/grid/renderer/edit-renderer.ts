@@ -90,7 +90,7 @@ export class EditRender {
             }
             // eslint-disable-next-line
             value = ((col.valueAccessor as Function)(col.field, args.rowData, col)) as string;
-            cell = form.querySelector('[e-mappinguid=' + col.uid + ']') as HTMLElement;
+            cell = form.querySelector('[data-mappinguid=' + col.uid + ']') as HTMLElement;
             let temp: Function = col.edit.write as Function;
             if (!isNullOrUndefined(cell)) {
                 if (typeof temp === 'string') {
@@ -174,7 +174,7 @@ export class EditRender {
                 const cells: Cell<Column>[] = model.generateRows(args.rowData)[0].cells;
                 const cell: Cell<Column>[] = cells.filter((cell: Cell<Column>) => cell.rowID);
                 const td: Element = cellRenderer.render(
-                    cell[parseInt(i.toString(), 10)], args.rowData, <{ [x: string]: string }>{ 'index': args.row ? (parseInt(args.row.getAttribute(
+                    cell[parseInt(i.toString(), 10)], args.rowData, <{ [x: string]: string }>{ 'data-index': args.row ? (parseInt(args.row.getAttribute(
                         literals.ariaRowIndex), 10) - 1).toString() : 0 }, this.parent.enableVirtualization);
                 const div: Element = td.firstElementChild;
                 div.setAttribute('textAlign', td.getAttribute('textAlign'));
@@ -190,7 +190,7 @@ export class EditRender {
             let temp: Function = col.edit.create as Function;
             let input: Element;
             if (col.editTemplate) {
-                input = this.parent.createElement('span', {attrs: {'e-mappinguid': col.uid}});
+                input = this.parent.createElement('span', {attrs: {'data-mappinguid': col.uid}});
                 const tempID: string = this.parent.element.id + col.uid + 'editTemplate';
                 const tempData: object = extendObjWithFn({}, args.rowData, { column: col });
                 const isReactCompiler: boolean = this.parent.isReact && typeof (col.editTemplate) !== 'string' &&
@@ -221,7 +221,7 @@ export class EditRender {
                 const isInput: number = input.tagName !== 'input' && input.querySelectorAll('input').length;
                 const complexFieldName: string = getComplexFieldID(col.field);
                 attributes(isInput ? input.querySelector('input') : input, {
-                    name: complexFieldName, 'e-mappinguid': col.uid,
+                    name: complexFieldName, 'data-mappinguid': col.uid,
                     id: gObj.element.id + complexFieldName
                 });
                 classList(input, ['e-input', 'e-field'], []);

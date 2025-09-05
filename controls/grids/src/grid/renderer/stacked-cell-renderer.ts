@@ -33,7 +33,7 @@ export class StackedHeaderCellRenderer extends CellRenderer implements ICellRend
         const node: Element = this.element.cloneNode() as Element;
         const div : Element = this.parent.createElement('div', {
             className: 'e-stackedheadercelldiv',
-            attrs: { 'e-mappinguid': cell.column.uid }
+            attrs: { 'data-mappinguid': cell.column.uid }
         });
         const column: Column = cell.column;
         node.appendChild(div);

@@ -48,11 +48,10 @@ describe('Paging module', () => {
             expect(gridObj.element.querySelectorAll('.e-row').length).toBe(2);
         });
         it('current page testing', () => {
-            expect(gridObj.getPager().getElementsByClassName('e-active')[0].getAttribute('index')).toBe('2');
+            expect(gridObj.getPager().getElementsByClassName('e-active')[0].getAttribute('data-index')).toBe('2');
         });
         it('page count testing', () => {
             expect(gridObj.getPager().getElementsByClassName('e-numericcontainer')[0].childNodes.length).toBe(4);
-            expect((<Element>gridObj.getPager().getElementsByClassName('e-numericcontainer')[0].childNodes[0].childNodes[0]).hasAttribute('aria-owns')).toBeTruthy();
         });
         it('totalRecordsCount testing', () => {
             expect(gridObj.pageSettings.totalRecordsCount).toBe(15);
@@ -141,7 +140,7 @@ describe('Paging module', () => {
 
         it('current page onproperty changed testing', (done: Function) => {
             actionComplete = (args: Object): void => {
-                expect(gridObj.getPager().getElementsByClassName('e-active')[0].getAttribute('index')).toBe('4');
+                expect(gridObj.getPager().getElementsByClassName('e-active')[0].getAttribute('data-index')).toBe('4');
                 done();
             };
             gridObj.actionComplete = actionComplete;

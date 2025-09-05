@@ -1,5 +1,5 @@
 import { createElement } from '@syncfusion/ej2-base';
-import { BlockActionItemClickEventArgs, BlockActionItemModel, BlockActionMenuCloseEventArgs, BlockActionMenuOpenEventArgs, BlockEditor, BlockType, ContentType, getBlockContentElement } from '../../src/index';
+import { BlockActionItemClickEventArgs, BlockActionItemModel, BlockActionMenuCloseEventArgs, BlockActionMenuOpenEventArgs, BlockEditor, BlockModel, BlockType, ContentType, getBlockContentElement } from '../../src/index';
 import { createEditor } from '../common/util.spec';
 
 describe('Block Action Menu', () => {
@@ -214,14 +214,14 @@ describe('Block Action Menu', () => {
         it('should recalculate markers for list items on move', function (done) {
             const blockElement = editor.element.querySelector('#paragraph1') as HTMLElement;
             editor.setFocusToBlock(blockElement);
-            const block1 = {
+            const block1: BlockModel = {
                 id: 'list1',
                 type: BlockType.NumberedList,
                 content: [
                     { type: ContentType.Text, content: 'List 1' }
                 ]
             };
-            const block2 = {
+            const block2: BlockModel = {
                 id: 'list2',
                 type: BlockType.NumberedList,
                 content: [
@@ -405,21 +405,23 @@ describe('Block Action Menu', () => {
                     },
                     {
                         id: 'callout-block',
-                        type: 'Callout',
-                        children: [
-                            {
-                                id: 'callout-children',
-                                type: BlockType.Paragraph,
-                                content: [{
-                                    id: 'callout-content',
-                                    type: ContentType.Text,
-                                    content: 'Important: Block Editor supports various content types including Text, Link, Code, Mention, and Label.',
-                                    styles: {
-                                        bold: true
-                                    }
-                                }]
-                            }
-                        ]
+                        type: BlockType.Callout,
+                        props: {
+                            children: [
+                                {
+                                    id: 'callout-children',
+                                    type: BlockType.Paragraph,
+                                    content: [{
+                                        id: 'callout-content',
+                                        type: ContentType.Text,
+                                        content: 'Important: Block Editor supports various content types including Text, Link, Code, Mention, and Label.',
+                                        styles: {
+                                            bold: true
+                                        }
+                                    }]
+                                }
+                            ]
+                        }
                     },
                     {
                         id: 'paragraph3',

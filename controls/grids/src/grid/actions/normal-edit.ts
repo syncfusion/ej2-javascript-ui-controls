@@ -195,7 +195,7 @@ export class NormalEdit {
         if (inputs.length) {
             for (let i: number = 0; i < inputs.length; i++) {
                 const input: Element = inputs[parseInt(i.toString(), 10)];
-                const uid: string = input.getAttribute('e-mappinguid');
+                const uid: string = input.getAttribute('data-mappinguid');
                 const column: Column = this.parent.getColumnByUid(uid);
                 const error: Element = parentsUntil(input, 'e-rowcell').querySelector('.e-error');
                 if (error) {

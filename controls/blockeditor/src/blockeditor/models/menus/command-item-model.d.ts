@@ -10,7 +10,7 @@ export interface CommandItemModel {
      *
      * @default 'Template'
      */
-    type?: BlockType;
+    type?: string | BlockType;
 
     /**
      * Specifies the unique identifier of the command item.

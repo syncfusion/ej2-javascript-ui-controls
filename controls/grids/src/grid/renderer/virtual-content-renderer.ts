@@ -828,8 +828,8 @@ export class VirtualContentRenderer extends ContentRender implements IRenderer {
                 const cell: HTMLElement = cells[parseInt(i.toString(), 10)];
                 let col: Column;
                 if (cell.classList.contains('e-rowcell')) {
-                    if (isNullOrUndefined(cell.getAttribute('aria-colindex')) && cell.querySelector('[e-mappinguid]')) {
-                        const uid: string = cell.querySelector('[e-mappinguid]').getAttribute('e-mappinguid');
+                    if (isNullOrUndefined(cell.getAttribute('aria-colindex')) && cell.querySelector('[data-mappinguid]')) {
+                        const uid: string = cell.querySelector('[data-mappinguid]').getAttribute('data-mappinguid');
                         col = this.parent.getColumnByUid(uid);
                     } else {
                         const idx: number = parseInt(cell.getAttribute('aria-colindex'), 10) - 1;
@@ -837,8 +837,8 @@ export class VirtualContentRenderer extends ContentRender implements IRenderer {
                     }
                 } else {
                     if (cell.classList.contains('e-headercell') || cell.classList.contains('e-filterbarcell')) {
-                        const uid: string = cell.classList.contains('e-filterbarcell') ? cell.getAttribute('e-mappinguid') :
-                            cell.querySelector('[e-mappinguid]').getAttribute('e-mappinguid');
+                        const uid: string = cell.classList.contains('e-filterbarcell') ? cell.getAttribute('data-mappinguid') :
+                            cell.querySelector('[data-mappinguid]').getAttribute('data-mappinguid');
                         col = this.parent.getColumnByUid(uid);
                     }
                 }
@@ -1029,7 +1029,7 @@ export class VirtualContentRenderer extends ContentRender implements IRenderer {
         if (col && allowScroll) {
             let offset: number = this.vgenerator.cOffsets[(col.index - this.parent.getVisibleFrozenColumns()) - 1];
             if (!this.parent.enableColumnVirtualization) {
-                const header: Element = this.parent.getHeaderContent().querySelector('.e-headercelldiv[e-mappinguid="' + col.uid + '"]');
+                const header: Element = this.parent.getHeaderContent().querySelector('.e-headercelldiv[data-mappinguid="' + col.uid + '"]');
                 offset = (header.parentElement as HTMLElement).offsetLeft;
             }
             if (this.parent.enableColumnVirtualization && this.parent.getVisibleFrozenLeftCount()) {
@@ -1671,8 +1671,8 @@ export class VirtualHeaderRenderer extends HeaderRender implements IRenderer {
     private setDisplayNone(col: Column, displayVal: string): void {
         const table: Element = this.getTable();
         for (const ele of [].slice.apply(table.querySelectorAll('th.e-headercell'))) {
-            if (ele.querySelector('[e-mappinguid]') &&
-                ele.querySelector('[e-mappinguid]').getAttribute('e-mappinguid') === col.uid) {
+            if (ele.querySelector('[data-mappinguid]') &&
+                ele.querySelector('[data-mappinguid]').getAttribute('data-mappinguid') === col.uid) {
                 setStyleAttribute(<HTMLElement>ele, { 'display': displayVal });
                 if (displayVal === '') {
                     removeClass([ele], 'e-hide');

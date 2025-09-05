@@ -138,7 +138,7 @@
         }
 
         /* Checklist Block */
-        &[data-block-type = 'CheckList'] {
+        &[data-block-type = 'Checklist'] {
           align-items: center;
           display: flex;
           margin-left: 0;
@@ -146,56 +146,16 @@
             word-break: break-word;
           }
 
-          .e-checkmark {
-            position: relative; /* Required for ripple positioning */
-            min-width: $be-checkbox-width;
-            min-height: $be-checkbox-height;
-            width: $be-checkbox-width;
-            height: $be-checkbox-height;
-            border-width: $be-checkbox-border;
-            border-style: solid;
+          .e-checkmark-container {
             display: inline-flex;
             justify-content: center;
             align-items: center;
             vertical-align: text-bottom;
-            border-radius: $be-checkbox-border-radius;
-            font-size: $be-checkmark-font-size;
-            font-weight: bold;
             user-select: none;
-            transition: background .2s ease-in-out;
             cursor: pointer;
-
-            /* Ripple element */
-            &::before {
-              content: '';
-              position: absolute;
-              top: 0;
-              right: 0;
-              bottom: 0;
-              left: 0;
-              border-radius: 100%;
-              visibility: hidden;
-              pointer-events: none;
-              transform: scale(1);
-              transition: transform .4s ease-out, opacity .4s;
-            }
-
-            /* Trigger ripple on check */
-            &.ripple-animate::before {
-              opacity: 0;
-              visibility: visible;
-              transform: scale(2.5);
-            }
           }
 
           &:has(.e-checked) {
-            .e-checkmark-checked {
-              &::after {
-                font-size: $be-checkmark-font-size;
-                line-height: $be-checkmark-line-height;
-              }
-            }
-
             li {
               text-decoration: line-through;
             }
@@ -544,6 +504,7 @@
       }
     }
 
+    /* ======== RTL Styles ======== */
     &.e-rtl {
 
       /* Block Styles */
@@ -583,7 +544,7 @@
           }
 
           /* Checklist Block */
-          &[data-block-type = 'CheckList'] {
+          &[data-block-type = 'Checklist'] {
             margin-right: 8px;
             margin-left: unset;
           }
@@ -591,7 +552,7 @@
           /* Padding adjustment for Bullet and Numbered list Block */
           &[data-block-type = 'BulletList'],
           &[data-block-type = 'NumberedList'],
-          &[data-block-type = 'CheckList'] {
+          &[data-block-type = 'Checklist'] {
             padding-left: calc(50px - var(--block-indent) * 1px);
             padding-right: calc(var(--block-indent) * 1px);
           }
@@ -746,6 +707,11 @@
         padding-left: 0;
       }
     }
+
+    /* ======== Blazor specific command menu popup styles ======== */
+    .e-dropdownbase.e-dd-group .e-list-item {
+      padding-left: unset;
+    }
   }
 
   /* Context menu styles */
@@ -793,6 +759,20 @@
       .e-toolbar-color-dropdown .e-icons.e-btn-icon,
       .e-toolbar-bgcolor-dropdown .e-icons.e-btn-icon {
         font-size: 12px;
+      }
+
+      /* ======== Blazor specific Toolbar styles ======== */
+      .e-toolbar-color-dropdown,
+      .e-toolbar-bgcolor-dropdown {
+        &.e-btn.e-icon-btn .e-btn-icon {
+          line-height: unset;
+        }
+
+        &.e-btn .e-btn-icon.e-icon-left {
+          margin-left: unset;
+          margin-right: unset;
+          width: unset;
+        }
       }
     }
   }

@@ -20,10 +20,17 @@ export function sanitizeHelper(html: string, enableSanitizer: boolean): string {
  * @returns {string} - returns the string
  */
 export function decode(value: string): string {
-    return value.replace(/&amp;/g, '&').replace(/&amp;lt;/g, '<')
-        .replace(/&lt;/g, '<').replace(/&amp;gt;/g, '>')
-        .replace(/&gt;/g, '>').replace(/&nbsp;/g, ' ')
-        .replace(/&amp;nbsp;/g, ' ').replace(/&quot;/g, '');
+    const entityMap: Record<string, string> = {
+        '&lt;': '<',
+        '&gt;': '>',
+        '&nbsp;': ' ',
+        '&quot;': '"',
+        '&#039;': '\'',
+        '&apos;': '\'',
+        '&amp;': '&'
+    };
+
+    return value.replace(/&(?:amp|lt|gt|nbsp|quot|#039|apos);/g, (match: string) => entityMap[match as string]);
 }
 
 /**
@@ -33,10 +40,13 @@ export function decode(value: string): string {
  * @returns {string} - returns the string
  */
 export function encode(value: string): string {
-    const divNode: HTMLElement = createElement('div');
-    divNode.innerText = value.trim();
-    // eslint-disable-next-line
-    return divNode.innerHTML.replace(/<br\s*[\/]?>/gi, '\n');
+    return value.trim()
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;')
+        .replace(/'/g, '&#039;')
+        .replace(/\n/g, '<br>');
 }
 
 export function escapeHTML(text: string): string {

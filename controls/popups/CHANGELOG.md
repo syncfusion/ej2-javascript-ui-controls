@@ -2,14 +2,6 @@
 
 ## [Unreleased]
 
-## 30.2.7 (2025-08-26)
-
-### Dialog
-
-#### Bug Fixes
-
-- `#I740162` - Fixed an issue where the resize event was not triggered for the dialog when the destroy method was called on a different dialog.
-
 ## 21.1.35 (2023-03-23)
 
 ### Tooltip

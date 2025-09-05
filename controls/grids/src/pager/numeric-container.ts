@@ -125,8 +125,8 @@ export class NumericContainer implements IRender {
         const numericContainer: Element = pagerObj.element.querySelector('.e-numericcontainer');
         const links: NodeList = numericContainer.querySelectorAll('a');
         for (let i: number = 0; i < links.length; i++) {
-            if ((<Element>links[parseInt(i.toString(), 10)]).hasAttribute('aria-label') && (<Element>links[parseInt(i.toString(), 10)]).hasAttribute('index')) {
-                (<Element>links[parseInt(i.toString(), 10)]).setAttribute('aria-label', pagerObj.getLocalizedLabel('Page') + (<Element>links[parseInt(i.toString(), 10)]).getAttribute('index')
+            if ((<Element>links[parseInt(i.toString(), 10)]).hasAttribute('aria-label') && (<Element>links[parseInt(i.toString(), 10)]).hasAttribute('data-index')) {
+                (<Element>links[parseInt(i.toString(), 10)]).setAttribute('aria-label', pagerObj.getLocalizedLabel('Page') + (<Element>links[parseInt(i.toString(), 10)]).getAttribute('data-index')
                     + pagerObj.getLocalizedLabel('Of') + pagerObj.totalPages + pagerObj.getLocalizedLabel('Pages'));
             }
         }
@@ -223,8 +223,8 @@ export class NumericContainer implements IRender {
             e.preventDefault();
         }
         pagerObj.previousPageNo = pagerObj.currentPage;
-        if (!this.target.classList.contains('e-disable') && !isNullOrUndefined(this.target.getAttribute('index'))) {
-            pagerObj.currentPage = parseInt(this.target.getAttribute('index'), 10);
+        if (!this.target.classList.contains('e-disable') && !isNullOrUndefined(this.target.getAttribute('data-index'))) {
+            pagerObj.currentPage = parseInt(this.target.getAttribute('data-index'), 10);
             this.pagerModule.isInteracted = true;
             pagerObj.dataBind();
         }
@@ -299,7 +299,7 @@ export class NumericContainer implements IRender {
                 isLastSet = lastFocused || (this.pagerModule.keyAction === 'End');
                 numItems = this.pagerElement.querySelectorAll(
                     '.e-numericitem:not(.e-hide):not([style*="display: none"]):not(.e-np):not(.e-pp)');
-                const isPageAvailable: boolean = Array.from(numItems).some((item: HTMLElement) => parseInt(item.getAttribute('index'), 10) === pagerObj.currentPage);
+                const isPageAvailable: boolean = Array.from(numItems).some((item: HTMLElement) => parseInt(item.getAttribute('data-index'), 10) === pagerObj.currentPage);
 
                 //Setting pageNo to render based on key action or click action.
                 if (firstFocused || this.pagerModule.keyAction === 'Home') {
@@ -308,16 +308,16 @@ export class NumericContainer implements IRender {
                     pageNo = (currentPageSet * pagerObj.pageCount) + 1 + i;
                 } else if (nextFocused || this.pagerModule.keyAction === 'ArrowRight' || prevFocused || this.pagerModule.keyAction === 'ArrowLeft') {
                     if (isPageAvailable) {
-                        pageNo = parseInt(numItems[0].getAttribute('index'), 10) + i;
+                        pageNo = parseInt(numItems[0].getAttribute('data-index'), 10) + i;
                     } else if (prevFocused || this.pagerModule.keyAction === 'ArrowLeft') {
-                        pageNo = parseInt(this.PP.getAttribute('index'), 10) + i;
+                        pageNo = parseInt(this.PP.getAttribute('data-index'), 10) + i;
                     } else {
                         pageNo = pagerObj.currentPage + i;
                     }
                 } else if (npFocused || ppFocused) {
                     pageNo = pagerObj.currentPage + i;
                 } else if (numItemFocused) {
-                    pageNo = (parseInt(numItems[0].getAttribute('index'), 10) + i);
+                    pageNo = (parseInt(numItems[0].getAttribute('data-index'), 10) + i);
                 } else {
                     pageNo = (currentPageSet * pagerObj.pageCount) + 1 + i;
                 }
@@ -329,7 +329,7 @@ export class NumericContainer implements IRender {
             if (pageNo <= pagerObj.totalPages) {
                 this.links[parseInt(i.toString(), 10)].classList.remove('e-hide');
                 this.links[parseInt(i.toString(), 10)].style.display = '';
-                this.links[parseInt(i.toString(), 10)].setAttribute('index', pageNo.toString());
+                this.links[parseInt(i.toString(), 10)].setAttribute('data-index', pageNo.toString());
                 this.links[parseInt(i.toString(), 10)].innerHTML = !pagerObj.customText ? pageNo.toString() : pagerObj.customText + pageNo;
                 if (pagerObj.currentPage !== pageNo) {
                     this.links[parseInt(i.toString(), 10)].classList.add('e-pager-default');
@@ -344,52 +344,52 @@ export class NumericContainer implements IRender {
             this.links[parseInt(i.toString(), 10)].removeAttribute('aria-current');
         }
         attributes(this.first, {
-            'index': '1',
+            'data-index': '1',
             'title': this.pagerModule.getLocalizedLabel('firstPageTooltip')
         });
         attributes(this.pagerElement.querySelector('.e-mfirst'), {
-            'index': '1',
+            'data-index': '1',
             'title': this.pagerModule.getLocalizedLabel('firstPageTooltip')
         });
         attributes(this.last, {
-            'index': pagerObj.totalPages.toString(),
+            'data-index': pagerObj.totalPages.toString(),
             'title': this.pagerModule.getLocalizedLabel('lastPageTooltip')
         });
         attributes(this.pagerElement.querySelector('.e-mlast'), {
-            'index': pagerObj.totalPages.toString(),
+            'data-index': pagerObj.totalPages.toString(),
             'title': this.pagerModule.getLocalizedLabel('lastPageTooltip')
         });
         attributes(this.prev, {
-            'index': (pagerObj.currentPage - 1).toString(),
+            'data-index': (pagerObj.currentPage - 1).toString(),
             'title': this.pagerModule.getLocalizedLabel('previousPageTooltip')
         });
         attributes(this.pagerElement.querySelector('.e-mprev'), {
-            'index': (pagerObj.currentPage - 1).toString(),
+            'data-index': (pagerObj.currentPage - 1).toString(),
             'title': this.pagerModule.getLocalizedLabel('previousPageTooltip')
         });
         attributes(this.next, {
-            'index': (pagerObj.currentPage + 1).toString(),
+            'data-index': (pagerObj.currentPage + 1).toString(),
             'title': this.pagerModule.getLocalizedLabel('nextPageTooltip')
         });
         attributes(this.pagerElement.querySelector('.e-mnext'), {
-            'index': (pagerObj.currentPage + 1).toString(),
+            'data-index': (pagerObj.currentPage + 1).toString(),
             'title': this.pagerModule.getLocalizedLabel('nextPageTooltip')
         });
         const ppIndex: number = (this.pagerModule.isPagerResized && numItems.length)
             ? isLastSet
-                ? parseInt(numItems[0].getAttribute('index'), 10) - pagerObj.avgNumItems
-                : parseInt(numItems[0].getAttribute('index'), 10) - numItems.length
-            : parseInt(this.links[0].getAttribute('index'), 10) - pagerObj.pageCount;
+                ? parseInt(numItems[0].getAttribute('data-index'), 10) - pagerObj.avgNumItems
+                : parseInt(numItems[0].getAttribute('data-index'), 10) - numItems.length
+            : parseInt(this.links[0].getAttribute('data-index'), 10) - pagerObj.pageCount;
         attributes(this.PP, {
-            'index': ((ppIndex < 1) ? '1' : ppIndex.toString()),
+            'data-index': ((ppIndex < 1) ? '1' : ppIndex.toString()),
             'title': this.pagerModule.getLocalizedLabel('previousPagerTooltip'),
             'aria-label': this.pagerModule.getLocalizedLabel('previousPagerTooltip')
         });
         const NPIndex: number = (this.pagerModule.isPagerResized && numItems.length)
-            ? parseInt(numItems[numItems.length - 1].getAttribute('index'), 10)
-            : parseInt(this.links[this.links.length - 1].getAttribute('index'), 10);
+            ? parseInt(numItems[numItems.length - 1].getAttribute('data-index'), 10)
+            : parseInt(this.links[this.links.length - 1].getAttribute('data-index'), 10);
         attributes(this.NP, {
-            'index': (NPIndex + 1).toString(),
+            'data-index': (NPIndex + 1).toString(),
             'title': this.pagerModule.getLocalizedLabel('nextPagerTooltip'),
             'aria-label': this.pagerModule.getLocalizedLabel('nextPagerTooltip')
         });
@@ -402,7 +402,7 @@ export class NumericContainer implements IRender {
         this.updateNextPagerSetStyles();
         this.updateNextNLastStyles();
         if (this.links.length) {
-            const currentPageIndex: number = this.links.findIndex((link: HTMLElement) => link.getAttribute('index') === this.pagerModule.currentPage.toString());
+            const currentPageIndex: number = this.links.findIndex((link: HTMLElement) => link.getAttribute('data-index') === this.pagerModule.currentPage.toString());
             const currentPage: number = (this.pagerModule.isPagerResized && currentPageIndex !== -1) ? currentPageIndex
                 : ((this.pagerModule.currentPage - 1) % this.pagerModule.pageCount);
             if (this.links[parseInt(currentPage.toString(), 10)]) {
@@ -432,7 +432,7 @@ export class NumericContainer implements IRender {
 
     private updatePrevPagerSetStyles(): void {
         if (this.pagerModule.currentPage > this.pagerModule.pageCount || (this.pagerModule.isPagerResized
-            && this.links.findIndex((link: HTMLElement) => parseInt(link.getAttribute('index'), 10) === 1))) {
+            && this.links.findIndex((link: HTMLElement) => parseInt(link.getAttribute('data-index'), 10) === 1))) {
             classList(this.PP, ['e-numericitem', 'e-pager-default'], ['e-nextprevitemdisabled', 'e-disable']);
         } else {
             classList(this.PP, ['e-nextprevitemdisabled', 'e-disable'], ['e-numericitem', 'e-pager-default']);
@@ -444,7 +444,7 @@ export class NumericContainer implements IRender {
         const firstPage: string = this.links[0].innerHTML.replace(pagerObj.customText, '');
         const numItems: NodeListOf<HTMLElement> = this.pagerElement.querySelectorAll('.e-numericitem:not(.e-hide):not([style*="display: none"]):not(.e-np):not(.e-pp)');
         if (!firstPage.length || !this.links.length || (parseInt(firstPage, 10) + pagerObj.pageCount > pagerObj.totalPages)
-         || (pagerObj.isPagerResized && Array.from(numItems).some((item: HTMLElement) => parseInt(item.getAttribute('index'), 10) === pagerObj.totalPages))) {
+         || (pagerObj.isPagerResized && Array.from(numItems).some((item: HTMLElement) => parseInt(item.getAttribute('data-index'), 10) === pagerObj.totalPages))) {
             classList(this.NP, ['e-nextprevitemdisabled', 'e-disable'], ['e-numericitem', 'e-pager-default']);
         } else {
             classList(this.NP, ['e-numericitem', 'e-pager-default'], ['e-nextprevitemdisabled', 'e-disable']);

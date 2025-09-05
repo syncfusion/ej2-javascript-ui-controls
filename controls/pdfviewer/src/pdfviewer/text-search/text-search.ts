@@ -775,12 +775,10 @@ export class TextSearch {
                 MultilineIndex = Multiline.indexOf(inputString, MultilineIndex + queryLength);
                 specialcharcterIndex = specialCharcterSearch.indexOf(inputString, specialcharcterIndex + queryLength);
                 if (multiSearchIndex !== -1) {
-                    arrayReturns = this.correctLinetext(inputString, matchIndex, pageTextData);
+                    arrayReturns = this.correctLinetext(inputString, matchIndex, pageTextData, multiSearchIndex);
                     matchIndex = -arrayReturns[0].length;
                     for (let i: number = 0; i < arrayReturns.length; i++) {
-                        matchIndex = pageTextData.indexOf(arrayReturns[parseInt(i.toString(), 10)].trim(),
-                                                          matchIndex + (arrayReturns[i - 1] === undefined ||
-                                null ? arrayReturns[0].length : arrayReturns[i - 1].length));
+                        matchIndex = pageTextData.indexOf(arrayReturns[parseInt(i.toString(), 10)].trim(), multiSearchIndex);
                         matchedArray.push(matchIndex);
                         if (matchedArray.length > 1) {
                             if ((matchedArray[1] - (matchedArray[0] + arrayReturns[0].length)) <= 3) {
@@ -1423,12 +1421,10 @@ export class TextSearch {
             MultilineIndex = Multiline.indexOf(searchText, MultilineIndex + queryLength);
             specialcharcterIndex = specialCharcterSearch.indexOf(searchText, specialcharcterIndex + queryLength);
             if (multiSearchIndex !== -1) {
-                arrayReturns = this.correctLinetext(searchString, matchIndex, pageText);
+                arrayReturns = this.correctLinetext(searchString, matchIndex, pageText, multiSearchIndex);
                 matchIndex = -arrayReturns[0].length;
                 for (let i: number = 0; i < arrayReturns.length; i++) {
-                    matchIndex = pageText.indexOf(arrayReturns[parseInt(i.toString(), 10)].trim(),
-                                                  matchIndex + (arrayReturns[i - 1] === undefined ||
-                            null ? arrayReturns[0].length : arrayReturns[i - 1].length));
+                    matchIndex = pageText.indexOf(arrayReturns[parseInt(i.toString(), 10)].trim(), multiSearchIndex);
                     matchedArray.push(matchIndex);
                     if (matchedArray.length > 1) {
                         if ((matchedArray[1] - (matchedArray[0] + arrayReturns[0].length)) <= 3) {
@@ -1598,13 +1594,13 @@ export class TextSearch {
         }
     }
 
-    private correctLinetext(searchString: string, matchIndex: number, pageText: string): string[] {
+    private correctLinetext(searchString: string, matchIndex: number, pageText: string, multiSearchIndex?: number): string[] {
         const indiuvalLineArray: string[] = [];
         let searchArray: string[] = searchString.split(/[" "]+/);
         if (!this.isMatchCase) {
             searchArray = searchString.toLowerCase().split(/\s+/);
         }
-        matchIndex = 0;
+        matchIndex = multiSearchIndex || 0;
         let linestring: string = '';
         let mergedText: string = pageText.replace(/ \r\n/g, ' ');
         mergedText = mergedText.replace(/\r\n/g, ' ');

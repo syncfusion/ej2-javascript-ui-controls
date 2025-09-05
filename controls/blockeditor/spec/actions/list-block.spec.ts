@@ -63,7 +63,7 @@ describe('List Block Actions', () => {
             editor.setFocusToBlock(paragraph.closest('.e-block') as HTMLElement);
             setCursorPosition(paragraph, 0);
             paragraph.textContent = '* ';
-            editor.updateContentOnUserTyping(paragraph.closest('.e-block') as HTMLElement);
+            editor.stateManager.updateContentOnUserTyping(paragraph.closest('.e-block') as HTMLElement);
             editorElement.dispatchEvent(new Event('input', { bubbles: true }));
             //trigger space key
             editorElement.dispatchEvent(new KeyboardEvent('keydown', { key: ' ', code: 'Space', bubbles: true }));
@@ -113,9 +113,9 @@ describe('List Block Actions', () => {
             editorElement.dispatchEvent(new Event('input', { bubbles: true }));
             editorElement.dispatchEvent(new KeyboardEvent('keydown', { key: ' ', code: 'Space', bubbles: true }));
             setTimeout(() => {
-                const newContentElement = editorElement.querySelector('#block1 li') as HTMLElement;
-                expect(editor.blocks[3].type).toBe(BlockType.CheckList);
-                expect(newContentElement.querySelector('span.e-checkmark')).toBeDefined();
+                const blockElement = editorElement.querySelector('#block4') as HTMLElement;
+                expect(editor.blocks[3].type).toBe(BlockType.Checklist);
+                expect(blockElement.querySelector('.e-checkmark-container')).not.toBeNull();
                 done();
             }, 800);
         });
@@ -149,7 +149,7 @@ describe('List Block Actions', () => {
             const blocks: BlockModel[] = [
                 { id: 'bulletlist', type: BlockType.BulletList, content: [{ id: 'bulletlist-content', type: ContentType.Text, content: 'Bullet item' }] },
                 { id: 'numberedlist', type: BlockType.NumberedList, content: [{ id: 'numberedlist-content', type: ContentType.Text, content: 'Numbered item' }] },
-                { id: 'checklist', type: BlockType.CheckList, content: [{ id: 'checklist-content', type: ContentType.Text, content: 'Checklist item' }] }
+                { id: 'checklist', type: BlockType.Checklist, content: [{ id: 'checklist-content', type: ContentType.Text, content: 'Checklist item' }] }
             ];
             editor = createEditor({ blocks: blocks });
             editor.appendTo('#editor');
@@ -226,8 +226,8 @@ describe('List Block Actions', () => {
                 //Enter again should transform list into paragraph
                 setCursorPosition(numberedContent, 0);
                 editorElement.dispatchEvent(new KeyboardEvent('keydown', { key: 'Enter', bubbles: true }));
-                expect(editor.blocks[0].type).toBe('Paragraph');
-                expect(getBlockContentElement(bulletBlock).tagName).toBe('P');
+                expect(editor.blocks[0].type).toBe(BlockType.Paragraph);
+                expect(getBlockContentElement(editorElement.querySelector('#bulletlist')).tagName).toBe('P');
                 done();
             }, 200);
         });
@@ -239,11 +239,11 @@ describe('List Block Actions', () => {
             editor.setFocusToBlock(numberedListBlock);
             setCursorPosition(numberedContent, 3);
 
-            spyOn(editor.blockAction, 'transformBlockToParagraph').and.callThrough();
+            spyOn(editor.blockRendererManager, 'transformBlockToParagraph').and.callThrough();
 
             editorElement.dispatchEvent(new KeyboardEvent('keydown', { key: 'Backspace', bubbles: true }));
             
-            expect(editor.blockAction.transformBlockToParagraph).not.toHaveBeenCalled();
+            expect(editor.blockRendererManager.transformBlockToParagraph).not.toHaveBeenCalled();
         });
 
         it('should update indent level on Tab/Shift+Tab key press', () => {
@@ -325,10 +325,48 @@ describe('List Block Actions', () => {
             expect(editor.blocks[5].content[0].content).toBe('Checkl');
             const newListBlock = checkListBlock.nextElementSibling as HTMLElement;
             expect(newListBlock).not.toBeNull();
-            expect(newListBlock.getAttribute('data-block-type')).toBe('CheckList');
+            expect(newListBlock.getAttribute('data-block-type')).toBe(BlockType.Checklist.toString());
             const newListContent = getBlockContentElement(newListBlock);
             expect(checkContent.textContent).toBe('Checkl');
             expect(newListContent.textContent).toBe('ist item');
         });
+    });
+
+    describe('Other actions', () => {
+        let editor: BlockEditor;
+        let editorElement: HTMLElement;
+
+        beforeAll(() => {
+            editorElement = createElement('div', { id: 'editor' });
+            document.body.appendChild(editorElement);
+            const blocks: BlockModel[] = [
+                {
+                    id: 'block1',
+                    type: BlockType.NumberedList,
+                    content: [{
+                        type: ContentType.Text, content: 'Block 1'
+                    }]
+                }
+            ];
+            editor = createEditor({ blocks: blocks });
+            editor.appendTo('#editor');
+        });
+
+        afterAll(() => {
+            if (editor) {
+                editor.destroy();
+                editor = undefined;
+            }
+            remove(editorElement);
+        });
+
+        it('getListMarker should use romanlookup for small numbers', () => {
+            expect((editor.listBlockAction as any).getListMarker(2, 2)).toBe('ii.');
+        });
+
+        it('getListMarker should use fallback algorith for large numbers', () => {
+            expect((editor.listBlockAction as any).getListMarker(25, 2)).toBe('xxv.');
+        });
+
     });
 });

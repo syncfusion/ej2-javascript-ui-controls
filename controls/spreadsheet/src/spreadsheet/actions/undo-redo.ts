@@ -11,7 +11,7 @@ import { getCell, setCell, CellModel, BeforeSortEventArgs, getSheetIndex, wrapEv
 import { SheetModel, MergeArgs, setMerge, getRangeAddress, replaceAll, applyCellFormat, CellFormatArgs } from '../../workbook/index';
 import { addClass, extend, isNullOrUndefined, isObject, isUndefined, L10n, select } from '@syncfusion/ej2-base';
 import { CellStyleModel, TextDecoration, setCellFormat, refreshRibbonIcons, isFilterHidden, getRowHeight } from '../../workbook/index';
-import { SortDescriptor, getColIndex, beginAction, ActionEventArgs, ConditionalFormat, updateCFModel, applyCF } from '../../workbook/index';
+import { SortDescriptor, getColIndex, beginAction, ActionEventArgs, ConditionalFormat, updateCFModel, applyCF, getCellIndexes, getFormattedCellObject, NumberFormatArgs } from '../../workbook/index';
 import { sheetRenameUpdate } from '../../workbook/common/index';
 /**
  * UndoRedo module allows to perform undo redo functionalities.
@@ -682,7 +682,31 @@ export class UndoRedo {
             const td: HTMLElement = this.parent.getCell(activeCell[0], activeCell[1]);
             (this.parent.element.querySelector('.e-active-cell') as HTMLElement).style.width = td.offsetWidth +  'px';
         }
+        if (eventArgs.isCol) {
+            const frozenCol: number = this.parent.frozenColCount(sheet);
+            const colIdx: number = eventArgs.index;
+            const cellIndexes: number[] = getCellIndexes(sheet.topLeftCell);
+            if ((frozenCol && colIdx >= cellIndexes[1] && colIdx < frozenCol) ||
+                (colIdx >= this.parent.viewport.leftIndex + frozenCol && colIdx <= this.parent.viewport.rightIndex)) {
+                const frozenRowCount: number = this.parent.frozenRowCount(sheet);
+                if (frozenRowCount > 0) {
+                    this.reapplyFormats(sheet, colIdx, cellIndexes[0], frozenRowCount - 1);
+                }
+                this.reapplyFormats(sheet, colIdx, this.parent.viewport.topIndex + frozenRowCount, this.parent.viewport.bottomIndex);
+            }
+        }
         return args;
+    }
+
+    private reapplyFormats(sheet: SheetModel, colIdx: number, rowIdx: number, endRowIdx: number): void {
+        for (rowIdx; rowIdx <= endRowIdx; rowIdx++) {
+            const cell: CellModel = getCell(rowIdx, colIdx, sheet, false, true);
+            if (cell.format && cell.format.includes('*')) {
+                this.parent.notify(getFormattedCellObject, <NumberFormatArgs>{ value: cell.value, format: cell.format, cell: cell,
+                    formattedText: cell.value, rowIndex: rowIdx, colIndex: colIdx
+                });
+            }
+        }
     }
 
     private performOperation(
@@ -715,10 +739,7 @@ export class UndoRedo {
                 range = getSwapRange(getRangeIndexes(currentRange));
             }
             const indexes: number[] = range;
-            const uniqueArgs: { cellIdx: number[], isUnique: boolean, uniqueRange: string } = {
-                cellIdx: [range[0], range[1]], isUnique: false,
-                uniqueRange: ''
-            };
+            const uniqueArgs: { cellIdx: number[], isUnique: boolean, uniqueRange: string } = { cellIdx: [range[0], range[1]], isUnique: false, uniqueRange: '' };
             if (!eventArgs.isColSelected) {
                 this.parent.notify(checkUniqueRange, uniqueArgs);
             }

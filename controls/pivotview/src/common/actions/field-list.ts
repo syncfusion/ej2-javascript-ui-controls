@@ -80,6 +80,8 @@ export class FieldList implements IAction {
                 maxNodeLimitInMemberEditor: this.parent.maxNodeLimitInMemberEditor,
                 aggregateCellInfo: this.parent.bindTriggerEvents.bind(this.parent),
                 onHeadersSort: this.parent.bindTriggerEvents.bind(this.parent),
+                beforeServiceInvoke: this.parent.bindTriggerEvents.bind(this.parent),
+                afterServiceInvoke: this.parent.bindTriggerEvents.bind(this.parent),
                 cssClass: this.parent.cssClass,
                 enableFieldSearching: this.parent.enableFieldSearching,
                 enableHtmlSanitizer: this.parent.enableHtmlSanitizer

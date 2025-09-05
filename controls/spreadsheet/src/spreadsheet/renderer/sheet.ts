@@ -340,18 +340,20 @@ export class SheetRender implements IRenderer {
             if (!this.parent) { return; }
             const content: HTMLElement = this.parent.getMainContent();
             const sheetContent: HTMLElement = document.getElementById(this.parent.element.id + '_sheet');
-            if (sheetContent.childElementCount && sheetContent.querySelector('.e-header-panel') !== this.headerPanel) {
-                const sheetChild: HTMLCollection = sheetContent.children;
-                for (let i: number = 0; i < sheetChild.length; i++) {
-                    if (!sheetChild[i as number].classList.contains('e-frozen-row') &&
-                        !sheetChild[i as number].classList.contains('e-frozen-column') &&
-                        !sheetChild[i as number].classList.contains('e-ss-overlay')) {
-                        sheetContent.removeChild(sheetChild[i as number]);
+            if (sheetContent) {
+                if (sheetContent.childElementCount && sheetContent.querySelector('.e-header-panel') !== this.headerPanel) {
+                    const sheetChild: HTMLCollection = sheetContent.children;
+                    for (let i: number = 0; i < sheetChild.length; i++) {
+                        if (!sheetChild[i as number].classList.contains('e-frozen-row') &&
+                            !sheetChild[i as number].classList.contains('e-frozen-column') &&
+                            !sheetChild[i as number].classList.contains('e-ss-overlay')) {
+                            sheetContent.removeChild(sheetChild[i as number]);
+                        }
                     }
                 }
+                sheetContent.appendChild(frag);
+                sheetContent.style.backgroundColor = '';
             }
-            sheetContent.appendChild(frag);
-            sheetContent.style.backgroundColor = '';
             if (sheet.conditionalFormats && sheet.conditionalFormats.length) {
                 this.parent.notify(applyCF, <ApplyCFArgs>{ indexes: args.indexes });
             }
@@ -935,23 +937,26 @@ export class SheetRender implements IRenderer {
     public showHideHeaders(): void {
         const sheet: SheetModel = this.parent.getActiveSheet();
         getUpdateUsingRaf((): void => {
-            if (sheet.showHeaders) {
-                const content: HTMLElement = this.getContentPanel();
-                this.setPanelWidth(sheet, this.getRowHeaderPanel()); this.setPanelHeight(sheet);
-                document.getElementById(this.parent.element.id + '_sheet').classList.remove('e-hide-headers');
-                this.getColHeaderPanel().scrollLeft = content.scrollLeft;
-                this.parent.selectRange(sheet.selectedRange);
-            } else {
-                this.updateHideHeaders(sheet, document.getElementById(this.parent.element.id + '_sheet'));
-                this.setPanelHeight(sheet);
-                if (this.parent.frozenColCount(sheet) || this.parent.frozenRowCount(sheet)) {
-                    this.setPanelWidth(sheet, this.getRowHeaderPanel());
+            const sheetElement: HTMLElement = document.getElementById(this.parent.element.id + '_sheet');
+            if (sheetElement) {
+                if (sheet.showHeaders) {
+                    const content: HTMLElement = this.getContentPanel();
+                    this.setPanelWidth(sheet, this.getRowHeaderPanel()); this.setPanelHeight(sheet);
+                    sheetElement.classList.remove('e-hide-headers');
+                    this.getColHeaderPanel().scrollLeft = content.scrollLeft;
                     this.parent.selectRange(sheet.selectedRange);
                 } else {
-                    this.getContentPanel().style.width = '';
-                    this.getContentPanel().style[this.parent.enableRtl ? 'right' : 'left'] = '';
+                    this.updateHideHeaders(sheet, sheetElement);
+                    this.setPanelHeight(sheet);
+                    if (this.parent.frozenColCount(sheet) || this.parent.frozenRowCount(sheet)) {
+                        this.setPanelWidth(sheet, this.getRowHeaderPanel());
+                        this.parent.selectRange(sheet.selectedRange);
+                    } else {
+                        this.getContentPanel().style.width = '';
+                        this.getContentPanel().style[this.parent.enableRtl ? 'right' : 'left'] = '';
+                    }
+                    this.getScrollElement().style.left = this.getRowHeaderWidth(sheet) + 'px';
                 }
-                this.getScrollElement().style.left = this.getRowHeaderWidth(sheet) + 'px';
             }
         });
     }

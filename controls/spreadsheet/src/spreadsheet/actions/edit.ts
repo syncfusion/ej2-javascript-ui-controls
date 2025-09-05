@@ -268,16 +268,18 @@ export class Edit {
                     const isFormulaEdit: boolean = checkIsFormula(this.editCellData.value, true);
                     if (this.isCellEdit || (isFormulaEdit && this.editCellData.value !== editorElem.textContent && e.keyCode !== 16 &&
                         e.keyCode !== 17)) {
-                        if (actCell[1] < this.parent.frozenColCount(sheet) && (!sheet.frozenRows || actCell[0] >=
-                            this.parent.frozenRowCount(sheet)) && editorElem && editorElem.style.height !== 'auto') {
+                        if (editorElem && editorElem.style.height !== 'auto') {
+                            if (actCell[1] < this.parent.frozenColCount(sheet) && (!sheet.frozenRows || actCell[0] >=
+                                this.parent.frozenRowCount(sheet))) {
+                                if (getTextWidth(editorElem.textContent, cell.style, this.parent.cellStyle) > parseInt(
+                                    editorElem.style.maxWidth, 10)) {
+                                    editorElem.style.height = 'auto';
+                                }
+                            }
                             if (getTextWidth(editorElem.textContent, cell.style, this.parent.cellStyle) > parseInt(
-                                editorElem.style.maxWidth, 10)) {
+                                editorElem.style.maxWidth, 10) - 5) { // 5 decreased for padding.
                                 editorElem.style.height = 'auto';
                             }
-                        }
-                        if (getTextWidth(editorElem.textContent, cell.style, this.parent.cellStyle) > parseInt(
-                            editorElem.style.maxWidth, 10) - 5) { // 5 decreased for padding.
-                            editorElem.style.height = 'auto';
                         }
                         if (actCell[0] < this.parent.frozenRowCount(sheet) && editorElem && !editorElem.style.overflow && getTextWidth(
                             editorElem.textContent, cell.style, this.parent.cellStyle) > parseInt(editorElem.style.maxWidth, 10)) {

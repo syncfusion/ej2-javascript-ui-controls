@@ -180,8 +180,9 @@ export class ViewSource {
                 this.wireEvent(this.previewElement);
                 this.unWireBaseKeyDown();
                 this.previewElement.focus();
-                this.parent.inputElement.innerHTML = cleanupInternalElements(this.replaceAmpersand(this.parent.inputElement.innerHTML),
-                                                                             this.parent.editorMode);
+                this.parent.inputElement.innerHTML =
+                cleanupInternalElements(this.replaceAmpersand(this.parent.inputElement.innerHTML),
+                                        this.parent.editorMode);
                 this.parent.updateValue();
                 this.parent.trigger(events.actionComplete, { requestType: 'SourceCode', targetItem: 'SourceCode', args: args });
                 this.parent.invokeChangeEvent();
@@ -246,8 +247,8 @@ export class ViewSource {
                 }
                 this.unWireEvent();
                 this.wireBaseKeyDown();
-                (this.contentModule.getEditPanel() as HTMLElement).focus();
                 this.parent.updateValue();
+                (this.contentModule.getEditPanel() as HTMLElement).focus();
                 this.parent.trigger(events.actionComplete, { requestType: 'Preview', targetItem: 'Preview', args: args });
                 this.parent.formatter.enableUndo(this.parent);
                 this.parent.addAudioVideoWrapper();

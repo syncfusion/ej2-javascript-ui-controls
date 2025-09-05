@@ -1,6 +1,6 @@
 import { Popup } from '../../../popups/src'; /*externalscript*/
 import { SfRichTextEditor } from '../sf-richtexteditor-fn';
-import { QuickToolbarType } from '../../src/common/types';
+import { QuickToolbarType } from '../../editor-scripts/common/types';
 import { createElement } from '../../../base'; /*externalscript*/
 import * as classes from '../classes';
 /**

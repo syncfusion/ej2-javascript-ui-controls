@@ -1411,6 +1411,32 @@ export class PivotFieldList extends Component<HTMLElement> implements INotifyPro
         return args;
     }
 
+    /**
+     * Triggers the `beforeServiceInvoke` event with the provided service object.
+     *
+     * @param {BeforeServiceInvokeEventArgs} args - Object containing details about the current service invocation,
+     * such as action and data source settings.
+     * @returns {BeforeServiceInvokeEventArgs} The processed event arguments after triggering the event.
+     * @hidden
+     */
+    public getBeforeServiceInvoke(args: BeforeServiceInvokeEventArgs): BeforeServiceInvokeEventArgs {
+        this.trigger(events.beforeServiceInvoke, args);
+        return args;
+    }
+
+    /**
+     * Triggers the `afterServiceInvoke` event after a service request completes.
+     *
+     * @param {AfterServiceInvokeEventArgs} response - Arguments from the service invocation, used to
+     * extract the action and response details.
+     * @returns {AfterServiceInvokeEventArgs} The processed event arguments after triggering the event.
+     * @hidden
+     */
+    public getAfterServiceInvoke(response: AfterServiceInvokeEventArgs): AfterServiceInvokeEventArgs {
+        this.trigger(events.afterServiceInvoke, response);
+        return response;
+    }
+
     private getData(): void {
         if ((this.dataSourceSettings.dataSource as DataManager).defaultQuery) {
             (this.dataSourceSettings.dataSource as DataManager).executeQuery((this.dataSourceSettings.dataSource as DataManager)

@@ -2,9 +2,9 @@ import { MenuEventArgs } from '../../navigations/src'; /*externalscript*/
 import { BeforeOpenCloseMenuEventArgs, DropDownButtonModel, OpenCloseMenuEventArgs } from '../../splitbuttons/src'; /*externalscript*/
 import { SfRichTextEditor } from './sf-richtexteditor-fn';
 import { ToolbarClickEventArgs, LinkFormModel } from './interfaces';
-import { IDropDownClickArgs, ITableCommandsArgs, ExecuteCommandOption } from '../src/common/interface';
-import { IToolsItems, ILinkCommandsArgs, IImageCommandsArgs, EditTableModel } from '../src/common/interface';
-import { CommandName } from '../src/common/enum';
+import { IDropDownClickArgs, ITableCommandsArgs, ExecuteCommandOption } from '../editor-scripts/common/interface';
+import { IToolsItems, ILinkCommandsArgs, IImageCommandsArgs, EditTableModel } from '../editor-scripts/common/interface';
+import { CommandName } from '../editor-scripts/common/enum';
 
 /**
  * Interop handler
@@ -300,5 +300,20 @@ export const RichTextEditorInterop: object = {
     },
     closePopup(dataId: string): void {
         if (dataId) { (window as any).sfBlazor.instances[dataId as string].closePopup(); }
+    },
+    importDialogOpened(dataId: string): void {
+        if (dataId) { (window as any).sfBlazor.instances[dataId as string].wordModule.dialogOpened(); }
+    },
+    cancelImportDialog(dataId: string): void {
+        if (dataId) { (window as any).sfBlazor.instances[dataId as string].wordModule.dialogClosed(); }
+    },
+    importDialogClosed(dataId: string): void {
+        if (dataId) { (window as any).sfBlazor.instances[dataId as string].wordModule.dialogClosed(); }
+    },
+    showWordDialog(dataId: string): void {
+        if (dataId) { (window as any).sfBlazor.instances[dataId as string].showWordDialog(); }
+    },
+    slashMenuToolbarRefresh(dataId: string): void {
+        if (dataId) { (window as any).sfBlazor.instances[dataId as string].slashMenuToolbarRefresh(); }
     }
 };

@@ -3,23 +3,25 @@ import { BlockType, ContentType } from '../../src/blockeditor/base/enums';
 import {
     convertHtmlElementToBlocks,
     convertInlineElementsToContentModels,
-    createBlockFromElement,
     extractStylesFromElement,
     getBlockDataAsHTML,
     renderContentAsHTML
 } from '../../src/blockeditor/utils/html-parser';
-import { BlockModel, ContentModel, StyleModel } from '../../src/blockeditor/models/index';
+import { BaseStylesProp, BlockModel, ContentModel, HeadingProps, ImageProps } from '../../src/blockeditor/models/index';
 import { cleanCheckmarkElement, getAdjacentBlock, getBlockIndexById, getContentElementBasedOnId, isAtEndOfBlock, isAtStartOfBlock, isNonContentEditableBlock, normalizeBlockIntoContentElement, removeEmptyTextNodes } from '../../src/blockeditor/utils/block';
-import { 
-    generateUniqueId, 
+import {
     getTemplateFunction, 
     normalizeRange, 
     denormalizeUrl,
     isNodeAroundSpecialElements, 
     getAccessibleTextColor
 } from '../../src/blockeditor/utils/common';
+import { unWrapContainer } from '../../src/blockeditor/utils/clipboard-utils';
 
-describe('Block utility functions', () => {
+import * as DataUtils from '../../src/blockeditor/utils/data';
+import { decode, encode } from '../../src/blockeditor/utils/security';
+
+describe('Utility functions', () => {
     describe('HTML Parser Utils', () => {
         describe('getBlockDataAsHTML function', () => {
             it('should return empty string for empty blocks array', () => {
@@ -45,22 +47,26 @@ describe('Block utility functions', () => {
                 const blocks: BlockModel[] = [
                     {
                         id: 'heading1',
-                        type: BlockType.Heading1,
+                        type: BlockType.Heading,
+                        props: { level: 1 },
                         content: [{ id: 'h1', type: ContentType.Text, content: 'Heading 1' }]
                     },
                     {
                         id: 'heading2',
-                        type: BlockType.Heading2,
+                        type: BlockType.Heading,
+                        props: { level: 2 },
                         content: [{ id: 'h2', type: ContentType.Text, content: 'Heading 2' }]
                     },
                     {
                         id: 'heading3',
-                        type: BlockType.Heading3,
+                        type: BlockType.Heading,
+                        props: { level: 3 },
                         content: [{ id: 'h3', type: ContentType.Text, content: 'Heading 3' }]
                     },
                     {
                         id: 'heading4',
-                        type: BlockType.Heading4,
+                        type: BlockType.Heading,
+                        props: { level: 4 },
                         content: [{ id: 'h4', type: ContentType.Text, content: 'Heading 4' }]
                     }
                 ];
@@ -159,7 +165,7 @@ describe('Block utility functions', () => {
                 const blocks: BlockModel[] = [{
                     id: 'img1',
                     type: BlockType.Image,
-                    imageSettings: {
+                    props: {
                         src: 'https://example.com/image.jpg',
                         altText: 'Test image'
                     }
@@ -172,7 +178,7 @@ describe('Block utility functions', () => {
                 const blocks: BlockModel[] = [{
                     id: 'img1',
                     type: BlockType.Image,
-                    imageSettings: {
+                    props: {
                         src: '',
                         altText: 'Empty image'
                     }
@@ -213,29 +219,33 @@ describe('Block utility functions', () => {
                 const blocks: BlockModel[] = [{
                     id: 'callout1',
                     type: BlockType.Callout,
-                    children: [{
-                        id: 'para1',
-                        type: BlockType.Paragraph,
-                        content: [{ id: 'p1', type: ContentType.Text, content: 'Callout text' }]
-                    }]
+                    props: {
+                        children: [{
+                            id: 'para1',
+                            type: BlockType.Paragraph,
+                            content: [{ id: 'p1', type: ContentType.Text, content: 'Callout text' }]
+                        }]
+                    }
                 }];
 
                 expect(getBlockDataAsHTML(blocks)).toBe('<div class="callout"><p>Callout text</p></div>');
             });
 
-            it('should convert toggle blocks to HTML', () => {
+            it('should convert collapsible blocks to HTML', () => {
                 const blocks: BlockModel[] = [{
                     id: 'toggle1',
-                    type: BlockType.ToggleParagraph,
-                    content: [{ id: 't1', type: ContentType.Text, content: 'Toggle header' }],
-                    children: [{
-                        id: 'para1',
-                        type: BlockType.Paragraph,
-                        content: [{ id: 'p1', type: ContentType.Text, content: 'Toggle content' }]
-                    }]
+                    type: BlockType.CollapsibleParagraph,
+                    content: [{ id: 't1', type: ContentType.Text, content: 'Collapsible header' }],
+                    props: {
+                        children: [{
+                            id: 'para1',
+                            type: BlockType.Paragraph,
+                            content: [{ id: 'p1', type: ContentType.Text, content: 'Collapsible content' }]
+                        }]
+                    }
                 }];
 
-                expect(getBlockDataAsHTML(blocks)).toBe('<div class="toggle">Toggle header <p>Toggle content</p></div>');
+                expect(getBlockDataAsHTML(blocks)).toBe('<div class="collapsible">Collapsible header <p>Collapsible content</p></div>');
             });
 
             it('should convert divider block to HTML', () => {
@@ -255,13 +265,15 @@ describe('Block utility functions', () => {
                         id: 'style1',
                         type: ContentType.Text,
                         content: 'Styled text',
-                        styles: {
-                            bold: true,
-                            italic: true,
-                            underline: true,
-                            strikethrough: true,
-                            color: '#ff0000',
-                            bgColor: '#00ff00'
+                        props: {
+                            styles: {
+                                bold: true,
+                                italic: true,
+                                underline: true,
+                                strikethrough: true,
+                                color: '#ff0000',
+                                bgColor: '#00ff00'
+                            }
                         }
                     }]
                 }];
@@ -284,7 +296,7 @@ describe('Block utility functions', () => {
                         id: 'l1',
                         type: ContentType.Link,
                         content: 'Link text',
-                        linkSettings: {
+                        props: {
                             url: 'https://example.com',
                             openInNewWindow: true
                         }
@@ -315,7 +327,7 @@ describe('Block utility functions', () => {
                     id: 'c1',
                     type: ContentType.Text,
                     content: 'Bold text',
-                    styles: { bold: true }
+                    props: { styles: { bold: true } }
                 }];
 
                 expect(renderContentAsHTML(content)).toBe('<strong>Bold text</strong>');
@@ -326,7 +338,7 @@ describe('Block utility functions', () => {
                     id: 'c1',
                     type: ContentType.Text,
                     content: 'Italic text',
-                    styles: { italic: true }
+                    props: { styles: { italic: true } }
                 }];
 
                 expect(renderContentAsHTML(content)).toBe('<em>Italic text</em>');
@@ -337,7 +349,7 @@ describe('Block utility functions', () => {
                     id: 'c1',
                     type: ContentType.Text,
                     content: 'Underlined text',
-                    styles: { underline: true }
+                    props: { styles: { underline: true } }
                 }];
 
                 expect(renderContentAsHTML(content)).toBe('<u>Underlined text</u>');
@@ -348,7 +360,7 @@ describe('Block utility functions', () => {
                     id: 'c1',
                     type: ContentType.Text,
                     content: 'Strikethrough text',
-                    styles: { strikethrough: true }
+                    props: { styles: { strikethrough: true } }
                 }];
 
                 expect(renderContentAsHTML(content)).toBe('<s>Strikethrough text</s>');
@@ -359,7 +371,7 @@ describe('Block utility functions', () => {
                     id: 'c1',
                     type: ContentType.Text,
                     content: 'Superscript text',
-                    styles: { superscript: true }
+                    props: { styles: { superscript: true } }
                 }];
 
                 expect(renderContentAsHTML(content)).toBe('<sup>Superscript text</sup>');
@@ -370,7 +382,7 @@ describe('Block utility functions', () => {
                     id: 'c1',
                     type: ContentType.Text,
                     content: 'Subscript text',
-                    styles: { subscript: true }
+                    props: { styles: { subscript: true } }
                 }];
 
                 expect(renderContentAsHTML(content)).toBe('<sub>Subscript text</sub>');
@@ -381,7 +393,7 @@ describe('Block utility functions', () => {
                     id: 'c1',
                     type: ContentType.Text,
                     content: 'Uppercase text',
-                    styles: { uppercase: true }
+                    props: { styles: { uppercase: true } }
                 }];
 
                 expect(renderContentAsHTML(content)).toBe('<span style="text-transform: uppercase;">Uppercase text</span>');
@@ -392,7 +404,7 @@ describe('Block utility functions', () => {
                     id: 'c1',
                     type: ContentType.Text,
                     content: 'Lowercase text',
-                    styles: { lowercase: true }
+                    props: { styles: { lowercase: true } }
                 }];
 
                 expect(renderContentAsHTML(content)).toBe('<span style="text-transform: lowercase;">Lowercase text</span>');
@@ -403,7 +415,7 @@ describe('Block utility functions', () => {
                     id: 'c1',
                     type: ContentType.Text,
                     content: 'Colored text',
-                    styles: { color: '#ff0000' }
+                    props: { styles: { color: '#ff0000' } }
                 }];
 
                 expect(renderContentAsHTML(content)).toBe('<span style="color: #ff0000;">Colored text</span>');
@@ -414,7 +426,7 @@ describe('Block utility functions', () => {
                     id: 'c1',
                     type: ContentType.Text,
                     content: 'BG-Colored text',
-                    styles: { bgColor: '#00ff00' }
+                    props: { styles: { bgColor: '#00ff00' } }
                 }];
 
                 expect(renderContentAsHTML(content)).toBe('<span style="background-color: #00ff00;">BG-Colored text</span>');
@@ -425,7 +437,7 @@ describe('Block utility functions', () => {
                     id: 'c1',
                     type: ContentType.Text,
                     content: 'Custom text',
-                    styles: { custom: 'font-family: Arial' }
+                    props: { styles: { custom: 'font-family: Arial' } }
                 }];
 
                 expect(renderContentAsHTML(content)).toBe('<span style="font-family: Arial;">Custom text</span>');
@@ -436,10 +448,12 @@ describe('Block utility functions', () => {
                     id: 'c1',
                     type: ContentType.Text,
                     content: 'Multi-styled text',
-                    styles: {
-                        bold: true,
-                        italic: true,
-                        underline: true
+                    props: {
+                        styles: {
+                            bold: true,
+                            italic: true,
+                            underline: true
+                        }
                     }
                 }];
 
@@ -451,7 +465,7 @@ describe('Block utility functions', () => {
                     id: 'c1',
                     type: ContentType.Link,
                     content: 'Link text',
-                    linkSettings: {
+                    props: {
                         url: 'https://example.com',
                         openInNewWindow: false
                     }
@@ -465,7 +479,7 @@ describe('Block utility functions', () => {
                     id: 'c1',
                     type: ContentType.Link,
                     content: 'Link text',
-                    linkSettings: {
+                    props: {
                         url: 'https://example.com',
                         openInNewWindow: true
                     }
@@ -506,10 +520,14 @@ describe('Block utility functions', () => {
 
                 const blocks = convertHtmlElementToBlocks(container, true);
                 expect(blocks.length).toBe(4);
-                expect(blocks[0].type).toBe(BlockType.Heading1);
-                expect(blocks[1].type).toBe(BlockType.Heading2);
-                expect(blocks[2].type).toBe(BlockType.Heading3);
-                expect(blocks[3].type).toBe(BlockType.Heading4);
+                expect(blocks[0].type).toBe(BlockType.Heading);
+                expect((blocks[0].props as HeadingProps).level).toBe(1);
+                expect(blocks[1].type).toBe(BlockType.Heading);
+                expect((blocks[1].props as HeadingProps).level).toBe(2);
+                expect(blocks[2].type).toBe(BlockType.Heading);
+                expect((blocks[2].props as HeadingProps).level).toBe(3);
+                expect(blocks[3].type).toBe(BlockType.Heading);
+                expect((blocks[3].props as HeadingProps).level).toBe(4);
             });
 
             it('should convert blockquote elements to blocks', () => {
@@ -541,8 +559,8 @@ describe('Block utility functions', () => {
                 const blocks = convertHtmlElementToBlocks(container, true);
                 expect(blocks.length).toBe(1);
                 expect(blocks[0].type).toBe(BlockType.Image);
-                expect(blocks[0].imageSettings.src).toContain('test.jpg');
-                expect(blocks[0].imageSettings.altText).toBe('Test image');
+                expect((blocks[0].props as ImageProps).src).toContain('test.jpg');
+                expect((blocks[0].props as ImageProps).altText).toBe('Test image');
             });
 
             it('should convert pre code elements to code blocks', () => {
@@ -640,7 +658,7 @@ describe('Block utility functions', () => {
 
             it('should merge with existing styles', () => {
                 const element = createElement('strong', { innerHTML: 'Bold text' });
-                const existingStyles: StyleModel = { italic: true };
+                const existingStyles: any = { italic: true };
                 const styles = extractStylesFromElement(element, existingStyles);
                 expect(styles.bold).toBe(true);
                 expect(styles.italic).toBe(true);
@@ -657,7 +675,7 @@ describe('Block utility functions', () => {
                 
                 expect(contentModels.length).toBe(1);
                 expect(contentModels[0].content).toBe('Bold and italic text');
-                expect(contentModels[0].styles).toBeUndefined();
+                expect(Object.keys((contentModels[0].props as BaseStylesProp).styles).length).toBe(0);
             });
             
             it('should handle empty element correctly', () => {
@@ -691,7 +709,7 @@ describe('Block utility functions', () => {
                 
                 expect(contentModels.length).toBe(2);
                 expect(contentModels[0].content).toBe('Text with ');
-                expect(contentModels[1].type).toBe(ContentType.Code);
+                expect(contentModels[1].type).toBe(BlockType.Code);
                 expect(contentModels[1].content).toBe('inline code');
             });
             
@@ -704,8 +722,8 @@ describe('Block utility functions', () => {
                 
                 expect(contentModels.length).toBe(1);
                 expect(contentModels[0].content).toBe('Bold and italic');
-                expect(contentModels[0].styles.bold).toBe(true);
-                expect(contentModels[0].styles.italic).toBe(true);
+                expect((contentModels[0].props as BaseStylesProp).styles.bold).toBe(true);
+                expect((contentModels[0].props as BaseStylesProp).styles.italic).toBe(true);
             });
             
             it('should ignore UL/OL elements in the content', () => {
@@ -724,10 +742,10 @@ describe('Block utility functions', () => {
 
         describe('HTML conversion edge cases', () => {
             it('should handle null or empty content in renderContentAsHTML', () => {
-                const nullContent = [{ id: 'c1', type: ContentType.Text }];
+                const nullContent: ContentModel[] = [{ id: 'c1', type: ContentType.Text }];
                 expect(renderContentAsHTML(nullContent)).toBe('');
                 
-                const emptyContent = [{ id: 'c1', type: ContentType.Text, content: '' }];
+                const emptyContent: ContentModel[] = [{ id: 'c1', type: ContentType.Text, content: '' }];
                 expect(renderContentAsHTML(emptyContent)).toBe('');
             });
             
@@ -853,10 +871,12 @@ describe('Block utility functions', () => {
                     { 
                         id: 'parent1', 
                         type: BlockType.Callout,
-                        children: [
-                            { id: 'child1', type: BlockType.Paragraph, parentId: 'parent1' },
-                            { id: 'child2', type: BlockType.Paragraph, parentId: 'parent1' }
-                        ]
+                        props: {
+                            children: [
+                                { id: 'child1', type: BlockType.Paragraph, parentId: 'parent1' },
+                                { id: 'child2', type: BlockType.Paragraph, parentId: 'parent1' }
+                            ]
+                        }
                     }
                 ];
                 
@@ -975,9 +995,7 @@ describe('Block utility functions', () => {
             });
             
             it('should return false for heading blocks', () => {
-                expect(isNonContentEditableBlock(BlockType.Heading1)).toBe(false);
-                expect(isNonContentEditableBlock(BlockType.Heading2)).toBe(false);
-                expect(isNonContentEditableBlock(BlockType.Heading3)).toBe(false);
+                expect(isNonContentEditableBlock(BlockType.Heading)).toBe(false);
             });
         });
         
@@ -1002,24 +1020,9 @@ describe('Block utility functions', () => {
                     content: 'Content'
                 };
                 
-                const element = getContentElementBasedOnId(content, container);
+                const element = getContentElementBasedOnId(content.id, container);
                 expect(element).not.toBeNull();
                 expect(element.id).toBe('content1');
-            });
-            
-            it('should get element by dataId when id not found', () => {
-                container.innerHTML = `<span id="data1">Content</span>`;
-                
-                const content: ContentModel = {
-                    id: 'content1',
-                    dataId: 'data1',
-                    type: ContentType.Text,
-                    content: 'Content'
-                };
-                
-                const element = getContentElementBasedOnId(content, container);
-                expect(element).not.toBeNull();
-                expect(element.id).toBe('data1');
             });
             
             it('should return null when neither id nor dataId match', () => {
@@ -1031,7 +1034,7 @@ describe('Block utility functions', () => {
                     content: 'Content'
                 };
                 
-                const element = getContentElementBasedOnId(content, container);
+                const element = getContentElementBasedOnId(content.id, container);
                 expect(element).toBeNull();
             });
             
@@ -1049,7 +1052,7 @@ describe('Block utility functions', () => {
                     content: 'Content'
                 };
                 
-                const element = getContentElementBasedOnId(content, null);
+                const element = getContentElementBasedOnId(content.id, null);
                 expect(element).toBeNull();
             });
         });
@@ -1129,18 +1132,18 @@ describe('Block utility functions', () => {
             it('should remove checkmark element from block', () => {
                 container.innerHTML = `
                     <div id="block1" class="e-block">
-                        <span class="e-checkmark"></span>
+                        <div class="e-checkmark-container"></div>
                         <div class="e-content">Content</div>
                     </div>
                 `;
                 
                 const blockElement = document.getElementById('block1');
-                const checkmark = blockElement.querySelector('.e-checkmark');
+                const checkmark = blockElement.querySelector('.e-checkmark-container');
                 
                 expect(checkmark).not.toBeNull();
                 cleanCheckmarkElement(blockElement);
                 
-                const checkmarkAfter = blockElement.querySelector('.e-checkmark');
+                const checkmarkAfter = blockElement.querySelector('.e-checkmark-container');
                 expect(checkmarkAfter).toBeNull();
             });
             
@@ -1375,6 +1378,98 @@ describe('Block utility functions', () => {
                 const invalidColor = 'notacolor';
                 expect(getAccessibleTextColor(invalidColor)).toBe('#000000');
             });
+        });
+    });
+    describe('Clipboard utils', () => {
+        it('should unwrap the deepest block container', (done) => {
+            const container = document.createElement('div');
+            const span = document.createElement('span');
+            span.innerHTML = '<div id="nestedContainer"> <p> Test </p> </div>';
+            container.appendChild(span);
+
+            const unwrapped = unWrapContainer(container);
+            expect(unwrapped).not.toBeNull();
+            expect((unwrapped.firstChild as HTMLElement).id).toBe('nestedContainer');
+            done();
+        });
+    });
+    describe('DataUtils', function () {
+        let originalUserAgent: any;
+        
+        beforeEach(() => {
+            originalUserAgent = navigator.userAgent;
+        });
+        
+        afterEach(() => {
+            // Restore the original navigator userAgent
+            Object.defineProperty(navigator, 'userAgent', {
+                value: originalUserAgent,
+                configurable: true
+            });
+        });
+        describe('getModifierKey()', function () {
+            it('should return "Cmd" for macOS', function () {
+                Object.defineProperty(navigator, 'userAgent', {
+                    value: 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36',
+                    configurable: true
+                });
+                expect(DataUtils.getModifierKey()).toBe('Cmd');
+            });
+            it('should return "Ctrl" for non-macOS platforms', function () {
+                spyOn(DataUtils, 'isMacOS').and.returnValue(false);
+                expect(DataUtils.getModifierKey()).toBe('Ctrl');
+            });
+        });
+    });
+    describe('decode', () => {
+
+        it('should handle multiple instances of the same entity', () => {
+            const input = '&amp;&amp;&amp;';
+            const expected = '&&&';
+            expect(decode(input)).toBe(expected);
+        });
+
+        it('should return unchanged string if no entities are present', () => {
+            const input = 'Hello World!';
+            expect(decode(input)).toBe(input);
+        });
+
+        it('should handle empty string', () => {
+            expect(decode('')).toBe('');
+        });
+
+        it('should preserve unknown entities', () => {
+            const input = 'Test &unknown; Entity';
+            expect(decode(input)).toBe('Test &unknown; Entity');
+        });
+
+        it('should decode both &apos; and &#039; to single quote', () => {
+            const input = 'Quote &apos; and &#039;';
+            const expected = 'Quote \' and \'';
+            expect(decode(input)).toBe(expected);
+        });
+    });
+
+    describe('encode', () => {
+        it('should convert newlines to <br>', () => {
+            const input = 'Line1\nLine2';
+            const expected = 'Line1<br>Line2';
+            expect(encode(input)).toBe(expected);
+        });
+
+        it('should trim leading and trailing whitespace', () => {
+            const input = '  Hello World  ';
+            const expected = 'Hello World';
+            expect(encode(input)).toBe(expected);
+        });
+
+        it('should handle empty string', () => {
+            expect(encode('')).toBe('');
+        });
+
+        it('should handle string with no special characters', () => {
+            const input = 'HelloWorld123';
+            expect(encode(input)).toBe('HelloWorld123');
         });
     });
 });

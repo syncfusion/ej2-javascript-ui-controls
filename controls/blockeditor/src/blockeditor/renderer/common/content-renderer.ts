@@ -1,9 +1,7 @@
-import { BlockModel, ContentModel, LabelItemModel, UserModel } from '../../models/index';
-import { BlockEditor } from '../../base/index';
-import { ContentType } from '../../base/index';
+import { BaseStylesProp, BlockModel, ContentModel, LabelContentProps, LabelItemModel, MentionContentProps, StyleModel, UserModel } from '../../models/index';
+import { BlockEditor, ContentType } from '../../base/index';
 import { createFormattingElement } from '../../utils/dom';
 import { generateUniqueId, getAccessibleTextColor, getAutoAvatarColor, getUserInitials } from '../../utils/common';
-import { getLabelMenuItems } from '../../utils/data';
 
 /**
  * `Content renderer` module is used to render content in Blocks.
@@ -18,14 +16,24 @@ export class ContentRenderer {
         this.editor = editor;
     }
 
+    /**
+     * Renders the actual content of a block.
+     *
+     * @param {BlockModel} block - The block model containing the content.
+     * @param {HTMLElement} contentElement - The HTML element where the content will be rendered.
+     * @returns {void}
+     * @hidden
+     */
     renderContent(block: BlockModel, contentElement: HTMLElement): void {
         if (block.content && block.content.length > 0) {
             if (contentElement) {
                 contentElement.innerHTML = '';
             }
             if (block.content.length === 1) {
-                const isDirectText: boolean = (block.content[0].stylesApplied.length === 0)
-                    && block.content[0].type === ContentType.Text;
+                const props: BaseStylesProp = block.content[0].props as BaseStylesProp;
+                const styles: Partial<Record<keyof StyleModel, string | boolean>> | {} = props ? props.styles : {};
+                const isEmptyStyles: boolean = !styles || Object.keys(styles).length === 0;
+                const isDirectText: boolean = isEmptyStyles && block.content[0].type === ContentType.Text;
                 this.invokeContentRenderer(
                     block.content[0],
                     contentElement,
@@ -66,7 +74,7 @@ export class ContentRenderer {
         }
     }
 
-    renderText(content: ContentModel, contentElement: HTMLElement, isDirectText?: boolean): void {
+    private renderText(content: ContentModel, contentElement: HTMLElement, isDirectText?: boolean): void {
         if (!content) {
             contentElement.textContent = '';
             return;
@@ -90,17 +98,16 @@ export class ContentRenderer {
     }
 
     private renderMention(content: ContentModel, contentElement: HTMLElement): void {
-        const userId: string = content.id.toLowerCase();
-        const userModel: UserModel = this.editor.users.find((user: UserModel) => user.id.toLowerCase() === userId);
+        const props: MentionContentProps = content.props as MentionContentProps;
+        const userModel: UserModel = this.editor.users.find((user: UserModel) => user.id.toLowerCase() === props.userId);
         if (!userModel) { return; }
 
         const name: string = userModel.user.trim();
         const initials: string = getUserInitials(name);
         const bgColor: string = userModel.avatarBgColor || getAutoAvatarColor(userModel.id);
         const avatarUrl: string = userModel.avatarUrl || '';
-        content.dataId = generateUniqueId(userId);
         const wrapper: HTMLElement = this.editor.createElement('div', {
-            id: content.dataId,
+            id: content.id,
             className: 'e-mention-chip e-user-chip',
             attrs: {
                 'data-user-id': userModel.id,
@@ -142,14 +149,13 @@ export class ContentRenderer {
     }
 
     private renderLabel(content: ContentModel, contentElement: HTMLElement): void {
-        const labelItemId: string = content.id.toLowerCase();
+        const props: LabelContentProps = content.props as LabelContentProps;
         const labelItems: LabelItemModel[] = this.editor.labelSettings.labelItems;
-        const labelItem: LabelItemModel = labelItems.find((item: LabelItemModel) => item.id === labelItemId);
+        const labelItem: LabelItemModel = labelItems.find((item: LabelItemModel) => item.id === props.labelId);
         if (!labelItem) { return; }
 
-        content.dataId = generateUniqueId(labelItem.id);
         const labelChip: HTMLElement = this.editor.createElement('span', {
-            id: content.dataId,
+            id: content.id,
             className: 'e-mention chip e-label-chip',
             styles: `background: ${labelItem.labelColor};color: ${getAccessibleTextColor(labelItem.labelColor)};`,
             attrs: {

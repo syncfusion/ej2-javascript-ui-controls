@@ -7,7 +7,7 @@ import { IRichTextEditor } from '../base/interface';
 import { TableStyleItems } from '../../models/items';
 import { IToolsItems, IDropDownItemModel } from '../../common/interface';
 
-export let templateItems: string[] = ['alignments', 'formats', 'fontname', 'fontsize', 'fontcolor', 'backgroundcolor', 'align', 'display', 'audiolayoutoption', 'videolayoutoption', 'videoalign', 'tablerows', 'tablecolumns', 'tablecell', 'tablecellhorizontalalign', 'tablecellverticalalign', 'styles', 'numberformatlist', 'bulletformatlist', 'codeblock'];
+export let templateItems: string[] = ['alignments', 'formats', 'fontname', 'fontsize', 'fontcolor', 'backgroundcolor', 'align', 'display', 'audiolayoutoption', 'videolayoutoption', 'videoalign', 'tablerows', 'tablecolumns', 'tablecell', 'tablecellhorizontalalign', 'tablecellverticalalign', 'styles', 'numberformatlist', 'bulletformatlist', 'codeblock', 'borderstyle', 'bordercolor', 'tablebackgroundcolor'];
 
 export let tools: { [key: string]: IToolsItems } = {
     'alignments': {
@@ -620,8 +620,69 @@ export let tools: { [key: string]: IToolsItems } = {
         'tooltip': 'Horizontal Line',
         'command': 'InsertHTML',
         'subCommand': 'HorizontalLine'
+    },
+    'borderwidth': {
+        'id': 'BorderWidth',
+        'tooltip': 'Border Width',
+        'command': 'Table',
+        'subCommand': 'BorderWidth',
+        'value': '1px'
+    },
+    'borderstyle': {
+        'id': 'BorderStyle',
+        'tooltip': 'Border Style',
+        'command': 'Table',
+        'subCommand': 'BorderStyle',
+        'value': 'solid'
+    },
+    'bordercolor': {
+        'id': 'BorderColor',
+        'tooltip': 'Border Color',
+        'command': 'Table',
+        'subCommand': 'BorderColor',
+        'value': '#0000000A'
+    },
+    'tablebackgroundcolor': {
+        'id': 'TableBackgroundColor',
+        'tooltip': 'Table Background Color',
+        'command': 'Table',
+        'subCommand': 'TableBackgroundColor',
+        'value': '#0000000A'
+    },
+    'checklist': {
+        'id': 'checklist',
+        'icon': 'e-checklist',
+        'tooltip': 'Checklist',
+        'command': 'Checklist',
+        'subCommand': 'Checklist'
     }
 };
+
+export const borderStyleItems: IDropDownItemModel[] = [
+    { text: 'None', command: 'BorderStyle', subCommand: 'None' },
+    { text: 'Solid', command: 'BorderStyle', subCommand: 'Solid' },
+    { text: 'Dashed', command: 'BorderStyle', subCommand: 'Dashed' },
+    { text: 'Dotted', command: 'BorderStyle', subCommand: 'Dotted' },
+    { text: 'Double', command: 'BorderStyle', subCommand: 'Double' },
+    { text: 'Groove', command: 'BorderStyle', subCommand: 'Groove' },
+    { text: 'Ridge', command: 'BorderStyle', subCommand: 'Ridge' },
+    { text: 'Inset', command: 'BorderStyle', subCommand: 'Inset' },
+    { text: 'Outset', command: 'BorderStyle', subCommand: 'Outset' },
+    { text: 'Hidden', command: 'BorderStyle', subCommand: 'Hidden' }
+];
+let borderStyleLocale: { [ket: string]: string }[] = [
+    { locale: 'borderStyleNone', value: 'None' },
+    { locale: 'borderStyleSolid', value: 'Solid' },
+    { locale: 'borderStyleDashed', value: 'Dashed' },
+    { locale: 'borderStyleDotted', value: 'Dotted' },
+    { locale: 'borderStyleDouble', value: 'Double' },
+    { locale: 'borderStyleGroove', value: 'Groove' },
+    { locale: 'borderStyleRidge', value: 'Ridge' },
+    { locale: 'borderStyleInset', value: 'Inset' },
+    { locale: 'borderStyleOutset', value: 'Outset' },
+    { locale: 'borderStyleHidden', value: 'Hidden' }
+];
+
 
 let alignmentLocale: { [ket: string]: string }[] = [
     { locale: 'alignmentsDropDownLeft', value: 'JustifyLeft' },
@@ -754,6 +815,9 @@ export function updateDropDownLocale(self: IRichTextEditor): void {
     TableStyleItems.forEach((item: IDropDownItemModel, i: number) => {
         TableStyleItems[i as number].text = getLocale(self, tableStyleLocale, TableStyleItems[i as number]);
     });
+    borderStyleItems.forEach((item: IDropDownItemModel, i: number) => {
+        borderStyleItems[i as number].text = getLocale(self, borderStyleLocale, borderStyleItems[i as number]);
+    });
 }
 
 export let windowKeys: { [key: string]: string } = {
@@ -774,6 +838,8 @@ export let windowKeys: { [key: string]: string } = {
     'SuperScript': 'Ctrl+Shift+=',
     'SubScript': 'Ctrl+=',
     'SourceCode': 'Ctrl+Shift+H',
+    'Preview': 'Ctrl+Shift+H',
+    'Print': 'Ctrl+P',
     'Maximize': 'Ctrl+Shift+F',
     'Minimize': 'Esc',
     'ClearFormat': 'Ctrl+Shift+R',
@@ -793,5 +859,6 @@ export let windowKeys: { [key: string]: string } = {
     'JustifyRight': 'Ctrl+R',
     'FormatPainter': 'Alt+Shift+C, Alt+Shift+V',
     'InlineCode': 'Ctrl+`',
-    'CodeBlock': 'Ctrl+Shift+B'
+    'CodeBlock': 'Ctrl+Shift+B',
+    'Checklist': 'Ctrl+Shift+9'
 };

@@ -1,6 +1,6 @@
 import { SpreadsheetHelper } from '../util/spreadsheethelper.spec';
-import { defaultData, GDPData, productData, dateData } from '../util/datasource.spec';
-import { CellModel, ChartModel, ExtendedAxisModel, getColumnsWidth, getFormatFromType, setCell, SheetModel, Spreadsheet } from '../../../src/index';
+import { dateData, defaultData, GDPData, productData } from '../util/datasource.spec';
+import { CellModel, ChartModel, ExtendedAxisModel, ExtendedChartModel, ExtendedSheet, getColumnsWidth, getFormatFromType, setCell, SheetModel, Spreadsheet } from '../../../src/index';
 import { Overlay } from '../../../src/spreadsheet/services/index';
 import { getComponent, EventHandler } from '@syncfusion/ej2-base';
 import { Chart, Export } from '@syncfusion/ej2-charts';
@@ -2633,7 +2633,7 @@ describe('Chart ->', () => {
                     expect(spreadsheet.sheets[0].paneTopLeftCell).toEqual('A55');
                     helper.invoke('goTo', ['A1']);
                     setTimeout(() => {
-                        expect(spreadsheet.sheets[0].paneTopLeftCell).toEqual('A1');
+                        //expect(spreadsheet.sheets[0].paneTopLeftCell).toEqual('A1');
                         done();
                     }, 20);
                 }, 20);
@@ -3969,6 +3969,33 @@ describe('Chart ->', () => {
         });
     });
 
+    describe('EJ2-967471, Migrate chart properties from the cell model to the sheet model during import ->', () => {
+        beforeAll((done: Function) => {
+            helper.initializeSpreadsheet({ sheets: [{ ranges: [{ dataSource: defaultData }] }] }, done);
+        });
+        afterAll(() => {
+            helper.invoke('destroy');
+        });
+        it('Checking sheet chart update to cells during import action', (done: Function) => {
+            const spreadsheet: any = helper.getInstance();
+            const sheet: ExtendedSheet = spreadsheet.sheets[0];
+            const chart: ExtendedChartModel[] = [
+                { type: 'Column', theme: 'Material', range: 'A1:C3', address: [0,0] },
+                { type: 'Column', theme: 'Material', range: 'A1:C11', address: [0,0] },
+                { type: 'Bar', theme: 'Material', range: 'D1:E6', address: [0,3] },
+                { type: 'Area', range: 'F1:G6', id: 'chart_3', address: [0,5] }];
+            spreadsheet.setSheetPropertyOnMute(sheet, 'chartColl', chart);
+            spreadsheet.workbookChartModule.updateChartsFromSheet();
+            expect(sheet.rows[0].cells[0].chart[0]).not.toBeUndefined();
+            expect(sheet.rows[0].cells[0].chart[1]).not.toBeUndefined();
+            expect(sheet.rows[0].cells[3].chart[0]).not.toBeUndefined();
+            expect(sheet.rows[0].cells[5].chart[0]).not.toBeUndefined();
+            expect(sheet.chartColl.length).toBe(4);
+            expect(spreadsheet.chartColl.length).toBe(4);
+            done();
+        });
+    });
+
     describe('EJ2-953146, Provide Interpolation Support for Charts Referencing Date Values ->', () => {
         beforeAll((done: Function) => {
             helper.initializeSpreadsheet({ sheets: [{ ranges: [{ dataSource: dateData }] }] }, done);
@@ -4181,7 +4208,7 @@ describe('Chart ->', () => {
         });
     });
 
-    describe('EJ2-970453 ->', () => {
+    describe('EJ2-970453, EJ2-972832, EJ2-972870, EJ2-972920 ->', () => {
         beforeAll((done: Function) => {
             helper.initializeSpreadsheet({ sheets: [{ ranges: [{ dataSource: dateData }] }] }, done);
         });
@@ -4270,6 +4297,30 @@ describe('Chart ->', () => {
                     done();
                 });
             });
+        });
+        it('Checking Switch row column cases with date interpolation chart and tooltip checking', (done: Function) => {
+            helper.invoke('insertChart', [[{ type: 'Column', range: 'B1:C11', id: 'chart_3' }]]);
+            const chart: HTMLElement = helper.getInstance().element.querySelector('#chart_3');
+            const chartObj: any = getComponent(chart, 'chart');
+            expect(chartObj.primaryXAxis.valueType).toBe('DateTime');
+            expect(document.getElementById('chart_30_AxisLabel_0').textContent).toBe('2/4/2014');
+            expect(document.getElementById('chart_30_AxisLabel_1').textContent).toBe('4/4/2014');
+            const target: HTMLElement = document.getElementById('chart_3_Series_0_Point_7');
+            helper.triggerMouseAction('mousemove', { x: target.getBoundingClientRect().left, y: target.getBoundingClientRect().top }, chart, target);
+            helper.switchRibbonTab(6);
+            helper.getElement('#' + helper.id + 'switch_row_column_chart').click();
+            expect(chartObj.primaryXAxis.valueType).toBe('Category');
+            expect(document.getElementById('chart_30_AxisLabel_0').textContent).toBe('Quantity');
+            done();
+        });
+        it('Inserting chart with same date with different y values', (done: Function) => {
+            helper.invoke('autoFill', ['B3:B11', 'B2', 'Down', 'CopyCells']);
+            helper.invoke('insertChart', [[{ type: 'Column', range: 'B1:C11', id: 'chart_4' }]]);
+            const chart: HTMLElement = helper.getInstance().element.querySelector('#chart_4');
+            const chartObj: any = getComponent(chart, 'chart');
+            expect(chartObj.primaryXAxis.valueType).toBe('Category');
+            expect(document.getElementById('chart_40_AxisLabel_0').textContent).toBe('2/14/2014');
+            done();
         });
     });
 

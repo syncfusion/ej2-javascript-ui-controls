@@ -603,7 +603,7 @@ export class InterActiveChatBase extends Component<HTMLElement> implements INoti
     protected getCursorPosition(): { start: number; end: number } {
         const selection: Selection | null = window.getSelection();
         const range: Range | null = selection.rangeCount > 0 ? selection.getRangeAt(0) : null;
-        if (range && this.editableTextarea.contains(range.commonAncestorContainer)) {
+        if (range && this.editableTextarea && this.editableTextarea.contains(range.commonAncestorContainer)) {
             return {
                 start: range.startOffset,
                 end: range.endOffset

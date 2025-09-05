@@ -23,7 +23,6 @@ import { NotifyArgs } from '../../common/interface';
 import * as EVENTS from './../../common/constant';
 import { InsertTextExec } from '../plugin/insert-text';
 import { NodeCutter } from '../plugin/nodecutter';
-import { FormatPainterActions } from '../plugin/format-painter-actions';
 import { EmojiPickerAction } from '../plugin/emoji-picker-action';
 import { TableSelection } from '../plugin/table-selection';
 import { DOMMethods } from '../plugin/dom-tree';
@@ -154,6 +153,10 @@ export class EditorManager {
         selector?: string, enterAction?: string): void {
         switch (command.toLowerCase()) {
         case 'lists':
+            this.observer.notify(EVENTS.LIST_TYPE, { subCommand: value, event: event, callBack: callBack,
+                selector: selector, item: exeValue, enterAction: enterAction });
+            break;
+        case 'checklist':
             this.observer.notify(EVENTS.LIST_TYPE, { subCommand: value, event: event, callBack: callBack,
                 selector: selector, item: exeValue, enterAction: enterAction });
             break;

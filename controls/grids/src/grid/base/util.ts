@@ -971,7 +971,7 @@ export function setChecked(elem: HTMLInputElement, checked: boolean): void {
 export function createCboxWithWrap(uid: string, elem: Element, className?: string): Element {
     const div: Element = createElement('div', { className: className });
     div.appendChild(elem);
-    div.setAttribute('uid', uid);
+    div.setAttribute('data-uid', uid);
     return div;
 }
 
@@ -1482,7 +1482,7 @@ export function groupCaptionRowLeftRightPos(tr: Element, gObj: IGrid): void {
             }
         }
         if (td.classList.contains('e-summarycell')) {
-            const uid: string = td.getAttribute('e-mappinguid');
+            const uid: string = td.getAttribute('data-mappinguid');
             const column: Column = gObj.getColumnByUid(uid);
             width += parseInt(column.width.toString(), 10);
         }
@@ -1621,7 +1621,7 @@ export function resetRowIndex(gObj: IGrid, rows: Row<Column>[], rowElms: HTMLTab
                 rowElms[parseInt(i.toString(), 10)].classList.remove('e-altrow');
             }
             for (let j: number = 0; j < rowElms[parseInt(i.toString(), 10)].cells.length; j++) {
-                rowElms[parseInt(i.toString(), 10)].cells[parseInt(j.toString(), 10)].setAttribute('index', startIndex.toString());
+                rowElms[parseInt(i.toString(), 10)].cells[parseInt(j.toString(), 10)].setAttribute('data-index', startIndex.toString());
             }
             startIndex++;
         }
@@ -1655,7 +1655,7 @@ export function resetCachedRowIndex(gObj: IGrid): void {
                     rowElement.classList.remove('e-altrow');
                 }
                 for (let j: number = 0; j < (rowElement as HTMLTableRowElement).cells.length; j++) {
-                    (rowElement as HTMLTableRowElement).cells[parseInt(j.toString(), 10)].setAttribute('index', startIndex.toString());
+                    (rowElement as HTMLTableRowElement).cells[parseInt(j.toString(), 10)].setAttribute('data-index', startIndex.toString());
                 }
                 k++;
             }
@@ -2257,7 +2257,7 @@ export function createEditElement(parent: IGrid, column: Column, classNames: str
     const complexFieldName: string = getComplexFieldID(column.field);
     attr = Object.assign(attr, {
         id: parent.element.id + complexFieldName,
-        name: complexFieldName, 'e-mappinguid': column.uid
+        name: complexFieldName, 'data-mappinguid': column.uid
     });
     return parent.createElement('input', {
         className: classNames, attrs: attr

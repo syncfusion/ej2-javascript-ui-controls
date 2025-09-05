@@ -1031,27 +1031,30 @@ export class AnnotationRenderer {
                 appearance.graphics.restore(state);
             }
             else {
-                const imageUrl: string = (stampAnnotation['stampAnnotationPath'].toString()).split(',')[1];
-                const bytes: Uint8Array = _decode(imageUrl, false) as Uint8Array;
-                let bitmap: PdfImage;
-                if (bytes && bytes.length > 2 && ((bytes[0] === 255 && bytes[1] === 216) || (bytes[0] === 137 && bytes[1] === 80 &&
-                     bytes[2] === 78 && bytes[3] === 71 && bytes[4] === 13 && bytes[5] === 10  && bytes[6] === 26 && bytes[7] === 10 ) )) {
-                    bitmap = new PdfBitmap(bytes);
-                    const appearance: PdfTemplate = rubberStampAnnotation.appearance.normal;
-                    const state: PdfGraphicsState = appearance.graphics.save();
-                    appearance.graphics.setTransparency(opacity);
-                    appearance.graphics.drawImage(bitmap, 0, 0, width, height);
-                    appearance.graphics.restore(state);
+                if (stampAnnotation && stampAnnotation['stampAnnotationPath'] && stampAnnotation['stampAnnotationPath'].toString() !== '') {
+                    const imageUrl: string = (stampAnnotation['stampAnnotationPath'].toString()).split(',')[1];
+                    const bytes: Uint8Array = _decode(imageUrl, false) as Uint8Array;
+                    let bitmap: PdfImage;
+                    if (bytes && bytes.length > 2 && ((bytes[0] === 255 && bytes[1] === 216) || (bytes[0] === 137 && bytes[1] === 80 &&
+                        bytes[2] === 78 && bytes[3] === 71 && bytes[4] === 13 && bytes[5] === 10 && bytes[6] === 26 && bytes[7] === 10))) {
+                        bitmap = new PdfBitmap(bytes);
+                        const appearance: PdfTemplate = rubberStampAnnotation.appearance.normal;
+                        const state: PdfGraphicsState = appearance.graphics.save();
+                        appearance.graphics.setTransparency(opacity);
+                        appearance.graphics.drawImage(bitmap, 0, 0, width, height);
+                        appearance.graphics.restore(state);
+                    }
+                    else {
+                        const appearance: PdfAppearance = rubberStampAnnotation.appearance;
+                        const filterAnnot: any =
+                            this.pdfViewerBase.pngData.filter((nameStamp: any) => nameStamp.name === stampAnnotation.annotName);
+                        const dictionary: _PdfDictionary = filterAnnot[0]._dictionary.get('AP');
+                        const pngDictionary: _PdfBaseStream = dictionary.get('N');
+                        appearance.normal = new PdfTemplate(pngDictionary, page._crossReference);
+                    }
+                    rubberStampAnnotation.rotationAngle = 0;
+                    this.setRotateAngle(this.getRubberStampRotateAngle(page.rotation, rotateAngle), rubberStampAnnotation);
                 }
-                else {
-                    const appearance: PdfAppearance = rubberStampAnnotation.appearance;
-                    const filterAnnot: any =
-                    this.pdfViewerBase.pngData.filter((nameStamp: any) => nameStamp.name === stampAnnotation.annotName);
-                    const dictionary: _PdfDictionary = filterAnnot[0]._dictionary.get('AP');
-                    const pngDictionary: _PdfBaseStream = dictionary.get('N');
-                    appearance.normal = new PdfTemplate(pngDictionary, page._crossReference);
-                }
-                rubberStampAnnotation.rotationAngle = this.getRubberStampRotateAngle(page.rotation, rotateAngle);
             }
             rubberStampAnnotation.opacity = opacity;
             if (!isNullOrUndefined(stampAnnotation.note)) {
@@ -1156,7 +1159,8 @@ export class AnnotationRenderer {
                 if (page.rotation === PdfRotationAngle.angle90 || page.rotation === PdfRotationAngle.angle270) {
                     rubberStampAnnotation.bounds = rectangle;
                 }
-                rubberStampAnnotation.rotationAngle = this.getRubberStampRotateAngle(page.rotation, stampAnnotation.rotateAngle);
+                rubberStampAnnotation.rotationAngle = 0;
+                this.setRotateAngle(this.getRubberStampRotateAngle(page.rotation, rotateAngle), rubberStampAnnotation);
             }
             if (!isNullOrUndefined(stampAnnotation.modifiedDate) && !isNaN(Date.parse(stampAnnotation.modifiedDate))) {
                 let dateValue: Date;
@@ -1196,8 +1200,21 @@ export class AnnotationRenderer {
                     this.renderSignHereStamp(rubberStampAnnotation, rectangle, icon, textBrush, page, pens, graphicsPath);
                     appearance.graphics.restore(state);
                 }
-                rubberStampAnnotation.rotationAngle = this.getRubberStampRotateAngle(page.rotation, rotateAngle);
+                rubberStampAnnotation.rotationAngle = 0;
+                this.setRotateAngle(this.getRubberStampRotateAngle(page.rotation, rotateAngle), rubberStampAnnotation);
             }
+        }
+    }
+
+    private setRotateAngle(rotateAngle: number, annot: PdfRubberStampAnnotation): void {
+        if (rotateAngle !== annot.rotate) {
+            if (rotateAngle < 0) {
+                rotateAngle = 360 + rotateAngle;
+            }
+            if (rotateAngle >= 360) {
+                rotateAngle = 360 - rotateAngle;
+            }
+            annot._dictionary.update('Rotate', rotateAngle);
         }
     }
 
@@ -1864,25 +1881,25 @@ export class AnnotationRenderer {
         return measurementUnit;
     }
 
-    private getRubberStampRotateAngle(angleEnum: PdfRotationAngle, rotationAngle: number): PdfRotationAngle {
-        let angle: PdfRotationAngle = PdfRotationAngle.angle0;
-        switch (rotationAngle) {
+    private getRubberStampRotateAngle(angleEnum: PdfRotationAngle, rotationAngle: number): number {
+        let angle: number = 0;
+        switch (angleEnum) {
         case 0:
-            angle = PdfRotationAngle.angle0;
+            angle = 0;
             break;
-        case 90:
-            angle = PdfRotationAngle.angle90;
+        case 1:
+            angle = 90;
             break;
-        case 180:
-            angle = PdfRotationAngle.angle180;
+        case 2:
+            angle = 180;
             break;
-        case 270:
-            angle = PdfRotationAngle.angle270;
+        case 3:
+            angle = 270;
             break;
         default:
             break;
         }
-        angle = ((angleEnum as number) - (angle as number)  + 4) % 4;
+        angle -= rotationAngle;
         return angle;
     }
 
@@ -3587,8 +3604,13 @@ export class AnnotationRenderer {
         }
         freeTextAnnotation.AnnotType = 'Text Box';
         freeTextAnnotation.FreeTextAnnotationType = 'Text Box';
-        freeTextAnnotation.BorderColor = new AnnotColor(freeTextAnnot.borderColor[0], freeTextAnnot.borderColor[1],
-                                                        freeTextAnnot.borderColor[2]);
+        if (freeTextAnnot.borderColor) {
+            freeTextAnnotation.BorderColor = new AnnotColor(freeTextAnnot.borderColor[0], freeTextAnnot.borderColor[1],
+                                                            freeTextAnnot.borderColor[2]);
+        }
+        else {
+            freeTextAnnotation.BorderColor = new AnnotColor(255, 255, 255);
+        }
         const points: AnnotPoint[] = [{X: 100, Y: 400}, {X: 200, Y: 400}];
         freeTextAnnotation.CalloutLines = points;
         const backgroundColor: number[] = freeTextAnnot.color ? freeTextAnnot.color : [0, 0, 0];
@@ -3606,7 +3628,12 @@ export class AnnotationRenderer {
         freeTextAnnotation.FontSize = this.convertPointToPixel(freeTextAnnot.font.size);
         freeTextAnnotation.Font = new FontBase(freeTextAnnot.font, freeTextAnnotation.FontFamily); // need to be checked
         freeTextAnnotation.Thickness = freeTextAnnot.border.width;
-        freeTextAnnotation.StrokeColor = 'rgba(' + freeTextAnnot.borderColor[0] + ',' + freeTextAnnot.borderColor[1] + ',' + freeTextAnnot.borderColor[2] + ',' + (freeTextAnnot.borderColor[3] ? freeTextAnnot.borderColor[3] : 1) + ')';
+        if (freeTextAnnot.borderColor) {
+            freeTextAnnotation.StrokeColor = 'rgba(' + freeTextAnnot.borderColor[0] + ',' + freeTextAnnot.borderColor[1] + ',' + freeTextAnnot.borderColor[2] + ',' + (freeTextAnnot.borderColor[3] ? freeTextAnnot.borderColor[3] : 1) + ')';
+        }
+        else {
+            freeTextAnnotation.StrokeColor = 'rgba(255, 255, 255, 1)';
+        }
         let fillOpacity: number;
         if (freeTextAnnot._dictionary.has('FillOpacity') && !isNullOrUndefined(freeTextAnnot._dictionary.get('FillOpacity'))) {
             fillOpacity = parseInt(freeTextAnnot._dictionary.get('FillOpacity').toString(), 10);

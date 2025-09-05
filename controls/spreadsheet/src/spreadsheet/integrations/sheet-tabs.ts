@@ -9,7 +9,7 @@ import { isSingleCell, getRangeIndexes, getSheet, getSheetIndex, beginAction } f
 import { DropDownButton, MenuEventArgs, BeforeOpenCloseMenuEventArgs, OpenCloseMenuEventArgs } from '@syncfusion/ej2-splitbuttons';
 import { ItemModel } from '@syncfusion/ej2-splitbuttons';
 import { isCollide, OffsetPosition, calculatePosition } from '@syncfusion/ej2-popups';
-import { rippleEffect, L10n, closest, EventHandler, remove, isNullOrUndefined, select } from '@syncfusion/ej2-base';
+import { rippleEffect, L10n, closest, EventHandler, remove, isNullOrUndefined, select, Browser } from '@syncfusion/ej2-base';
 import { Dialog } from '../services/index';
 import { sheetsDestroyed, activeCellChanged, workbookFormulaOperation, InsertDeleteModelArgs, checkIsFormula, sheetRenameUpdate } from '../../workbook/common/index';
 import { insertModel, refreshInsertDelete } from './../../workbook/common/index';
@@ -74,7 +74,7 @@ export class SheetTabs {
             beforeOpen: (args: BeforeOpenCloseMenuEventArgs): void => this.beforeOpenHandler(
                 this.dropDownInstance, args.element, l10n.getConstant('ListAllSheets')),
             open: (args: OpenCloseMenuEventArgs): void => this.openHandler(
-                this.dropDownInstance, args.element, this.parent.enableRtl ? 'right' : 'left'),
+                this.dropDownInstance, args.element, this.parent.enableRtl ? 'right' : 'left', Browser.isDevice),
             cssClass: 'e-sheets-list e-flat e-caret-hide',
             close: (): void => this.focusTab(this.tabInstance.element)
         });
@@ -179,10 +179,10 @@ export class SheetTabs {
         }
     }
 
-    private openHandler(instance: DropDownButton, element: HTMLElement, positionX: string): void {
+    private openHandler(instance: DropDownButton, element: HTMLElement, positionX: string, isDevice?: boolean): void {
         const wrapper: HTMLElement = element.parentElement; let height: number;
         const collide: string[] = isCollide(wrapper);
-        if (collide.indexOf('bottom') === -1) {
+        if (collide.indexOf('bottom') === -1 || isDevice) {
             height = element.style.overflowY === 'auto' ? this.parent.viewport.height : wrapper.getBoundingClientRect().height;
             const offset: OffsetPosition = calculatePosition(instance.element, positionX, 'top');
             if (positionX === 'right') {

@@ -1,6 +1,6 @@
-import { getRangeIndexes, ImageModel } from '../common/index';
+import { ExtendedImageModel, ExtendedSheet, getRangeIndexes, ImageModel } from '../common/index';
 import { CellModel, SheetModel, getCell, setCell, getSheetIndex, Workbook, getSheet } from '../base/index';
-import { setImage } from '../common/event';
+import { importModelUpdate, setImage } from '../common/event';
 import { isUndefined } from '@syncfusion/ej2-base';
 /**
  * Specifies image.
@@ -46,6 +46,25 @@ export class WorkbookImage {
         return args.isElementRemoved;
     }
 
+    private updateImagesFromSheet(): void {
+        this.parent.sheets.forEach((sheet: ExtendedSheet) => {
+            if (sheet.imageColl) {
+                sheet.imageColl.forEach((model: ExtendedImageModel) => {
+                    const imageModel: ExtendedImageModel = model;
+                    const indexes: number[] = imageModel.address;
+                    delete imageModel.address;
+                    const cell: CellModel = getCell(indexes[0], indexes[1], sheet);
+                    if (cell && cell.image) {
+                        cell.image.push(imageModel);
+                    } else {
+                        setCell(indexes[0], indexes[1], sheet, { image: [imageModel] }, true);
+                    }
+                });
+                delete sheet.imageColl;
+            }
+        });
+    }
+
     /**
      * Adding event listener for number format.
      *
@@ -53,6 +72,7 @@ export class WorkbookImage {
      */
     private addEventListener(): void {
         this.parent.on(setImage, this.setImage, this);
+        this.parent.on(importModelUpdate, this.updateImagesFromSheet, this);
     }
 
     /**
@@ -63,6 +83,7 @@ export class WorkbookImage {
     private removeEventListener(): void {
         if (!this.parent.isDestroyed) {
             this.parent.off(setImage, this.setImage);
+            this.parent.off(importModelUpdate, this.updateImagesFromSheet);
         }
     }
 

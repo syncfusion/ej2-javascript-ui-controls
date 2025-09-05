@@ -15,14 +15,14 @@ import { AudioCommand, CodeBlockPlugin, DOMNode, EmojiPickerAction, FormatPainte
 import { DOMMethods } from '../editor-manager/plugin/dom-tree';
 import { MDLink, MDTable } from '../markdown-parser';
 import { CustomUserAgentData } from './user-agent';
-import { DropDownButton, ItemModel as DropDownItemModel, SplitButton } from '@syncfusion/ej2-splitbuttons';
-import { ItemModel, OverflowMode } from '@syncfusion/ej2-navigations';
+import { DropDownButton, ItemModel as DropDownItemModel } from '@syncfusion/ej2-splitbuttons';
+import { ItemModel } from '@syncfusion/ej2-navigations';
 import { EmojiSettingsModel } from '../models/emoji-settings-model';
 import { FormatPainterSettingsModel, IFrameSettingsModel, ImageSettingsModel, PasteCleanupSettingsModel, QuickToolbarSettingsModel, TableSettingsModel } from '../models/models';
 import { ClickEventArgs } from '@syncfusion/ej2-navigations';
 import { Popup, Dialog } from '@syncfusion/ej2-popups';
-import { ColorPicker, ColorPickerEventArgs, ColorPickerModel } from '@syncfusion/ej2-inputs';
-import { ImageInputSource } from './enum';
+import { ColorPickerEventArgs, ColorPickerModel } from '@syncfusion/ej2-inputs';
+import { ImageInputSource, MediaInputSource } from './enum';
 
 
 /**
@@ -32,6 +32,7 @@ export interface IAdvanceListItem {
     listStyle?: string
     listImage?: string
     type?: string
+    action?: string
 }
 
 /**
@@ -117,6 +118,7 @@ export interface IToolbarStatus {
     bulletFormatList?: string | boolean
     InlineCode?: boolean
     isCodeBlock?: boolean
+    isCheckList?: boolean
 }
 /**
  * @deprecated
@@ -258,7 +260,14 @@ export interface IEditorModel {
     beforeSlashMenuApplyFormat?(): void
     codeBlockObj?: CodeBlockPlugin
 }
-
+/**
+ * Interface for checklist item model
+ */
+export interface IChecklistItemModel {
+    /** Defines the type of the checklist item */
+    text: string;
+    iconCss: string;
+}
 /**
  * @hidden
  * @deprecated
@@ -779,6 +788,7 @@ export interface ITableModel {
     hideTableQuickToolbar(): void;
     removeTable(selection?: NodeSelection, args?: ClickEventArgs | KeyboardEventArgs, delKey?: boolean): void;
     isTableQuickToolbarVisible(): boolean;
+    enableUndo(): void;
 }
 
 export interface IColorPickerModel extends ColorPickerModel {
@@ -1095,6 +1105,44 @@ export interface ImageSuccessEventArgs {
 }
 
 /**
+ * Provides specific details about a successful media upload event in the RichTextEditor.
+ */
+export interface MediaSuccessEventArgs {
+    /**
+     * Returns the original event arguments.
+     */
+    e?: object
+    /**
+     * Details about the media file that was successfully uploaded.
+     */
+    file: FileInfo
+    /**
+     * Provides the status text describing the media upload.
+     */
+    statusText?: string
+    /**
+     * Describes the operation performed during the upload event.
+     */
+    operation: string
+    /**
+     * Returns the response details of the upload event, if any.
+     */
+    response?: ResponseEventArgs
+    /**
+     * Specifies the name of the event.
+     */
+    name?: string
+    /**
+     * Specifies the HTML element related to the event.
+     */
+    element?: HTMLElement
+    /**
+     * Provides the detected media source related to the event.
+     */
+    detectMediaSource?: MediaInputSource
+}
+
+/**
  * Provides information about a response received after an Image upload event in the RichTextEditor.
  */
 export interface ResponseEventArgs {
@@ -1133,6 +1181,18 @@ export interface IColorPickerRenderArgs {
  * Provides information about the image drop event in a rich text editor.
  */
 export interface ImageDropEventArgs extends DragEvent {
+    /** Determines whether the action should be prevented. */
+    cancel: boolean
+    /** Refers to the parent element of the drop range. */
+    rangeParent?: Element
+    /** Specifies the offset value for the drop range. */
+    rangeOffset?: number
+}
+
+/**
+ * Provides information about the media drop event in a rich text editor.
+ */
+export interface MediaDropEventArgs extends DragEvent {
     /** Determines whether the action should be prevented. */
     cancel: boolean
     /** Refers to the parent element of the drop range. */
@@ -1254,4 +1314,38 @@ export interface ISlashMenuItem {
      * Specifies the type of the slash menu item. Grouping will be done based on the type.
      */
     type: string
+}
+
+/**
+ * Specifies the list style type and command to be executed.
+ *
+ * @hidden
+ * @private
+ */
+export interface IListCommandArgs{
+    /**
+     * Specifies the type of the list style.
+     */
+    listStyle : string
+    /**
+     * Specifies the type of the list subcommand.
+     */
+    type : string
+}
+/**
+ * Provides information about the selectionChanged event in the Rich Text Editor.
+ */
+export interface SelectionChangedEventArgs {
+    /**
+     * The HTML string representation of the current non-empty selection, including any inline styles and semantic tags.
+     */
+    selectedContent: string;
+    /**
+     * The browser Selection object representing the current selection range within the editor.
+     */
+    selection?: Selection;
+    /**
+     * Indicates if the editor is currently in HTML or Markdown mode.
+     */
+    editorMode?: EditorMode | string;
 }

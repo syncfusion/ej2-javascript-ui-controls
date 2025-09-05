@@ -56,6 +56,13 @@ export class DialogRenderer {
         return dlgObj;
     }
     private beforeOpen(args: BeforeOpenEventArgs): void {
+        if (this.parent.quickToolbarModule && this.parent.quickToolbarModule.textQTBar) {
+            if (this.parent.quickToolbarModule.textQTBar.element &&
+                this.parent.quickToolbarModule.textQTBar.element.classList.contains('e-popup-open') &&
+                document.body.contains(this.parent.quickToolbarModule.textQTBar.element)) {
+                this.parent.quickToolbarModule.textQTBar.hidePopup();
+            }
+        }
         if (args.element.classList.contains('e-dialog')) {
             const formEle: Element = closest(args.target as HTMLElement, 'form');
             if (!isNOU(formEle)) {
@@ -76,8 +83,10 @@ export class DialogRenderer {
         }
     }
     private open(args: Object): void {
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         const isFileMangerDialog: boolean = !isNOU(((args as any).container as HTMLElement).querySelector('.e-rte-file-manager-dialog'));
         if (isFileMangerDialog) {
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
             ((args as any).preventFocus as boolean) = true;
         }
         this.parent.trigger(events.dialogOpen, args);

@@ -712,7 +712,7 @@ export class Edit implements IAction {
 
         const inputs: HTMLInputElement[] = [].slice.call(form.getElementsByClassName('e-field'));
         for (let i: number = 0, len: number = inputs.length; i < len; i++) {
-            const col: Column = gObj.getColumnByUid(inputs[parseInt(i.toString(), 10)].getAttribute('e-mappinguid'));
+            const col: Column = gObj.getColumnByUid(inputs[parseInt(i.toString(), 10)].getAttribute('data-mappinguid'));
             if (col && col.field) {
                 let value:  number | string | Date | boolean = this.getValue(col, inputs[parseInt(i.toString(), 10)], editedData);
                 if (col.type === 'string' && !(col.isForeignColumn() && typeof value !== 'string')) {
@@ -1083,7 +1083,7 @@ export class Edit implements IAction {
                 this.validationComplete(args);
             },
             customPlacement: (inputElement: HTMLElement, error: HTMLElement) => {
-                const uid: string = inputElement.getAttribute('e-mappinguid');
+                const uid: string = inputElement.getAttribute('data-mappinguid');
                 const args: Object = {
                     column: this.parent.getColumnByUid(uid),
                     error: error,

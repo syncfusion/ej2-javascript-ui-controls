@@ -428,6 +428,21 @@ export const CLS_ALIGN_TB_BTN: string = 'e-alignment-tbar-btn';
  * @hidden
  * @deprecated
  */
+export const CLS_BORDER_STYLE_BTN: string = 'e-border-style-btn';
+/**
+ * @hidden
+ * @deprecated
+ */
+export const CLS_BORDERCOLOR_COLORPICKER: string = 'e-rte-border-colorpicker';
+/**
+ * @hidden
+ * @deprecated
+ */
+export const CLS_TABLE_BGCOLOR_COLORPICKER: string = 'e-rte-table-bg-colorpicker';
+/**
+ * @hidden
+ * @deprecated
+ */
 export const CLS_FONT_COLORPICKER: string = 'e-rte-font-colorpicker';
 /**
  * @hidden
@@ -534,6 +549,11 @@ export const CLS_IMG_RESIZE: string = 'e-img-resize';
  * @hidden
  * @deprecated
  */
+export const CLS_VID_RESIZE: string = 'e-vid-resize';
+/**
+ * @hidden
+ * @deprecated
+ */
 export const CLS_DROPAREA: string = 'e-droparea';
 /**
  * @hidden
@@ -596,4 +616,18 @@ export const CLS_RTE_RES_WEST: string = 'e-south-west';
  * @deprecated
  */
 export const CLS_RTE_SOURCE_CODE_TXTAREA: string = 'e-rte-srctextarea';
-
+/**
+ * @hidden
+ * @deprecated
+ */
+export const CLS_RTE_IMAGE_UPLOAD_POPUP: string = 'e-image-upload-popup';
+/**
+ * @hidden
+ * @deprecated
+ */
+export const CLS_RTE_VIDEO_UPLOAD_POPUP: string = 'e-video-upload-popup';
+/**
+ * @hidden
+ * @deprecated
+ */
+export const CLS_RTE_AUDIO_UPLOAD_POPUP: string = 'e-audio-upload-popup';

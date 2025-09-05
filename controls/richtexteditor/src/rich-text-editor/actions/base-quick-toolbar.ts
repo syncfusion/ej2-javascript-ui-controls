@@ -1029,7 +1029,11 @@ export class BaseQuickToolbar implements IBaseQuickToolbar {
             case 'Hidden':
             case 'ParentElement':
             case 'ScrollableContainer':
-                spaceBelow = scrollParentRect.bottom - (args.iframeRect.top + blockRect.bottom);
+                if (!isScrollParentElemInputElem && collision === 'ParentElement') {
+                    spaceBelow = args.iframeRect.bottom -  (args.iframeRect.top + blockRect.bottom);
+                } else {
+                    spaceBelow = scrollParentRect.bottom - (args.iframeRect.top + blockRect.bottom);
+                }
                 break;
             case 'ViewPort':
                 spaceBelow = window.innerHeight - (args.iframeRect.top + blockRect.bottom);

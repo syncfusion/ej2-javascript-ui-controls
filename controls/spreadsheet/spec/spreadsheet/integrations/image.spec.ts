@@ -3,7 +3,7 @@ import { defaultData } from '../util/datasource.spec';
 import { Overlay } from '../../../src/spreadsheet/services/index';
 import { Spreadsheet } from '../../../src/spreadsheet/index';
 import { EventHandler } from '@syncfusion/ej2-base';
-import { ImageModel, setImage } from '../../../src/index';
+import { ExtendedImageModel, ExtendedSheet, ImageModel, setImage } from '../../../src/index';
 
 describe('Image ->', () => {
     const helper: SpreadsheetHelper = new SpreadsheetHelper('spreadsheet');
@@ -320,6 +320,32 @@ describe('Image ->', () => {
                 expect(chart).toBeNull();
                 done();
             });
+        });
+    });
+
+    describe('EJ2-967471, Migrate Image properties from the cell model to the sheet model during import ->', () => {
+        beforeAll((done: Function) => {
+            helper.initializeSpreadsheet({ sheets: [{ ranges: [{ dataSource: defaultData }] }] }, done);
+        });
+        afterAll(() => {
+            helper.invoke('destroy');
+        });
+        it('Checking sheet images update to cells during import action', (done: Function) => {
+            const spreadsheet: any = helper.getInstance();
+            const sheet: ExtendedSheet = spreadsheet.sheets[0];
+            const image: ExtendedImageModel[] = [
+                { src: "https://www.w3schools.com/images/w3schools_green.jpg", address: [0,0] },
+                { src: "https://www.w3schools.com/images/w3schools_green.jpg", address: [0,1] },
+                { src: "https://www.w3schools.com/images/w3schools_green.jpg", address: [0,3] },
+                { src: "https://www.w3schools.com/images/w3schools_green.jpg", address: [0,3] }]
+            spreadsheet.setSheetPropertyOnMute(sheet, 'imageColl', image);
+            spreadsheet.workbookImageModule.updateImagesFromSheet();
+            expect(JSON.stringify(sheet.rows[0].cells[0].image[0])).toBe('{"src":"https://www.w3schools.com/images/w3schools_green.jpg"}');
+            expect(JSON.stringify(sheet.rows[0].cells[1].image[0])).toBe('{"src":"https://www.w3schools.com/images/w3schools_green.jpg"}');
+            expect(JSON.stringify(sheet.rows[0].cells[3].image[0])).toBe('{"src":"https://www.w3schools.com/images/w3schools_green.jpg"}');
+            expect(JSON.stringify(sheet.rows[0].cells[3].image[1])).toBe('{"src":"https://www.w3schools.com/images/w3schools_green.jpg"}');
+            expect(sheet.imageColl).toBeUndefined();
+            done();
         });
     });
 

@@ -1244,7 +1244,7 @@ export class ContentRender implements IRenderer {
 
     private updateCellIndex(rowEle: HTMLTableRowElement, index: number): void {
         for (let i: number = 0; i < rowEle.cells.length; i++) {
-            rowEle.cells[parseInt(i.toString(), 10)].setAttribute('index', index.toString());
+            rowEle.cells[parseInt(i.toString(), 10)].setAttribute('data-index', index.toString());
         }
     }
 }

@@ -30,19 +30,19 @@ describe('Selection Plugin', () => {
                             id: 'boldText',
                             type: ContentType.Text,
                             content: 'Bold text',
-                            styles: { bold: true }
+                            props: { styles: { bold: true } }
                         },
                         {
                             id: 'italicText',
                             type: ContentType.Text,
                             content: 'Italic text',
-                            styles: { italic: true }
+                            props: { styles: { italic: true } }
                         },
                         {
                             id: 'styledText',
                             type: ContentType.Text,
                             content: 'Mixed styles',
-                            styles: { bold: true, underline: true }
+                            props: { styles: { bold: true, underline: true } }
                         }
                     ]
                 }
@@ -412,7 +412,7 @@ describe('Selection Plugin', () => {
             selectionManager.saveSelection(contentElement);
             // expect(selectionManager.getStoredRange()).toBeNull();
 
-            expect((editor as any).checkIsEntireEditorSelected()).toBe(false);
+            expect(selectionManager.checkIsEntireEditorSelected()).toBe(false);
 
             contentElement.textContent = null;
             selectionManager.restoreSelection(contentElement);
@@ -458,7 +458,7 @@ describe('Selection Plugin', () => {
 
             expect(selectionManager.getNodeFromSelection ('P')).toBeNull();
 
-            expect((editor as any).checkIsEntireEditorSelected()).toBe(false);
+            expect(selectionManager.checkIsEntireEditorSelected()).toBe(false);
 
             const position = selectionManager.getSelectionPosition();
             expect(position.x).toBe(0);
@@ -471,19 +471,21 @@ describe('Selection Plugin', () => {
             editor.setFocusToBlock(blockElement);
             const block: BlockModel = {
                 id: 'callout-block',
-                type: 'Callout',
-                children: [
-                    {
-                        id: 'first-child',
-                        type: 'Paragraph',
-                        content: [ { type: ContentType.Text, content: '' } ]
-                    },
-                    {
-                        id: 'second-child',
-                        type: 'Paragraph',
-                        content: [ { type: ContentType.Text, content: 'Second child' } ]
-                    }
-                ],
+                type: BlockType.Callout,
+                props: {
+                    children: [
+                        {
+                            id: 'first-child',
+                            type: BlockType.Paragraph,
+                            content: [ { type: ContentType.Text, content: '' } ]
+                        },
+                        {
+                            id: 'second-child',
+                            type: BlockType.Paragraph,
+                            content: [ { type: ContentType.Text, content: 'Second child' } ]
+                        }
+                    ]
+                }
             }
             editor.addBlock(block);
             editor.removeBlock(blockElement.id);
@@ -500,7 +502,7 @@ describe('Selection Plugin', () => {
             );
 
             setTimeout(() => {
-                expect((editor as any).checkIsEntireEditorSelected()).toBe(true);
+                expect(selectionManager.checkIsEntireEditorSelected()).toBe(true);
                 done();
             }, 200);
         });

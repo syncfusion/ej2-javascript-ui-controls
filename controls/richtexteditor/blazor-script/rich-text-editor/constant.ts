@@ -16,6 +16,7 @@ export const refreshBegin: string = 'refresh-begin';
 export const toolbarUpdated: string = 'toolbar-updated';
 export const preventQuickToolbarClose: string = 'preventQuickToolbarClose';
 export const bindOnEnd: string = 'bind-on-end';
+export const updateProperty: string = 'updateProperty';
 export const renderColorPicker: string = 'render-color-picker';
 export const htmlToolbarClick: string = 'html-toolbar-click';
 export const markdownToolbarClick: string = 'markdown-toolbar-click';
@@ -158,7 +159,9 @@ export const FORMAT_PAINTER_ACTIONS: string = 'format_painter_actions';
 export const onCodeBlock: string = 'onCodeBlock';
 export const codeBlockPaste: string = 'code-block-paste-content';
 export const codeBlockEnter: string = 'code-block-enter';
-
+export const importWord: string = 'importWord';
+export const insertWord: string = 'insertWord';
+export const selectionChangeMouseUp: string = 'selectionChangeMouseUp';
 
 //Blazor Event
 export const beforeQuickToolbarOpenEvent: string = 'BeforeQuickToolbarOpenEvent';
@@ -198,6 +201,8 @@ export const showAudioDialog: string = 'ShowAudioDialog';
 export const closeAudioDialog: string = 'CloseAudioDialog';
 export const showVideoDialog: string = 'ShowVideoDialog';
 export const closeVideoDialog: string = 'CloseVideoDialog';
+export const showWordDialog: string = 'ShowWordDialog';
+export const closeWordDialog: string = 'CloseWordDialog';
 
 //Blazor ID
 export const imageQuickPopup: string = '_Image_Quick_Popup';

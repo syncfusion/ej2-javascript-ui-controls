@@ -7,7 +7,7 @@ import { Grid } from '../../../src/grid/base/grid';
 import { CellMergeRender } from '../../../src/grid/renderer/cell-merge-renderer';
 import { ContentRender } from '../../../src/grid/renderer/content-renderer';
 import '../../../node_modules/es6-promise/dist/es6-promise';
-import { data, filterData } from '../base/datasource.spec';
+import { data, filterData, spanData } from '../base/datasource.spec';
 import { extend } from '@syncfusion/ej2-base';
 import { GridModel } from '../../../src/grid/base/grid-model';
 import { VirtualScroll } from '../../../src/grid/actions/virtual-scroll';
@@ -282,6 +282,115 @@ describe('Cell Merge', () => {
             gridObj.clearSelection();
             gridObj.selectRow(0, true);
             gridObj.keyboardModule.keyAction({ action: 'f2', preventDefault: preventDefault, target: gridObj.getContent().querySelector('.e-row') } as any);
+        });
+        
+        afterAll(() => {
+            destroy(gridObj);
+            gridObj = null;
+        });
+    });
+
+    describe('EJ2-972292: Provide built-in support for rowspan and column span based on data source values.', () => {
+        let gridObj: Grid;
+        
+        beforeAll((done: Function) => {
+            gridObj = createGrid(
+                {
+                    dataSource: spanData,
+                    allowSorting: true,
+                    allowFiltering: true,
+                    allowPaging: true,
+                    enableRowSpan: true,
+                    enableColumnSpan: true,
+                    columns: [
+                        { field: 'Channel', headerText: 'Channel', width: 200 },
+                        { field: 'Genre', headerText: 'Genre', width: 100, },
+                        { field: 'Prgm6AM', headerText: '6AM', width: 120, },
+                        { field: 'Prgm7AM', headerText: '7AM', width: 120, visible: false },
+                        { field: 'Prgm8AM', headerText: '8AM', width: 120, },
+                        { field: 'Prgm9AM', headerText: '9AM', width: 120, },
+                        { field: 'Prgm10AM', headerText: '10AM', width: 120, enableRowSpan: false, enableColumnSpan: false },
+                    ],
+                }, done);
+        });
+
+        it('Rowspan and Colspan support - 1', (done: Function) => {
+            let tr = gridObj.getContentTable().querySelectorAll('tr');
+            let row1 = tr[0].querySelectorAll('td');
+            let row3 = tr[2].querySelectorAll('td');
+            expect(row1.length).toBe(6);
+            expect(row3.length).toBe(7);
+            expect(row1[1].getAttribute('rowspan')).toBe('2');
+            expect(row1[4].getAttribute('colspan')).toBe('2');
+            done();
+        });
+
+        it('Test sorting with spanned cell', (done: Function) => {
+            let dataBound = (args: any): void => {
+                let tr = gridObj.getContentTable().querySelectorAll('tr');
+                let row1 = tr[0].querySelectorAll('td');
+                let row3 = tr[3].querySelectorAll('td');
+                expect(row1.length).toBe(6);
+                expect(row3.length).toBe(7);
+                expect(row1[1].getAttribute('rowspan')).toBe('3');
+                expect(row1[4].getAttribute('colspan')).toBe('2');
+                gridObj.dataBound = null;
+                done();
+            }
+            gridObj.dataBound = dataBound;
+            gridObj.sortColumn('Genre', 'Ascending', true);
+        });
+
+        it('Test Filtering with spanned cell', (done: Function) => {
+            let dataBound = (args: any): void => {
+                let tr = gridObj.getContentTable().querySelectorAll('tr');
+                let row1 = tr[0].querySelectorAll('td');
+                expect(row1.length).toBe(6);
+                expect(row1[1].getAttribute('rowspan')).toBe('3');
+                expect(row1[4].getAttribute('colspan')).toBe('2');
+                gridObj.dataBound = null;
+                done();
+            }
+            gridObj.dataBound = dataBound;
+            gridObj.filterByColumn('Genre', 'contains', 'Kids');
+        });
+        
+        afterAll(() => {
+            destroy(gridObj);
+            gridObj = null;
+        });
+    });
+
+    describe('EJ2-972292: Provide built-in support for rowspan and column span based on data source values - 1', () => {
+        let gridObj: Grid;
+        
+        beforeAll((done: Function) => {
+            gridObj = createGrid(
+                {
+                    dataSource: spanData,
+                    allowGrouping: true,
+                    groupSettings: {columns: ['Genre']},
+                    enableRowSpan: true,
+                    enableColumnSpan: true,
+                    columns: [
+                        { field: 'Channel', headerText: 'Channel', width: 200 },
+                        { field: 'Genre', headerText: 'Genre', width: 100, },
+                        { field: 'Prgm6AM', headerText: '6AM', width: 120, },
+                        { field: 'Prgm7AM', headerText: '7AM', width: 120, visible: false },
+                        { field: 'Prgm8AM', headerText: '8AM', width: 120, },
+                        { field: 'Prgm9AM', headerText: '9AM', width: 120, },
+                        { field: 'Prgm10AM', headerText: '10AM', width: 120, enableRowSpan: false, enableColumnSpan: false },
+                    ],
+                }, done);
+        });
+
+        it('Test for Grouping', (done: Function) => {
+            let tr = gridObj.getContentTable().querySelectorAll('tr');
+            let row = tr[9].querySelectorAll('td');
+            expect(row.length).toBe(7);
+            expect(row[5].getAttribute('rowspan')).toBe('2');
+            expect(row[5].getAttribute('colspan')).toBe('2');
+            done();
         });
         
         afterAll(() => {

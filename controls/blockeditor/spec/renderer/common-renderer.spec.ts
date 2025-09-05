@@ -1,5 +1,5 @@
 import { createElement } from '@syncfusion/ej2-base';
-import { BlockEditor, getBlockModelById, getSelectionRange, MentionRenderer, PopupRenderer, ToolbarRenderer, TooltipRenderer } from '../../src/index';
+import { BlockEditor, MentionRenderer, PopupRenderer, ToolbarRenderer, TooltipRenderer } from '../../src/index';
 import { createEditor } from '../common/util.spec';
 
 describe('Renderer-Common Actions', () => {
@@ -252,7 +252,7 @@ describe('Renderer-Common Actions', () => {
                 // Test cleanMentionArtifacts with null range
                 // Instead of spying on window, spy on the imported function
                 const selectionModule = require('../../src/blockeditor/utils/selection');
-                spyOn(selectionModule, 'getSelectionRange').and.returnValue(null);
+                spyOn(selectionModule, 'getSelectedRange').and.returnValue(null);
                 
                 const testElement = document.createElement('div');
                 

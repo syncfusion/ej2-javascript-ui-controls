@@ -1,4 +1,4 @@
-import { ChildProperty, Property, Collection, Complex } from '@syncfusion/ej2-base';import { BlockType } from '../../base/enums';import { Content } from '../content/content';import { ContentModel } from '../content/index';import { CodeSettings } from './code-settings';import { ImageSettings } from './image-settings';import { CodeSettingsModel, ImageSettingsModel } from './index';
+import { ChildProperty, Property, Collection } from '@syncfusion/ej2-base';import { BlockType } from '../../base/enums';import { Content } from '../content/content';import { ContentModel } from '../content/index';import { BlockProperties } from './block-props';
 
 /**
  * Interface for a class Block
@@ -25,17 +25,20 @@ export interface BlockModel {
      * Specifies the type of the block, which can be a string or a predefined BlockType.
      * This property determines the type of content the block holds.
      *
-     * @default 'Paragraph'
+     * @isenumeration true
+     * @default BlockType.Paragraph
+     * @asptype BlockType
      */
-    type?: string | BlockType;
+    type?: BlockType | string;
 
     /**
-     * Specifies placeholder text to display when the block is empty.
-     * This property provides a hint to the user about what to write.
+     * Specifies the indent for the block.
+     * This property is used to specify indentation for each block.
      *
-     * @default ''
+     * @default 0
+     * @aspType int
      */
-    placeholder?: string;
+    indent?: number;
 
     /**
      * Specifies the content of the block, which can vary based on the block type.
@@ -46,37 +49,12 @@ export interface BlockModel {
     content?: ContentModel[];
 
     /**
-     * Specifies the indent for the block.
-     * This property is used to specify indent for each block.
+     * Specifies the type specific properties for the block.
      *
-     * @default 0
+     * @default null
+     * @asptype object
      */
-    indent?: number;
-
-    /**
-     * Represents the child blocks of the current block.
-     * This property contains an array of block models which are considered
-     * as children of the current block, allowing for hierarchical structures.
-     *
-     * @default []
-     */
-    children?: BlockModel[];
-
-    /**
-     * Specifies whether the block is expanded or collapsed.
-     * This property controls the visibility of child blocks within a hierarchical structure.
-     *
-     * @default false
-     */
-    isExpanded?: boolean;
-
-    /**
-     * Specifies the checked state for the block.
-     * This property is applicable for blocks that support a checked state, such as checklist.
-     *
-     * @default false
-     */
-    isChecked?: boolean;
+    props?: BlockProperties | object;
 
     /**
      * Specifies the CSS class applied to the block.
@@ -96,21 +74,5 @@ export interface BlockModel {
      * @aspType string
      */
     template?: string | HTMLElement | Function;
-
-    /**
-     * Specifies the code block configuration associated with this block.
-     * This property defines settings such as language, code content, theme, and syntax highlighting preferences.
-     *
-     * @default {}
-     */
-    codeSettings?: CodeSettingsModel;
-
-    /**
-     * Specifies the image block configuration associated with this block.
-     * This property defines settings such as save format, upload URLs, size constraints, display mode, and read-only preferences.
-     *
-     * @default {}
-     */
-    imageSettings?: ImageSettingsModel;
 
 }

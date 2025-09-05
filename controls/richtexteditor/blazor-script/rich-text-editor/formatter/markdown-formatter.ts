@@ -1,8 +1,8 @@
 import { extend } from '../../../base'; /*externalscript*/
 import { Formatter } from './formatter';
-import { MarkdownParser } from '../../src/markdown-parser/base/markdown-parser';
-import { IEditorModel, IMarkdownFormatterModel } from '../../src/common/interface';
-import { markdownKeyConfig, markdownListsTags, markdownFormatTags, markdownSelectionTags } from '../../src/common/config';
+import { MarkdownParser } from '../../editor-scripts/markdown-parser/base/markdown-parser';
+import { IEditorModel, IMarkdownFormatterModel } from '../../editor-scripts/common/interface';
+import { markdownKeyConfig, markdownListsTags, markdownFormatTags, markdownSelectionTags } from '../../editor-scripts/common/config';
 
 /**
  * Markdown adapter

@@ -3074,7 +3074,7 @@ export class PdfViewerBase {
             }
         }
         proxy.windowSessionStorageClear();
-        this.sessionStorageManager.clear();
+        proxy.sessionStorageManager.clear();
         if (proxy.pinchZoomStorage) {
             proxy.pinchZoomStorage = [];
         }
@@ -4884,7 +4884,7 @@ export class PdfViewerBase {
                             this.pdfViewer.toolbar.annotationToolbarModule.deselectAllItems();
                         }
                     }
-                    if (this.pdfViewer.isFormDesignerToolbarVisible && document.getElementById('FormField_helper_html_element')) {
+                    if (document.getElementById('FormField_helper_html_element')) {
                         const formFieldElement: HTMLElement = document.getElementById('FormField_helper_html_element');
                         if (formFieldElement) {
                             formFieldElement.remove();
@@ -6689,7 +6689,7 @@ export class PdfViewerBase {
                     proxy.saveFormfieldsData(data);
                 }
                 proxy.pageContainer.style.height = proxy.getPageTop(proxy.pageSize.length - 1) + proxy.getPageHeight(proxy.pageSize.length - 1) + 'px';
-                const pageData: string = this.sessionStorageManager.getItem(proxy.documentId + '_pagedata');
+                const pageData: string = proxy.sessionStorageManager.getItem(proxy.documentId + '_pagedata');
                 if (proxy.pageCount > 100) {
                     if (this.pdfViewer.initialRenderPages > 100) {
                         const limit: any = this.pdfViewer.initialRenderPages <= proxy.pageCount ?
@@ -6773,7 +6773,7 @@ export class PdfViewerBase {
                                 if (pageIndex === 0 && this.isDocumentLoaded) {
                                     proxy.renderPDFInformations();
                                     proxy.isInitialLoaded = true;
-                                    const pageData: any = this.sessionStorageManager.getItem(proxy.documentId + '_pagedata');
+                                    const pageData: any = proxy.sessionStorageManager.getItem(proxy.documentId + '_pagedata');
                                     if (proxy.pageCount <= 100) {
                                         proxy.pdfViewer.fireDocumentLoad(pageData);
                                     }
@@ -6847,7 +6847,7 @@ export class PdfViewerBase {
                                     if (pageIndex === 0 && this.isDocumentLoaded) {
                                         this.renderPDFInformations();
                                         this.isInitialLoaded = true;
-                                        const pageData: string = this.sessionStorageManager.getItem(proxy.documentId + '_pagedata');
+                                        const pageData: string = proxy.sessionStorageManager.getItem(proxy.documentId + '_pagedata');
                                         if (proxy.pageCount <= 100) {
                                             proxy.pdfViewer.fireDocumentLoad(pageData);
                                         }
@@ -8451,11 +8451,11 @@ export class PdfViewerBase {
                     }
                     proxy.pdfViewer.fireAjaxRequestSuccess(proxy.pdfViewer.serverActionSettings.importFormFields, data);
                     proxy.pdfViewer.fireFormImportSuccess(source);
-                    this.sessionStorageManager.removeItem(this.documentId + '_formfields');
+                    proxy.sessionStorageManager.removeItem(this.documentId + '_formfields');
                     if (this.pdfViewer.formFieldsModule) {
                         this.pdfViewer.formFieldsModule.removeExistingFormFields();
                     }
-                    this.sessionStorageManager.removeItem(this.documentId + '_formDesigner');
+                    proxy.sessionStorageManager.removeItem(this.documentId + '_formDesigner');
                     proxy.saveFormfieldsData(data);
                     for (let i: number = 0; i < proxy.renderedPagesList.length; i++) {
                         if (this.pdfViewer.formFieldsModule) {
@@ -9120,46 +9120,56 @@ export class PdfViewerBase {
                                 if (this.clientSideRendering) {
                                     const textDetailsId: string = proxy.documentId + '_' + pageIndex + '_textDetails';
                                     const isTextNeed: boolean = proxy.pageTextDetails ? proxy.pageTextDetails[`${textDetailsId}`] ? false : true : true;
-                                    const currentPage: PdfPage = this.pdfViewer.pdfRenderer.loadedDocument.getPage(pageIndex);
-                                    const cropBoxRect: Rect = new Rect(0, 0, 0, 0);
-                                    const mediaBoxRect: Rect = new Rect(0, 0, 0, 0);
-                                    if (currentPage && currentPage._pageDictionary && currentPage._pageDictionary._map &&
-                                         currentPage._pageDictionary._map.CropBox) {
-                                        [cropBoxRect.x, cropBoxRect.y, cropBoxRect.width, cropBoxRect.height] =
-                                         currentPage._pageDictionary._map.CropBox;
-                                    }
-                                    if (currentPage && currentPage._pageDictionary && currentPage._pageDictionary._map &&
-                                         currentPage._pageDictionary._map.MediaBox) {
-                                        [mediaBoxRect.x, mediaBoxRect.y, mediaBoxRect.width, mediaBoxRect.height] =
-                                        currentPage._pageDictionary._map.MediaBox;
-                                    }
-                                    if (viewPortWidth >= pageWidth || !proxy.pdfViewer.tileRenderingSettings.enableTileRendering) {
-                                        jsonData = JSON.parse(JSON.stringify(jsonObject));
-                                        jsonData.action = 'pageRenderInitiate';
-                                        proxy.pdfViewer.firePageRenderInitiate(jsonData);
-                                        this.pdfViewerRunner.addTask({ pageIndex: pageIndex, message: 'renderPage', zoomFactor: zoomFactor, isTextNeed: isTextNeed, textDetailsId: textDetailsId, cropBoxRect: cropBoxRect, mediaBoxRect: mediaBoxRect }, TaskPriorityLevel.High);
-                                    }
-                                    else {
-                                        this.showPageLoadingIndicator(pageIndex, true);
-                                        // eslint-disable-next-line
-                                        if ((jsonObject as any).xCoordinate == 0 && (jsonObject as any).yCoordinate == 0) {
+                                    if (pageIndex >= 0 && pageIndex < this.pdfViewer.pdfRenderer.loadedDocument.pageCount) {
+                                        const currentPage: PdfPage = this.pdfViewer.pdfRenderer.loadedDocument.getPage(pageIndex);
+                                        const cropBoxRect: Rect = new Rect(0, 0, 0, 0);
+                                        const mediaBoxRect: Rect = new Rect(0, 0, 0, 0);
+                                        if (currentPage && currentPage._pageDictionary && currentPage._pageDictionary._map &&
+                                            currentPage._pageDictionary._map.CropBox) {
+                                            [cropBoxRect.x, cropBoxRect.y, cropBoxRect.width, cropBoxRect.height] =
+                                                currentPage._pageDictionary._map.CropBox;
+                                        }
+                                        if (currentPage && currentPage._pageDictionary && currentPage._pageDictionary._map &&
+                                            currentPage._pageDictionary._map.MediaBox) {
+                                            [mediaBoxRect.x, mediaBoxRect.y, mediaBoxRect.width, mediaBoxRect.height] =
+                                                currentPage._pageDictionary._map.MediaBox;
+                                        }
+                                        if (viewPortWidth >= pageWidth || !proxy.pdfViewer.tileRenderingSettings.enableTileRendering) {
                                             jsonData = JSON.parse(JSON.stringify(jsonObject));
                                             jsonData.action = 'pageRenderInitiate';
                                             proxy.pdfViewer.firePageRenderInitiate(jsonData);
+                                            this.pdfViewerRunner.addTask({
+                                                pageIndex: pageIndex,
+                                                message: 'renderPage',
+                                                zoomFactor: zoomFactor,
+                                                isTextNeed: isTextNeed,
+                                                textDetailsId: textDetailsId,
+                                                cropBoxRect: cropBoxRect,
+                                                mediaBoxRect: mediaBoxRect
+                                            }, TaskPriorityLevel.High);
                                         }
-                                        this.pdfViewerRunner.addTask({
-                                            pageIndex: pageIndex,
-                                            message: 'renderImageAsTile',
-                                            zoomFactor: zoomFactor,
-                                            tileX: x,
-                                            tileY: y,
-                                            tileXCount: noTileX,
-                                            tileYCount: noTileY,
-                                            isTextNeed: isTextNeed,
-                                            textDetailsId: textDetailsId,
-                                            cropBoxRect: cropBoxRect,
-                                            mediaBoxRect: mediaBoxRect
-                                        }, TaskPriorityLevel.High);
+                                        else {
+                                            this.showPageLoadingIndicator(pageIndex, true);
+                                            // eslint-disable-next-line
+                                            if ((jsonObject as any).xCoordinate == 0 && (jsonObject as any).yCoordinate == 0) {
+                                                jsonData = JSON.parse(JSON.stringify(jsonObject));
+                                                jsonData.action = 'pageRenderInitiate';
+                                                proxy.pdfViewer.firePageRenderInitiate(jsonData);
+                                            }
+                                            this.pdfViewerRunner.addTask({
+                                                pageIndex: pageIndex,
+                                                message: 'renderImageAsTile',
+                                                zoomFactor: zoomFactor,
+                                                tileX: x,
+                                                tileY: y,
+                                                tileXCount: noTileX,
+                                                tileYCount: noTileY,
+                                                isTextNeed: isTextNeed,
+                                                textDetailsId: textDetailsId,
+                                                cropBoxRect: cropBoxRect,
+                                                mediaBoxRect: mediaBoxRect
+                                            }, TaskPriorityLevel.High);
+                                        }
                                     }
                                     this.pdfViewerRunner.onMessage('imageRendered,renderTileImage,renderThumbnail,renderPreviewTileImage,printImage,textSearched', function (event: any): void {
                                         switch (event.data.message) {

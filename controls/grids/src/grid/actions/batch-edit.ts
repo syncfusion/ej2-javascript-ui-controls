@@ -684,7 +684,7 @@ export class BatchEdit {
             gLen = this.parent.groupSettings.columns.length;
         }
         this.cellDetails.cellIndex = target.cellIndex - gLen;
-        this.cellDetails.rowIndex = parseInt(target.getAttribute('index'), 10);
+        this.cellDetails.rowIndex = parseInt(target.getAttribute('data-index'), 10);
     }
 
     public editCell(index: number, field: string, isAdd?: boolean): void {

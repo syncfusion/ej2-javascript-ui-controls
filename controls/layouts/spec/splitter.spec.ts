@@ -19,7 +19,7 @@ function appendSplitterStyles() {
 }
 
 describe('Splitter Control', () => {
-    describe('ValidateDraggedPosition with max size constraints', () => {
+        describe('ValidateDraggedPosition with max size constraints', () => {
         appendSplitterStyles();
         let splitterObj: any;
         beforeAll((): void => {

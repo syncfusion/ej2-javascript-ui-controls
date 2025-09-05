@@ -290,7 +290,6 @@ describe('PivotView spec', () => {
                     allowNumberFormatting: true,
                     allowCalculatedField: true,
                     allowDeferLayoutUpdate: true,
-                    enableValueSorting: true,
                     exportAllPages: false,
                     maxNodeLimitInMemberEditor: 50,
                     saveReport: util.saveReport.bind(this),

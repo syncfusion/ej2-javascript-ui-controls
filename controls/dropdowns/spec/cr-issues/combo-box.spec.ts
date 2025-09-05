@@ -93,117 +93,117 @@ describe('ComboBox', () => {
         });
     });    
     
-    // describe('EJ2-12247 - Popupitems is not same as initially after filtering in combobox', () => {
-    //     let comboObj: any;
-    //     let comboEle: HTMLInputElement = <HTMLInputElement>createElement('input', { id: 'combo' });
-    //     let originalTimeout: number;
-    //     beforeAll(() => {
+    describe('EJ2-12247 - Popupitems is not same as initially after filtering in combobox', () => {
+        let comboObj: any;
+        let comboEle: HTMLInputElement = <HTMLInputElement>createElement('input', { id: 'combo' });
+        let originalTimeout: number;
+        beforeAll(() => {
 
-    //         jasmine.clock().install();
-    //         originalTimeout = jasmine.DEFAULT_TIMEOUT_INTERVAL;
-    //         jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000;
+            jasmine.clock().install();
+            originalTimeout = jasmine.DEFAULT_TIMEOUT_INTERVAL;
+            jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000;
 
-    //         document.body.appendChild(comboEle);
-    //         comboObj = new ComboBox({
-    //             dataSource: [],
-    //             query: new Query().from('Customers').select(['ContactName', 'CustomerID']).take(25),
-    //             fields: { text: 'ContactName', value: 'CustomerID' },              
-    //             allowFiltering:true,
-    //             debounceDelay: 0,
-    //             filtering: (e: FilteringEventArgs) => {
-    //                 let query: Query = new Query();
-    //                 query = (e.text !== '') ? query.from('Customers').where('ContactName', 'startswith', e.text, true) : query;
-    //                 e.updateData(comboObj.dataSource, query);
-    //             }
-    //         });
-    //         comboObj.appendTo(comboEle);
-    //     });
-    //     afterAll(() => {
-    //         jasmine.clock().uninstall();
-    //         jasmine.DEFAULT_TIMEOUT_INTERVAL = originalTimeout;
-    //         comboObj.destroy();
-    //         comboEle.remove();
-    //     });
+            document.body.appendChild(comboEle);
+            comboObj = new ComboBox({
+                dataSource: [],
+                query: new Query().from('Customers').select(['ContactName', 'CustomerID']).take(25),
+                fields: { text: 'ContactName', value: 'CustomerID' },              
+                allowFiltering:true,
+                debounceDelay: 0,
+                filtering: (e: FilteringEventArgs) => {
+                    let query: Query = new Query();
+                    query = (e.text !== '') ? query.from('Customers').where('ContactName', 'startswith', e.text, true) : query;
+                    e.updateData(comboObj.dataSource, query);
+                }
+            });
+            comboObj.appendTo(comboEle);
+        });
+        afterAll(() => {
+            jasmine.clock().uninstall();
+            jasmine.DEFAULT_TIMEOUT_INTERVAL = originalTimeout;
+            comboObj.destroy();
+            comboEle.remove();
+        });
 
-    //     it('check whether the popup list is reset to initial list after clearing filtered items', () => {
-    //         comboObj.dataSource= new DataManager({
-    //             url: 'https://js.syncfusion.com/demos/ejServices/Wcf/Northwind.svc',
-    //             adaptor: new ODataAdaptor,
-    //             crossDomain: true
-    //         });
-    //         comboObj.dataBind();
-    //         comboObj.actionComplete = function (e: any) {
-    //             comboObj.focusIn();
-    //             comboObj.showPopup();
-    //             comboObj.inputElement.value = "a";
-    //             let event: any = new Event('keyup');
-    //             event.keyCode = 65;
-    //             event.key = "a";
-    //             comboObj.isValidKey = true;
-    //             comboObj.onFilterUp(event);
-    //             comboObj.inputElement.value = "";
-    //             event.keyCode = 8;
-    //             event.key = "Backspace";
-    //             comboObj.isValidKey = true;
-    //             comboObj.onFilterUp(event);
-    //             expect(comboObj.list.querySelector("li").textContent).toBe("Ana Trujillo");
-    //         }
-    //         jasmine.clock().tick(3000);
-    //     });
-    // });
+        it('check whether the popup list is reset to initial list after clearing filtered items', () => {
+            comboObj.dataSource= new DataManager({
+                url: 'https://js.syncfusion.com/demos/ejServices/Wcf/Northwind.svc',
+                adaptor: new ODataAdaptor,
+                crossDomain: true
+            });
+            comboObj.dataBind();
+            comboObj.actionComplete = function (e: any) {
+                comboObj.focusIn();
+                comboObj.showPopup();
+                comboObj.inputElement.value = "a";
+                let event: any = new Event('keyup');
+                event.keyCode = 65;
+                event.key = "a";
+                comboObj.isValidKey = true;
+                comboObj.onFilterUp(event);
+                comboObj.inputElement.value = "";
+                event.keyCode = 8;
+                event.key = "Backspace";
+                comboObj.isValidKey = true;
+                comboObj.onFilterUp(event);
+                expect(comboObj.list.querySelector("li").textContent).toBe("Ana Trujillo");
+            }
+            jasmine.clock().tick(3000);
+        });
+    });
 
-    // describe('EJ2-14483-key navigation is not working in combobox 	', () => {
-    //     let comboObj: any;
-    //     let select: boolean = false;
-    //     let change: boolean = false;
-    //     let comboEle: HTMLInputElement = <HTMLInputElement>createElement('input', { id: 'combo' });
-    //     let keyEventArgs: any = {
-    //         preventDefault: (): void => { /** NO Code */ },
-    //         keyCode: 74
-    //     };
-    //     let data: { [key: string]: Object }[] = [
-    //         { text: 'Australia', id: 'AU' },
-    //         { text: 'Bermuda', id: 'BM' },
-    //         { text: 'Canada', id: 'CA' },
-    //         { text: 'Cameroon', id: 'CM' },
-    //         { text: 'Denmark', id: 'DK' },
-    //         { text: 'France', id: 'FR' },
-    //     ];
-    //     beforeAll(() => {
-    //         document.body.appendChild(comboEle);
-    //         comboObj = new ComboBox({
-    //             dataSource: data,
-    //             fields: { text: 'text', value: 'id' },
-    //             placeholder: 'Select a customer',
-    //             popupHeight: '230px',
-    //             allowFiltering: true,
-    //             debounceDelay: 0,
-    //             filtering: function (e) {
-    //                 let query: Query = new Query();
-    //                 e.updateData(data, query, { text: 'text', value: 'id' });
-    //             }
-    //         });
-    //         comboObj.appendTo(comboEle);
-    //     });
-    //     afterAll(() => {
-    //         comboObj.destroy();
-    //         comboEle.remove();
-    //     });
+    describe('EJ2-14483-key navigation is not working in combobox 	', () => {
+        let comboObj: any;
+        let select: boolean = false;
+        let change: boolean = false;
+        let comboEle: HTMLInputElement = <HTMLInputElement>createElement('input', { id: 'combo' });
+        let keyEventArgs: any = {
+            preventDefault: (): void => { /** NO Code */ },
+            keyCode: 74
+        };
+        let data: { [key: string]: Object }[] = [
+            { text: 'Australia', id: 'AU' },
+            { text: 'Bermuda', id: 'BM' },
+            { text: 'Canada', id: 'CA' },
+            { text: 'Cameroon', id: 'CM' },
+            { text: 'Denmark', id: 'DK' },
+            { text: 'France', id: 'FR' },
+        ];
+        beforeAll(() => {
+            document.body.appendChild(comboEle);
+            comboObj = new ComboBox({
+                dataSource: data,
+                fields: { text: 'text', value: 'id' },
+                placeholder: 'Select a customer',
+                popupHeight: '230px',
+                allowFiltering: true,
+                debounceDelay: 0,
+                filtering: function (e) {
+                    let query: Query = new Query();
+                    e.updateData(data, query, { text: 'text', value: 'id' });
+                }
+            });
+            comboObj.appendTo(comboEle);
+        });
+        afterAll(() => {
+            comboObj.destroy();
+            comboEle.remove();
+        });
 
-    //     it('when passing fields in updateData', (done) => {
-    //         comboObj.filterInput.value = "can";
-    //         comboObj.onInput(keyEventArgs);
-    //         comboObj.onFilterUp(keyEventArgs);
-    //         setTimeout(() => {
-    //             let liElement: any = comboObj.list.querySelector('[data-value="CA"]');
-    //             expect(liElement).not.toBe(null);
-    //             comboObj.setSelection(liElement);
-    //             comboObj.hidePopup();
-    //             expect(comboObj.value === 'CA').toBe(true);
-    //             done();
-    //         }, 800);
-    //     });
-    // });
+        it('when passing fields in updateData', (done) => {
+            comboObj.filterInput.value = "can";
+            comboObj.onInput(keyEventArgs);
+            comboObj.onFilterUp(keyEventArgs);
+            setTimeout(() => {
+                let liElement: any = comboObj.list.querySelector('[data-value="CA"]');
+                expect(liElement).not.toBe(null);
+                comboObj.setSelection(liElement);
+                comboObj.hidePopup();
+                expect(comboObj.value === 'CA').toBe(true);
+                done();
+            }, 800);
+        });
+    });
     describe('EJ2-26008-The combobox is not focused when click the tab key at single time', () => {
         let comboObj: any;
         let comboEle: HTMLInputElement = <HTMLInputElement>createElement('input', { id: 'combo' });
@@ -572,7 +572,7 @@ describe('ComboBox', () => {
         let originalTimeout: number;
         beforeAll(() => {
             originalTimeout = jasmine.DEFAULT_TIMEOUT_INTERVAL;
-            jasmine.DEFAULT_TIMEOUT_INTERVAL = 5000;
+            jasmine.DEFAULT_TIMEOUT_INTERVAL = 4000;
             element = <HTMLInputElement>createElement('input', { id: 'dropdownlist' });
             document.body.appendChild(element);
         });
@@ -587,10 +587,6 @@ describe('ComboBox', () => {
                 popupHeight: '300px',
                 autofill: true,
                 allowCustom:true,
-                change: (args: ChangeEventArgs): void => {
-                    //expect(args.isInteracted).toBe(true);
-                    //done();
-                },
                 open: (): void => {
                     keyEventArgs.action = 'tab';
                     (<any>ddl).keyActionHandler(keyEventArgs);

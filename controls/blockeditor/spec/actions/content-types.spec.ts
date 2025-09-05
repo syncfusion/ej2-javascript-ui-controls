@@ -1,7 +1,6 @@
 import { createElement, remove } from '@syncfusion/ej2-base';
-import { ClickEventArgs } from '@syncfusion/ej2-navigations';
-import { BlockModel, UserModel } from '../../src/blockeditor/models';
-import { BlockEditor, BlockType, ContentType, setCursorPosition, setSelectionRange, getBlockContentElement } from '../../src/index';
+import { BlockModel, LabelContentProps, MentionContentProps, UserModel } from '../../src/blockeditor/models';
+import { BlockEditor, BlockType, ContentType, getBlockContentElement } from '../../src/index';
 import { createEditor } from '../common/util.spec';
 
 describe('Content types', () => {
@@ -30,7 +29,8 @@ describe('Content types', () => {
                 {
                     id: 'link-block',
                     type: BlockType.Paragraph,
-                    content: [{ type: ContentType.Link, content: 'syncfusion', linkSettings: { url: 'www.syncfusion.com', openInNewWindow: true } }]
+                    content: [{ type: ContentType.Link, content: 'syncfusion',
+                        props: { url: 'www.syncfusion.com', openInNewWindow: true }}]
                 },
                 {
                     id: 'code-block',
@@ -40,22 +40,22 @@ describe('Content types', () => {
                 {
                     id: 'mention-block',
                     type: BlockType.Paragraph,
-                    content: [{ type: ContentType.Mention, id: 'user1' }]
+                    content: [{ type: ContentType.Mention, id: 'mention-content', props: { userId: 'user1' } }]
                 },
                 {
                     id: 'label-block',
                     type: BlockType.Paragraph,
-                    content: [{ type: ContentType.Label, id: 'progress' }]
+                    content: [{ type: ContentType.Label, id: 'label-content', props: { labelId: 'progress' } }]
                 },
                 {
                     id: 'combined-block',
                     type: BlockType.Paragraph,
                     content: [
                         { type: ContentType.Text, content: 'To navigate to syncfusion site, ' },
-                        { type: ContentType.Link, content: 'click here ', linkSettings: { url: 'www.syncfusion.com', openInNewWindow: true } },
+                        { type: ContentType.Link, content: 'click here ', props: { url: 'www.syncfusion.com', openInNewWindow: true }},
                         { type: ContentType.Code, content: 'console.log("hello world"), ' },
-                        { type: ContentType.Mention, id: 'user2' },
-                        { type: ContentType.Label, id: 'progress' }
+                        { type: ContentType.Mention, id: 'mention-content', props: { userId: 'user2' }},
+                        { type: ContentType.Label, id: 'label-content', props: { labelId: 'progress' } }
                     ]
                 },
             ];
@@ -115,8 +115,8 @@ describe('Content types', () => {
             const mentionChipEle = (contentElement.firstChild as HTMLElement);
             expect(mentionChipEle.tagName).toBe('DIV');
             expect((mentionChipEle.querySelector('.em-content') as HTMLElement).textContent).toBe('John Paul');
-            expect(editor.blocks[3].content[0].dataId).toBe(mentionChipEle.id);
-            expect(editor.blocks[3].content[0].id).toBe(mentionChipEle.getAttribute('data-user-id'));
+            expect(editor.blocks[3].content[0].id).toBe(mentionChipEle.id);
+            expect((editor.blocks[3].content[0].props as MentionContentProps).userId).toBe(mentionChipEle.getAttribute('data-user-id'));
         });
 
         it('ensure content type label rendering', () => {
@@ -127,8 +127,8 @@ describe('Content types', () => {
             const labelChipEle = (contentElement.firstChild as HTMLElement);
             expect(labelChipEle.tagName).toBe('SPAN');
             expect(labelChipEle.textContent).toBe('Progress: In-progress');
-            expect(editor.blocks[4].content[0].dataId).toBe(labelChipEle.id);
-            expect(editor.blocks[4].content[0].id).toBe(labelChipEle.getAttribute('data-label-id'));
+            expect(editor.blocks[4].content[0].id).toBe(labelChipEle.id);
+            expect((editor.blocks[4].content[0].props as LabelContentProps).labelId).toBe(labelChipEle.getAttribute('data-label-id'));
         });
 
         it('ensure all content types combined rendering', () => {

@@ -18,6 +18,8 @@ export class Row<T> {
 
     public tIndex: number;
 
+    public groupDataIndex?: number;
+
     public isCaptionRow: boolean;
 
     public isAggregateRow: boolean;

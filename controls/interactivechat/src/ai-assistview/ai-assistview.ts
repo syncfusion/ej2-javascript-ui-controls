@@ -1,6 +1,6 @@
 // eslint-disable-next-line @typescript-eslint/triple-slash-reference
 ///<reference path='../interactive-chat-base/interactive-chat-base-model.d.ts'/>
-import { EventHandler, INotifyPropertyChanged, Property, NotifyPropertyChanges, Collection, EmitType, Event, remove, L10n } from '@syncfusion/ej2-base';
+import { EventHandler, INotifyPropertyChanged, Property, NotifyPropertyChanges, Collection, EmitType, Event, remove, L10n, SanitizeHtmlHelper } from '@syncfusion/ej2-base';
 import { ChildProperty, getUniqueID, isNullOrUndefined as isNOU, BaseEventArgs, Complex, removeClass, addClass } from '@syncfusion/ej2-base';
 import { AIAssistViewModel, PromptModel, ResponseToolbarSettingsModel, PromptToolbarSettingsModel, AssistViewModel, AttachmentSettingsModel } from './ai-assistview-model';
 import { ItemModel, Toolbar, ClickEventArgs } from '@syncfusion/ej2-navigations';
@@ -770,6 +770,7 @@ export class AIAssistView extends InterActiveChatBase implements INotifyProperty
     }
 
     protected render(): void {
+        this.initializeLocale();
         this.renderPromptView();
     }
 
@@ -990,14 +991,21 @@ export class AIAssistView extends InterActiveChatBase implements INotifyProperty
         this.renderStopResponding();
     }
 
+    private initializeLocale(): void {
+        this.l10n = new L10n('aiassistview', {
+            stopResponseText: 'Stop Responding',
+            fileSizeFailure: 'Upload failed: File size is too large',
+            send: 'Send',
+            attachments: 'Attach File',
+            clear: 'Clear'
+        }, this.locale);
+        this.l10n.setLocale(this.locale);
+    }
+
     private renderStopResponding(): void {
         this.stopResponding = this.createElement('div', { attrs: { class: 'e-stop-response', tabIndex: '0', 'aria-label': 'Stop Responding', role: 'button' } });
         const stopRespondingIcon: HTMLElement = this.createElement('span', { className: 'e-icons e-assist-stop' });
         this.stopRespondingContent = this.createElement('span', { className: 'e-stop-response-text' });
-        this.l10n = new L10n('aiassistview', {
-            stopResponseText: 'Stop Responding',
-            fileSizeFailure: 'Upload failed: File size is too large'
-        }, this.locale);
         this.updateStopRespondingTitle();
         this.appendChildren(this.stopResponding, stopRespondingIcon, this.stopRespondingContent);
     }
@@ -1028,7 +1036,7 @@ export class AIAssistView extends InterActiveChatBase implements INotifyProperty
         }
         if (this.prompts) {
             this.prompts.forEach((prompt: PromptModel, i: number) => {
-                this.renderOutputContainer(prompt.prompt, prompt.response, i);
+                this.renderOutputContainer(prompt.prompt, prompt.response, prompt.attachedFiles, i);
             });
         }
         if (this.suggestionsElement && this.content.contains(this.suggestionsElement)) {
@@ -1067,10 +1075,11 @@ export class AIAssistView extends InterActiveChatBase implements INotifyProperty
         const clearIconClass: string = 'e-icons e-assist-clear-icon e-assist-clear-icon-hide';
         if (!this.footerTemplate) {
             const footerIconsWrapper: HTMLDivElement = this.createElement('div', { attrs: { class: 'e-footer-icons-wrapper'}});
-            this.sendIcon = this.createElement('span', { attrs: { class: sendIconClass, role: 'button', 'aria-label': 'Submit', tabindex: '0' } }) as HTMLElement;
+            this.sendIcon = this.createElement('span', { attrs: { class: sendIconClass, role: 'button', 'aria-label': 'Submit', tabindex: '0', title: this.l10n.getConstant('send') } }) as HTMLElement;
             footerIconsWrapper.appendChild(this.sendIcon);
             if (this.showClearButton) {
                 this.renderClearIcon(footerIconsWrapper, clearIconClass);
+                this.clearIcon.setAttribute('title', this.l10n.getConstant('clear'));
             }
             this.updateAttachmentElement(footerIconsWrapper);
             textareaAndIconsWrapper.appendChild(footerIconsWrapper);
@@ -1099,7 +1108,7 @@ export class AIAssistView extends InterActiveChatBase implements INotifyProperty
     private renderAttachmentIcon(footerIconsWrapper: HTMLElement): void {
         this.dropArea = this.createElement('div', { attrs: { class: 'e-assist-drop-area' } });
         this.footer.prepend(this.dropArea);
-        this.attachmentIcon = this.createElement('span', { attrs: { class: 'e-icons e-assist-attachment-icon', role: 'button', 'aria-label': 'Attach files', tabindex: '0' } }) as HTMLElement;
+        this.attachmentIcon = this.createElement('span', { attrs: { class: 'e-icons e-assist-attachment-icon', role: 'button', 'aria-label': 'Attach file', tabindex: '0', title: this.l10n.getConstant('attachments') } }) as HTMLElement;
         const uploaderElement: HTMLElement = this.createElement('input', { attrs: { class: 'e-assist-file-upload', type: 'file', id: 'fileUpload'} });
         this.uploaderObj = new Uploader({
             asyncSettings: {
@@ -1122,7 +1131,7 @@ export class AIAssistView extends InterActiveChatBase implements INotifyProperty
     }
 
     private handleActionComplete(args: ActionCompleteEventArgs): void {
-        if (args.fileData[0].status === 'File size is too large') {
+        if (args.fileData[0].statusCode === '0' && args.fileData[0].status.includes('File size')) {
             const failureAlert: HTMLElement = this.renderFailureAlert();
             if (this.viewWrapper.contains(this.footer)) {
                 this.viewWrapper.insertBefore(failureAlert, this.footer);
@@ -1154,7 +1163,7 @@ export class AIAssistView extends InterActiveChatBase implements INotifyProperty
     private handleFailureAlertRemove(alertElement: HTMLElement): void {
         alertElement.classList.remove('e-show');
         EventHandler.remove(alertElement, 'click', this.handleFailureAlertRemove);
-        if (this.viewWrapper) {
+        if (this.viewWrapper && this.viewWrapper.contains(alertElement)) {
             this.viewWrapper.removeChild(alertElement);
         }
     }
@@ -1203,6 +1212,8 @@ export class AIAssistView extends InterActiveChatBase implements INotifyProperty
 
     private onUploadFailure(args: any): void {
         this.trigger('attachmentUploadFailure', args);
+        this.uploaderObj.remove(args.file);
+        this.uploadedFiles = this.uploadedFiles.filter((file: FileInfo) => file.name !== args.file.name);
         const progressFill: HTMLElement = this.element.querySelector(`#e-assist-progress-${CSS.escape(args.file.name)}`) as HTMLElement;
         if (progressFill) {
             progressFill.style.width = '100%';
@@ -1259,7 +1270,7 @@ export class AIAssistView extends InterActiveChatBase implements INotifyProperty
         const prevOnChange: boolean = this.isProtectedOnChange;
         this.isProtectedOnChange = true;
         const prevPrompt: string = this.prompt;
-        this.prompt = textContent;
+        this.prompt = SanitizeHtmlHelper.sanitize(textContent);
         this.isProtectedOnChange = prevOnChange;
         this.refreshTextareaUI();
         this.editableTextarea.focus();
@@ -1462,7 +1473,7 @@ export class AIAssistView extends InterActiveChatBase implements INotifyProperty
     private addPrompt(): void {
         const prevOnChange: boolean = this.isProtectedOnChange;
         this.isProtectedOnChange = true;
-        this.prompts = [...this.prompts, { prompt: this.prompt, response: '', isResponseHelpful: null }];
+        this.prompts = [...this.prompts, { prompt: this.prompt, response: '', isResponseHelpful: null, attachedFiles: this.uploadedFiles }];
         this.isProtectedOnChange = prevOnChange;
     }
 
@@ -1504,7 +1515,7 @@ export class AIAssistView extends InterActiveChatBase implements INotifyProperty
 
     private createOutputElement(): void {
         this.outputSuggestionEle = this.createElement('div', { attrs: { id: `e-prompt-item_${this.prompts.length - 1}`, class: `e-prompt-container ${this.promptItemTemplate ? 'e-prompt-item-template' : ''}` } });
-        this.renderPrompt(this.prompt, this.prompts.length - 1);
+        this.renderPrompt(this.prompt, this.prompts.length - 1, this.uploadedFiles);
         this.outputElement.append(this.outputSuggestionEle, this.skeletonContainer);
         this.skeletonContainer.hidden = false;
     }
@@ -1512,12 +1523,13 @@ export class AIAssistView extends InterActiveChatBase implements INotifyProperty
     private renderOutputContainer(
         promptText?: string,
         outputText?: string,
+        attachedFiles?: FileInfo[],
         index?: number,
         isMethodCall?: boolean,
         isFinalUpdate?: boolean
     ): void {
         const outputContainer: HTMLElement = this.createElement('div', { attrs: { id: `e-response-item_${index}`, class: `e-output-container ${this.responseItemTemplate ? 'e-response-item-template' : ''}` } });
-        this.renderOutput(outputContainer, promptText, outputText, isMethodCall, index, isFinalUpdate);
+        this.renderOutput(outputContainer, promptText, outputText, attachedFiles, isMethodCall, index, isFinalUpdate);
         if (promptText) {
             this.outputElement.append(this.outputSuggestionEle);
         }
@@ -1528,15 +1540,15 @@ export class AIAssistView extends InterActiveChatBase implements INotifyProperty
         }
     }
 
-    private renderOutput(outputContainer: HTMLElement, promptText?: string, outputText?: string,
+    private renderOutput(outputContainer: HTMLElement, promptText?: string, outputText?: string, attachedFiles?: FileInfo[],
                          isMethodCall?: boolean, index?: number, isFinalUpdate?: boolean): void {
         const promptIcon: HTMLElement = this.createElement('span', {
             className: 'e-output-icon e-icons ' + (this.responseIconCss || (this.isAssistView && this.views[0].iconCss) || 'e-assistview-icon' ) });
         const aiOutputEle: HTMLElement = this.createElement('div', { className: 'e-output' });
         if (!this.aiAssistViewRendered || isMethodCall) {
-            if (!isNOU(promptText)) {
+            if (!isNOU(promptText) || (attachedFiles && attachedFiles.length > 0)) {
                 this.outputSuggestionEle = this.createElement('div', { attrs: { id: `e-prompt-item_${index}`, class: `e-prompt-container ${this.promptItemTemplate ? 'e-prompt-item-template' : ''}` } });
-                this.renderPrompt(promptText, index);
+                this.renderPrompt(promptText, index, attachedFiles);
             }
         }
         const lastPrompt: PromptModel = { prompt: promptText, response: outputText };
@@ -1721,7 +1733,7 @@ export class AIAssistView extends InterActiveChatBase implements INotifyProperty
             this.isProtectedOnChange = prevOnChange;
         }
     }
-    private renderPrompt(promptText?: string, promptIndex?: number): void {
+    private renderPrompt(promptText?: string, promptIndex?: number, attachedFiles?: FileInfo[]): void {
         const outputPrompt: HTMLElement = this.createElement('div', { attrs: { class: 'e-prompt-text', tabindex: '0' } });
         const promptFiles: HTMLElement = this.createElement('div', { attrs: { class: 'e-prompt-uploaded-files' } });
         const promptContent: HTMLElement = this.createElement('div', { className: 'e-prompt-content' });
@@ -1735,9 +1747,10 @@ export class AIAssistView extends InterActiveChatBase implements INotifyProperty
         }
         else {
             outputPrompt.innerHTML = promptText;
-            if (this.uploadedFiles.length > 0)
+            const uploadedFiles: FileInfo[] = attachedFiles || this.uploadedFiles;
+            if (uploadedFiles.length > 0)
             {
-                this.uploadedFiles.forEach((file: FileInfo) => {
+                uploadedFiles.forEach((file: FileInfo) => {
                     promptFiles.appendChild(this.createFileItem(file, false));
                 });
                 promptDetails.appendChild(promptFiles);
@@ -1915,7 +1928,7 @@ export class AIAssistView extends InterActiveChatBase implements INotifyProperty
             if (isFinalUpdate) { this.renderPreTag(outputContentBodyEle); }
         }
         else {
-            this.renderOutputContainer(undefined, response, index, false, isFinalUpdate);
+            this.renderOutputContainer(undefined, response, undefined, index, false, isFinalUpdate);
         }
     }
 
@@ -2034,26 +2047,29 @@ export class AIAssistView extends InterActiveChatBase implements INotifyProperty
             let lastPrompt: PromptModel = this.prompts[this.prompts.length - 1];
             if (typeof outputResponse === 'string') {
                 if (!this.isResponseRequested) {
-                    this.prompts = [...this.prompts, { prompt: null, response: null, isResponseHelpful: null}];
+                    this.prompts = [...this.prompts, { prompt: null, response: null, isResponseHelpful: null, attachedFiles: null}];
                     lastPrompt = this.prompts[this.prompts.length - 1];
                 }
                 lastPrompt.response = outputResponse;
                 this.updateResponse(lastPrompt.response, this.prompts.length - 1, isFinalUpdate, responseItem);
             }
             if (typeof outputResponse === 'object') {
-                const tPrompt: { prompt: string, response: string, isResponseHelpful: boolean } = {
+                const tPrompt: PromptModel = {
                     prompt: (<{ prompt: string }>outputResponse).prompt,
+                    attachedFiles: (<{ attachedFiles: FileInfo[] }>outputResponse).attachedFiles,
                     response: (<{ response: string }>outputResponse).response,
                     isResponseHelpful: isNOU((<{ isResponseHelpful: boolean }>outputResponse).isResponseHelpful) ? null :
                         (<{ isResponseHelpful: boolean }>outputResponse).isResponseHelpful
                 };
                 if (this.prompt === tPrompt.prompt || this.lastStreamPrompt === tPrompt.prompt) {
                     lastPrompt.response = tPrompt.response;
+                    lastPrompt.attachedFiles = tPrompt.attachedFiles;
                     lastPrompt.isResponseHelpful = tPrompt.isResponseHelpful;
                     this.updateResponse(lastPrompt.response, this.prompts.length - 1, isFinalUpdate, responseItem);
                 } else {
                     this.prompts = [...this.prompts, tPrompt];
-                    this.renderOutputContainer(tPrompt.prompt, tPrompt.response, this.prompts.length - 1, true, isFinalUpdate);
+                    this.renderOutputContainer(tPrompt.prompt, tPrompt.response, tPrompt.attachedFiles,
+                                               this.prompts.length - 1, true, isFinalUpdate);
                 }
                 if (!isFinalUpdate) {
                     this.lastStreamPrompt = tPrompt.prompt;
@@ -2122,6 +2138,7 @@ export class AIAssistView extends InterActiveChatBase implements INotifyProperty
                     else {
                         const footerIconsWrapper: HTMLDivElement = this.footer.querySelector('.e-footer-icons-wrapper');
                         this.renderClearIcon(footerIconsWrapper, 'e-icons e-assist-clear-icon e-assist-clear-icon-hide');
+                        this.clearIcon.setAttribute('title', this.l10n.getConstant('clear'));
                         this.updateFooterEleClass();
                         this.wireClearIconEvents();
                     }

@@ -1,8 +1,6 @@
-import { ChildProperty, Complex, Property } from '@syncfusion/ej2-base';
-import { StyleModel, LinkSettingsModel } from './index';
-import { LinkSettings } from './link-settings';
-import { Style } from './style';
+import { ChildProperty, Property } from '@syncfusion/ej2-base';
 import { ContentType } from '../../base/enums';
+import { ContentProperties } from './content-props';
 
 /**
  * Defines the properties of block.
@@ -25,10 +23,12 @@ export class Content extends ChildProperty<Content> {
      * Defines the type of content for the block.
      * It can be text, link, code, mention, or label.
      *
-     * @default 'Text'
+     * @isenumeration true
+     * @default ContentType.Text
+     * @asptype ContentType
      */
-    @Property('Text')
-    public type: ContentType;
+    @Property(ContentType.Text)
+    public type: ContentType | string;
 
     /**
      * Specifies the actual content of the block.
@@ -39,38 +39,12 @@ export class Content extends ChildProperty<Content> {
     public content: string;
 
     /**
-     * Specifies style attributes for the block.
-     * This property is an object of StyleModel instances defining text formatting options.
+     * Specifies the type specific properties for the content.
      *
-     * @default {}
+     * @default null
+     * @asptype object
+     * @aspDefaultValueIgnore
      */
-    @Complex<StyleModel>({}, Style)
-    public styles: StyleModel;
-
-    /**
-     * Specifies a hyperlink associated with the block.
-     * If the block represents a link, this property holds the URL.
-     *
-     * @default {}
-     */
-    @Complex<LinkSettingsModel>({}, LinkSettings)
-    public linkSettings: LinkSettingsModel;
-
-    /**
-     * @hidden
-     * Tracks the order of styles applied to the content.
-     *
-     * @default []
-     */
-    @Property([])
-    public stylesApplied: string[];
-
-    /**
-     * @hidden
-     * Internal data identifier for label or mention type.
-     *
-     * @default ''
-     */
-    @Property('')
-    public dataId: string;
+    @Property(null)
+    public props: ContentProperties;
 }

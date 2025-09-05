@@ -64,18 +64,18 @@ describe('Server side pivot engine ', () => {
         });
         it('Intial rendering - pivot table', (done: Function) => {
             setTimeout(() => {
-                expect(pivotGridObj.pivotValues[0][1].formattedText).toBe('FY 2015');
+                expect(pivotGridObj.pivotValues[0][1].formattedText).toBe('FY 2022');
                 (pivotGridObj.element.querySelectorAll('.e-select-table')[0] as HTMLElement).click();
                 done();
             }, 4500);
         });
         it('Popup field list - ascend & descend', () => {
-            expect(document.querySelectorAll('.e-field-table .e-field-list-tree-outer-div .e-field-list ul li')[0].textContent).toBe('Production Year');
+            expect(document.querySelectorAll('.e-field-table .e-field-list-tree-outer-div .e-field-list ul li')[0].textContent).toBe('Quarter');
             (document.querySelectorAll('.e-sort-ascend')[0] as HTMLElement).click();
         });
         it('Popup field list - ascend & descend-1', (done: Function) => {
             setTimeout(() => {
-                expect(document.querySelectorAll('.e-field-table .e-field-list-tree-outer-div .e-field-list ul li')[0].textContent).toBe('Countries');
+                expect(document.querySelectorAll('.e-field-table .e-field-list-tree-outer-div .e-field-list ul li')[0].textContent).toBe('Amount');
                 (document.querySelectorAll('.e-sort-descend')[0] as HTMLElement).click()
                 done();
             }, 1500);
@@ -176,13 +176,13 @@ describe('Server side pivot engine ', () => {
         });
         it('Intial rendering - pivot table', (done: Function) => {
             setTimeout(() => {
-                expect(pivotGridObj.pivotValues[0][1].formattedText).toBe('FY 2015');
+                expect(pivotGridObj.pivotValues[0][1].formattedText).toBe('FY 2022');
                 (pivotGridObj.element.querySelectorAll('.e-select-table')[0] as HTMLElement).click();
                 done();
             }, 4000);
         });
         it('Popup field list - ascend & descend', () => {
-            expect(document.querySelectorAll('.e-field-table .e-field-list-tree-outer-div .e-field-list ul li')[0].textContent).toBe('Production Year');
+            expect(document.querySelectorAll('.e-field-table .e-field-list-tree-outer-div .e-field-list ul li')[0].textContent).toBe('Quarter');
         });
         it('Field list Filering - rows - 1', (done: Function) => {
             setTimeout(() => {
@@ -410,7 +410,7 @@ describe('Server side pivot engine ', () => {
         });
         it('Intial rendering - pivot table', (done: Function) => {
             setTimeout(() => {
-                expect(pivotGridObj.pivotValues[0][1].formattedText).toBe('FY 2015');
+                expect(pivotGridObj.pivotValues[0][1].formattedText).toBe('FY 2022');
                 done();
             }, 3000);
         });
@@ -483,7 +483,7 @@ describe('Server side pivot engine ', () => {
         });
         it('Intial rendering - pivot table', (done: Function) => {
             setTimeout(() => {
-                expect(pivotGridObj.pivotValues[0][1].formattedText).toBe('FY 2015');
+                expect(pivotGridObj.pivotValues[0][1].formattedText).toBe('FY 2022');
                 done();
             }, 3000);
         });

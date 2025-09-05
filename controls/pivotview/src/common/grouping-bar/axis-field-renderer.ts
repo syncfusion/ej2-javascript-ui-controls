@@ -41,10 +41,10 @@ export class AxisFields {
         const vlen: number = pivotButtons.length;
         for (let j: number = 0; j < vlen; j++) {
             const indentWidth: number = 24;
-            if (!this.parent.isTabular) {
+            if (!this.parent.isTabular || (this.parent.isTabular && this.parent.engineModule.rowMaxLevel === 0)) {
                 const indentDiv: Element = createElement('span', {
                     className: 'e-indent-div',
-                    styles: this.parent.isTabular ? 'auto' : 'width:' + j * indentWidth + 'px'
+                    styles: 'width:' + j * indentWidth + 'px'
                 });
                 this.tempElements.push(indentDiv);
                 prepend([indentDiv], pivotButtons[j as number]);

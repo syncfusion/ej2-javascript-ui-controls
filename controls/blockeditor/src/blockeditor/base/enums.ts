@@ -1,4 +1,11 @@
 /**
+ * Specifies the formats available for saving images.
+ * Options include saving as Base64 or Blob.
+ *
+ */
+export type SaveFormat = 'Base64' | 'Blob';
+
+/**
  * Enum representing the different block types available in the block editor component.
  * Each block type corresponds to a specific content format that can be used to create structured documents.
  */
@@ -11,33 +18,15 @@ export enum BlockType {
 
     /**
      * Represents a heading block.
-     * This block type is used for headings (H1).
+     * This block type is used for headings such as level 1, 2, 3 or 4.
      */
-    Heading1 = 'Heading1',
-
-    /**
-     * Represents a heading block.
-     * This block type is used for headings (H2).
-     */
-    Heading2 = 'Heading2',
-
-    /**
-     * Represents a heading block.
-     * This block type is used for headings (H3).
-     */
-    Heading3 = 'Heading3',
-
-    /**
-     * Represents a heading block.
-     * This block type is used for headings (H4).
-     */
-    Heading4 = 'Heading4',
+    Heading = 'Heading',
 
     /**
      * Represents a checklist block.
      * This block type is used for creating interactive to-do lists.
      */
-    CheckList = 'CheckList',
+    Checklist = 'Checklist',
 
     /**
      * Represents a bullet list block.
@@ -76,34 +65,16 @@ export enum BlockType {
     Divider = 'Divider',
 
     /**
-     * Represents a toggle paragraph block.
+     * Represents a collapsible paragraph block.
      * This block type is used to display paragraphs that can be expanded or collapsed.
      */
-    ToggleParagraph = 'ToggleParagraph',
+    CollapsibleParagraph = 'CollapsibleParagraph',
 
     /**
-     * Represents a toggle heading 1 block.
+     * Represents a collapsible heading 1 block.
      * This block type is used to display top-level headings that can be expanded or collapsed.
      */
-    ToggleHeading1 = 'ToggleHeading1',
-
-    /**
-     * Represents a toggle heading 2 block.
-     * This block type is used to display second-level headings that can be expanded or collapsed.
-     */
-    ToggleHeading2 = 'ToggleHeading2',
-
-    /**
-     * Represents a toggle heading 3 block.
-     * This block type is used to display third-level headings that can be expanded or collapsed.
-     */
-    ToggleHeading3 = 'ToggleHeading3',
-
-    /**
-     * Represents a toggle heading 4 block.
-     * This block type is used to display fourth-level headings that can be expanded or collapsed.
-     */
-    ToggleHeading4 = 'ToggleHeading4',
+    CollapsibleHeading = 'CollapsibleHeading',
 
     /**
      * Represents an image block.
@@ -166,6 +137,10 @@ export enum BuiltInToolbar {
     Custom = 'Custom'
 }
 
+/**
+ * Specifies the type of deletion to be performed.
+ *
+ */
 export enum DeletionType {
     Partial = 'partial',
     Entire = 'entire'

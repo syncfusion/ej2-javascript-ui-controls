@@ -1,7 +1,7 @@
 import { detach, EventHandler, Browser, L10n, isNullOrUndefined, extend, isUndefined } from '@syncfusion/ej2-base';
 import { ClickEventArgs } from '@syncfusion/ej2-navigations';
 import { Spreadsheet } from '../base/index';
-import { SheetModel, getRangeIndexes, getCell, getSheet, CellModel, getSwapRange, inRange, Workbook, isReadOnlyCells, setCell, ValidationModel, checkColumnValidation, getRowHeight, getColumnWidth, isReadOnly, getRow } from '../../workbook/index';
+import { SheetModel, getRangeIndexes, getCell, getSheet, CellModel, getSwapRange, inRange, Workbook, isReadOnlyCells, setCell, ValidationModel, checkColumnValidation, getRowHeight, getColumnWidth } from '../../workbook/index';
 import { CellStyleModel, getRangeAddress, getSheetIndexFromId, getSheetName, NumberFormatArgs } from '../../workbook/index';
 import { RowModel, getFormattedCellObject, workbookFormulaOperation, checkIsFormula, Sheet, mergedRange } from '../../workbook/index';
 import { ExtendedSheet, Cell, setMerge, MergeArgs, getCellIndexes, ChartModel } from '../../workbook/index';
@@ -106,7 +106,6 @@ export class Clipboard {
         const actCellIndex: number[] = getCellIndexes(actCell);
         const cellObj: CellModel = getCell(actCellIndex[0], actCellIndex[1], sheet);
         const isLocked: boolean = sheet.isProtected && isCellLocked(cellObj, getColumn(sheet, actCellIndex[1]));
-        const isReadonlyCell: boolean = isReadOnly(cellObj, getColumn(sheet, actCellIndex[1]), getRow(sheet, actCellIndex[0]));
         if (e.target === 'Content' || e.target === 'RowHeader' || e.target === 'ColumnHeader' || e.target === 'SelectAll') {
             this.parent.enableContextMenuItems(
                 [l10n.getConstant('Paste'), l10n.getConstant('PasteSpecial')], (this.copiedInfo ||
@@ -121,7 +120,7 @@ export class Clipboard {
             if (isLocked) {
                 this.parent.enableContextMenuItems([l10n.getConstant('Cut'), l10n.getConstant('Hyperlink'),
                     l10n.getConstant('EditNote'), l10n.getConstant('DeleteNote')], false);
-            } else if (isReadonlyCell) {
+            } else if (isReadOnlyCells(this.parent, getSwapRange(getRangeIndexes(sheet.selectedRange)))) {
                 this.parent.enableContextMenuItems([l10n.getConstant('Cut'), l10n.getConstant('Paste'), l10n.getConstant('PasteSpecial'),
                     l10n.getConstant('Filter'), l10n.getConstant('Sort'), l10n.getConstant('Hyperlink'), l10n.getConstant('EditHyperlink'),
                     l10n.getConstant('OpenHyperlink'), l10n.getConstant('RemoveHyperlink'), l10n.getConstant('AddNote')], false);

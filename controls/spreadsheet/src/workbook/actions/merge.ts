@@ -1,5 +1,5 @@
 import { Workbook, CellModel, getCell, SheetModel, setCell, getSheet } from '../base/index';
-import { setMerge, MergeArgs, getSwapRange, getRangeIndexes, mergedRange, applyMerge, activeCellMergedRange } from './../common/index';
+import { setMerge, MergeArgs, getSwapRange, getRangeIndexes, mergedRange, applyMerge, activeCellMergedRange, importModelUpdate, ExtendedSheet, MergedCellModel } from './../common/index';
 import { insertMerge, activeCellChanged, checkIsFormula, applyCF, ApplyCFArgs, updateCell, CellUpdateArgs } from './../common/index';
 import { refreshChart } from './../common/index';
 import { extend, isNullOrUndefined, isUndefined } from '@syncfusion/ej2-base';
@@ -585,11 +585,49 @@ export class WorkbookMerge {
         args.preventRefresh = true; args.merge = true;
         this.mergeAll(args);
     }
+
+    private updateMergedCellsFromSheet(): void {
+        this.parent.sheets.forEach((sheet: ExtendedSheet) => {
+            if (sheet.mergedCells) {
+                sheet.mergedCells.forEach((model: MergedCellModel) => {
+                    const startRow: number = model.address[0]; const startCol: number = model.address[1];
+                    const rowSpan: number = model.rowSpan; const colSpan: number = model.colSpan;
+                    const endRow: number = startRow + rowSpan - 1; const endCol: number = startCol + colSpan - 1;
+                    for (let rIdx: number = startRow; rIdx <= endRow; rIdx++) {
+                        for (let cIdx: number = startCol; cIdx <= endCol; cIdx++) {
+                            const cell: CellModel = getCell(rIdx, cIdx, sheet, true, true);
+                            if (rIdx === startRow && cIdx === startCol) {
+                                if (rowSpan > 1) {
+                                    cell.rowSpan = rowSpan;
+                                }
+                                if (colSpan > 1) {
+                                    cell.colSpan = colSpan;
+                                }
+                            } else {
+                                const rowSpanDiff: number = rIdx - startRow;
+                                const colSpanDiff: number = cIdx - startCol;
+                                if (rowSpan > 1 && rowSpanDiff > 0) {
+                                    cell.rowSpan = -rowSpanDiff;
+                                }
+                                if (colSpan > 1 && colSpanDiff > 0) {
+                                    cell.colSpan = -colSpanDiff;
+                                }
+                            }
+                            setCell(rIdx, cIdx, sheet, cell, true);
+                        }
+                    }
+                });
+                delete sheet.mergedCells;
+            }
+        });
+    }
+
     private addEventListener(): void {
         this.parent.on(setMerge, this.merge, this);
         this.parent.on(mergedRange, this.mergedRange, this);
         this.parent.on(activeCellMergedRange, this.activeCellRange, this);
         this.parent.on(insertMerge, this.insertHandler, this);
+        this.parent.on(importModelUpdate, this.updateMergedCellsFromSheet, this);
     }
     /**
      * Destroy workbook merge module.
@@ -606,6 +644,7 @@ export class WorkbookMerge {
             this.parent.off(mergedRange, this.mergedRange);
             this.parent.off(activeCellMergedRange, this.activeCellRange);
             this.parent.off(insertMerge, this.insertHandler);
+            this.parent.off(importModelUpdate, this.updateMergedCellsFromSheet);
         }
     }
     /**

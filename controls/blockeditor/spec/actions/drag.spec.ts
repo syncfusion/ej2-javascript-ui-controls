@@ -498,7 +498,7 @@ describe('DragAndDrop', () => {
             const endBlockId = endBlock.id;
             
             // Get all blocks between start and end blocks inclusive
-            const allBlocks = editor.blocksInternal;
+            const allBlocks = editor.getEditorBlocks();
             const startIdx = allBlocks.findIndex(b => b.id === startBlockId);
             const endIdx = allBlocks.findIndex(b => b.id === endBlockId);
             const selectedBlocks = allBlocks.slice(

@@ -120,11 +120,31 @@ export let defaultLocale: { [key: string]: string } = {
     'cellpadding': 'Cell Padding',
     'cellspacing': 'Cell Spacing',
     'columns': 'Number of columns',
+    'borderWidth': 'Width',
+    'borderColor': 'Color',
+    'borderLabel': 'Border',
+    'tableBackgroundColor': 'Background Color',
+    'borderStyle': 'Style',
+    'borderWidthTooltip': 'Border width',
+    'borderColorTooltip': 'Border color',
+    'borderStyleTooltip': 'Border style',
+    'borderStyleNone': 'None',
+    'borderStyleSolid': 'Solid',
+    'borderStyleDashed': 'Dashed',
+    'borderStyleDotted': 'Dotted',
+    'borderStyleDouble': 'Double',
+    'borderStyleGroove': 'Groove',
+    'borderStyleRidge': 'Ridge',
+    'borderStyleInset': 'Inset',
+    'borderStyleOutset': 'Outset',
+    'borderStyleHidden': 'Hidden',
     'rows': 'Number of rows',
     'tableRows': 'Row',
     'tableColumns': 'Column',
     'tableCellHorizontalAlign': 'Table Cell Horizontal Align',
     'tableCellVerticalAlign': 'Vertical Align',
+    'insertTableRowTitle': 'Enter a whole number from 1 to 100',
+    'insertTableColumnTitle': 'Enter a whole number from 1 to 50',
     'createTable': 'Create Table',
     'removeTable': 'Remove Table',
     'tableHeader': 'Header Row',
@@ -244,7 +264,8 @@ export let defaultLocale: { [key: string]: string } = {
     'slashMenuItemVideoDescription': 'Insert a video.',
     'slashMenuItemEmojiText': 'Emojipicker',
     'slashMenuItemEmojiDescription': 'Use emojis to express ideas and emoticons.',
-    'codeBlock': 'Insert Code Block'
+    'codeBlock': 'Insert Code Block',
+    'checklist': 'Checklist'
 };
 
 export let toolsLocale: { [key: string]: string } = {
@@ -347,7 +368,8 @@ export let toolsLocale: { [key: string]: string } = {
     'emojiPickerNoResultFound': 'No results found',
     'emojiPickerTrySomethingElse': 'Try something else',
     'inlinecode': 'inlinecode',
-    'codeblock': 'codeBlock'
+    'codeblock': 'codeBlock',
+    'checklist': 'checklist'
 };
 
 export let fontNameLocale: { [ket: string]: string }[] = [

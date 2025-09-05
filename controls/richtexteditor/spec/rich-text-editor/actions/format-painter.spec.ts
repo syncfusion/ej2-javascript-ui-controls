@@ -1849,6 +1849,47 @@ describe('Format Painter Module', () => {
         });
     });
 
+    describe('964344 when using the Format Painter tool, the selected text gets deleted after applying the copied formatting to it' , () => {
+        let rteObject : RichTextEditor ;
+        const innerHTML: string = `<ul><li class="focusnode"><strong>Select the text</strong> with the formatting you want to copy.</li><li class="startnode">Click the <strong>Format Painter</strong> button (paintbrush icon) in the toolbar.</li><li class="endnode">The cursor changes to a <strong>paintbrush</strong> icon.</li><li><strong>Click and drag</strong> over the text where you want to apply the copied format.</li><li>Release the mouse button, and the formatting will be applied.</li></ul><h5><br></h5>`;
+        beforeEach( (done: Function) => {
+            rteObject = renderRTE({
+                toolbarSettings : { items: ['FormatPainter', 'ClearFormat', 'Undo', 'Redo', '|',
+                    'Bold', 'Italic', 'Underline', 'StrikeThrough', '|',
+                    'FontName', 'FontSize', 'FontColor', 'BackgroundColor', '|',
+                    'SubScript', 'SuperScript', '|',
+                    'LowerCase', 'UpperCase', '|',
+                    'Formats', 'Alignments', '|', 'OrderedList', 'UnorderedList', '|',
+                    'Indent', 'Outdent', '|',
+                    'CreateLink', '|', 'Image', '|', 'CreateTable', '|',
+                    'SourceCode', '|', 'ClearFormat', 'Print', 'InsertCode']
+                } , value: innerHTML
+            });
+            done();
+        });
+        afterEach( (done: DoneFn) => {
+            destroy(rteObject);
+            done();
+        });
+        it('When selecting two lists, we are replacing the LI element one by one,', (done: Function) => {
+            rteObject.focusIn();
+            let range = new Range();
+            let startElement = rteObject.inputElement.querySelector('.focusnode');
+            range.setStart(startElement.firstChild, 0);
+            range.setEnd(startElement.lastChild, 38);
+            rteObject.selectRange(range);
+            rteObject.keyDown(copyKeyBoardEventArgs);
+            startElement = rteObject.inputElement.querySelector('.startnode');
+            let endElement = rteObject.inputElement.querySelector('.endnode');
+            range.setStart(startElement, 0);
+            range.setEnd(endElement.lastChild, 6);
+            rteObject.selectRange(range);
+            rteObject.keyDown(pasteKeyBoardEventArgs);
+            expect(rteObject.inputElement.innerHTML).toEqual('<ul><li class="focusnode"><strong>Select the text</strong> with the formatting you want to copy.</li><li class="focusnode"><strong>Click the </strong><strong>Format Painter</strong><strong> button (paintbrush icon) in the toolbar.</strong></li><li class="focusnode"><strong>The cursor changes to a </strong><strong>paintbrush</strong><strong> icon.</strong></li><li><strong>Click and drag</strong> over the text where you want to apply the copied format.</li><li>Release the mouse button, and the formatting will be applied.</li></ul><h5><br></h5>');
+            done();
+        });
+    });
+
     describe('Action Complete event testing' , () => {
         let rteObject : RichTextEditor ;
         let toolbarELem: HTMLElement;
@@ -2724,6 +2765,54 @@ describe('Format Painter Module', () => {
                 expect(errorSpy).not.toHaveBeenCalled();
                 done();
             }, 100);
+        });
+    });
+    describe('965886 - Undo Not Working After Pressing ESC Key Following Format Painter Use', () => {
+        let rteObject: RichTextEditor;
+        const innerHTML: string = '<p><strong>Bold text</strong> and normal text</p>';
+        beforeEach((done: Function) => {
+            rteObject = renderRTE({
+                toolbarSettings: { 
+                    items: ['FormatPainter', 'Bold', 'Italic', 'Undo', 'Redo']
+                }, 
+                value: innerHTML
+            });
+            done();
+        });
+        afterEach((done: DoneFn) => {
+            destroy(rteObject);
+            done();
+        });
+        it('Should undo format application when pressing Ctrl+Z after ESC key', (done: Function) => {
+            rteObject.focusIn();
+            let range = new Range();
+            let strongElement = rteObject.inputElement.querySelector('strong');
+            range.setStart(strongElement.firstChild, 0);
+            range.setEnd(strongElement.firstChild, strongElement.textContent.length);
+            rteObject.selectRange(range);
+            rteObject.keyDown(copyKeyBoardEventArgs);
+            let normalTextNode = rteObject.inputElement.querySelector('p').childNodes[1];
+            range.setStart(normalTextNode, 5);
+            range.setEnd(normalTextNode, 11);
+            rteObject.selectRange(range);
+            rteObject.keyDown(pasteKeyBoardEventArgs);
+            setTimeout(() => {
+                expect(rteObject.inputElement.querySelectorAll('strong').length).toEqual(2);
+                rteObject.keyDown(escapeKeyBoardEventArgs);
+                const undoKeyBoardEventArgs: any = {
+                    action: 'undo',
+                    ctrlKey: true,
+                    key: 'z',
+                    preventDefault: () => { },
+                    stopPropagation: () => { },
+                    type: 'keydown'
+                };
+                rteObject.keyDown(undoKeyBoardEventArgs);
+                setTimeout(() => {
+                    expect(rteObject.inputElement.querySelectorAll('strong').length).toEqual(1);
+                    done();
+                }, 300);
+            }, 400);
         });
     });
 });

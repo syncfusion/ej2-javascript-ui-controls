@@ -43,9 +43,17 @@ export class PopupRenderer {
         return popupObj;
     }
 
-    adjustPopupPositionRelativeToTarget(target: HTMLElement | Range, popup: Popup | Dialog): void {
-        const targetRect: DOMRect | ClientRect = target.getBoundingClientRect();
-        const popupRect: DOMRect | ClientRect = popup.element.getBoundingClientRect();
+    /**
+     * Adjusts the popup position relative to the target element.
+     *
+     * @param {HTMLElement | Range} target - specifies the target element.
+     * @param {Popup | Dialog} popup - specifies the popup object.
+     * @returns {void}
+     * @hidden
+     */
+    public adjustPopupPositionRelativeToTarget(target: HTMLElement | Range, popup: Popup | Dialog): void {
+        const targetRect: DOMRect = target.getBoundingClientRect() as DOMRect;
+        const popupRect: DOMRect = popup.element.getBoundingClientRect() as DOMRect;
         const isInlineTbar: boolean = popup.element.classList.contains('e-blockeditor-inline-toolbar-popup');
         const viewportWidth: number = window.innerWidth;
         const viewportHeight: number = window.innerHeight;

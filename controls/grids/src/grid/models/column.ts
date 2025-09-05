@@ -124,6 +124,20 @@ export class Column {
     public visible: boolean;
 
     /**
+     * Allows grid to perform row spanning on the specified column.
+     *
+     * @default true
+     */
+    public enableRowSpan: boolean = true;
+
+    /**
+     * Allows grid to perform column spanning on the specified column.
+     *
+     * @default true
+     */
+    public enableColumnSpan: boolean = true;
+
+    /**
      * Defines the column template that renders customized element in each cell of the column.
      * It accepts either [template string](https://ej2.syncfusion.com/documentation/common/template-engine/) or HTML element ID.
      *
@@ -516,6 +530,8 @@ export class Column {
             this.allowFiltering = false;
             this.allowGrouping = false;
             this.allowSorting = false;
+            this.enableColumnSpan = false;
+            this.enableRowSpan = false;
             if (this.columns) {
                 this.allowResizing = (this.columns as Column[]).some((col: Column) => {
                     return col.allowResizing;
@@ -854,6 +870,20 @@ export interface ColumnModel {
      * @default true
      */
     visible?: boolean;
+
+    /**
+     * Allows grid to perform row spanning on the specified column.
+     *
+     * @default true
+     */
+    enableRowSpan?: boolean;
+
+    /**
+     * Allows grid to perform column spanning on the specified column.
+     *
+     * @default true
+     */
+    enableColumnSpan?: boolean;
 
     /**
      * Defines the column template that renders customized element in each cell of the column.

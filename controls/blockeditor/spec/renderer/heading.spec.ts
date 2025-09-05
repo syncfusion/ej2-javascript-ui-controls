@@ -20,10 +20,18 @@ describe('Heading Block', () => {
             editorElement = createElement('div', { id: 'editor' });
             document.body.appendChild(editorElement);
             const blocks: BlockModel[] = [
-                { id: 'heading1', type: BlockType.Heading1, content: [{ id: 'heading1-content', type: ContentType.Text, content: 'Heading 1' }] },
-                { id: 'heading2', type: BlockType.Heading2, content: [{ id: 'heading2-content', type: ContentType.Text, content: 'Heading 2' }] },
-                { id: 'heading3', type: BlockType.Heading3, content: [{ id: 'heading3-content', type: ContentType.Text, content: 'Heading 3' }] },
-                { id: 'heading4', type: BlockType.Heading4, content: [{ id: 'heading4-content', type: ContentType.Text, content: 'Heading 4' }] }
+                { id: 'heading1', type: BlockType.Heading, props: { level: 1 },
+                    content: [{ id: 'heading1-content', type: ContentType.Text, content: 'Heading 1' }] 
+                },
+                { id: 'heading2', type: BlockType.Heading, props: { level: 2 },
+                    content: [{ id: 'heading2-content', type: ContentType.Text, content: 'Heading 2' }] 
+                },
+                { id: 'heading3', type: BlockType.Heading, props: { level: 3 },
+                    content: [{ id: 'heading3-content', type: ContentType.Text, content: 'Heading 3' }] 
+                },
+                { id: 'heading4', type: BlockType.Heading, props: { level: 4 },
+                    content: [{ id: 'heading4-content', type: ContentType.Text, content: 'Heading 4' }] 
+                }
             ];
             editor = createEditor({ blocks: blocks });
             editor.appendTo('#editor');
@@ -52,7 +60,7 @@ describe('Heading Block', () => {
             const heading1 = editorElement.querySelector('#heading1-content');
             heading1.textContent = 'Updated content';
             editor.setFocusToBlock(heading1.closest('.e-block') as HTMLElement);
-            editor.updateContentOnUserTyping(heading1.closest('.e-block') as HTMLElement);
+            editor.stateManager.updateContentOnUserTyping(heading1.closest('.e-block') as HTMLElement);
             setTimeout(() => {
                 expect(editor.blocks[0].content[0].content).toBe('Updated content');
                 done();
@@ -62,7 +70,8 @@ describe('Heading Block', () => {
         it('should render heading with Node as existing content (with text node)', () => {
             const headingBlock: BlockModel = {
                 id: 'heading-new',
-                type: BlockType.Heading2,
+                type: BlockType.Heading,
+                props: { level: 2 },
                 content: [{ id: 'heading-new-content', type: ContentType.Text, content: 'New heading' }]
             };
             
@@ -75,11 +84,11 @@ describe('Heading Block', () => {
             const blockElement = editor.createElement('div', { 
                 className: 'e-block',
                 id: headingBlock.id,
-                attrs: { 'data-block-type': headingBlock.type }
+                attrs: { 'data-block-type': headingBlock.type.toString() }
             });
             
             // Directly call the renderHeading method with the Node
-            const headingElement = editor.blockAction.headingRenderer.renderHeading(
+            const headingElement = editor.blockRendererManager.headingRenderer.renderHeading(
                 headingBlock, 
                 blockElement,
                 docFragment
@@ -93,7 +102,8 @@ describe('Heading Block', () => {
         it('should render heading with Node as existing content (with multiple nodes)', () => {
             const headingBlock: BlockModel = {
                 id: 'heading-multi',
-                type: BlockType.Heading3,
+                type: BlockType.Heading,
+                props: { level: 3 },
                 content: [{ id: 'heading-multi-content', type: ContentType.Text, content: 'Multi-node heading' }]
             };
             
@@ -113,11 +123,11 @@ describe('Heading Block', () => {
             const blockElement = editor.createElement('div', { 
                 className: 'e-block',
                 id: headingBlock.id,
-                attrs: { 'data-block-type': headingBlock.type }
+                attrs: { 'data-block-type': headingBlock.type.toString() }
             });
             
             // Directly call the renderHeading method with the Node
-            const headingElement = editor.blockAction.headingRenderer.renderHeading(
+            const headingElement = editor.blockRendererManager.headingRenderer.renderHeading(
                 headingBlock, 
                 blockElement,
                 docFragment
@@ -132,7 +142,8 @@ describe('Heading Block', () => {
         it('should render heading with Node as existing content (empty node)', () => {
             const headingBlock: BlockModel = {
                 id: 'heading-empty',
-                type: BlockType.Heading1,
+                type: BlockType.Heading,
+                props: { level: 1 },
                 content: [{ id: 'heading-empty-content', type: ContentType.Text, content: 'Empty node heading' }]
             };
             
@@ -143,11 +154,11 @@ describe('Heading Block', () => {
             const blockElement = editor.createElement('div', {
                 className: 'e-block',
                 id: headingBlock.id,
-                attrs: { 'data-block-type': headingBlock.type }
+                attrs: { 'data-block-type': headingBlock.type.toString() }
             });
             
             // Directly call the renderHeading method with the empty Node
-            const headingElement = editor.blockAction.headingRenderer.renderHeading(
+            const headingElement = editor.blockRendererManager.headingRenderer.renderHeading(
                 headingBlock, 
                 blockElement,
                 docFragment

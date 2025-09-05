@@ -243,7 +243,7 @@ export class InsertHtml {
         ) as HTMLElement;
         this.insertTableInList(
             range, insertedNode as HTMLTableElement,
-            closestParentNode, nodes[0], nodeCutter, lastClosestParentNode, editNode as HTMLElement);
+            closestParentNode, nodes[0], nodeCutter, lastClosestParentNode);
     }
 
     // Determines if the cursor is positioned at the start of the range.
@@ -388,7 +388,7 @@ export class InsertHtml {
     // Inserts nodes by considering established contexts like sibling nodes and nested elements.
     private static insertNodeBasedOnContext(
         parentNode: Node, editNode: Element, insertedNode: Node,
-        insertNode: Node | string, isCursor: boolean, range: Range, preNode: Node, enterAction: String
+        insertNode: Node | string, isCursor: boolean, range: Range, preNode: Node, enterAction: string
     ): void {
         if (parentNode.firstChild && ((parentNode as HTMLElement) !== editNode ||
            (insertedNode.nodeName === 'TABLE' && isCursor && parentNode === range.startContainer &&
@@ -769,7 +769,7 @@ export class InsertHtml {
         let lastSelectionNode: Node;
         const immediateBlockNode: Node = this.getImmediateBlockNode(range.startContainer, editNode);
         const tempSpan: HTMLElement = createElement('span', { className: 'tempSpan' });
-        if (this.shouldInsertInAnchor(range, nodes)) {
+        if (this.shouldInsertInAnchor(range)) {
             this.insertInAnchor(range, tempSpan, editNode);
         } else if (this.isMentionChip(nodes)) {
             range.startContainer.parentElement.insertAdjacentElement('afterend', tempSpan);
@@ -789,7 +789,7 @@ export class InsertHtml {
     }
 
     //Determines if content should be inserted within an anchor element based on specified conditions.
-    private static shouldInsertInAnchor(range: Range, nodes: Node[]): boolean {
+    private static shouldInsertInAnchor(range: Range): boolean {
         const nearestAnchor: Element = closest(range.startContainer.parentElement, 'a');
         return range.startContainer.nodeType === 3 &&
             !isNOU(nearestAnchor) &&
@@ -1505,11 +1505,25 @@ export class InsertHtml {
             insertedNodeAsHtml.firstElementChild.lastElementChild &&
             insertedNodeAsHtml.firstElementChild.lastElementChild.tagName === 'LI') {
             liNode = insertedNodeAsHtml.firstElementChild.lastElementChild as HTMLElement;
+            this.removeChecklistStyle(blockNode, liNode);
             this.removeListItemMargins(liNode);
             insertedNodeAsHtml.firstElementChild.insertAdjacentElement('afterend', liNode);
         }
     }
-
+    /*
+    * Removes checklist-specific inline styles from a pasted list item (`<li>`).
+    */
+    private static removeChecklistStyle(blockNode: Node, liNode: HTMLElement): void {
+        if (blockNode.nodeName === 'LI' && (blockNode as HTMLElement).parentElement &&
+            ((blockNode as HTMLElement).parentElement.nodeName === 'UL' || (blockNode as HTMLElement).parentElement.nodeName === 'OL')
+        ) {
+            liNode.style.removeProperty('list-style');
+            liNode.style.removeProperty('position');
+            if (liNode.getAttribute('style') === '') {
+                liNode.removeAttribute('style');
+            }
+        }
+    }
     // Checks if we should process list items in the node.
     private static shouldProcessListItems(blockNode: Node, insertedNode: Node, editNode: Element): boolean {
         return blockNode &&
@@ -2358,7 +2372,7 @@ export class InsertHtml {
             const hasNbsp: boolean = element.parentElement.textContent.length > 0 && element.parentElement.textContent.match(/\u00a0/g)
                 && element.parentElement.textContent.match(/\u00a0/g).length > 0;
             if (!hasNbsp && element.parentElement.textContent.trim() === '' && element.parentElement.contentEditable !== 'true' &&
-                isNOU(element.parentElement.querySelector('img')) && element.parentElement.nodeName !== 'TD' && element.parentElement.nodeName !== 'TH') {
+                isNOU(element.parentElement.querySelector('img')) && element.parentElement.nodeName !== 'TD' && element.parentElement.nodeName !== 'TH' && isNOU(element.parentElement.querySelector('table td, table th'))) {
                 removableElement = ignoreBlockNodes && CONSTANT.BLOCK_TAGS.indexOf(element.parentElement.tagName.toLowerCase()) !== -1 ?
                     element as HTMLElement : this.findDetachEmptyElem(element.parentElement, ignoreBlockNodes);
             } else {
@@ -2446,7 +2460,7 @@ export class InsertHtml {
     private static insertTableInList(
         range: Range, insertNode: HTMLTableElement,
         parentNode: Node, currentNode: Node,
-        nodeCutter: NodeCutter, lastclosestParentNode: HTMLElement, editNode: HTMLElement): void {
+        nodeCutter: NodeCutter, lastclosestParentNode: HTMLElement): void {
         const parentList: Element = closest(parentNode, 'ul,ol');
         const totalLi: number = parentList ? parentList.querySelectorAll('li').length : 0;
         const preNode: HTMLElement = nodeCutter.SplitNode(range, parentNode as HTMLElement, true);

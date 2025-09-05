@@ -1,16 +1,17 @@
 import { isNullOrUndefined } from '@syncfusion/ej2-base';
 import { FilteringEventArgs, Mention, MentionChangeEventArgs, PopupEventArgs, SelectEventArgs } from '@syncfusion/ej2-dropdowns';
-import { BlockModel, CommandItemModel, CommandMenuSettingsModel } from '../models/index';
+import { BlockModel, CommandItemModel, CommandMenuSettingsModel, HeadingProps } from '../models/index';
 import { getBlockModelById } from '../utils/block';
 import { IMentionRenderOptions} from '../base/interface';
 import { getCommandMenuItems } from '../utils/data';
 import { BlockEditor } from '../base/blockeditor';
 import { CommandItemClickedEventArgs, CommandMenuCloseEventArgs, CommandMenuOpenEventArgs, CommandQueryFilteringEventArgs } from '../base/eventargs';
-import { BlockEditorModel } from '../base/index';
+import { BlockEditorModel, BlockType } from '../base/index';
 import { events } from '../base/constant';
 import { getNormalizedKey } from '../utils/common';
 import { Tooltip, TooltipEventArgs } from '@syncfusion/ej2-popups';
 import { sanitizeCommandMenuItems } from '../utils/transform';
+import * as constants from '../base/constant';
 
 /**
  * `SlashCommandModule` module is used to handle the slash command actions in the BlockEditor.
@@ -22,45 +23,35 @@ export class SlashCommandModule {
     public mentionObj: Mention;
     private isPopupOpened: boolean = false;
     private slashMenuTooltip: Tooltip;
+    private shortcutMap: Map<string, CommandItemModel> = new Map();
+    private static readonly MAX_FILTER_TEXT_LENGTH: number = 6;
 
     constructor(editor: BlockEditor) {
         this.editor = editor;
         this.init();
+        this.buildShortcutMap();
         this.addEventListeners();
     }
 
     private addEventListeners(): void {
         this.editor.on(events.moduleChanged, this.onPropertyChanged, this);
         this.editor.on(events.keydown, this.onKeyDown, this);
-        this.editor.on('rtl-changed', this.applyRtlSettings, this);
+        this.editor.on(events.rtlChanged, this.applyRtlSettings, this);
         this.editor.on(events.destroy, this.destroy, this);
     }
 
     private removeEventListeners(): void {
         this.editor.off(events.moduleChanged, this.onPropertyChanged);
         this.editor.off(events.keydown, this.onKeyDown);
-        this.editor.off('rtl-changed', this.applyRtlSettings);
+        this.editor.off(events.rtlChanged, this.applyRtlSettings);
         this.editor.off(events.destroy, this.destroy);
     }
 
     private init(): void {
-        let slashMenuOptions: CommandItemModel[];
-        if (this.editor.commandMenu.commands.length > 0) {
-            slashMenuOptions = sanitizeCommandMenuItems(this.editor.commandMenu.commands);
-        }
-        else {
-            slashMenuOptions = getCommandMenuItems();
-            /* eslint-disable @typescript-eslint/no-explicit-any */
-            const prevOnChange: boolean = (this.editor as any).isProtectedOnChange;
-            (this.editor as any).isProtectedOnChange = true;
-            this.editor.commandMenu.commands = slashMenuOptions;
-            (this.editor as any).isProtectedOnChange = prevOnChange;
-            /* eslint-enable @typescript-eslint/no-explicit-any */
-        }
         const mentionArgs: IMentionRenderOptions = {
             element: this.editor.blockWrapper,
             mentionChar: '/',
-            dataSource: slashMenuOptions,
+            dataSource: this.getCommandItems(),
             cssClass: 'e-blockeditor-command-menu e-blockeditor-mention-menu',
             highlight: true,
             fields: { text: 'label', value: 'label', iconCss: 'iconCss', groupBy: 'groupHeader', disabled: 'disabled' },
@@ -79,11 +70,32 @@ export class SlashCommandModule {
         this.mentionObj = this.editor.mentionRenderer.renderMention(mentionArgs);
     }
 
+    private getCommandItems(): CommandItemModel[] {
+        const slashMenuOptions: CommandItemModel[] = this.editor.commandMenu.commands.length > 0
+            ? sanitizeCommandMenuItems(this.editor.commandMenu.commands)
+            : getCommandMenuItems();
+
+        if (this.editor.commandMenu.commands.length <= 0) {
+            const prevOnChange: boolean = this.editor.isProtectedOnChange;
+            this.editor.isProtectedOnChange = true;
+            this.editor.commandMenu.commands = slashMenuOptions;
+            this.editor.isProtectedOnChange = prevOnChange;
+        }
+        return slashMenuOptions;
+    }
+
+
+    private buildShortcutMap(): void {
+        this.shortcutMap.clear();
+        this.editor.commandMenu.commands.forEach((item: CommandItemModel) => {
+            this.shortcutMap.set(item.shortcut.toLowerCase(), item);
+        });
+    }
+
     private onKeyDown(e: KeyboardEvent): void {
         const normalizedKey: string = getNormalizedKey(e);
         if (!normalizedKey) { return; }
-        const commandItem: CommandItemModel = this.editor.commandMenu.commands.find((item: CommandItemModel) =>
-            item.shortcut.toLowerCase() === normalizedKey);
+        const commandItem: CommandItemModel = this.shortcutMap.get(normalizedKey);
         if (commandItem) {
             e.preventDefault();
             this.transformBlocks(commandItem);
@@ -95,6 +107,7 @@ export class SlashCommandModule {
 
     private bindTooltipForSlashPopup(): void {
         if (!this.editor.commandMenu.enableTooltip) { return; }
+
         this.slashMenuTooltip = this.editor.tooltipRenderer.renderTooltip({
             cssClass: 'e-blockeditor-command-menu-tooltip',
             position: 'RightCenter',
@@ -104,7 +117,7 @@ export class SlashCommandModule {
             beforeRender: (args: TooltipEventArgs) => {
                 const target: HTMLElement = args.target as HTMLElement;
                 const templateRoot: HTMLElement = target.querySelector('.e-command-mention-item-template');
-                if (target.classList.contains('e-disabled') || !templateRoot) {
+                if (target.classList.contains(constants.DISABLED_CLS) || !templateRoot) {
                     args.cancel = true;
                     return;
                 }
@@ -132,15 +145,23 @@ export class SlashCommandModule {
         this.transformBlocks(args.itemData as any);
     }
 
+    private getHeadingProps(itemId: string): HeadingProps {
+        const extractedType: string = itemId.replace('-command', '');
+        const level: number = parseInt(extractedType.slice(-1), 10);
+        return { level };
+    }
+
     private transformBlocks(commandItem: CommandItemModel): void {
         const selectedItem: string = commandItem.type;
         if (!selectedItem || !this.editor.currentFocusedBlock) { return; }
-        const blockElement: HTMLElement = this.editor.currentFocusedBlock;
-        const block: BlockModel = getBlockModelById(blockElement.id, this.editor.blocksInternal);
-        this.editor.handleBlockTransformation({
-            block: block,
-            blockElement: blockElement,
-            newBlockType: selectedItem
+
+        const isHeadingType: boolean = selectedItem === BlockType.Heading || selectedItem === BlockType.CollapsibleHeading;
+        const headingProps: HeadingProps = isHeadingType ? this.getHeadingProps(commandItem.id) : undefined;
+        this.editor.blockRendererManager.handleBlockTransformation({
+            block: getBlockModelById(this.editor.currentFocusedBlock.id, this.editor.getEditorBlocks()),
+            blockElement: this.editor.currentFocusedBlock,
+            newBlockType: selectedItem,
+            props: headingProps
         });
     }
 
@@ -164,7 +185,7 @@ export class SlashCommandModule {
     private handleSlashCommandSelect(args: SelectEventArgs): void {
         const itemClickArgs: CommandItemClickedEventArgs = {
             // eslint-disable-next-line @typescript-eslint/no-explicit-any
-            command: this.editor.commandMenu.commands.find((c: CommandItemModel) => c.type === (args.itemData as any).type),
+            command: this.editor.commandMenu.commands.find((c: CommandItemModel) => c.id === (args.itemData as any).id),
             element: args.item,
             event: (args.e as Event),
             isInteracted: true,
@@ -192,8 +213,7 @@ export class SlashCommandModule {
         }
         args.cancel = openEventArgs.cancel;
         if (this.editor.currentFocusedBlock) {
-            const blockType: string = this.editor.currentFocusedBlock.getAttribute('data-block-type');
-            args.cancel = (blockType === 'Code' || blockType === 'Table' || blockType === 'Image');
+            args.cancel = this.restrictPopupForBlockTypes(this.editor.currentFocusedBlock.getAttribute('data-block-type'));
         }
     }
 
@@ -213,6 +233,10 @@ export class SlashCommandModule {
         }
     }
 
+    private restrictPopupForBlockTypes(blockType: string): boolean {
+        return blockType === BlockType.Code || blockType === BlockType.Image;
+    }
+
     private applyRtlSettings(): void {
         if (this.mentionObj) {
             this.mentionObj.enableRtl = this.editor.enableRtl;
@@ -222,17 +246,35 @@ export class SlashCommandModule {
         }
     }
 
+    /**
+     * Checks whether the slash command popup is opened or not.
+     *
+     * @returns {boolean} - Returns true if the slash command popup is opened, otherwise false.
+     * @hidden
+     */
     public isPopupOpen(): boolean {
         const commandPopupElement: HTMLElement = document.querySelector('.e-mention.e-popup.e-blockeditor-command-menu') as HTMLElement;
         return this.isPopupOpened && (commandPopupElement && commandPopupElement.classList.contains('e-popup-open'));
     }
 
+    /**
+     * Hides the slash command popup.
+     *
+     * @returns {void}
+     * @hidden
+     */
     public hidePopup(): void {
         if (this.mentionObj) {
             this.mentionObj.hidePopup();
         }
     }
 
+    /**
+     * Shows the slash command popup.
+     *
+     * @returns {void}
+     * @hidden
+     */
     public showPopup(): void {
         const popupElement: HTMLElement = document.querySelector('.e-blockeditor-command-menu.e-popup');
         if (popupElement && popupElement.classList.contains('e-popup-open')) {
@@ -243,13 +285,22 @@ export class SlashCommandModule {
         }
     }
 
+    /**
+     * Filters the slash commands based on the given text.
+     *
+     * @param {string} text - The text to filter the slash commands.
+     * @param {number} xOffset - The x offset of the slash command popup.
+     * @param {number} yOffset - The y offset of the slash command popup.
+     * @returns {void}
+     * @hidden
+     */
     public filterCommands(text: string, xOffset: number, yOffset: number): void {
         if (this.mentionObj) {
-            if (text.length > 6) {
+            if (text.length > SlashCommandModule.MAX_FILTER_TEXT_LENGTH) {
                 this.hidePopup();
                 return;
             }
-            const rect: ClientRect | DOMRect = this.editor.floatingIconContainer.getBoundingClientRect();
+            const rect: DOMRect = this.editor.floatingIconContainer.getBoundingClientRect() as DOMRect;
             xOffset += rect.width;
             this.mentionObj.search(text, xOffset, yOffset);
         }
@@ -265,7 +316,13 @@ export class SlashCommandModule {
         return 'slashCommand';
     }
 
+    /**
+     * Destroys the slash command module.
+     *
+     * @returns {void}
+     */
     public destroy(): void {
+        this.removeEventListeners();
         if (this.mentionObj) {
             this.mentionObj.destroy();
             this.mentionObj = null;
@@ -274,7 +331,8 @@ export class SlashCommandModule {
             this.slashMenuTooltip.destroy();
             this.slashMenuTooltip = null;
         }
-        this.removeEventListeners();
+        this.shortcutMap = null;
+        this.editor = null;
     }
 
     /**
@@ -305,7 +363,7 @@ export class SlashCommandModule {
                     }
                     break;
                 case 'commands':
-                    this.mentionObj.dataSource = (sanitizeCommandMenuItems(newProp.commands) as any);
+                    this.mentionObj.dataSource = sanitizeCommandMenuItems(newProp.commands) as any;
                     break;
                 }
             }

@@ -23,8 +23,8 @@ export class ExpandCellRenderer extends IndentCellRenderer implements ICellRende
      */
     public render(cell: Cell<Column>, data: { field: string, key: string }, attr?: { [x: string]: string }, isExpand?: boolean): Element {
         const node: Element = this.element.cloneNode() as Element;
-        node.setAttribute('ej-mappingname', data.field);
-        node.setAttribute('ej-mappingvalue', data.key);
+        node.setAttribute('data-mappingname', data.field);
+        node.setAttribute('data-mappingvalue', data.key);
         node.setAttribute('aria-expanded', isExpand ? 'true' : 'false');
         node.setAttribute('tabindex', '-1');
         if (this.parent.infiniteScrollSettings && this.parent.infiniteScrollSettings.enableCache &&

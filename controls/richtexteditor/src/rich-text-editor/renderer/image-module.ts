@@ -19,6 +19,8 @@ import { RendererFactory } from '../services/renderer-factory';
 import { ServiceLocator } from '../services/service-locator';
 import { DialogRenderer } from './dialog-renderer';
 import { ImageCommand } from '../../editor-manager/plugin/image';
+import { PopupUploader } from './popup-uploader-renderer';
+
 /**
  * `Image` module is used to handle image actions.
  */
@@ -40,6 +42,7 @@ export class Image {
     private contentModule: IRenderer;
     private rendererFactory: RendererFactory;
     private quickToolObj: IQuickToolbar;
+    private popupUploaderObj: PopupUploader;
     /**
      * @hidden
      */
@@ -79,6 +82,7 @@ export class Image {
         this.i10n = serviceLocator.getService<L10n>('rteLocale');
         this.rendererFactory = serviceLocator.getService<RendererFactory>('rendererFactory');
         this.dialogRenderObj = serviceLocator.getService<DialogRenderer>('dialogRenderObject');
+        this.popupUploaderObj = serviceLocator.getService<PopupUploader>('popupUploaderObject');
         this.addEventListener();
         this.drop = this.dragDrop.bind(this);
         this.drag = this.dragOver.bind(this);
@@ -1489,6 +1493,7 @@ export class Image {
             locale: this.parent.locale,
             showCloseIcon: true, closeOnEscape: true, width: (Browser.isDevice) ? '290px' : '340px',
             isModal: (Browser.isDevice as boolean),
+            position: { X: 'center', Y: (Browser.isDevice) ? 'center' : 'top' },
             buttons: [{
                 click: this.insertImageUrl.bind(selectObj),
                 buttonModel: { content: imgInsert, cssClass: 'e-flat e-insertImage' + this.parent.getCssClass(true), isPrimary: true, disabled: this.parent.editorMode === 'Markdown' ? false : true }
@@ -2296,189 +2301,16 @@ export class Image {
      * @returns {void}
      */
     private uploadMethod(dragEvent: DragEvent, imageElement: HTMLImageElement): void {
-        let isUploading: boolean = false;
-        // eslint-disable-next-line
-        const proxy: Image = this;
-        const popupEle: HTMLElement = this.parent.createElement('div');
-        this.parent.rootContainer.appendChild(popupEle);
-        const uploadEle: HTMLInputElement | HTMLElement = this.parent.createElement('input', {
-            id: this.rteID + '_upload', attrs: { type: 'File', name: 'UploadFiles' }
-        });
-        this.popupObj = new Popup(popupEle, {
-            relateTo: imageElement,
-            height: '85px',
-            width: '300px',
-            content: uploadEle,
-            viewPortElement: this.parent.inputElement,
-            enableRtl: this.parent.enableRtl,
-            zIndex: 10001,
-            // eslint-disable-next-line
-            close: (event: { [key: string]: object }) => {
-                this.parent.isBlur = false;
-                this.popupObj.destroy();
-                detach(this.popupObj.element);
-                this.popupObj = null;
-                if (!this.parent.inlineMode.enable) {
-                    this.parent.toolbarModule.baseToolbar.toolbarObj.disable(false);
-                }
-            }
-        });
-        this.popupObj.element.style.display = 'none';
-        addClass([this.popupObj.element], classes.CLS_POPUP_OPEN);
-        addClass([this.popupObj.element], classes.CLS_RTE_UPLOAD_POPUP);
-        if (!isNOU(this.parent.cssClass)) {
-            addClass([this.popupObj.element], this.parent.cssClass.replace(/\s+/g, ' ').trim().split(' '));
-        }
+        this.popupObj = this.popupUploaderObj.renderPopup('Images', imageElement);
         const range: Range = this.parent.formatter.editorManager.nodeSelection.getRange(this.parent.contentModule.getDocument());
         const timeOut: number = dragEvent.dataTransfer.files[0].size > 1000000 ? 300 : 100;
         this.imageDragPopupTime = setTimeout(() => {
-            proxy.refreshPopup(imageElement);
+            this.popupUploaderObj.refreshPopup(imageElement);
         }, timeOut);
-        this.uploadObj = new Uploader({
-            asyncSettings: {
-                saveUrl: this.parent.insertImageSettings.saveUrl,
-                removeUrl: this.parent.insertImageSettings.removeUrl
-            },
-            cssClass: classes.CLS_RTE_DIALOG_UPLOAD + this.parent.getCssClass(true),
-            dropArea: this.parent.element,
-            allowedExtensions: this.parent.insertImageSettings.allowedTypes.toString(),
-            removing: () => {
-                this.parent.inputElement.contentEditable = 'true';
-                isUploading = false;
-                detach(imageElement);
-                this.popupObj.close();
-            },
-            canceling: () => {
-                this.parent.inputElement.contentEditable = 'true';
-                isUploading = false;
-                detach(imageElement);
-                this.popupObj.close();
-                this.quickToolObj.imageQTBar.hidePopup();
-                this.uploadCancelTime = setTimeout(() => {
-                    this.uploadObj.destroy();
-                }, 900);
-            },
-            beforeUpload: (args: BeforeUploadEventArgs) => {
-                this.parent.trigger(events.beforeImageUpload, args);
-                if (!this.parent.inlineMode.enable) {
-                    this.parent.toolbarModule.baseToolbar.toolbarObj.disable(true);
-                }
-            },
-            uploading: (e: UploadingEventArgs) => {
-                if (!this.parent.isServerRendered) {
-                    isUploading = true;
-                    this.parent.trigger(events.imageUploading, e, (imageUploadingArgs: UploadingEventArgs) => {
-                        if (imageUploadingArgs.cancel) {
-                            if (!isNOU(imageElement)) {
-                                detach(imageElement);
-                            }
-                            if (!isNOU(this.popupObj.element)) {
-                                detach(this.popupObj.element);
-                            }
-                        } else {
-                            this.parent.inputElement.contentEditable = 'false';
-                        }
-                    });
-                }
-            },
-            selected: (e: SelectedEventArgs) => {
-                if (isUploading) {
-                    e.cancel = true;
-                }
-            },
-            failure: (e: ImageFailedEventArgs) => {
-                isUploading = false;
-                this.parent.inputElement.contentEditable = 'true';
-                const args: IShowPopupArgs = {
-                    args: dragEvent as MouseEvent,
-                    type: 'Images',
-                    isNotify: undefined,
-                    elements: imageElement
-                };
-                this.uploadFailureTime = setTimeout(() => {
-                    this.uploadFailure(imageElement, args, e);
-                }, 900);
-            },
-            success: (e: ImageSuccessEventArgs) => {
-                if (e.operation === 'cancel') {
-                    return;
-                }
-                isUploading = false;
-                this.parent.inputElement.contentEditable = 'true';
-                const args: IShowPopupArgs = {
-                    args: dragEvent as MouseEvent,
-                    type: 'Images',
-                    isNotify: undefined,
-                    elements: imageElement
-                };
-                this.uploadSuccessTime = setTimeout(() => {
-                    this.uploadSuccess(imageElement, dragEvent, args, e);
-                }, 900);
-            }
-        });
-        this.uploadObj.appendTo(this.popupObj.element.childNodes[0] as HTMLElement);
+        this.uploadObj = this.popupUploaderObj.createUploader('Images', dragEvent, imageElement, this.popupObj.element.childNodes[0] as HTMLElement);
         (this.popupObj.element.querySelector('.e-rte-dialog-upload .e-file-select-wrap') as HTMLElement).style.display = 'none';
         range.selectNodeContents(imageElement);
         this.parent.formatter.editorManager.nodeSelection.setRange(this.contentModule.getDocument(), range);
-    }
-    private refreshPopup(imageElement: HTMLElement): void {
-        const imgPosition: number = this.parent.iframeSettings.enable ? this.parent.element.offsetTop +
-            imageElement.offsetTop : imageElement.offsetTop;
-        const rtePosition: number = this.parent.element.offsetTop + this.parent.element.offsetHeight;
-        if (imgPosition > rtePosition) {
-            this.popupObj.offsetY = this.parent.iframeSettings.enable ? -30 : -65;
-            this.popupObj.element.style.display = 'block';
-        } else {
-            if (this.popupObj) {
-                this.popupObj.refreshPosition(imageElement);
-                this.popupObj.element.style.display = 'block';
-            }
-        }
-    }
-
-    /**
-     * Called when drop image upload was failed
-     *
-     * @param {HTMLElement} imgEle - specifies the image element.
-     * @param {IShowPopupArgs} args - specifies the arguments.
-     * @param {ImageFailedEventArgs} e - specfies the failure event.
-     * @returns {void}
-     */
-    private uploadFailure(imgEle: HTMLElement, args: IShowPopupArgs, e: ImageFailedEventArgs): void {
-        detach(imgEle);
-        if (this.popupObj) {
-            this.popupObj.close();
-        }
-        this.parent.trigger(events.imageUploadFailed, e);
-        this.uploadObj.destroy();
-    }
-    /**
-     * Called when drop image upload was successful
-     *
-     * @param {HTMLElement} imageElement - specifies the image element.
-     * @param {DragEvent} dragEvent - specifies the drag event.
-     * @param {IShowPopupArgs} args - specifies the arguments.
-     * @param {ImageSuccessEventArgs} e - specifies the success event.
-     * @returns {void}
-     */
-    private uploadSuccess(imageElement: HTMLElement, dragEvent: DragEvent, args: IShowPopupArgs, e: ImageSuccessEventArgs): void {
-        imageElement.style.opacity = '1';
-        imageElement.classList.add(CLS_IMG_FOCUS);
-        e.element = imageElement;
-        e.detectImageSource = ImageInputSource.Dropped;
-        this.parent.trigger(events.imageUploadSuccess, e, (e: object) => {
-            if (!isNOU(this.parent.insertImageSettings.path)) {
-                const url: string = this.parent.insertImageSettings.path + (e as MetaData).file.name;
-                (imageElement as HTMLImageElement).src = url;
-                imageElement.setAttribute('alt', (e as MetaData).file.name);
-            }
-        });
-        if (this.popupObj) {
-            this.popupObj.close();
-            this.uploadObj.destroy();
-        }
-        this.showImageQuickToolbar(args);
-        this.resizeStart((dragEvent as MouseEvent) as PointerEvent, imageElement);
     }
 
     private imagePaste(args: NotifyArgs): void {

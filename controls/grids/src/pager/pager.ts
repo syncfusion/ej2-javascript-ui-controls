@@ -744,7 +744,7 @@ export class Pager extends Component<HTMLElement> implements INotifyPropertyChan
     private navigateToPageByEnterOrSpace(e: KeyboardEventArgs): void {
         const currentItemPagerFocus: Element = this.getFocusedElement();
         if (currentItemPagerFocus) {
-            this.goToPage(parseInt(currentItemPagerFocus.getAttribute('index'), 10));
+            this.goToPage(parseInt(currentItemPagerFocus.getAttribute('data-index'), 10));
             const currentActivePage: Element = this.getActiveElement();
             const selectedClass: string = this.getClass(currentItemPagerFocus);
             const classElement: Element = this.getElementByClass(selectedClass);
@@ -768,9 +768,9 @@ export class Pager extends Component<HTMLElement> implements INotifyPropertyChan
             : e.keyCode === 35 ? '.e-last' : e.keyCode === 36 ? '.e-first' : '';
         const pagingItem: Element = this.element.querySelector(actionClass);
         const currentItemPagerFocus: Element = this.getFocusedElement();
-        if (!isNullOrUndefined(pagingItem) && pagingItem.hasAttribute('index')
-            && !isNaN(parseInt(pagingItem.getAttribute('index'), 10))) {
-            this.goToPage(parseInt(pagingItem.getAttribute('index'), 10));
+        if (!isNullOrUndefined(pagingItem) && pagingItem.hasAttribute('data-index')
+            && !isNaN(parseInt(pagingItem.getAttribute('data-index'), 10))) {
+            this.goToPage(parseInt(pagingItem.getAttribute('data-index'), 10));
             const currentActivePage: Element = this.getActiveElement();
             if (this.checkFocusInAdaptiveMode(currentItemPagerFocus)) {
                 this.changeFocusInAdaptiveMode(currentItemPagerFocus);
@@ -1235,8 +1235,8 @@ export class Pager extends Component<HTMLElement> implements INotifyPropertyChan
                 for (let i: number = 1; i <= numToHide; i++) {
                     let hideIndex: number = hideFrom - parseInt(i.toString(), 10);
                     numItems = pagerContainer.querySelectorAll('.e-numericitem:not(.e-hide):not([style*="display: none"]):not(.e-np):not(.e-pp)');
-                    if (this.currentPage !== 1 && ((parseInt(numItems[Math.abs(hideIndex)].getAttribute('index'), 10) === this.currentPage)
-                    || parseInt(numItems[numItems.length - 1].getAttribute('index'), 10) === this.currentPage)) {
+                    if (this.currentPage !== 1 && ((parseInt(numItems[Math.abs(hideIndex)].getAttribute('data-index'), 10) === this.currentPage)
+                    || parseInt(numItems[numItems.length - 1].getAttribute('data-index'), 10) === this.currentPage)) {
                         hideIndex = 0;
                         classList(PP, ['e-numericitem', 'e-pager-default'], ['e-nextprevitemdisabled', 'e-disable']);
                     }
@@ -1273,8 +1273,8 @@ export class Pager extends Component<HTMLElement> implements INotifyPropertyChan
                     let numToShow: number = Math.floor((diff) / (numericItemWidth + bufferWidth));
                     numToShow = (numToShow > hiddenNumItems.length) ? hiddenNumItems.length : (numToShow - 1);
                     //Seggregating hidden num items as less index and greater index values than current page value.
-                    const lesserIndexItems: HTMLElement[] = Array.from(hiddenNumItems).filter((item: HTMLElement) => parseInt(item.getAttribute('index'), 10) < this.currentPage).sort((a: HTMLElement, b: HTMLElement) => parseInt(b.getAttribute('index'), 10) - parseInt(a.getAttribute('index'), 10));
-                    const greaterIndexItems: HTMLElement[] = Array.from(hiddenNumItems).filter((item: HTMLElement) => parseInt(item.getAttribute('index'), 10) > this.currentPage);
+                    const lesserIndexItems: HTMLElement[] = Array.from(hiddenNumItems).filter((item: HTMLElement) => parseInt(item.getAttribute('data-index'), 10) < this.currentPage).sort((a: HTMLElement, b: HTMLElement) => parseInt(b.getAttribute('data-index'), 10) - parseInt(a.getAttribute('data-index'), 10));
+                    const greaterIndexItems: HTMLElement[] = Array.from(hiddenNumItems).filter((item: HTMLElement) => parseInt(item.getAttribute('data-index'), 10) > this.currentPage);
 
                     let showItems: HTMLElement[] = (lesserIndexItems.length && lesserIndexItems)
                         || (greaterIndexItems.length && greaterIndexItems);
@@ -1295,16 +1295,16 @@ export class Pager extends Component<HTMLElement> implements INotifyPropertyChan
             numItems = pagerContainer.querySelectorAll(
                 '.e-numericitem:not(.e-hide):not([style*="display: none"]):not(.e-np):not(.e-pp)');
             if (numItems.length) {
-                if (parseInt(numItems[numItems.length - 1].getAttribute('index'), 10) === this.totalPages) {
+                if (parseInt(numItems[numItems.length - 1].getAttribute('data-index'), 10) === this.totalPages) {
                     classList(NP, ['e-nextprevitemdisabled', 'e-disable'], ['e-numericitem', 'e-pager-default']);
                 }
-                if (parseInt(numItems[0].getAttribute('index'), 10) === 1) {
+                if (parseInt(numItems[0].getAttribute('data-index'), 10) === 1) {
                     classList(PP, ['e-nextprevitemdisabled', 'e-disable'], ['e-numericitem', 'e-pager-default']);
                 }
-                const isLastSet: boolean = Array.from(numItems).some((item: HTMLElement) => parseInt(item.getAttribute('index'), 10) === this.totalPages);
-                const ppIndex: number = (parseInt(numItems[0].getAttribute('index'), 10) - (isLastSet && !isNullOrUndefined(this.avgNumItems) ? this.avgNumItems : numItems.length));
-                PP.setAttribute('index', (ppIndex < 1) ? '1' : ppIndex.toString());
-                NP.setAttribute('index', (parseInt(numItems[numItems.length - 1].getAttribute('index'), 10) + 1).toString());
+                const isLastSet: boolean = Array.from(numItems).some((item: HTMLElement) => parseInt(item.getAttribute('data-index'), 10) === this.totalPages);
+                const ppIndex: number = (parseInt(numItems[0].getAttribute('data-index'), 10) - (isLastSet && !isNullOrUndefined(this.avgNumItems) ? this.avgNumItems : numItems.length));
+                PP.setAttribute('data-index', (ppIndex < 1) ? '1' : ppIndex.toString());
+                NP.setAttribute('data-index', (parseInt(numItems[numItems.length - 1].getAttribute('data-index'), 10) + 1).toString());
                 this.avgNumItems = isLastSet ? this.avgNumItems : numItems.length;
             }
             /**

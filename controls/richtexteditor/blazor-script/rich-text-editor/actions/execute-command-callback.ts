@@ -1,6 +1,6 @@
 import * as events from '../constant';
 import { SfRichTextEditor } from '../sf-richtexteditor-fn';
-import { ActionBeginEventArgs } from '../../src/common/interface';
+import { ActionBeginEventArgs } from '../../editor-scripts/common/interface';
 import { isNullOrUndefined as isNOU } from '../../../base'; /*externalscript*/
 
 /**

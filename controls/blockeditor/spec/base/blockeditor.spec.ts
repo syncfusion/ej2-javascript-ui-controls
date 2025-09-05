@@ -1,11 +1,7 @@
 import { createElement, remove } from '@syncfusion/ej2-base';
-import { ClickEventArgs } from '@syncfusion/ej2-navigations';
-import { BlockModel } from '../../src/blockeditor/models';
-import { BlockEditor, BlockType, ContentType, setCursorPosition, setSelectionRange, getBlockContentElement, getSelectionRange } from '../../src/index';
-import { CodeSettingsModel, CodeLanguageModel } from '../../src/blockeditor/models';
+import { BaseStylesProp, BlockModel } from '../../src/blockeditor/models';
+import { BlockEditor, BlockType, ContentType, setCursorPosition, setSelectionRange, getBlockContentElement, getSelectedRange } from '../../src/index';
 import { createEditor } from '../common/util.spec';
-// import { setCursorPosition, setSelectionRange } from '../../src/blockeditor/utils/selection';
-// import { getBlockContentElement } from '../../src/blockeditor/utils/block';
 
 describe('Block Editor', () => {
     beforeAll(() => {
@@ -70,7 +66,7 @@ describe('Block Editor', () => {
             expect(editorElement.style.width).toBe('100%');
         });
         it('getPersistData checking', () => {
-            expect(((<any>editorElement).ej2_instances[0] as any).getPersistData()).toEqual('{}');
+            expect(((<any>editorElement).ej2_instances[0] as any).getPersistData()).toContain('blocks');
         });
 
         it('getDirective  checking', () => {
@@ -202,7 +198,7 @@ describe('Block Editor', () => {
             expect(contentElement.childElementCount).toBe(2);
             expect(contentElement.querySelector('span').textContent).toBe('Hello ');
             expect(contentElement.querySelector('strong').textContent).toBe('world');
-            expect(editor.blocks[0].content[1].styles.bold).toBe(true);
+            expect((editor.blocks[0].content[1].props as BaseStylesProp).styles.bold).toBe(true);
 
             //Split block at middle of text and check formatting applied correctly
             setCursorPosition(contentElement, 6);
@@ -210,7 +206,7 @@ describe('Block Editor', () => {
             expect(editor.blocks.length).toBe(2);
             expect(editor.blocks[0].content[0].content).toBe('Hello ');
             expect(editor.blocks[1].content[0].content).toBe('world');
-            expect(editor.blocks[1].content[0].styles.bold).toBe(true);
+            expect((editor.blocks[1].content[0].props as BaseStylesProp).styles.bold).toBe(true);
             expect(editorElement.querySelectorAll('.e-block').length).toBe(2);
             expect(editorElement.querySelectorAll('.e-block')[0].textContent).toBe('Hello ');
             expect(editorElement.querySelectorAll('.e-block')[1].getElementsByTagName('strong')[0].textContent).toBe('world');
@@ -226,7 +222,7 @@ describe('Block Editor', () => {
             expect(editor.blocks.length).toBe(1);
             expect(editor.blocks[0].content[0].content).toBe('Hello ');
             expect(editor.blocks[0].content[1].content).toBe('world');
-            expect(editor.blocks[0].content[1].styles.bold).toBe(true);
+            expect((editor.blocks[0].content[1].props as BaseStylesProp).styles.bold).toBe(true);
             const contentElement2 = getBlockContentElement(editorElement.querySelector('.e-block'));
             expect(contentElement2.childElementCount).toBe(2);
             expect(contentElement2.querySelector('span').textContent).toBe('Hello ');
@@ -245,25 +241,25 @@ describe('Block Editor', () => {
                 {
                     id: 'paragraph', type: BlockType.Paragraph, content: [
                         { id: 'p-content', type: ContentType.Text, content: 'Paragraph ' },
-                        { id: 'bolded-content', type: ContentType.Text, content: 'content', styles: { bold: true } },
+                        { id: 'bolded-content', type: ContentType.Text, content: 'content', props: { styles: { bold: true } } },
                     ]
                 },
                 {
-                    id: 'heading', type: BlockType.Heading3, content: [
+                    id: 'heading', type: BlockType.Heading, props: { level: 3 },  content: [
                         { id: 'h-content', type: ContentType.Text, content: 'Heading ' },
-                        { id: 'italic-content', type: ContentType.Text, content: 'content', styles: { italic: true } },
+                        { id: 'italic-content', type: ContentType.Text, content: 'content', props: { styles: { italic: true } } },
                     ]
                 },
                 {
                     id: 'bullet-list', type: BlockType.BulletList, content: [
                         { id: 'bullet-list-content', type: ContentType.Text, content: 'Bullet list ' },
-                        { id: 'underline-content', type: ContentType.Text, content: 'content', styles: { underline: true } },
+                        { id: 'underline-content', type: ContentType.Text, content: 'content', props: { styles: { underline: true } } },
                     ]
                 },
                 {
                     id: 'quote', type: BlockType.Quote, content: [
                         { id: 'q-content', type: ContentType.Text, content: 'Quote ' },
-                        { id: 'strike-content', type: ContentType.Text, content: 'content', styles: { strikethrough: true } },
+                        { id: 'strike-content', type: ContentType.Text, content: 'content', props: { styles: { strikethrough: true } } },
                     ]
                 }
             ];
@@ -312,7 +308,7 @@ describe('Block Editor', () => {
             expect(editor.blocks[0].content.length).toBe(2);
             expect(editor.blocks[0].content[0].content).toBe('Paragraph');
             expect(editor.blocks[0].content[1].content).toBe('content');
-            expect(editor.blocks[0].content[1].styles.strikethrough).toBe(true);
+            expect((editor.blocks[0].content[1].props as BaseStylesProp).styles.strikethrough).toBe(true);
             expect(getBlockContentElement(startBlockElement).childElementCount).toBe(2);
             expect(getBlockContentElement(startBlockElement).children[0].textContent).toBe('Paragraph');
             expect(getBlockContentElement(startBlockElement).children[1].textContent).toBe('content');
@@ -342,7 +338,7 @@ describe('Block Editor', () => {
             expect(editor.blocks[0].content.length).toBe(2);
             expect(editor.blocks[0].content[0].content).toBe('Paragraph');
             expect(editor.blocks[0].content[1].content).toBe('content');
-            expect(editor.blocks[0].content[1].styles.strikethrough).toBe(true);
+            expect((editor.blocks[0].content[1].props as BaseStylesProp).styles.strikethrough).toBe(true);
             expect(getBlockContentElement(startBlockElement).childElementCount).toBe(2);
             expect(getBlockContentElement(startBlockElement).children[0].textContent).toBe('Paragraph');
             expect(getBlockContentElement(startBlockElement).children[1].textContent).toBe('content');
@@ -417,20 +413,22 @@ describe('Block Editor', () => {
                 },
                 {
                     id: 'block3',
-                    type: BlockType.CheckList,
+                    type: BlockType.Checklist,
                     content: [{ type: ContentType.Text, content: 'Todo' }]
                 },
                 {
                     id: 'block4',
-                    type: BlockType.ToggleParagraph,
+                    type: BlockType.CollapsibleParagraph,
                     content: [{ id: 'toggle-content-1', type: ContentType.Text, content: 'Click here to expand' }],
-                    children: [
-                        {
-                            id: 'toggleChild',
-                            type: BlockType.CheckList,
-                            content: [{ type: ContentType.Text, content: 'Todo' }]
-                        }
-                    ]
+                    props: {
+                        children: [
+                            {
+                                id: 'toggleChild',
+                                type: BlockType.Checklist,
+                                content: [{ type: ContentType.Text, content: 'Todo' }]
+                            }
+                        ]
+                    }
                 }
             ];
             editor = new BlockEditor({
@@ -497,7 +495,7 @@ describe('Block Editor', () => {
             setTimeout(function () {
                 expect(editorElement.querySelector('#' + editor.currentFocusedBlock.id)).toBe(blockElement);
                 expect(editor.blocks[0].content[0].content).toBe('Bloc');
-                expect(editor.blocks[0].content[0].styles.bold).toBe(true);
+                expect((editor.blocks[0].content[0].props as BaseStylesProp).styles.bold).toBe(true);
                 expect(editor.blocks[0].content[1].content).toBe('k 1');
                 done();
             }, 100);
@@ -509,38 +507,17 @@ describe('Block Editor', () => {
             var contentElement = getBlockContentElement(firstBlock);
             contentElement.textContent = '';
             editor.blocks[0].type = BlockType.BulletList;
-            editor.blocks[0].placeholder = 'Type heading here';
             editor.blocks[0].cssClass = 'e-test';
-            editor.blocks[2].isChecked = true;
-            editor.blocks[3].isExpanded = true;
-            editor.blocks[3].children[0].indent = 1;
             editor.dataBind();
 
             expect(editor.blocks[0].type).toBe(BlockType.BulletList);
-            expect(editor.blocks[0].placeholder).toBe('Type heading here');
             expect(editor.blocks[0].cssClass).toBe('e-test');
-            expect(editor.blocks[2].isChecked).toBe(true);
-            expect(editor.blocks[3].isExpanded).toBe(true);
-            expect(editor.blocks[3].children[0].indent).toBe(1);
 
             //Assert dom
             setTimeout(() => {
                 const blocks = editorElement.querySelectorAll('.e-block') as NodeListOf<HTMLElement>;
                 expect(blocks[0].classList.contains('e-list-block')).toBe(true);
-                expect(getBlockContentElement(blocks[0]).getAttribute('placeholder')).toBe('Type heading here');
                 expect(blocks[0].classList.contains('e-test')).toBe(true);
-                expect(blocks[2].querySelector('.e-checkmark-checked') !== null).toBe(true);
-                expect(blocks[3].getAttribute('data-collapsed')).toBe('false');
-                expect((blocks[3].querySelector('.e-block') as HTMLElement).style.getPropertyValue('--block-indent')).toBe('20');
-
-                // //Removing old cssclass case
-                // editor.blocks[0].cssClass = 'Updated';
-
-                // setTimeout(() => {
-                //     expect(blocks[0].classList.contains('e-test')).toBe(false);
-                //     expect(blocks[0].classList.contains('Updated')).toBe(true);
-                //     done();
-                // }, 200);
                 done();
             }, 100);
         });
@@ -643,17 +620,16 @@ describe('Block Editor', () => {
 
         it('should set cursor in empty block on mousedown', (done) => {
             setTimeout(() => {
-                editor.blockAction.addNewBlock({
-                    block: { id: 'empty-paragraph', type: BlockType.Paragraph, content: [] },
-                    preventUIUpdate: true
-                });
+                editor.blockEditorMethods.addBlock({ id: 'empty-paragraph', type: BlockType.Paragraph, content: [] },
+                    null, false, true
+                );
                 const blockElement = editorElement.querySelector('#empty-paragraph') as HTMLElement;
                 blockElement.dispatchEvent(new MouseEvent('mousedown', {
                     bubbles: true,
                     cancelable: true
                 }));
                 setTimeout(() => {
-                    const range = getSelectionRange();
+                    const range = getSelectedRange();
                     expect(blockElement.contains(range.startContainer)).toBe(true);
                     expect(range.startOffset).toBe(0);
                     done();
@@ -747,26 +723,27 @@ describe('Block Editor', () => {
             }, 200);
         });
 
-        // it('should display slash menu on AddIcon click', (done) => {
-        //     const blockElement = editorElement.querySelector('#paragraph-1') as HTMLElement;
-        //     editor.setFocusToBlock(blockElement);
-        //     triggerMouseMove(blockElement, 10, 10);
+        it('should display slash menu on AddIcon click', (done) => {
+            const blockElement = editorElement.querySelector('#paragraph-1') as HTMLElement;
+            editor.setFocusToBlock(blockElement);
+            triggerMouseMove(blockElement, 10, 10);
 
-        //     const addIcon = editor.floatingIconContainer.querySelector('.e-block-add-icon') as HTMLElement;
-        //     expect(addIcon).not.toBeNull();
-        //     addIcon.click();
-        //     setTimeout(() => {
-        //         expect(editorElement.querySelector('#' + editor.currentHoveredBlock.id)).toBe(blockElement);
-        //         expect(document.querySelector('.e-blockeditor-command-menu').classList.contains('e-popup-open')).toBe(true);
-        //         done();
-        //     }, 100);
-        // });
+            const addIcon = editor.floatingIconContainer.querySelector('.e-block-add-icon') as HTMLElement;
+            expect(addIcon).not.toBeNull();
+            addIcon.click();
+            setTimeout(() => {
+                expect(editorElement.querySelector('#' + editor.currentHoveredBlock.id)).toBe(blockElement);
+                expect(document.querySelector('.e-blockeditor-command-menu').classList.contains('e-popup-open')).toBe(true);
+                editor.slashCommandModule.hidePopup();
+                done();
+            }, 100);
+        });
 
         it('should handle entire selection and type any input', (done) => {
             setTimeout(() => {
                 editor.selectAllBlocks();
                 editor.isEntireEditorSelected = true;
-                (editor as any).handleEditorInputActions(new Event('input'));
+                (editor.eventManager as any).handleEditorInputActions(new Event('input'));
                 // Only one block should remain after input event
                 setTimeout(() => {
                     expect(editor.blocks.length).toBe(1);
@@ -795,7 +772,7 @@ describe('Block Editor', () => {
                     type: BlockType.Paragraph,
                     content: [
                         { id: 'paragraph-content-2', type: ContentType.Text, content: 'Hello world 2' },
-                        { id: 'progress', type: ContentType.Label }
+                        { id: 'progress-label', type: ContentType.Label, props: { labelId: 'progress' } }
                     ]
                 },
             ];
@@ -813,11 +790,11 @@ describe('Block Editor', () => {
         });
 
         it('should do nothing if blockElement is null', () => {
-            const initialBlock = editor.blocksInternal[0];
+            const initialBlock = editor.getEditorBlocks()[0];
 
-            editor.updateContentOnUserTyping(null);
+            editor.stateManager.updateContentOnUserTyping(null);
 
-            expect(editor.blocksInternal[0]).toBe(initialBlock);
+            expect(editor.getEditorBlocks()[0]).toBe(initialBlock);
             editor.destroy();
         });
 
@@ -825,11 +802,11 @@ describe('Block Editor', () => {
             const nonExistentBlockElement = createElement('div', { id: 'nonexistent' });
             const blockElement = editorElement.querySelector('#paragraph-1') as HTMLElement;
             editor.setFocusToBlock(blockElement);
-            const initialBlock = editor.blocksInternal[0];
+            const initialBlock = editor.getEditorBlocks()[0];
 
-            editor.updateContentOnUserTyping(nonExistentBlockElement);
+            editor.stateManager.updateContentOnUserTyping(nonExistentBlockElement);
 
-            expect(editor.blocksInternal[0]).toBe(initialBlock);
+            expect(editor.getEditorBlocks()[0]).toBe(initialBlock);
         });
 
         it('should do nothing if contentElement is not found', () => {
@@ -837,13 +814,13 @@ describe('Block Editor', () => {
             const contentElement = getBlockContentElement(blockElement);
             contentElement.remove();
 
-            editor.updateContentOnUserTyping(blockElement);
+            editor.stateManager.updateContentOnUserTyping(blockElement);
         });
 
         it('should handle empty content array when updating', () => {
             editor.blocks[0].content = [];
             const blockElement = editorElement.querySelector('#paragraph-1') as HTMLElement;
-            editor.updateContentOnUserTyping(blockElement);
+            editor.stateManager.updateContentOnUserTyping(blockElement);
             const updatedBlock = editor.getBlock('paragraph-1');
             expect(updatedBlock.content.length).toBe(1);
             expect(updatedBlock.content[0].content).toBe('Hello world 1');
@@ -858,7 +835,7 @@ describe('Block Editor', () => {
             contentElement.appendChild(textNode);
             setCursorPosition(contentElement, contentElement.textContent.length);
 
-            editor.updateContentOnUserTyping(blockElement);
+            editor.stateManager.updateContentOnUserTyping(blockElement);
 
             setTimeout(() => {
                 const updatedBlock = editor.getBlock('paragraph-2');
@@ -887,7 +864,7 @@ describe('Block Editor', () => {
             contentElement.appendChild(elem);
             setCursorPosition(contentElement, contentElement.textContent.length);
 
-            editor.updateContentOnUserTyping(blockElement);
+            editor.stateManager.updateContentOnUserTyping(blockElement);
 
             setTimeout(() => {
                 const updatedBlock = editor.getBlock('paragraph-2');
@@ -903,12 +880,12 @@ describe('Block Editor', () => {
             const blockElement = editorElement.querySelector('#paragraph-2') as HTMLElement;
             editor.setFocusToBlock(blockElement);
             const content = [
-                { id: 'content1', content: 'Text content' },
-                { id: 'content2', content: 'Bold content - about to stale', styles: { bold: true } },
-                { id: 'content3', content: 'Another text content' }
+                { id: 'content1', type: ContentType.Text, content: 'Text content' },
+                { id: 'content2', type: ContentType.Text, content: 'Bold content - about to stale', styles: { bold: true } },
+                { id: 'content3', type: ContentType.Text, content: 'Another text content' }
             ];
 
-            editor.addBlock({ id: 'newblock', content: content, type: 'Paragraph' }, 'paragraph-2');
+            editor.addBlock({ id: 'newblock', content: content, type: BlockType.Paragraph }, 'paragraph-2');
 
             const newblockElement = editorElement.querySelector('#newblock') as HTMLElement;
             const contentElement = getBlockContentElement(newblockElement);
@@ -918,16 +895,16 @@ describe('Block Editor', () => {
                 contentElement.childNodes[0].firstChild,
                 contentElement.childNodes[2].firstChild,
                 4, 13);
-            const range = getSelectionRange();
+            const range = getSelectedRange();
             range.deleteContents();
-            editor.updateContentOnUserTyping(newblockElement);
+            editor.stateManager.updateContentOnUserTyping(newblockElement);
 
-            expect(editor.blocksInternal[2].content.length).toBe(2);
-            expect(editor.blocksInternal[2].content[0].id).toBe('content1');
-            expect(editor.blocksInternal[2].content[0].content).toBe('Text');
+            expect(editor.getEditorBlocks()[2].content.length).toBe(2);
+            expect(editor.getEditorBlocks()[2].content[0].id).toBe('content1');
+            expect(editor.getEditorBlocks()[2].content[0].content).toBe('Text');
 
-            expect(editor.blocksInternal[2].content[1].id).toBe('content3');
-            expect(editor.blocksInternal[2].content[1].content).toBe('content');
+            expect(editor.getEditorBlocks()[2].content[1].id).toBe('content3');
+            expect(editor.getEditorBlocks()[2].content[1].content).toBe('content');
         });
     });
 });

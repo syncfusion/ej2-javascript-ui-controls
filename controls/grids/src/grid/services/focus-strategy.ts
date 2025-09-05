@@ -118,7 +118,7 @@ export class FocusStrategy {
         if ((this.parent.isEdit || e && (!e.relatedTarget || closest(<HTMLElement>e.relatedTarget, '.e-grid') || closest(<HTMLElement>e.relatedTarget, '.e-grid-popup'))
             && !(this.parent.element.classList.contains('e-childgrid') && !this.parent.element.matches(':focus-within')))
             && !(!isGantt && isNullOrUndefined(e.relatedTarget) && parseInt((e.target as Element).getAttribute('aria-colindex'), 10) - 1 === 0
-            && parseInt((e.target as Element).getAttribute('index'), 10) === 0) && !(!isGantt && isNullOrUndefined(e.relatedTarget)
+            && parseInt((e.target as Element).getAttribute('data-index'), 10) === 0) && !(!isGantt && isNullOrUndefined(e.relatedTarget)
             && !closest(document.activeElement, '.e-grid') && !isNullOrUndefined(e['sourceCapabilities']))) { return; }
         this.removeFocus(); this.skipFocus = true; this.currentInfo.skipAction = false;
         this.setLastContentCellTabIndex();
@@ -679,8 +679,7 @@ export class FocusStrategy {
                 e.preventDefault();
                 (focusableToolbarItems[focusableToolbarItems.length - 1].querySelector('.e-toolbar-item-focus,.e-btn,.e-input') as HTMLElement).focus();
                 return;
-            }
-            else if (this.parent.toolbarTemplate) {
+            } else if (this.parent.toolbarTemplate) {
                 e.preventDefault();
                 (toolbarElement as HTMLElement).focus();
                 return;
@@ -1210,7 +1209,7 @@ export class FocusStrategy {
             if ( this.parent.allowGrouping && groupModule && groupModule.groupCancelFocus) {
                 const focusableGroupedItems: Element[] = groupModule.getFocusableGroupedItems();
                 if (focusableGroupedItems.length) {
-                    if (focusableGroupedItems[0].parentElement.getAttribute('ej-mappingname') === (e as GroupEventArgs).columnName) {
+                    if (focusableGroupedItems[0].parentElement.getAttribute('data-mappingname') === (e as GroupEventArgs).columnName) {
                         (focusableGroupedItems[3] as HTMLElement).focus();
                     } else {
                         (focusableGroupedItems[0] as HTMLElement).focus();

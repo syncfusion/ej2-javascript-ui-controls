@@ -1,9 +1,10 @@
 /**
  * Dialog renderer spec 
  */
-import { ENTERKEY_EVENT_INIT, TOOLBAR_FOCUS_SHORTCUT_EVENT_INIT } from '../../constant.spec';
+import { ENTERKEY_EVENT_INIT, TOOLBAR_FOCUS_SHORTCUT_EVENT_INIT, BASIC_MOUSE_EVENT_INIT } from '../../constant.spec';
 import { RichTextEditor } from './../../../src/index';
-import { renderRTE, destroy } from "./../render.spec";
+import { renderRTE, destroy, setSelection } from "./../render.spec";
+
 
 describe('Image Dialog', () => {
     let rteEle: HTMLElement;
@@ -353,6 +354,60 @@ describe('946028: File Manager Toolbar Opens New Folder Dialog Instead of File M
             document.activeElement.dispatchEvent(enterKeyUpEvent);
             setTimeout(() => {
                 expect(document.activeElement.closest('.e-richtexteditor')).toBe(editor.element);
+                done();
+            }, 100);
+        }, 100);
+    });
+});
+describe('Text quicktoolbar should hide before dialog opens', () => {
+    const INIT_MOUSEDOWN_EVENT: MouseEvent = new MouseEvent('mousedown', BASIC_MOUSE_EVENT_INIT);
+    const MOUSEUP_EVENT: MouseEvent = new MouseEvent('mouseup', BASIC_MOUSE_EVENT_INIT);
+    let rteEle: HTMLElement;
+    let rteObj: RichTextEditor;
+    
+    beforeAll(() => {
+        rteObj = renderRTE({
+            height: 400,
+            quickToolbarSettings: {
+                text: ['Bold', 'Italic', 'Image']
+            },
+            value: '<p>Sample text content for testing</p>'
+        });
+        rteEle = rteObj.element;
+    });
+    
+    afterAll(() => {
+        destroy(rteObj);
+    });
+    
+    it('Should hide text quick toolbar before image dialog opens', (done) => {
+        // Focus and trigger mousedown
+        rteObj.focusIn();
+        rteObj.inputElement.dispatchEvent(INIT_MOUSEDOWN_EVENT);
+        
+        // Select text using the existing pattern
+        const target: HTMLElement = rteObj.inputElement.querySelector('p');
+        setSelection(target.firstChild, 0, 6);
+        
+        // Trigger mouseup to show text quick toolbar
+        target.dispatchEvent(MOUSEUP_EVENT);
+        
+        setTimeout(() => {
+            // Check if text quick toolbar is visible
+            const textQTBar = document.querySelector('.e-text-quicktoolbar');
+            expect(textQTBar).not.toBeNull();
+            
+            // Click Image button from text quick toolbar
+            const imageButton = textQTBar.querySelector('[title="Insert Image (Ctrl+Shift+I)"]') as HTMLElement;
+            expect(imageButton).not.toBeNull();
+            
+            // Click the image button
+            imageButton.click();
+            
+            setTimeout(() => {
+                // Check that text quick toolbar is hidden
+                const hiddenQuickToolbar = document.querySelector('.e-text-quicktoolbar');
+                expect(hiddenQuickToolbar).toBeNull();
                 done();
             }, 100);
         }, 100);

@@ -582,4 +582,38 @@ describe('RTE SELECTION BASED - backgroundColor - ', () => {
             });
         });
     
+        describe('967437 - Fix Double Selection in Color Picker Leading to Improper UI', () =>{
+            let rteObj: RichTextEditor;
+            let controlId: string;
+            beforeAll((done: Function) => {
+                rteObj = renderRTE({
+                    value: '<p id="rte">RTE</p>',
+                    toolbarSettings: {
+                        items: ['BackgroundColor']
+                    },
+                    backgroundColor:{
+                        showRecentColors: false
+                    }
+                });
+                controlId = rteObj.element.id;
+                done();
+            });
+            afterAll((done: Function) => {
+                destroy(rteObj);
+                done();
+            });
+    
+            it('Updated the duplicate color codes in backgroundcolor palette ', () => {
+                let item: HTMLElement = rteObj.element.querySelector('#' + controlId + '_toolbar_BackgroundColor');
+                item = (item.nextElementSibling.querySelector('.e-dropdown-btn') as HTMLElement);
+                dispatchEvent(item, 'mousedown');
+                item.click();
+                dispatchEvent(item, 'mousedown');
+                let backgroundColorPopup: Element = document.querySelector('.e-color-palette');
+                expect((backgroundColorPopup.querySelectorAll('.e-row')[1].querySelectorAll('.e-tile')[5]).getAttribute('aria-label') === '#ccccfeff').toBe(true);
+                expect((backgroundColorPopup.querySelectorAll('.e-row')[2].querySelectorAll('.e-tile')[5]).getAttribute('aria-label') === '#8080feff').toBe(true);
+                expect((backgroundColorPopup.querySelectorAll('.e-row')[4].querySelectorAll('.e-tile')[7]).getAttribute('aria-label') === '#000065ff').toBe(true);
+            });
+        });
+
 });

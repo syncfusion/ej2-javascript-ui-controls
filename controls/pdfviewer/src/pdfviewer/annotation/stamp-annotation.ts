@@ -1179,6 +1179,8 @@ export class StampAnnotation {
                          JSON.stringify(this.pdfViewer.annotation.
                              getBounds(pageAnnotationObject.annotations[parseInt(z.toString(), 10)].bounds,
                                        pageAnnotationObject.pageIndex));
+                        const author: string = pageAnnotationObject.annotations[parseInt(z.toString(), 10)].author;
+                        pageAnnotationObject.annotations[parseInt(z.toString(), 10)].author = !isNullOrUndefined(author) ? author : 'Guest';
                     }
                     newArray = pageAnnotationObject.annotations;
                 }

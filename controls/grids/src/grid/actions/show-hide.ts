@@ -209,7 +209,7 @@ export class ShowHide {
             if (this.parent.enableColumnVirtualization) {
                 this.parent.notify(events.refreshFrozenPosition, { isModeChg: true });
             } else {
-                if (this.parent.isFrozenGrid() && columns.length) {
+                if ((this.parent.isFrozenGrid() || this.parent.enableColumnSpan) && columns.length) {
                     this.parent.notify(events.refreshFrozenPosition, { isModeChg: true });
                 } else {
                     this.parent.notify(events.columnVisibilityChanged, columns);

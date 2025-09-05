@@ -482,7 +482,7 @@ export class PasteCleanup {
             viewPortElement: this.parent.inputElement,
             enableRtl: this.parent.enableRtl,
             zIndex: 10001,
-            close: (event: { [key: string]: object }) => {
+            close: () => {
                 this.parent.isBlur = false;
                 this.popupObj.destroy();
                 detach(this.popupObj.element);

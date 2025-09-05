@@ -1558,6 +1558,26 @@ export class Grid extends Component<HTMLElement> implements INotifyPropertyChang
     public allowReordering: boolean;
 
     /**
+     * Enables or disables row spanning for adjacent cells with similar data.
+     * When enabled, the grid merges adjacent cells with identical data between rows into a single cell, spanning multiple rows to improve readability.
+     * {% codeBlock src='grid/enableRowSpan/index.md' %}{% endcodeBlock %}
+     *
+     * @default false
+     */
+    @Property(false)
+    public enableRowSpan: boolean;
+
+    /**
+     * Enables or disables column spanning for adjacent cells with similar data.
+     * When enabled, the grid merges adjacent cells with identical data between columns into a single cell, spanning multiple columns to enhance data presentation.
+     * {% codeBlock src='grid/enableColumnSpan/index.md' %}{% endcodeBlock %}
+     *
+     * @default false
+     */
+    @Property(false)
+    public enableColumnSpan: boolean;
+
+    /**
      * If `allowResizing` is set to true, Grid columns can be resized.
      * {% codeBlock src='grid/allowResizing/index.md' %}{% endcodeBlock %}
      *
@@ -1807,7 +1827,7 @@ export class Grid extends Component<HTMLElement> implements INotifyPropertyChang
      * If the `dataSource` is an existing [`DataManager`](https://ej2.syncfusion.com/documentation/api/data/dataManager/),
      *  the Grid will not initialize a new one.
      *
-     * > Check the available [`Adaptors`](../../data/adaptors/) to customize the data operation.
+     * > Check the available [`Adaptors`](https://ej2.syncfusion.com/documentation/data/adaptors) to customize the data operation.
      * {% codeBlock src='grid/dataSource/index.md' %}{% endcodeBlock %}
      *
      * @default []
@@ -3552,10 +3572,10 @@ export class Grid extends Component<HTMLElement> implements INotifyPropertyChang
                 addClass([maskCell], ['e-unfreeze']);
             }
             maskCell.removeAttribute('aria-colindex');
-            maskCell.removeAttribute('index');
-            maskCell.removeAttribute('ej-mappingname');
-            maskCell.removeAttribute('ej-mappingvalue');
-            maskCell.removeAttribute('e-mappinguid');
+            maskCell.removeAttribute('data-index');
+            maskCell.removeAttribute('data-mappingname');
+            maskCell.removeAttribute('data-mappingvalue');
+            maskCell.removeAttribute('data-mappinguid');
             maskCell.removeAttribute('aria-expanded');
             maskCell.classList.add('e-masked-cell');
             maskCell.innerHTML = this.getShimmerTemplate();
@@ -4278,6 +4298,10 @@ export class Grid extends Component<HTMLElement> implements INotifyPropertyChang
             if (this.toolbarModule) {
                 this.toolbarModule.refreshToolbarItems();
             }
+            break;
+        case 'enableRowSpan':
+        case 'enableColumnSpan':
+            this.refreshColumns();
             break;
         }
     }
@@ -5053,7 +5077,7 @@ export class Grid extends Component<HTMLElement> implements INotifyPropertyChang
                 const cell: Cell<Column> = rowsObj[parseInt(j.toString(), 10)][`${cells}`][parseInt(cellIndex.toString(), 10)];
                 if (cell && cell.column.uid === columnUid) {
                     const headerCellRenderer: HeaderCellRenderer = new HeaderCellRenderer(this, this.serviceLocator);
-                    const td: Element = parentsUntil(this.element.querySelectorAll('[e-mappinguid=' + columnUid + ']')[0], 'e-templatecell');
+                    const td: Element = parentsUntil(this.element.querySelectorAll('[data-mappinguid=' + columnUid + ']')[0], 'e-templatecell');
                     headerCellRenderer.refresh(cell, td);
                     const cols: SortDescriptorModel[] = this.sortSettings.columns;
                     const columnIndex: number = cols.findIndex(function (col: SortDescriptorModel): boolean { return col.field === cell
@@ -5287,7 +5311,7 @@ export class Grid extends Component<HTMLElement> implements INotifyPropertyChang
      * @returns {Element} - Returns the element
      */
     public getColumnHeaderByUid(uid: string): Element {
-        const element: Element = this.getHeaderContent().querySelector('[e-mappinguid=' + uid + ']');
+        const element: Element = this.getHeaderContent().querySelector('[data-mappinguid=' + uid + ']');
         return element ? element.parentElement : undefined;
     }
 
@@ -7569,14 +7593,14 @@ export class Grid extends Component<HTMLElement> implements INotifyPropertyChang
             e.touches) {
             return;
         }
-        if (this.allowRowDragAndDrop && parentsUntil(e.target as Element, 'e-rowcell')
-            && !parentsUntil(e.target as Element, 'e-rowdragdrop') && e.touches) {
-            return;
-        }
         if (parentsUntil(e.target as Element, 'e-gridheader') && this.allowRowDragAndDrop &&
             !(parentsUntil(e.target as Element, 'e-filterbarcell')) && (e.target &&
             ['A', 'BUTTON', 'INPUT'].indexOf((e.target  as Element).tagName) === -1)) {
             e.preventDefault();
+        }
+        if (this.allowRowDragAndDrop && parentsUntil(e.target as Element, 'e-rowcell')
+            && !parentsUntil(e.target as Element, 'e-rowdragdrop') && e.touches) {
+            return;
         }
         const args: RecordClickEventArgs = this.getRowInfo(e.target as Element) as RecordClickEventArgs;
         const cancel: string = 'cancel';

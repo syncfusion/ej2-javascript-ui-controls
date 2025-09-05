@@ -64,11 +64,11 @@ export class Group implements IAction {
         if (!element || (!target.classList.contains('e-drag') && this.groupSettings.allowReordering)) {
             return false;
         }
-        this.column = gObj.getColumnByField(element.firstElementChild.getAttribute('ej-mappingname'));
+        this.column = gObj.getColumnByField(element.firstElementChild.getAttribute('data-mappingname'));
         this.visualElement.textContent = element.textContent;
         updateCSSText(this.visualElement, `width: ${element.offsetWidth + 2}px;
             height: ${element.offsetHeight + 2}px; line-height: 23px;`);
-        this.visualElement.setAttribute('e-mappinguid', this.column.uid);
+        this.visualElement.setAttribute('data-mappinguid', this.column.uid);
         gObj.element.appendChild(this.visualElement);
         return this.visualElement;
     }
@@ -99,7 +99,7 @@ export class Group implements IAction {
             if (parentsUntil(e.target, 'e-groupdroparea')) {
                 this.rearrangeGroup();
             } else if (!(parentsUntil(e.target, 'e-grid'))) {
-                const field: string = this.parent.getColumnByUid(e.helper.getAttribute('e-mappinguid')).field;
+                const field: string = this.parent.getColumnByUid(e.helper.getAttribute('data-mappinguid')).field;
                 if (this.groupSettings.columns.indexOf(field) !== -1) {
                     this.ungroupColumn(field);
                 }
@@ -112,17 +112,17 @@ export class Group implements IAction {
     }
 
     private animateDropper: Function = (e: { target: HTMLElement, event: MouseEventArgs, helper: Element }) => {
-        const uid: string = this.parent.element.querySelector('.e-cloneproperties').getAttribute('e-mappinguid');
+        const uid: string = this.parent.element.querySelector('.e-cloneproperties').getAttribute('data-mappinguid');
         const dragField: string = this.parent.getColumnByUid(uid).field;
         const parent: Element = parentsUntil(e.target, 'e-groupdroparea');
         const dropTarget: Element = parentsUntil(e.target, 'e-group-animator');
         const grouped: string[] = [].slice.call(this.element.getElementsByClassName('e-groupheadercell'))
-            .map((e: Element) => e.querySelector('div').getAttribute('ej-mappingname'));
+            .map((e: Element) => e.querySelector('div').getAttribute('data-mappingname'));
         const cols: string[] = JSON.parse(JSON.stringify(grouped));
         if (dropTarget || parent) {
             if (dropTarget) {
-                const dropField: string = dropTarget.querySelector('div[ej-mappingname]').getAttribute('ej-mappingname');
-                const dropIndex: number = +(dropTarget.getAttribute('index'));
+                const dropField: string = dropTarget.querySelector('div[data-mappingname]').getAttribute('data-mappingname');
+                const dropIndex: number = +(dropTarget.getAttribute('data-index'));
                 if (dropField !== dragField) {
                     const dragIndex: number = cols.indexOf(dragField);
                     if (dragIndex !== -1) {
@@ -161,7 +161,7 @@ export class Group implements IAction {
     }
     private drop: Function = (e: DropEventArgs) => {
         const gObj: IGrid = this.parent;
-        const column: Column = gObj.getColumnByUid(e.droppedElement.getAttribute('e-mappinguid'));
+        const column: Column = gObj.getColumnByUid(e.droppedElement.getAttribute('data-mappinguid'));
         this.element.classList.remove('e-hover');
         remove(e.droppedElement);
         this.aria.setDropTarget(<HTMLElement>this.parent.element.querySelector('.e-groupdroparea'), false);
@@ -236,7 +236,7 @@ export class Group implements IAction {
     private columnDrop(e: { target: Element, droppedElement: HTMLElement }): void {
         const gObj: IGrid = this.parent;
         if (e.droppedElement.getAttribute('action') === 'grouping') {
-            const column: Column = gObj.getColumnByUid(e.droppedElement.getAttribute('e-mappinguid'));
+            const column: Column = gObj.getColumnByUid(e.droppedElement.getAttribute('data-mappinguid'));
             if (isNullOrUndefined(column) || column.allowGrouping === false ||
                 parentsUntil(gObj.getColumnHeaderByUid(column.uid), 'e-grid').getAttribute('id') !==
                 gObj.element.getAttribute('id')) {
@@ -406,7 +406,7 @@ export class Group implements IAction {
             const elem: HTMLElement = gObj.focusModule.currentInfo.element;
             if (elem && elem.classList.contains('e-headercell')) {
                 e.preventDefault();
-                const column: Column = gObj.getColumnByUid(elem.firstElementChild.getAttribute('e-mappinguid'));
+                const column: Column = gObj.getColumnByUid(elem.firstElementChild.getAttribute('data-mappinguid'));
                 if (column.field && gObj.groupSettings.columns.indexOf(column.field) < 0) {
                     this.groupColumn(column.field);
                 } else {
@@ -508,7 +508,7 @@ export class Group implements IAction {
 
     private unGroupFromTarget(target: Element): void {
         if (target.classList.contains('e-ungroupbutton')) {
-            this.ungroupColumn(target.parentElement.getAttribute('ej-mappingname'));
+            this.ungroupColumn(target.parentElement.getAttribute('data-mappingname'));
         }
     }
 
@@ -516,13 +516,13 @@ export class Group implements IAction {
         if (this.groupSettings.showToggleButton) {
             if (target.classList.contains('e-grptogglebtn')) {
                 if (target.classList.contains('e-toggleungroup')) {
-                    this.ungroupColumn(this.parent.getColumnByUid(target.parentElement.getAttribute('e-mappinguid')).field);
+                    this.ungroupColumn(this.parent.getColumnByUid(target.parentElement.getAttribute('data-mappinguid')).field);
                 } else {
-                    this.groupColumn(this.parent.getColumnByUid(target.parentElement.getAttribute('e-mappinguid')).field);
+                    this.groupColumn(this.parent.getColumnByUid(target.parentElement.getAttribute('data-mappinguid')).field);
                 }
             } else {
                 if (target.classList.contains('e-toggleungroup')) {
-                    this.ungroupColumn(target.parentElement.getAttribute('ej-mappingname'));
+                    this.ungroupColumn(target.parentElement.getAttribute('data-mappingname'));
                 }
             }
         }
@@ -533,7 +533,7 @@ export class Group implements IAction {
         const gHeader: Element = closest(target as Element, '.e-groupheadercell');
         if (gObj.allowSorting && gHeader && !target.classList.contains('e-ungroupbutton') &&
             !target.classList.contains('e-toggleungroup')) {
-            const field: string = gHeader.firstElementChild.getAttribute('ej-mappingname');
+            const field: string = gHeader.firstElementChild.getAttribute('data-mappingname');
             if (gObj.getColumnHeaderByField(field).getElementsByClassName('e-ascending').length) {
                 gObj.sortColumn(field, 'Descending', true);
             } else {
@@ -977,7 +977,7 @@ export class Group implements IAction {
         let direction: string = 'Ascending';
         const animator: Element = this.parent.createElement('div', { className: 'e-grid-icon e-group-animator' });
         let groupedColumn: Element = this.parent.createElement('div', { className: 'e-grid-icon e-groupheadercell' });
-        const childDiv: Element = this.parent.createElement('div', { attrs: { 'ej-mappingname': field } });
+        const childDiv: Element = this.parent.createElement('div', { attrs: { 'data-mappingname': field } });
         if (isComplexField(field)) {
             childDiv.setAttribute('ej-complexname', getComplexFieldID(field));
         }
@@ -1042,7 +1042,7 @@ export class Group implements IAction {
 
     private addColToGroupDrop(field: string): void {
         const groupElem: Element = isComplexField(field) ? this.parent.element.querySelector('.e-groupdroparea div[ej-complexname=' +
-            getParsedFieldID(getComplexFieldID(field)) + ']') : this.parent.element.querySelector('.e-groupdroparea div[ej-mappingname=' + getParsedFieldID(field) + ']');
+            getParsedFieldID(getComplexFieldID(field)) + ']') : this.parent.element.querySelector('.e-groupdroparea div[data-mappingname=' + getParsedFieldID(field) + ']');
         if (this.groupSettings.allowReordering && groupElem) {
             return;
         }
@@ -1053,7 +1053,7 @@ export class Group implements IAction {
         const groupedColumn: Element = this.createElement(field);
         if (this.groupSettings.allowReordering) {
             const index: number = this.element.getElementsByClassName('e-group-animator').length;
-            groupedColumn.setAttribute('index', index.toString());
+            groupedColumn.setAttribute('data-index', index.toString());
         }
         this.element.appendChild(groupedColumn);
         const focusModule: FocusStrategy = this.parent.focusModule;
@@ -1085,7 +1085,7 @@ export class Group implements IAction {
             const headers: Element[] = [].slice.call(this.parent.getHeaderTable().getElementsByClassName('e-headercelldiv'));
             for (let i: number = 0, len: number = headers.length; i < len; i++) {
                 if (!((headers[parseInt(i.toString(), 10)].classList.contains('e-emptycell')) || (headers[parseInt(i.toString(), 10)].classList.contains('e-headerchkcelldiv')))) {
-                    const column: Column = this.parent.getColumnByUid(headers[parseInt(i.toString(), 10)].getAttribute('e-mappinguid'));
+                    const column: Column = this.parent.getColumnByUid(headers[parseInt(i.toString(), 10)].getAttribute('data-mappinguid'));
                     if (!this.parent.showColumnMenu || (this.parent.showColumnMenu && !column.showColumnMenu)) {
                         if (headers[parseInt(i.toString(), 10)].getElementsByClassName('e-grptogglebtn').length) {
                             remove(headers[parseInt(i.toString(), 10)].querySelectorAll('.e-grptogglebtn')[0] as Element);
@@ -1299,8 +1299,8 @@ export class Group implements IAction {
     }
 
     private getGHeaderCell(field: string): Element {
-        if (this.element && this.element.querySelector('[ej-mappingname="' + field + '"]')) {
-            return this.element.querySelector('[ej-mappingname="' + field + '"]').parentElement;
+        if (this.element && this.element.querySelector('[data-mappingname="' + field + '"]')) {
+            return this.element.querySelector('[data-mappingname="' + field + '"]').parentElement;
         }
         return null;
     }

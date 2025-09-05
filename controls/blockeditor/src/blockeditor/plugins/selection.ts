@@ -1,5 +1,7 @@
 import { BlockEditor, RangePath } from '../base/index';
-import { UserModel } from '../models/index';
+import { getBlockContentElement, getClosestContentElementInDocument, getSelectedRange, isChildrenTypeBlock } from '../utils/index';
+import * as constants from '../base/constant';
+import { events } from '../base/constant';
 
 /**
  * Selection manager for the block editor.
@@ -12,16 +14,29 @@ export class NodeSelection {
     private savedEnd: number = 0;
     private editor: BlockEditor;
     private currentRange: Range = null;
-    private currentSelection: Selection = null;
     private rangeBackup: RangePath = null;
 
     constructor(editor: BlockEditor) {
         this.editor = editor;
+        this.addEventListeners();
     }
 
-    public saveSelection(container: HTMLElement): void {
-        const selection: Selection | null = this.getSelection();
+    private addEventListeners(): void {
+        this.editor.on(events.destroy, this.destroy, this);
+    }
 
+    private removeEventListeners(): void {
+        this.editor.off(events.destroy, this.destroy);
+    }
+
+    /**
+     * Saves the current selection.
+     *
+     * @param {HTMLElement} container - The container element.
+     * @returns {void}
+     * @hidden
+     */
+    public saveSelection(container: HTMLElement): void {
         const range: Range = this.getRange();
         if (!range) { return; }
 
@@ -36,15 +51,20 @@ export class NodeSelection {
 
         // Save current range and selection
         this.currentRange = range.cloneRange();
-        this.currentSelection = selection;
     }
 
+    /**
+     * Restores the saved selection.
+     *
+     * @param {HTMLElement} container - The container element.
+     * @returns {void}
+     * @hidden
+     */
     public restoreSelection(container: HTMLElement): void {
         const newText: string = container.textContent || '';
         // Handle text changes between save/restore
         const [start, end]: [number, number] = this.adjustOffsetsToTextChanges(newText);
         const range: Range = this.createRangeFromTextPositions(container, start, end);
-
         if (range) {
             const selection: Selection | null = this.getSelection();
             selection.removeAllRanges();
@@ -126,7 +146,7 @@ export class NodeSelection {
             startOffset: this.currentRange.startOffset,
             endContainer: this.currentRange.endContainer,
             endOffset: this.currentRange.endOffset,
-            parentElement: this.currentRange.startContainer.parentElement as HTMLElement
+            parentElement: getClosestContentElementInDocument(this.currentRange.startContainer)
         };
     }
 
@@ -152,7 +172,7 @@ export class NodeSelection {
         if (!range) {
             return { x: 0, y: 0 };
         }
-        const rect: ClientRect | DOMRect = range.getBoundingClientRect();
+        const rect: DOMRect = range.getBoundingClientRect() as DOMRect;
         return {
             x: rect.left,
             y: rect.bottom + window.scrollY + 10 // 10px below selection
@@ -192,13 +212,14 @@ export class NodeSelection {
      * @returns {void} - Returns void
      * @hidden
      */
-    public createRangeWithOffsets(startNode: Node, endNode: Node, startOffset: number, endOffset: number): void {
+    public createRangeWithOffsets(startNode: Node, endNode: Node, startOffset: number, endOffset: number): Range {
         const selection: Selection | null = window.getSelection();
         const range: Range = document.createRange();
         range.setStart(startNode, startOffset);
         range.setEnd(endNode, endOffset);
         selection.removeAllRanges();
         selection.addRange(range);
+        return range;
     }
 
     /**
@@ -262,5 +283,68 @@ export class NodeSelection {
             return (startElement.closest(tagName) || endElement.closest(tagName)) as HTMLElement;
         }
         return null;
+    }
+
+    /**
+     * Checks whether the entire editor is selected or not.
+     *
+     * @returns {boolean} - Returns true if the entire editor is selected, otherwise false.
+     * @hidden
+     */
+    checkIsEntireEditorSelected(): boolean {
+        const selection: Selection = this.getSelection();
+        if (!selection || selection.rangeCount === 0) {
+            return false;
+        }
+        const range: Range = getSelectedRange();
+        if (!range) { return false; }
+        let firstBlockElement: HTMLElement = this.editor.blockWrapper.firstElementChild as HTMLElement;
+        let lastBlockElement: HTMLElement = this.editor.blockWrapper.lastElementChild as HTMLElement;
+        if (isChildrenTypeBlock(firstBlockElement.getAttribute('data-block-type'))) {
+            firstBlockElement = firstBlockElement.querySelector('.' + constants.BLOCK_CLS) as HTMLElement;
+        }
+        if (isChildrenTypeBlock(lastBlockElement.getAttribute('data-block-type'))) {
+            lastBlockElement = lastBlockElement.querySelector('.e-block:last-child') as HTMLElement;
+        }
+        const firstBlockContent: HTMLElement = getBlockContentElement(this.editor.blockWrapper.firstElementChild as HTMLElement);
+        const lastBlockContent: HTMLElement = getBlockContentElement(this.editor.blockWrapper.lastElementChild as HTMLElement);
+        const startContainer: Node = range.startContainer;
+        const endContainer: Node = range.endContainer;
+        const isFirstBlockEmpty: boolean = firstBlockContent.textContent.trim() === '';
+        const isLastBlockEmpty: boolean = lastBlockContent.textContent.trim() === '';
+        const firstBlockStartNode: ChildNode = firstBlockContent.childNodes[0];
+        const lastBlockEndNode: ChildNode = lastBlockContent.childNodes[lastBlockContent.childNodes.length - 1];
+
+        // Selection performed using selectAll method
+        if (startContainer.nodeType === Node.ELEMENT_NODE && endContainer.nodeType === Node.ELEMENT_NODE &&
+            (startContainer as HTMLElement).classList.contains(constants.BLOCK_WRAPPER_CLS) &&
+            (endContainer as HTMLElement).classList.contains(constants.BLOCK_WRAPPER_CLS)) {
+            return true;
+        }
+
+        const isEqualsStartContainer: boolean = (
+            firstBlockStartNode && firstBlockStartNode.contains(startContainer) ||
+            isFirstBlockEmpty && firstBlockElement.contains(startContainer)
+        );
+        const isEqualsEndContainer: boolean = (
+            lastBlockEndNode && lastBlockEndNode.contains(endContainer) ||
+            isLastBlockEmpty && lastBlockElement.contains(endContainer)
+        );
+        return (isEqualsStartContainer &&
+            isEqualsEndContainer &&
+            range.startOffset === 0 &&
+            range.endOffset === endContainer.textContent.length);
+    }
+
+    /**
+     * Destroys the slash command module.
+     *
+     * @returns {void}
+     */
+    public destroy(): void {
+        this.removeEventListeners();
+        this.currentRange = null;
+        this.rangeBackup = null;
+        this.editor = null;
     }
 }

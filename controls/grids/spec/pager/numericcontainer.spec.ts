@@ -32,7 +32,7 @@ describe('Numericcontainer module testing', () => {
         });
 
         it('current page testing', () => {
-            expect(pagerObj.element.querySelectorAll('.e-active')[0].getAttribute('index')).toBe('8');
+            expect(pagerObj.element.querySelectorAll('.e-active')[0].getAttribute('data-index')).toBe('8');
         });
 
         afterAll(() => {
@@ -68,7 +68,7 @@ describe('Numericcontainer module testing', () => {
 
         it('Navigate page testing', () => {
             (pagerObj.element.querySelectorAll('.e-numericcontainer')[0].childNodes[1] as HTMLElement).click();
-            expect(pagerObj.element.querySelectorAll('.e-active')[0].getAttribute('index')).toBe('7');
+            expect(pagerObj.element.querySelectorAll('.e-active')[0].getAttribute('data-index')).toBe('7');
         });
 
         it('click event call', () => {
@@ -80,7 +80,7 @@ describe('Numericcontainer module testing', () => {
 
         it('Navigate unavailable page testing', () => {
             pagerObj.goToPage(23);
-            expect(pagerObj.element.querySelectorAll('.e-active')[0].getAttribute('index')).toBe('3');
+            expect(pagerObj.element.querySelectorAll('.e-active')[0].getAttribute('data-index')).toBe('3');
         });
 
         it('Goto page testing', () => {
@@ -91,7 +91,7 @@ describe('Numericcontainer module testing', () => {
             NP = pagerObj.element.querySelectorAll('.e-np')[0];
             next = pagerObj.element.querySelectorAll('.e-next')[0];
             last = pagerObj.element.querySelectorAll('.e-last')[0];
-            expect(pagerObj.element.querySelectorAll('.e-active')[0].getAttribute('index')).toBe('13');
+            expect(pagerObj.element.querySelectorAll('.e-active')[0].getAttribute('data-index')).toBe('13');
             expect(first.classList.contains('e-firstpagedisabled')).toBeFalsy();
             expect(first.classList.contains('e-disable')).toBeFalsy();
             expect(first.classList.contains('e-firstpage')).toBeTruthy();
@@ -119,7 +119,7 @@ describe('Numericcontainer module testing', () => {
 
         it('Prev page testing', () => {
             (prev as HTMLElement).click();
-            expect(pagerObj.element.querySelectorAll('.e-active')[0].getAttribute('index')).toBe('12');
+            expect(pagerObj.element.querySelectorAll('.e-active')[0].getAttribute('data-index')).toBe('12');
 
             expect(first.classList.contains('e-firstpagedisabled')).toBeFalsy();
             expect(first.classList.contains('e-disable')).toBeFalsy();
@@ -148,7 +148,7 @@ describe('Numericcontainer module testing', () => {
 
         it('First page testing', () => {
             (first as HTMLElement).click();
-            expect(pagerObj.element.querySelectorAll('.e-active')[0].getAttribute('index')).toBe('1');
+            expect(pagerObj.element.querySelectorAll('.e-active')[0].getAttribute('data-index')).toBe('1');
 
             expect(first.classList.contains('e-firstpagedisabled')).toBeTruthy();
             expect(first.classList.contains('e-disable')).toBeTruthy();
@@ -179,7 +179,7 @@ describe('Numericcontainer module testing', () => {
         it('Next page testing', () => {
             pagerObj.goToPage(13);
             (next as HTMLElement).click();
-            expect(pagerObj.element.querySelectorAll('.e-active')[0].getAttribute('index')).toBe('14');
+            expect(pagerObj.element.querySelectorAll('.e-active')[0].getAttribute('data-index')).toBe('14');
 
             expect(first.classList.contains('e-firstpagedisabled')).toBeFalsy();
             expect(first.classList.contains('e-disable')).toBeFalsy();
@@ -208,7 +208,7 @@ describe('Numericcontainer module testing', () => {
 
         it('Last page testing', () => {
             (last as HTMLElement).click();
-            expect(pagerObj.element.querySelectorAll('.e-active')[0].getAttribute('index')).toBe('20');
+            expect(pagerObj.element.querySelectorAll('.e-active')[0].getAttribute('data-index')).toBe('20');
 
             expect(first.classList.contains('e-firstpagedisabled')).toBeFalsy();
             expect(first.classList.contains('e-disable')).toBeFalsy();
@@ -238,7 +238,7 @@ describe('Numericcontainer module testing', () => {
         it('Prev page set testing', () => {
             pagerObj.goToPage(13);
             (PP as HTMLElement).click();
-            expect(pagerObj.element.querySelectorAll('.e-active')[0].getAttribute('index')).toBe('6');
+            expect(pagerObj.element.querySelectorAll('.e-active')[0].getAttribute('data-index')).toBe('6');
 
             expect(first.classList.contains('e-firstpagedisabled')).toBeFalsy();
             expect(first.classList.contains('e-disable')).toBeFalsy();
@@ -268,7 +268,7 @@ describe('Numericcontainer module testing', () => {
         it('Prev page set testing', () => {
             pagerObj.goToPage(13);
             (NP as HTMLElement).click();
-            expect(pagerObj.element.querySelectorAll('.e-active')[0].getAttribute('index')).toBe('16');
+            expect(pagerObj.element.querySelectorAll('.e-active')[0].getAttribute('data-index')).toBe('16');
 
             expect(first.classList.contains('e-firstpagedisabled')).toBeFalsy();
             expect(first.classList.contains('e-disable')).toBeFalsy();
@@ -321,7 +321,7 @@ describe('Numericcontainer module testing', () => {
             pagerObj.currentPage = 2;
             pagerObj.dataBind();
             pagerObj.refresh();
-            expect(pagerObj.element.querySelectorAll('.e-active')[0].getAttribute('index')).toBe('1');
+            expect(pagerObj.element.querySelectorAll('.e-active')[0].getAttribute('data-index')).toBe('1');
         });
 
         afterAll(() => {
@@ -350,7 +350,7 @@ describe('Numericcontainer module testing', () => {
             pagerObj.currentPage = 5;
             pagerObj.dataBind();
             pagerObj.refresh();
-            expect(pagerObj.element.querySelectorAll('.e-active')[0].getAttribute('index')).toBe('3');
+            expect(pagerObj.element.querySelectorAll('.e-active')[0].getAttribute('data-index')).toBe('3');
         });
 
         it('memory leak', () => {     
@@ -396,7 +396,7 @@ describe('Numericcontainer module testing', () => {
             }
             (pagerObj as any).resizePager();
             (pagerObj.element.querySelectorAll('.e-numericcontainer')[0].childNodes[1] as HTMLElement).click();
-            expect(pagerObj.element.querySelectorAll('.e-active')[0].getAttribute('index')).toBe('2');
+            expect(pagerObj.element.querySelectorAll('.e-active')[0].getAttribute('data-index')).toBe('2');
         });
         it('click event call', function () {
             var spyFn = jasmine.createSpy('click');
@@ -406,7 +406,7 @@ describe('Numericcontainer module testing', () => {
         });
         it('Navigate unavailable page testing', function () {
             pagerObj.goToPage(83);
-            expect(pagerObj.element.querySelectorAll('.e-active')[0].getAttribute('index')).toBe('3');
+            expect(pagerObj.element.querySelectorAll('.e-active')[0].getAttribute('data-index')).toBe('3');
         });
 
         it('Auxclick event checking', function () {

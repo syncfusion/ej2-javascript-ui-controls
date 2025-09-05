@@ -188,7 +188,7 @@ describe('Code Blocks', () => {
                 {
                     id: 'code-block',
                     type: BlockType.Code,
-                    codeSettings: {
+                    props: {
                         languages: customLanguages,
                         defaultLanguage: 'cpp'
                     },
@@ -398,29 +398,31 @@ describe('Code Blocks', () => {
         });
 
         it('should exit code block and set focus to next block if available', (done) => {
-            const codeElement: HTMLElement = editorElement.querySelector('.e-code-content');
-            codeElement.innerHTML = 'line1<br><br><br>';
-            const blockElement = codeElement.closest('.e-block') as HTMLElement;
-            editor.setFocusToBlock(blockElement);
-            editor.addBlock({
-                id: 'paragraph-block',
-                type: BlockType.Paragraph,
-                content: [{ id: 'paragraph-content', type: ContentType.Text, content: 'test' }]
-            }, 'code-block');
-            editor.setFocusToBlock(blockElement);
-            setCursorPosition(codeElement, codeElement.childNodes.length);
-            
-            const enterEvent: KeyboardEvent = new KeyboardEvent('keydown', { 
-                key: 'Enter', 
-                bubbles: true, 
-                cancelable: true 
-            });
-            editorElement.dispatchEvent(enterEvent);
             setTimeout(() => {
-                expect(editor.blocks.length).toBe(2);
-                expect(editor.currentFocusedBlock.id).toBe('paragraph-block');
-                done();
-            }, 400);
+                const codeElement: HTMLElement = editorElement.querySelector('.e-code-content');
+                codeElement.innerHTML = 'line1<br><br><br>';
+                const blockElement = codeElement.closest('.e-block') as HTMLElement;
+                editor.setFocusToBlock(blockElement);
+                editor.addBlock({
+                    id: 'paragraph-block',
+                    type: BlockType.Paragraph,
+                    content: [{ id: 'paragraph-content', type: ContentType.Text, content: 'test' }]
+                }, 'code-block');
+                editor.setFocusToBlock(blockElement);
+                setCursorPosition(codeElement, codeElement.childNodes.length);
+                
+                const enterEvent: KeyboardEvent = new KeyboardEvent('keydown', {
+                    key: 'Enter', 
+                    bubbles: true, 
+                    cancelable: true 
+                });
+                editorElement.dispatchEvent(enterEvent);
+                setTimeout(() => {
+                    expect(editor.blocks.length).toBe(2);
+                    expect(editor.currentFocusedBlock.id).toBe('paragraph-block');
+                    done();
+                }, 400);
+            }, 200);
         });
 
         it('should maintain indentation on new lines', () => {
@@ -744,7 +746,7 @@ describe('Code Blocks', () => {
             setCursorPosition(codeElement, 0);
             codeElement.textContent = 'const x = 5;';
             editor.blocks[0].content = [];
-            (editor.blockAction.codeRenderer as any).updateBlockModel(codeElement, editor.blocks[0]);
+            (editor.blockRendererManager.codeRenderer as any).updateBlockModel(codeElement, editor.blocks[0]);
             
             setTimeout(() => {
                 expect(editor.blocks[0].type).toBe(BlockType.Code);

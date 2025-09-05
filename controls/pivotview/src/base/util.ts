@@ -1036,7 +1036,9 @@ export class PivotUtil {
             pivot.olapEngineModule.renderEngine(
                 pivot.dataSourceSettings as IDataOptions, customProperties ? customProperties :
                     (pivot as PivotFieldList).frameCustomProperties(pivot.olapEngineModule.fieldListData, pivot.olapEngineModule.fieldList),
-                pivot.onHeadersSort ? (pivot as PivotView).getHeaderSortInfo.bind(pivot) : undefined
+                pivot.onHeadersSort ? (pivot as PivotView).getHeaderSortInfo.bind(pivot) : undefined, pivot.beforeServiceInvoke ?
+                    (pivot as PivotView).getBeforeServiceInvoke.bind(pivot) : undefined,
+                pivot.afterServiceInvoke ? (pivot as PivotView).getAfterServiceInvoke.bind(pivot) : undefined
             );
             pivot.setProperties({ dataSourceSettings: { valueIndex: pivot.olapEngineModule.measureIndex } }, true);
         } catch (exception) {

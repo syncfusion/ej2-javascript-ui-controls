@@ -781,7 +781,6 @@ describe('Spec for empty method ', () => {
     });
 });
 
-
 describe('templatecompiler Spec for empty method ', () => {
     let listObj: any;
     let element: HTMLElement;
@@ -801,7 +800,6 @@ describe('templatecompiler Spec for empty method ', () => {
         (<any>listObj).templateCompiler(null);
     });
 });
-
 describe('DropDownBase Coverage Tests', () => {
     let listObj: any;
     let element: HTMLElement;
@@ -821,7 +819,6 @@ describe('DropDownBase Coverage Tests', () => {
             document.body.innerHTML = '';
         }
     });
-
     it('templateCompiler method coverage', (done) => {
         listObj = new DropDownBase({
             dataSource: datasource,
@@ -831,7 +828,6 @@ describe('DropDownBase Coverage Tests', () => {
         (<any>listObj).templateCompiler(null);
         done();
     });
-
     it('createListItems method coverage', (done) => {
         listObj = new DropDownBase({
             dataSource: datasource,
@@ -840,7 +836,6 @@ describe('DropDownBase Coverage Tests', () => {
         (<any>listObj).createListItems(null);
         done();
     });
-
     it('removeScrollEvent method coverage', (done) => {
         listObj = new DropDownBase({
             dataSource: datasource
@@ -851,14 +846,12 @@ describe('DropDownBase Coverage Tests', () => {
         (<any>listObj).removeScrollEvent();
         done();
     });
-
     it('isDisabledItemByIndex method coverage', (done) => {
         let customDataSource = [
             { text: 'Audi', id: '1', disabled: true },
             { text: 'BMW', id: '2', disabled: false },
             { text: 'Bentley', id: '3' }
         ];
-
         listObj = new DropDownBase({
             dataSource: customDataSource,
         });
@@ -867,7 +860,6 @@ describe('DropDownBase Coverage Tests', () => {
         let isDisabled1 = (<any>listObj).isDisabledItemByIndex(0);
         done();
     });
-
      it('createVirtualContent method coverage', (done) => {
         listObj = new DropDownBase({
             dataSource: datasource,
@@ -878,7 +870,6 @@ describe('DropDownBase Coverage Tests', () => {
         done();
     });
 });
-
 describe('Spec for empty method updateFixedGroupTemplateHader', () => {
     let listObj: any;
     let element: HTMLElement;
@@ -910,7 +901,6 @@ describe('Spec for empty method updateFixedGroupTemplateHader', () => {
         (<any>listObj).updateFixedGroupTemplateHader(element);
     });
 });
-
 describe('templatecompiler Spec for empty method ', () => {
     let listObj: any;
     let element: HTMLElement;

@@ -5,8 +5,8 @@ import { KeyboardEventArgs } from '../actions/keyboard';
 import { SfRichTextEditor } from '../sf-richtexteditor-fn';
 import { addClass, removeClass } from '../../../base'; /*externalscript*/
 import { CLS_FULL_SCREEN, CLS_RTE_OVERFLOW } from '../classes';
-import { NotifyArgs } from '../../src/common/interface';
-import { ActionBeginEventArgs } from '../../src/common/interface';
+import { NotifyArgs } from '../../editor-scripts/common/interface';
+import { ActionBeginEventArgs } from '../../editor-scripts/common/interface';
 
 
 /**

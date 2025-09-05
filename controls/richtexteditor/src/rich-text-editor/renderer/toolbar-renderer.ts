@@ -38,6 +38,7 @@ export class ToolbarRenderer implements IRenderer {
     private tooltipTargetEle: Element;
     public isDestroyed: boolean;
     public isEscapeKey: boolean = false;
+    private rangeStore: boolean = false;
 
     /**
      * Constructor for toolbar renderer module
@@ -104,7 +105,9 @@ export class ToolbarRenderer implements IRenderer {
         }
         if (this.parent.toolbarSettings.type === ToolbarType.Popup) {
             let command: string;
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
             if (args.item && (args.item as any).command) {
+                // eslint-disable-next-line @typescript-eslint/no-explicit-any
                 command = (args.item as any).command;
             }
             const commandsArray: string[] = ['Formats', 'Font', 'Alignments', 'EmojiPicker', 'Table', 'BulletFormatList', 'NumberFormatList', 'CodeBlock'];
@@ -304,6 +307,19 @@ export class ToolbarRenderer implements IRenderer {
                         for (let index: number = 0; index < args.element.childNodes.length; index++) {
                             if ((args.element.childNodes[index as number] as HTMLElement).classList.contains('e-alternate-rows')) {
                                 addClass([args.element.childNodes[index as number]] as Element[], 'e-active');
+                            }
+                        }
+                    }
+                    // Table border styles dropdown preselect
+                    if (!isNOU(args.element.parentElement) && args.element.parentElement.classList.contains('e-border-style-btn')) {
+                        const borderStyleValue: string =
+                            (proxy.parent.contentModule.getDocument().activeElement as HTMLElement).innerText.toLowerCase();
+                        for (let i: number = 0; i < args.items.length; i++) {
+                            if (args.items[i as number].text.toLowerCase() === borderStyleValue) {
+                                addClass([args.element.childNodes[i as number]] as Element[], 'e-active');
+                                break;
+                            } else {
+                                removeClass([args.element.childNodes[i as number]] as Element[], 'e-active');
                             }
                         }
                     }
@@ -573,9 +589,11 @@ export class ToolbarRenderer implements IRenderer {
                     return;
                 }
                 if (!args.items) { return; }
+                // eslint-disable-next-line @typescript-eslint/no-explicit-any
                 if ((args.items[0] as any).command === 'CodeBlock') {
                     this.handleCodeBlockDropdown(args);
                 }
+                // eslint-disable-next-line @typescript-eslint/no-explicit-any
                 if ((args.items[0] as any).command === 'Lists') {
                     this.handleListsDropdown(args);
                 }
@@ -588,6 +606,8 @@ export class ToolbarRenderer implements IRenderer {
             beforeItemRender: this.beforeDropDownItemRender.bind(this)
         });
         splitButton.appendTo(args.element);
+        const popupElement: Element = document.getElementById(splitButton.element.id + '_dropdownbtn-popup');
+        popupElement.setAttribute('aria-owns', this.parent.getID());
         return splitButton;
     }
     /**
@@ -603,8 +623,15 @@ export class ToolbarRenderer implements IRenderer {
     public renderColorPicker(args: IColorPickerModel, item: string, toolbarType?: string): ColorPicker {
         // eslint-disable-next-line
         let proxy: this = this;
-        let colorValue: string = (isNullOrUndefined(this.defaultColorPicker)) ?
-            (item === 'backgroundcolor') ? proxy.parent.backgroundColor.default : proxy.parent.fontColor.default : this.defaultColorPicker;
+        let colorValue: string;
+        let editTablecolorpicker: boolean = false;
+        if (item === 'bordercolor' || item === 'tablebackgroundcolor') {
+            colorValue = args.value;
+            editTablecolorpicker = true;
+        } else {
+            colorValue = (isNullOrUndefined(this.defaultColorPicker)) ?
+                (item === 'backgroundcolor') ? proxy.parent.backgroundColor.default : proxy.parent.fontColor.default : this.defaultColorPicker;
+        }
         const colorPicker: ColorPicker = new ColorPicker({
             enableRtl: this.parent.enableRtl,
             inline: false,
@@ -629,7 +656,7 @@ export class ToolbarRenderer implements IRenderer {
             },
             mode: ((item === 'backgroundcolor') ? proxy.parent.backgroundColor.mode : proxy.parent.fontColor.mode),
             modeSwitcher: ((item === 'backgroundcolor') ? proxy.parent.backgroundColor.modeSwitcher : proxy.parent.fontColor.modeSwitcher),
-            showRecentColors: ((toolbarType === 'quick') ? false : ((item === 'backgroundcolor') ? proxy.parent.backgroundColor.showRecentColors : proxy.parent.fontColor.showRecentColors)),
+            showRecentColors: ((toolbarType === 'quick' && !editTablecolorpicker) ? false : (editTablecolorpicker) ? true : ((item === 'backgroundcolor') ? proxy.parent.backgroundColor.showRecentColors : proxy.parent.fontColor.showRecentColors)),
             presetColors: (item === 'backgroundcolor') ? this.parent.backgroundColor.colorCode : this.parent.fontColor.colorCode,
             columns: (item === 'backgroundcolor') ? this.parent.backgroundColor.columns : this.parent.fontColor.columns,
             beforeTileRender: (args: PaletteTileEventArgs) => {
@@ -647,8 +674,19 @@ export class ToolbarRenderer implements IRenderer {
                     args.element.classList.add(CLS_NOCOLOR_ITEM);
                 }
             },
-
+            beforeOpen: () => {
+                if ((proxy.parent.userAgentData.isSafari() || !proxy.parent.userAgentData.isSafari()) &&
+                    this.parent.formatter.editorManager.nodeSelection &&
+                    this.parent.inputElement.contains(this.parent.getRange().startContainer)) {
+                    proxy.parent.notify(events.selectionSave, {});
+                    this.rangeStore = true;
+                }
+            },
             change: (colorPickerArgs: IColorPickerEventArgs): void => {
+                if (this.rangeStore) {
+                    proxy.parent.notify(events.selectionRestore, {});
+                    this.rangeStore = false;
+                }
                 if (!proxy.parent.userAgentData.isSafari() ||
                     (proxy.parent.userAgentData.isSafari() && this.parent.formatter.editorManager.nodeSelection &&
                     this.parent.inputElement.contains(this.parent.getRange().startContainer))) {

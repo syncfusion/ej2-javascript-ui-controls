@@ -1,8 +1,8 @@
 import * as events from '../constant';
 import { SfRichTextEditor } from '../sf-richtexteditor-fn';
-import { IToolbarStatus } from '../../src/common/interface';
-import { getDefaultMDTbStatus } from '../../src/common/util';
-import { MarkdownSelection } from '../../src/markdown-parser/plugin/markdown-selection';
+import { IToolbarStatus } from '../../editor-scripts/common/interface';
+import { getDefaultMDTbStatus } from '../../editor-scripts/common/util';
+import { MarkdownSelection } from '../../editor-scripts/markdown-parser/plugin/markdown-selection';
 
 /**
  * MarkdownToolbarStatus module for refresh the toolbar status

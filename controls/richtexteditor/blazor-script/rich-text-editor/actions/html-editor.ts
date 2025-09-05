@@ -1,11 +1,11 @@
 import { addClass, attributes, Browser, closest, detach, EventHandler, isNullOrUndefined as isNOU, isNullOrUndefined, KeyboardEventArgs, removeClass, MouseEventArgs } from '../../../base'; /*externalscript*/
 import { ClickEventArgs } from '../../../navigations/src'; /*externalscript*/
-import { hasAnyFormatting, isIDevice, removeClassWithAttr, scrollToCursor } from '../../src/common/util';
-import { CodeBlockPosition, IHtmlKeyboardEvent } from '../../src/editor-manager/base/interface';
-import { InsertHtml } from '../../src/editor-manager/plugin/inserthtml';
-import { ActionBeginEventArgs, IDropDownItemModel, IToolbarItemModel, NotifyArgs } from '../../src/common/interface';
-import { FontSizeModel, FormatPainterSettingsModel } from '../../src/models';
-import { NodeSelection } from '../../src/selection/selection';
+import { hasAnyFormatting, isIDevice, removeClassWithAttr, scrollToCursor } from '../../editor-scripts/common/util';
+import { CodeBlockPosition, IHtmlKeyboardEvent } from '../../editor-scripts/editor-manager/base/interface';
+import { InsertHtml } from '../../editor-scripts/editor-manager/plugin/inserthtml';
+import { ActionBeginEventArgs, IDropDownItemModel, IToolbarItemModel, NotifyArgs } from '../../editor-scripts/common/interface';
+import { FontSizeModel, FormatPainterSettingsModel } from '../../editor-scripts/models';
+import { NodeSelection } from '../../editor-scripts/selection/selection';
 import * as classes from '../classes';
 import { IToolbarOptions, IRenderer } from '../interfaces';
 import * as events from '../constant';
@@ -15,7 +15,7 @@ import { SfRichTextEditor } from '../sf-richtexteditor-fn';
 import { getDefaultValue, getTextNodesUnder, sanitizeHelper } from '../util';
 import { HtmlToolbarStatus } from './html-toolbar-status';
 import { XhtmlValidation } from './xhtml-validation';
-import * as CONSTANTS from './../../src/editor-manager/base/constant';
+import * as CONSTANTS from './../../editor-scripts/editor-manager/base/constant';
 
 /**
  * `HtmlEditor` module is used to HTML editor
@@ -245,7 +245,8 @@ export class HtmlEditor {
     private onKeyDown(e: NotifyArgs): void {
         let currentRange: Range;
         const args: KeyboardEvent = e.args as KeyboardEvent;
-        if (this.parent.inputElement.querySelectorAll('.e-cell-select').length > 1 && (args.keyCode === 8 || args.keyCode === 32 || args.keyCode === 13)) {
+        if (this.parent.inputElement.querySelectorAll('.e-cell-select').length > 1 &&
+            (args.keyCode === 8 || args.keyCode === 32 || args.keyCode === 13 || args.keyCode === 46)) {
             this.tableSelectionKeyAction(e);
             this.parent.autoResize();
             return;
@@ -328,7 +329,7 @@ export class HtmlEditor {
                 });
             }
         }
-        const regex: RegExp = /[^\w\s\\/\\.\\:]/g;
+        const regex: RegExp = /[^\w\s\\/\\.\\:@-]/g;
         if (((e as NotifyArgs).args as KeyboardEventArgs).action === 'space' ||
             ((e as NotifyArgs).args as KeyboardEventArgs).action === 'enter' ||
             ((e as NotifyArgs).args as KeyboardEventArgs).keyCode === 13 || regex.test(((e as NotifyArgs).args as KeyboardEventArgs).key)) {
@@ -1066,9 +1067,9 @@ export class HtmlEditor {
                 && !closestElement.classList.contains(classes.CLS_TEXT_POP)) {
                 if (!(item.subCommand === 'SourceCode' || item.subCommand === 'Preview' ||
                     item.subCommand === 'FontColor' || item.subCommand === 'BackgroundColor')) {
-                    if (isIDevice() && (item.command === 'Images' || item.command === 'Audios' ||  item.command === 'Videos')) { this.nodeSelectionObj.restore(); }
-                    else if (item.command === 'Audios' && this.nodeSelectionObj.startNodeName.length !== 0) { this.nodeSelectionObj.restore(); }
                     const range: Range = this.nodeSelectionObj.getRange(this.parent.getDocument());
+                    if (isIDevice() && (item.command === 'Images' || item.command === 'Audios' ||  item.command === 'Videos')) { this.nodeSelectionObj.restore(); }
+                    else if (item.command === 'Audios' && this.nodeSelectionObj.startNodeName.length !== 0 && range.startContainer === this.nodeSelectionObj.range.startContainer) { this.nodeSelectionObj.restore(); }
                     save = this.nodeSelectionObj.save(range, this.parent.getDocument());
                     selectNodeEle = this.nodeSelectionObj.getNodeCollection(range);
                     selectParentEle = this.nodeSelectionObj.getParentNodeCollection(range);
@@ -1127,7 +1128,9 @@ export class HtmlEditor {
                     this.parent.print();
                     break;
                 case 'ImportWord':
-                    (window as any).sfBlazor.instances['RT_Editor_import'].element.click();
+                    this.parent.observer.notify(events.importWord, {
+                        member: 'word', args: args, selectNode: selectNodeEle, selection: save, selectParent: selectParentEle
+                    });
                     break;
                 case 'Image':
                     this.parent.observer.notify(events.insertImage, {

@@ -129,18 +129,31 @@ export class SpreadsheetNote {
     }
 
     private createNoteIndicator(args : { targetElement: HTMLElement, rowIndex: number, columnIndex: number, skipEvent?: boolean }): void {
-        const noteIndicator: HTMLElement = this.parent.createElement('div', { className: 'e-addNoteIndicator', styles: 'position: absolute;top: 0;right: 0;width: 0;height: 0;border-left: 8px solid transparent;border-top: 8px solid red;cursor: pointer;' });
+        const triangleDirection: string = this.parent.enableRtl
+            ? 'left: 0; border-right: 8px solid transparent;' : 'right: 0; border-left: 8px solid transparent;';
+        const noteIndicator: HTMLElement = this.parent.createElement('div', { className: 'e-addNoteIndicator',
+            styles: `position: absolute; top: 0; width: 0; height: 0; border-top: 8px solid red; cursor: pointer; ${triangleDirection}` });
         if (args.targetElement.children.length > 0) {
             const rowHeight: number = getRowHeight(this.parent.getActiveSheet(), args.rowIndex);
             const defaultFilterButtonHeight: number = 20;
             for (let i: number = 0; i < args.targetElement.childElementCount; i++) {
                 if (args.targetElement.children[i as number].className.indexOf('e-filter-btn') > -1) {
-                    noteIndicator.style.right = (rowHeight < (defaultFilterButtonHeight + 10) ?
-                        (args.targetElement.children[i as number].getBoundingClientRect().width <= 0 ? defaultFilterButtonHeight :
-                            args.targetElement.children[i as number].getBoundingClientRect().width) : 0 + 2) + 'px';
+                    if (this.parent.enableRtl) {
+                        noteIndicator.style.left = (rowHeight < (defaultFilterButtonHeight + 10) ?
+                            (args.targetElement.children[i as number].getBoundingClientRect().width <= 0 ? defaultFilterButtonHeight :
+                                args.targetElement.children[i as number].getBoundingClientRect().width) : 0 + 2) + 'px';
+                    } else {
+                        noteIndicator.style.right = (rowHeight < (defaultFilterButtonHeight + 10) ?
+                            (args.targetElement.children[i as number].getBoundingClientRect().width <= 0 ? defaultFilterButtonHeight :
+                                args.targetElement.children[i as number].getBoundingClientRect().width) : 0 + 2) + 'px';
+                    }
                 }
                 if (args.targetElement.children[i as number].className.indexOf('e-validation-list') > -1) {
-                    noteIndicator.style.right = `${(args.targetElement.children[i as number].getBoundingClientRect().width || 20) + 2}px`;
+                    if (this.parent.enableRtl) {
+                        noteIndicator.style.left = `${(args.targetElement.children[i as number].getBoundingClientRect().width || 20) + 2}px`;
+                    } else {
+                        noteIndicator.style.right = `${(args.targetElement.children[i as number].getBoundingClientRect().width || 20) + 2}px`;
+                    }
                 }
             }
         }
@@ -198,11 +211,22 @@ export class SpreadsheetNote {
 
     private createContainer(noteContainer: HTMLElement, cell: CellModel, cellRect: ClientRect, isShowNote: boolean): void {
         let containerTop: number = 5;
-        if (!isNullOrUndefined(document.getElementsByClassName('e-select-all-cell')[0]) && !isNullOrUndefined(document.getElementsByClassName('e-scroller')[0]) &&
-            cellRect.top >= document.getElementsByClassName('e-select-all-cell')[0].getBoundingClientRect().bottom && cellRect.right >= document.getElementsByClassName('e-select-all-cell')[0].getBoundingClientRect().right &&
-            cellRect.bottom <= document.getElementsByClassName('e-scroller')[0].getBoundingClientRect().top && cellRect.right <= document.getElementsByClassName('e-scroller')[0].getBoundingClientRect().width) {
-            noteContainer.style.display = 'block';
-            containerTop = cellRect.top === document.getElementsByClassName('e-select-all-cell')[0].getBoundingClientRect().bottom ? 0 : containerTop;
+        const selectAllCell: HTMLElement = this.parent.element.getElementsByClassName('e-select-all-cell')[0] as HTMLElement;
+        const scroller: HTMLElement = this.parent.element.getElementsByClassName('e-scroller')[0] as HTMLElement;
+        if (!isNullOrUndefined(selectAllCell) && !isNullOrUndefined(scroller) &&
+            cellRect.top >= selectAllCell.getBoundingClientRect().bottom &&
+            cellRect.bottom <= scroller.getBoundingClientRect().top) {
+            const isViewableArea : boolean = this.parent.enableRtl ?
+                cellRect.left <= selectAllCell.getBoundingClientRect().left &&
+                cellRect.left >= scroller.getBoundingClientRect().left :
+                cellRect.right >= selectAllCell.getBoundingClientRect().right &&
+                cellRect.right <= scroller.getBoundingClientRect().right;
+            if (isViewableArea) {
+                noteContainer.style.display = 'block';
+                containerTop = cellRect.top === selectAllCell.getBoundingClientRect().bottom ? 0 : containerTop;
+            } else {
+                noteContainer.style.display = 'none';
+            }
         }
         else {
             noteContainer.style.display = 'none';
@@ -212,9 +236,16 @@ export class SpreadsheetNote {
         noteContainer.style.position = 'absolute';
         noteContainer.style.top = (cellRect.top - (elementClientRect.top - (elementPosition === 'absolute' ? 0 :
             this.parent.element.offsetTop)) - containerTop) + 'px';
-        noteContainer.style.left = (cellRect.left + cellRect.width - (elementClientRect.left - (elementPosition === 'absolute' ?
-            0 : this.parent.element.offsetLeft)) + 10) + 'px';
-        noteContainer.style.width = '120px';
+        let leftPos: number;
+        const noteWidth: number = 120;
+        const offsetLeft: number = (elementPosition === 'absolute' ? 0 : this.parent.element.offsetLeft);
+        if (this.parent.enableRtl) {
+            leftPos = cellRect.left - (elementClientRect.left - offsetLeft) - noteWidth - 10;
+        } else {
+            leftPos = cellRect.left + cellRect.width - (elementClientRect.left - offsetLeft) + 10;
+        }
+        noteContainer.style.left = `${leftPos}px`;
+        noteContainer.style.width = `${noteWidth}px`;
         noteContainer.style.height = '120px';
         noteContainer.style.zIndex = '5';
         noteContainer.style.color = 'black';
@@ -228,12 +259,18 @@ export class SpreadsheetNote {
     }
 
     private createConnectorLine(noteContainer: HTMLElement, cellRect: ClientRect): void {
-        const connectorLine: HTMLCanvasElement = this.parent.createElement('canvas', { className: 'e-connectorLine', styles: 'width: 100px; position: absolute;  z-index: 1;' });
+        const lineWidth: number = 100;
+        const connectorLine: HTMLCanvasElement = this.parent.createElement('canvas', { className: 'e-connectorLine', styles: `width: ${lineWidth}px; position: absolute;  z-index: 1;` });
         const context: CanvasRenderingContext2D = connectorLine.getContext('2d');
         const elementClientRect: ClientRect = this.parent.element.getBoundingClientRect();
         const elementPosition: string = this.parent.element.style.getPropertyValue('position');
-        connectorLine.style.left = cellRect.left + cellRect.width - (elementClientRect.left - (elementPosition === 'absolute' ?
-            0 : this.parent.element.offsetLeft)) + 'px';
+        const offsetLeft: number = (elementPosition === 'absolute' ? 0 : this.parent.element.offsetLeft);
+        if (this.parent.enableRtl) {
+            connectorLine.style.left = cellRect.left - (elementClientRect.left - offsetLeft) - lineWidth + 'px';
+            connectorLine.style.transform = 'scaleX(-1)';
+        } else {
+            connectorLine.style.left = cellRect.left + cellRect.width - (elementClientRect.left - offsetLeft) + 'px';
+        }
         connectorLine.style.top = (noteContainer.getBoundingClientRect().top - (elementClientRect.top - (elementPosition === 'absolute' ?
             0 : this.parent.element.offsetTop)) - 5) + 'px';
         context.clearRect(0, 0, connectorLine.width, connectorLine.height);

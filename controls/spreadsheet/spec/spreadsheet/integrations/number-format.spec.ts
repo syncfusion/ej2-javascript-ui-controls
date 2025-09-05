@@ -264,25 +264,25 @@ describe('Spreadsheet Number Format Module ->', (): void => {
             helper.invoke('updateCell', [{ value: '4234' }, 'A2']);
             expect(cell.value).toBe(4234);
             helper.invoke('numberFormat', ['_($* #,##0_);_($* (#,##0);_($* "-"_);_(@_)', 'A2']);
-            expect(cellEle.textContent).toBe(' $4,234 ');
+            expect(cellEle.textContent).toBe(' $   4,234 ');
             helper.invoke('updateCell', [{ value: '-4234' }, 'A2']);
             expect(cell.value).toBe(-4234);
-            expect(cellEle.textContent).toBe(' $  (4,234)');
+            expect(cellEle.textContent).toBe(' $ (4,234)');
             helper.invoke('updateCell', [{ value: 'Test' }, 'A2']);
             expect(cell.value).toBe('Test');
             expect(cellEle.textContent).toBe(' Test ');
             helper.invoke('updateCell', [{ value: '0' }, 'A2']);
             expect(cell.value).toBe(0);
-            expect(cellEle.innerHTML).toBe('<span id="spreadsheet_currency" style="float: left;"> $</span>  - ');
+            expect(cellEle.innerHTML).toBe('<span class="e-fill-before" style="float: left;"> $</span><span class="e-fill" style="letter-spacing: 0.313609px;">          </span><span class="e-fill-sec">- </span>');
             helper.invoke('updateCell', [{ value: '4234.567' }, 'A2']);
             expect(cell.value).toBe(4234.567);
-            expect(cellEle.textContent).toBe(' $4,235 ');
+            expect(cellEle.textContent).toBe(' $   4,235 ');
             helper.invoke('numberFormat', ['_($* #,##0.00_);_($* (#,##0.00);_($* "-"??_);_(@_)', 'A2']);
             expect(cell.value).toBe(4234.567);
             expect(cellEle.textContent).toBe(' $4,234.57 ');
             helper.invoke('updateCell', [{ value: '-4234.567' }, 'A2']);
             expect(cell.value).toBe(-4234.567);
-            expect(cellEle.textContent).toBe(' $  (4,234.57)');
+            expect(cellEle.textContent).toBe(' $(4,234.57)');
             helper.invoke('numberFormat', ['_(* #,##0.00_);_(* (#,##0.00);_(* "-"??_);_(@_)', 'A2']);
             expect(cell.value).toBe(-4234.567);
             expect(cellEle.textContent).toBe(' (4,234.57)');
@@ -1487,7 +1487,7 @@ describe('Spreadsheet Number Format Module ->', (): void => {
             expect(sheet.rows[0].cells[7].formattedText).toBe(' Profit ');
             expect(sheet.rows[1].cells[7].formattedText).toBeUndefined();
             helper.invoke('updateCell', [{ format: getFormatFromType('Accounting') }, 'H2']);
-            expect(JSON.stringify(sheet.rows[1].cells[7])).toBe('{"value":10,"format":"_($* #,##0.00_);_($* (#,##0.00);_($* \\"-\\"??_);_(@_)","formattedText":" $10.00 "}');
+            expect(JSON.stringify(sheet.rows[1].cells[7])).toBe('{"value":10,"format":"_($* #,##0.00_);_($* (#,##0.00);_($* \\"-\\"??_);_(@_)","formattedText":" $"}');
             done();
         });
         it('Formatted text update on Editing and changing values using public methods', (done: Function) => {
@@ -1510,7 +1510,7 @@ describe('Spreadsheet Number Format Module ->', (): void => {
             expect(sheet.rows[79].cells[7].value).toBe(3);
             expect(sheet.rows[79].cells[7].formattedText).toBeUndefined();
             helper.invoke('numberFormat', [getFormatFromType('Accounting'), 'H80']);
-            expect(sheet.rows[79].cells[7].formattedText).toBe(' $3.00 ');
+            expect(sheet.rows[79].cells[7].formattedText).toBe(' $');
             helper.invoke('updateCell', [{ value: '2.56' }, 'H79']);
             expect(sheet.rows[78].cells[7].formattedText).toBeUndefined();
             helper.invoke('numberFormat', ['_(* #,##0.00_);_(* (#,##0.00);_(* "-"??_);_(@_)', 'H79:H80']);
@@ -2139,7 +2139,7 @@ describe('Spreadsheet Number Format Module ->', (): void => {
                 expect(helper.invoke('getCell', [0, 0]).textContent).toBe('100.0%');
                 expect(helper.invoke('getCell', [1, 0]).textContent).toBe('1');
                 expect(helper.invoke('getCell', [2, 0]).textContent).toBe('$1.00');
-                expect(helper.invoke('getCell', [3, 0]).textContent).toBe(' $1.00 ');
+                expect(helper.invoke('getCell', [3, 0]).textContent).toBe(' $     1.00 ');
                 expect(helper.invoke('getCell', [4, 0]).textContent).toBe('100.00%');
                 helper.edit('A1', '1%');
                 helper.edit('A2', '1%');
@@ -2149,7 +2149,7 @@ describe('Spreadsheet Number Format Module ->', (): void => {
                 expect(helper.invoke('getCell', [0, 0]).textContent).toBe('1.0%');
                 expect(helper.invoke('getCell', [1, 0]).textContent).toBe('0');
                 expect(helper.invoke('getCell', [2, 0]).textContent).toBe('$0.01');
-                expect(helper.invoke('getCell', [3, 0]).textContent).toBe(' $0.01 ');
+                expect(helper.invoke('getCell', [3, 0]).textContent).toBe(' $     0.01 ');
                 expect(helper.invoke('getCell', [4, 0]).textContent).toBe('1.00%');
                 done();
             });
@@ -2795,7 +2795,7 @@ describe('Spreadsheet Number Format Module ->', (): void => {
             expect(spreadsheet.sheets[0].rows[1].cells[9].value).toBe('12');
             expect(spreadsheet.sheets[0].rows[1].cells[9].format).not.toBe('$#,##0');
             expect(spreadsheet.sheets[0].rows[1].cells[9].format).toBe('_($* #,##0.00_);_($* (#,##0.00);_($* "-"??_);_(@_)');
-            expect(spreadsheet.sheets[0].rows[1].cells[9].formattedText).toBe(' $12.00 ');
+            expect(spreadsheet.sheets[0].rows[1].cells[9].formattedText).toBe(' $');
             helper.edit('J3', '$$121.32');
             expect(spreadsheet.sheets[0].rows[2].cells[9].value).toBe('$$121.32');
             expect(spreadsheet.sheets[0].rows[2].cells[9].format).not.toBe('$#,##0.00');
@@ -2805,12 +2805,12 @@ describe('Spreadsheet Number Format Module ->', (): void => {
             expect(spreadsheet.sheets[0].rows[3].cells[9].value).toBe('121.32');
             expect(spreadsheet.sheets[0].rows[3].cells[9].format).not.toBe('$#,##0.00');
             expect(spreadsheet.sheets[0].rows[3].cells[9].format).toBe('_($* #,##0.00_);_($* (#,##0.00);_($* "-"??_);_(@_)');
-            expect(spreadsheet.sheets[0].rows[3].cells[9].formattedText).toBe(' $121.32 ');
+            expect(spreadsheet.sheets[0].rows[3].cells[9].formattedText).toBe(' $');
             helper.edit('J5', '$       121.32');
             expect(spreadsheet.sheets[0].rows[4].cells[9].value).toBe('121.32');
             expect(spreadsheet.sheets[0].rows[4].cells[9].format).not.toBe('$#,##0.00');
             expect(spreadsheet.sheets[0].rows[4].cells[9].format).toBe('_($* #,##0.00_);_($* (#,##0.00);_($* "-"??_);_(@_)');
-            expect(spreadsheet.sheets[0].rows[4].cells[9].formattedText).toBe(' $121.32 ');
+            expect(spreadsheet.sheets[0].rows[4].cells[9].formattedText).toBe(' $');
             helper.invoke('numberFormat', [getFormatFromType('Percentage'), 'K2:K11']);
             expect(spreadsheet.sheets[0].rows[1].cells[10].format).toBe('0.00%');
             expect(spreadsheet.sheets[0].rows[2].cells[10].format).toBe('0.00%');
@@ -2980,6 +2980,145 @@ describe('Spreadsheet Number Format Module ->', (): void => {
             helper.invoke('updateCell', [{ value: '43891', format: '$ #,##0.00'}, 'G3']);
             expect(JSON.stringify(sheet.rows[2].cells[6])).toBe('{"value":43891,"format":"$ #,##0.00"}');           
             expect(helper.invoke('getCell',[2,6]).textContent).toBe('43891');
+            done();
+        });
+    });
+    describe('EJ2-905835 - Underline and strikethrough not extended till currency symbol on accounting formatted cells', () => {
+        beforeAll((done: Function) => {
+            helper.initializeSpreadsheet({ sheets: [{ ranges: [{ dataSource: defaultData }] }] }, done);
+        });
+        afterAll(() => {
+            helper.invoke('destroy');
+        });
+        it('Underline and strikethrough should be applied to the currency symbol on accounting formatted cells', (done: Function) => {
+            const spreadsheet: Spreadsheet = helper.getInstance();
+            helper.invoke('selectRange', ['E2']);
+            helper.invoke('numberFormat', ['_($* #,##0.00_);_($* (#,##0.00);_($* "-"??_);_(@_)', 'E2']);
+            expect(spreadsheet.sheets[0].rows[1].cells[4].format).toBe('_($* #,##0.00_);_($* (#,##0.00);_($* "-"??_);_(@_)');
+            helper.invoke('cellFormat', [{ textDecoration: 'underline line-through' }, 'E2']);
+            const cellElement: HTMLElement = helper.invoke('getCell', [1, 4]);
+            expect(cellElement.children[0].classList.contains('e-fill-before')).toBeTruthy();
+            expect(cellElement.children[0].innerHTML).toBe(' $');
+            expect(cellElement.children[1].classList.contains('e-fill')).toBeTruthy();
+            expect(cellElement.children[2].classList.contains('e-fill-sec')).toBeTruthy();
+            done();
+        });
+    });
+    describe('EJ2-968587 ->', () => {
+        beforeAll((done: Function) => {
+            helper.initializeSpreadsheet({ sheets: [{ ranges: [{ dataSource: defaultData }] }] }, done);
+        });
+        afterAll(() => {
+            helper.invoke('destroy');
+        });
+        it('Auto-detecting currency format with bracket values', (done: Function) => {
+            const spreadsheet: Spreadsheet = helper.getInstance();
+            helper.edit('J2', '$ 12');
+            expect(spreadsheet.sheets[0].rows[1].cells[9].value).toBe('12');
+            expect(spreadsheet.sheets[0].rows[1].cells[9].format).toBe('$#,##0');
+            expect(spreadsheet.sheets[0].rows[1].cells[9].formattedText).toBe('$12');
+            helper.edit('J3', '$ (121.32)');
+            expect(spreadsheet.sheets[0].rows[2].cells[9].value).toBe('-121.32');
+            expect(spreadsheet.sheets[0].rows[2].cells[9].format).toBe('$#,##0.00_);[Red]($#,##0.00)');
+            expect(spreadsheet.sheets[0].rows[2].cells[9].formattedText).toBe('($121.32)');
+            expect(helper.invoke('getCell', [2, 9]).style.color).toBe('red');
+            helper.edit('J4', '(10)');
+            expect(spreadsheet.sheets[0].rows[3].cells[9].value).toBe('-10');
+            expect(spreadsheet.sheets[0].rows[3].cells[9].format).toBeUndefined();
+            expect(spreadsheet.sheets[0].rows[3].cells[9].formattedText).toBeUndefined();
+            helper.edit('J5', '(10,324)');
+            expect(spreadsheet.sheets[0].rows[4].cells[9].value).toBe('-10324');
+            expect(spreadsheet.sheets[0].rows[4].cells[9].format).toBe('#,##0');
+            expect(spreadsheet.sheets[0].rows[4].cells[9].formattedText).toBe('-10,324');
+            helper.edit('J6', '$ (10,324)');
+            expect(spreadsheet.sheets[0].rows[5].cells[9].value).toBe('-10324');
+            expect(spreadsheet.sheets[0].rows[5].cells[9].format).toBe('$#,##0.00_);[Red]($#,##0.00)');
+            expect(spreadsheet.sheets[0].rows[5].cells[9].formattedText).toBe('($10,324.00)');
+            expect(helper.invoke('getCell', [5, 9]).style.color).toBe('red');
+            helper.edit('J7', '$ (10,345.56)');
+            expect(spreadsheet.sheets[0].rows[6].cells[9].value).toBe('-10345.56');
+            expect(spreadsheet.sheets[0].rows[6].cells[9].format).toBe('$#,##0.00_);[Red]($#,##0.00)');
+            expect(spreadsheet.sheets[0].rows[6].cells[9].formattedText).toBe('($10,345.56)');
+            expect(helper.invoke('getCell', [6, 9]).style.color).toBe('red');
+            done();
+        });
+    });
+    describe('EJ2-969764, EJ2-970187, EJ2-974351 ->', () => {
+        beforeAll((done: Function) => {
+            helper.initializeSpreadsheet({ sheets: [{ ranges: [{ dataSource: defaultData }] }] }, done);
+        });
+        afterAll(() => {
+            helper.invoke('destroy');
+        });
+        it('EJ2-969764 - Hyperlink should not break in cell resize', (done: Function) => {
+            const spreadsheet: Spreadsheet = helper.getInstance();
+            helper.invoke('addHyperlink', ['www.google.com', 'D2']);
+            expect(spreadsheet.sheets[0].rows[1].cells[3].hyperlink).toBe('http://www.google.com');
+            helper.invoke('numberFormat', ['_($* #,##0.00_);_($* (#,##0.00);_($* "-"??_);_(@_)', 'D2']);
+            spreadsheet.setColWidth('120', 3, 0);
+            spreadsheet.setRowHeight('75', 1, 0);
+            setTimeout(() => {
+                expect(spreadsheet.sheets[0].columns[3].width).toBe(120);
+                expect(spreadsheet.sheets[0].rows[1].height).toBe(75);
+                expect(spreadsheet.sheets[0].rows[1].cells[3].hyperlink).toBe('http://www.google.com');
+                done();
+            });
+        });
+        it('Filter icon should not dissappear in cell resize', (done: Function) => {
+            const spreadsheet: Spreadsheet = helper.getInstance();
+            helper.invoke('numberFormat', ['_($* #,##0.00_);_($* (#,##0.00);_($* "-"??_);_(@_)', 'D2:D11']);
+            helper.invoke('applyFilter', [null, 'D2:D11']);
+            spreadsheet.setColWidth('120', 3, 0);
+            setTimeout(() => {
+                expect(helper.invoke('getCell', [1, 3]).children[0].classList).toContain('e-filter-btn');
+                expect(spreadsheet.sheets[0].columns[3].width).toBe(120);
+                done();
+            });
+        });
+        it('EJ2-974351: DataBar should not dissappear in cell resize', (done: Function) => {
+            const spreadsheet: Spreadsheet = helper.getInstance();
+            helper.invoke('numberFormat', ['_($* #,##0.00_);_($* (#,##0.00);_($* "-"??_);_(@_)', 'H2:H11']);
+            helper.invoke('conditionalFormat', [{ type: 'GreenDataBar', range: 'H2:H11' }]);
+            spreadsheet.setColWidth('120', 7, 0);
+            setTimeout(() => {
+                const dataBarElement : HTMLElement = helper.invoke('getCell', [1, 7]).children[0];
+                expect(dataBarElement.classList).toContain('e-cf-databar');
+                expect(spreadsheet.sheets[0].rows[1].cells[7].formattedText).toBe(' $');
+                expect(dataBarElement.children[0].classList).toContain('e-cf-currency');
+                expect(dataBarElement.children[0].textContent).toBe(' $');
+                expect(dataBarElement.querySelector('#spreadsheet-leftspan')).toBeTruthy();
+                expect(dataBarElement.querySelector('#spreadsheet-rightspan')).toBeTruthy();
+                expect(spreadsheet.sheets[0].columns[7].width).toBe(120);
+                const dataBarValue: HTMLElement = dataBarElement.lastElementChild as HTMLElement;
+                expect(dataBarValue.classList).toContain('e-databar-value');
+                done();
+            });
+        });
+        it('Wrap content should be maintained in cell resize', (done: Function) => {
+            const spreadsheet: Spreadsheet = helper.getInstance();
+            spreadsheet.wrap('E1:E11', true);
+            helper.invoke('numberFormat', ['_($* #,##0.00_);_($* (#,##0.00);_($* "-"??_);_(@_)', 'E2:E11']);
+            spreadsheet.setColWidth('120', 4, 0);
+            setTimeout(() => {
+                expect(helper.invoke('getCell', [1, 4]).children[0].classList).toContain('e-wrap-content');
+                expect(spreadsheet.sheets[0].rows[1].cells[4].formattedText).toBe(' $');
+                expect(spreadsheet.sheets[0].columns[3].width).toBe(120);
+                done();
+            });
+        });
+    });
+    describe('EJ2-970326 -> Alignment Issue with Accounting Format and Negative Values', () => {
+        beforeAll((done: Function) => {
+            helper.initializeSpreadsheet({ sheets: [{ ranges: [{ dataSource: defaultData }] }] }, done);
+        });
+        afterAll(() => {
+            helper.invoke('destroy');
+        });
+        it('Letterspacing should not be applied to negative value of time formatted cell', (done: Function) => {
+            helper.invoke('updateCell', [{ value: -0.61 }, 'D2']);
+            helper.invoke('numberFormat', ['h:mm:ss AM/PM', 'D2']);
+            expect(helper.invoke('getCell', [1, 3]).children[0].classList).toContain('e-fill');
+            expect(helper.invoke('getCell', [1, 3]).children[0].style.letterSpacing).toBeFalsy();
             done();
         });
     });

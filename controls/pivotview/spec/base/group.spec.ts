@@ -67,7 +67,6 @@ describe('Group By Date feature', () => {
                 },
                 height: 500,
                 allowGrouping: true,
-                enableValueSorting: true,
                 allowDrillThrough: true,
                 editSettings: {
                     allowAdding: true, allowDeleting: true, allowEditing: true,
@@ -149,6 +148,7 @@ describe('Group By Date feature', () => {
             expect(document.querySelector('.e-pivotfieldlist-container').classList.contains('e-popup-close'));
         });
         it('Check code-behind groups initially', () => {
+            pivotGridObj.enableValueSorting = true;
             expect(pivotGridObj.element.querySelectorAll('td[aria-colindex="1"]')[0].textContent).toBe('Airways');
             (pivotGridObj.element.querySelector('.e-firstcell') as HTMLInputElement).click();
         });
@@ -159,6 +159,7 @@ describe('Group By Date feature', () => {
         });
         it('check sorting order field', () => {
             expect(pivotGridObj.element.querySelectorAll('td[aria-colindex="1"]')[0].textContent).toBe('Four wheelers');
+            pivotGridObj.enableValueSorting = false;
             let pivotButtons: HTMLElement[] = [].slice.call(pivotGridObj.element.querySelector('.e-rows').querySelectorAll('.e-pivot-button'));
             expect(pivotButtons.length).toBe(2);
             expect((pivotButtons[0]).querySelector('.e-ascend')).toBeTruthy;
@@ -392,7 +393,6 @@ describe('Group By Date feature', () => {
             (document.querySelector('#' + pivotGridObj.element.id + '_custom_ungroup') as HTMLElement).click();
             setTimeout(() => {
                 expect(pivotGridObj.element.querySelectorAll('th[aria-colindex="2"]')[0].textContent).toBe('20');
-                pivotGridObj.enableValueSorting = false;
                 done();
             }, 100);
         });

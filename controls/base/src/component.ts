@@ -364,7 +364,7 @@ export abstract class Component<ElementType extends HTMLElement> extends Base<El
         this.localObserver = new Observer(this);
         onIntlChange.on('notifyExternalChange', this.detectFunction, this, this.randomId);
         // Based on the considered control list we have count the instance
-        if (typeof window !== 'undefined' && typeof document !== 'undefined' && !validateLicense()) {
+        if (typeof window !== 'undefined' && typeof document !== 'undefined' && !validateLicense(this.getModuleName())) {
             if (componentList.indexOf(this.getModuleName()) !== -1) {
                 instancecount = instancecount + 1;
                 if (instancecount > 5) {

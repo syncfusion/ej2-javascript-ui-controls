@@ -2,13 +2,49 @@
 
 ## [Unreleased]
 
-## 30.2.7 (2025-08-26)
+## 31.1.17 (2025-09-05)
+
+### RichTextEditor
+
+#### Bug Fixes
+
+- `#I757135` - Now, the Rich Text Editor works properly when typing a hyphen (-) in `www-prefixed` text, allowing the auto-linking feature to continue without breaking.
+
+- Now, the Rich Text Editor Enter key action works properly after pressing the Shift + Enter keys action.
+
+#### Features
+
+- **Checklist insertion**: The Rich Text Editor now supports interactive checklists, enabling users to create lists with checkable items for better task tracking and organization. A checklist can be applied to selected text using the Ctrl + Shift + 9 shortcut, and the state of selected items can be toggled using Ctrl + Enter. Please find the demo link [here](https://ej2.syncfusion.com/demos/#/tailwind3/rich-text-editor/tools.html).
+
+- **External Media Drag and Drop**: This feature allows users to easily drag and drop video and audio files directly into the Rich Text Editor, providing a seamless multimedia content integration experience. Users can simply drag media files from their file system and drop them into the editor to embed them instantly. Please find the demo link [here](https://ej2.syncfusion.com/demos/#/bootstrap5/rich-text-editor/insert-media.html).
+
+- **Selection Change Event**: The Rich Text Editor now supports the [`selectionChanged`](https://ej2.syncfusion.com/documentation/api/rich-text-editor/#selectionChanged) event, triggered when a non-empty selection—text, image, or range—is made or updated via mouse, keyboard, or code. It provides detailed context through [`selectionChangedEventArgs`](https://ej2.syncfusion.com/documentation/api/rich-text-editor/selectionChangedEventArgs/), and works in both HTML and Markdown modes, enabling dynamic UI updates and custom logic. Please find the demo link [here](https://ej2.syncfusion.com/demos/#/tailwind3/rich-text-editor/client-side-events.html).
+
+- **Bullet/Number List via Execute Command**: Added support for `BulletFormatList` and `NumberFormatList` in the [`executeCommand`](https://ej2.syncfusion.com/documentation/api/rich-text-editor/#executecommand) method. These commands allow developers to programmatically apply numbered and bulleted list formatting to selected content within the Rich Text Editor.
+
+- **Table Properties Enhancement**: The Rich Text Editor now supports enhanced table customization features. Users can modify border color, style, and width, as well as table width, background color, cell spacing, and cell padding. All styling changes are instantly previewed within the editor for a seamless editing experience. Please find the demo link [here](https://ej2.syncfusion.com/demos/#/tailwind3/rich-text-editor/tools.html).
+
+- **Table Row/Column Quick Insert**: The Rich Text Editor now features an intuitive mechanism for inserting rows and columns. When users hover over the first row's columns or the first column's cells, a subtle dot icon appears. Hovering over this dot reveals a `+` icon, which users can click to instantly insert a new row or column at that position. Please find the demo link [here](https://ej2.syncfusion.com/demos/#/tailwind3/rich-text-editor/tools.html).
+
+- **Source Code View Alignment**: The Rich Text Editor now supports a more polished source code view, featuring improved formatting and indentation for both block-level and inline HTML elements. This enhancement ensures a cleaner, more readable, and user-friendly editing experience. Please find the demo link [here](https://ej2.syncfusion.com/demos/#/tailwind3/rich-text-editor/tools.html).
+
+#### Breaking Changes
+
+The [fileUploadSuccess](https://ej2.syncfusion.com/documentation/api/rich-text-editor/#fileuploadsuccess) event type is now changed to [MediaSuccessEventArgs](https://ej2.syncfusion.com/documentation/api/rich-text-editor/mediaSuccessEventArgs/).
+
+| Event Name                                                                                             | Previous Type      | Current Type         |
+|-------------------|---------------------------------------------------------------------------------------------------------|-----------------------|
+| [fileUploadSuccess](https://ej2.syncfusion.com/documentation/api/rich-text-editor/#fileuploadsuccess)  | object             | [MediaSuccessEventArgs](https://ej2.syncfusion.com/documentation/api/rich-text-editor/mediaSuccessEventArgs/) |
+
+## 30.2.6 (2025-08-19)
 
 ### RichTextEditor
 
 #### Bug Fixes
 
 - `#I754192` - Now, the Rich Text Editor works properly when a binding value is wrapped with a `<div>`, and no extra `<p>` tags are added.
+
+- `#I753955` - Now, the image with the table will be pasted into the editor in the Safari browser.
 
 ## 30.2.5 (2025-08-13)
 

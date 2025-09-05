@@ -410,7 +410,6 @@ describe('Classic layout spec', () => {
         });
         it('Expand second member in row', (done: Function) => {
             setTimeout(() => {
-                debugger
                 expect(pivotGridObj.engineModule.pivotValues.length === 22).toBeTruthy();
                 (document.querySelectorAll('.e-collapse')[2] as HTMLElement).click();
                 done();
@@ -1082,6 +1081,122 @@ describe('Classic layout spec', () => {
                 util.triggerEvent(li, 'mouseover');
                 done();
             }, 1000);
+        });
+    });
+
+    describe('Dynamic value sorting', () => {
+        let pivotGridObj: PivotView;
+        let elem: HTMLElement = createElement('div', { id: 'PivotGrid', styles: 'height:200px; width:1000px' });
+        afterAll(() => {
+            if (pivotGridObj) {
+                pivotGridObj.destroy();
+            }
+            remove(elem);
+        });
+        beforeAll((done: Function) => {
+            if (!document.getElementById(elem.id)) {
+                document.body.appendChild(elem);
+            }
+            let dataBound: EmitType<Object> = () => { done(); };
+            pivotGridObj = new PivotView({
+                dataSourceSettings: {
+                    dataSource: pivotDatas as IDataSet[],
+                    valueSortSettings: { headerDelimiter: "##", columnHeaderText: 'male##quantity', columnSortOrder: "Ascending", rowHeaderText: 'New Jercy', rowSortOrder: 'Descending' },
+                    sortSettings: [{ name: 'company', order: 'Descending' }, { name: 'product', order: 'Descending', membersOrder: ['Jet', 'Flight', 'Van'] }],
+                    rows: [{ name: 'state' }, { name: 'age' }],
+                    formatSettings: [{ name: 'balance', format: 'C' }, { name: 'date', format: 'dd/MM/yyyy', type: 'date' }],
+                    columns: [{ name: 'gender' }, { name: 'advance' }],
+                    values: [{ name: 'balance' }, { name: 'quantity' }],
+                    expandAll: true,
+                    enableSorting: true,
+                    allowValueFilter: true,
+                    allowLabelFilter: true,
+                    filterSettings: [
+                        { name: 'date', type: 'Date', condition: 'Between', value1: new Date('02/16/2000'), value2: new Date('02/16/2002') },
+                    ],
+                    fieldMapping: [{ name: 'product', dataType: 'string' },
+                    { name: 'company', caption: 'Company' },
+                    { name: 'pno', caption: 'Phone No' },
+                    { name: 'email', caption: 'Email' },
+                    { name: 'age', caption: 'Age' },
+                    { name: 'guid', caption: 'Guid' }],
+                },
+                height: 800,
+                width: 800,
+                enableValueSorting: true,
+                dataBound: dataBound
+            });
+            pivotGridObj.appendTo('#PivotGrid');
+        });
+        it('values testing', (done: Function) => {
+            setTimeout(() => {
+                expect((pivotGridObj.engineModule.pivotValues[12][7] as IDataSet).formattedText).toBe("$1,855.77");
+                done();
+            }, 1000);
+        });
+    });
+    describe('Dynamic value sorting - row axis', () => {
+        let pivotGridObj: PivotView;
+        let elem: HTMLElement = createElement('div', { id: 'PivotGrid', styles: 'height:200px; width:1000px' });
+        afterAll(() => {
+            if (pivotGridObj) {
+                pivotGridObj.destroy();
+            }
+            remove(elem);
+        });
+        beforeAll((done: Function) => {
+            if (!document.getElementById(elem.id)) {
+                document.body.appendChild(elem);
+            }
+            let dataBound: EmitType<Object> = () => { done(); };
+            pivotGridObj = new PivotView({
+                dataSourceSettings: {
+                    dataSource: pivotDatas as IDataSet[],
+                    valueSortSettings: { headerDelimiter: "##", columnHeaderText: 'male##quantity', columnSortOrder: "Ascending", rowHeaderText: 'New Jercy', rowSortOrder: 'Descending' },
+                    sortSettings: [{ name: 'company', order: 'Descending' }, { name: 'product', order: 'Descending', membersOrder: ['Jet', 'Flight', 'Van'] }],
+                    rows: [{ name: 'state' }, { name: 'age' }],
+                    formatSettings: [{ name: 'balance', format: 'C' }, { name: 'date', format: 'dd/MM/yyyy', type: 'date' }],
+                    columns: [{ name: 'gender' }, { name: 'advance' }],
+                    values: [{ name: 'balance' }, { name: 'quantity' }],
+                    expandAll: true,
+                    enableSorting: true,
+                    allowValueFilter: true,
+                    allowLabelFilter: true,
+                    filterSettings: [
+                        { name: 'date', type: 'Date', condition: 'Between', value1: new Date('02/16/2000'), value2: new Date('02/16/2002') },
+                    ],
+                    fieldMapping: [{ name: 'product', dataType: 'string' },
+                    { name: 'company', caption: 'Company' },
+                    { name: 'pno', caption: 'Phone No' },
+                    { name: 'email', caption: 'Email' },
+                    { name: 'age', caption: 'Age' },
+                    { name: 'guid', caption: 'Guid' }],
+                    valueAxis: 'row'
+                },
+                height: 800,
+                width: 800,
+                enableValueSorting: true,
+                dataBound: dataBound
+            });
+            pivotGridObj.appendTo('#PivotGrid');
+        });
+        it('values testing', (done: Function) => {
+            setTimeout(() => {
+                expect((pivotGridObj.engineModule.pivotValues[12][7] as IDataSet).formattedText).toBe("$1,663.84");
+                done();
+            }, 500);
+        });
+        it('set sub-total position as bottom', (done: Function) => {
+            setTimeout(() => {
+                pivotGridObj.dataSourceSettings.subTotalsPosition = "Bottom";
+                done();
+            }, 500);
+        });
+        it('values testing - row axis', (done: Function) => {
+            setTimeout(() => {
+                expect((pivotGridObj.engineModule.pivotValues[12][7] as IDataSet).formattedText).toBe("$1,663.84");
+                done();
+            }, 500);
         });
     });
 

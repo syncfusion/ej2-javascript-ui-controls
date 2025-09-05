@@ -1,16 +1,12 @@
-import { BlockAction } from '../../actions/index';
 import { BlockEditor } from '../../base/index';
-import { BlockModel } from '../../models/index';
+import { BlockModel, HeadingProps } from '../../models/index';
 import { handleExistingContentElement } from './block-utils';
-
 
 export class HeadingRenderer {
     private editor: BlockEditor;
-    private parent: BlockAction;
 
-    constructor(editor: BlockEditor, parent: BlockAction) {
+    constructor(editor: BlockEditor) {
         this.editor = editor;
-        this.parent = parent;
     }
 
     /**
@@ -23,18 +19,19 @@ export class HeadingRenderer {
      * @hidden
      */
     public renderHeading(block: BlockModel, blockElement: HTMLElement, existingContentElement?: HTMLElement | Node): HTMLElement {
-        const level: string = block.type.charAt(block.type.length - 1);
+        const headingProps: HeadingProps = block.props as HeadingProps;
+        headingProps.placeholder = this.editor.getPlaceholderValue(block);
 
-        const heading: HTMLElement = this.editor.createElement(`h${level}`, {
+        const heading: HTMLElement = this.editor.createElement(`h${headingProps.level}`, {
             attrs: {
                 contenteditable: 'true',
-                placeholder: this.editor.getPlaceholderValue(block.type, block.placeholder)
+                placeholder: headingProps.placeholder
             }
         });
         if (existingContentElement) {
             handleExistingContentElement(block, blockElement, heading, existingContentElement);
         } else {
-            this.parent.contentRenderer.renderContent(block, heading);
+            this.editor.blockRendererManager.contentRenderer.renderContent(block, heading);
         }
 
         return heading;

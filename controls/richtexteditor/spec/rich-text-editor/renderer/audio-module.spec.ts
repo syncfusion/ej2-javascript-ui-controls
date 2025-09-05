@@ -6,7 +6,9 @@ import { RichTextEditor, QuickToolbar, IQuickToolbar } from './../../../src/inde
 import { NodeSelection } from './../../../src/selection/index';
 import { DialogType } from "../../../src/common/enum";
 import { renderRTE, destroy, setCursorPoint, dispatchEvent, androidUA, iPhoneUA, currentBrowserUA } from "./../render.spec";
-import { BASIC_MOUSE_EVENT_INIT, DELETE_EVENT_INIT } from '../../constant.spec';
+import { BASIC_MOUSE_EVENT_INIT, DELETE_EVENT_INIT, BACKSPACE_EVENT_INIT } from '../../constant.spec';
+import * as classes from '../../../src/rich-text-editor/base/classes';
+import * as events from '../../../src/rich-text-editor/base/constant';
 
 function getQTBarModule(rteObj: RichTextEditor): QuickToolbar {
     return rteObj.quickToolbarModule;
@@ -850,7 +852,6 @@ describe('Audio Module', () => {
             }, 200);
         });
     });
-
     describe(' ActionComplete event triggered twice when replace the inserted audio using quicktoolbar - ', () => {
         let rteObj: RichTextEditor;
         let controlId: string;
@@ -2636,5 +2637,670 @@ describe('Audio Module', () => {
             }, 200);
         });
     });
-});
 
+    describe('Backspace behavior after inserting text following an audio element', () => {
+        let rteEle: HTMLElement;
+        let rteObj: RichTextEditor;
+        let innerHTML1: string = `
+        <p>Testing</p>
+        <span class="e-audio-wrap" contenteditable="false" title="audio.mp3">
+            <audio class="e-rte-audio e-audio-inline" controls="">
+                <source src="https://example.com/audio.mp3" type="audio/mp3">
+            </audio>
+        </span>
+        <span class="text-node">Some text</span>`;
+        let keyBoardEvent: any = { type: 'keydown', preventDefault: () => { }, ctrlKey: true, key: 'backspace', stopPropagation: () => { }, shiftKey: false, which: 8 };
+        beforeAll(() => {
+            rteObj = renderRTE({
+                height: 400,
+                toolbarSettings: {
+                    items: ['Audio', 'Bold']
+                },
+                value: innerHTML1
+            });
+            rteEle = rteObj.element;
+        });
+        afterAll(() => {
+            destroy(rteObj);
+        });
+        it('Audio backsapce action checking using backspace key', (done: Function) => {
+            let node: any = rteObj.inputElement.querySelector('.text-node').childNodes[0];
+            setCursorPoint(node, node.textContent.length);
+            const backspaceKeyDownEvent: KeyboardEvent = new KeyboardEvent('keydown', BACKSPACE_EVENT_INIT);
+            rteObj.inputElement.dispatchEvent(backspaceKeyDownEvent);
+            setTimeout(() => {
+                expect((rteObj as any).inputElement.querySelector('.text-node').textContent !== 'Sometext').toBe(true);
+                done();
+            }, 200);
+        });
+    });
+    describe('Audio Module insertDragAudio - drop scenarios', () => {
+        let rteObj: any;
+        beforeEach(() => {
+            rteObj = renderRTE({
+                toolbarSettings: { items: ['Audio'] },
+                insertAudioSettings: { allowedTypes: ['.mp3'] }
+            });
+        });
+
+        afterEach(() => destroy(rteObj));
+
+        it('should insert audio only for single file drop, and not insert for multiple or no files', (done: DoneFn) => {
+            // --- 1. Single audio file drop: should insert audio ---
+            rteObj.value = `<p>This is a text content.</p>`;
+            rteObj.dataBind();
+            const paragraphForSingleDrop = rteObj.inputElement.querySelector('p');
+            const audioFile = new File(['dummy'], 'test.mp3', { type: 'audio/mp3' });
+            const singleTransfer = new DataTransfer();
+            singleTransfer.items.add(audioFile);
+            const singleDropEvent = new DragEvent('drop', { dataTransfer: singleTransfer });
+            paragraphForSingleDrop.dispatchEvent(singleDropEvent);
+
+            setTimeout(() => {
+                expect(rteObj.inputElement.querySelectorAll('.e-audio-wrap').length).toBe(1);
+
+                // --- 2. Multiple file drop: should NOT insert audio ---
+                while (rteObj.inputElement.querySelector('.e-audio-wrap')) {
+                    rteObj.inputElement.querySelector('.e-audio-wrap').remove();
+                }
+
+                rteObj.value = `<p>This is a text content.</p>`;
+                rteObj.dataBind();
+                const paragraphForMultiDrop = rteObj.inputElement.querySelector('p');
+                const audioFile2 = new File(['dummy2'], 'test2.mp3', { type: 'audio/mp3' });
+                const multiTransfer = new DataTransfer();
+                multiTransfer.items.add(audioFile);
+                multiTransfer.items.add(audioFile2);
+                const multiDropEvent = new DragEvent('drop', { dataTransfer: multiTransfer });
+                paragraphForMultiDrop.dispatchEvent(multiDropEvent);
+
+                setTimeout(() => {
+                    expect(rteObj.inputElement.querySelectorAll('.e-audio-wrap').length).toBe(0);
+
+                    // --- 3. Empty (no files) drop: should NOT insert audio ---
+                    rteObj.value = `<p>This is a text content.</p>`;
+                    rteObj.dataBind();
+                    const paragraphForEmptyDrop = rteObj.inputElement.querySelector('p');
+                    const emptyTransfer = new DataTransfer();
+                    const emptyDropEvent = new DragEvent('drop', { dataTransfer: emptyTransfer });
+                    paragraphForEmptyDrop.dispatchEvent(emptyDropEvent);
+
+                    setTimeout(() => {
+                        expect(rteObj.inputElement.querySelectorAll('.e-audio-wrap').length).toBe(0);
+                        done();
+                    }, 75);
+                }, 75);
+            }, 75);
+        });
+    });
+
+    describe('RTE Drag and Drop Audio with paste restrictions', () => {
+        let rteObj: RichTextEditor;
+        let ele: HTMLElement;
+        let element: HTMLElement;
+        let audioSize: number;
+        let size: number;
+        let sizeInBytes: number;
+        beforeAll((done: Function) => {
+            element = createElement('form', {
+                id: "form-element", innerHTML:
+                    ` <div class="form-group">
+                        <textarea id="defaultRTE" name="defaultRTE" required maxlength="100" minlength="20" data-msg-containerid="dateError">
+                        </textarea>
+                        <div id="dateError"></div>
+                    </div>
+                    ` });
+            document.body.appendChild(element);
+            rteObj = new RichTextEditor({
+                insertAudioSettings: {
+                    saveUrl: 'http://aspnetmvc.syncfusion.com/services/api/uploadbox/Save',
+                },
+                value: `<div><p>First p node-0</p></div>`,
+                placeholder: 'Type something',
+                fileUploading: function (args) {
+                    expect(rteObj.toolbarModule.baseToolbar.toolbarObj.element.classList.contains('e-overlay')).toBe(true);
+                    audioSize = size;
+                    sizeInBytes = args.fileData.size;
+                    if (audioSize < sizeInBytes) {
+                        args.cancel = true;
+                    }
+                }
+            });
+            rteObj.appendTo('#defaultRTE');
+            done();
+        });
+        afterAll((done: Function) => {
+            destroy(rteObj);
+            detach(element);
+            detach(document.querySelector('.e-audio-inline'));
+            done();
+        });
+        it(" Check audio after drop", function (done: Function) {
+            let fileObj: File = new File(["Nice One"], "sample.mp3", { lastModified: 0, type: "audio/mp3" });
+            let event: any = { clientX: 40, clientY: 294, target: rteObj.contentModule.getEditPanel(), dataTransfer: { files: [fileObj] }, preventDefault: function () { return; } };
+            (rteObj.audioModule as any).getDropRange(event.clientX, event.clientY);
+            (rteObj.audioModule as any).dragDrop(event);
+            ele = rteObj.element.getElementsByTagName('audio')[0];
+            setTimeout(() => {
+                expect(rteObj.element.getElementsByTagName('audio').length).toBe(1);
+                expect(ele.classList.contains('e-rte-audio')).toBe(true);
+                expect(ele.classList.contains('e-audio-inline')).toBe(true);
+                done();
+            }, 1000);
+        });
+    });
+
+
+    describe('Provide event to restrict the audio insertion when drag and drop', () => {
+        let rteObj: RichTextEditor;
+        let ele: HTMLElement;
+        let element: HTMLElement;
+        beforeAll((done: Function) => {
+            element = createElement('form', {
+                id: "form-element", innerHTML:
+                    ` <div class="form-group">
+                    <textarea id="defaultRTE" name="defaultRTE" required maxlength="100" minlength="20" data-msg-containerid="dateError">
+                    </textarea>
+                    <div id="dateError"></div>
+                </div>
+                ` });
+            document.body.appendChild(element);
+            rteObj = new RichTextEditor({
+                insertAudioSettings: {
+                    saveUrl: 'http://aspnetmvc.syncfusion.com/services/api/uploadbox/Save',
+                },
+                value: `<div><p>First p node-0</p></div>`,
+                placeholder: 'Type something',
+                beforeMediaDrop: beforeMediaDropFunc
+            });
+            function beforeMediaDropFunc(args: any): void {
+                args.cancel = true;
+            }
+            rteObj.appendTo('#defaultRTE');
+            done();
+        });
+        afterAll((done: Function) => {
+            destroy(rteObj);
+            detach(element);
+            detach(document.querySelector('.e-audio-inline'))
+            done();
+        });
+        it("audioDrop event args.cancel as `true` check", function () {
+            let fileObj: File = new File(["Nice One"], "sample.mp3", { lastModified: 0, type: "audio/mp3" });
+            let event: any = { clientX: 40, clientY: 294, target: rteObj.contentModule.getEditPanel(), dataTransfer: { files: [fileObj] }, preventDefault: function () { return; } };
+            (rteObj.audioModule as any).getDropRange(event.clientX, event.clientY);
+            (rteObj.audioModule as any).dragDrop(event);
+            ele = rteObj.element.getElementsByTagName('audio')[0];
+            expect(rteObj.element.getElementsByTagName('audio').length).toBe(0);
+        });
+    });
+
+    describe('Audio Module - External Drag and Drop', () => {
+        let rteObj: RichTextEditor;
+        let element: HTMLElement;
+        let actionCompleteCalled: boolean = false;
+
+        beforeAll((done: Function) => {
+            element = createElement('form', {
+                id: "form-element",
+                innerHTML: `<div class="form-group">
+                <textarea id="defaultRTE" name="defaultRTE"></textarea>
+            </div>`
+            });
+            document.body.appendChild(element);
+
+            rteObj = new RichTextEditor({
+                insertAudioSettings: {
+                    saveUrl: 'http://aspnetmvc.syncfusion.com/services/api/uploadbox/Save',
+                },
+                value: `<div><p>First p node-0</p></div>`,
+                placeholder: 'Type something',
+                actionComplete: function (args: any): void {
+                    actionCompleteCalled = true;
+                }
+            });
+
+            rteObj.appendTo('#defaultRTE');
+            done();
+        });
+
+        afterAll((done: Function) => {
+            destroy(rteObj);
+            detach(element);
+            done();
+        });
+        it("Should not insert audio if actionBegin callback sets cancel = true", function (done) {
+            let fileObj = new File(["Audio content"], "sample.mp3", { type: "audio/mp3" });
+            rteObj.inputElement.contentEditable = 'true';
+
+            // Spy on parent.trigger to simulate actionBegin event and set cancel=true
+            spyOn(rteObj, "trigger").and.callFake(function (eventName: any, args: any, callback: Function) {
+                // If it's actionBegin and the callback exists, simulate cancel
+                if (eventName === events.actionBegin && typeof callback === "function") {
+                    args.cancel = true;
+                    callback(args);
+                }
+                // For all other events, call original handler if present
+                if (eventName === events.beforeMediaDrop && typeof callback === "function") {
+                    callback(args);
+                }
+                return;
+            });
+
+            // Spy on formatter.process to make sure it's NOT called
+            const processSpy = spyOn(rteObj.formatter, "process");
+
+            let event = {
+                clientX: 40,
+                clientY: 294,
+                target: rteObj.contentModule.getEditPanel(),
+                dataTransfer: { files: [fileObj] },
+                preventDefault: function () { }
+            };
+
+            (rteObj.audioModule as any).dragDrop(event);
+
+            setTimeout(() => {
+                // There should be no audio element inserted
+                expect(rteObj.inputElement.querySelectorAll('audio').length).toBe(0);
+                // Formatter should not be called
+                expect(processSpy).not.toHaveBeenCalled();
+                done();
+            }, 150);
+        });
+
+        it("Should not insert audios when dropped on toolbar", function (done: Function) {
+            // Create an audio file mock
+            let fileObj: File = new File(["Audio content"], "sample.mp3", { lastModified: 0, type: "audio/mp3" });
+
+            // Create drop event with external file targeting toolbar
+            let event: any = {
+                clientX: 40,
+                clientY: 20, // Position at toolbar
+                target: rteObj.element.querySelector('.e-toolbar'),
+                dataTransfer: { files: [fileObj] },
+                preventDefault: function () { return; }
+            };
+
+            // Count audios before drop
+            const initialCount = rteObj.inputElement.querySelectorAll('audio').length;
+
+            // Call the drag drop handler
+            (rteObj.audioModule as any).dragDrop(event);
+
+            // Check that no additional audio was inserted
+            setTimeout(() => {
+                expect(rteObj.inputElement.querySelectorAll('audio').length).toBe(initialCount);
+                done();
+            }, 200);
+        });
+
+        it("Check audio after drop with file size validation", function (done: Function) {
+            // Set up size validation in fileUploading event
+            let size = 7; // Small size to force validation failure
+            rteObj.fileUploading = function (args) {
+                if (size < args.fileData.size) {
+                    args.cancel = true;
+                }
+            };
+
+            // Create an audio file mock
+            let fileObj: File = new File(["Audio content that should be larger than size limit"], "sample.mp3", { lastModified: 0, type: "audio/mp3" });
+
+            // Create drop event with external file
+            let event: any = {
+                clientX: 40,
+                clientY: 294,
+                target: rteObj.contentModule.getEditPanel(),
+                dataTransfer: { files: [fileObj] },
+                preventDefault: function () { return; }
+            };
+
+            // Count audios before drop
+            const initialCount = rteObj.inputElement.querySelectorAll('audio').length;
+
+            // Call the drag drop handler
+            (rteObj.audioModule as any).dragDrop(event);
+
+            // Should reject the file due to size
+            setTimeout(() => {
+                expect(rteObj.inputElement.querySelectorAll('audio').length).toBe(initialCount);
+                done();
+            }, 200);
+        });
+
+        it("Should return early when uploadArea exists", function () {
+            let fileObj = new File(["Audio content"], "sample.mp3", { type: "audio/mp3" });
+
+            // Create a droparea element
+            const dropArea = document.createElement('div');
+            dropArea.className = classes.CLS_DROPAREA;
+            rteObj.element.appendChild(dropArea);
+
+            let event = {
+                clientX: 40,
+                clientY: 294,
+                target: rteObj.contentModule.getEditPanel(),
+                dataTransfer: { files: [fileObj] },
+                preventDefault: function () { }
+            };
+
+            const spy = spyOn(rteObj.audioModule as any, 'insertDragAudio');
+
+            (rteObj.audioModule as any).dragDrop(event);
+
+            expect(spy).not.toHaveBeenCalled();
+
+            // Clean up
+            rteObj.element.removeChild(dropArea);
+        });
+
+        // Test for non-audio drop (isAudioOrFileDrop = false)
+        it("Should handle non-audio drop", function () {
+            // Create event with empty files array
+            let event = {
+                clientX: 40,
+                clientY: 294,
+                target: rteObj.contentModule.getEditPanel(),
+                dataTransfer: { files: [] as File[] },
+                preventDefault: function () { }
+            };
+
+            const spy = spyOn(rteObj.audioModule as any, 'insertDragAudio');
+
+            (rteObj.audioModule as any).dragDrop(event);
+
+            expect(spy).not.toHaveBeenCalled();
+        });
+    });
+
+    describe('Audio popup toolbar with null element', function () {
+        let rteObj: RichTextEditor;
+        let container: HTMLDivElement;
+
+        beforeEach((done: DoneFn) => {
+            container = document.createElement('div');
+            document.body.appendChild(container);
+            rteObj = new RichTextEditor({
+                insertAudioSettings: { saveFormat: "Base64" },
+                toolbarSettings: { items: ['Audio'] },
+                quickToolbarSettings: { enable: true }
+            });
+            rteObj.appendTo(container);
+            done();
+        });
+
+        afterEach((done: DoneFn) => {
+            rteObj.destroy();
+            document.body.removeChild(container);
+            done();
+        });
+
+        it('should show audio popup toolbar when audio element exists', (done: DoneFn) => {
+            const expectedAudioUrl = "/base/spec/content/audio/RTE-Audio.mp3";
+            rteObj.value = `<audio class="e-rte-audio" src="${expectedAudioUrl}" controls>
+            <source src="${expectedAudioUrl}" type="audio/mp3"></audio>`;
+            rteObj.dataBind();
+
+            const audioElem = rteObj.inputElement.querySelector(`audio[src="${expectedAudioUrl}"]`) as HTMLElement;
+            expect(audioElem).not.toBeNull();
+
+            setCursorPoint(audioElem, 0);
+
+            // Simulate mousedown/mouseup to user interaction
+            audioElem.dispatchEvent(new MouseEvent('mousedown', { bubbles: true }));
+            audioElem.dispatchEvent(new MouseEvent('mouseup', { bubbles: true }));
+
+            // Call the editor's click handler
+            (rteObj.audioModule as any).editAreaClickHandler({ args: { target: audioElem, which: 1 } });
+
+            setTimeout(() => {
+                // Check in both body and the editor element
+                const quickPopup = document.body.querySelector('.e-rte-quick-popup') ||
+                    rteObj.element.querySelector('.e-rte-quick-popup');
+                expect(quickPopup).not.toBeNull();
+                expect((quickPopup as HTMLElement).style.display).not.toBe('none');
+                done();
+            }, 150);
+        });
+        it('should NOT show audio popup toolbar when audio element is null', (done: DoneFn) => {
+            // Create an audio element that is NOT in the RTE content
+            const testAudioElem = document.createElement('audio');
+            setCursorPoint(testAudioElem, 0);
+
+            // Simulate mousedown/mouseup
+            testAudioElem.dispatchEvent(new MouseEvent('mousedown', { bubbles: true }));
+            testAudioElem.dispatchEvent(new MouseEvent('mouseup', { bubbles: true }));
+
+            (rteObj.audioModule as any).editAreaClickHandler({ args: { target: testAudioElem, which: 1 } });
+
+            setTimeout(() => {
+                // Check in both body and the editor element; expect null!
+                const quickPopup = document.body.querySelector('.e-rte-quick-popup') ||
+                    rteObj.element.querySelector('.e-rte-quick-popup');
+                expect(quickPopup).toBeNull();
+                done();
+            }, 150);
+        });
+    });
+    describe('onSelect drops audio file and triggers upload', () => {
+        let rteObj: RichTextEditor;
+        let dragFile: File;
+        let dragDataTransfer: { files: File[] };
+        let dragEvent: any;
+
+        beforeEach((done: DoneFn) => {
+            rteObj = renderRTE({});
+            dragFile = new File(["Audio Data"], "dragged-audio.mp3", { type: "audio/mp3" });
+            dragDataTransfer = { files: [dragFile] };
+            dragEvent = {
+                dataTransfer: dragDataTransfer,
+                preventDefault: jasmine.createSpy('preventDefault')
+            };
+            (rteObj as any).insertAudioSettings = { path: "", layoutOption: "Inline" };
+            rteObj.contentModule.getEditPanel().innerHTML = '';
+            done();
+        });
+
+        afterEach((done: DoneFn) => {
+            rteObj.destroy();
+            done();
+        });
+
+        it('should handle audio drop and upload when actionBeginArgs.cancel is false and audio is rendered with source', (done: DoneFn) => {
+            spyOn(rteObj.formatter, 'process').and.callFake(() => {
+                rteObj.contentModule.getEditPanel().innerHTML =
+                    '<audio class="e-rte-audio" controls><source src="dragged-audio.mp3" type="audio/mp3"></audio>';
+            });
+
+            const uploadMethodSpy = spyOn(rteObj.audioModule as any, 'uploadMethod');
+            spyOn(rteObj, 'trigger').and.callFake(function (_eventName: string, args: any, callback?: Function) {
+                if (typeof callback === 'function') {
+                    callback(Object.assign({}, args, {
+                        cancel: false,
+                        originalEvent: dragEvent
+                    }));
+                }
+            });
+
+            (rteObj.audioModule as any).onSelect(dragEvent as DragEvent);
+
+            setTimeout(() => {
+                expect(uploadMethodSpy).toHaveBeenCalled();
+                const audio = rteObj.contentModule.getEditPanel().querySelector('audio');
+                expect(audio).not.toBeNull();
+                expect((audio as HTMLAudioElement).style.opacity).toBe('0.5');
+                const source = audio!.querySelector('source');
+                expect(source).not.toBeNull();
+                expect((source as HTMLSourceElement).getAttribute('src')).toBe('dragged-audio.mp3');
+                done();
+            }, 10);
+        });
+
+        it('should call originalEvent.preventDefault when actionBeginArgs.cancel is true', () => {
+            spyOn(rteObj, 'trigger').and.callFake(function (_eventName: string, args: any, callback?: Function) {
+                if (typeof callback === 'function') {
+                    callback(Object.assign({}, args, {
+                        cancel: true,
+                        originalEvent: dragEvent
+                    }));
+                }
+            });
+
+            (rteObj.audioModule as any).onSelect(dragEvent as DragEvent);
+            expect(dragEvent.preventDefault).toHaveBeenCalled();
+        });
+
+        it('should skip upload if audio element is not available after drop', () => {
+            spyOn(rteObj.formatter, 'process').and.callFake(() => {
+            });
+
+            const uploadMethodSpy = spyOn(rteObj.audioModule as any, 'uploadMethod');
+            spyOn(rteObj, 'trigger').and.callFake(function (_eventName: string, args: any, callback?: Function) {
+                if (typeof callback === 'function') {
+                    callback(Object.assign({}, args, {
+                        cancel: false,
+                        originalEvent: dragEvent
+                    }));
+                }
+            });
+            (rteObj.audioModule as any).onSelect(dragEvent as DragEvent);
+            expect(uploadMethodSpy).not.toHaveBeenCalled();
+        });
+    });
+    describe('dragOver functionality across different browsers', () => {
+        let rteObj: RichTextEditor;
+        let dragEvent: any;
+        let backupBrowserName: string;
+
+        beforeEach((done: DoneFn) => {
+            rteObj = renderRTE({});
+            dragEvent = {
+                dataTransfer: {
+                    items: [{ type: "audio/mp3" }],
+                    types: ["Files"]
+                },
+                preventDefault: jasmine.createSpy('preventDefault')
+            };
+            // Backup the browser name (info.name)
+            backupBrowserName = Browser.info.name;
+            done();
+        });
+
+        afterEach((done: DoneFn) => {
+            destroy(rteObj);
+            // Restore the browser name
+            Browser.info.name = backupBrowserName;
+            done();
+        });
+
+        it('should call preventDefault for Edge browsers when dragging audio', () => {
+            Browser.info.name = 'edge';
+            dragEvent.dataTransfer.items = [{ type: 'audio/mp3' }];
+            const result = (rteObj.audioModule as any).dragOver(dragEvent);
+            expect(dragEvent.preventDefault).toHaveBeenCalled();
+            expect(result).toBeUndefined();
+        });
+
+        it('should call preventDefault for Internet Explorer when types contain Files', () => {
+            Browser.info.name = 'ie';
+            dragEvent.dataTransfer.types = ["Files"];
+            const result = (rteObj.audioModule as any).dragOver(dragEvent);
+            expect(result === undefined || result === true).toBe(true);
+        });
+
+        it('should return true for other browsers or types', () => {
+            Browser.info.name = 'chrome';
+            dragEvent.dataTransfer.items = [{ type: 'text/plain' }];
+            dragEvent.dataTransfer.types = ["text"];
+            const result = (rteObj.audioModule as any).dragOver(dragEvent);
+            expect(dragEvent.preventDefault).not.toHaveBeenCalled();
+            expect(result).toBe(true);
+        });
+    });
+    describe('Audio module undoStack coverage', () => {
+        let rteObj: any;
+        beforeEach(() => {
+            rteObj = renderRTE({
+                toolbarSettings: { items: ['Audio'] }
+            });
+        });
+        afterEach(() => {
+            destroy(rteObj);
+        });
+        it('should cover undoStack when subCommand is not undo/redo', () => {
+            let undoCount = (rteObj as any).formatter.getUndoRedoStack().length;
+            (rteObj as any).audioModule.undoStack({ subCommand: "audio" });
+            expect((rteObj as any).formatter.getUndoRedoStack().length === undoCount).toBe(true);
+        });
+    });
+    describe('AudioModule bindOnEnd else branch coverage', () => {
+        let rteObj: any;
+        beforeEach(() => {
+            rteObj = renderRTE({ toolbarSettings: { items: ['Audio'] } });
+        });
+        afterEach(() => {
+            destroy(rteObj);
+        });
+
+        it('should cover bindOnEnd else-branch when audioObj is already not null', () => {
+            let manager = rteObj.formatter.editorManager;
+            manager.audioObj = {};
+            (rteObj.audioModule as any).bindOnEnd();
+        });
+    });
+    describe('AudioModule addEventListener else path coverage', () => {
+        let rteObj: any;
+        beforeEach(() => {
+            rteObj = renderRTE({ toolbarSettings: { items: ['Audio'] } });
+        });
+        afterEach(() => {
+            destroy(rteObj);
+        });
+
+        it('should cover addEventListener when drop, drag, enter are null', () => {
+            rteObj.audioModule.drop = () => { };
+            rteObj.audioModule.drag = () => { };
+            rteObj.audioModule.enter = () => { };
+            (rteObj as any).audioModule.addEventListener();
+        });
+        it('should cover addEventListener early return when parent.isDestroyed is true', () => {
+            rteObj.isDestroyed = true;
+            (rteObj as any).audioModule.addEventListener();
+            rteObj.isDestroyed = false;
+        });
+    });
+    describe('978382 - Audio element is not deleted when pressing the Delete key', () => {
+        let rteEle: HTMLElement;
+        let rteObj: RichTextEditor;
+        let keyBoardEvent: any = { type: 'keydown', preventDefault: () => { }, action: 'backspace', ctrlKey: true, key: 'backspace', stopPropagation: () => { }, shiftKey: false, which: 8 };
+        let innerHTML1: string = `<p>Using the quick toolbar, users can replace, display, and delete the selected audio.</p>
+<p><span class="e-audio-wrap" contenteditable="false" style="width: 300px; margin: 0px auto;"><span class="e-clickelem"><audio controls="" src="https://cdn.syncfusion.com/ej2/richtexteditor-resources/RTE-Audio.wav"  class="e-rte-audio e-audio-inline" style=""><source type="audio/mp3"/></audio></span></span><br/></p>`;
+        beforeAll(() => {
+            rteObj = renderRTE({
+                height: 400,
+                toolbarSettings: {
+                    items: ['Audio', 'Bold']
+                },
+                value: innerHTML1
+            });
+            rteEle = rteObj.element;
+        });
+        afterAll((done) => {
+            destroy(rteObj);
+            done();
+        });
+        it('Audio delete action checking using backspace key', (done: Function) => {
+            keyBoardEvent.keyCode = 8;
+            keyBoardEvent.code = 'backspace';
+            const range = document.createRange();
+            range.setEndAfter(document.querySelector('.e-clickelem'));
+            range.setStartBefore(document.querySelector('.e-clickelem'));
+            window.getSelection().removeAllRanges();
+            window.getSelection().addRange(range);
+            (rteObj as any).keyDown(keyBoardEvent);
+            expect((<any>rteObj).inputElement.querySelector('.e-audio-wrap')).toBe(null);
+            done();
+        });
+    });
+});

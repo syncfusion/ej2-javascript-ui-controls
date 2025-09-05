@@ -64,7 +64,6 @@ export class ToolbarStatus {
         for (let index: number = 0; index < nodes.length; index++) {
             const closestColOrColgroup: Element = closest(nodes[index as number] as Element, 'col, colgroup');
             if (isNullOrUndefined(closestColOrColgroup)) {
-                // eslint-disable-next-line max-len
                 formatCollection = this.getFormatParent(
                     docElement, formatCollection, nodes[index as number],
                     rootNode, formatNode, fontSize, fontName
@@ -77,6 +76,9 @@ export class ToolbarStatus {
                 }
                 if ((index === 0 && formatCollection.isCodeBlock) || !formatCollection.isCodeBlock) {
                     nodeCollection.isCodeBlock = formatCollection.isCodeBlock;
+                }
+                if ((index === 0 && formatCollection.isCheckList) || !formatCollection.isCheckList) {
+                    nodeCollection.isCheckList = formatCollection.isCheckList;
                 }
                 if ((index === 0 && formatCollection.blockquote) || !formatCollection.blockquote) {
                     nodeCollection.blockquote = formatCollection.blockquote;
@@ -203,7 +205,8 @@ export class ToolbarStatus {
         // Keep traversing up until document root
         while (currentNode && currentNode !== targetNode) {
             const nodeName : string  = currentNode.nodeName.toLowerCase();
-            if (!formatCollection.unorderedlist && nodeName === 'ul' && !isListUpdated && !isComplexListUpdated) {
+            const isCheckListElement: boolean = (currentNode as Element).tagName === 'UL' && (currentNode as Element).classList.contains('e-rte-checklist');
+            if (!formatCollection.unorderedlist && nodeName === 'ul' && !isListUpdated && !isComplexListUpdated && !isCheckListElement) {
                 formatCollection.unorderedlist = true;
                 isListUpdated = true;
                 formatCollection.bulletFormatList = this.isBulletFormatList(currentNode) as string;
@@ -226,6 +229,9 @@ export class ToolbarStatus {
             }
             if (!formatCollection.isCodeBlock && currentNode.nodeName.toLocaleLowerCase() === 'pre' && (currentNode as HTMLElement).hasAttribute('data-language')) {
                 formatCollection.isCodeBlock = true;
+            }
+            if (!formatCollection.isCheckList && isCheckListElement) {
+                formatCollection.isCheckList = true;
             }
             this.collectStyles(currentNode, collectedStyles, docElement, fontName, fontSize);
             currentNode = currentNode.parentNode;

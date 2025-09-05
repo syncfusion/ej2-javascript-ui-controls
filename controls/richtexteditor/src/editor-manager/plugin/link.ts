@@ -1,4 +1,3 @@
-import { EditorManager } from './../base/editor-manager';
 import * as CONSTANT from './../base/constant';
 import { IHtmlItem } from './../base/interface';
 import { ImageDropEventArgs } from '../../common/interface';

@@ -547,15 +547,15 @@ describe('Adaptive renderer', () => {
 
         it('Ensure custom sort dialog columns', () => {
             gridObj.showAdaptiveSortDialog();
-            expect(document.querySelector('.e-responsivecoldiv[data-e-mappingname="CustomerID"]')).toBeNull();
-            expect(document.querySelector('.e-responsivecoldiv[data-e-mappingname="ShipCountry"]')).toBeNull();
+            expect(document.querySelector('.e-responsivecoldiv[data-mappingname="CustomerID"]')).toBeNull();
+            expect(document.querySelector('.e-responsivecoldiv[data-mappingname="ShipCountry"]')).toBeNull();
             (document.querySelector('.e-dlg-closeicon-btn') as HTMLElement).click();
         });
 
         it('Ensure custom filter dialog columns', () => {
             gridObj.showAdaptiveFilterDialog();
-            expect(document.querySelector('.e-responsivecoldiv[data-e-mappingname="CustomerID"]')).toBeNull();
-            expect(document.querySelector('.e-responsivecoldiv[data-e-mappingname="EmployeeID"]')).toBeNull();
+            expect(document.querySelector('.e-responsivecoldiv[data-mappingname="CustomerID"]')).toBeNull();
+            expect(document.querySelector('.e-responsivecoldiv[data-mappingname="EmployeeID"]')).toBeNull();
             (document.querySelector('.e-dlg-closeicon-btn') as HTMLElement).click();
         });
 

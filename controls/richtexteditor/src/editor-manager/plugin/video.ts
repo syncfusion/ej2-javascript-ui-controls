@@ -1,11 +1,9 @@
 import { createElement, isNullOrUndefined as isNOU, detach, addClass, Browser, formatUnit, removeClass } from '@syncfusion/ej2-base';
-import { EditorManager } from './../base/editor-manager';
 import * as CONSTANT from './../base/constant';
 import * as classes from './../base/classes';
 import { IHtmlItem } from './../base/interface';
 import { InsertHtml } from './inserthtml';
 import * as EVENTS from './../../common/constant';
-import { NodeSelection } from '../../selection';
 import { scrollToCursor } from '../../common/util';
 import { IEditorModel } from '../../common/interface';
 
@@ -206,7 +204,7 @@ export class VideoCommand {
                 const focusNode: Node = document.createTextNode(' ');
                 const node: Node = this.parent.nodeSelection.getSelectedNodes(this.parent.currentDocument)[0];
                 wrapElement.parentNode.insertBefore(focusNode, node.nextSibling);
-                const save: NodeSelection = e.item.selection.save(range, this.parent.currentDocument);
+                e.item.selection.save(range, this.parent.currentDocument);
             }
         }
         if (e.callBack && (isNOU(e.selector) || !isNOU(e.selector) && e.selector !== 'pasteCleanupModule')) {

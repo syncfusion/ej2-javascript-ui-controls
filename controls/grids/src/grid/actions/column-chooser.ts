@@ -48,6 +48,9 @@ export class ColumnChooser implements IAction {
     private cBoxFalse: Element;
     private searchBoxObj: SearchBox;
     private searchOperator: string = 'startswith';
+    private sortDirection: string = 'None';
+    private selectedColumnModels: Column[] = [];
+    private selectedColumns: string[] = [];
     private targetdlg: Element;
     private itemsCount: number = 50;
     private infiniteSkipCount: number = 0;
@@ -287,6 +290,10 @@ export class ColumnChooser implements IAction {
             if ((<{ cancel?: boolean }>args).cancel) {
                 return;
             }
+            if (!this.infiniteRenderMode && this.selectedColumns.length && this.sortDirection === 'None' &&
+                !this.parent.columnChooserSettings.template) {
+                this.setOrderedColumns();
+            }
             (<{ columns?: Column[] }>args).columns = null;
             if (target) { this.targetdlg = target; }
             if (this.infiniteRenderMode) {
@@ -380,6 +387,10 @@ export class ColumnChooser implements IAction {
         if ((<{ cancel?: boolean }>args).cancel) {
             return;
         }
+        if (!this.infiniteRenderMode && this.selectedColumns.length && this.sortDirection === 'None' &&
+            !this.parent.columnChooserSettings.template) {
+            this.setOrderedColumns();
+        }
         (<{ columns?: Column[] }>args).columns = null;
         if (this.infiniteRenderMode) {
             this.dlgObj.show();
@@ -464,6 +475,16 @@ export class ColumnChooser implements IAction {
         const columns: Column[] = (this.infiniteRenderMode ? this.infiniteColumns : this.parent.getColumns()).filter((column: Column) => (column.type !== 'checkbox'
          && column.showInColumnChooser === true) || (column.type === 'checkbox' && column.field !== undefined));
         return columns;
+    }
+
+    private setOrderedColumns(): void {
+        this.selectedColumnModels = [];
+        for (let i: number = 0; i < this.selectedColumns.length; i++) {
+            const column: Column = this.parent.getColumnByField(this.selectedColumns[parseInt(i.toString(), 10)]);
+            if (column.showInColumnChooser) {
+                this.selectedColumnModels.push(column);
+            }
+        }
     }
 
     private renderDlgContent(): void {
@@ -737,6 +758,9 @@ export class ColumnChooser implements IAction {
         this.changedColumns = [];
         this.filterColumns = [];
         this.searchValue = '';
+        this.selectedColumnModels = [];
+        this.selectedColumns = [];
+        this.sortDirection = '';
         if (this.infiniteRenderMode) {
             const focusListElement: HTMLElement = this.dlgDiv.querySelector('.e-cclist.e-cc-selectall.e-colfocus');
             if (focusListElement) {
@@ -846,11 +870,15 @@ export class ColumnChooser implements IAction {
         }
         if (searchVal === '') {
             this.removeCancelIcon();
-            this.filterColumns = this.getColumns() as Column[];
+            this.filterColumns = this.selectedColumnModels.length ? this.selectedColumnModels : this.getColumns() as Column[];
             clearSearch = true;
         } else {
-            this.filterColumns = new DataManager((this.getColumns() as Object[]) as JSON[]).executeLocal(new Query()
+            const filterColumns: Column[] = this.selectedColumnModels.length ? this.selectedColumnModels : this.getColumns() as Column[];
+            this.filterColumns = new DataManager((filterColumns as Object[]) as JSON[]).executeLocal(new Query()
                 .where('headerText', this.searchOperator, searchVal, true, this.parent.columnChooserSettings.ignoreAccent)) as Column[];
+        }
+        if (this.selectedColumnModels.length === 0 && this.sortDirection !== 'None' && !this.parent.columnChooserSettings.template) {
+            this.filterColumns = this.sortColumnChooser(this.filterColumns, this.sortDirection);
         }
         if (this.infiniteRenderMode) {
             this.updateIfiniteSelectAll();
@@ -948,6 +976,20 @@ export class ColumnChooser implements IAction {
         }
     }
 
+    private sortColumnChooser(columns: Column[], order: string): Column[] {
+        if (order === 'Ascending') {
+            return [...columns].sort((reference: Column, comparer: Column) =>
+                reference.field.toLowerCase() < comparer.field.toLowerCase() ? -1 : 1
+            );
+        } else if (order === 'Descending') {
+            return [...columns].sort((reference: Column, comparer: Column) =>
+                reference.field.toLowerCase() > comparer.field.toLowerCase() ? -1 : 1
+            );
+        } else {
+            return columns;
+        }
+    }
+
     private updateIfiniteSelectAll(): void {
         this.changedColumns = [];
         this.hideColumn = [];
@@ -1000,8 +1042,9 @@ export class ColumnChooser implements IAction {
             if (!this.infiniteRenderMode) {
                 this.updateIntermediateBtn();
             }
-            const columnUid: string = parentsUntil(selectAllElement, 'e-ccheck').getAttribute('uid');
-            const column: Column[] =  (this.searchValue && this.searchValue.length) ? this.filterColumns : columns;
+            const columnUid: string = parentsUntil(selectAllElement, 'e-ccheck').getAttribute('data-uid');
+            const column: Column[] =  (this.searchValue && this.searchValue.length) || this.selectedColumnModels.length ?
+                this.filterColumns : columns;
             if (columnUid === this.parent.element.id + '-selectAll') {
                 this.changedColumns = [];
                 this.unchangedColumns = [];
@@ -1030,7 +1073,8 @@ export class ColumnChooser implements IAction {
         let className: string[] = [];
         let hideColumnsCount: number = 0;
         let showColumnsCount: number = 0;
-        (this.searchValue && this.searchValue.length ? this.filterColumns : this.infiniteColumns).filter((column: Column) => {
+        ((this.searchValue && this.searchValue.length) || this.sortDirection !== 'None' ?
+            this.filterColumns : this.infiniteColumns).filter((column: Column) => {
             if (column.visible === false) {
                 hideColumnsCount++;
             } else {
@@ -1123,7 +1167,7 @@ export class ColumnChooser implements IAction {
             if (this.infiniteRenderMode && element.classList.contains('e-selectall')) {
                 continue;
             }
-            const columnUID: string = parentsUntil(element, 'e-ccheck').getAttribute('uid');
+            const columnUID: string = parentsUntil(element, 'e-ccheck').getAttribute('data-uid');
             sreachShowColumns.push(columnUID);
         }
         const hideColumns: string[] = this.showColumn.filter((column: string) => sreachShowColumns.indexOf(column) !== -1);
@@ -1195,7 +1239,8 @@ export class ColumnChooser implements IAction {
 
     private infiniteScrollHandler(): void {
         const target: HTMLElement = this.infiniteDiv;
-        const columns: Column[] = this.searchValue && this.searchValue.length ? this.filterColumns : this.infiniteColumns;
+        const columns: Column[] = (this.searchValue && this.searchValue.length) || this.sortDirection !== 'None' ?
+            this.filterColumns : this.infiniteColumns;
         if (target.scrollTop >= target.scrollHeight - target.offsetHeight
             && this.infiniteLoadedElement.length <= (this.infiniteSkipCount + this.itemsCount)
             && this.ulElement.children.length === this.itemsCount * 3
@@ -1242,7 +1287,7 @@ export class ColumnChooser implements IAction {
     }
 
     private refreshCheckboxState(): void {
-        if (!this.parent.columnChooserSettings.enableSearching) {
+        if (!this.parent.columnChooserSettings.enableSearching && !this.selectedColumnModels.length && this.sortDirection === 'None') {
             return;
         }
         (<HTMLInputElement>this.dlgObj.element.querySelector('.e-cc.e-input')).value = '';
@@ -1254,8 +1299,8 @@ export class ColumnChooser implements IAction {
             let columnUID: string;
             if (this.parent.childGrid || this.parent.detailTemplate) {
                 columnUID = parentsUntil(this.dlgObj.element.querySelectorAll('.e-cc-chbox:not(.e-selectall)')[parseInt(i.toString(), 10)],
-                                         'e-ccheck').getAttribute('uid');
-            } else { columnUID = parentsUntil(element, 'e-ccheck').getAttribute('uid'); }
+                                         'e-ccheck').getAttribute('data-uid');
+            } else { columnUID = parentsUntil(element, 'e-ccheck').getAttribute('data-uid'); }
             const column: Column = gridObject.getColumnByUid(columnUID, this.infiniteRenderMode);
             const uncheck: NodeListOf<Element> = [].slice.call(element.parentElement.getElementsByClassName('e-uncheck'));
             if (column.visible && !uncheck.length) {
@@ -1393,14 +1438,21 @@ export class ColumnChooser implements IAction {
     }
 
     private beforeOpenColumnChooserEvent(): object {
-        const args1: { requestType: string, element?: Element, columns?: Column[], cancel: boolean, searchOperator: string } = {
+        const args: { requestType: string, element?: Element, columns?: Column[], cancel: boolean, searchOperator: string,
+            sortDirection: string, selectedColumns?: string[] } = {
             requestType: 'beforeOpenColumnChooser', element: this.parent.element,
             columns: this.getColumns() as Column[], cancel: false,
-            searchOperator: this.parent.columnChooserSettings.operator
+            searchOperator: this.parent.columnChooserSettings.operator,
+            sortDirection: 'None',
+            ...(!this.parent.enableColumnVirtualization ? { selectedColumns: [] } : {})
         };
-        this.parent.trigger(events.beforeOpenColumnChooser, args1);
-        this.searchOperator = args1.searchOperator;
-        return args1;
+        this.parent.trigger(events.beforeOpenColumnChooser, args);
+        this.searchOperator = args.searchOperator;
+        this.sortDirection = args.sortDirection;
+        if (!this.parent.enableColumnVirtualization) {
+            this.selectedColumns = args.selectedColumns;
+        }
+        return args;
     }
 
     private renderResponsiveChangeAction(args: { action?: number }): void {

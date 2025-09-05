@@ -2029,13 +2029,13 @@ export class PivotChart {
             this.accumulationMenu.destroy();
             this.accumulationMenu = null;
         }
-        if (select('#' + this.parent.element.id + '_accumulationChart', document)) {
-            remove(select('#' + this.parent.element.id + '_accumulationChart', document));
+        if (select('#' + this.parent.element.id + '_accumulationChart', this.parent.element)) {
+            remove(select('#' + this.parent.element.id + '_accumulationChart', this.parent.element));
         }
         if (this.parent && this.parent.chart && !this.parent.chart.isDestroyed) {
             this.parent.chart.destroy();
             this.parent.chart = null;
-        } else if (this.parent && !this.parent.chart) {
+        } else if (this.parent && !this.parent.chart && select('#' + this.parent.element.id + '_chart', this.parent.element)) {
             const emptyChartElement: HTMLElement = select('#' + this.parent.element.id + '_chart', this.parent.element);
             const chartInstance: Chart = getInstance(emptyChartElement, Chart) as Chart;
             chartInstance.destroy();

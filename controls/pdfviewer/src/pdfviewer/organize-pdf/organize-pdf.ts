@@ -3732,7 +3732,7 @@ export class PageOrganizer {
                 this.pdfViewerBase.loadRequestHandler.mode = true;
                 jsonObject['action'] = 'ValidatePassword';
                 jsonObject['elementId'] = this.pdfViewer.element.id;
-                jsonObject['isFileName'] = false;
+                jsonObject['isFileName'] = 'false';
                 if (this.pdfViewerBase.clientSideRendering) {
                     this.pdfViewerBase.getPdfByteArray(base64DocumentData).then((pdfbytearray: any) => {
                         let data: any = this.pdfViewer.pdfRendererModule.loadImportDocument(pdfbytearray, documentId, password, jsonObject);

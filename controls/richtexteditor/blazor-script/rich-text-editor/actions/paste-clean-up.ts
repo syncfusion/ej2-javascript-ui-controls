@@ -5,16 +5,16 @@ import * as events from '../constant';
 import * as classes from '../classes';
 import { sanitizeHelper } from '../util';
 import { MS_WORD_CLEANUP } from '../constant';
-import { IHtmlFormatterCallBack } from '../../src/common';
+import { IHtmlFormatterCallBack } from '../../editor-scripts/common';
 import { SfRichTextEditor } from '../sf-richtexteditor-fn';
-import { NodeSelection } from '../../src/selection/selection';
+import { NodeSelection } from '../../editor-scripts/selection/selection';
 import { CLS_RTE_DIALOG_UPLOAD } from '../classes';
 import { CLS_RTE_IMAGE, CLS_IMGINLINE, CLS_IMGBREAK } from '../classes';
-import { NotifyArgs, ImageUploadingEventArgs, CleanupResizeElemArgs, ImageSuccessEventArgs, IPasteModel, CropImageDataItem } from '../../src/common/interface';
+import { NotifyArgs, ImageUploadingEventArgs, CleanupResizeElemArgs, ImageSuccessEventArgs, IPasteModel, CropImageDataItem } from '../../editor-scripts/common/interface';
 import { RteUploader } from '../renderer/uploader';
-import { cleanHTMLString, scrollToCursor } from '../../src/common/util';
-import { ImageInputSource } from '../../src/common/enum';
-import { PasteCleanupAction } from '../../src/editor-manager/plugin/paste-clean-up-action';
+import { cleanHTMLString, scrollToCursor } from '../../editor-scripts/common/util';
+import { ImageInputSource } from '../../editor-scripts/common/enum';
+import { PasteCleanupAction } from '../../editor-scripts/editor-manager/plugin/paste-clean-up-action';
 /**
  * PasteCleanup module for handling content pasted into the RichTextEditor
  */
@@ -71,6 +71,7 @@ export class PasteCleanup {
         this.parent.observer.on(events.afterPasteCleanUp, this.pasteUpdatedValue, this);
         this.parent.observer.on(events.docClick, this.docClick, this);
         this.parent.observer.on(events.bindOnEnd, this.bindOnEnd, this);
+        this.parent.observer.on(events.updateProperty, this.updatePasteCleanupProperty, this);
     }
 
     /* Cleans up resources and removes event listeners */
@@ -94,6 +95,7 @@ export class PasteCleanup {
         this.parent.observer.off(events.afterPasteCleanUp, this.pasteUpdatedValue);
         this.parent.observer.off(events.docClick, this.docClick);
         this.parent.observer.off(events.bindOnEnd, this.bindOnEnd);
+        this.parent.observer.off(events.updateProperty, this.updatePasteCleanupProperty);
     }
     /*
      * Initializes the PasteCleanupAction  object in the editor manager after editor initialization is complete.
@@ -101,8 +103,22 @@ export class PasteCleanup {
      */
     private bindOnEnd(): void {
         if (this.parent.editorMode === 'HTML' && this.parent.formatter && this.parent.formatter.editorManager) {
-            // Create TableCommand with table model containing required methods
-            const pasteModel: IPasteModel = {
+            const pasteModel: IPasteModel = this.getPasteCleanupModel();
+            this.parent.formatter.editorManager.pasteObj = this.pasteObj =
+                new PasteCleanupAction(this.parent.formatter.editorManager, pasteModel);
+        }
+    }
+
+    /* Updates the paste cleanup object with the latest editor configuration settings */
+    private updatePasteCleanupProperty(): void {
+        const pasteModel: IPasteModel = this.getPasteCleanupModel();
+        this.pasteObj.updatePasteCleanupModel(pasteModel);
+    }
+
+    /* Creates and returns a paste cleanup model with editor configuration and callback methods */
+    private getPasteCleanupModel(): IPasteModel {
+        // Create TableCommand with table model containing required methods
+        const pasteModel: IPasteModel = {
                 rteElement: this.parent.element,
                 enterKey: this.parent.enterKey,
                 rootContainer: this.parent.rootContainer,
@@ -135,9 +151,7 @@ export class PasteCleanup {
                     return this.getCropImageData();
                 }
             };
-            this.parent.formatter.editorManager.pasteObj = this.pasteObj =
-                new PasteCleanupAction(this.parent.formatter.editorManager, pasteModel);
-        }
+        return pasteModel;
     }
 
     /* Returns the current crop image data */

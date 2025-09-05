@@ -8,10 +8,9 @@ import * as classes from '../base/classes';
 import { getDropDownValue, getFormattedFontSize } from '../base/util';
 import * as model from '../models/items';
 import { IRichTextEditor, IDropDownRenderArgs, ICssClassArgs, IRenderer } from '../base/interface';
-import { IDropDownModel, IDropDownItemModel, ISplitButtonModel, ICodeBlockLanguageModel, IListDropDownModel } from '../../common/interface';
+import { IDropDownModel, IDropDownItemModel, ISplitButtonModel, ICodeBlockLanguageModel, IListDropDownModel} from '../../common/interface';
 import { ServiceLocator } from '../services/service-locator';
 import { RendererFactory } from '../services/renderer-factory';
-import { dispatchEvent } from '../base/util';
 import { CLS_CODEBLOCK_TB_BTN, CLS_CODEBLOCK_TB_BTN_ICON } from '../base/classes';
 
 /**
@@ -31,6 +30,7 @@ export class DropDownButtons {
     public tableColumnsDropDown: DropDownButton;
     public tableCellDropDown: DropDownButton;
     public tableCellVerticalAlignDropDown: DropDownButton;
+    public tableBorderStyleDropDown: DropDownButton;
     /**
      *
      * @hidden
@@ -241,6 +241,22 @@ export class DropDownButtons {
                 case 'tablecellverticalalign': this.verticalAlignDropDown(type, tbElement, targetElement);
                     break;
                 case 'styles': this.tableStylesDropDown(type, tbElement, targetElement); break;
+                case 'borderstyle': {
+                    targetElement = tbElement;
+                    let bdrStyle: string;
+                    for (const item of model.borderStyleItems) {
+                        if (targetEle.style.borderStyle === item.subCommand.toLowerCase()) {
+                            bdrStyle = item.text;
+                            break;
+                        }
+                    }
+                    this.tableBorderStyleDropDown = this.toolbarRenderer.renderDropDownButton({
+                        content: '<span class="e-rte-dropdown-btn-text-wrapper"><span class="e-rte-dropdown-btn-text">' + bdrStyle + '</span></span>',
+                        cssClass: classes.CLS_DROPDOWN_POPUP + ' ' + classes.CLS_DROPDOWN_ITEMS + ' ' + classes.CLS_BORDER_STYLE_BTN,
+                        itemName: 'BorderStyle', items: model.borderStyleItems, element: targetElement
+                    } as IDropDownModel);
+                    break;
+                }
                 }
             }
         });
@@ -546,6 +562,11 @@ export class DropDownButtons {
             this.codeBlockSplitButton.destroy();
             this.codeBlockSplitButton = null;
         }
+        if (this.tableBorderStyleDropDown) {
+            this.removeDropDownClasses(this.tableBorderStyleDropDown.element);
+            this.tableBorderStyleDropDown.destroy();
+            this.tableBorderStyleDropDown = null;
+        }
         this.toolbarRenderer = null;
     }
 
@@ -587,6 +608,9 @@ export class DropDownButtons {
         if (this.bulletFormatListDropDown) {
             this.bulletFormatListDropDown.setProperties({ enableRtl: args.enableRtl });
         }
+        if (this.tableBorderStyleDropDown) {
+            this.tableBorderStyleDropDown.setProperties({ enableRtl: args.enableRtl });
+        }
     }
 
     private updateCss(dropDownObj: DropDownButton, e: ICssClassArgs): void {
@@ -603,7 +627,7 @@ export class DropDownButtons {
         const dropDownObj: DropDownButton[] = [
             this.formatDropDown, this.fontNameDropDown, this.fontSizeDropDown, this.alignDropDown, this.imageAlignDropDown,
             this.displayDropDown, this.numberFormatListDropDown, this.bulletFormatListDropDown, this.tableRowsDropDown,
-            this.tableColumnsDropDown, this.tableCellDropDown, this.tableCellVerticalAlignDropDown
+            this.tableColumnsDropDown, this.tableCellDropDown, this.tableCellVerticalAlignDropDown, this.tableBorderStyleDropDown
         ];
         for (let i: number = 0; i < dropDownObj.length; i++) {
             this.updateCss(dropDownObj[i as number], e);
@@ -655,7 +679,8 @@ export class DropDownButtons {
             this.tableRowsDropDown,
             this.tableColumnsDropDown,
             this.tableCellDropDown,
-            this.tableCellVerticalAlignDropDown
+            this.tableCellVerticalAlignDropDown,
+            this.tableBorderStyleDropDown
         ];
         dropdowns.forEach((dropdown: DropDownButton) => {
             if (dropdown && dropdown.dropDown && dropdown.dropDown.element && dropdown.dropDown.element.classList.contains('e-popup-open')) {

@@ -409,7 +409,7 @@ export class Sort implements IAction {
             !(gObj.allowSelection && gObj.selectionSettings.allowColumnSelection &&
                 (e.target as Element).classList.contains('e-headercell'))) {
             const gObj: IGrid = this.parent;
-            const colObj: Column = gObj.getColumnByUid(target.querySelector('.e-headercelldiv').getAttribute('e-mappinguid')) as Column;
+            const colObj: Column = gObj.getColumnByUid(target.querySelector('.e-headercelldiv').getAttribute('data-mappinguid')) as Column;
             if (colObj.type !== 'checkbox') {
                 this.initiateSort(target, e, colObj);
                 if (Browser.isDevice) {
@@ -425,7 +425,7 @@ export class Sort implements IAction {
 
     private excelFilterSortActionHandler(e: MouseEvent): void {
         if (parentsUntil(e.target as Element, 'e-excel-ascending') || parentsUntil(e.target as Element, 'e-excel-descending')) {
-            const colUid: string = (<EJ2Intance>closest(e.target as Element, '.e-filter-popup')).getAttribute('uid');
+            const colUid: string = (<EJ2Intance>closest(e.target as Element, '.e-filter-popup')).getAttribute('data-uid');
             const direction: SortDirection = isNullOrUndefined(parentsUntil(e.target as Element, 'e-excel-descending')) ?
                 'Ascending' : 'Descending';
             this.sortColumn(this.parent.getColumnByUid(colUid).field, direction, false);
@@ -440,7 +440,7 @@ export class Sort implements IAction {
             if (isNullOrUndefined(target) || !target.classList.contains('e-headercell')
                 || !target.querySelector('.e-headercelldiv')) { return; }
 
-            const col: Column = this.parent.getColumnByUid(target.querySelector('.e-headercelldiv').getAttribute('e-mappinguid')) as Column;
+            const col: Column = this.parent.getColumnByUid(target.querySelector('.e-headercelldiv').getAttribute('data-mappinguid')) as Column;
             this.initiateSort(target, e, col);
         }
     }

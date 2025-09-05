@@ -13,20 +13,20 @@ import { ClickEventArgs } from '../../../navigations/src'; /*externalscript*/
 import * as events from '../constant';
 import * as classes from '../classes';
 import { dispatchEvent, hasClass } from '../util';
-import { removeClassWithAttr } from '../../src/common/util';
+import { removeClassWithAttr } from '../../editor-scripts/common/util';
 
 // Component imports
 import { QuickToolbar } from '../actions/quick-toolbar';
-import { TableCommand } from '../../src/editor-manager';
+import { TableCommand } from '../../editor-scripts/editor-manager';
 import { SfRichTextEditor } from '../sf-richtexteditor-fn';
-import { NodeSelection } from '../../src/selection/selection';
+import { NodeSelection } from '../../editor-scripts/selection/selection';
 
 // Interface imports
 import {
     IDropDownItemModel, ITableModel, ResizeArgs, IColorPickerEventArgs,
     ITableArgs, IToolbarItemModel, NotifyArgs, ITableNotifyArgs, EditTableModel,
-    ITableModule
-} from '../../src/common/interface';
+    ITableModule, SelectionChangedEventArgs
+} from '../../editor-scripts/common/interface';
 
 /*
  * Table module for the Rich Text Editor component
@@ -67,7 +67,7 @@ export class Table {
         this.parent = parent;
         this.addEventListener();
     }
-
+    private selectionTimeout: number;
     /*
      * Attaches event listeners to the parent component's observer
      * Sets up all table-related event handlers
@@ -84,6 +84,7 @@ export class Table {
         // Register lifecycle events
         this.parent.observer.on(events.destroy, this.destroy, this);
         this.parent.observer.on(events.bindOnEnd, this.bindOnEnd, this);
+         this.parent.observer.on(events.updateProperty, this.updateTableProperty, this);
 
         // Register mouse events
         this.parent.observer.on(events.docClick, this.docClick, this);
@@ -113,6 +114,7 @@ export class Table {
         // Remove lifecycle events
         this.parent.observer.off(events.destroy, this.destroy);
         this.parent.observer.off(events.bindOnEnd, this.bindOnEnd);
+         this.parent.observer.on(events.updateProperty, this.updateTableProperty);
 
         // Remove mouse events
         this.parent.observer.off(events.docClick, this.docClick);
@@ -138,8 +140,36 @@ export class Table {
      */
     private bindOnEnd(): void {
         if (this.parent.editorMode === 'HTML' && this.parent.formatter && this.parent.formatter.editorManager) {
-            // Create TableCommand with table model containing required methods
-            const tableModel: ITableModel = {
+            const tableModel: ITableModel = this.getTableModelProperty();
+            this.parent.formatter.editorManager.tableObj = this.tableObj =
+                new TableCommand(this.parent.formatter.editorManager, tableModel, this.parent.iframeSettings);
+
+            if (this.tableObj) {
+                if (this.parent.tableSettings.resize) {
+                    this.tableObj.addResizeEventHandlers();
+                }
+
+                // First remove any existing event handler to prevent duplicates
+                this.parent.observer.off(events.mouseDown, this.tableObj.cellSelect);
+                this.parent.observer.off(events.tableColorPickerChanged, this.setBGColor);
+
+                // Then add the event handler
+                this.parent.observer.on(events.mouseDown, this.tableObj.cellSelect, this.tableObj);
+                this.parent.observer.on(events.tableColorPickerChanged, this.setBGColor, this);
+            }
+        }
+    }
+
+    /* Updates the table object with the latest editor configuration settings */
+    private updateTableProperty(): void {
+        const tableModel: ITableModel = this.getTableModelProperty();
+        this.tableObj.updateTableModel(tableModel);
+    }
+
+    /* Creates and returns a table model with editor configuration and callback methods for table operations */
+    private getTableModelProperty(): ITableModel {
+        // Create TableCommand with table model containing required methods
+        const tableModel: ITableModel = {
                 tableSettings: this.parent.tableSettings,
                 rteElement: this.parent.element,
                 readonly: this.parent.readonly,
@@ -192,26 +222,14 @@ export class Table {
                 // Method for Checks if the table quick toolbar is currently visible in the document.
                 isTableQuickToolbarVisible: () => {
                     return this.isTableQuickToolbarVisible();
+                },
+
+                //Method for enableUndo
+                enableUndo: () => {
+                    this.enableUndo();
                 }
             };
-
-            this.parent.formatter.editorManager.tableObj = this.tableObj =
-                new TableCommand(this.parent.formatter.editorManager, tableModel, this.parent.iframeSettings);
-
-            if (this.tableObj) {
-                if (this.parent.tableSettings.resize) {
-                    this.tableObj.addResizeEventHandlers();
-                }
-
-                // First remove any existing event handler to prevent duplicates
-                this.parent.observer.off(events.mouseDown, this.tableObj.cellSelect);
-                this.parent.observer.off(events.tableColorPickerChanged, this.setBGColor);
-
-                // Then add the event handler
-                this.parent.observer.on(events.mouseDown, this.tableObj.cellSelect, this.tableObj);
-                this.parent.observer.on(events.tableColorPickerChanged, this.setBGColor, this);
-            }
-        }
+        return tableModel;
     }
 
     /*
@@ -227,6 +245,15 @@ export class Table {
                     this.tableObj.cancelResizeAction();
                 }
             });
+        }
+    }
+
+    /*
+     * enableUndo method
+     */
+    private enableUndo(): void {
+        if (this.parent.formatter) {
+            this.parent.formatter.enableUndo(this.parent);
         }
     }
 
@@ -481,6 +508,30 @@ export class Table {
     }
 
     /*
+     * Invokes the OnSelectionChange Event
+     */
+    private selectionEventTriggers(): void {
+        const selection: Selection = this.parent.getDocument().getSelection();
+        const range: Range = selection && selection.rangeCount !== 0 && selection.getRangeAt(0);
+        if (range) {
+            const rangeStartElement: HTMLElement = range.startContainer.nodeName === '#text' ? range.startContainer.parentElement : range.startContainer as HTMLElement;
+            if (rangeStartElement.closest('table')) {
+                const selectedCell: Element | null = rangeStartElement.closest('.e-multi-cells-select');
+                if (!isNOU(selectedCell)) {
+                    const targetTable: HTMLTableElement = rangeStartElement.closest('table');
+                    const extractedTable: HTMLTableElement | null = this.tableObj.extractSelectedTable(targetTable, false);
+                    const selectionArgs: SelectionChangedEventArgs = {
+                        selectedContent: extractedTable ? extractedTable.outerHTML : null
+                    };
+                    if (this.parent.selectionChangedEnabled) {
+                        this.parent.dotNetRef.invokeMethodAsync('SelectionChanged', selectionArgs);
+                    }
+                }
+            }
+        }
+    }
+
+    /*
      * Handles edit area click events for table operations
      */
     private editAreaClickHandler(e: ITableNotifyArgs): void {
@@ -525,6 +576,7 @@ export class Table {
             } else {
                 this.hideTableQuickToolbar();
             }
+            this.selectionEventTriggers();
         }
     }
 
@@ -831,7 +883,6 @@ export class Table {
         if (this.parent.editorMode === 'HTML') {
             this.tableObj.handleShiftKeyTableSelection(event);
         }
-        this.tableObj.handleShiftKeyTableSelection(event);
         this.tableObj.handleGlobalKeyboardShortcuts(event);
         this.tableObj.handleTableDeletion(event);
         this.tableObj.handleDeselectionOnTyping(event);
@@ -872,7 +923,7 @@ export class Table {
             this.parent.isBlur = true;
             if (Browser.isIE) { dispatchEvent(this.parent.element, 'focusout'); }
         }
-        const closestEle: Element = closest(target, 'td');
+        const closestEle: Element = closest(target, 'td') || closest(target, 'th');
         const isExist: boolean = closestEle && this.parent.getEditPanel().contains(closestEle) ? true : false;
         if (target && target.tagName !== 'TD' && target.tagName !== 'TH' && !isExist &&
             closest(target, '.e-rte-quick-popup') === null && target.offsetParent &&
@@ -896,9 +947,16 @@ export class Table {
     /*
      * Handles iframe mouse down events
      */
-    private onIframeMouseDown(): void {
+    private onIframeMouseDown(e: MouseEvent): void {
         this.closeOpenedDialog();
         if (!isNOU(this.parent) && !isNOU(this.parent.getEditPanel()) && this.tableObj) {
+            if (e && e.target) {
+                const currentTarget: HTMLElement = <HTMLElement>e.target;
+                const isReziseEle: boolean = currentTarget && currentTarget.classList && currentTarget.classList.contains('e-rte-table-resize');
+                if (isReziseEle) {
+                    return;
+                }
+            }
             this.tableObj.removeResizeElement();
         }
     }
@@ -910,6 +968,13 @@ export class Table {
         if (this.tableObj) {
             this.tableObj.tableModulekeyUp(e);
         }
+        if (this.selectionTimeout) {
+            clearTimeout(this.selectionTimeout);
+            this.selectionTimeout = null;
+        }
+        this.selectionTimeout = window.setTimeout(() => {
+            this.selectionEventTriggers();
+        }, 600);
     }
 
     /**

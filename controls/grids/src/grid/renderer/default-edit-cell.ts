@@ -33,6 +33,7 @@ export class DefaultEditCell extends EditCellBase implements IEditCell {
     }
 
     public write(args: { rowData: Object, element: Element, column: Column, requestType: string }): void {
+        let mappingUid: string;
         const col: Column = args.column;
         const isInline: boolean = this.parent.editSettings.mode !== 'Dialog';
         const props: Object = {
@@ -47,9 +48,16 @@ export class DefaultEditCell extends EditCellBase implements IEditCell {
         if (!isNullOrUndefined(col.edit) && !isNullOrUndefined(col.edit.params) && (col.edit.params as any).multiline) {
             const cellValue: string = ((col.valueAccessor as Function)(col.field, args.rowData, col)) as string;
             props['value'] = cellValue;
+            mappingUid = (props as { element: HTMLInputElement }).element.getAttribute('data-mappinguid');
+            (props as { element: HTMLInputElement }).element.removeAttribute('data-mappinguid');
+            (props as { element: HTMLInputElement }).element.setAttribute('e-mappinguid', mappingUid);
         }
         this.obj = new TextBox(extend(props, col.edit.params));
         this.obj.appendTo(args.element as HTMLElement);
+        if (!isNullOrUndefined(mappingUid)) {
+            this.obj.element.removeAttribute('e-mappinguid');
+            this.obj.element.setAttribute('data-mappinguid', mappingUid);
+        }
         if (this.parent.editSettings.mode === 'Batch') {
             this.obj.element.addEventListener('keydown', this.keyEventHandler);
         }

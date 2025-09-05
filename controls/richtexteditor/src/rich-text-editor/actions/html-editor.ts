@@ -24,7 +24,6 @@ import { ServiceLocator } from '../services/service-locator';
 import { ON_BEGIN } from './../../common/constant';
 import { HtmlToolbarStatus } from './html-toolbar-status';
 import { XhtmlValidation } from './xhtml-validation';
-import * as CONSTANTS from './../../editor-manager/base';
 
 /**
  * `HtmlEditor` module is used to HTML editor
@@ -376,7 +375,8 @@ export class HtmlEditor {
         }
         let currentRange: Range;
         const args: KeyboardEvent = e.args as KeyboardEvent;
-        if (this.parent.inputElement.querySelectorAll('.e-cell-select:not(table)').length > 1 && (args.keyCode === 8 || args.keyCode === 32 || args.keyCode === 13)) {
+        if (this.parent.inputElement.querySelectorAll('.e-cell-select:not(table)').length > 1 &&
+            (args.keyCode === 8 || args.keyCode === 32 || args.keyCode === 13 || args.keyCode === 46)) {
             this.tableSelectionKeyAction(e);
             this.parent.autoResize();
             return;
@@ -431,7 +431,7 @@ export class HtmlEditor {
         }
         // Prevents the link from being added when a space, enter, or parenthesis key is pressed.
         // This ensures that parentheses are not mistakenly included as part of the URL.
-        const regex: RegExp = /[^\w\s\\/\\.\\:]/g;
+        const regex: RegExp = /[^\w\s\\/\\.\\:@-]/g;
         if (((e as NotifyArgs).args as KeyboardEventArgs).action === 'space' || ((e as NotifyArgs).args as KeyboardEventArgs).action === 'enter' || ((e as NotifyArgs).args as KeyboardEventArgs).keyCode === 13 || regex.test(((e as NotifyArgs).args as KeyboardEventArgs).key)) {
             this.spaceLink(e.args as KeyboardEvent);
             if (this.parent.editorMode === 'HTML' && !this.parent.readonly) {

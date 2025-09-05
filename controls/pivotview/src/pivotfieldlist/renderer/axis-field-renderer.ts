@@ -51,21 +51,24 @@ export class AxisFieldRenderer {
         if (parentElement.querySelector('.' + cls.FIELD_LIST_CLASS + '-values')) {
             parentElement.querySelector('.' + cls.FIELD_LIST_CLASS + '-values').querySelector('.' + cls.AXIS_CONTENT_CLASS).innerHTML = '';
         }
-        if ((this.parent.dataType === 'pivot' && this.parent.dataSourceSettings.dataSource &&
-        ((!(this.parent.dataSourceSettings.dataSource instanceof DataManager) &&
-            ((this.parent.dataSourceSettings.dataSource as IDataSet[]).length > 0)) ||
-        (this.parent.dataSourceSettings.dataSource instanceof DataManager && this.parent.engineModule.data &&
-            this.parent.engineModule.data.length > 0))) ||
-        (this.parent.dataType === 'olap' && this.parent.dataSourceSettings.url && this.parent.dataSourceSettings.url !== '') ||
-        (this.parent.dataSourceSettings.mode === 'Server' && this.parent.dataSourceSettings.url !== '')) {
-            const axis: string[] = ['rows', 'columns', 'values', 'filters'];
-            for (let len: number = 0, lnt: number = fields.length; len < lnt; len++) {
-                if (fields[len as number]) {
-                    const args: PivotButtonArgs = {
-                        field: fields[len as number],
-                        axis: axis[len as number].toString()
-                    };
-                    this.parent.notify(events.pivotButtonUpdate, args);
+        if ((this.parent.engineModule && this.parent.engineModule.fieldList && Object.keys(this.parent.engineModule.fieldList).length > 0)
+        || this.parent.dataType !== 'pivot') {
+            if ((this.parent.dataType === 'pivot' && this.parent.dataSourceSettings.dataSource &&
+            ((!(this.parent.dataSourceSettings.dataSource instanceof DataManager) &&
+                ((this.parent.dataSourceSettings.dataSource as IDataSet[]).length > 0)) ||
+            (this.parent.dataSourceSettings.dataSource instanceof DataManager && this.parent.engineModule.data &&
+                this.parent.engineModule.data.length > 0))) ||
+            (this.parent.dataType === 'olap' && this.parent.dataSourceSettings.url && this.parent.dataSourceSettings.url !== '') ||
+            (this.parent.dataSourceSettings.mode === 'Server' && this.parent.dataSourceSettings.url !== '')) {
+                const axis: string[] = ['rows', 'columns', 'values', 'filters'];
+                for (let len: number = 0, lnt: number = fields.length; len < lnt; len++) {
+                    if (fields[len as number]) {
+                        const args: PivotButtonArgs = {
+                            field: fields[len as number],
+                            axis: axis[len as number].toString()
+                        };
+                        this.parent.notify(events.pivotButtonUpdate, args);
+                    }
                 }
             }
         }

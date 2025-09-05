@@ -1944,3 +1944,113 @@ describe('Code Block with Blockquote Functionality', () => {
         }, 50);
     });
 });
+
+describe('977351 - Blazor Server: Unable to Insert Code Block After Deleting Table via Quick Toolbar', () => {
+    let rteObj: RichTextEditor;
+    let keyBoardEvent: any = { type: 'keydown', preventDefault: () => { }, ctrlKey: false, key: 'Tab', stopPropagation: () => { }, shiftKey: false, which: 9, code: 'Tab' };
+    beforeAll(() => {
+        rteObj = renderRTE({
+            toolbarSettings: {
+                items: ['CodeBlock', 'Indent', 'Outdent']
+            },
+            codeBlockSettings: {
+                languages: [
+                    { language: 'javascript', label: 'JavaScript' },
+                    { language: 'typescript', label: 'TypeScript' }
+                ]
+            }
+        });
+    });
+    afterAll((done) => {
+        destroy(rteObj);
+        done();
+    });
+    it('Should set the range to the next sibling after deleting the table', function (done) {
+        var contentEle = rteObj.contentModule.getEditPanel();
+        contentEle.innerHTML = `<table class="e-rte-table" style="width: 100%; min-width: 0px;">
+   <colgroup>
+      <col style="width: 50%;">
+      <col style="width: 50%;">
+   </colgroup>
+   <tbody>
+      <tr>
+         <td><br/></td>
+         <td><br/></td>
+      </tr>
+      <tr>
+         <td><br/></td>
+         <td><br/></td>
+      </tr>
+   </tbody>
+</table><h1>Rich Text Editor</h1>`;
+        rteObj.focusIn();
+        const cell = rteObj.contentModule.getEditPanel().querySelector('td');
+        const range = document.createRange();
+        range.setStart(cell, 0);
+        range.collapse(true);
+        const selection = window.getSelection();
+        selection.removeAllRanges();
+        selection.addRange(range);
+        const eventsArg = {
+            pageX: 50,
+            pageY: 50,
+            target: cell,
+            which: 1
+        };
+        (rteObj as any).mouseDownHandler(eventsArg);
+        (rteObj as any).mouseUp(eventsArg);
+        setTimeout(() => {
+            (document.querySelectorAll(".e-rte-quick-toolbar.e-table-quicktoolbar .e-toolbar-item")[1].firstChild as HTMLElement).click()
+            setTimeout(() => {
+                const range = window.getSelection().getRangeAt(0);
+                expect(range.startContainer.parentElement.nodeName === 'H1').toBe(true);
+                expect(range.startOffset === 0 && range.endOffset === 0).toBe(true);
+                done();
+            }, 200);
+        }, 200);
+    });
+    it('Should set the range before the BR element after deleting the table', function (done) {
+        var contentEle = rteObj.contentModule.getEditPanel();
+        contentEle.innerHTML = `<table class="e-rte-table" style="width: 100%; min-width: 0px;">
+   <colgroup>
+      <col style="width: 50%;">
+      <col style="width: 50%;">
+   </colgroup>
+   <tbody>
+      <tr>
+         <td><br/></td>
+         <td><br/></td>
+      </tr>
+      <tr>
+         <td><br/></td>
+         <td><br/></td>
+      </tr>
+   </tbody>
+</table><p><br></p>`;
+        rteObj.focusIn();
+        const cell = rteObj.contentModule.getEditPanel().querySelector('td');
+        const range = document.createRange();
+        range.setStart(cell, 0);
+        range.collapse(true);
+        const selection = window.getSelection();
+        selection.removeAllRanges();
+        selection.addRange(range);
+        const eventsArg = {
+            pageX: 50,
+            pageY: 50,
+            target: cell,
+            which: 1
+        };
+        (rteObj as any).mouseDownHandler(eventsArg);
+        (rteObj as any).mouseUp(eventsArg);
+        setTimeout(() => {
+            (document.querySelectorAll(".e-rte-quick-toolbar.e-table-quicktoolbar .e-toolbar-item")[1].firstChild as HTMLElement).click()
+            setTimeout(() => {
+                const range = window.getSelection().getRangeAt(0);
+                expect(range.startContainer.nodeName === 'P').toBe(true);
+                expect(range.startOffset === 0 && range.endOffset === 0).toBe(true);
+                done();
+            }, 200);
+        }, 200);
+    });
+});

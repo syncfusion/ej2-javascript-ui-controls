@@ -1,5 +1,5 @@
 import { createElement, remove } from "@syncfusion/ej2-base";
-import { BlockEditor, BlockModel, BlockType, ContentType, getBlockModelById,  } from "../../src/index";
+import { BlockEditor, BlockModel, BlockType, ContentType, getBlockModelById, ImageProps } from "../../src/index";
 import { createEditor } from "../common/util.spec";
 
 describe('Image Block', () => {
@@ -34,7 +34,7 @@ describe('Image Block', () => {
                 {
                     id: 'image1',
                     type: BlockType.Image,
-                    imageSettings: {
+                    props: {
                         src: 'https://cdn.syncfusion.com/ej2/richtexteditor-resources/RTE-Overview.png',
                         altText: 'Test Image',
                         width: '200px',
@@ -73,7 +73,7 @@ describe('Image Block', () => {
         //         {
         //             id: 'image2',
         //             type: BlockType.Image,
-        //             imageSettings: {
+        //              props: {
         //                 altText: 'Upload Image',
         //                 allowedTypes: ['.jpg', '.png', '.gif'],
         //                 saveFormat: 'Base64',
@@ -98,7 +98,7 @@ describe('Image Block', () => {
                 {
                     id: 'image4',
                     type: BlockType.Image,
-                    imageSettings: {
+                    props: {
                         src: 'https://cdn.syncfusion.com/ej2/richtexteditor-resources/RTE-Overview.png',
                         altText: 'Readonly Image',
                         allowedTypes: ['.jpg', '.png'],
@@ -119,7 +119,7 @@ describe('Image Block', () => {
                 {
                     id: 'image5',
                     type: BlockType.Image,
-                    imageSettings: {
+                    props: {
                         src: 'https://cdn.syncfusion.com/ej2/richtexteditor-resources/RTE-Overview.png',
                         altText: 'Resizable Image',
                         allowedTypes: ['.jpg', '.png'],
@@ -153,7 +153,7 @@ describe('Image Block', () => {
                 {
                     id: 'image6',
                     type: BlockType.Image,
-                    imageSettings: {
+                    props: {
                         src: 'https://cdn.syncfusion.com/ej2/richtexteditor-resources/RTE-Overview.png',
                         altText: 'Clickable Image',
                         allowedTypes: ['.jpg', '.png'],
@@ -169,7 +169,7 @@ describe('Image Block', () => {
             const container = editorElement.querySelector('.e-image-container') as HTMLElement;
             
             // Simulate adding resize handles
-            const renderer = (editor.blockAction as any).imageRenderer;
+            const renderer = (editor.blockRendererManager as any).imageRenderer;
             renderer.addResizeHandles(container, img);
 
             // Click on image
@@ -223,7 +223,7 @@ describe('Image Block', () => {
                 {
                     id: 'upload1',
                     type: BlockType.Image,
-                    imageSettings: {
+                    props: {
                         allowedTypes: ['.jpg', '.png'],
                         saveFormat: 'Base64',
                         readOnly: false
@@ -269,7 +269,7 @@ describe('Image Block', () => {
                 {
                     id: 'upload2',
                     type: BlockType.Image,
-                    imageSettings: {
+                    props: {
                         allowedTypes: ['.jpg', '.png'],
                         saveFormat: 'Blob',
                         readOnly: false
@@ -307,7 +307,7 @@ describe('Image Block', () => {
                 {
                     id: 'upload3',
                     type: BlockType.Image,
-                    imageSettings: {
+                    props: {
                         allowedTypes: ['.jpg', '.png'],
                         saveFormat: 'Base64',
                         readOnly: false
@@ -344,7 +344,7 @@ describe('Image Block', () => {
                 {
                     id: 'upload4',
                     type: BlockType.Image,
-                    imageSettings: {
+                    props: {
                         allowedTypes: ['.jpg', '.png'],
                         saveFormat: 'Base64',
                         readOnly: false
@@ -394,7 +394,7 @@ describe('Image Block', () => {
                 {
                     id: 'resize1',
                     type: BlockType.Image,
-                    imageSettings: {
+                    props: {
                         src: 'https://cdn.syncfusion.com/ej2/richtexteditor-resources/RTE-Overview.png',
                         altText: 'Resizable Image',
                         allowedTypes: ['.jpg', '.png'],
@@ -408,7 +408,7 @@ describe('Image Block', () => {
 
             const img = editorElement.querySelector('img') as HTMLImageElement;
             const container = editorElement.querySelector('.e-image-container') as HTMLElement;
-            const renderer = (editor.blockAction as any).imageRenderer;
+            const renderer = (editor.blockRendererManager as any).imageRenderer;
             
             img.addEventListener('load', () => {
                 setTimeout(() => {
@@ -437,7 +437,7 @@ describe('Image Block', () => {
                 {
                     id: 'resize2',
                     type: BlockType.Image,
-                    imageSettings: {
+                    props: {
                         src: 'https://cdn.syncfusion.com/ej2/richtexteditor-resources/RTE-Overview.png',
                         altText: 'Resizable Image',
                         allowedTypes: ['.jpg', '.png'],
@@ -451,7 +451,7 @@ describe('Image Block', () => {
 
             const img = editorElement.querySelector('img') as HTMLImageElement;
             const container = editorElement.querySelector('.e-image-container') as HTMLElement;
-            const renderer = (editor.blockAction as any).imageRenderer;
+            const renderer = (editor.blockRendererManager as any).imageRenderer;
             
             img.addEventListener('load', () => {
                 setTimeout(() => {
@@ -492,7 +492,7 @@ describe('Image Block', () => {
                 {
                     id: 'resize3',
                     type: BlockType.Image,
-                    imageSettings: {
+                    props: {
                         src: 'https://cdn.syncfusion.com/ej2/richtexteditor-resources/RTE-Overview.png',
                         altText: 'Aspect Ratio Image',
                         allowedTypes: ['.jpg', '.png'],
@@ -505,7 +505,7 @@ describe('Image Block', () => {
             editor.appendTo('#editor');
 
             const img = editorElement.querySelector('img') as HTMLImageElement;
-            const renderer = (editor.blockAction as any).imageRenderer;
+            const renderer = (editor.blockRendererManager as any).imageRenderer;
             
             img.addEventListener('load', () => {
                 setTimeout(() => {
@@ -538,7 +538,7 @@ describe('Image Block', () => {
                 {
                     id: 'resize4',
                     type: BlockType.Image,
-                    imageSettings: {
+                    props: {
                         src: 'https://cdn.syncfusion.com/ej2/richtexteditor-resources/RTE-Overview.png',
                         altText: 'Min Size Image',
                         allowedTypes: ['.jpg', '.png'],
@@ -551,7 +551,7 @@ describe('Image Block', () => {
             editor.appendTo('#editor');
 
             const img = editorElement.querySelector('img') as HTMLImageElement;
-            const renderer = (editor.blockAction as any).imageRenderer;
+            const renderer = (editor.blockRendererManager as any).imageRenderer;
             
             img.addEventListener('load', () => {
                 setTimeout(() => {
@@ -578,7 +578,7 @@ describe('Image Block', () => {
                 {
                     id: 'resize5',
                     type: BlockType.Image,
-                    imageSettings: {
+                    props: {
                         src: 'https://cdn.syncfusion.com/ej2/richtexteditor-resources/RTE-Overview.png',
                         altText: 'Outside Event Image',
                         allowedTypes: ['.jpg', '.png'],
@@ -590,7 +590,7 @@ describe('Image Block', () => {
             editor = createEditor({ blocks: blocks });
             editor.appendTo('#editor');
 
-            const renderer = (editor.blockAction as any).imageRenderer;
+            const renderer = (editor.blockRendererManager as any).imageRenderer;
             renderer.isResizing = false;
             renderer.currentImage = null;
 
@@ -613,7 +613,7 @@ describe('Image Block', () => {
                 {
                     id: 'resize6',
                     type: BlockType.Image,
-                    imageSettings: {
+                    props: {
                         src: 'https://cdn.syncfusion.com/ej2/richtexteditor-resources/RTE-Overview.png',
                         altText: 'Stop Resize Image',
                         allowedTypes: ['.jpg', '.png'],
@@ -625,7 +625,7 @@ describe('Image Block', () => {
             editor = createEditor({ blocks: blocks });
             editor.appendTo('#editor');
 
-            const renderer = (editor.blockAction as any).imageRenderer;
+            const renderer = (editor.blockRendererManager as any).imageRenderer;
             renderer.isResizing = false;
             
             // Should return early
@@ -657,7 +657,7 @@ describe('Image Block', () => {
                 {
                     id: 'destroy1',
                     type: BlockType.Image,
-                    imageSettings: {
+                    props: {
                         src: 'https://cdn.syncfusion.com/ej2/richtexteditor-resources/RTE-Overview.png',
                         altText: 'Destroy Test Image',
                         allowedTypes: ['.jpg', '.png'],
@@ -669,7 +669,7 @@ describe('Image Block', () => {
             editor = createEditor({ blocks: blocks });
             editor.appendTo('#editor');
 
-            const renderer = (editor.blockAction as any).imageRenderer;
+            const renderer = (editor.blockRendererManager as any).imageRenderer;
             
             // Create resize overlay
             renderer.resizeOverlay = createElement('div');
@@ -689,7 +689,7 @@ describe('Image Block', () => {
                 {
                     id: 'destroy2',
                     type: BlockType.Image,
-                    imageSettings: {
+                    props: {
                         src: 'https://cdn.syncfusion.com/ej2/richtexteditor-resources/RTE-Overview.png',
                         altText: 'No Overlay Image',
                         allowedTypes: ['.jpg', '.png'],
@@ -701,7 +701,7 @@ describe('Image Block', () => {
             editor = createEditor({ blocks: blocks });
             editor.appendTo('#editor');
 
-            const renderer = (editor.blockAction as any).imageRenderer;
+            const renderer = (editor.blockRendererManager as any).imageRenderer;
             renderer.resizeOverlay = null;
             
             // Should not throw error
@@ -745,7 +745,7 @@ describe('Image Block', () => {
             const blocks: BlockModel[] = [
                 {
                     type: BlockType.Image,
-                    imageSettings: {
+                    props: {
                         src: 'test.jpg',
                         allowedTypes: ['.jpg'],
                         saveFormat: 'Base64',
@@ -766,7 +766,7 @@ describe('Image Block', () => {
                 {
                     id: 'handles1',
                     type: BlockType.Image,
-                    imageSettings: {
+                    props: {
                         src: 'https://cdn.syncfusion.com/ej2/richtexteditor-resources/RTE-Overview.png',
                         altText: 'Handle Removal Test',
                         allowedTypes: ['.jpg', '.png'],
@@ -780,7 +780,7 @@ describe('Image Block', () => {
 
             const img = editorElement.querySelector('img') as HTMLImageElement;
             const container = editorElement.querySelector('.e-image-container') as HTMLElement;
-            const renderer = (editor.blockAction as any).imageRenderer;
+            const renderer = (editor.blockRendererManager as any).imageRenderer;
             
             img.addEventListener('load', () => {
                 setTimeout(() => {
@@ -801,7 +801,7 @@ describe('Image Block', () => {
                 {
                     id: 'nullimg1',
                     type: BlockType.Image,
-                    imageSettings: {
+                    props: {
                         allowedTypes: ['.jpg', '.png'],
                         saveFormat: 'Base64',
                         readOnly: false
@@ -813,7 +813,7 @@ describe('Image Block', () => {
 
             setTimeout(() => {
                 const fileInput = document.querySelector('input[type="file"]') as HTMLInputElement;
-                const renderer = (editor.blockAction as any).imageRenderer;
+                const renderer = (editor.blockRendererManager as any).imageRenderer;
                 
                 // Mock file
                 const file = new File(['test'], 'test.jpg', { type: 'image/jpeg' });
@@ -823,7 +823,7 @@ describe('Image Block', () => {
                 });
 
                 // Call handleImageUpload with null img
-                renderer.handleImageUpload(null, blocks[0].imageSettings);
+                renderer.handleImageUpload(null, blocks[0].props);
 
                 fileInput.dispatchEvent(new Event('change'));
 
@@ -839,7 +839,7 @@ describe('Image Block', () => {
                 {
                     id: 'cursor1',
                     type: BlockType.Image,
-                    imageSettings: {
+                    props: {
                         src: 'https://cdn.syncfusion.com/ej2/richtexteditor-resources/RTE-Overview.png',
                         altText: 'Cursor Test Image',
                         allowedTypes: ['.jpg', '.png'],
@@ -853,7 +853,7 @@ describe('Image Block', () => {
 
             const img = editorElement.querySelector('img') as HTMLImageElement;
             const container = editorElement.querySelector('.e-image-container') as HTMLElement;
-            const renderer = (editor.blockAction as any).imageRenderer;
+            const renderer = (editor.blockRendererManager as any).imageRenderer;
             
             img.addEventListener('load', () => {
                 setTimeout(() => {
@@ -876,7 +876,7 @@ describe('Image Block', () => {
                 {
                     id: 'datatype1',
                     type: BlockType.Image,
-                    imageSettings: {
+                    props: {
                         src: 'https://cdn.syncfusion.com/ej2/richtexteditor-resources/RTE-Overview.png',
                         altText: 'Data Type Test',
                         allowedTypes: ['.jpg', '.png'],
@@ -888,9 +888,9 @@ describe('Image Block', () => {
             editor = createEditor({ blocks: blocks });
             editor.appendTo('#editor');
 
-            const renderer = (editor.blockAction as any).imageRenderer;
+            const renderer = (editor.blockRendererManager as any).imageRenderer;
             const mockElement = createElement('div');
-            mockElement.setAttribute('data-block-type', 'Image');
+            mockElement.setAttribute('data-block-type', BlockType.Image);
             
             const clickEvent = new MouseEvent('click', { bubbles: true });
             Object.defineProperty(clickEvent, 'target', { value: mockElement });
@@ -905,7 +905,7 @@ describe('Image Block', () => {
                 {
                     id: 'cleanup1',
                     type: BlockType.Image,
-                    imageSettings: {
+                    props: {
                         src: 'https://cdn.syncfusion.com/ej2/richtexteditor-resources/RTE-Overview.png',
                         altText: 'Cleanup Test',
                         allowedTypes: ['.jpg', '.png'],
@@ -917,7 +917,7 @@ describe('Image Block', () => {
             editor = createEditor({ blocks: blocks });
             editor.appendTo('#editor');
 
-            const renderer = (editor.blockAction as any).imageRenderer;
+            const renderer = (editor.blockRendererManager as any).imageRenderer;
             renderer.isResizing = true;
             
             // Create and add overlay
@@ -937,7 +937,7 @@ describe('Image Block', () => {
                 {
                     id: 'noparent1',
                     type: BlockType.Image,
-                    imageSettings: {
+                    props: {
                         src: 'https://cdn.syncfusion.com/ej2/richtexteditor-resources/RTE-Overview.png',
                         altText: 'No Parent Test',
                         allowedTypes: ['.jpg', '.png'],
@@ -949,7 +949,7 @@ describe('Image Block', () => {
             editor = createEditor({ blocks: blocks });
             editor.appendTo('#editor');
 
-            const renderer = (editor.blockAction as any).imageRenderer;
+            const renderer = (editor.blockRendererManager as any).imageRenderer;
             renderer.isResizing = true;
             
             // Create overlay but don't add to DOM
@@ -965,7 +965,7 @@ describe('Image Block', () => {
                 {
                     id: 'animation1',
                     type: BlockType.Image,
-                    imageSettings: {
+                    props: {
                         src: 'https://cdn.syncfusion.com/ej2/richtexteditor-resources/RTE-Overview.png',
                         altText: 'Animation Test',
                         allowedTypes: ['.jpg', '.png'],
@@ -978,7 +978,7 @@ describe('Image Block', () => {
             editor.appendTo('#editor');
 
             const img = editorElement.querySelector('img') as HTMLImageElement;
-            const renderer = (editor.blockAction as any).imageRenderer;
+            const renderer = (editor.blockRendererManager as any).imageRenderer;
             
             renderer.startDimensions = { width: 100, height: 100 };
             renderer.startPosition = { x: 100, y: 100 };
@@ -1009,7 +1009,7 @@ describe('Image Block', () => {
                 {
                     id: 'emptycss1',
                     type: BlockType.Image,
-                    imageSettings: {
+                    props: {
                         src: 'test.jpg',
                         cssClass: '',
                         altText: 'Empty CSS Test',
@@ -1032,7 +1032,7 @@ describe('Image Block', () => {
                 {
                     id: 'noalt1',
                     type: BlockType.Image,
-                    imageSettings: {
+                    props: {
                         src: 'test.jpg',
                         allowedTypes: ['.jpg', '.png'],
                         saveFormat: 'Base64',
@@ -1071,7 +1071,7 @@ describe('Image Block', () => {
                 {
                     id: 'multi1',
                     type: BlockType.Image,
-                    imageSettings: {
+                    props: {
                         src: 'https://cdn.syncfusion.com/ej2/richtexteditor-resources/RTE-Overview.png',
                         altText: 'Image 1',
                         allowedTypes: ['.jpg', '.png'],
@@ -1082,7 +1082,7 @@ describe('Image Block', () => {
                 {
                     id: 'multi2',
                     type: BlockType.Image,
-                    imageSettings: {
+                    props: {
                         src: 'https://cdn.syncfusion.com/ej2/richtexteditor-resources/RTE-Overview.png',
                         altText: 'Image 2',
                         allowedTypes: ['.jpg', '.png'],
@@ -1095,7 +1095,7 @@ describe('Image Block', () => {
             editor.appendTo('#editor');
 
             const images = editorElement.querySelectorAll('img');
-            const renderer = (editor.blockAction as any).imageRenderer;
+            const renderer = (editor.blockRendererManager as any).imageRenderer;
             
             // Click first image
             const clickEvent1 = new MouseEvent('click', { bubbles: true });
@@ -1123,7 +1123,7 @@ describe('Image Block', () => {
                 {
                     id: 'extreme1',
                     type: BlockType.Image,
-                    imageSettings: {
+                    props: {
                         src: 'https://cdn.syncfusion.com/ej2/richtexteditor-resources/RTE-Overview.png',
                         altText: 'Extreme Resize Test',
                         allowedTypes: ['.jpg', '.png'],
@@ -1136,7 +1136,7 @@ describe('Image Block', () => {
             editor.appendTo('#editor');
 
             const img = editorElement.querySelector('img') as HTMLImageElement;
-            const renderer = (editor.blockAction as any).imageRenderer;
+            const renderer = (editor.blockRendererManager as any).imageRenderer;
             
             img.addEventListener('load', () => {
                 setTimeout(() => {
@@ -1169,7 +1169,7 @@ describe('Image Block', () => {
                 {
                     id: 'filecleanup1',
                     type: BlockType.Image,
-                    imageSettings: {
+                    props: {
                         allowedTypes: ['.jpg', '.png'],
                         saveFormat: 'Base64',
                         readOnly: false
@@ -1269,11 +1269,11 @@ describe('Image Block', () => {
             const paragraphBlock = editorElement.querySelector('#paragraph') as HTMLElement;
             editor.setFocusToBlock(paragraphBlock);
             
-            // Spy on blockAction.addNewBlock
-            const addNewBlockSpy = spyOn(editor.blockAction, 'addNewBlock').and.callThrough();
+            // Spy on blockCommandManager.addNewBlock
+            const addNewBlockSpy = spyOn(editor.blockCommandManager, 'addNewBlock').and.callThrough();
             
             // Call handleFilePaste - this will indirectly use getImageSrcFromFile
-            editor.blockAction.imageRenderer.handleFilePaste(imageBlob).then(() => {
+            editor.blockRendererManager.imageRenderer.handleFilePaste(imageBlob).then(() => {
                 expect(addNewBlockSpy).toHaveBeenCalled();
                 
                 // Should create a new Image block
@@ -1295,7 +1295,7 @@ describe('Image Block', () => {
             contentElement.textContent = '';
             
             // Update model
-            editor.updateContentOnUserTyping(paragraphBlock);
+            editor.stateManager.updateContentOnUserTyping(paragraphBlock);
             
             // Set focused block to paragraph
             editor.setFocusToBlock(paragraphBlock);
@@ -1304,10 +1304,10 @@ describe('Image Block', () => {
             const imageBlob = new Blob(['fake-image-data'], { type: 'image/png' });
             
             // Spy on transformBlock
-            const transformBlockSpy = spyOn(editor.blockAction, 'transformBlock').and.callThrough();
+            const transformBlockSpy = spyOn(editor.blockRendererManager, 'transformBlock').and.callThrough();
             
             // Call handleFilePaste - this will indirectly use getImageSrcFromFile
-            editor.blockAction.imageRenderer.handleFilePaste(imageBlob).then(() => {
+            editor.blockRendererManager.imageRenderer.handleFilePaste(imageBlob).then(() => {
                 expect(transformBlockSpy).toHaveBeenCalled();
                 
                 setTimeout(() => {
@@ -1332,7 +1332,7 @@ describe('Image Block', () => {
             editor.setFocusToBlock(paragraphBlock);
             
             // Call handleFilePaste
-            editor.blockAction.imageRenderer.handleFilePaste(imageFile).then(() => {
+            editor.blockRendererManager.imageRenderer.handleFilePaste(imageFile).then(() => {
                 setTimeout(() => {
                     // Check that image block was created with proper alt text
                     const imageBlock = editorElement.querySelector('.e-image-container');
@@ -1360,7 +1360,7 @@ describe('Image Block', () => {
             editor.setFocusToBlock(paragraphBlock);
             
             // Call handleFilePaste
-            editor.blockAction.imageRenderer.handleFilePaste(imageFile).then(() => {
+            editor.blockRendererManager.imageRenderer.handleFilePaste(imageFile).then(() => {
                 setTimeout(() => {
                     // Check that image block was created with proper alt text
                     const imageBlock = editorElement.querySelector('.e-image-container');
@@ -1399,7 +1399,7 @@ describe('Image Block', () => {
             spyOn(window as any, 'FileReader').and.returnValue(mockFileReader as any);
             
             // Call handleFilePaste with invalid file
-            editor.blockAction.imageRenderer.handleFilePaste(invalidFile).then(() => {
+            editor.blockRendererManager.imageRenderer.handleFilePaste(invalidFile).then(() => {
                 // This should not execute if proper error handling is in place
                 done.fail('Should have rejected invalid file');
             }).catch(() => {
@@ -1422,17 +1422,17 @@ describe('Image Block', () => {
             editor.setFocusToBlock(emptyParagraph);
             
             // Set saveFormat to Blob in the block model
-            const blockModel = getBlockModelById(emptyParagraph.id, editor.blocksInternal);
-            if (!blockModel.imageSettings) {
-                blockModel.imageSettings = {};
+            const blockModel = getBlockModelById(emptyParagraph.id, editor.getEditorBlocks());
+            if (!blockModel.props) {
+                blockModel.props = {};
             }
-            blockModel.imageSettings.saveFormat = 'Blob';
+            (blockModel.props as ImageProps).saveFormat = 'Blob';
             
             // Spy on URL.createObjectURL
             spyOn(URL, 'createObjectURL').and.returnValue('blob:mock-url');
             
             // Call handleFilePaste
-            editor.blockAction.imageRenderer.handleFilePaste(blobFile).then(() => {
+            editor.blockRendererManager.imageRenderer.handleFilePaste(blobFile).then(() => {
                 setTimeout(() => {
                     // Verify URL.createObjectURL was called
                     expect(URL.createObjectURL).toHaveBeenCalledWith(blobFile);

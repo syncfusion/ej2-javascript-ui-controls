@@ -46,7 +46,7 @@ export class Reorder implements IAction {
     }
 
     private chkDropPosition(srcElem: Element, destElem: Element): boolean {
-        const col: Column = this.parent.getColumnByUid(destElem.firstElementChild.getAttribute('e-mappinguid'));
+        const col: Column = this.parent.getColumnByUid(destElem.firstElementChild.getAttribute('data-mappinguid'));
         const bool: boolean = col ? !col.lockColumn : true;
         return ((srcElem.parentElement.isEqualNode(destElem.parentElement) || this.parent.enableColumnVirtualization)
             || (this.parent.isFrozenGrid()
@@ -110,7 +110,7 @@ export class Reorder implements IAction {
     private headerDrop(e: { target: Element }): void {
         const gObj: IGrid = this.parent;
         const dropElement: Element = this.element.querySelector('.e-headercelldiv') || this.element.querySelector('.e-stackedheadercelldiv');
-        const uId: string = dropElement.getAttribute('e-mappinguid');
+        const uId: string = dropElement.getAttribute('data-mappinguid');
         const column: Column = gObj.getColumnByUid(uId);
         if (!closestElement(e.target, 'th') || (!isNullOrUndefined(column) && (!column.allowReordering || column.lockColumn))) {
             this.parent.log('action_disabled_column', {moduleName: this.getModuleName(), column});
@@ -118,7 +118,7 @@ export class Reorder implements IAction {
         }
         const destElem: Element = closestElement(e.target as Element, '.e-headercell');
         const destElemDiv: Element = destElem.querySelector('.e-headercelldiv') || destElem.querySelector('.e-stackedheadercelldiv');
-        const destElemUid: string = destElemDiv.getAttribute('e-mappinguid');
+        const destElemUid: string = destElemDiv.getAttribute('data-mappinguid');
         if (!isNullOrUndefined(destElemUid)) {
             const destColumn: Column = gObj.getColumnByUid(destElemUid);
             if (isNullOrUndefined(destColumn) || !destColumn.allowReordering || destColumn.lockColumn) {
@@ -129,11 +129,11 @@ export class Reorder implements IAction {
         if (destElem && !(!this.chkDropPosition(this.element, destElem) || !this.chkDropAllCols(this.element, destElem))) {
             if (this.parent.enableColumnVirtualization) {
                 const columns: Column[] = this.parent.columns as Column[];
-                const sourceUid: string = this.element.querySelector('.e-headercelldiv').getAttribute('e-mappinguid');
+                const sourceUid: string = this.element.querySelector('.e-headercelldiv').getAttribute('data-mappinguid');
                 const col: Column[] = (this.parent.columns as Column[]).filter((col: Column) => col.uid === sourceUid);
                 let colMatchIndex: number = null;
                 const column: Column = col[0];
-                const destUid: string = destElem.querySelector('.e-headercelldiv').getAttribute('e-mappinguid');
+                const destUid: string = destElem.querySelector('.e-headercelldiv').getAttribute('data-mappinguid');
                 columns.some((col: Column, index: number) => {
                     if (col.uid === destUid) {
                         colMatchIndex = index;
@@ -146,7 +146,7 @@ export class Reorder implements IAction {
                 }
             } else {
                 const newIndex: number = this.targetParentContainerIndex(this.element, destElem);
-                const uid: string = this.element.firstElementChild.getAttribute('e-mappinguid');
+                const uid: string = this.element.firstElementChild.getAttribute('data-mappinguid');
                 this.destElement = destElem;
                 this.parent.notify(events.setReorderDestinationElement, { ele: destElem });
                 if (uid) {
@@ -183,7 +183,7 @@ export class Reorder implements IAction {
                 }
             }
             const col: Column =
-            this.parent.getColumnByUid(this.destElement.firstElementChild.getAttribute('e-mappinguid'));
+            this.parent.getColumnByUid(this.destElement.firstElementChild.getAttribute('data-mappinguid'));
             if (col) {
                 for (let i: number = 0; i < cols.length; i++) {
                     if (cols[parseInt(i.toString(), 10)].field === col.field) {
@@ -277,7 +277,7 @@ export class Reorder implements IAction {
                 i--;
             }
             else if (headers[parseInt(i.toString(), 10)].closest('thead').firstChild === headers[parseInt(i.toString(), 10)].parentElement) {
-                stackedCols.push(this.parent.getColumnByUid(headers[parseInt(i.toString(), 10)].firstElementChild.getAttribute('e-mappinguid')));
+                stackedCols.push(this.parent.getColumnByUid(headers[parseInt(i.toString(), 10)].firstElementChild.getAttribute('data-mappinguid')));
             }
         }
         return stackedCols;
@@ -505,7 +505,7 @@ export class Reorder implements IAction {
             // eslint-disable-next-line no-case-declarations
             const element: HTMLElement = gObj.focusModule.currentInfo.element;
             if (element && element.classList.contains('e-headercell')) {
-                const column: Column = gObj.getColumnByUid(element.firstElementChild.getAttribute('e-mappinguid'));
+                const column: Column = gObj.getColumnByUid(element.firstElementChild.getAttribute('data-mappinguid'));
                 const visibleCols: Column[] = gObj.getVisibleColumns();
                 const index: number = visibleCols.indexOf(column);
                 const toCol: Column = e.action === 'ctrlLeftArrow' ? visibleCols[index - 1] : visibleCols[index + 1];
@@ -532,7 +532,7 @@ export class Reorder implements IAction {
         if (closest && !closest.isEqualNode(this.element)) {
             target = closest;
             //consider stacked, detail header cell
-            const uid: string = target.querySelector('.e-headercelldiv, .e-stackedheadercelldiv').getAttribute('e-mappinguid');
+            const uid: string = target.querySelector('.e-headercelldiv, .e-stackedheadercelldiv').getAttribute('data-mappinguid');
             if (!(!this.chkDropPosition(this.element, target) || !this.chkDropAllCols(this.element, target)) &&
                 gObj.getColumnByUid(uid).allowReordering && e.column.allowReordering) {
                 this.updateArrowPosition(target, isLeft);

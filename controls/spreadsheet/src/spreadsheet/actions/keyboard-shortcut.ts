@@ -217,14 +217,25 @@ export class KeyboardShortcut {
                 getCell(indexes[0], indexes[1], sheet), getColumn(sheet, indexes[1]));
             if (e.keyCode === 70 && !isSelectionNone && this.parent.allowFindAndReplace) { /* Ctrl + F */
                 e.preventDefault();
-                this.parent.notify(findToolDlg, {});
+                const findInput: HTMLInputElement = document.querySelector('.e-text-findNext-short') as HTMLInputElement;
+                if (findInput) {
+                    findInput.focus();
+                } else {
+                    this.parent.notify(findToolDlg, {});
+                }
             }
             if ((!isLocked || !sheet.isProtected || e.keyCode === 86) && e.keyCode !== 70 && !isSelectionNone) {
                 if (e.keyCode === 71) { /* Ctrl + G */
                     e.preventDefault(); this.parent.notify(gotoDlg, null);
                 }
                 else if (e.keyCode === 72) {  /* Ctrl + H */
-                    e.preventDefault(); this.parent.notify(findDlg, null);
+                    e.preventDefault();
+                    const findInput: HTMLInputElement = document.querySelector('.e-text-findNext') as HTMLInputElement;
+                    if (findInput) {
+                        findInput.focus();
+                    } else {
+                        this.parent.notify(findDlg, null);
+                    }
                 } else if (e.keyCode === 88) { /* Ctrl + X */
                     this.parent.notify(cut, { promise: Promise });
                 } else if (e.keyCode === 86) {  /* Ctrl + v */

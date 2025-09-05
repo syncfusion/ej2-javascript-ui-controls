@@ -1852,3 +1852,18 @@ export let groupData: Object[] = [
         IsOffshore: false, IsEdit: true
     }
 ];
+
+export let spanData: Object[] = [
+    {Channel: "CNN International", Genre: "News", Prgm6AM: "World News", Prgm7AM: "News Update", Prgm8AM: "World Briefing", Prgm9AM: "World Briefing", Prgm10AM: "Midday Bulletin"},
+    {Channel: "BBC World News", Genre: "News", Prgm6AM: "World News", Prgm7AM: "World Business", Prgm8AM: "World Briefing", Prgm9AM: "World Briefing", Prgm10AM: "Hardtalk"},
+    {Channel: "Discovery Channel", Genre: "Science", Prgm6AM: "How It's Made", Prgm7AM: "Nature’s Wonders", Prgm8AM: "Extreme Engineering", Prgm9AM: "Tech Explorers", Prgm10AM: "Into the Unknown"},
+    {Channel: "National Geographic", Genre: "Science", Prgm6AM: "Explorer", Prgm7AM: "Wild Russia", Prgm8AM: "Extreme Engineering", Prgm9AM: "Tech Explorers", Prgm10AM: "Lost Treasures"},
+    {Channel: "HBO", Genre: "Movies", Prgm6AM: "The Wizard of Lies", Prgm7AM: "The Wizard of Lies", Prgm8AM: "The Wizard of Lies", Prgm9AM: "Game Change", Prgm10AM: "Game Change"},
+    {Channel: "ESPN", Genre: "Sports", Prgm6AM: "Tennis World", Prgm7AM: "Cricket Classics", Prgm8AM: "Live Match", Prgm9AM: "Live Match", Prgm10AM: "Top 10 Moments"},
+    {Channel: "Cartoon Network", Genre: "Kids", Prgm6AM: "Gumball", Prgm7AM: "Ben 10", Prgm8AM: "Ben 10", Prgm9AM: "Ben 10", Prgm10AM: "Scooby-Doo"},
+    {Channel: "Nickelodeon", Genre: "Kids", Prgm6AM: "Dora the Explorer", Prgm7AM: "PAW Patrol", Prgm8AM: "The Loud House", Prgm9AM: "The Loud House", Prgm10AM: "Scooby-Doo"},
+    {Channel: "Disney Channel", Genre: "Kids", Prgm6AM: "Mickey Mouse Clubhouse", Prgm7AM: "Big City Greens", Prgm8AM: "Gravity Falls", Prgm9AM: "Gravity Falls", Prgm10AM: "Scooby-Doo"},
+    {Channel: "Eurosport", Genre: "Sports", Prgm6AM: "Tennis World", Prgm7AM: "Olympic Moments", Prgm8AM: "Live Match", Prgm9AM: "Live Match", Prgm10AM: "Top 10 Moments"},
+    {Channel: "Animal Planet", Genre: "Wildlife", Prgm6AM: "Animal Atlas", Prgm7AM: "Into the Wild", Prgm8AM: "Predators", Prgm9AM: "Predators", Prgm10AM: "Ocean Giants"},
+    {Channel: "BBC Earth", Genre: "Nature", Prgm6AM: "Planet Earth", Prgm7AM: "Frozen Planet", Prgm8AM: "Life", Prgm9AM: "Life", Prgm10AM: "Blue Planet"}
+];

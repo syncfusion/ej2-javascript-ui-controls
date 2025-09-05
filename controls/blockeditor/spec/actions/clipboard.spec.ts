@@ -1,8 +1,8 @@
 import { createElement } from '@syncfusion/ej2-base';
-import { BlockModel } from '../../src/blockeditor/models/index';
-import { BlockEditor, BlockType, ContentType, getBlockContentElement, getContentModelById, getSelectionRange, IClipboardPayload, setCursorPosition } from '../../src/index';
+import { BaseChildrenProp, BaseStylesProp, BlockModel } from '../../src/blockeditor/models/index';
+import { BlockEditor, BlockType, ContentType, getBlockContentElement, getBlockText, IClipboardPayloadOptions, setCursorPosition } from '../../src/index';
 import { createEditor } from '../common/util.spec';
-import { allBlockData } from '../common/data.spec';
+import { allTypesOfBlock } from '../common/data.spec';
 
 function createMockClipboardEvent(type: string, clipboardData: any = {}): ClipboardEvent {
     const event: any = {
@@ -129,16 +129,16 @@ describe('Clipboard Actions', () => {
                         id: 'block1',
                         type: BlockType.Paragraph,
                         content: [
-                            { id: 'bold', type: ContentType.Text, content: 'Boldedtext', styles: { bold: true } },
-                            { id: 'italic', type: ContentType.Text, content: 'Italictext', styles: { italic: true } },
-                            { id: 'underline', type: ContentType.Text, content: 'Underlinedtext', styles: { underline: true } }
+                            { id: 'bold', type: ContentType.Text, content: 'Boldedtext', props: { styles: { bold: true } }},
+                            { id: 'italic', type: ContentType.Text, content: 'Italictext', props: { styles: { italic: true } }},
+                            { id: 'underline', type: ContentType.Text, content: 'Underlinedtext', props: { styles: { underline: true }} }
                         ]
                     },
                     {
                         id: 'block2',
                         type: BlockType.Paragraph,
                         content: [
-                            { id: 'test', type: ContentType.Text, content: 'TestContent', styles: { bold: true } }
+                            { id: 'test', type: ContentType.Text, content: 'TestContent', props: { styles: { bold: true }} }
                         ]
                     }
                 ]
@@ -180,9 +180,9 @@ describe('Clipboard Actions', () => {
                 expect(editor.blocks[1].content.length).toBe(initialLength + 3);
                 expect(editor.blocks[1].content[0].content).toBe('Test');
                 expect(editor.blocks[1].content[1].content).toBe('Italictext');
-                expect(editor.blocks[1].content[1].styles.italic).toBe(true);
+                expect((editor.blocks[1].content[1].props as BaseStylesProp).styles.italic).toBe(true);
                 expect(editor.blocks[1].content[2].content).toBe('Underl');
-                expect(editor.blocks[1].content[2].styles.underline).toBe(true);
+                expect((editor.blocks[1].content[2].props as BaseStylesProp).styles.underline).toBe(true);
                 expect(editor.blocks[1].content[3].content).toBe('Content');
                 expect(contentElement.childNodes.length).toBe(4);
                 expect(contentElement.childNodes[1].textContent).toBe('Italictext');
@@ -299,7 +299,7 @@ describe('Clipboard Actions', () => {
 
             const contentElement = getBlockContentElement(blockElement);
             contentElement.textContent = '';
-            editor.updateContentOnUserTyping(blockElement);
+            editor.stateManager.updateContentOnUserTyping(blockElement);
             setCursorPosition(contentElement, 0);
 
             editor.clipboardAction.handlePaste(createMockClipboardEvent('paste', mockClipboard));
@@ -339,12 +339,14 @@ describe('Clipboard Actions', () => {
 
             editor.addBlock({
                 id: 'callout-block',
-                type: 'Callout',
-                children: [{
-                    id: 'callout-child1',
-                    type: 'Paragraph',
-                    content: [{ id: 'callout-child1-content', type: ContentType.Text, content: '' }]
-                }]
+                type: BlockType.Callout,
+                props: {
+                    children: [{
+                        id: 'callout-child1',
+                        type: BlockType.Paragraph,
+                        content: [{ id: 'callout-child1-content', type: ContentType.Text, content: '' }]
+                    }]
+                }
             }, lastBlockElement.id);
 
             const calloutParentBlock = editorElement.querySelector('#callout-block') as HTMLElement;
@@ -356,10 +358,10 @@ describe('Clipboard Actions', () => {
 
             editor.clipboardAction.handlePaste(createMockClipboardEvent('paste', mockClipboard));
             setTimeout(function () {
-                expect(editor.blocks[2].children.length).toBe(2);
+                expect((editor.blocks[2].props as BaseChildrenProp).children.length).toBe(2);
                 expect(calloutParentBlock.querySelectorAll('.e-block').length).toBe(2);
-                expect(editor.blocks[2].children[0].content[0].content).toBe('First paragraph');
-                expect(editor.blocks[2].children[1].content[0].content).toBe('Second paragraph');
+                expect((editor.blocks[2].props as BaseChildrenProp).children[0].content[0].content).toBe('First paragraph');
+                expect((editor.blocks[2].props as BaseChildrenProp).children[1].content[0].content).toBe('Second paragraph');
                 expect(calloutParentBlock.querySelectorAll('.e-block')[0].querySelector('p').textContent).toBe('First paragraph');
                 expect(calloutParentBlock.querySelectorAll('.e-block')[1].querySelector('p').textContent).toBe('Second paragraph');
                 done();
@@ -680,12 +682,12 @@ describe('Clipboard Actions', () => {
                 expect(editor.blocks[1].content[0].content).toBe('Formatted ');
 
                 expect(editor.blocks[1].content[1].content).toBe('bold');
-                expect(editor.blocks[1].content[1].styles.bold).toBe(true);
+                expect((editor.blocks[1].content[1].props as BaseStylesProp).styles.bold).toBe(true);
 
                 expect(editor.blocks[1].content[2].content).toBe(' and ');
 
                 expect(editor.blocks[1].content[3].content).toBe('italic');
-                expect(editor.blocks[1].content[3].styles.italic).toBe(true);
+                expect((editor.blocks[1].content[3].props as BaseStylesProp).styles.italic).toBe(true);
 
                 expect(editor.blocks[1].content[4].content).toBe(' text');
                 done();
@@ -772,7 +774,7 @@ describe('Clipboard Actions', () => {
         beforeAll(() => {
             editorElement = createElement('div', { id: 'editor' });
             document.body.appendChild(editorElement);
-            editor = createEditor({ blocks: allBlockData });
+            editor = createEditor({ blocks: allTypesOfBlock });
             editor.appendTo('#editor');
         });
 
@@ -788,10 +790,10 @@ describe('Clipboard Actions', () => {
         it('should generate clean HTML for external clipboard', (done) => {
             // // Mock copy event
             editor.selectAllBlocks();
-            const { html, text, blockeditorData }: IClipboardPayload = editor.clipboardAction.getClipboardPayload();
+            const { html, text, blockeditorData }: IClipboardPayloadOptions = editor.clipboardAction.getClipboardPayload();
             expect(html).toContain('<h1>Welcome to the Block Editor Demo!</h1>');
             expect(html).toContain('<p>Block Editor is a powerful rich text editor</p>');
-            expect(html).toContain('<p>Try selecting text to see <em><strong>formatting options</strong></em>, or type <span style="background-color: #F0F0F0;"><strong>&quot;/&quot;</strong></span> to access the command menu.</p>');
+            expect(html).toContain('<p>Try selecting text to see <em><strong>formatting options</strong></em>, or type <strong><span style="background-color: #F0F0F0;">&quot;/&quot;</span></strong> to access the command menu.</p>');
             expect(html).toContain('<h2>Block Types</h2>');
             expect(html).toContain('<blockquote><em>The Block Editor makes document creation a seamless experience with its intuitive block-based approach.</em></blockquote>');
             expect(html).toContain('<h3>List Types</h3>');
@@ -1078,7 +1080,7 @@ describe('Clipboard Actions', () => {
             
             // Spy on performPasteOperation
             const pasteSpy = spyOn(editor.clipboardAction as any, 'performPasteOperation').and.callThrough();
-            const imagePasteHandler = spyOn(editor.blockAction.imageRenderer, 'handleFilePaste').and.callFake(() => Promise.resolve());
+            const imagePasteHandler = spyOn(editor.blockRendererManager.imageRenderer, 'handleFilePaste').and.callFake(() => Promise.resolve());
             
             // Set cursor in block
             const blockElement = editorElement.querySelector('#paragraph1') as HTMLElement;
@@ -1175,7 +1177,7 @@ describe('Clipboard Actions', () => {
 
             // Sending null data for parse will be catched by try catch block
             const spyconsole = spyOn(console, 'error').and.callFake(() => {});
-            const parsedData = (editor.clipboardAction as any).handleBlockEditorPaste('this is not valid json');
+            const parsedData = (editor.clipboardAction as any).handleBlockEditorPaste('this is not valid json', '');
             expect(parsedData).toBeUndefined();
             expect(console.error).toHaveBeenCalled();
             expect(console.error).toHaveBeenCalledWith('Error parsing Block Editor clipboard data:', jasmine.any(Error));
@@ -1198,22 +1200,10 @@ describe('Clipboard Actions', () => {
             const data2 = (editor.clipboardAction as any).handleMultiBlocksPaste([{ type: 'Fake' }]);
             expect(data2).toBeUndefined();
 
-            const text = (editor.clipboardAction as any).getBlockText({ content: null })
+            const text = getBlockText({ content: null })
             expect(text).toBe('');
             rangeSpy.calls.reset();
             done();
-        });
-
-        it('should unwrap the deepest block container', (done) => {
-           const container = document.createElement('div');
-           const span = document.createElement('span');
-           span.innerHTML = '<div id="nestedContainer"> <p> Test </p> </div>';
-           container.appendChild(span);
-
-           const unwrapped = (editor.clipboardAction as any).unWrapContainer(container);
-           expect(unwrapped).not.toBeNull();
-           expect(unwrapped.firstChild.id).toBe('nestedContainer');
-           done();
         });
 
         it('should exit when before paste event is prevented', (done) => {
@@ -1286,7 +1276,7 @@ describe('Clipboard Actions', () => {
 
                 setTimeout(() => {
                     expect(editor.blocks.length).toBe(3);
-                    expect(editor.blocks[1].type).toBe('Image');
+                    expect(editor.blocks[1].type).toBe(BlockType.Image);
                     expect(editorElement.querySelector('img')).not.toBeNull();
                     done();
                 }, 500);

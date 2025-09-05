@@ -350,7 +350,7 @@ export class EmojiPicker {
         }
     }
 
-    private onIframeMouseDown(e: { [key: string]: object }): void {
+    private onIframeMouseDown(): void {
         if (this.popupObj) {
             removeClass([this.divElement], 'e-active');
             this.popupObj.hide();

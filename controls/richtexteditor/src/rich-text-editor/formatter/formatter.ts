@@ -129,10 +129,10 @@ export class Formatter {
                 }
             }
         } else if (!isNOU(args) && args.item.command && args.item.subCommand && ((args.item.command !== args.item.subCommand
-            && args.item.command !== 'Font' && args.item.command !== 'Export')
+            && args.item.command !== 'Font' && args.item.command !== 'Export' && args.item.subCommand !== 'TableBackgroundColor' && args.item.subCommand !== 'BorderColor')
             || ((args.item.subCommand === 'FontName' || args.item.subCommand === 'FontSize') && args.name === 'dropDownSelect')
             || ((args.item.subCommand === 'BackgroundColor' || args.item.subCommand === 'FontColor')
-                && (args.name === 'colorPickerChanged' ||  args.name === 'tableColorPickerChanged')) || args.item.subCommand === 'FormatPainter' || args.item.subCommand === 'EmojiPicker' || args.item.subCommand === 'CodeBlock')) {
+                && (args.name === 'colorPickerChanged' ||  args.name === 'tableColorPickerChanged')) || args.item.subCommand === 'FormatPainter' || args.item.subCommand === 'EmojiPicker' || args.item.subCommand === 'CodeBlock' || args.item.subCommand === 'Checklist')) {
             extend(args, args, { requestType: args.item.subCommand, cancel: false, itemCollection: value, selectType: args.name }, true);
             self.trigger(CONSTANT.actionBegin, args, (actionBeginArgs: ActionBeginEventArgs) => {
                 if (!actionBeginArgs.cancel) {

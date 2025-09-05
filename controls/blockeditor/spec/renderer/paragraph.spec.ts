@@ -46,7 +46,7 @@ describe('Paragraph Block', () => {
             const paragraph = editorElement.querySelector('#paragraph-content');
             paragraph.textContent = 'Updated content';
             editor.setFocusToBlock(paragraph.closest('.e-block') as HTMLElement);
-            editor.updateContentOnUserTyping(paragraph.closest('.e-block') as HTMLElement);
+            editor.stateManager.updateContentOnUserTyping(paragraph.closest('.e-block') as HTMLElement);
             setTimeout(() => {
                 expect(editor.blocks[0].content[0].content).toBe('Updated content');
                 done();
