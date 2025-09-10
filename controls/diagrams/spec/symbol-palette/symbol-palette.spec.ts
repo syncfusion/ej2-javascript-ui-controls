@@ -3824,3 +3824,195 @@ describe('892454: Check BPMN Activity shapes Fill color for smaller size ', () =
         done();
     });
 });
+
+describe('974569: Group Node Not Rendering Properly in Symbol Palette Without Explicit Size Specification', () => {
+    let diagram: Diagram;
+    let palette: SymbolPalette;
+    let ele: HTMLElement;
+    let mouseEvents: MouseEvents = new MouseEvents();
+    beforeAll((): void => {
+        ele = createElement('div', { styles: 'width:100%;height:500px;' });
+        ele.appendChild(createElement('div', { id: 'symbolpaletteGroupSize', styles: 'width:25%;float:left;' }));
+        document.body.appendChild(ele);
+
+        let palettes: PaletteModel[] = [{
+            id: 'shapes-palette', expanded: true, symbols: [
+                { id: 'path1', shape: { type: 'Path', data: 'M14 10 A5 5 0 0 1 14 0' } },
+                { id: 'path2', shape: { type: 'Path', data: 'M 0,0 L 0,5' } },
+                { id: 'path3', shape: { type: 'Path', data: 'M 31 13 L 32 13' } },
+
+                {
+                    id: 'rect1',
+                    style: {
+                        fill: '#FF0000',
+                        strokeColor: '#FF0000',
+                        color: '#FF0000',
+                    },
+                    shape: {
+                        shape: 'Rectangle',
+                        type: 'Basic',
+                    },
+                    //   constraints: 0,
+                },
+                {
+                    id: 'poly1',
+                    offsetX: 50, offsetY: 50,
+                    //   constraints: 0,
+                    style: {
+                        strokeColor: '#B22222',
+                        color: '#B22222',
+                        fill: '#B22222',
+                    },
+                    shape: {
+                        shape: 'Polygon',
+                        type: 'Basic',
+                        points: [
+                            {
+                                x: 0,
+                                y: 21,
+                            },
+                            {
+                                x: 2,
+                                y: 18,
+                            },
+                            {
+                                x: 17,
+                                y: 18,
+                            },
+                            {
+                                x: 17,
+                                y: 2,
+                            },
+                            {
+                                x: 19,
+                                y: 0,
+                            },
+                            {
+                                x: 19,
+                                y: 21,
+                            },
+                            {
+                                x: 0,
+                                y: 21,
+                            },
+                        ],
+                    },
+                },
+                {
+                    id: 'poly2',
+                    //   constraints: 0,
+                    style: {
+                        strokeColor: '#FF4500',
+                        color: '#FF4500',
+                        fill: '#FF4500',
+                    },
+                    shape: {
+                        shape: 'Polygon',
+                        type: 'Basic',
+                        points: [
+                            {
+                                x: 0,
+                                y: 21,
+                            },
+                            {
+                                x: 2,
+                                y: 18,
+                            },
+                            {
+                                x: 2,
+                                y: 2,
+                            },
+                            {
+                                x: 17,
+                                y: 2,
+                            },
+                            {
+                                x: 19,
+                                y: 0,
+                            },
+                            {
+                                x: 0,
+                                y: 0,
+                            },
+                            {
+                                x: 0,
+                                y: 21,
+                            },
+                        ],
+                    },
+                },
+                {
+                    id: 'CustomRectangle',
+                    pivot: { x: 0, y: 0 },
+                    children: ['rect1', 'poly1',],
+                },
+
+                {
+                    id: 'line1',
+                    //   constraints: 0,
+                    style: {
+                        strokeColor: '#FF0000',
+                        color: '#FF0000',
+                        strokeWidth: 2,
+                        fill: 'none',
+                    },
+                    shape: {
+                        type: 'Path',
+                        data: 'M 0 0 L 0 5',
+                    },
+                    //   constraints: 0,
+                },
+                {
+                    id: 'line2',
+                    //   constraints: 0,
+                    style: {
+                        strokeColor: '#FF0000',
+                        color: '#FF0000',
+                        strokeWidth: 2,
+                        fill: 'none',
+                    },
+                    shape: {
+                        type: 'Path',
+                        data: 'M 10 5 L 0 15 L 0 20',
+                    },
+                    //   constraints: 0,
+                },
+                {
+                    id: 'CustomLines',
+                    style: {
+                        fill: 'none',
+                    },
+                    pivot: { x: 0, y: 0 },
+                    children: ['line1', 'line2'],
+                },
+
+            ],
+            title: 'Shapes'
+        }]
+        palette = new SymbolPalette({
+            width: '25%', height: '100%',
+            palettes: palettes, enableSearch: true,
+            expandMode: "Multiple",
+            symbolMargin: { left: 12, right: 12, top: 12, bottom: 12 },
+
+        });
+        palette.appendTo('#symbolpaletteGroupSize');
+    });
+    afterAll((): void => {
+        // diagram.destroy();
+        palette.destroy();
+        ele.remove();
+    });
+    it('Checking Symbol palette shapes', (done: Function) => {
+        expect(palette.palettes[0].symbols.length).toBe(10);
+        done();
+    });
+    it('Drag group node from palette', (done: Function) => {
+        let paletteElement = document.getElementById('symbolpaletteGroupSize_container');
+        let group = document.getElementById('CustomLines_container');
+        let groupBounds: any = group.getBoundingClientRect();
+        mouseEvents.mouseDownEvent(paletteElement,groupBounds.x + groupBounds.width / 2, groupBounds.y + groupBounds.height / 2);
+        mouseEvents.mouseMoveEvent(paletteElement,groupBounds.x + groupBounds.width / 2 + 10, groupBounds.y + groupBounds.height / 2 + 10);
+        done();
+    });
+});

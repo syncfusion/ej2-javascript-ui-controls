@@ -2,49 +2,24 @@
 
 ## [Unreleased]
 
-## 31.1.17 (2025-09-05)
+## 31.1.18 (2025-09-10)
 
 ### DocumentEditor
 
 #### Bug Fixes
 
-- `#I745098` - Fixed a script error that occurred when merging table cells with existing borders.
-- `#I751824` - Resolved issue where the spell checker was not triggered upon opening a document after it had been disabled.
-- `#I745960` - Corrected behaviour where selection did not move to the previous page when pressing the `PageUp` key.
-- `#I729357` - Addressed list formatting issues during SFDT export for specific selections.
-- `#F197172` - Fixed layout inconsistencies in paragraphs with `Exactly` alignment when opening documents.
-- `#I756856` - Resolved issue where justified paragraphs were not combining correctly when pressing backspace.
-- `#I756727` - Fixed UI issue where font size was not updating for empty paragraphs.
-
-## 30.2.6 (2025-08-19)
-
-### DocumentEditor
-
-#### Bug Fixes
-
-- `#I712717` - Fixed an issue where undo functionality failed after inserting grouped text.
-- `#I754664` - Addressed a looping problem that occurred when accepting a deleted revision containing comments.
-
-## 30.2.5 (2025-08-13)
-
-### DocumentEditor
-
-#### Bug Fixes
-
-- `#I748873` - Fixed a script error that occurred when decreasing the indent in list paragraphs.
-- `#I971894` - Resolved a script error triggered during `beginUndoAction` when clearing the redo collection.
-- `#I747660` - Addressed an issue where the comments panel failed to display correctly when `showRevision` was set to false.
-- `#I750354` - Resolved an issue where pressing keys on the numeric keypad did not trigger page number input in the status bar.
-- `#I747885` - Corrected layout inconsistencies when inserting white space after selecting content.
-- `#I748857` - Ensured left and right margins are properly applied during horizontal ruler scrolling.
-- `#I748856` - Fixed horizontal ruler misalignment when resizing the vertical ruler.
-- `#I741169` - Resolved an issue where underlines applied to images were not retained correctly.
-- `#I744835` - Fixed a script error occurring when dragging text from a table into the header.
-- `#I746062` - Addressed export issues with nested content controls.
-
-#### Features
-
-- `#I723821` - Added event to access the paste action before it paste
+- `#I748794` - Resolved a performance issue when scrolling the document with a header row.
+- `#I954857` - Resolved a font size updating issue when selecting the different fonts.
+- `#I750843` - Resolved an issue where the Different First Page header changed to a normal header when updating margin values.
+- `#I753959` - Resolved an exception that occurred when deleting a list and adding a new list in the same paragraph.
+- `#I757421` - Resolved an issue where the delete action caused overlap and a script error in Document Editor.
+- `#I751509` - Resolved an issue where the scrollbar did not update while selecting and copying text in Firefox.
+- `#I757912` - Resolved issues with the Alter Case functionality in Document Editor.
+- `#I758674` - Resolved an issue where the Table Merge option was disabled.
+- `#I757365` - Resolved an issue where replacing a suggested word removed extra content.
+- `#I761480` - Resolved an issue where underline formatting was incorrect when accepting a deletion revision.
+- `#I188060` - Added support for integrating Document Editor into Ant Modal.
+- `#I755704` - Resolved a spell check issue caused by the tab character and fixed an issue rendering the documents default character format after setting the editors character format.
 
 ## 30.1.42 (2025-07-29)
 

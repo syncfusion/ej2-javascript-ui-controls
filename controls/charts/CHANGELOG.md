@@ -2,24 +2,27 @@
 
 ## [Unreleased]
 
-## 31.1.17 (2025-09-05)
+## 31.1.18 (2025-09-10)
 
 ### Chart
 
 #### Bug Fixes
 
-- `#T745980` - The legend text trim tooltip will no longer be cropped at the bottom of the legend bounds.
-- `#T754125` - The marker will no longer render when it exceeds the axis range.
+- `#T742786` - Trendlines now render correctly when dynamically enabled.
+- `#F69182` - Columns with a single X-axis value now render with the correct width.
+- `#T757693` - Now the secondary axis label renders properly when the position is set to 'inside'.
+
+### 3D Chart
+
+#### Bug Fixes
+
+- `#T756018` - The axis label tooltip text now renders correctly without being trimmed.
 
 ## 30.2.6 (2025-08-19)
 
 ### Chart
 
 #### Bug Fixes
-
-- `#T745980` - The legend text and symbol will no longer overlap when RTL is enabled.
-
-## 30.2.4 (2025-08-13)
 
 ### Accumulation Chart
 
@@ -69,8 +72,6 @@
 #### Feature
 
 - `#I653358` - Provided support for DateTime value type on the primary Y-axis.
-
-## 30.1.37 (2025-06-25)
 
 ### Chart
 

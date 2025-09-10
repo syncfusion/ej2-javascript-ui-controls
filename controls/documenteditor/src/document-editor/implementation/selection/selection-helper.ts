@@ -753,7 +753,6 @@ export class TextPosition {
     }
     /**
      * Moves the text position to start of the next paragraph.
-     * @private
      */
     public moveToNextParagraphStartInternal(): void {
         const paragraph: ParagraphWidget = this.currentWidget.paragraph;

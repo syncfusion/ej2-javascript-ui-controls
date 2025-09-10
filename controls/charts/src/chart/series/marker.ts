@@ -1,4 +1,4 @@
-import { RectOption, ChartLocation, appendChildElement, getElement, appendClipElement, withInBounds, logBase } from '../../common/utils/helper';
+import { RectOption, ChartLocation, appendChildElement, getElement, appendClipElement, withInBounds, logBase  } from '../../common/utils/helper';
 import { findlElement, drawSymbol, markerAnimate, CircleOption } from '../../common/utils/helper';
 import { PathOption, Rect, Size, SvgRenderer, BaseAttibutes, CanvasRenderer } from '@syncfusion/ej2-svg-base';
 import { Chart } from '../chart';

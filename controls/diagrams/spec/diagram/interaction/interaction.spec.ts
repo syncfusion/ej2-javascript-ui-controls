@@ -5617,6 +5617,7 @@ describe('912436-Diagram Tool Change At RunTime', () => {
     });
 });
 
+
 let nodes: NodeModel[] = [
     {
         id: 'PolyLinenode1',

@@ -5234,7 +5234,8 @@ export class PivotEngine {
                 this.updateValueMembers(
                     this.measureIndex === 0 && axis.length > 1, null, null, columnHeaders, axis.slice(0, axis.length - 1), vcnt, 0);
                 this.updateValueMembers(false, null, null, columnHeaders, axis.slice(axis.length - 1, axis.length), vcnt, -1);
-            } else if (this.dataSourceSettings.grandTotalsPosition === 'Top' && this.dataSourceSettings.showGrandTotals && this.measureIndex === 0) {
+            } else if (this.dataSourceSettings.grandTotalsPosition === 'Top' && this.dataSourceSettings.showGrandTotals &&
+                       this.dataSourceSettings.showColumnGrandTotals && this.measureIndex === 0) {
                 this.updateValueMembers(false, null, null, columnHeaders, axis.slice(0, 1), vcnt, -1);
                 this.updateValueMembers(
                     this.measureIndex === 0 && axis.length > 1, null, null, columnHeaders, axis.slice(1, axis.length), vcnt, 0);

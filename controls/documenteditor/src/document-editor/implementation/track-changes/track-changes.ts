@@ -607,6 +607,7 @@ export class Revision {
     private removeItem(element: ElementBox): void {
         let paraWidget: ParagraphWidget = element.line.paragraph;
         this.owner.editorModule.unLinkFieldCharacter(element);
+        this.owner.editorModule.triggerChangeDetected(element);
         let elementIndex: number = element.line.children.indexOf(element);
         let previousNode: ElementBox = element.previousNode;
         element.line.children.splice(elementIndex, 1);

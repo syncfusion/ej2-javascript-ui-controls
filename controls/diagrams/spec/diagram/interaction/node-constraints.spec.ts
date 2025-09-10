@@ -913,7 +913,8 @@ describe('Dragging wih constraints', () => {
         mouseEvents.clickEvent(diagramCanvas, 565, 240);
         mouseEvents.dragAndDropEvent(diagramCanvas, 565, 240, 580, 260);
         expect (diagram.selectedItems.nodes.length === 1 && diagram.selectedItems.nodes[0].offsetX === 565 &&
-        diagram.selectedItems.nodes[0].offsetY === 240).toBe(true);
+        diagram.selectedItems.nodes[0].offsetY === 240).toBe(false);
+        expect (diagram.selectedItems.nodes.length === 0).toBe(true);
         done();
     });
 

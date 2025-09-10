@@ -3440,7 +3440,6 @@ class MatrixModel {
         return returnIds;
     }
 
-    // 962088 - Connector overlapping with nodes in layout
     private checkparentsLevel(list1: string[], list2: string[], matrixModel: MatrixModelObject): boolean {
         if (list1.length === 1 || list2.length === 1) {
             return true;

@@ -65,23 +65,6 @@
         }
       }
 
-      &.e-olap-editor-dialog .e-member-editor-outer-container .e-treeview ul li .e-text-content {
-        @if ($pivotgrid-skin =='Material3') {
-          padding-left: 30px !important;
-        }
-        @if ($skin-name =='tailwind3') {
-          padding-left: 25px !important;
-        }
-        .e-icon-expandable, .e-icon-collapsible {
-          @if ($pivotgrid-skin =='Material3') {
-            margin-left: -30px !important;
-          }
-          @if ($skin-name =='tailwind3') {
-            margin-left: -25px !important;
-          }
-        }
-      }
-
       &.e-rtl {
         .e-member-editor-outer-container ul {
           @if ($pivotgrid-skin =='bootstrap4') {

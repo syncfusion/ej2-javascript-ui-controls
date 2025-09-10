@@ -261,7 +261,7 @@ export class Ruler {
 
     private renderRulerSpace(): HTMLElement {
         const rulerGeometry: Size = this.getRulerGeometry();
-        this.rulerSpacediv = document.getElementById(this.element.id + '_ruler_space');
+        this.rulerSpacediv = this.element.querySelector('#' + this.element.id + '_ruler_space');
         if (!this.rulerSpacediv) {
             this.rulerSpacediv  = this.rulerHelper.createHtmlElement('div', {
                 'id': this.element.id + '_ruler_space',
@@ -590,7 +590,7 @@ export class Ruler {
         const rulerSize: number = this.getRulerSize();
         let svg: SVGElement;
         if (this.element) {
-            rulerSpace = document.getElementById(this.element.id + '_ruler_space');
+            rulerSpace = this.element.querySelector('#' + this.element.id + '_ruler_space');
             if (rulerSpace) {
                 const attr: Object = {
                     'id': this.element.id + '_Ruler_svg',

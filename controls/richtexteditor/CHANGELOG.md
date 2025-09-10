@@ -2,6 +2,22 @@
 
 ## [Unreleased]
 
+## 31.1.18 (2025-09-10)
+
+### RichTextEditor
+
+#### Bug Fixes
+
+- `#I760221` - Now, the Rich Text Editor works properly when deleting text from nested bullet lists that contain image elements.
+
+- `#I759593` - Now, the Rich Text Editor works properly without throwing an accessibility error from the color picker toolbar.
+
+- `#I762072, #I760826` - Now, the Rich Text Editor works properly when copying and pasting content with bold formatting and font color from Excel.
+
+- `#I762077` - Now, the Rich Text Editor works properly when pressing backspace before an image in a list item, and the image no longer disappears.
+
+- `#I760415` - Now, the Rich Text Editor works properly without scrolling to the top when inserting a link using Ctrl + K.
+
 ## 31.1.17 (2025-09-05)
 
 ### RichTextEditor

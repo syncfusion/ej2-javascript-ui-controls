@@ -20821,6 +20821,36 @@ describe('Save the empty comment Doocument', () => {
 
     });
 });
+describe('Document deafult character format API validation', () => {
+    let documenteditor: DocumentEditor;
+    beforeAll((): void => {
+        let ele: HTMLElement = createElement('div', { id: 'container' });
+        document.body.appendChild(ele);
+        documenteditor = new DocumentEditor({ isReadOnly: false })
+        documenteditor.enableAllModules();
+        documenteditor.appendTo("#container");
+    });
+    afterAll((done) => {
+        documenteditor.destroy();
+        document.body.removeChild(document.getElementById('container'));
+        documenteditor = undefined;
+        
+        setTimeout(function () {
+            done();
+        }, 1000);
+    });
+    it('Set character format API validation', () => {
+        console.log('Set character format API validation');
+        documenteditor.openBlank();
+        documenteditor.setDocumentCharacterFormat({ fontSize: 20 });
+        expect(documenteditor.selection.characterFormat.fontSize).toBe(20);
+    });
+    it('Get character format API validation', () => {
+        console.log('Get character format API validation');
+        let format: any = documenteditor.getDocumentCharacterFormat();
+        expect(format.fontSize).toBe(20);
+    });
+});
 
 
 

@@ -1,6 +1,6 @@
 import { Component, INotifyPropertyChanged, NotifyPropertyChanges, ChildProperty, L10n, Collection, Complex, isBlazor, Browser } from '@syncfusion/ej2-base';
 import { ModuleDeclaration, isNullOrUndefined, Property, Event, EmitType, SanitizeHtmlHelper } from '@syncfusion/ej2-base';
-import { PdfViewerModel, HighlightSettingsModel, UnderlineSettingsModel, SquigglySettingsModel, StrikethroughSettingsModel, LineSettingsModel, ArrowSettingsModel, RectangleSettingsModel, CircleSettingsModel, PolygonSettingsModel, StampSettingsModel, StickyNotesSettingsModel, CustomStampSettingsModel, VolumeSettingsModel, RadiusSettingsModel, AreaSettingsModel, PerimeterSettingsModel, DistanceSettingsModel, MeasurementSettingsModel, FreeTextSettingsModel, AnnotationSelectorSettingsModel, TextSearchColorSettingsModel, PageInfoModel, DocumentTextCollectionSettingsModel, TextDataSettingsModel, RectangleBoundsModel, SignatureFieldSettingsModel, InitialFieldSettingsModel, SignatureIndicatorSettingsModel, TextFieldSettingsModel, PasswordFieldSettingsModel, CheckBoxFieldSettingsModel, RadioButtonFieldSettingsModel, DropdownFieldSettingsModel, ListBoxFieldSettingsModel, ItemModel, SignatureDialogSettingsModel, PageOrganizerSettingsModel } from './pdfviewer-model';
+import { PdfViewerModel, HighlightSettingsModel, UnderlineSettingsModel, SquigglySettingsModel, StrikethroughSettingsModel, LineSettingsModel, AnnotationDrawingOptionsModel, ArrowSettingsModel, RectangleSettingsModel, CircleSettingsModel, PolygonSettingsModel, StampSettingsModel, StickyNotesSettingsModel, CustomStampSettingsModel, VolumeSettingsModel, RadiusSettingsModel, AreaSettingsModel, PerimeterSettingsModel, DistanceSettingsModel, MeasurementSettingsModel, FreeTextSettingsModel, AnnotationSelectorSettingsModel, TextSearchColorSettingsModel, PageInfoModel, DocumentTextCollectionSettingsModel, TextDataSettingsModel, RectangleBoundsModel, SignatureFieldSettingsModel, InitialFieldSettingsModel, SignatureIndicatorSettingsModel, TextFieldSettingsModel, PasswordFieldSettingsModel, CheckBoxFieldSettingsModel, RadioButtonFieldSettingsModel, DropdownFieldSettingsModel, ListBoxFieldSettingsModel, ItemModel, SignatureDialogSettingsModel, PageOrganizerSettingsModel } from './pdfviewer-model';
 import { ToolbarSettingsModel, ShapeLabelSettingsModel, KeyGestureModel, KeyboardCommandModel, CommandManagerModel } from './pdfviewer-model';
 import { ServerActionSettingsModel, AjaxRequestSettingsModel, CustomStampModel, CustomToolbarItemModel, HandWrittenSignatureSettingsModel, AnnotationSettingsModel, TileRenderingSettingsModel, ScrollSettingsModel, FormFieldModel, InkAnnotationSettingsModel } from './pdfviewer-model';
 import { IAnnotationPoint, IPoint, PdfViewerBase, PdfiumRunner, TextMarkupAnnotation } from './index';
@@ -1506,6 +1506,49 @@ export class LineSettings extends ChildProperty<LineSettings> {
      */
     @Property('')
     public subject: string;
+}
+
+/**
+ * Options for configuring line type annotation drawing behavior.
+ *
+ * ```html
+ * <div id="pdfViewer" style="height: 100%;width: 100%;"></div>
+ * ```
+ * ```ts
+ *  let viewer: PdfViewer = new PdfViewer();
+ *  viewer.annotationDrawingOptions = {
+ *      enableLineAngleConstraints: true,
+ *      restrictLineAngleTo: 90
+ *  };
+ *  viewer.appendTo("#pdfViewer");
+ * ```
+ *
+ */
+export class AnnotationDrawingOptions extends ChildProperty<AnnotationDrawingOptions> {
+    /**
+     * Enables angular constraints for line-type annotations.
+     *
+     * When set to `true`, lines and arrows are restricted to fixed angles defined by the `restrictLineAngleTo` property.
+     * On desktop platforms, holding the **Shift** key while drawing also activates angle constraints,
+     * allowing precise control over line orientation.
+     */
+    @Property(false)
+    public enableLineAngleConstraints: boolean;
+
+    /**
+     * Specifies the angle (in degrees) to which line-type annotations are constrained.
+     *
+     * - The initial drawing direction is treated as the 0° reference point.
+     * - Snapped angles are calculated based on the specified increment.
+     *   - If the increment is not a divisor of 360, angles reset after reaching 360°.
+     *   - Example:
+     *     - `restrictLineAngleTo: 45` → Snapped angles: 0°, 45°, 90°, ..., 360°
+     *     - `restrictLineAngleTo: 100` → Snapped angles: 0°, 100°, 200°, 300°, 360°
+     * - Angular constraints apply only to lines and arrows when adjusted using the selector.
+     * - The original direction of the line is used as the reference during selector-based modifications.
+     */
+    @Property(45)
+    public restrictLineAngleTo: number;
 }
 
 /**
@@ -3428,7 +3471,7 @@ export class VolumeSettings extends ChildProperty<VolumeSettings> {
  *          resizerCursorType: null
  *      },
  *      isLock: false,
- *      customData: null
+ *      customData: null,
  *      allowedInteractions: ['None'],
  *      isPrint: true,
  *      subject: ''
@@ -3945,7 +3988,6 @@ export class AnnotationSelectorSettings extends ChildProperty<AnnotationSelector
     /**
      * Specifies the border color of the resizer.
      *
-     * @ignore
      */
     @Property('black')
     public resizerBorderColor: string;
@@ -3953,7 +3995,6 @@ export class AnnotationSelectorSettings extends ChildProperty<AnnotationSelector
     /**
      * Specifies the fill color of the resizer.
      *
-     * @ignore
      */
     @Property('#FF4081')
     public resizerFillColor: string;
@@ -3961,7 +4002,6 @@ export class AnnotationSelectorSettings extends ChildProperty<AnnotationSelector
     /**
      * Specifies the size of the resizer.
      *
-     * @ignore
      */
     @Property(8)
     public resizerSize: number;
@@ -5101,7 +5141,6 @@ export class CheckBoxFieldSettings extends ChildProperty<CheckBoxFieldSettings> 
     @Property('')
     public value: string;
 
-
     /**
      * Specifies whether the check box is in checked state or not.
      */
@@ -5452,6 +5491,7 @@ export class DropdownFieldSettings extends ChildProperty<DropdownFieldSettings> 
  *      fontFamily: 'Courier',
  *      fontSize: 5,
  *      pageNumber: 0,
+ *      fontStyle: 'None',
  *      color: 'black',
  *      backgroundColor: 'white',
  *      alignment: 'Right',
@@ -5945,7 +5985,7 @@ export class PdfViewer extends Component<HTMLElement> implements INotifyProperty
     /**
      *Specifies the document printing quality. The default printing quality is set to 1.0. This limit varies from 0.5 to 5.0. If an invalid value is specified, the default value of 1.0 will be used. For documents with smaller page dimensions, a higher print quality is recommended.
      *
-     *{% codeBlock src='pdfviewer/printScaleFactor/index.md' %}{% endBlock %}
+     *{% codeBlock src='pdfviewer/printScaleFactor/index.md' %}{% endcodeBlock %}
      *
      * @default 1.0
      */
@@ -6205,6 +6245,7 @@ export class PdfViewer extends Component<HTMLElement> implements INotifyProperty
 
     /**
      * Opens the annotation toolbar when the PDF document is loaded in the PDF Viewer control initially.
+     *
      * @private
      * @deprecated This property renamed into "isAnnotationToolbarVisible"
      * @default false
@@ -7014,6 +7055,16 @@ export class PdfViewer extends Component<HTMLElement> implements INotifyProperty
     public lineSettings: LineSettingsModel;
 
     /**
+     * Options for configuring line type annotation drawing behavior.
+     *
+     * {% codeBlock src='pdfviewer/annotationDrawingOptions/index.md' %}{% endcodeBlock %}
+     *
+     */
+
+    @Property({ enableLineAngleConstraints: false, restrictLineAngleTo: 45 })
+    public annotationDrawingOptions: AnnotationDrawingOptionsModel;
+
+    /**
      * Defines the settings of arrow annotation.
      *
      * {% codeBlock src='pdfviewer/arrowSettings/index.md' %}{% endcodeBlock %}
@@ -7297,7 +7348,7 @@ export class PdfViewer extends Component<HTMLElement> implements INotifyProperty
      * {% codeBlock src='pdfviewer/listBoxFieldSettings/index.md' %}{% endcodeBlock %}
      *
      */
-    @Property({ name: '', fontFamily: 'Helvetica', fontSize: 10, fontStyle: 'None', color: 'black', backgroundColor: 'white', alignment: 'Left', isReadOnly: false, visibility: 'visible', isRequired: false, isPrint: false, tooltip: '', options: [], thickness: 1, borderColor: 'black', customData: '' })
+    @Property({ name: '', fontFamily: 'Helvetica', fontSize: 10, fontStyle: 'None', color: 'black', backgroundColor: 'white', alignment: 'Left', isReadOnly: false, visibility: 'visible', isRequired: false, isPrint: true, tooltip: '', options: [], thickness: 1, borderColor: 'black', customData: '' })
     public listBoxFieldSettings: ListBoxFieldSettingsModel;
 
     /**
@@ -7440,7 +7491,10 @@ export class PdfViewer extends Component<HTMLElement> implements INotifyProperty
      * @private
      */
     public pageOrganizerModule: PageOrganizer;
-    private isTextSelectionStarted: boolean = false;
+    /**
+     * @private
+     */
+    public isTextSelectionStarted: boolean = false;
     /**
      * @private
      */
@@ -8579,21 +8633,29 @@ export class PdfViewer extends Component<HTMLElement> implements INotifyProperty
             switch (prop) {
             case 'locale':
                 if (this.viewerBase.loadedData) {
-                    let data: any = null;
-                    if (this.formFieldsModule) {
-                        data = this.viewerBase.getItemFromSessionStorage('_formfields');
-                    }
-                    if (data) {
-                        this.viewerBase.formfieldvalue = JSON.parse(data);
-                        const annotCollection: any[] = this.annotationCollection;
+                    let documentValue: any;
+                    let pdfBlob: any;
+                    this.saveAsBlob().then((blob: Blob) => {
+                        pdfBlob = blob;
+                        const conversionPromise: any = this.viewerBase.clientSideRendering
+                            ? this.viewerBase.blobToByteArray(pdfBlob)
+                            : this.viewerBase.blobToBase64(pdfBlob);
+                        return conversionPromise;
+                    }).then((result: any) => {
+                        if (!isNullOrUndefined(result) && result !== '') {
+                            documentValue = result;
+                        }
+                        this.viewerBase.isLocaleChanged = true;
                         const filename: string = this.viewerBase.jsonDocumentId;
+                        this.viewerBase.isSkipDocumentPath = true;
+                        this.documentPath = documentValue;
                         super.refresh();
-                        this.load(this.viewerBase.loadedData, null);
-                        this.addAnnotation(annotCollection);
-                        this.viewerBase.loadedData = null;
                         this.downloadFileName = filename;
                         this.fileName = filename;
-                    }
+                        this.viewerBase.isLocaleChanged = false;
+                    }).catch((error: any) => {
+                        console.error(error); // Added error handling
+                    });
                 }
                 break;
             case 'toolbarSettings':
@@ -9851,11 +9913,11 @@ export class PdfViewer extends Component<HTMLElement> implements INotifyProperty
                     }
                 }
             } else {
+                this.updateShortHexValues(importData);
                 const imporedAnnotation: any = importData.pdfAnnotation;
                 if (typeof (importData) === 'object' && !isNullOrUndefined(imporedAnnotation) && !isNullOrUndefined(Object.keys(imporedAnnotation)) && !isNullOrUndefined(Object.keys(imporedAnnotation)[0]) && Object.keys(imporedAnnotation[Object.keys(imporedAnnotation)[0]]).length > 1) {
                     this.viewerBase.importAnnotations(importData);
                 } else {
-                    this.updateShortHexValues(importData);
                     importData = JSON.stringify(importData);
                     this.viewerBase.isPDFViewerJson = false;
                     const encoder: TextEncoder = new TextEncoder();
@@ -9897,7 +9959,6 @@ export class PdfViewer extends Component<HTMLElement> implements INotifyProperty
             }
         }
     }
-
 
     private importAnnotationsAsJson(importData: any): void {
         const jsonData: any = JSON.parse(importData);

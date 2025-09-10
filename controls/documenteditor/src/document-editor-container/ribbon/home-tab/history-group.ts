@@ -34,7 +34,6 @@ export class HistoryGroup extends RibbonGroupBase implements IRibbonGroup {
                         {
                             type: 'Button',
                             keyTip: 'ZZ',
-                            allowedSizes: RibbonItemSize.Medium,
                             buttonSettings: {
                                 content: this.localObj.getConstant('Undo'),
                                 iconCss: 'e-icons e-de-ctnr-undo',
@@ -50,7 +49,6 @@ export class HistoryGroup extends RibbonGroupBase implements IRibbonGroup {
                         {
                             type: 'Button',
                             keyTip: 'O',
-                            allowedSizes: RibbonItemSize.Medium,
                             buttonSettings: {
                                 content: this.localObj.getConstant('Redo'),
                                 iconCss: 'e-icons e-de-ctnr-redo',

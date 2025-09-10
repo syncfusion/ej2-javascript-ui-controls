@@ -232,8 +232,7 @@ export class NavigationPane {
             this.pdfViewerBase.viewerContainer.style.left = controlLeft + 'px';
             this.pdfViewerBase.viewerContainer.style.right = controlRight + 'px';
         }
-        this.pdfViewerBase.viewerContainer.style.width = ((this.pdfViewer.element.clientWidth > 0 ? this.pdfViewer.element.clientWidth :
-            this.pdfViewer.element.offsetWidth) - controlLeft - this.commentPanelContainer.clientWidth) + 'px';
+        this.pdfViewerBase.viewerContainer.style.width = ((this.pdfViewer.element.clientWidth > 0 ? this.pdfViewer.element.clientWidth : this.pdfViewer.element.offsetWidth) - controlLeft - this.commentPanelContainer.clientWidth) + 'px';
         this.sideBarContentContainer.style.display = 'none';
         if (!this.pdfViewer.enableNavigationToolbar) {
             if (!this.pdfViewer.enableRtl) {
@@ -540,8 +539,7 @@ export class NavigationPane {
                 } else {
                     viewerContainer.style.right = proxy.getViewerContainerRight() + 'px';
                 }
-                viewerContainer.style.width = ((proxy.pdfViewer.element.clientWidth > 0 ? proxy.pdfViewer.element.clientWidth :
-                    proxy.pdfViewer.element.offsetWidth) - proxy.getViewerContainerLeft() - proxy.getViewerContainerRight()) + 'px';
+                viewerContainer.style.width = ((proxy.pdfViewer.element.clientWidth > 0 ? proxy.pdfViewer.element.clientWidth : proxy.pdfViewer.element.offsetWidth) - proxy.getViewerContainerLeft() - proxy.getViewerContainerRight()) + 'px';
                 pageContainer.style.width = (proxy.pdfViewerBase.viewerContainer.offsetWidth - proxy.getViewerContainerScrollbarWidth()) + 'px';
             }
             if (proxy.pdfViewerBase) {
@@ -1173,9 +1171,7 @@ export class NavigationPane {
             } else {
                 proxy.pdfViewerBase.viewerContainer.style.left = (proxy.sideToolbarWidth) + 'px';
             }
-            proxy.pdfViewerBase.viewerContainer.style.width = ((proxy.pdfViewer.element.clientWidth > 0 ?
-                proxy.pdfViewer.element.clientWidth : proxy.pdfViewer.element.offsetWidth) - proxy.sideToolbarWidth -
-                proxy.getViewerContainerRight()) + 'px';
+            proxy.pdfViewerBase.viewerContainer.style.width = ((proxy.pdfViewer.element.clientWidth > 0 ? proxy.pdfViewer.element.clientWidth : proxy.pdfViewer.element.offsetWidth) - proxy.sideToolbarWidth - proxy.getViewerContainerRight()) + 'px';
             proxy.pdfViewerBase.pageContainer.style.width = (proxy.pdfViewerBase.viewerContainer.offsetWidth - proxy.getViewerContainerScrollbarWidth()) + 'px';
             if (this.restrictUpdateZoomValue){
                 proxy.pdfViewerBase.updateZoomValue();
@@ -1202,9 +1198,7 @@ export class NavigationPane {
             } else {
                 proxy.pdfViewerBase.viewerContainer.style.left = proxy.getViewerContainerLeft() + 'px';
             }
-            proxy.pdfViewerBase.viewerContainer.style.width = ((proxy.pdfViewer.element.clientWidth > 0 ?
-                proxy.pdfViewer.element.clientWidth : proxy.pdfViewer.element.offsetWidth) - this.getViewerContainerLeft() -
-                this.getViewerContainerRight()) + 'px';
+            proxy.pdfViewerBase.viewerContainer.style.width = ((proxy.pdfViewer.element.clientWidth > 0 ? proxy.pdfViewer.element.clientWidth : proxy.pdfViewer.element.offsetWidth) - this.getViewerContainerLeft() - this.getViewerContainerRight()) + 'px';
             proxy.pdfViewerBase.pageContainer.style.width = proxy.pdfViewerBase.viewerContainer.clientWidth + 'px';
             proxy.pdfViewerBase.updateZoomValue();
             if (proxy.pdfViewer.enableThumbnail) {
@@ -1340,8 +1334,7 @@ export class NavigationPane {
         if (sideBarContentContainer  && !this.isThumbnailAddedProgrammatically) {
             if (proxy.isThumbnail) {
                 sideBarContentContainer.style.display = 'none';
-                viewerContainer.style.width = (proxy.pdfViewer.element.clientWidth > 0 ? proxy.pdfViewer.element.clientWidth :
-                    proxy.pdfViewer.element.offsetWidth) + 'px';
+                viewerContainer.style.width = (proxy.pdfViewer.element.clientWidth > 0 ? proxy.pdfViewer.element.clientWidth : proxy.pdfViewer.element.offsetWidth) + 'px';
                 pageContainer.style.width = viewerContainer.clientWidth + 'px';
                 viewerContainer.style.left = sideBarContentContainer.clientWidth + 'px';
                 proxy.pdfViewerBase.updateZoomValue();
@@ -1425,9 +1418,7 @@ export class NavigationPane {
             } else {
                 this.pdfViewerBase.viewerContainer.style.left = (this.sideToolbarWidth) + 'px';
             }
-            this.pdfViewerBase.viewerContainer.style.width = ((this.pdfViewer.element.clientWidth > 0 ?
-                this.pdfViewer.element.clientWidth : this.pdfViewer.element.offsetWidth) - this.sideToolbarWidth -
-                this.getViewerContainerRight()) + 'px';
+            this.pdfViewerBase.viewerContainer.style.width = ((this.pdfViewer.element.clientWidth > 0 ? this.pdfViewer.element.clientWidth : this.pdfViewer.element.offsetWidth) - this.sideToolbarWidth - this.getViewerContainerRight()) + 'px';
             if (this.pdfViewerBase.pageContainer) {
                 this.pdfViewerBase.pageContainer.style.width = this.pdfViewerBase.viewerContainer.clientWidth + 'px';
             }
@@ -1634,7 +1625,9 @@ export class NavigationPane {
         for (let i: number = 0; i < commentTitleCollections.length; i++) {
             const commentTitleElement: HTMLElement = commentTitleCollections[parseInt(i.toString(), 10)];
             const moreIconElement: HTMLElement = commentTitleMoreIconCollections[parseInt(i.toString(), 10)];
-            commentTitleElement.style.maxWidth = (commentTitleElement.parentElement.clientWidth - moreIconElement.clientWidth) + 'px';
+            if (commentTitleElement.parentElement.clientWidth > 0 && moreIconElement.clientWidth > 0) {
+                commentTitleElement.style.maxWidth = (commentTitleElement.parentElement.clientWidth - moreIconElement.clientWidth) + 'px';
+            }
         }
         const replyTitleCollections: HTMLCollectionOf<HTMLElement> = document.getElementsByClassName('e-pv-reply-title') as HTMLCollectionOf<HTMLElement>;
         const replyTitleMoreIconCollections: HTMLCollectionOf<HTMLElement> = document.getElementsByClassName('e-pv-more-options-button e-btn') as HTMLCollectionOf<HTMLElement>;

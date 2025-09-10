@@ -108,7 +108,7 @@ export interface NativeModel extends ShapeModel{
      *
      * @default ''
      */
-    content?: string | SVGElement;
+    content?: string | SVGElement | Function;
 
     /**
      * Defines the scale of the native element.

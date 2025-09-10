@@ -349,6 +349,7 @@ export class UndoRedo {
         case 'Group':
             this.unGroup(entry, diagram); break;
         case 'UnGroup':
+            diagram.itemType = 'Undo';
             this.group(entry, diagram); break;
         case 'SegmentChanged':
             this.recordSegmentChanged(obj, diagram); break;
@@ -835,6 +836,7 @@ export class UndoRedo {
             const connectors: ConnectorModel[] = obj.connectors;
             for (i = 0; i < connectors.length; i++) {
                 connector = connectors[parseInt(i.toString(), 10)];
+                this.segmentChanged(connector, diagram);
                 this.connectionChanged(connector, diagram);
             }
         }
@@ -938,6 +940,7 @@ export class UndoRedo {
         if (obj && obj.connectors && obj.connectors.length > 0) {
             for (i = 0; i < obj.connectors.length; i++) {
                 connector = obj.connectors[parseInt(i.toString(), 10)];
+                this.segmentChanged(connector, diagram);
                 this.connectionChanged(connector, diagram);
             }
         }
@@ -978,11 +981,13 @@ export class UndoRedo {
         if (obj.sourcePortID !== connector.sourcePortID) {
             diagram.removePortEdges(diagram.nameTable[connector.sourceID], connector.sourcePortID, connector.id, false);
             connector.sourcePortID = obj.sourcePortID;
+            connector.segments = obj.segments;
             diagram.connectorPropertyChange(connector as Connector, {} as Connector, { sourcePortID: obj.sourcePortID } as Connector);
         }
         if (obj.targetPortID !== connector.targetPortID) {
             diagram.removePortEdges(diagram.nameTable[connector.targetID], connector.targetPortID, connector.id, true);
             connector.targetPortID = obj.targetPortID;
+            connector.segments = obj.segments;
             diagram.connectorPropertyChange(connector as Connector, {} as Connector, { targetPortID: obj.targetPortID } as Connector);
         }
         if (obj.sourceID !== connector.sourceID) {
@@ -1000,6 +1005,7 @@ export class UndoRedo {
                 const textAnnotationNode: NodeModel = diagram.nameTable[connector.targetID];
                 (textAnnotationNode.shape as BpmnShape).textAnnotation.textAnnotationTarget = connector.sourceID;
             }
+            connector.segments = obj.segments;
             diagram.connectorPropertyChange(connector as Connector, {} as Connector, { sourceID: obj.sourceID } as Connector);
         }
         if (obj.targetID !== connector.targetID) {
@@ -1012,6 +1018,7 @@ export class UndoRedo {
                 diagram.updatePortEdges(node, obj, true);
             }
             connector.targetID = obj.targetID;
+            connector.segments = obj.segments;
             diagram.connectorPropertyChange(connector as Connector, {} as Connector, { targetID: obj.targetID } as Connector);
         }
         if (entry && entry.childTable) {
@@ -1020,11 +1027,13 @@ export class UndoRedo {
         const sx: number = obj.sourcePoint.x - connector.sourcePoint.x;
         const sy: number = obj.sourcePoint.y - connector.sourcePoint.y;
         if (sx !== 0 || sy !== 0) {
+            connector.segments = obj.segments;
             diagram.dragSourceEnd(connector, sx, sy);
         }
         const tx: number = obj.targetPoint.x - connector.targetPoint.x;
         const ty: number = obj.targetPoint.y - connector.targetPoint.y;
         if (tx !== 0 || ty !== 0) {
+            connector.segments = obj.segments;
             diagram.dragTargetEnd(connector, tx, ty);
         }
         diagram.updateSelector();
@@ -1038,16 +1047,17 @@ export class UndoRedo {
         if (entry && entry.changeType) {
             let changeType: string;
             if (entry.isUndo) {
+                diagram.itemType = 'Undo';
                 if (entry.changeType === 'Insert') {
                     changeType = 'Remove';
                 } else {
                     changeType = 'Insert';
                 }
             } else {
+                diagram.itemType = 'Redo';
                 changeType = entry.changeType;
             }
             if (changeType === 'Remove') {
-                diagram.itemType = 'Undo';
                 if ((obj as BpmnAnnotation).nodeId) {
                     diagram.remove(diagram.nameTable[(obj as BpmnAnnotation).nodeId + '_textannotation_' + obj.id]);
                 } else {
@@ -1061,7 +1071,6 @@ export class UndoRedo {
                     diagram.clearSelectorLayer();
                 }
             } else {
-                diagram.itemType = 'Redo';
                 diagram.clearSelectorLayer();
                 if ((obj as Node | Connector).parentId && (diagram.nameTable[(obj as Node).parentId]
                     && diagram.nameTable[(obj as Node).parentId].shape.type !== 'Container')) {
@@ -1094,9 +1103,11 @@ export class UndoRedo {
                     addContainerChild((obj as Node), (obj as Node).parentId, diagram);
                 }
             }
+
             if (diagram.mode !== 'SVG') {
                 diagram.refreshDiagramLayer();
             }
+            diagram.itemType = 'PublicMethod';
         }
     }
     /**
@@ -1277,6 +1288,7 @@ export class UndoRedo {
             this.recordPortCollectionChanged(historyEntry, diagram);
             break;
         case 'Group':
+            diagram.itemType = 'Redo';
             this.group(historyEntry, diagram);
             break;
         case 'UnGroup':

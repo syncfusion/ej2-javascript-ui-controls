@@ -765,7 +765,8 @@ export class ChangesSingleView {
         this.outerSingleDiv.appendChild(this.singleInnerDiv);
         let userNameTotalDiv: HTMLElement = createElement('div', { className: 'e-de-track-usernme-div' });
         let userNameLabel: HTMLElement = createElement('div', { className: 'e-de-track-user-nme' });
-        if (!isNullOrUndefined(revision.customData) && revision.customData != '' && this.owner.documentEditorSettings.revisionSettings.showCustomDataWithAuthor) {
+        if(!isNullOrUndefined(revision.customData) && revision.customData != '' && this.owner.documentEditorSettings.revisionSettings.showCustomDataWithAuthor)
+        {
             userNameLabel.textContent = SanitizeHtmlHelper.sanitize(revision.author) + " [" + revision.customData + "]";
         }
         else {

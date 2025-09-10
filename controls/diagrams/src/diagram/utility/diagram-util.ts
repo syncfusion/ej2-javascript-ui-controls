@@ -349,7 +349,6 @@ export function setConnectorDefaults(child: ConnectorModel, node: ConnectorModel
                 }
                 if (node.style) {
                     hasRelation = true;
-                    node.style.strokeDashArray = (child.style && child.style.strokeDashArray) || '4 4';
                 }
             } else if ((child.shape as RelationShip).relationship === 'Composition') {
                 if (node.sourceDecorator && node.sourceDecorator.style) {
@@ -371,11 +370,12 @@ export function setConnectorDefaults(child: ConnectorModel, node: ConnectorModel
                 }
                 hasRelation = true; node.style.strokeDashArray = '4 4';
             } else if ((child.shape as RelationShip).relationship === 'Realization') {
-                if (node.sourceDecorator && node.sourceDecorator.style) {
-                    node.sourceDecorator.style.fill = (child.sourceDecorator && child.sourceDecorator.style &&
-                        child.sourceDecorator.style.fill) || 'white';
+                if (node.targetDecorator && node.targetDecorator.style) {
+                    node.targetDecorator.style.fill = (child.targetDecorator && child.targetDecorator.style &&
+                        child.targetDecorator.style.fill) || 'white';
                 }
                 hasRelation = true;
+                node.style.strokeDashArray = '4 4';
             }
             if (hasRelation) { node.style.strokeWidth = (child.style && child.style.strokeWidth) || 2; }
             break;
@@ -1219,7 +1219,7 @@ export function getChild(child: Canvas, children: string[]): string[] {
  * @param {NodeModel[]} nodes - provide the nodes  value.
  * @private
  */
-function getSwimLaneChildren(nodes: NodeModel[]): string[] {
+export function getSwimLaneChildren(nodes: NodeModel[]): string[] {
     let children: string[] = []; let node: Node; let grid: GridPanel; let childTable: DiagramElement[];
     let child: Canvas; const gridChild: string = 'childTable';
     for (let i: number = 0; i < nodes.length; i++) {
@@ -1244,7 +1244,7 @@ function getSwimLaneChildren(nodes: NodeModel[]): string[] {
  * @param {Diagram} diagram - provide the diagram  value.
  * @private
  */
-function removeUnnecessaryNodes(children: string[], diagram: Diagram): void {
+export function removeUnnecessaryNodes(children: string[], diagram: Diagram): void {
     const nodes: NodeModel[] = diagram.nodes;
     if (nodes) {
         for (let i: number = 0; i < nodes.length; i++) {
@@ -1620,6 +1620,8 @@ export function deserialize(model: string|Object, diagram: Diagram): Object {
     diagram.isLoading = true;
     diagram.protectPropertyChange(false);
     let key: string = 'refresh'; let component: View | Diagram;
+    // Indicates whether the diagram is being refreshed during deserialization
+    diagram.deserializing = true;
     for (let i: number = 0; i < diagram.views.length; i++) {
         component = diagram.views[diagram.views[i]] as Diagram;
         diagram.blazorActions = diagram.addConstraints(blazorAction, BlazorAction.ClearObject);
@@ -1635,6 +1637,7 @@ export function deserialize(model: string|Object, diagram: Diagram): Object {
             diagram.element.classList.add('e-diagram');
         }
     }
+    diagram.deserializing = false;
     //881117 - Event to notify after diagram elements are loaded.  
     const args: ILoadedEventArgs = { name: 'loaded', diagram: diagram};
     diagram.triggerEvent(DiagramEvent.loaded, args); 
@@ -2971,32 +2974,32 @@ export let getObjectType: Function = (obj: Object): Object => {
 
 
 /** @private */
-export let flipConnector: Function = (connector: Connector, diagram?: Diagram, isGroup?: boolean): void => {
+export let flipConnector: Function = (connector: Connector, horizontal?: boolean, vertical?: boolean, diagram?: Diagram, isGroup?: boolean, flip?: FlipDirection): void => {
     // Case 2: Both ends connected to nodes - do nothing
     if (connector.sourceID && connector.targetID) {
         return;
     }
-
+    if (!horizontal && !vertical) {
+        horizontal = flip === FlipDirection.Horizontal || flip === FlipDirection.Both;
+        vertical = flip === FlipDirection.Vertical || flip === FlipDirection.Both;
+    }
     if (connector.wrapper) {
-        // Determine flip directions by XORing connector and wrapper flip values
-        const horizontal: boolean = ((connector.flip & FlipDirection.Horizontal) ^
-            (connector.wrapper.flip & FlipDirection.Horizontal)) === FlipDirection.Horizontal;
-        const vertical: boolean = ((connector.flip & FlipDirection.Vertical) ^
-            (connector.wrapper.flip & FlipDirection.Vertical)) === FlipDirection.Vertical;
-
         // Store original points
         const source = { x: connector.sourcePoint.x, y: connector.sourcePoint.y };
         const target = { x: connector.targetPoint.x, y: connector.targetPoint.y };
 
-        // Get group bounds and center if this is a connector within a group
+        // Get group bounds, center, and rotation angle if this is a connector within a group
         let groupBounds: Rect;
         let groupCenter: PointModel;
+        let groupRotationAngle: number = 0;
 
         if (isGroup && connector.parentId) {
-            const groupWrapper = diagram.nameTable[(connector as Connector).parentId].wrapper;
+            const parentNode = diagram.nameTable[(connector as Connector).parentId];
+            const groupWrapper = parentNode.wrapper;
             if (groupWrapper) {
                 groupBounds = diagram.groupBounds;
                 groupCenter = { x: groupBounds.center.x, y: groupBounds.center.y };
+                groupRotationAngle = parentNode.rotateAngle || 0;
             }
         }
 
@@ -3016,45 +3019,136 @@ export let flipConnector: Function = (connector: Connector, diagram?: Diagram, i
                 diagram.updateConnectorProperties(connector);
             }
         } else if (isGroup && groupCenter) {
-            // Flipping within a group - need to consider the group's center point
-
-            // Case 1: Both ends not connected to any node within a group
-            if (!connector.sourceID && !connector.targetID) {
+            // For rotated groups, we need to transform the points
+            if (groupRotationAngle !== 0) {
+                // Create transformation matrices
+                let toOrigin = identityMatrix();
+                let rotateBackward = identityMatrix();
+                let flip = identityMatrix();
+                let rotateForward = identityMatrix();
+                let translate = identityMatrix();
+                
+                // Build transformation pipeline:
+                // 1. Translate to origin based on group center
+                toOrigin = identityMatrix();
+                toOrigin[4] = -groupCenter.x;
+                toOrigin[5] = -groupCenter.y;
+                
+                // 2. Rotate backward (counter-rotate by group angle)
+                rotateBackward = identityMatrix();
+                const angleInRadians = -groupRotationAngle * Math.PI / 180;
+                rotateBackward[0] = Math.cos(angleInRadians);
+                rotateBackward[1] = Math.sin(angleInRadians);
+                rotateBackward[2] = -Math.sin(angleInRadians);
+                rotateBackward[3] = Math.cos(angleInRadians);
+                
+                // 3. Apply flip transformation in the local coordinate system
+                flip = identityMatrix();
                 if (horizontal) {
-                    connector.sourcePoint.x = 2 * groupCenter.x - source.x;
-                    connector.targetPoint.x = 2 * groupCenter.x - target.x;
-                }
-
-                if (vertical) {
-                    connector.sourcePoint.y = 2 * groupCenter.y - source.y;
-                    connector.targetPoint.y = 2 * groupCenter.y - target.y;
-                }
-            }
-            // Case 3: Source connected, target not connected
-            else if (connector.sourceID && !connector.targetID) {
-                if (horizontal) {
-                    // Only flip the unconnected target point horizontally
-                    connector.targetPoint.x = 2 * groupCenter.x - target.x;
-                }
-                if (vertical) {
-                    // Only flip the unconnected target point vertically
-                    connector.targetPoint.y = 2 * groupCenter.y - target.y;
-                }
-            }
-            // Case 4: Source not connected, target connected
-            else if (!connector.sourceID && connector.targetID) {
-                if (horizontal) {
-                    // Only flip the unconnected source point horizontally
-                    connector.sourcePoint.x = 2 * groupCenter.x - source.x;
+                    flip[0] = -1; // Flip horizontally
                 }
                 if (vertical) {
-                    // Only flip the unconnected source point vertically
-                    connector.sourcePoint.y = 2 * groupCenter.y - source.y;
+                    flip[3] = -1; // Flip vertically
+                }
+                
+                // 4. Rotate forward (re-rotate by group angle)
+                rotateForward = identityMatrix();
+                const forwardAngleInRadians = groupRotationAngle * Math.PI / 180;
+                rotateForward[0] = Math.cos(forwardAngleInRadians);
+                rotateForward[1] = Math.sin(forwardAngleInRadians);
+                rotateForward[2] = -Math.sin(forwardAngleInRadians);
+                rotateForward[3] = Math.cos(forwardAngleInRadians);
+                
+                // 5. Translate back to group center
+                translate = identityMatrix();
+                translate[4] = groupCenter.x;
+                translate[5] = groupCenter.y;
+                
+                // Process source and target points through the transformation pipeline
+                const flipPointAcrossAxis = (point: PointModel, center: PointModel, isHorizontal: boolean, isVertical: boolean): PointModel => {
+                    // Create a new point that will be flipped
+                    const result = { x: point.x, y: point.y };
+                    
+                    // First translate to local coordinates (relative to group center)
+                    const localX = point.x - center.x;
+                    const localY = point.y - center.y;
+                    
+                    // Convert to rotated local coordinates
+                    const angleRad = -groupRotationAngle * Math.PI / 180; // counter-clockwise rotation
+                    const rotatedLocalX = localX * Math.cos(angleRad) - localY * Math.sin(angleRad);
+                    const rotatedLocalY = localX * Math.sin(angleRad) + localY * Math.cos(angleRad);
+                    
+                    // Apply flip in the rotated coordinate system
+                    let flippedLocalX = rotatedLocalX;
+                    let flippedLocalY = rotatedLocalY;
+                    
+                    if (isHorizontal) {
+                        flippedLocalX = -rotatedLocalX;
+                    }
+                    if (isVertical) {
+                        flippedLocalY = -rotatedLocalY;
+                    }
+                    
+                    // Convert back to world coordinates
+                    const finalAngleRad = groupRotationAngle * Math.PI / 180; // clockwise rotation
+                    const worldX = flippedLocalX * Math.cos(finalAngleRad) - flippedLocalY * Math.sin(finalAngleRad);
+                    const worldY = flippedLocalX * Math.sin(finalAngleRad) + flippedLocalY * Math.cos(finalAngleRad);
+                    
+                    // Translate back to world position
+                    result.x = center.x + worldX;
+                    result.y = center.y + worldY;
+                    
+                    return result;
+                };
+                
+                // Apply transformations to points based on connection state
+                if (!connector.sourceID && !connector.targetID) {
+                    // Both ends unconnected
+                    connector.sourcePoint = flipPointAcrossAxis(source, groupCenter, horizontal, vertical);
+                    connector.targetPoint = flipPointAcrossAxis(target, groupCenter, horizontal, vertical);
+                } else if (connector.sourceID && !connector.targetID) {
+                    // Target unconnected
+                    connector.targetPoint = flipPointAcrossAxis(target, groupCenter, horizontal, vertical);
+                } else if (!connector.sourceID && connector.targetID) {
+                    // Source unconnected
+                    connector.sourcePoint = flipPointAcrossAxis(source, groupCenter, horizontal, vertical);
+                }
+            } else {
+                // Non-rotated group - use the original flipping logic
+                if (!connector.sourceID && !connector.targetID) {
+                    // Both ends unconnected
+                    if (horizontal) {
+                        connector.sourcePoint.x = 2 * groupCenter.x - source.x;
+                        connector.targetPoint.x = 2 * groupCenter.x - target.x;
+                    }
+                    if (vertical) {
+                        connector.sourcePoint.y = 2 * groupCenter.y - source.y;
+                        connector.targetPoint.y = 2 * groupCenter.y - target.y;
+                    }
+                } else if (connector.sourceID && !connector.targetID) {
+                    // Target unconnected
+                    if (horizontal) {
+                        connector.targetPoint.x = 2 * groupCenter.x - target.x;
+                    }
+                    if (vertical) {
+                        connector.targetPoint.y = 2 * groupCenter.y - target.y;
+                    }
+                } else if (!connector.sourceID && connector.targetID) {
+                    // Source unconnected
+                    if (horizontal) {
+                        connector.sourcePoint.x = 2 * groupCenter.x - source.x;
+                    }
+                    if (vertical) {
+                        connector.sourcePoint.y = 2 * groupCenter.y - source.y;
+                    }
                 }
             }
         }
+        
         if (diagram) {
+            diagram.connectorFlipInProgress = true;
             diagram.updateConnectorProperties(connector);
+            diagram.connectorFlipInProgress = false;
         }
     } else {
         let source: PointModel = { x: connector.sourcePoint.x, y: connector.sourcePoint.y };
@@ -3110,8 +3204,8 @@ export let alignElement: Function = (element: GroupableView, offsetX: number, of
                 let connectorObj = diagram.nameTable[child.id];
                 if (connectorObj && connectorObj instanceof Connector) {
                     // Call flipConnector for connectors within the group
-                    if (isHorizontal || isVertical) {
-                        flipConnector(connectorObj, diagram, true);
+                    if (isHorizontal || isVertical || flip) {
+                        flipConnector(connectorObj, isHorizontal, isVertical, diagram, true, flip);
                         if (isHorizontal) {
                         connectorObj.wrapper.flip ^= FlipDirection.Horizontal;
                     }
@@ -3162,7 +3256,7 @@ export let alignElement: Function = (element: GroupableView, offsetX: number, of
                     if (isVertical) {
                         child.flip ^= FlipDirection.Vertical;
                     }
-                    if(!child.id.includes('group_container') && child.children) {
+                    if(!child.id.includes('group_container') && !child.id.endsWith('_transaction_events') && child.children) {
                         if (isHorizontal) {
                             child.children[0].flip ^= FlipDirection.Horizontal;
                         }
@@ -3532,14 +3626,25 @@ export function getFlippedPoint(parentSize: ParentContainer, element: TextElemen
         horizontalAlignment: element.horizontalAlignment, verticalAlignment: element.verticalAlignment, margin: element.margin,
         desiredSize: element.desiredSize, inversedAlignment: element.inversedAlignment, pivot: element.pivot
     };
+    if (element.flip === FlipDirection.Horizontal || element.flip === FlipDirection.Both) {
+        child.horizontalAlignment =
+            (child.horizontalAlignment === 'Left' || element.horizontalAlignment === 'Auto') ? 'Right' :
+                (child.horizontalAlignment === 'Right' ? 'Left' : child.horizontalAlignment);
+    }
+    if (element.flip === FlipDirection.Vertical || element.flip === FlipDirection.Both) {
+        child.verticalAlignment =
+            (child.verticalAlignment === 'Top' || element.verticalAlignment === 'Auto') ? 'Bottom' :
+                (child.verticalAlignment === 'Bottom' ? 'Top' : child.verticalAlignment);
+    }
     const cX: number = x += pX; const cY: number = y += pY;
     let point: PointModel = alignChildBasedOnaPoint(child as any, cX, cY);
+    const centerPoint: PointModel = { x: point.x + element.desiredSize.width / 2, y: point.y + element.desiredSize.height / 2 };
     const rotateAngle: number = element.rotateAngle;
     // Apply rotation if angle is not 0
     if (rotateAngle !== 0 || element.parentTransform !==0) {
-        const topLeft: PointModel = { x: cX - element.desiredSize.width / 2, y: cY - element.desiredSize.height / 2 };
+        const topLeft: PointModel = { x: point.x, y: point.y };
         let offset: PointModel = getOffset(topLeft, element);
-        offset = rotatePoint(element.rotateAngle, cX, cY, offset);
+        offset = rotatePoint(element.rotateAngle, centerPoint.x, centerPoint.y, offset);
         offset = rotatePoint(parentSize.rotateAngle + parentSize.parentTransform, parentSize.offsetX, parentSize.offsetY, offset);
         const ele: any = {offsetX: offset.x, offsetY:offset.y, pivot: element.pivot, actualSize: element.actualSize};
         const corner: Rect = cornersPointsBeforeRotation(ele);

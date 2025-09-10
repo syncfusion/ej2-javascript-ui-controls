@@ -1347,7 +1347,6 @@ export class BaseLegend {
                 ? Math.max(...legendOption.textCollection.map((line: string) =>
                     measureText(line, legend.textStyle, this.chart.themeStyle.legendLabelFont).width))
                 : measureText(legendOption.text, legend.textStyle, this.chart.themeStyle.legendLabelFont).width;
-
             textOptions.x = this.chart.getModuleName() === 'bulletChart'
                 ? legendOption.location.x - legend.shapeWidth
                 : legendOption.location.x - (textWidth + legend.shapeWidth / 2 + legend.shapePadding);

@@ -10161,3 +10161,184 @@ describe('962315 - Edit Swimlane header text', () => {
         done();
     });
 });
+
+describe('959667 - Swimlane interaction is not proper after refreshing the diagram at runtime', () => {
+    let diagram: Diagram;
+    let mouseEvents: MouseEvents = new MouseEvents();
+    let ele: HTMLElement;
+    beforeAll((): void => {
+        ele = createElement('div', { id: 'diagramSwimlaneRefresh' });
+        document.body.appendChild(ele);
+        var pathData = 'M 120 24.9999 C 120 38.8072 109.642 50 96.8653 50 L 23.135' +
+        ' 50 C 10.3578 50 0 38.8072 0 24.9999 L 0 24.9999 C' +
+        '0 11.1928 10.3578 0 23.135 0 L 96.8653 0 C 109.642 0 120 11.1928 120 24.9999 Z';
+    var darkColor = '#C7D4DF';
+    var lightColor = '#f5f5f5';
+        let nodes: NodeModel[] = [
+            {
+                id: 'swimlaneHorizontal',
+                shape: {
+                    type: 'SwimLane',
+                    orientation: 'Horizontal',
+                    header: {
+                        annotation: { content: 'ONLINE PURCHASE STATUS' },
+                    },
+                    lanes: [
+                        {
+                            id: 'stackCanvas1',
+                            header: {
+                                annotation: { content: 'CUSTOMER' }, width: 50,
+                                style: { fill: "yellow", fontSize: 11 }
+                            },
+                            height: 100,
+                            children: [
+                                {
+                                    id: 'Order',
+                                    shape: { type: 'Path', data: pathData },
+                                    annotations: [
+                                        {
+                                            content: 'ORDER',
+                                            style: { fontSize: 11 }
+                                        }
+                                    ],
+                                    margin: { left: 400, top: 20 },
+                                    height: 40, width: 130,
+                                }
+                            ],
+                        },
+                        {
+                            id: 'stackCanvas2',
+                            header: {
+                                annotation: { content: 'CUSTOMER2' }, width: 50,
+                                style: { fill: "yellow", fontSize: 11 }
+                            },
+                            children: [
+                                {
+                                    id: 'selectItemaddcart',
+                                    annotations: [{ content: 'Select item\nAdd cart' }],
+                                    margin: { left: 190, top: 20 },
+                                    height: 40, width: 100
+                                },
+                                {
+                                    id: 'paymentondebitcreditcard',
+                                    annotations: [{ content: 'Payment on\nDebit/Credit Card' }],
+                                    margin: { left: 350, top: 20 },
+                                    height: 40, width: 100
+                                }
+                            ],
+                            height: 100,
+                        },
+
+                    ],
+                    phases: [
+                        {
+                            id: 'phase1', offset: 170,
+                            style: { strokeWidth: 1, strokeDashArray: '3,3', strokeColor: '#606060' },
+                            header: { annotation: { content: 'Phase' } }
+                        },
+                        {
+                            id: 'phase2', offset: 350,
+                            style: { strokeWidth: 1, strokeDashArray: '3,3', strokeColor: '#606060' },
+                            header: { annotation: { content: 'Phase' } }
+                        },
+
+                    ],
+                    phaseSize: 20,
+                },
+                offsetX: 320, offsetY: 270,
+                height: 100,
+                width: 550
+            },
+            {
+                id: 'swimlaneVertical',
+                shape: {
+                    type: 'SwimLane',
+                    orientation: 'Vertical',
+                    header: {
+                        annotation: { content: 'ONLINE PURCHASE STATUS' },
+                        height: 50, style: { fill: 'grey', fontSize: 11 },
+                    },
+                    lanes: [
+                        {
+                            id: 'vertLane1',
+                            header: {
+                                annotation: { content: 'CUSTOMER' }, width: 50,
+                                style: { fill: 'grey', fontSize: 11 }
+                            },
+                            style: { fill: 'white' },
+                            height: 100,
+                            children: [
+                                {
+                                    id: 'Order2',
+                                    shape: { type: 'Path', data: pathData },
+                                    annotations: [
+                                        {
+                                            content: 'ORDER2',
+                                            style: { fontSize: 11 }
+                                        }
+                                    ],
+                                    margin: { left: 100, top: 20 },
+                                    height: 40, width: 130,
+                                }
+                            ],
+                        },
+                        {
+                            id: 'vertLane2',
+                            header: {
+                                annotation: { content: 'CUSTOMER' }, width: 50,
+                                style: { fill: 'grey', fontSize: 11 }
+                            },
+                            style: { fill: 'white' },
+                            height: 100,
+                            children: [
+                                {
+                                    id: 'Order3',
+                                    shape: { type: 'Path', data: pathData },
+                                    annotations: [
+                                        {
+                                            content: 'ORDER3',
+                                            style: { fontSize: 11 }
+                                        }
+                                    ],
+                                    margin: { left: 50, top: 20 },
+                                    height: 40, width: 130,
+                                }
+                            ],
+                        },
+
+                    ],
+                    phases: [
+                        {
+                            id: 'vertPhase1', offset: 170,
+                            header: { annotation: { content: 'Phase' } }
+                        },
+                        {
+                            id: 'vertPhase2', offset: 300,
+                            header: { annotation: { content: 'Phase' } }
+                        },
+
+                    ],
+                    phaseSize: 20,
+                },
+                offsetX: 950, offsetY: 270,
+                height: 100,
+                width: 450
+            },
+        ];
+        diagram = new Diagram({ width: 1500, height: 1000, nodes: nodes });
+        diagram.appendTo('#diagramSwimlaneRefresh');
+    });
+    afterAll((): void => {
+        diagram.destroy();
+        ele.remove();
+    });
+    it('Refresh diagram with swimlane', (done: Function) => {
+        let prevNodeCount: number = diagram.nodes.length;
+        let prevConnectorCount: number = diagram.connectors.length;
+        diagram.refresh();
+        let currentNodeCount: number = diagram.nodes.length;
+        let currentConnectorCount: number = diagram.connectors.length;
+        expect(prevNodeCount === currentNodeCount && prevConnectorCount === currentConnectorCount).toBe(true);
+        done();
+    });
+});

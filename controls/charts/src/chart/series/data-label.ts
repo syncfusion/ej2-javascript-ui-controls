@@ -287,18 +287,21 @@ export class DataLabel {
                             if (this.chart.redraw && document.getElementById(this.commonId + point.index + '_Text_' + i)) {
                                 oldText = document.getElementById(this.commonId + point.index + '_Text_' + i).textContent;
                             }
-                            dataLabelElement.push(textElement(
-                                this.chart.renderer,
-                                new TextOption(
-                                    this.commonId + ((series.removedPointIndex !== null && series.removedPointIndex <= point.index) ? (point.index + 1) : point.index) + '_Text_' + i,
-                                    xPos, yPos,
-                                    textAnchor, argsData.text, 'rotate(' + degree + ',' + (xValue) + ',' + (yValue) + ')', 'auto', degree
-                                ),
-                                argsData.font, argsData.font.color || (this.chart.theme === 'Bootstrap5' ? '#212529' : this.chart.theme === 'Bootstrap5Dark' ? '#DEE2E6' : ((contrast >= 128 || series.type === 'Hilo' || series.type === 'HiloOpenClose') ?
-                                    this.chart.theme.indexOf('Tailwind3') > -1 ? '#111827' : 'black' : this.chart.theme.indexOf('Tailwind3') > -1 ? '#FFFFFF' : 'white')),
-                                series.textElement, false, this.chart.redraw, true, false, series.chart.duration, series.clipRect, null,
-                                null, this.chart.enableCanvas, null, this.chart.themeStyle.datalabelFont, new ChartLocation(xValue, yValue)
-                            ));
+                            if (argsData.text) {
+                                dataLabelElement.push(textElement(
+                                    this.chart.renderer,
+                                    new TextOption(
+                                        this.commonId + ((series.removedPointIndex !== null && series.removedPointIndex <= point.index) ? (point.index + 1) : point.index) + '_Text_' + i,
+                                        xPos, yPos,
+                                        textAnchor, argsData.text, 'rotate(' + degree + ',' + (xValue) + ',' + (yValue) + ')', 'auto', degree
+                                    ),
+                                    argsData.font, argsData.font.color || (this.chart.theme === 'Bootstrap5' ? '#212529' : this.chart.theme === 'Bootstrap5Dark' ? '#DEE2E6' : ((contrast >= 128 || series.type === 'Hilo' || series.type === 'HiloOpenClose') ?
+                                        this.chart.theme.indexOf('Tailwind3') > -1 ? '#111827' : 'black' : this.chart.theme.indexOf('Tailwind3') > -1 ? '#FFFFFF' : 'white')),
+                                    series.textElement, false, this.chart.redraw, true, false, series.chart.duration, series.clipRect, null,
+                                    null, this.chart.enableCanvas, null, this.chart.themeStyle.datalabelFont,
+                                    new ChartLocation(xValue, yValue)
+                                ));
+                            }
                             if (this.isShape && dataLabel.enableRotation) {
                                 shapeRect.setAttribute('transform', 'rotate(' + dataLabel.angle + ', ' + xValue + ', ' + yValue + ')');
                             }

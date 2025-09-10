@@ -438,9 +438,12 @@ export class ContextMenu implements IContextMenu {
             this.defaultSquigglyId, this.defaultScaleratioId], true);
         if (isProp) {
             if (this.pdfViewer.selectedItems.annotations.length !== 0 && (this.pdfViewer.selectedItems.annotations[0].shapeAnnotationType === 'Distance' || this.pdfViewer.selectedItems.annotations[0].measureType === 'Perimeter' ||
-                this.pdfViewer.selectedItems.annotations[0].subject === 'Perimeter calculation' || this.pdfViewer.selectedItems.annotations[0].shapeAnnotationType === 'Polygon' ||
-                this.pdfViewer.selectedItems.annotations[0].shapeAnnotationType === 'Radius')) {
+                this.pdfViewer.selectedItems.annotations[0].subject === 'Perimeter calculation')) {
                 this.contextMenuObj.showItems([this.defaultPropertiesId, this.defaultScaleratioId], true);
+            } else if (this.pdfViewer.selectedItems.annotations.length !== 0 && ((this.pdfViewer.selectedItems.annotations[0].shapeAnnotationType === 'Polygon' && this.pdfViewer.selectedItems.annotations[0].measureType !== '') ||
+                this.pdfViewer.selectedItems.annotations[0].shapeAnnotationType === 'Radius')) {
+                this.contextMenuObj.showItems([this.defaultScaleratioId], true);
+                this.contextMenuObj.hideItems([this.defaultPropertiesId], true);
             } else if (this.pdfViewer.selectedItems.annotations.length !== 0 && (this.pdfViewer.selectedItems.annotations[0].shapeAnnotationType === 'Line' || this.pdfViewer.selectedItems.annotations[0].shapeAnnotationType === 'LineWidthArrowHead')) {
                 this.contextMenuObj.showItems([this.defaultPropertiesId], true);
             } else if (this.pdfViewer.selectedItems.formFields.length !== 0 &&

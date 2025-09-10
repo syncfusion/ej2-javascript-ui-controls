@@ -4798,7 +4798,6 @@ export class FormDesigner {
             return null;
         }
     }
-
     private getBoundsForSignatureImage (bound: any, pageIndex: number): any {
         const pageDetails: any = this.pdfViewerBase.pageSize[parseInt(pageIndex.toString(), 10)];
         if (pageDetails) {
@@ -4816,7 +4815,6 @@ export class FormDesigner {
             return bound;
         }
     }
-
     /**
      * @private
      * @param {any} formFieldsData - It describes about the fields in session
@@ -7936,12 +7934,10 @@ export class FormDesigner {
         if ((textFieldSettings.thickness && textFieldSettings.thickness !== 1) && this.textFieldPropertyChanged.isThicknessChanged) {
             drawingObject.thickness = textFieldSettings.thickness;
         }
-        if (textFieldSettings.maxLength && this.textFieldPropertyChanged.isMaxLengthChanged &&
-            textFieldSettings.maxLength !== 0) {
+        if (textFieldSettings.maxLength && this.textFieldPropertyChanged.isMaxLengthChanged && textFieldSettings.maxLength !== 0) {
             drawingObject.maxLength = textFieldSettings.maxLength;
         }
-        if (textFieldSettings.visibility && this.textFieldPropertyChanged.isVisibilityChanged &&
-            textFieldSettings.visibility !== 'visible') {
+        if (textFieldSettings.visibility && this.textFieldPropertyChanged.isVisibilityChanged && textFieldSettings.visibility !== 'visible') {
             drawingObject.visibility = textFieldSettings.visibility;
         }
         if (!isNullOrUndefined(textFieldSettings.isPrint) && this.textFieldPropertyChanged.isPrintChanged) {

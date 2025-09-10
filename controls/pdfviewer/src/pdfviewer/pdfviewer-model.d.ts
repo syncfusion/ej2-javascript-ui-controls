@@ -834,6 +834,36 @@ export interface LineSettingsModel {
 }
 
 /**
+ * Interface for a class AnnotationDrawingOptions
+ */
+export interface AnnotationDrawingOptionsModel {
+
+    /**
+     * Enables angular constraints for line-type annotations.
+     *
+     * When set to `true`, lines and arrows are restricted to fixed angles defined by the `restrictLineAngleTo` property.
+     * On desktop platforms, holding the **Shift** key while drawing also activates angle constraints,
+     * allowing precise control over line orientation.
+     */
+    enableLineAngleConstraints?: boolean;
+
+    /**
+     * Specifies the angle (in degrees) to which line-type annotations are constrained.
+     *
+     * - The initial drawing direction is treated as the 0° reference point.
+     * - Snapped angles are calculated based on the specified increment.
+     *   - If the increment is not a divisor of 360, angles reset after reaching 360°.
+     *   - Example:
+     *     - `restrictLineAngleTo: 45` → Snapped angles: 0°, 45°, 90°, ..., 360°
+     *     - `restrictLineAngleTo: 100` → Snapped angles: 0°, 100°, 200°, 300°, 360°
+     * - Angular constraints apply only to lines and arrows when adjusted using the selector.
+     * - The original direction of the line is used as the reference during selector-based modifications.
+     */
+    restrictLineAngleTo?: number;
+
+}
+
+/**
  * Interface for a class ArrowSettings
  */
 export interface ArrowSettingsModel {
@@ -2350,21 +2380,18 @@ export interface AnnotationSelectorSettingsModel {
     /**
      * Specifies the border color of the resizer.
      *
-     * @ignore
      */
     resizerBorderColor?: string;
 
     /**
      * Specifies the fill color of the resizer.
      *
-     * @ignore
      */
     resizerFillColor?: string;
 
     /**
      * Specifies the size of the resizer.
      *
-     * @ignore
      */
     resizerSize?: number;
 
@@ -3778,7 +3805,7 @@ export interface PdfViewerModel extends ComponentModel{
     /**
      *Specifies the document printing quality. The default printing quality is set to 1.0. This limit varies from 0.5 to 5.0. If an invalid value is specified, the default value of 1.0 will be used. For documents with smaller page dimensions, a higher print quality is recommended.
      *
-     *{% codeBlock src='pdfviewer/printScaleFactor/index.md' %}{% endBlock %}
+     *{% codeBlock src='pdfviewer/printScaleFactor/index.md' %}{% endcodeBlock %}
      *
      * @default 1.0
      */
@@ -3956,6 +3983,7 @@ export interface PdfViewerModel extends ComponentModel{
 
     /**
      * Opens the annotation toolbar when the PDF document is loaded in the PDF Viewer control initially.
+     *
      * @private
      * @deprecated This property renamed into "isAnnotationToolbarVisible"
      * @default false
@@ -4687,6 +4715,15 @@ export interface PdfViewerModel extends ComponentModel{
      */
 
     lineSettings?: LineSettingsModel;
+
+    /**
+     * Options for configuring line type annotation drawing behavior.
+     *
+     * {% codeBlock src='pdfviewer/annotationDrawingOptions/index.md' %}{% endcodeBlock %}
+     *
+     */
+
+    annotationDrawingOptions?: AnnotationDrawingOptionsModel;
 
     /**
      * Defines the settings of arrow annotation.

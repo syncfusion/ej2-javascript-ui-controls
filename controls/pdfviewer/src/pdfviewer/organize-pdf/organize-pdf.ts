@@ -428,8 +428,8 @@ export class PageOrganizer {
     }
 
     private onTileAreaMouseDown(event: MouseEvent): void {
-        if (event.target && (event.target as HTMLElement).previousElementSibling &&
-            (event.target as HTMLElement).previousElementSibling.classList.contains('e-pv-organize-tile-checkbox')) {
+        if (event.target && (event.target as HTMLElement).parentElement && (event.target as HTMLElement).parentElement.firstElementChild &&
+            (event.target as HTMLElement).parentElement.firstElementChild.classList.contains('e-pv-organize-tile-checkbox')) {
             this.isClickedOnCheckBox = true;
         } else {
             this.isClickedOnCheckBox = false;
@@ -1255,7 +1255,8 @@ export class PageOrganizer {
         }
         else {
             if (!this.pdfViewerBase.clientSideRendering) {
-                if (!this.isInitialLoading || (Browser.isDevice && !this.pdfViewer.enableDesktopMode)) {
+                if (!this.isInitialLoading || (Browser.isDevice && !this.pdfViewer.enableDesktopMode) ||
+                    (this.isInitialLoading && (!this.pdfViewer.enableThumbnail || isNullOrUndefined(this.pdfViewer.thumbnailViewModule)))) {
                     this.lastRequestedPageIndex = parseInt(data.endPage, 10);
                     const isIE: boolean = !!(document as any).documentMode;
                     if (!isIE) {
@@ -2688,7 +2689,7 @@ export class PageOrganizer {
             let pdfBlob: Blob;
             this.pdfViewer.saveAsBlob().then((blob: Blob) => {
                 pdfBlob = blob;
-                this.blobToBase64(pdfBlob).then((base64: string) => {
+                this.pdfViewerBase.blobToBase64(pdfBlob).then((base64: string) => {
                     if (!isNullOrUndefined(base64) && base64 !== '') {
                         const fileName: string = this.pdfViewer.fileName;
                         const downloadFileName: string = this.pdfViewer.downloadFileName;
@@ -2717,27 +2718,6 @@ export class PageOrganizer {
             this.undoOrganizeCollection = [];
             this.redoOrganizeCollection = [];
         }
-    }
-
-    private blobToByteArray(blob: Blob): any {
-        // eslint-disable-next-line
-        return new Promise(function (resolve, _) {
-            const reader: FileReader = new FileReader();
-            reader.onloadend = function (): any {
-                const arrayBuffer: any = reader.result;
-                const byteArray: Uint8Array = new Uint8Array(arrayBuffer);
-                resolve(byteArray);
-            };
-            reader.readAsArrayBuffer(blob);
-        });
-    }
-
-    private blobToBase64(blob: Blob): any {
-        return new Promise((resolve: (value: any) => void, _: any) => {
-            const reader: FileReader = new FileReader();
-            reader.onloadend = () => resolve(reader.result);
-            reader.readAsDataURL(blob);
-        });
     }
 
     /**
@@ -3935,8 +3915,8 @@ export class PageOrganizer {
         this.pdfViewer.saveAsBlob().then((blob: Blob) => {
             pdfBlob = blob;
             const conversionPromise: any = this.pdfViewerBase.clientSideRendering
-                ? this.blobToByteArray(pdfBlob)
-                : this.blobToBase64(pdfBlob);
+                ? this.pdfViewerBase.blobToByteArray(pdfBlob)
+                : this.pdfViewerBase.blobToBase64(pdfBlob);
             conversionPromise.then((result: any) => {
                 if (!isNullOrUndefined(result) && result !== '') {
                     canDownload = this.pdfViewer.firePageOrganizerSaveAsEventArgs(fileName, result);

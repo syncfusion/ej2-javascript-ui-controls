@@ -375,12 +375,6 @@
     }
   }
 
-  .e-bigger .e-pv-properties-line-leader-length-container {
-    @if $skin-name =='FluentUI' {
-      margin-left: 100px;
-    }
-  }
-
   .e-bigger .e-pv-properties-line-stroke-color-container {
     @if $skin-name =='FluentUI' {
       margin-left: 195px;
@@ -536,6 +530,9 @@
 
   .e-bigger .e-pv-current-page-box.e-input-group.e-control-wrapper input.e-input {
     padding-top: $pv-mobile-page-box-padding-top;
+    @if ($skin-name =='FluentUI') {
+      padding-bottom: 4px;
+    }
   }
 
   .e-bigger .e-pv-current-page-box.e-input-group.e-control-wrapper {
@@ -741,6 +738,13 @@
     }
   }
 
+  .e-bigger .e-pv-annotation-shapes-container.e-btn.e-icon-btn,
+  .e-bigger .e-pv-annotation-calibrate-container.e-btn.e-icon-btn {
+    @if ($skin-name == 'fluent2') {
+      padding-top: 4px;
+    }
+  }
+
   .e-bigger .e-dropdown-popup.e-lib.e-popup.e-control.e-pv-handwritten-popup .e-btn.e-outline.e-primary {
     @if $skin-name =='FluentUI' {
       min-height: 49px;
@@ -818,6 +822,12 @@
 
   .e-bigger .foreign-object .e-pdfviewer-signatureformfields + .e-pdfViewer-signIcon {
     display: block;
+  }
+
+  .e-bigger .e-pv-font-appearance-style .e-pv-font-sign {
+    @if $skin-name=='fluent2' {
+      width: 40%;/* stylelint-disable-line declaration-no-important */
+    }
   }
 
   .e-bigger .e-pv-stamp-template-container .e-menu-container .e-menu .e-menu-item,
@@ -950,6 +960,22 @@
     }
     @else {
       width: 435px !important;/* stylelint-disable-line declaration-no-important */
+    }
+  }
+
+  .e-bigger .e-dialog:has(.e-pv-properties-line-style-prop .e-pv-blazor-properties-container-custom-width) {
+    @if $skin-name =='FluentUI' {
+      height: 505px !important;/* stylelint-disable-line declaration-no-important */
+    }
+    @else {
+      height: 490px !important;/* stylelint-disable-line declaration-no-important */
+    }
+  }
+
+  .e-bigger .e-pv-blazor-properties-line-stroke-color-container {
+    margin-left: $pv-blazor-line-stroke-color-margin-left-bigger !important;/* stylelint-disable-line declaration-no-important */
+    @if ($skin-name != 'fluent2' and $skin-name != 'tailwind3') {
+      margin-right: 87px;
     }
   }
 
@@ -1328,13 +1354,55 @@
     }
   }
 
-  .e-bigger .e-control.e-blazor.e-smart-pdfviewer {
-    .e-pv-smart-assistanceview + .e-dlg-container .e-popup.e-control.e-popup-open {
-      @if ($skin-name =='FluentUI') {
-        height: 250px;
+  .e-bigger .e-pv-modern-navigation-toolbar {
+    padding-top: $pv-modern-sidebar-padding-top-big;
+    width: $pv-modern-sidebar-width-big;
+    gap: $pv-modern-sidebar-btn-gap-big;
+
+    .e-btn {
+      width: $pv-modern-sidebar-btn-width-big;
+      height: $pv-modern-sidebar-btn-height-big;
+      margin: unset;
+
+      .e-btn-icon {
+        font-size: $pv-modern-sidebar-btn-font-size-big;
       }
-      @else if ($skin-name == 'highcontrast') {
-        height: 220px;
+    }
+
+    .e-pv-side-panel-separator {
+      width: $pv-modern-sidebar-separator-width-big;
+      margin: $pv-modern-sidebar-separator-margin-big;
+    }
+  }
+
+  .e-bigger .e-pv-modern-side-panel {
+    right: $pv-modern-panel-right-big;
+  }
+
+  .e-pv-modern-side-panel.e-pv-rtl {
+    left: $pv-modern-panel-right-big;
+  }
+
+  .e-bigger .e-pv-modern-mobile-template-container .e-pv-modern-side-panel-container,
+  .e-bigger .e-pv-modern-side-panel .e-pv-modern-side-panel-container {
+    
+    .e-pv-modern-side-panel-header {
+      height: $pv-modern-panel-header-height-big;
+
+      .e-pv-modern-side-panel-header-title {
+        font-size: 16px;
+      }
+
+      .e-pv-icon {
+        font-size: $pv-modern-sidebar-btn-font-size-big;
+      }
+    }
+
+    .e-pv-modern-side-panel-content-container {
+      height: $pv-modern-panel-template-height-big;
+
+      .e-pv-sidebar-content {
+        top: $pv-modern-panel-header-height-big;
       }
     }
   }

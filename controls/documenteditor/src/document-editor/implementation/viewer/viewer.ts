@@ -811,7 +811,6 @@ export class DocumentHelper {
      * Gets the current rendering page.
      *
      * @returns {Page} - Returns current rendering page.
-     * @private
      */
     public get currentRenderingPage(): Page {
         if (this.pages.length === 0) {
@@ -1127,6 +1126,9 @@ export class DocumentHelper {
     public setDefaultDocumentFormat(): void {
         this.owner.parser.parseCharacterFormat(0, this.owner.characterFormat, this.characterFormat);
         this.owner.parser.parseParagraphFormat(0, this.owner.paragraphFormat, this.paragraphFormat);
+        if (!isNullOrUndefined(this.owner.documentCharacterFormat)) {
+            this.owner.parser.parseCharacterFormat(0, this.owner.documentCharacterFormat, this.characterFormat);
+        }
     }
 
     private setDefaultCharacterValue(characterFormat: WCharacterFormat): void {
@@ -1473,7 +1475,6 @@ export class DocumentHelper {
             this.viewerContainer.addEventListener('DOMMouseScroll', this.zoomModule.onMouseWheelInternal);
         }
         this.viewerContainer.addEventListener('mousewheel', this.zoomModule.onMouseWheelInternal);
-        this.editableDiv.addEventListener('focus',this.updateFocus);
     }
     private wireInputEvents(): void {
         if (isNullOrUndefined(this.editableDiv)) {
@@ -1494,6 +1495,7 @@ export class DocumentHelper {
         this.editableDiv.addEventListener('compositionstart', this.compositionStart);
         this.editableDiv.addEventListener('compositionupdate', this.compositionUpdated);
         this.editableDiv.addEventListener('compositionend', this.compositionEnd);
+        this.editableDiv.addEventListener('focus',this.updateFocus);
     }
     private onIframeLoad(): void {
         if (!isNullOrUndefined(this.iframe) && this.iframe.contentDocument.body.children.length === 0) {
@@ -1891,8 +1893,16 @@ export class DocumentHelper {
                 && !isNullOrUndefined(this.iframe)) {
                 this.iframe.focus();
             }
-            if (!isNullOrUndefined(this.editableDiv)) {
+            if (!isNullOrUndefined(this.editableDiv) && !isNullOrUndefined(this.viewerContainer)) {
+                const currentScrollTop: number = this.viewerContainer.scrollTop;
+                const currentScrollLeft: number = this.viewerContainer.scrollLeft;
                 this.editableDiv.focus();
+                if (this.viewerContainer.scrollTop !== currentScrollTop) {
+                    this.viewerContainer.scrollTop = currentScrollTop;
+                }
+                if (this.viewerContainer.scrollLeft !== currentScrollLeft) {
+                    this.viewerContainer.scrollLeft = currentScrollLeft;
+                }
             }
             this.selection.showCaret();
         }
@@ -2073,7 +2083,7 @@ export class DocumentHelper {
         // });
         this.owner.fireDocumentChange();
         this.owner.showHideRulers();
-        let picture_cc: HTMLElement = document.getElementById(this.owner.element.id + 'PICTURE_CONTENT_CONTROL');
+        let picture_cc: HTMLElement = this.owner.element.querySelector('#' + this.owner.element.id + 'PICTURE_CONTENT_CONTROL');
         if (!isNullOrUndefined(picture_cc)) {
             this.owner.renderPictureContentControlElement(this.owner, false, false);
         }
@@ -2095,17 +2105,17 @@ export class DocumentHelper {
             this.iframe.style.left = this.owner.viewer.containerLeft + 'px';
         }
         if (this.owner.hRuler) {
-            this.hRuler = document.getElementById(this.owner.element.id + ('_hRulerBottom'));
+            this.hRuler = this.owner.element.querySelector('#' + this.owner.element.id + ('_hRulerBottom'));
             this.hRuler.style.top = this.viewerContainer.scrollTop + 'px';
-            this.markIndicator = document.getElementById(this.owner.element.id + ('_markIndicator'));
+            this.markIndicator = this.owner.element.querySelector('#' + this.owner.element.id + ('_markIndicator'));
             if(this.markIndicator) {
                 this.markIndicator.style.top = this.viewerContainer.scrollTop + 'px';
             }
         }
         if (this.owner.vRuler) {
-            this.vRuler = document.getElementById(this.owner.element.id + ('_vRulerBottom'));
+            this.vRuler = this.owner.element.querySelector('#' + this.owner.element.id + ('_vRulerBottom'));
             this.vRuler.style.left = this.viewerContainer.scrollLeft + 'px';
-            this.markIndicator = document.getElementById(this.owner.element.id + ('_markIndicator'));
+            this.markIndicator = this.owner.element.querySelector('#' + this.owner.element.id + ('_markIndicator'));
             if(this.markIndicator) {
                 this.markIndicator.style.left = this.viewerContainer.scrollLeft + 'px';
             }
@@ -4389,7 +4399,6 @@ export class DocumentHelper {
      * Destroys the internal objects maintained for control.
      * 
      * @returns {void}
-     * @private
      */
     public destroy(): void {
         if (!isNullOrUndefined(this.owner)) {
@@ -6524,7 +6533,7 @@ export abstract class LayoutViewer {
      */
     public abstract updateScrollBars(): void;
     /**
-     * @private
+     * private
      */
     public abstract scrollToPage(pageIndex: number): void;
     /**
@@ -6785,7 +6794,7 @@ export class PageLayoutViewer extends LayoutViewer {
         if (this.owner.enableImageResizerMode && this.owner.imageResizerModule.currentPage !== undefined && this.owner.imageResizerModule.currentPage === page && this.owner.imageResizerModule.isImageResizerVisible) {
             this.owner.imageResizerModule.setImageResizerPositions(x, y, width, height);
         }
-        const pictureElement: HTMLElement = document.getElementById(this.owner.element.id + 'PICTURE_CONTENT_CONTROL');
+        const pictureElement: HTMLElement = this.owner.element.querySelector('#' + this.owner.element.id + 'PICTURE_CONTENT_CONTROL');
         if (!isNullOrUndefined(pictureElement) && pictureElement.style.display !== 'none') {
             this.owner.setPictureContentControlPositions(pictureElement);
         }
@@ -6994,7 +7003,7 @@ export class WebLayoutViewer extends LayoutViewer {
         if (this.owner.enableImageResizerMode && this.owner.imageResizerModule.currentPage !== undefined && this.owner.imageResizerModule.currentPage === page && this.owner.imageResizerModule.isImageResizerVisible) {
             this.owner.imageResizerModule.setImageResizerPositions(x, y, width, height);
         }
-        const pictureElement: HTMLElement = document.getElementById(this.owner.element.id + 'PICTURE_CONTENT_CONTROL');
+        const pictureElement: HTMLElement = this.owner.element.querySelector('#' + this.owner.element.id + 'PICTURE_CONTENT_CONTROL');
         if (!isNullOrUndefined(pictureElement) && pictureElement.style.display !== 'none') {
             this.owner.setPictureContentControlPositions(pictureElement);
         }

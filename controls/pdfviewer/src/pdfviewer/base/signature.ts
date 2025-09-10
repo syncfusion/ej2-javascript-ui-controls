@@ -1339,16 +1339,17 @@ export class Signature {
             fontSignature[parseInt(i.toString(), 10)] = document.createElement('div');
             fontSignature[parseInt(i.toString(), 10)].id = '_font_signature' + i + '';
             fontSignature[parseInt(i.toString(), 10)].classList.add('e-pv-font-sign');
+            fontSignature[parseInt(i.toString(), 10)].classList.add('e-pv-signature-text');
+            fontSignature[parseInt(i.toString(), 10)].style.lineHeight = '1.5';
             if (canvasHeight === 275) {
                 fontSignature[parseInt(i.toString(), 10)].style.fontSize = '13px';
-                fontSignature[parseInt(i.toString(), 10)].style.paddingTop = '30px';
                 fontSignature[parseInt(i.toString(), 10)].style.height = '78px';
-
+                fontSignature[parseInt(i.toString(), 10)].style.lineHeight = '1.3';
             }
             else if (canvasHeight === 250) {
                 fontSignature[parseInt(i.toString(), 10)].style.fontSize = '12px';
-                fontSignature[parseInt(i.toString(), 10)].style.paddingTop = '25px';
                 fontSignature[parseInt(i.toString(), 10)].style.height = '68px';
+                fontSignature[parseInt(i.toString(), 10)].style.lineHeight = '1.2';
             }
         }
         this.fontsign = fontSignature;
@@ -2803,67 +2804,69 @@ export class Signature {
         }
         if (this.signatureDialog)
         {this.signatureDialog.destroy(); }
-        this.mouseDetection = null;
-        this.mouseMoving = true;
-        this.canvasTouched = false;
-        this.signatureImageWidth = null;
-        this.signatureImageHeight = null;
-        this.oldX = null;
-        this.mouseX = null;
-        this.oldY = null;
-        this.mouseY = null;
-        this.imageSignatureDataUrl = '';
-        this.drawSignatureDataUrl = '';
-        this.newObject = null;
-        this.outputString = '';
-        this.drawOutputString = '';
-        this.imageOutputString = '';
-        this.signatureDialog = null;
-        this.signaturecollection = [];
-        this.outputcollection = [];
-        this.signAnnotationIndex = null;
-        this.fontName = '';
-        this.fontsign = [];
-        this.signfontStyle = [];
-        this.signtypevalue = '';
-        this.signfont = '';
-        this.signHeight = '';
-        this.signWidth = '';
-        this.signaturetype = '';
-        this.tabObj = null;
-        this.isSaveSignature = false;
-        this.isSaveInitial = false;
-        this.isInitialFiledSaveSignature = false;
-        this.isSignatureFieldsSaveSignature = false;
-        this.issaveTypeSignature = false;
-        this.issaveImageSignature = false;
-        this.issaveTypeInitial = false;
-        this.issaveImageInitial = false;
-        this.saveSignatureTypeString = '';
-        this.saveInitialTypeString = '';
-        this.saveTypeString = '';
-        this.signatureTypeString = '';
-        this.initialTypeString = '';
-        this.saveUploadString = '';
-        this.saveSignatureUploadString = '';
-        this.saveInitialUploadString = '';
-        this.signatureUploadString = '';
-        this.initialUploadString = '';
-        this.clearUploadString = false;
-        this.textValue = '';
-        this.signatureDrawString = '';
-        this.initialDrawString = '';
-        this.signatureTextContentTop = 0.2;
-        this.signatureTextContentLeft = 0.7;
-        this.saveSignatureString = '';
-        this.saveInitialString = '';
-        this.saveImageString = '';
-        this.currentTarget = null;
-        this.signatureFieldCollection = [];
-        this.signatureImageString = '';
-        this.initialImageString = '';
-        this.maxSaveLimit = 5;
-        this.isAddAnnotationProgramatically = null;
+        if (!this.pdfViewerBase.isLocaleChanged) {
+            this.mouseDetection = null;
+            this.mouseMoving = true;
+            this.canvasTouched = false;
+            this.signatureImageWidth = null;
+            this.signatureImageHeight = null;
+            this.oldX = null;
+            this.mouseX = null;
+            this.oldY = null;
+            this.mouseY = null;
+            this.imageSignatureDataUrl = '';
+            this.drawSignatureDataUrl = '';
+            this.newObject = null;
+            this.outputString = '';
+            this.drawOutputString = '';
+            this.imageOutputString = '';
+            this.signatureDialog = null;
+            this.signaturecollection = [];
+            this.outputcollection = [];
+            this.signAnnotationIndex = null;
+            this.fontName = '';
+            this.fontsign = [];
+            this.signfontStyle = [];
+            this.signtypevalue = '';
+            this.signfont = '';
+            this.signHeight = '';
+            this.signWidth = '';
+            this.signaturetype = '';
+            this.tabObj = null;
+            this.isSaveSignature = false;
+            this.isSaveInitial = false;
+            this.isInitialFiledSaveSignature = false;
+            this.isSignatureFieldsSaveSignature = false;
+            this.issaveTypeSignature = false;
+            this.issaveImageSignature = false;
+            this.issaveTypeInitial = false;
+            this.issaveImageInitial = false;
+            this.saveSignatureTypeString = '';
+            this.saveInitialTypeString = '';
+            this.saveTypeString = '';
+            this.signatureTypeString = '';
+            this.initialTypeString = '';
+            this.saveUploadString = '';
+            this.saveSignatureUploadString = '';
+            this.saveInitialUploadString = '';
+            this.signatureUploadString = '';
+            this.initialUploadString = '';
+            this.clearUploadString = false;
+            this.textValue = '';
+            this.signatureDrawString = '';
+            this.initialDrawString = '';
+            this.signatureTextContentTop = 0.2;
+            this.signatureTextContentLeft = 0.7;
+            this.saveSignatureString = '';
+            this.saveInitialString = '';
+            this.saveImageString = '';
+            this.currentTarget = null;
+            this.signatureFieldCollection = [];
+            this.signatureImageString = '';
+            this.initialImageString = '';
+            this.maxSaveLimit = 5;
+            this.isAddAnnotationProgramatically = null;
+        }
     }
 
     /**

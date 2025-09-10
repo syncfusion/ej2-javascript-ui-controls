@@ -6,7 +6,7 @@ import { IDropDownItemModel, IToolbarItemModel, IShowPopupArgs, NotifyArgs } fro
 import { ServiceLocator } from './../services/service-locator';
 import * as events from '../base/constant';
 import { CLS_RTE_ELEMENTS } from '../base/classes';
-import { Dialog, DialogModel } from '@syncfusion/ej2-popups';
+import { BeforeCloseEventArgs, Dialog, DialogModel } from '@syncfusion/ej2-popups';
 import { CheckBox } from '@syncfusion/ej2-buttons';
 import { ClickEventArgs } from '@syncfusion/ej2-navigations';
 import { NodeSelection } from '../../selection/selection';
@@ -376,9 +376,9 @@ export class Link {
             { click: this.cancelDialog.bind(this, selectObj), buttonModel: { cssClass: 'e-flat' + this.parent.getCssClass(true), content: linkCancel } }],
             target: (Browser.isDevice) ? document.body : this.parent.element,
             animationSettings: { effect: 'None' },
-            close: (event: { [key: string]: object }) => {
+            close: (event: BeforeCloseEventArgs) => {
                 this.parent.isBlur = false;
-                if (event && (event.event as { [key: string]: string }).returnValue) {
+                if (event && event.event.returnValue) {
                     if (this.parent.editorMode === 'HTML') {
                         selection.restore();
                     } else {
@@ -394,6 +394,9 @@ export class Link {
                 const args: Dialog = this.dialogObj;
                 this.dialogRenderObj.close(args);
                 this.dialogObj = null;
+                if (event) {
+                    event.preventFocus = true;
+                }
             }
         };
         // eslint-disable-next-line

@@ -5,7 +5,7 @@ import {
     IReviewCollection, AllowedInteraction, ISize, AnnotationsInternal, AnnotationBaseSettings,
     AnnotBoundsRect, AnnotationsBase, AnnotBoundsBase, IRect, IBounds
 } from '../index';
-import { isBlazor, isNullOrUndefined, SanitizeHtmlHelper  } from '@syncfusion/ej2-base';
+import { Browser, isBlazor, isNullOrUndefined, SanitizeHtmlHelper  } from '@syncfusion/ej2-base';
 import { PointModel } from '@syncfusion/ej2-drawings';
 import { PdfAnnotationBase } from '../drawing/pdf-annotation';
 import { PdfAnnotationBaseModel, PdfFontModel } from '../drawing/pdf-annotation-model';
@@ -702,14 +702,16 @@ export class FreeTextAnnotation {
             return 0;
         }
         else {
-            if (pageDetails.rotation === 0) {
-                return 0;
-            } else if (pageDetails.rotation === 1) {
-                return 90;
-            } else if (pageDetails.rotation === 2) {
-                return 180;
-            } else if (pageDetails.rotation === 3) {
-                return 270;
+            if (pageDetails) {
+                if (pageDetails.rotation === 0) {
+                    return 0;
+                } else if (pageDetails.rotation === 1) {
+                    return 90;
+                } else if (pageDetails.rotation === 2) {
+                    return 180;
+                } else if (pageDetails.rotation === 3) {
+                    return 270;
+                }
             }
             return 0;
         }
@@ -878,6 +880,21 @@ export class FreeTextAnnotation {
                 this.pdfViewer.annotation.storeAnnotations(pageIndex, annot, '_annotations_freetext');
                 this.pdfViewerBase.updateDocumentEditedProperty(true);
                 this.pdfViewer.fireAnnotationAdd(annot.pageIndex, annot.annotName, 'FreeText', bounds, settings);
+                if (Browser.isDevice && !this.pdfViewer.enableDesktopMode) {
+                    if (this.pdfViewer.toolbarModule && this.pdfViewer.toolbarModule.annotationToolbarModule) {
+                        this.pdfViewer.toolbarModule.annotationToolbarModule.createAnnotationToolbarForMobile();
+                        this.pdfViewer.toolbarModule.annotationToolbarModule.freetextToolbarElement.style.display = 'none';
+                        const editIcon: HTMLElement = document.getElementById(this.pdfViewer.element.id + '_annotationIcon');
+                        if (editIcon && editIcon.parentElement.classList.contains('e-pv-select')) {
+                            this.pdfViewer.toolbarModule.annotationToolbarModule.toolbarCreated = false;
+                            this.pdfViewer.toolbarModule.annotationToolbarModule.createAnnotationToolbarForMobile();
+                        }
+                        if (this.pdfViewer.toolbarModule.annotationToolbarModule.toolbarElement.children.length > 0) {
+                            this.pdfViewer.toolbarModule.annotationToolbarModule.toolbarElement.style.display = 'block';
+                        }
+                        this.pdfViewer.toolbarModule.annotationToolbarModule.adjustMobileViewer();
+                    }
+                }
                 this.pdfViewer.fireCommentAdd(annot.annotName, annot.dynamicText, annot);
                 this.pdfViewer.annotation.addAction(pageIndex, null, annotation, 'Addition', '', annotation, annotation);
                 this.pdfViewer.renderSelector((annot as PdfAnnotationBaseModel).pageIndex);

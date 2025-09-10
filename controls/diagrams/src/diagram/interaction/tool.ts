@@ -5,12 +5,12 @@
 /* eslint-disable max-len */
 import { PointModel } from '../primitives/point-model';
 import { Node, DiagramShape } from '../objects/node';
-import { Connector, BezierSegment, StraightSegment } from '../objects/connector';
+import { Connector, BezierSegment, StraightSegment, OrthogonalSegment } from '../objects/connector';
 import { NodeModel, BasicShapeModel, SwimLaneModel, PathModel } from '../objects/node-model';
 import { BezierSegmentModel, ConnectorModel, StraightSegmentModel, BezierSettingsModel } from '../objects/connector-model';
 import { Point } from '../primitives/point';
 import { BpmnSubEvent } from '../objects/node';
-import { PointPort } from '../objects/port';
+import { PathPort, PointPort } from '../objects/port';
 import { IElement, ISizeChangeEventArgs, IDraggingEventArgs, DiagramFixedUserHandle, IElementDrawEventArgs } from '../objects/interface/IElement';
 import { BlazorFixedUserHandleClickEventArgs, DiagramEventObject } from '../objects/interface/IElement';
 import { IEndChangeEventArgs, FixedUserHandleClickEventArgs } from '../objects/interface/IElement';
@@ -26,7 +26,7 @@ import { canOutConnect, canInConnect, canAllowDrop, canPortInConnect, canPortOut
 import { HistoryEntry } from '../diagram/history';
 import { Matrix, transformPointByMatrix, rotateMatrix, identityMatrix } from '../primitives/matrix';
 import { Snap } from './../objects/snapping';
-import { NodeConstraints, DiagramEvent, ObjectTypes, PortConstraints, State, DiagramConstraints, DiagramAction } from './../enum/enum';
+import { NodeConstraints, DiagramEvent, ObjectTypes, PortConstraints, State, DiagramConstraints, DiagramAction, FlipDirection } from './../enum/enum';
 import { PointPortModel, PortModel } from './../objects/port-model';
 import { ITouches } from '../objects/interface/interfaces';
 import { SelectorModel } from '../objects/node-model';
@@ -386,13 +386,8 @@ export class SelectTool extends ToolBase {
         //draw selected region
         if (this.inAction && Point.equals(this.currentPosition, this.prevPosition) === false) {
             const rect: Rect = Rect.toBounds([this.prevPosition, this.currentPosition]);
-            // Bug fix - EJ2-44495 -Node does not gets selected on slight movement of mouse when drag constraints disabled for node
-            if (this.mouseDownElement && !canMove(this.mouseDownElement)) {
-                this.commandHandler.clearObjectSelection(this.mouseDownElement);
-            } else {
-                this.commandHandler.clearSelectedItems();
-                this.commandHandler.drawSelectionRectangle(rect.x, rect.y, rect.width, rect.height);
-            }
+            this.commandHandler.clearSelectedItems();
+            this.commandHandler.drawSelectionRectangle(rect.x, rect.y, rect.width, rect.height);
         }
         return !this.blocked;
     }
@@ -618,7 +613,7 @@ export class ConnectTool extends ToolBase {
             }
             const trigger: number = this.endPoint === 'ConnectorSourceEnd' ? DiagramEvent.sourcePointChange : DiagramEvent.targetPointChange;
             this.commandHandler.triggerEvent(trigger, arg);
-            this.commandHandler.removeTerminalSegment(connector as Connector, true);
+            //this.commandHandler.removeTerminalSegment(connector as Connector, true);
         } else if (!(this instanceof ConnectorDrawingTool) &&
             (this.endPoint === 'BezierTargetThumb' || this.endPoint === 'BezierSourceThumb')) {
             if (this.undoElement && args.source) {
@@ -686,11 +681,12 @@ export class ConnectTool extends ToolBase {
                 connector = (args.source as SelectorModel).connectors[0];
             }
             let targetPortId: string; let targetNodeId: string;
+            let target: NodeModel | PointPortModel;
             if (args.target) {
-                const target: NodeModel | PointPortModel = this.commandHandler.findTarget(
+                target = this.commandHandler.findTarget(
                     args.targetWrapper, args.target, this.endPoint === 'ConnectorSourceEnd', true) as NodeModel | PointPortModel;
                 // eslint-disable-next-line @typescript-eslint/no-unused-expressions
-                (target instanceof PointPort) ? targetPortId = target.id : targetNodeId = target.id;
+                (target instanceof PointPort || target instanceof PathPort) ? targetPortId = target.id : targetNodeId = target.id;
             }
             let arg: IEndChangeEventArgs = {
                 connector: connector, state: 'Progress', targetNode: targetNodeId,
@@ -704,42 +700,128 @@ export class ConnectTool extends ToolBase {
             if (args.target) {
                 inPort = getInOutConnectPorts((args.target as Node), true); outPort = getInOutConnectPorts((args.target as Node), false);
             }
-            if (!arg.cancel && this.inAction && this.endPoint !== undefined && diffX !== 0 || diffY !== 0) {
-                // EJ2-65331 - The condition checks whether the cancel argument is true or false
-                if(!arg.cancel){
-                    this.blocked = !this.commandHandler.dragConnectorEnds(
-                        this.endPoint, args.source, this.currentPosition, this.selectedSegment, args.target, targetPortId);
+            if (!arg.cancel && this.inAction && this.endPoint !== undefined && (diffX !== 0 || diffY !== 0)) {
+                if (this.endPoint === 'ConnectorSourceEnd' && connector && connector.type === 'Orthogonal' && connector.segments && connector.segments.length > 0) {
+                    const connectorSegment: OrthogonalSegment = connector.segments[0] as OrthogonalSegment;
+                    const direction: string = connectorSegment.direction;
+                    const tryDragConnector = (
+                        targetPortId?: string,
+                        targetNodeId?: string,
+                        newPosition?: PointModel
+                    ) => {
+                        this.blocked = !this.commandHandler.dragConnectorEnds(
+                            this.endPoint,
+                            args.source,
+                            newPosition ? newPosition : this.currentPosition,
+                            this.selectedSegment,
+                            targetNodeId ? args.target : undefined,
+                            targetPortId
+                        );
+                    };
+
+                    const sourceChanged = connector.sourcePortID !== targetPortId || connector.sourceID !== targetNodeId;
+
+                    // Case 1: Disconnect if dragging to empty space
+                    if (sourceChanged && !targetNodeId && !targetPortId) {
+                        if (this.commandHandler.canDisconnect(this.endPoint, args, targetPortId, targetNodeId)) {
+                            tempArgs = this.commandHandler.disConnect(args.source, this.endPoint, this.canCancel) as IBlazorConnectionChangeEventArgs;
+                            this.isConnected = true;
+                            tryDragConnector(targetPortId, targetNodeId);
+                        }
+                    }
+
+                    // Case 2: Connect to a port
+                    else if (targetPortId && connector.sourcePortID !== targetPortId) {
+                        if (this.checkConnect(target as PointPortModel)) {
+                            tryDragConnector(targetPortId, (args.target as Node).id);
+                            tempArgs = this.commandHandler.connect(this.endPoint, args, this.canCancel) as IBlazorConnectionChangeEventArgs;
+                            this.isConnected = true;
+                        }
+                    }
+
+                    // Case 3: Connect to a node
+                    else if (target instanceof Node) {
+                        if (sourceChanged) {
+                            if (this.commandHandler.canDisconnect(this.endPoint, args, targetPortId, targetNodeId)) {
+                                tempArgs = this.commandHandler.disConnect(args.source, this.endPoint, this.canCancel) as IBlazorConnectionChangeEventArgs;
+                            }
+                        }
+
+                        if (canOutConnect(target)) {
+                            const corners = targetNodeId
+                                ? this.commandHandler.diagram.nameTable[`${targetNodeId}`].wrapper.corners
+                                : undefined;
+
+                            const getNewPosition = (): PointModel => {
+                                if (!direction || !corners) {
+                                    return this.currentPosition;
+                                }
+                                switch (direction) {
+                                case 'Bottom':
+                                    return corners.bottomCenter;
+                                case 'Top':
+                                    return corners.topCenter;
+                                case 'Left':
+                                    return corners.middleLeft;
+                                case 'Right':
+                                    return corners.middleRight;
+                                default:
+                                    return this.currentPosition;
+                                }
+                            };
+
+                            tryDragConnector(undefined, (args.target as Node).id, getNewPosition());
+                            tempArgs = this.commandHandler.connect(this.endPoint, args, this.canCancel) as IBlazorConnectionChangeEventArgs;
+                            this.isConnected = true;
+                        } else {
+                            tryDragConnector(undefined, undefined);
+                        }
+                    }
+
+                    // Case 4: Connect to connector port
+                    else if (target instanceof PathPort) {
+                        this.blocked = !this.commandHandler.dragConnectorEnds(this.endPoint, args.source, this.currentPosition, this.selectedSegment, args.target, targetPortId);
+                        tempArgs = this.commandHandler.connect(this.endPoint, args, this.canCancel) as any;
+                    }
+
                     this.commandHandler.updateSelector();
-                }
-                if (args.target && ((this.endPoint === 'ConnectorSourceEnd' && (canOutConnect(args.target) || canPortOutConnect(outPort)))
-                    || (this.endPoint === 'ConnectorTargetEnd' && (canInConnect(args.target) || canPortInConnect(inPort))))) {
-                    if (this.commandHandler.canDisconnect(this.endPoint, args, targetPortId, targetNodeId)) {
+                } else {
+                    // EJ2-65331 - The condition checks whether the cancel argument is true or false
+                    if (!arg.cancel) {
+                        this.blocked = !this.commandHandler.dragConnectorEnds(
+                            this.endPoint, args.source, this.currentPosition, this.selectedSegment, args.target, targetPortId);
+                        this.commandHandler.updateSelector();
+                    }
+                    if (args.target && ((this.endPoint === 'ConnectorSourceEnd' && (canOutConnect(args.target) || canPortOutConnect(outPort)))
+                        || (this.endPoint === 'ConnectorTargetEnd' && (canInConnect(args.target) || canPortInConnect(inPort))))) {
+                        if (this.commandHandler.canDisconnect(this.endPoint, args, targetPortId, targetNodeId)) {
+                            tempArgs = this.commandHandler.disConnect(
+                                args.source, this.endPoint, this.canCancel) as IBlazorConnectionChangeEventArgs;
+                            this.isConnected = true;
+                        }
+                        const target: NodeModel | PointPortModel = this.commandHandler.findTarget(
+                            args.targetWrapper, args.target, this.endPoint === 'ConnectorSourceEnd', true) as (NodeModel | PointPortModel);
+                        if (target instanceof Node) {
+                            if ((canInConnect(target) && this.endPoint === 'ConnectorTargetEnd')
+                                || (canOutConnect(target) && this.endPoint === 'ConnectorSourceEnd')) {
+
+                                tempArgs = this.commandHandler.connect(
+                                    this.endPoint, args, this.canCancel) as IBlazorConnectionChangeEventArgs;
+                                this.isConnected = true;
+                            }
+                        } else {
+                            const isConnect: boolean = this.checkConnect(target as PointPortModel);
+                            if (isConnect) {
+                                this.isConnected = true;
+                                tempArgs = this.commandHandler.connect(this.endPoint, args, this.canCancel) as IBlazorConnectionChangeEventArgs;
+                            }
+                        }
+                    } else if (this.endPoint.indexOf('Bezier') === -1) {
+                        this.isConnected = true;
                         tempArgs = this.commandHandler.disConnect(
                             args.source, this.endPoint, this.canCancel) as IBlazorConnectionChangeEventArgs;
-                        this.isConnected = true;
+                        this.commandHandler.updateSelector();
                     }
-                    const target: NodeModel | PointPortModel = this.commandHandler.findTarget(
-                        args.targetWrapper, args.target, this.endPoint === 'ConnectorSourceEnd', true) as (NodeModel | PointPortModel);
-                    if (target instanceof Node) {
-                        if ((canInConnect(target) && this.endPoint === 'ConnectorTargetEnd')
-                            || (canOutConnect(target) && this.endPoint === 'ConnectorSourceEnd')) {
-
-                            tempArgs = this.commandHandler.connect(
-                                this.endPoint, args, this.canCancel) as IBlazorConnectionChangeEventArgs;
-                            this.isConnected = true;
-                        }
-                    } else {
-                        const isConnect: boolean = this.checkConnect(target as PointPortModel);
-                        if (isConnect) {
-                            this.isConnected = true;
-                            tempArgs = this.commandHandler.connect(this.endPoint, args, this.canCancel) as IBlazorConnectionChangeEventArgs;
-                        }
-                    }
-                } else if (this.endPoint.indexOf('Bezier') === -1) {
-                    this.isConnected = true;
-                    tempArgs = this.commandHandler.disConnect(
-                        args.source, this.endPoint, this.canCancel) as IBlazorConnectionChangeEventArgs;
-                    this.commandHandler.updateSelector();
                 }
             }
             if (this.commandHandler.canEnableDefaultTooltip()) {
@@ -844,18 +926,7 @@ export class MoveTool extends ToolBase {
             this.undoElement = cloneObject(args.source);
         }
         //951087-Undo function doesn't retain connector segments after node move actions.
-        if (this.undoElement.nodes && this.undoElement.nodes.length > 0) {
-            for (const node of this.undoElement.nodes as Node[]) {
-                for (const edgeId of [...node.outEdges, ...node.inEdges]) {
-                    const connector: ConnectorModel = this.commandHandler.diagram.getObject(edgeId);
-                    if (connector && connector.segments && connector.segments.length > 1) {
-                        if (this.undoElement.connectors.indexOf(connector) === -1) {
-                            this.undoElement.connectors.push(cloneObject(connector));
-                        }
-                    }
-                }
-            }
-        }
+        this.commandHandler.trackConnectorChange(this.undoElement);
         this.undoParentElement = this.commandHandler.getSubProcess(args.source);
         this.undoContainerElement = this.commandHandler.getContainer(args.source);
         if (this.objectType === 'Port') {
@@ -903,18 +974,7 @@ export class MoveTool extends ToolBase {
                 obj = cloneObject(args.source);
             }
             //951087-Undo funciton doesn't retain connector segments after node move actions.
-            if (obj.nodes && obj.nodes.length > 0) {
-                for (const node of obj.nodes as Node[]) {
-                    for (const edgeId of [...node.outEdges, ...node.inEdges]) {
-                        const connector: ConnectorModel = this.commandHandler.diagram.getObject(edgeId);
-                        if (this.undoElement.connectors.indexOf(connector) !== -1 && obj.connectors.indexOf(connector) === -1) {
-                            const connectorClone: ConnectorModel = cloneObject(connector);
-                            redoObject.connectors.push(connectorClone);
-                            obj.connectors.push(connectorClone);
-                        }
-                    }
-                }
-            }
+            this.commandHandler.trackConnectorChange(obj);
             object = (this.commandHandler.renderContainerHelper(args.source as NodeModel) as Node) || args.source as Selector || (this.commandHandler.renderContainerHelper(args.source as ConnectorModel) as Connector);
             if (((object as Node).id === 'helper')|| ((object as Node).id !== 'helper')) {
                 let isSubGroupSelection: boolean = false;
@@ -1493,6 +1553,7 @@ export class RotateTool extends ToolBase {
                 this.childTable[nodes[parseInt(i.toString(), 10)].id] = cloneObject(node);
             }
         }
+        this.commandHandler.trackConnectorChange(this.undoElement);
 
 
         super.mouseDown(args);
@@ -1518,6 +1579,7 @@ export class RotateTool extends ToolBase {
             this.commandHandler.triggerEvent(DiagramEvent.rotateChange, arg);
             let obj: SelectorModel;
             obj = cloneObject(args.source);
+            this.commandHandler.trackConnectorChange(obj);
             const entry: HistoryEntry = {
                 type: 'RotationChanged', redoObject: cloneObject(obj), undoObject: cloneObject(this.undoElement), category: 'Internal',
                 childTable: this.childTable
@@ -1652,6 +1714,7 @@ export class ResizeTool extends ToolBase {
                 this.childTable[nodes[parseInt(i.toString(), 10)].id] = cloneObject(node);
             }
         }
+        this.commandHandler.trackConnectorChange(this.undoElement);
         this.commandHandler.checkSelection((args.source as Selector), this.corner);
         super.mouseDown(args);
         this.initialBounds.x = args.source.wrapper.offsetX;
@@ -1690,6 +1753,7 @@ export class ResizeTool extends ToolBase {
             this.commandHandler.triggerEvent(DiagramEvent.sizeChange, arg);
 
             const obj: SelectorModel = cloneObject(args.source);
+            this.commandHandler.trackConnectorChange(obj);
             const entry: HistoryEntry = {
                 type: 'SizeChanged', redoObject: cloneObject(obj), undoObject: cloneObject(this.undoElement), category: 'Internal',
                 childTable: this.childTable
@@ -2703,12 +2767,36 @@ export class LabelResizeTool extends ToolBase {
         let rotateAngle: number = textElement.rotateAngle;
         rotateAngle += (object instanceof Node) ? object.rotateAngle : 0; rotateAngle = (rotateAngle + 360) % 360;
         const trans: Matrix = identityMatrix();
-        rotateMatrix(trans, rotateAngle, center.x, center.y);
         const corner: string = (this.corner as string).slice(5);
         const pivot: Rect = this.updateSize(textElement, this.startPosition, this.currentPosition, corner, this.initialBounds, rotateAngle);
         const x: number = textElement.offsetX - textElement.actualSize.width * textElement.pivot.x;
         const y: number = textElement.offsetY - textElement.actualSize.height * textElement.pivot.y;
         let pivotPoint: PointModel = this.getPivot(corner);
+        if ((textElement as TextElement).flippedPoint) {
+            if (textElement.flip === FlipDirection.Horizontal && textElement.horizontalAlignment !== 'Center') {
+                pivotPoint.x = 1 - pivotPoint.x;
+                if (rotateAngle !== 0) {
+                    const normalized: number = ((rotateAngle % 360) + 360) % 360;
+                    rotateAngle = normalized === 0 ? 0 : (360 - normalized);
+                }
+            }
+            else if (textElement.flip === FlipDirection.Vertical && textElement.verticalAlignment !== 'Center') {
+                pivotPoint.y = 1 - pivotPoint.y;
+                if (rotateAngle !== 0) {
+                    const normalized: number = ((rotateAngle % 360) + 360) % 360;
+                    rotateAngle = normalized === 0 ? 0 : (360 - normalized);
+                }
+            }
+            if (textElement.flip === FlipDirection.Both) {
+                if (textElement.horizontalAlignment !== 'Center') {
+                    pivotPoint.x = 1 - pivotPoint.x;
+                }
+                if (textElement.verticalAlignment !== 'Center') {
+                    pivotPoint.y = 1 - pivotPoint.y;
+                }
+            }
+        }
+        rotateMatrix(trans, rotateAngle, center.x, center.y);
         pivotPoint = { x: x + textElement.actualSize.width * pivotPoint.x, y: y + textElement.actualSize.height * pivotPoint.y };
         const point: PointModel = transformPointByMatrix(trans, pivotPoint);
         pivot.x = point.x; pivot.y = point.y;

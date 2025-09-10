@@ -55,7 +55,7 @@ export class SvgRenderer implements IRenderer {
             shadowElement = document.createElementNS('http://www.w3.org/2000/svg', type) as SVGRectElement | SVGPathElement;
             canvas.appendChild(shadowElement);
         }
-        // 972592: Corner radius is not applied to shadow
+        //972592: Corner radius is not applied to shadow
         const attr: Object = {
             'id': canvas.id + '_shadow', 'fill': options.shadow.color, 'stroke': options.shadow.color,
             'opacity': options.shadow.opacity.toString(),
@@ -63,8 +63,7 @@ export class SvgRenderer implements IRenderer {
                 + (options.y + options.height * options.pivotY) + ')' +
                 'translate(' + (options.x + point.x) + ',' + (options.y + point.y) + ')',
             'rx': (options as RectAttributes).cornerRadius || 0, 'ry': (options as RectAttributes).cornerRadius || 0,
-            'stroke-width': options.strokeWidth, 'stroke-dasharray': options.dashArray
-
+            'stroke-dasharray': options.dashArray
         };
         if (parentSvg) {
             const svgContainer: HTMLElement = parentSvg.getElementById(canvas.id) as HTMLElement;
@@ -729,7 +728,11 @@ export class SvgRenderer implements IRenderer {
                 // eslint-disable-next-line @typescript-eslint/no-unused-expressions
                 // 883335-Exception Throws When Loading Data Without Defining Node Template at Application Level
                 if (element.isTemplate && element.template) {
-                    htmlElement.appendChild(element.template);
+                    if (diagram instanceof Diagram) {
+                        htmlElement.appendChild(element.template);
+                    } else {
+                        htmlElement.appendChild(element.template.cloneNode(true));
+                    }
                 } else if (element.template) {
                     htmlElement.appendChild(element.template.cloneNode(true));
                 }

@@ -476,7 +476,9 @@ export class PdfiumTaskScheduler {
      * @returns {void}
      */
     public addTask(taskData: any, priority: TaskPriorityLevel): void {
-        if (taskData.message === 'unloadFPDF' || taskData.skipOnReload === true) {
+        if ((taskData.message === 'unloadFPDF' || taskData.skipOnReload === true) &&
+            (!(Object.keys(this.functionManager).length === 1 &&
+            Object.keys(this.functionManager)[0] === 'loaded'))) {
             this.taskQueue = [];
             this.functionManager = {};
         }

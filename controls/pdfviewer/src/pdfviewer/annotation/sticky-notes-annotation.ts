@@ -3545,7 +3545,7 @@ export class StickyNotesAnnotation {
         }
         const date: Date = new Date(dateTime);
         let modifiedTime: string;
-        const modifiedDate: string = dateTime.toString().split(' ').splice(0, 4).join(' ');
+        const modifiedDate: string = dateTime.toString().split(' ').splice(0, dateTime.toString().split(' ').length).join(' ');
         if (date.toLocaleTimeString().split(' ').length === 2) {
             modifiedTime = date.toLocaleTimeString().split(' ')[0].split(':').splice(0, 2).join(':') + ' ' + date.toLocaleTimeString().split(' ')[1];
         }

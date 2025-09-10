@@ -690,6 +690,7 @@ export class Toolbar {
             if (!isNullOrUndefined(this.currentPageBox)) {
                 this.currentPageBox.min = 0;
                 this.currentPageBox.value = 0;
+                this.currentPageBox.dataBind();
             }
             this.updateTotalPage();
             this.updateToolbarItems();
@@ -1021,6 +1022,7 @@ export class Toolbar {
                             (this.currentPageBoxElement as HTMLInputElement).value = pageIndex.toString();
                         }
                         this.currentPageBox.value = pageIndex;
+                        this.currentPageBox.dataBind();
                     }
                 } else {
                     //this.pdfViewer._dotnetInstance.invokeMethodAsync('OnPageChanged', pageIndex);
@@ -1042,8 +1044,10 @@ export class Toolbar {
     public updateTotalPage(): void {
         if (!Browser.isDevice || this.pdfViewer.enableDesktopMode) {
             if (this.pdfViewerBase.pageCount > 0) {
-                if (!isNullOrUndefined(this.currentPageBox))
-                {this.currentPageBox.min = 1; }
+                if (!isNullOrUndefined(this.currentPageBox)) {
+                    this.currentPageBox.min = 1;
+                    this.currentPageBox.dataBind();
+                }
             }
             if (!isNullOrUndefined(this.totalPageItem))
             {this.totalPageItem.textContent = this.pdfViewer.localeObj.getConstant('of') + this.pdfViewerBase.pageCount.toString(); }
@@ -2203,6 +2207,7 @@ export class Toolbar {
         if (!Browser.isDevice || this.pdfViewer.enableDesktopMode) {
             if (this.annotationToolbarModule && this.pdfViewer.enableAnnotationToolbar) {
                 this.annotationToolbarModule.showAnnotationToolbar(this.annotationItem);
+                this.pdfViewer.viewerBase.showAnnotationPropertiesToolbar(true);
                 this.pdfViewer.toolbarModule.annotationToolbarModule.toolbar.refreshOverflow();
                 if (isKeyBoardEvent || this.pdfViewer.toolbarModule.annotationToolbarModule.toolbar.items.length > 0) {
                     document.getElementById(this.pdfViewer.toolbarModule.annotationToolbarModule.toolbar.items[0].id).focus();

@@ -605,6 +605,13 @@ export class OrthogonalSegment extends ConnectorSegment {
         return 'OrthogonalSegment';
     }
 
+    /**
+     * Identifies whether the segment is internal
+     *
+     * @private
+     */
+    public isOrthoInternalSegment: boolean;
+
 }
 
 /**
@@ -943,10 +950,10 @@ export class RelationShip extends ConnectorShape {
     /**
      * Defines the association direction
      *
-     * @default 'Directional'
+     * @default 'Default'
      * @IgnoreSingular
      */
-    @Property('Directional')
+    @Property('Default')
     public associationType: AssociationFlow;
     /**
      * Defines the type of the Classifier Multiplicity
@@ -974,10 +981,10 @@ export class DiagramConnectorShape extends ChildProperty<DiagramConnectorShape> 
     /**
      * Defines the association direction
      *
-     * @default 'Directional'
+     * @default 'Default'
      * @IgnoreSingular
      */
-    @Property('Directional')
+    @Property('Default')
     public associationType: AssociationFlow;
 
     /**
@@ -1392,6 +1399,8 @@ export class Connector extends NodeBase implements IElement {
     /** @private */
     public parentId: string = '';
 
+    /** @private */
+    public showDefaultTooltipForPalette: boolean = true;
     /**
      * Defines the behavior of connection ports
      *
@@ -1670,7 +1679,7 @@ export class Connector extends NodeBase implements IElement {
         const shape: RelationShip = (this.shape as RelationShip);
         if (shape.relationship === 'Association') {
             this.sourceDecorator.shape = 'None';
-            this.targetDecorator.shape = 'Arrow';
+            this.targetDecorator.shape = 'None';
 
         } else if (shape.relationship === 'Inheritance') {
             this.sourceDecorator.shape = 'None';
@@ -1689,8 +1698,12 @@ export class Connector extends NodeBase implements IElement {
             this.targetDecorator.shape = 'Arrow';
         }
         if (shape.associationType === 'BiDirectional') {
+            this.sourceDecorator.shape = 'OpenArrow';
+            this.targetDecorator.shape = 'OpenArrow';
+        }
+        if (shape.associationType === 'Directional') {
             this.sourceDecorator.shape = 'None';
-            this.targetDecorator.shape = 'None';
+            this.targetDecorator.shape = 'OpenArrow';
         }
         let text1: string = '';
         //let lower: MultiplicityLabelModel;

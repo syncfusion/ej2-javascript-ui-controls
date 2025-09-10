@@ -544,7 +544,7 @@ export interface RelationShipModel extends ConnectorShapeModel{
     /**
      * Defines the association direction
      *
-     * @default 'Directional'
+     * @default 'Default'
      * @IgnoreSingular
      */
     associationType?: AssociationFlow;
@@ -575,7 +575,7 @@ export interface DiagramConnectorShapeModel {
     /**
      * Defines the association direction
      *
-     * @default 'Directional'
+     * @default 'Default'
      * @IgnoreSingular
      */
     associationType?: AssociationFlow;

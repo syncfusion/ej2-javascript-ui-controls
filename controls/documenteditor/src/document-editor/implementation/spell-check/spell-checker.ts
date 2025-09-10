@@ -318,23 +318,13 @@ export class SpellChecker {
      * @private
      */
     public handleIgnoreOnce(startInlineObj: ElementInfo): void {
+        if (this.documentHelper.owner && this.documentHelper.owner.editorModule) {
+            this.documentHelper.owner.editor.initHistory('IgnoreOnce');
+        }
         const textElement: TextElementBox = (startInlineObj.element as TextElementBox);
+        // If text is split into multiple text elements, then we need to add ignoreOnceItems for all the text elements. So gets the start and end position of the text element and checks the same text exist which is in error element.
         if (!isNullOrUndefined(this.currentContextInfo) && this.currentContextInfo.element && this.currentContextInfo.element instanceof ErrorTextElementBox) {
-            const errorElement: ErrorTextElementBox = this.currentContextInfo.element;
-            const startPosition: TextPosition = errorElement.start;
-            const endPosition: TextPosition = errorElement.end;
-            let startInlineObj: ElementBox = (startPosition.currentWidget as LineWidget).getInline(startPosition.offset, 0, false, true).element;
-            const endInlineObj: ElementBox = (endPosition.currentWidget as LineWidget).getInline(endPosition.offset, 0, false, true).element;
-            while (true) {
-                const exactText: string = this.manageSpecialCharacters(errorElement.text, undefined, true);
-                if ((startInlineObj as TextElementBox).ignoreOnceItems.indexOf(exactText) === -1) {
-                    (startInlineObj as TextElementBox).ignoreOnceItems.push(exactText);
-                }
-                if (startInlineObj === endInlineObj) {
-                    break;
-                }
-                startInlineObj = startInlineObj.nextNode;
-            }
+            this.handleIgnoreOnceInternal(this.currentContextInfo.element, false);
         } else {
             const exactText: string = this.manageSpecialCharacters(textElement.text, undefined, true);
             if (textElement.ignoreOnceItems.indexOf(exactText) === -1) {
@@ -342,6 +332,34 @@ export class SpellChecker {
             }
         }
         this.documentHelper.owner.editorModule.reLayout(this.documentHelper.selection);
+    }
+    /**
+     * Method to handle to ignore error Once intenral
+     *
+     * @private
+     */
+    public handleIgnoreOnceInternal(errorElement: ErrorTextElementBox, isundoing: boolean): void {
+        const startPosition: TextPosition = errorElement.start;
+        const endPosition: TextPosition = errorElement.end;
+        let startInlineObj: ElementBox = (startPosition.currentWidget as LineWidget).getInline(startPosition.offset, 0, false, true).element;
+        const endInlineObj: ElementBox = (endPosition.currentWidget as LineWidget).getInline(endPosition.offset, 0, false, true).element;
+        while (true) {
+            const exactText: string = this.manageSpecialCharacters(errorElement.text, undefined, true);
+            const textIndex: number = (startInlineObj as TextElementBox).ignoreOnceItems.indexOf(exactText)
+            if (isundoing) {
+                if (textIndex !== -1) {
+                    (startInlineObj as TextElementBox).ignoreOnceItems.splice(textIndex, 1);
+                }
+            } else {
+                if (textIndex === -1) {
+                    (startInlineObj as TextElementBox).ignoreOnceItems.push(exactText);
+                }
+            }
+            if (startInlineObj === endInlineObj) {
+                break;
+            }
+            startInlineObj = startInlineObj.nextNode;
+        }
     }
 
     /**
@@ -611,6 +629,7 @@ export class SpellChecker {
             if (!isNullOrUndefined(inlineObj.element.errorCollection) && inlineObj.element.errorCollection.length > 0) {
                 for (let i: number = 0; i < inlineObj.element.errorCollection.length; i++) {
                     const errorElement: ErrorTextElementBox = inlineObj.element.errorCollection[i];
+                    // If the cursor is in error element, then we need to retrieve the text from that error element.
                     if (errorElement.start.isExistBefore(this.documentHelper.selection.start) && errorElement.end.isExistAfter(this.documentHelper.selection.start)) {
                         text = errorElement.text;
                         element = errorElement;
@@ -872,7 +891,7 @@ export class SpellChecker {
             if (!isNullOrUndefined(previousLine.children[index]) && previousLine.children[index] instanceof TextElementBox) {
                 const firstElement: TextElementBox = previousLine.children[index] as TextElementBox;
                 if (!isNullOrUndefined(currentElement.text)) {
-                    if (currentElement.text.indexOf(' ') !== 0 && firstElement.text.lastIndexOf(' ') !== firstElement.text.length - 1) {
+                    if (currentElement.text.indexOf(' ') !== 0 && firstElement.text.lastIndexOf(' ') !== firstElement.text.length - 1 && !(firstElement.text === '\v' || firstElement.text === '\t' || firstElement.text === '\f')) {
                         currentText = (currentText.length > 0) ? currentText : prevText;
                         this.checkElementCanBeCombined(firstElement, underlineY, beforeIndex, true, currentText, false, true, true);
                         return true;
@@ -890,7 +909,7 @@ export class SpellChecker {
             const nextLine: LineWidget = elementBox.line.nextLine;
             if (!isNullOrUndefined(nextLine.children[0]) && nextLine.children[0] instanceof TextElementBox) {
                 const firstElement: TextElementBox = nextLine.children[0] as TextElementBox;
-                if (elementBox.text.lastIndexOf(' ') !== elementBox.text.length - 1 && firstElement.text.indexOf(' ') !== 0) {
+                if (elementBox.text.lastIndexOf(' ') !== elementBox.text.length - 1 && firstElement.text.indexOf(' ') !== 0 && !(elementBox.text === '\v' || elementBox.text === '\t' || elementBox.text === '\f')) {
                     currentText = (currentText.length > 0) ? currentText : prevText;
                     this.checkElementCanBeCombined(firstElement, underlineY, beforeIndex, true, currentText, true, false, true);
                     return true;
@@ -989,6 +1008,7 @@ export class SpellChecker {
                 span.text = errorText;
                 const startElement: TextElementBox = combinedElements[0];
                 const endElement: TextElementBox = combinedElements[combinedElements.length - 1];
+                // Set the start and end position for the error element when text is splitted into multiple lines.
                 if (startElement && endElement) {
                     let offset: number = startElement.line.getOffset(startElement, 0);
                     let startPosition: TextPosition = new TextPosition(this.documentHelper.owner);

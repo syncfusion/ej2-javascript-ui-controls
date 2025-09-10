@@ -5,7 +5,7 @@ import { NodeModel, PathModel, FlowShapeModel, TextModel } from '../../../src/di
 import { MouseEvents } from '../interaction/mouseevents.spec';
 import { UndoRedo } from '../../../src/diagram/objects/undo-redo';
 import { HistoryEntry, History } from '../../../src/diagram/diagram/history';
-import { SnapConstraints, PointPortModel, AnnotationModel, PathElement, ConnectorBridging } from '../../../src/diagram/index';
+import { SnapConstraints, PointPortModel, AnnotationModel, PathElement, ConnectorBridging, PrintAndExport, BpmnDiagrams } from '../../../src/diagram/index';
 import { PortConstraints, PortVisibility, ConnectorConstraints, NodeConstraints, DecoratorShapes, DiagramConstraints, FlipDirection, AnnotationConstraints } from '../../../src/diagram/enum/enum';
 Diagram.Inject(UndoRedo);
 /**
@@ -1092,7 +1092,7 @@ describe('Diagram Control', () => {
             done();
         });
     });
-     describe('Bug 961464 - Flipping rotated nodes is not working properly as it does not consider the rotation angle after the flip', () => {
+    describe('Bug 961464 - Flipping rotated nodes is not working properly as it does not consider the rotation angle after the flip', () => {
         let diagram: Diagram;
         let ele: HTMLElement;
         beforeAll((): void => {
@@ -1203,4 +1203,133 @@ describe('Diagram Control', () => {
             done();
         });
     });
+    describe('Flip pending issues', () => {
+        let diagram: Diagram;
+        Diagram.Inject(PrintAndExport,BpmnDiagrams)
+        let ele: HTMLElement;
+        let mouseEvents = new MouseEvents();
+        beforeAll((): void => {
+            const isDef = (o: any) => o !== undefined && o !== null;
+            if (!isDef(window.performance)) {
+                console.log("Unsupported environment, window.performance.memory is unavailable");
+                this.skip(); //Skips test (in Chai)
+                return;
+            }
+            ele = createElement('div', { id: 'diagramFlipPendingIssues' });
+            document.body.appendChild(ele);
+            diagram = new Diagram({
+                width: '1200px', height: '000px',
+                nodes: [
+                    {
+                        id: 'node1', flipMode: 'Label', width: 200, backgroundColor: 'lightgrey', annotations: [
+                            { constraints: AnnotationConstraints.Interaction, content: 'node', offset: { x: 0.1, y: 0.3 }, style: { fill: 'pink' } },
+                            { constraints: AnnotationConstraints.Interaction, content: 'node1', offset: { x: 0.1, y: 0.1 }, horizontalAlignment: 'Left', verticalAlignment: 'Top', style: { fill: 'yellow' } },
+                            { constraints: AnnotationConstraints.Interaction, content: 'node2', offset: { x: 0.1, y: 0.5 }, horizontalAlignment: 'Left', verticalAlignment: 'Center', style: { fill: 'yellow' } },
+                            { constraints: AnnotationConstraints.Interaction, content: 'node3', offset: { x: 0.1, y: 0.9 }, horizontalAlignment: 'Left', verticalAlignment: 'Bottom', style: { fill: 'yellow' } },
+                            { constraints: AnnotationConstraints.Interaction, content: 'node4', offset: { x: 0.5, y: 0.1 }, horizontalAlignment: 'Center', verticalAlignment: 'Top', style: { fill: 'lightgreen' } },
+                            { constraints: AnnotationConstraints.Interaction, content: 'node5', offset: { x: 0.5, y: 0.5 }, horizontalAlignment: 'Center', verticalAlignment: 'Center', style: { fill: 'lightgreen' } },
+                            { constraints: AnnotationConstraints.Interaction, content: 'node6', offset: { x: 0.5, y: 0.9 }, horizontalAlignment: 'Center', verticalAlignment: 'Bottom', style: { fill: 'lightgreen' } },
+                            { constraints: AnnotationConstraints.Interaction, content: 'node7', offset: { x: 0.9, y: 0.1 }, horizontalAlignment: 'Right', verticalAlignment: 'Top', style: { fill: 'orange' } },
+                            { constraints: AnnotationConstraints.Interaction, content: 'node8', offset: { x: 0.9, y: 0.5 }, horizontalAlignment: 'Right', verticalAlignment: 'Center', style: { fill: 'orange' } },
+                            { constraints: AnnotationConstraints.Interaction, content: 'node9', offset: { x: 0.9, y: 0.9 }, horizontalAlignment: 'Right', verticalAlignment: 'Bottom', style: { fill: 'orange' } }
+
+                        ], height: 200, offsetX: 300, offsetY: 300, shape: { type: 'Basic', shape: 'RightTriangle' }, style: { fill: 'skyblue' }
+                    },
+                    {
+                        id: 'collapsedSub', offsetX: 1200, offsetY: 600, width: 100, height: 100,
+                        shape: {
+                            shape: 'Activity',
+                            type: 'Bpmn',
+                            activity: {
+                                activity: 'SubProcess',
+                                subProcess: {
+                                    type: 'Transaction',
+                                    compensation: true,
+                                    adhoc: true,
+                                    loop: 'ParallelMultiInstance',
+                                    boundary: 'Call',
+                                    collapsed: true,
+                                    processes: [],
+                                    transaction: {
+                                        cancel: { visible: true },
+                                        failure: { visible: true },
+                                        success: { visible: true }
+                                    }
+                                }
+                            }
+                        }
+                    },
+
+                ]
+            });
+            diagram.appendTo('#diagramFlipPendingIssues');
+        });
+        afterAll((): void => {
+            diagram.destroy();
+            ele.remove();
+        });
+        //Flipping nodes containing multiple labels with different horizontal and vertical alignments.
+        //For coverage
+        it('Flip node horizontal and interact with label', function (done: Function) {
+            let diagramCanvas = document.getElementById(diagram.element.id + 'content');
+            let node = diagram.nameTable['node1'];
+            node.flip ^= FlipDirection.Horizontal;
+            diagram.dataBind();
+            node.rotateAngle = 30;
+            diagram.dataBind();
+            mouseEvents.mouseMoveEvent(diagramCanvas,400,280);
+            mouseEvents.clickEvent(diagramCanvas,400,280);
+            mouseEvents.dragAndDropEvent(diagramCanvas,415,290,425,300);
+            expect(node.annotations[1].width !== undefined).toBe(true);
+            diagram.select([node]);
+            node.flip ^= FlipDirection.Horizontal;
+            diagram.dataBind();
+            done();
+        });
+        it('Flip node vertical and interact with label', function (done: Function) {
+            let diagramCanvas = document.getElementById(diagram.element.id + 'content');
+            let node = diagram.nameTable['node1'];
+            node.flip ^= FlipDirection.Vertical;
+            diagram.dataBind();
+            mouseEvents.mouseMoveEvent(diagramCanvas,400,280);
+            mouseEvents.clickEvent(diagramCanvas,400,280);
+            mouseEvents.dragAndDropEvent(diagramCanvas,415,290,425,300);
+            expect(node.annotations[9].width !== undefined).toBe(true);
+            diagram.select([node]);
+            done();
+        });
+        it('Flip node both and interact with label', function (done: Function) {
+            let diagramCanvas = document.getElementById(diagram.element.id + 'content');
+            let node = diagram.nameTable['node1'];
+            node.flip ^= FlipDirection.Horizontal;
+            diagram.dataBind();
+            mouseEvents.mouseMoveEvent(diagramCanvas,270,240);
+            mouseEvents.clickEvent(diagramCanvas,270,240);
+            mouseEvents.dragAndDropEvent(diagramCanvas,275,250,275,260);
+            expect(node.annotations[1].height !== undefined).toBe(true);
+            done();
+        });
+        it('Export flipped node with multiple labels', function (done: Function) {
+            let diagramCanvas = document.getElementById(diagram.element.id + 'content');
+            mouseEvents.clickEvent(diagramCanvas, 50, 50);
+            let data = diagram.exportDiagram({ format: 'PNG', mode: 'Data' });
+            expect(data !== undefined).toBe(true);
+            done();
+        });
+        it('Flip collapsed subprocess and export', function (done: Function) {
+            let collapsedSub = diagram.nameTable['collapsedSub'];
+            collapsedSub.flip ^= FlipDirection.Horizontal;
+            diagram.dataBind();
+            let pngData1 = diagram.exportDiagram({format:'PNG',mode:'Data'});
+            collapsedSub.flip = FlipDirection.Vertical;
+            diagram.dataBind();
+            let jpgData = diagram.exportDiagram({format:'JPG',mode:'Data'});
+            collapsedSub.flip ^= FlipDirection.Horizontal;
+            diagram.dataBind();
+            let pngData2 = diagram.exportDiagram({format:'PNG',mode:'Data'});
+            expect(pngData1 !== undefined && jpgData !== undefined && pngData2 !== undefined).toBe(true);
+            done();
+        });
+    });
+
 });

@@ -369,6 +369,7 @@ export class ContextMenu {
             items: this.addMenuItems(this.menuItems),
             cssClass: 'e-de-contextmenu-wrapper',
             select: (args: MenuEventArgs) => {
+                this.contextMenuInstance.element.parentElement.style.height = '';
                 let item: string = args.element.id;
                 this.handleContextMenuItem(item);
             },
@@ -396,6 +397,9 @@ export class ContextMenu {
                 classList(this.documentHelper.selection.caret, [], ['e-de-cursor-animation']);
                 this.documentHelper.selection.showCaret();
             }
+            this.contextMenuInstance.enableScrolling = true;		
+            this.contextMenuInstance.element.parentElement.style.height = this.documentHelper.viewerContainer.style.height;
+            this.contextMenuInstance.element.style.width = 'auto';
         };
         if (!isNullOrUndefined(this.documentHelper.owner.documentEditorSettings.popupTarget)) {
             this.documentHelper.owner.documentEditorSettings.popupTarget.append(document.getElementsByClassName('e-de-contextmenu-wrapper')[0]);
@@ -786,7 +790,7 @@ export class ContextMenu {
         let contextMenuItems: any[] = this.customItems.length > 0 ? this.customItems.slice() : [];
         // classList(this.noSuggestion,['e-disabled'],[]);
         if (isNullOrUndefined(allSuggestion) || allSuggestion.length === 0) {
-            contextMenuItems.push({ text: this.locale.getConstant('no suggestions'), id: CONTEXTMENU_NO_SUGGESTION, classList: ['e-focused'], iconCss: '' });
+            contextMenuItems.push({ text: this.locale.getConstant('No suggestions'), id: CONTEXTMENU_NO_SUGGESTION, classList: ['e-focused'], iconCss: '' });
         } else {
             for (let i: number = 0; i < allSuggestion.length; i++) {
                 contextMenuItems.push({ text: allSuggestion[i], id: CONTEXTMENU_SPELLCHECK_OTHERSUGGESTIONS + allSuggestion[i], iconCss: '' });

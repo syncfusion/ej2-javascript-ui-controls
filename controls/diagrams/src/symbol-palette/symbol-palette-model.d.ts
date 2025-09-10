@@ -320,4 +320,12 @@ export interface SymbolPaletteModel extends ComponentModel{
      */
     connectorDefaults?: ConnectorModel;
 
+    /**
+     * Helps to Customizes the node template
+     *
+     * @default undefined
+     * @aspType string
+     */
+    nodeTemplate?: string | Function;
+
 }

@@ -483,7 +483,6 @@ export function measureImage(source: string, contentSize: Size, id?: string, cal
  */
 export function measureNativeContent(nativeContent: SVGElement): Rect {
     const measureWindowElement: string = 'measureElement';
-    window[measureWindowElement].style.visibility = 'visible';
     let nativeSVG: SVGSVGElement = window[measureWindowElement].children[2];
     nativeSVG.appendChild(nativeContent);
     const bounds: ClientRect = nativeContent.getBoundingClientRect();
@@ -492,7 +491,6 @@ export function measureNativeContent(nativeContent: SVGElement): Rect {
     rect.x = bounds.left - svgBounds.left;
     rect.y = bounds.top - svgBounds.top;
     nativeSVG.removeChild(nativeContent);
-    window[measureWindowElement].style.visibility = 'hidden';
     return rect;
 }
 
@@ -999,12 +997,21 @@ export function getContent(
     } else {
         div = document.createElementNS('http://www.w3.org/2000/svg', 'g');
     }
-    const node: Object = getElement(element);
+    const diagramElement: Object = document.getElementById(element.diagramId);
+    const instance: string = 'ej2_instances';
+    const diagram: Object = diagramElement[instance][0];
+    let node: Object;
+    if (!(diagram as Diagram).initNodeTemplate || !(diagram instanceof Diagram)) {
+        node = getElement(element);
+    }
     let content: string = '';
     let sentNode: Object = {};
     let isSvg: boolean = false;
     let propertyName: string;
-    if (node instanceof Node) {
+    if ((!node && (diagram as Diagram).initNodeTemplate)) {
+        sentNode = sentNode = ((diagram as Diagram).tempTable && (diagram as Diagram).tempTable[element.nodeId]) || sentNode;
+        propertyName = "nodeTemplate";
+    } else if (node instanceof Node) {
         sentNode = node;
         ////Removed svg content re-assign from outerHtml to improve performance.
         //let blazor: string = 'Blazor';
@@ -1017,9 +1024,6 @@ export function getContent(
         propertyName = "annotationTemplate";
     }
     let item: HTMLElement | SVGElement;
-    const diagramElement: Object = document.getElementById(element.diagramId);
-    const instance: string = 'ej2_instances';
-    const diagram: Object = diagramElement[instance][0];
 
     if ((typeof element.content === 'string' || typeof element.content === 'function') && (!(element as DiagramHtmlElement).isTemplate)) {
         const template: HTMLElement = document.getElementById(element.content as string);

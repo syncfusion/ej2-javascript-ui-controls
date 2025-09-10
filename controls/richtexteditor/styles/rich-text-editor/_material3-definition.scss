@@ -37,7 +37,6 @@ $rte-font-arrow-touch-width: 20px !default;
 $rte-placeholder-line-height: $leading-normal !default;
 $rte-big-active-tb-item-btn-padding: 0 6px !default;
 $rte-table-popup-padding: 10px !default;
-$rte-table-popup-min-height: 150px !default;
 $rte-table-popup-border: 1px solid $outline-variant !default;
 $rte-insert-dialog-label-padding-top: 20px !default;
 $rte-insert-dialog-label-padding-bottom: 0 !default;
@@ -45,7 +44,6 @@ $rte-big-quick-tbar-item-min-height: 40px !default;
 $rte-big-quick-tbar-item-min-width: 40px !default;
 $rte-content-font-size: 14px !default;
 $rte-big-content-font-size: 16px !default;
-$rte-big-dialog-min-height: 324px !default;
 $rte-dropdown-caret-icon-size: $text-xs !default;
 $rte-big-dropdown-caret-icon-size: $text-sm !default;
 $font-weight: $font-weight-normal !default;
@@ -125,7 +123,6 @@ $rte-split-btn-active-color-icon-line-height: 30px !default;
 $rte-big-split-btn-active-color-icon-line-height: 38px !default;
 $rte-selection-color: rgba($white) !default;
 $rte-selection-bg: rgba($primary) !default;
-$rte-insert-icon-color: rgba($primary) !default;
 $rte-dropdown-color: rgba($icon-color) !default;
 $rte-dropdown-transition-color: rgba($icon-color) !default;
 $rte-color-picker-line-height: 1 !default;
@@ -177,6 +174,7 @@ $rte-table-multicell-select-bg-color: rgba($primary, .11) !default;
 
 $rte-tb-hover-font-color: rgba($secondary-text-color-hover);
 $transparent: $transparent;
+$rte-placeholder-padding: 16px !default;
 
 $rte-img-dlg-max-height: 390px !default;
 $rte-img-alt-dlg-max-height: 390px !default;
@@ -263,9 +261,3 @@ $rte-quick-popup-filter-color: rgba(0, 0, 0, .3) !default;
 
 $rte-popup-padding: 0 4px !default;
 $rte-popup-item-padding: 2px 4px !default;
-
-$rte-checklist-checked-bg-color: rgba($primary) !default;
-$rte-checklist-checked-border-color: 2px solid rgba($primary) !default;
-$rte-checklist-checked-checkmark-color: rgba($primary-text-color) !default;
-$rte-checklist-checkbox-border: 2px solid rgba($content-text-color-alt1);
-$rte-checklist-checkbox-border-radius: 2px;

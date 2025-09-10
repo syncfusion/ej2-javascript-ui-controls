@@ -33,16 +33,10 @@ const SCALE: string = 'SC';
  */
 export class DocumentCanvasElement {
 
-    /**
-     * Gets or sets the height of a canvas element on a document.
-     * @private
-     */
+    /** Gets or sets the height of a canvas element on a document. */
     public height: number;
 
-    /**
-     * Gets or sets the width of a canvas element on a document.
-     * @private
-     */
+    /** Gets or sets the width of a canvas element on a document. */
     public width: number;
 
     public style: CSSStyleDeclaration = {} as any;

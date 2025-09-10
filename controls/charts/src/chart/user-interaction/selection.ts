@@ -712,116 +712,119 @@ export class Selection extends BaseSelection {
      * @returns {void}
      */
     public checkSelectionElements(element: Element, className: string, visibility: boolean, isLegend: boolean = true, series: number = 0, legendStrokeColor: string = '#D3D3D3'): void {
-        let children: HTMLCollection | Element[] = <Element[]>(this.isSeriesMode ?
-            element.childNodes ||  [element] : element.childNodes || element);
-        if (this.chart.selectionMode !== 'None' && (this.chart.highlightMode !== 'None' || this.chart.legendSettings.enableHighlight)) {
-            children = (element.childNodes as any || element);
-        }
-        if (this.chart.selectionMode === 'Cluster' && element.tagName.toLowerCase() === 'text' && element.id.indexOf('_Text_') >= 0) {
-            children = [element];
-        }
-        let elementClassName: string; let parentClassName: string; let legendShape: Element; let selectElement: Element = element;
-        const isDataLabelTextElement: boolean = (this.chart.visibleSeries[this.rangeColorMappingEnabled() ? 0 : series as number].marker.dataLabel.visible && (element.id.indexOf('Text') > -1 || element.id.indexOf('TextShape') > -1) && element.tagName !== 'g');
-        for (let i: number = 0; i < children.length && !isDataLabelTextElement; i++) {
-            elementClassName = children[i as number].getAttribute('class') || '';
-            parentClassName = (<Element>children[i as number].parentNode).getAttribute('class') || '';
+        if (element) {
+            let children: HTMLCollection | Element[] = <Element[]>(this.isSeriesMode ?
+                element.childNodes || [element] : element.childNodes || element);
             if (this.chart.selectionMode !== 'None' && (this.chart.highlightMode !== 'None' || this.chart.legendSettings.enableHighlight)) {
-                className = elementClassName.indexOf('selection') > 0 ||
-                    elementClassName.indexOf('highlight') > 0 ? elementClassName : className;
-                className = (parentClassName.indexOf('selection') > 0 ||
-                    parentClassName.indexOf('highlight') > 0) ? parentClassName : className;
+                children = (element.childNodes as any || element);
             }
-            if (elementClassName.indexOf(className) === -1 &&
-                parentClassName.indexOf(className) === -1 && visibility) {
-                this.addSvgClass(children[i as number], this.unselected);
-            } else {
-                selectElement = children[i as number];
-                this.removeSvgClass(children[i as number], this.unselected);
-                this.removeSvgClass(<Element>children[i as number].parentNode, this.unselected);
-                if (children[i as number].id !== '' && elementClassName.indexOf(this.unselected) !== -1 && parentClassName.indexOf(className) === -1) {
-                    this.highlightAnimation(children[i as number] as HTMLElement, this.chart.series.length === 1 ? 0 :
-                        this.indexFinder(children[i as number].id).series, 700, 0.3);
+            if (this.chart.selectionMode === 'Cluster' && element.tagName.toLowerCase() === 'text' && element.id.indexOf('_Text_') >= 0) {
+                children = [element];
+            }
+            let elementClassName: string; let parentClassName: string; let legendShape: Element; let selectElement: Element = element;
+            const isDataLabelTextElement: boolean = (this.chart.visibleSeries[this.rangeColorMappingEnabled() ? 0 : series as number].marker.dataLabel.visible && (element.id.indexOf('Text') > -1 || element.id.indexOf('TextShape') > -1) && element.tagName !== 'g');
+            for (let i: number = 0; i < children.length && !isDataLabelTextElement; i++) {
+                elementClassName = children[i as number].getAttribute('class') || '';
+                parentClassName = (<Element>children[i as number].parentNode).getAttribute('class') || '';
+                if (this.chart.selectionMode !== 'None' && (this.chart.highlightMode !== 'None' || this.chart.legendSettings.enableHighlight)) {
+                    className = elementClassName.indexOf('selection') > 0 ||
+                        elementClassName.indexOf('highlight') > 0 ? elementClassName : className;
+                    className = (parentClassName.indexOf('selection') > 0 ||
+                        parentClassName.indexOf('highlight') > 0) ? parentClassName : className;
                 }
-            }
-            if (children[i as number].id.indexOf('Trackball') > 0 && selectElement.classList[0] === className) {
-                this.removeSvgClass(children[i as number], this.unselected);
-                this.removeSvgClass(<Element>children[i as number].parentNode, this.unselected);
-                this.addSvgClass(children[i as number], className);
-            }
-        }
-        if (element.id.indexOf('Symbol') > -1) {
-            if ((element.querySelectorAll('.' + className)[0]) && element.querySelectorAll('.' + className)[0].getAttribute('class')
-                === className) {
-                const symbolEle: Element = getElement(this.control.element.id + '_Series_' + element.id[element.id.length - 1]);
-                const seriesClassName: string = symbolEle && symbolEle.hasAttribute('class') ? symbolEle.getAttribute('class') : '';
-                if (seriesClassName.indexOf(this.unselected) > -1) {
-                    this.removeSvgClass(symbolEle, this.unselected);
-                }
-            }
-        }
-        if ((this.control as Chart).legendModule && (this.control as Chart).legendSettings.visible && this.control.legendSettings.visible
-            && !(isLegend && this.rangeColorMappingEnabled && (element === (this.control as Chart).visibleSeries[0].textElement
-                || element === (this.control as Chart).visibleSeries[0].shapeElement))) {
-            legendShape = getElement(this.control.element.id + '_chart_legend_shape_' + series);
-            if (legendShape) {
-                if (legendShape.hasAttribute('class')) {
-                    this.removeSvgClass(legendShape, legendShape.getAttribute('class'));
-                    if (!isNullOrUndefined(this.chart.highlightColor && this.chart.highlightColor !== '') && !this.chart.legendSettings.enableHighlight) {
-                        legendShape.setAttribute('stroke', legendStrokeColor);
-                        if (this.chart.highlightPattern === 'None') {
-                            legendShape.setAttribute('fill', legendStrokeColor);
-                        }
-                    }
-                }
-                elementClassName = selectElement.getAttribute('class') || '';
-                parentClassName = (<Element>selectElement.parentNode).getAttribute('class') || '';
-                if (elementClassName.indexOf(className) === -1 && parentClassName.indexOf(className) === -1 && visibility) {
-                    this.addSvgClass(legendShape, (this.chart.highlightMode === 'None' && this.chart.legendSettings.enableHighlight && (!this.chart.selectionModule || this.chart.selectionModule.selectedDataIndexes.length === 0)) ? className : this.unselected);
-                    this.removeSvgClass(legendShape, className);
-                    if (this.chart.highlightColor !== '' && !isNullOrUndefined(this.chart.highlightColor)) {
-                        legendShape.setAttribute('stroke', (this.control as Chart).visibleSeries[series as number].interior);
-                        if (this.chart.highlightPattern === 'None') {
-                            legendShape.setAttribute('fill', (this.control as Chart).visibleSeries[series as number].interior);
-                        }
-                    }
+                if (elementClassName.indexOf(className) === -1 &&
+                    parentClassName.indexOf(className) === -1 && visibility) {
+                    this.addSvgClass(children[i as number], this.unselected);
                 } else {
-                    this.removeSvgClass(legendShape, this.unselected);
-                    if (!isNullOrUndefined(this.chart.highlightColor) && this.chart.highlightColor !== '') {
-                        legendShape.setAttribute('stroke', (this.control as Chart).visibleSeries[series as number].interior);
-                        if (this.chart.highlightPattern === 'None') {
-                            legendShape.setAttribute('fill', (this.control as Chart).visibleSeries[series as number].interior);
-                        }
+                    selectElement = children[i as number];
+                    this.removeSvgClass(children[i as number], this.unselected);
+                    this.removeSvgClass(<Element>children[i as number].parentNode, this.unselected);
+                    if (children[i as number].id !== '' && elementClassName.indexOf(this.unselected) !== -1 && parentClassName.indexOf(className) === -1) {
+                        this.highlightAnimation(children[i as number] as HTMLElement, this.chart.series.length === 1 ? 0 :
+                            this.indexFinder(children[i as number].id).series, 700, 0.3);
                     }
-                    if ((elementClassName === '' && parentClassName === '') || elementClassName.trim() === 'EJ2-Trackball') {
-                        this.removeSvgClass(legendShape, className);
-                    } else {
-                        this.addSvgClass(legendShape, className);
-                        if (className.indexOf('highlight') > 0 && this.chart.highlightColor !== '' && this.chart.highlightColor !== 'transparent' && !isNullOrUndefined(this.chart.highlightColor)) {
-                            legendShape.setAttribute('stroke', this.chart.highlightColor);
-                            if (this.styleId.indexOf('highlight') > 0 && this.chart.highlightPattern === 'None') {
-                                legendShape.setAttribute('fill', this.chart.highlightColor);
+                }
+                if (children[i as number].id.indexOf('Trackball') > 0 && selectElement.classList[0] === className) {
+                    this.removeSvgClass(children[i as number], this.unselected);
+                    this.removeSvgClass(<Element>children[i as number].parentNode, this.unselected);
+                    this.addSvgClass(children[i as number], className);
+                }
+            }
+            if (element.id.indexOf('Symbol') > -1) {
+                if ((element.querySelectorAll('.' + className)[0]) && element.querySelectorAll('.' + className)[0].getAttribute('class')
+                    === className) {
+                    const symbolEle: Element = getElement(this.control.element.id + '_Series_' + element.id[element.id.length - 1]);
+                    const seriesClassName: string = symbolEle && symbolEle.hasAttribute('class') ? symbolEle.getAttribute('class') : '';
+                    if (seriesClassName.indexOf(this.unselected) > -1) {
+                        this.removeSvgClass(symbolEle, this.unselected);
+                    }
+                }
+            }
+            if ((this.control as Chart).legendModule && (this.control as Chart).legendSettings.visible &&
+                this.control.legendSettings.visible
+                && !(isLegend && this.rangeColorMappingEnabled && (element === (this.control as Chart).visibleSeries[0].textElement
+                    || element === (this.control as Chart).visibleSeries[0].shapeElement))) {
+                legendShape = getElement(this.control.element.id + '_chart_legend_shape_' + series);
+                if (legendShape) {
+                    if (legendShape.hasAttribute('class')) {
+                        this.removeSvgClass(legendShape, legendShape.getAttribute('class'));
+                        if (!isNullOrUndefined(this.chart.highlightColor && this.chart.highlightColor !== '') && !this.chart.legendSettings.enableHighlight) {
+                            legendShape.setAttribute('stroke', legendStrokeColor);
+                            if (this.chart.highlightPattern === 'None') {
+                                legendShape.setAttribute('fill', legendStrokeColor);
                             }
                         }
                     }
-                }
-                let legendItemsId: Element;
-                if (this.rangeColorMappingEnabled()) {
-                    for (let i: number = 0; i < this.chart.rangeColorSettings.length; i++) {
-                        legendItemsId = document.getElementById(this.chart.element.id + '_chart_legend_shape_' + i);
-                        if (legendShape !== legendItemsId) {
-                            this.addSvgClass(legendItemsId, this.unselected);
-                            this.removeSvgClass(legendItemsId, className);
+                    elementClassName = selectElement.getAttribute('class') || '';
+                    parentClassName = (<Element>selectElement.parentNode).getAttribute('class') || '';
+                    if (elementClassName.indexOf(className) === -1 && parentClassName.indexOf(className) === -1 && visibility) {
+                        this.addSvgClass(legendShape, (this.chart.highlightMode === 'None' && this.chart.legendSettings.enableHighlight && (!this.chart.selectionModule || this.chart.selectionModule.selectedDataIndexes.length === 0)) ? className : this.unselected);
+                        this.removeSvgClass(legendShape, className);
+                        if (this.chart.highlightColor !== '' && !isNullOrUndefined(this.chart.highlightColor)) {
+                            legendShape.setAttribute('stroke', (this.control as Chart).visibleSeries[series as number].interior);
+                            if (this.chart.highlightPattern === 'None') {
+                                legendShape.setAttribute('fill', (this.control as Chart).visibleSeries[series as number].interior);
+                            }
                         }
-                        else if (isLegend === true) {
-                            this.addSvgClass(legendItemsId, className);
+                    } else {
+                        this.removeSvgClass(legendShape, this.unselected);
+                        if (!isNullOrUndefined(this.chart.highlightColor) && this.chart.highlightColor !== '') {
+                            legendShape.setAttribute('stroke', (this.control as Chart).visibleSeries[series as number].interior);
+                            if (this.chart.highlightPattern === 'None') {
+                                legendShape.setAttribute('fill', (this.control as Chart).visibleSeries[series as number].interior);
+                            }
                         }
-                        if (elementClassName.indexOf(className) === -1 && isLegend === false) {
-                            this.removeSvgClass(legendItemsId, this.unselected);
+                        if ((elementClassName === '' && parentClassName === '') || elementClassName.trim() === 'EJ2-Trackball') {
+                            this.removeSvgClass(legendShape, className);
+                        } else {
+                            this.addSvgClass(legendShape, className);
+                            if (className.indexOf('highlight') > 0 && this.chart.highlightColor !== '' && this.chart.highlightColor !== 'transparent' && !isNullOrUndefined(this.chart.highlightColor)) {
+                                legendShape.setAttribute('stroke', this.chart.highlightColor);
+                                if (this.styleId.indexOf('highlight') > 0 && this.chart.highlightPattern === 'None') {
+                                    legendShape.setAttribute('fill', this.chart.highlightColor);
+                                }
+                            }
                         }
                     }
-                }
-                if (isLegend && parentClassName.indexOf(className) > -1) {
-                    this.addSvgClass(legendShape, className);
+                    let legendItemsId: Element;
+                    if (this.rangeColorMappingEnabled()) {
+                        for (let i: number = 0; i < this.chart.rangeColorSettings.length; i++) {
+                            legendItemsId = document.getElementById(this.chart.element.id + '_chart_legend_shape_' + i);
+                            if (legendShape !== legendItemsId) {
+                                this.addSvgClass(legendItemsId, this.unselected);
+                                this.removeSvgClass(legendItemsId, className);
+                            }
+                            else if (isLegend === true) {
+                                this.addSvgClass(legendItemsId, className);
+                            }
+                            if (elementClassName.indexOf(className) === -1 && isLegend === false) {
+                                this.removeSvgClass(legendItemsId, this.unselected);
+                            }
+                        }
+                    }
+                    if (isLegend && parentClassName.indexOf(className) > -1) {
+                        this.addSvgClass(legendShape, className);
+                    }
                 }
             }
         }

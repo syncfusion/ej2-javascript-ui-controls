@@ -391,16 +391,6 @@
       .e-virtual-pivot-content {
         visibility: hidden;
       }
-
-      th.e-leftfreeze:has(.e-rhandler:hover) {
-        border-right: 1px dashed $pivotgrid-drop-hover-color !important;
-      }
-      &.e-rtl {
-        th.e-leftfreeze:has(.e-rhandler:hover) {
-          border-left: 1px dashed $pivotgrid-drop-hover-color !important;
-          border-right: unset !important;
-        }
-      }
     }
 
     &.sf-pivotview {
@@ -540,7 +530,7 @@
         border: $pivotgrid-border-size $pivotgrid-border-type $pivotgrid-default-border-color;
         border-bottom-width: 0;
         border-right-width: 0;
-        min-width: 100px;
+        min-width: 250px;
 
         &.e-static-server-rendering {
           width: 250px;
@@ -826,8 +816,6 @@
       .e-pvt-btn-div {
         .e-pivot-button {
           max-width: 230px;
-          overflow: hidden;
-          text-overflow: ellipsis;
         }
       }
     }
@@ -870,16 +858,10 @@
             padding: 0 0 0 10px !important;
           }
           .e-pivot-button {
-            width: 100% !important;
-            max-width: 180px !important;
-            min-width: 80px;
-            overflow: hidden;
-            text-overflow: ellipsis;
-            white-space: nowrap;
+            width: 180px;
             &.e-tabular-row-btn {
-              width: 100% !important;
-              max-width: 180px !important;
-              min-width: 80px;
+              width: auto !important;
+              max-width: 250px;
             }
             @if ($pivotgrid-skin == 'bootstrap4') {
               font-weight: 400;
@@ -1471,7 +1453,7 @@
       .e-frozenheader>.e-table,
       .e-frozencontent>.e-table,
       .e-leftfreeze.e-freezeleftborder {
-        border-left-width: 1px !important;
+        border-left-width: 1px;
         border-right: 0;
       }
 
@@ -1573,7 +1555,7 @@
       }
 
       th.e-headercell:first-child:not(.e-firstcell):not(.e-headercell.e-frozen-left-border) {
-        border-left-width: 1px;
+        border-left-width: 1px !important;
       }
       /* stylelint-enable */
     }

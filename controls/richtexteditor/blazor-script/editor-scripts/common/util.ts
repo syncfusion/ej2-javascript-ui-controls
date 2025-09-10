@@ -264,10 +264,15 @@ export function scrollToCursor(
     if (inputElement.nodeName === 'BODY') {
         if (height === 'auto') {
             if (window.innerHeight < cursorTop) {
-                finalFocusElement.scrollIntoView(false);
+                finalFocusElement.scrollIntoView({ block: 'end', inline: 'nearest' });
+            } else if (cursorBottom > finalFocusElement.getBoundingClientRect().top){
+                finalFocusElement.scrollIntoView({ block: 'nearest', inline: 'nearest' });
             }
         } else {
             if (cursorTop > inputElement.getBoundingClientRect().height || cursorBottom > rootRect.bottom) {
+                finalFocusElement.scrollIntoView({ block: 'nearest', inline: 'nearest' });
+            }
+            if (cursorBottom > finalFocusElement.getBoundingClientRect().top){
                 finalFocusElement.scrollIntoView({ block: 'nearest', inline: 'nearest' });
             }
         }
@@ -276,11 +281,11 @@ export function scrollToCursor(
             if (window.innerHeight < cursorTop) {
                 finalFocusElement.scrollIntoView({ block: 'end', inline: 'nearest' });
             }
-            if (cursorTop > inputElement.getBoundingClientRect().height) {
+            if (cursorTop > finalFocusElement.getBoundingClientRect().top) {
                 finalFocusElement.scrollIntoView({ block: 'nearest', inline: 'nearest' });
             }
         } else {
-            if (cursorTop > inputElement.getBoundingClientRect().height) {
+            if (cursorBottom > finalFocusElement.getBoundingClientRect().top) {
                 finalFocusElement.scrollIntoView({ block: 'nearest', inline: 'nearest' });
             }
             if (cursorBottom > rootRect.bottom) {

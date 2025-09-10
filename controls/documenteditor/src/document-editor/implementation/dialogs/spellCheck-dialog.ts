@@ -10,7 +10,6 @@ import { createSpinner, showSpinner, hideSpinner } from '@syncfusion/ej2-popups'
 import { DocumentHelper } from '../viewer';
 /**
  * Spell check dialog
- * @private
  */
 export class SpellCheckDialog {
     private target: HTMLElement;

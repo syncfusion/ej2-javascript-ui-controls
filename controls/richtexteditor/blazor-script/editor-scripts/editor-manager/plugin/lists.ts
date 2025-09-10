@@ -496,7 +496,7 @@ export class Lists {
             isNOU(startNode.previousElementSibling)) {
             startNode.removeAttribute('style');
         }
-        if (startNode === endNode && startNode.textContent === '') {
+        if (startNode === endNode && startNode.textContent === '' && !this.hasMediaElement(startNode)) {
             if (startNode.parentElement.tagName === 'LI' && endNode.parentElement.tagName === 'LI') {
                 detach(startNode);
             } else if (startNode.closest('ul') || startNode.closest('ol')) {
@@ -541,6 +541,18 @@ export class Lists {
         }
         this.removeList(range, e);
         this.firstListBackSpace(range, e);
+    }
+
+    private hasMediaElement(element: Element): boolean {
+        if (!element) {
+            return false;
+        }
+        const videoElemList : NodeList = element.querySelectorAll('.e-video-clickelem');
+        const embedVideoElem : boolean = videoElemList.length > 0 && videoElemList[0].childNodes[0].nodeName === 'IFRAME';
+        if (element.querySelectorAll('audio,video,table,img,hr').length > 0 || ['AUDIO', 'VIDEO', 'TABLE', 'IMG', 'HR'].indexOf(element.tagName) !== -1 || embedVideoElem) {
+            return true;
+        }
+        return false;
     }
 
     private handleNestedListRearrangement(
@@ -666,19 +678,19 @@ export class Lists {
                         }
                     });
                 }
-                if ((!listItems[i as number].firstChild || listItems[i as number].textContent.trim() === '') && (listItems[i as number] === startNode || listItems[i as number] === endNode || listItems[i as number] === endParentList)) {
+                if ((!listItems[i as number].firstChild || listItems[i as number].textContent.trim() === '' && !this.hasMediaElement(listItems[i as number])) && (listItems[i as number] === startNode || listItems[i as number] === endNode || listItems[i as number] === endParentList)) {
                     previousNode = this.findPreviousElementForCursor(listItems[i as number]);
                     listItems[i as number].parentNode.removeChild(listItems[i as number]);
                 }
             }
             this.parent.editableElement.querySelectorAll('ol').forEach((ol: HTMLOListElement) => {
-                if (!ol.firstChild || ol.textContent.trim() === '') {
+                if (!ol.firstChild || ol.textContent.trim() === '' && !this.hasMediaElement(ol)) {
                     previousNode = this.findPreviousElementForCursor(ol);
                     ol.parentNode.removeChild(ol);
                 }
             });
             this.parent.editableElement.querySelectorAll('ul').forEach((ul: HTMLUListElement) => {
-                if (!ul.firstChild || ul.textContent.trim() === '') {
+                if (!ul.firstChild || ul.textContent.trim() === '' && !this.hasMediaElement(ul)) {
                     previousNode = this.findPreviousElementForCursor(ul);
                     ul.parentNode.removeChild(ul);
                 }

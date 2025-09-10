@@ -50,6 +50,8 @@ import { Export } from '../chart/print-export/export';
 import { Animation, AnimationOptions, compile as templateComplier} from '@syncfusion/ej2-base';
 import { PrintUtils } from '../common/utils/print';
 import { IAfterExportEventArgs, IExportEventArgs } from '../common/model/interface';
+import { createTemplate } from '../common/utils/helper';
+import { createElement } from '@syncfusion/ej2-base';
 
 /**
  * Represents the AccumulationChart control.
@@ -128,6 +130,16 @@ export class AccumulationChart extends Component<HTMLElement> implements INotify
     public exportModule: Export;
 
     // Property declarations goes here
+
+    /**
+     * Specifies the template to be displayed when the chart has no data.
+     * This property enables the users to display customized messages, images, or other UI elements in place of an empty chart.
+     * It provides a better user experience by offering context when no data points are available.
+     *
+     * @default null
+     */
+    @Property(null)
+    public noDataTemplate: string | Function;
 
     /**
      * The width of the chart as a string, allowing input in formats such as '100px' or '100%'.
@@ -1928,6 +1940,15 @@ export class AccumulationChart extends Component<HTMLElement> implements INotify
 
         this.setSecondaryElementPosition();
 
+        const isAllSeriesEmpty: boolean = this.series.every((s: AccumulationSeriesModel) => {
+            const dataSource: object[] = s.dataSource as Object[] || [];
+            return dataSource.length === 0;
+        });
+
+        if (isAllSeriesEmpty && !isNullOrUndefined(this.noDataTemplate)) {
+            this.renderNoDataTemplate(true);
+        }
+
         updateBlazorTemplate(this.element.id + '_DataLabel', 'Template', this.series[0].dataLabel);
 
         this.trigger('loaded', { accumulation: this.isBlazor ? {} : this, chart: this.isBlazor ? {} : this });
@@ -1949,6 +1970,61 @@ export class AccumulationChart extends Component<HTMLElement> implements INotify
         const svgRect: ClientRect = getElement(this.element.id + '_svg').getBoundingClientRect();
         tooltipParent.style.left = Math.max(svgRect.left - rect.left, 0) + 'px';
         tooltipParent.style.top = Math.max(svgRect.top - rect.top, 0) + 'px';
+    }
+
+    private renderNoDataTemplate(allowTemplate: boolean): void {
+        const existingTemplate: Element = this.element.querySelector(`#${this.element.id}_NoDataTemplate_wrapper`);
+        if (existingTemplate) {
+            existingTemplate.remove();
+        }
+
+        if (allowTemplate) {
+            const rawTemplate: string | Function = typeof this.noDataTemplate === 'function' ? this.noDataTemplate() : this.noDataTemplate;
+            const sanitizedTemplate: string | Function = this.enableHtmlSanitizer && typeof rawTemplate === 'string'
+                ? this.sanitize(rawTemplate) : rawTemplate;
+            const wrapper: HTMLElement = createElement('div', {
+                id: this.element.id + '_NoDataTemplate_wrapper'
+            });
+            let borderStrokeWidth: number = 0;
+            const borderElement: SVGRectElement = this.element.querySelector(`#${this.element.id}_border`) as SVGRectElement;
+            if (borderElement) {
+                borderStrokeWidth = parseFloat(borderElement.getAttribute('stroke-width'));
+            }
+            let chartAreaWidth: number = this.availableSize.width - borderStrokeWidth * 2;
+            let chartAreaHeight: number = this.availableSize.height - borderStrokeWidth * 2;
+            let topOffset: number = borderStrokeWidth;
+            let leftOffset: number = borderStrokeWidth;
+            let titleOffset: number = 0;
+            if (this.title) {
+                const titleSize: number = measureText(this.title, this.titleStyle, this.themeStyle.chartTitleFont).height;
+                const subTitleSize: number = this.subTitle
+                    ? measureText(this.subTitle, this.subTitleStyle, this.themeStyle.chartSubTitleFont).height : 0;
+                const spacing: number = this.subTitle ? 5 : 0;
+                titleOffset = titleSize + subTitleSize + spacing;
+                switch (this.titleStyle.position) {
+                case 'Top':
+                    topOffset += titleOffset + 10;
+                    chartAreaHeight -= (titleOffset + 10);
+                    break;
+                case 'Left':
+                    leftOffset += titleOffset + 10;
+                    chartAreaWidth -= (titleOffset + 10);
+                    break;
+                case 'Bottom':
+                    chartAreaHeight -= (titleOffset + 16);
+                    break;
+                case 'Right':
+                    chartAreaWidth -= (titleOffset + 10);
+                    break;
+                }
+            }
+            wrapper.style.cssText = `position: absolute; top: ${topOffset}px; left: ${leftOffset}px; width: ${chartAreaWidth}px;
+                height: ${chartAreaHeight}px; z-index: 1;
+            `;
+            const element: HTMLElement = getElement(this.element.id + '_Secondary_Element') as HTMLElement;
+            element.appendChild(wrapper);
+            createTemplate(wrapper, null, sanitizedTemplate, this, null, null, this.element.id + '_NoData');
+        }
     }
 
     /**

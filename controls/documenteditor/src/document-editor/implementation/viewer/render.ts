@@ -990,7 +990,7 @@ private calculatePathBounds(data: string): Rect {
         for (let i: number = 0; i < table.childWidgets.length; i++) {
             let row: TableRowWidget = table.childWidgets[i] as TableRowWidget;
             if (row.rowFormat.isHeader) {
-                let clonedRow: TableRowWidget = row.clone();
+                let clonedRow: TableRowWidget = row.clone(true);
                 if (!isNullOrUndefined(this.documentHelper.owner.editorModule)) {
                     this.documentHelper.owner.editorModule.constructRevisionFromID(clonedRow.rowFormat);
                 }
@@ -1536,7 +1536,7 @@ private calculatePathBounds(data: string): Rect {
                                 //right
                                 this.renderSingleBorder(color, endX, startY, endX, endY, 1, 'single');
                                 if (lineWidget === contentControl.reference.line && !isNullOrUndefined(contentControl) && (contentControl.contentControlProperties.type === 'ComboBox' || contentControl.contentControlProperties.type === 'DropDownList' || contentControl.contentControlProperties.type === 'Date')) {
-                                    let element = document.getElementById("contenticon");
+                                    let element = this.documentHelper.owner.element.querySelector('#' + "contenticon") as HTMLElement;
                                     if (element) {
                                         element.style.display = 'block';
                                         startX = this.getScaledValue(endX, 1);
@@ -2217,7 +2217,7 @@ private calculatePathBounds(data: string): Rect {
                 }
             }
         }
-        return HelperMethods.containsUnderlinedImage(lineWidget, this.viewer.owner.enableTrackChanges) ? height + 2 * lineHeight : height - 2 * lineHeight;
+        return HelperMethods.containsUnderlinedImage(lineWidget) ? height + 2 * lineHeight : height - 2 * lineHeight;
     }
     private renderListTextElementBox(elementBox: ListTextElementBox, left: number, top: number, underlineY: number): void {
         let topMargin: number = elementBox.margin.top;
@@ -2630,6 +2630,7 @@ private calculatePathBounds(data: string): Rect {
                         markindex += currentText.length + spaceValue;
                     }
                 }
+                elementBox.isChangeDetected = false;
             } else {
                 let retrievedText: string = this.spellChecker.manageSpecialCharacters(checkText, undefined, true);
                 if (checkText.length > 0) {
@@ -3034,7 +3035,8 @@ private calculatePathBounds(data: string): Rect {
         }
         currentRevision = this.getRevisionType(revisionInfo, true);
         let format: WCharacterFormat = elementBox.characterFormat;
-        if (elementBox.textWrappingStyle === 'Inline' && format.underline !== 'None' && !isNullOrUndefined(format.underline) || (!isNullOrUndefined(currentRevision) && (currentRevision.type === 'Insertion' || currentRevision.type === 'MoveTo'))) {
+        if (elementBox.textWrappingStyle === 'Inline' && format.underline !== 'None' && !isNullOrUndefined(format.underline) ||
+            (!isNullOrUndefined(currentRevision) && (currentRevision.type === 'Insertion' || currentRevision.type === 'MoveTo'))) {
             let y: number = this.getUnderlineYPosition(elementBox.line);
             this.renderUnderline(elementBox, left, top, y, color, format.underline, format.baselineAlignment);
         }

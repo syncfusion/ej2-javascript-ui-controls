@@ -268,6 +268,11 @@ function updateIndex(diagram: Diagram, source: Node | Connector): void {
  */
 export function dropContainerChild(target: Node, source: Node, diagram: Diagram): void {
     const container: ContainerModel = diagram.nameTable[target.id].shape;
+    // 967788 : selection issue when drag and drop child from palette to container
+    if (diagram.currentSymbol && target.shape.type === 'Container') {
+        source.parentId = target.id;
+        return;
+    }
     container.children = container.children || [];
     const redoElement: NodeModel = cloneObject(source);
     const sources: DiagramElement = diagram.nameTable[source.id].wrapper;

@@ -2,6 +2,7 @@ import { RibbonGroupBase, IRibbonGroup } from '../ribbon-interfaces';
 import { RibbonGroupModel, RibbonGalleryItemModel, RibbonItemModel } from '@syncfusion/ej2-ribbon';
 import { RIBBON_ID } from '../ribbon-base/ribbon-constants';
 import { StylesHelper } from '../../helper/styles-helper';
+import { SanitizeHtmlHelper, isNullOrUndefined } from '@syncfusion/ej2-base';
 
 // Styles group constants
 export const STYLES_GROUP_ID: string = '_styles_group';
@@ -47,7 +48,12 @@ export class StylesGroup extends RibbonGroupBase implements IRibbonGroup {
                                 itemCount: 3,
                                 select: (args: any) => {
                                     if (!this.documentEditor.isReadOnly && this.documentEditor.editorModule) {
-                                        this.documentEditor.editorModule.applyStyle(args.currentItem.content, true);
+                                        const styleName: string = this.documentEditor.stylesDialogModule.getStyleName(
+                                            SanitizeHtmlHelper.sanitize(args.currentItem.content)
+                                        );
+                                        if (!isNullOrUndefined(this.documentEditor.documentHelper.styles.findByName(styleName))) {
+                                            this.documentEditor.editorModule.applyStyle(styleName, true);
+                                        }
                                     }
                                 },
                                 popupWidth: '150px',
@@ -82,7 +88,7 @@ export class StylesGroup extends RibbonGroupBase implements IRibbonGroup {
         galleryItem.gallerySettings.groups[0].items = StylesHelper.getStyleItems(this.documentEditor, this.localObj);
 
         // Set the selected item based on current selection
-        const currentStyle: string = StylesHelper.getCurrentStyleName(this.documentEditor);
+        const currentStyle: string = StylesHelper.getCurrentStyleName(this.documentEditor, this.localObj);
         galleryItem.gallerySettings.selectedItemIndex = StylesHelper.findStyleIndex(
             currentStyle,
             galleryItem.gallerySettings.groups[0].items

@@ -79,7 +79,7 @@ export class SfdtReader {
      * @private
      */
     public isHtmlPaste: boolean = false;
-    public hasFieldSeparator: boolean = false;
+    private hasFieldSeparator: boolean = false;
     private revisionMap: Dictionary<ParagraphWidget | WCharacterFormat | WRowFormat , Dictionary<string, Revision>>;
     private get isPasting(): boolean {
         return this.viewer && this.viewer.owner.isPastingContent;
@@ -114,6 +114,9 @@ export class SfdtReader {
         } else {
             this.documentHelper.characterFormat.clearFormat();
             this.parseCharacterFormat(this.keywordIndex, jsonObject[characterFormatProperty[this.keywordIndex]], this.documentHelper.characterFormat);
+        }
+        if (!isNullOrUndefined(this.viewer.owner.documentCharacterFormat)) {
+            this.parseCharacterFormat(0, this.viewer.owner.documentCharacterFormat, this.documentHelper.characterFormat);
         }
         if (isNullOrUndefined(jsonObject[paragraphFormatProperty[this.keywordIndex]])) {
             this.parseParagraphFormat(0, this.viewer.owner.paragraphFormat, this.documentHelper.paragraphFormat);

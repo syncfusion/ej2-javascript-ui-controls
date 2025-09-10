@@ -90,7 +90,7 @@ export class HtmlExport {
             blockStyle += this.closeList();
         }
         if (!this.isSkipStyle) {
-            tagAttributes.push('style="' + this.serializeParagraphStyle(paragraph, '', isList) + ';' + 'white-space:pre' + '"' );
+            tagAttributes.push('style="' + this.serializeParagraphStyle(paragraph, '', isList) + ';' + 'white-space:pre' + '"');
         }
         if (isList) {
             blockStyle += this.createAttributesTag('li', tagAttributes);
@@ -157,7 +157,6 @@ export class HtmlExport {
                 });
             } else if (currentLevelNumber < this.listInfoDetails[this.listInfoDetails.length - 1].listLevelNumber) {
                 html += this.closeListLevelTag(currentLevelNumber);
-
                 // Check if we need to open a new list at this level
                 const stackItemAtLevel: ListInfo = this.findStackItemAtLevel(currentLevelNumber);
                 if (!stackItemAtLevel || this.isListPatternChanged(stackItemAtLevel.listLevel, listLevel)) {

@@ -1281,7 +1281,7 @@ export type Action = 'Insert' | 'Delete' | 'BackSpace' | 'Selection' | 'MultiSel
 |'BottomBorder'
 |'HorizontalBorder'
 |'VerticalBorder'|'ColumnBreak'
-| 'DragAndDropContent' | 'LinkToPrevious' | 'GroupAction' | 'DeleteHeaderFooter' | 'EditComment' | 'TableTitle' | 'TableDescription' | 'TabStop' | 'Grouping' | 'ModifyStyle'|'InsertContentControl'|'RemoveContentControl' | 'InsertSectionBreak' | 'UpdateContentControl' | 'AddRevision' | 'RemoveAndAddRevision' | 'RemoveRevision';
+| 'DragAndDropContent' | 'LinkToPrevious' | 'GroupAction' | 'DeleteHeaderFooter' | 'EditComment' | 'TableTitle' | 'TableDescription' | 'TabStop' | 'Grouping' | 'ModifyStyle'|'InsertContentControl'|'RemoveContentControl' | 'InsertSectionBreak' | 'UpdateContentControl' | 'AddRevision' | 'RemoveAndAddRevision' | 'RemoveRevision' | 'IgnoreOnce';
 /**
  * Enum for direction
  */
@@ -1606,7 +1606,6 @@ export type FormattingExceptions = 'Bold' | 'Italic' | 'FontSize' | 'FontFamily'
 
 /**
  * Specifies the Content Control Widget type
- * @private
  */
 export type ContentControlWidgetType = 'Block' | 'Inline' | 'Row' | 'Cell';
 /**

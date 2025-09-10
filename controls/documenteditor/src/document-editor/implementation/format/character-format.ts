@@ -6,6 +6,8 @@ import { WUniqueFormats } from '../../base/unique-formats';
 import { WStyle, WParagraphStyle, WCharacterStyle } from './style';
 import { isNullOrUndefined } from '@syncfusion/ej2-base';
 import { Revision } from '../track-changes/track-changes';
+import { CharacterFormatInfo, CharacterFormatProperties } from '../editor';
+import { DocumentHelper } from '../viewer';
 /* eslint-disable */
 /**
  * @private
@@ -277,14 +279,25 @@ export class WCharacterFormat {
     }
     private getDefaultValue(property: string): Object {
         const propertyType: number = WUniqueFormat.getPropertyType(WCharacterFormat.uniqueFormatType, property);
-        const docCharacterFormat: WCharacterFormat = this.documentCharacterFormat();
-        if (!isNullOrUndefined(docCharacterFormat) && !isNullOrUndefined(docCharacterFormat.uniqueCharacterFormat) && docCharacterFormat.uniqueCharacterFormat.propertiesHash.containsKey(propertyType)) {
-            return docCharacterFormat.uniqueCharacterFormat.propertiesHash.get(propertyType);
+        const characterFormatInfo: CharacterFormatInfo = this.documentCharacterFormat();
+        if (!isNullOrUndefined(characterFormatInfo)) {
+            const docCharacterFormat: WCharacterFormat = characterFormatInfo.documentFormat;
+            if (!isNullOrUndefined(docCharacterFormat) && !isNullOrUndefined(docCharacterFormat.uniqueCharacterFormat) && docCharacterFormat.uniqueCharacterFormat.propertiesHash.containsKey(propertyType)) {
+                return docCharacterFormat.uniqueCharacterFormat.propertiesHash.get(propertyType);
+            } else {
+                const editorFormat: CharacterFormatProperties = characterFormatInfo.editorFormat;
+                if (!isNullOrUndefined(editorFormat) && editorFormat.hasOwnProperty(property)) {
+                    let value: Object = (editorFormat as any)[property];
+                    return value;
+                } else {
+                    return WCharacterFormat.getPropertyDefaultValue(property);
+                }
+            }
         } else {
             return WCharacterFormat.getPropertyDefaultValue(property);
         }
     }
-    private documentCharacterFormat(): WCharacterFormat {
+    private documentCharacterFormat(): CharacterFormatInfo {
         if (isNullOrUndefined(this.ownerBase)) {
             return undefined;
         }
@@ -297,7 +310,8 @@ export class WCharacterFormat {
         if (paragraph) {
             let bodyWidget: BlockContainer = paragraph.bodyWidget;
             if (bodyWidget && bodyWidget.page && bodyWidget.page.documentHelper) {
-                return bodyWidget.page.documentHelper.characterFormat;
+                const documentHelper: DocumentHelper = bodyWidget.page.documentHelper;
+                return { editorFormat: documentHelper.owner.characterFormat, documentFormat: documentHelper.characterFormat };
             }
         }
         return undefined;
@@ -847,9 +861,9 @@ export class WCharacterFormat {
             hasValue = (this.baseCharStyle as WCharacterStyle).characterFormat.hasValue(property);
         }
         // 3. If VALUE is NULL get DEFAULT VALUE
-        let defFormat: WCharacterFormat = this.documentCharacterFormat();
-        if (!hasValue && !isNullOrUndefined(defFormat)) {
-            hasValue = defFormat.hasValue(property);
+        const defFormat: CharacterFormatInfo = this.documentCharacterFormat();
+        if (!hasValue && !isNullOrUndefined(defFormat) && !isNullOrUndefined(defFormat.documentFormat)) {
+            hasValue = defFormat.documentFormat.hasValue(property);
         }
         return hasValue;
     }

@@ -1020,6 +1020,7 @@ export class CommentView {
         let plainText = clipboardData.getData('text/plain');
         if (plainText) {
             let htmlString = this.convertToHtml(plainText);
+            htmlString = SanitizeHtmlHelper.sanitize(htmlString);
             element.innerHTML = element.innerHTML + htmlString;
         }
         this.enableDisableReplyPostButton();

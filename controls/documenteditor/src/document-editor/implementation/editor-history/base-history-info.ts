@@ -11,7 +11,8 @@ import {
     FieldElementBox, TableWidget, TableRowWidget, BookmarkElementBox, HeaderFooterWidget,
     EditRangeStartElementBox, CommentElementBox, CheckBoxFormField, TextFrame, TextFormField,
     TextElementBox, HeaderFooters, CommentEditInfo, FormField, FootnoteElementBox, ImageElementBox,
-    Widget, ListTextElementBox, ContentControl
+    Widget, ListTextElementBox, ContentControl,
+    ErrorTextElementBox
 } from '../viewer/page';
 import { Dictionary } from '../../base/dictionary';
 import { DocumentEditor } from '../../document-editor';
@@ -22,7 +23,7 @@ import { isNullOrUndefined } from '@syncfusion/ej2-base';
 import { ElementBox, CommentCharacterElementBox } from '../viewer/page';
 import { TableResizer } from '../editor/table-resizer';
 import { WTableFormat, WRowFormat, WCellFormat, WParagraphStyle, WCharacterStyle, WShading, WBorders} from '../format/index';
-import { ParagraphInfo, HelperMethods, AbsolutePositionInfo, CellInfo, PositionInfo, ElementInfo } from '../editor/editor-helper';
+import { ParagraphInfo, HelperMethods, AbsolutePositionInfo, CellInfo, PositionInfo, ElementInfo, ContextElementInfo } from '../editor/editor-helper';
 import { BookmarkInfo } from './history-helper';
 import { DocumentHelper, TextHelper } from '../viewer';
 import { CONTROL_CHARACTERS, HeaderFooterType, ListLevelPattern, ProtectionType } from '../../base/types';
@@ -586,6 +587,38 @@ export class BaseHistoryInfo {
         }
         this.owner.editorModule.fireContentChange();
     }
+    private revertIgnoreOnce(): void {
+        if (this.owner.spellChecker) {
+            const startPosition: TextPosition = this.owner.selection.getTextPosBasedOnLogicalIndex(this.selectionStart);
+            this.documentHelper.selection.selectPosition(startPosition, startPosition);
+            const currentContextInfo: ContextElementInfo = this.owner.spellChecker.findCurretText();
+            if (currentContextInfo && currentContextInfo.element instanceof ErrorTextElementBox) {
+                this.owner.spellChecker.handleIgnoreOnceInternal(currentContextInfo.element, this.editorHistory.isUndoing);
+            } else {
+                const startInlineObj: ElementInfo =
+                (startPosition.currentWidget as LineWidget).getInline(startPosition.offset, 0, false, true);
+                if (startInlineObj && startInlineObj.element instanceof TextElementBox) {
+                    const exactText: string = this.owner.spellChecker.manageSpecialCharacters(startInlineObj.element.text, undefined, true);
+                    const textIndex: number = startInlineObj.element.ignoreOnceItems.indexOf(exactText);
+                    if (this.editorHistory.isUndoing) {
+                        if (textIndex !== -1) {
+                            startInlineObj.element.ignoreOnceItems.splice(textIndex, 1);
+                        }
+                    } else {
+                        if (textIndex === -1) {
+                            startInlineObj.element.ignoreOnceItems.push(exactText);
+                        }
+                    }
+                }
+            }
+            this.documentHelper.owner.editorModule.reLayout(this.documentHelper.selection);
+        }
+        if (this.editorHistory.isUndoing) {
+            this.editorHistory.recordChanges(this);
+        } else {
+            this.editorHistory.undoStack.push(this);
+        }
+    }
     /* eslint-disable  */
     public revert(): void {
         if (this.action === 'FormTextFormat') {
@@ -614,6 +647,10 @@ export class BaseHistoryInfo {
         }
         if (this.action === 'UpdateContentControl') {
             this.revertContentControlProperties();
+            return;
+        }
+        if (this.action === 'IgnoreOnce') {
+            this.revertIgnoreOnce();
             return;
         }
         if (this.editorHistory && this.editorHistory.currentHistoryInfo && (this.editorHistory.currentHistoryInfo.action === 'Accept All' || this.editorHistory.currentHistoryInfo.action === 'Reject All')) {

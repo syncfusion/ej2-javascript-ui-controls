@@ -77,7 +77,7 @@ export class RibbonContextualTabManager {
     public updateContextualTabs(ribbon: EJ2Ribbon): void {
         if (!this.container.documentEditor || !this.container.documentEditor.selection ||
             (!isNullOrUndefined(this.container.documentEditor.selection) &&
-            this.container.documentEditor.selection.contextType === this.ribbonDocumentEditor.previousContext)) {
+            this.container.documentEditor.selection.contextType === 'Text' && this.ribbonDocumentEditor.previousContext === 'Text')) {
             return;
         }
 

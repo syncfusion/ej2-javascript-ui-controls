@@ -285,7 +285,8 @@ export class DiagramEventHandler {
     }
     private isForeignObject(target: HTMLElement, isTextBox?: boolean): HTMLElement {
         let foreignobject: HTMLElement = target;
-        if (foreignobject) {
+        // 976504 - Annotation Template Drag is improper in diagram while template is image source
+        if (foreignobject && foreignobject.tagName.toLowerCase() !== 'img') {
             while (foreignobject.parentNode !== null) {
                 if (typeof foreignobject.className === 'string' &&
                     ((!isTextBox && foreignobject.className.indexOf('foreign-object') !== -1) ||
@@ -637,6 +638,7 @@ export class DiagramEventHandler {
     }
 
     private createPortAutomaticallyAndActivateTool(isSourceEnd: boolean): void {
+        const actualTarget: (NodeModel | ConnectorModel)[] = this.findObjectsUnderMouse(this.currentPosition);
         if (this.hoverElement) {
             if (this.hoverElement instanceof Node) {
                 const node: NodeModel = this.hoverElement;
@@ -673,6 +675,8 @@ export class DiagramEventHandler {
                             drawingConnector.targetID = node.id;
                             drawingConnector.targetPortID = port.id;
                         }
+                    } else if (this.eventArgs.source instanceof Connector && actualTarget[0] instanceof Connector) {
+                        this.addAutomaticPortCreationForConnector(actualTarget, this.eventArgs);
                     }
                 }
             } else if (this.hoverElement instanceof Connector) {
@@ -708,6 +712,8 @@ export class DiagramEventHandler {
                             drawingConnector.targetID = connector.id;
                             drawingConnector.targetPortID = port.id;
                         }
+                    } else if (this.eventArgs.source instanceof Connector && actualTarget[0] instanceof Connector) {
+                        this.addAutomaticPortCreationForConnector(actualTarget, this.eventArgs);
                     }
                 }
             }
@@ -718,6 +724,21 @@ export class DiagramEventHandler {
                 }
             }
         }
+    }
+
+    private addAutomaticPortCreationForConnector(actualTarget: (NodeModel | ConnectorModel)[], eventArgs: object): void {
+        const connector: Connector = actualTarget[0] as Connector;
+        const offset: number = this.findConnectorOffset(connector.intermediatePoints);
+        const port: PathPortModel = {
+            id: 'port' + randomId(),
+            offset: offset,
+            visibility: PortVisibility.Visible,
+            constraints: PortConstraints.Default | PortConstraints.Draw
+        };
+        this.diagram.addPorts(connector, [port]);
+        const drawingConnector: Connector = (eventArgs as { source: Connector }).source;
+        drawingConnector.targetID = connector.id;
+        drawingConnector.targetPortID = port.id;
     }
 
     private findConnectorOffset(points: PointModel[]): number {
@@ -1098,6 +1119,7 @@ export class DiagramEventHandler {
         //Bug 914365: Node is not resizable using touch interaction
         this.touchArgs = undefined;
         this.diagram.diagramRenderer.touchMove = undefined;
+        this.commandHandler.annotationRestrictDeltaValue = { x: 0, y: 0 };
         //EJ2-849817-Dropping nodes in swimlane does not consider as child in angular
         if (this.eventArgs && this.eventArgs.target && this.eventArgs.target !== this.hoverNode
             && this.eventArgs.target !== this.lastObjectUnderMouse) {
@@ -2146,19 +2168,19 @@ export class DiagramEventHandler {
                     && (this.hoverElement as PointPort).constraints & PortConstraints.ToolTip)
                 || ((this.hoverElement instanceof ShapeAnnotation || this.hoverElement instanceof PathAnnotation)
                     && (this.hoverElement as ShapeAnnotation | PathAnnotation).constraints & AnnotationConstraints.Tooltip);
-            // 971487 - fix for Displaying same tooltip content for different group nodes
+            // 971487 - fix for Displaying same tooltip content for different group nodes.
             let content: string | HTMLElement = this.getContent();
             let children: NodeModel | ConnectorModel;
             if (this.hoverElement && (this.hoverElement as NodeModel).children && (this.hoverElement as NodeModel).children.length > 0) {
                 // EJ2-56981 - Below method is used to check if the mouse pointer position and group children node gets intersect or not
                 children = this.findIntersectChild(this.hoverElement as NodeModel);
-                // 971487 - fix for Displaying same tooltip content for different group nodes
+                // 971487 - fix for Displaying same tooltip content for different group nodes.
                 if (content === '') {
                     content = this.hoverElement.tooltip.content;
                 }
             }
             if (this.hoverElement.tooltip.openOn === 'Auto' && content !== '') {
-                // 971487 - fix for Displaying same tooltip content for different group nodes
+                // 971487 - fix for Displaying same tooltip content for different group nodes.
                 updateTooltip(this.diagram, isPrivateTooltip ? this.hoverElement : undefined);
             }
             // EJ2-66418 - set tooltip relativeMode as mouse
@@ -3276,7 +3298,7 @@ class ObjectFinder {
         let inPort: PointPortModel;
         let outPort: PointPortModel;
         let actualTarget: NodeModel | ConnectorModel = null;
-        if (eventArg === null) {
+        if(eventArg === null) {
             eventArg = {};
         }
         if (objects.length !== 0) {

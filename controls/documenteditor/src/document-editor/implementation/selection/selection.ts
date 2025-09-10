@@ -4167,7 +4167,7 @@ export class Selection {
             let previous: ParagraphWidget = paraElement.previousSplitWidget as ParagraphWidget;
             while (previous instanceof ParagraphWidget) {
                 paraElement = previous;
-                paraLength += this.documentHelper.selection.getParagraphLength(paraElement);
+                paraLength += this.getParagraphLength(paraElement);
                 previous = paraElement.previousSplitWidget as ParagraphWidget;
             }
         }
@@ -11552,7 +11552,6 @@ export class Selection {
      * @param columnFirst Specify start index of column to find cells.
      * @param columnLast Specify end index of column to find cells.
      * @param bookmark Specify the bookmark element.
-     * @private
      */
     public getCellsToSelect(table: TableWidget, columnFirst: number, columnLast: number, bookmark: BookmarkElementBox): TableCellWidget[] {
         let rows: TableRowWidget[] = table.childWidgets as TableRowWidget[];
@@ -11635,6 +11634,9 @@ export class Selection {
                     this.documentHelper.selection.selectRange(startPosition, endPosition, true);
                 }
             }
+        }
+        else {
+            this.moveToDocumentStart();
         }
     }
     /**

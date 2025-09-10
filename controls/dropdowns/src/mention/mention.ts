@@ -1729,6 +1729,9 @@ export class Mention extends DropDownBase {
             if (Browser.isAndroid) {
                 return '<span contenteditable="true" class="e-mention-chip">' + showChar + value + '</span>'.concat(typeof this.suffixText === 'string' ? this.suffixText : '&#8203;');
             }
+            else if (Browser.info.name === 'mozilla') {
+                return '<span>&#65279;<span contenteditable="false" class="e-mention-chip">' + showChar + value + '</span>&#65279;</span>'.concat(typeof this.suffixText === 'string' ? this.suffixText : '&#8203;');
+            }
             else {
                 return '<span contenteditable="false" class="e-mention-chip">' + showChar + value + '</span>'.concat(typeof this.suffixText === 'string' ? this.suffixText : '&#8203;');
             }

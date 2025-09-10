@@ -1294,7 +1294,7 @@ export class Editor {
                 replyComment.commentId = Math.random().toString(36).substring(2, 15) + Math.random().toString(36).substring(2, 15);
                 replyComment.isReply = true;
             }
-            const eventArgs: CommentActionEventArgs = { author: replyComment.author, cancel: false, type: 'Post', text: text ? text : '', mentions: replyComment.mentions };
+           const eventArgs: CommentActionEventArgs = { author: replyComment.author, cancel: false, type: 'Post', text: text ? text : '', mentions: replyComment.mentions };
             this.owner.trigger(beforeCommentActionEvent, eventArgs);
             if (eventArgs.cancel && eventArgs.type === 'Post') {
                 return;
@@ -4741,7 +4741,7 @@ export class Editor {
     /**
     * @private
     */
-    public getLastParaForBodywidgetCollection(widget: ParagraphWidget) {
+    public getLastParaForBodywidgetCollection(widget: ParagraphWidget): any {
         const bodywidget = widget.containerWidget;
         if (bodywidget.containerWidget instanceof FootNoteWidget || (bodywidget instanceof TableCellWidget)) {
             const splitWidgets = bodywidget.getSplitWidgets();
@@ -4757,6 +4757,10 @@ export class Editor {
         const lastPage = this.documentHelper.pages[this.documentHelper.pages.length - 1];
         const lastBodyWidget = lastPage.bodyWidgets[lastPage.bodyWidgets.length - 1];
         const lastPara = lastBodyWidget.childWidgets[lastBodyWidget.childWidgets.length - 1];
+        if (isNullOrUndefined(lastPara)) {
+            this.documentHelper.removeEmptyPages();
+            return this.getLastParaForBodywidgetCollection(widget);
+        }
         return lastPara;
     }
 
@@ -6220,8 +6224,9 @@ export class Editor {
             }
         }
         this.selection.updateContentControlHighlightSelection();
-        let element = document.getElementById("contenticon");
-        let picElement = document.getElementById(this.owner.element.id + 'PICTURE_CONTENT_CONTROL');
+        const documentEditor = this.documentHelper.owner;
+        let element = documentEditor.element.querySelector('#' + "contenticon") as HTMLElement;
+        let picElement = documentEditor.element.querySelector('#' + this.owner.element.id + 'PICTURE_CONTENT_CONTROL') as HTMLElement;
         if (element) {
             element.style.display = 'none';
         }
@@ -7895,11 +7900,16 @@ export class Editor {
                     if (this.previousParaFormat.listFormat && this.previousParaFormat.listFormat.list && this.previousParaFormat.listFormat.listId !== -1) {
                         widget.paragraphFormat.listFormat.copyFormat(this.previousParaFormat.listFormat);
                         widget.paragraphFormat.leftIndent = this.previousParaFormat.leftIndent;
+                        widget.paragraphFormat.firstLineIndent = this.previousParaFormat.firstLineIndent;
+                        if (this.previousParaFormat.baseStyle instanceof WParagraphStyle) {
+                            widget.paragraphFormat.baseStyle.name = this.previousParaFormat.baseStyle.name;
+                        }
                     } else if (this.previousParaFormat.baseStyle && this.previousParaFormat.baseStyle instanceof WParagraphStyle && this.previousParaFormat.baseStyle.paragraphFormat.listFormat
                         && this.previousParaFormat.baseStyle.paragraphFormat.listFormat.list && this.previousParaFormat.baseStyle.paragraphFormat.listFormat.listId !== -1) {
                         let paraFormat: WParagraphFormat = this.previousParaFormat.baseStyle.paragraphFormat;
                         widget.paragraphFormat.listFormat.copyFormat(paraFormat.listFormat);
                         widget.paragraphFormat.leftIndent = paraFormat.leftIndent;
+                        widget.paragraphFormat.firstLineIndent = paraFormat.firstLineIndent;
                     }
                 }
                 if (j === widgets.length - 1 && widget instanceof ParagraphWidget
@@ -12414,14 +12424,14 @@ export class Editor {
             words = inputString.split(' ').map(word => word.charAt(0).toUpperCase() + word.slice(1)).join(' ');
             return words;
         }
-        const words: string[] = inputString.split(/[^\w]+/g);
+        const words: string[] = inputString.split(/[^\w\u00C0-\u024F]+/g);
         const capitalizedWords: string[] = words.map((word, index) => {
             if (index === 0) {
                 return makeFirstLetterCapital ? word.charAt(0).toUpperCase() + word.slice(1).toLowerCase() : word.toLowerCase();
             }
             return word.charAt(0).toUpperCase() + word.slice(1).toLowerCase();
         });
-        const specialChars: string[] = inputString.split(/\w+/).filter(Boolean);
+        const specialChars: string[] = inputString.split(/[\w\u00C0-\u024F]+/g).filter(Boolean);
         const resultArray: string[] = [];
         for (let i = 0; i < Math.max(capitalizedWords.length, specialChars.length); i++) {
             if (capitalizedWords[i]) {
@@ -18136,6 +18146,9 @@ export class Editor {
             start = selection.end;
         }
         let currentParagraph: ParagraphWidget = start.paragraph;
+        if (!isNullOrUndefined(list) && list.listId === -1 && start.paragraph.paragraphFormat.listFormat.listId === -1) {
+            list = undefined;
+        }
         if (isNullOrUndefined(list)) {
             while (!isNullOrUndefined(currentParagraph.previousWidget) && currentParagraph.previousWidget instanceof ParagraphWidget
                 && currentParagraph.previousWidget.isEmpty() && currentParagraph.previousWidget.paragraphFormat.listFormat.listId === -1) {
@@ -19804,6 +19817,31 @@ export class Editor {
             count += inline.length;
         }
     }
+    /**
+     *
+     * @private
+     * @returns {void}
+     */
+    public triggerChangeDetected(inline: ElementBox): void {
+        inline.isChangeDetected = true;
+        if (this.owner.isSpellCheck) {
+            // here we are removing errorCollection for next & previous elements for recalculating spellcheck error
+            const nextElement: ElementBox = inline.nextElement;
+            const previousElement: ElementBox = inline.previousElement;
+            this.owner.spellCheckerModule.removeErrorsFromCollection({ 'element': inline, 'text': (inline as TextElementBox).text });
+            if (!isNullOrUndefined(nextElement) && nextElement instanceof TextElementBox) {
+                nextElement.isChangeDetected = true;
+                this.owner.spellCheckerModule.removeErrorsFromCollection({ 'element': nextElement, 'text': nextElement.text });
+            }
+            if (!isNullOrUndefined(previousElement) && previousElement instanceof TextElementBox) {
+                previousElement.isChangeDetected = true;
+                this.owner.spellCheckerModule.removeErrorsFromCollection({ 'element': previousElement, 'text': previousElement.text });
+            }
+            if (!inline.canTrigger) {
+                this.documentHelper.triggerSpellCheck = false;
+            }
+        }
+    }
 
     private removeCharacter(inline: ElementBox, offset: number, count: number, lineWidget: LineWidget, lineIndex: number, i: number, isRearrange?: boolean): boolean {
         let isBreak: boolean = false;
@@ -19828,25 +19866,7 @@ export class Editor {
         }
         if (offset < count + inline.length) {
             let indexInInline: number = offset - count;
-            inline.isChangeDetected = true;
-            if (this.owner.isSpellCheck) {
-                // here we are removing errorCollection for next & previous elements for recalculating spellcheck error
-                const nextElement: ElementBox = inline.nextElement;
-                const previousElement: ElementBox = inline.previousElement;
-                this.owner.spellCheckerModule.removeErrorsFromCollection({ 'element': inline, 'text': (inline as TextElementBox).text });
-                if (!isNullOrUndefined(nextElement) && nextElement instanceof TextElementBox) {
-                    nextElement.isChangeDetected = true;
-                    this.owner.spellCheckerModule.removeErrorsFromCollection({ 'element': nextElement, 'text': nextElement.text });
-                }
-                if (!isNullOrUndefined(previousElement) && previousElement instanceof TextElementBox) {
-                    previousElement.isChangeDetected = true;
-                    this.owner.spellCheckerModule.removeErrorsFromCollection({ 'element': previousElement, 'text': previousElement.text });
-                }
-                if (!inline.canTrigger) {
-                    this.documentHelper.triggerSpellCheck = false;
-                }
-            }
-
+            this.triggerChangeDetected(inline);
             if (offset === count && inline.length === 1) {
                 if (this.owner.enableTrackChanges && !this.skipTracking()) {
                     this.addRemovedNodes(inline.clone());
@@ -21291,6 +21311,8 @@ export class Editor {
         format.pageWidth = this.documentHelper.selection.sectionFormat.pageWidth;
         format.footerDistance = this.documentHelper.selection.sectionFormat.footerDistance;
         format.headerDistance = this.documentHelper.selection.sectionFormat.headerDistance;
+        format.differentOddAndEvenPages = this.documentHelper.selection.sectionFormat.differentOddAndEvenPages;
+        format.differentFirstPage = this.documentHelper.selection.sectionFormat.differentFirstPage;
         return format;
     }
     /**
@@ -25754,9 +25776,6 @@ export interface TabPositionInfo {
     fPosition: number;
     position: number;
 }
-/**
- * @private
- */
 
 export interface ShapeProperties{
     /**

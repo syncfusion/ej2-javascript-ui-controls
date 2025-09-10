@@ -224,6 +224,12 @@
     }
 
     .e-format-color-picker {
+      @if ($skin-name == 'Material3') {
+        border: 1px solid $info-outline-border;
+        border-radius: 20px;
+        min-width: 64px;
+      }
+
       .e-split-btn-wrapper .e-split-btn {
         pointer-events: none;
 

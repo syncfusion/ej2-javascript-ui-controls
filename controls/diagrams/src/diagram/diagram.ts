@@ -44,8 +44,8 @@ import { StackEntryObject, IExpandStateChangeEventArgs } from './objects/interfa
 import { ZoomOptions, IPrintOptions, IExportOptions, IFitOptions, ActiveLabel, IEditSegmentOptions, HierarchyData, NodeData, SpaceLevel, IGraph, ConnectorStyle, MermaidStyle } from './objects/interface/interfaces';
 import { View, IDataSource, IFields } from './objects/interface/interfaces';
 import { GroupableView } from './core/containers/container';
-import { Node, BpmnShape, BpmnAnnotation, SwimLane, Path, DiagramShape, UmlActivityShape, FlowShape, BasicShape, UmlClassMethod, MethodArguments, UmlEnumerationMember, UmlClassAttribute, Lane, Shape, Container } from './objects/node';
-import { cloneBlazorObject, cloneSelectedObjects, findObjectIndex, getConnectorArrowType, selectionHasConnector, isLabelFlipped, rotateAfterFlip } from './utility/diagram-util';
+import { Node, BpmnShape, BpmnAnnotation, SwimLane, Path, DiagramShape, UmlActivityShape, FlowShape, BasicShape, UmlClassMethod, MethodArguments, UmlEnumerationMember, UmlClassAttribute, Lane, Shape, Container, Html, Native } from './objects/node';
+import { cloneBlazorObject, cloneSelectedObjects, findObjectIndex, getConnectorArrowType, selectionHasConnector, isLabelFlipped, rotateAfterFlip, getSwimLaneChildren, removeUnnecessaryNodes } from './utility/diagram-util';
 import { checkBrowserInfo } from './utility/diagram-util';
 import { updateDefaultValues, getCollectionChangeEventArguements, getPoint } from './utility/diagram-util';
 import { flipConnector, updatePortEdges, alignElement, setConnectorDefaults, getPreviewSize } from './utility/diagram-util';
@@ -169,7 +169,7 @@ import { LabelProperties } from './load-utility/labelProperties';
 import { getClassAttributesChild, getClassMembersChild, getClassNodesChild } from './utility/uml-util';
 import { getIntersectionPoints, getPortDirection } from './utility/connector';
 import { FlowchartLayout } from './layout/flowChart/flow-chart-layout';
-import { dragContainerChild, updateContainerDocks, setSizeForContainer, removeChildFromContainer, updateChildWrapper, addContainerChild, removeChild } from './utility/container-util';
+import { dragContainerChild, updateContainerDocks, setSizeForContainer, removeChildFromContainer, updateChildWrapper, addContainerChild, removeChild, dropContainerChild } from './utility/container-util';
 import { Overview } from '../overview';
 import { identityMatrix, rotateMatrix, transformPointByMatrix, scaleMatrix, Matrix } from './primitives/matrix';
 import { UmlSequenceDiagram } from './diagram/sequence-diagram';
@@ -1737,6 +1737,12 @@ export class Diagram extends Component<HTMLElement> implements INotifyPropertyCh
     private isUndo: boolean = false;
     /**@private */
     public groupBounds: Rect;
+    // Groups that either have connectors with flip applied or a non-zero rotation
+    /**@private */
+    public connectorOrRotatedGroups: NodeModel[] = [];
+    // To indicate the connector inside group is flipping.
+    /**@private */
+    public connectorFlipInProgress: boolean = false;
     // Indicates whether the current action is part of an undo or redo operation
     /** @private */
     public checkUndoRedo: boolean = false;
@@ -1744,8 +1750,22 @@ export class Diagram extends Component<HTMLElement> implements INotifyPropertyCh
     public activeLayerObjectsSet: Set<string> = new Set();
     /** @private */
     public restrictedDeltaValue: PointModel;
+
     /**@private */
     public isScrollOffsetInverted: boolean = true;
+    /**@private */
+    public initNodeTemplate: boolean = false;
+    /**
+     * Stores diagram nodes and connectors temporarily before they are initialized and appended to the nameTable.
+     * @private
+     */
+    public tempTable: {} = {};
+    /**
+     * Indicates whether the diagram is being refreshed during deserialization.
+     * @private
+     */
+    public deserializing: boolean = false;
+
     /**
      * Constructor for creating the widget
      */
@@ -2374,6 +2394,16 @@ export class Diagram extends Component<HTMLElement> implements INotifyPropertyCh
         if (!this.isScrollOffsetInverted) {
             this.isScrollOffsetInverted = true;
         }
+        if (!this.connectorOrRotatedGroups) {
+            this.connectorOrRotatedGroups = [];
+        }
+        //Bug 959667: Swimlane interaction is not proper after refreshing the diagram at runtime.
+        if (this.refreshing && !this.deserializing) {
+            if (this.nodes.some((node: NodeModel) => node.shape.type === 'SwimLane')) {
+                this.getSwimlaneChildTable();
+                this.removeSwimlaneChildOnRefresh();
+            }
+        }
         this.nameTable = {};
         this.pathTable = {};
         this.groupTable = {};
@@ -2387,6 +2417,42 @@ export class Diagram extends Component<HTMLElement> implements INotifyPropertyCh
         this.scroller = new DiagramScroller(this);
     }
 
+    private removeSwimlaneChildOnRefresh(): void {
+        const removeNodes = getSwimLaneChildren(this.nodes);
+        removeUnnecessaryNodes(removeNodes, this);
+        //Bug 959667: To update the margin for swimlane child nodes.
+        this.nodes.forEach((node: NodeModel) => {
+            const swimLaneShape: SwimLane = node.shape as SwimLane;
+            if (swimLaneShape && swimLaneShape.lanes && swimLaneShape.lanes.length > 0) {
+                const nodeX: number = node.offsetX - node.wrapper.actualSize.width / 2;
+                let nodeY: number = node.offsetY - node.wrapper.actualSize.height / 2;
+                // Determine orientation
+                const isVertical: boolean = swimLaneShape.orientation === 'Vertical';
+                if (isVertical) {
+                    if (swimLaneShape.orientation === 'Vertical') {
+                        nodeY += (swimLaneShape.header && swimLaneShape.hasHeader) ? swimLaneShape.header.height : 0;
+                    }
+                }
+                // Iterate over lanes using forEach
+                swimLaneShape.lanes.forEach((lane: Lane) => {
+                    if (lane.children && lane.children.length > 0) {
+                        // Iterate over children using forEach
+                        lane.children.forEach((childNode: NodeModel) => {
+                            const childX: number = childNode.wrapper.offsetX - childNode.width / 2;
+                            const childY: number = childNode.wrapper.offsetY - childNode.height / 2;
+
+                            if (isVertical) {
+                                childNode.margin.top = childY - nodeY;
+                            } else {
+                                childNode.margin.left = childX - nodeX;
+                            }
+                        });
+                    }
+                });
+            }
+        });
+    }
+
     private initializeServices(): void {
         this.serviceLocator.register('localization', this.localeObj = new L10n(this.getModuleName(), this.defaultLocale, this.locale));
     }
@@ -2398,6 +2464,28 @@ export class Diagram extends Component<HTMLElement> implements INotifyPropertyCh
 
     private setCulture(): void {
         this.localeObj = new L10n(this.getModuleName(), this.defaultLocale, this.locale);
+    }
+    private getSwimlaneChildTable() {
+        let children: string[] = []; let node: Node; let grid: GridPanel; let childTable: DiagramElement[];
+        let child: Canvas; const gridChild: string = 'childTable';
+        for (let i: number = 0; i < this.nodes.length; i++) {
+            node = this.nodes[parseInt(i.toString(), 10)] as Node;
+            if (node.shape.type === 'SwimLane') {
+                grid = node.wrapper.children[0] as GridPanel;
+                childTable = grid[`${gridChild}`];
+                for (const key of Object.keys(childTable)) {
+                    child = childTable[`${key}`];
+                    children = getChild(child as Canvas, children);
+                }
+                for (let i: number = 0; i < children.length; i++) {
+                    if (this.nameTable[children[parseInt(i.toString(), 10)]]) {
+                        this.swimlaneChildTable[children[parseInt(i.toString(), 10)]]
+                            = this.nameTable[children[parseInt(i.toString(), 10)]].zIndex;
+                    }
+                }
+                this.swimlaneZIndexTable[node.id] = node.zIndex;
+            }
+        }
     }
     /* tslint:disable */
     /**
@@ -2933,6 +3021,7 @@ export class Diagram extends Component<HTMLElement> implements INotifyPropertyCh
 
     private cutCommand(): void {
         this.cut();
+        this.itemType = 'PublicMethod';
     }
 
 
@@ -3653,10 +3742,10 @@ export class Diagram extends Component<HTMLElement> implements INotifyPropertyCh
                 obj.wrapper.rotateAngle += angle;
                 const bounds: Rect = getBounds(obj.wrapper);
                 checkBoundaryConstraints = this.commandHandler.checkBoundaryConstraints(undefined, undefined, bounds);
-                if (!checkBoundaryConstraints) {
+                if ((!checkBoundaryConstraints) || (!this.canRotateOnNegativeAxis(obj.wrapper))) {
                     obj.rotateAngle -= angle;
                     obj.wrapper.rotateAngle -= angle;
-                    return checkBoundaryConstraints;
+                    return false;
                 }
 
                 let objects: (NodeModel | ConnectorModel)[] = [];
@@ -3684,6 +3773,17 @@ export class Diagram extends Component<HTMLElement> implements INotifyPropertyCh
 
         }
         return checkBoundaryConstraints;
+    }
+    /**
+     * Checks if the object can be rotated on the negative axis.
+     *
+     * @param {GroupableView | TextElement} objWrapper - The object to check (GroupableView or TextElement).
+     * @returns {boolean} True if rotation is allowed, otherwise false.
+     * @private
+     */
+    public canRotateOnNegativeAxis(objWrapper: GroupableView | TextElement): boolean {
+        return !(this.constraints & DiagramConstraints.RestrictNegativeAxisDragDrop) ||
+            (getBounds(objWrapper).left >= 0 && getBounds(objWrapper).top >= 0);
     }
     /**
      * Moves the source point of the given connector by the specified horizontal and vertical distances.
@@ -4133,12 +4233,39 @@ export class Diagram extends Component<HTMLElement> implements INotifyPropertyCh
      */
     public distribute(option: DistributeOptions, objects?: (NodeModel | ConnectorModel)[]): void {
         this.getBlazorDiagramObjects(objects);
+        // Array of connectors that are connected to nodes
+        const connectedArray: Connector[] = [];
         if (!objects) {
             objects = [];
-            objects = objects.concat(this.selectedItems.nodes, this.selectedItems.connectors);
+            // 977606 - Distribution not working properly when connector is selected
+            objects = objects.concat(this.selectedItems.nodes);
+            this.selectedItems.connectors.forEach((connector: Connector) => {
+                // Check if connector has sourceWrapper
+                if (connector.sourceWrapper) {
+                    if (connectedArray.indexOf(connector) === -1) {
+                        connectedArray.push(connector);
+                    }
+                }
+                // Check if connector has targetWrapper
+                else if (connector.targetWrapper) {
+                    if (connectedArray.indexOf(connector) === -1) {
+                        connectedArray.push(connector);
+                    }
+                }
+                // Add unconnected connector to objects array
+                else {
+                    if (objects.indexOf(connector) === -1) {
+                        objects.push(connector);
+                    }
+                }
+            });
         }
         this.diagramActions = this.diagramActions | DiagramAction.PublicMethod;
         this.commandHandler.distribute(objects, option);
+        // 977606 - Distribution not working properly when connector is selected
+        for (const connector of connectedArray) {
+            this.updateConnectorProperties(connector);
+        }
         this.commandHandler.getBlazorOldValues();
         this.canEnableBlazorObject = false;
         this.callBlazorModel = true;
@@ -5177,6 +5304,7 @@ export class Diagram extends Component<HTMLElement> implements INotifyPropertyCh
         // 968828 : update diagramAction for delete an element by delete key
         this.itemType = 'KeyboardDelete';
         this.remove();
+        this.itemType = 'PublicMethod';
     }
     /**
      * Removes the specified object from the diagram.
@@ -6024,7 +6152,8 @@ export class Diagram extends Component<HTMLElement> implements INotifyPropertyCh
                     this.updateDiagramObject(connector, true);
                 }
                 if (canEnableRouting || (this.layout as Layout).connectionPointOrigin === 'DifferentPoint' && this.lineDistributionModule && canDoOverlap) {
-                    if ((this.diagramActions & DiagramAction.Render) && this.layout.enableRouting) {
+                    //Bug 977447: Connectors Overlapping Issue in Complex Hierarchical Tree Layout.
+                    if (this.layout.enableRouting) {
                         this.refreshRoutingConnectors();
                         isRoutingConnectorsRefreshed = true;
                     }
@@ -6059,6 +6188,7 @@ export class Diagram extends Component<HTMLElement> implements INotifyPropertyCh
     //Bug 877799: Optimize the routing segment distance while using enableRouting in layout.
     //Stored the routingConnectors in resetRoutingSegments method and then Refresh the routing connectors after layout completion.
     private refreshRoutingConnectors() {
+        const prevProp: boolean = this.isProtectedOnChange;
         this.isProtectedOnChange = true;
         if ((this as any).routingConnectors) {
             for (let i = 0; i < (this as any).routingConnectors.length; i++) {
@@ -6068,18 +6198,13 @@ export class Diagram extends Component<HTMLElement> implements INotifyPropertyCh
                 const lineRouting = new LineRouting();
                 if (sourceNode.visible && targetNode.visible) {
                     lineRouting.renderVirtualRegion(this, true);
-                    lineRouting.refreshConnectorSegments(this, connector, false, true);
-                    const points = this.getPoints(connector);
-                    updateConnector(connector, points);
-                    connector.wrapper.measure(new Size(undefined, undefined));
-                    connector.wrapper.arrange(connector.wrapper.desiredSize);
-                    this.updateDiagramObject(connector, true);
+                    lineRouting.refreshConnectorSegments(this, connector, true, true);
                     (this as any).routingConnectors.splice(i, 1);
                     i--;
                 }
             }
         }
-        this.isProtectedOnChange = false;
+        this.isProtectedOnChange = prevProp;
     }
     //To update new connector points in flowchart layout
     private refreshFlowChartConnectors() {
@@ -8094,6 +8219,7 @@ export class Diagram extends Component<HTMLElement> implements INotifyPropertyCh
             this.addToLayer(obj, hasLayers);
             tempTabel[obj.id] = obj;
         }
+        this.tempTable = tempTabel;
         for (const layer of this.layers) {
             for (const obj of layer.objects) {
                 if (tempTabel[`${obj}`]) {
@@ -8176,6 +8302,20 @@ export class Diagram extends Component<HTMLElement> implements INotifyPropertyCh
             const layer: LayerModel = this.commandHandler.getObjectLayer(connector.id);
             this.initConnectors(connector, layer);
         }
+        for (const obj of this.connectorOrRotatedGroups) {
+            if (obj.children && obj.flip !== FlipDirection.None && !this.refreshing) {
+                this.groupBounds = obj.wrapper.bounds;
+                alignElement(obj.wrapper, obj.wrapper.offsetX, obj.wrapper.offsetY, this, obj.wrapper.flip, undefined, undefined);
+                for (const childId of obj.children) {
+                    const child: ConnectorModel = this.nameTable[`${childId}`];
+                    if (child instanceof Connector && child.sourceID && child.targetID) {
+                        this.updateConnectorProperties(child);
+                    }
+                }
+                obj.wrapper.measure(new Size(obj.wrapper.actualSize.width, obj.wrapper.actualSize.height));
+                obj.wrapper.arrange(obj.wrapper.desiredSize);
+            }
+        }
         //Removed isBlazor code
     }
     private hasNestingContainer(containerTable: Record<string, any>, tempTabel: Record<string, any>): boolean {
@@ -8212,17 +8352,14 @@ export class Diagram extends Component<HTMLElement> implements INotifyPropertyCh
         const containerInDegree: Record<string, number> = {};
         // Final sorted order of containerIds
         const sortedContainerIds: string[] = [];
-
         // Initialize empty dependency graph and in-degree tracker for each container
         for (const containerId of Object.keys(containerTable)) {
             dependencyGraph[`${containerId}`] = [];
             containerInDegree[`${containerId}`] = 0;
         }
-
         // Build dependency graph: parent -> [children], and track child container in-degree
         for (const parentId of Object.keys(containerTable)) {
             const parentContainer: NodeModel = tempTabel[`${parentId}`];
-
             // If parentContainer has children that are themselves containers, create dependency
             if (
                 parentContainer && parentContainer.shape instanceof Container &&
@@ -8237,22 +8374,18 @@ export class Diagram extends Component<HTMLElement> implements INotifyPropertyCh
                 }
             }
         }
-
         // Use Kahn's algorithm for topological sorting
         const processQueue: string[] = [];
-
         // Start by processing containers without any parents (root containers)
         for (const containerId of Object.keys(containerInDegree)) {
             if (containerInDegree[`${containerId}`] === 0) {
                 processQueue.push(containerId);
             }
         }
-
         // Build the sorted order by traversing dependencies
         while (processQueue.length > 0) {
             const currentId: string = processQueue.shift() as string;
             sortedContainerIds.push(currentId);
-
             for (const childId of dependencyGraph[`${currentId}`]) {
                 containerInDegree[`${childId}`]--;
                 if (containerInDegree[`${childId}`] === 0) {
@@ -8260,7 +8393,6 @@ export class Diagram extends Component<HTMLElement> implements INotifyPropertyCh
                 }
             }
         }
-
         // Reverse the result to ensure children are rendered before their parents
         return sortedContainerIds.reverse();
     }
@@ -8620,6 +8752,37 @@ export class Diagram extends Component<HTMLElement> implements INotifyPropertyCh
                     const temp: LayerModel = this.layers[parseInt(i.toString(), 10)];
                     this.layers[parseInt(i.toString(), 10)] = this.layers[parseInt(j.toString(), 10)];
                     this.layers[parseInt(j.toString(), 10)] = temp;
+                }
+            }
+        }
+        // 966269 - unlayered objects are added to default layer
+        if (this.layers.length > 0) {
+            const activeLayerId: string = this.activeLayer ? this.activeLayer.id : undefined;
+            if (activeLayerId !== 'default_layer') {
+                const layerObjectIds: string[] = (this.layers as any).flatMap((layer: LayerModel) => layer.objects);
+                const allDiagramObjects: (NodeModel | ConnectorModel)[] =
+                    ([] as (NodeModel | ConnectorModel)[]).concat(this.nodes as NodeModel[], this.connectors as ConnectorModel[]);
+                const unlayeredObjects: (NodeModel | ConnectorModel)[] = allDiagramObjects.filter(
+                    (obj: NodeModel | ConnectorModel) => !(layerObjectIds as any).includes(obj.id)
+                );
+                if (unlayeredObjects.length > 0) {
+                    const unlayeredIds: string[] = unlayeredObjects.map((obj: NodeModel | ConnectorModel) => obj.id);
+                    const defaultLayer: LayerModel = {
+                        id: 'default_layer',
+                        visible: true,
+                        lock: false,
+                        objects: [],
+                        zIndex: 0,
+                        objectZIndex: -1,
+                        zIndexTable: {}
+                    } as LayerModel;
+                    this.commandHandler.addLayer(defaultLayer, null, true);
+                    const defaultLayerIndex: number = this.layers.findIndex((layer: LayerModel) => layer.id === 'default_layer');
+                    if (defaultLayerIndex !== -1) {
+                        const [addedLayer]: LayerModel[] = this.layers.splice(defaultLayerIndex, 1);
+                        this.layers.unshift(addedLayer);
+                        addedLayer.objects = unlayeredIds;
+                    }
                 }
             }
         }
@@ -9060,10 +9223,17 @@ export class Diagram extends Component<HTMLElement> implements INotifyPropertyCh
         if (obj.shape.type === 'Container') {
             this.updateDiagramElementQuad();
         }
-        if (obj.wrapper.flip !== FlipDirection.None) {
+        if (obj.wrapper.flip !== FlipDirection.None && this.isNotContainerOrSubProcess(obj)) {
             if (obj.children && obj.children.length > 0) {
+                let hasConnector: boolean = false;
                 for (let i: number = 0; i < obj.children.length; i++) {
                     let node: NodeModel = this.nameTable[obj.children[i]];
+                    if (node instanceof Connector || obj.rotateAngle !== 0) {
+                        hasConnector = true;
+                        if (this.connectorOrRotatedGroups.indexOf(obj) == -1) {
+                            this.connectorOrRotatedGroups.push(obj);
+                        }
+                    }
                     if (node) {
                         if (!this.refreshing && !this.commandHandler.cloningInProgress && !(this.diagramActions & DiagramAction.UndoRedo)) {
                             node.flip ^= obj.flip;
@@ -9091,7 +9261,7 @@ export class Diagram extends Component<HTMLElement> implements INotifyPropertyCh
                         }
                     }
                 }
-                if (!this.refreshing && !this.commandHandler.cloningInProgress && !(this.diagramActions & DiagramAction.UndoRedo)) {
+                if (!hasConnector && !this.refreshing && !this.commandHandler.cloningInProgress && !(this.diagramActions & DiagramAction.UndoRedo)) {
                     alignElement(obj.wrapper, obj.wrapper.offsetX, obj.wrapper.offsetY, this, obj.wrapper.flip, undefined, undefined, true);
                 }
             } else {
@@ -9123,6 +9293,14 @@ export class Diagram extends Component<HTMLElement> implements INotifyPropertyCh
             this.updateChildPosition(obj);
         }
     }
+    private isNotContainerOrSubProcess(obj: NodeModel): boolean {
+        return (obj.shape.type !== 'Container' && !(obj.shape.type === 'Bpmn'
+        && (obj.shape as BpmnShape).shape === 'Activity'
+        && (obj.shape as BpmnShape).activity.activity === 'SubProcess' && (obj.shape as BpmnShape).activity.subProcess.collapsed === false))
+    }
+    private isNotSwimlaneObject(node: NodeModel): boolean {
+        return (node.shape.type !== 'SwimLane' && !(node as Node).isLane && !(node as Node).isPhase && !(node as Node).isHeader);
+    }
     private updateLaneAfterAddChild(swimlane: NodeModel) {
         for (let i: number = 0; i < this.nodes.length; i++) {
             const node: NodeModel = this.nodes[parseInt(i.toString(), 10)];
@@ -9133,19 +9311,21 @@ export class Diagram extends Component<HTMLElement> implements INotifyPropertyCh
         }
     }
     private applyWrapperFlip(obj: NodeModel) {
-        obj.wrapper.flip = obj.flip;
-        obj.wrapper.flipMode = obj.flipMode;
-        obj.wrapper.children[0].flip = obj.flip;
-        obj.wrapper.children[0].flipMode = obj.flipMode;
-        for (let i=0;i<obj.wrapper.children.length;i++) {
-            let wrapperChild = obj.wrapper.children[i];
-            if(wrapperChild instanceof Canvas) {
-                //To update the flip and flipmode for the node wrapper childs.
-                this.applyWrapperCanvasFlip(wrapperChild,obj);
-            }
-            else {
-                wrapperChild.flip = obj.flip;
-                wrapperChild.flipMode = obj.flipMode;
+        if (obj instanceof Node) {
+            obj.wrapper.flip = obj.flip;
+            obj.wrapper.flipMode = obj.flipMode;
+            obj.wrapper.children[0].flip = obj.flip;
+            obj.wrapper.children[0].flipMode = obj.flipMode;
+            for (let i=0;i<obj.wrapper.children.length;i++) {
+                let wrapperChild = obj.wrapper.children[i];
+                if(wrapperChild instanceof Canvas) {
+                    //To update the flip and flipmode for the node wrapper childs.
+                    this.applyWrapperCanvasFlip(wrapperChild,obj);
+                }
+                else {
+                    wrapperChild.flip = obj.flip;
+                    wrapperChild.flipMode = obj.flipMode;
+                }
             }
         }
     }
@@ -10284,12 +10464,13 @@ export class Diagram extends Component<HTMLElement> implements INotifyPropertyCh
      * @param {boolean } transform - provide the transform value.
      * @param {boolean } fromExport - provide the fromExport value.
      * @param { boolean } isOverView - provide the isOverView value.
+     * @param { boolean } fromSetOverview - provide the fromSetOverview value.
      *
      * @private
      */
     public renderDiagramElements(
         canvas: HTMLCanvasElement | SVGElement, renderer: DiagramRenderer, htmlLayer: HTMLElement,
-        transform: boolean = true, fromExport?: boolean, isOverView?: boolean): void {
+        transform: boolean = true, fromExport?: boolean, isOverView?: boolean, fromSetOverview?: boolean): void {
         const pageBounds: Rect = this.scroller.getPageBounds();
         pageBounds.x *= this.scroller.currentZoom;
         pageBounds.y *= this.scroller.currentZoom;
@@ -10336,7 +10517,7 @@ export class Diagram extends Component<HTMLElement> implements INotifyPropertyCh
                     }
                     // Bug 880945: Overview is not updated properly with 4k monitor.
                     //To render the overview elements based on the pageBounds.
-                    if (isOverView) {
+                    if (isOverView || fromSetOverview) {
                         transformValue = {
                             tx: (-pageBounds.x) / this.scroller.currentZoom,
                             ty: (-pageBounds.y) / this.scroller.currentZoom,
@@ -10399,7 +10580,7 @@ export class Diagram extends Component<HTMLElement> implements INotifyPropertyCh
                     renderer.renderElement(
                         renderNode.wrapper, canvas, htmlLayer,
                         (!renderer.isSvgMode && transform) ? transformValue : undefined,
-                        undefined, undefined, status && (!this.diagramActions || isOverView),
+                        undefined, undefined, status && (!this.diagramActions || fromSetOverview),
                         undefined, undefined, getCenterPoint, this.portCenterPoint);
                 }
             }
@@ -10734,7 +10915,8 @@ export class Diagram extends Component<HTMLElement> implements INotifyPropertyCh
             const renderer: DiagramRenderer = new DiagramRenderer(overview.id, new SvgRenderer(), false);
             const g: HTMLElement = document.getElementById(overview.element.id + '_diagramLayer') as HTMLCanvasElement;
             const htmlLayer: HTMLElement = getHTMLLayer(overview.element.id);
-            this.renderDiagramElements(g as HTMLCanvasElement, overview.diagramRenderer || renderer, htmlLayer, undefined, undefined, true);
+            this.renderDiagramElements(g as HTMLCanvasElement, overview.diagramRenderer || renderer, htmlLayer, undefined, undefined,
+                                       undefined, true);
         }
     }
 
@@ -12350,9 +12532,7 @@ export class Diagram extends Component<HTMLElement> implements INotifyPropertyCh
             updateConnector = true;
             sizeChanged = true;
         }
-        if (actualObject.shape.type !== 'Container' && !(actualObject.shape.type === 'Bpmn'
-            && (actualObject.shape as BpmnShape).shape === 'Activity'
-            && (actualObject.shape as BpmnShape).activity.activity === 'SubProcess')) {
+        if (this.isNotContainerOrSubProcess(actualObject) && this.isNotSwimlaneObject(actualObject)) {
             if (node.flip !== undefined) {
                 const horizontal: boolean = ((node.flip & FlipDirection.Horizontal) ^
                     (actualObject.wrapper.flip & FlipDirection.Horizontal)) === FlipDirection.Horizontal;
@@ -12708,6 +12888,25 @@ export class Diagram extends Component<HTMLElement> implements INotifyPropertyCh
             //Removed isBlazor code
             this.triggerEvent(DiagramEvent.propertyChange, args);
         }
+    }
+    /**
+     * Determines if any selected connector is connected to the specified node.
+     *
+     * @param {Node} node - The node to check for connection with selected connectors.
+     * @returns { boolean } True if the node is connected to at least one selected connector; otherwise, false.
+     *
+     * @private
+     */
+    public hasSelectedConnector(node: Node): boolean {
+        // Get selected connector IDs once for efficient lookup
+        const selectedConIds: string[] = (this.selectedItems.connectors || []).map((con: Connector) => con.id);
+        // Get connector IDs from outEdges and InEdges of node
+        const connectorArray: string[] = (node.outEdges || []).concat(node.inEdges || []);
+        // Check connectorArray contains selected connector
+        if (connectorArray.some((id: string) => selectedConIds.indexOf(id) !== -1)) {
+            return true;
+        }
+        return false;
     }
     private updateWrapperChildFlip(actualObject: Node, changeFlipMode?: FlipMode){
         if (actualObject && actualObject.children && actualObject.children.length > 0) {
@@ -13082,13 +13281,11 @@ export class Diagram extends Component<HTMLElement> implements INotifyPropertyCh
      * @private
      */
     public updateConnectorEdges(actualObject: Node | Connector): void {
-        // 973829-Connector Segments Not Moving with Node During Multi-Select Drag
         // Get selected connector IDs once for efficient lookup
         const selectedConIds: string[] = (this.selectedItems.connectors || []).map((con: Connector) => con.id);
 
         if (actualObject.inEdges.length > 0) {
             for (let j: number = 0; j < actualObject.inEdges.length; j++) {
-                // 973829-Connector Segments Not Moving with Node During Multi-Select Drag
                 const inEdgeId: string = actualObject.inEdges[parseInt(j.toString(), 10)];
                 if ((this.eventHandler as any).currentAction !== 'Drag' || selectedConIds.indexOf(inEdgeId) === -1) {
                     this.updateConnectorProperties(this.nameTable[`${inEdgeId}`]);
@@ -13097,7 +13294,6 @@ export class Diagram extends Component<HTMLElement> implements INotifyPropertyCh
         }
         if (actualObject.outEdges.length > 0) {
             for (let k: number = 0; k < actualObject.outEdges.length; k++) {
-                // 973829-Connector Segments Not Moving with Node During Multi-Select Drag
                 const outEdgeId: string = actualObject.outEdges[parseInt(k.toString(), 10)];
                 if ((this.eventHandler as any).currentAction !== 'Drag' || selectedConIds.indexOf(outEdgeId) === -1) {
                     this.updateConnectorProperties(this.nameTable[`${outEdgeId}`]);
@@ -13220,8 +13416,18 @@ export class Diagram extends Component<HTMLElement> implements INotifyPropertyCh
             }
             if (newProp.flip !== undefined) {
                 actualObject.flip = newProp.flip;
-                flipConnector(actualObject, this);
-                actualObject.wrapper.flip = newProp.flip;
+                // Determine flip directions by XORing connector and wrapper flip values
+                const horizontal: boolean = ((actualObject.flip & FlipDirection.Horizontal) ^
+                    (actualObject.wrapper.flip & FlipDirection.Horizontal)) === FlipDirection.Horizontal;
+                const vertical: boolean = ((actualObject.flip & FlipDirection.Vertical) ^
+                    (actualObject.wrapper.flip & FlipDirection.Vertical)) === FlipDirection.Vertical;
+                if (horizontal) {
+                    actualObject.wrapper.flip ^= FlipDirection.Horizontal;
+                }
+                if (vertical) {
+                    actualObject.wrapper.flip ^= FlipDirection.Vertical;
+                }
+                flipConnector(actualObject,horizontal, vertical, this);
             }
             //EJ2-867479 - Performance issue in complexhierarchical layout due to linerouting injection
             if (actualObject.type === 'Orthogonal' && this.lineRoutingModule && this.diagramActions &&
@@ -13262,7 +13468,7 @@ export class Diagram extends Component<HTMLElement> implements INotifyPropertyCh
         this.updatefixedUserHandle(newProp, actualObject);
         actualObject.wrapper.measure(new Size(actualObject.wrapper.width, actualObject.wrapper.height));
         actualObject.wrapper.arrange(actualObject.wrapper.desiredSize);
-        if (existingBounds.equals(existingBounds, actualObject.wrapper.bounds) === false) {
+        if (existingBounds.equals(existingBounds, actualObject.wrapper.bounds) === false && !(this.connectorFlipInProgress)) {
             this.updateQuad(actualObject);
             if ((this.eventHandler as any).currentAction !== 'Drag') {
                 this.updateGroupSize(actualObject);
@@ -14403,10 +14609,17 @@ export class Diagram extends Component<HTMLElement> implements INotifyPropertyCh
                         const childtable: string = 'childTable';
                         if (sourceElement) {
                             const obj: IElement = sourceElement[`${selectedSymbols}`];
+                            const wrapper: DiagramElement = (obj.wrapper.children[0] as GroupableView).children[0];
+                            if ((obj as Node).shape.type === 'Native' || (obj as Node).shape.type === 'HTML') {
+                                if (((obj as Node).shape as Native | Html).content &&
+                                    typeof (((obj as Node).shape as Native | Html).content) === 'function') {
+                                    ((obj as Node).shape as Native | Html).content = (wrapper as
+                                        DiagramNativeElement | DiagramHtmlElement).template.innerHTML;
+                                }
+                            }
                             this.allowServerDataBinding = false;
                             clonedObject = cloneObject(sourceElement[`${selectedSymbols}`]);
                             childTable = sourceElement[`${childtable}`];
-                            const wrapper: DiagramElement = (obj.wrapper.children[0] as GroupableView).children[0];
                             preview = getPreviewSize(sourceElement, clonedObject as Node, wrapper);
                             if (sourceElement[`${selectedSymbols}`] instanceof Node) {
                                 if (((obj as Node).shape as BpmnShape).shape === 'TextAnnotation') {
@@ -14791,6 +15004,12 @@ export class Diagram extends Component<HTMLElement> implements INotifyPropertyCh
                 if (this.bpmnModule && newObj instanceof Node && (clonedObject as Node).processId) {
                     newObj.processId = (clonedObject as Node).processId;
                     this.bpmnModule.dropBPMNchild(this.nameTable[newObj.processId], newObj, this);
+                }
+                // 967788 : selection issue when drag and drop child from palette to container
+                if (newObj instanceof Node && (clonedObject as Node).parentId && this.nameTable[(clonedObject as Node).parentId]
+                    && this.nameTable[(clonedObject as Node).parentId].shape.type === 'Container') {
+                    newObj.parentId = (clonedObject as Node).parentId;
+                    dropContainerChild(this.nameTable[newObj.parentId], newObj, this);
                 }
                 if (!arg.cancel) {
                     this.endGroupAction();
@@ -15221,25 +15440,25 @@ export class Diagram extends Component<HTMLElement> implements INotifyPropertyCh
     private getProjectedOffset(
         port: PointPortModel,
         node: Node,
-        edge: Direction): number {
-        if (edge === 'Left' || edge === 'Right') {
-            return port.offset.y;
-        }
-        if (edge === 'Top' || edge === 'Bottom') {
-            return port.offset.x;
-        }
-        return 0;
+        edge: Direction): PointModel {
+        const nodeLeft: number = node.offsetX - node.width * node.pivot.x;
+        const nodeTop: number = node.offsetY - node.height * node.pivot.y;
+        return { x: nodeLeft + port.offset.x * node.width, y: nodeTop + port.offset.y * node.height };
     }
 
     private callSort(node: Node, edge: Direction, diagram: Diagram): (a: PointPortModel, b: PointPortModel) => number {
         return (a: PointPortModel, b: PointPortModel) => {
             const aHasConn: number = (a.outEdges && a.outEdges.length) || (a.inEdges && a.inEdges.length);
             const bHasConn: number = (b.outEdges && b.outEdges.length) || (b.inEdges && b.inEdges.length);
-            const aVal: number = aHasConn ? diagram.getConnectorTargetOffset(a, node, edge, diagram)
+            const aVal: PointModel = aHasConn ? diagram.getConnectorTargetOffset(a, node, edge, diagram)
                 : diagram.getProjectedOffset(a, node, edge);
-            const bVal: number = bHasConn ? diagram.getConnectorTargetOffset(b, node, edge, diagram)
+            const bVal: PointModel = bHasConn ? diagram.getConnectorTargetOffset(b, node, edge, diagram)
                 : diagram.getProjectedOffset(b, node, edge);
-            return aVal - bVal;
+            if (edge === 'Top' || edge === 'Bottom') {
+                return (aVal.x - bVal.x) === 0 ? (bVal.y - aVal.y) : (aVal.x - bVal.x);
+            } else {
+                return (aVal.y - bVal.y) === 0 ? (bVal.x - aVal.x) : (aVal.y - bVal.y);
+            }
         };
     }
 
@@ -15248,7 +15467,7 @@ export class Diagram extends Component<HTMLElement> implements INotifyPropertyCh
         node: Node,
         edge: Direction,
         diagram: Diagram
-    ): number {
+    ): PointModel {
         let connector: Connector = null;
         if (port.outEdges && port.outEdges.length > 0) {
             connector = diagram.nameTable[port.outEdges[0]];
@@ -15256,18 +15475,7 @@ export class Diagram extends Component<HTMLElement> implements INotifyPropertyCh
             connector = diagram.nameTable[port.inEdges[0]];
         }
         if (connector) {
-            const target: PointModel = connector.targetPoint;
-            if (target) {
-                const nodeLeft: number = node.offsetX - node.width * node.pivot.x;
-                const nodeTop: number = node.offsetY - node.height * node.pivot.y;
-                if (edge === 'Left' || edge === 'Right') {
-                    const relY: number = (target.y - nodeTop) / node.height;
-                    return Math.max(0, Math.min(1, relY));
-                } else {
-                    const relX: number = (target.x - nodeLeft) / node.width;
-                    return Math.max(0, Math.min(1, relX));
-                }
-            }
+            return connector.targetPoint;
         }
         return this.getProjectedOffset(port, node, edge);
     }

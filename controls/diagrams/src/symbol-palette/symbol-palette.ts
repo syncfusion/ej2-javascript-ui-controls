@@ -421,6 +421,15 @@ export class SymbolPalette extends Component<HTMLElement> implements INotifyProp
     @Property()
     public connectorDefaults: ConnectorModel;
 
+    /**
+     * Helps to Customizes the node template
+     *
+     * @default undefined
+     * @aspType string
+     */
+    @Property()
+    public nodeTemplate: string | Function;
+
     //private variables
 
     /** @private */
@@ -984,6 +993,9 @@ export class SymbolPalette extends Component<HTMLElement> implements INotifyProp
             //Set the strokeDashArray for specific connectors to ensure that it is visually represented exactly as intended in the diagram
             if (symbol.shape.type === 'UmlClassifier' && (symbol.shape as RelationShipModel).relationship) {
                 if ((symbol.shape as RelationShipModel).relationship === 'Inheritance') {
+                    (symbol as Connector).targetDecorator.style.fill = (symbol as Connector).targetDecorator.style.fill === 'black' ? 'white' : (symbol as Connector).targetDecorator.style.fill;
+                }
+                if ((symbol.shape as RelationShipModel).relationship === 'Realization') {
                     symbol.style.strokeDashArray = symbol.style.strokeDashArray ? symbol.style.strokeDashArray : '4 4';
                     (symbol as Connector).targetDecorator.style.fill = (symbol as Connector).targetDecorator.style.fill === 'black' ? 'white' : (symbol as Connector).targetDecorator.style.fill;
                 }
@@ -1162,7 +1174,17 @@ export class SymbolPalette extends Component<HTMLElement> implements INotifyProp
                     content = (symbol as Node).init(this);
                 }
 
-                if (symbol instanceof Node && symbol.parentId) { container.children.push(content); }
+                if (symbol instanceof Node && symbol.parentId) {
+                    // Bug 974569: Group Node Not Rendering Properly in Symbol Palette Without Explicit Size Specification.
+                    // Added logic to assign a default size to child nodes if no size is defined at the sample level.
+                    content.measure(new Size());
+                    content.arrange(content.desiredSize);
+                    content.width = content.width || this.symbolWidth || content.actualSize.width || content.style.strokeWidth;
+                    content.height = content.height || this.symbolHeight || content.actualSize.height || content.style.strokeWidth;
+                    symbol.width = symbol.width || this.symbolWidth || content.actualSize.width || content.style.strokeWidth;
+                    symbol.height = symbol.height || this.symbolHeight || content.actualSize.height || content.style.strokeWidth;
+                    container.children.push(content);
+                }
             }
         }
         if (!(symbol as Node | Connector).parentId) {
@@ -1171,6 +1193,8 @@ export class SymbolPalette extends Component<HTMLElement> implements INotifyProp
             if (getSymbolInfo) {
                 symbolInfo = getSymbolInfo(symbol);
             }
+            //972952 - support to disable the tooltip for the shapes in Symbol palettes
+            (obj as Node).showDefaultTooltipForPalette = symbolInfo && symbolInfo.showTooltip !== false;
             symbolInfo = symbolInfo || this.symbolInfo || {};
             if (symbol.shape && (symbol.shape as SwimLaneModel).isPhase) {
                 symbolInfo.width = symbolInfo.width || this.symbolWidth;
@@ -1762,27 +1786,28 @@ export class SymbolPalette extends Component<HTMLElement> implements INotifyProp
         if (!elementOver) {
             //set the collision target element to given position if enabled
             (this.symbolTooltipObject as Tooltip).windowCollision = true;
+            //972952 - support to disable the tooltip for the shapes in Symbol palettes
+            const showDefaultTooltip: boolean = (this.hoverElement as Node).showDefaultTooltipForPalette;
             //840454 - support to provide isSticky property for tooltip in diagram control
             if (this.hoverElement.tooltip.isSticky) {
                 (this.symbolTooltipObject as Tooltip).isSticky = true;
             }
             if (this.hoverElement instanceof Node) {
-                if (!(this.hoverElement.constraints & (NodeConstraints.Default && NodeConstraints.Tooltip))) {
-                    this.hoverElement.tooltip.content = this.hoverElement.id;
+                if (showDefaultTooltip && !(this.hoverElement.constraints & (NodeConstraints.Default && NodeConstraints.Tooltip))) {
                     //Task 834121: Content-Security-Policy support for diagram
                     this.symbolTooltipObject.content = initializeCSPTemplate(function (): string | HTMLElement {
                         return this.hoverElement.id;
                     }, this);
                 }
             } else if (this.hoverElement instanceof Connector) {
-                if (!(this.hoverElement.constraints & (ConnectorConstraints.Default && ConnectorConstraints.Tooltip))) {
-                    this.hoverElement.tooltip.content = this.hoverElement.id;
+                if (showDefaultTooltip &&
+                    !(this.hoverElement.constraints & (ConnectorConstraints.Default && ConnectorConstraints.Tooltip))) {
                     this.symbolTooltipObject.content = initializeCSPTemplate(function (): string | HTMLElement {
                         return this.hoverElement.id;
                     }, this);
                 }
             }
-            if (this.hoverElement.tooltip.content) {
+            if (this.symbolTooltipObject.content) {
                 if (this.hoverElement.tooltip.relativeMode === 'Mouse') {
                     //To set relative mode only to object for Symbol Palatte
                     this.hoverElement.tooltip.relativeMode = 'Object';
@@ -1798,12 +1823,12 @@ export class SymbolPalette extends Component<HTMLElement> implements INotifyProp
             // To render tooltip for the symbol in search palette, the id of the shape is appended with 'SearchSymbol'.
             const targetId: string = isSearchSymbol ? this.hoverElement.id + 'SearchSymbol' : this.hoverElement.id;
             const targetEle: HTMLElement = document.getElementById(targetId);
-            if (this.hoverElement.tooltip.openOn === 'Auto' && this.hoverElement.tooltip.content !== '') {
+            if (this.hoverElement.tooltip.openOn === 'Auto' && this.symbolTooltipObject.content !== '') {
                 (this.symbolTooltipObject as Tooltip).close();
                 (this.symbolTooltipObject as TooltipModel).opensOn = (this.hoverElement.tooltip as DiagramTooltipModel).openOn;
                 (this.symbolTooltipObject as Tooltip).dataBind();
             }
-            if (this.hoverElement.tooltip.openOn === 'Auto') {
+            if (this.hoverElement.tooltip.openOn === 'Auto' && this.symbolTooltipObject.content !== '' ) {
                 (this.symbolTooltipObject as Tooltip).target = this.hoverElement.id;
                 (this.symbolTooltipObject as Tooltip).open(targetEle);
             }
@@ -2156,8 +2181,9 @@ export class SymbolPalette extends Component<HTMLElement> implements INotifyProp
     }
 
     private scaleGroup(child: DiagramElement, w: number, h: number, symbol: NodeModel | ConnectorModel, preview?: boolean): void {
-        child.width = child.width * w;
-        child.height = (child.height * h);
+        //Bug 974569: Group Node Not Rendering Properly in Symbol Palette Without Explicit Size Specification
+        child.width = (child.width || (child as Canvas).children[0].width) * w;
+        child.height = (child.height || (child as Canvas).children[0].height) * h;
         child.offsetX = preview ? (child.offsetX * w) - symbol.style.strokeWidth : (child.offsetX * w) + symbol.style.strokeWidth / 2;
         child.offsetY = preview ? (child.offsetY * h) - symbol.style.strokeWidth : (child.offsetY * h) + symbol.style.strokeWidth / 2;
         child.measure(new Size());
@@ -2194,7 +2220,8 @@ export class SymbolPalette extends Component<HTMLElement> implements INotifyProp
         applyStyleAgainstCsp(searchDiv, 'height:30px');
         //  searchDiv.setAttribute('style', 'backgroundColor:white;height:30px');
         searchDiv.className = 'e-input-group';
-        this.element.appendChild(searchDiv);
+        //975140: Symbol search box renders at bottom of palette while enabled at runtime
+        this.element.insertBefore(searchDiv, this.element.firstChild);
         const textBox: HTMLInputElement = createHtmlElement('input', {}) as HTMLInputElement;
         textBox.placeholder = this.l10n.getConstant('SearchShapes');
         textBox.id = 'textEnter';
@@ -2378,8 +2405,17 @@ export interface SymbolInfo {
      * Define the text to be displayed when mouse hover on the shape.
      *
      * @default ''
+     * @deprecated
      */
     tooltip?: string;
+
+    /**
+     * Specifies whether the default tooltip displaying the symbol's ID should be shown for this element in the Symbol Palette.
+     * When set to `true`, the tooltip will display the value of the `id` property. If set to `false`, the tooltip will be hidden.
+     * This property is effective only when tooltip constraints are disabled for the symbol palette element.
+     * @default true
+     */
+    showTooltip?: boolean
 }
 
 /**

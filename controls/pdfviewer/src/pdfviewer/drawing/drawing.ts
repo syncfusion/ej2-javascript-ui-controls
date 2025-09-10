@@ -1033,7 +1033,11 @@ export class Drawing {
      */
     public getAdornerLayerSvg(diagramId: string, index?: number): SVGSVGElement {
         let adornerLayerSvg: SVGSVGElement = null;
-        const diagramElement: HTMLElement = getDiagramElement(diagramId + index + '_diagramAdornerLayer');
+        let diagramElement: HTMLElement = getDiagramElement(diagramId + index + '_diagramAdornerLayer');
+        if (isNullOrUndefined(diagramElement)) {
+            this.pdfViewer.viewerBase.getAnnotationCanvas('_annotationCanvas_', index);
+            diagramElement = getDiagramElement(diagramId + index + '_diagramAdornerLayer');
+        }
         let elementcoll: any;
         if (diagramElement) {
             elementcoll = diagramElement.getElementsByClassName('e-adorner-layer' + index);
@@ -3573,7 +3577,8 @@ export class Drawing {
                                 const newNode: PdfAnnotationBaseModel = cloneObject(copy);
                                 if (this.pdfViewer.viewerBase.contextMenuModule.previousAction !== 'Cut') {
                                     newNode.id += randomId();
-                                    if (this.pdfViewer.annotationModule && newNode.shapeAnnotationType !== 'HandWrittenSignature') {
+                                    if (this.pdfViewer.annotationModule && newNode.shapeAnnotationType !== 'HandWrittenSignature' &&
+                                        newNode.shapeAnnotationType !== 'SignatureText' && newNode.shapeAnnotationType !== 'SignatureImage') {
                                         newNode.annotName = newNode.id;
                                         this.pdfViewer.annotationModule.stickyNotesAnnotationModule.
                                             updateAnnotationCollection(newNode, copiedItems[0], false);
@@ -3667,6 +3672,7 @@ export class Drawing {
                 }
             }
             this.pdfViewer.renderDrawing(undefined, index);
+            this.pdfViewer.viewerBase.showAnnotationPropertiesToolbar(true);
             this.pdfViewer.clipboardData.pasteIndex++;
         }
         this.pdfViewer.enableServerDataBinding(allowServerDataBind, true);

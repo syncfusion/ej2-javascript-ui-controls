@@ -42,12 +42,12 @@ export class StylesHelper {
             } = StylesHelper.createStyleMaps(paragraphStyles, linkedStyles, characterStyles);
 
             // Add default styles first in the specified order
-            StylesHelper.addDefaultStyles(styles, defaultStyleNames, stylesMaps);
+            StylesHelper.addDefaultStyles(styles, defaultStyleNames, stylesMaps, localObj);
 
             // Track added styles to avoid duplicates
             const addedStylesMap: { [key: string]: boolean } = {};
             /* eslint-disable */
-            defaultStyleNames.forEach((name: string) => addedStylesMap[name] = true);
+            defaultStyleNames.forEach((name: string) => { if (localObj.getConstant(name) !== '') addedStylesMap[localObj.getConstant(name)] = true; });
             // defaultStyleNames.forEach((name: string) => {
             //     Object.prototype.hasOwnProperty.call(addedStylesMap, name) || (addedStylesMap[name] = true);
             // });
@@ -106,12 +106,13 @@ export class StylesHelper {
             paragraphStyleMap: { [key: string]: any };
             linkedStyleMap: { [key: string]: any };
             characterStyleMap: { [key: string]: any };
-        }
+        },
+        localObj: L10n
     ): void {
         const { paragraphStyleMap, linkedStyleMap, characterStyleMap } = stylesMaps;
 
         for (let i: number = 0; i < defaultStyleNames.length; i++) {
-            const styleName: string = defaultStyleNames[parseInt(i.toString(),10)];
+            const styleName: string = localObj.getConstant(defaultStyleNames[parseInt(i.toString(), 10)]);
 
             // Direct lookup is much faster than looping
             const styleInfo: any = paragraphStyleMap[styleName] ||
@@ -173,7 +174,7 @@ export class StylesHelper {
      * @param {DocumentEditor} documentEditor - Document editor instance
      * @returns {string} The current style name
      */
-    public static getCurrentStyleName(documentEditor: DocumentEditor): string {
+    public static getCurrentStyleName(documentEditor: DocumentEditor, localObj: L10n): string {
         if (!documentEditor || !documentEditor.selection) {
             return 'Normal';
         }
@@ -182,10 +183,10 @@ export class StylesHelper {
         const paragraphFormat: any = documentEditor.selection.paragraphFormat;
 
         if (paragraphFormat && paragraphFormat.styleName) {
-            return paragraphFormat.styleName;
+            return localObj.getConstant(paragraphFormat.styleName);
         } else if (characterFormat && characterFormat.styleName &&
             characterFormat.styleName !== 'Default Paragraph Font') {
-            return characterFormat.styleName;
+            return localObj.getConstant(characterFormat.styleName);
         }
 
         return 'Normal';

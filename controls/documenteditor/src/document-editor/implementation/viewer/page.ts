@@ -2406,14 +2406,14 @@ export class TableWidget extends BlockWidget {
         }
         tempGrid.sort((a: number, b: number) => { return a - b; });
         tempSpanDecimal.sort((a: number, b: number) => { return a - b; });
-        if (this.tableHolder.columns.length > 0 && (tempGrid.length !== this.tableHolder.columns.length || isInsertRow)) {
+        if (this.tableHolder.columns.length > 0 || isInsertRow) {
             this.updateColumnSpans(tempGrid, tableWidth, tempSpanDecimal);
         }
         this.tableCellInfo.clear();
         this.tableCellInfo = undefined;
     }
     private updateValidPreferredWidth(cell: TableCellWidget): void {
-        if (cell.cellFormat.preferredWidthType === 'Point' && cell.cellFormat.preferredWidth !== cell.cellFormat.cellWidth && cell.ownerColumn && cell.cellFormat.preferredWidth < cell.ownerColumn.minimumWidth) {
+        if (cell.cellFormat.preferredWidthType === 'Point' && cell.cellFormat.preferredWidth !== cell.cellFormat.cellWidth && cell.cellFormat.preferredWidth < cell.getMinimumPreferredWidth()) {
             if (cell.indexInOwner === 0) {
                 cell.cellFormat.preferredWidth = cell.ownerColumn.endOffset;
             } else {
@@ -3232,8 +3232,7 @@ export class TableRowWidget extends BlockWidget {
         else {
             prevOffset += ownerTable.getCellWidth(rowFormat.gridBeforeWidth, rowFormat.gridBeforeWidthType, containerWidth, null);
             if (index >= 0) {
-                prevOffset += ((ownerTable.containerWidget as BodyWidget) && (ownerTable.containerWidget as BodyWidget).page && (ownerTable.containerWidget as BodyWidget).page.documentHelper
-                    && (ownerTable.containerWidget as BodyWidget).page.documentHelper.layout.isInitialLoad) ? ownerTable.getCellStartOffset(cell) : this.getCellOffset(index, containerWidth);
+                prevOffset += ownerTable.getCellStartOffset(cell);
             }
             if (index < this.childWidgets.length) {
                 width = ownerTable.getCellWidth(cell.cellFormat.preferredWidth, cell.cellFormat.preferredWidthType, containerWidth, null);
@@ -3477,14 +3476,14 @@ export class TableRowWidget extends BlockWidget {
     /**
      * @private
      */
-    public clone(): TableRowWidget {
+    public clone(cloneUpToHeight?: boolean): TableRowWidget {
         let row: TableRowWidget = new TableRowWidget();
         row.rowFormat.copyFormat(this.rowFormat);
         row.topBorderWidth = this.topBorderWidth;
         row.bottomBorderWidth = this.bottomBorderWidth;
         row.isRenderBookmarkEnd = this.isRenderBookmarkEnd;
         for (let i: number = 0; i < this.childWidgets.length; i++) {
-            let cell: TableCellWidget = (this.childWidgets[i] as TableCellWidget).clone();
+            let cell: TableCellWidget = (this.childWidgets[i] as TableCellWidget).clone(cloneUpToHeight);
             row.childWidgets.push(cell);
             cell.containerWidget = row;
             cell.index = i;
@@ -4533,14 +4532,19 @@ export class TableCellWidget extends BlockWidget {
     /**
      * @private
      */
-    public clone(): TableCellWidget {
+    public clone(cloneUpToHeight?: boolean): TableCellWidget {
         let cell: TableCellWidget = new TableCellWidget();
         cell.cellFormat.copyFormat(this.cellFormat);
+        let blockHeight: number = 0;
         for (let i: number = 0; i < this.childWidgets.length; i++) {
+            if (cloneUpToHeight && blockHeight > this.height) {
+                break;
+            }
             let block: BlockWidget = (this.childWidgets[i] as BlockWidget).clone();
             cell.childWidgets.push(block);
             block.containerWidget = cell;
             block.index = i;
+            blockHeight += block.height;
         }
         cell.leftBorderWidth = this.leftBorderWidth;
         cell.rightBorderWidth = this.rightBorderWidth;
@@ -4635,8 +4639,7 @@ export class LineWidget implements IWidget {
     */
     public skipClipImage: boolean = false;
     /**
-     * Rendered elements contains reordered element for RTL layout
-     * @private
+     * Rendered elements contains reordered element for RTL layout 
      */
     get renderedElements(): ElementBox[] {
         if (!isNullOrUndefined(this.layoutedElements)) {

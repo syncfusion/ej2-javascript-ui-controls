@@ -39,6 +39,7 @@ import { AnnotationConstraints} from '../enum/enum';
 import { Diagram } from '../diagram';
 import { getSegmentThumbShapeHorizontal, getSegmentThumbShapeVertical } from '../objects/dictionary/common';
 import { Actions } from '../interaction/actions';
+import { Overview } from '../../overview/overview';
 /**
  * Renderer module is used to render basic diagram elements
  */
@@ -60,6 +61,8 @@ export class DiagramRenderer {
     public adornerSvgLayer: SVGSVGElement;
     /** @private */
     public rendererActions: RendererAction;
+    /** @private */
+    public transactionBounds: Rect;
     private groupElement: GroupableView;
     private element: HTMLElement;
     private transform: PointModel = { x: 0, y: 0 };
@@ -1807,7 +1810,8 @@ export class DiagramRenderer {
             (element.style.textOverflow === 'Clip' || element.style.textOverflow === 'Ellipsis')) {
             options.y = options.y + (options.height - this.groupElement.actualSize.height) / 2;
         }
-        this.renderer.drawRectangle(canvas, options as RectAttributes, this.diagramId, undefined, undefined, parentSvg);
+        this.renderer.drawRectangle(canvas, options as RectAttributes, this.diagramId, undefined, undefined, parentSvg,
+                                    undefined, undefined, undefined, this, element);
         this.renderer.drawText(
             canvas, options as TextAttributes, parentSvg, ariaLabel, this.diagramId,
             (element.isExport && Math.min(element.exportScaleValue.x || element.exportScaleValue.y)), this, element);
@@ -1993,6 +1997,9 @@ export class DiagramRenderer {
                 }
             }
         }
+        if (group && group.id && group.id.endsWith('_transaction_events') && group.flip !== 0) {
+            this.transactionBounds = group.bounds;
+        }
         this.renderRect(group, canvas, transform, parentSvg);
         this.groupElement = group;
         if (group.hasChildren()) {
@@ -2052,12 +2059,21 @@ export class DiagramRenderer {
             if (selectedNode) {
                 containerId = selectedNode.children ? selectedNode.id + 'group_container' :  selectedNode.id + '_content_groupElement';
             }
-            if (diagram instanceof Diagram && (diagram as Diagram).nameTable[`${objId}`] && (diagram as Diagram).nameTable[`${objId}`].propName !== 'connectors') {
-                if (isNodeSelected && selectedNode) {
+            if ((diagram instanceof Diagram && (diagram as Diagram).nameTable[`${objId}`] && (diagram as Diagram).nameTable[`${objId}`].propName !== 'connectors') || diagram instanceof Overview) {
+                if ((isNodeSelected && selectedNode) || diagram instanceof Overview) {
                     if (group.children && group.children[0] instanceof DiagramNativeElement) {
-                        innerNodeContent = document.getElementById(selectedNode.id + '_content_inner_native_element');
+                        if (diagram instanceof Overview) {
+                            innerNodeContent = document.querySelector(`.e-overview g[id=${objId + '_content_inner_native_element'}]`);
+                        } else {
+                            innerNodeContent = document.getElementById(selectedNode.id + '_content_inner_native_element');
+                        }
                     } else if (group.children && group.children[0] instanceof DiagramHtmlElement) {
-                        innerNodeContent = document.getElementById(selectedNode.id + '_content_html_element');
+                        if (diagram instanceof Overview) {
+                            const element: HTMLDivElement = document.querySelector('#' + diagram.id + '_htmlLayer_div');
+                            innerNodeContent = element.querySelector('#' + objId + '_content_html_element');
+                        } else {
+                            innerNodeContent = document.getElementById(selectedNode.id + '_content_html_element');
+                        }
                         if (!innerNodeContent) {
                             innerNodeContent = document.getElementById(containerId);
                         }
@@ -2065,7 +2081,9 @@ export class DiagramRenderer {
                     else {
                         innerNodeContent = document.getElementById(containerId);
                     }
-                    this.renderFlipElement(group, innerNodeContent, group.flip);
+                    if (innerNodeContent) {
+                        this.renderFlipElement(group, innerNodeContent, group.flip);
+                    }
                 }
             }
         }
@@ -2241,29 +2259,63 @@ export class DiagramRenderer {
      * @param {FlipDirection} flip - Provide the node flip direction.
      */
     private flipLabel(element: DiagramElement, textElement: DiagramElement, labelPos: PointModel, flip: FlipDirection): PointModel {
-        let flippedOffset: PointModel;
-        if (flip !== FlipDirection.None) {
-            let flippedOffsetX: number;
-            let flippedOffsetY: number;
-            // Node's topLeft Position
-            const topLeft: PointModel = {
-                x: element.offsetX - element.desiredSize.width / 2,
-                y: element.offsetY - element.desiredSize.height / 2
-            };
-            flippedOffsetX = topLeft.x + (element.desiredSize.width * ((labelPos.x / textElement.desiredSize.width)));
-            flippedOffsetY = topLeft.y + (element.desiredSize.height * ((labelPos.y / textElement.desiredSize.height)));
-            if (flip === FlipDirection.Both || flip === FlipDirection.Horizontal ) {
-                flippedOffsetX = topLeft.x + (element.desiredSize.width * (1 - (labelPos.x / textElement.desiredSize.width)));
-            }
-            if (flip === FlipDirection.Both || flip === FlipDirection.Vertical) {
-                flippedOffsetY = topLeft.y + (element.desiredSize.height * (1 - (labelPos.y / textElement.desiredSize.height)));
-            }
-            // Flipped Position
-            flippedOffset = { x: flippedOffsetX, y: flippedOffsetY };
-            // FlippedPoint after rotating, with node offset as its pivot
-            flippedOffset = rotatePoint(element.rotateAngle + element.parentTransform, element.offsetX, element.offsetY, flippedOffset);
+        if (flip === FlipDirection.None) {
+            return undefined;
         }
-        return flippedOffset;
+        // Node's topLeft Position
+        const topLeft: PointModel = {
+            x: element.offsetX - element.desiredSize.width / 2,
+            y: element.offsetY - element.desiredSize.height / 2
+        };
+        // Get horizontal and vertical alignment factors
+        let horizontalAlignmentFactor: number = 0.5;  // default for Center alignment
+        let verticalAlignmentFactor: number = 0.5;    // default for Center alignment
+        // Adjust alignment factors based on text properties
+        if (textElement.horizontalAlignment === 'Left' || textElement.horizontalAlignment === 'Auto') {
+            horizontalAlignmentFactor = 0;
+        } else if (textElement.horizontalAlignment === 'Right') {
+            horizontalAlignmentFactor = 1;
+        }
+        if (textElement.verticalAlignment === 'Top' || textElement.verticalAlignment === 'Auto') {
+            verticalAlignmentFactor = 0;
+        } else if (textElement.verticalAlignment === 'Bottom') {
+            verticalAlignmentFactor = 1;
+        }
+        // Calculate ratios once
+        const xRatio: number = labelPos.x / textElement.desiredSize.width;
+        const yRatio: number = labelPos.y / textElement.desiredSize.height;
+        // Initialize with default positions
+        let flippedOffsetX: number = topLeft.x + (element.desiredSize.width * xRatio);
+        let flippedOffsetY: number = topLeft.y + (element.desiredSize.height * yRatio);
+        // Calculate alignment deltas once
+        const alignmentDeltaX: number = (horizontalAlignmentFactor - 0.5) * textElement.desiredSize.width;
+        const alignmentDeltaY: number = (verticalAlignmentFactor - 0.5) * textElement.desiredSize.height;
+
+        const isHorizontalFlip: boolean = flip === FlipDirection.Horizontal || flip === FlipDirection.Both;
+        const isVerticalFlip: boolean = flip === FlipDirection.Vertical || flip === FlipDirection.Both;
+        // Apply horizontal flip
+        if (isHorizontalFlip) {
+            flippedOffsetX = topLeft.x + (element.desiredSize.width * (1 - xRatio));
+            flippedOffsetY -= isVerticalFlip ? 0 : alignmentDeltaY;
+        }
+        // Apply vertical flip
+        if (isVerticalFlip) {
+            flippedOffsetY = topLeft.y + (element.desiredSize.height * (1 - yRatio));
+            flippedOffsetX -= isHorizontalFlip ? 0 : alignmentDeltaX;
+        }
+        // Apply alignment adjustments based on flip direction
+        if (isHorizontalFlip && !isVerticalFlip) {
+            flippedOffsetX += alignmentDeltaX;
+        } else if (isVerticalFlip && !isHorizontalFlip) {
+            flippedOffsetY += alignmentDeltaY;
+        } else if (isHorizontalFlip && isVerticalFlip) {
+            flippedOffsetX += alignmentDeltaX;
+            flippedOffsetY += alignmentDeltaY;
+        }
+        // Create flipped position
+        const flippedOffset: PointModel = { x: flippedOffsetX, y: flippedOffsetY };
+        // RotatePoint after flipping, with node offset as its pivot
+        return rotatePoint(element.rotateAngle + element.parentTransform, element.offsetX, element.offsetY, flippedOffset);
     }
 
 
@@ -2367,10 +2419,13 @@ export class DiagramRenderer {
         if (element.flip) {
             options.flip = element.flip;
             if ((element.flip === FlipDirection.Horizontal  || element.flip === FlipDirection.Vertical) &&
-                 element instanceof ImageElement && !this.isSvgMode) {
+                 (element instanceof ImageElement || element.isRectElement)  && !this.isSvgMode) {
                 (options as any).isImage = true;
             }
+        } else {
+            options.flip = FlipDirection.None;
         }
+
         if (element.flipMode) {
             options.flipMode = element.flipMode;
         }

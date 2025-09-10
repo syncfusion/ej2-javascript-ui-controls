@@ -233,7 +233,7 @@ export class Native extends Shape {
      * @default ''
      */
     @Property('')
-    public content: string | SVGElement;
+    public content: string | SVGElement | Function;
 
     /**
      * Defines the scale of the native element.
@@ -2537,6 +2537,8 @@ export class Node extends NodeBase implements IElement {
     /** @private */
     public parentId: string = '';
     /** @private */
+    public showDefaultTooltipForPalette: boolean = true;
+    /** @private */
     public processId: string = '';
     /** @private */
     public umlIndex: number = -1;
@@ -2651,8 +2653,9 @@ export class Node extends NodeBase implements IElement {
             break;
         case 'Bpmn':
             if (diagram.bpmnModule) {
-                if ((this.shape as BpmnShape).activity && (this.shape as BpmnShape).activity.activity === 'SubProcess') {
+                if ((this.shape as BpmnShape).activity && (this.shape as BpmnShape).activity.activity === 'SubProcess' && (this.shape as BpmnShape).activity.subProcess.collapsed === false) {
                     this.flip = FlipDirection.None;
+                    this.wrapper.flip = FlipDirection.None;
                 }
                 content = diagram.bpmnModule.initBPMNContent(content, this, diagram);
                 this.wrapper.elementActions = this.wrapper.elementActions | ElementAction.ElementIsGroup;
@@ -2675,12 +2678,27 @@ export class Node extends NodeBase implements IElement {
             }
             break;
         case 'Native':
-            const nativeContent: DiagramNativeElement = new DiagramNativeElement(this.id, diagram.element.id);
-            nativeContent.content = (this.shape as Native).content;
+            diagram.initNodeTemplate = true;
+            const nativeContent: DiagramNativeElement = new DiagramNativeElement(this.id, diagram.element.id, diagram.nodeTemplate);
+            if ((!(this.shape as Native).content && !diagram.nodeTemplate) ||
+                ((this.shape as Native).content && (typeof ((this.shape as Native).content) === 'string' || !diagram.isReact))) {
+                nativeContent.content = (this.shape as Native).content;
+            }
+            else if (diagram.nodeTemplate) {
+                nativeContent.isTemplate = true;
+                nativeContent.template = nativeContent.content = getContent(nativeContent, false, this) as SVGElement;
+            }
+            if (((this.shape as Native) as Html).content && typeof ((this.shape as Native).content) === 'function' && diagram.isReact) {
+                nativeContent.isTemplate = true;
+                (nativeContent as any).templateFn = baseTemplateCompiler((this.shape as Native).content as Function);
+                nativeContent.template = nativeContent.content = getContent(nativeContent, false, this) as SVGElement;
+            }
             nativeContent.scale = (this.shape as Native).scale;
             content = nativeContent;
+            diagram.initNodeTemplate = false;
             break;
         case 'HTML':
+            diagram.initNodeTemplate = true;
             const htmlContent: DiagramHtmlElement = new DiagramHtmlElement(this.id, diagram.element.id, undefined, diagram.nodeTemplate);
             if ((this.shape as Html).content && (typeof ((this.shape as Html).content) === 'string' || !diagram.isReact)) {
                 htmlContent.content = (this.shape as Html).content;
@@ -2695,6 +2713,7 @@ export class Node extends NodeBase implements IElement {
                 htmlContent.template = htmlContent.content = getContent(htmlContent, true, this) as HTMLElement;
             }
             content = htmlContent;
+            diagram.initNodeTemplate = false;
             break;
         case 'UmlClassifier':
             //   let umlClassifierShape: StackPanel = new StackPanel();
@@ -2703,11 +2722,14 @@ export class Node extends NodeBase implements IElement {
         case 'Container':
             this.constraints |= (NodeConstraints.ReadOnly | NodeConstraints.AllowDrop);
             this.flip = FlipDirection.None;
+            this.wrapper.flip = FlipDirection.None;
             content = initContainerWrapper(content, this, diagram);
             break;
         case 'SwimLane':
             this.annotations = [];
             this.ports = [];
+            this.flip = FlipDirection.None;
+            this.wrapper.flip = FlipDirection.None;
             (content as GridPanel).cellStyle.fill = 'none';
             (content as GridPanel).cellStyle.strokeColor = 'none';
             this.container = { type: 'Grid', orientation: (this.shape as SwimLaneModel).orientation };

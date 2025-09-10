@@ -65,7 +65,9 @@ export interface NodeBaseModel {
     flip?: FlipDirection;
 
     /**
-     * Allows you to flip only the node or along with port and label
+     * Allows you to flip only the node or along with port and label.
+     *
+     * This functionality is applicable only for nodes.
      *
      * @aspDefaultValueIgnore
      * @default All

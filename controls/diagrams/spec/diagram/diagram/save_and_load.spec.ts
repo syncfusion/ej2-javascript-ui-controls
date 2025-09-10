@@ -547,7 +547,6 @@ describe('Diagram Control', () => {
         it('load EJ1 data', (done: Function) => {
             let ej1Data: any = {"width":"100%","height":"100%","nodes":[{"type":"basic","name":"node1","width":100,"height":100,"offsetX":400,"offsetY":200,"zOrder":0,"shape":"rectangle"},{"type":"basic","name":"node2","width":100,"height":100,"offsetX":550,"offsetY":350,"zOrder":1,"shape":"rectangle"}],"serializationSettings":{"preventDefaultValues":true},"scrollSettings":{"viewPortHeight":17.986112594604492,"viewPortWidth":2117.361328125},"pageSettings":{"pageWidth":0,"pageHeight":0,"scrollableArea":{"x":0,"y":0,"width":0,"height":0}},"enableAutoScroll":false,"version":"13.3.0.8","tool":6,"selectedItems":{"tooltip":{"margin":{"top":10}}}};
             diagram.loadDiagram(JSON.stringify(ej1Data), true);
-            console.log('EJ1_Data Nodes' , diagram.nodes.length);
             expect(diagram.nodes.length === 2).toBe(true);
             done();
         });

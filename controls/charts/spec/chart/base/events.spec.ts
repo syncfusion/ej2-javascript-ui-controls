@@ -23,6 +23,11 @@ export class MouseEvents {
         dblclick.initEvent('dblclick', true, false);
         element.dispatchEvent(dblclick);
     }
+    public rightClickEvent(element: Element): void {
+        let rightClick: Event = document.createEvent('MouseEvent');
+        rightClick.initEvent('contextmenu', true, false);
+        element.dispatchEvent(rightClick);
+    }
     public mousedownEvent(element: Element, sx: number, sy: number, cx: number, cy: number): void {
         let mousedown: MouseEvent = document.createEvent('MouseEvent');
         mousedown.initMouseEvent('mousedown', false, false, window, 1, sx, sy, cx, cy, false, false, false, false, 0, null);

@@ -17,7 +17,7 @@ import { PointPortModel } from './../objects/port-model';
 import { Connector } from './../objects/connector';
 import { BpmnAnnotation } from './../objects/node';
 import { BpmnFlowModel, ConnectorModel } from './../objects/connector-model';
-import { Transform, DiagramAction, TextAnnotationDirection, BpmnFlows, BpmnGateways } from '../enum/enum';
+import { Transform, DiagramAction, TextAnnotationDirection, BpmnFlows, BpmnGateways, FlipDirection } from '../enum/enum';
 import { PointModel } from '../primitives/point-model';
 import { findAngle, getIntersectionPoints, getPortDirection } from '../utility/connector';
 import { Point } from '../primitives/point';
@@ -391,6 +391,7 @@ export class BpmnDiagrams {
     /** @private */
     public getBPMNEventShape(node: Node, subEvent: BpmnSubEventModel, sub?: boolean, id?: string): Canvas {
         const eventshape: Canvas = new Canvas();
+        eventshape.flip = node.flip || FlipDirection.None;
         let event: string; let trigger: string;
         let width: number; let height: number;
         id = id || node.id;
@@ -644,6 +645,7 @@ export class BpmnDiagrams {
 
         const transactionEvents: Canvas = new Canvas();
         transactionEvents.id = node.id + '_transaction_events';
+        transactionEvents.flip = node.flip || FlipDirection.None;
         transactionEvents.style.gradient = node.style.gradient;
         const transaction: BpmnTransactionSubProcessModel = shape.activity.subProcess.transaction;
 
@@ -1848,15 +1850,18 @@ export class BpmnDiagrams {
         if (task.type !== undefined) {
             task.type = task.type || 'None';
             const bpmnshapeTaskdata: string = getBpmnTaskShapePathData(task.type);
+            let taskTypeFlip: FlipDirection = FlipDirection.None;
             (elementWrapper.children[1] as PathModel).data = bpmnshapeTaskdata;
             for (let i: number = 0; i < elementWrapper.children.length; i++) {
                 if (elementWrapper.children[parseInt(i.toString(), 10)].id === node.id + '_1_tasktType') {
+                    taskTypeFlip = elementWrapper.children[parseInt(i.toString(), 10)].flip;
                     elementWrapper.children.splice(i, 1);
                     const element: HTMLElement = document.getElementById(node.id + '_1_tasktType');
                     element.parentNode.removeChild(element);
                 }
                 //EJ2-907764-Changing Loop for Activity node with task type, result in change in task type symbols
                 if (elementWrapper.children[parseInt(i.toString(), 10)].id === node.id + '_1_taskTypeService') {
+                    taskTypeFlip = elementWrapper.children[parseInt(i.toString(), 10)].flip;
                     elementWrapper.children.splice(i, 1);
                     const element: HTMLElement = document.getElementById(node.id + '_1_taskTypeService');
                     element.parentNode.removeChild(element);
@@ -1864,6 +1869,7 @@ export class BpmnDiagrams {
             }
             const taskTypeNode: PathElement = new PathElement();
             taskTypeNode.id = node.id + '_1_tasktType';
+            taskTypeNode.flip = taskTypeFlip || 0;
             taskTypeNode.margin.left = 5; taskTypeNode.margin.top = 5;
             taskTypeNode.data = bpmnshapeTaskdata;
             taskTypeNode.style.fill = 'transparent';

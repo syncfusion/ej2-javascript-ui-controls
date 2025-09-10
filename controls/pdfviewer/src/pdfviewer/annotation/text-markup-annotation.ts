@@ -2174,8 +2174,11 @@ export class TextMarkupAnnotation {
                 this.currentTextMarkupAnnotation = null;
             }
             let isSkip: boolean = false;
-            if (this.pdfViewer.annotation.freeTextAnnotationModule &&
-                 this.pdfViewer.annotation.freeTextAnnotationModule.isInuptBoxInFocus) {
+            if (this.pdfViewer.annotation.freeTextAnnotationModule && (this.pdfViewer.toolbarModule &&
+                this.pdfViewer.toolbarModule.annotationToolbarModule) &&
+                (this.pdfViewer.annotation.freeTextAnnotationModule.isInuptBoxInFocus ||
+                    this.pdfViewer.toolbarModule.annotationToolbarModule.isFreetextClicked ||
+                    this.pdfViewer.toolbarModule.annotationToolbarModule.isPolygonClicked)) {
                 isSkip = true;
             }
             if (!isSkip) {

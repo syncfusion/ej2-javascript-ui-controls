@@ -2232,7 +2232,7 @@ export class MeasureAnnotation {
             LabelContent: null,
             LabelFillColor: null,
             LabelSettings: null,
-            LeaderLength: annotationObject.leaderLength ? annotationObject.leaderLength : 0,
+            LeaderLength: !isNullOrUndefined(annotationObject.leaderLength) ? annotationObject.leaderLength : 40,
             LeaderLineExtension: 0,
             LeaderLineOffset : 0,
             LineHeadStart: annotationObject.lineHeadStartStyle ? annotationObject.lineHeadStartStyle : isArrow ? 'ClosedArrow' : 'None',

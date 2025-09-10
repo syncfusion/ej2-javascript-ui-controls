@@ -39,6 +39,9 @@ import { StockLegend, StockChartLegendSettings } from './legend/legend';
 import { ColumnSeries, RangeAreaSeries, SeriesModel, SplineRangeAreaSeries } from './index';
 import { VisibleRangeModel } from '../common/model/interface';
 import { Periods, StockTooltipSettings } from '../common/model/base';
+import { isNullOrUndefined } from '@syncfusion/ej2-base';
+import { createTemplate } from '../common/utils/helper';
+import { createElement } from '@syncfusion/ej2-base';
 
 /**
  * Stock Chart
@@ -52,6 +55,17 @@ export class StockChart extends Component<HTMLElement> implements INotifyPropert
      * `legendModule` is used to manipulate and add legend to the Stockchart.
      */
     public stockLegendModule: StockLegend;
+
+    /**
+     * Specifies the template to be displayed when the chart has no data.
+     * This property enables the users to display customized messages, images, or other UI elements in place of an empty chart.
+     * It provides a better user experience by offering context when no data points are available.
+     *
+     * @default null
+     */
+    @Property(null)
+    public noDataTemplate: string | Function;
+
     /**
      * The width of the stockChart as a string accepts input as both like '100px' or '100%'.
      * If specified as '100%, stockChart renders to the full width of its parent element.
@@ -863,9 +877,56 @@ export class StockChart extends Component<HTMLElement> implements INotifyPropert
      */
     public stockChartDataManagerSuccess(): void {
         this.findRange();
+        const isAllSeriesEmpty: boolean = this.series.every((s: StockSeriesModel) => {
+            const dataSource: Object[] = s.dataSource as Object[] || [];
+            return !dataSource || dataSource.length === 0;
+        });
+
+        this.renderNoDataTemplate(isAllSeriesEmpty && !isNullOrUndefined(this.noDataTemplate));
         this.renderRangeSelector();
         this.renderPeriodSelector();
         this.trigger('loaded', { stockChart: this });
+    }
+
+    private renderNoDataTemplate(allowTemplate: boolean): void {
+        const existingTemplate: Element = this.element.querySelector(`#${this.element.id}_NoDataTemplate_wrapper`);
+        if (existingTemplate) {
+            existingTemplate.remove();
+        }
+        if (allowTemplate) {
+            const rawTemplate: string | Function = typeof this.noDataTemplate === 'function'
+                ? this.noDataTemplate() : this.noDataTemplate;
+            const wrapper: HTMLElement = createElement('div', { id: this.element.id + '_NoDataTemplate_wrapper' });
+            const container: HTMLElement = this.element.querySelector(`#${this.element.id}_Secondary_Element`) as HTMLElement;
+            let borderStrokeWidth : number = 0;
+            const borderElement : HTMLElement = document.getElementById(`${this.element.id}_stock_border`);
+            if (borderElement) {
+                const computedStyle : CSSStyleDeclaration = getComputedStyle(borderElement);
+                const borderWidth : string | null = computedStyle.borderWidth || computedStyle.borderTopWidth;
+                borderStrokeWidth = borderWidth ? parseFloat(borderWidth) : 0;
+            }
+            let topOffset: number = 0;
+            if (this.title) {
+                const titleHeight: number = measureText(this.title, this.titleStyle, this.themeStyle.chartTitleFont).height;
+                topOffset = titleHeight + 11;
+            }
+            const chartRect: ClientRect = this.element.getBoundingClientRect();
+            const rangeSelector: Element = document.querySelector(`#${this.element.id}_rangeSelector`) ||
+                container.querySelector('[id*="rangeSelector"]');
+            let bottom: number = chartRect.bottom;
+            if (rangeSelector) {
+                const rangeRect: ClientRect = (rangeSelector as HTMLElement).getBoundingClientRect();
+                bottom = Math.max(bottom, rangeRect.bottom);
+            }
+            const containerRect: ClientRect = container.getBoundingClientRect();
+            const height: number = bottom - containerRect.top - topOffset - borderStrokeWidth;
+            wrapper.style.cssText = `position: absolute; top: ${topOffset}px; left: ${borderStrokeWidth}px; width: ${this.availableSize.width - borderStrokeWidth * 2}px;
+                height: ${height}px; z-index: 1;
+            `;
+            const secondaryElement: HTMLElement = getElement(this.element.id + '_Secondary_Element') as HTMLElement;
+            secondaryElement.appendChild(wrapper);
+            createTemplate(wrapper, null, rawTemplate, this as unknown as Chart, null, null, this.element.id + '_NoData');
+        }
     }
 
     /**

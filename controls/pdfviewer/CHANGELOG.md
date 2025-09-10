@@ -2,9 +2,22 @@
 
 ## [Unreleased]
 
-## 30.2.7 (2025-08-26)
+## 31.1.18 (2025-09-10)
 
 ### PDF Viewer
+
+#### Bug Fixes
+
+- `#I761851` - Resolved an issue where stamp comments were missing in the comment panel when opacity was not set in `stampSettings`.
+- `#I755572` - Resolved a script error when opening the context menu after selecting the text more than three pages.
+
+## 31.1.17 (2025-09-05)
+
+### PDF Viewer
+
+#### New Features
+
+- `#I703098` - Added support for angle constraints in line-based annotations, with customizable angle settings.
 
 #### Bug Fixes
 

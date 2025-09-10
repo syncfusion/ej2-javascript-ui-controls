@@ -811,9 +811,7 @@
       .e-toolbar-item.e-template,
       .e-toolbar-item:not(.e-separator):not(.e-spacer)
       {
-        @if ($skin-name != 'Material3') {
-          padding: 0 !important;
-        }
+        padding: 0 !important;
         /* stylelint-enable */
       }
 

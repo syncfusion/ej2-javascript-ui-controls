@@ -534,8 +534,10 @@ export class Magnification {
         const pageDivElements: any = document.querySelectorAll('.e-pv-page-div');
         const startPageElement: number = pageDivElements[0].id.split('_pageDiv_')[1];
         const endPageElement: number = pageDivElements[pageDivElements.length - 1].id.split('_pageDiv_')[1];
-        for (let i: number = 0; i < this.pdfViewerBase.renderedPagesList.length; i++) {
-            this.pdfViewer.annotation.clearAnnotationCanvas(this.pdfViewerBase.renderedPagesList[parseInt(i.toString(), 10)]);
+        if (!isNullOrUndefined(this.pdfViewer.annotationModule)) {
+            for (let i: number = 0; i < this.pdfViewerBase.renderedPagesList.length; i++) {
+                this.pdfViewer.annotation.clearAnnotationCanvas(this.pdfViewerBase.renderedPagesList[parseInt(i.toString(), 10)]);
+            }
         }
         if ((this.previousZoomFactor !== this.zoomFactor) || this.pdfViewerBase.isInitialPageMode) {
             for (let i: number = startPageElement; i <= endPageElement; i++) {
@@ -988,7 +990,9 @@ export class Magnification {
         // Styles need to be applied to both canvases. The 'blendAnnotationsIntoCanvas' is used for highlight annotations.
         ['_annotationCanvas_', '_blendAnnotationsIntoCanvas_'].forEach((id: string) => {
             const canvas: HTMLElement = this.pdfViewerBase.getElement(`${id}${pageNumber}`);
-            canvas.style.setProperty('display', 'block');
+            if (!isNullOrUndefined(canvas)) {
+                canvas.style.setProperty('display', 'block');
+            }
         });
     }
 

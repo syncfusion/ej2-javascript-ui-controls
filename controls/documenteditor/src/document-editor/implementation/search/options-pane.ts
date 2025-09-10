@@ -650,7 +650,7 @@ export class OptionsPane {
      * @returns {void}
      */
     public onKeyDownInternal(): void {
-        let inputElement: HTMLInputElement = document.getElementById(this.documentHelper.owner.containerId + '_option_search_text_box') as HTMLInputElement;
+        let inputElement: HTMLInputElement = this.documentHelper.owner.element.querySelector('#' + this.documentHelper.owner.containerId + '_option_search_text_box') as HTMLInputElement;
         if (isNullOrUndefined(inputElement)) {
             return;
         }
@@ -1023,7 +1023,7 @@ export class OptionsPane {
      */
     public searchIconClickInternal = (): void => {
         /* eslint-disable @typescript-eslint/no-explicit-any */
-        let inputElement: any = document.getElementById(this.documentHelper.owner.containerId + '_option_search_text_box');
+        let inputElement: any = this.documentHelper.owner.element.querySelector('#' + this.documentHelper.owner.containerId + '_option_search_text_box');
         /* eslint-enable @typescript-eslint/no-explicit-any */
         let text: string = inputElement.value;
         if (text === '') {
@@ -1082,8 +1082,8 @@ export class OptionsPane {
      * @returns {void}
      */
     public navigateNextResultButtonClick = (): void => {
-        if (document.getElementById(this.documentHelper.owner.containerId + '_list_box_container') != null &&
-            document.getElementById(this.documentHelper.owner.containerId + '_list_box_container').style.display !== 'none') {
+        if (this.documentHelper.owner.element.querySelector('#' + this.documentHelper.owner.containerId + '_list_box_container') != null &&
+            (this.documentHelper.owner.element.querySelector('#' + this.documentHelper.owner.containerId + '_list_box_container') as HTMLElement).style.display !== 'none') {
             let selectionEnd: TextPosition = this.documentHelper.owner.selectionModule.end;
             let nextResult: TextSearchResult;
             let currentIndex: number = 0;
@@ -1128,8 +1128,8 @@ export class OptionsPane {
      * @returns {void}
      */
     public navigatePreviousResultButtonClick = (): void => {
-        if (document.getElementById(this.documentHelper.owner.containerId + '_list_box_container') != null &&
-            document.getElementById(this.documentHelper.owner.containerId + '_list_box_container').style.display !== 'none') {
+        if (this.documentHelper.owner.element.querySelector('#' + this.documentHelper.owner.containerId + '_list_box_container') != null &&
+            (this.documentHelper.owner.element.querySelector('#' + this.documentHelper.owner.containerId + '_list_box_container') as HTMLElement).style.display !== 'none') {
             let previousResult: TextSearchResult;
             let selectionStart: TextPosition = this.documentHelper.owner.selectionModule.start;
             let currentIndex: number = this.results.currentIndex;
@@ -1331,13 +1331,13 @@ export class OptionsPane {
                 else {
                     this.tabInstance.select(1);
                 }
-                let treeViewResult: HTMLElement = document.getElementById(this.documentHelper.owner.containerId + '_treeDiv');
+                let treeViewResult: HTMLElement = this.documentHelper.owner.element.querySelector('#' + this.documentHelper.owner.containerId + '_treeDiv');
                 if (!isNullOrUndefined(treeViewResult)) {
                     treeViewResult.innerHTML = '';
                 }
                 this.searchDiv.innerHTML = this.localeValue.getConstant(this.searchText);
                 this.isOptionsPaneShow = true;
-                let textBox: HTMLInputElement = document.getElementById(this.documentHelper.owner.getDocumentEditorElement().id + '_option_search_text_box') as HTMLInputElement;
+                let textBox: HTMLInputElement = this.documentHelper.owner.element.querySelector('#' + this.documentHelper.owner.getDocumentEditorElement().id + '_option_search_text_box') as HTMLInputElement;
                 let selectedText: string = this.documentHelper.owner.selectionModule.text;
                 if (!isNullOrUndefined(selectedText)) {
                     let char: string[] = ['\v', '\r'];
@@ -1373,15 +1373,15 @@ export class OptionsPane {
                         this.documentHelper.owner.searchModule.clearSearchHighlight();
                     }
                     this.isOptionsPaneShow = false;
-                    let resultListBox: HTMLElement = document.getElementById(this.documentHelper.owner.containerId + '_list_box_container');
-                    let message: HTMLElement = document.getElementById(this.documentHelper.owner.containerId + '_search_status');
+                    let resultListBox: HTMLElement = this.documentHelper.owner.element.querySelector('#' + this.documentHelper.owner.containerId + '_list_box_container');
+                    let message: HTMLElement = this.documentHelper.owner.element.querySelector('#' + this.documentHelper.owner.containerId + '_search_status');
                     if (!isNullOrUndefined(resultListBox) && !isNullOrUndefined(message)) {
                         resultListBox.style.display = 'none';
                         this.clearFocusElement();
                         resultListBox.innerHTML = '';
                         message.innerHTML = this.localeValue.getConstant('No matches');
                     }
-                    let treeViewResult: HTMLElement = document.getElementById(this.documentHelper.owner.containerId + '_treeDiv');
+                    let treeViewResult: HTMLElement = this.documentHelper.owner.element.querySelector('#' + this.documentHelper.owner.containerId + '_treeDiv');
                     if (!isNullOrUndefined(treeViewResult)) {
                         treeViewResult.innerHTML = '';
                     }

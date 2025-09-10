@@ -760,7 +760,7 @@ export class MsWordPaste {
             return;
         }
         // Process style rules
-        const selectors: string[] = Object.keys(styleClassObject);
+        const selectors: string[] = this.sortSelectors(Object.keys(styleClassObject));
         let styleValues: string[] = selectors.map((selector: string) => {
             return styleClassObject[`${selector}`];
         });
@@ -771,6 +771,13 @@ export class MsWordPaste {
         this.applyStylesToElements(clipboardDataElement, selectors, styleValues);
         // Process list-specific styles
         this.processListStyles(clipboardDataElement, selectors, styleValues);
+    }
+
+    // Sorts CSS selectors to ensure a specific application order: classes and then other elements.
+    private sortSelectors(selectors: string[]): string[] {
+        return selectors.sort((a: string, b: string) =>
+            (a.trim().startsWith('.') ? 0 : 1) - (b.trim().startsWith('.') ? 0 : 1)
+        );
     }
 
     /* Filters inline styles to keep only allowed style properties */

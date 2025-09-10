@@ -8,7 +8,7 @@ import { TextElement } from '@syncfusion/ej2-drawings';
 import { Selector } from './selector';
 import { DrawingElement } from '@syncfusion/ej2-drawings';
 import { findActiveElement } from './action';
-import { PdfViewer, PdfViewerBase, MeasureAnnotation, AnnotationSelectorSettingsModel } from '../index';
+import { PdfViewer, PdfViewerBase, MeasureAnnotation, AnnotationSelectorSettingsModel, AnnotationDrawingOptions } from '../index';
 import { PdfAnnotationBaseModel, PdfFormFieldBaseModel } from './pdf-annotation-model';
 import { PdfAnnotationBase } from './pdf-annotation';
 import { cloneObject, isLineShapes } from './drawing-util';
@@ -17,7 +17,7 @@ import { updatePerimeterLabel } from './connector-util';
 import { Browser } from '@syncfusion/ej2-base';
 import { DiagramHtmlElement } from './html-element';
 import { IFormField, IFormFieldBound } from '../form-designer';
-import { FormFieldModel } from '../pdfviewer-model';
+import { AnnotationDrawingOptionsModel, FormFieldModel } from '../pdfviewer-model';
 import { FontStyle, FormFieldType } from '../base';
 
 /**
@@ -94,6 +94,7 @@ export class ToolBase {
 
     protected undoParentElement: SelectorModel = { annotations: [] };
 
+    private baseDirection: 'right' | 'left' | 'up' | 'down';
     /**
      * @param {IElement} currentElement - Specified the current element.
      * @returns {void}
@@ -112,6 +113,7 @@ export class ToolBase {
         this.currentElement = args.source;
         this.startPosition = this.currentPosition = this.prevPosition = args.position;
         this.isTooltipVisible = true;
+        this.baseDirection = null;
         this.startAction(args.source);
     }
 
@@ -125,6 +127,72 @@ export class ToolBase {
         //this.currentElement = currentElement;
         this.prevPageId = this.pdfViewerBase.activeElements.activePageID;
         return !this.blocked;
+    }
+
+    /**
+     * @private
+     * @param {number} deltaX - The difference in X-axis points.
+     * @param {number} deltaY - The difference in Y-axis points.
+     * @param {PointModel} start - The starting point of the line.
+     * @param {PointModel} previous - The previous mouse position.
+     * @param {number} restrictAngle - The angle increment to snap to.
+     * @returns {PointModel}  - The snapped position.
+     */
+    protected getSnappedPosition(
+        deltaX: number,
+        deltaY: number,
+        start: PointModel,
+        previous: PointModel,
+        restrictAngle: number
+    ): PointModel  {
+        // Step 1: Determine initial movement direction
+        if (!this.baseDirection) {
+            const initDX: number = previous.x - start.x;
+            const initDY: number = previous.y - start.y;
+            if (Math.abs(initDX) > Math.abs(initDY)) {
+                this.baseDirection = initDX > 0 ? 'right' : 'left';
+            } else {
+                this.baseDirection = initDY > 0 ? 'down' : 'up';
+            }
+        }
+        // Step 2: Calculate angle from start to current
+        let angle: number = Math.atan2(deltaY, deltaX) * (180 / Math.PI);
+        if (angle < 0) { angle += 360; }
+
+        // Step 3: Adjust angle so baseDirection becomes 0°
+        let adjustedAngle: number = angle;
+        switch (this.baseDirection) {
+        case 'right': adjustedAngle = angle; break;
+        case 'left': adjustedAngle = (angle + 180) % 360; break;
+        case 'up': adjustedAngle = (angle + 90) % 360; break;
+        case 'down': adjustedAngle = (angle + 270) % 360; break;
+        }
+
+        // Step 4: Snap adjusted angle
+        const maxSnaps: number = Math.floor(360 / restrictAngle);
+        let snappedRelativeAngle: number = Math.round(adjustedAngle / restrictAngle) * restrictAngle;
+        snappedRelativeAngle = Math.min(snappedRelativeAngle, maxSnaps * restrictAngle);
+
+        // Step 5: Convert back to absolute angle
+        let snappedAngle: number = snappedRelativeAngle;
+        switch (this.baseDirection) {
+        case 'right': snappedAngle = snappedRelativeAngle; break;
+        case 'left': snappedAngle = (snappedRelativeAngle + 180) % 360; break;
+        case 'up': snappedAngle = (snappedRelativeAngle + 270) % 360; break;
+        case 'down': snappedAngle = (snappedRelativeAngle + 90) % 360; break;
+        }
+        snappedAngle = ((snappedAngle % 360) + 360) % 360;
+        const snappedAngleRad: number = snappedAngle * (Math.PI / 180);
+        const distance: number = Math.sqrt(deltaX * deltaX + deltaY * deltaY);
+        const snappedX: number = start.x + distance * Math.cos(snappedAngleRad);
+        const snappedY: number = start.y + distance * Math.sin(snappedAngleRad);
+
+        const snappedPosition: PointModel = {
+            x: snappedX,
+            y: snappedY
+        };
+
+        return snappedPosition;
     }
 
     /**
@@ -1186,6 +1254,34 @@ export class ConnectTool extends ToolBase {
         if (this.currentPosition && this.prevPosition) {
             const diffX: number = this.currentPosition.x - this.prevPosition.x;
             const diffY: number = this.currentPosition.y - this.prevPosition.y;
+            const drawingOptions: AnnotationDrawingOptionsModel = this.pdfViewerBase.pdfViewer.annotationDrawingOptions;
+
+            if (!isNullOrUndefined(drawingOptions) && (drawingOptions.enableLineAngleConstraints || args.info.shiftKey) &&
+                Number.isInteger(drawingOptions.restrictLineAngleTo) &&
+                drawingOptions.restrictLineAngleTo > 0 && drawingOptions.restrictLineAngleTo <= 360 &&
+                ((args.source as any).properties.shapeAnnotationType === 'Line' ||
+                    (args.source as any).properties.shapeAnnotationType === 'LineWidthArrowHead')) {
+                let startingPoint: any;
+                if (this.endPoint === 'ConnectorSegmentPoint_0') {
+                    startingPoint = (args.source as any).vertexPoints[1];
+                } else if (this.endPoint === 'ConnectorSegmentPoint_1') {
+                    startingPoint = (args.source as any).vertexPoints[0];
+                }
+                const restrictAngle: number = drawingOptions.restrictLineAngleTo;
+
+                const deltaX: number = this.currentPosition.x - startingPoint.x;
+                const deltaY: number = this.currentPosition.y - startingPoint.y;
+                const previousPoint: PointModel  = (startingPoint.x === this.prevPosition.x &&
+                        startingPoint.y === this.prevPosition.y)
+                    ? this.currentPosition
+                    : this.prevPosition;
+                const result: PointModel = this.getSnappedPosition(deltaX, deltaY, startingPoint, previousPoint,
+                                                                   restrictAngle);
+                this.currentPosition = {
+                    x: result.x,
+                    y: result.y
+                };
+            }
             let newValue: PointModel;
             let oldValue: PointModel;
             if (args.source && (args.source as SelectorModel).annotations) {
@@ -1972,8 +2068,30 @@ export class PolygonDrawingTool extends ToolBase {
             this.dragging = true;
             const obj: PdfAnnotationBaseModel = (this.drawingObject);
             if (this.drawingObject && this.currentPosition) {
-                obj.vertexPoints[obj.vertexPoints.length - 1].x = this.currentPosition.x / this.pdfViewerBase.getZoomFactor();
-                obj.vertexPoints[obj.vertexPoints.length - 1].y = this.currentPosition.y / this.pdfViewerBase.getZoomFactor();
+                const drawingOptions: AnnotationDrawingOptionsModel = this.pdfViewerBase.pdfViewer.annotationDrawingOptions;
+
+                if (!isNullOrUndefined(drawingOptions) && (drawingOptions.enableLineAngleConstraints || args.info.shiftKey) &&
+                    Number.isInteger(drawingOptions.restrictLineAngleTo) &&
+                    drawingOptions.restrictLineAngleTo > 0 &&
+                    drawingOptions.restrictLineAngleTo <= 360 && obj.vertexPoints.length >= 2) {
+                    const fixedPoint: PointModel = obj.vertexPoints[obj.vertexPoints.length - 2];
+                    const restrictAngle: number = drawingOptions.restrictLineAngleTo;
+                    const currentX: number = this.currentPosition.x / this.pdfViewerBase.getZoomFactor();
+                    const currentY: number = this.currentPosition.y / this.pdfViewerBase.getZoomFactor();
+                    const previousX: number = this.prevPosition.x / this.pdfViewerBase.getZoomFactor();
+                    const previousY: number = this.prevPosition.y / this.pdfViewerBase.getZoomFactor();
+                    const previousPoint: PointModel  = (fixedPoint.x === previousX && fixedPoint.y === previousY)
+                        ? { x: currentX, y: currentY }
+                        : { x: previousX, y: previousY };
+                    const result: PointModel = this.getSnappedPosition(currentX - fixedPoint.x, currentY - fixedPoint.y, fixedPoint,
+                                                                       previousPoint, restrictAngle);
+                    obj.vertexPoints[obj.vertexPoints.length - 1].x = result.x;
+                    obj.vertexPoints[obj.vertexPoints.length - 1].y = result.y;
+                }
+                else {
+                    obj.vertexPoints[obj.vertexPoints.length - 1].x = this.currentPosition.x / this.pdfViewerBase.getZoomFactor();
+                    obj.vertexPoints[obj.vertexPoints.length - 1].y = this.currentPosition.y / this.pdfViewerBase.getZoomFactor();
+                }
                 this.commandHandler.nodePropertyChange(obj, { vertexPoints: obj.vertexPoints });
             }
             if (obj.measureType === 'Perimeter') {
@@ -2271,6 +2389,25 @@ export class LineTool extends ToolBase {
             if (this.currentPosition && this.prevPosition) {
                 const diffX: number = this.currentPosition.x - this.prevPosition.x;
                 const diffY: number = this.currentPosition.y - this.prevPosition.y;
+                const drawingOptions: AnnotationDrawingOptionsModel = this.pdfViewerBase.pdfViewer.annotationDrawingOptions;
+
+                if (!isNullOrUndefined(drawingOptions) && (drawingOptions.enableLineAngleConstraints || args.info.shiftKey) &&
+                    Number.isInteger(drawingOptions.restrictLineAngleTo) &&
+                    drawingOptions.restrictLineAngleTo > 0 && drawingOptions.restrictLineAngleTo <= 360) {
+                    const restrictAngle: number = drawingOptions.restrictLineAngleTo;
+                    const deltaX: number = this.currentPosition.x - this.startPosition.x;
+                    const deltaY: number = this.currentPosition.y - this.startPosition.y;
+                    const previousPoint: PointModel  = (this.startPosition.x === this.prevPosition.x &&
+                        this.startPosition.y === this.prevPosition.y)
+                        ? this.currentPosition
+                        : this.prevPosition;
+                    const result: PointModel = this.getSnappedPosition(deltaX, deltaY, this.startPosition,
+                                                                       previousPoint, restrictAngle);
+                    this.currentPosition = {
+                        x: result.x,
+                        y: result.y
+                    };
+                }
                 let currentSelector: any;
                 if ((args.source as PdfAnnotationBaseModel) && (args as PdfAnnotationBaseModel).annotationSelectorSettings !== null) {
                     currentSelector = (args.source as PdfAnnotationBaseModel).annotationSelectorSettings;

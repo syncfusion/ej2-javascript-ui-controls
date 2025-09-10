@@ -3529,3 +3529,279 @@ describe('Diagram Port Distribution with Connectors', () => {
         done();
     });
 });
+
+describe('Node Annotation Drag and Resize with RestrictNegativeAxisDragDrop', () => {
+    let diagram: Diagram;
+    let ele: HTMLElement;
+    let mouseEvents = new MouseEvents();
+    beforeAll(() => {
+        ele = createElement('div', { id: 'diagram-annotation-drag' });
+        document.body.appendChild(ele);
+        let nodes: NodeModel[] = [
+            {
+                id: 'node1', width: 100, height: 100, offsetX: 200, offsetY: 200,
+                annotations: [{ content: 'Node 1', constraints: AnnotationConstraints.Select | AnnotationConstraints.Drag | AnnotationConstraints.Resize }],
+            }]
+        diagram = new Diagram({
+            width: 900, height: 900,
+            nodes: nodes,
+            constraints: DiagramConstraints.Default | DiagramConstraints.RestrictNegativeAxisDragDrop,
+            scrollSettings: {horizontalOffset: 200, verticalOffset: 200}
+        });
+        diagram.appendTo('#diagram-annotation-drag');
+    });
+    afterAll(() => {
+        diagram.destroy();
+        ele.remove();
+    });
+    it('should restrict annotation dragging to negative axis when RestrictNegativeAxisDragDrop is enabled(Y-Axis)', (done: Function) => {
+        diagram.clearSelection();
+        let diagramCanvas: HTMLElement = document.getElementById(diagram.element.id + 'content');
+        mouseEvents.clickEvent(diagramCanvas, 400, 400);
+        mouseEvents.mouseDownEvent(diagramCanvas, 400, 400);
+        mouseEvents.mouseMoveEvent(diagramCanvas, 400, 350);
+        mouseEvents.mouseMoveEvent(diagramCanvas, 400, 300);
+        mouseEvents.mouseMoveEvent(diagramCanvas, 400, 230);
+        mouseEvents.mouseMoveEvent(diagramCanvas, 400, 180);
+        mouseEvents.mouseMoveEvent(diagramCanvas, 400, 150);
+        mouseEvents.mouseMoveEvent(diagramCanvas, 400, 180);
+        mouseEvents.mouseMoveEvent(diagramCanvas, 400, 230);
+        mouseEvents.mouseMoveEvent(diagramCanvas, 400, 300);
+        mouseEvents.mouseMoveEvent(diagramCanvas, 400, 350);
+        mouseEvents.mouseMoveEvent(diagramCanvas, 400, 375);
+        mouseEvents.mouseUpEvent(diagramCanvas, 400, 375);
+        let node = diagram.nodes[0];
+        let annotationWrapper = (node as Node).wrapper.children[1];
+        expect(annotationWrapper.offsetY>0).toBe(true);
+        done();
+        diagram.dataBind();
+        diagram.refresh();
+    });
+    it('should restrict annotation dragging to negative axis when RestrictNegativeAxisDragDrop is enabled(X-Axis)', (done: Function) => {
+        diagram.dataBind();
+        diagram.refresh();
+        diagram.clearSelection();
+        let diagramCanvas: HTMLElement = document.getElementById(diagram.element.id + 'content');
+        mouseEvents.clickEvent(diagramCanvas, 400, 400);
+        mouseEvents.mouseDownEvent(diagramCanvas, 400, 400);
+        mouseEvents.mouseMoveEvent(diagramCanvas, 350, 400);
+        mouseEvents.mouseMoveEvent(diagramCanvas, 300, 400);
+        mouseEvents.mouseMoveEvent(diagramCanvas, 230, 400);
+        mouseEvents.mouseMoveEvent(diagramCanvas, 180, 400);
+        mouseEvents.mouseMoveEvent(diagramCanvas, 150, 400);
+        mouseEvents.mouseMoveEvent(diagramCanvas, 180, 400);
+        mouseEvents.mouseMoveEvent(diagramCanvas, 230, 400);
+        mouseEvents.mouseMoveEvent(diagramCanvas, 300, 400);
+        mouseEvents.mouseMoveEvent(diagramCanvas, 350, 400);
+        mouseEvents.mouseMoveEvent(diagramCanvas, 390, 400);
+        mouseEvents.mouseUpEvent(diagramCanvas, 390, 400);
+        let node = diagram.nodes[0];
+        let annotationWrapper = (node as Node).wrapper.children[1];
+        expect(annotationWrapper.offsetX>0).toBe(true);
+        done();
+    });
+    it('should restrict annotation resizing to negative axis when RestrictNegativeAxisDragDrop is enabled(Y-Axis)', (done: Function) => {
+        diagram.clearSelection();
+        let diagramCanvas: HTMLElement = document.getElementById(diagram.element.id + 'content');
+        let offsetLeft: number = diagram.element.offsetLeft+200;
+        let offsetTop: number = diagram.element.offsetTop+200;
+        let node = diagram.nodes[0];
+        let annotationWrapper = (node as Node).wrapper.children[1];
+        let annoBounds = annotationWrapper.bounds;
+        let topCenter = annoBounds.topCenter;
+        mouseEvents.clickEvent(diagramCanvas, topCenter.x + offsetLeft, topCenter.y + offsetTop);
+        mouseEvents.dragAndDropEvent(diagramCanvas, topCenter.x + offsetLeft, topCenter.y + offsetTop-3, topCenter.x + offsetLeft, topCenter.y + offsetTop - 50);
+        mouseEvents.dragAndDropEvent(diagramCanvas, topCenter.x + offsetLeft, topCenter.y + offsetTop-3-55, topCenter.x + offsetLeft, topCenter.y + offsetTop - 198);
+        mouseEvents.dragAndDropEvent(diagramCanvas, topCenter.x + offsetLeft, topCenter.y + offsetTop-195, topCenter.x + offsetLeft, topCenter.y + offsetTop - 205);
+        mouseEvents.dragAndDropEvent(diagramCanvas, topCenter.x + offsetLeft, topCenter.y + offsetTop-200, topCenter.x + offsetLeft, topCenter.y + offsetTop + 250);
+        expect(annotationWrapper.bounds.y>0).toBe(true);
+        done();
+    });
+    it('should restrict annotation resizing to negative axis when RestrictNegativeAxisDragDrop is enabled(X-Axis)', (done: Function) => {
+        let diagramCanvas: HTMLElement = document.getElementById(diagram.element.id + 'content');
+        let offsetLeft: number = diagram.element.offsetLeft+200;
+        let offsetTop: number = diagram.element.offsetTop+200;
+        let node = diagram.nodes[0];
+        let annotationWrapper = (node as Node).wrapper.children[1];
+        let annoBounds = annotationWrapper.bounds;
+        let topCenter = annoBounds.topCenter;
+        let topLeft = annoBounds.topLeft;
+        mouseEvents.dragAndDropEvent(diagramCanvas, topLeft.x + offsetLeft, topCenter.y + offsetTop + 102, topLeft.x + offsetLeft - 180, topCenter.y + offsetTop+102);
+        mouseEvents.dragAndDropEvent(diagramCanvas, 207, 312, 190, 312);
+        expect(annotationWrapper.bounds.x>0).toBe(true);
+        done();
+    });
+});
+
+describe('Node rotate restrict with RestrictNegativeAxisDragDrop', () => {
+    let diagram: Diagram;
+    let ele: HTMLElement;
+    let mouseEvents = new MouseEvents();
+    beforeAll(() => {
+        ele = createElement('div', { id: 'diagram-node-rotate' });
+        document.body.appendChild(ele);
+        let nodes: NodeModel[] = [
+            {
+                id: 'node1', width: 100, height: 100, offsetX: 200, offsetY: 200,
+                annotations: [{ content: 'Node 1'}],
+            }]
+
+        diagram = new Diagram({
+            width: 900, height: 900,
+            nodes: nodes,
+            constraints: DiagramConstraints.Default | DiagramConstraints.RestrictNegativeAxisDragDrop,
+            scrollSettings: {horizontalOffset: 200, verticalOffset: 200}
+        });
+        diagram.appendTo('#diagram-node-rotate');
+    });
+    afterAll(() => {
+        diagram.destroy();
+        ele.remove();
+    });
+    it('should restrict node rotation when RestrictNegativeAxisDragDrop is enabled', (done: Function) => {
+        debugger
+        //diagram.clearSelection();
+        let diagramCanvas: HTMLElement = document.getElementById(diagram.element.id + 'content');
+        mouseEvents.clickEvent(diagramCanvas, 400, 400);
+            mouseEvents.mouseDownEvent(diagramCanvas, 400, 400);
+            mouseEvents.mouseMoveEvent(diagramCanvas, 350, 400);
+            mouseEvents.mouseMoveEvent(diagramCanvas, 300, 400);
+            mouseEvents.mouseMoveEvent(diagramCanvas, 230, 400);
+            mouseEvents.mouseMoveEvent(diagramCanvas, 180, 400);
+            mouseEvents.mouseMoveEvent(diagramCanvas, 150, 400);
+            mouseEvents.mouseUpEvent(diagramCanvas, 150, 400);
+            mouseEvents.mouseDownEvent(diagramCanvas, 250, 330);
+            mouseEvents.mouseMoveEvent(diagramCanvas, 305, 400);
+            mouseEvents.mouseMoveEvent(diagramCanvas, 228, 480);
+            mouseEvents.mouseUpEvent(diagramCanvas, 228, 480);
+            let node = diagram.nodes[0];
+            expect(node.wrapper.bounds.left >=0 && node.wrapper.bounds.top >= 0).toBe(true);
+            done();
+    });
+});
+
+describe('Node rotate restrict without RestrictNegativeAxisDragDrop constraints', () => {
+    let diagram: Diagram;
+    let ele: HTMLElement;
+    let mouseEvents = new MouseEvents();
+    beforeAll(() => {
+        ele = createElement('div', { id: 'diagram-node-rotate-without-Constraint' });
+        document.body.appendChild(ele);
+        let nodes: NodeModel[] = [
+            {
+                id: 'node1', width: 100, height: 100, offsetX: 200, offsetY: 200,
+                annotations: [{ content: 'Node 1'}],
+            }]
+
+        diagram = new Diagram({
+            width: 900, height: 900,
+            nodes: nodes,
+            scrollSettings: {horizontalOffset: 200, verticalOffset: 200}
+        });
+        diagram.appendTo('#diagram-node-rotate-without-Constraint');
+    });
+    afterAll(() => {
+        diagram.destroy();
+        ele.remove();
+    });
+    it('should node rotation when RestrictNegativeAxisDragDrop is disabled', (done: Function) => {
+        debugger
+        let diagramCanvas: HTMLElement = document.getElementById(diagram.element.id + 'content');
+        mouseEvents.clickEvent(diagramCanvas, 400, 400);
+        mouseEvents.mouseDownEvent(diagramCanvas, 400, 400);
+        mouseEvents.mouseMoveEvent(diagramCanvas, 350, 400);
+        mouseEvents.mouseMoveEvent(diagramCanvas, 300, 400);
+        mouseEvents.mouseMoveEvent(diagramCanvas, 230, 400);
+        mouseEvents.mouseMoveEvent(diagramCanvas, 180, 400);
+        mouseEvents.mouseMoveEvent(diagramCanvas, 150, 400);
+        mouseEvents.mouseUpEvent(diagramCanvas, 150, 400);
+        mouseEvents.mouseDownEvent(diagramCanvas, 150, 330);
+        mouseEvents.mouseMoveEvent(diagramCanvas, 205, 330);
+        mouseEvents.mouseMoveEvent(diagramCanvas, 250, 400);
+        mouseEvents.mouseMoveEvent(diagramCanvas, 200, 480);
+        mouseEvents.mouseUpEvent(diagramCanvas, 200, 480);
+        let node = diagram.nodes[0];
+        expect(node.wrapper.bounds.left <=0 && node.wrapper.bounds.top >= 0).toBe(true);
+        done();
+    });
+});
+
+describe('Distribute with connectors selected', () => {
+    let diagram: Diagram;
+    let ele: HTMLElement;
+    let mouseEvents = new MouseEvents();
+    beforeAll(() => {
+        ele = createElement('div', { id: 'diagramDistribute' });
+        document.body.appendChild(ele);
+        let nodes: NodeModel[] = [
+            {
+                id: 'node1',
+                offsetX: 300, offsetY: 250,
+                width: 100, height: 100,
+                annotations: [{ content: 'node1' }],
+            },
+            {
+                id: 'node2',
+                offsetX: 250, offsetY: 450,
+                width: 100, height: 100,
+                annotations: [{ content: 'node2' }],
+            },
+            {
+                id: 'node3',
+                offsetX: 550, offsetY: 450,
+                width: 100, height: 100,
+                annotations: [{ content: 'node2' }],
+            },
+        ];
+        let connectors: ConnectorModel[] = [
+            {
+                id: 'connector1',
+                sourceID: 'node1',
+                targetID: 'node2',
+                type: 'Orthogonal',
+                annotations: [{ content: 'connector1' }],
+            },
+            {
+                id: 'connector2',
+                sourceID: 'node2',
+                targetPoint: { x: 400, y: 450 },
+                type: 'Orthogonal',
+                annotations: [{ content: 'connector2' }],
+            },
+            {
+                id: 'connector3',
+                sourcePoint: { x: 550, y: 250 },
+                targetID: 'node3',
+                type: 'Orthogonal',
+                annotations: [{ content: 'connector3' }],
+            },
+            {
+                id: 'connector4',
+                sourcePoint: { x: 650, y: 220 },
+                targetPoint: { x: 750, y: 300 },
+                type: 'Orthogonal',
+                annotations: [{ content: 'connector4' }],
+            }
+        ]
+
+        diagram = new Diagram({
+            width: 900, height: 900,
+            nodes: nodes, connectors: connectors,
+        });
+        diagram.appendTo('#diagramDistribute');
+    });
+    afterAll(() => {
+        diagram.destroy();
+        ele.remove();
+    });
+    it('MultiSelect Distribute', (done: Function) => {
+        diagram.selectAll();
+        diagram.distribute('RightToLeft');
+        diagram.dataBind();
+        diagram.distribute('BottomToTop');
+        diagram.dataBind();
+        let node = diagram.nodes[0];
+        expect(node.offsetX === 400 && node.offsetY === 250).toBe(true);
+        done();
+    });
+});

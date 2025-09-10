@@ -314,7 +314,6 @@ export class Layout {
      * Releases un-managed and - optionally - managed resources.
      *
      * @returns {void}
-     * @private
      */
     public destroy(): void {
         this.documentHelper = undefined;
@@ -4151,7 +4150,6 @@ export class Layout {
     /**
      * Set the checkbox font size
      * @returns {void}
-     * @private
      */
     public setCheckBoxFontSize(formFieldData: CheckBoxFormField, format: WCharacterFormat): void {
         if (formFieldData.sizeType !== 'Auto') {
@@ -5539,7 +5537,7 @@ export class Layout {
                 }
             }
         }
-        if (HelperMethods.containsUnderlinedImage(line, this.viewer.owner.enableTrackChanges)) {
+        if (HelperMethods.containsUnderlinedImage(line)) {
             let measurement: TextSizeInfo = this.documentHelper.textHelper.measureText('a', line.paragraph.characterFormat);
             this.maxTextHeight = measurement.Height;
             this.maxTextBaseline = measurement.BaselineOffset;
@@ -5634,7 +5632,7 @@ export class Layout {
             if (!isNullOrUndefined(line)) {
                 index = paragraphWidget.childWidgets.indexOf(line);
                 if (index !== 0) {
-                    if (paragraphWidget.paragraphFormat.keepLinesTogether && !isNullOrUndefined(paragraphWidget.previousWidget) && !line.previousLine.isEndsWithColumnBreak) {
+                    if (paragraphWidget.paragraphFormat.keepLinesTogether && !isNullOrUndefined(paragraphWidget.previousWidget) && !line.previousLine.isEndsWithColumnBreak && !line.previousLine.isEndsWithPageBreak) {
                         index = 0;
                         keepLinesTogether = true;
                     } else if (index == 1 && !line.previousLine.isEndsWithPageBreak && !line.previousLine.isEndsWithColumnBreak && paragraphWidget.paragraphFormat.widowControl &&
@@ -10282,7 +10280,9 @@ export class Layout {
         this.viewer.cutFromTop(yPos);
         this.clearTableWidget(currentTable, true, true, true, true);
         this.isBidiReLayout = true;
+        this.isRelayout = true;
         this.layoutBlock(currentTable, 0);
+        this.isRelayout = false;
         this.viewer.updateClientAreaForBlock(currentTable, false);
         let pageIndexAfterLayouting: number = 0;
         if (currentTable.containerWidget instanceof BodyWidget) {

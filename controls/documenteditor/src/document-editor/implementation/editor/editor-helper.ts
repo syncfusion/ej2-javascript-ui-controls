@@ -1,7 +1,7 @@
 import { isNullOrUndefined, NumberFormatOptions, Internationalization, DateFormatOptions, SanitizeHtmlHelper } from '@syncfusion/ej2-base';
 import { ZipArchive, ZipArchiveItem } from '@syncfusion/ej2-compression';
 import { LineWidget, ElementBox, BodyWidget, ParagraphWidget, TextElementBox, BlockWidget, TableRowWidget, TableCellWidget, TableWidget, ListTextElementBox, ImageElementBox } from '../viewer/page';
-import { WCharacterFormat, WCellFormat, TextPosition, TextSearchResults, WList, WAbstractList, Revision, CommentElementBox } from '../index';
+import { WCharacterFormat, WCellFormat, TextPosition, TextSearchResults, WList, WAbstractList, Revision, CommentElementBox, CharacterFormatProperties } from '../index';
 import { HighlightColor, TextFormFieldType, CheckBoxSizeType, RevisionType, CollaborativeEditingAction, CompatibilityMode, BaselineAlignment, Underline, Strikethrough, BiDirectionalOverride, BreakClearType, LineStyle, TextAlignment, LineSpacingType, OutlineLevel, VerticalAlignment, FontHintType } from '../../base/types';
 import { Widget, FieldElementBox, CommentCharacterElementBox } from '../viewer/page';
 import { Dictionary, MentionDataEditInfo } from '../..';
@@ -99,26 +99,22 @@ export class HelperMethods {
      * Check if the line widget has image with underline
      * @private
      * @param {LineWidget} lineWidget input line widget to check if it has image with underline
-     * @param {boolean} enableTrackChanges accepts a boolean value to check if track changes is enabled
      * @returns {boolean} weather line widget has image with underline or not
      */
     /* eslint-disable  */
-    public static containsUnderlinedImage(lineWidget: LineWidget, enableTrackChanges: boolean): boolean {
-        let isLineHasText: boolean  = false;
-        let isImageHasUnderline: boolean  = false;
+    public static containsUnderlinedImage(lineWidget: LineWidget): boolean {
+        let isImageHasUnderline: boolean = false;
         for (let i: number = 0; i < lineWidget.children.length; i++) {
             const elementBox: ElementBox = lineWidget.children[i] as ElementBox;
-            if (!isLineHasText) {
-                if (elementBox instanceof TextElementBox || elementBox instanceof ListTextElementBox || elementBox instanceof FieldElementBox) {
-                    isLineHasText = true;
-                } else if (elementBox instanceof ImageElementBox) {
-                    // Check if the image has underline or track changes insertion
-                    isImageHasUnderline = (enableTrackChanges && elementBox.getAllRevision().length > 0 && elementBox.getRevision(0).revisionType === 'Insertion')
-                        || (elementBox.characterFormat && elementBox.characterFormat.underline !== 'None');
-                }
+            if (elementBox instanceof TextElementBox || elementBox instanceof ListTextElementBox || elementBox instanceof FieldElementBox) {
+                return false; //If line has text, no need to check for underline in image
+            } else if (elementBox instanceof ImageElementBox) {
+                // Check if the image has underline or track changes insertion
+                isImageHasUnderline = (elementBox.getAllRevision().length > 0 && elementBox.getRevision(0).revisionType === 'Insertion')
+                    || (elementBox.characterFormat && elementBox.characterFormat.underline !== 'None');
             }
         }
-        return !isLineHasText && isImageHasUnderline;
+        return isImageHasUnderline;
     }
     /**
      * Check given string is a valid either roman or arabic number
@@ -908,6 +904,46 @@ export class HelperMethods {
             }
         }
     }
+
+    /**
+     * Writes character format properties from a WCharacterFormat instance
+     * into a CharacterFormatProperties object.
+     */
+    public static writeCharacterFormatProperties(characterFormat: WCharacterFormat, format: any) {
+        if (!isNullOrUndefined(characterFormat.bold)) {
+            format.bold = characterFormat.bold;
+        }
+        if (!isNullOrUndefined(characterFormat.italic)) {
+            format.italic = characterFormat.italic;
+        }
+        if (!isNullOrUndefined(characterFormat.fontSize)) {
+            format.fontSize = characterFormat.fontSize;
+        }
+        if (!isNullOrUndefined(characterFormat.fontFamily)) {
+            format.fontFamily = characterFormat.fontFamily;
+        }
+        if (!isNullOrUndefined(characterFormat.underline)) {
+            format.underline = characterFormat.underline;
+        }
+        if (!isNullOrUndefined(characterFormat.strikethrough)) {
+            format.strikethrough = characterFormat.strikethrough;
+        }
+        if (!isNullOrUndefined(characterFormat.baselineAlignment)) {
+            format.baselineAlignment = characterFormat.baselineAlignment;
+        }
+        if (!isNullOrUndefined(characterFormat.highlightColor)) {
+            format.highlightColor = characterFormat.highlightColor;
+        }
+        if (!isNullOrUndefined(characterFormat.fontColor)) {
+            format.fontColor = characterFormat.fontColor;
+        }
+        if (!isNullOrUndefined(characterFormat.bidi)) {
+            format.bidi = characterFormat.bidi;
+        }
+        if (!isNullOrUndefined(characterFormat.allCaps)) {
+            format.allCaps = characterFormat.allCaps;
+        }
+    }
     /// <summary>
     /// To check whether the font name is theme font or not.
     /// </summary>
@@ -1374,27 +1410,16 @@ export class HelperMethods {
 export class Point {
     private xIn: number = 0;
     private yIn: number = 0;
-    /**
-     * @private
-     */
+
     public get x(): number {
         return this.xIn;
     }
-    /**
-     * @private
-     */
     public set x(value: number) {
         this.xIn = value;
     }
-    /**
-     * @private
-     */    
     public get y(): number {
         return this.yIn;
     }
-    /**
-     * @private
-     */    
     public set y(value: number) {
         this.yIn = value;
     }
@@ -1403,9 +1428,6 @@ export class Point {
         this.xIn = xPosition;
         this.yIn = yPosition;
     }
-    /**
-     * @private
-     */    
     public copy(point: Point): void {
         this.xIn = point.xIn;
         this.yIn = point.yIn;
@@ -1414,7 +1436,6 @@ export class Point {
      * Destroys the internal objects maintained.
      *
      * @returns {void}
-     * @private
      */
     public destroy(): void {
         this.xIn = undefined;
@@ -1791,6 +1812,13 @@ export interface ElementInfo {
 export interface ParagraphFormatResult {
     docParagraphFormat: WParagraphFormat;
     isPaste: boolean;
+}
+/**
+ * @private
+ */
+export interface CharacterFormatInfo {
+    editorFormat: CharacterFormatProperties;
+    documentFormat: WCharacterFormat;
 }
 /**
  * @private

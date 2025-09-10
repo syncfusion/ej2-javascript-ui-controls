@@ -107,7 +107,8 @@ import { StockChart } from '../stock-chart/stock-chart';
 import { Export } from './print-export/export';
 import { PrintUtils } from '../common/utils/print';
 import { IAfterExportEventArgs, IExportEventArgs } from '../common/model/interface';
-
+import { createTemplate } from '../common/utils/helper';
+import { createElement } from '@syncfusion/ej2-base';
 /**
  * Configures the range color settings in the chart.
  */
@@ -630,6 +631,16 @@ export class Chart extends Component<HTMLElement> implements INotifyPropertyChan
      * `exportModule` is used to export the chart in `JPEG`, `PNG`, `SVG`, `PDF`, `XLSX`, or `CSV` format.
      */
     public exportModule: Export;
+
+    /**
+     * Specifies the template to be displayed when the chart has no data.
+     * This property enables the users to display customized messages, images, or other UI elements in place of an empty chart.
+     * It provides a better user experience by offering context when no data points are available.
+     *
+     * @default null
+     */
+    @Property(null)
+    public noDataTemplate: string | Function;
 
     /**
      * The width of the chart as a string, accepting input such as '100px' or '100%'.
@@ -1965,6 +1976,11 @@ export class Chart extends Component<HTMLElement> implements INotifyPropertyChan
 
         this.calculateBounds();
 
+        const isAllSeriesEmpty: boolean = this.series.every((s: SeriesModel) => {
+            const dataSource: Object[] = s.dataSource as Object[] || [];
+            return dataSource.length === 0;
+        });
+
         //this prevents the initial rendering of stock chart
         if (this.stockChart && !this.stockChart.rangeFound) {
             if (this.stockChart.enablePeriodSelector || this.stockChart.enableSelector) {
@@ -1973,13 +1989,81 @@ export class Chart extends Component<HTMLElement> implements INotifyPropertyChan
         }
 
         this.renderElements();
-
+        this.renderNoDataTemplate(isAllSeriesEmpty && !isNullOrUndefined(this.noDataTemplate));
         removeElement('chartmeasuretext');
         this.removeSelection();
         if (this.markerRender) {
             this.markerRender.mergeXvalues(this.visibleSeries);
         }
     }
+
+    private renderNoDataTemplate(allowTemplate: boolean): void {
+        const existingTemplate: Element = this.element.querySelector(`#${this.element.id}_NoDataTemplate_wrapper`);
+        if (existingTemplate) {
+            existingTemplate.remove();
+        }
+        if (allowTemplate) {
+            const sanitizedTemplate: string | Function = this.enableHtmlSanitizer
+                ? this.sanitize(this.noDataTemplate as string)
+                : this.noDataTemplate;
+
+            const wrapper: HTMLElement = createElement('div', {
+                id: this.element.id + '_NoDataTemplate_wrapper'
+            });
+
+            let borderStrokeWidth: number = 0;
+            const borderElement: SVGRectElement | null = this.element.querySelector(
+                `#${this.element.id}_ChartBorder`
+            ) as SVGRectElement | null;
+
+            if (borderElement) {
+                const strokeAttr: string | null = borderElement.getAttribute('stroke-width');
+                borderStrokeWidth = strokeAttr ? parseFloat(strokeAttr) : 0;
+            }
+
+            let topOffset: number = borderStrokeWidth;
+            let leftOffset: number = borderStrokeWidth;
+            let width: number = this.availableSize.width - borderStrokeWidth * 2;
+            let height: number = this.availableSize.height - borderStrokeWidth * 2;
+
+            if (this.title) {
+                const titleHeight: number = this.title
+                    ? measureText(this.title, this.titleStyle, this.themeStyle.chartTitleFont).height
+                    : 0;
+                const subTitleHeight: number = this.subTitle
+                    ? measureText(this.subTitle, this.subTitleStyle, this.themeStyle.chartSubTitleFont).height
+                    : 0;
+                const spacing: number = this.subTitle ? 5 : 0;
+                const totalOffset: number = titleHeight + subTitleHeight + spacing;
+
+                switch (this.titleStyle.position) {
+                case 'Top':
+                    topOffset = totalOffset + 11;
+                    height -= totalOffset + 11;
+                    break;
+                case 'Left':
+                    leftOffset = totalOffset + 11;
+                    width -= totalOffset + 11;
+                    break;
+                case 'Bottom':
+                    height = height - totalOffset - 16;
+                    break;
+                case 'Right':
+                    width = width - totalOffset - 11;
+                    break;
+                }
+            }
+
+            wrapper.style.cssText = `position: absolute; top: ${topOffset}px; left: ${leftOffset}px; width: ${width}px;
+            height: ${height}px; z-index: 1;
+        `;
+
+            const element: HTMLElement = getElement(this.element.id + '_Secondary_Element') as HTMLElement;
+            element.appendChild(wrapper);
+            createTemplate(wrapper, null, sanitizedTemplate, this, null, null, this.element.id + '_NoData');
+        }
+    }
+
     /**
      * To calcualte the stack values.
      *
@@ -3348,9 +3432,6 @@ export class Chart extends Component<HTMLElement> implements INotifyPropertyChan
                         clearTimeout(this.resizeTo);
                         return;
                     }
-                    if ((this.axisCollections[0].zoomingScrollBar && this.axisCollections[0].zoomingScrollBar.isScrollUI)) {
-                        this.axisCollections[0].zoomingScrollBar.isScrollUI = false;
-                    }
                     this.createChartSvg();
                     arg.currentSize = this.availableSize;
                     this.trigger(resized, arg);
@@ -3584,10 +3665,19 @@ export class Chart extends Component<HTMLElement> implements INotifyPropertyChan
                 this.currentSeriesIndex = +targetId.split('SeriesGroup')[1];
                 targetElement.removeAttribute('tabindex');
                 targetElement.blur();
-                if (targetElement.children[1].id.indexOf('_Point_') === -1) {
+                if (targetElement.children.length > 1 && targetElement.children[1].id.indexOf('_Point_') === -1) {
                     markerGroup = getElement(this.element.id + 'SymbolGroup' + targetId.split('SeriesGroup')[1]) as HTMLElement;
                 }
-                targetId = this.focusChild((markerGroup != null ? markerGroup.children[1] : targetElement.children[1]) as HTMLElement);
+                let childToFocus: HTMLElement | null = null;
+                if (markerGroup && markerGroup.children.length > 1) {
+                    childToFocus = markerGroup.children[1] as HTMLElement;
+                } else if (targetElement.children.length > 1) {
+                    childToFocus = targetElement.children[1] as HTMLElement;
+                }
+
+                if (childToFocus) {
+                    targetId = this.focusChild(childToFocus);
+                }
             }
             else if (targetId.indexOf('_ChartTitle') > -1) {
                 this.setNavigationStyle(targetId);
@@ -4455,7 +4545,8 @@ export class Chart extends Component<HTMLElement> implements INotifyPropertyChan
         for (const series of this.series) {
             let markerEnable: boolean;
             series.trendlines.map((trendline: Trendline) => {
-                markerEnable = markerEnable || trendline.marker.visible;
+                markerEnable = markerEnable ||
+                (this.getActualProperties(trendline).marker && this.getActualProperties(trendline).marker.visible);
                 isLine = isLine || (trendline.type === 'Linear' || trendline.type === 'MovingAverage') ? true : false;
                 isSpline = isSpline || (!isLine || (trendline.type === 'Exponential' || trendline.type === 'Logarithmic' || trendline.type === 'Power' || trendline.type === 'Polynomial')) ? true : false;
             });
@@ -4546,6 +4637,7 @@ export class Chart extends Component<HTMLElement> implements INotifyPropertyChan
                 remove(this.svgObject);
             }
         }
+        this.trendLineElements = null;
     }
 
     private refreshDefinition(definitions: Row[] | Column[]): void {
@@ -4904,8 +4996,9 @@ export class Chart extends Component<HTMLElement> implements INotifyPropertyChan
                             removeElement((this.series[i as number] as Series).lastValueLabelElement.id);
                             (this.series[i as number] as Series).lastValueLabelElement = null;
                         }
-                        if (this.isBlazor && series && ((series.visible !== oldProp.series[i as number].visible) || series.isClosed ||
-                            series.marker || series.emptyPointSettings || series.type || series.boxPlotMode || series.showMean)) {
+                        if (series && ((series.visible !== (oldProp.series[i as number] && oldProp.series[i as number].visible)) ||
+                            series.isClosed || series.marker || series.emptyPointSettings || series.type || series.boxPlotMode ||
+                            series.showMean) && this.isBlazor) {
                             blazorProp = true;
                         }
                         if (!isNullOrUndefined(series) && (series.dataSource || series.query || series.errorBar || series.xName ||

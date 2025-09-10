@@ -751,13 +751,13 @@ export class Toolbar implements IToolbarHandler {
      */
     public toggleRestrictEditing(enable: boolean): void {
         const restrictEditingId: string = this.container.element.id + TOOLBAR_ID + RESTRICT_EDITING_ID;
-        const element: HTMLElement = document.getElementById(restrictEditingId);
+        const element: HTMLElement = this.container.element.querySelector('#' + restrictEditingId);
         if (element) {
             this.toggleButton(restrictEditingId, enable);
         }
     }
     private toggleButton(id: string, toggle: boolean): void {
-        const element: HTMLElement = document.getElementById(id);
+        const element: HTMLElement = this.container.element.querySelector('#' + id) as HTMLElement;
         if (toggle) {
             classList(element, ['e-btn-toggle'], []);
             element.setAttribute('aria-pressed', 'true');
@@ -933,7 +933,7 @@ export class Toolbar implements IToolbarHandler {
     }
 
     private enableDisableFormField(enable: boolean): void {
-        const ele: HTMLElement = document.getElementById('container_toolbar_form_fields');
+        const ele: HTMLElement = this.container.element.querySelector('#' + 'container_toolbar_form_fields');
         if (!isNullOrUndefined(ele)) {
             this.toolbar.enableItems(ele.parentElement, enable);
         }
@@ -947,7 +947,7 @@ export class Toolbar implements IToolbarHandler {
         this.isCommentEditing = !enable;
         const id: string = this.container.element.id + TOOLBAR_ID;
         const commentId: string = id + COMMENT_ID;
-        const element: HTMLElement = document.getElementById(commentId);
+        const element: HTMLElement = this.container.element.querySelector('#' + commentId);
         if (!this.container.enableComment && element) {
             this.toolbar.removeItems(element.parentElement);
         } else if (element) {
@@ -965,7 +965,7 @@ export class Toolbar implements IToolbarHandler {
      */
     public toggleTrackChanges(enable: boolean): void {
         const trackId: string = this.container.element.id + TOOLBAR_ID + TRACK_ID;
-        const element: HTMLElement = document.getElementById(trackId);
+        const element: HTMLElement = this.container.element.querySelector('#' + trackId);
         if (element) {
             this.toggleTrackChangesInternal(trackId, enable);
         }
@@ -1013,7 +1013,7 @@ export class Toolbar implements IToolbarHandler {
                         && itemId === id + UPDATE_FIELDS_ID) {
                         continue;
                     }
-                    const element: HTMLElement = document.getElementById(item.id);
+                    const element: HTMLElement = this.container.element.querySelector('#' + item.id);
                     if (!isNullOrUndefined(element) && !isNullOrUndefined(element.parentElement)) {
                         this.toolbar.enableItems(element.parentElement, enable);
                     }
@@ -1026,40 +1026,40 @@ export class Toolbar implements IToolbarHandler {
             if (this.documentEditor.selectionModule.isinFootnote || this.documentEditor.selectionModule.isinEndnote
                 || this.documentEditor.enableHeaderAndFooter || isPlainContetnControl) {
                 if (this.containsItem(id + ENDNOTE_ID)) {
-                    this.toolbar.enableItems(document.getElementById(id + ENDNOTE_ID).parentElement, false);
+                    this.toolbar.enableItems(this.container.element.querySelector('#' + id + ENDNOTE_ID).parentElement, false);
                 }
                 if (this.containsItem(id + FOOTNOTE_ID)) {
-                    this.toolbar.enableItems(document.getElementById(id + FOOTNOTE_ID).parentElement, false);
+                    this.toolbar.enableItems(this.container.element.querySelector('#' + id + FOOTNOTE_ID).parentElement, false);
                 }
                 if (this.containsItem(id + BREAK_ID)) {
-                    this.toolbar.enableItems(document.getElementById(id + BREAK_ID).parentElement, false);
+                    this.toolbar.enableItems(this.container.element.querySelector('#' + id + BREAK_ID).parentElement, false);
                 }
                 if (isPlainContetnControl) {
                     if (this.containsItem(id + INSERT_TABLE_ID)) {
-                        this.toolbar.enableItems(document.getElementById(id + INSERT_TABLE_ID).parentElement, false);
+                        this.toolbar.enableItems(this.container.element.querySelector('#' + id + INSERT_TABLE_ID).parentElement, false);
                     }
                     if (this.containsItem(id + INSERT_IMAGE_ID)) {
-                        this.toolbar.enableItems(document.getElementById(id + INSERT_IMAGE_ID).parentElement, false);
+                        this.toolbar.enableItems(this.container.element.querySelector('#' + id + INSERT_IMAGE_ID).parentElement, false);
                     }
                     if (this.containsItem(id + COMMENT_ID)) {
-                        this.toolbar.enableItems(document.getElementById(id + COMMENT_ID).parentElement, false);
+                        this.toolbar.enableItems(this.container.element.querySelector('#' + id + COMMENT_ID).parentElement, false);
                     }
                     if (this.containsItem(id + BOOKMARK_ID)) {
-                        this.toolbar.enableItems(document.getElementById(id + BOOKMARK_ID).parentElement, false);
+                        this.toolbar.enableItems(this.container.element.querySelector('#' + id + BOOKMARK_ID).parentElement, false);
                     }
                     if (this.containsItem(id + INSERT_LINK_ID)) {
-                        this.toolbar.enableItems(document.getElementById(id + INSERT_LINK_ID).parentElement, false);
+                        this.toolbar.enableItems(this.container.element.querySelector('#' + id + INSERT_LINK_ID).parentElement, false);
                     }
                     if (this.containsItem(id + FORM_FIELDS_ID)) {
-                        this.toolbar.enableItems(document.getElementById(id + FORM_FIELDS_ID).parentElement, false);
+                        this.toolbar.enableItems(this.container.element.querySelector('#' + id + FORM_FIELDS_ID).parentElement, false);
                     }
                     if (this.containsItem(id + CONTENT_CONTROL_ID)) {
-                        this.toolbar.enableItems(document.getElementById(id + CONTENT_CONTROL_ID).parentElement, false);
+                        this.toolbar.enableItems(this.container.element.querySelector('#' + id + CONTENT_CONTROL_ID).parentElement, false);
                     }
                 }
             }
             if (this.documentEditor.selection.isCellOrRowSelected() && this.containsItem(id + INSERT_LINK_ID)) {
-                this.toolbar.enableItems(document.getElementById(id + INSERT_LINK_ID).parentElement, false);
+                this.toolbar.enableItems(this.container.element.querySelector('#' + id + INSERT_LINK_ID).parentElement, false);
             }
             if (!isProtectedContent || this.container.showPropertiesPane) {
                 if (isProtectedContent) {
@@ -1073,7 +1073,7 @@ export class Toolbar implements IToolbarHandler {
                 this.enableDisableUndoRedo();
             }
             if (this.documentEditor.documentHelper.isTrackedOnlyMode && this.containsItem(id + TRACK_ID)) {
-                this.toolbar.enableItems(document.getElementById(id + TRACK_ID).parentElement, false);
+                this.toolbar.enableItems(this.container.element.querySelector('#' + id + TRACK_ID).parentElement, false);
             }
         }
     }
@@ -1092,7 +1092,7 @@ export class Toolbar implements IToolbarHandler {
     public enableDisableUndoRedo(): void {
         const id: string = this.container.element.id + TOOLBAR_ID;
         if (this.toolbarItems.indexOf('Undo') >= 0) {
-            const undoElement: HTMLElement = document.getElementById(id + UNDO_ID);
+            const undoElement: HTMLElement = this.container.element.querySelector('#' + id + UNDO_ID);
             // We can optimize this condition check to single bool validation instead of array collection.
             /* eslint-disable-next-line max-len */
             if (!isNullOrUndefined(undoElement)) {
@@ -1100,7 +1100,7 @@ export class Toolbar implements IToolbarHandler {
             }
         }
         if (this.toolbarItems.indexOf('Redo') >= 0) {
-            const redoElement: HTMLElement = document.getElementById(id + REDO_ID);
+            const redoElement: HTMLElement = this.container.element.querySelector('#' + id + REDO_ID);
             // We can optimize this condition check to single bool validation instead of array collection.
             /* eslint-disable-next-line max-len */
             if (!isNullOrUndefined(redoElement)) {

@@ -201,6 +201,7 @@ export class LineDistribution {
             //Bug 969032: Connectors Overlapping Issue in Complex Hierarchical Tree
             //Sort the connectors by start point from lowest to highest
             sortedrow.sort((a: ObstacleSegmentValues, b: ObstacleSegmentValues) => a.start - b.start);
+
             let groupby: ObstacleSegmentValues[];
             groupby = [];
 

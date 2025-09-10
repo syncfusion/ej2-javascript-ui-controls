@@ -2499,8 +2499,7 @@ export class FormFields {
             if ((this.pdfViewerBase.isSignatureImageData(data.Value))) {
                 annot = {
                     id: this.pdfViewer.element.id + 'input_' + currentPage + '_' + index, bounds: newBounds, pageIndex: currentPage, data: data.Value, modifiedDate: '',
-                    shapeAnnotationType: 'SignatureImage', opacity: 1, rotateAngle: isFieldRotated || (this.pdfViewerBase.clientSideRendering &&
-                        (data.Rotation === 1 || data.Rotation === 2 || data.Rotation === 3)) ? this.getAngle(currentPage) : 0, annotName: 'SignatureField', comments: [], review: { state: '', stateModel: '', modifiedDate: '', author: '' }
+                    shapeAnnotationType: 'SignatureImage', opacity: 1, rotateAngle: isFieldRotated || (this.pdfViewerBase.clientSideRendering && (data.Rotation === 1 || data.Rotation === 2 || data.Rotation === 3)) ? this.getAngle(currentPage) : 0, annotName: 'SignatureField', comments: [], review: { state: '', stateModel: '', modifiedDate: '', author: '' }
                 };
             } else if (this.pdfViewerBase.isSignaturePathData(data.Value)) {
                 let bound: any = newBounds;
@@ -2581,7 +2580,6 @@ export class FormFields {
             }
         }
     }
-
     /**
      * @param {any} bound - It describes about the bound
      * @param {number} pageIndex - It describes about the page index

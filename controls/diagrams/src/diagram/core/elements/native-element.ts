@@ -4,6 +4,7 @@ import { measureNativeContent, getContent, measureNativeSvg } from './../../util
 import { Stretch } from '../../enum/enum';
 import { PointModel } from '../../primitives/point-model';
 import { Rect } from '../../primitives/rect';
+import { templateCompiler } from '../../utility/base-util';
 
 /**
  * NativeElement defines the basic native elements
@@ -16,15 +17,17 @@ export class DiagramNativeElement extends DiagramElement {
      * @returns { void } set the id for each element.\
      * @param {string} nodeId - provide the id value.
      * @param {string} diagramId - provide the id value.
+     * @param {string} nodeTemplate - provide the string value.
      *
      * @private
      */
-    public constructor(nodeId: string, diagramId: string) {
+    public constructor(nodeId: string, diagramId: string, nodeTemplate?: string) {
         super();
         this.diagramId = diagramId;
         this.nodeId = nodeId;
+        this.templateFn = templateCompiler(nodeTemplate);
     }
-    private data: string | SVGElement = '';
+    private data: string | SVGElement | Function = '';
 
     /**
      * set the node id
@@ -42,7 +45,7 @@ export class DiagramNativeElement extends DiagramElement {
      *
      * @private
      */
-    public get content(): string | SVGElement {
+    public get content(): string | SVGElement | Function {
         return this.data;
     }
 
@@ -50,20 +53,43 @@ export class DiagramNativeElement extends DiagramElement {
      *  sets the geometry of the native element \
      *
      * @returns { void } sets the geometry of the native element.\
-     * @param {string | SVGElement} value - provide the id value.
+     * @param {string | SVGElement | Function} value - provide the data value.
      *
      * @private
      */
-    public set content(value: string | SVGElement) {
+    public set content(value: string | SVGElement | Function) {
         this.data = value;
         if (!this.canReset) {
             this.canReset = true;
-            this.template = getContent(this, false) as SVGElement;
+            if (!this.isTemplate) {
+                this.template = getContent(this, false) as SVGElement;
+            }
             this.canReset = false;
             this.isDirt = true;
         }
 
     }
+
+    /**
+     * getNodeTemplate method \
+     *
+     * @returns { Function } getNodeTemplate method .\
+     *
+     * @private
+     */
+    public getNodeTemplate(): Function {
+        return this.templateFn;
+    }
+
+    // eslint-disable-next-line @typescript-eslint/ban-types
+    private templateFn: Function;
+
+    /**
+     * check whether it is native element or not
+     *
+     * @private
+     */
+    public isTemplate: boolean;
 
     /**
      * defines geometry of the native element

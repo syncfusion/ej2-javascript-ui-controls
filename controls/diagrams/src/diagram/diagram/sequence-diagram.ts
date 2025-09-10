@@ -1821,6 +1821,13 @@ class MessageRenderer {
 
         this.assignPortOrPoint(message, senderPort, sender, messageY, true);
         this.assignPortOrPoint(message, receiverPort, receiver, messageY, false);
+        // 963954: Sequence diagram create & delete message is not straight
+        if (!message.sourcePortID) {
+            message.sourcePoint.y = messageY;
+        }
+        if (!message.targetPortID) {
+            message.targetPoint.y = messageY;
+        }
     }
 
     private static renderSelfMessage(lifeline: Connector, message: Connector, messageY: number): void {

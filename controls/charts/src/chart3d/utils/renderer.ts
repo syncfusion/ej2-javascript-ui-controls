@@ -327,7 +327,6 @@ export class AxisRenderer {
                 let x1: number = 0;
                 let y1: number = 0;
                 let pointX: number;
-                axis.visibleLabels[i as number].originalText = axis.visibleLabels[i as number].text as string;
                 let textAnchor: string;
 
                 const textSize: Size = measureText(axis.visibleLabels[i as number].text as string,

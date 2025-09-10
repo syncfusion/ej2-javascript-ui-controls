@@ -724,6 +724,7 @@ export class ToolbarRenderer implements IRenderer {
         colorPicker.isStringTemplate = true;
         colorPicker.createElement = this.parent.createElement;
         colorPicker.appendTo(args.element);
+        args.element.setAttribute('role', 'button');
         return colorPicker;
     }
 

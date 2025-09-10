@@ -213,7 +213,7 @@ export class CartesianAxisLayoutPanel {
         let axisOffset: number;
 
         this.calculateRowSize(rect);
-
+        let isPrimaryYaxisOutside: boolean = false;
         for (let i: number = 0, len: number = chart.rows.length; i < len; i++) {
             row = <Row>chart.rows[i as number];
             nearCount = 0; farCount = 0;
@@ -231,6 +231,9 @@ export class CartesianAxisLayoutPanel {
                     axis.rect.height = (axis.rect.height + size) -
                                       (this.getAxisOffsetValue(axis.plotOffsetTop, axis.plotOffsetBottom, axis.plotOffset));
                     axis.rect.width = 0;
+                }
+                if (axis.name === 'primaryYAxis' && axis.labelPosition === 'Outside') {
+                    isPrimaryYaxisOutside = true;
                 }
                 if (axis.isAxisOpposedPosition) {
                     if (axis.labelPosition === 'Inside' && axis.orientation === 'Vertical') {
@@ -250,13 +253,7 @@ export class CartesianAxisLayoutPanel {
                     farCount++;
                 } else {
                     if (axis.labelPosition === 'Inside' && axis.orientation === 'Vertical') {
-                        if (nearCount > 0) {
-                            x = rect.x - sum(subArray(row.nearSizes, nearCount)) - axis.maxLabelSize.width -
-                                axis.multiLevelLabelHeight - (axis.tickPosition === 'Inside' ? axis.majorTickLines.height : 0) - axis.labelPadding;
-                        }
-                        else {
-                            x = rect.x + sum(subArray(row.insideNearSizes, nearCount));
-                        }
+                        x = rect.x + sum(subArray(row.insideNearSizes, isPrimaryYaxisOutside ? nearCount - 1 : nearCount));
                     }
                     else {
                         x = rect.x - sum(subArray(row.nearSizes, nearCount));

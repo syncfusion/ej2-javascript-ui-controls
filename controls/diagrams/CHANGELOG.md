@@ -2,81 +2,20 @@
 
 ## [Unreleased]
 
+## 31.1.18 (2025-09-10)
+
+### Diagram
+
+#### Bug Fixes
+
+- `#I752739` - Connector segments now update correctly when dragging the connector's source thumb.
+- `#I753805` - Group nodes without explicit size definitions are now rendered properly in the symbol palette
+- `#I742819` - Resolved connector overlapping issues in complex hierarchical tree layouts.
+- `#I759916` - The issue in the distribute method has been resolved.
+- `#I759053` - Locked nodes will no longer move along with unlocked nodes.
+- `#I757716` - Issues in UML connectors has been fixed.
+
 ## 31.1.17 (2025-09-05)
-
-### Diagram
-
-#### Bug Fixes
-
-- `#I753156` - Connector segments now move along with nodes and connectors during multi-selection dragging.
-
-## 30.2.5 (2025-08-13)
-
-### Diagram
-
-#### Bug Fixes
-
-- `#I743248` - CollectionChange now supports diagram item deletion via the delete key, with the action marked as Keyboard Delete.
-
-## 30.2.4 (2025-08-07)
-
-### Diagram
-
-#### Bug Fixes
-
-- `#I748546` - Fixed an issue where same tooltip content was shown for different group nodes.
-
-## 30.1.42 (2025-07-29)
-
-### Diagram
-
-#### Bug Fixes
-
-- `#I743792` - Enhanced connector interaction, When initiating a connector from an InConnect-only port, the target end now correctly attaches to the port, while the source end follows the mouse pointer during drawing.
-- `#I745390` - Fixed an issue where an exception was thrown when loading an EJ1 diagram with PreventDefaults set to true in an EJ2 diagram.
-
-## 30.1.41 (2025-07-22)
-
-### Diagram
-
-#### Bug Fixes
-
-- `#I743241` - Improved performance when dragging group nodes containing multiple child nodes.
-- `#I742692` - Resolved diagram flickering issue during panning.
-- `#I742819` - Fixed connector overlapping issue in complex hierarchical tree.
-- `#I743248` - The CollectionChange event now provides arguments to notify copy and paste actions, enabling proper tracking and handling of these operations.
-
-## 30.1.40 (2025-07-15)
-
-### Diagram
-
-#### Bug Fixes
-
-- `#I737645` - Connectors are now selected after being dragged from a negative position to a positive position.
-- `#I739876` - now no error occurs when moving group node into a layer.
-- `#I739181` - The issue "Child nodes overlapping on another layout in organizational chart" has been fixed.
-
-## 30.1.39 (2025-07-08)
-
-### Diagram
-
-#### Bug Fixes
-
-- `#I732921` - Resolved the issue of node dimension changes when dragging multiple selected nodes.
-- `#I739052` - Undo now works correctly for connectors without a target id.
-
-## 30.1.38 (2025-07-02)
-
-### Diagram
-
-#### Bug Fixes
-
-- `#I731236` - Resolved the issue with flipping rotated group nodes.
-- `#I732003` - The connectors in layout will no longer overlaps on nodes.
-- `#I734671` - Resolved the issue in viewport changing on serialization.
-- `#I733087` - Now, Polyline connectors can be drawn from ports.
-
-## 30.1.37 (2025-06-25)
 
 ### Diagram
 

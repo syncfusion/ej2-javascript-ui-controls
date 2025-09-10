@@ -34,7 +34,6 @@ export class FindGroup extends RibbonGroupBase implements IRibbonGroup {
                         {
                             type: 'Button',
                             keyTip: 'FD',
-                            allowedSizes: RibbonItemSize.Medium,
                             buttonSettings: {
                                 content: this.localObj.getConstant('Find'),
                                 iconCss: 'e-icons e-de-ctnr-find',
@@ -50,7 +49,6 @@ export class FindGroup extends RibbonGroupBase implements IRibbonGroup {
                         {
                             type: 'Button',
                             keyTip: 'R',
-                            allowedSizes: RibbonItemSize.Medium,
                             buttonSettings: {
                                 content: this.localObj.getConstant('Replace'),
                                 iconCss: 'e-icons e-de-ctnr-replace',

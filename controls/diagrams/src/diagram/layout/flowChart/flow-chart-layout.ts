@@ -98,7 +98,14 @@ export class FlowchartLayout {
         this.vertexMapper.clear();
         this.edgesMapper.clear();
         this.loopedgesMapper.clear();
+        const connectors: ConnectorModel[] = this.diagram.connectors;
 
+        //976507: Connector segments issues
+        for (const connector of connectors) {
+            if (connector.segments && connector.segments.length > 0) {
+                connector.segments = connector.segments.filter((segment: OrthogonalSegment) => !(segment).isOrthoInternalSegment);
+            }
+        }
         for (const item of nodes) {
             if (!item.excludeFromLayout) {
                 const vertex: FlowChartVertex = this.createVertex(item as Node);
@@ -752,7 +759,8 @@ export class FlowchartLayout {
                     length: pointSets[0].x === pointSets[1].x ? Math.abs(pointSets[0].y - pointSets[1].y)
                         : Math.abs(pointSets[0].x - pointSets[1].x),
                     direction: pointSets[0].x === pointSets[1].x ? pointSets[0].y > pointSets[1].y ? 'Top' : 'Bottom'
-                        : pointSets[0].x > pointSets[1].x ? 'Left' : 'Right'
+                        : pointSets[0].x > pointSets[1].x ? 'Left' : 'Right',
+                    isOrthoInternalSegment: true
                 } as OrthogonalSegment;
                 pointSets = [];
                 segCollection.push(seg);

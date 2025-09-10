@@ -243,7 +243,8 @@ export function PdfiumRunner(): void {
             documentDetails.setPages(pages);
             documentDetails.createAllPages();
             pdfiumWindow.fileByteArray = null;
-            ctx.postMessage({ message: 'PageLoaded', pageIndex: event.data.pageIndex, isZoomMode: event.data.isZoomMode, pageCount : pages, pageSizes: documentDetails.pageSizes, pageRotation: documentDetails.pageRotation });
+            ctx.postMessage({ message: 'PageLoaded', pageIndex: event.data.pageIndex, isZoomMode: event.data.isZoomMode,
+                pageCount : pages, pageSizes: documentDetails.pageSizes, pageRotation: documentDetails.pageRotation });
         }
         else if (event.data.message === 'LoadPageStampCollection') {
             const fileSize: number = event.data.uploadedFile.length;
@@ -1526,7 +1527,7 @@ export function PdfiumRunner(): void {
             for (let i: number = 0; i < this.pages.length; i++) {
                 this.pages[parseInt(i.toString(), 10)] = new Page(parseInt(i.toString(), 10), this.processor);
                 this.pages[parseInt(i.toString(), 10)] = new Page(i, this.processor);
-                const currentPageSize : any = this.processor.getPageSize(i);
+                const currentPageSize: any = this.processor.getPageSize(i);
                 this.pageSizes[parseInt(i.toString(), 10)] = new SizeF(currentPageSize[0], currentPageSize[1]);
                 const page: any = (FPDF as any).LoadPage(documentDetails.processor.wasmData.wasm, i);
                 const rotation: any = (FPDF as any).GetPageRotation(page);

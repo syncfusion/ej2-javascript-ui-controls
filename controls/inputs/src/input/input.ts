@@ -672,7 +672,7 @@ export namespace Input {
             } else {
                 parentElement.classList.add(CLASSNAMES.NOFLOATLABEL);
                 const floatTextContent: Element = parentElement.getElementsByClassName('e-float-text-content')[0];
-                if (floatTextContent) {
+                if (floatTextContent && floatTextContent.children[0]) {
                     floatTextContent.children[0].textContent = '';
                 } else {
                     const floatText: Element = parentElement.getElementsByClassName(CLASSNAMES.FLOATTEXT)[0];

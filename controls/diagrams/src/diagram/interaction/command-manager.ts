@@ -112,6 +112,10 @@ export class CommandHandler {
     public canUpdateTemplate: boolean = false;
     /** @private */
     public cloningInProgress: boolean = false;
+    /**   @private  */
+    public clonedChildrenTable: {} = {};
+    /** @private */
+    public annotationRestrictDeltaValue: PointModel = { x: 0, y: 0 };
 
     private childTable: {} = {};
     private objectStore: any = [];
@@ -514,6 +518,22 @@ export class CommandHandler {
         return returnargs;
     }
 
+    /** @private */
+    public trackConnectorChange(selectorModel: SelectorModel): void {
+        if (selectorModel.nodes && selectorModel.nodes.length > 0) {
+            for (const node of selectorModel.nodes as Node[]) {
+                for (const edgeId of [...node.outEdges, ...node.inEdges]) {
+                    const connector: ConnectorModel = this.diagram.getObject(edgeId);
+                    const hasValidSegments: boolean = connector && connector.segments &&
+                        (connector.type === 'Bezier' ? connector.segments.length >= 1 : connector.segments.length > 1);
+                    if (hasValidSegments && selectorModel.connectors.indexOf(connector) === -1) {
+                        const connectorClone: ConnectorModel = cloneObject(connector);
+                        selectorModel.connectors.push(connectorClone);
+                    }
+                }
+            }
+        }
+    }
 
     private connectionEventChange(
         connector: Connector, oldChanges: Connector, newChanges: Connector, endPoint: string, canCancel?: boolean)
@@ -1326,7 +1346,9 @@ export class CommandHandler {
             return a.zIndex - b.zIndex;
         });
         for (let i: number = 0; i < order.length; i++) {
-            if (!(order[parseInt(i.toString(), 10)] as Node).parentId) {
+            // 942207: Group two bpmn nodes, when grouped and perform resize in side subprocess
+            if (!(order[parseInt(i.toString(), 10)] as Node).parentId &&
+                !(order[parseInt(i.toString(), 10)] as Node).processId) {
                 obj.children.push(order[parseInt(i.toString(), 10)].id);
             }
         }
@@ -1454,6 +1476,7 @@ export class CommandHandler {
                 let groupAction: boolean = false;
                 const objectTable: {} = {};
                 const keyTable: {} = {};
+                this.clonedChildrenTable = {};
                 if (this.clipboardData.pasteIndex !== 0) {
                     this.clearSelection();
                 }
@@ -1485,10 +1508,16 @@ export class CommandHandler {
                         if (objectTable[`${nodeId}`] && keyTable[`${nodeId}`]) {
                             clonedObj.sourceID = keyTable[`${nodeId}`];
                         }
+                        if (this.clonedChildrenTable[`${nodeId}`]) {
+                            clonedObj.sourceID = this.clonedChildrenTable[`${nodeId}`];
+                        }
                         nodeId = clonedObj.targetID;
                         clonedObj.targetID = '';
                         if (objectTable[`${nodeId}`] && keyTable[`${nodeId}`]) {
                             clonedObj.targetID = keyTable[`${nodeId}`];
+                        }
+                        if (this.clonedChildrenTable[`${nodeId}`]) {
+                            clonedObj.targetID = this.clonedChildrenTable[`${nodeId}`];
                         }
                         //To check if the connector is cloned already for text annotation node.
                         let allowClone: boolean = true;
@@ -1654,7 +1683,7 @@ export class CommandHandler {
             && (node.shape as BpmnShape).activity.subProcess.processes.length) {
             process = (node.shape as BpmnShape).activity.subProcess.processes;
             this.cloneProcessess(process, node);
-        }  else if (node.shape.type === 'Container' && (node.shape as Container).children
+        } else if (node.shape.type === 'Container' && (node.shape as Container).children
             && (node.shape as Container).children.length) {
             const connector: string[] = [];
             const temp: {} = {};
@@ -1677,18 +1706,22 @@ export class CommandHandler {
                 const newNode: NodeModel = this.cloneNode(innerChild, false);
                 temp[children[parseInt(g.toString(), 10)]] = newNode.id;
                 children[parseInt(g.toString(), 10)] = newNode.id;
+                this.clonedChildrenTable[innerChild.id] = newNode.id;
                 addContainerChild(newNode, node.id, this.diagram);
                 for (const i of connector) {
                     const node: ConnectorModel = this.diagram.nameTable[`${i}`] || this.diagram.connectorTable[`${i}`];
-                    const clonedNode: Object = cloneObject(node);
-                    if (temp[(clonedNode as Connector).sourceID] && temp[(clonedNode as Connector).targetID]) {
-                        (clonedNode as Connector).zIndex = -1;
-                        (clonedNode as Connector).id += randomId();
-                        (clonedNode as Connector).sourceID = temp[(clonedNode as Connector).sourceID];
-                        (clonedNode as Connector).targetID = temp[(clonedNode as Connector).targetID];
-                        connector.splice(connector.indexOf(i), 1);
-                        (clonedNode as Connector).zIndex = Number.MIN_VALUE;
-                        this.diagram.add(clonedNode);
+                    const isSelectedConnector: boolean = (this.clipboardData.clipObject as any).find((item: any) => (item.id === node.id));
+                    if (!isSelectedConnector) {
+                        const clonedNode: Object = cloneObject(node);
+                        if (temp[(clonedNode as Connector).sourceID] && temp[(clonedNode as Connector).targetID]) {
+                            (clonedNode as Connector).zIndex = -1;
+                            (clonedNode as Connector).id += randomId();
+                            (clonedNode as Connector).sourceID = temp[(clonedNode as Connector).sourceID];
+                            (clonedNode as Connector).targetID = temp[(clonedNode as Connector).targetID];
+                            connector.splice(connector.indexOf(i), 1);
+                            (clonedNode as Connector).zIndex = Number.MIN_VALUE;
+                            this.diagram.add(clonedNode);
+                        }
                     }
                 }
             }
@@ -4809,6 +4842,19 @@ export class CommandHandler {
     }
 
     /**
+     * Retrieves the original orthogonal direction of the segment based on its start and end points.
+     */
+    private getDirection(direction: string, seg: OrthogonalSegment): string {
+        let currentDirection: string;
+        if (direction === 'Right' || direction === 'Left') {
+            currentDirection = seg.points[0].x < seg.points[1].x ? 'Right' : 'Left';
+        } else if (direction === 'Top' || direction === 'Bottom') {
+            currentDirection = seg.points[0].y < seg.points[1].y ? 'Bottom' : 'Top';
+        }
+        return currentDirection;
+    }
+
+    /**
      * Upadte the connector segments when change the source node
      */
     private changeSegmentLength(connector: Connector, target: NodeModel, targetPortId: string, isDragSource: boolean): void {
@@ -4817,6 +4863,15 @@ export class CommandHandler {
         const canChangeSegment: boolean = target ? this.canConnect(connector, target) : true;
         if (connector.segments && (connector.segments[0] as OrthogonalSegment).direction !== null
             && ((!target && connector.sourceID === '') || isDragSource) && canChangeSegment) {
+            const firstSegment: OrthogonalSegment = connector.segments[0] as OrthogonalSegment;
+            /// Clears the segment if its direction is opposite to the actual direction
+            /// determined from the segment's start and end points.
+            if (firstSegment.direction !== this.getDirection(firstSegment.direction, firstSegment)) {
+                connector.segments.splice(0, 1);
+                if ((connector.segments[0] as OrthogonalSegment).direction === null) {
+                    return;
+                }
+            }
             const first: OrthogonalSegment = connector.segments[0] as OrthogonalSegment;
             const second: OrthogonalSegment = connector.segments[1] as OrthogonalSegment;
             const node: NodeModel = this.diagram.nameTable[connector.sourceID]; let secPoint: PointModel;
@@ -4899,15 +4954,56 @@ export class CommandHandler {
                 }
             }
         } else {
-            if (target && !targetPortId && connector.sourceID !== target.id &&
-                connector.segments && (connector.segments[0] as OrthogonalSegment).direction !== null
-                && target && target instanceof Node && canChangeSegment) {
-                this.changeSourceEndToNode(connector, target);
-            }
-            if (target && targetPortId && connector.sourcePortID !== targetPortId &&
-                connector.segments && (connector.segments[0] as OrthogonalSegment).direction !== null
-                && target && target instanceof Node && canChangeSegment) {
-                this.changeSourceEndToPort(connector, target, targetPortId);
+            if (connector.segments && (connector.segments[0] as OrthogonalSegment).direction !== null) {
+                if (target && target instanceof Node && !targetPortId) {
+                    const firstSegment: OrthogonalSegment = connector.segments[0] as OrthogonalSegment;
+                    const secondSegment: OrthogonalSegment = connector.segments[1] as OrthogonalSegment;
+                    const sourceDirection: Direction = firstSegment.direction;
+                    const sourcePoint: PointModel = connector.sourcePoint;
+                    const sourceNode: Node = this.diagram.nameTable[target.id];
+                    const corners = sourceNode.wrapper ? sourceNode.wrapper.corners : undefined;
+                    const getNewPosition = (): PointModel => {
+                        if (!sourceDirection || !corners) {
+                            return sourcePoint;
+                        }
+
+                        switch (sourceDirection) {
+                        case 'Bottom':
+                            return corners.bottomCenter;
+                        case 'Top':
+                            return corners.topCenter;
+                        case 'Left':
+                            return corners.middleLeft;
+                        case 'Right':
+                            return corners.middleRight;
+                        default:
+                            return sourcePoint;
+                        }
+                    };
+
+                    const newPosition: PointModel = getNewPosition();
+                    connector.sourcePoint.x = newPosition.x;
+                    connector.sourcePoint.y = newPosition.y;
+                    firstSegment.points[0] = newPosition;
+                    const lastFirstPoint = firstSegment.points[firstSegment.points.length - 1];
+                    if (sourceDirection === 'Top' || sourceDirection === 'Bottom') {
+                        lastFirstPoint.x = newPosition.x;
+                        secondSegment.points[0].y = lastFirstPoint.y;
+                    } else {
+                        lastFirstPoint.y = newPosition.y;
+                        secondSegment.points[0].x = lastFirstPoint.x;
+                    }
+
+                    firstSegment.length = Point.distancePoints(firstSegment.points[0], lastFirstPoint);
+                    if (secondSegment.direction !== null) {
+                        const lastSecondPoint = secondSegment.points[secondSegment.points.length - 1];
+                        secondSegment.length = Point.distancePoints(lastFirstPoint, lastSecondPoint);
+                        secondSegment.direction = Point.direction(lastFirstPoint, lastSecondPoint) as Direction;
+                    }
+                }
+                else if (target && target instanceof Node && targetPortId && connector.sourcePortID !== targetPortId) {
+                    this.changeSourceEndToPort(connector, target, targetPortId);
+                }
             }
         }
     }
@@ -4927,73 +5023,145 @@ export class CommandHandler {
     private changeSourceEndToPort(connector: ConnectorModel, target: Node, targetPortId: string): void {
         const port: DiagramElement = this.diagram.getWrapper(target.wrapper, targetPortId);
         const point: PointModel = { x: port.offsetX, y: port.offsetY };
+        connector.sourcePoint.x = point.x;
+        connector.sourcePoint.y = point.y;
         const direction: Direction = getPortDirection(point, cornersPointsBeforeRotation(target.wrapper), target.wrapper.bounds, false);
-        const firstSegment: OrthogonalSegment = connector.segments[0] as OrthogonalSegment;
-        const secondSegment: OrthogonalSegment = connector.segments[1] as OrthogonalSegment;
-        if (firstSegment.direction !== direction) {
-            const segments: OrthogonalSegmentModel[] = [];
-            let segValues: Object = {};
-            if (firstSegment.direction === getOppositeDirection(direction)) {
-                segValues = {}; let segValues1: Object;
-                if (direction === 'Top' || direction === 'Bottom') {
-                    segValues1 = (direction === 'Top') ? {
-                        type: 'Orthogonal', isTerminal: true, direction: direction,
-                        length: Math.abs(firstSegment.points[0].y - point.y)
-                    } :
-                        {
-                            type: 'Orthogonal', isTerminal: true, direction: direction,
-                            length: Math.abs(point.y - firstSegment.points[0].y)
-                        };
-                    segValues = (firstSegment.points[0].x > point.x) ?
-                        { type: 'Orthogonal', isTerminal: true, direction: 'Right', length: (firstSegment.points[0].x - point.x) } :
-                        { type: 'Orthogonal', isTerminal: true, direction: 'Left', length: (point.x - firstSegment.points[0].x) };
-                } else {
-                    segValues1 = (direction === 'Right') ? {
-                        type: 'Orthogonal', isTerminal: true, direction: direction,
-                        length: Math.abs(firstSegment.points[0].x - point.x)
-                    } :
-                        {
-                            type: 'Orthogonal', isTerminal: true, direction: direction,
-                            length: Math.abs(point.x - firstSegment.points[0].x)
-                        };
-                    segValues = (firstSegment.points[0].y > point.y) ?
-                        { type: 'Orthogonal', direction: 'Top', isTerminal: true, length: (firstSegment.points[0].y - point.y) } :
-                        { type: 'Orthogonal', direction: 'Bottom', isTerminal: true, length: (point.y - firstSegment.points[0].y) };
-                }
-                segments.push(new OrthogonalSegment(connector, 'segments', segValues1, true));
-                segments.push(new OrthogonalSegment(connector, 'segments', segValues, true));
-            } else {
-                segValues = { type: 'Orthogonal', direction: direction, length: 20, isTerminal: true };
-                segments.push(new OrthogonalSegment(connector, 'segments', segValues, true));
-            }
-            if (firstSegment.direction !== getOppositeDirection(direction)) {
-                if (direction === 'Top' || direction === 'Bottom') {
-                    firstSegment.points[0].x = point.x;
-                    firstSegment.points[0].y = firstSegment.points[firstSegment.points.length - 1].y = (direction === 'Top') ?
-                        point.y - 20 : point.y + 20;
-                } else {
-                    firstSegment.points[0].y = point.y;
-                    firstSegment.points[0].x = firstSegment.points[firstSegment.points.length - 1].x = (direction === 'Right') ?
-                        point.x + 20 : point.x - 20;
-                }
-                firstSegment.length = Point.distancePoints(firstSegment.points[0], firstSegment.points[firstSegment.points.length - 1]);
-                secondSegment.length = Point.distancePoints(
-                    firstSegment.points[firstSegment.points.length - 1], secondSegment.points[secondSegment.points.length - 1]);
-            }
-            connector.segments = segments.concat(connector.segments);
-        } else {
-            firstSegment.points[0] = point;
-            if (direction === 'Top' || direction === 'Bottom') {
-                firstSegment.points[firstSegment.points.length - 1].x = point.x;
+        let firstSegment: OrthogonalSegment = connector.segments[0] as OrthogonalSegment;
+        let secondSegment: OrthogonalSegment = connector.segments[1] as OrthogonalSegment;
 
+        const isVertical = direction === 'Top' || direction === 'Bottom';
+        const offset = 20;
+
+        // Case 1: Direction matches
+        if (firstSegment.direction === direction) {
+            firstSegment.points[0] = point;
+
+            const lastFirstPoint: PointModel = firstSegment.points[firstSegment.points.length - 1];
+            if (isVertical) {
+                lastFirstPoint.x = point.x;
             } else {
-                firstSegment.points[firstSegment.points.length - 1].y = point.y;
+                lastFirstPoint.y = point.y;
             }
-            firstSegment.length = Point.distancePoints(firstSegment.points[0], firstSegment.points[firstSegment.points.length - 1]);
-            secondSegment.length = Point.distancePoints(
-                firstSegment.points[firstSegment.points.length - 1], secondSegment.points[secondSegment.points.length - 1]);
+
+            firstSegment.length = Point.distancePoints(firstSegment.points[0], lastFirstPoint);
+            if (secondSegment.direction !== null) {
+                const lastSecondPoint: PointModel = secondSegment.points[secondSegment.points.length - 1];
+                secondSegment.length = Point.distancePoints(lastFirstPoint, lastSecondPoint);
+                secondSegment.direction = Point.direction(lastFirstPoint, lastSecondPoint) as Direction;
+            }
+            return;
+        }
+
+        // Case 2: Direction is not opposite
+        if (firstSegment.direction !== getOppositeDirection(direction)) {
+            if (secondSegment.direction === direction) {
+                connector.segments.splice(0, 1);
+
+                if (connector.segments.length > 1) {
+                    firstSegment = secondSegment;
+                    secondSegment = connector.segments[1] as OrthogonalSegment;
+
+                    firstSegment.points[0] = point;
+                    const lastFirstPoint = firstSegment.points[firstSegment.points.length - 1];
+
+                    if (isVertical) {
+                        lastFirstPoint.x = point.x;
+                    } else {
+                        lastFirstPoint.y = point.y;
+                    }
+
+                    firstSegment.length = Point.distancePoints(firstSegment.points[0], lastFirstPoint);
+                    if (secondSegment.direction !== null) {
+                        const lastSecondPoint: PointModel = secondSegment.points[secondSegment.points.length - 1];
+                        secondSegment.length = Point.distancePoints(lastFirstPoint, lastSecondPoint);
+                        secondSegment.direction = Point.direction(lastFirstPoint, lastSecondPoint) as Direction;
+                    }
+                }
+                return;
+            }
+
+            const terminalCount = connector.segments.slice(0, -2).filter(seg => (seg as OrthogonalSegment).isTerminal).length;
+            if (terminalCount > 1) {
+                this.removeTerminalSegment(connector as Connector);
+                firstSegment = connector.segments[0] as OrthogonalSegment;
+                secondSegment = connector.segments[1] as OrthogonalSegment;
+            }
+
+            const newSegment = new OrthogonalSegment(connector, 'segments', {
+                type: 'Orthogonal',
+                direction,
+                length: offset,
+                isTerminal: true
+            }, true);
+
+            const firstPoint = firstSegment.points[0];
+            const lastFirstPoint = firstSegment.points[firstSegment.points.length - 1];
+
+            if (isVertical) {
+                firstPoint.x = point.x;
+                firstPoint.y = lastFirstPoint.y = direction === 'Top' ? point.y - offset : point.y + offset;
+            } else {
+                firstPoint.y = point.y;
+                firstPoint.x = lastFirstPoint.x = direction === 'Right' ? point.x + offset : point.x - offset;
+            }
+
+            firstSegment.length = Point.distancePoints(firstPoint, lastFirstPoint);
+            if (secondSegment.direction !== null) {
+                const lastSecondPoint: PointModel = secondSegment.points[secondSegment.points.length - 1];
+                secondSegment.length = Point.distancePoints(lastFirstPoint, lastSecondPoint);
+                secondSegment.direction = Point.direction(lastFirstPoint, lastSecondPoint) as Direction;
+            }
+
+            connector.segments = [newSegment, ...connector.segments];
+            connector.sourcePoint.x = point.x;
+            connector.sourcePoint.y = point.y;
+            return;
+        }
+
+        // Case 3: Direction is opposite
+        const thirdSegment = connector.segments.length > 2 ? connector.segments[2] as OrthogonalSegment : undefined;
+        const lastIndex = firstSegment.points.length - 1;
+        const oldLastPoint = { ...firstSegment.points[parseInt(lastIndex.toString(), 10)] };
+        const lastFirstPoint = firstSegment.points[firstSegment.points.length - 1];
+
+        firstSegment.points[0] = point;
+
+        if (isVertical) {
+            lastFirstPoint.x = point.x;
+            lastFirstPoint.y = direction === 'Top' ? point.y - offset : point.y + offset;
+
+            secondSegment.points[0].x = lastFirstPoint.x;
+            secondSegment.points[0].y = lastFirstPoint.y;
+            secondSegment.points[secondSegment.points.length - 1].y = lastFirstPoint.y;
+        } else {
+            lastFirstPoint.y = point.y;
+            lastFirstPoint.x = direction === 'Right' ? point.x + offset : point.x - offset;
+
+            secondSegment.points[0].x = lastFirstPoint.x;
+            secondSegment.points[0].y = lastFirstPoint.y;
+            secondSegment.points[secondSegment.points.length - 1].x = lastFirstPoint.x;
+        }
+
+        firstSegment.length = Point.distancePoints(firstSegment.points[0], lastFirstPoint);
+        if (secondSegment.direction === null) {
+            const lastSecondPoint: PointModel = secondSegment.points[secondSegment.points.length - 1];
+            secondSegment.length = Point.distancePoints(lastFirstPoint, lastSecondPoint);
+            secondSegment.direction = Point.direction(lastFirstPoint, lastSecondPoint) as Direction;
+        }
+
+        const additionalLength = isVertical
+            ? Math.abs(oldLastPoint.y - lastFirstPoint.y)
+            : Math.abs(oldLastPoint.x - lastFirstPoint.x);
+
+        if (thirdSegment && thirdSegment.direction !== null) {
+            if (firstSegment.direction === thirdSegment.direction) {
+                thirdSegment.length += additionalLength;
+            } else {
+                thirdSegment.length -= additionalLength;
+            }
         }
     }
+
     /**
      * @param connector
      * @param changeTerminal
@@ -5013,81 +5181,6 @@ Remove terinal segment in initial
         }
     }
 
-    /**
-     * Change the connector endPoint from point to node
-     */
-    private changeSourceEndToNode(connector: ConnectorModel, target: Node): void {
-        this.removeTerminalSegment(connector as Connector);
-        const sourceWrapper: Corners = target.wrapper.children[0].corners; let sourcePoint: PointModel; let sourcePoint2: PointModel;
-        const firstSegment: OrthogonalSegment = connector.segments[0] as OrthogonalSegment;
-        const nextSegment: OrthogonalSegment = connector.segments[1] as OrthogonalSegment;
-        const segments: OrthogonalSegmentModel[] = [];
-        if (firstSegment.direction === 'Right' || firstSegment.direction === 'Left') {
-            sourcePoint = (firstSegment.direction === 'Left') ? sourceWrapper.middleLeft : sourceWrapper.middleRight;
-            if (firstSegment.length > sourceWrapper.width || ((firstSegment.direction === 'Left' &&
-                sourcePoint.x >= firstSegment.points[0].x) || (firstSegment.direction === 'Right' &&
-                    sourcePoint.x <= firstSegment.points[0].x))) {
-
-                firstSegment.points[0].y = firstSegment.points[firstSegment.points.length - 1].y = sourcePoint.y;
-                firstSegment.points[0].x = sourcePoint.x;
-                firstSegment.length = Point.distancePoints(
-                    firstSegment.points[0], firstSegment.points[firstSegment.points.length - 1]);
-                nextSegment.length = Point.distancePoints(
-                    firstSegment.points[firstSegment.points.length - 1], nextSegment.points[nextSegment.points.length - 1]);
-            } else {
-                let direction: Direction;
-                if (nextSegment.direction) {
-                    direction = nextSegment.direction;
-                } else {
-                    direction = Point.direction(
-                        nextSegment.points[0], nextSegment.points[nextSegment.points.length - 1]) as Direction;
-                }
-                sourcePoint2 = (direction === 'Bottom') ? sourceWrapper.bottomCenter : sourceWrapper.topCenter;
-                if (nextSegment.length && nextSegment.direction) {
-                    nextSegment.length =
-                        (direction === 'Top') ? firstSegment.points[firstSegment.points.length - 1].y - (sourcePoint2.y + 20) :
-                            (sourcePoint2.y + 20) - firstSegment.points[firstSegment.points.length - 1].y;
-                }
-                firstSegment.length = firstSegment.points[firstSegment.points.length - 1].x - sourcePoint2.x;
-                firstSegment.direction = (firstSegment.length > 0) ? 'Right' : 'Left';
-                const segValues: Object = { type: 'Orthogonal', direction: direction, length: 20 };
-                segments.push(new OrthogonalSegment(connector as Connector, 'segments', segValues, true));
-                connector.segments = segments.concat(connector.segments);
-            }
-        } else {
-            sourcePoint = (firstSegment.direction === 'Bottom') ? sourceWrapper.bottomCenter : sourceWrapper.topCenter;
-
-            if (firstSegment.length > sourceWrapper.height || ((firstSegment.direction === 'Top' &&
-                sourcePoint.y >= firstSegment.points[0].y) ||
-                (firstSegment.direction === 'Bottom' && sourcePoint.y <= firstSegment.points[0].y))) {
-                firstSegment.points[0].x = firstSegment.points[firstSegment.points.length - 1].x = sourcePoint.x;
-                firstSegment.points[0].y = sourcePoint.y;
-                firstSegment.length = Point.distancePoints(
-                    firstSegment.points[0], firstSegment.points[firstSegment.points.length - 1]);
-                nextSegment.length = Point.distancePoints(
-                    firstSegment.points[firstSegment.points.length - 1], nextSegment.points[nextSegment.points.length - 1]);
-            } else {
-                sourcePoint2 = (nextSegment.direction === 'Left') ? sourceWrapper.middleLeft : sourceWrapper.middleRight;
-                let direction: Direction;
-                if (nextSegment.direction) {
-                    direction = nextSegment.direction;
-                } else {
-                    direction = Point.direction(
-                        nextSegment.points[0], nextSegment.points[nextSegment.points.length - 1]) as Direction;
-                }
-                if (nextSegment.length && nextSegment.direction) {
-                    nextSegment.length =
-                        (direction === 'Left') ? firstSegment.points[firstSegment.points.length - 1].x - (sourcePoint2.x + 20) :
-                            (sourcePoint2.x + 20) - firstSegment.points[firstSegment.points.length - 1].x;
-                }
-                firstSegment.length = firstSegment.points[firstSegment.points.length - 1].y - sourcePoint2.y;
-                firstSegment.direction = (firstSegment.length > 0) ? 'Bottom' : 'Top';
-                const segValues: Object = { type: 'Orthogonal', direction: direction, length: 20 };
-                segments.push(new OrthogonalSegment(connector as Connector, 'segments', segValues, true));
-                connector.segments = segments.concat(connector.segments);
-            }
-        }
-    }
     //Translate the bezier points during the interaction
     private translateBezierPoints(
         connector: ConnectorModel, value: string, tx: number, ty: number, seg: BezierSegmentModel, point?: PointModel,
@@ -5539,11 +5632,12 @@ Remove terinal segment in initial
             const newProp: Connector = { sourcePoint: conn.sourcePoint, targetPoint: conn.targetPoint } as Connector;
             this.diagram.connectorPropertyChange(conn as Connector, {} as Connector, newProp);
             if (conn.segments && conn.segments.length > 0) {
+                const prevProtectPropertyChange: boolean = this.diagram.getProtectPropertyChangeValue();
                 this.diagram.protectPropertyChange(true);
                 const connector: Connector = conn;
                 connector.segments = [];
                 this.diagram.connectorPropertyChange(connector, {} as Connector, { segments: connector.segments } as Connector);
-                this.diagram.protectPropertyChange(false);
+                this.diagram.protectPropertyChange(prevProtectPropertyChange);
             }
         }
     }
@@ -6064,9 +6158,49 @@ Remove terinal segment in initial
         if (label instanceof ShapeAnnotation) {
             // Calculate sign multipliers based on flip direction
             const xSign = ((textElement as TextElement).flippedPoint && textElement.flip === FlipDirection.Horizontal ||
-                            textElement.flip === FlipDirection.Both) ? -1 : 1;
+                textElement.flip === FlipDirection.Both) ? -1 : 1;
             const ySign = ((textElement as TextElement).flippedPoint && textElement.flip === FlipDirection.Vertical ||
-                            textElement.flip === FlipDirection.Both) ? -1 : 1;
+                textElement.flip === FlipDirection.Both) ? -1 : 1;
+            if (this.diagram.constraints & DiagramConstraints.RestrictNegativeAxisDragDrop) {
+                this.annotationRestrictDeltaValue = this.annotationRestrictDeltaValue || { x: 0, y: 0 };
+                if (this.annotationRestrictDeltaValue.x > 0) {
+                    this.annotationRestrictDeltaValue.x -= tx;
+                    tx = this.annotationRestrictDeltaValue.x > 0 ? 0 : -this.annotationRestrictDeltaValue.x;
+                    this.annotationRestrictDeltaValue.x = Math.max(0, this.annotationRestrictDeltaValue.x);
+                }
+                if (this.annotationRestrictDeltaValue.y > 0) {
+                    this.annotationRestrictDeltaValue.y -= ty;
+                    ty = this.annotationRestrictDeltaValue.y > 0 ? 0 : -this.annotationRestrictDeltaValue.y;
+                    this.annotationRestrictDeltaValue.y = Math.max(0, this.annotationRestrictDeltaValue.y);
+                }
+                const cos: number = Math.cos(textElement.parentTransform * Math.PI / 180);
+                const sin: number = Math.sin(textElement.parentTransform * Math.PI / 180);
+                const rotatedCenter: PointModel = {
+                    x: (obj as Node).offsetX + ((bounds.x + label.offset.x * bounds.width + tx - (obj as Node).offsetX) * cos -
+                        (bounds.y + label.offset.y * bounds.height + ty - (obj as Node).offsetY) * sin),
+                    y: (obj as Node).offsetY + ((bounds.x + label.offset.x * bounds.width + tx - (obj as Node).offsetX) * sin +
+                        (bounds.y + label.offset.y * bounds.height + ty - (obj as Node).offsetY) * cos)
+                };
+                const totalAngle: number = (textElement.parentTransform + textElement.rotateAngle) % 360;
+                const corners: PointModel[] = this.getRotatedAnnotationCorners(rotatedCenter, textElement.actualSize.width,
+                                                                               textElement.actualSize.height, totalAngle);
+                const xs: number[] = corners.map(pt => pt.x);
+                const ys: number[] = corners.map(pt => pt.y);
+                const rectLeft: number = Math.min(...xs);
+                const rectTop: number = Math.min(...ys);
+                if (rectLeft < 0 || rectTop < 0) {
+                    tx = 0;
+                    ty = 0;
+                    if (textElement.parentTransform === 0) {
+                        if (rectLeft < 0) {
+                            this.annotationRestrictDeltaValue.x += -rectLeft;
+                        }
+                        if (rectTop < 0) {
+                            this.annotationRestrictDeltaValue.y += -rectTop;
+                        }
+                    }
+                }
+            }
             // Apply offsets in a single operation
             label.offset.x += (xSign * tx / bounds.width);
             label.offset.y += (ySign * ty / bounds.height);
@@ -6093,6 +6227,25 @@ Remove terinal segment in initial
             }
         }
     }
+
+    private getRotatedAnnotationCorners(
+        center: PointModel,
+        width: number,
+        height: number,
+        angle: number
+    ): PointModel[] {
+        const cos = Math.cos(angle * Math.PI / 180);
+        const sin = Math.sin(angle * Math.PI / 180);
+        const halfW = width / 2;
+        const halfH = height / 2;
+        return [
+            { x: center.x + (-halfW * cos - -halfH * sin), y: center.y + (-halfW * sin + -halfH * cos) },
+            { x: center.x + (halfW * cos - -halfH * sin), y: center.y + (halfW * sin + -halfH * cos) },
+            { x: center.x + (-halfW * cos - halfH * sin), y: center.y + (-halfW * sin + halfH * cos) },
+            { x: center.x + (halfW * cos - halfH * sin), y: center.y + (halfW * sin + halfH * cos) }
+        ];
+    }
+
 
     private updatePathAnnotationOffset(
         object: Connector, label: PathAnnotation, tx: number, ty: number, newPosition?: PointModel, size?: Size): void {
@@ -6499,7 +6652,12 @@ Remove terinal segment in initial
         if (label instanceof PathAnnotation) {
             label.alignment = 'Center';
         }
+        let oldAngle = labelWrapper.rotateAngle;
+        labelWrapper.rotateAngle = label.rotateAngle;
         selector.wrapper.rotateAngle = selector.rotateAngle = label.rotateAngle;
+        labelWrapper.rotateAngle = this.diagram.canRotateOnNegativeAxis(labelWrapper as TextElement)
+            ? label.rotateAngle
+            : (label.rotateAngle = oldAngle);
         changedvalues = this.getAnnotationChanges(object, label);
         if (object instanceof Node) {
             this.diagram.nodePropertyChange(object as Node, oldValues as Node, changedvalues as Node);
@@ -6531,8 +6689,22 @@ Remove terinal segment in initial
             scaleMatrix(matrix, deltaWidth, deltaHeight, pivot.x, pivot.y);
             rotateMatrix(matrix, rotateAngle, pivot.x, pivot.y);
             let newPosition: PointModel = transformPointByMatrix(matrix, { x: textElement.offsetX, y: textElement.offsetY });
-            const height: number = textElement.actualSize.height * deltaHeight;
-            const width: number = textElement.actualSize.width * deltaWidth;
+            let height: number = textElement.actualSize.height * deltaHeight;
+            let width: number = textElement.actualSize.width * deltaWidth;
+            if (this.diagram.constraints & DiagramConstraints.RestrictNegativeAxisDragDrop) {
+                const center: PointModel = { x: textElement.offsetX, y: textElement.offsetY };
+                const newCenter: PointModel = transformPointByMatrix(matrix, center);
+                const corners: PointModel[] = this.getRotatedAnnotationCorners(newCenter as PointModel,
+                    width as number, height as number, rotateAngle as number);
+                const isNegative: boolean = corners.some(pt => pt.x < 0 || pt.y < 0);
+                if (isNegative) {
+                    deltaWidth = 1;
+                    deltaHeight = 1;
+                    width = textElement.actualSize.width;
+                    height = textElement.actualSize.height;
+                    return;
+                }
+            }
             const shape: ShapeAnnotationModel | PathAnnotationModel = this.findTarget(textElement, node as IElement) as ShapeAnnotation;
             if (shape instanceof PathAnnotation) {
                 newPosition.y += (shape.verticalAlignment === 'Top') ? (-height / 2) : (
@@ -6558,7 +6730,8 @@ Remove terinal segment in initial
                     const prevOffsetX: number = shape.offset.x;
                     shape.offset.x = 1 / offsetx;
                     //Modify the offset for the text element based if the element is flipped.
-                    if ((textElement as TextElement).flippedPoint && (textElement.flip === FlipDirection.Horizontal || textElement.flip === FlipDirection.Both)) {
+                    if ((textElement as TextElement).flippedPoint && (textElement.flip === FlipDirection.Horizontal || textElement.flip === FlipDirection.Both)
+                        && textElement.horizontalAlignment === 'Center') {
                         shape.offset.x = prevOffsetX + prevOffsetX - shape.offset.x;
                     }
                 }
@@ -6567,7 +6740,8 @@ Remove terinal segment in initial
                     const prevOffsetY: number = shape.offset.y;
                     shape.offset.y = 1 / offsety;
                     //Modify the offset for the text element based if the element is flipped.
-                    if ((textElement as TextElement).flippedPoint && (textElement.flip === FlipDirection.Vertical || textElement.flip === FlipDirection.Both)) {
+                    if ((textElement as TextElement).flippedPoint && (textElement.flip === FlipDirection.Vertical || textElement.flip === FlipDirection.Both)
+                        && textElement.verticalAlignment === 'Center') {
                         shape.offset.y = prevOffsetY + prevOffsetY - shape.offset.y;
                     }
                 }
@@ -7002,7 +7176,12 @@ Remove terinal segment in initial
                                 !checkParentAsContainer(this.diagram, node) &&
                                 !node.isLane
                                 && !node.isPhase && !node.isHeader) {
-                                node.offsetX += offsetX; node.offsetY += offsetY;
+                                // 977394 - Locked Node Moves Unexpectedly When Line Routing Is Enabled
+                                // Check if selected node have Drag constraint
+                                if (node.constraints & NodeConstraints.Drag) {
+                                    node.offsetX += offsetX;
+                                    node.offsetY += offsetY;
+                                }
                                 node.width += width; node.height += height; node.rotateAngle += rotateAngle;
                                 this.diagram.nodePropertyChange(node, {} as Node, {
                                     offsetX: node.offsetX, offsetY: node.offsetY,
@@ -7011,7 +7190,6 @@ Remove terinal segment in initial
                                 objects = objects.concat(this.diagram.spatialSearch.findObjects(actualObject.wrapper.outerBounds as Rect));
                             }
                         }
-                        // 973829-Connector Segments Not Moving with Node During Multi-Select Drag
                         if (this.diagram.lineRoutingModule) {
                             for (let i: number = 0; i < actualObject.connectors.length; i++) {
                                 const connector: Connector = actualObject.connectors[i] as Connector;

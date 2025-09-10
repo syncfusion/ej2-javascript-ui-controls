@@ -95,7 +95,6 @@ export class DocumentEditorSettings extends ChildProperty<DocumentEditorSettings
      */
     @Property({ customData: '', showCustomDataWithAuthor: false })
     public revisionSettings: RevisionSettingsModel;
-
     /**
      * Specified the auto resize settings.
      */
@@ -1240,6 +1239,10 @@ export class DocumentEditor extends Component<HTMLElement> implements INotifyPro
     /**
      * @private
      */
+    public documentCharacterFormat: CharacterFormatProperties;
+    /**
+     * @private
+     */
     public commentReviewPane: CommentReviewPane;
     /**
      * @private
@@ -1400,7 +1403,6 @@ export class DocumentEditor extends Component<HTMLElement> implements INotifyPro
      * Gets the spell check dialog object of the document editor.
      *
      * @returns {SpellCheckDialog} Returns the spell check dialog object.
-     * @private
      */
     public get spellCheckDialog(): SpellCheckDialog {
         if (!this.spellCheckDialogModule) {
@@ -2083,6 +2085,14 @@ export class DocumentEditor extends Component<HTMLElement> implements INotifyPro
     }
 
     /**
+     * Gets the default character format for document editor
+     * @returns Returns the default character format for document editor.
+     */
+    public getDefaultCharacterFormat(): CharacterFormatProperties {
+       return this.characterFormat;
+    }
+
+    /**
      * Sets the default paragraph format for document editor
      *
      * @param {ParagraphFormatProperties} paragraphFormat Specifies the paragraph format.
@@ -2109,6 +2119,28 @@ export class DocumentEditor extends Component<HTMLElement> implements INotifyPro
             this.selectionModule.retrieveCurrentFormatProperties();
         }
     }
+
+    /**
+     * Sets the default character format of the document loaded in Document editor. These properties will be serialized and preserved in the exported document too.
+     * @returns {void}
+     */
+    public setDocumentCharacterFormat(characterFormat: CharacterFormatProperties): void {
+        this.documentCharacterFormat = JSON.parse(HelperMethods.sanitizeString(JSON.stringify(characterFormat)));
+        this.parser.parseCharacterFormat(0, this.documentCharacterFormat, this.documentHelper.characterFormat);
+        if (!isNullOrUndefined(this.selectionModule)) {
+            this.selectionModule.retrieveCurrentFormatProperties();
+        }
+    }
+    /**
+     * Gets the default character format of the document loaded in Document editor. These properties will be serialized and preserved in the exported document too.
+     * @returns Returns the default character format of the document loaded in Document editor.
+     */
+    public getDocumentCharacterFormat(): CharacterFormatProperties {
+        let format: CharacterFormatProperties = {};
+        HelperMethods.writeCharacterFormatProperties(this.documentHelper.characterFormat, format);
+        return format;
+    }
+
 
     /**
      * Gets the properties to be maintained in the persisted state.
@@ -2507,8 +2539,8 @@ export class DocumentEditor extends Component<HTMLElement> implements INotifyPro
         };
         let pictureCC: HTMLElement;
         let contentControlImage: ElementBox;
-        let element: HTMLElement = document.getElementById(this.element.id + '_viewerContainer');
-        let picture_cc: HTMLElement = document.getElementById(this.element.id + 'PICTURE_CONTENT_CONTROL');
+        let element: HTMLElement = this.element.querySelector('#' + this.element.id + '_viewerContainer');
+        let picture_cc: HTMLElement = this.element.querySelector('#' + this.element.id + 'PICTURE_CONTENT_CONTROL');
         if ((isNullOrUndefined(picture_cc) && showPicContentControl) || pictureElement) {
             pictureCC = this.rulerHelper.createHtmlElement('div', attributes);
             this.setPictureContentControlPositions(pictureCC)
@@ -3264,7 +3296,7 @@ export class DocumentEditor extends Component<HTMLElement> implements INotifyPro
         'Unsaved comments': 'Unsaved comments',
         'XML Mapping': 'XML Mapping',
         'Custom XML Part' :'Custom XML Part:',
-        'Discard Comment body': 'You have comments that haven\'t been posted yet. If you leave this page, they\'ll be discarded',   
+        'Discard Comment body': 'You have comments that haven\'t been posted yet. If you leave this page, they\'ll be discarded',
         'Discard Content Control': 'You can not insert a content control when the selection includes another content control.',
         'No Headings': 'No Heading Found!',
         'Add Headings': 'This document has no headings. Please add headings and try again.',
@@ -3589,8 +3621,8 @@ export class DocumentEditor extends Component<HTMLElement> implements INotifyPro
             }
             if (!isNullOrUndefined(sfdtText) && this.viewer) {
                 const incrementalOps: Record<string, ActionInfo[]> = {};
-                const sections: BodyWidget[] = this.parser.convertJsonToDocument(sfdtText as string, incrementalOps);
                 this.documentHelper.setDefaultDocumentFormat();
+                const sections: BodyWidget[] = this.parser.convertJsonToDocument(sfdtText as string, incrementalOps);
                 this.documentHelper.onDocumentChanged(sections, incrementalOps);
             }
             if (this.isSpellCheck) {

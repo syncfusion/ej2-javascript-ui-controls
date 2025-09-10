@@ -511,7 +511,78 @@ it('memory leak', () => {
     //Check the final memory usage against the first usage, there should be little change if everything was properly deallocated
     expect(memory).toBeLessThan(profile.samples[0] + 0.25);
 });
+    describe('Pie Chart checking no data template', () => {
+        let chart: AccumulationChart;
+        let ele: HTMLElement;
+        beforeAll((): void => {
+            ele = createElement('div', { id: 'container' });
+            document.body.appendChild(ele);
+            chart = new AccumulationChart();
+            chart.appendTo('#container');
+        });
 
+        afterAll((): void => {
+            chart.destroy();
+            ele.remove();
+        });
+        it('checking no data template element', (done: Function) => {
+            chart.loaded = (args: Object) => {
+                chart.loaded = null;
+                const templateElement: HTMLElement = document.getElementById('container_NoDataTemplate_wrapper');
+                expect(templateElement != null);
+                done();
+            };
+            chart.subTitle = null;
+            chart.noDataTemplate = '<div>No data template</div>';
+            chart.refresh();
+        });
+        it('checking with title', (done: Function) => {
+            chart.loaded = (args: Object) => {
+                chart.loaded = null;
+                const templateElement: HTMLElement = document.getElementById('container_NoDataTemplate_wrapper');
+                expect(templateElement != null);
+                done();
+            };
+            chart.enableHtmlSanitizer = true;
+            chart.title = 'Title';
+            chart.subTitle = 'Title';
+            chart.refresh();
+        });
+        it('checking with left title', (done: Function) => {
+            chart.loaded = (args: Object) => {
+                chart.loaded = null;
+                const templateElement: HTMLElement = document.getElementById('container_NoDataTemplate_wrapper');
+                expect(templateElement != null);
+                done();
+            };
+            chart.titleStyle.position = 'Left';
+            chart.enableHtmlSanitizer = false;
+            chart.refresh();
+        });
+        it('checking with right title', (done: Function) => {
+            chart.loaded = (args: Object) => {
+                chart.loaded = null;
+                const templateElement: HTMLElement = document.getElementById('container_NoDataTemplate_wrapper');
+                expect(templateElement != null);
+                done();
+            };
+            chart.titleStyle.position = 'Right';
+            chart.refresh();
+        });
+        it('checking with bottom title', (done: Function) => {
+            chart.loaded = (args: Object) => {
+                chart.loaded = null;
+                const templateElement: HTMLElement = document.getElementById('container_NoDataTemplate_wrapper');
+                expect(templateElement != null);
+                done();
+            };
+            chart.titleStyle.position = 'Bottom';
+            chart.noDataTemplate = function() {
+                return '<div>No data template</div>';
+            };
+            chart.refresh();
+        });
+    });
 describe('Checking RTL Behaviour for Title', () => {
     let ele: HTMLElement;
     let id: string = 'ej2-container';

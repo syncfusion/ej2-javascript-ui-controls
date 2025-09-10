@@ -33,11 +33,8 @@
       width: max-content;
       padding: $rte-popup-padding;
     }
-    // Prevents flickering caused by dynamic max-width when popup opens
-    // Removes inherited max-height from toolbar component to ensure all items are visible
     .e-toolbar-pop:not(.e-toolbar-extended) {
       max-width: 75%;
-      max-height: none !important; /* stylelint-disable-line declaration-no-important */
     }
   }
   

@@ -731,6 +731,66 @@ describe('default stock chart', () => {
             chart.refresh();
         });
     });
+    describe('Stock Chart checking no data template', () => {
+        let chart: StockChart;
+        let ele: HTMLElement;
+        beforeAll((): void => {
+            ele = createElement('div', { id: 'container' });
+            document.body.appendChild(ele);
+            chart = new StockChart();
+            chart.appendTo('#container');
+        });
+
+        afterAll((): void => {
+            chart.destroy();
+            ele.remove();
+        });
+        it('checking no data template element', (done: Function) => {
+            chart.loaded = (args: Object) => {
+                chart.loaded = null;
+                const templateElement: HTMLElement = document.getElementById('container_NoDataTemplate_wrapper');
+                expect(templateElement != null);
+                done();
+            };
+            chart.noDataTemplate = '<div>No data template</div>';
+            chart.refresh();
+        });
+        it('checking with title', (done: Function) => {
+            chart.loaded = (args: Object) => {
+                chart.loaded = null;
+                const templateElement: HTMLElement = document.getElementById('container_NoDataTemplate_wrapper');
+                expect(templateElement != null);
+                done();
+            };
+            chart.noDataTemplate = function() {
+                return '<div>No data template</div>';
+            };
+            chart.title = 'Title';
+            chart.refresh();
+        });
+    });
+    describe('Stock Chart checking id name', () => {
+        let chart: StockChart;
+        let ele: HTMLElement;
+        beforeAll((): void => {
+            ele = createElement('div', {  });
+            document.body.appendChild(ele);
+            chart = new StockChart({}, ele);
+        });
+
+        afterAll((): void => {
+            chart.destroy();
+            ele.remove();
+        });
+        it('checking id name', (done: Function) => {
+            chart.loaded = (args: Object) => {
+                chart.loaded = null;
+                done();
+            };
+            chart.title = 'Title';
+            chart.refresh();
+        });
+    });
     describe('checking stock chart', () => {
         let chart: StockChart;
         let chartElement: Element = createElement('div', { id: 'stock' });
@@ -872,6 +932,16 @@ describe('default stock chart', () => {
                 expect(element !== null).toBe(true);
                 done();
             };
+            chart.refresh();
+        });
+        it('Checking stock chart events', (done: Function) => {
+            chart.loaded = (args: IStockChartEventArgs): void => {
+                chart.loaded = null;
+                element = document.getElementById('stock_stockChart_chart_Series_0_Point_2');
+                trigger.rightClickEvent(element);
+                done();
+            };
+            chart.crosshair.enable = true;
             chart.refresh();
         });
         // it('Checking stock chart event export button', (done: Function) => {

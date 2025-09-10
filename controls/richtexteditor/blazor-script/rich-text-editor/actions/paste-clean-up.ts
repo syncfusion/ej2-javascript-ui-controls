@@ -967,13 +967,7 @@ export class PasteCleanup {
             'div', { className: 'pasteContent', styles: 'display:inline;' }
         ) as HTMLElement;
         clipBoardElem.innerHTML = value;
-        // Add table class if needed
-        if (typeof args !== 'string' && (args as NotifyArgs).pasteTableSource) {
-            clipBoardElem = this.pasteObj.addTableClass(
-                clipBoardElem,
-                (args as NotifyArgs).pasteTableSource
-            );
-        }
+        clipBoardElem = this.pasteObj.addTableClass(clipBoardElem, (args as NotifyArgs).pasteTableSource);
         return clipBoardElem;
     }
 

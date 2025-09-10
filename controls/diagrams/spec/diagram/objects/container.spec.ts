@@ -679,7 +679,7 @@ describe('Diagram Control', () => {
 
         });
     });
-
+    
     describe('Bug 969383-Margin Properties Fail for Nested Containers with Children', () => {
         let diagram: Diagram;
         let mouseEvents: MouseEvents = new MouseEvents();
@@ -771,8 +771,8 @@ describe('Diagram Control', () => {
                             },
                         },
                         children: ["Terminator4", "container5"]
-
                     },
+
                     style: {
                         fill: 'pink',
                         strokeColor: '#6AA874',
@@ -850,7 +850,6 @@ describe('Diagram Control', () => {
                             },
                         },
                         children: ["Terminator5"]
-
                     },
                     style: {
                         fill: 'skyblue',
@@ -896,7 +895,6 @@ describe('Diagram Control', () => {
                             },
                         },
                         children: ["Terminator3", "container4"]
-
                     },
                     style: {
                         fill: 'yellow',
@@ -924,34 +922,30 @@ describe('Diagram Control', () => {
                     shape: { type: 'Flow', shape: 'Terminator' }
                 }
             ];
-
-        diagram = new Diagram({
-            width: '1900px', height: '1200px', nodes: nodes,
-            rulerSettings: { showRulers: true }
-        });
+            diagram = new Diagram({
+                width: '1900px', height: '1200px', nodes: nodes,
+                rulerSettings: { showRulers: true }
+            });
             diagram.appendTo('#diagramNestedContainer');
         });
-
         afterAll((): void => {
             diagram.destroy();
             ele.remove();
         });
-
         it('Render-nested-container-with-child', function (done) {
             let mainContainer: NodeModel = diagram.nameTable["container1"]
             expect((mainContainer.wrapper.children[0] as Canvas).children.length === 4 &&
                 (((mainContainer.wrapper.children[0] as Canvas).children[2] as Canvas).children[0] as Canvas).children.length === 4).toBe(true);
             done();
         });
-
         it('Drag the child-node inside nested-Container', function (done) {
             let lastChild = diagram.nameTable['Terminator5'];
-            let diagramCanvas = document.getElementById(diagram.element.id+'content');
+            let diagramCanvas = document.getElementById(diagram.element.id + 'content');
             diagram.select([lastChild]);
             const childElement = document.getElementById('Terminator5_groupElement');
             const bounds = childElement.getBoundingClientRect();
-            const dragX = bounds.left + (bounds.width/2);
-            const dragY = bounds.top + (bounds.height/2);
+            const dragX = bounds.left + (bounds.width / 2);
+            const dragY = bounds.top + (bounds.height / 2);
             mouseEvents.dragAndDropEvent(diagramCanvas, dragX, dragY, dragX + 200, dragY);
             //Check outer parent container4 width after dragging inner container5 children drag
             let container4 = diagram.nameTable['container4'];
@@ -961,13 +955,13 @@ describe('Diagram Control', () => {
         })
         it('Resize the child-node inside nested-Container', function (done) {
             let child = diagram.nameTable['Terminator4'];
-            let diagramCanvas = document.getElementById(diagram.element.id+'content');
+            let diagramCanvas = document.getElementById(diagram.element.id + 'content');
             diagram.select([child]);
             let resizeEast: any = document.getElementById('resizeEast');
             let bounds: any = resizeEast.getBoundingClientRect();
-            let boundsCenterX: number = bounds.left + (bounds.width/2);
-            let boundsCenterY: number = bounds.top + (bounds.height/2);
-            mouseEvents.dragAndDropEvent(diagramCanvas, boundsCenterX, boundsCenterY , boundsCenterX + 500, boundsCenterY);
+            let boundsCenterX: number = bounds.left + (bounds.width / 2);
+            let boundsCenterY: number = bounds.top + (bounds.height / 2);
+            mouseEvents.dragAndDropEvent(diagramCanvas, boundsCenterX, boundsCenterY, boundsCenterX + 500, boundsCenterY);
             //Check outer parent container3 width after resizing inner container4 children
             let container3 = diagram.nameTable['container3'];
             console.log(container3.wrapper.children[0].width);

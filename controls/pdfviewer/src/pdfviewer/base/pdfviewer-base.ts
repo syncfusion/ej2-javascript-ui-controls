@@ -421,6 +421,10 @@ export class PdfViewerBase {
     /**
      * @private
      */
+    public isLocaleChanged: boolean = false;
+    /**
+     * @private
+     */
     public customStampCount: number = 0;
     /**
      * @private
@@ -902,7 +906,8 @@ export class PdfViewerBase {
                 this.pdfViewer.textSearchModule.createTextSearchBox();
             }
             if (this.pdfViewer.documentPath) {
-                if (this.pdfViewer.enableHtmlSanitizer) {
+                const documentPath: any = this.pdfViewer.documentPath;
+                if (this.pdfViewer.enableHtmlSanitizer && !(documentPath instanceof Uint8Array)) {
                     this.pdfViewer.documentPath = SanitizeHtmlHelper.sanitize(this.pdfViewer.documentPath as string);
                 }
                 if (isBlazor()) {
@@ -1102,7 +1107,7 @@ export class PdfViewerBase {
                     this.pdfViewer.uploadedFileByteArray = pdfbytearray;
                     documentData = pdfbytearray;
                 }
-                else if (!isUrlLoaded && !documentData.includes('pdf;base64,') && this.clientSideRendering) {
+                else if (!isUrlLoaded && documentData && !documentData.includes('pdf;base64,') && this.clientSideRendering) {
                     const dataType: string = this.identifyDataType(documentData);
                     const isDataType: boolean = dataType === 'URL';
                     isValidData = this.isValidPDFBase64(documentData) || isDataType;
@@ -1477,8 +1482,7 @@ export class PdfViewerBase {
 
     private updateViewerContainerSize(): void {
         if (!isNullOrUndefined(this.viewerContainer)) {
-            this.viewerContainer.style.width = (this.pdfViewer.element.clientWidth > 0 ? this.pdfViewer.element.clientWidth :
-                this.pdfViewer.element.offsetWidth) + 'px';
+            this.viewerContainer.style.width = (this.pdfViewer.element.clientWidth > 0 ? this.pdfViewer.element.clientWidth : this.pdfViewer.element.offsetWidth) + 'px';
         }
         if (!isNullOrUndefined(this.pageContainer)) {
             this.pageContainer.style.width = this.viewerContainer.offsetWidth + 'px';
@@ -2404,7 +2408,7 @@ export class PdfViewerBase {
     }
 
     /**
-     * @param {boolean} isEnable - Enable or disable the toolbar item.
+     * @param {boolean} isEnable - Enable or disable the toolbar items.
      * @returns {void}
      * @private
      */
@@ -2750,6 +2754,37 @@ export class PdfViewerBase {
         if (this.pageCount > 0) {
             this.createRequestForDownload();
         }
+    }
+
+    /**
+     * @param {Blob} blob - get the blob value.
+     * @private
+     * @returns {any} - Returns the blob object.
+     */
+    public blobToByteArray(blob: Blob): any {
+        // eslint-disable-next-line
+        return new Promise(function (resolve, _) {
+            const reader: FileReader = new FileReader();
+            reader.onloadend = function (): any {
+                const arrayBuffer: any = reader.result;
+                const byteArray: Uint8Array = new Uint8Array(arrayBuffer);
+                resolve(byteArray);
+            };
+            reader.readAsArrayBuffer(blob);
+        });
+    }
+
+    /**
+     * @param {Blob} blob - get the blob value.
+     * @private
+     * @returns {any} - Returns the blob object.
+     */
+    public blobToBase64(blob: Blob): any {
+        return new Promise((resolve: (value: any) => void, _: any) => {
+            const reader: FileReader = new FileReader();
+            reader.onloadend = () => resolve(reader.result);
+            reader.readAsDataURL(blob);
+        });
     }
 
     /**
@@ -3129,241 +3164,244 @@ export class PdfViewerBase {
         if (measureElement) {
             measureElement = undefined;
         }
-        this.hyperlinkAndLinkAnnotation = {};
-        this.navigationPane = new NavigationPane(this.pdfViewer, this);
-        this.textLayer = new TextLayer(this.pdfViewer, this);
-        this.accessibilityTags = new AccessibilityTags(this.pdfViewer, this);
-        this.signatureModule = new Signature(this.pdfViewer, this);
-        this.pageTextDetails = {};
-        this.pageImageDetails = {};
-        this.viewerContainer = null;
-        this.contextMenuModule = null;
-        this.documentPathByteArray = null;
-        this.pageSize = [];
-        this.existingFieldImport = null;
-        this.pageCount = 0;
-        this.customZoomValues = [];
-        this.isReRenderRequired = null;
-        this.currentPageNumber = null;
-        this.previousZoomValue = null;
-        this.initialZoomValue = {};
-        this.activeElements = new ActiveElements();
-        this.mouseDownEvent = null;
-        this.pngData = [];
-        this.blazorUIAdaptor = null;
-        this.unload = null;
-        this.isDocumentLoaded = null;
-        this.documentId = null;
-        this.jsonDocumentId = null;
-        this.renderedPagesList = [];
-        this.pageGap = 8;
-        this.signatureAdded = null;
-        this.isSignInitialClick = null;
-        this.loadedData = '';
-        this.isFreeTextSelected = null;
-        this.formfieldvalue = null;
-        this.pageLeft = 5;
-        this.sessionLimit = 1000;
-        this.pageStopValue = 300;
-        this.toolbarHeight = 56;
-        this.pageLimit = 0;
-        this.previousPage = 0;
-        this.isViewerMouseDown = null;
-        this.isViewerMouseWheel = null;
-        this.scrollPosition = 0;
-        this.sessionStorage = [];
-        this.sessionStorageManager.clear();
-        this.pageContainer = null;
-        this.isLoadedFormFieldAdded = null;
-        this.scrollHoldTimer = null;
-        this.isFileName = null;
-        this.isInkAnnot = null;
-        this.modifiedPageIndex = [];
-        this.pointerCount = 0;
-        this.pointersForTouch = [];
-        this.corruptPopup = null;
-        this.passwordPopup = null;
-        this.goToPagePopup = null;
-        this.isPasswordAvailable = null;
-        this.isBounds = null;
-        this.isImportDoc = null;
-        this.document = null;
-        this.passwordData = '';
-        this.reRenderedCount = 0;
-        this.passwordInput = null;
-        this.promptElement = null;
-        this.mouseX = 0;
-        this.mouseY = 0;
-        this.mouseLeft = 0;
-        this.mouseTop = 0;
-        this.hashId = '';
-        this.documentLiveCount = null;
-        this.mainContainer = null;
-        this.viewerMainContainer = null;
-        this.printMainContainer = null;
-        this.mobileScrollerContainer = null;
-        this.mobilePageNoContainer = null;
-        this.mobileSpanContainer = null;
-        this.mobilecurrentPageContainer = null;
-        this.mobilenumberContainer = null;
-        this.mobiletotalPageContainer = null;
-        this.touchClientX = 0;
-        this.touchClientY = 0;
-        this.previousTime = 0;
-        this.currentTime = 0;
-        this.isTouchScrolled = null;
-        this.isgetFocused = null;
-        this.goToPageInput = null;
-        this.pageNoContainer = null;
-        this.goToPageElement = null;
-        this.isLongTouchPropagated = null;
-        this.longTouchTimer = null;
-        this.isViewerContainerDoubleClick = null;
-        this.dblClickTimer = null;
-        this.pinchZoomStorage = null;
-        this.isPinchZoomStorage = null;
-        this.isTextSelectionDisabled = null;
-        this.isPanMode = null;
-        this.dragX = 0;
-        this.dragY = 0;
-        this.isScrollbarMouseDown = null;
-        this.scrollX = 0;
-        this.scrollY = 0;
-        this.ispageMoved = null;
-        this.isThumb = null;
-        this.isTapHidden = null;
-        this.singleTapTimer = null;
-        this.tapCount = 0;
-        this.inputTapCount = 0;
-        this.isInitialLoaded = null;
-        this.loadRequestHandler = null;
-        this.unloadRequestHandler = null;
-        this.dowonloadRequestHandler = null;
-        this.pageRequestHandler = null;
-        this.textRequestHandler = null;
-        this.virtualLoadRequestHandler = null;
-        this.exportAnnotationRequestHandler = null;
-        this.importAnnotationRequestHandler = null;
-        this.exportFormFieldsRequestHandler = null;
-        this.importFormFieldsRequestHandler = null;
-        this.annotationPageList = null;
-        this.importPageList = null;
-        this.importedAnnotation = null;
-        this.isImportAction = null;
-        this.isImportedAnnotation = null;
-        this.isAnnotationCollectionRemoved = null;
-        this.tool = null;
-        this.action = '';
-        this.eventArgs = {};
-        this.inAction = null;
-        this.isMouseDown = null;
-        this.isStampMouseDown = null;
-        this.currentPosition = null;
-        this.prevPosition = null;
-        this.initialEventArgs = null;
-        this.stampAdded = null;
-        this.customStampCount = 0;
-        this.isDynamicStamp = null;
-        this.isMixedSizeDocument = null;
-        this.highestWidth = 0;
-        this.highestHeight = 0;
-        this.customStampCollection = [];
-        this.isAlreadyAdded = null;
-        this.isWebkitMobile = null;
-        this.isFreeTextContextMenu = null;
-        this.isSelection = null;
-        this.isAddAnnotation = null;
-        this.annotationComments = null;
-        this.isToolbarSignClicked = null;
-        this.signatureCount = 0;
-        this.isSignatureAdded = null;
-        this.isNewSignatureAdded = null;
-        this.currentSignatureAnnot = null;
-        this.isInitialPageMode = null;
-        this.ajaxData = null;
-        this.documentAnnotationCollections = null;
-        this.annotationRenderredList = [];
-        this.annotationStorage = {};
-        this.formFieldStorage = {};
-        this.isStorageExceed = null;
-        this.isFormStorageExceed = null;
-        this.isNewStamp = null;
-        this.downloadCollections = {};
-        this.isAnnotationAdded = null;
-        this.annotationEvent = null;
-        this.isAnnotationDrawn = null;
-        this.isAnnotationSelect = null;
-        this.isAnnotationMouseDown = null;
-        this.isAnnotationMouseMove = null;
-        this.validateForm = null;
-        this.isMinimumZoom = null;
-        this.documentLoaded = null;
-        this.tileRenderCount = 0;
-        this.tileRequestCount = 0;
-        this.isTileImageRendered = null;
-        this.isDataExits = null;
-        this.requestLists = [];
-        this.tilerequestLists = [];
-        this.textrequestLists = [];
-        this.renderThumbnailImages = null;
-        this.pageRenderCount = 2;
-        this.isToolbarInkClicked = null;
-        this.isInkAdded = null;
-        this.inkCount = null;
-        this.isAddedSignClicked = null;
-        this.imageCount = 0;
-        this.isMousedOver = null;
-        this.isFormFieldSelect = null;
-        this.isFormFieldMouseDown = null;
-        this.isFormFieldMouseMove = null;
-        this.isFormFieldMousedOver = null;
-        this.isPassword = null;
-        this.digitalSignaturePages = [];
-        this.isDigitalSignaturePresent = null;
-        this.restrictionList = null;
-        this.isDrawnCompletely = null;
-        this.isAddComment = null;
-        this.isCommentIconAdded = null;
-        this.currentTarget = null;
-        this.fromTarget = null;
-        this.drawSignatureWithTool = null;
-        this.formFieldCollection = [];
-        this.requestCollection = [];
-        this.nonFillableFields = {};
-        this.pdfViewerRunner = null;
-        this.isInitialField = null;
-        this.isTouchDesignerMode = null;
-        this.designerModetarget = null;
-        this.isPrint = null;
-        this.isPDFViewerJson = null;
-        this.isJsonImported = null;
-        this.isJsonExported = null;
-        this.isPageRotated = null;
-        this.preventContextmenu = null;
-        this.downloadFileName = '';
-        this.isFocusField = null;
-        this.isTouchPad = null;
-        this.isMacGestureActive = null;
-        this.macGestureStartScale = 0;
-        this.zoomInterval = 5;
-        this.isTaggedPdf = null;
-        this.accessibilityTagsHandler = null;
-        this.accessibilityTagsCollection = [];
-        this.pageRequestListForAccessibilityTags = [];
-        this.enableAccessibilityMultiPageRequest = null;
-        this.clientSideRendering = null;
-        this.focusField = null;
-        this.isPasswordProtected = null;
-        this.isMoving = null;
-        this.isDeviceiOS = null;
-        this.isMacSafari = null;
-        this.globalize = null;
-        this.isSkipDocumentPath = null;
-        this.isScrollerMoving = null;
-        this.isScrollerMovingTimer = null;
-        this.isMessageBoxOpen = null;
-        this.notifyDialog = null;
-        this.previousScrollbarWidth = 0;
+        if (!this.isLocaleChanged) {
+            this.hyperlinkAndLinkAnnotation = {};
+            this.navigationPane = new NavigationPane(this.pdfViewer, this);
+            this.textLayer = new TextLayer(this.pdfViewer, this);
+            this.accessibilityTags = new AccessibilityTags(this.pdfViewer, this);
+            this.signatureModule = new Signature(this.pdfViewer, this);
+            this.pageTextDetails = {};
+            this.pageImageDetails = {};
+            this.viewerContainer = null;
+            this.contextMenuModule = null;
+            this.documentPathByteArray = null;
+            this.pageSize = [];
+            this.existingFieldImport = null;
+            this.pageCount = 0;
+            this.customZoomValues = [];
+            this.isReRenderRequired = null;
+            this.currentPageNumber = null;
+            this.previousZoomValue = null;
+            this.initialZoomValue = {};
+            this.activeElements = new ActiveElements();
+            this.mouseDownEvent = null;
+            this.pngData = [];
+            this.blazorUIAdaptor = null;
+            this.unload = null;
+            this.isDocumentLoaded = null;
+            this.documentId = null;
+            this.jsonDocumentId = null;
+            this.renderedPagesList = [];
+            this.pageGap = 8;
+            this.signatureAdded = null;
+            this.isSignInitialClick = null;
+            this.loadedData = '';
+            this.isFreeTextSelected = null;
+            this.formfieldvalue = null;
+            this.pageLeft = 5;
+            this.sessionLimit = 1000;
+            this.pageStopValue = 300;
+            this.toolbarHeight = 56;
+            this.pageLimit = 0;
+            this.previousPage = 0;
+            this.isViewerMouseDown = null;
+            this.isViewerMouseWheel = null;
+            this.scrollPosition = 0;
+            this.sessionStorage = [];
+            this.sessionStorageManager.clear();
+            this.pageContainer = null;
+            this.isLoadedFormFieldAdded = null;
+            this.scrollHoldTimer = null;
+            this.isFileName = null;
+            this.isInkAnnot = null;
+            this.modifiedPageIndex = [];
+            this.pointerCount = 0;
+            this.pointersForTouch = [];
+            this.corruptPopup = null;
+            this.passwordPopup = null;
+            this.goToPagePopup = null;
+            this.isPasswordAvailable = null;
+            this.isBounds = null;
+            this.isImportDoc = null;
+            this.document = null;
+            this.passwordData = '';
+            this.reRenderedCount = 0;
+            this.passwordInput = null;
+            this.promptElement = null;
+            this.mouseX = 0;
+            this.mouseY = 0;
+            this.mouseLeft = 0;
+            this.mouseTop = 0;
+            this.hashId = '';
+            this.hashId = null;
+            this.documentLiveCount = null;
+            this.mainContainer = null;
+            this.viewerMainContainer = null;
+            this.printMainContainer = null;
+            this.mobileScrollerContainer = null;
+            this.mobilePageNoContainer = null;
+            this.mobileSpanContainer = null;
+            this.mobilecurrentPageContainer = null;
+            this.mobilenumberContainer = null;
+            this.mobiletotalPageContainer = null;
+            this.touchClientX = 0;
+            this.touchClientY = 0;
+            this.previousTime = 0;
+            this.currentTime = 0;
+            this.isTouchScrolled = null;
+            this.isgetFocused = null;
+            this.goToPageInput = null;
+            this.pageNoContainer = null;
+            this.goToPageElement = null;
+            this.isLongTouchPropagated = null;
+            this.longTouchTimer = null;
+            this.isViewerContainerDoubleClick = null;
+            this.dblClickTimer = null;
+            this.pinchZoomStorage = null;
+            this.isPinchZoomStorage = null;
+            this.isTextSelectionDisabled = null;
+            this.isPanMode = null;
+            this.dragX = 0;
+            this.dragY = 0;
+            this.isScrollbarMouseDown = null;
+            this.scrollX = 0;
+            this.scrollY = 0;
+            this.ispageMoved = null;
+            this.isThumb = null;
+            this.isTapHidden = null;
+            this.singleTapTimer = null;
+            this.tapCount = 0;
+            this.inputTapCount = 0;
+            this.isInitialLoaded = null;
+            this.loadRequestHandler = null;
+            this.unloadRequestHandler = null;
+            this.dowonloadRequestHandler = null;
+            this.pageRequestHandler = null;
+            this.textRequestHandler = null;
+            this.virtualLoadRequestHandler = null;
+            this.exportAnnotationRequestHandler = null;
+            this.importAnnotationRequestHandler = null;
+            this.exportFormFieldsRequestHandler = null;
+            this.importFormFieldsRequestHandler = null;
+            this.annotationPageList = null;
+            this.importPageList = null;
+            this.importedAnnotation = null;
+            this.isImportAction = null;
+            this.isImportedAnnotation = null;
+            this.isAnnotationCollectionRemoved = null;
+            this.tool = null;
+            this.action = '';
+            this.eventArgs = {};
+            this.inAction = null;
+            this.isMouseDown = null;
+            this.isStampMouseDown = null;
+            this.currentPosition = null;
+            this.prevPosition = null;
+            this.initialEventArgs = null;
+            this.stampAdded = null;
+            this.customStampCount = 0;
+            this.isDynamicStamp = null;
+            this.isMixedSizeDocument = null;
+            this.highestWidth = 0;
+            this.highestHeight = 0;
+            this.customStampCollection = [];
+            this.isAlreadyAdded = null;
+            this.isWebkitMobile = null;
+            this.isFreeTextContextMenu = null;
+            this.isSelection = null;
+            this.isAddAnnotation = null;
+            this.annotationComments = null;
+            this.isToolbarSignClicked = null;
+            this.signatureCount = 0;
+            this.isSignatureAdded = null;
+            this.isNewSignatureAdded = null;
+            this.currentSignatureAnnot = null;
+            this.isInitialPageMode = null;
+            this.ajaxData = null;
+            this.documentAnnotationCollections = null;
+            this.annotationRenderredList = [];
+            this.annotationStorage = {};
+            this.formFieldStorage = {};
+            this.isStorageExceed = null;
+            this.isFormStorageExceed = null;
+            this.isNewStamp = null;
+            this.downloadCollections = {};
+            this.isAnnotationAdded = null;
+            this.annotationEvent = null;
+            this.isAnnotationDrawn = null;
+            this.isAnnotationSelect = null;
+            this.isAnnotationMouseDown = null;
+            this.isAnnotationMouseMove = null;
+            this.validateForm = null;
+            this.isMinimumZoom = null;
+            this.documentLoaded = null;
+            this.tileRenderCount = 0;
+            this.tileRequestCount = 0;
+            this.isTileImageRendered = null;
+            this.isDataExits = null;
+            this.requestLists = [];
+            this.tilerequestLists = [];
+            this.textrequestLists = [];
+            this.renderThumbnailImages = null;
+            this.pageRenderCount = 2;
+            this.isToolbarInkClicked = null;
+            this.isInkAdded = null;
+            this.inkCount = null;
+            this.isAddedSignClicked = null;
+            this.imageCount = 0;
+            this.isMousedOver = null;
+            this.isFormFieldSelect = null;
+            this.isFormFieldMouseDown = null;
+            this.isFormFieldMouseMove = null;
+            this.isFormFieldMousedOver = null;
+            this.isPassword = null;
+            this.digitalSignaturePages = [];
+            this.isDigitalSignaturePresent = null;
+            this.restrictionList = null;
+            this.isDrawnCompletely = null;
+            this.isAddComment = null;
+            this.isCommentIconAdded = null;
+            this.currentTarget = null;
+            this.fromTarget = null;
+            this.drawSignatureWithTool = null;
+            this.formFieldCollection = [];
+            this.requestCollection = [];
+            this.nonFillableFields = {};
+            this.pdfViewerRunner = null;
+            this.isInitialField = null;
+            this.isTouchDesignerMode = null;
+            this.designerModetarget = null;
+            this.isPrint = null;
+            this.isPDFViewerJson = null;
+            this.isJsonImported = null;
+            this.isJsonExported = null;
+            this.isPageRotated = null;
+            this.preventContextmenu = null;
+            this.downloadFileName = '';
+            this.isFocusField = null;
+            this.isTouchPad = null;
+            this.isMacGestureActive = null;
+            this.macGestureStartScale = 0;
+            this.zoomInterval = 5;
+            this.isTaggedPdf = null;
+            this.accessibilityTagsHandler = null;
+            this.accessibilityTagsCollection = [];
+            this.pageRequestListForAccessibilityTags = [];
+            this.enableAccessibilityMultiPageRequest = null;
+            this.clientSideRendering = null;
+            this.focusField = null;
+            this.isPasswordProtected = null;
+            this.isMoving = null;
+            this.isDeviceiOS = null;
+            this.isMacSafari = null;
+            this.globalize = null;
+            this.isSkipDocumentPath = null;
+            this.isScrollerMoving = null;
+            this.isScrollerMovingTimer = null;
+            this.isMessageBoxOpen = null;
+            this.notifyDialog = null;
+            this.previousScrollbarWidth = 0;
+        }
         if (!isNullOrUndefined(this.pdfViewer.annotationModule) && this.pdfViewer.annotationModule.measureAnnotationModule) {
             this.pdfViewer.annotationModule.measureAnnotationModule.destroy();
         }
@@ -4418,6 +4456,37 @@ export class PdfViewerBase {
         }
     }
 
+    /**
+     * @private
+     * @param {boolean} isEnable - Boolean value
+     * @returns {void}
+     */
+    public showAnnotationPropertiesToolbar(isEnable: boolean): void {
+        if (this.pdfViewer.selectedItems.annotations.length > 0) {
+            if (this.pdfViewer.selectedItems.annotations[0].shapeAnnotationType === 'Stamp' ||
+                this.pdfViewer.selectedItems.annotations[0].shapeAnnotationType === 'Image') {
+                this.pdfViewer.toolbar.annotationToolbarModule.enableStampAnnotationPropertiesTools(isEnable);
+            } else if (this.pdfViewer.selectedItems.annotations[0].shapeAnnotationType === 'StickyNotes') {
+                this.pdfViewer.toolbar.annotationToolbarModule.enableStampAnnotationPropertiesTools(isEnable);
+            } else if (this.pdfViewer.selectedItems.annotations[0].shapeAnnotationType === 'Path' ||
+                this.pdfViewer.selectedItems.annotations[0].shapeAnnotationType === 'SignatureImage' ||
+                this.pdfViewer.selectedItems.annotations[0].shapeAnnotationType === 'SignatureText') {
+                this.pdfViewer.toolbar.annotationToolbarModule.enableAnnotationPropertiesTools(isEnable);
+            } else if (this.pdfViewer.selectedItems.annotations[0].shapeAnnotationType === 'FreeText') {
+                this.pdfViewer.toolbar.annotationToolbarModule.enableFreeTextAnnotationPropertiesTools(isEnable);
+            } else if (this.pdfViewer.selectedItems.annotations[0].shapeAnnotationType === 'HandWrittenSignature') {
+                this.pdfViewer.toolbar.annotationToolbarModule.enableSignaturePropertiesTools(isEnable);
+            } else if (this.pdfViewer.selectedItems.annotations[0].shapeAnnotationType === 'Ink') {
+                this.pdfViewer.toolbar.annotationToolbarModule.enableSignaturePropertiesTools(isEnable);
+            } else {
+                if (this.pdfViewer.selectedItems.annotations.length === 1 &&
+                    this.pdfViewer.selectedItems.annotations[0].formFieldAnnotationType === null) {
+                    this.pdfViewer.toolbar.annotationToolbarModule.enableAnnotationPropertiesTools(isEnable);
+                }
+            }
+        }
+    }
+
     private CommentItemSelected(): void {
         if (this.pdfViewer.annotation) {
             this.pdfViewer.annotation.showCommentsPanel();
@@ -5190,7 +5259,8 @@ export class PdfViewerBase {
                         if (searchBoxId) {
                             isSearchboxDialogOpen = searchBoxId.style.display !== 'none';
                         }
-                        if (!isSearchboxDialogOpen && this.pdfViewer.formDesigner && this.isTargetClassNameValid(event) && (event.target as any).className !== 'e-pv-properties-tooltip-prop-input e-input e-lib e-textbox e-control') {
+                        const signaturePaneClassName: Element = document.querySelector('.e-dlg-container.e-pv-signature-dialog-height.e-dlg-center-center');
+                        if (!isSearchboxDialogOpen && !signaturePaneClassName && this.pdfViewer.formDesigner && this.isTargetClassNameValid(event) && (event.target as any).className !== 'e-pv-properties-tooltip-prop-input e-input e-lib e-textbox e-control') {
                             this.pdfViewer.paste();
                             this.contextMenuModule.previousAction = 'Paste';
                         }
@@ -6553,24 +6623,43 @@ export class PdfViewerBase {
                 const pageDiv: HTMLElement = this.getElement('_pageDiv_' + j);
                 const pageCanvas: HTMLElement = this.getElement('_pageCanvas_' + j);
                 const textLayer: HTMLElement = this.getElement('_textLayer_' + j);
+                let pageNumber: number;
+                if (textLayer && textLayer.id) {
+                    pageNumber = parseInt(textLayer.id.split('_').pop(), 10);
+                }
+                let hasSelection: boolean = false;
+                const ranges: any = this.pdfViewer.textSelectionModule ? this.pdfViewer.textSelectionModule.selectionRangeArray : [];
+                if (ranges) {
+                    for (let i: number = 0; i < ranges.length; i++) {
+                        const range: any = ranges[i as number];
+                        if (range && range.pageNumber === pageNumber) {
+                            hasSelection = true;
+                            break;
+                        }
+                    }
+                }
                 const initialLoadedPages: number = this.pdfViewer.initialRenderPages > this.pageRenderCount ?
                     (this.pdfViewer.initialRenderPages <= this.pageCount) ? (this.pdfViewer.initialRenderPages - 1) : this.pageCount : -1;
                 if (pageCanvas && j > initialLoadedPages) {
                     pageCanvas.onload = null;
                     pageCanvas.onerror = null;
-                    pageCanvas.parentNode.removeChild(pageCanvas);
+                    if (!hasSelection && !this.pdfViewer.isTextSelectionStarted) {
+                        pageCanvas.parentNode.removeChild(pageCanvas);
+                    }
                     if (textLayer) {
                         if (this.pdfViewer.textSelectionModule && textLayer.childNodes.length !== 0 && !this.isTextSelectionDisabled) {
                             this.pdfViewer.textSelectionModule.maintainSelectionOnScroll(j, true);
                         }
-                        textLayer.parentNode.removeChild(textLayer);
+                        if (!hasSelection && textLayer.parentNode && !this.pdfViewer.isTextSelectionStarted) {
+                            textLayer.parentNode.removeChild(textLayer);
+                        }
                     }
                     const indexInArray: number = this.renderedPagesList.indexOf(j);
                     if (indexInArray !== -1) {
                         this.renderedPagesList.splice(indexInArray, 1);
                     }
                 }
-                if (pageDiv && j > initialLoadedPages) {
+                if (pageDiv && j > initialLoadedPages && !hasSelection && !this.pdfViewer.isTextSelectionStarted) {
                     pageDiv.parentNode.removeChild(pageDiv);
                     const indexInArray: number = this.renderedPagesList.indexOf(j);
                     if (indexInArray !== -1) {
@@ -9619,6 +9708,7 @@ export class PdfViewerBase {
      * @param {number} pageIndex - The pageIndex.
      * @param {number} tileX - The tileX.
      * @param {number} tileY - The tileY.
+     * @param {string} blobUrl - The blobUrl.
      * @returns {void}
      */
     public storeWinData(data: any, pageIndex: number, tileX?: number, tileY?: number): void {
@@ -11343,13 +11433,13 @@ export class PdfViewerBase {
                 }
                 if (stampObj) {
                     this.isViewerMouseDown = false;
-                    stampObj.opacity = this.pdfViewer.stampSettings.opacity;
+                    stampObj.opacity = this.pdfViewer.stampSettings.opacity ? this.pdfViewer.stampSettings.opacity : 1;
                     this.isNewStamp = true;
                     let opacity: number;
                     if (stampObj.shapeAnnotationType === 'Image') {
                         opacity = this.pdfViewer.customStampSettings.opacity;
                     } else {
-                        opacity = this.pdfViewer.stampSettings.opacity;
+                        opacity = this.pdfViewer.stampSettings.opacity ? this.pdfViewer.stampSettings.opacity : 1;
                     }
                     this.pdfViewer.nodePropertyChange(stampObj, { opacity: opacity });
                     this.pdfViewer.annotation.stampAnnotationModule.isStampAddMode = false;

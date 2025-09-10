@@ -3,7 +3,7 @@ import { Diagram } from '../../../src/diagram/diagram';
 import { ConnectorModel } from '../../../src/diagram/objects/connector-model';
 import { NodeModel, BasicShapeModel } from '../../../src/diagram/objects/node-model';
 import { PointPortModel } from '../../../src/diagram/objects/port-model';
-import { Segments, ConnectorConstraints} from '../../../src/diagram/enum/enum';
+import { Segments, ConnectorConstraints, PortVisibility} from '../../../src/diagram/enum/enum';
 import { Connector, OrthogonalSegment } from '../../../src/diagram/objects/connector';
 import { StraightSegmentModel } from '../../../src/diagram/objects/connector-model';
 import { PathElement } from '../../../src/diagram/core/elements/path-element';
@@ -2354,6 +2354,343 @@ describe('Bezier control points are draggable while segment orientation is horiz
         mouseEvents.mouseUpEvent(diagramCanvas,100,300);
         let curSegment = diagram.connectors[0].segments;
         expect(curSegment.length===4).toBe(true);
+        done();
+    });
+});
+
+describe('973493 - Dragging source point makes connector segments improper', () => {
+    let diagram: Diagram;
+    let ele: HTMLElement;
+    let mouseEvents: MouseEvents = new MouseEvents();
+    let diagramCanvas: HTMLElement;
+    beforeAll((): void => {
+        ele = createElement('div', { id: 'diagramSourceEnd' });
+        document.body.appendChild(ele);
+        function getPorts() {
+            let ports = [
+                { id: 'leftTop', offset: { x: 0, y: 0.2 }, visibility: PortVisibility.Visible },
+                { id: 'leftMiddle', offset: { x: 0, y: 0.5 }, visibility: PortVisibility.Visible },
+                { id: 'leftBottom', offset: { x: 0, y: 0.8 }, visibility: PortVisibility.Visible },
+
+                { id: 'rightTop', offset: { x: 1, y: 0.2 }, visibility: PortVisibility.Visible },
+                { id: 'rightMiddle', offset: { x: 1, y: 0.5 }, visibility: PortVisibility.Visible },
+                { id: 'rightBottom', offset: { x: 1, y: 0.8 }, visibility: PortVisibility.Visible },
+
+                { id: 'topLeft', offset: { x: 0.2, y: 0 }, visibility: PortVisibility.Visible },
+                { id: 'topMiddle', offset: { x: 0.5, y: 0 }, visibility: PortVisibility.Visible },
+                { id: 'topRight', offset: { x: 0.8, y: 0 }, visibility: PortVisibility.Visible },
+
+                { id: 'bottomLeft', offset: { x: 0.2, y: 1 }, visibility: PortVisibility.Visible },
+                { id: 'bottomMiddle', offset: { x: 0.5, y: 1 }, visibility: PortVisibility.Visible },
+                { id: 'bottomRight', offset: { x: 0.8, y: 1 }, visibility: PortVisibility.Visible },
+            ];
+            return ports;
+
+        }
+        var nodes:NodeModel[] = [
+            {
+            id: "node1",
+            offsetX: 300,
+            offsetY: 300,
+            width: 100,
+            height: 100,
+            ports: getPorts()
+        },
+         {		
+            id: "node2",		
+            offsetX: 650,		
+            offsetY: 300,		
+            width: 100,		
+            height: 100,		
+            ports: [		
+                 { id: 'leftTop', offset: { x: 0, y: 0.2 }, visibility: PortVisibility.Visible },		
+            { id: 'leftBottom', offset: { x: 0, y: 0.8 }, visibility: PortVisibility.Visible },		
+            { id: 'rightTop', offset: { x: 1, y: 0.2 }, visibility: PortVisibility.Visible },		
+            { id: 'rightBottom', offset: { x: 1, y: 0.8 }, visibility: PortVisibility.Visible },		
+            { id: 'topLeft', offset: { x: 0.2, y: 0 }, visibility: PortVisibility.Visible },		
+            { id: 'topRight', offset: { x: 0.8, y: 0 }, visibility: PortVisibility.Visible },		
+            { id: 'bottomLeft', offset: { x: 0.2, y: 1 }, visibility: PortVisibility.Visible },		
+            { id: 'bottomRight', offset: { x: 0.8, y: 1 }, visibility: PortVisibility.Visible },		
+            ]		
+        },
+        ]
+        var connectors: ConnectorModel[] = [{
+            id: 'connector1', sourceID:'node1', targetID:'node1', sourcePortID:'leftTop', targetPortID:'rightMiddle', type:'Orthogonal',
+            constraints:ConnectorConstraints.Default| ConnectorConstraints.DragSegmentThumb
+        },{		
+            id: 'connector2', sourceID: 'node2', targetID: 'node2', sourcePortID: 'leftTop', targetPortID: 'rightBottom', type: 'Orthogonal',		
+            constraints: ConnectorConstraints.Default | ConnectorConstraints.DragSegmentThumb		
+        }];
+        diagram = new Diagram({
+            width: '900px', height: '700px', nodes: nodes, connectors: connectors,
+            segmentThumbShape: 'Square', segmentThumbSize:20,
+        });
+        diagram.appendTo('#diagramSourceEnd');
+        diagramCanvas = document.getElementById(diagram.element.id + 'content');
+    });
+    afterAll((): void => {
+        diagram.destroy();
+        ele.remove();
+    });
+    it('Adjust segment connect to leftTop port', function (done) {
+        let connector = diagram.connectors[0];
+        diagram.select([connector]);
+        //case 1:
+        mouseEvents.mouseDownEvent(diagramCanvas, 310, 370);
+        mouseEvents.mouseMoveEvent(diagramCanvas, 310, 450);
+        mouseEvents.mouseUpEvent(diagramCanvas, 310, 450);
+
+        mouseEvents.mouseDownEvent(diagramCanvas, 240, 365);
+        mouseEvents.mouseMoveEvent(diagramCanvas, 100, 365);
+        mouseEvents.mouseUpEvent(diagramCanvas, 100, 365);
+
+        mouseEvents.mouseDownEvent(diagramCanvas, 380, 380);
+        mouseEvents.mouseMoveEvent(diagramCanvas, 480, 380);
+        mouseEvents.mouseUpEvent(diagramCanvas, 480, 380);
+        let sourceThumb = document.getElementById('connectorSourceThumb');
+        let sourceThumbBounds: any = sourceThumb.getBoundingClientRect();
+        let topLeftPort = document.getElementById('node1_topLeft');
+        let topLeftBounds: any = topLeftPort.getBoundingClientRect();
+        mouseEvents.mouseDownEvent(diagramCanvas, sourceThumbBounds.x + sourceThumbBounds.width/ 2, sourceThumbBounds.y + sourceThumbBounds.height / 2);
+        mouseEvents.mouseMoveEvent(diagramCanvas, sourceThumbBounds.x + sourceThumbBounds.width/ 2 - 20, sourceThumbBounds.y + sourceThumbBounds.height / 2);
+        mouseEvents.mouseMoveEvent(diagramCanvas, sourceThumbBounds.x + sourceThumbBounds.width/ 2 - 40, sourceThumbBounds.y + sourceThumbBounds.height / 2);
+        mouseEvents.mouseMoveEvent(diagramCanvas, topLeftBounds.x + topLeftBounds.width/ 2, topLeftBounds.y + topLeftBounds.height / 2);
+        mouseEvents.mouseUpEvent(diagramCanvas, topLeftBounds.x + topLeftBounds.width/ 2, topLeftBounds.y + topLeftBounds.height / 2);
+        expect(connector.sourcePortID === 'topLeft').toBe(true);
+        done();
+    });
+     it('Reconnect to topMiddle port', function (done) {
+        let connector = diagram.connectors[0];
+        let sourceThumb = document.getElementById('connectorSourceThumb');
+        let sourceThumbBounds: any = sourceThumb.getBoundingClientRect();
+        let topMiddlePort = document.getElementById('node1_topMiddle');
+        let topMiddleBounds: any = topMiddlePort.getBoundingClientRect();
+        mouseEvents.mouseDownEvent(diagramCanvas, sourceThumbBounds.x + sourceThumbBounds.width / 2, sourceThumbBounds.y + sourceThumbBounds.height / 2);
+        mouseEvents.mouseMoveEvent(diagramCanvas, topMiddleBounds.x + topMiddleBounds.width / 2, topMiddleBounds.y + topMiddleBounds.height / 2);
+        mouseEvents.mouseUpEvent(diagramCanvas, topMiddleBounds.x + topMiddleBounds.width / 2, topMiddleBounds.y + topMiddleBounds.height / 2);
+        expect(connector.sourcePortID === 'topMiddle').toBe(true);
+        done();
+    });
+
+    it('Reconnect to topRight port', function (done) {
+        let connector = diagram.connectors[0];
+        let sourceThumb = document.getElementById('connectorSourceThumb');
+        let sourceThumbBounds: any = sourceThumb.getBoundingClientRect();
+        let topRightPort = document.getElementById('node1_topRight');
+        let topRightBounds: any = topRightPort.getBoundingClientRect();
+        mouseEvents.mouseDownEvent(diagramCanvas, sourceThumbBounds.x + sourceThumbBounds.width / 2, sourceThumbBounds.y + sourceThumbBounds.height / 2);
+        mouseEvents.mouseMoveEvent(diagramCanvas, topRightBounds.x + topRightBounds.width / 2, topRightBounds.y + topRightBounds.height / 2);
+        mouseEvents.mouseUpEvent(diagramCanvas, topRightBounds.x + topRightBounds.width / 2, topRightBounds.y + topRightBounds.height / 2);
+        expect(connector.sourcePortID === 'topRight').toBe(true);
+        done();
+    });
+
+    it('Reconnect to rightTop port', function (done) {
+        let connector = diagram.connectors[0];
+        let sourceThumb = document.getElementById('connectorSourceThumb');
+        let sourceThumbBounds: any = sourceThumb.getBoundingClientRect();
+        let rightTopPort = document.getElementById('node1_rightTop');
+        let rightTopBounds: any = rightTopPort.getBoundingClientRect();
+        mouseEvents.mouseDownEvent(diagramCanvas, sourceThumbBounds.x + sourceThumbBounds.width / 2, sourceThumbBounds.y + sourceThumbBounds.height / 2);
+        mouseEvents.mouseMoveEvent(diagramCanvas, rightTopBounds.x + rightTopBounds.width / 2, rightTopBounds.y + rightTopBounds.height / 2);
+        mouseEvents.mouseUpEvent(diagramCanvas, rightTopBounds.x + rightTopBounds.width / 2, rightTopBounds.y + rightTopBounds.height / 2);
+        expect(connector.sourcePortID === 'rightTop').toBe(true);
+        done();
+    });
+
+    it('Reconnect to rightMiddle port', function (done) {
+        let connector = diagram.connectors[0];
+        let sourceThumb = document.getElementById('connectorSourceThumb');
+        let sourceThumbBounds: any = sourceThumb.getBoundingClientRect();
+        let rightMiddlePort = document.getElementById('node1_rightMiddle');
+        let rightMiddleBounds: any = rightMiddlePort.getBoundingClientRect();
+        mouseEvents.mouseDownEvent(diagramCanvas, sourceThumbBounds.x + sourceThumbBounds.width / 2, sourceThumbBounds.y + sourceThumbBounds.height / 2);
+        mouseEvents.mouseMoveEvent(diagramCanvas, rightMiddleBounds.x + rightMiddleBounds.width / 2, rightMiddleBounds.y + rightMiddleBounds.height / 2);
+        mouseEvents.mouseUpEvent(diagramCanvas, rightMiddleBounds.x + rightMiddleBounds.width / 2, rightMiddleBounds.y + rightMiddleBounds.height / 2);
+        expect(connector.sourcePortID === 'rightMiddle').toBe(true);
+        done();
+    });
+
+    it('Reconnect to rightBottom port', function (done) {
+        let connector = diagram.connectors[0];
+        let sourceThumb = document.getElementById('connectorSourceThumb');
+        let sourceThumbBounds: any = sourceThumb.getBoundingClientRect();
+        let rightBottomPort = document.getElementById('node1_rightBottom');
+        let rightBottomBounds: any = rightBottomPort.getBoundingClientRect();
+        mouseEvents.mouseDownEvent(diagramCanvas, sourceThumbBounds.x + sourceThumbBounds.width / 2, sourceThumbBounds.y + sourceThumbBounds.height / 2);
+        mouseEvents.mouseMoveEvent(diagramCanvas, rightBottomBounds.x + rightBottomBounds.width / 2, rightBottomBounds.y + rightBottomBounds.height / 2);
+        mouseEvents.mouseUpEvent(diagramCanvas, rightBottomBounds.x + rightBottomBounds.width / 2, rightBottomBounds.y + rightBottomBounds.height / 2);
+        expect(connector.sourcePortID === 'rightBottom').toBe(true);
+        done();
+    });
+
+    it('Reconnect to bottomRight port', function (done) {
+        let connector = diagram.connectors[0];
+        let sourceThumb = document.getElementById('connectorSourceThumb');
+        let sourceThumbBounds: any = sourceThumb.getBoundingClientRect();
+        let bottomRightPort = document.getElementById('node1_bottomRight');
+        let bottomRightBounds: any = bottomRightPort.getBoundingClientRect();
+        mouseEvents.mouseDownEvent(diagramCanvas, sourceThumbBounds.x + sourceThumbBounds.width / 2, sourceThumbBounds.y + sourceThumbBounds.height / 2);
+        mouseEvents.mouseMoveEvent(diagramCanvas, bottomRightBounds.x + bottomRightBounds.width / 2, bottomRightBounds.y + bottomRightBounds.height / 2);
+        mouseEvents.mouseUpEvent(diagramCanvas, bottomRightBounds.x + bottomRightBounds.width / 2, bottomRightBounds.y + bottomRightBounds.height / 2);
+        expect(connector.sourcePortID === 'bottomRight').toBe(true);
+        done();
+    });
+
+    it('Reconnect to bottomMiddle port', function (done) {
+        let connector = diagram.connectors[0];
+        let sourceThumb = document.getElementById('connectorSourceThumb');
+        let sourceThumbBounds: any = sourceThumb.getBoundingClientRect();
+        let bottomMiddlePort = document.getElementById('node1_bottomMiddle');
+        let bottomMiddleBounds: any = bottomMiddlePort.getBoundingClientRect();
+        mouseEvents.mouseDownEvent(diagramCanvas, sourceThumbBounds.x + sourceThumbBounds.width / 2, sourceThumbBounds.y + sourceThumbBounds.height / 2);
+        mouseEvents.mouseMoveEvent(diagramCanvas, bottomMiddleBounds.x + bottomMiddleBounds.width / 2, bottomMiddleBounds.y + bottomMiddleBounds.height / 2);
+        mouseEvents.mouseUpEvent(diagramCanvas, bottomMiddleBounds.x + bottomMiddleBounds.width / 2, bottomMiddleBounds.y + bottomMiddleBounds.height / 2);
+        expect(connector.sourcePortID === 'bottomMiddle').toBe(true);
+        done();
+    });
+
+    it('Reconnect to bottomLeft port', function (done) {
+        let connector = diagram.connectors[0];
+        let sourceThumb = document.getElementById('connectorSourceThumb');
+        let sourceThumbBounds: any = sourceThumb.getBoundingClientRect();
+        let bottomLeftPort = document.getElementById('node1_bottomLeft');
+        let bottomLeftBounds: any = bottomLeftPort.getBoundingClientRect();
+        mouseEvents.mouseDownEvent(diagramCanvas, sourceThumbBounds.x + sourceThumbBounds.width / 2, sourceThumbBounds.y + sourceThumbBounds.height / 2);
+        mouseEvents.mouseMoveEvent(diagramCanvas, bottomLeftBounds.x + bottomLeftBounds.width / 2, bottomLeftBounds.y + bottomLeftBounds.height / 2);
+        mouseEvents.mouseUpEvent(diagramCanvas, bottomLeftBounds.x + bottomLeftBounds.width / 2, bottomLeftBounds.y + bottomLeftBounds.height / 2);
+        expect(connector.sourcePortID === 'bottomLeft').toBe(true);
+        done();
+    });
+
+    it('Reconnect to leftBottom port', function (done) {
+        let connector = diagram.connectors[0];
+        let sourceThumb = document.getElementById('connectorSourceThumb');
+        let sourceThumbBounds: any = sourceThumb.getBoundingClientRect();
+        let leftBottomPort = document.getElementById('node1_leftBottom');
+        let leftBottomBounds: any = leftBottomPort.getBoundingClientRect();
+        mouseEvents.mouseDownEvent(diagramCanvas, sourceThumbBounds.x + sourceThumbBounds.width / 2, sourceThumbBounds.y + sourceThumbBounds.height / 2);
+        mouseEvents.mouseMoveEvent(diagramCanvas, leftBottomBounds.x + leftBottomBounds.width / 2, leftBottomBounds.y + leftBottomBounds.height / 2);
+        mouseEvents.mouseUpEvent(diagramCanvas, leftBottomBounds.x + leftBottomBounds.width / 2, leftBottomBounds.y + leftBottomBounds.height / 2);
+        expect(connector.sourcePortID === 'leftBottom').toBe(true);
+        done();
+    });
+    
+    it('Reconnect to leftMiddle port', function (done) {
+        let connector = diagram.connectors[0];
+        let sourceThumb = document.getElementById('connectorSourceThumb');
+        let sourceThumbBounds: any = sourceThumb.getBoundingClientRect();
+        let leftMiddlePort = document.getElementById('node1_leftMiddle');
+        let leftMiddleBounds: any = leftMiddlePort.getBoundingClientRect();
+        mouseEvents.mouseDownEvent(diagramCanvas, sourceThumbBounds.x + sourceThumbBounds.width / 2, sourceThumbBounds.y + sourceThumbBounds.height / 2);
+        mouseEvents.mouseMoveEvent(diagramCanvas, leftMiddleBounds.x + leftMiddleBounds.width / 2, leftMiddleBounds.y + leftMiddleBounds.height / 2);
+        mouseEvents.mouseUpEvent(diagramCanvas, leftMiddleBounds.x + leftMiddleBounds.width / 2, leftMiddleBounds.y + leftMiddleBounds.height / 2);
+        expect(connector.sourcePortID === 'leftMiddle').toBe(true);
+        done();
+    });
+
+    it('Adjust segment and connect source to node body near topLeft port', function (done) {
+        let connector2 = diagram.connectors[1];
+        diagram.select([connector2]);
+
+        // Adjust segments
+        mouseEvents.mouseDownEvent(diagramCanvas, 585, 330);
+        mouseEvents.mouseMoveEvent(diagramCanvas, 500, 330);
+        mouseEvents.mouseUpEvent(diagramCanvas, 500, 330);
+
+        mouseEvents.mouseDownEvent(diagramCanvas, 615, 375);
+        mouseEvents.mouseMoveEvent(diagramCanvas, 615, 500);
+        mouseEvents.mouseUpEvent(diagramCanvas, 615, 500);
+
+        mouseEvents.mouseDownEvent(diagramCanvas, 555, 275);
+        mouseEvents.mouseMoveEvent(diagramCanvas, 555, 180);
+        mouseEvents.mouseUpEvent(diagramCanvas, 55, 180);
+
+        // First, connect to the topLeft port
+        let sourceThumb_case1_init = document.getElementById('connectorSourceThumb');
+        let sourceBounds_case1_init: any = sourceThumb_case1_init.getBoundingClientRect();
+        let node2Port_case1 = document.getElementById('node2_topLeft');
+        let node2PortBounds_case1: any = node2Port_case1.getBoundingClientRect();
+        mouseEvents.mouseDownEvent(diagramCanvas, sourceBounds_case1_init.x + sourceBounds_case1_init.width / 2, sourceBounds_case1_init.y + sourceBounds_case1_init.height / 2);
+        mouseEvents.mouseMoveEvent(diagramCanvas, node2PortBounds_case1.x + node2PortBounds_case1.width / 2, node2PortBounds_case1.y + node2PortBounds_case1.height / 2);
+        mouseEvents.mouseUpEvent(diagramCanvas, node2PortBounds_case1.x + node2PortBounds_case1.width / 2, node2PortBounds_case1.y + node2PortBounds_case1.height / 2);
+        
+        // Now, drag from the port to the node's body
+        let sourceThumb_case1_final = document.getElementById('connectorSourceThumb');
+        let sourceBounds_case1_final: any = sourceThumb_case1_final.getBoundingClientRect();
+        mouseEvents.mouseDownEvent(diagramCanvas, sourceBounds_case1_final.x + sourceBounds_case1_final.width / 2, sourceBounds_case1_final.y + sourceBounds_case1_final.height / 2);
+        mouseEvents.mouseMoveEvent(diagramCanvas, sourceBounds_case1_final.x + sourceBounds_case1_final.width / 2, sourceBounds_case1_final.y + sourceBounds_case1_final.height / 2 - 20);
+        mouseEvents.mouseMoveEvent(diagramCanvas, 680, 320); // Move to a point on the node, not a port
+        mouseEvents.mouseUpEvent(diagramCanvas, 680, 320);
+
+        expect(connector2.sourcePortID === '' && connector2.sourceID === 'node2').toBe(true);
+        done();
+    });
+
+    it('Reconnect source to node body near rightTop port', function (done) {
+        let connector2 = diagram.connectors[1];
+        // First, connect to the rightTop port to set up the scenario
+        let sourceThumb_case2_init = document.getElementById('connectorSourceThumb');
+        let sourceBounds_case2_init: any = sourceThumb_case2_init.getBoundingClientRect();
+        let node2Port_case2 = document.getElementById('node2_rightTop');
+        let node2PortBounds_case2: any = node2Port_case2.getBoundingClientRect();
+        mouseEvents.mouseDownEvent(diagramCanvas, sourceBounds_case2_init.x + sourceBounds_case2_init.width / 2, sourceBounds_case2_init.y + sourceBounds_case2_init.height / 2);
+        mouseEvents.mouseMoveEvent(diagramCanvas, node2PortBounds_case2.x + node2PortBounds_case2.width / 2, node2PortBounds_case2.y + node2PortBounds_case2.height / 2);
+        mouseEvents.mouseUpEvent(diagramCanvas, node2PortBounds_case2.x + node2PortBounds_case2.width / 2, node2PortBounds_case2.y + node2PortBounds_case2.height / 2);
+
+        // Now, drag from the port to the node's body
+        let sourceThumb_case2_final = document.getElementById('connectorSourceThumb');
+        let sourceBounds_case2_final: any = sourceThumb_case2_final.getBoundingClientRect();
+        mouseEvents.mouseDownEvent(diagramCanvas, sourceBounds_case2_final.x + sourceBounds_case2_final.width / 2, sourceBounds_case2_final.y + sourceBounds_case2_final.height / 2);
+        mouseEvents.mouseMoveEvent(diagramCanvas, sourceBounds_case2_final.x + sourceBounds_case2_final.width / 2, sourceBounds_case2_final.y + sourceBounds_case2_final.height / 2 + 20);
+        mouseEvents.mouseMoveEvent(diagramCanvas, sourceBounds_case2_final.x + sourceBounds_case2_final.width / 2 - 5, sourceBounds_case2_final.y + sourceBounds_case2_final.height / 2 + 20);
+        mouseEvents.mouseUpEvent(diagramCanvas, sourceBounds_case2_final.x + sourceBounds_case2_final.width / 2 - 5, sourceBounds_case2_final.y + sourceBounds_case2_final.height / 2 + 20);
+        
+        expect(connector2.sourcePortID === '' && connector2.sourceID === 'node2').toBe(true);
+        done();
+    });
+
+    it('Reconnect source to node body near bottomRight port', function (done) {
+        let connector2 = diagram.connectors[1];
+        // First, connect to the bottomRight port
+        let sourceThumb_case3_init = document.getElementById('connectorSourceThumb');
+        let sourceBounds_case3_init: any = sourceThumb_case3_init.getBoundingClientRect();
+        let node2Port_case3 = document.getElementById('node2_bottomRight');
+        let node2PortBounds_case3: any = node2Port_case3.getBoundingClientRect();
+        mouseEvents.mouseDownEvent(diagramCanvas, sourceBounds_case3_init.x + sourceBounds_case3_init.width / 2, sourceBounds_case3_init.y + sourceBounds_case3_init.height / 2);
+        mouseEvents.mouseMoveEvent(diagramCanvas, node2PortBounds_case3.x + node2PortBounds_case3.width / 2, node2PortBounds_case3.y + node2PortBounds_case3.height / 2);
+        mouseEvents.mouseUpEvent(diagramCanvas, node2PortBounds_case3.x + node2PortBounds_case3.width / 2, node2PortBounds_case3.y + node2PortBounds_case3.height / 2);
+
+        // Now, drag from the port to the node's body
+        let sourceThumb_case3_final = document.getElementById('connectorSourceThumb');
+        let sourceBounds_case3_final: any = sourceThumb_case3_final.getBoundingClientRect();
+        mouseEvents.mouseDownEvent(diagramCanvas, sourceBounds_case3_final.x + sourceBounds_case3_final.width / 2, sourceBounds_case3_final.y + sourceBounds_case3_final.height / 2);
+        mouseEvents.mouseMoveEvent(diagramCanvas, sourceBounds_case3_final.x + sourceBounds_case3_final.width / 2 - 10, sourceBounds_case3_final.y + sourceBounds_case3_final.height / 2);
+        mouseEvents.mouseUpEvent(diagramCanvas, sourceBounds_case3_final.x + sourceBounds_case3_final.width / 2 - 10, sourceBounds_case3_final.y + sourceBounds_case3_final.height / 2);
+
+        expect(connector2.sourcePortID === '' && connector2.sourceID === 'node2').toBe(true);
+        done();
+    });
+
+    it('Reconnect source to node body near leftBottom port', function (done) {
+        let connector2 = diagram.connectors[1];
+        // First, connect to the leftBottom port
+        let sourceThumb_case4_init = document.getElementById('connectorSourceThumb');
+        let sourceBounds_case4_init: any = sourceThumb_case4_init.getBoundingClientRect();
+        let node2Port_case4 = document.getElementById('node2_leftBottom');
+        let node2PortBounds_case4: any = node2Port_case4.getBoundingClientRect();
+        mouseEvents.mouseDownEvent(diagramCanvas, sourceBounds_case4_init.x + sourceBounds_case4_init.width / 2, sourceBounds_case4_init.y + sourceBounds_case4_init.height / 2);
+        mouseEvents.mouseMoveEvent(diagramCanvas, node2PortBounds_case4.x + node2PortBounds_case4.width / 2, node2PortBounds_case4.y + node2PortBounds_case4.height / 2);
+        mouseEvents.mouseUpEvent(diagramCanvas, node2PortBounds_case4.x + node2PortBounds_case4.width / 2, node2PortBounds_case4.y + node2PortBounds_case4.height / 2);
+
+        // Now, drag from the port to the node's body
+        let sourceThumb_case4_final = document.getElementById('connectorSourceThumb');
+        let sourceBounds_case4_final: any = sourceThumb_case4_final.getBoundingClientRect();
+        mouseEvents.mouseDownEvent(diagramCanvas, sourceBounds_case4_final.x + sourceBounds_case4_final.width / 2, sourceBounds_case4_final.y + sourceBounds_case4_final.height / 2);
+        mouseEvents.mouseMoveEvent(diagramCanvas, sourceBounds_case4_final.x + sourceBounds_case4_final.width / 2, sourceBounds_case4_final.y + sourceBounds_case4_final.height / 2 - 10);
+        mouseEvents.mouseUpEvent(diagramCanvas, sourceBounds_case4_final.x + sourceBounds_case4_final.width / 2, sourceBounds_case4_final.y + sourceBounds_case4_final.height / 2 - 10);
+
+        expect(connector2.sourcePortID === '' && connector2.sourceID === 'node2').toBe(true);
         done();
     });
 });

@@ -18,6 +18,7 @@ import { ImageElement } from '../core/elements/image-element';
 import { ElementAction, FlipDirection } from '../enum/enum';
 import { DiagramElement } from '../core/elements/diagram-element';
 import { Diagram } from '../diagram';
+import { Rect } from '../primitives/rect';
 
 /**
  * Canvas Renderer
@@ -287,8 +288,13 @@ export class CanvasRenderer implements IRenderer {
                 const cornerRadius: number = options.cornerRadius;
                 const pivotX: number = options.x + options.width * options.pivotX;
                 const pivotY: number = options.y + options.height * options.pivotY;
-                const angle: number = (options as any).isImage ? -options.angle : options.angle;
-                this.rotateContext(canvas, angle, pivotX, pivotY);
+                //To flip the annotation background rect.
+                if ((options as TextAttributes).textWrapping && (options as TextAttributes).wrapBounds) {
+                    this.applyFlipAndRotate(ctx, options, canvas, pivotX, pivotY, renderer, element);
+                } else {
+                    const angle: number = (options as any).isImage ? -options.angle : options.angle;
+                    this.rotateContext(canvas, angle, pivotX, pivotY);
+                }
                 this.setStyle(canvas, options as StyleAttributes);
                 ctx.rect(options.x, options.y, options.width, options.height);
                 ctx.fillRect(options.x, options.y, options.width, options.height);
@@ -620,6 +626,7 @@ export class CanvasRenderer implements IRenderer {
                            && !(element as any).position) || element instanceof DiagramElement) {
                     transform = renderer.renderFlipElement( parent, canvas, options.flip, true);
                 }
+                transform = this.setElementTransform(element, renderer) || transform;
                 //To set the translate and scale for the diagram elements while print and export.
                 if (transform && transform.transform) {
                     // Parse and apply the transform directly
@@ -647,6 +654,38 @@ export class CanvasRenderer implements IRenderer {
                 }
             }
             this.rotateContext(canvas, options.angle, pivotX, pivotY);
+    }
+    private setElementTransform(element: PathElement | TextElement | ImageElement | DiagramElement,
+                                renderer: any): { transform: string } | null {
+        const eventSuffixes: string[] = [
+            '_cancel_1_event', '_cancel_0_event', '_cancel_2_trigger',
+            '_success_0_event', '_success_1_event', '_success_2_trigger',
+            '_failure_0_event', '_failure_1_event', '_failure_2_trigger'
+        ];
+        // Check if the id ends with the transaction sub type ids.
+        for (const suffix of eventSuffixes) {
+            if (element.id.endsWith(suffix)) {
+               const bounds: Rect = renderer.transactionBounds;
+               let posX: number = 0; let posY: number = 0; let scaleX: number = 1; let scaleY: number = 1;
+               let offsetX: number = 0; let offsetY: number = 0;
+               if (element.flip === 1 || element.flip === 3) {
+                        posX = bounds.center.x;
+                        scaleX = -1;
+                        offsetX = -posX;
+                    }
+                    if (element.flip === 2 || element.flip === 3) {
+                        posY = bounds.center.y;
+                        scaleY = -1;
+                        offsetY = -posY;
+                    }
+                    return {
+                        transform: 'translate(' + posX + ',' + posY + ') scale(' + scaleX + ','
+                            + scaleY + ') translate(' + offsetX + ',' + offsetY + ')'
+                    };
+            }
+        }
+
+        return null;
     }
 
     private loadImage(

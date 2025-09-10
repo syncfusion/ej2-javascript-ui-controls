@@ -521,6 +521,97 @@ describe('Chart Control', () => {
             expect(document.getElementById('EJ2_Chart_ZoomTip').innerHTML).toEqual("&nbsp;Zoom&nbsp;");
         });
     });
+    describe('Chart checking no data template', () => {
+        let chart: Chart;
+        let ele: HTMLElement;
+        beforeAll((): void => {
+            ele = createElement('div', { id: 'container' });
+            document.body.appendChild(ele);
+            chart = new Chart();
+            chart.appendTo('#container');
+        });
+
+        afterAll((): void => {
+            chart.destroy();
+            ele.remove();
+        });
+        it('checking no data template element', (done: Function) => {
+            chart.loaded = (args: ILoadedEventArgs) => {
+                chart.loaded = null;
+                const templateElement: HTMLElement = document.getElementById('container_NoDataTemplate_wrapper');
+                expect(templateElement != null);
+                done();
+            };
+            chart.noDataTemplate = '<div>No data template</div>';
+            chart.refresh();
+        });
+        it('checking with title', (done: Function) => {
+            chart.loaded = (args: ILoadedEventArgs) => {
+                chart.loaded = null;
+                const templateElement: HTMLElement = document.getElementById('container_NoDataTemplate_wrapper');
+                expect(templateElement != null);
+                done();
+            };
+            chart.enableHtmlSanitizer = true;
+            chart.title = 'Title';
+            chart.subTitle = 'Title';
+            chart.refresh();
+        });
+        it('checking with title position left', (done: Function) => {
+            chart.loaded = (args: ILoadedEventArgs) => {
+                chart.loaded = null;
+                const templateElement: HTMLElement = document.getElementById('container_NoDataTemplate_wrapper');
+                expect(templateElement != null);
+                done();
+            };
+            chart.enableHtmlSanitizer = true;
+            chart.title = 'Title';
+            chart.subTitle = 'Title';
+            chart.titleStyle.position = 'Left';
+            chart.refresh();
+        });
+        it('checking with title position Bottom', (done: Function) => {
+            chart.loaded = (args: ILoadedEventArgs) => {
+                chart.loaded = null;
+                const templateElement: HTMLElement = document.getElementById('container_NoDataTemplate_wrapper');
+                expect(templateElement != null);
+                done();
+            };
+            chart.enableHtmlSanitizer = true;
+            chart.title = 'Title';
+            chart.subTitle = 'Title';
+            chart.titleStyle.position = 'Bottom';
+            chart.refresh();
+        });
+        it('checking with title position Right', (done: Function) => {
+            chart.loaded = (args: ILoadedEventArgs) => {
+                chart.loaded = null;
+                const templateElement: HTMLElement = document.getElementById('container_NoDataTemplate_wrapper');
+                expect(templateElement != null);
+                done();
+            };
+            chart.enableHtmlSanitizer = true;
+            chart.title = 'Title';
+            chart.subTitle = 'Title';
+            chart.titleStyle.position = 'Right';
+            chart.refresh();
+        });
+         it('checking with title position Custom', (done: Function) => {
+            chart.loaded = (args: ILoadedEventArgs) => {
+                chart.loaded = null;
+                const templateElement: HTMLElement = document.getElementById('container_NoDataTemplate_wrapper');
+                expect(templateElement != null);
+                done();
+            };
+            chart.enableHtmlSanitizer = true;
+            chart.title = 'Title';
+            chart.subTitle = 'Title';
+            chart.titleStyle.position = 'Custom';
+            chart.titleStyle.x = 250;
+            chart.titleStyle.y = 100;
+            chart.refresh();
+        });
+    });
     describe('Chart checking center aligned div', () => {
         let chart: Chart;
         let ele: HTMLElement;

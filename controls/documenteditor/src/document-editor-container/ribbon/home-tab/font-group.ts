@@ -1,10 +1,11 @@
 import { RibbonGroupBase, IRibbonGroup } from '../ribbon-interfaces';
 import { Ribbon, RibbonGroupModel, RibbonItemSize, RibbonSplitButtonSettingsModel } from '@syncfusion/ej2-ribbon';
 import { RIBBON_ID } from '../ribbon-base/ribbon-constants';
-import { createElement, isNullOrUndefined } from '@syncfusion/ej2-base';
+import { createElement, getInstance, isNullOrUndefined } from '@syncfusion/ej2-base';
 import { HighlightColor, SelectionCharacterFormat } from '../../../document-editor';
 import { FontHelper } from '../../helper/font-helper';
 import { ElementsMap, HighlightColorInfo } from '../../helper/ribbon-interfaces';
+import { ComboBox } from '@syncfusion/ej2-dropdowns';
 
 // Font group constants
 export const FONT_GROUP_ID: string = '_font_group';
@@ -314,7 +315,15 @@ export class FontGroup extends RibbonGroupBase implements IRibbonGroup {
             const fontSize: string = characterFormat.fontSize.toString();
             const fontSizeElement: HTMLElement = document.getElementById(id + FONT_SIZE_ID);
             if (fontSizeElement) {
-                (fontSizeElement as HTMLInputElement).value = fontSize;
+                const fontSizeInstance: object = getInstance(fontSizeElement, ComboBox);
+                (fontSizeInstance as any).value = fontSize;
+            }
+        }
+        else {
+            const fontSizeElement: HTMLElement = document.getElementById(id + FONT_SIZE_ID);
+            if (fontSizeElement) {
+                const fontSizeInstance: object = getInstance(fontSizeElement, ComboBox);
+                (fontSizeInstance as any).value = null;
             }
         }
 

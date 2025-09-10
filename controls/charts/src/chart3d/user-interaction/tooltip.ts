@@ -286,7 +286,7 @@ export class Tooltip3D extends BaseTooltip {
         if (!this.styleAdded) {
             const style: HTMLStyleElement = document.createElement('style');
             style.setAttribute('id', this.element.id + '_ej2_chart_tooltip');
-            style.innerText += ' .' + this.element.id + '_ej2_tooltipDeselected { opacity:' + (0.2) + ';} ';
+            (<HTMLElement>style).innerText += ' .' + this.element.id + '_ej2_tooltipDeselected { opacity:' + (0.2) + ';} ';
             document.body.appendChild(style);
             this.styleAdded = true;
         }
