@@ -886,15 +886,17 @@ export class SpreadsheetChart {
                 enableCanvas: chart.enableCanvas ? true : false,
                 load: (args: ILoadedEventArgs) => {
                     args.chart.theme = chart.theme || 'Material';
-                    if (this.isDateFormatRange) {
-                        args.chart.primaryXAxis.minimum = this.minDate;
-                        args.chart.primaryXAxis.maximum = this.maxDate;
-                    } else {
-                        if (args.chart.primaryXAxis.minimum) {
-                            args.chart.primaryXAxis.minimum = null;
-                        }
-                        if (args.chart.primaryXAxis.maximum) {
-                            args.chart.primaryXAxis.maximum = null;
+                    if (args.chart.primaryXAxis) {
+                        if (this.isDateFormatRange) {
+                            args.chart.primaryXAxis.minimum = this.minDate;
+                            args.chart.primaryXAxis.maximum = this.maxDate;
+                        } else {
+                            if (args.chart.primaryXAxis.minimum) {
+                                args.chart.primaryXAxis.minimum = null;
+                            }
+                            if (args.chart.primaryXAxis.maximum) {
+                                args.chart.primaryXAxis.maximum = null;
+                            }
                         }
                     }
                 },

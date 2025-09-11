@@ -2226,6 +2226,7 @@ export class Image {
             rawFile: args.dataTransfer.files[0],
             validationMessages: {}
         };
+        let isUrlPassed: boolean;
         const imageTag: HTMLImageElement = <HTMLImageElement>this.parent.createElement('IMG');
         imageTag.style.opacity = '0.5';
         imageTag.classList.add(classes.CLS_RTE_IMAGE);
@@ -2235,7 +2236,9 @@ export class Image {
         const reader: FileReader = new FileReader();
         reader.addEventListener('load', () => {
             const url: string = URL.createObjectURL(convertToBlob(reader.result as string));
-            imageTag.src = proxy.parent.insertImageSettings.saveFormat === 'Blob' ? url : reader.result as string;
+            if (isNOU(proxy.parent.insertImageSettings.path) && !isUrlPassed) {
+                imageTag.src = proxy.parent.insertImageSettings.saveFormat === 'Blob' ? url : reader.result as string;
+            }
         });
         if (file) {
             reader.readAsDataURL(file);
@@ -2244,7 +2247,7 @@ export class Image {
             range, this.parent.contentModule.getDocument());
         const imageCommand: IImageCommandsArgs = {
             cssClass: (this.parent.insertImageSettings.display === 'inline' ? classes.CLS_IMGINLINE : classes.CLS_IMGBREAK),
-            url: this.parent.insertImageSettings.path + file.name,
+            url: !isNOU(proxy.parent.insertImageSettings.path) ? this.parent.insertImageSettings.path + file.name : '',
             selection: selection,
             altText: file.name.replace(/\.[a-zA-Z0-9]+$/, ''),
             width: {
@@ -2266,21 +2269,19 @@ export class Image {
         this.parent.trigger(events.actionBegin, actionBeginArgs, (actionBeginArgs: ActionBeginEventArgs) => {
             if (!actionBeginArgs.cancel) {
                 const command: IImageCommandsArgs = actionBeginArgs.itemCollection as IImageCommandsArgs;
-                const image: HTMLImageElement = createElement('img', {
-                    className: command.cssClass,
-                    attrs: { src: command.url, alt: command.altText }
-                }) as HTMLImageElement;
-                image.style.opacity = '0.5';
-                image.classList.add(classes.CLS_RTE_IMAGE);
-                image.classList.add(classes.CLS_IMGINLINE);
-                image.classList.add(CLS_RESIZE);
-                range.insertNode(image);
-                this.uploadMethod(args, image);
-                image.addEventListener('load', (e: Event) => {
+                isUrlPassed = command.url !== '';
+                imageTag.className = command.cssClass;
+                imageTag.alt = command.altText;
+                imageTag.src = command.url;
+                imageTag.classList.add(classes.CLS_RTE_IMAGE);
+                imageTag.classList.add(CLS_RESIZE);
+                range.insertNode(imageTag);
+                this.uploadMethod(args, imageTag);
+                imageTag.addEventListener('load', (e: Event) => {
                     const actionCompleteArgs: ActionCompleteEventArgs = {
                         requestType: 'Image',
                         name: 'InsertDropImage',
-                        elements: [image],
+                        elements: [imageTag],
                         event: e as KeyboardEventArgs,
                         editorMode: 'HTML'
                     };

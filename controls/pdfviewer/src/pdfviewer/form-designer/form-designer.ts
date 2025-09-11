@@ -4100,19 +4100,17 @@ export class FormDesigner {
             }
         }
         this.pdfViewerBase.setItemInSessionStorage(this.pdfViewerBase.formFieldCollection, '_formDesigner');
-        const storeObject: string = this.pdfViewerBase.sessionStorageManager.getItem(this.pdfViewerBase.documentId + '_annotations_shape');
+        const storeObject: IPageAnnotations[] = this.pdfViewer.annotationsCollection.get(this.pdfViewerBase.documentId + '_annotations_shape');
         if (storeObject) {
-            const annotObject: IPageAnnotations[] = JSON.parse(storeObject);
-            const index: number = this.pdfViewer.annotationModule.getPageCollection(annotObject, this.pdfViewerBase.currentPageNumber - 1);
-            if ( index != null && annotObject[parseInt(index.toString(), 10)]) {
-                for (let m: number = 0; m < annotObject[parseInt(index.toString(), 10)].annotations.length; m++) {
-                    if (annotationId === annotObject[parseInt(index.toString(), 10)].annotations[parseInt(m.toString(), 10)].id) {
-                        annotObject[parseInt(index.toString(), 10)].annotations.splice(m, 1);
+            const index: number = this.pdfViewer.annotationModule.getPageCollection(storeObject, this.pdfViewerBase.currentPageNumber - 1);
+            if ( index != null && storeObject[parseInt(index.toString(), 10)]) {
+                for (let m: number = 0; m < storeObject[parseInt(index.toString(), 10)].annotations.length; m++) {
+                    if (annotationId === storeObject[parseInt(index.toString(), 10)].annotations[parseInt(m.toString(), 10)].id) {
+                        storeObject[parseInt(index.toString(), 10)].annotations.splice(m, 1);
                         break;
                     }
                 }
-                const annotationStringified: string = JSON.stringify(annotObject);
-                this.pdfViewerBase.sessionStorageManager.setItem(this.pdfViewerBase.documentId + '_annotations_shape', annotationStringified);
+                this.pdfViewer.annotationsCollection.set(this.pdfViewerBase.documentId + '_annotations_shape', storeObject);
             }
         }
         const collections: any = this.pdfViewer.formFieldCollection;

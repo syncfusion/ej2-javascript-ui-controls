@@ -944,6 +944,18 @@
         }
       }
     }
+    
+    &.e-popup {
+      .e-treeview {
+        .e-list-item {
+          .e-ul {
+            @if $ddt-skin-name == 'fluent2' {
+              padding: 0 0 0 14px;
+            }
+          }
+        }
+      }
+    }
   }
 
   .e-ddt-icon-hide {

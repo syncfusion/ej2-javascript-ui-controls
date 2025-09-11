@@ -945,6 +945,46 @@ describe('RTE CR issues ', () => {
                 insertImageSettings: {
                     saveUrl: 'http://aspnetmvc.syncfusion.com/services/api/uploadbox/Save',
                 },
+                value: `<div><p>First p node-0</p></div>`,
+            });
+            done();
+        });
+        afterAll((done: Function) => {
+            destroy(rteObj);
+            done();
+        });
+        it(" Drag and dropping image without path configuration", function (done: DoneFn) {
+            rteObj.value = '<p>21</p>';
+            rteObj.dataBind();
+            let fileObj: File = new File(["Nice One"], "sample.png", { lastModified: 0, type: "image/png" });
+            let event: any = { clientX: 40, clientY: 294, dataTransfer: { files: [fileObj] }, preventDefault: function () { return; } };
+            rteObj.focusIn();
+            (rteObj.imageModule as any).insertDragImage(event);
+            setTimeout(() => {
+                expect(rteObj.inputElement.querySelectorAll('img').length === 1).toBe(true);
+                expect((rteObj.inputElement.querySelector('img') as HTMLImageElement).src.includes('blob')).toBe(true);
+                done();
+            }, 100);
+        });
+    });
+
+    describe('Bug 971752: Image Upload fails when dragging and dropping images into RichTextEditor', () => {
+        let rteObj: RichTextEditor;
+        let keyBoardEvent: any = {
+            preventDefault: () => { },
+            type: "keydown",
+            stopPropagation: () => { },
+            ctrlKey: false,
+            shiftKey: false,
+            action: null,
+            which: 64,
+            key: ""
+        };
+        beforeAll((done: Function) => {
+            rteObj = renderRTE({
+                insertImageSettings: {
+                    saveUrl: 'http://aspnetmvc.syncfusion.com/services/api/uploadbox/Save',
+                },
                 pasteCleanupSettings: {
                     prompt: false,
                 },

@@ -2590,7 +2590,7 @@ export class SfRichTextEditor {
     // Triggers the onSelectionchange event
     private triggerOnSelectionChange(): void {
         const selection: Selection | null = this.getDocument().getSelection();
-        const currentRange: Range = selection && selection.getRangeAt(0);
+        const currentRange: Range = selection && selection.rangeCount > 0 && selection.getRangeAt(0);
         if (!this.isSelectionCollapsed()) {
             const isSamerange: boolean = this.previousRange &&
                 (this.previousRange.startContainer === currentRange.startContainer

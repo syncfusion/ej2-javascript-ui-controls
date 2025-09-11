@@ -1,12 +1,27 @@
 import { InkAnnotationSettings } from './../pdfviewer';
-import { IPoint, PdfViewer } from '../index';
+import { AllowedInteraction, IAnnotation, IPoint, PdfViewer } from '../index';
 import { PdfViewerBase, IPageAnnotations } from '../index';
-import { PdfAnnotationBaseModel } from '../drawing/pdf-annotation-model';
+import { PdfAnnotationBaseModel, PdfBoundsModel } from '../drawing/pdf-annotation-model';
 import { PdfAnnotationBase } from '../drawing/pdf-annotation';
 import { AnnotationSelectorSettingsModel } from '../pdfviewer-model';
 import { splitArrayCollection, processPathData, getPathString } from '@syncfusion/ej2-drawings';
 import { Browser, isNullOrUndefined } from '@syncfusion/ej2-base';
 
+/**
+ * @hidden
+ */
+export interface IInkAnnotation extends IAnnotation {
+    id: string,
+    bounds: any;
+    pageIndex: number,
+    data: string,
+    customData: object,
+    thickness: number,
+    notes: string,
+    isPrint: boolean,
+    allowedInteractions: AllowedInteraction[],
+    isLocked?: boolean
+}
 export class InkAnnotation {
     private pdfViewer: PdfViewer;
     private pdfViewerBase: PdfViewerBase;
@@ -225,6 +240,14 @@ export class InkAnnotation {
                 annotationSelectorSettings: this.getSelector('Ink', ''), modifiedDate: modifiedDate, annotationSettings: annotationSettings,
                 isPrint: isPrint, allowedInteractions: allowedInteractions, isCommentLock: false, isLocked: isLock
             };
+            const annotObject: IInkAnnotation = {
+                id: 'ink' + this.pdfViewerBase.inkCount, bounds: { x: currentBounds.x, y: currentBounds.y, width: currentBounds.width, height: currentBounds.height }, pageIndex: pageIndex, data: this.outputString, customData: customData,
+                shapeAnnotationType: 'Ink', opacity: opacity, strokeColor: strokeColor, thickness: thickness, annotName: annotationName, comments: [],
+                author: author, subject: subject, notes: '',
+                review: { state: '', stateModel: '', modifiedDate: modifiedDate, author: author },
+                annotationSelectorSettings: this.getSelector('Ink', ''), modifiedDate: modifiedDate, annotationSettings: annotationSettings,
+                isPrint: isPrint, allowedInteractions: allowedInteractions, isCommentLock: false, isLocked: isLock
+            };
             const annotation: PdfAnnotationBaseModel = this.pdfViewer.add(annot as PdfAnnotationBase);
             const bounds: any = { left: annot.bounds.x, top: annot.bounds.y, width: annot.bounds.width, height: annot.bounds.height };
             const settings: any = {
@@ -238,7 +261,7 @@ export class InkAnnotation {
             }
             annot.annotName = annotationName;
             this.pdfViewer.annotation.addAction(pageIndex, null, annotation, 'Addition', '', annotation, annotation);
-            this.pdfViewer.annotationModule.storeAnnotations(pageIndex, annot, '_annotations_ink');
+            this.pdfViewer.annotationModule.storeAnnotations(pageIndex, annotObject, '_annotations_ink');
             this.pdfViewer.fireAnnotationAdd(annot.pageIndex, annot.annotName, 'Ink', bounds, settings);
             if (this.pdfViewerBase.isInkAdded) {
                 this.outputString = '';
@@ -264,16 +287,13 @@ export class InkAnnotation {
         }
     }
     public saveInkSignature(): string {
-        let storeObject: string = this.pdfViewerBase.sessionStorageManager.getItem(this.pdfViewerBase.documentId + '_annotations_ink');
-        if (this.pdfViewerBase.isStorageExceed) {
-            storeObject = this.pdfViewerBase.annotationStorage[this.pdfViewerBase.documentId + '_annotations_ink'];
-        }
+        const storeObject: IPageAnnotations[] = this.pdfViewer.annotationsCollection.get(this.pdfViewerBase.documentId + '_annotations_ink');
         const annotations: Array<any> = [];
         for (let j: number = 0; j < this.pdfViewerBase.pageCount; j++) {
             annotations[parseInt(j.toString(), 10)] = [];
         }
         if (storeObject && !this.pdfViewer.annotationSettings.skipDownload) {
-            const annotationCollection: IPageAnnotations[] = JSON.parse(storeObject);
+            let annotationCollection: IPageAnnotations[] = JSON.parse(JSON.stringify(storeObject)) as IPageAnnotations[];
             for (let i: number = 0; i < annotationCollection.length; i++) {
                 let newArray: any[] = [];
                 const pageAnnotationObject: IPageAnnotations = annotationCollection[parseInt(i.toString(), 10)];
@@ -295,6 +315,7 @@ export class InkAnnotation {
                 }
                 annotations[pageAnnotationObject.pageIndex] = newArray;
             }
+            annotationCollection = null;
         }
         return JSON.stringify(annotations);
     }
@@ -453,6 +474,21 @@ export class InkAnnotation {
                         annotationSelectorSettings: selectorSettings, customData: customData, isPrint: isPrint,
                         isCommentLock: currentAnnotation.IsCommentLock
                     };
+                    const annotObject: IInkAnnotation = {
+                        id: 'ink' + this.pdfViewerBase.inkCount, bounds: { x: currentLeft, y: currentTop, width: currentWidth, height: currentHeight }, pageIndex: pageIndex, data: data,
+                        shapeAnnotationType: 'Ink', opacity: currentAnnotation.Opacity, strokeColor: currentAnnotation.StrokeColor, thickness: currentAnnotation.Thickness, annotName: currentAnnotation.AnnotName,
+
+                        comments: this.pdfViewer.annotationModule.
+                            getAnnotationComments(currentAnnotation.Comments, currentAnnotation, currentAnnotation.Author),
+                        author: currentAnnotation.Author, allowedInteractions: currentAnnotation.allowedInteractions,
+                        subject: currentAnnotation.Subject, modifiedDate: currentAnnotation.ModifiedDate,
+
+                        review: { state: currentAnnotation.State, stateModel: currentAnnotation.StateModel,
+                            modifiedDate: currentAnnotation.ModifiedDate, author: currentAnnotation.Author }, notes:
+                                currentAnnotation.Note, annotationSettings: currentAnnotation.AnnotationSettings,
+                        annotationSelectorSettings: selectorSettings, customData: customData, isPrint: isPrint,
+                        isCommentLock: currentAnnotation.IsCommentLock
+                    };
                     this.pdfViewer.add(annot as PdfAnnotationBase);
                     const canvasPageIndex: any = currentAnnotation.pageIndex ? currentAnnotation.pageIndex : currentAnnotation.PageNumber;
                     const canvass: any = this.pdfViewerBase.getAnnotationCanvas('_annotationCanvas_', canvasPageIndex);
@@ -461,7 +497,7 @@ export class InkAnnotation {
                     if (isNeedToRender) {
                         this.pdfViewer.renderDrawing(canvass as any, annot.pageIndex);
                     }
-                    this.pdfViewer.annotationModule.storeAnnotations(annot.pageIndex, annot, '_annotations_ink');
+                    this.pdfViewer.annotationModule.storeAnnotations(annot.pageIndex, annotObject, '_annotations_ink');
                     if (this.isAddAnnotationProgramatically) {
                         const settings: any = {
                             opacity: annot.opacity, strokeColor: annot.strokeColor, thickness: annot.thickness,
@@ -562,7 +598,7 @@ export class InkAnnotation {
             review: { state: '', stateModel: '', modifiedDate: annotations.modifiedDate, author: annotations.author }, notes: annotations.notes,
             annotationSelectorSettings: this.getSelector(annotations, 'Ink'), isCommentLock: annotations.isCommentLock
         };
-        const storeObject: string = this.pdfViewerBase.sessionStorageManager.getItem(this.pdfViewerBase.documentId + '_annotations_ink');
+        const storeObject: IPageAnnotations[] = this.pdfViewer.annotationsCollection.get(this.pdfViewerBase.documentId + '_annotations_ink');
         let index: number = 0;
         if (!storeObject) {
             const shapeAnnotation: IPageAnnotations = { pageIndex: pageNumber, annotations: [] };
@@ -570,23 +606,20 @@ export class InkAnnotation {
             index = shapeAnnotation.annotations.indexOf(annotation);
             const annotationCollection: IPageAnnotations[] = [];
             annotationCollection.push(shapeAnnotation);
-            const annotationStringified: string = JSON.stringify(annotationCollection);
-            this.pdfViewerBase.sessionStorageManager.setItem(this.pdfViewerBase.documentId + '_annotations_ink', annotationStringified);
+            this.pdfViewer.annotationsCollection.set(this.pdfViewerBase.documentId + '_annotations_ink', annotationCollection);
         } else {
-            const annotObject: IPageAnnotations[] = JSON.parse(storeObject);
-            this.pdfViewerBase.sessionStorageManager.removeItem(this.pdfViewerBase.documentId + '_annotations_ink');
-            const pageIndex: number = this.pdfViewer.annotationModule.getPageCollection(annotObject, pageNumber);
-            if (pageIndex != null && annotObject[parseInt(pageIndex.toString(), 10)]) {
-                (annotObject[parseInt(pageIndex.toString(), 10)] as IPageAnnotations).annotations.push(annotation);
-                index = (annotObject[parseInt(pageIndex.toString(), 10)] as IPageAnnotations).annotations.indexOf(annotation);
+            this.pdfViewer.annotationsCollection.delete(this.pdfViewerBase.documentId + '_annotations_ink');
+            const pageIndex: number = this.pdfViewer.annotationModule.getPageCollection(storeObject, pageNumber);
+            if (pageIndex != null && storeObject[parseInt(pageIndex.toString(), 10)]) {
+                (storeObject[parseInt(pageIndex.toString(), 10)] as IPageAnnotations).annotations.push(annotation);
+                index = (storeObject[parseInt(pageIndex.toString(), 10)] as IPageAnnotations).annotations.indexOf(annotation);
             } else {
                 const markupAnnotation: IPageAnnotations = { pageIndex: pageNumber, annotations: [] };
                 markupAnnotation.annotations.push(annotation);
                 index = markupAnnotation.annotations.indexOf(annotation);
-                annotObject.push(markupAnnotation);
+                storeObject.push(markupAnnotation);
             }
-            const annotationStringified: string = JSON.stringify(annotObject);
-            this.pdfViewerBase.sessionStorageManager.setItem(this.pdfViewerBase.documentId + '_annotations_ink', annotationStringified);
+            this.pdfViewer.annotationsCollection.set(this.pdfViewerBase.documentId + '_annotations_ink', storeObject);
         }
     }
 
@@ -601,12 +634,11 @@ export class InkAnnotation {
 
     private getAnnotations(pageIndex: number, shapeAnnotations: any[]): any[] {
         let annotationCollection: any[];
-        const storeObject: string = this.pdfViewerBase.sessionStorageManager.getItem(this.pdfViewerBase.documentId + '_annotations_ink');
+        const storeObject: IPageAnnotations[] = this.pdfViewer.annotationsCollection.get(this.pdfViewerBase.documentId + '_annotations_ink');
         if (storeObject) {
-            const annotObject: IPageAnnotations[] = JSON.parse(storeObject);
-            const index: number = this.pdfViewer.annotationModule.getPageCollection(annotObject, pageIndex);
-            if (index != null && annotObject[parseInt(index.toString(), 10)]) {
-                annotationCollection = annotObject[parseInt(index.toString(), 10)].annotations;
+            const index: number = this.pdfViewer.annotationModule.getPageCollection(storeObject, pageIndex);
+            if (index != null && storeObject[parseInt(index.toString(), 10)]) {
+                annotationCollection = storeObject[parseInt(index.toString(), 10)].annotations;
             } else {
                 annotationCollection = shapeAnnotations;
             }
@@ -672,16 +704,14 @@ export class InkAnnotation {
     }
 
     private manageInkAnnotations(pageAnnotations: any[], pageNumber: number): void {
-        const storeObject: string = this.pdfViewerBase.sessionStorageManager.getItem(this.pdfViewerBase.documentId + '_annotations_ink');
+        const storeObject: IPageAnnotations[] = this.pdfViewer.annotationsCollection.get(this.pdfViewerBase.documentId + '_annotations_ink');
         if (storeObject) {
-            const annotObject: IPageAnnotations[] = JSON.parse(storeObject);
-            this.pdfViewerBase.sessionStorageManager.removeItem(this.pdfViewerBase.documentId + '_annotations_ink');
-            const index: number = this.pdfViewer.annotationModule.getPageCollection(annotObject, pageNumber);
-            if (index != null && annotObject[parseInt(index.toString(), 10)]) {
-                annotObject[parseInt(index.toString(), 10)].annotations = pageAnnotations;
+            this.pdfViewer.annotationsCollection.delete(this.pdfViewerBase.documentId + '_annotations_ink');
+            const index: number = this.pdfViewer.annotationModule.getPageCollection(storeObject, pageNumber);
+            if (index != null && storeObject[parseInt(index.toString(), 10)]) {
+                storeObject[parseInt(index.toString(), 10)].annotations = pageAnnotations;
             }
-            const annotationStringified: string = JSON.stringify(annotObject);
-            this.pdfViewerBase.sessionStorageManager.setItem(this.pdfViewerBase.documentId + '_annotations_ink', annotationStringified);
+            this.pdfViewer.annotationsCollection.set(this.pdfViewerBase.documentId + '_annotations_ink', storeObject);
         }
     }
 

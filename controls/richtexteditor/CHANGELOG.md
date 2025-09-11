@@ -2,6 +2,14 @@
 
 ## [Unreleased]
 
+## 31.1.19 (2025-09-11)
+
+### RichTextEditor
+
+#### Bug Fixes
+
+- `#I750223` - Now, drag and drop image insertion into the editor functions reliably even when no image path is configured.
+
 ## 31.1.18 (2025-09-10)
 
 ### RichTextEditor

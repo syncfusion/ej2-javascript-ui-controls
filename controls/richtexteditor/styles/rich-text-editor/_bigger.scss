@@ -35,8 +35,10 @@
     }
   }
   .e-dialog.e-rte-dialog-minheight {
-    min-height: 324px;
-    @if $skin-name == 'FluentUI' {
+    @if $theme-name != 'fluent2-highcontrast' {
+      min-height: $rte-big-dialog-min-height;
+    }
+    @if $theme-name == 'fluent2-highcontrast' {
       min-height: 350px;
     }
   }
@@ -54,7 +56,8 @@
 
   .e-dialog .e-img-uploadwrap .e-droptext,
   .e-dialog .e-aud-uploadwrap .e-droptext,
-  .e-dialog .e-vid-uploadwrap .e-droptext {
+  .e-dialog .e-vid-uploadwrap .e-droptext,
+  .e-dialog .e-word-uploadwrap .e-droptext {
     height: $rte-big-drop-text-height;
   }
 }
@@ -327,6 +330,12 @@
   }
 }
 
+.e-bigger {
+  .e-dialog.e-rte-table-popup.e-popup.e-popup-open {
+    min-height: $rte-table-popup-min-height !important; /* stylelint-disable-line declaration-no-important */
+  }
+}
+
 //toolbar popup min height over riding end
 
 //Layout styles
@@ -356,4 +365,8 @@
   .e-bigger .e-rtl .e-rte-toolbar .e-toolbar-items {
     border-top-right-radius: $rte-border-top-right-radius;
   }
+}
+
+.e-bigger .e-rte-elements.e-popup-open.e-rte-slashmenu .e-list-parent > li {
+  padding-left: 0;
 }

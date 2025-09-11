@@ -16,12 +16,14 @@ $rte-icons-color: $content-font !default;
 $rte-hover-icons-color: $content-font !default;
 $rte-content-padding: 16px !default;
 $rte-table-popup-padding: 10px !default;
+$rte-table-popup-min-height: 160px !default;
 $rte-table-popup-border: 1px solid $border-default !default;
 $rte-tb-expended-min-height: 40px !default;
 $rte-big-tb-expended-min-height: 50px !default;
 $rte-tb-expended-padding-left: 1px !default;
 $rte-tb-expended-hover-padding-left: 1px !default;
 $rte-table-multicell-select-bg-color: rgba($selection-bg, .14) !default;
+$rte-insert-icon-color: $selection-bg !default;
 
 $rte-big-quick-item-btn-width: 39px !default;
 $rte-big-quick-item-btn-height: 34px !default;
@@ -145,6 +147,7 @@ $rte-big-quick-tbar-item-min-height: 49px !default;
 $rte-big-quick-tbar-item-min-width: 50px !default;
 $rte-content-font-size: 14px !default;
 $rte-big-content-font-size: 16px !default;
+$rte-big-dialog-min-height: 324px !default;
 $rte-dropdown-caret-icon-size: 12px !default;
 $rte-big-dropdown-caret-icon-size: 12px !default;
 $rte-toolbar-icon-size: 16px !default;
@@ -161,7 +164,6 @@ $rte-resize-handler-position: 0;
 $rte-default-character-count-opacity: .54;
 
 $rte-big-color-list-span-common-padding-left-right: 0;
-$rte-placeholder-padding: 16px !default;
 
 $rte-img-dlg-max-height: 433px !default;
 $rte-img-alt-dlg-max-height: 433px !default;
@@ -258,3 +260,9 @@ $rte-quick-toolbar-tip-pointer-content: $bg-base-0 !default;
 
 $rte-popup-padding: 0 3px !default;
 $rte-popup-item-padding: 1px 1px !default;
+
+$rte-checklist-checked-bg-color: $selection-bg !default;
+$rte-checklist-checked-border-color: 1px solid $selection-bg !default;
+$rte-checklist-checked-checkmark-color: $selection-font !default;
+$rte-checklist-checkbox-border: 1px solid rgba(255, 255, 255, 1);
+$rte-checklist-checkbox-border-radius: 0;

@@ -643,13 +643,10 @@ export class PageRenderer{
                 currentAnnot.Apperarance = [];
             }
             currentAnnot.Apperarance.push(Json);
-            storeObject = this.pdfViewerBase.sessionStorageManager.getItem(this.pdfViewerBase.documentId + '_annotations_stamp');
-            if (this.pdfViewerBase.isStorageExceed) {
-                storeObject = this.pdfViewerBase.annotationStorage[this.pdfViewerBase.documentId + '_annotations_stamp'];
-            }
+            storeObject = this.pdfViewer.annotationsCollection.get(this.pdfViewerBase.documentId + '_annotations_stamp');
             let shouldRender: boolean = true;
             if (storeObject) {
-                annotObject = JSON.parse(storeObject);
+                annotObject = storeObject;
                 if (annotObject.length > 0) {
                     for (let i: number = 0; i < annotObject.length; i++) {
                         for (let j: number = 0; j < annotObject[parseInt(i.toString(), 10)].annotations.length; j++) {

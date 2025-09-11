@@ -3,7 +3,8 @@ import {
     IReviewCollection,
     ISize,
     AllowedInteraction,
-    AnnotationsInternal
+    AnnotationsInternal,
+    IAnnotation
 } from '../index';
 import { createElement, Browser, isNullOrUndefined, isBlazor } from '@syncfusion/ej2-base';
 import { ChangeEventArgs } from '@syncfusion/ej2-inputs';
@@ -11,36 +12,24 @@ import { AnnotationSelectorSettingsModel } from '../pdfviewer-model';
 /**
  * @hidden
  */
-export interface ITextMarkupAnnotation {
+export interface ITextMarkupAnnotation extends IAnnotation {
     textMarkupAnnotationType: string
-    author: string
-    subject: string
-    modifiedDate: string
-    note: string
     bounds: any;
     color: any;
-    opacity: number
     rect: any;
-    comments: ICommentsCollection[]
-    review: IReviewCollection
-    annotName: string
-    shapeAnnotationType: string
     position?: string
     pageNumber: number
     textMarkupContent: string
     textMarkupStartIndex: number
     textMarkupEndIndex: number
-    annotationSelectorSettings: AnnotationSelectorSettingsModel
     customData: object
     isMultiSelect?: boolean
     annotNameCollection?: any[];
     annotpageNumbers?: any[];
     annotationAddMode: string
-    annotationSettings?: any;
     allowedInteractions?: AllowedInteraction
     isLocked: boolean
     isPrint: boolean
-    isCommentLock: boolean
     isAnnotationRotated: boolean
     annotationRotation?: number
 }
@@ -1778,16 +1767,14 @@ export class TextMarkupAnnotation {
      * @returns {string} - string
      */
     public saveTextMarkupAnnotations(): string {
-        let storeTextMarkupObject: string = this.pdfViewerBase.sessionStorageManager.getItem(this.pdfViewerBase.documentId + '_annotations_textMarkup');
-        if (this.pdfViewerBase.isStorageExceed) {
-            storeTextMarkupObject = this.pdfViewerBase.annotationStorage[this.pdfViewerBase.documentId + '_annotations_textMarkup'];
-        }
+        const storeTextMarkupObject: IPageAnnotations[] = this.pdfViewer.annotationsCollection.get(this.pdfViewerBase.documentId + '_annotations_textMarkup');
         const textMarkupAnnotations: Array<any> = [];
         for (let j: number = 0; j < this.pdfViewerBase.pageCount; j++) {
             textMarkupAnnotations[parseInt(j.toString(), 10)] = [];
         }
         if (storeTextMarkupObject && !this.pdfViewer.annotationSettings.skipDownload) {
-            const textMarkupAnnotationCollection: IPageAnnotations[] = JSON.parse(storeTextMarkupObject);
+            let textMarkupAnnotationCollection: IPageAnnotations[] =
+            JSON.parse(JSON.stringify(storeTextMarkupObject)) as IPageAnnotations[];
             for (let i: number = 0; i < textMarkupAnnotationCollection.length; i++) {
                 let newArray: ITextMarkupAnnotation[] = [];
                 const pageAnnotationObject: IPageAnnotations = textMarkupAnnotationCollection[parseInt(i.toString(), 10)];
@@ -1829,6 +1816,7 @@ export class TextMarkupAnnotation {
                 }
                 textMarkupAnnotations[pageAnnotationObject.pageIndex] = newArray;
             }
+            textMarkupAnnotationCollection = null;
         }
         return JSON.stringify(textMarkupAnnotations);
     }
@@ -3115,25 +3103,14 @@ export class TextMarkupAnnotation {
      * @returns {void}
      */
     public manageAnnotations(pageAnnotations: ITextMarkupAnnotation[], pageNumber: number): void {
-        let storeObject: string = this.pdfViewerBase.sessionStorageManager.getItem(this.pdfViewerBase.documentId + '_annotations_textMarkup');
-        if (this.pdfViewerBase.isStorageExceed) {
-            storeObject = this.pdfViewerBase.annotationStorage[this.pdfViewerBase.documentId + '_annotations_textMarkup'];
-        }
+        const storeObject: IPageAnnotations[] = this.pdfViewer.annotationsCollection.get(this.pdfViewerBase.documentId + '_annotations_textMarkup');
         if (storeObject) {
-            const annotObject: IPageAnnotations[] = JSON.parse(storeObject);
-            if (!this.pdfViewerBase.isStorageExceed) {
-                this.pdfViewerBase.sessionStorageManager.removeItem(this.pdfViewerBase.documentId + '_annotations_textMarkup');
+            this.pdfViewer.annotationsCollection.delete(this.pdfViewerBase.documentId + '_annotations_textMarkup');
+            const index: number = this.pdfViewer.annotationModule.getPageCollection(storeObject, pageNumber);
+            if (index != null && storeObject[parseInt(index.toString(), 10)]) {
+                storeObject[parseInt(index.toString(), 10)].annotations = pageAnnotations;
             }
-            const index: number = this.pdfViewer.annotationModule.getPageCollection(annotObject, pageNumber);
-            if (index != null && annotObject[parseInt(index.toString(), 10)]) {
-                annotObject[parseInt(index.toString(), 10)].annotations = pageAnnotations;
-            }
-            const annotationStringified: string = JSON.stringify(annotObject);
-            if (this.pdfViewerBase.isStorageExceed) {
-                this.pdfViewerBase.annotationStorage[this.pdfViewerBase.documentId + '_annotations_textMarkup'] = annotationStringified;
-            } else {
-                this.pdfViewerBase.sessionStorageManager.setItem(this.pdfViewerBase.documentId + '_annotations_textMarkup', annotationStringified);
-            }
+            this.pdfViewer.annotationsCollection.set(this.pdfViewerBase.documentId + '_annotations_textMarkup', storeObject);
         }
     }
 
@@ -3149,12 +3126,11 @@ export class TextMarkupAnnotation {
         if (id == null || id === undefined) {
             id = '_annotations_textMarkup';
         }
-        let storeObject: string = this.pdfViewerBase.sessionStorageManager.getItem(this.pdfViewerBase.documentId + id);
-        if (this.pdfViewerBase.isStorageExceed) {
-            storeObject = this.pdfViewerBase.annotationStorage[this.pdfViewerBase.documentId + id];
-        }
+        const storeObject: IPageAnnotations[] =
+        this.pdfViewer.annotationsCollection.get(this.pdfViewerBase.documentId + id);
         if (storeObject) {
-            const annotObject: IPageAnnotations[] = JSON.parse(storeObject);
+            const annotObject: IPageAnnotations[] =
+            JSON.parse(JSON.stringify(storeObject)) as IPageAnnotations[];
             const index: number = this.pdfViewer.annotationModule.getPageCollection(annotObject, pageIndex);
             if (index != null && annotObject[parseInt(index.toString(), 10)]) {
                 annotationCollection = annotObject[parseInt(index.toString(), 10)].annotations;
@@ -3404,7 +3380,7 @@ export class TextMarkupAnnotation {
         this.selectTextMarkupCurrentPage = null;
         this.currentTextMarkupAnnotation = null;
         this.annotationClickPosition = null;
-        this.pdfViewerBase.sessionStorageManager.removeItem(this.pdfViewerBase.documentId + '_annotations_textMarkup');
+        this.pdfViewer.annotationsCollection.delete(this.pdfViewerBase.documentId + '_annotations_textMarkup');
         this.isTextMarkupAnnotationMode = null;
         this.currentTextMarkupAddMode = null;
         this.highlightColor = null;

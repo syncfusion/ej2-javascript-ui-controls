@@ -755,9 +755,10 @@ export class PolarArc {
  * @param {number} top - The top position of the tooltip.
  * @param {number} left - The left position of the tooltip.
  * @param {string} fontSize - The font size of the tooltip text.
+ * @param {Chart} chartId - Chart element id.
  * @returns {void}
  */
-export function createTooltip(id: string, text: string, top: number, left: number, fontSize: string): void {
+export function createTooltip(id: string, text: string, top: number, left: number, fontSize: string, chartId: string): void {
     let tooltip: HTMLElement = getElement(id) as HTMLElement;
     const style: string = 'top:' + top.toString() + 'px;' +
         'left:' + left.toString() + 'px;' +
@@ -768,7 +769,7 @@ export function createTooltip(id: string, text: string, top: number, left: numbe
         tooltip = createElement('div', {
             id: id, innerHTML: '&nbsp;' + text + '&nbsp;', styles: style
         });
-        document.body.appendChild(tooltip);
+        getElement(chartId).appendChild(tooltip);
     } else {
         tooltip.setAttribute('innerHTML', '&nbsp;' + text + '&nbsp;');
         (tooltip as HTMLElement).style.cssText = style;
@@ -1065,7 +1066,15 @@ export function getMinPointsDelta(axis: Axis | Chart3DAxis, seriesCollection: Se
     let xValues: Object[];
     let minVal: number;
     let seriesMin: number;
+    let allSeriesXvalueLen: boolean = true;
     const stackingGroups: string[] = [];
+    for (const series of seriesCollection) {
+        const xValues: Object[] = series.points.map((point: Points) => point.xValue);
+        if (xValues.length !== 1) {
+            allSeriesXvalueLen = false;
+            break; // No need to continue if one series fails the condition
+        }
+    }
     for (let index: number = 0; index < seriesCollection.length; index++) {
         const series: Series = seriesCollection[index as number];
         xValues = [];
@@ -1079,7 +1088,7 @@ export function getMinPointsDelta(axis: Axis | Chart3DAxis, seriesCollection: Se
                 return point.xValue;
             });
             xValues.sort((first: Object, second: Object) => { return <number>first - <number>second; });
-            if (xValues.length === 1) {
+            if (xValues.length === 1 && allSeriesXvalueLen) {
                 if (axis.valueType === 'Category') {
                     const minValue: number = series.xAxis.visibleRange.min;
                     const delta: number = <number>xValues[0] - minValue;

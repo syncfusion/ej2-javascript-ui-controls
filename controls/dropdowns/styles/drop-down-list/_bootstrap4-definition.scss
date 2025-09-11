@@ -115,6 +115,14 @@ $ddl-bigger-small-list-font-size: 14px !default;
     font-size: 12px;
   }
 
+  .e-input-group.e-ddl .e-input[readonly] ~ span.e-input-group-icon.e-ddl-icon,
+  .e-input-group.e-control-wrapper.e-ddl .e-input[readonly] ~ span.e-input-group-icon.e-ddl-icon,
+  .e-float-input.e-ddl input[readonly] ~ span.e-input-group-icon.e-ddl-icon,
+  .e-float-input.e-control-wrapper.e-ddl input[readonly] ~ span.e-input-group-icon.e-ddl-icon {
+    background: transparent;
+    color: $ddl-list-icon-color;
+  }
+
   .e-small .e-input-group .e-control#{&}.e-dropdownlist~.e-ddl-icon,
   .e-small.e-input-group .e-control#{&}.e-dropdownlist~.e-ddl-icon {
     font-size: 10px;

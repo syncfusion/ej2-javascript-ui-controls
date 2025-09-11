@@ -1,7 +1,8 @@
 import { PdfViewer, PdfViewerBase, IRectangle, IPageAnnotations, IPoint, AnnotationType as AnnotType,
     ShapeLabelSettingsModel,
     AnnotationType,
-    IPointBase} from '../../index';
+    IPointBase,
+    IAnnotation} from '../../index';
 import { NumericTextBox } from '@syncfusion/ej2-inputs';
 import { PdfAnnotationBase } from '../drawing/pdf-annotation';
 import { PdfAnnotationBaseModel } from '../drawing/pdf-annotation-model';
@@ -18,15 +19,7 @@ import { ItemModel } from '@syncfusion/ej2-navigations';
 /**
  * @hidden
  */
-export interface IMeasureShapeAnnotation {
-    shapeAnnotationType: string
-    author: string
-    modifiedDate: string
-    subject: string
-    note: string
-    strokeColor: string
-    fillColor: string
-    opacity: number
+export interface IMeasureShapeAnnotation extends IAnnotation {
     bounds: IRectangle
     thickness: number
     borderStyle: string
@@ -47,9 +40,6 @@ export interface IMeasureShapeAnnotation {
     indent: string
     calibrate: any;
     id: string
-    annotName: string
-    comments: ICommentsCollection[]
-    review: IReviewCollection
     enableShapeLabel: boolean
     labelContent: string
     labelFillColor: string
@@ -57,13 +47,10 @@ export interface IMeasureShapeAnnotation {
     fontColor: string
     fontSize: number
     labelBounds: IRectangle
-    annotationSelectorSettings: AnnotationSelectorSettingsModel
     labelSettings?: ShapeLabelSettingsModel
-    annotationSettings?: any;
     customData: object
     allowedInteractions?: AllowedInteraction
     isPrint: boolean
-    isCommentLock: boolean
     isAnnotationRotated: boolean
     pageNumber?: number
 }
@@ -863,16 +850,13 @@ export class MeasureAnnotation {
      * @returns {string} - string
      */
     public saveMeasureShapeAnnotations(): string {
-        let storeObject: string = this.pdfViewerBase.sessionStorageManager.getItem(this.pdfViewerBase.documentId + '_annotations_shape_measure');
-        if (this.pdfViewerBase.isStorageExceed) {
-            storeObject = this.pdfViewerBase.annotationStorage[this.pdfViewerBase.documentId + '_annotations_shape_measure'];
-        }
+        const storeObject: IPageAnnotations[] = this.pdfViewer.annotationsCollection.get(this.pdfViewerBase.documentId + '_annotations_shape_measure');
         const annotations: Array<any> = [];
         for (let j: number = 0; j < this.pdfViewerBase.pageCount; j++) {
             annotations[parseInt(j.toString(), 10)] = [];
         }
         if (storeObject && !this.pdfViewer.annotationSettings.skipDownload) {
-            const annotationCollection: IPageAnnotations[] = JSON.parse(storeObject);
+            let annotationCollection: IPageAnnotations[] = JSON.parse(JSON.stringify(storeObject)) as IPageAnnotations[];
             for (let i: number = 0; i < annotationCollection.length; i++) {
                 let newArray: IMeasureShapeAnnotation[] = [];
                 const pageAnnotationObject: IPageAnnotations = annotationCollection[parseInt(i.toString(), 10)];
@@ -939,6 +923,7 @@ export class MeasureAnnotation {
                 }
                 annotations[pageAnnotationObject.pageIndex] = newArray;
             }
+            annotationCollection = null;
         }
         return JSON.stringify(annotations);
     }
@@ -1521,39 +1506,24 @@ export class MeasureAnnotation {
     }
 
     private manageAnnotations(pageAnnotations: IMeasureShapeAnnotation[], pageNumber: number): void {
-        let storeObject: string = this.pdfViewerBase.sessionStorageManager.getItem(this.pdfViewerBase.documentId + '_annotations_shape_measure');
-        if (this.pdfViewerBase.isStorageExceed) {
-            storeObject = this.pdfViewerBase.annotationStorage[this.pdfViewerBase.documentId + '_annotations_shape_measure'];
-        }
+        const storeObject: IPageAnnotations[] = this.pdfViewer.annotationsCollection.get(this.pdfViewerBase.documentId + '_annotations_shape_measure');
         if (storeObject) {
-            const annotObject: IPageAnnotations[] = JSON.parse(storeObject);
-            if (!this.pdfViewerBase.isStorageExceed) {
-                this.pdfViewerBase.sessionStorageManager.removeItem(this.pdfViewerBase.documentId + '_annotations_shape_measure');
+            this.pdfViewer.annotationsCollection.delete(this.pdfViewerBase.documentId + '_annotations_shape_measure');
+            const index: number = this.pdfViewer.annotationModule.getPageCollection(storeObject, pageNumber);
+            if (index != null && storeObject[parseInt(index.toString(), 10)]) {
+                storeObject[parseInt(index.toString(), 10)].annotations = pageAnnotations;
             }
-            const index: number = this.pdfViewer.annotationModule.getPageCollection(annotObject, pageNumber);
-            if (index != null && annotObject[parseInt(index.toString(), 10)]) {
-                annotObject[parseInt(index.toString(), 10)].annotations = pageAnnotations;
-            }
-            const annotationStringified: string = JSON.stringify(annotObject);
-            if (this.pdfViewerBase.isStorageExceed) {
-                this.pdfViewerBase.annotationStorage[this.pdfViewerBase.documentId + '_annotations_shape_measure'] = annotationStringified;
-            } else {
-                this.pdfViewerBase.sessionStorageManager.setItem(this.pdfViewerBase.documentId + '_annotations_shape_measure', annotationStringified);
-            }
+            this.pdfViewer.annotationsCollection.set(this.pdfViewerBase.documentId + '_annotations_shape_measure', storeObject);
         }
     }
 
     private getAnnotations(pageIndex: number, shapeAnnotations: any[]): any[] {
         let annotationCollection: any[];
-        let storeObject: string = this.pdfViewerBase.sessionStorageManager.getItem(this.pdfViewerBase.documentId + '_annotations_shape_measure');
-        if (this.pdfViewerBase.isStorageExceed) {
-            storeObject = this.pdfViewerBase.annotationStorage[this.pdfViewerBase.documentId + '_annotations_shape_measure'];
-        }
+        const storeObject: IPageAnnotations[] = this.pdfViewer.annotationsCollection.get(this.pdfViewerBase.documentId + '_annotations_shape_measure');
         if (storeObject) {
-            const annotObject: IPageAnnotations[] = JSON.parse(storeObject);
-            const index: number = this.pdfViewer.annotationModule.getPageCollection(annotObject, pageIndex);
-            if (index != null && annotObject[parseInt(index.toString(), 10)]) {
-                annotationCollection = annotObject[parseInt(index.toString(), 10)].annotations;
+            const index: number = this.pdfViewer.annotationModule.getPageCollection(storeObject, pageIndex);
+            if (index != null && storeObject[parseInt(index.toString(), 10)]) {
+                annotationCollection = storeObject[parseInt(index.toString(), 10)].annotations;
             } else {
                 annotationCollection = shapeAnnotations;
             }

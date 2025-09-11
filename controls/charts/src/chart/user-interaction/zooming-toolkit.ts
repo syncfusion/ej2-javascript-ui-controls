@@ -328,7 +328,7 @@ export class Toolkit {
      */
     private showTooltip(event: MouseEvent): void {
         const text: string = (<HTMLElement>event.currentTarget).id.split('_Zooming_')[1];
-        const left: number = (event.pageX - (measureText(text, { size: '10px' }, { size: '10px', fontStyle: 'Normal', fontWeight: '400', fontFamily: 'Segoe UI'}).width + 5));
+        const left: number = (event.layerX - (measureText(text, { size: '10px' }, { size: '10px', fontStyle: 'Normal', fontWeight: '400', fontFamily: 'Segoe UI'}).width + 5));
         const rect: Element = getElement((<HTMLElement>event.currentTarget).id + '_1');
         const icon2: Element = getElement((<HTMLElement>event.currentTarget).id + '_2');
         const icon3: Element = getElement((<HTMLElement>event.currentTarget).id + '_3');
@@ -349,7 +349,7 @@ export class Toolkit {
             icon3.setAttribute('fill', this.chart.theme === 'Fluent2HighContrast' && ((<HTMLElement>event.currentTarget).childNodes[1] as HTMLElement).getAttribute('fill') === '#3FF23F' ? '#3FF23F' : this.chart.themeStyle.toolkitSelectionColor);
         }
         if (!this.chart.isTouch && !this.isDragging) {
-            createTooltip('EJ2_Chart_ZoomTip', this.chart.getLocalizedLabel(text), (event.pageY + 10), left, '10px');
+            createTooltip('EJ2_Chart_ZoomTip', this.chart.getLocalizedLabel(text), (event.layerY + 10), left, '10px', this.chart.element.id);
         }
     }
     /**

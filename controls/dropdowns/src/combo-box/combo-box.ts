@@ -441,6 +441,11 @@ export class ComboBox extends DropDownList {
                                     this.setProperties({ 'text': dataItem.text ? dataItem.text.toString() : dataItem.text, 'value': value });
                                 }
                             }
+                            else if (this.allowCustom) {
+                                this.valueMuteChange(this.value);
+                                this.setHiddenValue();
+                                Input.setValue(this.text, this.inputElement, this.floatLabelType, this.showClearButton);
+                            }
                             else{
                                 this.valueMuteChange(null);
                             }
@@ -470,7 +475,7 @@ export class ComboBox extends DropDownList {
                 this.setSelection(li, null);
             } else if (
                 (!this.enableVirtualization && this.allowCustom) ||
-                (this.allowCustom && this.enableVirtualization && !doesItemExist)
+                (this.allowCustom && this.enableVirtualization && !doesItemExist && !(this.dataSource instanceof DataManager))
             ) {
                 this.valueMuteChange(this.value);
             } else if (!this.enableVirtualization || (this.enableVirtualization && !(this.dataSource instanceof DataManager)

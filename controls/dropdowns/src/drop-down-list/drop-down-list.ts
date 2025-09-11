@@ -3226,7 +3226,7 @@ export class DropDownList extends DropDownBase implements IInput {
                     setTimeout(() => {
                         if (this.value || this.list.querySelector('.e-active')) {
                             this.updateSelectionList();
-                            if (this.selectedValueInfo && this.viewPortInfo && this.viewPortInfo.offsets.top) {
+                            if (this.viewPortInfo && this.viewPortInfo.offsets.top) {
                                 this.list.scrollTop = this.viewPortInfo.offsets.top;
                             } else {
                                 this.scrollBottom(true, true);
@@ -3812,9 +3812,7 @@ export class DropDownList extends DropDownBase implements IInput {
         }
         let dataSourceCount: number;
         if (this.dataSource instanceof DataManager) {
-            // eslint-disable-next-line @typescript-eslint/no-explicit-any
-            dataSourceCount = this.virtualGroupDataSource && (this.virtualGroupDataSource as any).length ?
-                (this.virtualGroupDataSource as any).length : 0;
+            dataSourceCount = this.remoteDataCount;
         } else {
             // eslint-disable-next-line @typescript-eslint/no-explicit-any
             dataSourceCount = this.dataSource && (this.dataSource as any).length ? (this.dataSource as any).length : 0;

@@ -3,7 +3,7 @@ import { ModuleDeclaration, isNullOrUndefined, Property, Event, EmitType, Saniti
 import { PdfViewerModel, HighlightSettingsModel, UnderlineSettingsModel, SquigglySettingsModel, StrikethroughSettingsModel, LineSettingsModel, AnnotationDrawingOptionsModel, ArrowSettingsModel, RectangleSettingsModel, CircleSettingsModel, PolygonSettingsModel, StampSettingsModel, StickyNotesSettingsModel, CustomStampSettingsModel, VolumeSettingsModel, RadiusSettingsModel, AreaSettingsModel, PerimeterSettingsModel, DistanceSettingsModel, MeasurementSettingsModel, FreeTextSettingsModel, AnnotationSelectorSettingsModel, TextSearchColorSettingsModel, PageInfoModel, DocumentTextCollectionSettingsModel, TextDataSettingsModel, RectangleBoundsModel, SignatureFieldSettingsModel, InitialFieldSettingsModel, SignatureIndicatorSettingsModel, TextFieldSettingsModel, PasswordFieldSettingsModel, CheckBoxFieldSettingsModel, RadioButtonFieldSettingsModel, DropdownFieldSettingsModel, ListBoxFieldSettingsModel, ItemModel, SignatureDialogSettingsModel, PageOrganizerSettingsModel } from './pdfviewer-model';
 import { ToolbarSettingsModel, ShapeLabelSettingsModel, KeyGestureModel, KeyboardCommandModel, CommandManagerModel } from './pdfviewer-model';
 import { ServerActionSettingsModel, AjaxRequestSettingsModel, CustomStampModel, CustomToolbarItemModel, HandWrittenSignatureSettingsModel, AnnotationSettingsModel, TileRenderingSettingsModel, ScrollSettingsModel, FormFieldModel, InkAnnotationSettingsModel } from './pdfviewer-model';
-import { IAnnotationPoint, IPoint, PdfViewerBase, PdfiumRunner, TextMarkupAnnotation } from './index';
+import { IAnnotationPoint, IPoint, IPageAnnotations, PdfViewerBase, PdfiumRunner, TextMarkupAnnotation } from './index';
 import { Navigation } from './index';
 import { Magnification } from './index';
 import { Toolbar } from './index';
@@ -8339,6 +8339,11 @@ export class PdfViewer extends Component<HTMLElement> implements INotifyProperty
      */
     @Collection<PdfFormFieldBaseModel>([], PdfFormFieldBase)
     public formFields: PdfFormFieldBaseModel[];
+
+    /**
+     * @private
+     */
+    public annotationsCollection: Map<string, IPageAnnotations[]> = new Map();
 
     /**
      * @private

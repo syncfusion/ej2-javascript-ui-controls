@@ -3,7 +3,8 @@ import { FreeTextSettings } from './../pdfviewer';
 import {
     PdfViewer, PdfViewerBase, IPageAnnotations, IPoint, AnnotationType as AnnotType, ICommentsCollection,
     IReviewCollection, AllowedInteraction, ISize, AnnotationsInternal, AnnotationBaseSettings,
-    AnnotBoundsRect, AnnotationsBase, AnnotBoundsBase, IRect, IBounds
+    AnnotBoundsRect, AnnotationsBase, AnnotBoundsBase, IRect, IBounds,
+    IAnnotation
 } from '../index';
 import { Browser, isBlazor, isNullOrUndefined, SanitizeHtmlHelper  } from '@syncfusion/ej2-base';
 import { PointModel } from '@syncfusion/ej2-drawings';
@@ -14,37 +15,32 @@ import { AnnotationSelectorSettingsModel } from '../pdfviewer-model';
 /**
  * @hidden
  */
-export interface IFreeTextAnnotation {
-    shapeAnnotationType: string
-    author: string
-    modifiedDate: string
-    subject: string
-    note: string
-    opacity: number
+export interface IFreeTextAnnotation extends IAnnotation {
     bounds: any;
     thickness: number
-    borderStyle: string
-    borderDashArray: number
-    rotateAngle: string
-    isLocked: boolean
+    borderStyle?: string
+    borderDashArray?: number
+    rotateAngle: number
+    isLocked?: boolean
     id: string
-    annotName: string
     position?: string
-    fillColor: string
-    strokeColor: string
     dynamicText: string
     fontColor: string
     fontSize: number
     fontFamily: string
     textAlign: string
     font: any;
-    comments: ICommentsCollection[]
-    review: IReviewCollection
-    annotationSelectorSettings: AnnotationSelectorSettingsModel
-    annotationSettings?: any;
-    allowedInteractions?: AllowedInteraction
-    isCommentLock: boolean
     isReadonly: boolean
+    allowedInteractions?: AllowedInteraction[]
+    pageIndex: number
+    customData: object
+    isPrint: boolean
+    pageRotation?: number
+    notes?: string
+    annotationAddMode?: string
+    isAddAnnotationProgrammatically?: boolean
+    isTransparentSet?: boolean
+    previousFontSize?: number
 }
 
 /**
@@ -467,12 +463,38 @@ export class FreeTextAnnotation {
                             isPrint: annotation.IsPrint, isCommentLock: annotation.IsCommentLock, isReadonly: annotation.IsReadonly,
                             isAddAnnotationProgrammatically: isAddedProgramatically, isTransparentSet: annotation.IsTransparentSet
                         };
+                        const annotObject: IFreeTextAnnotation = {
+                            author: annotation.Author, modifiedDate: annotation.ModifiedDate, subject: annotation.Subject, id: 'freetext' + this.inputBoxCount,
+                            rotateAngle: annotation.Rotate, dynamicText: annotation.MarkupText, strokeColor: annotation.StrokeColor,
+                            thickness: annotation.Thickness, fillColor: annotation.FillColor,
+                            bounds: {
+                                x: annotationBoundsX, y: annotationBoundsY, left: annotationBoundsX, top: annotationBoundsY,
+                                width: width, height: height, right: (annotation.Bounds as IBounds).Right,
+                                bottom: (annotation.Bounds as IBounds).Bottom
+                            }, annotName: annotation.AnnotName, shapeAnnotationType: 'FreeText',
+                            pageIndex: pageNumber, opacity: annotation.Opacity, fontColor: annotation.FontColor,
+                            fontSize: annotation.FontSize, pageRotation: rotateValue,
+                            fontFamily: annotation.FontFamily, notes: annotation.MarkupText, textAlign: annotation.TextAlign,
+                            comments: this.pdfViewer.annotationModule.getAnnotationComments(annotation.Comments,
+                                                                                            annotation, annotation.Author),
+                            review: { state: annotation.State, stateModel: annotation.StateModel,
+                                modifiedDate: annotation.ModifiedDate, author: annotation.Author },
+                            font: { isBold: annotation.Font.Bold, isItalic: annotation.Font.Italic,
+                                isStrikeout: annotation.Font.Strikeout, isUnderline: annotation.Font.Underline },
+                            annotationSelectorSettings: this.getSettings(annotation), annotationSettings: annotation.AnnotationSettings,
+                            customData: this.pdfViewer.annotation.getCustomData(annotation),
+                            annotationAddMode: annotation.annotationAddMode, allowedInteractions: annotation.allowedInteractions,
+                            isPrint: annotation.IsPrint, isCommentLock: annotation.IsCommentLock, isReadonly: annotation.IsReadonly,
+                            isAddAnnotationProgrammatically: isAddedProgramatically, isTransparentSet: annotation.IsTransparentSet
+                        };
                         if (isImportAction) {
                             annot.id = annotation.AnnotName;
                             annot.previousFontSize = annotation.FontSize ? annotation.FontSize : this.fontSize;
+                            annotObject.id = annotation.AnnotName;
+                            annotObject.previousFontSize = annotation.FontSize ? annotation.FontSize : this.fontSize;
                         }
                         const addedAnnot: PdfAnnotationBaseModel = this.pdfViewer.add(annot as PdfAnnotationBase);
-                        this.pdfViewer.annotationModule.storeAnnotations(pageNumber, annot, '_annotations_freetext');
+                        this.pdfViewer.annotationModule.storeAnnotations(pageNumber, annotObject, '_annotations_freetext');
                         if (this.isAddAnnotationProgramatically) {
                             const settings: AnnotationBaseSettings = {
                                 opacity: annot.opacity, borderColor: annot.strokeColor, borderWidth: annot.thickness,
@@ -647,16 +669,13 @@ export class FreeTextAnnotation {
      * @returns {string} - string
      */
     public saveFreeTextAnnotations(): string {
-        let storeObject: string = this.pdfViewerBase.sessionStorageManager.getItem(this.pdfViewerBase.documentId + '_annotations_freetext');
-        if (this.pdfViewerBase.isStorageExceed) {
-            storeObject = this.pdfViewerBase.annotationStorage[this.pdfViewerBase.documentId + '_annotations_freetext'];
-        }
+        const storeObject: IPageAnnotations[] = this.pdfViewer.annotationsCollection.get(this.pdfViewerBase.documentId + '_annotations_freetext');
         const annotations: Array<any> = [];
         for (let j: number = 0; j < this.pdfViewerBase.pageCount; j++) {
             annotations[parseInt(j.toString(), 10)] = [];
         }
         if (storeObject && !this.pdfViewer.annotationSettings.skipDownload) {
-            const annotationCollection: IPageAnnotations[] = JSON.parse(storeObject);
+            let annotationCollection: IPageAnnotations[] = JSON.parse(JSON.stringify(storeObject)) as IPageAnnotations[];
             for (let i: number = 0; i < annotationCollection.length; i++) {
                 let newArray: IFreeTextAnnotation[] = [];
                 const pageAnnotationObject: IPageAnnotations = annotationCollection[parseInt(i.toString(), 10)];
@@ -692,6 +711,7 @@ export class FreeTextAnnotation {
                 }
                 annotations[pageAnnotationObject.pageIndex] = newArray;
             }
+            annotationCollection = null;
         }
         return JSON.stringify(annotations);
     }
@@ -735,39 +755,24 @@ export class FreeTextAnnotation {
     }
 
     private manageAnnotations(pageAnnotations: IFreeTextAnnotation[], pageNumber: number): void {
-        let storeObject: string = this.pdfViewerBase.sessionStorageManager.getItem(this.pdfViewerBase.documentId + '_annotations_freetext');
-        if (this.pdfViewerBase.isStorageExceed) {
-            storeObject = this.pdfViewerBase.annotationStorage[this.pdfViewerBase.documentId + '_annotations_freetext'];
-        }
+        const storeObject: IPageAnnotations[] = this.pdfViewer.annotationsCollection.get(this.pdfViewerBase.documentId + '_annotations_freetext');
         if (storeObject) {
-            const annotObject: IPageAnnotations[] = JSON.parse(storeObject);
-            if (!this.pdfViewerBase.isStorageExceed) {
-                this.pdfViewerBase.sessionStorageManager.removeItem(this.pdfViewerBase.documentId + '_annotations_freetext');
+            this.pdfViewer.annotationsCollection.delete(this.pdfViewerBase.documentId + '_annotations_freetext');
+            const index: number = this.pdfViewer.annotationModule.getPageCollection(storeObject, pageNumber);
+            if (index != null && storeObject[parseInt(index.toString(), 10)]) {
+                storeObject[parseInt(index.toString(), 10)].annotations = pageAnnotations;
             }
-            const index: number = this.pdfViewer.annotationModule.getPageCollection(annotObject, pageNumber);
-            if (index != null && annotObject[parseInt(index.toString(), 10)]) {
-                annotObject[parseInt(index.toString(), 10)].annotations = pageAnnotations;
-            }
-            const annotationStringified: string = JSON.stringify(annotObject);
-            if (this.pdfViewerBase.isStorageExceed) {
-                this.pdfViewerBase.annotationStorage[this.pdfViewerBase.documentId + '_annotations_freetext'] = annotationStringified;
-            } else {
-                this.pdfViewerBase.sessionStorageManager.setItem(this.pdfViewerBase.documentId + '_annotations_freetext', annotationStringified);
-            }
+            this.pdfViewer.annotationsCollection.set(this.pdfViewerBase.documentId + '_annotations_freetext', storeObject);
         }
     }
 
     private getAnnotations(pageIndex: number, shapeAnnotations: any[]): any[] {
         let annotationCollection: any[];
-        let storeObject: string = this.pdfViewerBase.sessionStorageManager.getItem(this.pdfViewerBase.documentId + '_annotations_freetext');
-        if (this.pdfViewerBase.isStorageExceed) {
-            storeObject = this.pdfViewerBase.annotationStorage[this.pdfViewerBase.documentId + '_annotations_freetext'];
-        }
+        const storeObject: IPageAnnotations[] = this.pdfViewer.annotationsCollection.get(this.pdfViewerBase.documentId + '_annotations_freetext');
         if (storeObject) {
-            const annotObject: IPageAnnotations[] = JSON.parse(storeObject);
-            const index: number = this.pdfViewer.annotationModule.getPageCollection(annotObject, pageIndex);
-            if (index != null && annotObject[parseInt(index.toString(), 10)]) {
-                annotationCollection = annotObject[parseInt(index.toString(), 10)].annotations;
+            const index: number = this.pdfViewer.annotationModule.getPageCollection(storeObject, pageIndex);
+            if (index != null && storeObject[parseInt(index.toString(), 10)]) {
+                annotationCollection = storeObject[parseInt(index.toString(), 10)].annotations;
             } else {
                 annotationCollection = shapeAnnotations;
             }
@@ -864,6 +869,23 @@ export class FreeTextAnnotation {
                     customData: this.pdfViewer.annotationModule.getData('FreeText'), isPrint: (this.pdfViewer.freeTextSettings && !isNullOrUndefined(this.pdfViewer.freeTextSettings.isPrint)) ? this.pdfViewer.freeTextSettings.isPrint : true,
                     allowedInteractions: allowedInteractions, isReadonly: this.isReadonly
                 };
+                const annotObject: IFreeTextAnnotation = {
+                    author: this.author, modifiedDate: currentDateString, subject: this.subject, id: 'free_text' + this.inputBoxCount,
+                    rotateAngle: 0, dynamicText: inputValue, strokeColor: this.borderColor,
+                    thickness: this.borderWidth, fillColor: this.fillColor,
+                    bounds: {
+                        left: inputEleLeft / zoomFactor, top: inputEleTop / zoomFactor, x: inputEleLeft / zoomFactor,
+                        y: inputEleTop / zoomFactor, width: inputEleWidth / zoomFactor, height: inputEleHeight / zoomFactor
+                    }, annotName: annotationName,
+                    shapeAnnotationType: 'FreeText', pageIndex: pageIndex, fontColor: this.fontColor, fontSize: this.fontSize,
+                    fontFamily: this.fontFamily, opacity: this.opacity, comments: [], textAlign: this.textAlign,
+                    font: { isBold: this.isBold, isItalic: this.isItalic, isStrikeout: this.isStrikethrough,
+                        isUnderline: this.isUnderline },
+                    review: { state: 'Unmarked', stateModel: 'None', modifiedDate: currentDateString, author: this.author },
+                    annotationSelectorSettings: annotationSelectorSettings, annotationSettings: annotationSettings,
+                    customData: this.pdfViewer.annotationModule.getData('FreeText'), isPrint: (this.pdfViewer.freeTextSettings && !isNullOrUndefined(this.pdfViewer.freeTextSettings.isPrint)) ? this.pdfViewer.freeTextSettings.isPrint : true,
+                    allowedInteractions: allowedInteractions, isReadonly: this.isReadonly
+                };
                 if (this.pdfViewer.enableRtl) {
                     annot.textAlign = 'Right';
                 }
@@ -877,7 +899,7 @@ export class FreeTextAnnotation {
                     height: annot.bounds.height, fontColor: annot.fontColor, fontFamily: annot.fontFamily,
                     defaultText: annot.dynamicText, fontStyle: annot.font, textAlignment: annot.textAlign
                 };
-                this.pdfViewer.annotation.storeAnnotations(pageIndex, annot, '_annotations_freetext');
+                this.pdfViewer.annotation.storeAnnotations(pageIndex, annotObject, '_annotations_freetext');
                 this.pdfViewerBase.updateDocumentEditedProperty(true);
                 this.pdfViewer.fireAnnotationAdd(annot.pageIndex, annot.annotName, 'FreeText', bounds, settings);
                 if (Browser.isDevice && !this.pdfViewer.enableDesktopMode) {
@@ -1387,7 +1409,7 @@ export class FreeTextAnnotation {
             const annotationBoundsY: number = !isNullOrUndefined(annotation.Bounds.Y) ? annotation.Bounds.Y : annotation.Bounds.y;
             const annotationBoundsWidth: number = annotation.Bounds.Width ? annotation.Bounds.Width : annotation.Bounds.width;
             const annotationBoundsHeight: number = annotation.Bounds.Height ? annotation.Bounds.Height : annotation.Bounds.height;
-            const annot: PdfAnnotationBaseModel = {
+            const annot: IFreeTextAnnotation = {
                 author: annotation.Author, allowedInteractions: annotation.allowedInteractions, modifiedDate: annotation.ModifiedDate, subject: annotation.Subject, id: 'freetext',
                 rotateAngle: annotation.Rotate, dynamicText: annotation.MarkupText, strokeColor: annotation.StrokeColor,
                 thickness: annotation.Thickness, fillColor: annotation.FillColor,

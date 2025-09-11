@@ -18,7 +18,9 @@
     .e-alignments::before {
       content: '\e7b8';
     }
-
+    .e-rte-checklist-icon::before {
+      content: '\e952';
+    }
     .e-justify-left::before {
       content: '\e7b8';
     }
@@ -254,7 +256,7 @@
     }
 
     .e-table-edit-properties::before {
-      content: '\e730';
+      content: '\e954';
     }
 
     .e-create-table::before {

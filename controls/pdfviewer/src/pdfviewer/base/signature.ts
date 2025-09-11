@@ -2153,18 +2153,13 @@ export class Signature {
      * @returns {string} - Returns the string.
      */
     public saveSignature(): string {
-        let storeObject: string = null;
-        if (this.pdfViewerBase.isStorageExceed) {
-            storeObject = this.pdfViewerBase.annotationStorage[this.pdfViewerBase.documentId + '_annotations_sign'];
-        } else {
-            storeObject = this.pdfViewerBase.sessionStorageManager.getItem(this.pdfViewerBase.documentId + '_annotations_sign');
-        }
+        const storeObject: IPageAnnotations[] = this.pdfViewer.annotationsCollection.get(this.pdfViewerBase.documentId + '_annotations_sign');
         const annotations: Array<any> = [];
         for (let j: number = 0; j < this.pdfViewerBase.pageCount; j++) {
             annotations[parseInt(j.toString(), 10)] = [];
         }
         if (storeObject) {
-            const annotationCollection: IPageAnnotations[] = JSON.parse(storeObject);
+            let annotationCollection: IPageAnnotations[] = JSON.parse(JSON.stringify(storeObject)) as IPageAnnotations[];
             for (let i: number = 0; i < annotationCollection.length; i++) {
                 let newArray: ISignAnnotation[] = [];
                 const pageAnnotationObject: IPageAnnotations = annotationCollection[parseInt(i.toString(), 10)];
@@ -2222,6 +2217,7 @@ export class Signature {
                 }
                 annotations[pageAnnotationObject.pageIndex] = newArray;
             }
+            annotationCollection = null;
         }
         return JSON.stringify(annotations);
     }
@@ -2483,12 +2479,11 @@ export class Signature {
         const currentAnnotation: number = Math.round(JSON.stringify(annotation).length / 1024);
         if ((sessionSize + currentAnnotation) > 4500) {
             this.pdfViewerBase.isStorageExceed = true;
-            this.pdfViewer.annotationModule.clearAnnotationStorage();
             if (!(this.pdfViewerBase.isFormStorageExceed) && this.pdfViewer.formFieldsModule){
                 this.pdfViewer.formFieldsModule.clearFormFieldStorage();
             }
         }
-        const storeObject: string = this.pdfViewerBase.sessionStorageManager.getItem(this.pdfViewerBase.documentId + '_annotations_sign');
+        const storeObject: IPageAnnotations[] = this.pdfViewer.annotationsCollection.get(this.pdfViewerBase.documentId + '_annotations_sign');
         let index: number = 0;
         if (!storeObject) {
             this.storeSignatureCollections(annotation, pageNumber);
@@ -2497,32 +2492,21 @@ export class Signature {
             index = shapeAnnotation.annotations.indexOf(annotation);
             const annotationCollection: IPageAnnotations[] = [];
             annotationCollection.push(shapeAnnotation);
-            const annotationStringified: string = JSON.stringify(annotationCollection);
-            if (this.pdfViewerBase.isStorageExceed) {
-                this.pdfViewerBase.annotationStorage[this.pdfViewerBase.documentId + '_annotations_sign'] = annotationStringified;
-            } else {
-                this.pdfViewerBase.sessionStorageManager.setItem(this.pdfViewerBase.documentId + '_annotations_sign', annotationStringified);
-            }
+            this.pdfViewer.annotationsCollection.set(this.pdfViewerBase.documentId + '_annotations_sign', annotationCollection);
         } else {
             this.storeSignatureCollections(annotation, pageNumber);
-            const annotObject: IPageAnnotations[] = JSON.parse(storeObject);
-            this.pdfViewerBase.sessionStorageManager.removeItem(this.pdfViewerBase.documentId + '_annotations_sign');
-            const pageIndex: number = this.pdfViewer.annotationModule.getPageCollection(annotObject, pageNumber);
-            if (!isNullOrUndefined(pageIndex) && annotObject[parseInt(pageIndex.toString(), 10)]) {
-                (annotObject[parseInt(pageIndex.toString(), 10)] as IPageAnnotations).annotations.push(annotation);
-                index = (annotObject[parseInt(pageIndex.toString(), 10)] as IPageAnnotations).annotations.indexOf(annotation);
+            this.pdfViewer.annotationsCollection.delete(this.pdfViewerBase.documentId + '_annotations_sign');
+            const pageIndex: number = this.pdfViewer.annotationModule.getPageCollection(storeObject, pageNumber);
+            if (!isNullOrUndefined(pageIndex) && storeObject[parseInt(pageIndex.toString(), 10)]) {
+                (storeObject[parseInt(pageIndex.toString(), 10)] as IPageAnnotations).annotations.push(annotation);
+                index = (storeObject[parseInt(pageIndex.toString(), 10)] as IPageAnnotations).annotations.indexOf(annotation);
             } else {
                 const markupAnnotation: IPageAnnotations = { pageIndex: pageNumber, annotations: [] };
                 markupAnnotation.annotations.push(annotation);
                 index = markupAnnotation.annotations.indexOf(annotation);
-                annotObject.push(markupAnnotation);
+                storeObject.push(markupAnnotation);
             }
-            const annotationStringified: string = JSON.stringify(annotObject);
-            if (this.pdfViewerBase.isStorageExceed) {
-                this.pdfViewerBase.annotationStorage[this.pdfViewerBase.documentId + '_annotations_sign'] = annotationStringified;
-            } else {
-                this.pdfViewerBase.sessionStorageManager.setItem(this.pdfViewerBase.documentId + '_annotations_sign', annotationStringified);
-            }
+            this.pdfViewer.annotationsCollection.set(this.pdfViewerBase.documentId + '_annotations_sign', storeObject);
         }
     }
 
@@ -2674,17 +2658,11 @@ export class Signature {
      */
     public getAnnotations(pageIndex: number, shapeAnnotations: any[]): any[] {
         let annotationCollection: any[];
-        let storeObject: string = null;
-        if (this.pdfViewerBase.isStorageExceed){
-            storeObject = this.pdfViewerBase.annotationStorage[this.pdfViewerBase.documentId + '_annotations_sign'];
-        } else {
-            storeObject = this.pdfViewerBase.sessionStorageManager.getItem(this.pdfViewerBase.documentId + '_annotations_sign');
-        }
+        const storeObject: IPageAnnotations[] =  this.pdfViewer.annotationsCollection.get(this.pdfViewerBase.documentId + '_annotations_sign');
         if (storeObject) {
-            const annotObject: IPageAnnotations[] = JSON.parse(storeObject);
-            const index: number = this.pdfViewer.annotationModule.getPageCollection(annotObject, pageIndex);
-            if (!isNullOrUndefined(index) && annotObject[parseInt(index.toString(), 10)]) {
-                annotationCollection = annotObject[parseInt(index.toString(), 10)].annotations;
+            const index: number = this.pdfViewer.annotationModule.getPageCollection(storeObject, pageIndex);
+            if (!isNullOrUndefined(index) && storeObject[parseInt(index.toString(), 10)]) {
+                annotationCollection = storeObject[parseInt(index.toString(), 10)].annotations;
             } else {
                 annotationCollection = shapeAnnotations;
             }
@@ -2701,25 +2679,14 @@ export class Signature {
      * @returns {void}
      */
     public manageAnnotations(pageAnnotations: ISignAnnotation[], pageNumber: number): void {
-        let storeObject: string = null;
-        if (this.pdfViewerBase.isStorageExceed) {
-            storeObject = this.pdfViewerBase.annotationStorage[this.pdfViewerBase.documentId + '_annotations_sign'];
-        } else {
-            storeObject = this.pdfViewerBase.sessionStorageManager.getItem(this.pdfViewerBase.documentId + '_annotations_sign');
-        }
+        const storeObject: IPageAnnotations[] = this.pdfViewer.annotationsCollection.get(this.pdfViewerBase.documentId + '_annotations_sign');
         if (storeObject) {
-            const annotObject: IPageAnnotations[] = JSON.parse(storeObject);
-            this.pdfViewerBase.sessionStorageManager.removeItem(this.pdfViewerBase.documentId + '_annotations_sign');
-            const index: number = this.pdfViewer.annotationModule.getPageCollection(annotObject, pageNumber);
-            if (index != null && annotObject[parseInt(index.toString(), 10)]) {
-                annotObject[parseInt(index.toString(), 10)].annotations = pageAnnotations;
+            this.pdfViewer.annotationsCollection.delete(this.pdfViewerBase.documentId + '_annotations_sign');
+            const index: number = this.pdfViewer.annotationModule.getPageCollection(storeObject, pageNumber);
+            if (index != null && storeObject[parseInt(index.toString(), 10)]) {
+                storeObject[parseInt(index.toString(), 10)].annotations = pageAnnotations;
             }
-            const annotationStringified: string = JSON.stringify(annotObject);
-            if (this.pdfViewerBase.isStorageExceed) {
-                this.pdfViewerBase.annotationStorage[this.pdfViewerBase.documentId + '_annotations_sign'] = annotationStringified;
-            } else {
-                this.pdfViewerBase.sessionStorageManager.setItem(this.pdfViewerBase.documentId + '_annotations_sign', annotationStringified);
-            }
+            this.pdfViewer.annotationsCollection.set(this.pdfViewerBase.documentId + '_annotations_sign', storeObject);
         }
     }
 
@@ -2795,7 +2762,7 @@ export class Signature {
      * @returns {void}
      */
     public destroy(): void {
-        this.pdfViewerBase.sessionStorageManager.removeItem('_annotations_sign');
+        this.pdfViewer.annotationsCollection.delete('_annotations_sign');
         const signImage: HTMLElement = document.getElementById(this.pdfViewer.element.id + '_signElement');
         if (signImage) {
             signImage.removeEventListener('change', this.addStampImage);

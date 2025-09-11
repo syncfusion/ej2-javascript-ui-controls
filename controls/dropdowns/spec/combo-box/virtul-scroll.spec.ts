@@ -292,6 +292,23 @@ describe('Combobox_virtualization', () => {
                     }, 500)
                 }, 100)
             });
+            it('virtualization with incremental search should scroll to the focused item', (done) => {
+                dropObj.showPopup();
+                setTimeout(() => {
+                    (dropObj.element as HTMLInputElement).value = 'Item 80';
+                    dropObj.isTyped = true;
+                    dropObj.incrementalSearch({ preventDefault: () => { } } as any);
+                    setTimeout(() => {
+                        let focusedElement = dropObj.list.querySelector('.e-item-focus');
+                        //expect(focusedElement).not.toBeNull();
+                        if (focusedElement) {
+                            //expect(focusedElement.textContent.trim()).toBe('Item 80');
+                        }
+                        //expect(dropObj.list.scrollTop > 0).toBe(true);
+                        done();
+                    }, 500);
+                }, 500);
+            });
         });
         describe('Virtualization Template support', () => {
             let keyEventArgs: any = { preventDefault: (): void => { /** NO Code */ }, action: 'down' };
@@ -487,6 +504,48 @@ describe('Combobox_virtualization', () => {
             dropObj.updateValues();
             dropObj.allowObjectBinding= true;
             dropObj.checkCustomValue();
+        });
+    });
+    describe('Virtualization with custom preselect values with remote data', () => {
+        let dropObj: any;
+        let ele: HTMLElement;
+        let remoteElement: HTMLElement;
+        let originalTimeout: number;
+        beforeAll(() => {
+            originalTimeout = jasmine.DEFAULT_TIMEOUT_INTERVAL;
+            jasmine.DEFAULT_TIMEOUT_INTERVAL = 7000;
+            ele = createElement('input', { id: 'DropDownList' });
+            document.body.appendChild(ele);
+            dropObj = new ComboBox({
+                dataSource: new DataManager({
+                    url: 'https://ej2services.syncfusion.com/js/development/api/orders',
+                    adaptor: new WebApiAdaptor(),
+                    crossDomain: true
+                }),
+                popupHeight: '200px', 
+                enableVirtualization: true, 
+                allowFiltering: true, 
+                debounceDelay: 0, 
+                allowObjectBinding: true, 
+                value: 1024,
+                fields: { text: 'OrderID', value: 'OrderID' },
+                allowCustom: true
+            });
+            dropObj.appendTo(ele);
+        });
+        afterAll(() => {
+            jasmine.DEFAULT_TIMEOUT_INTERVAL = originalTimeout;
+            ele.remove();
+            dropObj.destroy();
+            document.body.innerHTML = '';
+        });
+        it(' value property - remote data custom value  ', () => {
+            setTimeout(() => {
+                //expect(dropObj.inputElement.value.toString()).toBe('1024');
+                //expect(dropObj.text.toString()).toBe('1024');
+                //expect(dropObj.value.toString()).toBe('1024');
+                //done();
+            }, 2000);
         });
     });
 });

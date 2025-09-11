@@ -1,5 +1,5 @@
 import { StickyNotesSettings } from './../pdfviewer';
-import { PdfViewerBase, PdfViewer, IPageAnnotations, AjaxHandler, AllowedInteraction, IPoint, AnnotBoundsRect, IRect } from '../index';
+import { PdfViewerBase, PdfViewer, IPageAnnotations, AjaxHandler, AllowedInteraction, IPoint, AnnotBoundsRect, IRect, IAnnotation } from '../index';
 import { createElement, Browser, Internationalization, isBlazor, isNullOrUndefined, SanitizeHtmlHelper} from '@syncfusion/ej2-base';
 import { Accordion, BeforeOpenCloseMenuEventArgs, ContextMenu as Context, MenuItemModel } from '@syncfusion/ej2-navigations';
 import { InPlaceEditor } from '@syncfusion/ej2-inplace-editor';
@@ -11,28 +11,16 @@ import { AnnotationSelectorSettingsModel } from '../pdfviewer-model';
 /**
  * @hidden
  */
-export interface IPopupAnnotation {
-    shapeAnnotationType: string
+export interface IPopupAnnotation extends IAnnotation {
     pathData: string
-    author: string
-    subject: string
-    modifiedDate: string
-    note: string
     bounds: any;
     color: any;
-    opacity: number
     state: string;
     stateModel: string
-    comments: ICommentsCollection[]
-    review: IReviewCollection
-    annotName: string
     pageNumber: number
-    annotationSelectorSettings: AnnotationSelectorSettingsModel
     customData: object
-    annotationSettings: any;
     allowedInteractions: AllowedInteraction
     isPrint: boolean
-    isCommentLock: boolean
 }
 
 /**
@@ -2501,17 +2489,14 @@ export class StickyNotesAnnotation {
         if (typeString === 'freeText') {
             typeString = 'freetext';
         }
-        let storeCommentObject: string = this.pdfViewerBase.sessionStorageManager.getItem(this.pdfViewerBase.documentId + '_annotations_' + typeString);
-        if (this.pdfViewerBase.isStorageExceed) {
-            storeCommentObject = this.pdfViewerBase.annotationStorage[this.pdfViewerBase.documentId + '_annotations_' + typeString];
-        }
-        if (storeCommentObject) {
-            const annotationCommentObject: IPageAnnotations[] = JSON.parse(storeCommentObject);
+        const storeObject: IPageAnnotations[] = this.pdfViewer.annotationsCollection.get(this.pdfViewerBase.documentId + '_annotations_' + typeString);
+        if (storeObject) {
             const annotation: any = this.pdfViewer.selectedItems.annotations[0];
+            let storeCommentObject: IPageAnnotations[] = JSON.parse(JSON.stringify(storeObject)) as IPageAnnotations[];
             const index: number = this.pdfViewer.annotationModule.
-                getPageCollection(annotationCommentObject, (pageNumber - 1));
-            if (index != null && annotationCommentObject[parseInt(index.toString(), 10)]) {
-                const pageCollections: any = annotationCommentObject[parseInt(index.toString(), 10)].annotations;
+                getPageCollection(storeCommentObject, (pageNumber - 1));
+            if (index != null && storeCommentObject[parseInt(index.toString(), 10)]) {
+                const pageCollections: any = storeCommentObject[parseInt(index.toString(), 10)].annotations;
                 for (let i: number = 0; i < pageCollections.length; i++) {
                     const currentSelector: AnnotationSelectorSettingsModel =
                      pageCollections[parseInt(i.toString(), 10)].annotationSelectorSettings;
@@ -2583,6 +2568,7 @@ export class StickyNotesAnnotation {
                     }
                 }
             }
+            storeCommentObject = null;
         }
     }
 
@@ -3272,12 +3258,9 @@ export class StickyNotesAnnotation {
         } else {
             type = 'shape_measure';
         }
-        let storeObject: string = this.pdfViewerBase.sessionStorageManager.getItem(this.pdfViewerBase.documentId + '_annotations_' + type);
-        if (this.pdfViewerBase.isStorageExceed) {
-            storeObject = this.pdfViewerBase.annotationStorage[this.pdfViewerBase.documentId + '_annotations_' + type];
-        }
+        const storeObject: IPageAnnotations[] = this.pdfViewer.annotationsCollection.get(this.pdfViewerBase.documentId + '_annotations_' + type);
         if (storeObject) {
-            const annotObject: IPageAnnotations[] = JSON.parse(storeObject);
+            const annotObject: IPageAnnotations[] = JSON.parse(JSON.stringify(storeObject)) as IPageAnnotations[];
             const index: number = this.pdfViewer.annotationModule.getPageCollection(annotObject, pageIndex);
             if (index != null && annotObject[parseInt(index.toString(), 10)]) {
                 annotationCollection = annotObject[parseInt(index.toString(), 10)].annotations;
@@ -3307,56 +3290,34 @@ export class StickyNotesAnnotation {
         } else {
             type = 'shape_measure';
         }
-        let storeObject: string = this.pdfViewerBase.sessionStorageManager.getItem(this.pdfViewerBase.documentId + '_annotations_' + type);
-        if (this.pdfViewerBase.isStorageExceed) {
-            storeObject = this.pdfViewerBase.annotationStorage[this.pdfViewerBase.documentId + '_annotations_' + type];
-        }
+        const storeObject: IPageAnnotations[] = this.pdfViewer.annotationsCollection.get(this.pdfViewerBase.documentId + '_annotations_' + type);
         if (storeObject) {
-            const annotObject: IPageAnnotations[] = JSON.parse(storeObject);
-            if (!this.pdfViewerBase.isStorageExceed) {
-                this.pdfViewerBase.sessionStorageManager.removeItem(this.pdfViewerBase.documentId + '_annotations_' + type);
+            this.pdfViewer.annotationsCollection.delete(this.pdfViewerBase.documentId + '_annotations_' + type);
+            const index: number = this.pdfViewer.annotationModule.getPageCollection(storeObject, pageNumber);
+            if (index != null && storeObject[parseInt(index.toString(), 10)]) {
+                storeObject[parseInt(index.toString(), 10)].annotations = pageAnnotations;
             }
-            const index: number = this.pdfViewer.annotationModule.getPageCollection(annotObject, pageNumber);
-            if (index != null && annotObject[parseInt(index.toString(), 10)]) {
-                annotObject[parseInt(index.toString(), 10)].annotations = pageAnnotations;
-            }
-            const annotationStringified: string = JSON.stringify(annotObject);
-            if (this.pdfViewerBase.isStorageExceed) {
-                this.pdfViewerBase.annotationStorage[this.pdfViewerBase.documentId + '_annotations_' + type] = annotationStringified;
-            } else {
-                this.pdfViewerBase.sessionStorageManager.setItem(this.pdfViewerBase.documentId + '_annotations_' + type, annotationStringified);
-            }
+            this.pdfViewer.annotationsCollection.set(this.pdfViewerBase.documentId + '_annotations_' + type, storeObject);
         }
     }
 
     public updateStickyNotes(annotation: any, id: any): void {
-        let storeObject: string = this.pdfViewerBase.sessionStorageManager.getItem(this.pdfViewerBase.documentId + '_annotations_sticky');
-        if (this.pdfViewerBase.isStorageExceed) {
-            storeObject = this.pdfViewerBase.annotationStorage[this.pdfViewerBase.documentId + '_annotations_sticky'];
-        }
+        const storeObject: IPageAnnotations[] = this.pdfViewer.annotationsCollection.get(this.pdfViewerBase.documentId + '_annotations_sticky');
         if (storeObject) {
             const bounds: any = annotation.bounds;
-            const annotObject: IPageAnnotations[] = JSON.parse(storeObject);
-            for (let k: number = 0; k < annotObject.length; k++) {
-                const currentAnnot: any = annotObject[parseInt(k.toString(), 10)];
+            for (let k: number = 0; k < storeObject.length; k++) {
+                const currentAnnot: any = storeObject[parseInt(k.toString(), 10)];
                 for (let j: number = 0; j < currentAnnot.annotations.length; j++) {
-                    if (annotObject[parseInt(k.toString(), 10)].annotations[parseInt(j.toString(), 10)].annotName ===
+                    if (storeObject[parseInt(k.toString(), 10)].annotations[parseInt(j.toString(), 10)].annotName ===
                      annotation.annotName) {
-                        if (!this.pdfViewerBase.isStorageExceed) {
-                            this.pdfViewerBase.sessionStorageManager.removeItem(this.pdfViewerBase.documentId + '_annotations_sticky');
-                        }
-                        const pageIndex: number = this.pdfViewer.annotationModule.getPageCollection(annotObject, 0);
-                        if (annotObject[parseInt(k.toString(), 10)]) {
-                            annotObject[parseInt(k.toString(), 10)].annotations[parseInt(j.toString(), 10)].bounds =
+                        this.pdfViewer.annotationsCollection.delete(this.pdfViewerBase.documentId + '_annotations_sticky');
+                        const pageIndex: number = this.pdfViewer.annotationModule.getPageCollection(storeObject, 0);
+                        if (storeObject[parseInt(k.toString(), 10)]) {
+                            storeObject[parseInt(k.toString(), 10)].annotations[parseInt(j.toString(), 10)].bounds =
                              { left: bounds.x, top: bounds.y, width: bounds.width, height: bounds.height,
                                  right: bounds.right, bottom: bounds.bottom };
                         }
-                        const annotationStringified: string = JSON.stringify(annotObject);
-                        if (this.pdfViewerBase.isStorageExceed) {
-                            this.pdfViewerBase.annotationStorage[this.pdfViewerBase.documentId + '_annotations_sticky'] = annotationStringified;
-                        } else {
-                            this.pdfViewerBase.sessionStorageManager.setItem(this.pdfViewerBase.documentId + '_annotations_sticky', annotationStringified);
-                        }
+                        this.pdfViewer.annotationsCollection.set(this.pdfViewerBase.documentId + '_annotations_sticky', storeObject);
                         break;
                     }
                 }
@@ -3365,16 +3326,13 @@ export class StickyNotesAnnotation {
     }
 
     public saveStickyAnnotations(): string {
-        let storeObject: string = this.pdfViewerBase.sessionStorageManager.getItem(this.pdfViewerBase.documentId + '_annotations_sticky');
-        if (this.pdfViewerBase.isStorageExceed) {
-            storeObject = this.pdfViewerBase.annotationStorage[this.pdfViewerBase.documentId + '_annotations_sticky'];
-        }
+        const storeObject: IPageAnnotations[] = this.pdfViewer.annotationsCollection.get(this.pdfViewerBase.documentId + '_annotations_sticky');
         const annotations: Array<any> = [];
         for (let j: number = 0; j < this.pdfViewerBase.pageCount; j++) {
             annotations[parseInt(j.toString(), 10)] = [];
         }
         if (storeObject && !this.pdfViewer.annotationSettings.skipDownload) {
-            const annotationCollection: IPageAnnotations[] = JSON.parse(storeObject);
+            let annotationCollection: IPageAnnotations[] = JSON.parse(JSON.stringify(storeObject)) as IPageAnnotations[];
             for (let i: number = 0; i < annotationCollection.length; i++) {
                 let newArray: IPopupAnnotation[] = [];
                 const pageAnnotationObject: IPageAnnotations = annotationCollection[parseInt(i.toString(), 10)];
@@ -3389,30 +3347,20 @@ export class StickyNotesAnnotation {
                 }
                 annotations[pageAnnotationObject.pageIndex] = newArray;
             }
+            annotationCollection = null;
         }
         return JSON.stringify(annotations);
     }
 
     private deleteStickyNotesAnnotations(pageAnnotations: any, pageNumber: number): void {
-        let storeObject: string = this.pdfViewerBase.sessionStorageManager.getItem(this.pdfViewerBase.documentId + '_annotations_sticky');
-        if (this.pdfViewerBase.isStorageExceed) {
-            storeObject = this.pdfViewerBase.annotationStorage[this.pdfViewerBase.documentId + '_annotations_sticky'];
-        }
+        const storeObject: IPageAnnotations[] = this.pdfViewer.annotationsCollection.get(this.pdfViewerBase.documentId + '_annotations_sticky');
         if (storeObject) {
-            const annotObject: IPageAnnotations[] = JSON.parse(storeObject);
-            if (!this.pdfViewerBase.isStorageExceed) {
-                this.pdfViewerBase.sessionStorageManager.removeItem(this.pdfViewerBase.documentId + '_annotations_sticky');
+            this.pdfViewer.annotationsCollection.delete(this.pdfViewerBase.documentId + '_annotations_sticky');
+            const index: number = this.pdfViewer.annotationModule.getPageCollection(storeObject, pageNumber);
+            if (index != null && storeObject[parseInt(index.toString(), 10)]) {
+                storeObject[parseInt(index.toString(), 10)].annotations = pageAnnotations;
             }
-            const index: number = this.pdfViewer.annotationModule.getPageCollection(annotObject, pageNumber);
-            if (index != null && annotObject[parseInt(index.toString(), 10)]) {
-                annotObject[parseInt(index.toString(), 10)].annotations = pageAnnotations;
-            }
-            const annotationStringified: string = JSON.stringify(annotObject);
-            if (this.pdfViewerBase.isStorageExceed) {
-                this.pdfViewerBase.annotationStorage[this.pdfViewerBase.documentId + '_annotations_sticky'] = annotationStringified;
-            } else {
-                this.pdfViewerBase.sessionStorageManager.setItem(this.pdfViewerBase.documentId + '_annotations_sticky', annotationStringified);
-            }
+            this.pdfViewer.annotationsCollection.set(this.pdfViewerBase.documentId + '_annotations_sticky', storeObject);
         }
     }
 
